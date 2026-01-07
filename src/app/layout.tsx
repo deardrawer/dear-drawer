@@ -1,0 +1,130 @@
+import type { Metadata } from "next";
+import {
+  Noto_Sans_KR,
+  Noto_Serif_KR,
+  Cormorant_Garamond,
+  Playfair_Display,
+  Montserrat,
+  Great_Vibes,
+  Lora,
+  Cinzel,
+  EB_Garamond,
+  Nanum_Myeongjo,
+  Gowun_Batang,
+  Gowun_Dodum,
+} from "next/font/google";
+import "./globals.css";
+import SessionProvider from "@/components/providers/SessionProvider";
+
+// 기본 폰트
+const notoSansKR = Noto_Sans_KR({
+  variable: "--font-noto-sans-kr",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "700"],
+});
+
+const notoSerifKR = Noto_Serif_KR({
+  variable: "--font-noto-serif-kr",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+});
+
+const cormorantGaramond = Cormorant_Garamond({
+  variable: "--font-cormorant",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+// Classic 스타일
+const playfairDisplay = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const nanumMyeongjo = Nanum_Myeongjo({
+  variable: "--font-nanum-myeongjo",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
+// Modern 스타일
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+});
+
+// Romantic 스타일
+const greatVibes = Great_Vibes({
+  variable: "--font-great-vibes",
+  subsets: ["latin"],
+  weight: ["400"],
+});
+
+const lora = Lora({
+  variable: "--font-lora",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const gowunBatang = Gowun_Batang({
+  variable: "--font-gowun-batang",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
+// Contemporary 스타일
+const cinzel = Cinzel({
+  variable: "--font-cinzel",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const gowunDodum = Gowun_Dodum({
+  variable: "--font-gowun-dodum",
+  subsets: ["latin"],
+  weight: ["400"],
+});
+
+// Luxury 스타일
+const ebGaramond = EB_Garamond({
+  variable: "--font-eb-garamond",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+export const metadata: Metadata = {
+  title: "dear drawer - 나만의 모바일 청첩장",
+  description: "AI가 만들어주는 특별한 모바일 청첩장. 간단한 질문에 답하면 나만의 청첩장이 완성됩니다.",
+  keywords: ["청첩장", "모바일청첩장", "웨딩", "결혼식", "AI청첩장", "dear drawer"],
+};
+
+const fontVariables = [
+  notoSansKR.variable,
+  notoSerifKR.variable,
+  cormorantGaramond.variable,
+  playfairDisplay.variable,
+  nanumMyeongjo.variable,
+  montserrat.variable,
+  greatVibes.variable,
+  lora.variable,
+  gowunBatang.variable,
+  cinzel.variable,
+  gowunDodum.variable,
+  ebGaramond.variable,
+].join(' ');
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="ko">
+      <body className={`${fontVariables} font-sans antialiased`}>
+        <SessionProvider>{children}</SessionProvider>
+      </body>
+    </html>
+  );
+}

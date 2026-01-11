@@ -104,9 +104,10 @@ export async function GET(request: NextRequest) {
     console.log("=== Kakao Callback API Success ===");
     return response;
   } catch (error) {
-    console.error("Kakao callback error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    console.error("Kakao callback error:", errorMessage);
     return NextResponse.redirect(
-      new URL(`/login?error=${encodeURIComponent("로그인 처리 중 오류가 발생했습니다.")}`, request.url)
+      new URL(`/login?error=${encodeURIComponent(errorMessage)}`, request.url)
     );
   }
 }

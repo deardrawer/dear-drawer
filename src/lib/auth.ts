@@ -1,9 +1,36 @@
 import { SignJWT, jwtVerify } from "jose";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import type { User, JWTPayload } from "@/types/kakao";
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "your-super-secret-jwt-key-min-32-chars"
-);
+// Cloudflare 환경변수 타입
+interface CloudflareEnv {
+  JWT_SECRET?: string;
+  NEXT_PUBLIC_KAKAO_CLIENT_ID?: string;
+  NEXT_PUBLIC_KAKAO_REDIRECT_URI?: string;
+  KAKAO_CLIENT_SECRET?: string;
+}
+
+// JWT Secret 가져오기 (동적)
+async function getJwtSecret(): Promise<Uint8Array> {
+  try {
+    const { env } = await getCloudflareContext() as { env: CloudflareEnv };
+    const secret = env.JWT_SECRET || process.env.JWT_SECRET || "your-super-secret-jwt-key-min-32-chars";
+    return new TextEncoder().encode(secret);
+  } catch {
+    // Fallback for build time or non-Cloudflare environment
+    return new TextEncoder().encode(process.env.JWT_SECRET || "your-super-secret-jwt-key-min-32-chars");
+  }
+}
+
+// 환경변수 가져오기 (동적)
+async function getEnvVar(key: keyof CloudflareEnv): Promise<string | undefined> {
+  try {
+    const { env } = await getCloudflareContext() as { env: CloudflareEnv };
+    return env[key] || process.env[key];
+  } catch {
+    return process.env[key];
+  }
+}
 
 const COOKIE_NAME = "auth-token";
 const COOKIE_OPTIONS = {
@@ -15,16 +42,18 @@ const COOKIE_OPTIONS = {
 };
 
 export async function createToken(user: User): Promise<string> {
+  const secret = await getJwtSecret();
   return await new SignJWT({ user })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("7d")
-    .sign(JWT_SECRET);
+    .sign(secret);
 }
 
 export async function verifyToken(token: string): Promise<JWTPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, JWT_SECRET);
+    const secret = await getJwtSecret();
+    const { payload } = await jwtVerify(token, secret);
     return payload as unknown as JWTPayload;
   } catch {
     return null;
@@ -63,12 +92,15 @@ export function getKakaoAuthUrl(): string {
 
 // Exchange authorization code for tokens
 export async function getKakaoToken(code: string) {
-  const clientId = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID;
-  const clientSecret = process.env.KAKAO_CLIENT_SECRET;
-  const redirectUri = process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI;
+  const clientId = await getEnvVar("NEXT_PUBLIC_KAKAO_CLIENT_ID");
+  const clientSecret = await getEnvVar("KAKAO_CLIENT_SECRET");
+  const redirectUri = await getEnvVar("NEXT_PUBLIC_KAKAO_REDIRECT_URI");
+
+  console.log("getKakaoToken - clientId:", clientId ? "있음" : "없음");
+  console.log("getKakaoToken - redirectUri:", redirectUri ? "있음" : "없음");
 
   if (!clientId || !redirectUri) {
-    throw new Error("Kakao OAuth environment variables are not configured");
+    throw new Error(`Kakao OAuth environment variables are not configured. clientId: ${!!clientId}, redirectUri: ${!!redirectUri}`);
   }
 
   const params = new URLSearchParams({

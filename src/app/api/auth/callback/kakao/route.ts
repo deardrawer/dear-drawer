@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getKakaoToken, getKakaoUserInfo, createToken, getAuthCookieOptions } from "@/lib/auth";
+import { createToken, getAuthCookieOptions } from "@/lib/auth";
 import type { KakaoTokenResponse, KakaoUserResponse, User } from "@/types/kakao";
 
 export async function GET(request: NextRequest) {
@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const code = searchParams.get("code");
     const error = searchParams.get("error");
-    console.log("Code:", code ? "있음" : "없음");
+    console.log("Code:", code ? code.substring(0, 10) + "..." : "없음");
     console.log("Error:", error);
 
     // Handle error from Kakao
@@ -23,14 +23,58 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(new URL("/login?error=no_code", request.url));
     }
 
+    // Get environment variables
+    const clientId = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID;
+    const redirectUri = process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI;
+
+    console.log("ENV - clientId:", clientId ? clientId.substring(0, 8) + "..." : "없음");
+    console.log("ENV - redirectUri:", redirectUri || "없음");
+
+    if (!clientId || !redirectUri) {
+      throw new Error(`Missing env vars: clientId=${!!clientId}, redirectUri=${!!redirectUri}`);
+    }
+
     // Exchange code for tokens
     console.log("Exchanging code for token...");
-    const tokenData: KakaoTokenResponse = await getKakaoToken(code);
+    const tokenParams = new URLSearchParams({
+      grant_type: "authorization_code",
+      client_id: clientId,
+      redirect_uri: redirectUri,
+      code,
+    });
+
+    const tokenResponse = await fetch("https://kauth.kakao.com/oauth/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+      },
+      body: tokenParams.toString(),
+    });
+
+    if (!tokenResponse.ok) {
+      const errorText = await tokenResponse.text();
+      console.error("Token error:", errorText);
+      throw new Error(`Token exchange failed: ${errorText}`);
+    }
+
+    const tokenData: KakaoTokenResponse = await tokenResponse.json();
     console.log("Token received:", tokenData.access_token ? "성공" : "실패");
 
     // Get user info
     console.log("Getting user info...");
-    const kakaoUser: KakaoUserResponse = await getKakaoUserInfo(tokenData.access_token);
+    const userResponse = await fetch("https://kapi.kakao.com/v2/user/me", {
+      headers: {
+        Authorization: `Bearer ${tokenData.access_token}`,
+      },
+    });
+
+    if (!userResponse.ok) {
+      const errorText = await userResponse.text();
+      console.error("User info error:", errorText);
+      throw new Error(`User info failed: ${errorText}`);
+    }
+
+    const kakaoUser: KakaoUserResponse = await userResponse.json();
     console.log("User ID:", kakaoUser.id);
 
     // Create user object

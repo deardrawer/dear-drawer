@@ -88,7 +88,7 @@ export default function ShareModal({
 
     try {
       const response = await fetch(`/api/invitations/check-slug?slug=${encodeURIComponent(slug)}`)
-      const data = await response.json()
+      const data: { available?: boolean } = await response.json()
 
       if (data.available) {
         setSlugAvailable(true)

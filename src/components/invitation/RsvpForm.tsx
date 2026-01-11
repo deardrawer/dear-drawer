@@ -12,12 +12,14 @@ interface RsvpFormProps {
   invitationId: string
   primaryColor: string
   onSuccess?: () => void
+  allowGuestCount?: boolean
 }
 
 export default function RsvpForm({
   invitationId,
   primaryColor,
   onSuccess,
+  allowGuestCount = true,
 }: RsvpFormProps) {
   const [guestName, setGuestName] = useState('')
   const [guestPhone, setGuestPhone] = useState('')
@@ -59,7 +61,7 @@ export default function RsvpForm({
       })
 
       if (!response.ok) {
-        const data = await response.json()
+        const data: { error?: string } = await response.json()
         throw new Error(data.error || '제출에 실패했습니다.')
       }
 
@@ -188,8 +190,8 @@ export default function RsvpForm({
         </div>
       </div>
 
-      {/* 동반 인원 (참석 시만) */}
-      {attendance === 'attending' && (
+      {/* 동반 인원 (참석 시만, allowGuestCount가 true일 때만) */}
+      {allowGuestCount && attendance === 'attending' && (
         <div className="space-y-2">
           <Label htmlFor="guestCount">동반 인원 (본인 포함)</Label>
           <div className="flex items-center gap-3">

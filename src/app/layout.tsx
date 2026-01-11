@@ -14,7 +14,7 @@ import {
   Gowun_Dodum,
 } from "next/font/google";
 import "./globals.css";
-import SessionProvider from "@/components/providers/SessionProvider";
+import { AuthProvider } from "@/components/providers/AuthProvider";
 
 // 기본 폰트
 const notoSansKR = Noto_Sans_KR({
@@ -123,7 +123,7 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className={`${fontVariables} font-sans antialiased`}>
-        <SessionProvider>{children}</SessionProvider>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

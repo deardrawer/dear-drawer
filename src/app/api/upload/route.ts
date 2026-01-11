@@ -1,142 +1,149 @@
-export const runtime = 'edge'
+import { NextRequest, NextResponse } from "next/server";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { verifyToken, getAuthCookieName } from "@/lib/auth";
 
-import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { supabase } from '@/lib/supabase'
+interface CloudflareEnv {
+  R2: R2Bucket;
+  NEXT_PUBLIC_R2_PUBLIC_URL?: string;
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const cookieName = getAuthCookieName();
+    const token = request.cookies.get(cookieName)?.value;
 
-    if (!session?.user?.id) {
+    if (!token) {
       return NextResponse.json(
-        { error: '로그인이 필요합니다.' },
+        { error: "로그인이 필요합니다." },
         { status: 401 }
-      )
+      );
     }
 
-    const formData = await request.formData()
-    const file = formData.get('file') as File
-    const invitationId = formData.get('invitationId') as string
-    const type = formData.get('type') as string // 'main' or 'gallery'
+    const payload = await verifyToken(token);
+    if (!payload) {
+      return NextResponse.json(
+        { error: "Invalid token" },
+        { status: 401 }
+      );
+    }
+
+    const userId = payload.user.id;
+    const formData = await request.formData();
+    const file = formData.get("file") as File;
+    const invitationId = formData.get("invitationId") as string;
+    const type = formData.get("type") as string; // 'main' or 'gallery'
 
     if (!file) {
       return NextResponse.json(
-        { error: '파일이 필요합니다.' },
+        { error: "파일이 필요합니다." },
         { status: 400 }
-      )
+      );
     }
 
     // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
-        { error: '지원하지 않는 파일 형식입니다. (JPG, PNG, WebP, GIF만 가능)' },
+        { error: "지원하지 않는 파일 형식입니다. (JPG, PNG, WebP, GIF만 가능)" },
         { status: 400 }
-      )
+      );
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       return NextResponse.json(
-        { error: '파일 크기는 5MB 이하여야 합니다.' },
+        { error: "파일 크기는 5MB 이하여야 합니다." },
         { status: 400 }
-      )
+      );
     }
 
     // Generate unique filename
-    const ext = file.name.split('.').pop()
-    const filename = `${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`
-    const path = `${session.user.id}/${invitationId || 'temp'}/${type}/${filename}`
+    const ext = file.name.split(".").pop();
+    const filename = `${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`;
+    const key = `${userId}/${invitationId || "temp"}/${type}/${filename}`;
 
-    // Convert file to buffer
-    const buffer = Buffer.from(await file.arrayBuffer())
+    // Get R2 bucket from Cloudflare context
+    const { env } = (await getCloudflareContext()) as unknown as { env: CloudflareEnv };
 
-    // Upload to Supabase storage
-    const { data, error } = await supabase.storage
-      .from('invitation-images')
-      .upload(path, buffer, {
+    // Upload to R2
+    const arrayBuffer = await file.arrayBuffer();
+    await env.R2.put(key, arrayBuffer, {
+      httpMetadata: {
         contentType: file.type,
-        upsert: false,
-      })
-
-    if (error) {
-      console.error('Upload error:', error)
-      return NextResponse.json(
-        { error: '파일 업로드에 실패했습니다.' },
-        { status: 500 }
-      )
-    }
+      },
+    });
 
     // Get public URL
-    const { data: urlData } = supabase.storage
-      .from('invitation-images')
-      .getPublicUrl(data.path)
+    const publicUrl = env.NEXT_PUBLIC_R2_PUBLIC_URL || "https://pub-dear-drawer.r2.dev";
+    const url = `${publicUrl}/${key}`;
 
     return NextResponse.json({
       success: true,
-      url: urlData.publicUrl,
-      path: data.path,
-    })
+      url,
+      path: key,
+    });
   } catch (error) {
-    console.error('Upload API error:', error)
+    console.error("Upload API error:", error);
     return NextResponse.json(
-      { error: '서버 오류가 발생했습니다.' },
+      { error: "서버 오류가 발생했습니다." },
       { status: 500 }
-    )
+    );
   }
 }
 
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const cookieName = getAuthCookieName();
+    const token = request.cookies.get(cookieName)?.value;
 
-    if (!session?.user?.id) {
+    if (!token) {
       return NextResponse.json(
-        { error: '로그인이 필요합니다.' },
+        { error: "로그인이 필요합니다." },
         { status: 401 }
-      )
+      );
     }
 
-    const { path } = await request.json()
+    const payload = await verifyToken(token);
+    if (!payload) {
+      return NextResponse.json(
+        { error: "Invalid token" },
+        { status: 401 }
+      );
+    }
+
+    const userId = payload.user.id;
+    const { path }: { path?: string } = await request.json();
 
     if (!path) {
       return NextResponse.json(
-        { error: '파일 경로가 필요합니다.' },
+        { error: "파일 경로가 필요합니다." },
         { status: 400 }
-      )
+      );
     }
 
     // Verify ownership (path should start with user's ID)
-    if (!path.startsWith(session.user.id)) {
+    if (!path.startsWith(userId)) {
       return NextResponse.json(
-        { error: '삭제 권한이 없습니다.' },
+        { error: "삭제 권한이 없습니다." },
         { status: 403 }
-      )
+      );
     }
 
-    const { error } = await supabase.storage
-      .from('invitation-images')
-      .remove([path])
+    // Get R2 bucket from Cloudflare context
+    const { env } = (await getCloudflareContext()) as unknown as { env: CloudflareEnv };
 
-    if (error) {
-      console.error('Delete error:', error)
-      return NextResponse.json(
-        { error: '파일 삭제에 실패했습니다.' },
-        { status: 500 }
-      )
-    }
+    // Delete from R2
+    await env.R2.delete(path);
 
     return NextResponse.json({
       success: true,
-      message: '파일이 삭제되었습니다.',
-    })
+      message: "파일이 삭제되었습니다.",
+    });
   } catch (error) {
-    console.error('Delete API error:', error)
+    console.error("Delete API error:", error);
     return NextResponse.json(
-      { error: '서버 오류가 발생했습니다.' },
+      { error: "서버 오류가 발생했습니다." },
       { status: 500 }
-    )
+    );
   }
 }

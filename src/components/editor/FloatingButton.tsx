@@ -3,6 +3,30 @@
 import { useState } from 'react'
 
 type ModalType = 'none' | 'guestbook' | 'rsvp' | 'location' | 'account'
+type DirectionsTab = 'car' | 'subway' | 'bus' | 'parking'
+
+interface BankAccount {
+  bank: string
+  account: string
+  holder: string
+  enabled: boolean
+}
+
+interface DirectionsInfo {
+  car: {
+    desc: string
+    route: string
+  }
+  subway: string[]
+  bus: {
+    main: string[]
+    branch: string[]
+  }
+  parking: {
+    location: string
+    fee: string
+  }
+}
 
 interface FloatingButtonProps {
   themeColors: {
@@ -25,16 +49,32 @@ interface FloatingButtonProps {
     groom_mother_name?: string
     bride_father_name?: string
     bride_mother_name?: string
-    groom_account?: string
-    bride_account?: string
-    groom_bank?: string
-    bride_bank?: string
+    // 연락처 (6개)
+    groom_phone?: string
+    bride_phone?: string
+    groom_father_phone?: string
+    groom_mother_phone?: string
+    bride_father_phone?: string
+    bride_mother_phone?: string
+    // 계좌 정보 (6개)
+    groom_bank_info?: BankAccount
+    groom_father_bank_info?: BankAccount
+    groom_mother_bank_info?: BankAccount
+    bride_bank_info?: BankAccount
+    bride_father_bank_info?: BankAccount
+    bride_mother_bank_info?: BankAccount
+    // 오시는 길 정보
+    directions?: DirectionsInfo
+    // RSVP 설정
+    rsvpEnabled?: boolean
+    rsvpAllowGuestCount?: boolean
   }
 }
 
 export default function FloatingButton({ themeColors, fonts, invitation }: FloatingButtonProps) {
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false)
   const [activeModal, setActiveModal] = useState<ModalType>('none')
+  const [directionsTab, setDirectionsTab] = useState<DirectionsTab>('car')
   const [guestbookForm, setGuestbookForm] = useState({ name: '', message: '' })
   const [rsvpForm, setRsvpForm] = useState({ name: '', attendance: '', guestCount: 1, message: '' })
 
@@ -71,68 +111,230 @@ export default function FloatingButton({ themeColors, fonts, invitation }: Float
       </button>
 
       {/* Bottom Sheet */}
-      {isBottomSheetOpen && (
-        <>
-          <div className="absolute inset-0 bg-black/50 z-50" onClick={() => setIsBottomSheetOpen(false)} />
-          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 p-6 pb-8" style={{ maxHeight: '70%', boxShadow: '0 -4px 20px rgba(0,0,0,0.15)' }}>
-            <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-6" />
-            <h3 className="text-center text-sm mb-6" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 500 }}>결혼식 정보</h3>
-            <div className="grid grid-cols-2 gap-3">
-              <button className="flex flex-col items-center justify-center p-5 rounded-2xl" style={{ background: themeColors.sectionBg }} onClick={() => openModal('guestbook')}>
-                <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3" style={{ background: themeColors.cardBg }}>
-                  <svg className="w-5 h-5" fill="none" stroke={themeColors.primary} strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>
-                </div>
-                <span className="text-[11px]" style={{ color: themeColors.text }}>축하 전하기</span>
-              </button>
-              <button className="flex flex-col items-center justify-center p-5 rounded-2xl" style={{ background: themeColors.sectionBg }} onClick={() => openModal('rsvp')}>
-                <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3" style={{ background: themeColors.cardBg }}>
-                  <svg className="w-5 h-5" fill="none" stroke={themeColors.primary} strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                </div>
-                <span className="text-[11px]" style={{ color: themeColors.text }}>참석 여부</span>
-              </button>
-              <button className="flex flex-col items-center justify-center p-5 rounded-2xl" style={{ background: themeColors.sectionBg }} onClick={() => openModal('location')}>
-                <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3" style={{ background: themeColors.cardBg }}>
-                  <svg className="w-5 h-5" fill="none" stroke={themeColors.primary} strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
-                </div>
-                <span className="text-[11px]" style={{ color: themeColors.text }}>오시는 길</span>
-              </button>
-              <button className="flex flex-col items-center justify-center p-5 rounded-2xl" style={{ background: themeColors.sectionBg }} onClick={() => openModal('account')}>
-                <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3" style={{ background: themeColors.cardBg }}>
-                  <svg className="w-5 h-5" fill="none" stroke={themeColors.primary} strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" /></svg>
-                </div>
-                <span className="text-[11px]" style={{ color: themeColors.text }}>마음 전하기</span>
-              </button>
-            </div>
-            <button onClick={() => setIsBottomSheetOpen(false)} className="w-full mt-6 py-3 rounded-xl text-xs font-light" style={{ background: themeColors.background, color: themeColors.gray }}>닫기</button>
-          </div>
-        </>
-      )}
+      {isBottomSheetOpen && (() => {
+        // 연락처 유무 체크 (축하 전하기)
+        const hasContacts = !!(
+          invitation?.groom_phone ||
+          invitation?.bride_phone ||
+          invitation?.groom_father_phone ||
+          invitation?.groom_mother_phone ||
+          invitation?.bride_father_phone ||
+          invitation?.bride_mother_phone
+        )
+        // RSVP 활성화 체크 (참석 여부)
+        const hasRsvp = !!invitation?.rsvpEnabled
+        // 계좌 정보 유무 체크 (마음 전하기)
+        const hasAccounts = !!(
+          invitation?.groom_bank_info?.enabled ||
+          invitation?.groom_father_bank_info?.enabled ||
+          invitation?.groom_mother_bank_info?.enabled ||
+          invitation?.bride_bank_info?.enabled ||
+          invitation?.bride_father_bank_info?.enabled ||
+          invitation?.bride_mother_bank_info?.enabled
+        )
 
-      {/* Guestbook Modal */}
+        const menuItems = [
+          hasContacts && {
+            key: 'guestbook',
+            label: '축하 전하기',
+            icon: <svg className="w-5 h-5" fill="none" stroke={themeColors.primary} strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>
+          },
+          hasRsvp && {
+            key: 'rsvp',
+            label: '참석 여부',
+            icon: <svg className="w-5 h-5" fill="none" stroke={themeColors.primary} strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          },
+          {
+            key: 'location',
+            label: '오시는 길',
+            icon: <svg className="w-5 h-5" fill="none" stroke={themeColors.primary} strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
+          },
+          hasAccounts && {
+            key: 'account',
+            label: '마음 전하기',
+            icon: <svg className="w-5 h-5" fill="none" stroke={themeColors.primary} strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" /></svg>
+          },
+        ].filter(Boolean) as { key: string; label: string; icon: React.ReactElement }[]
+
+        return (
+          <>
+            <div className="absolute inset-0 bg-black/50 z-50" onClick={() => setIsBottomSheetOpen(false)} />
+            <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 p-6 pb-8" style={{ maxHeight: '70%', boxShadow: '0 -4px 20px rgba(0,0,0,0.15)' }}>
+              <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-6" />
+              <h3 className="text-center text-sm mb-6" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 500 }}>결혼식 정보</h3>
+              <div className={`grid gap-3 ${menuItems.length <= 2 ? 'grid-cols-' + menuItems.length : 'grid-cols-2'}`}>
+                {menuItems.map((item) => (
+                  <button
+                    key={item.key}
+                    className="flex flex-col items-center justify-center p-5 rounded-2xl"
+                    style={{ background: themeColors.sectionBg }}
+                    onClick={() => openModal(item.key as ModalType)}
+                  >
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3" style={{ background: themeColors.cardBg }}>
+                      {item.icon}
+                    </div>
+                    <span className="text-[11px]" style={{ color: themeColors.text }}>{item.label}</span>
+                  </button>
+                ))}
+              </div>
+              <button onClick={() => setIsBottomSheetOpen(false)} className="w-full mt-6 py-3 rounded-xl text-xs font-light" style={{ background: themeColors.background, color: themeColors.gray }}>닫기</button>
+            </div>
+          </>
+        )
+      })()}
+
+      {/* Guestbook Modal - 축하 전하기 */}
       {activeModal === 'guestbook' && (
         <>
           <div className="absolute inset-0 bg-black/50 z-50" onClick={closeModal} />
-          <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 bg-white rounded-2xl z-50 p-6" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
-            <h3 className="text-center text-base mb-4" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>축하 메시지</h3>
-            <input
-              type="text"
-              placeholder="이름"
-              value={guestbookForm.name}
-              onChange={(e) => setGuestbookForm({ ...guestbookForm, name: e.target.value })}
-              className="w-full p-3 rounded-xl mb-3 text-sm outline-none"
-              style={{ background: themeColors.sectionBg, color: themeColors.text }}
-            />
-            <textarea
-              placeholder="축하 메시지를 남겨주세요"
-              value={guestbookForm.message}
-              onChange={(e) => setGuestbookForm({ ...guestbookForm, message: e.target.value })}
-              className="w-full p-3 rounded-xl mb-4 text-sm outline-none resize-none h-24"
-              style={{ background: themeColors.sectionBg, color: themeColors.text }}
-            />
-            <div className="flex gap-2">
-              <button onClick={closeModal} className="flex-1 py-3 rounded-xl text-sm" style={{ background: themeColors.sectionBg, color: themeColors.gray }}>취소</button>
-              <button onClick={closeModal} className="flex-1 py-3 rounded-xl text-sm text-white" style={{ background: themeColors.primary }}>등록하기</button>
-            </div>
+          <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 bg-white rounded-2xl z-50 p-6 max-h-[70%] overflow-y-auto" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
+            <h3 className="text-center text-base mb-4" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>축하 전하기</h3>
+
+            {/* 신랑측 */}
+            {(invitation?.groom_name || invitation?.groom_father_name || invitation?.groom_mother_name) && (
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                  <p className="text-xs font-medium text-blue-700">신랑측</p>
+                </div>
+                <div className="space-y-2">
+                  {invitation?.groom_name && (
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-blue-50 border border-blue-100">
+                      <div>
+                        <span className="text-xs font-medium text-blue-900">신랑</span>
+                        <p className="text-[11px] text-blue-700">{invitation.groom_name}</p>
+                      </div>
+                      <div className="flex gap-1.5">
+                        {invitation.groom_phone && (
+                          <>
+                            <a href={`sms:${invitation.groom_phone}`} className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center hover:bg-blue-200 transition-colors">
+                              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                            </a>
+                            <a href={`tel:${invitation.groom_phone}`} className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center hover:bg-blue-200 transition-colors">
+                              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                            </a>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  {invitation?.groom_father_name && (
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-blue-50 border border-blue-100">
+                      <div>
+                        <span className="text-xs font-medium text-blue-900">아버지</span>
+                        <p className="text-[11px] text-blue-700">{invitation.groom_father_name}</p>
+                      </div>
+                      <div className="flex gap-1.5">
+                        {invitation.groom_father_phone && (
+                          <>
+                            <a href={`sms:${invitation.groom_father_phone}`} className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center hover:bg-blue-200 transition-colors">
+                              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                            </a>
+                            <a href={`tel:${invitation.groom_father_phone}`} className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center hover:bg-blue-200 transition-colors">
+                              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                            </a>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  {invitation?.groom_mother_name && (
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-blue-50 border border-blue-100">
+                      <div>
+                        <span className="text-xs font-medium text-blue-900">어머니</span>
+                        <p className="text-[11px] text-blue-700">{invitation.groom_mother_name}</p>
+                      </div>
+                      <div className="flex gap-1.5">
+                        {invitation.groom_mother_phone && (
+                          <>
+                            <a href={`sms:${invitation.groom_mother_phone}`} className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center hover:bg-blue-200 transition-colors">
+                              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                            </a>
+                            <a href={`tel:${invitation.groom_mother_phone}`} className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center hover:bg-blue-200 transition-colors">
+                              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                            </a>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* 신부측 */}
+            {(invitation?.bride_name || invitation?.bride_father_name || invitation?.bride_mother_name) && (
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-pink-500"></span>
+                  <p className="text-xs font-medium text-pink-700">신부측</p>
+                </div>
+                <div className="space-y-2">
+                  {invitation?.bride_name && (
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-pink-50 border border-pink-100">
+                      <div>
+                        <span className="text-xs font-medium text-pink-900">신부</span>
+                        <p className="text-[11px] text-pink-700">{invitation.bride_name}</p>
+                      </div>
+                      <div className="flex gap-1.5">
+                        {invitation.bride_phone && (
+                          <>
+                            <a href={`sms:${invitation.bride_phone}`} className="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center hover:bg-pink-200 transition-colors">
+                              <svg className="w-4 h-4 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                            </a>
+                            <a href={`tel:${invitation.bride_phone}`} className="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center hover:bg-pink-200 transition-colors">
+                              <svg className="w-4 h-4 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                            </a>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  {invitation?.bride_father_name && (
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-pink-50 border border-pink-100">
+                      <div>
+                        <span className="text-xs font-medium text-pink-900">아버지</span>
+                        <p className="text-[11px] text-pink-700">{invitation.bride_father_name}</p>
+                      </div>
+                      <div className="flex gap-1.5">
+                        {invitation.bride_father_phone && (
+                          <>
+                            <a href={`sms:${invitation.bride_father_phone}`} className="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center hover:bg-pink-200 transition-colors">
+                              <svg className="w-4 h-4 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                            </a>
+                            <a href={`tel:${invitation.bride_father_phone}`} className="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center hover:bg-pink-200 transition-colors">
+                              <svg className="w-4 h-4 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                            </a>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  {invitation?.bride_mother_name && (
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-pink-50 border border-pink-100">
+                      <div>
+                        <span className="text-xs font-medium text-pink-900">어머니</span>
+                        <p className="text-[11px] text-pink-700">{invitation.bride_mother_name}</p>
+                      </div>
+                      <div className="flex gap-1.5">
+                        {invitation.bride_mother_phone && (
+                          <>
+                            <a href={`sms:${invitation.bride_mother_phone}`} className="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center hover:bg-pink-200 transition-colors">
+                              <svg className="w-4 h-4 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                            </a>
+                            <a href={`tel:${invitation.bride_mother_phone}`} className="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center hover:bg-pink-200 transition-colors">
+                              <svg className="w-4 h-4 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                            </a>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <button onClick={closeModal} className="w-full py-3 rounded-xl text-sm" style={{ background: themeColors.background, color: themeColors.gray }}>닫기</button>
           </div>
         </>
       )}
@@ -163,7 +365,7 @@ export default function FloatingButton({ themeColors, fonts, invitation }: Float
                 style={{ background: rsvpForm.attendance === 'no' ? themeColors.primary : themeColors.sectionBg, color: rsvpForm.attendance === 'no' ? 'white' : themeColors.text }}
               >불참</button>
             </div>
-            {rsvpForm.attendance === 'yes' && (
+            {invitation?.rsvpAllowGuestCount !== false && rsvpForm.attendance === 'yes' && (
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-sm" style={{ color: themeColors.text }}>참석 인원</span>
                 <div className="flex items-center gap-2 ml-auto">
@@ -200,12 +402,14 @@ export default function FloatingButton({ themeColors, fonts, invitation }: Float
       {activeModal === 'location' && (
         <>
           <div className="absolute inset-0 bg-black/50 z-50" onClick={closeModal} />
-          <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 bg-white rounded-2xl z-50 p-6" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
-            <h3 className="text-center text-base mb-4" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>오시는 길</h3>
+          <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 bg-white rounded-2xl z-50 p-5 max-h-[80%] overflow-y-auto" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
+            <h3 className="text-center text-base mb-3" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>오시는 길</h3>
             <div className="text-center mb-4">
               <p className="text-sm font-medium mb-1" style={{ color: themeColors.text }}>{invitation?.venue_name || '예식장'}</p>
               <p className="text-xs" style={{ color: themeColors.gray }}>{invitation?.venue_address || '주소를 입력해주세요'}</p>
             </div>
+
+            {/* 지도 앱 버튼 */}
             <div className="grid grid-cols-3 gap-2 mb-4">
               <button className="flex flex-col items-center p-3 rounded-xl" style={{ background: themeColors.sectionBg }}>
                 <div className="w-8 h-8 rounded-full flex items-center justify-center mb-1" style={{ background: '#03C75A' }}>
@@ -226,9 +430,147 @@ export default function FloatingButton({ themeColors, fonts, invitation }: Float
                 <span className="text-[10px]" style={{ color: themeColors.text }}>티맵</span>
               </button>
             </div>
+
+            {/* 교통수단 탭 */}
+            {(() => {
+              const hasSubway = invitation?.directions?.subway && invitation.directions.subway.some(s => s)
+              const hasBus = (invitation?.directions?.bus?.main && invitation.directions.bus.main.length > 0) ||
+                             (invitation?.directions?.bus?.branch && invitation.directions.bus.branch.length > 0)
+              const hasParking = invitation?.directions?.parking?.location || invitation?.directions?.parking?.fee
+
+              const tabs = [
+                { key: 'car' as DirectionsTab, label: '자가용', show: true, icon: (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 17h.01M16 17h.01M9 6h6m-6 0a2 2 0 00-2 2v9a2 2 0 002 2h6a2 2 0 002-2V8a2 2 0 00-2-2M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2m-6 5h6" />
+                  </svg>
+                )},
+                { key: 'subway' as DirectionsTab, label: '지하철', show: hasSubway, icon: (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7v10M16 7v10M8 11h8M5 21l2-4h10l2 4M12 3v4m-4 0h8a2 2 0 012 2v8a2 2 0 01-2 2H8a2 2 0 01-2-2V9a2 2 0 012-2z" />
+                  </svg>
+                )},
+                { key: 'bus' as DirectionsTab, label: '버스', show: hasBus, icon: (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 18h.01M16 18h.01M6 6h12a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2zm0 0V4h12v2M6 10h12" />
+                  </svg>
+                )},
+                { key: 'parking' as DirectionsTab, label: '주차', show: hasParking, icon: (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 7h4a2 2 0 012 2v0a2 2 0 01-2 2H9V7zm0 4v6m-3 4h12a2 2 0 002-2V5a2 2 0 00-2-2H6a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                )},
+              ].filter(tab => tab.show)
+
+              return tabs.length > 1 ? (
+                <div className="flex rounded-xl overflow-hidden mb-3" style={{ background: themeColors.sectionBg }}>
+                  {tabs.map((tab) => (
+                    <button
+                      key={tab.key}
+                      onClick={() => setDirectionsTab(tab.key)}
+                      className="flex-1 flex flex-col items-center py-2.5 transition-all"
+                      style={{
+                        background: directionsTab === tab.key ? themeColors.primary : 'transparent',
+                        color: directionsTab === tab.key ? 'white' : themeColors.gray,
+                      }}
+                    >
+                      {tab.icon}
+                      <span className="text-[9px] mt-1">{tab.label}</span>
+                    </button>
+                  ))}
+                </div>
+              ) : null
+            })()}
+
+            {/* 교통수단별 정보 */}
+            <div className="rounded-xl p-4 mb-3" style={{ background: themeColors.sectionBg, minHeight: '100px' }}>
+              {directionsTab === 'car' && (
+                <div>
+                  {invitation?.directions?.car?.desc || invitation?.directions?.car?.route ? (
+                    <>
+                      {invitation?.directions?.car?.desc && (
+                        <p className="text-xs leading-relaxed mb-2" style={{ color: themeColors.text }}>
+                          {invitation.directions.car.desc}
+                        </p>
+                      )}
+                      {invitation?.directions?.car?.route && (
+                        <p className="text-[11px] leading-relaxed" style={{ color: themeColors.gray }}>
+                          {invitation.directions.car.route}
+                        </p>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-xs text-center py-4" style={{ color: themeColors.gray }}>
+                      자가용 정보가 없습니다
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {directionsTab === 'subway' && invitation?.directions?.subway && invitation.directions.subway.some(s => s) && (
+                <ul className="space-y-2">
+                  {invitation.directions.subway.filter(s => s).map((line, idx) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ background: themeColors.primary }}></span>
+                      <span className="text-xs leading-relaxed" style={{ color: themeColors.text }}>{line}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {directionsTab === 'bus' && (invitation?.directions?.bus?.main?.length || invitation?.directions?.bus?.branch?.length) && (
+                <div className="space-y-3">
+                  {invitation?.directions?.bus?.main && invitation.directions.bus.main.length > 0 && (
+                    <div>
+                      <p className="text-[10px] font-medium mb-1.5" style={{ color: themeColors.primary }}>간선버스</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {invitation.directions.bus.main.map((num, idx) => (
+                          <span key={idx} className="px-2 py-0.5 rounded text-[10px]" style={{ background: '#3B5998', color: 'white' }}>
+                            {num}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {invitation?.directions?.bus?.branch && invitation.directions.bus.branch.length > 0 && (
+                    <div>
+                      <p className="text-[10px] font-medium mb-1.5" style={{ color: themeColors.primary }}>지선버스</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {invitation.directions.bus.branch.map((num, idx) => (
+                          <span key={idx} className="px-2 py-0.5 rounded text-[10px]" style={{ background: '#5FB85D', color: 'white' }}>
+                            {num}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {directionsTab === 'parking' && (invitation?.directions?.parking?.location || invitation?.directions?.parking?.fee) && (
+                <>
+                  {invitation?.directions?.parking?.location && (
+                    <div className="mb-2">
+                      <p className="text-[10px] font-medium mb-1" style={{ color: themeColors.primary }}>주차장 위치</p>
+                      <p className="text-xs leading-relaxed" style={{ color: themeColors.text }}>
+                        {invitation.directions.parking.location}
+                      </p>
+                    </div>
+                  )}
+                  {invitation?.directions?.parking?.fee && (
+                    <div>
+                      <p className="text-[10px] font-medium mb-1" style={{ color: themeColors.primary }}>주차 요금</p>
+                      <p className="text-xs leading-relaxed" style={{ color: themeColors.text }}>
+                        {invitation.directions.parking.fee}
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
             <button
               onClick={() => copyToClipboard(invitation?.venue_address || '')}
-              className="w-full py-2 rounded-xl text-xs mb-3"
+              className="w-full py-2 rounded-xl text-xs mb-2"
               style={{ background: themeColors.sectionBg, color: themeColors.text }}
             >주소 복사</button>
             <button onClick={closeModal} className="w-full py-3 rounded-xl text-sm" style={{ background: themeColors.background, color: themeColors.gray }}>닫기</button>
@@ -243,37 +585,112 @@ export default function FloatingButton({ themeColors, fonts, invitation }: Float
           <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 bg-white rounded-2xl z-50 p-6 max-h-[70%] overflow-y-auto" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
             <h3 className="text-center text-base mb-4" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>마음 전하기</h3>
 
-            {/* Groom Side */}
-            <div className="mb-4">
-              <p className="text-xs mb-2" style={{ color: themeColors.gray }}>신랑측</p>
-              <div className="p-4 rounded-xl" style={{ background: themeColors.sectionBg }}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm" style={{ color: themeColors.text }}>{invitation?.groom_name || '신랑'}</span>
-                  <button
-                    onClick={() => copyToClipboard(`${invitation?.groom_bank || ''} ${invitation?.groom_account || ''}`)}
-                    className="text-xs px-3 py-1 rounded-full"
-                    style={{ background: themeColors.cardBg, color: themeColors.primary }}
-                  >복사</button>
+            {/* Groom Side - 블루 계열 */}
+            {(invitation?.groom_bank_info?.enabled || invitation?.groom_father_bank_info?.enabled || invitation?.groom_mother_bank_info?.enabled) && (
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                  <p className="text-xs font-medium text-blue-700">신랑측</p>
                 </div>
-                <p className="text-xs" style={{ color: themeColors.gray }}>{invitation?.groom_bank || '은행'} {invitation?.groom_account || '계좌번호'}</p>
+                <div className="space-y-2">
+                  {invitation?.groom_bank_info?.enabled && invitation?.groom_bank_info?.account && (
+                    <div className="p-3 rounded-xl bg-blue-50 border border-blue-100">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-medium text-blue-900">신랑 {invitation?.groom_name}</span>
+                        <button
+                          onClick={() => copyToClipboard(`${invitation?.groom_bank_info?.bank || ''} ${invitation?.groom_bank_info?.account || ''}`)}
+                          className="text-[10px] px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"
+                        >복사</button>
+                      </div>
+                      <p className="text-[10px] text-blue-600">{invitation?.groom_bank_info?.holder}</p>
+                      <p className="text-xs text-blue-800">{invitation?.groom_bank_info?.bank} {invitation?.groom_bank_info?.account}</p>
+                    </div>
+                  )}
+                  {invitation?.groom_father_bank_info?.enabled && invitation?.groom_father_bank_info?.account && (
+                    <div className="p-3 rounded-xl bg-blue-50 border border-blue-100">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-medium text-blue-900">아버지 {invitation?.groom_father_name}</span>
+                        <button
+                          onClick={() => copyToClipboard(`${invitation?.groom_father_bank_info?.bank || ''} ${invitation?.groom_father_bank_info?.account || ''}`)}
+                          className="text-[10px] px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"
+                        >복사</button>
+                      </div>
+                      <p className="text-[10px] text-blue-600">{invitation?.groom_father_bank_info?.holder}</p>
+                      <p className="text-xs text-blue-800">{invitation?.groom_father_bank_info?.bank} {invitation?.groom_father_bank_info?.account}</p>
+                    </div>
+                  )}
+                  {invitation?.groom_mother_bank_info?.enabled && invitation?.groom_mother_bank_info?.account && (
+                    <div className="p-3 rounded-xl bg-blue-50 border border-blue-100">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-medium text-blue-900">어머니 {invitation?.groom_mother_name}</span>
+                        <button
+                          onClick={() => copyToClipboard(`${invitation?.groom_mother_bank_info?.bank || ''} ${invitation?.groom_mother_bank_info?.account || ''}`)}
+                          className="text-[10px] px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"
+                        >복사</button>
+                      </div>
+                      <p className="text-[10px] text-blue-600">{invitation?.groom_mother_bank_info?.holder}</p>
+                      <p className="text-xs text-blue-800">{invitation?.groom_mother_bank_info?.bank} {invitation?.groom_mother_bank_info?.account}</p>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Bride Side */}
-            <div className="mb-4">
-              <p className="text-xs mb-2" style={{ color: themeColors.gray }}>신부측</p>
-              <div className="p-4 rounded-xl" style={{ background: themeColors.sectionBg }}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm" style={{ color: themeColors.text }}>{invitation?.bride_name || '신부'}</span>
-                  <button
-                    onClick={() => copyToClipboard(`${invitation?.bride_bank || ''} ${invitation?.bride_account || ''}`)}
-                    className="text-xs px-3 py-1 rounded-full"
-                    style={{ background: themeColors.cardBg, color: themeColors.primary }}
-                  >복사</button>
+            {/* Bride Side - 핑크 계열 */}
+            {(invitation?.bride_bank_info?.enabled || invitation?.bride_father_bank_info?.enabled || invitation?.bride_mother_bank_info?.enabled) && (
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-pink-500"></span>
+                  <p className="text-xs font-medium text-pink-700">신부측</p>
                 </div>
-                <p className="text-xs" style={{ color: themeColors.gray }}>{invitation?.bride_bank || '은행'} {invitation?.bride_account || '계좌번호'}</p>
+                <div className="space-y-2">
+                  {invitation?.bride_bank_info?.enabled && invitation?.bride_bank_info?.account && (
+                    <div className="p-3 rounded-xl bg-pink-50 border border-pink-100">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-medium text-pink-900">신부 {invitation?.bride_name}</span>
+                        <button
+                          onClick={() => copyToClipboard(`${invitation?.bride_bank_info?.bank || ''} ${invitation?.bride_bank_info?.account || ''}`)}
+                          className="text-[10px] px-2.5 py-1 rounded-full bg-pink-100 text-pink-700 hover:bg-pink-200 transition-colors"
+                        >복사</button>
+                      </div>
+                      <p className="text-[10px] text-pink-600">{invitation?.bride_bank_info?.holder}</p>
+                      <p className="text-xs text-pink-800">{invitation?.bride_bank_info?.bank} {invitation?.bride_bank_info?.account}</p>
+                    </div>
+                  )}
+                  {invitation?.bride_father_bank_info?.enabled && invitation?.bride_father_bank_info?.account && (
+                    <div className="p-3 rounded-xl bg-pink-50 border border-pink-100">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-medium text-pink-900">아버지 {invitation?.bride_father_name}</span>
+                        <button
+                          onClick={() => copyToClipboard(`${invitation?.bride_father_bank_info?.bank || ''} ${invitation?.bride_father_bank_info?.account || ''}`)}
+                          className="text-[10px] px-2.5 py-1 rounded-full bg-pink-100 text-pink-700 hover:bg-pink-200 transition-colors"
+                        >복사</button>
+                      </div>
+                      <p className="text-[10px] text-pink-600">{invitation?.bride_father_bank_info?.holder}</p>
+                      <p className="text-xs text-pink-800">{invitation?.bride_father_bank_info?.bank} {invitation?.bride_father_bank_info?.account}</p>
+                    </div>
+                  )}
+                  {invitation?.bride_mother_bank_info?.enabled && invitation?.bride_mother_bank_info?.account && (
+                    <div className="p-3 rounded-xl bg-pink-50 border border-pink-100">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-medium text-pink-900">어머니 {invitation?.bride_mother_name}</span>
+                        <button
+                          onClick={() => copyToClipboard(`${invitation?.bride_mother_bank_info?.bank || ''} ${invitation?.bride_mother_bank_info?.account || ''}`)}
+                          className="text-[10px] px-2.5 py-1 rounded-full bg-pink-100 text-pink-700 hover:bg-pink-200 transition-colors"
+                        >복사</button>
+                      </div>
+                      <p className="text-[10px] text-pink-600">{invitation?.bride_mother_bank_info?.holder}</p>
+                      <p className="text-xs text-pink-800">{invitation?.bride_mother_bank_info?.bank} {invitation?.bride_mother_bank_info?.account}</p>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* 계좌가 하나도 없는 경우 */}
+            {!(invitation?.groom_bank_info?.enabled || invitation?.groom_father_bank_info?.enabled || invitation?.groom_mother_bank_info?.enabled || invitation?.bride_bank_info?.enabled || invitation?.bride_father_bank_info?.enabled || invitation?.bride_mother_bank_info?.enabled) && (
+              <p className="text-center text-xs py-8" style={{ color: themeColors.gray }}>등록된 계좌가 없습니다</p>
+            )}
 
             <button onClick={closeModal} className="w-full py-3 rounded-xl text-sm" style={{ background: themeColors.background, color: themeColors.gray }}>닫기</button>
           </div>

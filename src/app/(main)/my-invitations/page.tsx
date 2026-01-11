@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
+import { useAuth } from '@/components/providers/AuthProvider'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -30,7 +30,7 @@ type InvitationSummary = {
 }
 
 export default function MyInvitationsPage() {
-  const { data: session, status } = useSession()
+  const { user, status } = useAuth()
   const router = useRouter()
   const [invitations, setInvitations] = useState<InvitationSummary[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -48,7 +48,7 @@ export default function MyInvitationsPage() {
   const fetchInvitations = async () => {
     try {
       const response = await fetch('/api/invitations')
-      const data = await response.json()
+      const data: { invitations?: InvitationSummary[] } = await response.json()
       setInvitations(data.invitations || [])
     } catch (error) {
       console.error('Failed to fetch invitations:', error)

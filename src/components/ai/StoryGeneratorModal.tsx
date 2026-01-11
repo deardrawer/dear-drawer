@@ -122,7 +122,7 @@ export default function StoryGeneratorModal({
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
+        const errorData: { error?: string } = await response.json()
         throw new Error(errorData.error || '스토리 생성에 실패했습니다.')
       }
 
@@ -155,11 +155,11 @@ export default function StoryGeneratorModal({
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
+        const errorData: { error?: string } = await response.json()
         throw new Error(errorData.error || '섹션 재생성에 실패했습니다.')
       }
 
-      const result = await response.json()
+      const result: Record<string, string> = await response.json()
       setGeneratedStory({
         ...generatedStory,
         [section]: result[section],

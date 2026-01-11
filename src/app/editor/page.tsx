@@ -3,18 +3,20 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useSession } from 'next-auth/react'
+import { useAuth } from '@/components/providers/AuthProvider'
 import { getTemplateById } from '@/lib/templates'
 import { Button } from '@/components/ui/button'
 import { useEditorStore } from '@/store/editorStore'
 import EditPanel from '@/components/editor/EditPanel'
 import Preview from '@/components/editor/Preview'
 import ShareModal from '@/components/share/ShareModal'
+import IntroSelector from '@/components/editor/IntroSelector'
+import IntroPreview from '@/components/editor/IntroPreview'
 
 function EditorContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const { data: session } = useSession()
+  const { user } = useAuth()
   const templateId = searchParams.get('template') || 'classic-elegance'
   const template = getTemplateById(templateId)
 
@@ -23,6 +25,7 @@ function EditorContent() {
   const [invitationId, setInvitationId] = useState<string | null>(null)
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+  const [isIntroSelectorOpen, setIsIntroSelectorOpen] = useState(false)
 
   useEffect(() => {
     if (template && !invitation) {
@@ -32,7 +35,7 @@ function EditorContent() {
 
   // Save invitation to database
   const handleSave = async () => {
-    if (!invitation || !session?.user) {
+    if (!invitation || !user) {
       alert('저장하려면 로그인이 필요합니다.')
       router.push('/login')
       return
@@ -70,7 +73,7 @@ function EditorContent() {
         })
       }
 
-      const data = await response.json()
+      const data: { error?: string; invitation?: { id: string } } = await response.json()
 
       if (!response.ok) {
         throw new Error(data.error || '저장에 실패했습니다.')
@@ -229,15 +232,42 @@ function EditorContent() {
 
       {/* Main Editor Area */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Edit Panel - 40% */}
-        <div className="w-2/5 min-w-[400px] max-w-[500px]">
-          <EditPanel />
-        </div>
+        {isIntroSelectorOpen ? (
+          <>
+            {/* 인트로 선택 패널 - 40% */}
+            <div className="w-2/5 min-w-[400px] max-w-[500px] border-r overflow-y-auto">
+              <IntroSelector onBack={() => setIsIntroSelectorOpen(false)} />
+            </div>
 
-        {/* Preview - 60% */}
-        <div className="flex-1">
-          <Preview />
-        </div>
+            {/* 인트로 미리보기 - 60% */}
+            <div className="flex-1 bg-gray-900 flex items-center justify-center p-8">
+              <div className="relative w-full max-w-[375px] h-[667px] bg-black rounded-[40px] overflow-hidden shadow-2xl">
+                {/* 폰 노치 */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[30px] bg-black rounded-b-2xl z-50" />
+                {/* 인트로 미리보기 */}
+                <div className="w-full h-full pt-[30px]">
+                  <IntroPreview
+                    settings={invitation.intro}
+                    coverImage={invitation.media.coverImage}
+                    autoPlay={true}
+                  />
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Edit Panel - 40% */}
+            <div className="w-2/5 min-w-[400px] max-w-[500px]">
+              <EditPanel onOpenIntroSelector={() => setIsIntroSelectorOpen(true)} />
+            </div>
+
+            {/* Preview - 60% */}
+            <div className="flex-1">
+              <Preview />
+            </div>
+          </>
+        )}
       </div>
 
       {/* Share Modal */}

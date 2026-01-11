@@ -1,24 +1,35 @@
 import { create } from 'zustand'
 import { Template } from '@/lib/templates'
 import { GeneratedStory } from '@/app/api/ai/generate-story/route'
-
-// 부모 정보
-export interface ParentInfo {
-  name: string
-  phone: string
-  deceased: boolean
-}
+import { IntroSettings, IntroPresetId, getDefaultIntroSettings, mergeIntroSettings } from '@/lib/introPresets'
 
 // 계좌 정보
 export interface BankInfo {
   bank: string
   account: string
   holder: string
+  enabled: boolean
+}
+
+// 부모 정보
+export interface ParentInfo {
+  name: string
+  phone: string
+  deceased: boolean
+  bank: BankInfo
+}
+
+// 이미지 설정
+export interface ImageSettings {
+  scale: number      // 0.5 ~ 2.0 (기본 1.0)
+  positionX: number  // -50 ~ 50 (기본 0)
+  positionY: number  // -50 ~ 50 (기본 0)
 }
 
 // 프로필 정보
 export interface ProfileInfo {
   images: string[]
+  imageSettings: ImageSettings[]  // 각 이미지별 설정
   aboutLabel: string
   subtitle: string
   intro: string
@@ -69,6 +80,7 @@ export interface StoryItem {
   title: string
   desc: string
   images: string[]
+  imageSettings: ImageSettings[]  // 각 이미지별 설정
 }
 
 // 인터뷰 아이템
@@ -76,6 +88,7 @@ export interface InterviewItem {
   question: string
   answer: string
   images: string[]
+  imageSettings: ImageSettings[]  // 각 이미지별 설정
   bgClass: string
 }
 
@@ -127,6 +140,64 @@ export interface InfoSettings {
   customItems: CustomInfoItem[]
 }
 
+// ===== 새로운 타입들 =====
+
+// 섹션 공개 설정
+export interface SectionVisibility {
+  coupleProfile: boolean    // 커플 소개
+  ourStory: boolean         // 우리의 이야기
+  interview: boolean        // 인터뷰
+  guidance: boolean         // 행복한 시간을 위한 안내
+  bankAccounts: boolean     // 축의금
+  guestbook: boolean        // 방명록
+}
+
+// 인트로 애니메이션 타입
+export type IntroAnimationType =
+  | 'none'           // 없음
+  | 'fade-in'        // 페이드 인
+  | 'slide-up'       // 슬라이드 업
+  | 'zoom-reveal'    // 줌 인
+  | 'curtain-open'   // 커튼 오픈
+  | 'letter-unfold'  // 편지 펼치기
+
+// 섹션 구분선 영문 텍스트
+export interface SectionDividerTexts {
+  invitation: string      // 기본: "INVITATION"
+  ourStory: string        // 기본: "OUR STORY"
+  aboutUs: string         // 기본: "ABOUT US"
+  interview: string       // 기본: "INTERVIEW"
+  gallery: string         // 기본: "GALLERY"
+  information: string     // 기본: "INFORMATION"
+  location: string        // 기본: "LOCATION"
+  rsvp: string            // 기본: "RSVP"
+  thankYou: string        // 기본: "THANK YOU"
+  guestbook: string       // 기본: "GUESTBOOK"
+}
+
+// 디자인 설정
+export interface DesignSettings {
+  introAnimation: IntroAnimationType
+  coverTitle: string              // 표지 제목 (기본: "OUR WEDDING")
+  sectionDividers: SectionDividerTexts
+}
+
+// 배경음악 설정
+export interface BgmSettings {
+  enabled: boolean
+  url: string
+  autoplay: boolean
+}
+
+// 행복한 시간을 위한 안내 섹션
+export interface GuidanceSection {
+  enabled: boolean
+  title: string           // 기본: "행복한 시간을 위한 안내"
+  content: string
+  image: string
+  imageSettings: ImageSettings
+}
+
 export interface InvitationContent {
   // ===== 커플 정보 =====
   groom: PersonInfo
@@ -147,6 +218,7 @@ export interface InvitationContent {
   relationship: {
     startDate: string
     stories: StoryItem[]
+    closingText: string  // 마무리 문구
   }
 
   // ===== 콘텐츠 =====
@@ -162,6 +234,7 @@ export interface InvitationContent {
   // ===== 갤러리 =====
   gallery: {
     images: string[]
+    imageSettings: ImageSettings[]
   }
 
   // ===== 미디어 =====
@@ -191,6 +264,22 @@ export interface InvitationContent {
   // ===== RSVP =====
   rsvpEnabled: boolean
   rsvpDeadline: string
+  rsvpAllowGuestCount: boolean
+
+  // ===== 섹션 공개 설정 =====
+  sectionVisibility: SectionVisibility
+
+  // ===== 디자인 설정 =====
+  design: DesignSettings
+
+  // ===== 배경음악 =====
+  bgm: BgmSettings
+
+  // ===== 행복한 시간을 위한 안내 =====
+  guidance: GuidanceSection
+
+  // ===== 인트로 애니메이션 설정 =====
+  intro: IntroSettings
 
   // ===== 레거시 필드 (AI 스토리용) =====
   ourStory: string
@@ -220,17 +309,35 @@ interface EditorStore {
   removeStory: (index: number) => void
   addInterview: () => void
   removeInterview: (index: number) => void
+  toggleSectionVisibility: (section: keyof SectionVisibility) => void
+  // 인트로 관련 액션
+  updateIntroPreset: (presetId: IntroPresetId) => void
+  updateIntroField: <K extends keyof IntroSettings>(field: K, value: IntroSettings[K]) => void
 }
+
+const createDefaultImageSettings = (): ImageSettings => ({
+  scale: 1.0,
+  positionX: 0,
+  positionY: 0,
+})
+
+const createDefaultBankInfo = (): BankInfo => ({
+  bank: '',
+  account: '',
+  holder: '',
+  enabled: false,
+})
 
 const createDefaultPerson = (isGroom: boolean): PersonInfo => ({
   name: '',
   nameEn: '',
   phone: '',
-  father: { name: '', phone: '', deceased: false },
-  mother: { name: '', phone: '', deceased: false },
-  bank: { bank: '', account: '', holder: '' },
+  father: { name: '', phone: '', deceased: false, bank: createDefaultBankInfo() },
+  mother: { name: '', phone: '', deceased: false, bank: createDefaultBankInfo() },
+  bank: createDefaultBankInfo(),
   profile: {
     images: [],
+    imageSettings: [],
     aboutLabel: isGroom ? 'ABOUT GROOM' : 'ABOUT BRIDE',
     subtitle: isGroom ? '신부가 소개하는 신랑' : '신랑이 소개하는 신부',
     intro: '',
@@ -270,10 +377,11 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
   relationship: {
     startDate: '',
     stories: [
-      { date: '', title: '', desc: '', images: [] },
-      { date: '', title: '', desc: '', images: [] },
-      { date: '', title: '', desc: '', images: [] },
+      { date: '', title: '', desc: '', images: [], imageSettings: [] },
+      { date: '', title: '', desc: '', images: [], imageSettings: [] },
+      { date: '', title: '', desc: '', images: [], imageSettings: [] },
     ],
+    closingText: '그리고 이제 드디어 부르는 서로의 이름에 \'신랑\', \'신부\'라는 호칭을 담습니다.',
   },
 
   // 콘텐츠
@@ -295,9 +403,9 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
       customItems: [],
     },
     interviews: [
-      { question: '', answer: '', images: [], bgClass: 'pink-bg' },
-      { question: '', answer: '', images: [], bgClass: 'white-bg' },
-      { question: '', answer: '', images: [], bgClass: 'pink-bg' },
+      { question: '', answer: '', images: [], imageSettings: [], bgClass: 'pink-bg' },
+      { question: '', answer: '', images: [], imageSettings: [], bgClass: 'white-bg' },
+      { question: '', answer: '', images: [], imageSettings: [], bgClass: 'pink-bg' },
     ],
     guestbookQuestions: [
       '두 사람에게 해주고 싶은 말은?',
@@ -307,7 +415,7 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
   },
 
   // 갤러리
-  gallery: { images: [] },
+  gallery: { images: [], imageSettings: [] },
 
   // 미디어
   media: { coverImage: '', infoImage: '', bgm: '' },
@@ -328,6 +436,54 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
   // RSVP
   rsvpEnabled: true,
   rsvpDeadline: '',
+  rsvpAllowGuestCount: true,
+
+  // 섹션 공개 설정
+  sectionVisibility: {
+    coupleProfile: true,
+    ourStory: true,
+    interview: true,
+    guidance: false,
+    bankAccounts: true,
+    guestbook: true,
+  },
+
+  // 디자인 설정
+  design: {
+    introAnimation: 'fade-in',
+    coverTitle: 'OUR WEDDING',
+    sectionDividers: {
+      invitation: 'INVITATION',
+      ourStory: 'OUR STORY',
+      aboutUs: 'ABOUT US',
+      interview: 'INTERVIEW',
+      gallery: 'GALLERY',
+      information: 'INFORMATION',
+      location: 'LOCATION',
+      rsvp: 'RSVP',
+      thankYou: 'THANK YOU',
+      guestbook: 'GUESTBOOK',
+    },
+  },
+
+  // 배경음악
+  bgm: {
+    enabled: false,
+    url: '',
+    autoplay: false,
+  },
+
+  // 행복한 시간을 위한 안내
+  guidance: {
+    enabled: false,
+    title: '행복한 시간을 위한 안내',
+    content: '',
+    image: '',
+    imageSettings: { scale: 1.0, positionX: 0, positionY: 0 },
+  },
+
+  // 인트로 애니메이션 설정
+  intro: getDefaultIntroSettings('cinematic'),
 
   // 레거시
   ourStory: '',
@@ -445,7 +601,7 @@ export const useEditorStore = create<EditorStore>((set) => ({
             ...state.invitation.relationship,
             stories: [
               ...state.invitation.relationship.stories,
-              { date: '', title: '', desc: '', images: [] },
+              { date: '', title: '', desc: '', images: [], imageSettings: [] },
             ],
           },
         },
@@ -478,7 +634,7 @@ export const useEditorStore = create<EditorStore>((set) => ({
             ...state.invitation.content,
             interviews: [
               ...state.invitation.content.interviews,
-              { question: '', answer: '', images: [], bgClass: 'white-bg' },
+              { question: '', answer: '', images: [], imageSettings: [], bgClass: 'white-bg' },
             ],
           },
         },
@@ -495,6 +651,49 @@ export const useEditorStore = create<EditorStore>((set) => ({
           content: {
             ...state.invitation.content,
             interviews: state.invitation.content.interviews.filter((_, i) => i !== index),
+          },
+        },
+        isDirty: true,
+      }
+    }),
+
+  toggleSectionVisibility: (section) =>
+    set((state) => {
+      if (!state.invitation) return state
+      return {
+        invitation: {
+          ...state.invitation,
+          sectionVisibility: {
+            ...state.invitation.sectionVisibility,
+            [section]: !state.invitation.sectionVisibility[section],
+          },
+        },
+        isDirty: true,
+      }
+    }),
+
+  updateIntroPreset: (presetId) =>
+    set((state) => {
+      if (!state.invitation) return state
+      const newIntro = mergeIntroSettings(state.invitation.intro, presetId)
+      return {
+        invitation: {
+          ...state.invitation,
+          intro: newIntro,
+        },
+        isDirty: true,
+      }
+    }),
+
+  updateIntroField: (field, value) =>
+    set((state) => {
+      if (!state.invitation) return state
+      return {
+        invitation: {
+          ...state.invitation,
+          intro: {
+            ...state.invitation.intro,
+            [field]: value,
           },
         },
         isDirty: true,

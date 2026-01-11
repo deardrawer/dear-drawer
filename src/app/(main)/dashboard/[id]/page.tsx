@@ -1,5 +1,3 @@
-export const runtime = 'edge'
-
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -55,7 +53,7 @@ export default function DashboardPage() {
   const fetchRSVPData = async () => {
     try {
       const response = await fetch(`/api/rsvp?invitationId=${invitationId}`)
-      const data = await response.json()
+      const data: { data?: RSVPData[]; summary?: Summary } = await response.json()
       setResponses(data.data || [])
       setSummary(data.summary || {
         total: 0,

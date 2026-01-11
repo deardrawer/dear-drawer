@@ -125,3 +125,77 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Intro Animations for Wedding Invitation Cover */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes zoomReveal {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes curtainOpen {
+  from {
+    clip-path: inset(0 50% 0 50%);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes letterUnfold {
+  0% {
+    transform: perspective(1000px) rotateX(90deg);
+    opacity: 0;
+  }
+  100% {
+    transform: perspective(1000px) rotateX(0);
+    opacity: 1;
+  }
+}
+
+/* Intro Animation Classes */
+.intro-animation-fade-in {
+  animation: fadeIn 1s ease-out forwards;
+}
+
+.intro-animation-slide-up {
+  animation: slideUp 0.8s ease-out forwards;
+}
+
+.intro-animation-zoom-reveal {
+  animation: zoomReveal 0.8s ease-out forwards;
+}
+
+.intro-animation-curtain-open {
+  animation: curtainOpen 1.2s ease-out forwards;
+}
+
+.intro-animation-letter-unfold {
+  animation: letterUnfold 1s ease-out forwards;
+  transform-origin: top center;
+}

@@ -7,6 +7,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recha
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import SlugSettings from '@/components/dashboard/SlugSettings'
 
 type RSVPData = {
   id: string
@@ -172,6 +173,11 @@ export default function DashboardPage() {
             <div className="text-3xl font-bold text-rose-600">{summary.totalGuests}명</div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Slug Settings */}
+      <div className="mb-8">
+        <SlugSettings invitationId={invitationId} />
       </div>
 
       {/* Chart and Table */}

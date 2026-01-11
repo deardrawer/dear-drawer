@@ -79,6 +79,13 @@ export interface PageView {
   viewed_at: string;
 }
 
+export interface SlugAlias {
+  id: string;
+  invitation_id: string;
+  alias_slug: string;
+  created_at: string;
+}
+
 // 템플릿 정의
 export interface Template {
   id: string;

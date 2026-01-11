@@ -238,9 +238,11 @@ export async function deleteInvitation(id: string, userId: string): Promise<bool
   return result.meta.changes > 0;
 }
 
-// 슬러그 중복 확인
+// 슬러그 중복 확인 (invitations 테이블 + slug_aliases 테이블 모두 체크)
 export async function isSlugAvailable(slug: string, excludeId?: string): Promise<boolean> {
   const db = await getDB();
+
+  // 1. invitations 테이블에서 확인
   let query = "SELECT id FROM invitations WHERE slug = ?";
   const params: unknown[] = [slug];
 
@@ -249,8 +251,26 @@ export async function isSlugAvailable(slug: string, excludeId?: string): Promise
     params.push(excludeId);
   }
 
-  const result = await db.prepare(query).bind(...params).first();
-  return !result;
+  const invitationResult = await db.prepare(query).bind(...params).first();
+  if (invitationResult) {
+    return false;
+  }
+
+  // 2. slug_aliases 테이블에서 확인
+  const aliasResult = await db
+    .prepare("SELECT id, invitation_id FROM slug_aliases WHERE alias_slug = ?")
+    .bind(slug)
+    .first<{ id: string; invitation_id: string }>();
+
+  if (aliasResult) {
+    // 자신의 이전 slug를 재사용하려는 경우는 허용
+    if (excludeId && aliasResult.invitation_id === excludeId) {
+      return true;
+    }
+    return false;
+  }
+
+  return true;
 }
 
 // 페이지 조회 기록
@@ -385,4 +405,94 @@ export async function getRSVPSummary(invitationId: string): Promise<{
       .filter((r) => r.attendance === "attending")
       .reduce((sum, r) => sum + (r.guest_count || 1), 0),
   };
+}
+
+// ==================== Slug Alias Functions ====================
+
+export interface SlugAlias {
+  id: string;
+  invitation_id: string;
+  alias_slug: string;
+  created_at: string;
+}
+
+// Alias로 청첩장 조회
+export async function getInvitationByAlias(alias: string): Promise<Invitation | null> {
+  const db = await getDB();
+  const aliasRecord = await db
+    .prepare("SELECT invitation_id FROM slug_aliases WHERE alias_slug = ?")
+    .bind(alias)
+    .first<{ invitation_id: string }>();
+
+  if (!aliasRecord) {
+    return null;
+  }
+
+  return getInvitationById(aliasRecord.invitation_id);
+}
+
+// Slug alias 생성
+export async function createSlugAlias(
+  invitationId: string,
+  aliasSlug: string
+): Promise<SlugAlias> {
+  const db = await getDB();
+  const id = generateId();
+
+  const result = await db
+    .prepare(
+      `INSERT INTO slug_aliases (id, invitation_id, alias_slug)
+       VALUES (?, ?, ?)
+       RETURNING *`
+    )
+    .bind(id, invitationId, aliasSlug)
+    .first<SlugAlias>();
+
+  if (!result) {
+    throw new Error("Failed to create slug alias");
+  }
+
+  return result;
+}
+
+// 청첩장의 alias 목록 조회
+export async function getAliasesByInvitationId(invitationId: string): Promise<SlugAlias[]> {
+  const db = await getDB();
+  const result = await db
+    .prepare("SELECT * FROM slug_aliases WHERE invitation_id = ? ORDER BY created_at DESC")
+    .bind(invitationId)
+    .all<SlugAlias>();
+
+  return result.results || [];
+}
+
+// 청첩장의 alias 개수 확인
+export async function countAliasesByInvitationId(invitationId: string): Promise<number> {
+  const db = await getDB();
+  const result = await db
+    .prepare("SELECT COUNT(*) as count FROM slug_aliases WHERE invitation_id = ?")
+    .bind(invitationId)
+    .first<{ count: number }>();
+
+  return result?.count || 0;
+}
+
+// 특정 slug가 alias인지 확인
+export async function getAliasBySlug(slug: string): Promise<SlugAlias | null> {
+  const db = await getDB();
+  return db
+    .prepare("SELECT * FROM slug_aliases WHERE alias_slug = ?")
+    .bind(slug)
+    .first<SlugAlias>();
+}
+
+// Alias 삭제
+export async function deleteSlugAlias(aliasId: string, invitationId: string): Promise<boolean> {
+  const db = await getDB();
+  const result = await db
+    .prepare("DELETE FROM slug_aliases WHERE id = ? AND invitation_id = ?")
+    .bind(aliasId, invitationId)
+    .run();
+
+  return result.meta.changes > 0;
 }

@@ -7,6 +7,7 @@
   "observability": {
     "enabled": true
   },
+  // 기본 바인딩 (모든 환경에서 상속)
   "d1_databases": [
     {
       "binding": "DB",
@@ -20,24 +21,37 @@
       "bucket_name": "dear-drawer-images"
     }
   ],
-  // 기본 환경변수 (모든 환경에 적용)
-  "vars": {
-    "NEXT_PUBLIC_KAKAO_CLIENT_ID": "45cff9edef371e0e18394dfd5d0f29f7",
-    "NEXT_PUBLIC_KAKAO_REDIRECT_URI": "https://dear-drawer.pages.dev/auth/kakao/callback"
-  },
-  // Preview 환경
+  // 환경별 설정 (환경변수는 Cloudflare Dashboard에서 관리)
   "env": {
     "preview": {
-      "vars": {
-        "NEXT_PUBLIC_KAKAO_CLIENT_ID": "45cff9edef371e0e18394dfd5d0f29f7",
-        "NEXT_PUBLIC_KAKAO_REDIRECT_URI": "https://dear-drawer.pages.dev/auth/kakao/callback"
-      }
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "dear-drawer-db",
+          "database_id": "00fa0bde-3240-4e30-b1ff-8e90629d6512"
+        }
+      ],
+      "r2_buckets": [
+        {
+          "binding": "R2",
+          "bucket_name": "dear-drawer-images"
+        }
+      ]
     },
     "production": {
-      "vars": {
-        "NEXT_PUBLIC_KAKAO_CLIENT_ID": "45cff9edef371e0e18394dfd5d0f29f7",
-        "NEXT_PUBLIC_KAKAO_REDIRECT_URI": "https://dear-drawer.pages.dev/auth/kakao/callback"
-      }
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "dear-drawer-db",
+          "database_id": "00fa0bde-3240-4e30-b1ff-8e90629d6512"
+        }
+      ],
+      "r2_buckets": [
+        {
+          "binding": "R2",
+          "bucket_name": "dear-drawer-images"
+        }
+      ]
     }
   }
 }

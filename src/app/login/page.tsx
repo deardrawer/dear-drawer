@@ -30,6 +30,8 @@ export default function LoginPage() {
 
   // Check if already logged in
   useEffect(() => {
+    console.log("=== Login Page Loaded ===");
+    console.log("KAKAO_CLIENT_ID:", process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID);
     fetch("/api/auth/me")
       .then((res) => {
         if (res.ok) {
@@ -44,7 +46,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Background decorations */}
-      <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-yellow-500/10 to-transparent rounded-full blur-3xl animate-pulse" />
         <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-yellow-400/10 to-transparent rounded-full blur-3xl animate-pulse delay-1000" />
       </div>

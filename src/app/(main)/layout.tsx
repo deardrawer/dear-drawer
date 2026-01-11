@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import HeaderAuth from '@/components/layout/HeaderAuth'
 
 export default function MainLayout({
   children,
@@ -33,12 +34,7 @@ export default function MainLayout({
             >
               My Invitations
             </Link>
-            <Link
-              href="/login"
-              className="text-sm px-5 py-2 bg-black text-white hover:bg-gray-800 transition-colors tracking-wide"
-            >
-              Sign In
-            </Link>
+            <HeaderAuth />
           </nav>
         </div>
       </header>

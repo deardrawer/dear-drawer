@@ -23,16 +23,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(new URL("/login?error=no_code", request.url));
     }
 
-    // Get environment variables
+    // Get client ID from environment
     const clientId = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID;
-    const redirectUri = process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI;
+
+    // Derive redirect URI from current request URL (more reliable)
+    const requestUrl = new URL(request.url);
+    const redirectUri = `${requestUrl.origin}/api/auth/callback/kakao`;
 
     console.log("ENV - clientId:", clientId || "없음");
-    console.log("ENV - redirectUri:", redirectUri || "없음");
+    console.log("Derived redirectUri:", redirectUri);
 
-    if (!clientId || !redirectUri) {
-      // Show actual values in error for debugging
-      throw new Error(`Missing env: clientId=${clientId || 'EMPTY'}, redirectUri=${redirectUri || 'EMPTY'}`);
+    if (!clientId) {
+      throw new Error(`Missing clientId env var`);
     }
 
     // Exchange code for tokens

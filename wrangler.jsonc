@@ -19,5 +19,25 @@
       "binding": "R2",
       "bucket_name": "dear-drawer-images"
     }
-  ]
+  ],
+  // 기본 환경변수 (모든 환경에 적용)
+  "vars": {
+    "NEXT_PUBLIC_KAKAO_CLIENT_ID": "45cff9edef371e0e18394dfd5d0f29f7",
+    "NEXT_PUBLIC_KAKAO_REDIRECT_URI": "https://dear-drawer.pages.dev/auth/kakao/callback"
+  },
+  // Preview 환경
+  "env": {
+    "preview": {
+      "vars": {
+        "NEXT_PUBLIC_KAKAO_CLIENT_ID": "45cff9edef371e0e18394dfd5d0f29f7",
+        "NEXT_PUBLIC_KAKAO_REDIRECT_URI": "https://dear-drawer.pages.dev/auth/kakao/callback"
+      }
+    },
+    "production": {
+      "vars": {
+        "NEXT_PUBLIC_KAKAO_CLIENT_ID": "45cff9edef371e0e18394dfd5d0f29f7",
+        "NEXT_PUBLIC_KAKAO_REDIRECT_URI": "https://dear-drawer.pages.dev/auth/kakao/callback"
+      }
+    }
+  }
 }

@@ -27,21 +27,27 @@ export async function GET(request: NextRequest) {
     const clientId = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID;
     const redirectUri = process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI;
 
-    console.log("ENV - clientId:", clientId ? clientId.substring(0, 8) + "..." : "없음");
+    console.log("ENV - clientId:", clientId || "없음");
     console.log("ENV - redirectUri:", redirectUri || "없음");
 
     if (!clientId || !redirectUri) {
-      throw new Error(`Missing env vars: clientId=${!!clientId}, redirectUri=${!!redirectUri}`);
+      // Show actual values in error for debugging
+      throw new Error(`Missing env: clientId=${clientId || 'EMPTY'}, redirectUri=${redirectUri || 'EMPTY'}`);
     }
 
     // Exchange code for tokens
     console.log("Exchanging code for token...");
+    console.log("Token request - clientId:", clientId);
+    console.log("Token request - redirectUri:", redirectUri);
+
     const tokenParams = new URLSearchParams({
       grant_type: "authorization_code",
       client_id: clientId,
       redirect_uri: redirectUri,
       code,
     });
+
+    console.log("Token params:", tokenParams.toString());
 
     const tokenResponse = await fetch("https://kauth.kakao.com/oauth/token", {
       method: "POST",

@@ -5,8 +5,6 @@ import {
   buildStoryPrompt,
 } from "@/lib/openrouter";
 
-export const runtime = "edge";
-
 interface GenerateRequest {
   type: "couple_intro" | "our_story" | "interview";
   answers: Record<string, string>;

@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { callOpenRouter, MODIFICATION_PROMPTS } from "@/lib/openrouter";
 
-export const runtime = "edge";
-
 type ModificationType = "romantic" | "concise" | "humorous" | "grammar" | "custom";
 
 interface ModifyRequest {

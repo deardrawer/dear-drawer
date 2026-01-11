@@ -36,8 +36,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ content });
   } catch (error) {
     console.error("Story generation error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "스토리 생성 중 오류가 발생했습니다." },
+      { error: `스토리 생성 중 오류가 발생했습니다: ${errorMessage}` },
       { status: 500 }
     );
   }

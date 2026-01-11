@@ -7,11 +7,14 @@ export default function LoginPage() {
   const router = useRouter();
 
   const handleKakaoLogin = () => {
+    console.log("=== Kakao Login Debug ===");
     const clientId = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID;
     const redirectUri = process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI;
+    console.log("Client ID:", clientId);
+    console.log("Redirect URI:", redirectUri);
 
     if (!clientId || !redirectUri) {
-      alert("카카오 로그인 설정이 되어있지 않습니다.");
+      alert(`카카오 로그인 설정이 되어있지 않습니다.\nClient ID: ${clientId}\nRedirect URI: ${redirectUri}`);
       return;
     }
 

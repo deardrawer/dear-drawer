@@ -15,10 +15,14 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { useEditorStore, ImageSettings, SectionVisibility } from '@/store/editorStore'
 import StoryGeneratorModal from '@/components/ai/StoryGeneratorModal'
+import AIStoryAssistant from '@/components/ai/AIStoryAssistant'
 import { GeneratedStory } from '@/app/api/ai/generate-story/route'
 import { fieldHelpers, sectionLabels, sectionColors, introAnimationOptions, PreviewSection } from '@/lib/fieldHelpers'
 import { getPresetById } from '@/lib/introPresets'
-import { ChevronRight, Sparkles, Palette, FileText, Heart, Settings, ChevronsUpDown } from 'lucide-react'
+import { ChevronRight, Sparkles, Palette, FileText, Heart, Settings, ChevronsUpDown, Wand2 } from 'lucide-react'
+
+// AI 어시스턴트 타입
+type AIAssistantType = 'couple_intro' | 'our_story' | 'interview' | null
 
 // 섹션 매핑 배지 컴포넌트
 function SectionBadge({ section }: { section?: PreviewSection }) {
@@ -94,6 +98,7 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
     toggleSectionVisibility
   } = useEditorStore()
   const [isAIModalOpen, setIsAIModalOpen] = useState(false)
+  const [aiAssistantType, setAiAssistantType] = useState<AIAssistantType>(null)
 
   // 각 탭의 아코디언 열림 상태 관리
   const [designAccordion, setDesignAccordion] = useState<string[]>(['design-theme'])
@@ -125,6 +130,30 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
 
   const handleAIComplete = (story: GeneratedStory) => {
     applyAIStory(story)
+  }
+
+  // AI 어시스턴트 결과 적용 핸들러
+  const handleAIApply = (text: string) => {
+    switch (aiAssistantType) {
+      case 'couple_intro':
+        // 커플 소개의 경우 양쪽 intro에 적용 (앞부분은 신랑, 뒷부분은 신부)
+        const parts = text.split(/\n\n---\n\n|\n\n\*\*\*\n\n/)
+        if (parts.length >= 2) {
+          updateNestedField('groom.profile.intro', parts[0].trim())
+          updateNestedField('bride.profile.intro', parts[1].trim())
+        } else {
+          // 구분자가 없으면 그냥 인사말로 적용
+          updateNestedField('content.greeting', text)
+        }
+        break
+      case 'our_story':
+        updateNestedField('content.greeting', text)
+        break
+      case 'interview':
+        // 인터뷰 형식 파싱 시도
+        updateNestedField('content.greeting', text)
+        break
+    }
   }
 
   // 헬퍼 함수들
@@ -1261,7 +1290,18 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
                 />
               </div>
               <div className="space-y-1.5">
-                <FieldLabel fieldKey="groom.profile.intro">소개글</FieldLabel>
+                <div className="flex items-center justify-between">
+                  <FieldLabel fieldKey="groom.profile.intro">소개글</FieldLabel>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setAiAssistantType('couple_intro')}
+                    className="text-xs h-7 gap-1 text-purple-600 border-purple-200 hover:bg-purple-50"
+                  >
+                    <Wand2 className="w-3 h-3" />
+                    AI 작성
+                  </Button>
+                </div>
                 <Textarea
                   value={invitation.groom.profile.intro}
                   onChange={(e) => updateNestedField('groom.profile.intro', e.target.value)}
@@ -1370,7 +1410,18 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
                 />
               </div>
               <div className="space-y-1.5">
-                <FieldLabel fieldKey="bride.profile.intro">소개글</FieldLabel>
+                <div className="flex items-center justify-between">
+                  <FieldLabel fieldKey="bride.profile.intro">소개글</FieldLabel>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setAiAssistantType('couple_intro')}
+                    className="text-xs h-7 gap-1 text-purple-600 border-purple-200 hover:bg-purple-50"
+                  >
+                    <Wand2 className="w-3 h-3" />
+                    AI 작성
+                  </Button>
+                </div>
                 <Textarea
                   value={invitation.bride.profile.intro}
                   onChange={(e) => updateNestedField('bride.profile.intro', e.target.value)}
@@ -1407,6 +1458,19 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
             {!invitation.sectionVisibility.ourStory && (
               <p className="text-xs text-gray-500 bg-gray-100 p-2 rounded">이 섹션은 현재 비공개 상태예요.</p>
             )}
+
+            {/* AI 작성 버튼 */}
+            <div className="flex justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setAiAssistantType('our_story')}
+                className="text-xs h-8 gap-1.5 text-purple-600 border-purple-200 hover:bg-purple-50"
+              >
+                <Wand2 className="w-3.5 h-3.5" />
+                AI로 스토리 작성하기
+              </Button>
+            </div>
 
             <div className="space-y-1.5">
               <FieldLabel fieldKey="relationship.startDate" />
@@ -1569,6 +1633,19 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
             {!invitation.sectionVisibility.interview && (
               <p className="text-xs text-gray-500 bg-gray-100 p-2 rounded">이 섹션은 현재 비공개 상태예요.</p>
             )}
+
+            {/* AI 작성 버튼 */}
+            <div className="flex justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setAiAssistantType('interview')}
+                className="text-xs h-8 gap-1.5 text-purple-600 border-purple-200 hover:bg-purple-50"
+              >
+                <Wand2 className="w-3.5 h-3.5" />
+                AI로 인터뷰 작성하기
+              </Button>
+            </div>
 
             {invitation.content.interviews.map((interview, index) => (
               <div key={index} className="space-y-3 p-4 bg-amber-50 rounded-lg">
@@ -2125,6 +2202,24 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
         onOpenChange={setIsAIModalOpen}
         onComplete={handleAIComplete}
       />
+
+      {/* AI Story Assistant Modal */}
+      {aiAssistantType && (
+        <AIStoryAssistant
+          type={aiAssistantType}
+          groomName={invitation.groom.name}
+          brideName={invitation.bride.name}
+          currentText={
+            aiAssistantType === 'couple_intro'
+              ? invitation.groom.profile.intro
+              : aiAssistantType === 'our_story'
+              ? invitation.content.greeting
+              : invitation.content.greeting
+          }
+          onApply={handleAIApply}
+          onClose={() => setAiAssistantType(null)}
+        />
+      )}
     </div>
   )
 }

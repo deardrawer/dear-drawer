@@ -29,6 +29,9 @@ export interface Invitation {
   contact_bride: string | null;
   account_info: string; // JSON string array
 
+  // 전체 콘텐츠 (JSON)
+  content: string | null;
+
   // 상태
   is_paid: number;
   is_published: number;
@@ -48,6 +51,7 @@ export interface InvitationInput {
   venue_name?: string;
   venue_address?: string;
   venue_detail?: string;
+  venue_hall?: string;
   venue_map_url?: string;
   main_image?: string;
   gallery_images?: string[];
@@ -55,6 +59,7 @@ export interface InvitationInput {
   contact_groom?: string;
   contact_bride?: string;
   account_info?: AccountInfo[];
+  content?: string;
   is_published?: boolean;
   slug?: string;
 }

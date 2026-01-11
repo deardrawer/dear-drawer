@@ -55,8 +55,8 @@ export async function createInvitation(
         wedding_date, wedding_time, venue_name, venue_address,
         venue_detail, venue_map_url, main_image, gallery_images,
         greeting_message, contact_groom, contact_bride, account_info,
-        is_paid, is_published, slug, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        content, is_paid, is_published, slug, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       RETURNING *`
     )
     .bind(
@@ -77,6 +77,7 @@ export async function createInvitation(
       input.contact_groom || null,
       input.contact_bride || null,
       JSON.stringify(input.account_info || []),
+      input.content || null,
       0,
       input.is_published ? 1 : 0,
       input.slug || null,
@@ -193,6 +194,10 @@ export async function updateInvitation(
   if (input.account_info !== undefined) {
     updates.push("account_info = ?");
     values.push(JSON.stringify(input.account_info));
+  }
+  if (input.content !== undefined) {
+    updates.push("content = ?");
+    values.push(input.content);
   }
   if (input.is_published !== undefined) {
     updates.push("is_published = ?");

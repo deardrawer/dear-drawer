@@ -45,7 +45,7 @@ export default function ShareModal({
   const qrCanvasRef = useRef<HTMLCanvasElement>(null)
 
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-  const invitationUrl = `${baseUrl}/i/${slug || invitationId}`
+  const invitationUrl = `${baseUrl}/invitation/${invitationId}`
 
   // Generate default slug
   useEffect(() => {

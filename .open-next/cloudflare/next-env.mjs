@@ -1,3 +1,0 @@
-export const production = {"NEXT_PUBLIC_SUPABASE_URL":"https://placeholder.supabase.co","NEXT_PUBLIC_SUPABASE_ANON_KEY":"placeholder_key","ANTHROPIC_API_KEY":"placeholder","OPENROUTER_API_KEY":"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","NEXTAUTH_URL":"http://localhost:3000","NEXTAUTH_SECRET":"development_secret_change_in_production"};
-export const development = {"NEXT_PUBLIC_SUPABASE_URL":"https://placeholder.supabase.co","NEXT_PUBLIC_SUPABASE_ANON_KEY":"placeholder_key","ANTHROPIC_API_KEY":"placeholder","OPENROUTER_API_KEY":"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","NEXTAUTH_URL":"http://localhost:3000","NEXTAUTH_SECRET":"development_secret_change_in_production"};
-export const test = {};

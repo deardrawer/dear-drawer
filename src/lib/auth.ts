@@ -8,7 +8,7 @@ const JWT_SECRET = new TextEncoder().encode(
 const COOKIE_NAME = "auth-token";
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
+  secure: true, // Always use secure for HTTPS (pages.dev)
   sameSite: "lax" as const,
   path: "/",
   maxAge: 60 * 60 * 24 * 7, // 7 days

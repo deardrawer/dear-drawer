@@ -22,7 +22,7 @@ export default function LoginPage() {
       client_id: clientId,
       redirect_uri: redirectUri,
       response_type: "code",
-      scope: "profile_nickname profile_image account_email",
+      scope: "profile_nickname profile_image",
     });
 
     window.location.href = `https://kauth.kakao.com/oauth/authorize?${params.toString()}`;

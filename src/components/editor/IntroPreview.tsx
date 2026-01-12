@@ -24,11 +24,15 @@ export default function IntroPreview({ settings, coverImage, onSkip, autoPlay = 
     }
   }, [settings.presetId, autoPlay])
 
+  // backgroundScale을 cover 기반 줌으로 계산 (100 = cover, 150 = 줌인)
+  const scale = settings.backgroundScale || 100
+  // 세로 위치: 50(이전 기본값)이면 0(상단)으로 처리
+  const posY = settings.backgroundPositionY === 50 ? 0 : (settings.backgroundPositionY ?? 0)
   const backgroundStyle = {
     backgroundImage: coverImage ? `url(${coverImage})` : 'linear-gradient(135deg, #333 0%, #111 100%)',
-    backgroundSize: 'cover',
-    backgroundPosition: `${settings.backgroundPositionX}% ${settings.backgroundPositionY}%`,
-    transform: `scale(${settings.backgroundScale / 100})`,
+    backgroundSize: scale > 100 ? `${scale}%` : 'cover',
+    backgroundPosition: `${settings.backgroundPositionX ?? 50}% ${posY}%`,
+    backgroundRepeat: 'no-repeat',
     filter: `brightness(${settings.backgroundBrightness / 100})`,
   }
 
@@ -547,13 +551,17 @@ function RippleIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: {
   titleStyle: React.CSSProperties
   subTitleStyle: React.CSSProperties
 }) {
+  // 물결 효과를 위해 상단/하단 위치만 조정하되 사용자 설정 반영
+  const topBgStyle = { ...backgroundStyle }
+  const bottomBgStyle = { ...backgroundStyle, transform: 'scaleY(-1)', opacity: 0.6 }
+
   return (
     <div className="relative h-full flex flex-col">
       <div className="relative h-1/2">
-        <div className="absolute inset-0 intro-fade-in" style={{ ...backgroundStyle, backgroundPosition: 'center bottom' }} />
+        <div className="absolute inset-0 intro-fade-in" style={topBgStyle} />
       </div>
       <div className="relative h-1/2 overflow-hidden">
-        <div className="absolute inset-0" style={{ ...backgroundStyle, backgroundPosition: 'center top', transform: 'scaleY(-1)', opacity: 0.6 }} />
+        <div className="absolute inset-0" style={bottomBgStyle} />
         <div className="absolute inset-0 bg-gradient-to-b from-sky-900/30 to-sky-950/50" />
       </div>
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 z-10">

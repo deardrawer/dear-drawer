@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
+import Image from 'next/image'
 import { useEditorStore } from '@/store/editorStore'
 import { introPresets, IntroPresetId, IntroSettings, getPresetById } from '@/lib/introPresets'
 import { Button } from '@/components/ui/button'
@@ -9,17 +10,57 @@ import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Check, ChevronLeft, Info, Sparkles, Type, Image as ImageIcon, Settings2 } from 'lucide-react'
+import { Check, ChevronLeft, Info, Sparkles, Type, Image as ImageIcon, Settings2, Upload, X } from 'lucide-react'
 
 interface IntroSelectorProps {
   onBack?: () => void
 }
 
 export default function IntroSelector({ onBack }: IntroSelectorProps) {
-  const { invitation, updateIntroPreset, updateIntroField } = useEditorStore()
+  const { invitation, updateIntroPreset, updateIntroField, updateNestedField } = useEditorStore()
   const [activeTab, setActiveTab] = useState<'preset' | 'customize'>('preset')
+  const [isUploading, setIsUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   if (!invitation) return null
+
+  const coverImage = invitation.media.coverImage
+
+  // 이미지 업로드 핸들러
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // 파일 크기 체크 (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('파일 크기는 5MB 이하여야 합니다.')
+      return
+    }
+
+    setIsUploading(true)
+    try {
+      // 로컬 미리보기용 base64 (임시)
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        const base64 = event.target?.result as string
+        updateNestedField('media.coverImage', base64)
+      }
+      reader.readAsDataURL(file)
+    } catch (error) {
+      console.error('Image upload failed:', error)
+      alert('이미지 업로드에 실패했습니다.')
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  // 이미지 삭제 핸들러
+  const handleRemoveImage = () => {
+    updateNestedField('media.coverImage', '')
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
 
   const { intro } = invitation
   const currentPreset = getPresetById(intro.presetId)
@@ -241,55 +282,139 @@ export default function IntroSelector({ onBack }: IntroSelectorProps) {
               <div className="space-y-4 pt-4 border-t">
                 <div className="flex items-center gap-2">
                   <ImageIcon className="w-4 h-4 text-gray-500" />
-                  <h3 className="font-medium text-gray-900">배경 설정</h3>
+                  <h3 className="font-medium text-gray-900">커버 사진</h3>
                 </div>
-                <p className="text-xs text-gray-500 -mt-2">
-                  커버 이미지가 배경으로 사용됩니다
-                </p>
 
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between mb-2">
-                      <Label className="text-sm text-gray-700">사진 크기</Label>
-                      <span className="text-sm text-gray-500">{intro.backgroundScale}%</span>
-                    </div>
-                    <Slider
-                      value={[intro.backgroundScale]}
-                      onValueChange={([v]) => handleFieldChange('backgroundScale', v)}
-                      min={100}
-                      max={150}
-                      step={5}
-                    />
-                  </div>
+                {/* 커버 이미지 업로드 영역 */}
+                <div className="space-y-3">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
 
-                  <div>
-                    <div className="flex justify-between mb-2">
-                      <Label className="text-sm text-gray-700">밝기</Label>
-                      <span className="text-sm text-gray-500">{intro.backgroundBrightness}%</span>
+                  {coverImage ? (
+                    <div className="relative rounded-lg overflow-hidden bg-gray-100">
+                      <div className="aspect-[3/4] relative">
+                        <Image
+                          src={coverImage}
+                          alt="커버 이미지"
+                          fill
+                          className="object-cover"
+                          style={{
+                            transform: `scale(${intro.backgroundScale / 100})`,
+                            objectPosition: `${intro.backgroundPositionX}% ${intro.backgroundPositionY}%`
+                          }}
+                        />
+                      </div>
+                      <button
+                        onClick={handleRemoveImage}
+                        className="absolute top-2 right-2 p-1.5 bg-black/50 hover:bg-black/70 rounded-full text-white transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="absolute bottom-2 right-2 px-3 py-1.5 bg-black/50 hover:bg-black/70 rounded-lg text-white text-xs transition-colors"
+                      >
+                        변경
+                      </button>
                     </div>
-                    <Slider
-                      value={[intro.backgroundBrightness]}
-                      onValueChange={([v]) => handleFieldChange('backgroundBrightness', v)}
-                      min={30}
-                      max={100}
-                      step={5}
-                    />
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between mb-2">
-                      <Label className="text-sm text-gray-700">오버레이 농도</Label>
-                      <span className="text-sm text-gray-500">{intro.overlayOpacity}%</span>
-                    </div>
-                    <Slider
-                      value={[intro.overlayOpacity]}
-                      onValueChange={([v]) => handleFieldChange('overlayOpacity', v)}
-                      min={0}
-                      max={80}
-                      step={5}
-                    />
-                  </div>
+                  ) : (
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploading}
+                      className="w-full aspect-[3/4] border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-gray-400 hover:bg-gray-50 transition-colors"
+                    >
+                      {isUploading ? (
+                        <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-300 border-t-gray-600" />
+                      ) : (
+                        <>
+                          <Upload className="w-8 h-8 text-gray-400" />
+                          <span className="text-sm text-gray-500">클릭하여 커버 사진 추가</span>
+                          <span className="text-xs text-gray-400">권장: 3:4 비율</span>
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
+
+                {/* 이미지 조절 옵션 (이미지가 있을 때만 표시) */}
+                {coverImage && (
+                  <div className="space-y-4 pt-3 border-t border-gray-100">
+                    <div>
+                      <div className="flex justify-between mb-2">
+                        <Label className="text-sm text-gray-700">사진 크기</Label>
+                        <span className="text-sm text-gray-500">{intro.backgroundScale}%</span>
+                      </div>
+                      <Slider
+                        value={[intro.backgroundScale]}
+                        onValueChange={([v]) => handleFieldChange('backgroundScale', v)}
+                        min={100}
+                        max={150}
+                        step={5}
+                      />
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between mb-2">
+                        <Label className="text-sm text-gray-700">가로 위치</Label>
+                        <span className="text-sm text-gray-500">{intro.backgroundPositionX}%</span>
+                      </div>
+                      <Slider
+                        value={[intro.backgroundPositionX]}
+                        onValueChange={([v]) => handleFieldChange('backgroundPositionX', v)}
+                        min={0}
+                        max={100}
+                        step={5}
+                      />
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between mb-2">
+                        <Label className="text-sm text-gray-700">세로 위치</Label>
+                        <span className="text-sm text-gray-500">{intro.backgroundPositionY}%</span>
+                      </div>
+                      <Slider
+                        value={[intro.backgroundPositionY]}
+                        onValueChange={([v]) => handleFieldChange('backgroundPositionY', v)}
+                        min={0}
+                        max={100}
+                        step={5}
+                      />
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between mb-2">
+                        <Label className="text-sm text-gray-700">밝기</Label>
+                        <span className="text-sm text-gray-500">{intro.backgroundBrightness}%</span>
+                      </div>
+                      <Slider
+                        value={[intro.backgroundBrightness]}
+                        onValueChange={([v]) => handleFieldChange('backgroundBrightness', v)}
+                        min={30}
+                        max={100}
+                        step={5}
+                      />
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between mb-2">
+                        <Label className="text-sm text-gray-700">오버레이 농도</Label>
+                        <span className="text-sm text-gray-500">{intro.overlayOpacity}%</span>
+                      </div>
+                      <Slider
+                        value={[intro.overlayOpacity]}
+                        onValueChange={([v]) => handleFieldChange('overlayOpacity', v)}
+                        min={0}
+                        max={80}
+                        step={5}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* 기본값 복원 버튼 */}

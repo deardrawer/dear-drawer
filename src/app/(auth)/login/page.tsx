@@ -1,11 +1,28 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 export default function LoginPage() {
   const router = useRouter()
+  const [isDevLoginLoading, setIsDevLoginLoading] = useState(false)
+
+  const handleDevLogin = async () => {
+    setIsDevLoginLoading(true)
+    try {
+      const res = await fetch('/api/auth/dev-login', { method: 'POST' })
+      if (res.ok) {
+        router.replace('/my-invitations')
+      } else {
+        alert('테스트 로그인 실패')
+      }
+    } catch {
+      alert('테스트 로그인 오류')
+    } finally {
+      setIsDevLoginLoading(false)
+    }
+  }
 
   const handleKakaoLogin = () => {
     const clientId = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID
@@ -65,6 +82,27 @@ export default function LoginPage() {
             </svg>
             카카오로 시작하기
           </button>
+
+          {/* Dev Login Button - 개발 환경에서만 표시 */}
+          {process.env.NODE_ENV !== 'production' && (
+            <>
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-200" />
+                </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className="bg-white px-4 text-gray-400">또는</span>
+                </div>
+              </div>
+              <button
+                onClick={handleDevLogin}
+                disabled={isDevLoginLoading}
+                className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium text-sm tracking-wider transition-all duration-200 disabled:opacity-50"
+              >
+                {isDevLoginLoading ? '로그인 중...' : '테스트 계정으로 로그인 (개발용)'}
+              </button>
+            </>
+          )}
         </div>
 
         <div className="mt-8 pt-6 border-t border-gray-100 text-center text-xs text-gray-400">

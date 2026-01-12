@@ -63,10 +63,10 @@ export default function HeaderAuth() {
           />
         ) : (
           <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs font-medium">
-            {user.nickname.charAt(0).toUpperCase()}
+            {(user.nickname || user.email || 'U').charAt(0).toUpperCase()}
           </div>
         )}
-        <span className="tracking-wide">{user.nickname}</span>
+        <span className="tracking-wide">{user.nickname || user.email || 'User'}</span>
         <svg
           className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
           fill="none"

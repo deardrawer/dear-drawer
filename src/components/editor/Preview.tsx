@@ -181,7 +181,7 @@ function IntroPage({ invitation, groomName, brideName, fonts, themeColors }: Pag
       <BgmPlayer bgm={invitation.bgm} />
 
       <section className={`relative flex flex-col justify-center items-center ${introAnimation !== 'none' ? `intro-animation-${introAnimation}` : ''}`} style={{ height: '716px' }}>
-        <div className="absolute inset-0" style={{ backgroundImage: invitation.media.coverImage ? `url(${invitation.media.coverImage})` : 'linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)', backgroundSize: 'cover', backgroundPosition: 'center', filter: 'grayscale(100%)' }} />
+        <div className="absolute inset-0" style={{ backgroundImage: invitation.media.coverImage ? `url(${invitation.media.coverImage})` : 'linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)', backgroundSize: 'cover', backgroundPosition: 'top', filter: 'grayscale(100%)' }} />
         <div className="absolute inset-0 bg-black/30" />
         <div className="relative z-10 text-center text-white px-5">
           <p className="text-[13px] font-light mb-4" style={{ fontFamily: fonts.displayKr, letterSpacing: '2px' }}>{groomName} & {brideName}</p>
@@ -240,7 +240,7 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors }: Page
       {/* BGM Player */}
       <BgmPlayer bgm={invitation.bgm} />
 
-      <section className="relative h-[200px] flex items-end justify-center" style={{ backgroundImage: invitation.media.coverImage ? `url(${invitation.media.coverImage})` : 'linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
+      <section className="relative h-[200px] flex items-end justify-center" style={{ backgroundImage: invitation.media.coverImage ? `url(${invitation.media.coverImage})` : 'linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)', backgroundSize: 'cover', backgroundPosition: 'top' }}>
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
         <div className="relative z-10 text-center text-white pb-8"><p className="text-xs font-light" style={{ fontFamily: fonts.displayKr, letterSpacing: '1.5px' }}>{groomName} & {brideName}<br/>결혼합니다.</p></div>
       </section>

@@ -16,22 +16,85 @@ import IntroPreview from '@/components/editor/IntroPreview'
 function EditorContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const { user } = useAuth()
-  const templateId = searchParams.get('template') || 'classic-elegance'
-  const template = getTemplateById(templateId)
+  const { user, status } = useAuth()
+  const editId = searchParams.get('id') // 기존 청첩장 편집용 ID
+  const templateId = searchParams.get('template') || 'narrative-our'
+  const urlTemplate = getTemplateById(templateId)
 
-  const { invitation, initInvitation, isDirty, isSaving, setSaving, resetDirty } = useEditorStore()
+  const { invitation, template, initInvitation, updateMultipleFields, isDirty, isSaving, setSaving, resetDirty } = useEditorStore()
 
-  const [invitationId, setInvitationId] = useState<string | null>(null)
+  // editId가 있으면 store의 template 사용, 없으면 URL의 template 사용
+  const activeTemplate = editId ? template : urlTemplate
+
+  const [invitationId, setInvitationId] = useState<string | null>(editId)
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [isIntroSelectorOpen, setIsIntroSelectorOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(!!editId)
+  const [loadAttempted, setLoadAttempted] = useState(false)
+
+  // 기존 청첩장 불러오기
+  useEffect(() => {
+    // 인증 상태 확인 중이면 대기
+    if (status === 'loading') return
+
+    // 이미 로드 시도했으면 스킵
+    if (loadAttempted) return
+
+    if (editId) {
+      setLoadAttempted(true)
+
+      // 로그인하지 않은 경우에도 청첩장 데이터는 로드 (공개 데이터)
+      setIsLoading(true)
+      fetch(`/api/invitations/${editId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.invitation) {
+            const inv = data.invitation
+            // content 필드에서 전체 데이터 파싱
+            if (inv.content) {
+              try {
+                const content = JSON.parse(inv.content)
+                const tplId = inv.template_id || templateId
+                const tpl = getTemplateById(tplId)
+                console.log('Loading invitation:', { tplId, tpl: !!tpl, contentKeys: Object.keys(content) })
+                if (tpl) {
+                  initInvitation(tpl)
+                  // 파싱된 content로 상태 업데이트
+                  setTimeout(() => {
+                    updateMultipleFields(content)
+                    resetDirty()
+                  }, 0)
+                } else {
+                  // 템플릿을 찾지 못한 경우 기본 템플릿 사용
+                  console.warn(`Template not found: ${tplId}, using default`)
+                  const defaultTpl = getTemplateById('narrative-our')
+                  if (defaultTpl) {
+                    initInvitation(defaultTpl)
+                    setTimeout(() => {
+                      updateMultipleFields(content)
+                      resetDirty()
+                    }, 0)
+                  }
+                }
+              } catch (e) {
+                console.error('Failed to parse invitation content:', e)
+              }
+            }
+          } else {
+            console.error('No invitation data in response:', data)
+          }
+        })
+        .catch(err => console.error('Failed to load invitation:', err))
+        .finally(() => setIsLoading(false))
+    }
+  }, [editId, status, loadAttempted])
 
   useEffect(() => {
-    if (template && !invitation) {
-      initInvitation(template)
+    if (urlTemplate && !invitation && !editId) {
+      initInvitation(urlTemplate)
     }
-  }, [template, invitation, initInvitation])
+  }, [urlTemplate, invitation, initInvitation, editId])
 
   // Save invitation to database
   const handleSave = async () => {
@@ -44,6 +107,26 @@ function EditorContent() {
     setSaving(true)
 
     try {
+      // 저장 시 base64 이미지 데이터 제외 (URL만 유지)
+      const cleanInvitation = JSON.parse(JSON.stringify(invitation))
+      // base64 데이터가 있으면 빈 문자열로 대체 (URL은 http로 시작)
+      const cleanImages = (obj: Record<string, unknown>) => {
+        for (const key in obj) {
+          if (typeof obj[key] === 'string' && (obj[key] as string).startsWith('data:')) {
+            obj[key] = '' // base64 데이터 제거
+          } else if (Array.isArray(obj[key])) {
+            obj[key] = (obj[key] as unknown[]).map(item => {
+              if (typeof item === 'string' && item.startsWith('data:')) return ''
+              if (typeof item === 'object' && item !== null) cleanImages(item as Record<string, unknown>)
+              return item
+            })
+          } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+            cleanImages(obj[key] as Record<string, unknown>)
+          }
+        }
+      }
+      cleanImages(cleanInvitation)
+
       const payload = {
         template_id: templateId,
         groom_name: invitation.groom.name,
@@ -53,7 +136,7 @@ function EditorContent() {
         venue_name: invitation.wedding.venue.name,
         venue_address: invitation.wedding.venue.address,
         venue_hall: invitation.wedding.venue.hall,
-        content: JSON.stringify(invitation),
+        content: JSON.stringify(cleanInvitation),
       }
 
       let response
@@ -133,7 +216,16 @@ function EditorContent() {
     setIsShareModalOpen(true)
   }
 
-  if (!template) {
+  // 인증 상태 확인 중이거나 기존 청첩장 로딩 중이면 스피너 표시
+  if ((editId && isLoading) || (editId && status === 'loading')) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-white">
+        <div className="animate-spin rounded-full h-6 w-6 border border-gray-300 border-t-gray-900" />
+      </div>
+    )
+  }
+
+  if (!activeTemplate && !editId) {
     return (
       <div className="h-screen flex items-center justify-center bg-white">
         <div className="text-center">
@@ -166,7 +258,7 @@ function EditorContent() {
           </Link>
           <div className="h-4 w-px bg-gray-200" />
           <span className="text-sm text-gray-400 font-light tracking-wide">
-            {template.name}
+            {activeTemplate?.name || 'Loading...'}
             {isDirty && <span className="ml-2 text-gray-600">• Unsaved</span>}
           </span>
         </div>
@@ -242,7 +334,7 @@ function EditorContent() {
           </Button>
           <Button
             size="sm"
-            disabled={isSaving || !isDirty}
+            disabled={isSaving}
             onClick={handleSave}
             className="bg-black text-white hover:bg-gray-800 rounded-none text-xs tracking-wide"
           >
@@ -285,16 +377,16 @@ function EditorContent() {
             {/* 인트로 미리보기 - 60% */}
             <div className="flex-1 bg-gray-900 flex items-center justify-center p-8">
               <div className="relative w-full max-w-[375px] h-[667px] bg-black rounded-[40px] overflow-hidden shadow-2xl">
-                {/* 폰 노치 */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[30px] bg-black rounded-b-2xl z-50" />
-                {/* 인트로 미리보기 */}
-                <div className="w-full h-full pt-[30px]">
+                {/* 인트로 미리보기 - 전체 영역 사용 */}
+                <div className="w-full h-full">
                   <IntroPreview
                     settings={invitation.intro}
                     coverImage={invitation.media.coverImage}
                     autoPlay={true}
                   />
                 </div>
+                {/* 폰 노치 - 콘텐츠 위에 오버레이 */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[30px] bg-black rounded-b-2xl z-50" />
               </div>
             </div>
           </>

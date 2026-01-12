@@ -35,7 +35,7 @@ async function getEnvVar(key: keyof CloudflareEnv): Promise<string | undefined> 
 const COOKIE_NAME = "auth-token";
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: true, // Always use secure for HTTPS (pages.dev)
+  secure: process.env.NODE_ENV === "production", // HTTPS only in production
   sameSite: "lax" as const,
   path: "/",
   maxAge: 60 * 60 * 24 * 7, // 7 days

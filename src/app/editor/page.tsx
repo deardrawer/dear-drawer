@@ -47,8 +47,8 @@ function EditorContent() {
       // 로그인하지 않은 경우에도 청첩장 데이터는 로드 (공개 데이터)
       setIsLoading(true)
       fetch(`/api/invitations/${editId}`)
-        .then(res => res.json())
-        .then(data => {
+        .then(async res => await res.json() as { invitation?: { content?: string; template_id?: string } })
+        .then((data) => {
           if (data.invitation) {
             const inv = data.invitation
             // content 필드에서 전체 데이터 파싱

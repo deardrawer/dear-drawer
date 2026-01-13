@@ -23,7 +23,7 @@ export default function MainLayout({
           </Link>
           <nav className="flex items-center gap-8">
             <Link
-              href="/"
+              href="/gallery"
               className="text-sm text-gray-700 hover:text-black transition-colors tracking-wide"
             >
               Templates

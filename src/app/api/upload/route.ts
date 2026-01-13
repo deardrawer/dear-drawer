@@ -7,8 +7,14 @@ interface CloudflareEnv {
   NEXT_PUBLIC_R2_PUBLIC_URL?: string;
 }
 
+// 허용 파일 타입
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+// 최대 파일 크기 (30MB)
+const MAX_FILE_SIZE = 30 * 1024 * 1024;
+
 export async function POST(request: NextRequest) {
   try {
+    // 인증 확인
     const cookieName = getAuthCookieName();
     const token = request.cookies.get(cookieName)?.value;
 
@@ -29,58 +35,84 @@ export async function POST(request: NextRequest) {
 
     const userId = payload.user.id;
     const formData = await request.formData();
-    const file = formData.get("file") as File;
-    const invitationId = formData.get("invitationId") as string;
-    const type = formData.get("type") as string; // 'main' or 'gallery'
 
-    if (!file) {
+    // 파일 추출 (web, thumb 버전)
+    const webFile = formData.get("web") as File | null;
+    const thumbFile = formData.get("thumb") as File | null;
+    const invitationId = formData.get("invitationId") as string || "temp";
+    const imageId = formData.get("imageId") as string || crypto.randomUUID();
+
+    // 최소 web 파일은 필수
+    if (!webFile) {
       return NextResponse.json(
-        { error: "파일이 필요합니다." },
+        { error: "이미지 파일이 필요합니다." },
         { status: 400 }
       );
     }
 
-    // Validate file type
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-    if (!allowedTypes.includes(file.type)) {
+    // 파일 타입 검증
+    if (!ALLOWED_TYPES.includes(webFile.type)) {
       return NextResponse.json(
-        { error: "지원하지 않는 파일 형식입니다. (JPG, PNG, WebP, GIF만 가능)" },
+        { error: "지원하지 않는 파일 형식입니다. (JPG, PNG, WebP만 가능)" },
         { status: 400 }
       );
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    // 파일 크기 검증
+    if (webFile.size > MAX_FILE_SIZE) {
       return NextResponse.json(
-        { error: "파일 크기는 5MB 이하여야 합니다." },
+        { error: "파일 크기는 30MB 이하여야 합니다." },
         { status: 400 }
       );
     }
 
-    // Generate unique filename
-    const ext = file.name.split(".").pop();
-    const filename = `${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`;
-    const key = `${userId}/${invitationId || "temp"}/${type}/${filename}`;
-
-    // Get R2 bucket from Cloudflare context
+    // R2 bucket 가져오기
     const { env } = (await getCloudflareContext()) as unknown as { env: CloudflareEnv };
+    const publicUrl = env.NEXT_PUBLIC_R2_PUBLIC_URL || "https://pub-dear-drawer.r2.dev";
 
-    // Upload to R2
-    const arrayBuffer = await file.arrayBuffer();
-    await env.R2.put(key, arrayBuffer, {
+    // 파일 키 생성
+    const baseKey = `invitation/${invitationId}/${imageId}`;
+    const webKey = `${baseKey}_web.webp`;
+    const thumbKey = `${baseKey}_thumb.webp`;
+
+    // Web 버전 업로드
+    const webBuffer = await webFile.arrayBuffer();
+    await env.R2.put(webKey, webBuffer, {
       httpMetadata: {
-        contentType: file.type,
+        contentType: "image/webp",
+        cacheControl: "public, max-age=31536000",
       },
     });
 
-    // Get public URL
-    const publicUrl = env.NEXT_PUBLIC_R2_PUBLIC_URL || "https://pub-dear-drawer.r2.dev";
-    const url = `${publicUrl}/${key}`;
+    let thumbUrl = "";
+    let sizeThumb = 0;
+
+    // Thumb 버전 업로드 (있는 경우)
+    if (thumbFile) {
+      const thumbBuffer = await thumbFile.arrayBuffer();
+      await env.R2.put(thumbKey, thumbBuffer, {
+        httpMetadata: {
+          contentType: "image/webp",
+          cacheControl: "public, max-age=31536000",
+        },
+      });
+      thumbUrl = `${publicUrl}/${thumbKey}`;
+      sizeThumb = thumbFile.size;
+    }
+
+    // 이미지 크기 정보는 클라이언트에서 전달받음
+    const width = parseInt(formData.get("width") as string) || 0;
+    const height = parseInt(formData.get("height") as string) || 0;
 
     return NextResponse.json({
       success: true,
-      url,
-      path: key,
+      imageId,
+      webUrl: `${publicUrl}/${webKey}`,
+      thumbUrl: thumbUrl || `${publicUrl}/${webKey}`,
+      width,
+      height,
+      sizeWeb: webFile.size,
+      sizeThumb: sizeThumb || webFile.size,
     });
   } catch (error) {
     console.error("Upload API error:", error);
@@ -111,29 +143,28 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const userId = payload.user.id;
-    const { path }: { path?: string } = await request.json();
+    const { imageId, invitationId }: { imageId?: string; invitationId?: string } = await request.json();
 
-    if (!path) {
+    if (!imageId) {
       return NextResponse.json(
-        { error: "파일 경로가 필요합니다." },
+        { error: "이미지 ID가 필요합니다." },
         { status: 400 }
       );
     }
 
-    // Verify ownership (path should start with user's ID)
-    if (!path.startsWith(userId)) {
-      return NextResponse.json(
-        { error: "삭제 권한이 없습니다." },
-        { status: 403 }
-      );
-    }
-
-    // Get R2 bucket from Cloudflare context
+    // R2 bucket 가져오기
     const { env } = (await getCloudflareContext()) as unknown as { env: CloudflareEnv };
 
-    // Delete from R2
-    await env.R2.delete(path);
+    // 파일 키 생성
+    const baseKey = `invitation/${invitationId || "temp"}/${imageId}`;
+    const webKey = `${baseKey}_web.webp`;
+    const thumbKey = `${baseKey}_thumb.webp`;
+
+    // 두 버전 모두 삭제
+    await Promise.all([
+      env.R2.delete(webKey),
+      env.R2.delete(thumbKey),
+    ]);
 
     return NextResponse.json({
       success: true,

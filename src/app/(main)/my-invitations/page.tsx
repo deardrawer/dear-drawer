@@ -101,7 +101,7 @@ export default function MyInvitationsPage() {
           <h1 className="text-2xl font-bold text-gray-900">내 청첩장</h1>
           <p className="text-gray-500 mt-1">생성한 청첩장을 관리하세요</p>
         </div>
-        <Link href="/">
+        <Link href="/gallery">
           <Button>
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -125,7 +125,7 @@ export default function MyInvitationsPage() {
             <p className="text-gray-400 mb-6">
               템플릿을 선택하고 나만의 청첩장을 만들어보세요
             </p>
-            <Link href="/">
+            <Link href="/gallery">
               <Button>청첩장 만들기</Button>
             </Link>
           </CardContent>

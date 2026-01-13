@@ -19,6 +19,7 @@ import AIStoryAssistant from '@/components/ai/AIStoryAssistant'
 import { GeneratedStory } from '@/app/api/ai/generate-story/route'
 import { fieldHelpers, sectionLabels, sectionColors, introAnimationOptions, PreviewSection } from '@/lib/fieldHelpers'
 import { getPresetById } from '@/lib/introPresets'
+import { uploadImage } from '@/lib/imageUpload'
 import { ChevronRight, Sparkles, Palette, FileText, Heart, Settings, ChevronsUpDown, Wand2 } from 'lucide-react'
 
 // AI 어시스턴트 타입
@@ -99,6 +100,30 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
   } = useEditorStore()
   const [isAIModalOpen, setIsAIModalOpen] = useState(false)
   const [aiAssistantType, setAiAssistantType] = useState<AIAssistantType>(null)
+  const [uploadingImages, setUploadingImages] = useState<Set<string>>(new Set())
+
+  // 이미지 업로드 핸들러 (공통)
+  const handleImageUpload = async (
+    file: File,
+    uploadKey: string,
+    onSuccess: (url: string) => void
+  ) => {
+    setUploadingImages(prev => new Set(prev).add(uploadKey))
+
+    const result = await uploadImage(file)
+
+    setUploadingImages(prev => {
+      const next = new Set(prev)
+      next.delete(uploadKey)
+      return next
+    })
+
+    if (result.success && result.webUrl) {
+      onSuccess(result.webUrl)
+    } else {
+      alert(result.error || '이미지 업로드에 실패했습니다.')
+    }
+  }
 
   // 각 탭의 아코디언 열림 상태 관리
   const [designAccordion, setDesignAccordion] = useState<string[]>(['design-theme'])
@@ -324,17 +349,20 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
     maxImages,
     onAdd,
     onRemove,
-    colorClass
+    colorClass,
+    uploadKeyPrefix
   }: {
     images: string[];
     maxImages: number;
     onAdd: (url: string) => void;
     onRemove: (index: number) => void;
     colorClass: string;
+    uploadKeyPrefix: string;
   }) => (
     <div className={`grid grid-cols-${maxImages} gap-2`}>
       {Array.from({ length: maxImages }).map((_, imgIndex) => {
         const imageUrl = images?.[imgIndex]
+        const uploadKey = `${uploadKeyPrefix}-${imgIndex}`
         return (
           <div key={imgIndex} className="relative">
             {imageUrl ? (
@@ -351,24 +379,30 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
                 </button>
               </div>
             ) : (
-              <label className={`aspect-square border-2 border-dashed border-${colorClass}-200 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-${colorClass}-400 transition-colors bg-white/50`}>
-                <svg className={`w-5 h-5 text-${colorClass}-300`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                <span className={`text-[10px] text-${colorClass}-400 mt-1`}>추가</span>
+              <label className={`aspect-square border-2 border-dashed border-${colorClass}-200 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-${colorClass}-400 transition-colors bg-white/50 ${uploadingImages.has(uploadKey) ? 'opacity-50' : ''}`}>
+                {uploadingImages.has(uploadKey) ? (
+                  <>
+                    <div className={`w-5 h-5 border-2 border-${colorClass}-300 border-t-${colorClass}-600 rounded-full animate-spin`} />
+                    <span className={`text-[10px] text-${colorClass}-400 mt-1`}>업로드중...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className={`w-5 h-5 text-${colorClass}-300`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span className={`text-[10px] text-${colorClass}-400 mt-1`}>추가</span>
+                  </>
+                )}
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/webp"
                   className="hidden"
+                  disabled={uploadingImages.has(uploadKey)}
                   onChange={(e) => {
                     const file = e.target.files?.[0]
                     if (file) {
-                      const reader = new FileReader()
-                      reader.onload = (event) => {
-                        const result = event.target?.result as string
-                        onAdd(result)
-                      }
-                      reader.readAsDataURL(file)
+                      handleImageUpload(file, uploadKey, onAdd)
+                      e.target.value = ''
                     }
                   }}
                 />
@@ -1105,14 +1139,20 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
               <div className="grid grid-cols-3 gap-2">
                 {[0, 1, 2, 3, 4, 5].map((imgIndex) => {
                   const imageUrl = invitation.gallery.images?.[imgIndex]
+                  const imgSettings = invitation.gallery.imageSettings?.[imgIndex] || { scale: 1.0, positionX: 0, positionY: 0 }
                   return (
                     <div key={imgIndex} className="relative">
                       {imageUrl ? (
                         <div className="relative group">
-                          <div
-                            className="aspect-square rounded-lg bg-cover bg-center border border-purple-200"
-                            style={{ backgroundImage: `url(${imageUrl})` }}
-                          />
+                          <div className="aspect-square rounded-lg overflow-hidden border border-purple-200">
+                            <div
+                              className="w-full h-full bg-cover bg-center"
+                              style={{
+                                backgroundImage: `url(${imageUrl})`,
+                                transform: `scale(${imgSettings.scale}) translate(${imgSettings.positionX}%, ${imgSettings.positionY}%)`,
+                              }}
+                            />
+                          </div>
                           <button
                             onClick={() => removeGalleryImage(imgIndex)}
                             className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
@@ -1121,24 +1161,30 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
                           </button>
                         </div>
                       ) : (
-                        <label className="aspect-square border-2 border-dashed border-purple-200 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-purple-400 transition-colors bg-white/50">
-                          <svg className="w-5 h-5 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                          </svg>
-                          <span className="text-[10px] text-purple-400 mt-1">추가</span>
+                        <label className={`aspect-square border-2 border-dashed border-purple-200 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-purple-400 transition-colors bg-white/50 ${uploadingImages.has(`gallery-${imgIndex}`) ? 'opacity-50' : ''}`}>
+                          {uploadingImages.has(`gallery-${imgIndex}`) ? (
+                            <>
+                              <div className="w-5 h-5 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin" />
+                              <span className="text-[10px] text-purple-400 mt-1">업로드중...</span>
+                            </>
+                          ) : (
+                            <>
+                              <svg className="w-5 h-5 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                              </svg>
+                              <span className="text-[10px] text-purple-400 mt-1">추가</span>
+                            </>
+                          )}
                           <input
                             type="file"
-                            accept="image/*"
+                            accept="image/jpeg,image/png,image/webp"
                             className="hidden"
+                            disabled={uploadingImages.has(`gallery-${imgIndex}`)}
                             onChange={(e) => {
                               const file = e.target.files?.[0]
                               if (file) {
-                                const reader = new FileReader()
-                                reader.onload = (event) => {
-                                  const result = event.target?.result as string
-                                  addGalleryImage(result)
-                                }
-                                reader.readAsDataURL(file)
+                                handleImageUpload(file, `gallery-${imgIndex}`, addGalleryImage)
+                                e.target.value = ''
                               }
                             }}
                           />
@@ -1209,14 +1255,20 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
                 <div className="grid grid-cols-3 gap-2">
                   {[0, 1, 2].map((imgIndex) => {
                     const imageUrl = invitation.groom.profile.images?.[imgIndex]
+                    const imgSettings = invitation.groom.profile.imageSettings?.[imgIndex] || { scale: 1.0, positionX: 0, positionY: 0 }
                     return (
                       <div key={imgIndex} className="relative">
                         {imageUrl ? (
                           <div className="relative group">
-                            <div
-                              className="aspect-square rounded-lg bg-cover bg-center border border-blue-200"
-                              style={{ backgroundImage: `url(${imageUrl})` }}
-                            />
+                            <div className="aspect-square rounded-lg overflow-hidden border border-blue-200">
+                              <div
+                                className="w-full h-full bg-cover bg-center"
+                                style={{
+                                  backgroundImage: `url(${imageUrl})`,
+                                  transform: `scale(${imgSettings.scale}) translate(${imgSettings.positionX}%, ${imgSettings.positionY}%)`,
+                                }}
+                              />
+                            </div>
                             <button
                               onClick={() => removeProfileImage('groom', imgIndex)}
                               className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
@@ -1225,24 +1277,30 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
                             </button>
                           </div>
                         ) : (
-                          <label className="aspect-square border-2 border-dashed border-blue-200 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 transition-colors bg-white/50">
-                            <svg className="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                            </svg>
-                            <span className="text-[10px] text-blue-400 mt-1">추가</span>
+                          <label className={`aspect-square border-2 border-dashed border-blue-200 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 transition-colors bg-white/50 ${uploadingImages.has(`groom-profile-${imgIndex}`) ? 'opacity-50' : ''}`}>
+                            {uploadingImages.has(`groom-profile-${imgIndex}`) ? (
+                              <>
+                                <div className="w-5 h-5 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin" />
+                                <span className="text-[10px] text-blue-400 mt-1">업로드중...</span>
+                              </>
+                            ) : (
+                              <>
+                                <svg className="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                </svg>
+                                <span className="text-[10px] text-blue-400 mt-1">추가</span>
+                              </>
+                            )}
                             <input
                               type="file"
-                              accept="image/*"
+                              accept="image/jpeg,image/png,image/webp"
                               className="hidden"
+                              disabled={uploadingImages.has(`groom-profile-${imgIndex}`)}
                               onChange={(e) => {
                                 const file = e.target.files?.[0]
                                 if (file) {
-                                  const reader = new FileReader()
-                                  reader.onload = (event) => {
-                                    const result = event.target?.result as string
-                                    addProfileImage('groom', result)
-                                  }
-                                  reader.readAsDataURL(file)
+                                  handleImageUpload(file, `groom-profile-${imgIndex}`, (url) => addProfileImage('groom', url))
+                                  e.target.value = ''
                                 }
                               }}
                             />
@@ -1329,14 +1387,20 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
                 <div className="grid grid-cols-3 gap-2">
                   {[0, 1, 2].map((imgIndex) => {
                     const imageUrl = invitation.bride.profile.images?.[imgIndex]
+                    const imgSettings = invitation.bride.profile.imageSettings?.[imgIndex] || { scale: 1.0, positionX: 0, positionY: 0 }
                     return (
                       <div key={imgIndex} className="relative">
                         {imageUrl ? (
                           <div className="relative group">
-                            <div
-                              className="aspect-square rounded-lg bg-cover bg-center border border-pink-200"
-                              style={{ backgroundImage: `url(${imageUrl})` }}
-                            />
+                            <div className="aspect-square rounded-lg overflow-hidden border border-pink-200">
+                              <div
+                                className="w-full h-full bg-cover bg-center"
+                                style={{
+                                  backgroundImage: `url(${imageUrl})`,
+                                  transform: `scale(${imgSettings.scale}) translate(${imgSettings.positionX}%, ${imgSettings.positionY}%)`,
+                                }}
+                              />
+                            </div>
                             <button
                               onClick={() => removeProfileImage('bride', imgIndex)}
                               className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
@@ -1345,24 +1409,30 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
                             </button>
                           </div>
                         ) : (
-                          <label className="aspect-square border-2 border-dashed border-pink-200 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-pink-400 transition-colors bg-white/50">
-                            <svg className="w-5 h-5 text-pink-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                            </svg>
-                            <span className="text-[10px] text-pink-400 mt-1">추가</span>
+                          <label className={`aspect-square border-2 border-dashed border-pink-200 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-pink-400 transition-colors bg-white/50 ${uploadingImages.has(`bride-profile-${imgIndex}`) ? 'opacity-50' : ''}`}>
+                            {uploadingImages.has(`bride-profile-${imgIndex}`) ? (
+                              <>
+                                <div className="w-5 h-5 border-2 border-pink-300 border-t-pink-600 rounded-full animate-spin" />
+                                <span className="text-[10px] text-pink-400 mt-1">업로드중...</span>
+                              </>
+                            ) : (
+                              <>
+                                <svg className="w-5 h-5 text-pink-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                </svg>
+                                <span className="text-[10px] text-pink-400 mt-1">추가</span>
+                              </>
+                            )}
                             <input
                               type="file"
-                              accept="image/*"
+                              accept="image/jpeg,image/png,image/webp"
                               className="hidden"
+                              disabled={uploadingImages.has(`bride-profile-${imgIndex}`)}
                               onChange={(e) => {
                                 const file = e.target.files?.[0]
                                 if (file) {
-                                  const reader = new FileReader()
-                                  reader.onload = (event) => {
-                                    const result = event.target?.result as string
-                                    addProfileImage('bride', result)
-                                  }
-                                  reader.readAsDataURL(file)
+                                  handleImageUpload(file, `bride-profile-${imgIndex}`, (url) => addProfileImage('bride', url))
+                                  e.target.value = ''
                                 }
                               }}
                             />
@@ -1528,14 +1598,20 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
                   <div className="grid grid-cols-3 gap-2">
                     {[0, 1, 2].map((imgIndex) => {
                       const imageUrl = story.images?.[imgIndex]
+                      const imgSettings = story.imageSettings?.[imgIndex] || { scale: 1.0, positionX: 0, positionY: 0 }
                       return (
                         <div key={imgIndex} className="relative">
                           {imageUrl ? (
                             <div className="relative group">
-                              <div
-                                className="aspect-square rounded-lg bg-cover bg-center border border-rose-200"
-                                style={{ backgroundImage: `url(${imageUrl})` }}
-                              />
+                              <div className="aspect-square rounded-lg overflow-hidden border border-rose-200">
+                                <div
+                                  className="w-full h-full bg-cover bg-center"
+                                  style={{
+                                    backgroundImage: `url(${imageUrl})`,
+                                    transform: `scale(${imgSettings.scale}) translate(${imgSettings.positionX}%, ${imgSettings.positionY}%)`,
+                                  }}
+                                />
+                              </div>
                               <button
                                 onClick={() => removeStoryImage(index, imgIndex)}
                                 className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
@@ -1544,24 +1620,30 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
                               </button>
                             </div>
                           ) : (
-                            <label className="aspect-square border-2 border-dashed border-rose-200 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-rose-400 transition-colors bg-white/50">
-                              <svg className="w-5 h-5 text-rose-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                              </svg>
-                              <span className="text-[10px] text-rose-400 mt-1">추가</span>
+                            <label className={`aspect-square border-2 border-dashed border-rose-200 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-rose-400 transition-colors bg-white/50 ${uploadingImages.has(`story-${index}-${imgIndex}`) ? 'opacity-50' : ''}`}>
+                              {uploadingImages.has(`story-${index}-${imgIndex}`) ? (
+                                <>
+                                  <div className="w-5 h-5 border-2 border-rose-300 border-t-rose-600 rounded-full animate-spin" />
+                                  <span className="text-[10px] text-rose-400 mt-1">업로드중...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <svg className="w-5 h-5 text-rose-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                  </svg>
+                                  <span className="text-[10px] text-rose-400 mt-1">추가</span>
+                                </>
+                              )}
                               <input
                                 type="file"
-                                accept="image/*"
+                                accept="image/jpeg,image/png,image/webp"
                                 className="hidden"
+                                disabled={uploadingImages.has(`story-${index}-${imgIndex}`)}
                                 onChange={(e) => {
                                   const file = e.target.files?.[0]
                                   if (file) {
-                                    const reader = new FileReader()
-                                    reader.onload = (event) => {
-                                      const result = event.target?.result as string
-                                      addStoryImage(index, result)
-                                    }
-                                    reader.readAsDataURL(file)
+                                    handleImageUpload(file, `story-${index}-${imgIndex}`, (url) => addStoryImage(index, url))
+                                    e.target.value = ''
                                   }
                                 }}
                               />
@@ -1668,14 +1750,20 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
                   <div className="grid grid-cols-2 gap-2">
                     {[0, 1].map((imgIndex) => {
                       const imageUrl = interview.images?.[imgIndex]
+                      const imgSettings = interview.imageSettings?.[imgIndex] || { scale: 1.0, positionX: 0, positionY: 0 }
                       return (
                         <div key={imgIndex} className="relative">
                           {imageUrl ? (
                             <div className="relative group">
-                              <div
-                                className="aspect-square rounded-lg bg-cover bg-center border border-amber-200"
-                                style={{ backgroundImage: `url(${imageUrl})` }}
-                              />
+                              <div className="aspect-square rounded-lg overflow-hidden border border-amber-200">
+                                <div
+                                  className="w-full h-full bg-cover bg-center"
+                                  style={{
+                                    backgroundImage: `url(${imageUrl})`,
+                                    transform: `scale(${imgSettings.scale}) translate(${imgSettings.positionX}%, ${imgSettings.positionY}%)`,
+                                  }}
+                                />
+                              </div>
                               <button
                                 onClick={() => removeInterviewImage(index, imgIndex)}
                                 className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
@@ -1684,24 +1772,30 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
                               </button>
                             </div>
                           ) : (
-                            <label className="aspect-square border-2 border-dashed border-amber-200 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-amber-400 transition-colors bg-white/50">
-                              <svg className="w-5 h-5 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                              </svg>
-                              <span className="text-[10px] text-amber-400 mt-1">추가</span>
+                            <label className={`aspect-square border-2 border-dashed border-amber-200 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-amber-400 transition-colors bg-white/50 ${uploadingImages.has(`interview-${index}-${imgIndex}`) ? 'opacity-50' : ''}`}>
+                              {uploadingImages.has(`interview-${index}-${imgIndex}`) ? (
+                                <>
+                                  <div className="w-5 h-5 border-2 border-amber-300 border-t-amber-600 rounded-full animate-spin" />
+                                  <span className="text-[10px] text-amber-400 mt-1">업로드중...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <svg className="w-5 h-5 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                  </svg>
+                                  <span className="text-[10px] text-amber-400 mt-1">추가</span>
+                                </>
+                              )}
                               <input
                                 type="file"
-                                accept="image/*"
+                                accept="image/jpeg,image/png,image/webp"
                                 className="hidden"
+                                disabled={uploadingImages.has(`interview-${index}-${imgIndex}`)}
                                 onChange={(e) => {
                                   const file = e.target.files?.[0]
                                   if (file) {
-                                    const reader = new FileReader()
-                                    reader.onload = (event) => {
-                                      const result = event.target?.result as string
-                                      addInterviewImage(index, result)
-                                    }
-                                    reader.readAsDataURL(file)
+                                    handleImageUpload(file, `interview-${index}-${imgIndex}`, (url) => addInterviewImage(index, url))
+                                    e.target.value = ''
                                   }
                                 }}
                               />
@@ -1822,24 +1916,30 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
                     </button>
                   </div>
                 ) : (
-                  <label className="w-full aspect-video border-2 border-dashed border-cyan-200 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-cyan-400 transition-colors bg-white/50">
-                    <svg className="w-8 h-8 text-cyan-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                    <span className="text-xs text-cyan-400 mt-2">사진 추가</span>
+                  <label className={`w-full aspect-video border-2 border-dashed border-cyan-200 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-cyan-400 transition-colors bg-white/50 ${uploadingImages.has('guidance') ? 'opacity-50' : ''}`}>
+                    {uploadingImages.has('guidance') ? (
+                      <>
+                        <div className="w-8 h-8 border-2 border-cyan-300 border-t-cyan-600 rounded-full animate-spin" />
+                        <span className="text-xs text-cyan-400 mt-2">업로드중...</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-8 h-8 text-cyan-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span className="text-xs text-cyan-400 mt-2">사진 추가</span>
+                      </>
+                    )}
                     <input
                       type="file"
-                      accept="image/*"
+                      accept="image/jpeg,image/png,image/webp"
                       className="hidden"
+                      disabled={uploadingImages.has('guidance')}
                       onChange={(e) => {
                         const file = e.target.files?.[0]
                         if (file) {
-                          const reader = new FileReader()
-                          reader.onload = (event) => {
-                            const result = event.target?.result as string
-                            addGuidanceImage(result)
-                          }
-                          reader.readAsDataURL(file)
+                          handleImageUpload(file, 'guidance', addGuidanceImage)
+                          e.target.value = ''
                         }
                       }}
                     />

@@ -196,7 +196,7 @@ function IntroPage({ invitation, groomName, brideName, fonts, themeColors }: Pag
         </div>
       </section>
       <section className="px-7 py-10 text-center" style={{ background: themeColors.background }}>
-        <p className="text-sm font-light mb-9" style={{ fontFamily: fonts.displayKr, color: themeColors.text, letterSpacing: '1px' }}>{groomName} & {brideName}<br/>결혼합니다.</p>
+        <p className="text-[10px] font-light mb-9" style={{ color: themeColors.gray, letterSpacing: '4px' }}>INVITATION</p>
         {invitation.content.quote.text && <div className="py-5 mb-9" style={{ borderTop: `1px solid ${themeColors.divider}`, borderBottom: `1px solid ${themeColors.divider}` }}><p className="text-[13px] font-light leading-[1.9] mb-2" style={{ fontFamily: fonts.displayKr, color: themeColors.primary }} dangerouslySetInnerHTML={{ __html: invitation.content.quote.text.replace(/\n/g, '<br/>') }} />{invitation.content.quote.author && <p className="text-[11px] font-light" style={{ color: themeColors.gray }}>{invitation.content.quote.author}</p>}</div>}
         <div className="mb-11"><p className="text-[13px] font-light leading-[2.1]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: invitation.content.greeting ? invitation.content.greeting.replace(/\n/g, '<br/>') : 'Please enter greeting' }} /></div>
         {/* 부모님 정보 */}

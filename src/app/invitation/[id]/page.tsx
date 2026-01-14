@@ -7,6 +7,7 @@ import type { Invitation } from "@/types/invitation";
 
 interface PageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ preview?: string }>;
 }
 
 interface InvitationLookupResult {
@@ -44,8 +45,10 @@ async function getInvitation(key: string): Promise<InvitationLookupResult> {
   return { invitation: byId, isAlias: false };
 }
 
-export default async function InvitationPage({ params }: PageProps) {
+export default async function InvitationPage({ params, searchParams }: PageProps) {
   const { id } = await params;
+  const { preview } = await searchParams;
+  const isPreviewMode = preview === 'true';
   const { invitation, isAlias, canonicalSlug } = await getInvitation(id);
 
   if (!invitation) {
@@ -117,10 +120,12 @@ export default async function InvitationPage({ params }: PageProps) {
               `,
             }}
           />
-          {/* 상단 배너 */}
-          <div className="absolute top-0 left-0 right-0 bg-yellow-400 text-yellow-900 text-center py-2 text-sm font-medium">
-            이것은 샘플 미리보기입니다. 결제 후 워터마크가 제거됩니다.
-          </div>
+          {/* 상단 배너 - 프리뷰 모드에서는 숨김 (에디터에서 별도로 표시) */}
+          {!isPreviewMode && (
+            <div className="absolute top-0 left-0 right-0 bg-yellow-400 text-yellow-900 text-center py-2 text-sm font-medium">
+              이것은 샘플 미리보기입니다. 결제 후 워터마크가 제거됩니다.
+            </div>
+          )}
         </div>
       )}
 

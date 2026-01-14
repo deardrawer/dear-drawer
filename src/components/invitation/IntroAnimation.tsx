@@ -2,27 +2,40 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { IntroSettings } from '@/lib/introPresets'
-import { X } from 'lucide-react'
 
-interface IntroPreviewProps {
+interface IntroAnimationProps {
   settings: IntroSettings
   coverImage?: string
-  onSkip?: () => void
-  autoPlay?: boolean
+  groomName: string
+  brideName: string
+  weddingDate?: string
+  venueName?: string
+  onComplete: () => void
+  isComplete: boolean
 }
 
-export default function IntroPreview({ settings, coverImage, onSkip, autoPlay = true }: IntroPreviewProps) {
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [key, setKey] = useState(0)
+export default function IntroAnimation({
+  settings,
+  coverImage,
+  groomName,
+  brideName,
+  weddingDate,
+  venueName,
+  onComplete,
+  isComplete,
+}: IntroAnimationProps) {
+  const [isPlaying, setIsPlaying] = useState(true)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // 자동 재생
+  // 자동 완료 (4초 후)
+  const INTRO_DURATION = 4000
   useEffect(() => {
-    if (autoPlay) {
-      setIsPlaying(true)
-      setKey(k => k + 1)
-    }
-  }, [settings.presetId, autoPlay])
+    const timer = setTimeout(() => {
+      onComplete()
+    }, INTRO_DURATION)
+
+    return () => clearTimeout(timer)
+  }, [onComplete])
 
   // backgroundScale을 cover 기반 줌으로 계산 (100 = cover, 150 = 줌인)
   const scale = settings.backgroundScale || 100
@@ -30,121 +43,87 @@ export default function IntroPreview({ settings, coverImage, onSkip, autoPlay = 
     backgroundImage: coverImage ? `url(${coverImage})` : 'linear-gradient(135deg, #333 0%, #111 100%)',
     backgroundSize: scale > 100 ? `${scale}%` : 'cover',
     backgroundPosition: `${settings.backgroundPositionX ?? 50}% ${settings.backgroundPositionY ?? 50}%`,
-    backgroundRepeat: 'no-repeat',
-    filter: `brightness(${settings.backgroundBrightness / 100})`,
+    backgroundRepeat: 'no-repeat' as const,
+    filter: `brightness(${(settings.backgroundBrightness || 100) / 100})`,
   }
 
   const overlayStyle = {
-    backgroundColor: `rgba(0, 0, 0, ${settings.overlayOpacity / 100})`,
+    backgroundColor: `rgba(0, 0, 0, ${(settings.overlayOpacity || 30) / 100})`,
   }
 
   const titleStyle = {
-    fontSize: `${settings.titleFontSize}px`,
-    letterSpacing: `${settings.titleLetterSpacing}px`,
-    color: settings.titleColor,
+    fontSize: `${settings.titleFontSize || 24}px`,
+    letterSpacing: `${settings.titleLetterSpacing || 3}px`,
+    color: settings.titleColor || '#ffffff',
   }
 
   const subTitleStyle = {
-    color: settings.subTitleColor,
+    color: settings.subTitleColor || 'rgba(255,255,255,0.8)',
   }
+
+  // 기본값 설정
+  const mainTitle = settings.mainTitle || `${groomName} & ${brideName}`
+  const subTitle = settings.subTitle || 'WEDDING INVITATION'
+  const dateText = settings.dateText || (weddingDate ? formatDate(weddingDate) : '')
+  const venueText = settings.venueText || venueName || ''
 
   // 프리셋별 렌더링
   const renderIntro = () => {
+    const commonProps = { settings: { ...settings, mainTitle, subTitle, dateText, venueText }, backgroundStyle, overlayStyle, titleStyle, subTitleStyle }
+
     switch (settings.presetId) {
       case 'cinematic':
-        return <CinematicIntro key={key} settings={settings} backgroundStyle={backgroundStyle} overlayStyle={overlayStyle} titleStyle={titleStyle} subTitleStyle={subTitleStyle} />
+        return <CinematicIntro {...commonProps} />
       case 'typing':
-        return <TypingIntro key={key} settings={settings} backgroundStyle={backgroundStyle} overlayStyle={overlayStyle} titleStyle={titleStyle} subTitleStyle={subTitleStyle} />
+        return <TypingIntro {...commonProps} />
       case 'blur':
-        return <BlurIntro key={key} settings={settings} backgroundStyle={backgroundStyle} overlayStyle={overlayStyle} titleStyle={titleStyle} subTitleStyle={subTitleStyle} />
+        return <BlurIntro {...commonProps} />
       case 'zoom':
-        return <ZoomIntro key={key} settings={settings} backgroundStyle={backgroundStyle} overlayStyle={overlayStyle} titleStyle={titleStyle} subTitleStyle={subTitleStyle} />
+        return <ZoomIntro {...commonProps} />
       case 'bokeh':
-        return <BokehIntro key={key} settings={settings} backgroundStyle={backgroundStyle} overlayStyle={overlayStyle} titleStyle={titleStyle} subTitleStyle={subTitleStyle} />
+        return <BokehIntro {...commonProps} />
       case 'letter':
-        return <LetterIntro key={key} settings={settings} backgroundStyle={backgroundStyle} titleStyle={titleStyle} />
+        return <LetterIntro {...commonProps} />
       case 'petal':
-        return <PetalIntro key={key} settings={settings} backgroundStyle={backgroundStyle} overlayStyle={overlayStyle} titleStyle={titleStyle} subTitleStyle={subTitleStyle} />
+        return <PetalIntro {...commonProps} />
       case 'watercolor':
-        return <WatercolorIntro key={key} settings={settings} backgroundStyle={backgroundStyle} titleStyle={titleStyle} subTitleStyle={subTitleStyle} />
+        return <WatercolorIntro {...commonProps} />
       case 'lightray':
-        return <LightrayIntro key={key} settings={settings} backgroundStyle={backgroundStyle} overlayStyle={overlayStyle} titleStyle={titleStyle} subTitleStyle={subTitleStyle} />
+        return <LightrayIntro {...commonProps} />
       case 'film':
-        return <FilmIntro key={key} settings={settings} backgroundStyle={backgroundStyle} titleStyle={titleStyle} subTitleStyle={subTitleStyle} />
-      case 'ripple':
-        return <RippleIntro key={key} settings={settings} backgroundStyle={backgroundStyle} titleStyle={titleStyle} subTitleStyle={subTitleStyle} />
+        return <FilmIntro {...commonProps} />
       case 'gold':
-        return <GoldIntro key={key} settings={settings} backgroundStyle={backgroundStyle} overlayStyle={overlayStyle} titleStyle={titleStyle} subTitleStyle={subTitleStyle} />
+        return <GoldIntro {...commonProps} />
       case 'focus':
-        return <FocusIntro key={key} settings={settings} backgroundStyle={backgroundStyle} overlayStyle={overlayStyle} titleStyle={titleStyle} subTitleStyle={subTitleStyle} />
+        return <FocusIntro {...commonProps} />
       default:
-        return <CinematicIntro key={key} settings={settings} backgroundStyle={backgroundStyle} overlayStyle={overlayStyle} titleStyle={titleStyle} subTitleStyle={subTitleStyle} />
+        return <CinematicIntro {...commonProps} />
     }
   }
 
   return (
-    <div ref={containerRef} className="relative w-full h-full overflow-hidden bg-black">
+    <div
+      ref={containerRef}
+      className="fixed inset-0 z-[100] bg-black"
+      style={{
+        opacity: isComplete ? 0 : 1,
+        transition: 'opacity 0.5s ease',
+        pointerEvents: isComplete ? 'none' : 'auto',
+      }}
+    >
       <style jsx global>{`
-        @keyframes introFadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes introSlideUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes introZoomOut {
-          from { transform: scale(1.1); }
-          to { transform: scale(1); }
-        }
-        @keyframes introBlurToSharp {
-          from { filter: blur(10px); opacity: 0; }
-          to { filter: blur(0); opacity: 1; }
-        }
-        @keyframes introLetterSpread {
-          from { opacity: 0; letter-spacing: 6px; }
-          to { opacity: 1; letter-spacing: 3px; }
-        }
-        @keyframes introLineExpand {
-          from { width: 0; }
-          to { width: 50px; }
-        }
-        @keyframes introTyping {
-          from { width: 0; }
-          to { width: 100%; }
-        }
-        @keyframes introBlink {
-          50% { opacity: 0; }
-        }
-        @keyframes introFloat {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-5px); }
-        }
-        @keyframes introParticle {
-          0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-          100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
-        }
-        @keyframes introGlow {
-          0%, 100% { opacity: 0.3; }
-          50% { opacity: 0.8; }
-        }
-        @keyframes introLightBloom {
-          0% { transform: scale(0.8); opacity: 0; filter: blur(40px); }
-          50% { opacity: 1; }
-          100% { transform: scale(1); opacity: 0.9; filter: blur(60px); }
-        }
-        @keyframes introLightPulse {
-          0%, 100% { transform: scale(1); opacity: 0.6; }
-          50% { transform: scale(1.1); opacity: 0.8; }
-        }
-        @keyframes introLightFlare {
-          0% { transform: scale(0) rotate(0deg); opacity: 0; }
-          100% { transform: scale(1) rotate(180deg); opacity: 0.4; }
-        }
-        @keyframes introSoftReveal {
-          0% { opacity: 0; filter: blur(10px); transform: translateY(10px); }
-          100% { opacity: 1; filter: blur(0); transform: translateY(0); }
-        }
+        @keyframes introFadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes introSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes introZoomOut { from { transform: scale(1.1); } to { transform: scale(1); } }
+        @keyframes introBlurToSharp { from { filter: blur(10px); opacity: 0; } to { filter: blur(0); opacity: 1; } }
+        @keyframes introLetterSpread { from { opacity: 0; letter-spacing: 6px; } to { opacity: 1; letter-spacing: 3px; } }
+        @keyframes introLineExpand { from { width: 0; } to { width: 50px; } }
+        @keyframes introFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        @keyframes introParticle { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(360deg); opacity: 0; } }
+        @keyframes introLightBloom { 0% { transform: scale(0.8); opacity: 0; filter: blur(40px); } 50% { opacity: 1; } 100% { transform: scale(1); opacity: 0.9; filter: blur(60px); } }
+        @keyframes introLightPulse { 0%, 100% { transform: scale(1); opacity: 0.6; } 50% { transform: scale(1.1); opacity: 0.8; } }
+        @keyframes introLightFlare { 0% { transform: scale(0) rotate(0deg); opacity: 0; } 100% { transform: scale(1) rotate(180deg); opacity: 0.4; } }
+        @keyframes introSoftReveal { 0% { opacity: 0; filter: blur(10px); transform: translateY(10px); } 100% { opacity: 1; filter: blur(0); transform: translateY(0); } }
         .intro-light-bloom { animation: introLightBloom 2.5s ease-out forwards; }
         .intro-light-pulse { animation: introLightPulse 4s ease-in-out infinite; }
         .intro-light-flare { animation: introLightFlare 3s ease-out forwards; }
@@ -163,27 +142,37 @@ export default function IntroPreview({ settings, coverImage, onSkip, autoPlay = 
       {renderIntro()}
 
       {/* 스킵 버튼 */}
-      {onSkip && (
-        <button
-          onClick={onSkip}
-          className="absolute top-4 right-4 z-50 flex items-center gap-1 px-3 py-1.5 bg-black/30 hover:bg-black/50 text-white/80 text-xs rounded-full backdrop-blur-sm transition-colors"
-        >
-          <X className="w-3 h-3" />
-          건너뛰기
-        </button>
-      )}
+      <button
+        onClick={onComplete}
+        className="absolute top-4 right-4 z-50 flex items-center gap-1 px-3 py-1.5 bg-black/30 hover:bg-black/50 text-white/80 text-xs rounded-full backdrop-blur-sm transition-colors"
+      >
+        건너뛰기
+      </button>
     </div>
   )
 }
 
-// 시네마틱 인트로
-function CinematicIntro({ settings, backgroundStyle, overlayStyle, titleStyle }: {
-  settings: IntroSettings
+// 날짜 포맷 헬퍼
+function formatDate(dateString: string): string {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  const year = date.getFullYear()
+  const month = date.getMonth() + 1
+  const day = date.getDate()
+  return `${year}.${month}.${day}`
+}
+
+// 공통 Props 타입
+interface IntroComponentProps {
+  settings: IntroSettings & { mainTitle: string; subTitle: string; dateText: string; venueText: string }
   backgroundStyle: React.CSSProperties
   overlayStyle: React.CSSProperties
   titleStyle: React.CSSProperties
   subTitleStyle: React.CSSProperties
-}) {
+}
+
+// 시네마틱 인트로
+function CinematicIntro({ settings, backgroundStyle, overlayStyle, titleStyle }: IntroComponentProps) {
   return (
     <div className="relative h-full">
       <div className="absolute inset-0 intro-fade-in intro-zoom-out" style={{ ...backgroundStyle, filter: `${backgroundStyle.filter} grayscale(100%)` }} />
@@ -191,7 +180,7 @@ function CinematicIntro({ settings, backgroundStyle, overlayStyle, titleStyle }:
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
         <div className="intro-line-expand h-px bg-white/50 mb-5" />
         <p className="intro-letter-spread uppercase whitespace-nowrap" style={{ ...titleStyle, fontFamily: "'Cormorant Garamond', serif" }}>
-          {settings.mainTitle || 'Welcome to our wedding'}
+          {settings.mainTitle}
         </p>
         {settings.dateText && (
           <p className="text-xs mt-3.5 intro-fade-in-delay" style={{ color: 'rgba(255,255,255,0.6)', letterSpacing: '2px', fontFamily: "'Cormorant Garamond', serif" }}>
@@ -204,15 +193,9 @@ function CinematicIntro({ settings, backgroundStyle, overlayStyle, titleStyle }:
 }
 
 // 타이핑 인트로
-function TypingIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle }: {
-  settings: IntroSettings
-  backgroundStyle: React.CSSProperties
-  overlayStyle: React.CSSProperties
-  titleStyle: React.CSSProperties
-  subTitleStyle: React.CSSProperties
-}) {
+function TypingIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
   const [displayText, setDisplayText] = useState('')
-  const fullText = settings.mainTitle || '소중한 분들을 초대합니다'
+  const fullText = settings.mainTitle
 
   useEffect(() => {
     let index = 0
@@ -247,24 +230,13 @@ function TypingIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subT
             {settings.dateText}
           </p>
         )}
-        {settings.venueText && (
-          <p className="text-xs mt-2 intro-slide-up-delay" style={{ ...subTitleStyle, opacity: 0.7, animationDelay: '3.5s' }}>
-            {settings.venueText}
-          </p>
-        )}
       </div>
     </div>
   )
 }
 
 // 블러 인트로
-function BlurIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle }: {
-  settings: IntroSettings
-  backgroundStyle: React.CSSProperties
-  overlayStyle: React.CSSProperties
-  titleStyle: React.CSSProperties
-  subTitleStyle: React.CSSProperties
-}) {
+function BlurIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
   return (
     <div className="relative h-full">
       <div className="absolute inset-0 intro-blur-to-sharp" style={backgroundStyle} />
@@ -276,7 +248,7 @@ function BlurIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTit
           </p>
         )}
         <p className="text-2xl font-serif intro-fade-in-delay" style={{ ...titleStyle, animationDelay: '2s' }}>
-          {settings.mainTitle || '우리 결혼합니다'}
+          {settings.mainTitle}
         </p>
         <div className="w-16 h-px bg-white/50 my-6 intro-line-expand" style={{ animationDelay: '2.5s' }} />
         {settings.dateText && (
@@ -290,13 +262,7 @@ function BlurIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTit
 }
 
 // 줌 인트로
-function ZoomIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle }: {
-  settings: IntroSettings
-  backgroundStyle: React.CSSProperties
-  overlayStyle: React.CSSProperties
-  titleStyle: React.CSSProperties
-  subTitleStyle: React.CSSProperties
-}) {
+function ZoomIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
   return (
     <div className="relative h-full overflow-hidden">
       <div className="absolute inset-0 intro-zoom-out" style={{ ...backgroundStyle, animationDuration: '8s' }} />
@@ -308,7 +274,7 @@ function ZoomIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTit
           </p>
         )}
         <p className="text-2xl font-serif intro-slide-up-delay" style={titleStyle}>
-          {settings.mainTitle || '평생을 약속합니다'}
+          {settings.mainTitle}
         </p>
         <div className="w-20 h-px bg-white/50 my-6 intro-line-expand" style={{ animationDelay: '1s' }} />
         {settings.dateText && (
@@ -322,13 +288,7 @@ function ZoomIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTit
 }
 
 // 보케 인트로
-function BokehIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle }: {
-  settings: IntroSettings
-  backgroundStyle: React.CSSProperties
-  overlayStyle: React.CSSProperties
-  titleStyle: React.CSSProperties
-  subTitleStyle: React.CSSProperties
-}) {
+function BokehIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
   const particles = Array.from({ length: 20 }, (_, i) => ({
     id: i,
     size: Math.random() * 30 + 10,
@@ -342,7 +302,6 @@ function BokehIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTi
     <div className="relative h-full overflow-hidden">
       <div className="absolute inset-0 intro-fade-in" style={backgroundStyle} />
       <div className="absolute inset-0" style={overlayStyle} />
-      {/* 보케 파티클 */}
       <div className="absolute inset-0 pointer-events-none">
         {particles.map((p) => (
           <div
@@ -367,7 +326,7 @@ function BokehIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTi
           </p>
         )}
         <p className="text-xl font-serif intro-slide-up-delay" style={titleStyle}>
-          {settings.mainTitle || '두 사람이 하나 되는 날'}
+          {settings.mainTitle}
         </p>
         <div className="w-20 h-px bg-white/50 my-6 intro-line-expand" />
         {settings.dateText && (
@@ -381,20 +340,16 @@ function BokehIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTi
 }
 
 // 편지 인트로
-function LetterIntro({ settings, backgroundStyle, titleStyle }: {
-  settings: IntroSettings
-  backgroundStyle: React.CSSProperties
-  titleStyle: React.CSSProperties
-}) {
+function LetterIntro({ settings, backgroundStyle, titleStyle }: IntroComponentProps) {
   return (
     <div className="relative h-full flex items-center justify-center">
       <div className="absolute inset-0" style={{ ...backgroundStyle, filter: 'grayscale(100%) brightness(0.4)' }} />
       <div className="relative w-[280px] h-[360px] bg-white rounded-lg shadow-2xl flex flex-col items-center justify-center p-6 text-center intro-slide-up">
         <p className="text-[11px] text-gray-400 tracking-[4px] mb-2">
-          {settings.subTitle || 'WEDDING INVITATION'}
+          {settings.subTitle}
         </p>
         <p className="text-2xl mb-4" style={{ ...titleStyle, color: titleStyle.color === '#ffffff' ? '#4a4a4a' : titleStyle.color }}>
-          {settings.mainTitle || '우리 결혼합니다'}
+          {settings.mainTitle}
         </p>
         <div className="w-12 h-px bg-[#d4a574] mb-4" />
         {settings.dateText && (
@@ -409,13 +364,7 @@ function LetterIntro({ settings, backgroundStyle, titleStyle }: {
 }
 
 // 꽃잎 인트로
-function PetalIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle }: {
-  settings: IntroSettings
-  backgroundStyle: React.CSSProperties
-  overlayStyle: React.CSSProperties
-  titleStyle: React.CSSProperties
-  subTitleStyle: React.CSSProperties
-}) {
+function PetalIntro({ settings, backgroundStyle, titleStyle }: IntroComponentProps) {
   const petals = Array.from({ length: 15 }, (_, i) => ({
     id: i,
     left: Math.random() * 100,
@@ -427,7 +376,6 @@ function PetalIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTi
     <div className="relative h-full overflow-hidden">
       <div className="absolute inset-0 intro-fade-in" style={backgroundStyle} />
       <div className="absolute inset-0 bg-gradient-to-b from-[#fff5f5]/70 to-[#ffe4e6]/80" />
-      {/* 꽃잎 */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {petals.map((p) => (
           <div
@@ -452,7 +400,7 @@ function PetalIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTi
           </p>
         )}
         <p className="text-xl font-serif intro-slide-up-delay" style={{ ...titleStyle, color: '#374151' }}>
-          {settings.mainTitle || '꽃잎처럼 아름다운 날'}
+          {settings.mainTitle}
         </p>
         <div className="w-20 h-px bg-pink-300 my-6 intro-line-expand" />
         {settings.dateText && (
@@ -463,149 +411,35 @@ function PetalIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTi
   )
 }
 
-// 수채화 인트로 - 소프트 라이트 블룸
-function WatercolorIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: {
-  settings: IntroSettings
-  backgroundStyle: React.CSSProperties
-  titleStyle: React.CSSProperties
-  subTitleStyle: React.CSSProperties
-}) {
+// 수채화 인트로
+function WatercolorIntro({ settings, backgroundStyle, titleStyle }: IntroComponentProps) {
   return (
     <div className="relative h-full overflow-hidden">
-      {/* 배경 이미지 */}
-      <div
-        className="absolute inset-0 intro-fade-in"
-        style={backgroundStyle}
-      />
-
-      {/* 밝은 오버레이 */}
+      <div className="absolute inset-0 intro-fade-in" style={backgroundStyle} />
       <div className="absolute inset-0 bg-gradient-to-b from-white/60 to-gray-50/65" />
-
-      {/* 비네팅 */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: 'radial-gradient(ellipse at center, transparent 0%, rgba(255,255,255,0.3) 80%, rgba(255,255,255,0.5) 100%)',
-        }}
-      />
-
-      {/* 메인 라이트 블룸 (중앙) - 골드/피치 톤 */}
-      <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 intro-light-bloom"
-        style={{
-          width: '180%',
-          height: '180%',
-          background: 'radial-gradient(ellipse at center, rgba(255,200,150,0.6) 0%, rgba(255,180,120,0.4) 25%, rgba(255,220,200,0.2) 45%, transparent 65%)',
-        }}
-      />
-
-      {/* 보조 라이트 (핑크 톤) */}
-      <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 intro-light-bloom intro-light-pulse"
-        style={{
-          width: '140%',
-          height: '140%',
-          background: 'radial-gradient(ellipse at center, rgba(255,180,200,0.5) 0%, rgba(255,200,220,0.3) 30%, transparent 55%)',
-          animationDelay: '0.3s',
-        }}
-      />
-
-      {/* 세 번째 라이트 (따뜻한 화이트) */}
-      <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 intro-light-bloom intro-light-pulse"
-        style={{
-          width: '100%',
-          height: '100%',
-          background: 'radial-gradient(ellipse at center, rgba(255,250,240,0.7) 0%, transparent 50%)',
-          animationDelay: '0.6s',
-        }}
-      />
-
-      {/* 렌즈 플레어 효과 */}
-      <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 intro-light-flare"
-        style={{
-          width: '250px',
-          height: '250px',
-          background: 'conic-gradient(from 0deg, transparent, rgba(255,200,150,0.3) 10%, transparent 20%, rgba(255,180,200,0.2) 30%, transparent 40%, rgba(255,220,180,0.3) 50%, transparent 60%, rgba(255,200,180,0.2) 70%, transparent 80%, rgba(255,180,150,0.3) 90%, transparent)',
-          animationDelay: '0.8s',
-        }}
-      />
-
-      {/* 작은 보케 라이트들 */}
-      <div className="absolute inset-0 pointer-events-none">
-        {[
-          { x: 25, y: 20, size: 120, color: 'rgba(255,200,180,0.4)', delay: 0.5 },
-          { x: 75, y: 25, size: 100, color: 'rgba(255,180,200,0.35)', delay: 0.8 },
-          { x: 20, y: 70, size: 90, color: 'rgba(255,220,200,0.35)', delay: 1.1 },
-          { x: 80, y: 75, size: 110, color: 'rgba(255,200,150,0.4)', delay: 1.4 },
-          { x: 50, y: 85, size: 80, color: 'rgba(255,180,180,0.3)', delay: 1.7 },
-        ].map((bokeh, i) => (
-          <div
-            key={i}
-            className="absolute rounded-full intro-light-bloom intro-light-pulse"
-            style={{
-              left: `${bokeh.x}%`,
-              top: `${bokeh.y}%`,
-              width: bokeh.size,
-              height: bokeh.size,
-              transform: 'translate(-50%, -50%)',
-              background: `radial-gradient(circle, ${bokeh.color} 0%, transparent 70%)`,
-              animationDelay: `${bokeh.delay}s`,
-            }}
-          />
-        ))}
-      </div>
-
-      {/* 텍스트 */}
+      <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at center, transparent 0%, rgba(255,255,255,0.3) 80%, rgba(255,255,255,0.5) 100%)' }} />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 intro-light-bloom" style={{ width: '180%', height: '180%', background: 'radial-gradient(ellipse at center, rgba(255,200,150,0.6) 0%, rgba(255,180,120,0.4) 25%, rgba(255,220,200,0.2) 45%, transparent 65%)' }} />
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
         {settings.subTitle && (
-          <p
-            className="text-2xl font-light tracking-widest intro-soft-reveal"
-            style={{
-              ...titleStyle,
-              color: '#1a1a1a',
-              textShadow: '0 0 30px rgba(255,255,255,0.8)',
-              animationDelay: '1.5s',
-              opacity: 0,
-            }}
-          >
+          <p className="text-2xl font-light tracking-widest intro-soft-reveal" style={{ ...titleStyle, color: '#1a1a1a', textShadow: '0 0 30px rgba(255,255,255,0.8)', animationDelay: '1.5s', opacity: 0 }}>
             {settings.subTitle}
           </p>
         )}
-        <p
-          className="text-sm mt-3 tracking-wider intro-soft-reveal"
-          style={{
-            color: '#333333',
-            textShadow: '0 0 20px rgba(255,255,255,0.8)',
-            animationDelay: '2s',
-            opacity: 0,
-          }}
-        >
-          {settings.mainTitle || '우리의 새로운 이야기가 시작됩니다'}
+        <p className="text-sm mt-3 tracking-wider intro-soft-reveal" style={{ color: '#333333', textShadow: '0 0 20px rgba(255,255,255,0.8)', animationDelay: '2s', opacity: 0 }}>
+          {settings.mainTitle}
         </p>
-        <div
-          className="w-12 h-px bg-gradient-to-r from-transparent via-gray-400 to-transparent my-6 intro-line-expand"
-          style={{ animationDelay: '2.5s' }}
-        />
+        <div className="w-12 h-px bg-gradient-to-r from-transparent via-gray-400 to-transparent my-6 intro-line-expand" style={{ animationDelay: '2.5s' }} />
       </div>
     </div>
   )
 }
 
 // 빛의 커튼 인트로
-function LightrayIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle }: {
-  settings: IntroSettings
-  backgroundStyle: React.CSSProperties
-  overlayStyle: React.CSSProperties
-  titleStyle: React.CSSProperties
-  subTitleStyle: React.CSSProperties
-}) {
+function LightrayIntro({ settings, backgroundStyle, titleStyle }: IntroComponentProps) {
   return (
     <div className="relative h-full overflow-hidden">
       <div className="absolute inset-0 intro-fade-in" style={backgroundStyle} />
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/20" />
-      {/* 빛 광선 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {Array.from({ length: 6 }).map((_, i) => (
           <div
@@ -628,7 +462,7 @@ function LightrayIntro({ settings, backgroundStyle, overlayStyle, titleStyle, su
           </p>
         )}
         <p className="text-2xl font-serif intro-slide-up-delay" style={titleStyle}>
-          {settings.mainTitle || '영원을 약속하는 날'}
+          {settings.mainTitle}
         </p>
         <div className="w-20 h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent my-6 intro-line-expand" />
       </div>
@@ -637,12 +471,7 @@ function LightrayIntro({ settings, backgroundStyle, overlayStyle, titleStyle, su
 }
 
 // 필름 인트로
-function FilmIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: {
-  settings: IntroSettings
-  backgroundStyle: React.CSSProperties
-  titleStyle: React.CSSProperties
-  subTitleStyle: React.CSSProperties
-}) {
+function FilmIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
   return (
     <div className="relative h-full overflow-hidden">
       <div className="absolute inset-0 intro-fade-in" style={{ ...backgroundStyle, filter: `${backgroundStyle.filter} sepia(50%)` }} />
@@ -654,7 +483,7 @@ function FilmIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: {
           </p>
         )}
         <p className="text-2xl font-serif intro-blur-to-sharp" style={{ ...titleStyle, color: '#fef3c7', animationDelay: '1s' }}>
-          {settings.mainTitle || '우리의 순간에 초대합니다'}
+          {settings.mainTitle}
         </p>
         <div className="w-16 h-px bg-amber-200/50 my-6 intro-line-expand" style={{ animationDelay: '2s' }} />
       </div>
@@ -662,51 +491,8 @@ function FilmIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: {
   )
 }
 
-// 물결 인트로
-function RippleIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: {
-  settings: IntroSettings
-  backgroundStyle: React.CSSProperties
-  titleStyle: React.CSSProperties
-  subTitleStyle: React.CSSProperties
-}) {
-  // 물결 효과를 위해 상단/하단 위치만 조정하되 사용자 설정 반영
-  const topBgStyle = { ...backgroundStyle }
-  const bottomBgStyle = { ...backgroundStyle, transform: 'scaleY(-1)', opacity: 0.6 }
-
-  return (
-    <div className="relative h-full flex flex-col">
-      <div className="relative h-1/2">
-        <div className="absolute inset-0 intro-fade-in" style={topBgStyle} />
-      </div>
-      <div className="relative h-1/2 overflow-hidden">
-        <div className="absolute inset-0" style={bottomBgStyle} />
-        <div className="absolute inset-0 bg-gradient-to-b from-sky-900/30 to-sky-950/50" />
-      </div>
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 z-10">
-        <div className="bg-black/30 backdrop-blur-sm px-8 py-6 rounded-lg intro-slide-up">
-          {settings.subTitle && (
-            <p className="text-[10px] tracking-[4px] mb-3" style={{ color: 'rgba(186,230,253,0.8)' }}>
-              {settings.subTitle}
-            </p>
-          )}
-          <p className="text-lg font-serif" style={titleStyle}>
-            {settings.mainTitle || '두 사람이 하나가 되는 순간'}
-          </p>
-          <div className="w-12 h-px bg-sky-200/50 mx-auto my-3 intro-line-expand" />
-        </div>
-      </div>
-    </div>
-  )
-}
-
 // 골드 인트로
-function GoldIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle }: {
-  settings: IntroSettings
-  backgroundStyle: React.CSSProperties
-  overlayStyle: React.CSSProperties
-  titleStyle: React.CSSProperties
-  subTitleStyle: React.CSSProperties
-}) {
+function GoldIntro({ settings, backgroundStyle, titleStyle }: IntroComponentProps) {
   const goldColors = ['#C9A24D', '#E6C87A', '#B08D3A']
   const particles = Array.from({ length: 50 }, (_, i) => ({
     id: i,
@@ -722,7 +508,6 @@ function GoldIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTit
     <div className="relative h-full overflow-hidden">
       <div className="absolute inset-0 intro-fade-in" style={backgroundStyle} />
       <div className="absolute inset-0 bg-black/60" />
-      {/* 골드 파티클 */}
       <div className="absolute inset-0 pointer-events-none">
         {particles.map((p) => (
           <div
@@ -747,17 +532,12 @@ function GoldIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTit
           </p>
         )}
         <p className="text-2xl font-serif intro-slide-up-delay" style={{ ...titleStyle, color: '#fef3c7' }}>
-          {settings.mainTitle || '소중한 날에 초대합니다'}
+          {settings.mainTitle}
         </p>
         <div className="w-20 h-px bg-gradient-to-r from-transparent via-amber-400 to-transparent my-6 intro-line-expand" />
         {settings.dateText && (
           <p className="text-sm intro-fade-in-delay" style={{ color: 'rgba(253,230,138,0.6)' }}>
             {settings.dateText}
-          </p>
-        )}
-        {settings.venueText && (
-          <p className="text-xs mt-2 intro-fade-in-delay" style={{ color: 'rgba(253,230,138,0.4)', animationDelay: '0.5s' }}>
-            {settings.venueText}
           </p>
         )}
       </div>
@@ -766,13 +546,7 @@ function GoldIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTit
 }
 
 // 포커스 인트로
-function FocusIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle }: {
-  settings: IntroSettings
-  backgroundStyle: React.CSSProperties
-  overlayStyle: React.CSSProperties
-  titleStyle: React.CSSProperties
-  subTitleStyle: React.CSSProperties
-}) {
+function FocusIntro({ settings, backgroundStyle, overlayStyle, titleStyle }: IntroComponentProps) {
   return (
     <div className="relative h-full overflow-hidden">
       <div className="absolute inset-0" style={{ ...backgroundStyle, filter: 'blur(15px)' }} />
@@ -785,7 +559,7 @@ function FocusIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTi
           </p>
         )}
         <p className="text-2xl font-serif intro-slide-up-delay" style={titleStyle}>
-          {settings.mainTitle || '두 사람의 이야기'}
+          {settings.mainTitle}
         </p>
         <div className="w-16 h-px bg-white/50 my-6 intro-line-expand" />
       </div>

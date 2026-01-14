@@ -199,3 +199,234 @@
   animation: letterUnfold 1s ease-out forwards;
   transform-origin: top center;
 }
+
+/* Screen Transition Animations */
+@keyframes whiteFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes whiteFadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes screenFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Screen transition overlay */
+.screen-transition-overlay {
+  position: fixed;
+  inset: 0;
+  background: white;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.screen-transition-overlay.fade-in {
+  animation: whiteFadeIn 0.5s ease-out forwards;
+}
+
+.screen-transition-overlay.fade-out {
+  animation: whiteFadeOut 0.5s ease-out forwards;
+}
+
+/* Screen states */
+.screen {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.screen.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.screen.active.animate {
+  animation: screenFadeIn 0.6s ease-out forwards;
+}
+
+/* =====================
+   Scroll-based Section Animations
+   ===================== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes lineExpand {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+/* 메인 섹션 애니메이션 */
+.anim-section {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.anim-section.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 타이틀 애니메이션 */
+.anim-title {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.anim-title.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 라인/구분선 애니메이션 */
+.anim-line {
+  opacity: 0;
+  transform: translateY(15px);
+  transition: opacity 0.6s ease-out 0.1s, transform 0.6s ease-out 0.1s;
+}
+
+.anim-line.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 문단 애니메이션 */
+.anim-paragraph {
+  opacity: 0;
+  transform: translateY(15px);
+  transition: opacity 0.6s ease-out 0.2s, transform 0.6s ease-out 0.2s;
+}
+
+.anim-paragraph.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 언더라인 확장 애니메이션 */
+.anim-underline {
+  position: relative;
+}
+
+.anim-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  width: 0;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.3;
+  transition: width 0.8s ease-out, left 0.8s ease-out;
+}
+
+.anim-underline.revealed::after {
+  width: 50px;
+  left: calc(50% - 25px);
+}
+
+/* 순차 등장 애니메이션 (stagger) */
+.anim-stagger > * {
+  opacity: 0;
+  transform: translateY(15px);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+
+.anim-stagger.revealed > *:nth-child(1) { transition-delay: 0ms; }
+.anim-stagger.revealed > *:nth-child(2) { transition-delay: 100ms; }
+.anim-stagger.revealed > *:nth-child(3) { transition-delay: 200ms; }
+.anim-stagger.revealed > *:nth-child(4) { transition-delay: 300ms; }
+.anim-stagger.revealed > *:nth-child(5) { transition-delay: 400ms; }
+.anim-stagger.revealed > *:nth-child(6) { transition-delay: 500ms; }
+
+.anim-stagger.revealed > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 카드 등장 애니메이션 */
+.anim-card {
+  opacity: 0;
+  transform: translateY(20px) scale(0.98);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.anim-card.revealed {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* 이미지 등장 애니메이션 */
+.anim-image {
+  opacity: 0;
+  transform: scale(1.05);
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.anim-image.revealed {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* 페이드인 애니메이션 */
+.anim-fade {
+  opacity: 0;
+  transition: opacity 0.8s ease-out;
+}
+
+.anim-fade.revealed {
+  opacity: 1;
+}
+
+/* 모션 감소 설정 지원 */
+@media (prefers-reduced-motion: reduce) {
+  .anim-section,
+  .anim-title,
+  .anim-line,
+  .anim-paragraph,
+  .anim-card,
+  .anim-image,
+  .anim-fade,
+  .anim-stagger > * {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .anim-underline::after {
+    width: 50px;
+    left: calc(50% - 25px);
+    transition: none;
+  }
+}

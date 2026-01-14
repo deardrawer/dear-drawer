@@ -243,8 +243,8 @@ export function isBase64(str: string): boolean {
 }
 
 /**
- * URL인지 확인 (http/https)
+ * URL인지 확인 (http/https 또는 상대 경로)
  */
 export function isUrl(str: string): boolean {
-  return str.startsWith('http://') || str.startsWith('https://');
+  return str.startsWith('http://') || str.startsWith('https://') || str.startsWith('/');
 }

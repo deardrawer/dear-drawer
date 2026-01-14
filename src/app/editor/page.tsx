@@ -90,11 +90,15 @@ function EditorContent() {
     }
   }, [editId, status, loadAttempted])
 
+  // 새 청첩장 생성 시 스토어 초기화 (editId가 없을 때)
+  const [isNewInvitation] = useState(!editId)
+
   useEffect(() => {
-    if (urlTemplate && !invitation && !editId) {
+    // 새 청첩장인 경우 항상 초기화 (이전 데이터 무시)
+    if (urlTemplate && isNewInvitation) {
       initInvitation(urlTemplate)
     }
-  }, [urlTemplate, invitation, initInvitation, editId])
+  }, [urlTemplate, isNewInvitation, initInvitation])
 
   // Save invitation to database
   const handleSave = async () => {
@@ -176,10 +180,10 @@ function EditorContent() {
     }
   }
 
-  // Open preview in new tab
+  // Open preview modal
   const handlePreview = () => {
     if (invitationId) {
-      window.open(`/invitation/${invitationId}`, '_blank')
+      setIsPreviewOpen(true)
     } else {
       alert('미리보기를 보려면 먼저 저장해주세요.')
     }
@@ -415,6 +419,56 @@ function EditorContent() {
           brideName={invitation.bride.name}
           weddingDate={invitation.wedding.date}
         />
+      )}
+
+      {/* Mobile Preview Modal */}
+      {isPreviewOpen && invitationId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          {/* Close button */}
+          <button
+            onClick={() => setIsPreviewOpen(false)}
+            className="absolute top-6 right-6 z-10 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+          >
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          {/* Open in new tab button */}
+          <button
+            onClick={() => window.open(`/invitation/${invitationId}`, '_blank')}
+            className="absolute top-6 right-20 z-10 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-white text-sm flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+            새 탭에서 열기
+          </button>
+
+          {/* Mobile Phone Frame */}
+          <div className="relative flex flex-col items-center">
+            {/* 상단 안내 문구 - 핸드폰 프레임 바깥 */}
+            <div className="mb-4 px-6 py-2.5 bg-yellow-400 text-yellow-900 text-center text-sm font-medium rounded-full">
+              이것은 샘플 미리보기입니다. 결제 후 워터마크가 제거됩니다.
+            </div>
+            {/* Phone outer frame */}
+            <div className="w-[375px] bg-gray-900 rounded-[50px] p-3 shadow-2xl border border-gray-700">
+              {/* Phone screen */}
+              <div className="rounded-[40px] overflow-hidden bg-white relative" style={{ height: '812px' }}>
+                {/* Dynamic Island */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[35px] bg-black rounded-b-3xl z-10" />
+                {/* Content iframe */}
+                <iframe
+                  src={`/invitation/${invitationId}?preview=true`}
+                  className="w-full h-full border-0"
+                  title="Invitation Preview"
+                />
+                {/* Home indicator */}
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-gray-300 rounded-full" />
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

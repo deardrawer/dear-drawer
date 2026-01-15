@@ -61,6 +61,7 @@ export interface IntroSettings {
   // 텍스트 스타일
   titleFontSize: number
   titleLetterSpacing: number
+  titleFontFamily: string
   titleColor: string
   subTitleColor: string
   // 배경
@@ -70,6 +71,17 @@ export interface IntroSettings {
   backgroundBrightness: number
   overlayOpacity: number
 }
+
+// 사용 가능한 폰트 목록
+export const availableFonts = [
+  { value: 'Pretendard', label: '프리텐다드' },
+  { value: "'Noto Serif KR', serif", label: '노토 세리프' },
+  { value: "'Nanum Myeongjo', serif", label: '나눔명조' },
+  { value: "'Nanum Gothic', sans-serif", label: '나눔고딕' },
+  { value: "'Gowun Batang', serif", label: '고운바탕' },
+  { value: "'Cormorant Garamond', serif", label: 'Cormorant' },
+  { value: "'Playfair Display', serif", label: 'Playfair' },
+]
 
 // 프리셋 정의
 export interface IntroPreset {
@@ -183,9 +195,9 @@ export const introPresets: IntroPreset[] = [
     name: '다가오는 순간',
     description: '천천히 다가오는 특별한 순간을 표현',
     defaults: {
-      mainTitle: '평생을 약속합니다',
-      subTitle: 'WITH LOVE',
-      dateText: '2025. 05. 24',
+      mainTitle: '새로운 시작을 함께해주세요',
+      subTitle: 'OUR WEDDING DAY',
+      dateText: '2025년 5월 24일 토요일',
       venueText: '',
       titleFontSize: 22,
       titleLetterSpacing: 2,
@@ -204,10 +216,10 @@ export const introPresets: IntroPreset[] = [
     name: '빛나는 약속',
     description: '반짝이는 빛 속에서 전하는 약속',
     defaults: {
-      mainTitle: '두 사람이 하나 되는 날',
-      subTitle: 'FOREVER LOVE',
-      dateText: '2025. 05. 24',
-      venueText: '더채플앳청담',
+      mainTitle: '행복한 날에 초대합니다',
+      subTitle: 'THE WEDDING OF',
+      dateText: '2025. 05. 24 Saturday',
+      venueText: '',
       titleFontSize: 20,
       titleLetterSpacing: 1,
       titleColor: '#ffffff',
@@ -248,8 +260,8 @@ export const introPresets: IntroPreset[] = [
     defaults: {
       mainTitle: '꽃잎처럼 아름다운 날',
       subTitle: 'SPRING WEDDING',
-      dateText: '2025. 05. 24',
-      venueText: '',
+      dateText: '봄날의 아름다운 약속',
+      venueText: '2025. 05. 24',
       titleFontSize: 20,
       titleLetterSpacing: 0,
       titleColor: '#374151',
@@ -267,10 +279,10 @@ export const introPresets: IntroPreset[] = [
     name: '물드는 사랑',
     description: '수채화처럼 번지는 따뜻한 감성',
     defaults: {
-      mainTitle: '우리의 새로운 이야기가 시작됩니다',
-      subTitle: 'A New Chapter Begins',
-      dateText: '',
-      venueText: '',
+      mainTitle: 'A New Chapter Begins',
+      subTitle: 'WELCOME TO OUR WEDDING',
+      dateText: 'You are warmly invited to share our special day.',
+      venueText: '우리의 새로운 이야기가 시작됩니다.',
       titleFontSize: 16,
       titleLetterSpacing: 0,
       titleColor: '#374151',
@@ -290,7 +302,7 @@ export const introPresets: IntroPreset[] = [
     defaults: {
       mainTitle: '영원을 약속하는 날',
       subTitle: 'BLESSED UNION',
-      dateText: '',
+      dateText: '소중한 분들을 초대합니다',
       venueText: '',
       titleFontSize: 24,
       titleLetterSpacing: 0,
@@ -311,7 +323,7 @@ export const introPresets: IntroPreset[] = [
     defaults: {
       mainTitle: '우리의 순간에 초대합니다',
       subTitle: 'TIMELESS LOVE',
-      dateText: '',
+      dateText: 'An invitation to our moment',
       venueText: '',
       titleFontSize: 24,
       titleLetterSpacing: 0,
@@ -332,7 +344,7 @@ export const introPresets: IntroPreset[] = [
     defaults: {
       mainTitle: '두 사람이 하나가 되는 순간',
       subTitle: 'ETERNAL PROMISE',
-      dateText: '',
+      dateText: '소중한 분들을 초대합니다',
       venueText: '',
       titleFontSize: 18,
       titleLetterSpacing: 0,
@@ -374,7 +386,7 @@ export const introPresets: IntroPreset[] = [
     defaults: {
       mainTitle: '두 사람의 이야기',
       subTitle: 'FOCUS ON US',
-      dateText: '',
+      dateText: '저희의 시작에 함께해 주세요',
       venueText: '',
       titleFontSize: 24,
       titleLetterSpacing: 0,
@@ -403,6 +415,7 @@ export function getDefaultIntroSettings(presetId: IntroPresetId = 'cinematic'): 
     venueText: defaults.venueText || '',
     titleFontSize: defaults.titleFontSize || 20,
     titleLetterSpacing: defaults.titleLetterSpacing || 0,
+    titleFontFamily: defaults.titleFontFamily || "'Noto Serif KR', serif",
     titleColor: defaults.titleColor || '#ffffff',
     subTitleColor: defaults.subTitleColor || 'rgba(255,255,255,0.7)',
     backgroundScale: defaults.backgroundScale || 100,

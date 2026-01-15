@@ -2233,7 +2233,7 @@ export default function InvitationPage() {
   ]
 
   return (
-    <div className="min-h-screen overflow-x-hidden" style={{ backgroundColor: themeColors.background, fontFamily: fonts.body, color: themeColors.text }}>
+    <div className={`min-h-screen overflow-x-hidden theme-${invitation.colorTheme}`} style={{ backgroundColor: themeColors.background, fontFamily: fonts.body, color: themeColors.text }}>
       {/* Inject CSS animations */}
       <style dangerouslySetInnerHTML={{ __html: globalStyles }} />
 
@@ -2263,6 +2263,7 @@ export default function InvitationPage() {
           fonts={fonts}
           openModal={openModalType}
           onModalClose={() => setOpenModalType('none')}
+          showTooltip={currentPage === 'intro' && introScreen === 'invitation'}
           invitation={{
             venue_name: invitation.wedding.venue.name,
             venue_address: invitation.wedding.venue.address,

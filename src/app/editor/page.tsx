@@ -387,6 +387,9 @@ function EditorContent() {
                     settings={invitation.intro}
                     coverImage={invitation.media.coverImage}
                     autoPlay={true}
+                    weddingDate={invitation.wedding.date}
+                    weddingTime={invitation.wedding.time}
+                    venueName={invitation.wedding.venue.name}
                   />
                 </div>
                 {/* 폰 노치 - 콘텐츠 위에 오버레이 */}

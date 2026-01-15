@@ -4,9 +4,11 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import type { Invitation } from '@/types/invitation'
 import type { InvitationContent } from '@/store/editorStore'
 import { type IntroSettings, getDefaultIntroSettings } from '@/lib/introPresets'
+import { parseHighlight } from '@/lib/textUtils'
 import GuestFloatingButton from '@/components/invitation/GuestFloatingButton'
 import IntroAnimation from '@/components/invitation/IntroAnimation'
 import ProfileImageSlider from '@/components/editor/ProfileImageSlider'
+import { WatermarkOverlay } from '@/components/ui/WatermarkOverlay'
 import { useScrollAnimation } from '@/hooks/useScrollAnimation'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation, Pagination, Autoplay } from 'swiper/modules'
@@ -521,7 +523,7 @@ export default function InvitationView({ invitation, content, isPaid }: Invitati
 
   return (
     <div
-      className="relative min-h-screen"
+      className={`relative min-h-screen theme-${displayData.colorTheme || 'classic-rose'}`}
       style={{
         fontFamily: fonts.body,
         color: themeColors.text,
@@ -529,6 +531,22 @@ export default function InvitationView({ invitation, content, isPaid }: Invitati
         paddingTop: isPaid ? 0 : '40px',
       }}
     >
+      {/* 미결제 워터마크 배너 */}
+      {!isPaid && (
+        <div
+          className="fixed top-0 left-0 right-0 z-[200] flex items-center justify-center gap-2 py-2.5 text-xs"
+          style={{
+            background: 'linear-gradient(135deg, #1a1a1a 0%, #333 100%)',
+            color: '#fff',
+          }}
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+          <span>미리보기 모드 - 결제 후 워터마크가 제거됩니다</span>
+        </div>
+      )}
+
       {/* 인트로 애니메이션 (전체 화면 오버레이) */}
       {showIntroAnimation && introSettings?.presetId && (
         <IntroAnimation
@@ -564,6 +582,7 @@ export default function InvitationView({ invitation, content, isPaid }: Invitati
             brideName={brideName}
             fonts={fonts}
             themeColors={themeColors}
+            isPaid={isPaid}
             onCoverClick={handleCoverClick}
           />
         )}
@@ -576,6 +595,7 @@ export default function InvitationView({ invitation, content, isPaid }: Invitati
             brideName={brideName}
             fonts={fonts}
             themeColors={themeColors}
+            isPaid={isPaid}
             onNextPage={goToMainPage}
             onBackToCover={goBackToCover}
           />
@@ -590,6 +610,7 @@ export default function InvitationView({ invitation, content, isPaid }: Invitati
             fonts={fonts}
             themeColors={themeColors}
             invitationId={invitation.id}
+            isPaid={isPaid}
             onBackToIntro={goBackToCover}
           />
         )}
@@ -599,6 +620,7 @@ export default function InvitationView({ invitation, content, isPaid }: Invitati
       <GuestFloatingButton
         themeColors={themeColors}
         fonts={fonts}
+        showTooltip={currentScreen === 'invitation'}
         invitation={{
           venue_name: displayData.wedding?.venue?.name || '',
           venue_address: displayData.wedding?.venue?.address || '',
@@ -622,6 +644,7 @@ interface PageProps {
   fonts: FontConfig
   themeColors: ColorConfig
   invitationId?: string
+  isPaid?: boolean
   onNextPage?: () => void
   onBackToIntro?: () => void
   onCoverClick?: () => void
@@ -629,7 +652,7 @@ interface PageProps {
 }
 
 // === COVER SCREEN (첫 번째 화면 - 클릭하면 인비테이션으로 전환) ===
-function CoverScreen({ invitation, groomName, brideName, fonts, themeColors, onCoverClick }: PageProps) {
+function CoverScreen({ invitation, groomName, brideName, fonts, themeColors, isPaid, onCoverClick }: PageProps) {
   const introAnimation = invitation.design?.introAnimation || 'fade-in'
   const coverTitle = invitation.design?.coverTitle || invitation.wedding?.title || 'OUR WEDDING'
 
@@ -639,20 +662,21 @@ function CoverScreen({ invitation, groomName, brideName, fonts, themeColors, onC
       onClick={onCoverClick}
     >
       {/* 커버 섹션 - 전체 화면 */}
-      <section
-        className={`relative flex flex-col justify-center items-center ${introAnimation !== 'none' ? `intro-animation-${introAnimation}` : ''}`}
-        style={{ minHeight: '100vh' }}
-      >
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: invitation.media?.coverImage ? `url(${invitation.media.coverImage})` : 'linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'top',
-            filter: 'grayscale(100%)'
-          }}
-        />
-        <div className="absolute inset-0 bg-black/30" />
+      <WatermarkOverlay isPaid={isPaid ?? false} className="relative flex flex-col justify-center items-center" style={{ minHeight: '100vh' }}>
+        <section
+          className={`absolute inset-0 ${introAnimation !== 'none' ? `intro-animation-${introAnimation}` : ''}`}
+        >
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: invitation.media?.coverImage ? `url(${invitation.media.coverImage})` : 'linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'top',
+              filter: 'grayscale(100%)'
+            }}
+          />
+          <div className="absolute inset-0 bg-black/30" />
+        </section>
         <div className="relative z-10 text-center text-white px-5">
           <p className="text-[13px] font-light mb-4" style={{ fontFamily: fonts.displayKr, letterSpacing: '2px' }}>
             {groomName} & {brideName}
@@ -669,18 +693,18 @@ function CoverScreen({ invitation, groomName, brideName, fonts, themeColors, onC
         </div>
 
         {/* 클릭 안내 표시 */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center z-10">
           <span className="text-[10px] text-white/70 mb-2">Tap to Open</span>
           <div className="w-px h-6 bg-gradient-to-b from-white/60 to-transparent" />
           <div className="w-1.5 h-1.5 bg-white/80 rounded-full animate-bounce mt-1" />
         </div>
-      </section>
+      </WatermarkOverlay>
     </div>
   )
 }
 
 // === INVITATION SCREEN (두 번째 화면 - 인사말, 부모님 정보, 예식 정보) ===
-function InvitationScreen({ invitation, groomName, brideName, fonts, themeColors, onNextPage, onBackToCover }: PageProps) {
+function InvitationScreen({ invitation, groomName, brideName, fonts, themeColors, isPaid, onNextPage, onBackToCover }: PageProps) {
   // 화면 등장 시 순차 애니메이션을 위한 스타일 (더 느리게)
   const entryAnimation = (delay: number) => ({
     animation: `screenFadeIn 1.2s ease-out ${delay}s forwards`,
@@ -817,7 +841,7 @@ function InvitationScreen({ invitation, groomName, brideName, fonts, themeColors
 }
 
 // === MAIN PAGE ===
-function MainPage({ invitation, groomName, brideName, fonts, themeColors, onBackToIntro }: PageProps) {
+function MainPage({ invitation, groomName, brideName, fonts, themeColors, isPaid, onBackToIntro }: PageProps) {
   const sectionVisibility = invitation.sectionVisibility || {
     coupleProfile: true, ourStory: true, interview: true, guidance: true, bankAccounts: true, guestbook: true
   }
@@ -840,8 +864,8 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors, onBack
 
   // 샘플 방명록 메시지 (실제로는 API에서 가져옴)
   const guestbookMessages = [
-    { question: 'Message for the couple?', answer: 'Be happy!', color: '#FFF9F0' },
-    { question: 'Most important in marriage?', answer: 'Trust each other', color: '#F0F7FF' },
+    { question: '두 사람에게 해주고 싶은 말은?', answer: '행복하세요!', color: '#FFF9F0' },
+    { question: '결혼생활에서 가장 중요한 건?', answer: '서로 믿는 것', color: '#F0F7FF' },
     { question: '축하의 말을 전해주세요', answer: '행복하게 살아요!', color: '#F5FFF0' },
   ]
 
@@ -888,12 +912,12 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors, onBack
 
       {/* 구분선 섹션 */}
       <section className="anim-section py-20 px-7 text-center" style={{ background: themeColors.cardBg }}>
-        <div className="anim-line w-px h-10 mx-auto mb-6" style={{ background: themeColors.divider }} />
+        <div className="anim-line anim-line-top w-px h-10 mx-auto mb-6" style={{ background: themeColors.divider }} />
         <div className="anim-title" style={{ fontFamily: fonts.displayKr, fontSize: '14px', color: themeColors.text, letterSpacing: '3px', lineHeight: 1.9 }}>
           <span className="block">{groomName} & {brideName}</span>
           <span className="block">결혼합니다.</span>
         </div>
-        <div className="anim-line w-px h-10 mx-auto mt-6" style={{ background: themeColors.divider }} />
+        <div className="anim-line anim-line-bottom w-px h-10 mx-auto mt-6" style={{ background: themeColors.divider }} />
       </section>
 
       {/* Couple Profile Section */}
@@ -901,10 +925,10 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors, onBack
         <section className="anim-section px-7 py-14" style={{ background: themeColors.sectionBg }}>
           <ProfileImageSlider images={invitation.bride.profile.images} imageSettings={invitation.bride.profile.imageSettings} className="anim-image mb-10" />
           <div className="anim-stagger text-center mb-8">
-            <p className="text-[10px] font-light mb-1.5" style={{ fontFamily: fonts.display, color: themeColors.gray, letterSpacing: '3px' }}>{invitation.bride.profile.aboutLabel}</p>
+            <p className="text-[10px] font-light mb-4 anim-underline" style={{ fontFamily: fonts.display, color: themeColors.gray, letterSpacing: '3px', display: 'inline-block' }}>{invitation.bride.profile.aboutLabel}</p>
             <p className="text-[11px] font-light" style={{ color: '#999' }}>{invitation.bride.profile.subtitle}</p>
           </div>
-          <div className="anim-paragraph text-xs font-light leading-[2.2] text-left" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: invitation.bride.profile.intro.replace(/\n/g, '<br/>') }} />
+          <div className="anim-paragraph text-xs font-light leading-[2.2] text-left" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.bride.profile.intro) }} />
           {invitation.bride.profile.tag && <div className="anim-fade inline-flex items-center gap-1.5 mt-5 px-3.5 py-2 rounded-md text-[10px] font-light" style={{ background: 'rgba(0,0,0,0.03)', color: '#777' }}>&#9829; {invitation.bride.profile.tag}</div>}
         </section>
       )}
@@ -912,10 +936,10 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors, onBack
         <section className="anim-section px-7 py-14" style={{ background: themeColors.sectionBg }}>
           <ProfileImageSlider images={invitation.groom.profile.images} imageSettings={invitation.groom.profile.imageSettings} className="anim-image mb-10" />
           <div className="anim-stagger text-center mb-8">
-            <p className="text-[10px] font-light mb-1.5" style={{ fontFamily: fonts.display, color: themeColors.gray, letterSpacing: '3px' }}>{invitation.groom.profile.aboutLabel}</p>
+            <p className="text-[10px] font-light mb-4 anim-underline" style={{ fontFamily: fonts.display, color: themeColors.gray, letterSpacing: '3px', display: 'inline-block' }}>{invitation.groom.profile.aboutLabel}</p>
             <p className="text-[11px] font-light" style={{ color: '#999' }}>{invitation.groom.profile.subtitle}</p>
           </div>
-          <div className="anim-paragraph text-xs font-light leading-[2.2] text-left" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: invitation.groom.profile.intro.replace(/\n/g, '<br/>') }} />
+          <div className="anim-paragraph text-xs font-light leading-[2.2] text-left" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.groom.profile.intro) }} />
           {invitation.groom.profile.tag && <div className="anim-fade inline-flex items-center gap-1.5 mt-5 px-3.5 py-2 rounded-md text-[10px] font-light" style={{ background: 'rgba(0,0,0,0.03)', color: '#777' }}>&#9829; {invitation.groom.profile.tag}</div>}
         </section>
       )}
@@ -924,15 +948,15 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors, onBack
       {sectionVisibility.ourStory && invitation.relationship?.stories?.some(s => s.title || s.desc) && (
         <>
           <section className="anim-section py-16 px-7 text-center" style={{ background: themeColors.cardBg }}>
-            <div className="anim-line w-px h-10 mx-auto mb-6" style={{ background: themeColors.divider }} />
+            <div className="anim-line anim-line-top w-px h-10 mx-auto mb-6" style={{ background: themeColors.divider }} />
             <p className="anim-title text-sm font-light mb-4" style={{ fontFamily: fonts.displayKr, color: themeColors.text, letterSpacing: '1px' }}>사랑이 시작된 작은 순간들</p>
-            <div className="anim-line w-px h-10 mx-auto mt-6" style={{ background: themeColors.divider }} />
+            <div className="anim-line anim-line-bottom w-px h-10 mx-auto mt-6" style={{ background: themeColors.divider }} />
           </section>
           {invitation.relationship.stories.map((story, index) => story.title || story.desc ? (
             <section key={index} className="anim-section px-7 py-14 text-center" style={{ background: themeColors.sectionBg }}>
               {story.date && <p className="anim-fade text-[10px] font-light mb-3" style={{ fontFamily: fonts.display, color: themeColors.gray, letterSpacing: '2px' }}>{story.date}</p>}
               {story.title && <p className="anim-title text-[15px] mb-3" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400 }}>{story.title}</p>}
-              {story.desc && <p className="anim-paragraph text-[11px] font-light leading-[1.9] mb-7" style={{ color: '#777' }} dangerouslySetInnerHTML={{ __html: story.desc.replace(/\n/g, '<br/>') }} />}
+              {story.desc && <p className="anim-paragraph text-[11px] font-light leading-[1.9] mb-7" style={{ color: '#777' }} dangerouslySetInnerHTML={{ __html: parseHighlight(story.desc) }} />}
               {story.images && story.images.length > 0 && (
                 <div className={`anim-stagger grid gap-3 ${story.images.length === 1 ? 'grid-cols-1' : story.images.length === 2 ? 'grid-cols-2' : 'grid-cols-2'}`}>
                   {story.images.slice(0, 3).map((img, i) => {
@@ -985,9 +1009,9 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors, onBack
       {sectionVisibility.interview && invitation.content?.interviews?.some(i => i.question || i.answer) && (
         <>
           <section className="anim-section py-16 px-7 text-center" style={{ background: themeColors.cardBg }}>
-            <div className="anim-line w-px h-10 mx-auto mb-6" style={{ background: themeColors.divider }} />
+            <div className="anim-line anim-line-top w-px h-10 mx-auto mb-6" style={{ background: themeColors.divider }} />
             <p className="anim-title text-sm font-light mb-4" style={{ fontFamily: fonts.displayKr, color: themeColors.text, letterSpacing: '1px' }}>결혼에 관한 우리의 이야기</p>
-            <div className="anim-line w-px h-10 mx-auto mt-6" style={{ background: themeColors.divider }} />
+            <div className="anim-line anim-line-bottom w-px h-10 mx-auto mt-6" style={{ background: themeColors.divider }} />
           </section>
           {invitation.content.interviews.map((interview, index) => interview.question || interview.answer ? (
             <section key={index} className="anim-section px-7 py-14" style={{ background: interview.bgClass === 'pink-bg' ? themeColors.sectionBg : themeColors.cardBg }}>
@@ -1004,8 +1028,8 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors, onBack
                   <span className="text-gray-400 text-sm">Interview Image</span>
                 </div>
               )}
-              {interview.question && <p className="anim-title text-sm mb-5 text-center" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400 }}>{interview.question}</p>}
-              {interview.answer && <p className="anim-paragraph text-[11px] font-light leading-[2.2]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: interview.answer.replace(/\n/g, '<br/>') }} />}
+              {interview.question && <p className="anim-title text-sm mb-5 text-center"><span className="anim-underline" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400, display: 'inline-block' }}>{interview.question}</span></p>}
+              {interview.answer && <p className="anim-paragraph text-[11px] font-light leading-[2.2]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: parseHighlight(interview.answer) }} />}
             </section>
           ) : null)}
         </>
@@ -1108,33 +1132,33 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors, onBack
       {sectionVisibility.guestbook && (
         <section className="anim-section px-5 py-14 pb-20 text-center" style={{ background: themeColors.cardBg }}>
           <p className="anim-fade text-[10px] font-light mb-4" style={{ color: themeColors.gray, letterSpacing: '4px' }}>GUESTBOOK</p>
-          <h3 className="anim-title text-sm mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400 }}>Guestbook</h3>
+          <h3 className="anim-title text-sm mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400 }}>축하의 한마디</h3>
           <div className="max-w-[300px] mx-auto mb-9">
-            <p className="text-xs font-light leading-[1.7] mb-4 min-h-[40px]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>{invitation.content?.guestbookQuestions?.[0] || 'Leave a message for the couple'}</p>
+            <p className="text-xs font-light leading-[1.7] mb-4 min-h-[40px]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>{invitation.content?.guestbookQuestions?.[0] || '두 사람에게 해주고 싶은 말은?'}</p>
             <div className="flex gap-2 mb-2.5">
-              <input type="text" className="flex-1 px-3.5 py-3 border border-gray-200 rounded-lg text-[11px] font-light" style={{ background: '#fafafa', color: themeColors.text }} placeholder="20 characters max" disabled />
-              <button className="px-4 py-3 rounded-lg text-[10px] font-light text-white" style={{ background: themeColors.text }}>Submit</button>
+              <input type="text" className="flex-1 px-3.5 py-3 border border-gray-200 rounded-lg text-[11px] font-light" style={{ background: '#fafafa', color: themeColors.text }} placeholder="20자 이내로 답해주세요" disabled />
+              <button className="px-4 py-3 rounded-lg text-[10px] font-light text-white" style={{ background: themeColors.text }}>남기기</button>
             </div>
-            <button className="text-[10px] font-light" style={{ color: '#aaa' }}>View other questions</button>
+            <button className="text-[10px] font-light" style={{ color: '#aaa' }}>다른 질문 보기</button>
           </div>
           <div
             className="relative min-h-[200px] cursor-pointer"
             onClick={() => setGuestbookModalOpen(true)}
           >
             <div className="absolute w-[130px] px-3 py-3.5 bg-[#FFF9F0] rounded-lg text-left shadow-sm hover:shadow-md transition-shadow" style={{ transform: 'rotate(-3deg)', top: '10px', left: '20px' }}>
-              <p className="text-[9px] font-light text-gray-400 mb-1.5 leading-[1.4]">Message for the couple?</p>
-              <p className="text-[11px] font-light leading-[1.6]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>Be happy!</p>
+              <p className="text-[9px] font-light text-gray-400 mb-1.5 leading-[1.4]">두 사람에게 해주고 싶은 말은?</p>
+              <p className="text-[11px] font-light leading-[1.6]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>행복하세요!</p>
             </div>
             <div className="absolute w-[130px] px-3 py-3.5 bg-[#F0F7FF] rounded-lg text-left shadow-sm hover:shadow-md transition-shadow" style={{ transform: 'rotate(2deg)', top: '80px', right: '20px' }}>
-              <p className="text-[9px] font-light text-gray-400 mb-1.5 leading-[1.4]">Most important in marriage?</p>
-              <p className="text-[11px] font-light leading-[1.6]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>Trust each other</p>
+              <p className="text-[9px] font-light text-gray-400 mb-1.5 leading-[1.4]">결혼생활에서 가장 중요한 건?</p>
+              <p className="text-[11px] font-light leading-[1.6]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>서로 믿는 것</p>
             </div>
             {/* 확대 안내 */}
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex items-center gap-1.5 text-[10px] text-gray-400">
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
               </svg>
-              Tap to view all
+              탭하여 전체 보기
             </div>
           </div>
         </section>

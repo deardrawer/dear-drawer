@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { useEditorStore, ImageSettings, SectionVisibility } from '@/store/editorStore'
 import StoryGeneratorModal from '@/components/ai/StoryGeneratorModal'
+import HighlightTextarea from '@/components/editor/HighlightTextarea'
 import AIStoryAssistant from '@/components/ai/AIStoryAssistant'
 import { GeneratedStory } from '@/app/api/ai/generate-story/route'
 import { fieldHelpers, sectionLabels, sectionColors, introAnimationOptions, PreviewSection } from '@/lib/fieldHelpers'
@@ -1360,9 +1361,9 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
                     AI 작성
                   </Button>
                 </div>
-                <Textarea
+                <HighlightTextarea
                   value={invitation.groom.profile.intro}
-                  onChange={(e) => updateNestedField('groom.profile.intro', e.target.value)}
+                  onChange={(value) => updateNestedField('groom.profile.intro', value)}
                   placeholder={fieldHelpers['groom.profile.intro']?.example}
                   rows={6}
                   className="resize-none text-sm"
@@ -1492,9 +1493,9 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
                     AI 작성
                   </Button>
                 </div>
-                <Textarea
+                <HighlightTextarea
                   value={invitation.bride.profile.intro}
-                  onChange={(e) => updateNestedField('bride.profile.intro', e.target.value)}
+                  onChange={(value) => updateNestedField('bride.profile.intro', value)}
                   placeholder={fieldHelpers['bride.profile.intro']?.example}
                   rows={6}
                   className="resize-none text-sm"
@@ -1584,9 +1585,9 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
                 </div>
                 <div className="space-y-1.5">
                   <FieldLabel fieldKey="relationship.stories[].desc">내용</FieldLabel>
-                  <Textarea
+                  <HighlightTextarea
                     value={story.desc}
-                    onChange={(e) => updateStoryField(index, 'desc', e.target.value)}
+                    onChange={(value) => updateStoryField(index, 'desc', value)}
                     placeholder={fieldHelpers['relationship.stories[].desc']?.example}
                     rows={4}
                     className="resize-none text-sm"
@@ -1836,9 +1837,9 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
                 </div>
                 <div className="space-y-1.5">
                   <FieldLabel fieldKey="content.interviews[].answer">답변</FieldLabel>
-                  <Textarea
+                  <HighlightTextarea
                     value={interview.answer}
-                    onChange={(e) => updateInterviewField(index, 'answer', e.target.value)}
+                    onChange={(value) => updateInterviewField(index, 'answer', value)}
                     placeholder={fieldHelpers['content.interviews[].answer']?.example}
                     rows={5}
                     className="resize-none text-sm"

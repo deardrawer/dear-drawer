@@ -40,6 +40,7 @@ interface FloatingButtonProps {
   fonts: {
     displayKr: string
   }
+  showTooltip?: boolean
   invitation?: {
     venue_name?: string
     venue_address?: string
@@ -71,7 +72,7 @@ interface FloatingButtonProps {
   }
 }
 
-export default function FloatingButton({ themeColors, fonts, invitation }: FloatingButtonProps) {
+export default function FloatingButton({ themeColors, fonts, invitation, showTooltip = false }: FloatingButtonProps) {
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false)
   const [activeModal, setActiveModal] = useState<ModalType>('none')
   const [directionsTab, setDirectionsTab] = useState<DirectionsTab>('car')
@@ -94,21 +95,50 @@ export default function FloatingButton({ themeColors, fonts, invitation }: Float
 
   return (
     <>
-      {/* Floating Button */}
-      <button
-        onClick={() => setIsBottomSheetOpen(true)}
-        className="absolute bottom-12 right-4 w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-105 active:scale-95 z-40"
-        style={{
-          background: themeColors.primary,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15), 0 2px 4px rgba(0,0,0,0.1)'
-        }}
-      >
-        <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
-          <line x1="4" y1="6" x2="20" y2="6" />
-          <line x1="4" y1="12" x2="20" y2="12" />
-          <line x1="4" y1="18" x2="14" y2="18" />
-        </svg>
-      </button>
+      {/* Floating Button with Tooltip */}
+      <div className="absolute bottom-12 right-4 z-40 flex items-center gap-2">
+        {/* 안내 툴팁 (말풍선) - 왼쪽 */}
+        {showTooltip && !isBottomSheetOpen && activeModal === 'none' && (
+          <div className="relative animate-fade-in">
+            <div
+              className="px-4 py-2.5 rounded-full text-xs font-medium whitespace-nowrap shadow-lg"
+              style={{
+                background: '#333',
+                color: '#fff',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+              }}
+            >
+              결혼식 정보는 여기에서
+            </div>
+            {/* 말풍선 꼬리 (오른쪽) */}
+            <div
+              className="absolute top-1/2 -right-2 -translate-y-1/2"
+              style={{
+                width: 0,
+                height: 0,
+                borderTop: '6px solid transparent',
+                borderBottom: '6px solid transparent',
+                borderLeft: '8px solid #333'
+              }}
+            />
+          </div>
+        )}
+        {/* 햄버거 메뉴 버튼 */}
+        <button
+          onClick={() => setIsBottomSheetOpen(true)}
+          className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-105 active:scale-95"
+          style={{
+            background: themeColors.cardBg,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.12)'
+          }}
+        >
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke={themeColors.text} strokeWidth={2} strokeLinecap="round">
+            <line x1="4" y1="6" x2="20" y2="6" />
+            <line x1="4" y1="12" x2="20" y2="12" />
+            <line x1="4" y1="18" x2="14" y2="18" />
+          </svg>
+        </button>
+      </div>
 
       {/* Bottom Sheet */}
       {isBottomSheetOpen && (() => {

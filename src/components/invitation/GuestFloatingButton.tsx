@@ -45,6 +45,7 @@ interface GuestFloatingButtonProps {
   fonts: { displayKr: string }
   openModal?: ModalType
   onModalClose?: () => void
+  showTooltip?: boolean
   invitation: {
     venue_name?: string
     venue_address?: string
@@ -57,7 +58,7 @@ interface GuestFloatingButtonProps {
   }
 }
 
-export default function GuestFloatingButton({ themeColors, fonts, invitation, openModal: externalOpenModal, onModalClose }: GuestFloatingButtonProps) {
+export default function GuestFloatingButton({ themeColors, fonts, invitation, openModal: externalOpenModal, onModalClose, showTooltip = false }: GuestFloatingButtonProps) {
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false)
   const [activeModal, setActiveModal] = useState<ModalType>('none')
   const [directionsTab, setDirectionsTab] = useState<DirectionsTab>('car')
@@ -136,31 +137,44 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
 
   return (
     <>
-      {/* Floating Buttons - 말풍선(방명록) + 햄버거 메뉴 */}
-      <div className="fixed bottom-6 right-6 flex items-center gap-3 z-40">
-        {/* 말풍선 (방명록/축하 전하기) 버튼 */}
-        {hasContacts && (
-          <button
-            onClick={() => openModal('contact')}
-            className="w-11 h-11 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-105 active:scale-95"
-            style={{ background: themeColors.cardBg, boxShadow: '0 4px 12px rgba(0,0,0,0.12)' }}
-          >
-            <svg className="w-5 h-5" fill="none" stroke={themeColors.primary} strokeWidth={1.5} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-          </button>
+      {/* Floating Button - 햄버거 메뉴 */}
+      <div className="fixed bottom-6 right-6 z-40 flex items-center gap-2">
+        {/* 안내 툴팁 (말풍선) - 왼쪽 */}
+        {showTooltip && !isBottomSheetOpen && activeModal === 'none' && (
+          <div className="relative animate-fade-in">
+            <div
+              className="px-4 py-2.5 rounded-full text-xs font-medium whitespace-nowrap shadow-lg"
+              style={{
+                background: '#333',
+                color: '#fff',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+              }}
+            >
+              결혼식 정보는 여기에서
+            </div>
+            {/* 말풍선 꼬리 (오른쪽) */}
+            <div
+              className="absolute top-1/2 -right-2 -translate-y-1/2"
+              style={{
+                width: 0,
+                height: 0,
+                borderTop: '6px solid transparent',
+                borderBottom: '6px solid transparent',
+                borderLeft: '8px solid #333'
+              }}
+            />
+          </div>
         )}
-
         {/* 햄버거 메뉴 버튼 */}
         <button
           onClick={() => setIsBottomSheetOpen(true)}
           className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-105 active:scale-95"
-          style={{ background: themeColors.primary, boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}
+          style={{ background: themeColors.cardBg, boxShadow: '0 4px 12px rgba(0,0,0,0.12)' }}
         >
-          <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-            <line x1="4" y1="6" x2="20" y2="6" />
-            <line x1="4" y1="12" x2="20" y2="12" />
-            <line x1="4" y1="18" x2="14" y2="18" />
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke={themeColors.text} strokeWidth={2}>
+            <line x1="4" y1="6" x2="20" y2="6" strokeLinecap="round" />
+            <line x1="4" y1="12" x2="20" y2="12" strokeLinecap="round" />
+            <line x1="4" y1="18" x2="14" y2="18" strokeLinecap="round" />
           </svg>
         </button>
       </div>

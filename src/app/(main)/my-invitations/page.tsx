@@ -23,6 +23,7 @@ type InvitationSummary = {
   wedding_date: string
   slug: string
   is_published: boolean
+  is_paid: boolean
   created_at: string
   updated_at: string
   template_id: string
@@ -147,13 +148,22 @@ export default function MyInvitationsPage() {
                     {formatDate(invitation.wedding_date)}
                   </p>
                 </div>
-                {!invitation.is_published && (
-                  <div className="absolute top-2 left-2">
+                <div className="absolute top-2 left-2 flex gap-1">
+                  {!invitation.is_published && (
                     <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full">
                       임시저장
                     </span>
-                  </div>
-                )}
+                  )}
+                  {invitation.is_paid ? (
+                    <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
+                      결제완료
+                    </span>
+                  ) : (
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                      미결제
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Actions */}
@@ -174,27 +184,36 @@ export default function MyInvitationsPage() {
                   )}
                 </div>
 
-                <div className="grid grid-cols-4 gap-2">
-                  <Link href={`/editor?id=${invitation.id}`} className="col-span-1">
+                <div className="grid grid-cols-3 gap-2 mb-2">
+                  <Link href={`/editor?id=${invitation.id}`}>
                     <Button variant="outline" size="sm" className="w-full">
                       편집
                     </Button>
                   </Link>
-                  <Link href={`/dashboard/${invitation.id}`} className="col-span-1">
+                  <Link href={`/dashboard/${invitation.id}`}>
                     <Button variant="outline" size="sm" className="w-full">
                       통계
                     </Button>
                   </Link>
-                  <Link href={`/i/${invitation.slug}`} target="_blank" className="col-span-1">
+                  <Link href={`/i/${invitation.slug}`} target="_blank">
                     <Button variant="outline" size="sm" className="w-full">
                       보기
                     </Button>
                   </Link>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {!invitation.is_paid && (
+                    <Link href={`/dashboard/payment?invitationId=${invitation.id}`}>
+                      <Button size="sm" className="w-full bg-rose-500 hover:bg-rose-600">
+                        결제 요청
+                      </Button>
+                    </Link>
+                  )}
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setDeleteId(invitation.id)}
-                    className="col-span-1 text-red-500 hover:text-red-600 hover:bg-red-50"
+                    className={`${!invitation.is_paid ? '' : 'col-span-2'} text-red-500 hover:text-red-600 hover:bg-red-50`}
                   >
                     삭제
                   </Button>

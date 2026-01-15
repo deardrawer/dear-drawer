@@ -52,6 +52,9 @@
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
+  /* 하이라이트 색상 - 기본값 */
+  --highlight-yellow: #FFEB3B;
+  --highlight-white: rgba(255, 255, 255, 0.85);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
@@ -310,16 +313,27 @@
   transform: translateY(0);
 }
 
-/* 라인/구분선 애니메이션 */
+/* 라인/구분선 애니메이션 - 중앙에서 확장 */
 .anim-line {
-  opacity: 0;
-  transform: translateY(15px);
-  transition: opacity 0.6s ease-out 0.1s, transform 0.6s ease-out 0.1s;
+  opacity: 1;
+  transform: scaleY(0);
+  transform-origin: center center;
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .anim-line.revealed {
-  opacity: 1;
-  transform: translateY(0);
+  transform: scaleY(1);
+}
+
+/* 상단 바: 아래에서 위로 확장 */
+.anim-line-top {
+  transform-origin: bottom center;
+}
+
+/* 하단 바: 위에서 아래로 확장 (딜레이 추가) */
+.anim-line-bottom {
+  transform-origin: top center;
+  transition-delay: 0.5s;
 }
 
 /* 문단 애니메이션 */
@@ -356,6 +370,67 @@
   left: calc(50% - 25px);
 }
 
+/* 텍스트 하이라이트 스타일 */
+.highlight-yellow {
+  background: linear-gradient(transparent 60%, var(--highlight-yellow) 60%);
+  padding: 0 2px;
+}
+
+.highlight-white {
+  background: linear-gradient(transparent 60%, var(--highlight-white) 60%);
+  padding: 0 2px;
+}
+
+/* 테마별 하이라이트 색상 */
+/* Classic Rose - 따뜻한 노란색 + 순백 */
+.theme-classic-rose {
+  --highlight-yellow: #FFE082;
+  --highlight-white: #FFFFFF;
+}
+
+/* Modern Black - 밝은 노란색 + 라이트 그레이 */
+.theme-modern-black {
+  --highlight-yellow: #FFEB3B;
+  --highlight-white: #E0E0E0;
+}
+
+/* Romantic Blush - 소프트 옐로우 + 순백 */
+.theme-romantic-blush {
+  --highlight-yellow: #FFE0B2;
+  --highlight-white: #FFFFFF;
+}
+
+/* Nature Green - 따뜻한 노란색 + 순백 */
+.theme-nature-green {
+  --highlight-yellow: #FFF59D;
+  --highlight-white: #FFFFFF;
+}
+
+/* Luxury Navy - 골드 + 순백 */
+.theme-luxury-navy {
+  --highlight-yellow: #FFD54F;
+  --highlight-white: #FFFFFF;
+}
+
+/* Sunset Coral - 따뜻한 옐로우 + 순백 */
+.theme-sunset-coral {
+  --highlight-yellow: #FFCC80;
+  --highlight-white: #FFFFFF;
+}
+
+/* 하이라이트 애니메이션 (그려지듯 등장) */
+.anim-highlight {
+  background: linear-gradient(90deg, var(--highlight-yellow) 50%, transparent 50%);
+  background-size: 200% 40%;
+  background-position: 100% 100%;
+  background-repeat: no-repeat;
+  transition: background-position 1s ease-out;
+}
+
+.anim-highlight.revealed {
+  background-position: 0% 100%;
+}
+
 /* 순차 등장 애니메이션 (stagger) */
 .anim-stagger > * {
   opacity: 0;
@@ -385,6 +460,22 @@
 .anim-card.revealed {
   opacity: 1;
   transform: translateY(0) scale(1);
+}
+
+/* 페이드 인 애니메이션 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
 }
 
 /* 이미지 등장 애니메이션 */

@@ -72,14 +72,18 @@ export async function generateMetadata({ params }: PageProps) {
 
   const groomName = invitation.groom_name || "신랑";
   const brideName = invitation.bride_name || "신부";
-  const title = `${groomName} ♥ ${brideName} 결혼합니다`;
-  const description = invitation.greeting_message || "저희 결혼식에 초대합니다";
 
-  // content에서 썸네일 이미지 추출
+  // content에서 커스텀 메타 정보 및 썸네일 추출
+  let customTitle = "";
+  let customDescription = "";
   let thumbnailImage = "";
+
   if (invitation.content) {
     try {
       const content = JSON.parse(invitation.content);
+      // 커스텀 제목/설명 (설정된 경우)
+      customTitle = content?.meta?.title || "";
+      customDescription = content?.meta?.description || "";
       // 우선순위: kakaoThumbnail > ogImage > coverImage > gallery 첫번째 이미지
       thumbnailImage =
         content?.meta?.kakaoThumbnail ||
@@ -91,6 +95,10 @@ export async function generateMetadata({ params }: PageProps) {
       console.error("Failed to parse content for metadata:", e);
     }
   }
+
+  // 커스텀 값이 있으면 사용, 없으면 자동 생성
+  const title = customTitle || `${groomName} ♥ ${brideName} 결혼합니다`;
+  const description = customDescription || invitation.greeting_message || "저희 결혼식에 초대합니다";
 
   const baseUrl = "https://invite.deardrawer.com";
 

@@ -692,12 +692,41 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
 
         {/* 카카오 공유 설정 */}
         <AccordionItem value="design-kakao">
-          <AccordionTrigger className="text-base font-medium">💬 카카오 공유 썸네일</AccordionTrigger>
+          <AccordionTrigger className="text-base font-medium">💬 공유 미리보기 설정</AccordionTrigger>
           <AccordionContent className="space-y-4 pb-4">
             <p className="text-xs text-gray-500">
-              카카오톡으로 청첩장을 공유할 때 표시될 썸네일 이미지입니다.
-              <br />권장 사이즈: 800 x 400px (2:1 비율)
+              카카오톡, 문자 등으로 청첩장을 공유할 때 표시되는 정보입니다.
             </p>
+
+            {/* 커스텀 제목 */}
+            <div className="space-y-2">
+              <Label className="text-xs font-medium">공유 제목</Label>
+              <Input
+                value={invitation.meta.title}
+                onChange={(e) => updateNestedField('meta.title', e.target.value)}
+                placeholder={`${invitation.groom.name || '신랑'} ♥ ${invitation.bride.name || '신부'} 결혼합니다`}
+                className="text-sm"
+              />
+              <p className="text-[11px] text-gray-400">비워두면 자동 생성됩니다.</p>
+            </div>
+
+            {/* 커스텀 설명 */}
+            <div className="space-y-2">
+              <Label className="text-xs font-medium">공유 설명</Label>
+              <Input
+                value={invitation.meta.description}
+                onChange={(e) => updateNestedField('meta.description', e.target.value)}
+                placeholder="2025년 3월 15일 토요일 오후 2시"
+                className="text-sm"
+              />
+              <p className="text-[11px] text-gray-400">비워두면 결혼식 날짜가 표시됩니다.</p>
+            </div>
+
+            {/* 썸네일 이미지 */}
+            <div className="space-y-2 pt-3 border-t">
+              <Label className="text-xs font-medium">썸네일 이미지</Label>
+              <p className="text-xs text-gray-500">권장 사이즈: 800 x 400px (2:1 비율)</p>
+            </div>
 
             {/* 썸네일 미리보기 및 업로드 */}
             <div className="space-y-3">

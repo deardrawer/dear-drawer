@@ -195,7 +195,7 @@ export default function MyInvitationsPage() {
                       통계
                     </Button>
                   </Link>
-                  <Link href={`/i/${invitation.slug}`} target="_blank">
+                  <Link href={invitation.slug ? `/i/${invitation.slug}` : `/invitation/${invitation.id}`} target="_blank">
                     <Button variant="outline" size="sm" className="w-full">
                       보기
                     </Button>

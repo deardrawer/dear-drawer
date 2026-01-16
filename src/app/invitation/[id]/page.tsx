@@ -2,7 +2,7 @@ import { getInvitationById, getInvitationBySlug, getInvitationByAlias, recordPag
 import { notFound, redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { isUUID } from "@/lib/slug";
-import InvitationView from "./InvitationView";
+import InvitationClient from "@/app/i/[slug]/InvitationClient";
 import type { Invitation } from "@/types/invitation";
 
 interface PageProps {
@@ -130,7 +130,7 @@ export default async function InvitationPage({ params, searchParams }: PageProps
       )}
 
       {/* 청첩장 콘텐츠 */}
-      <InvitationView
+      <InvitationClient
         invitation={invitation}
         content={invitationContent}
         isPaid={isPaid}

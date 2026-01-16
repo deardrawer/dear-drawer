@@ -1,9 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken, getAuthCookieName } from '@/lib/auth'
 import { getCloudflareContext } from '@opennextjs/cloudflare'
-import { sendTelegramMessage, formatPaymentRequestMessage } from '@/lib/telegram'
 
 export const runtime = 'edge'
+
+// Telegram helper functions (inline to avoid edge runtime import issues)
+async function sendTelegramNotification(message: string, botToken: string, chatId: string): Promise<boolean> {
+  try {
+    const url = `https://api.telegram.org/bot${botToken}/sendMessage`
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: message,
+        parse_mode: 'HTML'
+      })
+    })
+    return response.ok
+  } catch (error) {
+    console.error('Telegram send failed:', error)
+    return false
+  }
+}
 
 interface D1Database {
   prepare(query: string): {
@@ -81,27 +100,30 @@ export async function POST(request: NextRequest) {
 
     // 텔레그램 알림 전송 (실패해도 DB 저장은 완료됨)
     try {
-      const now = new Date()
-      const submittedAt = now.toLocaleString('ko-KR', {
-        timeZone: 'Asia/Seoul',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-      })
+      if (env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHAT_ID) {
+        const now = new Date()
+        const submittedAt = now.toLocaleString('ko-KR', {
+          timeZone: 'Asia/Seoul',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+        })
 
-      const adminUrl = `${request.headers.get('origin') || 'https://invite.deardrawer.com'}/admin/simple`
+        const adminUrl = `${request.headers.get('origin') || 'https://invite.deardrawer.com'}/admin/simple`
 
-      const message = formatPaymentRequestMessage({
-        orderNumber,
-        buyerName,
-        buyerPhone,
-        submittedAt,
-        adminUrl
-      })
+        const message = `🔔 <b>새로운 결제 요청</b>
 
-      await sendTelegramMessage(message, env)
+📦 주문번호: <code>${orderNumber}</code>
+👤 구매자: ${buyerName}
+📱 연락처: ${buyerPhone}
+🕐 제출시간: ${submittedAt}
+
+👉 <a href="${adminUrl}">승인하러 가기</a>`
+
+        await sendTelegramNotification(message, env.TELEGRAM_BOT_TOKEN, env.TELEGRAM_CHAT_ID)
+      }
     } catch (telegramError) {
       console.error('Telegram notification failed:', telegramError)
     }

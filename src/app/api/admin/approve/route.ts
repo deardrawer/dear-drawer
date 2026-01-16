@@ -1,8 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCloudflareContext } from '@opennextjs/cloudflare'
-import { sendTelegramMessage, formatPaymentApprovalMessage } from '@/lib/telegram'
 
 export const runtime = 'edge'
+
+// Telegram helper functions (inline to avoid edge runtime import issues)
+async function sendTelegramNotification(message: string, botToken: string, chatId: string): Promise<boolean> {
+  try {
+    const url = `https://api.telegram.org/bot${botToken}/sendMessage`
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: message,
+        parse_mode: 'HTML'
+      })
+    })
+    return response.ok
+  } catch (error) {
+    console.error('Telegram send failed:', error)
+    return false
+  }
+}
 
 interface D1Database {
   prepare(query: string): {
@@ -89,11 +108,14 @@ export async function POST(request: NextRequest) {
 
     // 텔레그램 승인 완료 알림 전송
     try {
-      const message = formatPaymentApprovalMessage({
-        orderNumber: paymentRequest.order_number,
-        buyerName: paymentRequest.buyer_name
-      })
-      await sendTelegramMessage(message, env)
+      if (env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHAT_ID) {
+        const message = `✅ <b>결제 승인 완료</b>
+
+📦 주문번호: <code>${paymentRequest.order_number}</code>
+👤 구매자: ${paymentRequest.buyer_name}`
+
+        await sendTelegramNotification(message, env.TELEGRAM_BOT_TOKEN, env.TELEGRAM_CHAT_ID)
+      }
     } catch (telegramError) {
       console.error('Telegram notification failed:', telegramError)
     }

@@ -142,13 +142,7 @@ export default function ShareModal({
       }
     }
 
-    if (typeof window !== 'undefined' && kakaoWindow.Kakao?.Share) {
-      // SDK가 초기화되었는지 확인
-      if (!kakaoWindow.Kakao.isInitialized?.()) {
-        alert('카카오 SDK가 초기화되지 않았습니다. 잠시 후 다시 시도해주세요.')
-        return
-      }
-
+    if (typeof window !== 'undefined' && kakaoWindow.Kakao?.Share && kakaoWindow.Kakao.isInitialized?.()) {
       const description = weddingDate
         ? `${new Date(weddingDate).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}`
         : '저희 결혼식에 초대합니다'
@@ -175,11 +169,9 @@ export default function ShareModal({
         ],
       })
     } else {
-      // Fallback: open Kakao story share
-      window.open(
-        `https://story.kakao.com/share?url=${encodeURIComponent(invitationUrl)}`,
-        '_blank'
-      )
+      // 카카오 SDK 미초기화 시 링크 복사로 대체
+      navigator.clipboard.writeText(invitationUrl)
+      alert('카카오톡 공유를 사용할 수 없어 링크가 복사되었습니다.\n카카오톡에서 직접 붙여넣기 해주세요.')
     }
   }
 

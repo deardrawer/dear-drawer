@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 
-export const runtime = 'edge'
-
-// Telegram helper functions (inline to avoid edge runtime import issues)
+// Telegram helper function
 async function sendTelegramNotification(message: string, botToken: string, chatId: string): Promise<boolean> {
   try {
     const url = `https://api.telegram.org/bot${botToken}/sendMessage`

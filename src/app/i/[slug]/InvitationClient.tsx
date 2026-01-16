@@ -1160,8 +1160,11 @@ interface InvitationClientProps {
   isPaid: boolean
 }
 
+// Type for display invitation data
+type DisplayInvitation = typeof mockInvitation
+
 // Transform DB data to the expected format
-function transformToDisplayData(dbInvitation: Invitation, content: InvitationContent | null): typeof mockInvitation {
+function transformToDisplayData(dbInvitation: Invitation, content: InvitationContent | null): DisplayInvitation {
   if (!content) {
     // Return mock data as fallback
     return mockInvitation
@@ -1185,7 +1188,7 @@ function transformToDisplayData(dbInvitation: Invitation, content: InvitationCon
     design: content.design || mockInvitation.design,
     bgm: content.bgm || mockInvitation.bgm,
     guidance: content.guidance || mockInvitation.guidance,
-  }
+  } as unknown as DisplayInvitation
 }
 
 function formatDateDisplay(d: string): string {

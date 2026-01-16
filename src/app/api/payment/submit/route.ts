@@ -97,11 +97,6 @@ export async function POST(request: NextRequest) {
     ).run()
 
     // 텔레그램 알림 전송
-    console.log('Telegram env check:', {
-      hasToken: !!env.TELEGRAM_BOT_TOKEN,
-      hasChatId: !!env.TELEGRAM_CHAT_ID,
-      chatId: env.TELEGRAM_CHAT_ID
-    })
     try {
       if (env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHAT_ID) {
         const now = new Date()
@@ -125,10 +120,7 @@ export async function POST(request: NextRequest) {
 
 👉 <a href="${adminUrl}">승인하러 가기</a>`
 
-        const result = await sendTelegramNotification(message, env.TELEGRAM_BOT_TOKEN, env.TELEGRAM_CHAT_ID)
-        console.log('Telegram send result:', result)
-      } else {
-        console.log('Telegram skipped: missing env vars')
+        await sendTelegramNotification(message, env.TELEGRAM_BOT_TOKEN, env.TELEGRAM_CHAT_ID)
       }
     } catch (telegramError) {
       console.error('Telegram notification failed:', telegramError)

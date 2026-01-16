@@ -421,6 +421,13 @@ function EditorContent() {
           groomName={invitation.groom.name}
           brideName={invitation.bride.name}
           weddingDate={invitation.wedding.date}
+          thumbnailUrl={
+            invitation.meta.kakaoThumbnail ||
+            invitation.meta.ogImage ||
+            invitation.media.coverImage ||
+            invitation.gallery.images?.[0] ||
+            ''
+          }
         />
       )}
 

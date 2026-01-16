@@ -418,7 +418,7 @@ function createDefaultContent(invitation: Invitation): InvitationContent {
     content: { greeting: invitation.greeting_message || '', quote: { text: '', author: '' }, thankYou: { title: 'THANK YOU', message: '', sign: '' }, info: { dressCode: { title: '', content: '', enabled: false }, photoShare: { title: '', content: '', buttonText: '', url: '', enabled: false }, photoBooth: { title: '', content: '', enabled: false }, flowerChild: { title: '', content: '', enabled: false }, customItems: [] }, interviews: [], guestbookQuestions: [] },
     gallery: { images: [], imageSettings: [] },
     media: { coverImage: invitation.main_image || '', infoImage: '', bgm: '' },
-    meta: { title: '', description: '', ogImage: '' },
+    meta: { title: '', description: '', ogImage: '', kakaoThumbnail: '' },
     templateId: 'narrative-our',
     primaryColor: '#E91E63',
     secondaryColor: '#D4A574',

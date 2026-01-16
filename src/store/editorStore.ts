@@ -249,6 +249,7 @@ export interface InvitationContent {
     title: string
     description: string
     ogImage: string
+    kakaoThumbnail: string
   }
 
   // ===== 테마 =====
@@ -421,7 +422,7 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
   media: { coverImage: '', infoImage: '', bgm: '' },
 
   // 메타
-  meta: { title: '', description: '', ogImage: '' },
+  meta: { title: '', description: '', ogImage: '', kakaoThumbnail: '' },
 
   // 테마
   templateId: template.id,

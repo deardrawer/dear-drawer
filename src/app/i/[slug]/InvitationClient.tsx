@@ -2313,6 +2313,10 @@ export default function InvitationClient({ invitation: dbInvitation, content, is
             rsvpEnabled: invitation.rsvpEnabled,
             rsvpAllowGuestCount: invitation.rsvpAllowGuestCount,
             invitationId: invitation.id,
+            groomName: invitation.groom.name,
+            brideName: invitation.bride.name,
+            weddingDate: invitation.wedding.date,
+            thumbnailUrl: content?.meta?.kakaoThumbnail || content?.meta?.ogImage || invitation.media?.coverImage || invitation.gallery?.images?.[0] || '',
           }}
         />
       )}

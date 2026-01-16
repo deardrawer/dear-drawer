@@ -72,14 +72,54 @@ export async function generateMetadata({ params }: PageProps) {
 
   const groomName = invitation.groom_name || "신랑";
   const brideName = invitation.bride_name || "신부";
+  const title = `${groomName} ♥ ${brideName} 결혼합니다`;
+  const description = invitation.greeting_message || "저희 결혼식에 초대합니다";
+
+  // content에서 썸네일 이미지 추출
+  let thumbnailImage = "";
+  if (invitation.content) {
+    try {
+      const content = JSON.parse(invitation.content);
+      // 우선순위: kakaoThumbnail > ogImage > coverImage > gallery 첫번째 이미지
+      thumbnailImage =
+        content?.meta?.kakaoThumbnail ||
+        content?.meta?.ogImage ||
+        content?.media?.coverImage ||
+        content?.gallery?.images?.[0] ||
+        "";
+    } catch (e) {
+      console.error("Failed to parse content for metadata:", e);
+    }
+  }
+
+  const baseUrl = "https://invite.deardrawer.com";
 
   return {
-    title: `${groomName} ♥ ${brideName} 결혼합니다`,
-    description: invitation.greeting_message || "저희 결혼식에 초대합니다",
+    title,
+    description,
     openGraph: {
-      title: `${groomName} ♥ ${brideName} 결혼합니다`,
-      description: invitation.greeting_message || "저희 결혼식에 초대합니다",
+      title,
+      description,
       type: "website",
+      url: `${baseUrl}/i/${slug}`,
+      siteName: "dear drawer - 모바일 청첩장",
+      locale: "ko_KR",
+      ...(thumbnailImage && {
+        images: [
+          {
+            url: thumbnailImage,
+            width: 800,
+            height: 400,
+            alt: title,
+          },
+        ],
+      }),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      ...(thumbnailImage && { images: [thumbnailImage] }),
     },
   };
 }

@@ -133,7 +133,7 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
   const [extrasAccordion, setExtrasAccordion] = useState<string[]>([])
 
   // 아코디언 아이템 목록
-  const designItems = ['design-theme', 'design-font', 'design-intro', 'design-cover']
+  const designItems = ['design-theme', 'design-font', 'design-intro', 'design-cover', 'design-kakao']
   const requiredItems = ['couple-basic', 'family-info', 'greeting', 'wedding-info', 'directions', 'gallery']
   const storyItems = ['profile', 'our-story', 'interview']
   const extrasItems = ['guidance', 'rsvp', 'account', 'contacts']
@@ -687,6 +687,69 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
                 placeholder={fieldHelpers['design.coverTitle']?.example}
               />
             </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* 카카오 공유 설정 */}
+        <AccordionItem value="design-kakao">
+          <AccordionTrigger className="text-base font-medium">💬 카카오 공유 썸네일</AccordionTrigger>
+          <AccordionContent className="space-y-4 pb-4">
+            <p className="text-xs text-gray-500">
+              카카오톡으로 청첩장을 공유할 때 표시될 썸네일 이미지입니다.
+              <br />권장 사이즈: 800 x 400px (2:1 비율)
+            </p>
+
+            {/* 썸네일 미리보기 및 업로드 */}
+            <div className="space-y-3">
+              {invitation.meta.kakaoThumbnail ? (
+                <div className="relative">
+                  <div
+                    className="w-full aspect-[2/1] rounded-lg bg-cover bg-center border border-gray-200"
+                    style={{ backgroundImage: `url(${invitation.meta.kakaoThumbnail})` }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => updateNestedField('meta.kakaoThumbnail', '')}
+                    className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center w-full aspect-[2/1] border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    <svg className="w-8 h-8 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <p className="text-sm text-gray-500">클릭하여 이미지 업로드</p>
+                    <p className="text-xs text-gray-400 mt-1">800 x 400px 권장</p>
+                  </div>
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        handleImageUpload(file, 'kakao-thumbnail', (url) => updateNestedField('meta.kakaoThumbnail', url))
+                        e.target.value = ''
+                      }
+                    }}
+                  />
+                  {uploadingImages.has('kakao-thumbnail') && (
+                    <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-lg">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+                    </div>
+                  )}
+                </label>
+              )}
+            </div>
+
+            <p className="text-xs text-gray-400">
+              * 미설정 시 갤러리 첫 번째 이미지 또는 기본 이미지가 사용됩니다.
+            </p>
           </AccordionContent>
         </AccordionItem>
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 
-type ModalType = 'none' | 'contact' | 'rsvp' | 'location' | 'account'
+type ModalType = 'none' | 'contact' | 'rsvp' | 'location' | 'account' | 'share'
 type DirectionsTab = 'car' | 'subway' | 'bus' | 'parking'
 
 interface BankAccount {
@@ -55,6 +55,10 @@ interface GuestFloatingButtonProps {
     rsvpEnabled?: boolean
     rsvpAllowGuestCount?: boolean
     invitationId?: string
+    groomName?: string
+    brideName?: string
+    weddingDate?: string
+    thumbnailUrl?: string
   }
 }
 
@@ -123,11 +127,70 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
   const hasRsvp = !!invitation.rsvpEnabled
   const hasAccounts = invitation.accounts.some(a => a.bank.enabled)
 
+  const handleKakaoShare = () => {
+    const kakaoWindow = window as typeof window & {
+      Kakao?: {
+        isInitialized?: () => boolean
+        Share?: { sendDefault: (config: object) => void }
+      }
+    }
+
+    const invitationUrl = typeof window !== 'undefined' ? window.location.href : ''
+    const groomName = invitation.groomName || '신랑'
+    const brideName = invitation.brideName || '신부'
+
+    if (typeof window !== 'undefined' && kakaoWindow.Kakao?.Share) {
+      if (!kakaoWindow.Kakao.isInitialized?.()) {
+        alert('카카오 SDK가 초기화되지 않았습니다. 잠시 후 다시 시도해주세요.')
+        return
+      }
+
+      const description = invitation.weddingDate
+        ? `${new Date(invitation.weddingDate).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}`
+        : '저희 결혼식에 초대합니다'
+
+      kakaoWindow.Kakao.Share.sendDefault({
+        objectType: 'feed',
+        content: {
+          title: `${groomName} ♥ ${brideName} 결혼합니다`,
+          description,
+          imageUrl: invitation.thumbnailUrl || '',
+          link: {
+            mobileWebUrl: invitationUrl,
+            webUrl: invitationUrl,
+          },
+        },
+        buttons: [
+          {
+            title: '청첩장 보기',
+            link: {
+              mobileWebUrl: invitationUrl,
+              webUrl: invitationUrl,
+            },
+          },
+        ],
+      })
+    } else {
+      window.open(
+        `https://story.kakao.com/share?url=${encodeURIComponent(invitationUrl)}`,
+        '_blank'
+      )
+    }
+    closeModal()
+  }
+
+  const handleCopyLink = () => {
+    const invitationUrl = typeof window !== 'undefined' ? window.location.href : ''
+    navigator.clipboard.writeText(invitationUrl)
+    alert('링크가 복사되었습니다!')
+  }
+
   const menuItems = [
     hasContacts && { key: 'contact', label: '축하 전하기', icon: <svg className="w-5 h-5" fill="none" stroke={themeColors.primary} strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg> },
     hasRsvp && { key: 'rsvp', label: '참석 여부', icon: <svg className="w-5 h-5" fill="none" stroke={themeColors.primary} strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
     { key: 'location', label: '오시는 길', icon: <svg className="w-5 h-5" fill="none" stroke={themeColors.primary} strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg> },
     hasAccounts && { key: 'account', label: '마음 전하기', icon: <svg className="w-5 h-5" fill="none" stroke={themeColors.primary} strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" /></svg> },
+    { key: 'share', label: '공유하기', icon: <svg className="w-5 h-5" fill="none" stroke={themeColors.primary} strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" /></svg> },
   ].filter(Boolean) as { key: string; label: string; icon: React.ReactElement }[]
 
   const groomContacts = invitation.contacts.filter(c => c.side === 'groom')
@@ -366,6 +429,45 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
                       </div>
                     </div>
                   )}
+                </>
+              )}
+
+              {/* Share Content */}
+              {activeModal === 'share' && (
+                <>
+                  <p className="text-center text-sm mb-4" style={{ color: themeColors.text }}>
+                    청첩장을 공유해보세요
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={handleKakaoShare}
+                      className="flex flex-col items-center justify-center p-4 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
+                      style={{ background: '#FEE500' }}
+                    >
+                      <svg className="w-8 h-8 mb-2" viewBox="0 0 24 24" fill="#3C1E1E">
+                        <path d="M12 3C6.477 3 2 6.463 2 10.691c0 2.643 1.765 4.966 4.412 6.286l-.893 3.27a.3.3 0 00.455.334l3.862-2.552c.67.097 1.357.148 2.055.148 5.523 0 10-3.463 10-7.777C22 6.463 17.523 3 12 3z" />
+                      </svg>
+                      <span className="text-xs font-medium" style={{ color: '#3C1E1E' }}>카카오톡 공유</span>
+                    </button>
+
+                    <button
+                      onClick={handleCopyLink}
+                      className="flex flex-col items-center justify-center p-4 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
+                      style={{ background: themeColors.sectionBg }}
+                    >
+                      <svg className="w-8 h-8 mb-2" fill="none" stroke={themeColors.primary} strokeWidth={1.5} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+                      </svg>
+                      <span className="text-xs font-medium" style={{ color: themeColors.text }}>링크 복사</span>
+                    </button>
+                  </div>
+
+                  <div className="mt-4 p-3 rounded-xl" style={{ background: themeColors.sectionBg }}>
+                    <p className="text-[10px] text-center" style={{ color: themeColors.gray }}>
+                      카카오톡으로 친구들에게 청첩장을 공유하거나<br />
+                      링크를 복사하여 원하는 곳에 붙여넣기 하세요
+                    </p>
+                  </div>
                 </>
               )}
             </div>

@@ -22,6 +22,7 @@ interface ShareModalProps {
   weddingDate: string
   currentSlug?: string
   onSlugChange?: (slug: string) => void
+  thumbnailUrl?: string
 }
 
 export default function ShareModal({
@@ -33,6 +34,7 @@ export default function ShareModal({
   weddingDate,
   currentSlug,
   onSlugChange,
+  thumbnailUrl,
 }: ShareModalProps) {
   const [slug, setSlug] = useState(currentSlug || '')
   const [isCheckingSlug, setIsCheckingSlug] = useState(false)
@@ -132,14 +134,31 @@ export default function ShareModal({
   }
 
   const handleKakaoShare = () => {
-    // Kakao SDK share (requires SDK initialization)
-    if (typeof window !== 'undefined' && (window as typeof window & { Kakao?: { Share?: { sendDefault: (config: object) => void } } }).Kakao?.Share) {
-      (window as typeof window & { Kakao: { Share: { sendDefault: (config: object) => void } } }).Kakao.Share.sendDefault({
+    // Kakao SDK share
+    const kakaoWindow = window as typeof window & {
+      Kakao?: {
+        isInitialized?: () => boolean
+        Share?: { sendDefault: (config: object) => void }
+      }
+    }
+
+    if (typeof window !== 'undefined' && kakaoWindow.Kakao?.Share) {
+      // SDK가 초기화되었는지 확인
+      if (!kakaoWindow.Kakao.isInitialized?.()) {
+        alert('카카오 SDK가 초기화되지 않았습니다. 잠시 후 다시 시도해주세요.')
+        return
+      }
+
+      const description = weddingDate
+        ? `${new Date(weddingDate).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}`
+        : '저희 결혼식에 초대합니다'
+
+      kakaoWindow.Kakao.Share.sendDefault({
         objectType: 'feed',
         content: {
           title: `${groomName} ♥ ${brideName} 결혼합니다`,
-          description: '저희 결혼식에 초대합니다',
-          imageUrl: '', // Add invitation image URL
+          description,
+          imageUrl: thumbnailUrl || '',
           link: {
             mobileWebUrl: invitationUrl,
             webUrl: invitationUrl,

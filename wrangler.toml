@@ -1,0 +1,20 @@
+name = "dear-drawer"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+NEXT_PUBLIC_SUPABASE_URL = "https://oxfhlxpdbsvnfkkpvffd.supabase.co"
+NEXT_PUBLIC_KAKAO_CLIENT_ID = "45cff9edef371e0e18394dfd5d0f29f7"
+NEXT_PUBLIC_KAKAO_REDIRECT_URI = "https://invite.deardrawer.com/api/auth/kakao/callback"
+NEXTAUTH_URL = "https://invite.deardrawer.com"
+
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "dear-drawer-db"
+database_id = "00fa0bde-3240-4e30-b1ff-8e90629d6512"
+
+# R2 Storage binding
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "dear-drawer-images"

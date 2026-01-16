@@ -189,7 +189,7 @@ export default function ShareModal({
               <Label>커스텀 URL</Label>
               <div className="flex gap-2">
                 <div className="flex-1 flex items-center bg-gray-100 rounded-lg px-3">
-                  <span className="text-gray-500 text-sm">weddinglink.io/</span>
+                  <span className="text-gray-500 text-sm">invite.deardrawer.com/</span>
                   <Input
                     value={slug}
                     onChange={(e) => handleSlugChange(e.target.value)}

@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 
-export const runtime = 'edge'
-
 interface D1Database {
   prepare(query: string): {
     bind(...values: unknown[]): {

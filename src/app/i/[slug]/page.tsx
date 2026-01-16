@@ -51,46 +51,11 @@ export default async function InvitationPage({ params }: PageProps) {
   const isPaid = invitation.is_paid === 1;
 
   return (
-    <div className="relative min-h-screen">
-      {/* 워터마크 - 서버에서 렌더링되므로 클라이언트에서 제거 불가 */}
-      {!isPaid && (
-        <div
-          className="fixed inset-0 z-[9999] pointer-events-none select-none"
-          style={{
-            background: "repeating-linear-gradient(45deg, transparent, transparent 100px, rgba(0,0,0,0.02) 100px, rgba(0,0,0,0.02) 200px)",
-          }}
-        >
-          {/* 중앙 워터마크 */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div
-              className="text-center transform rotate-[-15deg]"
-              style={{ opacity: 0.15 }}
-            >
-              <p className="text-6xl font-bold text-gray-900 tracking-widest">SAMPLE</p>
-              <p className="text-xl text-gray-700 mt-2">샘플 미리보기</p>
-            </div>
-          </div>
-          {/* 반복 워터마크 패턴 */}
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `repeating-linear-gradient(45deg, transparent 0px, transparent 300px, rgba(0, 0, 0, 0.03) 300px, rgba(0, 0, 0, 0.03) 301px)`,
-            }}
-          />
-          {/* 상단 배너 */}
-          <div className="absolute top-0 left-0 right-0 bg-yellow-400 text-yellow-900 text-center py-2 text-sm font-medium z-[10000]">
-            샘플 미리보기입니다. 결제 후 워터마크가 제거됩니다.
-          </div>
-        </div>
-      )}
-
-      {/* 청첩장 콘텐츠 */}
-      <InvitationClient
-        invitation={invitation}
-        content={invitationContent}
-        isPaid={isPaid}
-      />
-    </div>
+    <InvitationClient
+      invitation={invitation}
+      content={invitationContent}
+      isPaid={isPaid}
+    />
   );
 }
 

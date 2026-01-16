@@ -184,7 +184,7 @@ export default function MyInvitationsPage() {
                   )}
                 </div>
 
-                <div className="grid grid-cols-3 gap-2 mb-2">
+                <div className="grid grid-cols-2 gap-2 mb-2">
                   <Link href={`/editor?id=${invitation.id}`}>
                     <Button variant="outline" size="sm" className="w-full">
                       편집
@@ -193,11 +193,6 @@ export default function MyInvitationsPage() {
                   <Link href={`/dashboard/${invitation.id}`}>
                     <Button variant="outline" size="sm" className="w-full">
                       통계
-                    </Button>
-                  </Link>
-                  <Link href={invitation.slug ? `/i/${invitation.slug}` : `/invitation/${invitation.id}`} target="_blank">
-                    <Button variant="outline" size="sm" className="w-full">
-                      보기
                     </Button>
                   </Link>
                 </div>

@@ -2267,10 +2267,14 @@ export default function InvitationClient({ invitation: dbInvitation, content, is
   ]
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center py-4 md:py-8">
-      {/* Mobile Container */}
-      <div className={`w-full max-w-[430px] min-h-screen md:min-h-[90vh] md:max-h-[90vh] md:overflow-y-auto md:rounded-3xl md:shadow-2xl overflow-x-hidden theme-${invitation.colorTheme}`} style={{ backgroundColor: themeColors.background, fontFamily: fonts.body, color: themeColors.text }}>
-      {/* Inject CSS animations */}
+    <div
+      className={`relative w-full min-h-screen overflow-x-hidden theme-${invitation.colorTheme}`}
+      style={{
+        backgroundColor: themeColors.background,
+        fontFamily: fonts.body,
+        color: themeColors.text,
+      }}
+    >
       <style dangerouslySetInnerHTML={{ __html: globalStyles }} />
 
       {/* Page Content */}
@@ -2292,7 +2296,7 @@ export default function InvitationClient({ invitation: dbInvitation, content, is
         />
       )}
 
-      {/* Floating Button - show on invitation screen and main page */}
+      {/* Floating Button */}
       {showFloatingButton && (
         <GuestFloatingButton
           themeColors={themeColors}
@@ -2313,7 +2317,7 @@ export default function InvitationClient({ invitation: dbInvitation, content, is
         />
       )}
 
-      {/* Music Toggle - show on main page */}
+      {/* Music Toggle */}
       <MusicToggle audioRef={audioRef} isVisible={showMusicToggle} shouldAutoPlay={currentPage === 'main'} />
 
       {/* Background Music */}
@@ -2322,7 +2326,6 @@ export default function InvitationClient({ invitation: dbInvitation, content, is
           <source src={invitation.media.bgm} type="audio/mpeg" />
         </audio>
       )}
-      </div>
     </div>
   )
 }

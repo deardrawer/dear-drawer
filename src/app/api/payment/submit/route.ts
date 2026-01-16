@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken, getAuthCookieName } from '@/lib/auth'
 import { getCloudflareContext } from '@opennextjs/cloudflare'
+import { sendTelegramMessage, formatPaymentRequestMessage } from '@/lib/telegram'
 
 export const runtime = 'edge'
 
@@ -12,6 +13,12 @@ interface D1Database {
       all<T = unknown>(): Promise<{ results?: T[] }>
     }
   }
+}
+
+interface CloudflareEnv {
+  DB?: D1Database
+  TELEGRAM_BOT_TOKEN?: string
+  TELEGRAM_CHAT_ID?: string
 }
 
 export async function POST(request: NextRequest) {
@@ -43,7 +50,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '모든 필드를 입력해주세요.' }, { status: 400 })
     }
 
-    const { env } = await getCloudflareContext() as { env: { DB?: D1Database } }
+    const { env } = await getCloudflareContext() as { env: CloudflareEnv }
 
     if (!env.DB) {
       return NextResponse.json({ error: 'Database not available' }, { status: 500 })
@@ -71,6 +78,33 @@ export async function POST(request: NextRequest) {
       buyerName,
       buyerPhone
     ).run()
+
+    // 텔레그램 알림 전송 (실패해도 DB 저장은 완료됨)
+    try {
+      const now = new Date()
+      const submittedAt = now.toLocaleString('ko-KR', {
+        timeZone: 'Asia/Seoul',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+
+      const adminUrl = `${request.headers.get('origin') || 'https://invite.deardrawer.com'}/admin/simple`
+
+      const message = formatPaymentRequestMessage({
+        orderNumber,
+        buyerName,
+        buyerPhone,
+        submittedAt,
+        adminUrl
+      })
+
+      await sendTelegramMessage(message, env)
+    } catch (telegramError) {
+      console.error('Telegram notification failed:', telegramError)
+    }
 
     return NextResponse.json({ success: true, message: '접수되었습니다.' })
   } catch (error) {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCloudflareContext } from '@opennextjs/cloudflare'
+import { sendTelegramMessage, formatPaymentApprovalMessage } from '@/lib/telegram'
 
 export const runtime = 'edge'
 
@@ -13,6 +14,12 @@ interface D1Database {
   }
 }
 
+interface CloudflareEnv {
+  DB?: D1Database
+  TELEGRAM_BOT_TOKEN?: string
+  TELEGRAM_CHAT_ID?: string
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { requestId } = await request.json() as { requestId?: number }
@@ -21,7 +28,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '요청 ID가 필요합니다.' }, { status: 400 })
     }
 
-    const { env } = await getCloudflareContext() as { env: { DB?: D1Database } }
+    const { env } = await getCloudflareContext() as { env: CloudflareEnv }
 
     if (!env.DB) {
       return NextResponse.json({ error: 'Database not available' }, { status: 500 })
@@ -37,6 +44,7 @@ export async function POST(request: NextRequest) {
       user_id: string
       invitation_id: string | null
       order_number: string
+      buyer_name: string
       status: string
     }>()
 
@@ -77,6 +85,17 @@ export async function POST(request: NextRequest) {
       // invitations 테이블이 없는 경우 (로컬 개발 환경)
       // 결제 요청 상태는 이미 업데이트되었으므로 경고만 출력
       console.warn('Could not update invitation is_paid status:', invitationError)
+    }
+
+    // 텔레그램 승인 완료 알림 전송
+    try {
+      const message = formatPaymentApprovalMessage({
+        orderNumber: paymentRequest.order_number,
+        buyerName: paymentRequest.buyer_name
+      })
+      await sendTelegramMessage(message, env)
+    } catch (telegramError) {
+      console.error('Telegram notification failed:', telegramError)
     }
 
     return NextResponse.json({ success: true, message: '승인되었습니다.' })

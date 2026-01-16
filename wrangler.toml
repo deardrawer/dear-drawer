@@ -9,8 +9,7 @@ NEXTAUTH_URL = "https://invite.deardrawer.com"
 
 # Telegram notification settings
 # Note: TELEGRAM_BOT_TOKEN should be added as a secret via Cloudflare dashboard
-# TELEGRAM_CHAT_ID should be a numeric chat ID (get it from @userinfobot on Telegram)
-TELEGRAM_CHAT_ID = "Deardrawer_payment_bot"
+TELEGRAM_CHAT_ID = "8359227559"
 
 # D1 Database binding
 [[d1_databases]]

@@ -162,10 +162,20 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
 
       // 기본 이미지
       const defaultImage = 'https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png'
-      // https로 시작하는 외부 URL만 사용 (상대경로나 http://localhost는 카카오에서 접근 불가)
+      // 카카오 공유에 사용할 이미지 URL 결정
       let imageUrl = defaultImage
-      if (invitation.thumbnailUrl && invitation.thumbnailUrl.startsWith('https://')) {
-        imageUrl = invitation.thumbnailUrl
+
+      if (invitation.thumbnailUrl) {
+        if (invitation.thumbnailUrl.startsWith('https://')) {
+          // 이미 https URL인 경우 그대로 사용
+          imageUrl = invitation.thumbnailUrl
+        } else if (invitation.thumbnailUrl.startsWith('/uploads/') || invitation.thumbnailUrl.startsWith('/api/r2/')) {
+          // 업로드된 이미지 (상대 경로)를 절대 URL로 변환
+          // localhost에서는 외부 접근 불가하므로 production URL 사용
+          const productionUrl = 'https://dear-drawer.pages.dev'
+          imageUrl = `${productionUrl}${invitation.thumbnailUrl}`
+        }
+        // /demo/ 경로 이미지는 기본 이미지 사용 (외부 접근 불가)
       }
 
       // 세로형 리스트 템플릿 (objectType: 'list')

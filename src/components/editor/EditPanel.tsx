@@ -722,18 +722,18 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
               <p className="text-[11px] text-gray-400">비워두면 결혼식 날짜가 표시됩니다.</p>
             </div>
 
-            {/* 썸네일 이미지 */}
+            {/* 카카오톡 공유 썸네일 이미지 */}
             <div className="space-y-2 pt-3 border-t">
-              <Label className="text-xs font-medium">썸네일 이미지</Label>
-              <p className="text-xs text-gray-500">권장 사이즈: 800 x 400px (2:1 비율)</p>
+              <Label className="text-xs font-medium">카카오톡 공유 썸네일</Label>
+              <p className="text-xs text-gray-500">권장 사이즈: 600 x 800px (3:4 세로 비율)</p>
             </div>
 
             {/* 썸네일 미리보기 및 업로드 */}
             <div className="space-y-3">
               {invitation.meta.kakaoThumbnail ? (
-                <div className="relative">
+                <div className="relative max-w-[200px]">
                   <div
-                    className="w-full aspect-[2/1] rounded-lg bg-cover bg-center border border-gray-200"
+                    className="w-full aspect-[3/4] rounded-lg bg-cover bg-center border border-gray-200"
                     style={{ backgroundImage: `url(${invitation.meta.kakaoThumbnail})` }}
                   />
                   <button
@@ -747,13 +747,13 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
                   </button>
                 </div>
               ) : (
-                <label className="flex flex-col items-center justify-center w-full aspect-[2/1] border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                <label className="flex flex-col items-center justify-center max-w-[200px] aspect-[3/4] border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 relative">
+                  <div className="flex flex-col items-center justify-center p-4">
                     <svg className="w-8 h-8 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                     </svg>
-                    <p className="text-sm text-gray-500">클릭하여 이미지 업로드</p>
-                    <p className="text-xs text-gray-400 mt-1">800 x 400px 권장</p>
+                    <p className="text-xs text-gray-500 text-center">클릭하여 업로드</p>
+                    <p className="text-xs text-gray-400 mt-1">600 x 800px</p>
                   </div>
                   <input
                     type="file"
@@ -777,7 +777,7 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
             </div>
 
             <p className="text-xs text-gray-400">
-              * 미설정 시 갤러리 첫 번째 이미지 또는 기본 이미지가 사용됩니다.
+              * 카카오톡 공유 시 표시되는 이미지입니다. 미설정 시 표지 이미지가 사용됩니다.
             </p>
           </AccordionContent>
         </AccordionItem>

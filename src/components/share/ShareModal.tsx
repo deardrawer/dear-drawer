@@ -57,10 +57,8 @@ export default function ShareModal({
   const qrCanvasRef = useRef<HTMLCanvasElement>(null)
 
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-  // 슬러그가 있으면 공개 URL 사용, 없으면 invitation ID 사용
-  const invitationUrl = currentSlug
-    ? `${baseUrl}/i/${currentSlug}`
-    : `${baseUrl}/invitation/${invitationId}`
+  // /i/ 경로 사용 (슬러그 또는 ID)
+  const invitationUrl = `${baseUrl}/i/${currentSlug || invitationId}`
 
   // Generate default slug
   useEffect(() => {
@@ -212,7 +210,7 @@ export default function ShareModal({
         },
         buttons: [
           {
-            title: '청첩장 보기',
+            title: '모바일 청첩장 보기',
             link: {
               mobileWebUrl: invitationUrl,
               webUrl: invitationUrl,

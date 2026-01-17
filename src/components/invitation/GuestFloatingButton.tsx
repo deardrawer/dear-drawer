@@ -201,7 +201,7 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
         },
         buttons: [
           {
-            title: '청첩장 보기',
+            title: '모바일 청첩장 보기',
             link: {
               mobileWebUrl: invitationUrl,
               webUrl: invitationUrl,

@@ -1,8 +1,9 @@
-import { getInvitationBySlug, getInvitationByAlias, recordPageView } from "@/lib/db";
+import { getInvitationBySlug, getInvitationByAlias, getInvitationById, recordPageView } from "@/lib/db";
 import { notFound, redirect } from "next/navigation";
 import { headers } from "next/headers";
 import InvitationClient from "./InvitationClient";
 import type { Invitation } from "@/types/invitation";
+import { isUUID } from "@/lib/slug";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -11,8 +12,17 @@ interface PageProps {
 export default async function InvitationPage({ params }: PageProps) {
   const { slug } = await params;
 
+  let invitation = null;
+
+  // UUID인 경우 ID로 먼저 조회
+  if (isUUID(slug)) {
+    invitation = await getInvitationById(slug);
+  }
+
   // 1. slug로 청첩장 조회
-  let invitation = await getInvitationBySlug(slug);
+  if (!invitation) {
+    invitation = await getInvitationBySlug(slug);
+  }
 
   // 2. alias로 조회 (이전 slug로 접속한 경우)
   if (!invitation) {

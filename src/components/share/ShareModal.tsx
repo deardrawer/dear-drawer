@@ -57,7 +57,10 @@ export default function ShareModal({
   const qrCanvasRef = useRef<HTMLCanvasElement>(null)
 
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-  const invitationUrl = `${baseUrl}/invitation/${invitationId}`
+  // 슬러그가 있으면 공개 URL 사용, 없으면 invitation ID 사용
+  const invitationUrl = currentSlug
+    ? `${baseUrl}/i/${currentSlug}`
+    : `${baseUrl}/invitation/${invitationId}`
 
   // Generate default slug
   useEffect(() => {
@@ -226,8 +229,27 @@ export default function ShareModal({
 
   const handleSMSShare = () => {
     const smsTitle = shareTitle || `${groomName || '신랑'} ♥ ${brideName || '신부'} 결혼합니다`
-    const smsDescription = shareDescription || '저희 결혼식에 초대합니다.'
-    const message = `${smsTitle}\n\n${smsDescription}\n청첩장 보기: ${invitationUrl}`
+
+    // 날짜/시간/장소 정보 포맷팅
+    const formattedDate = weddingDate
+      ? new Date(weddingDate).toLocaleDateString('ko-KR', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          weekday: 'long'
+        })
+      : ''
+    const formattedTime = weddingTime || ''
+    const formattedVenue = venueName || ''
+
+    // 공유 설명이 있으면 사용, 없으면 날짜/시간/장소 조합
+    let smsDescription = shareDescription
+    if (!smsDescription) {
+      const details = [formattedDate, formattedTime, formattedVenue].filter(Boolean).join(' / ')
+      smsDescription = details || '저희 결혼식에 초대합니다.'
+    }
+
+    const message = `${smsTitle}\n\n${smsDescription}\n\n청첩장 보기: ${invitationUrl}`
     window.open(`sms:?body=${encodeURIComponent(message)}`)
   }
 
@@ -365,8 +387,14 @@ export default function ShareModal({
               <p className="text-sm text-gray-500">
                 {shareTitle || `${groomName || '신랑'} ♥ ${brideName || '신부'} 결혼합니다`}
                 <br /><br />
-                {shareDescription || '저희 결혼식에 초대합니다.'}
-                <br />
+                {shareDescription || (() => {
+                  const date = weddingDate
+                    ? new Date(weddingDate).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })
+                    : ''
+                  const details = [date, weddingTime, venueName].filter(Boolean).join(' / ')
+                  return details || '저희 결혼식에 초대합니다.'
+                })()}
+                <br /><br />
                 청첩장 보기: {invitationUrl}
               </p>
             </div>

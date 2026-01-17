@@ -60,6 +60,8 @@ interface GuestFloatingButtonProps {
     weddingDate?: string
     weddingTime?: string
     thumbnailUrl?: string
+    shareTitle?: string
+    shareDescription?: string
   }
 }
 
@@ -178,46 +180,28 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
         // /demo/ 경로 이미지는 기본 이미지 사용 (외부 접근 불가)
       }
 
-      // 세로형 리스트 템플릿 (objectType: 'list')
+      // 공유 제목
+      const displayTitle = invitation.shareTitle || `${groomName} ❤️ ${brideName}의 결혼식`
+
+      // 공유 설명
+      const displayDescription = invitation.shareDescription ||
+        `${formattedDate} ${formattedTime}\n${venueDisplay}${venueDetail}`
+
+      // 피드형 템플릿 (objectType: 'feed')
       kakaoWindow.Kakao.Share.sendDefault({
-        objectType: 'list',
-        headerTitle: `${groomName} ❤️ ${brideName}의 결혼식`,
-        headerLink: {
-          mobileWebUrl: invitationUrl,
-          webUrl: invitationUrl,
+        objectType: 'feed',
+        content: {
+          title: displayTitle,
+          description: displayDescription,
+          imageUrl,
+          link: {
+            mobileWebUrl: invitationUrl,
+            webUrl: invitationUrl,
+          },
         },
-        contents: [
-          {
-            title: '📅 날짜',
-            description: formattedDate,
-            imageUrl,
-            link: {
-              mobileWebUrl: invitationUrl,
-              webUrl: invitationUrl,
-            },
-          },
-          {
-            title: '🕐 시간',
-            description: formattedTime,
-            imageUrl,
-            link: {
-              mobileWebUrl: invitationUrl,
-              webUrl: invitationUrl,
-            },
-          },
-          {
-            title: '📍 장소',
-            description: `${venueDisplay}${venueDetail}`,
-            imageUrl,
-            link: {
-              mobileWebUrl: invitationUrl,
-              webUrl: invitationUrl,
-            },
-          },
-        ],
         buttons: [
           {
-            title: '모바일 청첩장 보기',
+            title: '청첩장 보기',
             link: {
               mobileWebUrl: invitationUrl,
               webUrl: invitationUrl,

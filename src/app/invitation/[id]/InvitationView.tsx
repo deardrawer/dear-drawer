@@ -635,6 +635,8 @@ export default function InvitationView({ invitation, content, isPaid }: Invitati
           weddingDate: displayData.wedding?.date,
           weddingTime: displayData.wedding?.timeDisplay || displayData.wedding?.time,
           thumbnailUrl: displayData.meta?.kakaoThumbnail || displayData.meta?.ogImage || displayData.media?.coverImage || displayData.gallery?.images?.[0] || '',
+          shareTitle: displayData.meta?.title,
+          shareDescription: displayData.meta?.description,
         }}
       />
     </div>

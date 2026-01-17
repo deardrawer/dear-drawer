@@ -2318,6 +2318,8 @@ export default function InvitationClient({ invitation: dbInvitation, content, is
             weddingDate: invitation.wedding.date,
             weddingTime: invitation.wedding.timeDisplay || invitation.wedding.time,
             thumbnailUrl: content?.meta?.kakaoThumbnail || content?.meta?.ogImage || invitation.media?.coverImage || invitation.gallery?.images?.[0] || '',
+            shareTitle: content?.meta?.title || invitation.meta?.title,
+            shareDescription: content?.meta?.description || invitation.meta?.description,
           }}
         />
       )}

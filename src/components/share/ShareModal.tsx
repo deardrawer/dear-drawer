@@ -191,46 +191,25 @@ export default function ShareModal({
       // 공유 제목 (커스텀 제목이 있으면 사용, 없으면 기본 형식)
       const displayTitle = shareTitle || `${groomName || '신랑'} ❤️ ${brideName || '신부'}의 결혼식`
 
-      // 세로형 리스트 템플릿 (objectType: 'list')
+      // 공유 설명 (커스텀 설명이 있으면 사용, 없으면 날짜/시간/장소 조합)
+      const displayDescription = shareDescription ||
+        `${formattedDate} ${formattedTime}\n${venueDisplay}${venueDetail}`
+
+      // 피드형 템플릿 (objectType: 'feed')
       kakaoWindow.Kakao.Share.sendDefault({
-        objectType: 'list',
-        headerTitle: displayTitle,
-        headerLink: {
-          mobileWebUrl: invitationUrl,
-          webUrl: invitationUrl,
+        objectType: 'feed',
+        content: {
+          title: displayTitle,
+          description: displayDescription,
+          imageUrl,
+          link: {
+            mobileWebUrl: invitationUrl,
+            webUrl: invitationUrl,
+          },
         },
-        contents: [
-          {
-            title: '📅 날짜',
-            description: formattedDate,
-            imageUrl,
-            link: {
-              mobileWebUrl: invitationUrl,
-              webUrl: invitationUrl,
-            },
-          },
-          {
-            title: '🕐 시간',
-            description: formattedTime,
-            imageUrl,
-            link: {
-              mobileWebUrl: invitationUrl,
-              webUrl: invitationUrl,
-            },
-          },
-          {
-            title: '📍 장소',
-            description: `${venueDisplay}${venueDetail}`,
-            imageUrl,
-            link: {
-              mobileWebUrl: invitationUrl,
-              webUrl: invitationUrl,
-            },
-          },
-        ],
         buttons: [
           {
-            title: '모바일 청첩장 보기',
+            title: '청첩장 보기',
             link: {
               mobileWebUrl: invitationUrl,
               webUrl: invitationUrl,

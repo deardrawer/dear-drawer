@@ -630,6 +630,11 @@ export default function InvitationView({ invitation, content, isPaid }: Invitati
           rsvpEnabled: displayData.rsvpEnabled,
           rsvpAllowGuestCount: displayData.rsvpAllowGuestCount,
           invitationId: invitation.id,
+          groomName,
+          brideName,
+          weddingDate: displayData.wedding?.date,
+          weddingTime: displayData.wedding?.timeDisplay || displayData.wedding?.time,
+          thumbnailUrl: displayData.meta?.kakaoThumbnail || displayData.meta?.ogImage || displayData.media?.coverImage || displayData.gallery?.images?.[0] || '',
         }}
       />
     </div>

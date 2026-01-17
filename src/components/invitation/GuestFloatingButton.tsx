@@ -58,6 +58,7 @@ interface GuestFloatingButtonProps {
     groomName?: string
     brideName?: string
     weddingDate?: string
+    weddingTime?: string
     thumbnailUrl?: string
   }
 }
@@ -140,24 +141,73 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
     const brideName = invitation.brideName || '신부'
 
     if (typeof window !== 'undefined' && kakaoWindow.Kakao?.Share && kakaoWindow.Kakao.isInitialized?.()) {
-      const description = invitation.weddingDate
-        ? `${new Date(invitation.weddingDate).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}`
-        : '저희 결혼식에 초대합니다'
+      console.log('Kakao Share 호출:', { invitationUrl, groomName, brideName, thumbnailUrl: invitation.thumbnailUrl })
 
+      // 날짜 포맷팅
+      const formattedDate = invitation.weddingDate
+        ? new Date(invitation.weddingDate).toLocaleDateString('ko-KR', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            weekday: 'long'
+          })
+        : '날짜 미정'
+
+      // 시간 포맷팅
+      const formattedTime = invitation.weddingTime || '시간 미정'
+
+      // 장소 포맷팅
+      const venueDisplay = invitation.venue_name || '장소 미정'
+      const venueDetail = invitation.venue_address ? `\n${invitation.venue_address}` : ''
+
+      // 기본 이미지
+      const defaultImage = 'https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png'
+      // https로 시작하는 외부 URL만 사용 (상대경로나 http://localhost는 카카오에서 접근 불가)
+      let imageUrl = defaultImage
+      if (invitation.thumbnailUrl && invitation.thumbnailUrl.startsWith('https://')) {
+        imageUrl = invitation.thumbnailUrl
+      }
+
+      // 세로형 리스트 템플릿 (objectType: 'list')
       kakaoWindow.Kakao.Share.sendDefault({
-        objectType: 'feed',
-        content: {
-          title: `${groomName} ♥ ${brideName} 결혼합니다`,
-          description,
-          imageUrl: invitation.thumbnailUrl || '',
-          link: {
-            mobileWebUrl: invitationUrl,
-            webUrl: invitationUrl,
-          },
+        objectType: 'list',
+        headerTitle: `${groomName} ❤️ ${brideName}의 결혼식`,
+        headerLink: {
+          mobileWebUrl: invitationUrl,
+          webUrl: invitationUrl,
         },
+        contents: [
+          {
+            title: '📅 날짜',
+            description: formattedDate,
+            imageUrl,
+            link: {
+              mobileWebUrl: invitationUrl,
+              webUrl: invitationUrl,
+            },
+          },
+          {
+            title: '🕐 시간',
+            description: formattedTime,
+            imageUrl,
+            link: {
+              mobileWebUrl: invitationUrl,
+              webUrl: invitationUrl,
+            },
+          },
+          {
+            title: '📍 장소',
+            description: `${venueDisplay}${venueDetail}`,
+            imageUrl,
+            link: {
+              mobileWebUrl: invitationUrl,
+              webUrl: invitationUrl,
+            },
+          },
+        ],
         buttons: [
           {
-            title: '청첩장 보기',
+            title: '모바일 청첩장 보기',
             link: {
               mobileWebUrl: invitationUrl,
               webUrl: invitationUrl,

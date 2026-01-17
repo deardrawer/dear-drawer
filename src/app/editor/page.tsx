@@ -421,6 +421,9 @@ function EditorContent() {
           groomName={invitation.groom.name}
           brideName={invitation.bride.name}
           weddingDate={invitation.wedding.date}
+          weddingTime={invitation.wedding.timeDisplay || invitation.wedding.time}
+          venueName={invitation.wedding.venue.name}
+          venueAddress={invitation.wedding.venue.address}
           thumbnailUrl={
             invitation.meta.kakaoThumbnail ||
             invitation.meta.ogImage ||

@@ -126,27 +126,28 @@ export default function RootLayout({
       <body className={`${fontVariables} font-sans antialiased`}>
         <AuthProvider>{children}</AuthProvider>
         <Script
-          src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js"
-          integrity="sha384-DKYJZ8NLiK8MN4/C5P2ezmLTAmRGFL/NUiACPv/ayDSl/6aGgjnTTVv1NHdshFo5"
-          crossOrigin="anonymous"
+          id="kakao-sdk"
+          src="https://developers.kakao.com/sdk/js/kakao.min.js"
           strategy="afterInteractive"
         />
-        <Script id="kakao-init" strategy="afterInteractive">
+        <Script id="kakao-init" strategy="lazyOnload">
           {`
-            if (typeof window !== 'undefined') {
-              window.kakaoInitialized = false;
-              const initKakao = () => {
-                if (window.Kakao && !window.Kakao.isInitialized()) {
-                  window.Kakao.init('${process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID || ''}');
-                  window.kakaoInitialized = true;
+            (function() {
+              var kakaoKey = '${process.env.NEXT_PUBLIC_KAKAO_JS_KEY || ''}';
+              function initKakao() {
+                if (window.Kakao && !window.Kakao.isInitialized() && kakaoKey) {
+                  window.Kakao.init(kakaoKey);
+                  console.log('Kakao SDK initialized:', window.Kakao.isInitialized());
                 }
-              };
-              if (window.Kakao) {
-                initKakao();
-              } else {
-                document.addEventListener('DOMContentLoaded', initKakao);
               }
-            }
+              var checkKakao = setInterval(function() {
+                if (window.Kakao) {
+                  clearInterval(checkKakao);
+                  initKakao();
+                }
+              }, 100);
+              setTimeout(function() { clearInterval(checkKakao); }, 10000);
+            })();
           `}
         </Script>
       </body>

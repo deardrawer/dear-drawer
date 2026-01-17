@@ -2316,6 +2316,7 @@ export default function InvitationClient({ invitation: dbInvitation, content, is
             groomName: invitation.groom.name,
             brideName: invitation.bride.name,
             weddingDate: invitation.wedding.date,
+            weddingTime: invitation.wedding.timeDisplay || invitation.wedding.time,
             thumbnailUrl: content?.meta?.kakaoThumbnail || content?.meta?.ogImage || invitation.media?.coverImage || invitation.gallery?.images?.[0] || '',
           }}
         />

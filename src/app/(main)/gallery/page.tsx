@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { templates, Template } from '@/lib/templates'
 
@@ -81,17 +81,11 @@ export default function GalleryPage() {
                     {/* iframe Preview */}
                     <div className="h-[calc(100%-28px)] relative">
                       <iframe
-                        key={iframeKey}
+                        key={`${selectedTemplate.narrativeType}-${iframeKey}`}
                         src={sampleUrl}
                         className="w-full h-full border-0"
                         title="Wedding Invitation Preview"
-                        style={{ background: selectedColor.bg }}
                       />
-
-                      {/* Loading overlay (brief) */}
-                      <div className="absolute inset-0 bg-white/80 flex items-center justify-center pointer-events-none opacity-0 animate-pulse" id="loading-overlay">
-                        <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-                      </div>
                     </div>
                   </div>
                 </div>

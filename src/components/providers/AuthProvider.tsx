@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react'
+import { usePathname } from 'next/navigation'
 
 interface User {
   id: string
@@ -22,8 +23,18 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [status, setStatus] = useState<'loading' | 'authenticated' | 'unauthenticated'>('loading')
+  const pathname = usePathname()
+
+  // /i 경로(청첩장 뷰어)에서는 인증 체크 건너뛰기
+  const isInvitationPage = pathname?.startsWith('/i/')
 
   const refreshAuth = useCallback(async () => {
+    // 청첩장 뷰어 페이지에서는 auth 체크 생략
+    if (isInvitationPage) {
+      setStatus('unauthenticated')
+      return
+    }
+
     try {
       const response = await fetch('/api/auth/me')
       if (response.ok) {
@@ -39,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null)
       setStatus('unauthenticated')
     }
-  }, [])
+  }, [isInvitationPage])
 
   useEffect(() => {
     refreshAuth()

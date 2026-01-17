@@ -1159,6 +1159,7 @@ interface InvitationClientProps {
   invitation: Invitation
   content: InvitationContent | null
   isPaid: boolean
+  isPreview?: boolean
 }
 
 // Type for display invitation data
@@ -1263,6 +1264,7 @@ type DirectionsTab = 'car' | 'subway' | 'bus' | 'parking'
 
 interface PageProps {
   invitation: typeof mockInvitation
+  invitationId: string
   fonts: FontConfig
   themeColors: ColorConfig
   onNavigate: (page: PageType) => void
@@ -1270,10 +1272,19 @@ interface PageProps {
   onOpenRsvp?: () => void
 }
 
+// 방명록 메시지 타입
+interface GuestbookMessage {
+  id: string
+  guest_name: string
+  message: string
+  question: string | null
+  created_at: string
+}
+
 // Intro Page Component - Screen-based transitions like original template
 type IntroScreen = 'cover' | 'invitation'
 
-function IntroPage({ invitation, fonts, themeColors, onNavigate, onScreenChange }: PageProps) {
+function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors, onNavigate, onScreenChange }: PageProps) {
   const [showDirections, setShowDirections] = useState(false)
   const [directionsTab, setDirectionsTab] = useState<DirectionsTab>('car')
 
@@ -1878,8 +1889,74 @@ function IntroPage({ invitation, fonts, themeColors, onNavigate, onScreenChange 
 }
 
 // Main Page Component - matching template exactly
-function MainPage({ invitation, fonts, themeColors, onNavigate, onOpenRsvp }: PageProps) {
+function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, onOpenRsvp }: PageProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
+
+  // 방명록 상태
+  const [guestbookMessages, setGuestbookMessages] = useState<GuestbookMessage[]>([])
+  const [guestName, setGuestName] = useState('')
+  const [guestMessage, setGuestMessage] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // 방명록 메시지 불러오기
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        const res = await fetch(`/api/guestbook?invitationId=${invitationId}`)
+        if (res.ok) {
+          const data: { data?: GuestbookMessage[] } = await res.json()
+          setGuestbookMessages(data.data || [])
+        }
+      } catch (error) {
+        console.error('Failed to fetch guestbook messages:', error)
+      }
+    }
+    fetchMessages()
+  }, [invitationId])
+
+  // 방명록 메시지 등록
+  const handleSubmitGuestbook = async () => {
+    if (!guestName.trim() || !guestMessage.trim()) {
+      alert('이름과 메시지를 입력해주세요.')
+      return
+    }
+
+    if (guestMessage.length > 100) {
+      alert('메시지는 100자 이내로 입력해주세요.')
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      const res = await fetch('/api/guestbook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          invitationId,
+          guestName: guestName.trim(),
+          message: guestMessage.trim(),
+          question: invitation.content.guestbookQuestions[currentQuestionIndex] || null,
+        }),
+      })
+
+      if (res.ok) {
+        const data: { data?: GuestbookMessage } = await res.json()
+        if (data.data) {
+          setGuestbookMessages((prev) => [data.data!, ...prev])
+        }
+        setGuestName('')
+        setGuestMessage('')
+        alert('방명록이 등록되었습니다!')
+      } else {
+        alert('등록에 실패했습니다. 다시 시도해주세요.')
+      }
+    } catch (error) {
+      console.error('Failed to submit guestbook:', error)
+      alert('등록에 실패했습니다. 다시 시도해주세요.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   const handleNextQuestion = () => {
     const questions = invitation.content.guestbookQuestions
@@ -1887,6 +1964,9 @@ function MainPage({ invitation, fonts, themeColors, onNavigate, onOpenRsvp }: Pa
       setCurrentQuestionIndex((prev) => (prev + 1) % questions.length)
     }
   }
+
+  // 방명록 카드 색상 배열
+  const cardColors = ['#FFF9F0', '#F0F7FF', '#F5FFF0', '#FFF0F5', '#F0FFFF']
 
   return (
     <div className="relative">
@@ -2171,9 +2251,35 @@ function MainPage({ invitation, fonts, themeColors, onNavigate, onOpenRsvp }: Pa
           <h3 className="text-sm mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400 }}>Guestbook</h3>
           <div className="max-w-[300px] mx-auto mb-9">
             <p className="text-xs font-light leading-[1.7] mb-4 min-h-[40px]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>{invitation.content.guestbookQuestions[currentQuestionIndex] || '두 사람에게 하고 싶은 말을 남겨주세요'}</p>
-            <div className="flex gap-2 mb-2.5">
-              <input type="text" className="flex-1 px-3.5 py-3 border border-gray-200 rounded-lg text-[11px] font-light" style={{ background: '#fafafa', color: themeColors.text }} placeholder="20자 이내" />
-              <button className="px-4 py-3 rounded-lg text-[10px] font-light text-white" style={{ background: themeColors.text }}>등록</button>
+            <div className="space-y-2 mb-2.5">
+              <input
+                type="text"
+                value={guestName}
+                onChange={(e) => setGuestName(e.target.value)}
+                className="w-full px-3.5 py-3 border border-gray-200 rounded-lg text-[11px] font-light"
+                style={{ background: '#fafafa', color: themeColors.text }}
+                placeholder="이름"
+                maxLength={20}
+              />
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={guestMessage}
+                  onChange={(e) => setGuestMessage(e.target.value)}
+                  className="flex-1 px-3.5 py-3 border border-gray-200 rounded-lg text-[11px] font-light"
+                  style={{ background: '#fafafa', color: themeColors.text }}
+                  placeholder="메시지 (100자 이내)"
+                  maxLength={100}
+                />
+                <button
+                  onClick={handleSubmitGuestbook}
+                  disabled={isSubmitting}
+                  className="px-4 py-3 rounded-lg text-[10px] font-light text-white disabled:opacity-50"
+                  style={{ background: themeColors.text }}
+                >
+                  {isSubmitting ? '...' : '등록'}
+                </button>
+              </div>
             </div>
             {invitation.content.guestbookQuestions.length > 1 && (
               <button
@@ -2185,15 +2291,33 @@ function MainPage({ invitation, fonts, themeColors, onNavigate, onOpenRsvp }: Pa
               </button>
             )}
           </div>
+          {/* 방명록 메시지 표시 */}
           <div className="relative min-h-[200px]">
-            <div className="absolute w-[130px] px-3 py-3.5 bg-[#FFF9F0] rounded-lg text-left shadow-sm" style={{ transform: 'rotate(-3deg)', top: '10px', left: '20px' }}>
-              <p className="text-[9px] font-light text-gray-400 mb-1.5 leading-[1.4]">두 사람에게 하고 싶은 말?</p>
-              <p className="text-[11px] font-light leading-[1.6]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>행복하세요!</p>
-            </div>
-            <div className="absolute w-[130px] px-3 py-3.5 bg-[#F0F7FF] rounded-lg text-left shadow-sm" style={{ transform: 'rotate(2deg)', top: '80px', right: '20px' }}>
-              <p className="text-[9px] font-light text-gray-400 mb-1.5 leading-[1.4]">결혼생활에서 가장 중요한 건?</p>
-              <p className="text-[11px] font-light leading-[1.6]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>서로를 믿는 것</p>
-            </div>
+            {guestbookMessages.length === 0 ? (
+              <p className="text-[11px] font-light text-gray-400 pt-10">아직 방명록이 없습니다. 첫 번째로 메시지를 남겨보세요!</p>
+            ) : (
+              <div className="flex flex-wrap justify-center gap-3">
+                {guestbookMessages.slice(0, 6).map((msg, index) => (
+                  <div
+                    key={msg.id}
+                    className="w-[130px] px-3 py-3.5 rounded-lg text-left shadow-sm"
+                    style={{
+                      background: cardColors[index % cardColors.length],
+                      transform: `rotate(${index % 2 === 0 ? -3 : 2}deg)`,
+                    }}
+                  >
+                    {msg.question && (
+                      <p className="text-[9px] font-light text-gray-400 mb-1.5 leading-[1.4]">{msg.question}</p>
+                    )}
+                    <p className="text-[11px] font-light leading-[1.6] mb-1" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>{msg.message}</p>
+                    <p className="text-[8px] font-light text-gray-400">- {msg.guest_name}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+            {guestbookMessages.length > 6 && (
+              <p className="text-[10px] font-light text-gray-400 mt-4">외 {guestbookMessages.length - 6}개의 메시지</p>
+            )}
           </div>
         </AnimatedSection>
       )}
@@ -2223,7 +2347,7 @@ function MainPage({ invitation, fonts, themeColors, onNavigate, onOpenRsvp }: Pa
   )
 }
 
-export default function InvitationClient({ invitation: dbInvitation, content, isPaid }: InvitationClientProps) {
+export default function InvitationClient({ invitation: dbInvitation, content, isPaid, isPreview = false }: InvitationClientProps) {
   // Transform DB data to display format
   const invitation = transformToDisplayData(dbInvitation, content)
 
@@ -2268,7 +2392,7 @@ export default function InvitationClient({ invitation: dbInvitation, content, is
   ]
 
   return (
-    <WatermarkOverlay isPaid={isPaid} className="relative w-full min-h-screen">
+    <WatermarkOverlay isPaid={isPaid || isPreview} className="relative w-full min-h-screen">
       <div
         className={`relative w-full min-h-screen overflow-x-hidden theme-${invitation.colorTheme}`}
         style={{
@@ -2283,6 +2407,7 @@ export default function InvitationClient({ invitation: dbInvitation, content, is
       {currentPage === 'intro' ? (
         <IntroPage
           invitation={invitation}
+          invitationId={dbInvitation.id}
           fonts={fonts}
           themeColors={themeColors}
           onNavigate={setCurrentPage}
@@ -2291,6 +2416,7 @@ export default function InvitationClient({ invitation: dbInvitation, content, is
       ) : (
         <MainPage
           invitation={invitation}
+          invitationId={dbInvitation.id}
           fonts={fonts}
           themeColors={themeColors}
           onNavigate={setCurrentPage}

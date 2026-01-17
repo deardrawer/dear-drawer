@@ -13,23 +13,20 @@ function KakaoCallbackContent() {
     const errorParam = searchParams.get("error");
     const errorDescription = searchParams.get("error_description");
 
-    // URL 깔끔하게 정리 (쿼리 파라미터 제거)
-    if (typeof window !== 'undefined' && window.location.search) {
-      window.history.replaceState({}, '', '/auth/kakao/callback');
-    }
-
     if (errorParam) {
+      // URL 정리 후 에러 표시
+      if (typeof window !== 'undefined' && window.location.search) {
+        window.history.replaceState({}, '', '/auth/kakao/callback');
+      }
       setError(errorDescription || "로그인이 취소되었습니다.");
       return;
     }
 
-    if (!code) {
-      setError("인증 코드가 없습니다.");
-      return;
+    if (code) {
+      // 코드가 있으면 API로 리다이렉트
+      window.location.href = `/api/auth/callback/kakao?code=${encodeURIComponent(code)}`;
     }
-
-    // Redirect to API route for token exchange
-    window.location.href = `/api/auth/callback/kakao?code=${encodeURIComponent(code)}`;
+    // 코드가 없으면 로딩 상태 유지 (초기 렌더링 시)
   }, [searchParams]);
 
   if (error) {
@@ -73,7 +70,7 @@ function KakaoCallbackContent() {
           <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
           <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
         </div>
-        <p className="text-gray-600 text-sm">로그인 처리 중...</p>
+        <p className="text-gray-600 text-sm">로그인 처리중 잠시만 기다려주세요</p>
       </div>
     </div>
   );
@@ -88,7 +85,7 @@ function LoadingFallback() {
           <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
           <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
         </div>
-        <p className="text-gray-600 text-sm">잠시만 기다려주세요...</p>
+        <p className="text-gray-600 text-sm">로그인 처리중 잠시만 기다려주세요</p>
       </div>
     </div>
   );

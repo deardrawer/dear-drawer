@@ -97,10 +97,24 @@ function PaymentForm() {
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-md mx-auto px-4">
         <div className="bg-white rounded-2xl shadow-sm p-8">
-          <h1 className="text-xl font-semibold text-gray-900 mb-2">결제 확인 요청</h1>
-          <p className="text-sm text-gray-600 mb-6">
-            아임웹에서 결제 완료 후 주문번호를 입력해주세요.
+          <h1 className="text-xl font-semibold text-gray-900 mb-2">워터마크 제거 요청</h1>
+          <p className="text-sm text-gray-600 mb-4">
+            디어드로어에서 모바일 청첩장 결제 완료 후 주문번호를 입력해주세요.
           </p>
+
+          <a
+            href="https://www.deardrawer.com/invitation/?idx=8"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block w-full mb-6"
+          >
+            <Button variant="outline" className="w-full bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-100">
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+              디어드로어에서 결제하기
+            </Button>
+          </a>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">

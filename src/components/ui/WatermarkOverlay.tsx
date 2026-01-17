@@ -23,50 +23,34 @@ export function WatermarkOverlay({ children, isPaid, className = '', style }: Wa
       {children}
       {/* 워터마크 오버레이 */}
       <div
-        className="absolute inset-0 pointer-events-none overflow-hidden"
-        style={{ zIndex: 10 }}
+        className="fixed inset-0 pointer-events-none overflow-hidden"
+        style={{ zIndex: 9999 }}
       >
-        {/* 대각선 반복 패턴 워터마크 */}
+        {/* 전체 화면 워터마크 */}
         <div
-          className="absolute inset-0"
+          className="absolute inset-0 flex items-center justify-center select-none"
           style={{
-            background: `repeating-linear-gradient(
-              -45deg,
-              transparent,
-              transparent 80px,
-              rgba(255, 255, 255, 0.03) 80px,
-              rgba(255, 255, 255, 0.03) 160px
-            )`,
+            transform: 'rotate(-30deg) scale(3)',
           }}
-        />
-
-        {/* 중앙 워터마크 텍스트들 */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div
-            className="transform -rotate-30 select-none"
-            style={{
-              transform: 'rotate(-30deg)',
-            }}
-          >
-            {/* 반복되는 워터마크 그리드 */}
-            <div className="flex flex-col gap-24">
-              {[0, 1, 2, 3, 4].map((row) => (
-                <div key={row} className="flex gap-16">
-                  {[0, 1, 2, 3].map((col) => (
-                    <span
-                      key={col}
-                      className="text-white text-opacity-20 text-lg font-light tracking-widest whitespace-nowrap select-none"
-                      style={{
-                        textShadow: '0 0 10px rgba(0,0,0,0.3)',
-                        opacity: 0.15,
-                      }}
-                    >
-                      dear drawer
-                    </span>
-                  ))}
-                </div>
-              ))}
-            </div>
+        >
+          {/* 반복되는 워터마크 그리드 */}
+          <div className="flex flex-col items-center gap-10">
+            {Array.from({ length: 50 }).map((_, row) => (
+              <div key={row} className="flex gap-6">
+                {Array.from({ length: 30 }).map((_, col) => (
+                  <span
+                    key={col}
+                    className="text-sm font-medium tracking-wider whitespace-nowrap select-none"
+                    style={{
+                      color: 'rgba(128, 128, 128, 0.3)',
+                      textShadow: '0 1px 2px rgba(255,255,255,0.5)',
+                    }}
+                  >
+                    dear drawer
+                  </span>
+                ))}
+              </div>
+            ))}
           </div>
         </div>
       </div>

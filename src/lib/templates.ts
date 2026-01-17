@@ -13,6 +13,7 @@ export type Template = {
   description: string
   thumbnail: string
   narrativeType: NarrativeType
+  emoji: string
   colors: {
     primary: string
     secondary: string
@@ -35,6 +36,7 @@ export const templates: Template[] = [
     description: '커플의 서사가 중심이 되는 청첩장입니다. 두 사람이 어떻게 만나고, 어떤 시간을 지나 결혼을 결심하게 되었는지를 담습니다.',
     thumbnail: '/templates/narrative-our.jpg',
     narrativeType: 'our',
+    emoji: '💕',
     colors: {
       primary: '#8B7355',
       secondary: '#F5F0EB',
@@ -63,6 +65,7 @@ export const templates: Template[] = [
     description: '가족의 서사가 함께하는 청첩장입니다. 신랑신부 각각의 성장 배경과 부모님의 마음, 가족이 되어가는 의미를 담습니다.',
     thumbnail: '/templates/narrative-family.jpg',
     narrativeType: 'family',
+    emoji: '👨‍👩‍👧‍👦',
     colors: {
       primary: '#2C3E50',
       secondary: '#ECF0F1',

@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { useEditorStore, ImageSettings, SectionVisibility } from '@/store/editorStore'
+import { useEditorStore, ImageSettings, SectionVisibility, PreviewSectionId } from '@/store/editorStore'
 import StoryGeneratorModal from '@/components/ai/StoryGeneratorModal'
 import HighlightTextarea from '@/components/editor/HighlightTextarea'
 import AIStoryAssistant from '@/components/ai/AIStoryAssistant'
@@ -87,6 +87,34 @@ interface EditPanelProps {
   onOpenIntroSelector?: () => void
 }
 
+// 아코디언 아이템 → 미리보기 섹션 매핑
+const accordionToPreviewSection: Record<string, PreviewSectionId> = {
+  // 디자인 탭
+  'design-theme': 'intro-cover',
+  'design-font': 'intro-cover',
+  'design-intro': 'intro-cover',
+  'design-animation': 'intro-cover',
+  'design-bgm': 'intro-cover',
+  'design-cover': 'intro-cover',
+  'design-kakao': 'intro-cover',
+  // 필수 입력 탭
+  'couple-basic': 'invitation',
+  'family-info': 'invitation',
+  'greeting': 'invitation',
+  'wedding-info': 'venue-info',
+  'directions': 'venue-info',
+  'gallery': 'gallery',
+  // 스토리 탭
+  'profile': 'couple-profile',
+  'our-story': 'our-story',
+  'interview': 'interview',
+  // 추가 기능 탭
+  'guidance': 'guidance',
+  'rsvp': 'rsvp',
+  'account': 'thank-you',
+  'contacts': 'thank-you',
+}
+
 export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
   const {
     invitation,
@@ -97,7 +125,8 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
     removeStory,
     addInterview,
     removeInterview,
-    toggleSectionVisibility
+    toggleSectionVisibility,
+    setActiveSection
   } = useEditorStore()
   const [isAIModalOpen, setIsAIModalOpen] = useState(false)
   const [aiAssistantType, setAiAssistantType] = useState<AIAssistantType>(null)
@@ -150,6 +179,40 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
   }
   const toggleExtrasAll = () => {
     setExtrasAccordion(extrasAccordion.length === extrasItems.length ? [] : [...extrasItems])
+  }
+
+  // 아코디언 변경 핸들러 (activeSection도 함께 업데이트)
+  const handleDesignAccordionChange = (value: string[]) => {
+    setDesignAccordion(value)
+    // 새로 열린 아코디언 아이템 찾기
+    const newlyOpened = value.find(v => !designAccordion.includes(v))
+    if (newlyOpened && accordionToPreviewSection[newlyOpened]) {
+      setActiveSection(accordionToPreviewSection[newlyOpened])
+    }
+  }
+
+  const handleRequiredAccordionChange = (value: string[]) => {
+    setRequiredAccordion(value)
+    const newlyOpened = value.find(v => !requiredAccordion.includes(v))
+    if (newlyOpened && accordionToPreviewSection[newlyOpened]) {
+      setActiveSection(accordionToPreviewSection[newlyOpened])
+    }
+  }
+
+  const handleStoryAccordionChange = (value: string[]) => {
+    setStoryAccordion(value)
+    const newlyOpened = value.find(v => !storyAccordion.includes(v))
+    if (newlyOpened && accordionToPreviewSection[newlyOpened]) {
+      setActiveSection(accordionToPreviewSection[newlyOpened])
+    }
+  }
+
+  const handleExtrasAccordionChange = (value: string[]) => {
+    setExtrasAccordion(value)
+    const newlyOpened = value.find(v => !extrasAccordion.includes(v))
+    if (newlyOpened && accordionToPreviewSection[newlyOpened]) {
+      setActiveSection(accordionToPreviewSection[newlyOpened])
+    }
   }
 
   if (!invitation) return null
@@ -537,7 +600,7 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
             isAllOpen={designAccordion.length === designItems.length}
             onToggleAll={toggleDesignAll}
           />
-          <Accordion type="multiple" value={designAccordion} onValueChange={setDesignAccordion} className="px-4">
+          <Accordion type="multiple" value={designAccordion} onValueChange={handleDesignAccordionChange} className="px-4">
 
         {/* 색상 테마 */}
         <AccordionItem value="design-theme">
@@ -793,7 +856,7 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
             isAllOpen={requiredAccordion.length === requiredItems.length}
             onToggleAll={toggleRequiredAll}
           />
-          <Accordion type="multiple" value={requiredAccordion} onValueChange={setRequiredAccordion} className="px-4">
+          <Accordion type="multiple" value={requiredAccordion} onValueChange={handleRequiredAccordionChange} className="px-4">
 
         {/* 신랑신부 기본정보 */}
         <AccordionItem value="couple-basic">
@@ -1320,7 +1383,7 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
             isAllOpen={storyAccordion.length === storyItems.length}
             onToggleAll={toggleStoryAll}
           />
-          <Accordion type="multiple" value={storyAccordion} onValueChange={setStoryAccordion} className="px-4">
+          <Accordion type="multiple" value={storyAccordion} onValueChange={handleStoryAccordionChange} className="px-4">
 
         {/* 커플 소개 */}
         <AccordionItem value="profile">
@@ -1961,7 +2024,7 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
             isAllOpen={extrasAccordion.length === extrasItems.length}
             onToggleAll={toggleExtrasAll}
           />
-          <Accordion type="multiple" value={extrasAccordion} onValueChange={setExtrasAccordion} className="px-4 pb-10">
+          <Accordion type="multiple" value={extrasAccordion} onValueChange={handleExtrasAccordionChange} className="px-4 pb-10">
 
         {/* 안내 & 기타 설정 (통합) */}
         <AccordionItem value="guidance">

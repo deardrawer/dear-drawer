@@ -496,3 +496,76 @@ export async function deleteSlugAlias(aliasId: string, invitationId: string): Pr
 
   return result.meta.changes > 0;
 }
+
+// ==================== Guestbook Functions ====================
+
+export interface GuestbookMessage {
+  id: string;
+  invitation_id: string;
+  guest_name: string;
+  message: string;
+  question: string | null;
+  created_at: string;
+}
+
+export interface GuestbookInput {
+  invitation_id: string;
+  guest_name: string;
+  message: string;
+  question?: string;
+}
+
+// 방명록 메시지 생성
+export async function createGuestbookMessage(input: GuestbookInput): Promise<GuestbookMessage> {
+  const db = await getDB();
+  const id = generateId();
+  const now = new Date().toISOString();
+
+  const result = await db
+    .prepare(
+      `INSERT INTO guestbook_messages (id, invitation_id, guest_name, message, question, created_at)
+       VALUES (?, ?, ?, ?, ?, ?)
+       RETURNING *`
+    )
+    .bind(id, input.invitation_id, input.guest_name, input.message, input.question || null, now)
+    .first<GuestbookMessage>();
+
+  if (!result) {
+    throw new Error("Failed to create guestbook message");
+  }
+
+  return result;
+}
+
+// 방명록 메시지 목록 조회
+export async function getGuestbookMessages(invitationId: string): Promise<GuestbookMessage[]> {
+  const db = await getDB();
+  const result = await db
+    .prepare("SELECT * FROM guestbook_messages WHERE invitation_id = ? ORDER BY created_at DESC")
+    .bind(invitationId)
+    .all<GuestbookMessage>();
+
+  return result.results || [];
+}
+
+// 방명록 메시지 삭제
+export async function deleteGuestbookMessage(messageId: string, invitationId: string): Promise<boolean> {
+  const db = await getDB();
+  const result = await db
+    .prepare("DELETE FROM guestbook_messages WHERE id = ? AND invitation_id = ?")
+    .bind(messageId, invitationId)
+    .run();
+
+  return result.meta.changes > 0;
+}
+
+// 방명록 메시지 개수
+export async function getGuestbookCount(invitationId: string): Promise<number> {
+  const db = await getDB();
+  const result = await db
+    .prepare("SELECT COUNT(*) as count FROM guestbook_messages WHERE invitation_id = ?")
+    .bind(invitationId)
+    .first<{ count: number }>();
+
+  return result?.count || 0;
+}

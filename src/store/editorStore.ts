@@ -152,6 +152,21 @@ export interface SectionVisibility {
   guestbook: boolean        // 방명록
 }
 
+// 미리보기 섹션 타입 (EditPanel과 Preview 연동용)
+export type PreviewSectionId =
+  | 'intro-cover'       // 인트로 커버
+  | 'invitation'        // 초대 글귀
+  | 'venue-info'        // 예식 정보
+  | 'couple-profile'    // 커플 프로필
+  | 'our-story'         // 우리의 이야기
+  | 'gallery'           // 갤러리
+  | 'interview'         // 인터뷰
+  | 'guidance'          // 행복한 시간을 위한 안내
+  | 'thank-you'         // 감사 인사
+  | 'guestbook'         // 방명록
+  | 'rsvp'              // RSVP
+  | null
+
 // 인트로 애니메이션 타입
 export type IntroAnimationType =
   | 'none'           // 없음
@@ -293,9 +308,11 @@ interface EditorStore {
   template: Template | null
   isDirty: boolean
   isSaving: boolean
+  activeSection: PreviewSectionId  // 현재 편집 중인 섹션
 
   // Actions
   initInvitation: (template: Template) => void
+  setActiveSection: (section: PreviewSectionId) => void
   updateField: <K extends keyof InvitationContent>(
     field: K,
     value: InvitationContent[K]
@@ -513,13 +530,17 @@ export const useEditorStore = create<EditorStore>((set) => ({
   template: null,
   isDirty: false,
   isSaving: false,
+  activeSection: null,
 
   initInvitation: (template) =>
     set({
       invitation: createDefaultInvitation(template),
       template,
       isDirty: false,
+      activeSection: null,
     }),
+
+  setActiveSection: (section) => set({ activeSection: section }),
 
   updateField: (field, value) =>
     set((state) => ({

@@ -56,7 +56,8 @@ export default function ShareModal({
   const [pageViews, setPageViews] = useState({ total: 0, today: 0 })
   const qrCanvasRef = useRef<HTMLCanvasElement>(null)
 
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
+  // 공유 URL은 프로덕션 도메인 사용 (카카오 공유 호환성)
+  const baseUrl = 'https://invite.deardrawer.com'
   // /i/ 경로 사용 (슬러그 또는 ID)
   const invitationUrl = `${baseUrl}/i/${currentSlug || invitationId}`
 

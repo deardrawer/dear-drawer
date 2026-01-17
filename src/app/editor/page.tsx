@@ -431,6 +431,8 @@ function EditorContent() {
             invitation.gallery.images?.[0] ||
             ''
           }
+          shareTitle={invitation.meta.title}
+          shareDescription={invitation.meta.description}
         />
       )}
 

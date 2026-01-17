@@ -26,6 +26,8 @@ interface ShareModalProps {
   currentSlug?: string
   onSlugChange?: (slug: string) => void
   thumbnailUrl?: string
+  shareTitle?: string
+  shareDescription?: string
 }
 
 export default function ShareModal({
@@ -41,6 +43,8 @@ export default function ShareModal({
   currentSlug,
   onSlugChange,
   thumbnailUrl,
+  shareTitle,
+  shareDescription,
 }: ShareModalProps) {
   const [slug, setSlug] = useState(currentSlug || '')
   const [isCheckingSlug, setIsCheckingSlug] = useState(false)
@@ -184,10 +188,13 @@ export default function ShareModal({
         // /demo/ 경로 이미지는 기본 이미지 사용 (외부 접근 불가)
       }
 
+      // 공유 제목 (커스텀 제목이 있으면 사용, 없으면 기본 형식)
+      const displayTitle = shareTitle || `${groomName || '신랑'} ❤️ ${brideName || '신부'}의 결혼식`
+
       // 세로형 리스트 템플릿 (objectType: 'list')
       kakaoWindow.Kakao.Share.sendDefault({
         objectType: 'list',
-        headerTitle: `${groomName} ❤️ ${brideName}의 결혼식`,
+        headerTitle: displayTitle,
         headerLink: {
           mobileWebUrl: invitationUrl,
           webUrl: invitationUrl,
@@ -239,7 +246,9 @@ export default function ShareModal({
   }
 
   const handleSMSShare = () => {
-    const message = `${groomName} ♥ ${brideName} 결혼합니다\n\n저희 결혼식에 초대합니다.\n청첩장 보기: ${invitationUrl}`
+    const smsTitle = shareTitle || `${groomName || '신랑'} ♥ ${brideName || '신부'} 결혼합니다`
+    const smsDescription = shareDescription || '저희 결혼식에 초대합니다.'
+    const message = `${smsTitle}\n\n${smsDescription}\n청첩장 보기: ${invitationUrl}`
     window.open(`sms:?body=${encodeURIComponent(message)}`)
   }
 
@@ -375,9 +384,9 @@ export default function ShareModal({
             <div className="p-4 bg-gray-50 rounded-lg">
               <p className="text-sm text-gray-600 font-medium mb-2">문자 메시지 템플릿</p>
               <p className="text-sm text-gray-500">
-                {groomName} ♥ {brideName} 결혼합니다
+                {shareTitle || `${groomName || '신랑'} ♥ ${brideName || '신부'} 결혼합니다`}
                 <br /><br />
-                저희 결혼식에 초대합니다.
+                {shareDescription || '저희 결혼식에 초대합니다.'}
                 <br />
                 청첩장 보기: {invitationUrl}
               </p>

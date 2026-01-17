@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import GuestFloatingButton from '@/components/invitation/GuestFloatingButton'
 import ProfileImageSlider from '@/components/editor/ProfileImageSlider'
+import { WatermarkOverlay } from '@/components/ui/WatermarkOverlay'
 import type { Invitation } from '@/types/invitation'
 import type { InvitationContent } from '@/store/editorStore'
 
@@ -2267,15 +2268,16 @@ export default function InvitationClient({ invitation: dbInvitation, content, is
   ]
 
   return (
-    <div
-      className={`relative w-full min-h-screen overflow-x-hidden theme-${invitation.colorTheme}`}
-      style={{
-        backgroundColor: themeColors.background,
-        fontFamily: fonts.body,
-        color: themeColors.text,
-      }}
-    >
-      <style dangerouslySetInnerHTML={{ __html: globalStyles }} />
+    <WatermarkOverlay isPaid={isPaid} className="relative w-full min-h-screen">
+      <div
+        className={`relative w-full min-h-screen overflow-x-hidden theme-${invitation.colorTheme}`}
+        style={{
+          backgroundColor: themeColors.background,
+          fontFamily: fonts.body,
+          color: themeColors.text,
+        }}
+      >
+        <style dangerouslySetInnerHTML={{ __html: globalStyles }} />
 
       {/* Page Content */}
       {currentPage === 'intro' ? (
@@ -2327,12 +2329,13 @@ export default function InvitationClient({ invitation: dbInvitation, content, is
       {/* Music Toggle */}
       <MusicToggle audioRef={audioRef} isVisible={showMusicToggle} shouldAutoPlay={currentPage === 'main'} />
 
-      {/* Background Music */}
-      {invitation.media.bgm && (
-        <audio ref={audioRef} loop preload="auto">
-          <source src={invitation.media.bgm} type="audio/mpeg" />
-        </audio>
-      )}
-    </div>
+        {/* Background Music */}
+        {invitation.media.bgm && (
+          <audio ref={audioRef} loop preload="auto">
+            <source src={invitation.media.bgm} type="audio/mpeg" />
+          </audio>
+        )}
+      </div>
+    </WatermarkOverlay>
   )
 }

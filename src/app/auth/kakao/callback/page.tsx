@@ -13,6 +13,11 @@ function KakaoCallbackContent() {
     const errorParam = searchParams.get("error");
     const errorDescription = searchParams.get("error_description");
 
+    // URL 깔끔하게 정리 (쿼리 파라미터 제거)
+    if (typeof window !== 'undefined' && window.location.search) {
+      window.history.replaceState({}, '', '/auth/kakao/callback');
+    }
+
     if (errorParam) {
       setError(errorDescription || "로그인이 취소되었습니다.");
       return;
@@ -29,11 +34,11 @@ function KakaoCallbackContent() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDFBF8]">
         <div className="text-center px-6">
-          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-red-500/20 flex items-center justify-center">
+          <div className="w-12 h-12 mx-auto mb-5 rounded-full bg-red-50 flex items-center justify-center">
             <svg
-              className="w-8 h-8 text-red-500"
+              className="w-6 h-6 text-red-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -41,18 +46,18 @@ function KakaoCallbackContent() {
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={2}
+                strokeWidth={1.5}
                 d="M6 18L18 6M6 6l12 12"
               />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">로그인 실패</h1>
-          <p className="text-slate-400 mb-6">{error}</p>
+          <p className="text-lg text-gray-800 font-medium mb-1">로그인 실패</p>
+          <p className="text-sm text-gray-500 mb-6">{error}</p>
           <button
             onClick={() => router.push("/login")}
-            className="px-6 py-3 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-medium transition-colors"
+            className="px-5 py-2.5 rounded-full bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium transition-colors"
           >
-            다시 시도하기
+            다시 시도
           </button>
         </div>
       </div>
@@ -60,33 +65,15 @@ function KakaoCallbackContent() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDFBF8]">
       <div className="text-center px-6">
-        {/* Loading spinner */}
-        <div className="w-16 h-16 mx-auto mb-6">
-          <svg
-            className="animate-spin w-full h-full text-yellow-500"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            />
-          </svg>
+        {/* 심플한 로딩 애니메이션 */}
+        <div className="flex items-center justify-center gap-1.5 mb-6">
+          <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+          <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+          <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
         </div>
-        <h1 className="text-2xl font-bold text-white mb-2">로그인 처리 중</h1>
-        <p className="text-slate-400">잠시만 기다려주세요...</p>
+        <p className="text-gray-600 text-sm">로그인 처리 중...</p>
       </div>
     </div>
   );
@@ -94,32 +81,14 @@ function KakaoCallbackContent() {
 
 function LoadingFallback() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDFBF8]">
       <div className="text-center px-6">
-        <div className="w-16 h-16 mx-auto mb-6">
-          <svg
-            className="animate-spin w-full h-full text-yellow-500"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            />
-          </svg>
+        <div className="flex items-center justify-center gap-1.5 mb-6">
+          <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+          <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+          <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
         </div>
-        <h1 className="text-2xl font-bold text-white mb-2">로딩 중</h1>
-        <p className="text-slate-400">잠시만 기다려주세요...</p>
+        <p className="text-gray-600 text-sm">잠시만 기다려주세요...</p>
       </div>
     </div>
   );

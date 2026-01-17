@@ -189,28 +189,6 @@ function EditorContent() {
     }
   }
 
-  // Copy link to clipboard
-  const handleCopyLink = async () => {
-    if (!invitationId) {
-      alert('링크를 복사하려면 먼저 저장해주세요.')
-      return
-    }
-    const link = `${window.location.origin}/invitation/${invitationId}`
-    try {
-      await navigator.clipboard.writeText(link)
-      alert('링크가 복사되었습니다!')
-    } catch {
-      // Fallback for older browsers
-      const textArea = document.createElement('textarea')
-      textArea.value = link
-      document.body.appendChild(textArea)
-      textArea.select()
-      document.execCommand('copy')
-      document.body.removeChild(textArea)
-      alert('링크가 복사되었습니다!')
-    }
-  }
-
   // Open share modal
   const handleShare = () => {
     if (!invitationId) {
@@ -293,27 +271,6 @@ function EditorContent() {
               />
             </svg>
             Preview
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleCopyLink}
-            className="border-gray-200 text-gray-600 hover:bg-gray-50 rounded-none text-xs tracking-wide"
-          >
-            <svg
-              className="w-4 h-4 mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-              />
-            </svg>
-            Copy Link
           </Button>
           <Button
             variant="outline"

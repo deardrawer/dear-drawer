@@ -197,9 +197,6 @@ export default function ShareModal({
       const displayDescription = shareDescription ||
         `${formattedDate} ${formattedTime}\n${venueDisplay}${venueDetail}`
 
-      // 디버깅: 전달되는 URL 확인
-      console.log('Kakao Share URL:', invitationUrl)
-
       // 피드형 템플릿 (objectType: 'feed')
       kakaoWindow.Kakao.Share.sendDefault({
         objectType: 'feed',

@@ -7,13 +7,14 @@ import { isUUID } from "@/lib/slug";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ preview?: string }>;
+  searchParams: Promise<{ preview?: string; colorTheme?: string; fontStyle?: string; skipIntro?: string }>;
 }
 
 export default async function InvitationPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
-  const { preview } = await searchParams;
+  const { preview, colorTheme, fontStyle, skipIntro } = await searchParams;
   const isPreview = preview === 'true';
+  const shouldSkipIntro = skipIntro === 'true';
 
   let invitation = null;
 
@@ -69,6 +70,9 @@ export default async function InvitationPage({ params, searchParams }: PageProps
       content={invitationContent}
       isPaid={isPaid}
       isPreview={isPreview}
+      overrideColorTheme={colorTheme}
+      overrideFontStyle={fontStyle}
+      skipIntro={shouldSkipIntro}
     />
   );
 }

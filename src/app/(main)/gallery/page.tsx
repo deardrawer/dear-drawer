@@ -1,31 +1,56 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { templates, Template } from '@/lib/templates'
 
-// 색상 테마 정의
+// 색상 테마 정의 (에디터와 동일)
 const colorThemes = [
-  { id: 'classic-rose', name: 'Classic Rose', primary: '#A67B5B', bg: '#FDF8F5', text: '#3D3D3D' },
-  { id: 'modern-black', name: 'Modern Black', primary: '#1A1A1A', bg: '#FFFFFF', text: '#1A1A1A' },
-  { id: 'romantic-blush', name: 'Romantic Blush', primary: '#D4A5A5', bg: '#FFF5F5', text: '#4A4A4A' },
-  { id: 'nature-green', name: 'Nature Green', primary: '#6B8E6B', bg: '#F5F8F5', text: '#3D4A3D' },
-  { id: 'luxury-navy', name: 'Luxury Navy', primary: '#1E3A5F', bg: '#F8FAFC', text: '#1E3A5F' },
-  { id: 'sunset-coral', name: 'Sunset Coral', primary: '#E8846B', bg: '#FFF8F5', text: '#4A3D3D' },
+  { id: 'classic-rose', name: 'Classic Rose', colors: ['#E91E63', '#D4A574'] },
+  { id: 'modern-black', name: 'Modern Black', colors: ['#1A1A1A', '#888888'] },
+  { id: 'romantic-blush', name: 'Romantic Blush', colors: ['#D4A5A5', '#C9B8A8'] },
+  { id: 'nature-green', name: 'Nature Green', colors: ['#6B8E6B', '#A8B5A0'] },
+  { id: 'luxury-navy', name: 'Luxury Navy', colors: ['#1E3A5F', '#C9A96E'] },
+  { id: 'sunset-coral', name: 'Sunset Coral', colors: ['#E8846B', '#F5C7A9'] },
+]
+
+// 폰트 스타일 정의
+const fontStyles = [
+  { id: 'classic', name: 'Classic Elegance', desc: 'Playfair Display + 나눔명조' },
+  { id: 'modern', name: 'Modern Minimal', desc: 'Montserrat + Noto Sans KR' },
+  { id: 'romantic', name: 'Romantic', desc: 'Lora + 고운바탕' },
+  { id: 'contemporary', name: 'Contemporary', desc: 'Cinzel + 고운돋움' },
+  { id: 'luxury', name: 'Premium Luxury', desc: 'EB Garamond + 나눔명조' },
 ]
 
 export default function GalleryPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<Template>(templates[0])
   const [selectedColor, setSelectedColor] = useState(colorThemes[0])
+  const [selectedFont, setSelectedFont] = useState(fontStyles[2]) // romantic as default
   const [iframeKey, setIframeKey] = useState(0)
+  const [hasInteracted, setHasInteracted] = useState(false)
 
-  // 템플릿에 따른 샘플 URL
+  // 템플릿에 따른 샘플 URL (컬러 테마, 폰트 파라미터 포함)
+  // 스타일 변경 시에는 skipIntro=true로 인트로 스킵
+  const skipIntroParam = hasInteracted ? '&skipIntro=true' : ''
   const sampleUrl = selectedTemplate.narrativeType === 'our'
-    ? '/i/sample-our?preview=true'
-    : '/i/sample-family?preview=true'
+    ? `/i/sample-our?preview=true&colorTheme=${selectedColor.id}&fontStyle=${selectedFont.id}${skipIntroParam}`
+    : `/i/sample-family?preview=true&colorTheme=${selectedColor.id}&fontStyle=${selectedFont.id}${skipIntroParam}`
 
-  // iframe 새로고침
+  // 컬러/폰트 변경 핸들러 (인트로 스킵 활성화)
+  const handleColorChange = (theme: typeof colorThemes[0]) => {
+    setHasInteracted(true)
+    setSelectedColor(theme)
+  }
+
+  const handleFontChange = (font: typeof fontStyles[0]) => {
+    setHasInteracted(true)
+    setSelectedFont(font)
+  }
+
+  // iframe 새로고침 (인트로부터 다시 보기)
   const refreshPreview = () => {
+    setHasInteracted(false)
     setIframeKey(prev => prev + 1)
   }
 
@@ -141,18 +166,52 @@ export default function GalleryPage() {
                   {colorThemes.map((theme) => (
                     <button
                       key={theme.id}
-                      onClick={() => setSelectedColor(theme)}
+                      onClick={() => handleColorChange(theme)}
                       className={`relative p-3 rounded-xl border-2 transition-all ${
                         selectedColor.id === theme.id
                           ? 'border-black'
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
-                      <div
-                        className="w-full h-8 rounded-lg mb-2"
-                        style={{ background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.bg} 100%)` }}
-                      />
+                      <div className="flex gap-1 mb-2 justify-center">
+                        <div
+                          className="w-6 h-6 rounded-full border border-gray-200"
+                          style={{ backgroundColor: theme.colors[0] }}
+                        />
+                        <div
+                          className="w-6 h-6 rounded-full border border-gray-200"
+                          style={{ backgroundColor: theme.colors[1] }}
+                        />
+                      </div>
                       <p className="text-xs font-medium text-gray-700 truncate">{theme.name}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Font Style Selection */}
+              <div>
+                <h2 className="text-lg font-medium text-gray-900 mb-4">폰트 스타일</h2>
+                <div className="grid grid-cols-1 gap-2">
+                  {fontStyles.map((font) => (
+                    <button
+                      key={font.id}
+                      onClick={() => handleFontChange(font)}
+                      className={`relative p-3 rounded-xl border-2 transition-all text-left ${
+                        selectedFont.id === font.id
+                          ? 'border-black bg-gray-50'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      {selectedFont.id === font.id && (
+                        <div className="absolute top-3 right-3 w-4 h-4 bg-black rounded-full flex items-center justify-center">
+                          <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      )}
+                      <p className="font-medium text-gray-900 text-sm">{font.name}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{font.desc}</p>
                     </button>
                   ))}
                 </div>
@@ -212,7 +271,7 @@ export default function GalleryPage() {
 
               {/* CTA Button */}
               <Link
-                href={`/editor?template=${selectedTemplate.id}&color=${selectedColor.id}`}
+                href={`/editor?template=${selectedTemplate.id}`}
                 className="block w-full py-4 bg-black text-white text-center rounded-xl font-medium hover:bg-gray-800 transition-colors"
               >
                 이 템플릿으로 시작하기

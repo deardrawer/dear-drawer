@@ -228,7 +228,7 @@ const globalStyles = `
     height: 40px;
     margin: 24px 0;
     transform: scaleY(0);
-    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transition: transform 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   }
 
   .divider-line.top {
@@ -237,7 +237,7 @@ const globalStyles = `
 
   .divider-line.bottom {
     transform-origin: top center;
-    transition-delay: 0.6s;
+    transition-delay: 1.5s;
   }
 
   .divider-section.in-view .divider-line {
@@ -257,13 +257,13 @@ const globalStyles = `
     opacity: 0;
     letter-spacing: -2px;
     transform: scaleX(0.8);
-    transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                letter-spacing 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transition: opacity 2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                letter-spacing 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                transform 2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   }
 
   .divider-text-mask .text-line:nth-child(2) {
-    transition-delay: 0.2s;
+    transition-delay: 0.5s;
   }
 
   .divider-section.in-view .divider-text-mask .text-line {
@@ -273,7 +273,7 @@ const globalStyles = `
   }
 
   .divider-section.in-view .divider-text-mask .text-line:nth-child(2) {
-    transition-delay: 0.25s;
+    transition-delay: 0.6s;
   }
 
   /* Story Section Animations */
@@ -431,12 +431,416 @@ const globalStyles = `
     height: 1px;
     background: currentColor;
     opacity: 0.4;
-    transition: width 1s ease-out, left 1s ease-out;
+    transition: width 4s ease-out, left 4s ease-out;
   }
 
   .profile-label-animated.revealed::after {
     width: 100%;
     left: 0;
+  }
+
+  /* Gallery Lightbox */
+  .gallery-lightbox {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+
+  .gallery-lightbox.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .gallery-lightbox-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .gallery-lightbox-slides {
+    display: flex;
+    width: 100%;
+    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .gallery-lightbox-slide {
+    min-width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .gallery-lightbox-slide img {
+    max-width: 100%;
+    max-height: 80vh;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+
+  .gallery-lightbox-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    z-index: 10;
+    transition: color 0.2s ease;
+  }
+
+  .gallery-lightbox-close:hover {
+    color: #fff;
+  }
+
+  .gallery-lightbox-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    z-index: 10;
+    transition: color 0.2s ease;
+  }
+
+  .gallery-lightbox-nav:hover {
+    color: #fff;
+  }
+
+  .gallery-lightbox-nav.prev {
+    left: 16px;
+  }
+
+  .gallery-lightbox-nav.next {
+    right: 16px;
+  }
+
+  .gallery-lightbox-counter {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 14px;
+    letter-spacing: 2px;
+  }
+
+  body.lightbox-open {
+    overflow: hidden;
+  }
+
+  /* Anniversary Counter Sequential Animation */
+  .anniversary-counter {
+    opacity: 1;
+  }
+
+  .anniversary-counter .counter-item {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+
+  .anniversary-counter.in-view .counter-item:nth-child(1) {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 0s;
+  }
+
+  .anniversary-counter.in-view .counter-item:nth-child(2) {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 0.3s;
+  }
+
+  .anniversary-counter.in-view .counter-item:nth-child(3) {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 0.6s;
+  }
+
+  .anniversary-counter .counter-divider {
+    transform: scaleY(0);
+    transform-origin: top center;
+    transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transition-delay: 0s;
+  }
+
+  .anniversary-counter.in-view .counter-divider {
+    transform: scaleY(1);
+    transition-delay: 1.1s;
+  }
+
+  .anniversary-counter .counter-text {
+    opacity: 0;
+    transform: translateY(15px);
+    transition: opacity 1s ease, transform 1s ease;
+    transition-delay: 0s;
+  }
+
+  .anniversary-counter.in-view .counter-text {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 1.6s;
+  }
+
+  /* Guestbook Modal */
+  .guestbook-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(250, 250, 250, 0.55);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+
+  .guestbook-modal.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .guestbook-modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    background: #fff;
+    border: none;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: #999;
+    transition: transform 0.2s;
+    z-index: 10;
+  }
+
+  .guestbook-modal-close:hover {
+    transform: scale(1.1);
+  }
+
+  .guestbook-stack {
+    position: relative;
+    width: 280px;
+    height: 360px;
+    perspective: 1000px;
+  }
+
+  .guestbook-stack-card {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    min-height: 200px;
+    padding: 32px 28px;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    text-align: center;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+    touch-action: pan-y;
+    cursor: grab;
+  }
+
+  .guestbook-stack-card:active {
+    cursor: grabbing;
+  }
+
+  .guestbook-stack-card:nth-child(2) {
+    transform: translateY(20px) scale(0.95);
+    opacity: 0.7;
+    z-index: -1;
+  }
+
+  .guestbook-stack-card:nth-child(3) {
+    transform: translateY(40px) scale(0.9);
+    opacity: 0.4;
+    z-index: -2;
+  }
+
+  .guestbook-stack-card:nth-child(n+4) {
+    transform: translateY(50px) scale(0.85);
+    opacity: 0;
+    z-index: -3;
+  }
+
+  .guestbook-stack-card.swiping {
+    transition: none;
+  }
+
+  .guestbook-stack-card.swipe-up {
+    transform: translateY(-150%) rotate(-5deg);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+
+  .guestbook-stack-card.swipe-down {
+    transform: translateY(150%) rotate(5deg);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+
+  .guestbook-swipe-hint {
+    position: absolute;
+    bottom: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    color: #aaa;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .guestbook-swipe-hint::before {
+    content: '↑';
+    font-size: 16px;
+    animation: swipeHintBounce 1.5s ease-in-out infinite;
+  }
+
+  @keyframes swipeHintBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+
+  body.guestbook-modal-open {
+    overflow: hidden;
+  }
+
+  /* Desktop Mobile Frame Wrapper */
+  @media (min-width: 768px) {
+    .desktop-frame-wrapper {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f8f8f8 0%, #e8e8e8 100%);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px 20px;
+    }
+
+    .mobile-frame {
+      position: relative;
+      width: 390px;
+      min-height: 844px;
+      background: #1a1a1a;
+      border-radius: 50px;
+      padding: 12px;
+      box-shadow:
+        0 50px 100px rgba(0,0,0,0.25),
+        0 30px 60px rgba(0,0,0,0.15),
+        inset 0 0 0 2px rgba(255,255,255,0.1);
+    }
+
+    .mobile-frame::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 150px;
+      height: 30px;
+      background: #1a1a1a;
+      border-radius: 0 0 20px 20px;
+      z-index: 10;
+    }
+
+    .mobile-frame::after {
+      content: '';
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 8px;
+      background: #333;
+      border-radius: 10px;
+      z-index: 11;
+    }
+
+    .mobile-frame-screen {
+      width: 100%;
+      height: 100%;
+      background: #fff;
+      border-radius: 40px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .mobile-frame-content {
+      width: 100%;
+      height: 844px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      position: relative;
+      /* Create new containing block for fixed positioned elements */
+      transform: translateZ(0);
+    }
+
+    .mobile-frame-content::-webkit-scrollbar {
+      display: none;
+    }
+
+    .mobile-frame-content {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .desktop-frame-wrapper {
+      display: contents;
+    }
+
+    .mobile-frame {
+      display: contents;
+    }
+
+    .mobile-frame-screen {
+      display: contents;
+    }
+
+    .mobile-frame-content {
+      display: contents;
+    }
   }
 `
 
@@ -492,6 +896,162 @@ function AnimatedSection({ children, className, style, delay = 0 }: {
       }}
     >
       {children}
+    </div>
+  )
+}
+
+// Gallery Lightbox Component - Infinite Loop
+function GalleryLightbox({
+  images,
+  isOpen,
+  initialIndex,
+  onClose,
+}: {
+  images: string[]
+  isOpen: boolean
+  initialIndex: number
+  onClose: () => void
+}) {
+  const [currentIndex, setCurrentIndex] = useState(initialIndex + 1) // +1 for clone
+  const [isTransitioning, setIsTransitioning] = useState(false)
+  const slidesRef = useRef<HTMLDivElement>(null)
+  const touchStartX = useRef(0)
+
+  // Reset to initial index when opening
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentIndex(initialIndex + 1)
+      document.body.classList.add('lightbox-open')
+    } else {
+      document.body.classList.remove('lightbox-open')
+    }
+  }, [isOpen, initialIndex])
+
+  // Handle infinite loop transition end
+  useEffect(() => {
+    const slides = slidesRef.current
+    if (!slides) return
+
+    const handleTransitionEnd = () => {
+      setIsTransitioning(false)
+      if (currentIndex === 0) {
+        setCurrentIndex(images.length)
+        slides.style.transition = 'none'
+        slides.style.transform = `translateX(-${images.length * 100}%)`
+      } else if (currentIndex === images.length + 1) {
+        setCurrentIndex(1)
+        slides.style.transition = 'none'
+        slides.style.transform = `translateX(-100%)`
+      }
+    }
+
+    slides.addEventListener('transitionend', handleTransitionEnd)
+    return () => slides.removeEventListener('transitionend', handleTransitionEnd)
+  }, [currentIndex, images.length])
+
+  const goToPrev = useCallback(() => {
+    if (isTransitioning) return
+    setIsTransitioning(true)
+    if (slidesRef.current) {
+      slidesRef.current.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+    }
+    setCurrentIndex(prev => prev - 1)
+  }, [isTransitioning])
+
+  const goToNext = useCallback(() => {
+    if (isTransitioning) return
+    setIsTransitioning(true)
+    if (slidesRef.current) {
+      slidesRef.current.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+    }
+    setCurrentIndex(prev => prev + 1)
+  }, [isTransitioning])
+
+  // Keyboard navigation
+  useEffect(() => {
+    if (!isOpen) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+      if (e.key === 'ArrowLeft') goToPrev()
+      if (e.key === 'ArrowRight') goToNext()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose, goToPrev, goToNext])
+
+  // Touch swipe
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const diff = touchStartX.current - e.changedTouches[0].clientX
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) goToNext()
+      else goToPrev()
+    }
+  }
+
+  // Calculate display index (1-based)
+  let displayIndex = currentIndex
+  if (currentIndex === 0) displayIndex = images.length
+  else if (currentIndex === images.length + 1) displayIndex = 1
+
+  if (!isOpen || images.length === 0) return null
+
+  return (
+    <div className={`gallery-lightbox ${isOpen ? 'active' : ''}`}>
+      <div className="gallery-lightbox-container" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
+        {/* Close Button */}
+        <button className="gallery-lightbox-close" onClick={onClose}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
+
+        {/* Prev Button */}
+        <button className="gallery-lightbox-nav prev" onClick={goToPrev}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </button>
+
+        {/* Slides */}
+        <div
+          ref={slidesRef}
+          className="gallery-lightbox-slides"
+          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          {/* Last clone */}
+          <div className="gallery-lightbox-slide">
+            <img src={images[images.length - 1]} alt="갤러리 이미지" />
+          </div>
+          {/* Actual slides */}
+          {images.map((img, i) => (
+            <div key={i} className="gallery-lightbox-slide">
+              <img src={img} alt={`갤러리 이미지 ${i + 1}`} />
+            </div>
+          ))}
+          {/* First clone */}
+          <div className="gallery-lightbox-slide">
+            <img src={images[0]} alt="갤러리 이미지" />
+          </div>
+        </div>
+
+        {/* Next Button */}
+        <button className="gallery-lightbox-nav next" onClick={goToNext}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </button>
+
+        {/* Counter */}
+        <div className="gallery-lightbox-counter">
+          {displayIndex} / {images.length}
+        </div>
+      </div>
     </div>
   )
 }
@@ -586,7 +1146,7 @@ function ProfileSection({
         style={{
           opacity: isVisible ? 1 : 0,
           transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
-          transition: 'opacity 1.2s ease, transform 1.2s ease',
+          transition: 'opacity 2.5s ease, transform 2.5s ease',
         }}
       >
         <ProfileImageSlider
@@ -604,7 +1164,7 @@ function ProfileSection({
             letterSpacing: '3px',
             opacity: isVisible ? 1 : 0,
             transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-            transition: 'opacity 1.2s ease 0.3s, transform 1.2s ease 0.3s',
+            transition: 'opacity 2.5s ease 0.5s, transform 2.5s ease 0.5s',
           }}
         >
           {profile.aboutLabel}
@@ -615,20 +1175,20 @@ function ProfileSection({
             color: '#999',
             opacity: isVisible ? 1 : 0,
             transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-            transition: 'opacity 1.2s ease 0.6s, transform 1.2s ease 0.6s',
+            transition: 'opacity 2.5s ease 1s, transform 2.5s ease 1s',
           }}
         >
           {profile.subtitle}
         </p>
       </div>
       <div
-        className="text-xs font-light leading-[2.2] text-left"
+        className="text-[13px] font-light leading-[2.2] text-left"
         style={{
           fontFamily: fonts.displayKr,
           color: themeColors.text,
           opacity: isVisible ? 1 : 0,
           transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-          transition: 'opacity 1.2s ease 0.9s, transform 1.2s ease 0.9s',
+          transition: 'opacity 2.5s ease 1.5s, transform 2.5s ease 1.5s',
         }}
         dangerouslySetInnerHTML={{ __html: profile.intro.replace(/\n/g, '<br/>') }}
       />
@@ -640,7 +1200,7 @@ function ProfileSection({
             color: '#777',
             opacity: isVisible ? 1 : 0,
             transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-            transition: 'opacity 1.2s ease 1.2s, transform 1.2s ease 1.2s',
+            transition: 'opacity 2.5s ease 2s, transform 2.5s ease 2s',
           }}
         >
           &#9829; {profile.tag}
@@ -752,34 +1312,19 @@ function InterviewSection({
       className="px-7 py-14"
       style={{ background: bgColor }}
     >
-      {/* Images */}
+      {/* Images - Auto Slide for 2+ images */}
       <div
         style={{
           opacity: isVisible ? 1 : 0,
           transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
-          transition: 'opacity 1.2s ease, transform 1.2s ease',
+          transition: 'opacity 2.5s ease, transform 2.5s ease',
         }}
       >
         {interview.images && interview.images.length > 0 ? (
-          interview.images.length === 1 ? (
-            <div className="w-full aspect-[4/5] rounded-xl mb-8 overflow-hidden">
-              <div
-                className="w-full h-full bg-cover bg-center bg-gray-100"
-                style={{ backgroundImage: interview.images[0] ? `url(${interview.images[0]})` : undefined }}
-              />
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-2 mb-8">
-              {interview.images.slice(0, 2).map((img, i) => (
-                <div key={i} className="aspect-square rounded-xl overflow-hidden">
-                  <div
-                    className="w-full h-full bg-cover bg-center bg-gray-100"
-                    style={{ backgroundImage: img ? `url(${img})` : undefined }}
-                  />
-                </div>
-              ))}
-            </div>
-          )
+          <ProfileImageSlider
+            images={interview.images}
+            className="mb-8"
+          />
         ) : (
           <div className="w-full aspect-[4/5] rounded-xl mb-8 bg-gray-100 flex items-center justify-center">
             <span className="text-gray-400 text-sm">Interview Image</span>
@@ -794,7 +1339,7 @@ function InterviewSection({
           style={{
             opacity: isVisible ? 1 : 0,
             transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-            transition: 'opacity 1.2s ease 0.3s, transform 1.2s ease 0.3s',
+            transition: 'opacity 2.5s ease 0.5s, transform 2.5s ease 0.5s',
           }}
         >
           <p
@@ -809,13 +1354,13 @@ function InterviewSection({
       {/* Answer */}
       {interview.answer && (
         <p
-          className="text-[11px] font-light leading-[2.2]"
+          className="text-[13px] font-light leading-[2.2]"
           style={{
             fontFamily: fonts.displayKr,
             color: themeColors.text,
             opacity: isVisible ? 1 : 0,
             transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-            transition: 'opacity 1.2s ease 0.6s, transform 1.2s ease 0.6s',
+            transition: 'opacity 2.5s ease 1.5s, transform 2.5s ease 1.5s',
           }}
           dangerouslySetInnerHTML={{ __html: interview.answer.replace(/\n/g, '<br/>') }}
         />
@@ -881,7 +1426,7 @@ function StorySection({
         <p
           className="story-desc"
           style={{
-            fontSize: '11px',
+            fontSize: '13px',
             fontWeight: 300,
             color: '#777',
             lineHeight: 1.9,
@@ -916,6 +1461,80 @@ function StorySection({
           ))}
         </div>
       )}
+    </div>
+  )
+}
+
+// Anniversary Counter Section Component with Sequential Animation
+function AnniversaryCounterSection({
+  startDate,
+  closingText,
+  fonts,
+  themeColors,
+}: {
+  startDate: string
+  closingText?: string
+  fonts: FontConfig
+  themeColors: ColorConfig
+}) {
+  const { ref, isVisible } = useScrollAnimation()
+  const anniversary = calculateAnniversary(startDate)
+  const displayClosingText = closingText || '그리고 이제 드디어 부르는 서로의 이름에 \'신랑\', \'신부\'라는 호칭을 담습니다.'
+
+  return (
+    <div
+      ref={ref}
+      className={`anniversary-counter ${isVisible ? 'in-view' : ''}`}
+      style={{
+        padding: '56px 28px',
+        textAlign: 'center',
+        background: `linear-gradient(180deg, ${themeColors.sectionBg} 0%, ${themeColors.cardBg} 100%)`
+      }}
+    >
+      {/* 3-column numbers */}
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', gap: '32px', marginBottom: '40px' }}>
+        <div className="counter-item" style={{ textAlign: 'center' }}>
+          <p style={{ fontFamily: fonts.displayKr, fontSize: '16px', fontWeight: 400, color: themeColors.text }}>
+            {anniversary.days.toLocaleString()}
+            <span style={{ fontSize: '10px', fontWeight: 300, marginLeft: '2px', color: themeColors.gray }}>일</span>
+          </p>
+        </div>
+        <div className="counter-item" style={{ textAlign: 'center' }}>
+          <p style={{ fontFamily: fonts.displayKr, fontSize: '16px', fontWeight: 400, color: themeColors.text }}>
+            {anniversary.weeks.toLocaleString()}
+            <span style={{ fontSize: '10px', fontWeight: 300, marginLeft: '2px', color: themeColors.gray }}>주</span>
+          </p>
+        </div>
+        <div className="counter-item" style={{ textAlign: 'center' }}>
+          <p style={{ fontFamily: fonts.displayKr, fontSize: '16px', fontWeight: 400, color: themeColors.text }}>
+            {anniversary.yearsMonths}
+          </p>
+        </div>
+      </div>
+
+      {/* Divider */}
+      <div
+        className="counter-divider"
+        style={{
+          width: '1px',
+          height: '20px',
+          margin: '0 auto 28px',
+          background: themeColors.divider
+        }}
+      />
+
+      {/* Closing Message */}
+      <p
+        className="counter-text"
+        style={{
+          fontFamily: fonts.displayKr,
+          fontSize: '13px',
+          fontWeight: 300,
+          lineHeight: 2,
+          color: themeColors.gray
+        }}
+        dangerouslySetInnerHTML={{ __html: displayClosingText.replace(/\n/g, '<br/>') }}
+      />
     </div>
   )
 }
@@ -1031,19 +1650,19 @@ const mockInvitation = {
         date: '2020.03',
         title: '운명처럼 다가온 만남',
         desc: '친구의 소개로 처음 만났던 그 날,\n어색한 인사를 나누며 시작된 우리의 이야기.\n카페에서 나눈 세 시간의 대화가\n우리 사랑의 첫 페이지가 되었습니다.',
-        images: ['/demo/story1.jpg'],
+        images: ['/sample/story1-1.png', '/sample/story1-2.png'],
       },
       {
         date: '2022.12',
         title: '함께한 첫 해외여행',
         desc: '제주도부터 시작해 일본, 유럽까지.\n함께 떠난 여행에서 서로를 더 깊이 알게 되었고,\n어떤 상황에서도 함께라면 즐거울 수 있다는 걸 깨달았습니다.',
-        images: ['/demo/story2.jpg', '/demo/story3.jpg'],
+        images: ['/sample/story2-1.png', '/sample/story2-2.png'],
       },
       {
         date: '2024.09',
         title: '프러포즈',
         desc: '우리가 처음 만났던 그 카페에서,\n떨리는 마음으로 건넨 반지와 함께\n평생을 약속했습니다.',
-        images: ['/demo/story4.jpg'],
+        images: ['/sample/story3-1.jpeg', '/sample/story3-2.png'],
       },
     ],
     closingText: '그리고 이제 드디어 부르는 서로의 이름에 \'신랑\', \'신부\'라는 호칭을 담습니다.',
@@ -1062,16 +1681,22 @@ const mockInvitation = {
     },
     interviews: [
       {
-        question: '첫 만남의 기억이 어떠셨나요?',
+        question: '상대방의 첫인상은 어땠나요?',
         answer: '처음 본 순간, 이 사람이다 싶었어요. 말로 설명하기 어려운 느낌이었는데, 대화를 나눌수록 확신이 들었습니다. 서로의 눈을 바라보며 웃던 그 순간을 잊을 수 없어요.',
-        images: ['/demo/interview1.jpg'],
+        images: ['/sample/interview1-1.png', '/sample/interview1-2.png'],
         bgClass: 'pink-bg',
       },
       {
         question: '결혼을 결심하게 된 계기는?',
         answer: '함께 있을 때 가장 나다울 수 있었어요. 아무리 힘든 일이 있어도 이 사람 곁에 있으면 괜찮아지더라구요. 평생 이 사람과 함께라면 어떤 일이든 해낼 수 있을 것 같았습니다.',
-        images: ['/demo/interview2.jpg'],
+        images: ['/sample/interview2-1.png', '/sample/interview2-2.png'],
         bgClass: 'white-bg',
+      },
+      {
+        question: '앞으로의 결혼생활 계획은?',
+        answer: '서로를 존중하고 배려하며 살고 싶어요. 작은 일상에서도 감사함을 잊지 않고, 함께 웃으며 나이 들어가고 싶습니다. 무엇보다 서로의 꿈을 응원하는 부부가 되고 싶어요.',
+        images: ['/sample/interview3-1.png', '/sample/interview3-2.png'],
+        bgClass: 'pink-bg',
       },
     ],
     guestbookQuestions: [
@@ -1160,6 +1785,9 @@ interface InvitationClientProps {
   content: InvitationContent | null
   isPaid: boolean
   isPreview?: boolean
+  overrideColorTheme?: string
+  overrideFontStyle?: string
+  skipIntro?: boolean
 }
 
 // Type for display invitation data
@@ -1270,6 +1898,7 @@ interface PageProps {
   onNavigate: (page: PageType) => void
   onScreenChange?: (screen: 'cover' | 'invitation') => void
   onOpenRsvp?: () => void
+  onOpenLightbox?: (index: number) => void
 }
 
 // 방명록 메시지 타입
@@ -1309,8 +1938,8 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
     const bgTimer = setTimeout(() => setCinematicActive(true), 100)
     const textTimer = setTimeout(() => setShowText(true), 1000)
     const fadeOutTimer = setTimeout(() => setCinematicFadeOut(true), 3200)
-    const coverTimer = setTimeout(() => setCoverAnimated(true), 3500)
-    const hideTimer = setTimeout(() => setCinematicHidden(true), 4200)
+    const coverTimer = setTimeout(() => setCoverAnimated(true), 3800)
+    const hideTimer = setTimeout(() => setCinematicHidden(true), 4700)
 
     return () => {
       clearTimeout(bgTimer)
@@ -1395,7 +2024,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
           style={{
             background: '#000',
             opacity: cinematicFadeOut ? 0 : 1,
-            transition: 'opacity 1s cubic-bezier(0.4, 0, 0.2, 1)',
+            transition: 'opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1)',
             pointerEvents: 'none'
           }}
         >
@@ -1407,8 +2036,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
                 ? `url(${invitation.media.coverImage})`
                 : 'linear-gradient(135deg, #333 0%, #111 100%)',
               backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              filter: 'grayscale(100%)'
+              backgroundPosition: 'center'
             }}
           />
 
@@ -1458,7 +2086,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
         onTouchEnd={handleTouchEnd}
         onWheel={handleWheel}
       >
-        {/* Cover Background Image - grayscale like original */}
+        {/* Cover Background Image */}
         <div
           className="absolute inset-0"
           style={{
@@ -1467,7 +2095,6 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
               : 'linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            filter: 'grayscale(100%)',
             opacity: coverAnimated ? 1 : 0,
             transform: coverAnimated ? 'scale(1)' : 'scale(1.03)',
             transition: 'opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1), transform 1.1s cubic-bezier(0.22, 1, 0.36, 1)'
@@ -1678,10 +2305,10 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
               e.stopPropagation()
               onNavigate('main')
             }}
-            className="text-[11px] font-light"
-            style={{ color: themeColors.gray }}
+            className="text-[13px] font-light"
+            style={{ color: themeColors.gray, fontFamily: fonts.displayKr }}
           >
-            Next Story
+            다음 이야기
           </button>
           <div className="flex flex-col items-center mt-4">
             <div
@@ -1889,7 +2516,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
 }
 
 // Main Page Component - matching template exactly
-function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, onOpenRsvp }: PageProps) {
+function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, onOpenRsvp, onOpenLightbox }: PageProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
 
   // 방명록 상태
@@ -1897,6 +2524,10 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
   const [guestName, setGuestName] = useState('')
   const [guestMessage, setGuestMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // 방명록 모달 상태
+  const [guestbookModalOpen, setGuestbookModalOpen] = useState(false)
+  const [guestbookModalIndex, setGuestbookModalIndex] = useState(0)
 
   // 방명록 메시지 불러오기
   useEffect(() => {
@@ -1968,35 +2599,31 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
   // 방명록 카드 색상 배열
   const cardColors = ['#FFF9F0', '#F0F7FF', '#F5FFF0', '#FFF0F5', '#F0FFFF']
 
+  // 방명록 모달 열기/닫기
+  const openGuestbookModal = (index: number) => {
+    setGuestbookModalIndex(index)
+    setGuestbookModalOpen(true)
+    document.body.classList.add('guestbook-modal-open')
+  }
+
+  const closeGuestbookModal = () => {
+    setGuestbookModalOpen(false)
+    document.body.classList.remove('guestbook-modal-open')
+  }
+
   return (
     <div className="relative">
-      {/* Back to Intro Button */}
-      <button
-        onClick={() => onNavigate('intro')}
-        className="fixed top-4 left-4 z-40 flex items-center gap-1.5 px-3 py-2 rounded-full text-[10px] font-light"
-        style={{
-          background: 'rgba(255,255,255,0.9)',
-          color: themeColors.gray,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-        }}
-      >
-        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-        </svg>
-        Intro
-      </button>
-
       {/* Mini Hero */}
       <section className="relative h-[200px] flex items-end justify-center" style={{ backgroundImage: invitation.media.coverImage ? `url(${invitation.media.coverImage})` : 'linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-        <div className="relative z-10 text-center text-white pb-8"><p className="text-xs font-light" style={{ fontFamily: fonts.displayKr, letterSpacing: '1.5px' }}>{invitation.groom.name} & {invitation.bride.name}<br/>Getting Married</p></div>
+        <div className="relative z-10 text-center text-white pb-8"><p className="text-xs font-light" style={{ fontFamily: fonts.displayKr, letterSpacing: '1.5px' }}>{invitation.groom.name} & {invitation.bride.name}<br/>결혼합니다</p></div>
       </section>
 
       {/* Title Section - with divider bar animations */}
       <DividerSection
         lines={[
           `${invitation.groom.name} & ${invitation.bride.name}`,
-          'Getting Married'
+          '결혼합니다'
         ]}
         dividerColor={themeColors.divider}
         fontFamily={fonts.displayKr}
@@ -2056,7 +2683,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
       {/* Our Story Title Section - with divider bar animations and visibility toggle */}
       {invitation.sectionVisibility?.ourStory !== false && invitation.relationship.stories.some(s => s.title || s.desc) && (
         <DividerSection
-          lines={['Beginning of Love', 'Our Moments']}
+          lines={['사랑이 시작된', '작은 순간들']}
           dividerColor={themeColors.divider}
           fontFamily={fonts.displayKr}
           textColor={themeColors.text}
@@ -2076,53 +2703,24 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
       ) : null)}
 
       {/* Anniversary Counter Section - with visibility toggle */}
-      {invitation.sectionVisibility?.ourStory !== false && invitation.relationship.startDate && (() => {
-        const anniversary = calculateAnniversary(invitation.relationship.startDate)
-        const closingText = invitation.relationship.closingText || '그리고 이제 드디어 부르는 서로의 이름에 \'신랑\', \'신부\'라는 호칭을 담습니다.'
-        return (
-          <AnimatedSection
-            className="py-14 px-7 text-center"
-            style={{ background: `linear-gradient(180deg, ${themeColors.sectionBg} 0%, ${themeColors.cardBg} 100%)` }}
-          >
-            {/* 3-column numbers */}
-            <div className="flex justify-center items-baseline gap-8 mb-10">
-              <div className="text-center">
-                <p className="text-[16px] font-normal" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>
-                  {anniversary.days.toLocaleString()}
-                  <span className="text-[10px] font-light ml-0.5" style={{ color: themeColors.gray }}>일</span>
-                </p>
-              </div>
-              <div className="text-center">
-                <p className="text-[16px] font-normal" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>
-                  {anniversary.weeks.toLocaleString()}
-                  <span className="text-[10px] font-light ml-0.5" style={{ color: themeColors.gray }}>주</span>
-                </p>
-              </div>
-              <div className="text-center">
-                <p className="text-[16px] font-normal" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>
-                  {anniversary.yearsMonths}
-                </p>
-              </div>
-            </div>
-
-            {/* Divider */}
-            <div className="w-px h-5 mx-auto mb-7" style={{ background: themeColors.divider }} />
-
-            {/* Closing Message */}
-            <p
-              className="text-[11px] font-light leading-[2]"
-              style={{ fontFamily: fonts.displayKr, color: themeColors.gray }}
-              dangerouslySetInnerHTML={{ __html: closingText.replace(/\n/g, '<br/>') }}
-            />
-          </AnimatedSection>
-        )
-      })()}
+      {invitation.sectionVisibility?.ourStory !== false && invitation.relationship.startDate && (
+        <AnniversaryCounterSection
+          startDate={invitation.relationship.startDate}
+          closingText={invitation.relationship.closingText}
+          fonts={fonts}
+          themeColors={themeColors}
+        />
+      )}
 
       {/* Gallery Section */}
       <AnimatedSection className="px-5 py-10" style={{ background: themeColors.cardBg }}>
         <div className="grid grid-cols-2 gap-2">
           {invitation.gallery.images && invitation.gallery.images.length > 0 ? invitation.gallery.images.map((img, i) => (
-            <div key={i} className="aspect-square rounded overflow-hidden">
+            <div
+              key={i}
+              className="aspect-square rounded overflow-hidden cursor-pointer transition-transform hover:scale-[1.02]"
+              onClick={() => onOpenLightbox?.(i)}
+            >
               <div className="w-full h-full bg-cover bg-center bg-gray-100" style={{ backgroundImage: img ? `url(${img})` : undefined }} />
             </div>
           )) : [1, 2, 3, 4, 5, 6].map(i => (
@@ -2136,7 +2734,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
       {/* Interview Title Section - with divider bar animations and visibility toggle */}
       {invitation.sectionVisibility?.interview !== false && invitation.content.interviews.some(i => i.question || i.answer) && (
         <DividerSection
-          lines={['About Marriage', 'Our Story']}
+          lines={['결혼에 관한', '우리의 이야기']}
           dividerColor={themeColors.divider}
           fontFamily={fonts.displayKr}
           textColor={themeColors.text}
@@ -2300,11 +2898,12 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
                 {guestbookMessages.slice(0, 6).map((msg, index) => (
                   <div
                     key={msg.id}
-                    className="w-[130px] px-3 py-3.5 rounded-lg text-left shadow-sm"
+                    className="w-[130px] px-3 py-3.5 rounded-lg text-left shadow-sm cursor-pointer transition-transform hover:scale-105"
                     style={{
                       background: cardColors[index % cardColors.length],
                       transform: `rotate(${index % 2 === 0 ? -3 : 2}deg)`,
                     }}
+                    onClick={() => openGuestbookModal(index)}
                   >
                     {msg.question && (
                       <p className="text-[9px] font-light text-gray-400 mb-1.5 leading-[1.4]">{msg.question}</p>
@@ -2343,21 +2942,222 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
         <p className="text-[10px] font-light" style={{ color: '#999' }}>Thank you for celebrating with us</p>
         <p className="text-[9px] font-light mt-2" style={{ color: '#ccc' }}>Made with dear drawer</p>
       </div>
+
+      {/* Guestbook Modal */}
+      <GuestbookModal
+        messages={guestbookMessages}
+        isOpen={guestbookModalOpen}
+        startIndex={guestbookModalIndex}
+        onClose={closeGuestbookModal}
+        cardColors={cardColors}
+        fonts={fonts}
+        themeColors={themeColors}
+      />
     </div>
   )
 }
 
-export default function InvitationClient({ invitation: dbInvitation, content, isPaid, isPreview = false }: InvitationClientProps) {
+// Guestbook Modal Component with swipe functionality
+function GuestbookModal({
+  messages,
+  isOpen,
+  startIndex,
+  onClose,
+  cardColors,
+  fonts,
+  themeColors,
+}: {
+  messages: GuestbookMessage[]
+  isOpen: boolean
+  startIndex: number
+  onClose: () => void
+  cardColors: string[]
+  fonts: { body: string; displayKr: string; display: string }
+  themeColors: { text: string; primary: string; background: string; cardBg: string; gray: string; divider: string }
+}) {
+  const [currentIndex, setCurrentIndex] = useState(startIndex)
+  const [swipingDirection, setSwipingDirection] = useState<'none' | 'up' | 'down'>('none')
+  const [dragY, setDragY] = useState(0)
+  const touchStartY = useRef(0)
+  const isDragging = useRef(false)
+
+  // Reset index when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentIndex(startIndex)
+    }
+  }, [isOpen, startIndex])
+
+  const handleNextCard = () => {
+    if (currentIndex < messages.length - 1) {
+      setSwipingDirection('up')
+      setTimeout(() => {
+        setCurrentIndex((prev) => prev + 1)
+        setSwipingDirection('none')
+      }, 300)
+    }
+  }
+
+  const handlePrevCard = () => {
+    if (currentIndex > 0) {
+      setSwipingDirection('down')
+      setTimeout(() => {
+        setCurrentIndex((prev) => prev - 1)
+        setSwipingDirection('none')
+      }, 300)
+    } else {
+      // Close modal if at first card and swiping down
+      onClose()
+    }
+  }
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY
+    isDragging.current = true
+    setDragY(0)
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging.current) return
+    const deltaY = e.touches[0].clientY - touchStartY.current
+    setDragY(deltaY)
+  }
+
+  const handleTouchEnd = () => {
+    isDragging.current = false
+    const threshold = 80
+
+    if (dragY < -threshold) {
+      // Swipe up - next card
+      handleNextCard()
+    } else if (dragY > threshold) {
+      // Swipe down - previous card or close
+      handlePrevCard()
+    }
+    setDragY(0)
+  }
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    touchStartY.current = e.clientY
+    isDragging.current = true
+    setDragY(0)
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging.current) return
+    const deltaY = e.clientY - touchStartY.current
+    setDragY(deltaY)
+  }
+
+  const handleMouseUp = () => {
+    isDragging.current = false
+    const threshold = 80
+
+    if (dragY < -threshold) {
+      handleNextCard()
+    } else if (dragY > threshold) {
+      handlePrevCard()
+    }
+    setDragY(0)
+  }
+
+  const handleMouseLeave = () => {
+    if (isDragging.current) {
+      isDragging.current = false
+      setDragY(0)
+    }
+  }
+
+  // Get visible cards (current and next 2)
+  const visibleCards = messages.slice(currentIndex, currentIndex + 3)
+
+  if (!isOpen || messages.length === 0) return null
+
+  return (
+    <div
+      className={`guestbook-modal ${isOpen ? 'active' : ''}`}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose()
+      }}
+    >
+      <button className="guestbook-modal-close" onClick={onClose}>
+        ✕
+      </button>
+
+      <div className="guestbook-stack">
+        {visibleCards.map((msg, idx) => {
+          const actualIndex = currentIndex + idx
+          const isTopCard = idx === 0
+          const cardStyle: React.CSSProperties = {
+            background: cardColors[actualIndex % cardColors.length],
+            zIndex: 3 - idx,
+            transform: isTopCard && dragY !== 0
+              ? `translateY(${dragY}px) rotate(${dragY > 0 ? 2 : -2}deg)`
+              : undefined,
+          }
+
+          return (
+            <div
+              key={msg.id}
+              className={`guestbook-stack-card ${isTopCard && swipingDirection === 'up' ? 'swipe-up' : ''} ${isTopCard && swipingDirection === 'down' ? 'swipe-down' : ''} ${isTopCard && dragY !== 0 ? 'swiping' : ''}`}
+              style={cardStyle}
+              onTouchStart={isTopCard ? handleTouchStart : undefined}
+              onTouchMove={isTopCard ? handleTouchMove : undefined}
+              onTouchEnd={isTopCard ? handleTouchEnd : undefined}
+              onMouseDown={isTopCard ? handleMouseDown : undefined}
+              onMouseMove={isTopCard ? handleMouseMove : undefined}
+              onMouseUp={isTopCard ? handleMouseUp : undefined}
+              onMouseLeave={isTopCard ? handleMouseLeave : undefined}
+            >
+              {msg.question && (
+                <p className="text-[10px] font-light text-gray-400 mb-3 leading-[1.5]">{msg.question}</p>
+              )}
+              <p className="text-[14px] font-light leading-[1.8] mb-4" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>
+                {msg.message}
+              </p>
+              <p className="text-[11px] font-light text-gray-400">- {msg.guest_name}</p>
+            </div>
+          )
+        })}
+
+        {/* Swipe hint */}
+        <div className="guestbook-swipe-hint">
+          위로 밀어서 다음
+        </div>
+
+        {/* Card counter */}
+        <div className="absolute -bottom-24 left-1/2 -translate-x-1/2 text-[11px] text-gray-400">
+          {currentIndex + 1} / {messages.length}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function InvitationClient({ invitation: dbInvitation, content, isPaid, isPreview = false, overrideColorTheme, overrideFontStyle, skipIntro = false }: InvitationClientProps) {
   // Transform DB data to display format
   const invitation = transformToDisplayData(dbInvitation, content)
 
-  const [currentPage, setCurrentPage] = useState<PageType>('intro')
+  // Override colorTheme if provided via URL parameter
+  const effectiveColorTheme = (overrideColorTheme && overrideColorTheme in colorThemes)
+    ? overrideColorTheme as ColorTheme
+    : invitation.colorTheme
+
+  // Override fontStyle if provided via URL parameter
+  const effectiveFontStyle = (overrideFontStyle && overrideFontStyle in fontStyles)
+    ? overrideFontStyle as FontStyle
+    : invitation.fontStyle
+
+  // If skipIntro is true, start directly on main page
+  const [currentPage, setCurrentPage] = useState<PageType>(skipIntro ? 'main' : 'intro')
   const [introScreen, setIntroScreen] = useState<'cover' | 'invitation'>('cover')
   const audioRef = useRef<HTMLAudioElement>(null)
   const [openModalType, setOpenModalType] = useState<'none' | 'rsvp'>('none')
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState(0)
 
-  const themeColors = colorThemes[invitation.colorTheme]
-  const fonts = fontStyles[invitation.fontStyle]
+  const themeColors = colorThemes[effectiveColorTheme]
+  const fonts = fontStyles[effectiveFontStyle]
 
   // Show floating button only on invitation screen or main page
   const showFloatingButton = currentPage === 'main' || (currentPage === 'intro' && introScreen === 'invitation')
@@ -2392,76 +3192,97 @@ export default function InvitationClient({ invitation: dbInvitation, content, is
   ]
 
   return (
-    <WatermarkOverlay isPaid={isPaid || isPreview} className="relative w-full min-h-screen">
-      <div
-        className={`relative w-full min-h-screen overflow-x-hidden theme-${invitation.colorTheme}`}
-        style={{
-          backgroundColor: themeColors.background,
-          fontFamily: fonts.body,
-          color: themeColors.text,
-        }}
-      >
-        <style dangerouslySetInnerHTML={{ __html: globalStyles }} />
+    <>
+      <style dangerouslySetInnerHTML={{ __html: globalStyles }} />
+      <div className="desktop-frame-wrapper">
+        <div className="mobile-frame">
+          <div className="mobile-frame-screen">
+            <div className="mobile-frame-content">
+              <WatermarkOverlay isPaid={isPaid || isPreview} className="relative w-full min-h-screen">
+                <div
+                  className={`relative w-full min-h-screen overflow-x-hidden theme-${invitation.colorTheme}`}
+                  style={{
+                    backgroundColor: themeColors.background,
+                    fontFamily: fonts.body,
+                    color: themeColors.text,
+                  }}
+                >
+                  {/* Page Content */}
+                  {currentPage === 'intro' ? (
+                    <IntroPage
+                      invitation={invitation}
+                      invitationId={dbInvitation.id}
+                      fonts={fonts}
+                      themeColors={themeColors}
+                      onNavigate={setCurrentPage}
+                      onScreenChange={setIntroScreen}
+                    />
+                  ) : (
+                    <MainPage
+                      invitation={invitation}
+                      invitationId={dbInvitation.id}
+                      fonts={fonts}
+                      themeColors={themeColors}
+                      onNavigate={setCurrentPage}
+                      onOpenRsvp={() => setOpenModalType('rsvp')}
+                      onOpenLightbox={(index) => {
+                        setLightboxIndex(index)
+                        setLightboxOpen(true)
+                      }}
+                    />
+                  )}
 
-      {/* Page Content */}
-      {currentPage === 'intro' ? (
-        <IntroPage
-          invitation={invitation}
-          invitationId={dbInvitation.id}
-          fonts={fonts}
-          themeColors={themeColors}
-          onNavigate={setCurrentPage}
-          onScreenChange={setIntroScreen}
-        />
-      ) : (
-        <MainPage
-          invitation={invitation}
-          invitationId={dbInvitation.id}
-          fonts={fonts}
-          themeColors={themeColors}
-          onNavigate={setCurrentPage}
-          onOpenRsvp={() => setOpenModalType('rsvp')}
-        />
-      )}
+                  {/* Gallery Lightbox */}
+                  <GalleryLightbox
+                    images={invitation.gallery?.images || []}
+                    isOpen={lightboxOpen}
+                    initialIndex={lightboxIndex}
+                    onClose={() => setLightboxOpen(false)}
+                  />
 
-      {/* Floating Button */}
-      {showFloatingButton && (
-        <GuestFloatingButton
-          themeColors={themeColors}
-          fonts={fonts}
-          openModal={openModalType}
-          onModalClose={() => setOpenModalType('none')}
-          showTooltip={currentPage === 'intro' && introScreen === 'invitation'}
-          invitation={{
-            venue_name: invitation.wedding.venue.name,
-            venue_address: invitation.wedding.venue.address,
-            contacts,
-            accounts,
-            directions: invitation.wedding.directions,
-            rsvpEnabled: invitation.rsvpEnabled,
-            rsvpAllowGuestCount: invitation.rsvpAllowGuestCount,
-            invitationId: invitation.id,
-            groomName: invitation.groom.name,
-            brideName: invitation.bride.name,
-            weddingDate: invitation.wedding.date,
-            weddingTime: invitation.wedding.timeDisplay || invitation.wedding.time,
-            thumbnailUrl: content?.meta?.kakaoThumbnail || content?.meta?.ogImage || invitation.media?.coverImage || invitation.gallery?.images?.[0] || '',
-            shareTitle: content?.meta?.title,
-            shareDescription: content?.meta?.description,
-          }}
-        />
-      )}
+                  {/* Floating Button */}
+                  {showFloatingButton && (
+                    <GuestFloatingButton
+                      themeColors={themeColors}
+                      fonts={fonts}
+                      openModal={openModalType}
+                      onModalClose={() => setOpenModalType('none')}
+                      showTooltip={currentPage === 'intro' && introScreen === 'invitation'}
+                      invitation={{
+                        venue_name: invitation.wedding.venue.name,
+                        venue_address: invitation.wedding.venue.address,
+                        contacts,
+                        accounts,
+                        directions: invitation.wedding.directions,
+                        rsvpEnabled: invitation.rsvpEnabled,
+                        rsvpAllowGuestCount: invitation.rsvpAllowGuestCount,
+                        invitationId: invitation.id,
+                        groomName: invitation.groom.name,
+                        brideName: invitation.bride.name,
+                        weddingDate: invitation.wedding.date,
+                        weddingTime: invitation.wedding.timeDisplay || invitation.wedding.time,
+                        thumbnailUrl: content?.meta?.kakaoThumbnail || content?.meta?.ogImage || invitation.media?.coverImage || invitation.gallery?.images?.[0] || '',
+                        shareTitle: content?.meta?.title,
+                        shareDescription: content?.meta?.description,
+                      }}
+                    />
+                  )}
 
-      {/* Music Toggle */}
-      <MusicToggle audioRef={audioRef} isVisible={showMusicToggle} shouldAutoPlay={currentPage === 'main'} />
+                  {/* Music Toggle */}
+                  <MusicToggle audioRef={audioRef} isVisible={showMusicToggle} shouldAutoPlay={currentPage === 'main'} />
 
-        {/* Background Music */}
-        {invitation.media.bgm && (
-          <audio ref={audioRef} loop preload="auto">
-            <source src={invitation.media.bgm} type="audio/mpeg" />
-          </audio>
-        )}
+                  {/* Background Music */}
+                  {invitation.media.bgm && (
+                    <audio ref={audioRef} loop preload="auto">
+                      <source src={invitation.media.bgm} type="audio/mpeg" />
+                    </audio>
+                  )}
+                </div>
+              </WatermarkOverlay>
+            </div>
+          </div>
+        </div>
       </div>
-    </WatermarkOverlay>
+    </>
   )
 }

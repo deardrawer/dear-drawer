@@ -823,6 +823,26 @@ const globalStyles = `
       -ms-overflow-style: none;
       scrollbar-width: none;
     }
+
+    /* Fixed UI container - positioned relative to mobile-frame-screen */
+    .mobile-frame-fixed-ui {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      z-index: 40;
+    }
+
+    .mobile-frame-fixed-ui > * {
+      pointer-events: auto;
+    }
+
+    /* Override fixed positioning for elements inside fixed-ui container */
+    .mobile-frame-fixed-ui .fixed {
+      position: absolute !important;
+    }
   }
 
   @media (max-width: 767px) {
@@ -839,6 +859,10 @@ const globalStyles = `
     }
 
     .mobile-frame-content {
+      display: contents;
+    }
+
+    .mobile-frame-fixed-ui {
       display: contents;
     }
   }
@@ -3240,37 +3264,6 @@ export default function InvitationClient({ invitation: dbInvitation, content, is
                     onClose={() => setLightboxOpen(false)}
                   />
 
-                  {/* Floating Button */}
-                  {showFloatingButton && (
-                    <GuestFloatingButton
-                      themeColors={themeColors}
-                      fonts={fonts}
-                      openModal={openModalType}
-                      onModalClose={() => setOpenModalType('none')}
-                      showTooltip={currentPage === 'intro' && introScreen === 'invitation'}
-                      invitation={{
-                        venue_name: invitation.wedding.venue.name,
-                        venue_address: invitation.wedding.venue.address,
-                        contacts,
-                        accounts,
-                        directions: invitation.wedding.directions,
-                        rsvpEnabled: invitation.rsvpEnabled,
-                        rsvpAllowGuestCount: invitation.rsvpAllowGuestCount,
-                        invitationId: invitation.id,
-                        groomName: invitation.groom.name,
-                        brideName: invitation.bride.name,
-                        weddingDate: invitation.wedding.date,
-                        weddingTime: invitation.wedding.timeDisplay || invitation.wedding.time,
-                        thumbnailUrl: content?.meta?.kakaoThumbnail || content?.meta?.ogImage || invitation.media?.coverImage || invitation.gallery?.images?.[0] || '',
-                        shareTitle: content?.meta?.title,
-                        shareDescription: content?.meta?.description,
-                      }}
-                    />
-                  )}
-
-                  {/* Music Toggle */}
-                  <MusicToggle audioRef={audioRef} isVisible={showMusicToggle} shouldAutoPlay={currentPage === 'main'} />
-
                   {/* Background Music */}
                   {invitation.media.bgm && (
                     <audio ref={audioRef} loop preload="auto">
@@ -3279,6 +3272,40 @@ export default function InvitationClient({ invitation: dbInvitation, content, is
                   )}
                 </div>
               </WatermarkOverlay>
+            </div>
+
+            {/* Fixed UI elements - outside scroll container */}
+            <div className="mobile-frame-fixed-ui">
+              {/* Floating Button */}
+              {showFloatingButton && (
+                <GuestFloatingButton
+                  themeColors={themeColors}
+                  fonts={fonts}
+                  openModal={openModalType}
+                  onModalClose={() => setOpenModalType('none')}
+                  showTooltip={currentPage === 'intro' && introScreen === 'invitation'}
+                  invitation={{
+                    venue_name: invitation.wedding.venue.name,
+                    venue_address: invitation.wedding.venue.address,
+                    contacts,
+                    accounts,
+                    directions: invitation.wedding.directions,
+                    rsvpEnabled: invitation.rsvpEnabled,
+                    rsvpAllowGuestCount: invitation.rsvpAllowGuestCount,
+                    invitationId: invitation.id,
+                    groomName: invitation.groom.name,
+                    brideName: invitation.bride.name,
+                    weddingDate: invitation.wedding.date,
+                    weddingTime: invitation.wedding.timeDisplay || invitation.wedding.time,
+                    thumbnailUrl: content?.meta?.kakaoThumbnail || content?.meta?.ogImage || invitation.media?.coverImage || invitation.gallery?.images?.[0] || '',
+                    shareTitle: content?.meta?.title,
+                    shareDescription: content?.meta?.description,
+                  }}
+                />
+              )}
+
+              {/* Music Toggle */}
+              <MusicToggle audioRef={audioRef} isVisible={showMusicToggle} shouldAutoPlay={currentPage === 'main'} />
             </div>
           </div>
         </div>

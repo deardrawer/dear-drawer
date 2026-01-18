@@ -2101,7 +2101,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
   ]
 
   return (
-    <div>
+    <div className="relative w-full h-screen">
       {/* CINEMATIC INTRO - Fixed overlay that auto fades out (matching original template) */}
       {!cinematicHidden && (
         <div
@@ -2159,9 +2159,8 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
       {/* COVER SECTION - matching original template exactly */}
       {currentScreen === 'cover' && (
       <section
-        className="relative flex flex-col justify-center items-center cursor-pointer"
+        className="fixed inset-0 flex flex-col justify-center items-center cursor-pointer z-40"
         style={{
-          height: '100vh',
           overflow: 'hidden',
           opacity: screenFadeOut ? 0 : 1,
           transition: 'opacity 0.5s ease'
@@ -2191,7 +2190,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
 
         {/* Cover Content - centered */}
         <div
-          className="relative z-10 text-center text-white px-5"
+          className="relative z-10 w-full text-center text-white px-5"
         >
           {/* Names */}
           <p
@@ -2555,45 +2554,6 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
                 카카오맵
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Speech Bubble Tooltip */}
-      {currentScreen === 'invitation' && (
-        <div
-          className="fixed z-50 transition-all duration-300"
-          style={{
-            bottom: '80px',
-            right: '8px',
-            opacity: showTooltip ? 1 : 0,
-            visibility: showTooltip ? 'visible' : 'hidden',
-            transform: showTooltip ? 'translateY(0)' : 'translateY(10px)'
-          }}
-        >
-          <div
-            className="relative px-4 py-2.5 rounded-2xl text-xs text-gray-700 whitespace-nowrap"
-            style={{
-              background: '#fff',
-              boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
-              fontFamily: "'Noto Sans KR', sans-serif",
-            }}
-          >
-            결혼식 정보는 여기에서
-            {/* Speech bubble tail */}
-            <div
-              className="absolute"
-              style={{
-                bottom: '-8px',
-                right: '20px',
-                width: '0',
-                height: '0',
-                borderLeft: '8px solid transparent',
-                borderRight: '8px solid transparent',
-                borderTop: '10px solid #fff',
-                filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.1))'
-              }}
-            />
           </div>
         </div>
       )}

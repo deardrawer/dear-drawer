@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -10,10 +10,6 @@ import {
   Tone,
   Version,
 } from '@/types/ai-generator'
-
-// 저장 키
-const STORAGE_KEY_GROOM = 'wedding-ai-profile-groom'
-const STORAGE_KEY_BRIDE = 'wedding-ai-profile-bride'
 
 // 비유 옵션
 const METAPHOR_OPTIONS = [
@@ -253,41 +249,13 @@ function VersionCard({
 export default function ProfileForm({ data, onChange, role }: ProfileFormProps) {
   const [version, setVersion] = useState<Version>(data.version || 'short')
 
-  // 로컬 스토리지에서 불러오기
-  useEffect(() => {
-    const key = role === 'groom' ? STORAGE_KEY_GROOM : STORAGE_KEY_BRIDE
-    const saved = localStorage.getItem(key)
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved)
-        if (parsed && !data.name) {
-          onChange(parsed)
-          setVersion(parsed.version || 'short')
-        }
-      } catch (e) {
-        console.error('Failed to load saved profile form data')
-      }
-    }
-  }, [role])
-
-  // 로컬 스토리지 저장
-  const saveToStorage = useCallback((newData: ProfileFormData) => {
-    try {
-      const key = role === 'groom' ? STORAGE_KEY_GROOM : STORAGE_KEY_BRIDE
-      localStorage.setItem(key, JSON.stringify(newData))
-    } catch (e) {
-      console.error('Failed to save profile form data')
-    }
-  }, [role])
-
   // 버전 변경시 데이터 업데이트
   useEffect(() => {
     if (data.version !== version) {
       const newData = { ...data, version }
       onChange(newData)
-      saveToStorage(newData)
     }
-  }, [version])
+  }, [version, data, onChange])
 
   const updateField = <K extends keyof ProfileFormData>(
     field: K,
@@ -295,7 +263,6 @@ export default function ProfileForm({ data, onChange, role }: ProfileFormProps) 
   ) => {
     const newData = { ...data, [field]: value }
     onChange(newData)
-    saveToStorage(newData)
   }
 
   const personLabel = role === 'groom' ? '신랑' : '신부'

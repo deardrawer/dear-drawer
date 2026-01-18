@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -16,8 +16,6 @@ import {
   Version,
 } from '@/types/ai-generator'
 
-const STORAGE_KEY = 'wedding-ai-interview-form'
-
 interface InterviewFormProps {
   data: InterviewFormData
   onChange: (data: InterviewFormData) => void
@@ -25,10 +23,10 @@ interface InterviewFormProps {
   isGenerating?: boolean
 }
 
-// 버전별 제한
+// 버전별 제한 (둘 다 2-3개 질문, 답변 상세함만 다름)
 const VERSION_LIMITS = {
-  short: { topicsMin: 2, topicsMax: 3, questionsMin: 3, questionsMax: 4 },
-  rich: { topicsMin: 4, topicsMax: 5, questionsMin: 6, questionsMax: 8 }
+  short: { topicsMin: 2, topicsMax: 3, questionsMin: 2, questionsMax: 3 },
+  rich: { topicsMin: 2, topicsMax: 3, questionsMin: 2, questionsMax: 3 }
 }
 
 // 섹션 컴포넌트
@@ -73,36 +71,23 @@ function FieldLabel({
 function VersionCard({
   selected,
   onClick,
-  icon,
-  title,
-  subtitle,
-  description
+  children
 }: {
   selected: boolean
   onClick: () => void
-  icon: string
-  title: string
-  subtitle: string
-  description: string
+  children: React.ReactNode
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`p-4 rounded-xl border-2 text-left transition-all min-h-[120px] ${
+      className={`p-4 rounded-xl border-2 text-left transition-all ${
         selected
           ? 'border-rose-500 bg-rose-50 ring-2 ring-rose-500/20'
           : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
       }`}
     >
-      <div className="text-2xl mb-2">{icon}</div>
-      <h4 className={`font-semibold ${selected ? 'text-rose-700' : 'text-gray-900'}`}>
-        {title}
-      </h4>
-      <p className={`text-sm ${selected ? 'text-rose-600' : 'text-gray-600'}`}>
-        {subtitle}
-      </p>
-      <p className="text-xs text-gray-500 mt-1">{description}</p>
+      {children}
     </button>
   )
 }
@@ -131,37 +116,12 @@ export default function InterviewForm({
 }: InterviewFormProps) {
   const limits = VERSION_LIMITS[data.version]
 
-  // 로컬 스토리지에서 불러오기
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved)
-        if (parsed && !data.topics?.length && !data.selectedQuestions?.length) {
-          onChange(parsed)
-        }
-      } catch (e) {
-        console.error('Failed to load saved interview form data')
-      }
-    }
-  }, [])
-
-  // 로컬 스토리지에 저장
-  const saveToStorage = useCallback((newData: InterviewFormData) => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newData))
-    } catch (e) {
-      console.error('Failed to save interview form data')
-    }
-  }, [])
-
   const updateField = <K extends keyof InterviewFormData>(
     field: K,
     value: InterviewFormData[K]
   ) => {
     const newData = { ...data, [field]: value }
     onChange(newData)
-    saveToStorage(newData)
   }
 
   // 버전 변경시 선택 초기화
@@ -174,7 +134,6 @@ export default function InterviewForm({
       customQuestions: []
     }
     onChange(newData)
-    saveToStorage(newData)
   }
 
   // 주제 토글
@@ -192,7 +151,6 @@ export default function InterviewForm({
 
     const newData = { ...data, topics: newTopics }
     onChange(newData)
-    saveToStorage(newData)
   }
 
   // 질문 토글
@@ -210,7 +168,6 @@ export default function InterviewForm({
 
     const newData = { ...data, selectedQuestions: newQuestions }
     onChange(newData)
-    saveToStorage(newData)
   }
 
   // 직접 입력 질문 추가
@@ -226,7 +183,6 @@ export default function InterviewForm({
       ]
     }
     onChange(newData)
-    saveToStorage(newData)
   }
 
   // 질문 삭제
@@ -237,7 +193,6 @@ export default function InterviewForm({
       customQuestions: current.filter((_, i) => i !== index)
     }
     onChange(newData)
-    saveToStorage(newData)
   }
 
   // 질문 업데이트
@@ -247,7 +202,6 @@ export default function InterviewForm({
     updated[index] = { ...updated[index], [field]: value }
     const newData = { ...data, customQuestions: updated }
     onChange(newData)
-    saveToStorage(newData)
   }
 
   // 힌트 업데이트
@@ -256,29 +210,28 @@ export default function InterviewForm({
     hints[key] = { ...(hints[key] || {}), [type]: value }
     const newData = { ...data, hints }
     onChange(newData)
-    saveToStorage(newData)
   }
 
-  // 유효성 검사
+  // 유효성 검사 (모든 타입 공통: 2-3개 질문)
   const isValid = useMemo(() => {
     if (data.type === 'auto') {
       const topicsCount = data.topics?.length || 0
-      return topicsCount >= limits.topicsMin && !!data.answerStyle
+      return topicsCount >= 2 && topicsCount <= 3 && !!data.answerStyle
     }
 
     if (data.type === 'popular') {
       const questionsCount = data.selectedQuestions?.length || 0
-      return questionsCount >= limits.questionsMin
+      return questionsCount >= 2 && questionsCount <= 3
     }
 
     if (data.type === 'custom') {
       const questions = data.customQuestions || []
-      if (questions.length < limits.questionsMin) return false
+      if (questions.length < 2 || questions.length > 3) return false
       return questions.every(q => q.question.trim() && q.answerStyle)
     }
 
     return false
-  }, [data, limits])
+  }, [data])
 
   return (
     <div className="space-y-8">
@@ -292,24 +245,56 @@ export default function InterviewForm({
       </div>
 
       {/* 버전 선택 */}
-      <Section title="인터뷰 스타일을 선택해주세요">
+      <Section title="답변 스타일을 선택해주세요">
         <div className="grid grid-cols-2 gap-4">
           <VersionCard
             selected={data.version === 'short'}
             onClick={() => handleVersionChange('short')}
-            icon="🎤"
-            title="간결한 인터뷰"
-            subtitle="3-4개 질문"
-            description="빠르게 핵심만"
-          />
+          >
+            <h4 className={`font-semibold ${data.version === 'short' ? 'text-rose-700' : 'text-gray-900'}`}>
+              💬 간결한 답변
+            </h4>
+            <p className="font-semibold text-pink-600 text-sm mt-1">2-3개 질문</p>
+            <p className="text-xs text-gray-600 mt-2">
+              핵심 내용 중심으로 간결하게 (각 5-7문장)
+            </p>
+            <div className="mt-3 p-3 bg-gray-50 rounded text-xs text-gray-600 leading-relaxed">
+              <p className="font-medium mb-1">예시:</p>
+              <p className="whitespace-pre-line">{`일상 속 사소한 순간부터
+슬픔과 기쁨까지
+모든 걸 함께 나눌 수 있고,
+어떤 일이 있을 때 가장 먼저 떠올릴 수 있는
+내 편이 생긴다는 게
+제일 큰 행복이라고 생각해요.`}</p>
+            </div>
+          </VersionCard>
+
           <VersionCard
             selected={data.version === 'rich'}
             onClick={() => handleVersionChange('rich')}
-            icon="🎬"
-            title="풍부한 인터뷰"
-            subtitle="6-8개 질문"
-            description="깊이있게 상세하게"
-          />
+          >
+            <h4 className={`font-semibold ${data.version === 'rich' ? 'text-rose-700' : 'text-gray-900'}`}>
+              📝 풍부한 답변
+            </h4>
+            <p className="font-semibold text-pink-600 text-sm mt-1">2-3개 질문</p>
+            <p className="text-xs text-gray-600 mt-2">
+              구체적인 에피소드와 디테일 포함 (각 10-15문장)
+            </p>
+            <div className="mt-3 p-3 bg-gray-50 rounded text-xs text-gray-600 leading-relaxed">
+              <p className="font-medium mb-1">예시:</p>
+              <p className="whitespace-pre-line">{`사실 처음부터 순탄하진 않았어요.
+원래는 2023년에 결혼을 하려고 했는데
+여러 사정이 겹치면서 한 번 미뤄졌거든요.
+
+그때 이후로는
+'결혼'이라는 말이 괜히 어색하게
+느껴지기도 했고요.
+
+그러다 2025년 2월,
+주경의 어머니의 한마디로
+모든 게 정말 일사천리로 흘러갔어요...`}</p>
+            </div>
+          </VersionCard>
         </div>
       </Section>
 
@@ -334,16 +319,19 @@ export default function InterviewForm({
         <TabsContent value="auto" className="mt-6 space-y-6">
           <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
             <p className="text-sm text-blue-800">
-              💡 입력하신 스토리 정보를 바탕으로 AI가 자연스러운 질문을 만들어드려요
+              💡 입력하신 스토리 정보를 바탕으로 AI가 2-3개의 질문을 만들어드려요
+            </p>
+            <p className="text-xs text-blue-600 mt-1">
+              간결한 버전: 핵심 위주 답변 (5-7문장) / 풍부한 버전: 에피소드 포함 상세 답변 (10-15문장)
             </p>
           </div>
 
           <div className="space-y-2">
             <FieldLabel
               required
-              hint={`${limits.topicsMin}-${limits.topicsMax}개를 선택해주세요`}
+              hint="선택하신 주제로 AI가 질문을 생성합니다"
             >
-              어떤 주제의 질문을 원하세요?
+              어떤 주제의 질문을 원하세요? (2-3개 선택)
             </FieldLabel>
             <div className="space-y-2">
               {INTERVIEW_TOPICS.map((topic) => {
@@ -375,14 +363,11 @@ export default function InterviewForm({
                 )
               })}
             </div>
-            {data.topics && data.topics.length > 0 && (
-              <p className="text-sm text-gray-500">
-                {data.topics.length}/{limits.topicsMax} 선택됨
-                {data.topics.length < limits.topicsMin && (
-                  <span className="text-red-500 ml-2">
-                    (최소 {limits.topicsMin}개 선택 필요)
-                  </span>
-                )}
+            {data.topics && (
+              <p className="text-sm text-gray-500 mt-2">
+                {data.topics.length}/3 선택됨
+                {data.topics.length < 2 && ' (최소 2개 선택 필요)'}
+                {data.topics.length > 3 && ' (최대 3개까지)'}
               </p>
             )}
           </div>
@@ -425,7 +410,10 @@ export default function InterviewForm({
         <TabsContent value="popular" className="mt-6 space-y-6">
           <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
             <p className="text-sm text-purple-800">
-              ⭐ 가장 많이 사용하는 질문들입니다. {limits.questionsMin}-{limits.questionsMax}개를 선택해주세요
+              ⭐ 가장 많이 사용하는 질문들입니다. 2-3개를 선택해주세요
+            </p>
+            <p className="text-xs text-purple-600 mt-1">
+              간결한 버전: 핵심 위주 / 풍부한 버전: 에피소드와 디테일 포함
             </p>
           </div>
 
@@ -475,21 +463,22 @@ export default function InterviewForm({
           {data.selectedQuestions && data.selectedQuestions.length > 0 && (
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
               <h4 className="font-semibold text-gray-800 mb-2">
-                선택된 질문 ({data.selectedQuestions.length}/{limits.questionsMax})
-                {data.selectedQuestions.length < limits.questionsMin && (
-                  <span className="text-red-500 text-sm font-normal ml-2">
-                    (최소 {limits.questionsMin}개 선택 필요)
-                  </span>
-                )}
+                선택된 질문 ({data.selectedQuestions.length}개)
               </h4>
               <ul className="space-y-1">
                 {data.selectedQuestions.map((qId, index) => (
                   <li key={qId} className="text-sm text-gray-700 flex items-start gap-2">
-                    <span className="text-rose-500 font-medium">{index + 1}.</span>
+                    <span className="text-gray-400">{index + 1}.</span>
                     <span>{getQuestionText(qId)}</span>
                   </li>
                 ))}
               </ul>
+              {data.selectedQuestions.length < 2 && (
+                <p className="text-sm text-orange-600 mt-2">💡 최소 2개를 선택해주세요</p>
+              )}
+              {data.selectedQuestions.length > 3 && (
+                <p className="text-sm text-orange-600 mt-2">💡 최대 3개까지 선택 가능합니다</p>
+              )}
             </div>
           )}
         </TabsContent>
@@ -498,7 +487,10 @@ export default function InterviewForm({
         <TabsContent value="custom" className="mt-6 space-y-6">
           <div className="bg-green-50 p-4 rounded-lg border border-green-200">
             <p className="text-sm text-green-800">
-              ✏️ 우리만의 특별한 질문을 직접 만들어보세요
+              ✏️ 우리만의 특별한 질문을 직접 만들어보세요 (2-3개)
+            </p>
+            <p className="text-xs text-green-600 mt-1">
+              답변 힌트를 입력하면 AI가 선택하신 버전에 맞게 답변을 작성합니다
             </p>
           </div>
 
@@ -606,12 +598,8 @@ export default function InterviewForm({
           )}
 
           <p className="text-sm text-gray-500 text-center">
-            {data.customQuestions?.length || 0}/{limits.questionsMax}
-            {(data.customQuestions?.length || 0) < limits.questionsMin && (
-              <span className="text-red-500 ml-2">
-                (최소 {limits.questionsMin}개 필요)
-              </span>
-            )}
+            {data.customQuestions?.length || 0}/3개
+            (최소 2개, 최대 3개)
           </p>
 
           {/* 질문 없을 때 안내 */}
@@ -652,9 +640,9 @@ export default function InterviewForm({
           </Button>
           {!isValid && (
             <p className="text-xs text-red-500 text-center mt-2">
-              {data.type === 'auto' && '주제를 선택하고 답변 스타일을 선택해주세요'}
-              {data.type === 'popular' && `질문을 최소 ${limits.questionsMin}개 선택해주세요`}
-              {data.type === 'custom' && `질문을 최소 ${limits.questionsMin}개 작성해주세요`}
+              {data.type === 'auto' && '주제 2-3개를 선택하고 답변 스타일을 선택해주세요'}
+              {data.type === 'popular' && '질문을 2-3개 선택해주세요'}
+              {data.type === 'custom' && '질문을 2-3개 작성해주세요'}
             </p>
           )}
         </div>

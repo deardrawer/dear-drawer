@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -16,8 +16,6 @@ import {
   Version,
 } from '@/types/ai-generator'
 
-const STORAGE_KEY = 'wedding-ai-story-form'
-
 // 년도 옵션 생성 (현재-30년 ~ 현재)
 const currentYear = new Date().getFullYear()
 const years = Array.from({ length: 31 }, (_, i) => currentYear - i)
@@ -27,6 +25,35 @@ const days = Array.from({ length: 31 }, (_, i) => i + 1)
 // 일수 계산
 function calculateDays(duration: { years: number; months: number }) {
   return Math.floor(duration.years * 365.25 + duration.months * 30.44)
+}
+
+// 날짜로부터 관계 기간 계산
+function calculateDurationFromDate(date: { year: number; month: number; day?: number }): { years: number; months: number } {
+  if (!date.year || !date.month) {
+    return { years: 0, months: 0 }
+  }
+
+  const startDate = new Date(date.year, date.month - 1, date.day || 1)
+  const now = new Date()
+
+  let years = now.getFullYear() - startDate.getFullYear()
+  let months = now.getMonth() - startDate.getMonth()
+
+  if (months < 0) {
+    years--
+    months += 12
+  }
+
+  // 일자 고려
+  if (date.day && now.getDate() < startDate.getDate()) {
+    months--
+    if (months < 0) {
+      years--
+      months += 12
+    }
+  }
+
+  return { years: Math.max(0, years), months: Math.max(0, months) }
 }
 
 // 만남 장소 옵션
@@ -274,39 +301,27 @@ export default function StoryForm({ data, onChange }: StoryFormProps) {
   const [version, setVersion] = useState<Version>(data.version || 'short')
   const [openItems, setOpenItems] = useState<string[]>(['step1', 'step2', 'step3'])
 
-  // 로컬 스토리지에서 불러오기
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved)
-        if (parsed && !data.firstMeetPlace) {
-          onChange(parsed)
-          setVersion(parsed.version || 'short')
-        }
-      } catch (e) {
-        console.error('Failed to load saved story form data')
-      }
-    }
-  }, [])
-
-  // 로컬 스토리지 저장
-  const saveToStorage = useCallback((newData: StoryFormData) => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newData))
-    } catch (e) {
-      console.error('Failed to save story form data')
-    }
-  }, [])
-
   // 버전 변경시 데이터 업데이트
   useEffect(() => {
     if (data.version !== version) {
       const newData = { ...data, version }
       onChange(newData)
-      saveToStorage(newData)
     }
-  }, [version])
+  }, [version, data, onChange])
+
+  // 공식 사귄 날짜가 있으면 관계 기간 자동 계산
+  useEffect(() => {
+    if ((data as any).hasOfficialDate && data.officialDate?.year && data.officialDate?.month) {
+      const calculatedDuration = calculateDurationFromDate(data.officialDate)
+      // 현재 값과 다를 때만 업데이트 (무한 루프 방지)
+      if (
+        calculatedDuration.years !== data.relationshipDuration.years ||
+        calculatedDuration.months !== data.relationshipDuration.months
+      ) {
+        onChange({ ...data, relationshipDuration: calculatedDuration })
+      }
+    }
+  }, [(data as any).hasOfficialDate, data.officialDate?.year, data.officialDate?.month, data.officialDate?.day])
 
   const updateField = <K extends keyof StoryFormData>(
     field: K,
@@ -314,7 +329,6 @@ export default function StoryForm({ data, onChange }: StoryFormProps) {
   ) => {
     const newData = { ...data, [field]: value }
     onChange(newData)
-    saveToStorage(newData)
   }
 
   const totalDays = calculateDays(data.relationshipDuration)
@@ -521,38 +535,61 @@ export default function StoryForm({ data, onChange }: StoryFormProps) {
               {/* 관계 기간 */}
               <div className="space-y-2">
                 <FieldLabel required>현재까지 관계 기간은?</FieldLabel>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs text-gray-500">년</label>
-                    <Input
-                      type="number"
-                      min="0"
-                      max="30"
-                      value={data.relationshipDuration.years}
-                      onChange={(e) => updateField('relationshipDuration', {
-                        ...data.relationshipDuration,
-                        years: parseInt(e.target.value) || 0
-                      })}
-                    />
+                {(data as any).hasOfficialDate && data.officialDate?.year && data.officialDate?.month ? (
+                  // 공식 사귄 날짜가 있으면 자동 계산된 값 표시
+                  <div className="p-4 bg-rose-50 rounded-lg border border-rose-100">
+                    <p className="text-sm text-gray-600 mb-2">
+                      📅 {data.officialDate.year}년 {data.officialDate.month}월 {data.officialDate.day || 1}일부터
+                    </p>
+                    <p className="text-lg font-semibold text-rose-600">
+                      {data.relationshipDuration.years}년 {data.relationshipDuration.months}개월째 함께하고 있어요!
+                    </p>
+                    {totalDays > 0 && (
+                      <p className="text-sm text-rose-500 mt-1">
+                        (약 {totalDays.toLocaleString()}일) 💕
+                      </p>
+                    )}
                   </div>
-                  <div>
-                    <label className="text-xs text-gray-500">개월</label>
-                    <Input
-                      type="number"
-                      min="0"
-                      max="11"
-                      value={data.relationshipDuration.months}
-                      onChange={(e) => updateField('relationshipDuration', {
-                        ...data.relationshipDuration,
-                        months: parseInt(e.target.value) || 0
-                      })}
-                    />
-                  </div>
-                </div>
-                {totalDays > 0 && (
-                  <p className="text-sm text-rose-600 mt-2">
-                    약 {totalDays.toLocaleString()}일 함께 하셨네요! 💕
-                  </p>
+                ) : (
+                  // 공식 날짜 없으면 직접 입력
+                  <>
+                    <p className="text-xs text-gray-500 mb-2">
+                      💡 위에서 &apos;공식 사귄 날짜&apos;를 입력하면 자동으로 계산됩니다
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs text-gray-500">년</label>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="30"
+                          value={data.relationshipDuration.years}
+                          onChange={(e) => updateField('relationshipDuration', {
+                            ...data.relationshipDuration,
+                            years: parseInt(e.target.value) || 0
+                          })}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-500">개월</label>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="11"
+                          value={data.relationshipDuration.months}
+                          onChange={(e) => updateField('relationshipDuration', {
+                            ...data.relationshipDuration,
+                            months: parseInt(e.target.value) || 0
+                          })}
+                        />
+                      </div>
+                    </div>
+                    {totalDays > 0 && (
+                      <p className="text-sm text-rose-600 mt-2">
+                        약 {totalDays.toLocaleString()}일 함께 하셨네요! 💕
+                      </p>
+                    )}
+                  </>
                 )}
                 <label className="flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all border-gray-200 hover:border-gray-300 mt-2">
                   <Checkbox

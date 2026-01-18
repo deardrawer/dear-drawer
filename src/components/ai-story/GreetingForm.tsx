@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect, useCallback } from 'react'
+import * as React from 'react'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   GreetingFormData,
   Tone,
+  ThanksStyle,
 } from '@/types/ai-generator'
 
 // 미리보기 텍스트 상수
@@ -17,10 +18,12 @@ const GREETING_PREVIEWS: Record<Tone, string> = {
   cheerful: '드디어! 저희 둘이 결혼합니다! 이 특별한 날, 꼭 함께해주세요!'
 }
 
-const THANKS_PREVIEWS: Record<string, string> = {
-  formal: '지금까지 저희를 아껴주신 모든 분들께 감사드립니다. 앞으로도 많은 응원과 축복 부탁드립니다.',
+const THANKS_PREVIEWS: Record<ThanksStyle, string> = {
+  formal: '지금까지 저희를 지켜봐 주시고 아껴주신 모든 분들께 진심으로 감사드립니다. 앞으로도 많은 응원과 축복 부탁드립니다.',
+  warm: '오늘 이 자리까지 함께해주신 모든 분들께 감사드립니다. 여러분의 축복이 저희에게 큰 힘이 됩니다. 앞으로도 따뜻한 시선으로 지켜봐 주세요.',
   friendly: '지금까지 저희를 아껴주신 모든 분들께 감사드립니다. 앞으로도 많은 응원과 축복 부탁드립니다. 💕',
-  simple: '함께해주셔서 감사합니다. 앞으로도 지켜봐주세요.'
+  simple: '함께해주셔서 감사합니다. 앞으로도 지켜봐주세요.',
+  humble: '부족한 저희 두 사람을 여기까지 이끌어주신 모든 분들께 깊이 감사드립니다. 앞으로도 변함없는 관심과 사랑 부탁드립니다.'
 }
 
 // 관계 기간 옵션
@@ -58,22 +61,34 @@ const TONE_OPTIONS: { value: Tone; label: string; preview: string }[] = [
   { value: 'cheerful', label: '유머러스하고 밝은', preview: '드디어! 저희 둘이 결혼합니다!' }
 ]
 
-// 감사 대상 옵션
-const THANKS_TO_OPTIONS = [
-  { value: 'parents', label: '부모님' },
-  { value: 'family', label: '가족' },
-  { value: 'friends', label: '친구들' },
-  { value: 'everyone', label: '모든 분들' }
-]
-
-// 감사 스타일 옵션
+// 감사 스타일 옵션 (5가지)
 const THANKS_STYLE_OPTIONS = [
-  { value: 'formal', label: '정중하고 공손한', preview: '지금까지 저희를 아껴주신 모든 분들께 감사드립니다.' },
-  { value: 'friendly', label: '따뜻하고 친근한', preview: '지금까지 저희를 아껴주신 모든 분들께 감사드립니다. 💕' },
-  { value: 'simple', label: '간결하고 진솔한', preview: '함께해주셔서 감사합니다.' }
+  {
+    value: 'formal',
+    label: '정중하고 공손한',
+    preview: '지금까지 저희를 지켜봐 주시고 아껴주신 모든 분들께 진심으로 감사드립니다. 앞으로도 많은 응원과 축복 부탁드립니다.'
+  },
+  {
+    value: 'warm',
+    label: '따뜻하고 감성적인',
+    preview: '오늘 이 자리까지 함께해주신 모든 분들께 감사드립니다. 여러분의 축복이 저희에게 큰 힘이 됩니다. 앞으로도 따뜻한 시선으로 지켜봐 주세요.'
+  },
+  {
+    value: 'friendly',
+    label: '친근하고 밝은 (이모지)',
+    preview: '지금까지 저희를 아껴주신 모든 분들께 감사드립니다. 앞으로도 많은 응원과 축복 부탁드립니다. 💕'
+  },
+  {
+    value: 'simple',
+    label: '간결하고 진솔한',
+    preview: '함께해주셔서 감사합니다. 앞으로도 지켜봐주세요.'
+  },
+  {
+    value: 'humble',
+    label: '겸손하고 정중한',
+    preview: '부족한 저희 두 사람을 여기까지 이끌어주신 모든 분들께 깊이 감사드립니다. 앞으로도 변함없는 관심과 사랑 부탁드립니다.'
+  }
 ]
-
-const STORAGE_KEY = 'wedding-ai-greeting-form'
 
 interface GreetingFormProps {
   data: GreetingFormData
@@ -233,38 +248,12 @@ function PreviewBox({
 }
 
 export default function GreetingForm({ data, onChange }: GreetingFormProps) {
-  // 로컬 스토리지에서 불러오기
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved)
-        // 저장된 데이터가 있고 현재 데이터가 기본값이면 복원
-        if (parsed && !data.relationshipDuration) {
-          onChange(parsed)
-        }
-      } catch (e) {
-        console.error('Failed to load saved greeting form data')
-      }
-    }
-  }, [])
-
-  // 로컬 스토리지에 저장
-  const saveToStorage = useCallback((newData: GreetingFormData) => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newData))
-    } catch (e) {
-      console.error('Failed to save greeting form data')
-    }
-  }, [])
-
   const updateField = <K extends keyof GreetingFormData>(
     field: K,
     value: GreetingFormData[K]
   ) => {
     const newData = { ...data, [field]: value }
     onChange(newData)
-    saveToStorage(newData)
   }
 
   return (
@@ -358,35 +347,21 @@ export default function GreetingForm({ data, onChange }: GreetingFormProps) {
 
       {/* 섹션 3: 감사말 */}
       <Section title="감사의 마음 전하기">
-        {/* 감사 대상 */}
-        <div className="space-y-2">
-          <FieldLabel required hint="복수 선택 가능">누구에게 감사를 전하고 싶으세요?</FieldLabel>
-          <CheckboxGroup
-            name="thanksTo"
-            values={data.thanksTo || []}
-            options={THANKS_TO_OPTIONS}
-            onChange={(v) => updateField('thanksTo', v)}
-          />
-        </div>
-
         {/* 감사 스타일 */}
         <div className="space-y-2">
           <FieldLabel required>감사말 스타일</FieldLabel>
           <RadioGroup
             name="thanksStyle"
-            value={data.thanksStyle}
-            options={THANKS_STYLE_OPTIONS}
-            onChange={(v) => updateField('thanksStyle', v)}
+            value={data.thanksStyle || 'formal'}
+            options={THANKS_STYLE_OPTIONS.map(opt => ({
+              value: opt.value,
+              label: opt.label,
+              preview: opt.preview
+            }))}
+            onChange={(v) => updateField('thanksStyle', v as ThanksStyle)}
             columns={1}
           />
         </div>
-
-        {/* 감사말 미리보기 */}
-        <PreviewBox
-          title="💡 이런 느낌으로 만들어드려요"
-          content={THANKS_PREVIEWS[data.thanksStyle] || ''}
-          show={!!data.thanksStyle}
-        />
       </Section>
     </div>
   )

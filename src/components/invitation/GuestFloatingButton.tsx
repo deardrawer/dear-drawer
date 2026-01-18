@@ -239,7 +239,42 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
   return (
     <>
       {/* Floating Button - 햄버거 메뉴 */}
-      <div className="fixed bottom-6 right-6 z-40 flex items-center gap-2">
+      <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2">
+        {/* Speech Bubble Tooltip */}
+        <div
+          className="transition-all duration-300"
+          style={{
+            opacity: showTooltip ? 1 : 0,
+            visibility: showTooltip ? 'visible' : 'hidden',
+            transform: showTooltip ? 'translateY(0)' : 'translateY(10px)'
+          }}
+        >
+          <div
+            className="relative px-4 py-2.5 rounded-2xl text-xs text-gray-700 whitespace-nowrap"
+            style={{
+              background: '#fff',
+              boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
+              fontFamily: "'Noto Sans KR', sans-serif",
+            }}
+          >
+            결혼식 정보는 여기에서
+            {/* Speech bubble tail */}
+            <div
+              className="absolute"
+              style={{
+                bottom: '-8px',
+                right: '16px',
+                width: '0',
+                height: '0',
+                borderLeft: '8px solid transparent',
+                borderRight: '8px solid transparent',
+                borderTop: '10px solid #fff',
+                filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.1))'
+              }}
+            />
+          </div>
+        </div>
+
         {/* 햄버거 메뉴 버튼 */}
         <button
           onClick={() => setIsBottomSheetOpen(true)}

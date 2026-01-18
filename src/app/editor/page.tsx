@@ -364,7 +364,7 @@ function EditorContent() {
           <>
             {/* Edit Panel - 40% */}
             <div className="w-2/5 min-w-[400px] max-w-[500px]">
-              <EditPanel onOpenIntroSelector={() => setIsIntroSelectorOpen(true)} />
+              <EditPanel onOpenIntroSelector={() => setIsIntroSelectorOpen(true)} invitationId={invitationId} templateId={templateId} />
             </div>
 
             {/* Preview - 60% */}

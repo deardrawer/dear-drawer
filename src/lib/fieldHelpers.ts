@@ -304,14 +304,14 @@ export const fieldHelpers: Record<string, FieldHelper> = {
   // ===== 인터뷰 =====
   'content.interviews[].question': {
     label: '질문',
-    explanation: '서로에게 묻고 싶은 질문을 적어보세요',
-    example: '나를 처음 봤을 때 어떤 생각이 들었어?',
+    explanation: '하객분들께 보여줄 웨딩 인터뷰 질문이에요',
+    example: '결혼을 결심하게 된 계기는 무엇인가요?',
     previewSection: 'interview',
   },
   'content.interviews[].answer': {
     label: '답변',
-    explanation: '질문에 대한 솔직한 답변을 적어보세요',
-    example: '솔직히 내 스타일은 아닌 것 같은데...? 라고 생각했는데, 대화하면 할수록 점점 빠져들었어.',
+    explanation: '인터뷰 질문에 대한 두 분의 답변이에요',
+    example: '함께하는 모든 순간이 행복했고, 이 사람과 평생을 함께하고 싶다는 확신이 들었어요.',
     previewSection: 'interview',
   },
 

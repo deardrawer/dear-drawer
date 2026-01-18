@@ -345,7 +345,8 @@ export function getTogetherFeelingText(feeling: string): string {
     courage: '용기가 생긴다',
     growth: '함께 성장하게 된다',
     calm: '마음이 평온해진다',
-    energy: '에너지가 충전된다'
+    energy: '에너지가 충전된다',
+    custom: '직접 입력'
   }
   return feelings[feeling] || feeling
 }
@@ -355,10 +356,13 @@ export function getTogetherFeelingText(feeling: string): string {
  */
 export function getMeetPlaceText(place: string): string {
   const places: Record<string, string> = {
-    school: '학교',
+    school: '학교 (캠퍼스)',
     work: '직장',
+    'blind-date': '소개팅',
+    club: '동호회/모임',
+    app: '앱/온라인',
+    reunion: '재회',
     friend: '친구 소개',
-    app: '소개팅 앱',
     church: '교회/성당',
     hobby: '취미 활동',
     neighborhood: '동네',
@@ -374,11 +378,15 @@ export function getMeetPlaceText(place: string): string {
  */
 export function getHowStartedText(howStarted: string): string {
   const starts: Record<string, string> = {
+    'friend-to-lover': '친구에서 연인으로',
+    'first-sight': '첫눈에 반해서',
+    'gradual-confession': '조심스러운 고백들이 쌓여서',
+    natural: '자연스럽게 마음이 스며들어',
     confession: '고백으로',
-    natural: '자연스럽게',
     event: '특별한 계기로',
     long_friend: '오랜 친구에서',
     blind: '소개팅에서',
+    custom: '직접 입력',
     other: '기타'
   }
   return starts[howStarted] || howStarted
@@ -389,17 +397,128 @@ export function getHowStartedText(howStarted: string): string {
  */
 export function getMemorableEventText(event: string): string {
   const events: Record<string, string> = {
+    'long-distance': '장거리 연애',
+    'job-search': '취업 준비 함께 함',
+    'living-together': '타지 생활 함께 함',
+    pet: '반려동물 입양',
+    hardship: '힘든 시기 극복',
+    'daily-life': '일상 쌓아가기',
+    travel: '함께한 여행',
     first_trip: '첫 여행',
     anniversary: '기념일',
-    hardship: '힘든 시기 극복',
     family_intro: '가족 소개',
     cohabitation: '동거 시작',
-    pet: '반려동물',
     milestone: '인생의 전환점',
     surprise: '서프라이즈 이벤트',
-    sick: '아플 때 돌봐줌'
+    sick: '아플 때 돌봐줌',
+    other: '기타'
   }
   return events[event] || event
+}
+
+/**
+ * 결혼 준비 느낌 텍스트
+ */
+export function getPreparationFeelingText(feeling: string): string {
+  const feelings: Record<string, string> = {
+    fun: '재미있게 준비 중',
+    together: '하나의 마음으로 준비 중',
+    exciting: '설레는 마음으로 준비 중',
+    custom: '직접 입력'
+  }
+  return feelings[feeling] || feeling
+}
+
+/**
+ * 관계 기간 텍스트
+ */
+export function getRelationshipDurationText(duration: string): string {
+  const durations: Record<string, string> = {
+    '1year-': '1년 미만',
+    '1-3years': '1-3년',
+    '3-5years': '3-5년',
+    '5-10years': '5-10년',
+    '10years+': '10년 이상'
+  }
+  return durations[duration] || duration
+}
+
+/**
+ * 관계 특징 텍스트
+ */
+export function getRelationshipTraitText(trait: string): string {
+  const traits: Record<string, string> = {
+    growth: '함께 성장해온',
+    understanding: '서로를 이해하는',
+    dream: '같은 꿈을 꾸는',
+    friend: '오랜 친구 같은',
+    destiny: '운명 같은',
+    best_friend: '절친한 친구 같은',
+    supportive: '서로 응원하는',
+    playful: '장난스러운',
+    calm: '차분하고 편안한',
+    passionate: '열정적인'
+  }
+  return traits[trait] || trait
+}
+
+/**
+ * 결혼 의미 텍스트
+ */
+export function getMarriageMeaningText(meaning: string): string {
+  const meanings: Record<string, string> = {
+    newStart: '새로운 시작',
+    lifelong: '평생의 약속',
+    growTogether: '함께 성장하기',
+    family: '가족 되기',
+    other: '기타'
+  }
+  return meanings[meaning] || meaning
+}
+
+/**
+ * 감사 스타일 텍스트
+ */
+export function getThanksStyleText(style: string): string {
+  const styles: Record<string, string> = {
+    formal: '정중하고 공손한',
+    warm: '따뜻하고 감성적인',
+    friendly: '친근하고 밝은',
+    simple: '간결하고 진솔한',
+    humble: '겸손하고 정중한'
+  }
+  return styles[style] || style
+}
+
+/**
+ * 성격 특징 텍스트
+ */
+export function getCharacteristicText(char: string): string {
+  const chars: Record<string, string> = {
+    // ProfileForm에서 사용하는 옵션들
+    firm: '단단하고 흔들리지 않는',
+    'sensitive-rational': '감성적이면서도 냉철한',
+    proactive: '주도적이고 독립적인',
+    curious: '호기심이 많고 꼼꼼한',
+    delicate: '섬세하고 세심한',
+    comfortable: '편안하고 한결같은',
+    perfectionist: '완벽주의적이고 주관 뚜렷한',
+    'clear-standards': '자기만의 기준이 또렷한',
+    sincere: '성실하고 책임감 있는',
+    // 기존 옵션들 (호환성 유지)
+    reliable: '믿음직한',
+    caring: '다정한',
+    humorous: '유머러스한',
+    calm: '차분한',
+    passionate: '열정적인',
+    thoughtful: '사려깊은',
+    positive: '긍정적인',
+    warm: '따뜻한',
+    creative: '창의적인',
+    hardworking: '성실한',
+    kind: '친절한'
+  }
+  return chars[char] || char
 }
 
 /**
@@ -567,19 +686,24 @@ export function validateTextQuality(
  * 인터뷰 프롬프트 생성
  */
 function getInterviewPrompt(interviewData: InterviewFormData): string {
-  const questionCount = interviewData.version === 'short' ? '3-4' : '6-8'
-
-  // 인터뷰 샘플 포함
+  // 인터뷰 샘플 포함 (JSON 형식으로 명확하게)
   const sampleText = `
-참고 샘플:
-[개별 답변 예시]
-질문: "${SAMPLE_TEXTS.interview.individual.question}"
-신랑: "${SAMPLE_TEXTS.interview.individual.groomAnswer}"
-신부: "${SAMPLE_TEXTS.interview.individual.brideAnswer}"
+참고 샘플 (JSON 형식):
 
-[공동 답변 예시]
-질문: "${SAMPLE_TEXTS.interview.joint.question}"
-함께: "${SAMPLE_TEXTS.interview.joint.jointAnswer}"
+[개별 답변 예시 - groomAnswer와 brideAnswer 모두 필수]
+{
+  "question": "${SAMPLE_TEXTS.interview.individual.question}",
+  "groomAnswer": "${SAMPLE_TEXTS.interview.individual.groomAnswer}",
+  "brideAnswer": "${SAMPLE_TEXTS.interview.individual.brideAnswer}"
+}
+
+[공동 답변 예시 - jointAnswer 필수]
+{
+  "question": "${SAMPLE_TEXTS.interview.joint.question}",
+  "jointAnswer": "${SAMPLE_TEXTS.interview.joint.jointAnswer}"
+}
+
+**주의**: 위 예시처럼 실제 답변 내용을 작성해야 합니다. 빈 문자열이나 placeholder 금지.
 `
 
   if (interviewData.type === 'auto') {
@@ -591,6 +715,7 @@ function getInterviewPrompt(interviewData: InterviewFormData): string {
       'each-other': '서로에 대한 질문'
     }
     const topics = interviewData.topics?.map(t => topicLabels[t] || t).join(', ')
+    const topicCount = interviewData.topics?.length || 3
 
     const answerStyleDesc: Record<string, string> = {
       individual: '신랑과 신부가 각각 답변 (groomAnswer, brideAnswer 사용)',
@@ -602,34 +727,49 @@ function getInterviewPrompt(interviewData: InterviewFormData): string {
 AI 자동 생성 모드
 - 선택된 주제: ${topics}
 - 답변 스타일: ${answerStyleDesc[interviewData.answerStyle || 'mixed']}
-- 생성할 질문 수: ${questionCount}개
+- 생성할 질문 수: 정확히 ${topicCount}개 (각 주제당 1개씩)
+
+**중요**: 반드시 정확히 ${topicCount}개의 질문과 답변을 생성해주세요. 더 적거나 더 많이 생성하지 마세요.
 
 위 주제들을 바탕으로 자연스럽고 개성있는 질문을 만들고 답변을 작성해주세요.
 답변은 앞서 입력된 정보들(스토리, 소개 등)을 바탕으로 일관성있게 작성해주세요.
 
 ${sampleText}
 
-중요:
-- 각 답변은 1-3문장으로 간결하게
+**필수 규칙**:
+- 각 답변은 1-3문장으로 간결하게 (빈 문자열 금지)
 - 신랑/신부 각자의 개성이 드러나도록
 - 진정성 있고 구체적인 표현 사용
+- 개별 답변 스타일(individual)일 경우: groomAnswer와 brideAnswer에 반드시 실제 답변 작성
+- 공동 답변 스타일(together)일 경우: jointAnswer에 반드시 실제 답변 작성
+- 혼합 스타일(mixed)일 경우: 질문 특성에 따라 적절한 필드에 반드시 실제 답변 작성
 `
   } else if (interviewData.type === 'popular') {
+    const questionCount = interviewData.selectedQuestions?.length || 3
     const questions = interviewData.selectedQuestions?.map((qId, i) =>
       `${i + 1}. ${getPopularQuestionText(qId)}`
     ).join('\n')
 
     return `
 인기 질문 선택 모드
-선택된 질문들:
+선택된 질문들 (총 ${questionCount}개):
 ${questions}
 
-각 질문에 대해 답변을 작성해주세요.
+**중요**: 위 ${questionCount}개 질문 모두에 대해 빠짐없이 답변을 작성해주세요.
+결과 JSON 배열에 정확히 ${questionCount}개의 항목이 있어야 합니다.
+
 질문 성격에 따라 개별 답변(groomAnswer, brideAnswer) 또는 공동 답변(jointAnswer) 사용
 
 ${sampleText}
+
+**필수 규칙**:
+- 각 질문에 대해 실제 답변 내용을 반드시 작성하세요 (빈 문자열 금지)
+- 개인적인 질문(결심 이유, 첫인상 등): groomAnswer와 brideAnswer 모두 작성
+- 공통 질문(약속, 미래 계획 등): jointAnswer 작성
+- 1-3문장으로 구체적이고 진정성 있게 작성
 `
   } else {
+    const questionCount = interviewData.customQuestions?.length || 3
     const questions = interviewData.customQuestions?.map((q, i) =>
       `${i + 1}. ${q.question} → ${q.answerStyle === 'individual' ? '각자 답변' : '함께 답변'}`
     ).join('\n')
@@ -642,16 +782,25 @@ ${sampleText}
 
     return `
 직접 입력 모드
-질문들:
+질문들 (총 ${questionCount}개):
 ${questions}
+
+**중요**: 위 ${questionCount}개 질문 모두에 대해 빠짐없이 답변을 작성해주세요.
+결과 JSON 배열에 정확히 ${questionCount}개의 항목이 있어야 합니다.
 
 ${hintsText ? `답변 힌트:\n${hintsText}\n\n힌트가 제공된 경우 이를 참고하되, 자연스럽고 진정성있게 확장해주세요.` : ''}
 
 각 질문에 대해 지정된 답변 스타일로 작성해주세요.
-- 각자 답변: groomAnswer, brideAnswer 필드 사용
-- 함께 답변: jointAnswer 필드 사용
+- 각자 답변: groomAnswer, brideAnswer 필드 모두에 실제 답변 작성
+- 함께 답변: jointAnswer 필드에 실제 답변 작성
 
 ${sampleText}
+
+**필수 규칙**:
+- 각 질문에 지정된 답변 스타일에 맞게 반드시 실제 답변 내용을 작성하세요 (빈 문자열 금지)
+- 각자 답변으로 지정된 질문: groomAnswer와 brideAnswer 둘 다 반드시 작성
+- 함께 답변으로 지정된 질문: jointAnswer 반드시 작성
+- 1-3문장으로 구체적이고 진정성 있게 작성
 `
   }
 }
@@ -691,6 +840,12 @@ export function generateFullPrompt(
   return `당신은 감성적인 한국 웨딩 스토리 전문 작가입니다.
 제공된 정보를 바탕으로 진정성 있고 아름다운 청첩장 텍스트를 작성해주세요.
 
+🚨🚨🚨 최우선 규칙 🚨🚨🚨
+1. 각 섹션의 "입력 정보"에 있는 값들을 반드시 활용해서 새로운 문장을 작성하세요
+2. 샘플/예시 문장을 절대로 그대로 복사하지 마세요
+3. 입력된 관계 기간, 특징, 비유, 장소 등이 결과물에 자연스럽게 녹아들어야 합니다
+4. 매번 다른 표현과 문장 구조를 사용하세요
+
 ═══════════════════════════════════════════════════
 전체 작성 규칙
 ═══════════════════════════════════════════════════
@@ -717,25 +872,69 @@ ${toneGuide}
 ▶ 형식: 2-3문단, 150-250자
 ▶ 톤: ${getToneDescription(greeting.greetingTone)}
 ▶ 구조:
-  - 첫 문단: 두 사람의 관계/여정 소개
-  - 중간 문단: 결혼의 의미와 다짐
+  - 첫 문단: 두 사람의 관계/여정 소개 (과거 회상)
+  - 중간 문단: 결혼의 의미와 다짐 (현재→미래)
   - 마지막 문단: 초대 문구
 
 ▶ 입력 정보:
-- 관계 기간: ${greeting.relationshipDuration}
-- 관계 특징: ${greeting.relationshipTraits.join(', ')}
-- 결혼의 의미: ${greeting.marriageMeaning}
+- 관계 기간: ${getRelationshipDurationText(greeting.relationshipDuration)}
+- 관계 특징: ${greeting.relationshipTraits.map(t => getRelationshipTraitText(t)).join(', ')}
+- 결혼의 의미: ${getMarriageMeaningText(greeting.marriageMeaning)}
 ${greeting.specialNote ? `- 특별한 내용: ${greeting.specialNote}` : ''}
 
-▶ 참고 샘플:
+▶ ⚠️ 반드시 지켜야 할 작성 규칙:
+
+[시간적 표현 - 청첩장 맥락 고려]
+- ❌ 절대 금지: "오늘 이 자리에", "오늘 함께", "이 자리에서"
+  (청첩장은 결혼식 '전'에 보내는 것이므로 "오늘" 표현 부적절)
+- ✅ 올바른 표현: "~를 함께 걸어오며", "~의 시간을", "~년의 인생을"
+  (과거 회상형으로 시작)
+
+[초대 표현]
+- ✅ 적절한 표현: "초대합니다", "모시고자 합니다", "함께해주세요"
+- ❌ 피할 표현: "감사합니다" (감사말은 별도 섹션에서 처리)
+
+[구체성]
+- ❌ 추상적: "서로를 이해하고 존중하며 성장"
+- ✅ 구체적: "20대의 인생을 함께 걸어오며", "서로의 성장과 변화를 지켜본"
+- 관계 기간이나 특별한 내용을 구체적으로 녹여서 표현
+
+[과거-현재-미래 흐름]
+- 과거: "함께 걸어오며", "지켜본 우리는"
+- 현재→미래: "새로운 여정을 시작하려 합니다", "더 나은 우리가 되기를"
+- 이 흐름이 자연스럽게 연결되어야 함
+
+[단어 반복 제한]
+- "함께" 단어: 전체 인사말에서 최대 2회까지만
+- ❌ 나쁜 예: "함께 해주셔서 ~ 함께 걸어갈 ~ 함께 성장"
+
+[어미 다양화]
+- ❌ "~입니다. ~입니다. ~입니다." 반복 금지
+- ✅ "~합니다", "~려 합니다", "~있습니다", "~주세요" 등 섞어서
+
+[핵심 구조]
+인사말 = "우리의 이야기(과거 회상) + 결혼의 의미(미래 다짐) + 초대"
+- 감사 인사는 여기에 포함하지 않음 (별도 감사말 섹션에서 처리)
+
+⚠️⚠️⚠️ 중요: 아래 샘플은 스타일 참고용입니다. 절대로 그대로 복사하지 마세요!
+반드시 위 "입력 정보"의 값들을 활용해서 새로운 문장을 작성하세요.
+- 관계 기간이 "${getRelationshipDurationText(greeting.relationshipDuration)}"이면 이를 자연스럽게 녹여서 표현
+- 관계 특징 "${greeting.relationshipTraits.map(t => getRelationshipTraitText(t)).join(', ')}"을 반영
+- 결혼의 의미 "${getMarriageMeaningText(greeting.marriageMeaning)}"를 표현
+
+▶ 스타일 참고 (복사 금지, 스타일만 참고):
 "${greetingSample}"
+
+▶ 피해야 할 표현:
+- "오늘 이 자리에" (청첩장은 결혼식 전에 보냄)
+- 샘플 문장 그대로 복사
 
 ═══════════════════════════════════════════════════
 [2] 감사말 (thanks)
 ═══════════════════════════════════════════════════
 
 ▶ 형식: 1-2문장, 50-100자
-▶ 스타일: ${greeting.thanksStyle}
+▶ 스타일: ${getThanksStyleText(greeting.thanksStyle || 'formal')}
 ▶ 감사 대상: ${greeting.thanksTo.join(', ')}
 
 ▶ 참고 샘플:
@@ -752,7 +951,7 @@ ${greeting.specialNote ? `- 특별한 내용: ${greeting.specialNote}` : ''}
 ▶ 입력 정보:
 - 이름: ${groomName}
 - 비유: ${groomMetaphor}
-- 특징: ${groomProfile.characteristics.join(', ')}
+- 특징: ${groomProfile.characteristics.map(c => getCharacteristicText(c)).join(', ')}
 - 함께 있으면: ${groomFeeling}
 ${groomProfile.version === 'rich' ? `
 - 첫인상 vs 실제: ${groomProfile.firstImpressionVsReality || '(미입력)'}
@@ -762,7 +961,47 @@ ${groomProfile.version === 'rich' ? `
 - 관계 속 역할: ${groomProfile.relationshipHistory || '(미입력)'}
 ` : ''}
 
-▶ 참고 샘플:
+▶ ⚠️ 반드시 지켜야 할 작성 규칙:
+
+[호칭 규칙]
+- ✅ 이름만 사용: "${groomName.slice(-2)}이는", "${groomName.slice(-2)}이 곁에 있으면"
+- ❌ 절대 금지: "우리 신랑", "제 신랑", "예비 신랑"
+- (아직 결혼 전이므로 "신랑" 호칭 사용하지 않음)
+
+[1인칭 최소화]
+- ❌ 피해야 할 표현: "제게", "저를", "저의", "제가" 과다 사용
+- ✅ 대안: 주어 생략하거나 "곁에 있으면", "함께하면" 등으로 표현
+- 1인칭은 전체 글에서 2-3회 이내로 제한
+
+[어미 다양화 - 단조로움 방지]
+- ❌ 나쁜 예: "~합니다. ~합니다. ~합니다." 반복
+- ✅ 좋은 예: "~이에요.", "~거든요.", "~더라고요.", "~있어요.", "~같아요."
+- 같은 어미가 연속 2번 이상 반복되지 않도록 섞어서 사용
+
+[구체적 표현 사용]
+- ❌ 추상적: "긍정적인 에너지", "좋은 사람", "멋진 사람"
+- ✅ 구체적: "힘들 때 말없이 곁에서 기다려주는", "웃을 때 눈이 초승달처럼 휘는"
+
+[줄바꿈으로 리듬감]
+- 긴 문장을 나열하지 말고, 짧은 문장으로 끊어서 리듬감 부여
+- 문단 내에서도 의미 단위로 줄바꿈 활용
+- 예시:
+  "따뜻한 햇살 같은 사람입니다.
+
+  ${groomName.slice(-2)}이 곁에 있으면
+  어느새 입가에 미소가 피어오르고,
+  마음이 포근해져요."
+
+[문장 구조]
+- 첫 문장: 비유로 인상적 시작 ("큰 나무 한 그루 같은 사람입니다.")
+- 중간: 구체적 특징/에피소드 서술
+- 전환 문장 활용: "그런데 가까이에서 지켜볼수록 알게 됩니다."
+- 마지막: 결론적 감정 표현
+
+⚠️⚠️⚠️ 중요: 아래 샘플은 스타일 참고용입니다. 절대로 그대로 복사하지 마세요!
+반드시 위 "입력 정보"의 비유(${groomMetaphor}), 특징, 느낌을 활용해서 새로운 문장을 작성하세요.
+
+▶ 스타일 참고 (복사 금지):
 "${profileSample}"
 
 ═══════════════════════════════════════════════════
@@ -776,7 +1015,7 @@ ${groomProfile.version === 'rich' ? `
 ▶ 입력 정보:
 - 이름: ${brideName}
 - 비유: ${brideMetaphor}
-- 특징: ${brideProfile.characteristics.join(', ')}
+- 특징: ${brideProfile.characteristics.map(c => getCharacteristicText(c)).join(', ')}
 - 함께 있으면: ${brideFeeling}
 ${brideProfile.version === 'rich' ? `
 - 첫인상 vs 실제: ${brideProfile.firstImpressionVsReality || '(미입력)'}
@@ -786,6 +1025,49 @@ ${brideProfile.version === 'rich' ? `
 - 관계 속 역할: ${brideProfile.relationshipHistory || '(미입력)'}
 ` : ''}
 
+▶ ⚠️ 반드시 지켜야 할 작성 규칙:
+
+[호칭 규칙]
+- ✅ 이름만 사용: "${brideName.slice(-2)}이는", "${brideName.slice(-2)}이 곁에 있으면"
+- ❌ 절대 금지: "우리 신부", "제 신부", "예비 신부"
+- (아직 결혼 전이므로 "신부" 호칭 사용하지 않음)
+
+[1인칭 최소화]
+- ❌ 피해야 할 표현: "제게", "저를", "저의", "제가" 과다 사용
+- ✅ 대안: 주어 생략하거나 "곁에 있으면", "함께하면" 등으로 표현
+- 1인칭은 전체 글에서 2-3회 이내로 제한
+
+[어미 다양화 - 단조로움 방지]
+- ❌ 나쁜 예: "~합니다. ~합니다. ~합니다." 반복
+- ✅ 좋은 예: "~이에요.", "~거든요.", "~더라고요.", "~있어요.", "~같아요."
+- 같은 어미가 연속 2번 이상 반복되지 않도록 섞어서 사용
+
+[구체적 표현 사용]
+- ❌ 추상적: "긍정적인 에너지", "좋은 사람", "멋진 사람"
+- ✅ 구체적: "힘들 때 말없이 곁에서 기다려주는", "웃을 때 눈이 초승달처럼 휘는"
+
+[줄바꿈으로 리듬감]
+- 긴 문장을 나열하지 말고, 짧은 문장으로 끊어서 리듬감 부여
+- 문단 내에서도 의미 단위로 줄바꿈 활용
+- 예시:
+  "따뜻한 햇살 같은 사람입니다.
+
+  ${brideName.slice(-2)}이 곁에 있으면
+  어느새 입가에 미소가 피어오르고,
+  마음이 포근해져요."
+
+[문장 구조]
+- 첫 문장: 비유로 인상적 시작 ("큰 나무 한 그루 같은 사람입니다.")
+- 중간: 구체적 특징/에피소드 서술
+- 전환 문장 활용: "그런데 가까이에서 지켜볼수록 알게 됩니다."
+- 마지막: 결론적 감정 표현
+
+⚠️⚠️⚠️ 중요: 아래 샘플은 스타일 참고용입니다. 절대로 그대로 복사하지 마세요!
+반드시 위 "입력 정보"의 비유(${brideMetaphor}), 특징, 느낌을 활용해서 새로운 문장을 작성하세요.
+
+▶ 스타일 참고 (복사 금지):
+"${SAMPLE_TEXTS.profile[brideProfile.tone as keyof typeof SAMPLE_TEXTS.profile]?.[brideProfile.version as 'short' | 'rich'] || SAMPLE_TEXTS.profile.sincere.short}"
+
 ═══════════════════════════════════════════════════
 [5] 러브스토리 (story) - 3단계 구조
 ═══════════════════════════════════════════════════
@@ -794,29 +1076,23 @@ ${brideProfile.version === 'rich' ? `
 ▶ 각 단계: 2-3문단씩
 
 [5-1] 연애의 시작 (first)
+⚠️ 반드시 아래 입력 정보를 사용하세요 (샘플 복사 금지):
 - 첫 만남: ${story.firstMeetDate.year}년 ${story.firstMeetDate.month}월
 - 만난 장소: ${meetPlace}
 - 사귀게 된 계기: ${howStarted}
 ${story.officialDate ? `- 공식 사귄 날: ${story.officialDate.year}년 ${story.officialDate.month}월 ${story.officialDate.day}일` : ''}
 
-참고 샘플:
-"${SAMPLE_TEXTS.story.first}"
-
 [5-2] 함께 성장한 시간 (together)
+⚠️ 반드시 아래 입력 정보를 사용하세요 (샘플 복사 금지):
 - 관계 기간: ${story.relationshipDuration.years}년 ${story.relationshipDuration.months}개월
 - 기억에 남는 일: ${memorableEvents}
 ${story.specificEpisodes ? `- 구체적 에피소드: ${story.specificEpisodes}` : ''}
 
-참고 샘플:
-"${SAMPLE_TEXTS.story.together}"
-
 [5-3] 결혼 준비 (preparation)
+⚠️ 반드시 아래 입력 정보를 사용하세요 (샘플 복사 금지):
 ${story.proposalStory ? `- 프로포즈: ${story.proposalStory}` : ''}
 - 준비 기간: ${story.preparationDuration.years}년 ${story.preparationDuration.months}개월
-${story.preparationFeeling ? `- 준비 중 느낌: ${story.preparationFeeling}` : ''}
-
-참고 샘플:
-"${SAMPLE_TEXTS.story.preparation}"
+${story.preparationFeeling ? `- 준비 중 느낌: ${getPreparationFeelingText(story.preparationFeeling)}` : ''}
 
 ═══════════════════════════════════════════════════
 [6] 웨딩 인터뷰 (interview)
@@ -834,24 +1110,30 @@ ${getInterviewPrompt(interview)}
 - JSON 외 다른 텍스트 없이 순수 JSON만 출력
 
 {
-  "greeting": "인사말 텍스트",
-  "thanks": "감사말 텍스트",
-  "groomProfile": "신랑 소개 텍스트",
-  "brideProfile": "신부 소개 텍스트",
+  "greeting": "여기에 실제 인사말 내용 작성",
+  "thanks": "여기에 실제 감사말 내용 작성",
+  "groomProfile": "여기에 실제 신랑 소개 내용 작성",
+  "brideProfile": "여기에 실제 신부 소개 내용 작성",
   "story": {
-    "first": "첫 만남/연애 시작",
-    "together": "함께 성장한 시간",
-    "preparation": "결혼 준비"
+    "first": "여기에 실제 첫 만남/연애 시작 스토리 작성",
+    "together": "여기에 실제 함께 성장한 시간 스토리 작성",
+    "preparation": "여기에 실제 결혼 준비 스토리 작성"
   },
   "interview": [
     {
-      "question": "질문",
-      "groomAnswer": "신랑 답변 (개별시)",
-      "brideAnswer": "신부 답변 (개별시)",
-      "jointAnswer": "공동 답변 (함께시)"
+      "question": "여기에 실제 질문 작성 (예: 결혼을 결심한 이유는 무엇인가요?)",
+      "groomAnswer": "여기에 신랑의 실제 답변 1-3문장 작성 (개별 답변 모드시 반드시 작성)",
+      "brideAnswer": "여기에 신부의 실제 답변 1-3문장 작성 (개별 답변 모드시 반드시 작성)",
+      "jointAnswer": "여기에 두 사람의 공동 답변 1-3문장 작성 (공동 답변 모드시 반드시 작성)"
     }
   ]
-}`
+}
+
+**중요**: interview 배열의 각 항목에서:
+- 개별 답변 스타일: groomAnswer와 brideAnswer에 실제 내용을 반드시 작성하세요
+- 공동 답변 스타일: jointAnswer에 실제 내용을 반드시 작성하세요
+- 혼합 스타일: 질문 특성에 따라 적절한 필드에 실제 내용을 작성하세요
+- 빈 문자열("")이나 placeholder 텍스트가 아닌 실제 생성된 답변을 넣어주세요`
 }
 
 // ============================================================
@@ -916,12 +1198,20 @@ ${toneGuide}
 ▶ 톤: ${getToneDescription(greeting.greetingTone)}
 
 ▶ 입력 정보:
-- 관계 기간: ${greeting.relationshipDuration}
-- 관계 특징: ${greeting.relationshipTraits.join(', ')}
-- 결혼의 의미: ${greeting.marriageMeaning}
+- 관계 기간: ${getRelationshipDurationText(greeting.relationshipDuration)}
+- 관계 특징: ${greeting.relationshipTraits.map(t => getRelationshipTraitText(t)).join(', ')}
+- 결혼의 의미: ${getMarriageMeaningText(greeting.marriageMeaning)}
 ${greeting.specialNote ? `- 특별한 내용: ${greeting.specialNote}` : ''}
 
-▶ 참고 샘플 스타일:
+▶ ⚠️ 반드시 지켜야 할 작성 규칙:
+1. 시간적 표현: "오늘 이 자리에" 절대 금지 (청첩장은 결혼식 전에 보냄)
+   → "~를 함께 걸어오며", "~년의 시간을" 같은 과거 회상형 사용
+2. 초대 표현: "초대합니다", "모시고자 합니다" (감사 인사는 별도 섹션)
+3. 구체성: 관계 기간, 특별한 내용을 구체적으로 녹여서
+4. 과거→미래 흐름: "함께 걸어오며(과거) → 새로운 여정(미래)"
+5. "함께" 단어 최대 2회, "~입니다" 어미 과다 반복 금지
+
+▶ 참고 샘플 스타일 (이 스타일을 정확히 따라주세요):
 "${greetingSample}"
 
 ▶ 출력: 인사말 텍스트만 출력 (JSON 아님)
@@ -931,7 +1221,7 @@ ${greeting.specialNote ? `- 특별한 내용: ${greeting.specialNote}` : ''}
 
 [감사말 재생성]
 ▶ 형식: 1-2문장, 50-100자
-▶ 스타일: ${greeting.thanksStyle}
+▶ 스타일: ${getThanksStyleText(greeting.thanksStyle || 'formal')}
 ▶ 감사 대상: ${greeting.thanksTo.join(', ')}
 
 ▶ 참고 샘플:
@@ -948,7 +1238,7 @@ ${greeting.specialNote ? `- 특별한 내용: ${greeting.specialNote}` : ''}
 ▶ 입력 정보:
 - 이름: ${groomName}
 - 비유: ${getMetaphorText(groomProfile.metaphor)}
-- 특징: ${groomProfile.characteristics.join(', ')}
+- 특징: ${groomProfile.characteristics.map(c => getCharacteristicText(c)).join(', ')}
 - 함께 있으면: ${getTogetherFeelingText(groomProfile.togetherFeeling)}
 ${groomProfile.version === 'rich' ? `
 - 첫인상 vs 실제: ${groomProfile.firstImpressionVsReality || ''}
@@ -956,7 +1246,14 @@ ${groomProfile.version === 'rich' ? `
 - 양면성: ${groomProfile.duality || ''}
 ` : ''}
 
-▶ 참고 샘플 스타일:
+▶ ⚠️ 반드시 지켜야 할 작성 규칙:
+1. 호칭: 이름만 사용 ("${groomName.slice(-2)}이는"), "우리 신랑/제 신랑" 절대 금지
+2. 1인칭 최소화: "제게", "저를" 2-3회 이내, 주어 생략이나 "곁에 있으면" 등으로 대체
+3. 어미 다양화: "~이에요", "~거든요", "~더라고요" 등 섞어서, 연속 반복 금지
+4. 구체적 표현: "긍정적인 에너지" 같은 추상적 표현 대신 구체적 행동/상황 묘사
+5. 줄바꿈 활용: 짧은 문장으로 끊어서 리듬감 부여
+
+▶ 참고 샘플 스타일 (이 스타일을 정확히 따라주세요):
 "${SAMPLE_TEXTS.profile[groomProfile.tone as keyof typeof SAMPLE_TEXTS.profile]?.[groomProfile.version as 'short' | 'rich'] || SAMPLE_TEXTS.profile.sincere.short}"
 
 ▶ 출력: 신랑 소개 텍스트만 출력 (JSON 아님)
@@ -971,13 +1268,23 @@ ${groomProfile.version === 'rich' ? `
 ▶ 입력 정보:
 - 이름: ${brideName}
 - 비유: ${getMetaphorText(brideProfile.metaphor)}
-- 특징: ${brideProfile.characteristics.join(', ')}
+- 특징: ${brideProfile.characteristics.map(c => getCharacteristicText(c)).join(', ')}
 - 함께 있으면: ${getTogetherFeelingText(brideProfile.togetherFeeling)}
 ${brideProfile.version === 'rich' ? `
 - 첫인상 vs 실제: ${brideProfile.firstImpressionVsReality || ''}
 - 구체적 모습: ${brideProfile.specificDetails || ''}
 - 양면성: ${brideProfile.duality || ''}
 ` : ''}
+
+▶ ⚠️ 반드시 지켜야 할 작성 규칙:
+1. 호칭: 이름만 사용 ("${brideName.slice(-2)}이는"), "우리 신부/제 신부" 절대 금지
+2. 1인칭 최소화: "제게", "저를" 2-3회 이내, 주어 생략이나 "곁에 있으면" 등으로 대체
+3. 어미 다양화: "~이에요", "~거든요", "~더라고요" 등 섞어서, 연속 반복 금지
+4. 구체적 표현: "긍정적인 에너지" 같은 추상적 표현 대신 구체적 행동/상황 묘사
+5. 줄바꿈 활용: 짧은 문장으로 끊어서 리듬감 부여
+
+▶ 참고 샘플 스타일 (이 스타일을 정확히 따라주세요):
+"${SAMPLE_TEXTS.profile[brideProfile.tone as keyof typeof SAMPLE_TEXTS.profile]?.[brideProfile.version as 'short' | 'rich'] || SAMPLE_TEXTS.profile.sincere.short}"
 
 ▶ 출력: 신부 소개 텍스트만 출력 (JSON 아님)
 문단 구분은 빈 줄로 해주세요.`,
@@ -1026,7 +1333,7 @@ ${story.specificEpisodes ? `- 구체적 에피소드: ${story.specificEpisodes}`
 ▶ 입력 정보:
 ${story.proposalStory ? `- 프로포즈: ${story.proposalStory}` : ''}
 - 준비 기간: ${story.preparationDuration.years}년 ${story.preparationDuration.months}개월
-${story.preparationFeeling ? `- 준비 중 느낌: ${story.preparationFeeling}` : ''}
+${story.preparationFeeling ? `- 준비 중 느낌: ${getPreparationFeelingText(story.preparationFeeling)}` : ''}
 
 ▶ 참고 샘플:
 "${SAMPLE_TEXTS.story.preparation}"
@@ -1042,12 +1349,17 @@ ${getInterviewPrompt(interview)}
 ▶ 출력: JSON 배열 형식으로만 출력
 [
   {
-    "question": "질문",
-    "groomAnswer": "신랑 답변 (개별시)",
-    "brideAnswer": "신부 답변 (개별시)",
-    "jointAnswer": "공동 답변 (함께시)"
+    "question": "실제 질문 내용을 작성",
+    "groomAnswer": "신랑의 실제 답변 1-3문장 작성 (개별 답변시 필수)",
+    "brideAnswer": "신부의 실제 답변 1-3문장 작성 (개별 답변시 필수)",
+    "jointAnswer": "두 사람의 공동 답변 1-3문장 작성 (공동 답변시 필수)"
   }
-]`
+]
+
+**중요**: 각 질문에 대해 반드시 실제 답변 내용을 작성해주세요.
+- 빈 문자열("")이나 placeholder 금지
+- 개별 답변 모드: groomAnswer, brideAnswer 둘 다 실제 내용 작성
+- 공동 답변 모드: jointAnswer에 실제 내용 작성`
   }
 
   return sectionPrompts[section] || ''

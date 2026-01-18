@@ -1,6 +1,8 @@
 // AI 스토리 생성기 타입 정의
 
 // 버전 타입
+// 'short' = 간결 (핵심 위주, 5-7문장)
+// 'rich' = 풍부 (에피소드 포함, 10-15문장)
 export type Version = 'short' | 'rich';
 
 // 톤 타입
@@ -14,6 +16,18 @@ export const ToneLabels: Record<Tone, string> = {
   cheerful: '밝고 경쾌한',
 };
 
+// 감사 스타일 타입
+export type ThanksStyle = 'formal' | 'warm' | 'friendly' | 'simple' | 'humble';
+
+// 감사 스타일 라벨
+export const ThanksStyleLabels: Record<ThanksStyle, string> = {
+  formal: '격식 있는',
+  warm: '따뜻한',
+  friendly: '친근한',
+  simple: '간결한',
+  humble: '겸손한',
+};
+
 // 인사말/감사말 폼 데이터
 export interface GreetingFormData {
   relationshipDuration: string;
@@ -21,8 +35,8 @@ export interface GreetingFormData {
   marriageMeaning: string;
   specialNote?: string;
   greetingTone: Tone;
-  thanksTo: string[];
-  thanksStyle: string;
+  thanksTo: string[];  // 항상 ['everyone']으로 설정됨
+  thanksStyle: ThanksStyle;
 }
 
 // 신랑신부 소개 폼 데이터
@@ -62,18 +76,25 @@ export interface StoryFormData {
 // 웨딩 인터뷰 폼 데이터
 export interface InterviewFormData {
   version: Version;
+  // 'short' = 간결 (핵심 위주, 5-7문장)
+  // 'rich' = 풍부 (에피소드 포함, 10-15문장)
+
   type: 'auto' | 'popular' | 'custom';
-  // auto인 경우
+
+  // auto인 경우 (2-3개 선택)
   topics?: string[];
   answerStyle?: 'individual' | 'together' | 'mixed';
-  // popular인 경우
+
+  // popular인 경우 (2-3개 선택)
   selectedQuestions?: string[];
-  // custom인 경우
+
+  // custom인 경우 (2-3개 작성)
   customQuestions?: Array<{
     question: string;
     answerStyle: 'individual' | 'together';
   }>;
-  // 답변 힌트
+
+  // 답변 힌트 (선택)
   hints?: Record<string, { groom?: string; bride?: string; joint?: string }>;
 }
 
@@ -129,7 +150,7 @@ export const defaultGreetingForm: GreetingFormData = {
   marriageMeaning: '',
   specialNote: '',
   greetingTone: 'warm',
-  thanksTo: [],
+  thanksTo: ['everyone'],  // 항상 'everyone'으로 설정
   thanksStyle: 'formal',
 };
 

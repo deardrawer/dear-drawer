@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import {
   Accordion,
   AccordionContent,
@@ -16,7 +16,6 @@ import { Switch } from '@/components/ui/switch'
 import { useEditorStore, ImageSettings, SectionVisibility, PreviewSectionId } from '@/store/editorStore'
 import StoryGeneratorModal from '@/components/ai/StoryGeneratorModal'
 import HighlightTextarea from '@/components/editor/HighlightTextarea'
-import AIStoryAssistant from '@/components/ai/AIStoryAssistant'
 import { AIStoryGenerator } from '@/components/ai-story'
 import { GeneratedStory } from '@/app/api/ai/generate-story/route'
 import { GeneratedContent } from '@/types/ai-generator'
@@ -28,10 +27,8 @@ import {
 import { fieldHelpers, sectionLabels, sectionColors, introAnimationOptions, PreviewSection } from '@/lib/fieldHelpers'
 import { getPresetById } from '@/lib/introPresets'
 import { uploadImage } from '@/lib/imageUpload'
-import { ChevronRight, Sparkles, Palette, FileText, Heart, Settings, ChevronsUpDown, Wand2 } from 'lucide-react'
-
-// AI 어시스턴트 타입
-type AIAssistantType = 'couple_intro' | 'our_story' | 'interview' | null
+import { ChevronRight, Sparkles, Palette, FileText, Heart, Settings, ChevronsUpDown, Play, Pause, Music } from 'lucide-react'
+import { bgmPresets, getBgmPresetByUrl } from '@/lib/bgmPresets'
 
 // 섹션 매핑 배지 컴포넌트
 function SectionBadge({ section }: { section?: PreviewSection }) {
@@ -92,6 +89,8 @@ function SectionGroupHeader({
 
 interface EditPanelProps {
   onOpenIntroSelector?: () => void
+  invitationId?: string | null
+  templateId?: string // 새 템플릿의 경우 template 파라미터
 }
 
 // 아코디언 아이템 → 미리보기 섹션 매핑
@@ -122,7 +121,7 @@ const accordionToPreviewSection: Record<string, PreviewSectionId> = {
   'contacts': 'thank-you',
 }
 
-export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
+export default function EditPanel({ onOpenIntroSelector, invitationId, templateId }: EditPanelProps) {
   const {
     invitation,
     updateField,
@@ -136,9 +135,21 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
     setActiveSection
   } = useEditorStore()
   const [isAIModalOpen, setIsAIModalOpen] = useState(false)
-  const [aiAssistantType, setAiAssistantType] = useState<AIAssistantType>(null)
   const [isAIStoryGeneratorOpen, setIsAIStoryGeneratorOpen] = useState(false)
   const [uploadingImages, setUploadingImages] = useState<Set<string>>(new Set())
+
+  // BGM 미리듣기 관련
+  const bgmAudioRef = useRef<HTMLAudioElement>(null)
+  const [previewingBgmId, setPreviewingBgmId] = useState<string | null>(null)
+  const [isCustomBgm, setIsCustomBgm] = useState(false)
+
+  // BGM URL이 프리셋에 없으면 직접 입력 모드로 전환
+  useEffect(() => {
+    if (invitation?.bgm?.url) {
+      const isPresetUrl = bgmPresets.some(p => p.url === invitation.bgm.url)
+      setIsCustomBgm(!isPresetUrl && invitation.bgm.url.length > 0)
+    }
+  }, [invitation?.bgm?.url])
 
   // 이미지 업로드 핸들러 (공통)
   const handleImageUpload = async (
@@ -229,30 +240,6 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
     applyAIStory(story)
   }
 
-  // AI 어시스턴트 결과 적용 핸들러
-  const handleAIApply = (text: string) => {
-    switch (aiAssistantType) {
-      case 'couple_intro':
-        // 커플 소개의 경우 양쪽 intro에 적용 (앞부분은 신랑, 뒷부분은 신부)
-        const parts = text.split(/\n\n---\n\n|\n\n\*\*\*\n\n/)
-        if (parts.length >= 2) {
-          updateNestedField('groom.profile.intro', parts[0].trim())
-          updateNestedField('bride.profile.intro', parts[1].trim())
-        } else {
-          // 구분자가 없으면 그냥 인사말로 적용
-          updateNestedField('content.greeting', text)
-        }
-        break
-      case 'our_story':
-        updateNestedField('content.greeting', text)
-        break
-      case 'interview':
-        // 인터뷰 형식 파싱 시도
-        updateNestedField('content.greeting', text)
-        break
-    }
-  }
-
   // AI 스토리 생성기 결과 적용 핸들러
   const handleAIStoryGeneratorApply = (content: GeneratedContent) => {
     // 인사말 적용
@@ -260,10 +247,9 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
       updateNestedField('content.greeting', content.greeting)
     }
 
-    // 감사 인사 적용 (있으면 인사말 뒤에 추가)
+    // 감사 인사 적용 (thankYou.message에 적용)
     if (content.thanks) {
-      const currentGreeting = invitation.content.greeting || ''
-      updateNestedField('content.greeting', currentGreeting + '\n\n' + content.thanks)
+      updateNestedField('content.thankYou.message', content.thanks)
     }
 
     // 신랑 소개 적용
@@ -281,24 +267,27 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
       const stories = []
       if (content.story.first) {
         stories.push({
+          date: '',
           title: '연애의 시작',
-          content: content.story.first,
+          desc: content.story.first,
           images: [],
           imageSettings: []
         })
       }
       if (content.story.together) {
         stories.push({
+          date: '',
           title: '함께한 시간',
-          content: content.story.together,
+          desc: content.story.together,
           images: [],
           imageSettings: []
         })
       }
       if (content.story.preparation) {
         stories.push({
+          date: '',
           title: '결혼 준비',
-          content: content.story.preparation,
+          desc: content.story.preparation,
           images: [],
           imageSettings: []
         })
@@ -314,13 +303,27 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
 
     // 인터뷰 적용
     if (content.interview && content.interview.length > 0) {
-      const interviews = content.interview.map(item => ({
-        question: item.question,
-        groomAnswer: item.groomAnswer || '',
-        brideAnswer: item.brideAnswer || '',
-        jointAnswer: item.jointAnswer || ''
-      }))
-      updateNestedField('interview.questions', interviews)
+      const interviews = content.interview.map((item, index) => {
+        // 신랑/신부 개별 답변이나 공동 답변을 하나의 answer로 합침
+        let answer = ''
+        if (item.jointAnswer) {
+          answer = item.jointAnswer
+        } else {
+          const parts = []
+          if (item.groomAnswer) parts.push(`🤵 ${item.groomAnswer}`)
+          if (item.brideAnswer) parts.push(`👰 ${item.brideAnswer}`)
+          answer = parts.join('\n\n')
+        }
+
+        return {
+          question: item.question,
+          answer: answer,
+          images: [],
+          imageSettings: [],
+          bgClass: index % 2 === 0 ? 'white-bg' : 'pink-bg'
+        }
+      })
+      updateNestedField('content.interviews', interviews)
       // 인터뷰 섹션 활성화
       if (!invitation.sectionVisibility.interview) {
         toggleSectionVisibility('interview')
@@ -807,6 +810,13 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
         <AccordionItem value="design-bgm">
           <AccordionTrigger className="text-base font-medium">🎵 배경음악</AccordionTrigger>
           <AccordionContent className="space-y-4 pb-4">
+            {/* 숨겨진 오디오 엘리먼트 (미리듣기용) */}
+            <audio
+              ref={bgmAudioRef}
+              onEnded={() => setPreviewingBgmId(null)}
+              onPause={() => setPreviewingBgmId(null)}
+            />
+
             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <div>
                 <p className="text-sm font-medium">배경음악 사용</p>
@@ -814,19 +824,138 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
               </div>
               <Switch
                 checked={invitation.bgm.enabled}
-                onCheckedChange={(checked) => updateNestedField('bgm.enabled', checked)}
+                onCheckedChange={(checked) => {
+                  updateNestedField('bgm.enabled', checked)
+                  // 비활성화 시 미리듣기 중지
+                  if (!checked && bgmAudioRef.current) {
+                    bgmAudioRef.current.pause()
+                    setPreviewingBgmId(null)
+                  }
+                }}
               />
             </div>
+
             {invitation.bgm.enabled && (
               <>
-                <div className="space-y-1.5">
-                  <FieldLabel fieldKey="bgm.url">음악 URL</FieldLabel>
-                  <Input
-                    value={invitation.bgm.url}
-                    onChange={(e) => updateNestedField('bgm.url', e.target.value)}
-                    placeholder={fieldHelpers['bgm.url']?.example}
-                  />
+                {/* BGM 프리셋 리스트 */}
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium">음악 선택</Label>
+                  <div className="space-y-2">
+                    {bgmPresets.map((preset) => {
+                      const isSelected = !isCustomBgm && invitation.bgm.url === preset.url
+                      const isPreviewing = previewingBgmId === preset.id
+
+                      return (
+                        <div
+                          key={preset.id}
+                          className={`p-3 rounded-lg border-2 transition-all cursor-pointer ${
+                            isSelected
+                              ? 'border-purple-500 bg-purple-50'
+                              : 'border-gray-200 bg-white hover:border-gray-300'
+                          }`}
+                          onClick={() => {
+                            setIsCustomBgm(false)
+                            updateNestedField('bgm.url', preset.url)
+                          }}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                isSelected ? 'bg-purple-500' : 'bg-gray-100'
+                              }`}>
+                                <Music className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-gray-500'}`} />
+                              </div>
+                              <div>
+                                <p className={`text-sm font-medium ${isSelected ? 'text-purple-700' : 'text-gray-900'}`}>
+                                  {preset.name}
+                                </p>
+                                <p className="text-xs text-gray-500">{preset.description}</p>
+                                {preset.duration && (
+                                  <p className="text-[10px] text-gray-400 mt-0.5">
+                                    {preset.duration} {preset.artist && `· ${preset.artist}`}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                if (isPreviewing) {
+                                  bgmAudioRef.current?.pause()
+                                  setPreviewingBgmId(null)
+                                } else {
+                                  // 다른 미리듣기 중지
+                                  if (bgmAudioRef.current) {
+                                    bgmAudioRef.current.src = preset.url
+                                    bgmAudioRef.current.play()
+                                    setPreviewingBgmId(preset.id)
+                                  }
+                                }
+                              }}
+                              className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
+                                isPreviewing
+                                  ? 'bg-purple-500 text-white'
+                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                              }`}
+                            >
+                              {isPreviewing ? (
+                                <Pause className="w-4 h-4" />
+                              ) : (
+                                <Play className="w-4 h-4 ml-0.5" />
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      )
+                    })}
+
+                    {/* 직접 입력 옵션 */}
+                    <div
+                      className={`p-3 rounded-lg border-2 transition-all cursor-pointer ${
+                        isCustomBgm
+                          ? 'border-purple-500 bg-purple-50'
+                          : 'border-gray-200 bg-white hover:border-gray-300'
+                      }`}
+                      onClick={() => {
+                        setIsCustomBgm(true)
+                        // 프리셋 URL이 아닌 경우 유지, 프리셋 URL인 경우 초기화
+                        const isPresetUrl = bgmPresets.some(p => p.url === invitation.bgm.url)
+                        if (isPresetUrl) {
+                          updateNestedField('bgm.url', '')
+                        }
+                      }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          isCustomBgm ? 'bg-purple-500' : 'bg-gray-100'
+                        }`}>
+                          <FileText className={`w-5 h-5 ${isCustomBgm ? 'text-white' : 'text-gray-500'}`} />
+                        </div>
+                        <div className="flex-1">
+                          <p className={`text-sm font-medium ${isCustomBgm ? 'text-purple-700' : 'text-gray-900'}`}>
+                            직접 입력
+                          </p>
+                          <p className="text-xs text-gray-500">나만의 음악 URL을 입력해요</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+
+                {/* 직접 입력 URL 필드 */}
+                {isCustomBgm && (
+                  <div className="space-y-1.5 pl-4 border-l-2 border-purple-200">
+                    <Label className="text-xs">음악 URL</Label>
+                    <Input
+                      value={invitation.bgm.url}
+                      onChange={(e) => updateNestedField('bgm.url', e.target.value)}
+                      placeholder="https://example.com/my-music.mp3"
+                    />
+                    <p className="text-[10px] text-gray-400">MP3, WAV 등 오디오 파일 URL을 입력하세요</p>
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div>
                     <p className="text-sm font-medium">자동 재생</p>
@@ -1189,20 +1318,6 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
         <AccordionItem value="greeting">
           <AccordionTrigger className="text-base font-medium">✉️ 인사말</AccordionTrigger>
           <AccordionContent className="space-y-4 pb-4">
-            <div className="flex justify-end">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsAIModalOpen(true)}
-                className="text-rose-600 border-rose-200 hover:bg-rose-50"
-              >
-                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                </svg>
-                AI로 문구 작성하기
-              </Button>
-            </div>
-
             <div className="space-y-1.5">
               <FieldLabel fieldKey="content.greeting" />
               <Textarea
@@ -1640,18 +1755,7 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
                 />
               </div>
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <FieldLabel fieldKey="groom.profile.intro">소개글</FieldLabel>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setAiAssistantType('couple_intro')}
-                    className="text-xs h-7 gap-1 text-purple-600 border-purple-200 hover:bg-purple-50"
-                  >
-                    <Wand2 className="w-3 h-3" />
-                    AI 작성
-                  </Button>
-                </div>
+                <FieldLabel fieldKey="groom.profile.intro">소개글</FieldLabel>
                 <HighlightTextarea
                   value={invitation.groom.profile.intro}
                   onChange={(value) => updateNestedField('groom.profile.intro', value)}
@@ -1772,18 +1876,7 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
                 />
               </div>
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <FieldLabel fieldKey="bride.profile.intro">소개글</FieldLabel>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setAiAssistantType('couple_intro')}
-                    className="text-xs h-7 gap-1 text-purple-600 border-purple-200 hover:bg-purple-50"
-                  >
-                    <Wand2 className="w-3 h-3" />
-                    AI 작성
-                  </Button>
-                </div>
+                <FieldLabel fieldKey="bride.profile.intro">소개글</FieldLabel>
                 <HighlightTextarea
                   value={invitation.bride.profile.intro}
                   onChange={(value) => updateNestedField('bride.profile.intro', value)}
@@ -1820,19 +1913,6 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
             {!invitation.sectionVisibility.ourStory && (
               <p className="text-xs text-gray-500 bg-gray-100 p-2 rounded">이 섹션은 현재 비공개 상태예요.</p>
             )}
-
-            {/* AI 작성 버튼 */}
-            <div className="flex justify-end">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setAiAssistantType('our_story')}
-                className="text-xs h-8 gap-1.5 text-purple-600 border-purple-200 hover:bg-purple-50"
-              >
-                <Wand2 className="w-3.5 h-3.5" />
-                AI로 스토리 작성하기
-              </Button>
-            </div>
 
             <div className="space-y-1.5">
               <FieldLabel fieldKey="relationship.startDate" />
@@ -2007,19 +2087,6 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
             {!invitation.sectionVisibility.interview && (
               <p className="text-xs text-gray-500 bg-gray-100 p-2 rounded">이 섹션은 현재 비공개 상태예요.</p>
             )}
-
-            {/* AI 작성 버튼 */}
-            <div className="flex justify-end">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setAiAssistantType('interview')}
-                className="text-xs h-8 gap-1.5 text-purple-600 border-purple-200 hover:bg-purple-50"
-              >
-                <Wand2 className="w-3.5 h-3.5" />
-                AI로 인터뷰 작성하기
-              </Button>
-            </div>
 
             {invitation.content.interviews.map((interview, index) => (
               <div key={index} className="space-y-3 p-4 bg-amber-50 rounded-lg">
@@ -2595,24 +2662,6 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
         onComplete={handleAIComplete}
       />
 
-      {/* AI Story Assistant Modal */}
-      {aiAssistantType && (
-        <AIStoryAssistant
-          type={aiAssistantType}
-          groomName={invitation.groom.name}
-          brideName={invitation.bride.name}
-          currentText={
-            aiAssistantType === 'couple_intro'
-              ? invitation.groom.profile.intro
-              : aiAssistantType === 'our_story'
-              ? invitation.content.greeting
-              : invitation.content.greeting
-          }
-          onApply={handleAIApply}
-          onClose={() => setAiAssistantType(null)}
-        />
-      )}
-
       {/* AI 스토리 생성기 다이얼로그 */}
       <Dialog open={isAIStoryGeneratorOpen} onOpenChange={setIsAIStoryGeneratorOpen}>
         <DialogContent className="max-w-3xl h-[85vh] max-h-[85vh] p-0 flex flex-col overflow-hidden">
@@ -2621,7 +2670,10 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
             <AIStoryGenerator
               groomName={invitation.groom.name}
               brideName={invitation.bride.name}
+              invitationId={invitationId || undefined}
+              templateId={templateId}
               onApply={handleAIStoryGeneratorApply}
+              onClose={() => setIsAIStoryGeneratorOpen(false)}
             />
           </div>
         </DialogContent>

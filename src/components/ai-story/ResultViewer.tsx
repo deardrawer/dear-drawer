@@ -804,8 +804,8 @@ export default function ResultViewer({
     )
   }
 
-  // 콘텐츠 없음
-  if (!content || !editedContent) {
+  // 콘텐츠 없음 또는 필수 필드 누락
+  if (!content || !editedContent || !editedContent.story) {
     return (
       <div className="text-center py-16">
         <div className="text-5xl mb-4">📝</div>
@@ -816,6 +816,9 @@ export default function ResultViewer({
       </div>
     )
   }
+
+  // story 객체 안전 검사
+  const story = editedContent.story || { first: '', together: '', preparation: '' }
 
   return (
     <div className="space-y-6 pb-8">
@@ -934,18 +937,18 @@ export default function ResultViewer({
           <SectionCard
             title="1단계: 연애의 시작"
             icon=""
-            content={editedContent.story.first}
+            content={story.first}
             sectionKey="story.first"
             isEditing={editingSection === 'story.first'}
             editedText={editedText}
             isRegenerating={regeneratingSection === 'story.first'}
             regenStatus={regenStatuses['story.first'] || defaultRegenStatus}
-            onEdit={() => startEdit('story.first', editedContent.story.first)}
+            onEdit={() => startEdit('story.first', story.first)}
             onSave={() => saveEdit('story.first')}
             onCancel={cancelEdit}
             onRegenerate={() => handleRegenerate('story.first')}
             onCopy={() =>
-              copyToClipboard(editedContent.story.first, '연애의 시작')
+              copyToClipboard(story.first, '연애의 시작')
             }
             onTextChange={setEditedText}
             compact
@@ -956,20 +959,20 @@ export default function ResultViewer({
           <SectionCard
             title="2단계: 함께 성장한 시간"
             icon=""
-            content={editedContent.story.together}
+            content={story.together}
             sectionKey="story.together"
             isEditing={editingSection === 'story.together'}
             editedText={editedText}
             isRegenerating={regeneratingSection === 'story.together'}
             regenStatus={regenStatuses['story.together'] || defaultRegenStatus}
             onEdit={() =>
-              startEdit('story.together', editedContent.story.together)
+              startEdit('story.together', story.together)
             }
             onSave={() => saveEdit('story.together')}
             onCancel={cancelEdit}
             onRegenerate={() => handleRegenerate('story.together')}
             onCopy={() =>
-              copyToClipboard(editedContent.story.together, '함께 성장한 시간')
+              copyToClipboard(story.together, '함께 성장한 시간')
             }
             onTextChange={setEditedText}
             compact
@@ -980,20 +983,20 @@ export default function ResultViewer({
           <SectionCard
             title="3단계: 결혼 준비"
             icon=""
-            content={editedContent.story.preparation}
+            content={story.preparation}
             sectionKey="story.preparation"
             isEditing={editingSection === 'story.preparation'}
             editedText={editedText}
             isRegenerating={regeneratingSection === 'story.preparation'}
             regenStatus={regenStatuses['story.preparation'] || defaultRegenStatus}
             onEdit={() =>
-              startEdit('story.preparation', editedContent.story.preparation)
+              startEdit('story.preparation', story.preparation)
             }
             onSave={() => saveEdit('story.preparation')}
             onCancel={cancelEdit}
             onRegenerate={() => handleRegenerate('story.preparation')}
             onCopy={() =>
-              copyToClipboard(editedContent.story.preparation, '결혼 준비')
+              copyToClipboard(story.preparation, '결혼 준비')
             }
             onTextChange={setEditedText}
             compact

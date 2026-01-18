@@ -167,6 +167,9 @@ export type PreviewSectionId =
   | 'rsvp'              // RSVP
   | null
 
+// 고인 표시 스타일
+export type DeceasedDisplayStyle = 'hanja' | 'flower'
+
 // 인트로 애니메이션 타입
 export type IntroAnimationType =
   | 'none'           // 없음
@@ -281,6 +284,9 @@ export interface InvitationContent {
   rsvpEnabled: boolean
   rsvpDeadline: string
   rsvpAllowGuestCount: boolean
+
+  // ===== 고인 표시 스타일 =====
+  deceasedDisplayStyle: DeceasedDisplayStyle
 
   // ===== 섹션 공개 설정 =====
   sectionVisibility: SectionVisibility
@@ -455,6 +461,9 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
   rsvpEnabled: true,
   rsvpDeadline: '',
   rsvpAllowGuestCount: true,
+
+  // 고인 표시 스타일
+  deceasedDisplayStyle: 'flower',
 
   // 섹션 공개 설정
   sectionVisibility: {

@@ -16,6 +16,7 @@ import {
 } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import { ErrorBoundaryProvider } from "@/components/providers/ErrorBoundaryProvider";
 
 // 기본 폰트
 const notoSansKR = Noto_Sans_KR({
@@ -124,7 +125,9 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className={`${fontVariables} font-sans antialiased`}>
-        <AuthProvider>{children}</AuthProvider>
+        <ErrorBoundaryProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </ErrorBoundaryProvider>
         <Script
           id="kakao-sdk"
           src="https://developers.kakao.com/sdk/js/kakao.min.js"

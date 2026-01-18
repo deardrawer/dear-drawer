@@ -430,6 +430,7 @@ function createDefaultContent(invitation: Invitation): InvitationContent {
     rsvpEnabled: true,
     rsvpDeadline: '',
     rsvpAllowGuestCount: true,
+    deceasedDisplayStyle: 'flower',
     sectionVisibility: { coupleProfile: true, ourStory: true, interview: true, guidance: false, bankAccounts: true, guestbook: true },
     design: { introAnimation: 'fade-in', coverTitle: 'OUR WEDDING', sectionDividers: { invitation: 'INVITATION', ourStory: 'OUR STORY', aboutUs: 'ABOUT US', interview: 'INTERVIEW', gallery: 'GALLERY', information: 'INFORMATION', location: 'LOCATION', rsvp: 'RSVP', thankYou: 'THANK YOU', guestbook: 'GUESTBOOK' } },
     bgm: { enabled: false, url: '', autoplay: false },

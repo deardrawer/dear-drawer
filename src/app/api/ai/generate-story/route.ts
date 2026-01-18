@@ -61,7 +61,7 @@ ${answersContext}
 }`
 
     const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-3-haiku-20240307',
       max_tokens: 1024,
       messages: [
         {

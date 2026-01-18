@@ -90,25 +90,24 @@ function calculateDday(d: string): string {
   const diff = Math.ceil((wedding.getTime() - today.getTime()) / (1000*60*60*24))
   return diff > 0 ? 'D-' + diff : diff === 0 ? 'D-Day' : 'D+' + Math.abs(diff)
 }
-// 국화 아이콘 (고인 표시)
+// 국화 아이콘 (고인 표시 - 꽃 스타일)
 const ChrysanthemumIcon = () => (
-  <svg className="inline-block w-3 h-3 mr-0.5" viewBox="0 0 24 24" fill="currentColor" opacity="0.7">
-    <path d="M12 2C12 2 14 6 14 8C14 10 12 12 12 12C12 12 10 10 10 8C10 6 12 2 12 2Z"/>
-    <path d="M12 12C12 12 16 10 18 10C20 10 22 12 22 12C22 12 20 14 18 14C16 14 12 12 12 12Z"/>
-    <path d="M12 12C12 12 8 10 6 10C4 10 2 12 2 12C2 12 4 14 6 14C8 14 12 12 12 12Z"/>
-    <path d="M12 12C12 12 14 16 14 18C14 20 12 22 12 22C12 22 10 20 10 18C10 16 12 12 12 12Z"/>
-    <path d="M12 12C12 12 15.5 7.5 17.5 6.5C19.5 5.5 22 6 22 6C22 6 21.5 8.5 19.5 10.5C17.5 12.5 12 12 12 12Z"/>
-    <path d="M12 12C12 12 8.5 7.5 6.5 6.5C4.5 5.5 2 6 2 6C2 6 2.5 8.5 4.5 10.5C6.5 12.5 12 12 12 12Z"/>
-    <path d="M12 12C12 12 15.5 16.5 17.5 17.5C19.5 18.5 22 18 22 18C22 18 21.5 15.5 19.5 13.5C17.5 11.5 12 12 12 12Z"/>
-    <path d="M12 12C12 12 8.5 16.5 6.5 17.5C4.5 18.5 2 18 2 18C2 18 2.5 15.5 4.5 13.5C6.5 11.5 12 12 12 12Z"/>
-    <circle cx="12" cy="12" r="2.5"/>
-  </svg>
+  <img
+    src="/icons/chrysanthemum.svg"
+    alt="고인"
+    className="inline-block w-3 h-3 mr-0.5 opacity-70"
+  />
 );
 
-// 부모님 이름 표시 (고인 시 국화 아이콘)
-const ParentName = ({ name, deceased }: { name: string; deceased?: boolean }) => (
+// 한자 故 표시 (고인 표시 - 한자 스타일)
+const HanjaDeceasedIcon = () => (
+  <span className="inline-block mr-0.5 text-[10px] opacity-70">故</span>
+);
+
+// 부모님 이름 표시 (고인 시 선택된 스타일로 표시)
+const ParentName = ({ name, deceased, displayStyle = 'flower' }: { name: string; deceased?: boolean; displayStyle?: 'hanja' | 'flower' }) => (
   <span className="inline-flex items-center">
-    {deceased && <ChrysanthemumIcon />}
+    {deceased && (displayStyle === 'hanja' ? <HanjaDeceasedIcon /> : <ChrysanthemumIcon />)}
     {name}
   </span>
 );
@@ -233,16 +232,16 @@ function IntroPage({ invitation, groomName, brideName, fonts, themeColors }: Pag
         <div className="mb-9 text-center" style={{ fontFamily: fonts.displayKr }}>
           <div className="mb-3">
             <p className="text-[11px] font-light leading-[2]" style={{ color: themeColors.text }}>
-              {invitation.groom.father.name && <><ParentName name={invitation.groom.father.name} deceased={invitation.groom.father.deceased} /> · </>}
-              {invitation.groom.mother.name && <><ParentName name={invitation.groom.mother.name} deceased={invitation.groom.mother.deceased} /></>}
+              {invitation.groom.father.name && <><ParentName name={invitation.groom.father.name} deceased={invitation.groom.father.deceased} displayStyle={invitation.deceasedDisplayStyle} /> · </>}
+              {invitation.groom.mother.name && <><ParentName name={invitation.groom.mother.name} deceased={invitation.groom.mother.deceased} displayStyle={invitation.deceasedDisplayStyle} /></>}
               {(invitation.groom.father.name || invitation.groom.mother.name) && <span style={{ color: themeColors.gray }}> 의 아들 </span>}
               <span style={{ color: themeColors.primary, fontWeight: 500 }}>{groomName}</span>
             </p>
           </div>
           <div>
             <p className="text-[11px] font-light leading-[2]" style={{ color: themeColors.text }}>
-              {invitation.bride.father.name && <><ParentName name={invitation.bride.father.name} deceased={invitation.bride.father.deceased} /> · </>}
-              {invitation.bride.mother.name && <><ParentName name={invitation.bride.mother.name} deceased={invitation.bride.mother.deceased} /></>}
+              {invitation.bride.father.name && <><ParentName name={invitation.bride.father.name} deceased={invitation.bride.father.deceased} displayStyle={invitation.deceasedDisplayStyle} /> · </>}
+              {invitation.bride.mother.name && <><ParentName name={invitation.bride.mother.name} deceased={invitation.bride.mother.deceased} displayStyle={invitation.deceasedDisplayStyle} /></>}
               {(invitation.bride.father.name || invitation.bride.mother.name) && <span style={{ color: themeColors.gray }}> 의 딸 </span>}
               <span style={{ color: themeColors.primary, fontWeight: 500 }}>{brideName}</span>
             </p>

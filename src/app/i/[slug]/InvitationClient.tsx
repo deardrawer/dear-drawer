@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import GuestFloatingButton from '@/components/invitation/GuestFloatingButton'
 import ProfileImageSlider from '@/components/editor/ProfileImageSlider'
 import { WatermarkOverlay } from '@/components/ui/WatermarkOverlay'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 import type { Invitation } from '@/types/invitation'
 import type { InvitationContent } from '@/store/editorStore'
 
@@ -94,6 +95,28 @@ function MusicToggle({
     </button>
   )
 }
+
+// 국화 아이콘 (고인 표시 - 꽃 스타일)
+const ChrysanthemumIcon = () => (
+  <img
+    src="/icons/chrysanthemum.svg"
+    alt="고인"
+    className="inline-block w-3 h-3 mr-0.5 opacity-70"
+  />
+);
+
+// 한자 故 표시 (고인 표시 - 한자 스타일)
+const HanjaDeceasedIcon = () => (
+  <span className="inline-block mr-0.5 text-[10px] opacity-70">故</span>
+);
+
+// 부모님 이름 표시 (고인 시 선택된 스타일로 표시)
+const ParentName = ({ name, deceased, displayStyle = 'flower' }: { name: string; deceased?: boolean; displayStyle?: 'hanja' | 'flower' }) => (
+  <span className="inline-flex items-center">
+    {deceased && (displayStyle === 'hanja' ? <HanjaDeceasedIcon /> : <ChrysanthemumIcon />)}
+    {name}
+  </span>
+);
 
 // Global CSS Animations - matching original template
 const globalStyles = `
@@ -842,6 +865,41 @@ const globalStyles = `
     /* Override fixed positioning for elements inside fixed-ui container */
     .mobile-frame-fixed-ui .fixed {
       position: absolute !important;
+    }
+
+    /* Ensure inset-0 works correctly for overlays */
+    .mobile-frame-fixed-ui .inset-0 {
+      top: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      left: 0 !important;
+    }
+
+    /* Fix bottom sheet positioning */
+    .mobile-frame-fixed-ui .bottom-0 {
+      bottom: 0 !important;
+    }
+
+    .mobile-frame-fixed-ui .left-0 {
+      left: 0 !important;
+    }
+
+    .mobile-frame-fixed-ui .right-0 {
+      right: 0 !important;
+    }
+
+    /* Fix modal centering */
+    .mobile-frame-fixed-ui .inset-x-4 {
+      left: 1rem !important;
+      right: 1rem !important;
+    }
+
+    .mobile-frame-fixed-ui .top-1\/2 {
+      top: 50% !important;
+    }
+
+    .mobile-frame-fixed-ui .-translate-y-1\/2 {
+      transform: translateY(-50%) !important;
     }
   }
 
@@ -1758,6 +1816,9 @@ const mockInvitation = {
   rsvpDeadline: '2025-05-17',
   rsvpAllowGuestCount: true,
 
+  // 고인 표시 스타일
+  deceasedDisplayStyle: 'flower',
+
   // Section visibility toggles
   sectionVisibility: {
     coupleProfile: true,
@@ -2281,8 +2342,9 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
         <div className="parents-section mb-9 text-center" style={{ fontFamily: fonts.displayKr }}>
           <div className="mb-1">
             <p className="text-[11px] font-light leading-[1.5]" style={{ color: themeColors.text }}>
-              {invitation.groom.father.name} · {invitation.groom.mother.name}
-              <span style={{ color: themeColors.gray }}> 의 아들 </span>
+              {invitation.groom.father.name && <><ParentName name={invitation.groom.father.name} deceased={invitation.groom.father.deceased} displayStyle={invitation.deceasedDisplayStyle as 'hanja' | 'flower'} /> · </>}
+              {invitation.groom.mother.name && <ParentName name={invitation.groom.mother.name} deceased={invitation.groom.mother.deceased} displayStyle={invitation.deceasedDisplayStyle as 'hanja' | 'flower'} />}
+              {(invitation.groom.father.name || invitation.groom.mother.name) && <span style={{ color: themeColors.gray }}> 의 아들 </span>}
               <span style={{ color: themeColors.primary, fontWeight: 500 }}>{invitation.groom.name}</span>
             </p>
           </div>
@@ -2292,8 +2354,9 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
           </div>
           <div>
             <p className="text-[11px] font-light leading-[1.5]" style={{ color: themeColors.text }}>
-              {invitation.bride.father.name} · {invitation.bride.mother.name}
-              <span style={{ color: themeColors.gray }}> 의 딸 </span>
+              {invitation.bride.father.name && <><ParentName name={invitation.bride.father.name} deceased={invitation.bride.father.deceased} displayStyle={invitation.deceasedDisplayStyle as 'hanja' | 'flower'} /> · </>}
+              {invitation.bride.mother.name && <ParentName name={invitation.bride.mother.name} deceased={invitation.bride.mother.deceased} displayStyle={invitation.deceasedDisplayStyle as 'hanja' | 'flower'} />}
+              {(invitation.bride.father.name || invitation.bride.mother.name) && <span style={{ color: themeColors.gray }}> 의 딸 </span>}
               <span style={{ color: themeColors.primary, fontWeight: 500 }}>{invitation.bride.name}</span>
             </p>
           </div>
@@ -3158,7 +3221,30 @@ function GuestbookModal({
   )
 }
 
-export default function InvitationClient({ invitation: dbInvitation, content, isPaid, isPreview = false, overrideColorTheme, overrideFontStyle, skipIntro = false }: InvitationClientProps) {
+// 청첩장 전용 에러 Fallback
+function InvitationErrorFallback({ resetError }: { resetError: () => void }) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <div className="max-w-sm w-full bg-white rounded-2xl shadow-lg p-8 text-center">
+        <div className="w-16 h-16 mx-auto mb-4 bg-rose-100 rounded-full flex items-center justify-center">
+          <svg className="w-8 h-8 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <h2 className="text-lg font-medium text-gray-900 mb-2">청첩장을 불러올 수 없습니다</h2>
+        <p className="text-gray-500 text-sm mb-6">잠시 후 다시 시도해 주세요.</p>
+        <button
+          onClick={resetError}
+          className="w-full px-5 py-3 bg-rose-500 text-white rounded-xl font-medium hover:bg-rose-600 transition-colors"
+        >
+          다시 시도
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function InvitationClientContent({ invitation: dbInvitation, content, isPaid, isPreview = false, overrideColorTheme, overrideFontStyle, skipIntro = false }: InvitationClientProps) {
   // Transform DB data to display format
   const invitation = transformToDisplayData(dbInvitation, content)
 
@@ -3311,5 +3397,16 @@ export default function InvitationClient({ invitation: dbInvitation, content, is
         </div>
       </div>
     </>
+  )
+}
+
+// ErrorBoundary로 감싼 최종 컴포넌트
+export default function InvitationClient(props: InvitationClientProps) {
+  return (
+    <ErrorBoundary
+      fallback={<InvitationErrorFallback resetError={() => window.location.reload()} />}
+    >
+      <InvitationClientContent {...props} />
+    </ErrorBoundary>
   )
 }

@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+import Anthropic from "@anthropic-ai/sdk";
 import {
-  callOpenRouter,
   STORY_SYSTEM_PROMPT,
   buildStoryPrompt,
 } from "@/lib/openrouter";
+
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+});
 
 interface GenerateRequest {
   type: "couple_intro" | "our_story" | "interview";
@@ -26,14 +30,34 @@ export async function POST(request: NextRequest) {
 
     const userPrompt = buildStoryPrompt(type, answers, groomName, brideName);
 
-    const content = await callOpenRouter([
-      { role: "system", content: STORY_SYSTEM_PROMPT },
-      { role: "user", content: userPrompt },
-    ]);
+    const message = await anthropic.messages.create({
+      model: "claude-3-haiku-20240307",
+      max_tokens: 2000,
+      system: STORY_SYSTEM_PROMPT,
+      messages: [
+        {
+          role: "user",
+          content: userPrompt,
+        },
+      ],
+    });
 
-    return NextResponse.json({ content });
+    const textContent = message.content.find((block) => block.type === "text");
+    if (!textContent || textContent.type !== "text") {
+      throw new Error("AI 응답에서 텍스트를 찾을 수 없습니다.");
+    }
+
+    return NextResponse.json({ content: textContent.text });
   } catch (error) {
     console.error("Story generation error:", error);
+
+    if (error instanceof Anthropic.APIError) {
+      return NextResponse.json(
+        { error: `AI API 오류: ${error.message}` },
+        { status: error.status || 500 }
+      );
+    }
+
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       { error: `스토리 생성 중 오류가 발생했습니다: ${errorMessage}` },

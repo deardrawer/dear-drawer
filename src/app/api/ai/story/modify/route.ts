@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { callOpenRouter, MODIFICATION_PROMPTS } from "@/lib/openrouter";
+import Anthropic from "@anthropic-ai/sdk";
+import { MODIFICATION_PROMPTS } from "@/lib/openrouter";
+
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+});
 
 type ModificationType = "romantic" | "concise" | "humorous" | "grammar" | "custom";
 
@@ -46,14 +51,34 @@ export async function POST(request: NextRequest) {
       systemPrompt += "\n\n결과물만 출력해주세요.";
     }
 
-    const content = await callOpenRouter([
-      { role: "system", content: systemPrompt },
-      { role: "user", content: text },
-    ]);
+    const message = await anthropic.messages.create({
+      model: "claude-3-haiku-20240307",
+      max_tokens: 2000,
+      system: systemPrompt,
+      messages: [
+        {
+          role: "user",
+          content: text,
+        },
+      ],
+    });
 
-    return NextResponse.json({ content });
+    const textContent = message.content.find((block) => block.type === "text");
+    if (!textContent || textContent.type !== "text") {
+      throw new Error("AI 응답에서 텍스트를 찾을 수 없습니다.");
+    }
+
+    return NextResponse.json({ content: textContent.text });
   } catch (error) {
     console.error("Text modification error:", error);
+
+    if (error instanceof Anthropic.APIError) {
+      return NextResponse.json(
+        { error: `AI API 오류: ${error.message}` },
+        { status: error.status || 500 }
+      );
+    }
+
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       { error: `텍스트 수정 중 오류가 발생했습니다: ${errorMessage}` },

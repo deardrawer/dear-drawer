@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useAuth } from '@/components/providers/AuthProvider'
 import { getTemplateById } from '@/lib/templates'
 import { Button } from '@/components/ui/button'
@@ -12,6 +13,7 @@ import Preview from '@/components/editor/Preview'
 import ShareModal from '@/components/share/ShareModal'
 import IntroSelector from '@/components/editor/IntroSelector'
 import IntroPreview from '@/components/editor/IntroPreview'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 function EditorContent() {
   const searchParams = useSearchParams()
@@ -235,8 +237,12 @@ function EditorContent() {
       {/* Action Bar */}
       <header className="h-14 border-b border-gray-100 bg-white flex items-center justify-between px-6 shrink-0">
         <div className="flex items-center gap-4">
-          <Link href="/" className="text-base font-light tracking-wider text-black uppercase">
-            dear drawer
+          <Link href="/">
+            <img
+              src="/logo.png"
+              alt="Dear Drawer"
+              className="h-6 w-auto"
+            />
           </Link>
           <div className="h-4 w-px bg-gray-200" />
           <span className="text-sm text-gray-400 font-light tracking-wide">
@@ -446,16 +452,50 @@ function EditorContent() {
   )
 }
 
+// 에디터 전용 에러 Fallback
+function EditorErrorFallback({ resetError }: { resetError: () => void }) {
+  return (
+    <div className="h-screen flex items-center justify-center bg-white">
+      <div className="max-w-md w-full p-8 text-center">
+        <div className="w-16 h-16 mx-auto mb-6 bg-rose-100 rounded-full flex items-center justify-center">
+          <svg className="w-8 h-8 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <h2 className="text-xl font-medium text-gray-900 mb-2">에디터 오류</h2>
+        <p className="text-gray-600 mb-6">에디터를 불러오는 중 문제가 발생했습니다.</p>
+        <div className="flex gap-3 justify-center">
+          <button
+            onClick={resetError}
+            className="px-5 py-2.5 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors"
+          >
+            다시 시도
+          </button>
+          <Link href="/">
+            <button className="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+              홈으로
+            </button>
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function EditorPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="h-screen flex items-center justify-center bg-white">
-          <div className="animate-spin rounded-full h-6 w-6 border border-gray-300 border-t-gray-900" />
-        </div>
-      }
+    <ErrorBoundary
+      fallback={<EditorErrorFallback resetError={() => window.location.reload()} />}
     >
-      <EditorContent />
-    </Suspense>
+      <Suspense
+        fallback={
+          <div className="h-screen flex items-center justify-center bg-white">
+            <div className="animate-spin rounded-full h-6 w-6 border border-gray-300 border-t-gray-900" />
+          </div>
+        }
+      >
+        <EditorContent />
+      </Suspense>
+    </ErrorBoundary>
   )
 }

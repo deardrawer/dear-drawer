@@ -17,7 +17,14 @@ import { useEditorStore, ImageSettings, SectionVisibility, PreviewSectionId } fr
 import StoryGeneratorModal from '@/components/ai/StoryGeneratorModal'
 import HighlightTextarea from '@/components/editor/HighlightTextarea'
 import AIStoryAssistant from '@/components/ai/AIStoryAssistant'
+import { AIStoryGenerator } from '@/components/ai-story'
 import { GeneratedStory } from '@/app/api/ai/generate-story/route'
+import { GeneratedContent } from '@/types/ai-generator'
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { fieldHelpers, sectionLabels, sectionColors, introAnimationOptions, PreviewSection } from '@/lib/fieldHelpers'
 import { getPresetById } from '@/lib/introPresets'
 import { uploadImage } from '@/lib/imageUpload'
@@ -130,6 +137,7 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
   } = useEditorStore()
   const [isAIModalOpen, setIsAIModalOpen] = useState(false)
   const [aiAssistantType, setAiAssistantType] = useState<AIAssistantType>(null)
+  const [isAIStoryGeneratorOpen, setIsAIStoryGeneratorOpen] = useState(false)
   const [uploadingImages, setUploadingImages] = useState<Set<string>>(new Set())
 
   // 이미지 업로드 핸들러 (공통)
@@ -243,6 +251,91 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
         updateNestedField('content.greeting', text)
         break
     }
+  }
+
+  // AI 스토리 생성기 결과 적용 핸들러
+  const handleAIStoryGeneratorApply = (content: GeneratedContent) => {
+    // 인사말 적용
+    if (content.greeting) {
+      updateNestedField('content.greeting', content.greeting)
+    }
+
+    // 감사 인사 적용 (있으면 인사말 뒤에 추가)
+    if (content.thanks) {
+      const currentGreeting = invitation.content.greeting || ''
+      updateNestedField('content.greeting', currentGreeting + '\n\n' + content.thanks)
+    }
+
+    // 신랑 소개 적용
+    if (content.groomProfile) {
+      updateNestedField('groom.profile.intro', content.groomProfile)
+    }
+
+    // 신부 소개 적용
+    if (content.brideProfile) {
+      updateNestedField('bride.profile.intro', content.brideProfile)
+    }
+
+    // 러브스토리 적용
+    if (content.story) {
+      const stories = []
+      if (content.story.first) {
+        stories.push({
+          title: '연애의 시작',
+          content: content.story.first,
+          images: [],
+          imageSettings: []
+        })
+      }
+      if (content.story.together) {
+        stories.push({
+          title: '함께한 시간',
+          content: content.story.together,
+          images: [],
+          imageSettings: []
+        })
+      }
+      if (content.story.preparation) {
+        stories.push({
+          title: '결혼 준비',
+          content: content.story.preparation,
+          images: [],
+          imageSettings: []
+        })
+      }
+      if (stories.length > 0) {
+        updateNestedField('relationship.stories', stories)
+        // 스토리 섹션 활성화
+        if (!invitation.sectionVisibility.ourStory) {
+          toggleSectionVisibility('ourStory')
+        }
+      }
+    }
+
+    // 인터뷰 적용
+    if (content.interview && content.interview.length > 0) {
+      const interviews = content.interview.map(item => ({
+        question: item.question,
+        groomAnswer: item.groomAnswer || '',
+        brideAnswer: item.brideAnswer || '',
+        jointAnswer: item.jointAnswer || ''
+      }))
+      updateNestedField('interview.questions', interviews)
+      // 인터뷰 섹션 활성화
+      if (!invitation.sectionVisibility.interview) {
+        toggleSectionVisibility('interview')
+      }
+    }
+
+    // 프로필 섹션 활성화
+    if (content.groomProfile || content.brideProfile) {
+      if (!invitation.sectionVisibility.coupleProfile) {
+        toggleSectionVisibility('coupleProfile')
+      }
+    }
+
+    // 다이얼로그 닫기
+    setIsAIStoryGeneratorOpen(false)
   }
 
   // 헬퍼 함수들
@@ -559,6 +652,17 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
     <div className="h-full flex flex-col bg-white border-r overflow-hidden">
       {/* 상단 탭 네비게이션 */}
       <Tabs defaultValue="design" className="flex-1 flex flex-col min-h-0">
+        {/* AI 스토리 작성하기 버튼 */}
+        <div className="px-3 py-2 border-b bg-white shrink-0">
+          <button
+            onClick={() => setIsAIStoryGeneratorOpen(true)}
+            className="w-full py-2.5 px-4 rounded-lg bg-rose-500 text-white shadow hover:bg-rose-600 transition-all flex items-center justify-center gap-2"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span className="font-semibold text-sm">AI로 스토리 작성하기</span>
+          </button>
+        </div>
+
         <div className="border-b bg-white shrink-0">
           <TabsList className="w-full h-auto p-1 bg-gray-50 rounded-none grid grid-cols-4 gap-1">
             <TabsTrigger
@@ -935,6 +1039,38 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
               <p className="text-xs text-amber-700">
                 연락처는 선택 입력이에요. 입력하면 하단 버튼의 "안내정보 → 연락처"와 "축하 전하기"에 표시돼요.
               </p>
+            </div>
+
+            {/* 고인 표시 스타일 */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">고인 표시 스타일</Label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => updateField('deceasedDisplayStyle', 'hanja')}
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 transition-all ${
+                    invitation.deceasedDisplayStyle === 'hanja'
+                      ? 'border-gray-900 bg-gray-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <span className="text-base">故</span>
+                  <span className="text-xs text-gray-600">한자</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateField('deceasedDisplayStyle', 'flower')}
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 transition-all ${
+                    invitation.deceasedDisplayStyle === 'flower'
+                      ? 'border-gray-900 bg-gray-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <img src="/icons/chrysanthemum.svg" alt="국화" className="w-5 h-5" />
+                  <span className="text-xs text-gray-600">국화꽃</span>
+                </button>
+              </div>
+              <p className="text-xs text-gray-500">고인으로 표시된 부모님 앞에 표시됩니다</p>
             </div>
 
             {/* 신랑측 */}
@@ -2476,6 +2612,20 @@ export default function EditPanel({ onOpenIntroSelector }: EditPanelProps) {
           onClose={() => setAiAssistantType(null)}
         />
       )}
+
+      {/* AI 스토리 생성기 다이얼로그 */}
+      <Dialog open={isAIStoryGeneratorOpen} onOpenChange={setIsAIStoryGeneratorOpen}>
+        <DialogContent className="max-w-3xl h-[85vh] max-h-[85vh] p-0 flex flex-col overflow-hidden">
+          <DialogTitle className="sr-only">AI 스토리 생성기</DialogTitle>
+          <div className="flex-1 overflow-hidden">
+            <AIStoryGenerator
+              groomName={invitation.groom.name}
+              brideName={invitation.bride.name}
+              onApply={handleAIStoryGeneratorApply}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

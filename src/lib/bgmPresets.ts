@@ -13,7 +13,7 @@ export const bgmPresets: BgmPreset[] = [
     id: 'wedding-classic',
     name: '웨딩 클래식',
     description: '따뜻하고 로맨틱한 피아노 선율',
-    url: '/audio/wedding-bgm.mp3',
+    url: '/samples/parents/wedding-bgm.mp3',
     duration: '3:30',
   },
   // 추후 추가될 BGM들

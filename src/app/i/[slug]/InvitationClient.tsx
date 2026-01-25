@@ -2140,7 +2140,7 @@ const mockInvitation = {
   media: {
     coverImage: '/demo/cover.jpg',
     infoImage: '/demo/info.jpg',
-    bgm: '/audio/wedding-bgm.mp3',
+    bgm: '/samples/parents/wedding-bgm.mp3',
   },
 
   rsvpEnabled: true,
@@ -2181,7 +2181,7 @@ const mockInvitation = {
   // Background music settings
   bgm: {
     enabled: true,
-    url: '/audio/wedding-bgm.mp3',
+    url: '/samples/parents/wedding-bgm.mp3',
     autoplay: true,
   },
 

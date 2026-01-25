@@ -28,14 +28,14 @@ export default async function InvitationPage({ params, searchParams }: PageProps
     isSampleInvitation = true;
   }
 
-  // UUID인 경우 ID로 먼저 조회
-  if (!invitation && isUUID(slug)) {
-    invitation = await getInvitationById(slug);
-  }
-
   // 1. slug로 청첩장 조회
   if (!invitation) {
     invitation = await getInvitationBySlug(slug);
+  }
+
+  // 2. ID로 조회 (UUID 또는 8자리 short ID)
+  if (!invitation) {
+    invitation = await getInvitationById(slug);
   }
 
   // 2. alias로 조회 (이전 slug로 접속한 경우)
@@ -163,7 +163,11 @@ export async function generateMetadata({ params }: PageProps) {
     };
   }
 
-  const invitation = await getInvitationBySlug(slug);
+  // slug로 먼저 조회, 없으면 ID로 조회
+  let invitation = await getInvitationBySlug(slug);
+  if (!invitation) {
+    invitation = await getInvitationById(slug);
+  }
 
   if (!invitation) {
     return {

@@ -788,3 +788,43 @@
 .transition-slow {
   transition-duration: 500ms;
 }
+
+/* =====================
+   Parents 청첩장 폰트 스타일 (한글 중심)
+   ===================== */
+
+/* 정갈한 명조 - 나눔명조 */
+.font-parents-elegant,
+.font-parents-elegant * {
+  font-family: var(--font-nanum-myeongjo), serif !important;
+}
+
+/* 부드러운 바탕 - 고운바탕 */
+.font-parents-soft,
+.font-parents-soft * {
+  font-family: var(--font-gowun-batang), serif !important;
+}
+
+/* 고전 세리프 - 함렛 (Hahmlet) */
+.font-parents-classic,
+.font-parents-classic * {
+  font-family: var(--font-hahmlet), serif !important;
+}
+
+/* 전통 붓글씨 - 송명 (Song Myung) */
+.font-parents-brush,
+.font-parents-brush * {
+  font-family: var(--font-song-myung), serif !important;
+}
+
+/* 모던 고딕 - IBM Plex Sans KR */
+.font-parents-modern,
+.font-parents-modern * {
+  font-family: var(--font-ibm-plex-sans-kr), sans-serif !important;
+}
+
+/* 친근한 고딕 - 나눔고딕 */
+.font-parents-friendly,
+.font-parents-friendly * {
+  font-family: var(--font-nanum-gothic), sans-serif !important;
+}

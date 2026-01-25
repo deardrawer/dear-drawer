@@ -4,6 +4,10 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { templates, Template } from '@/lib/templates'
 
+// 템플릿 분류
+const coupleTemplates = templates.filter(t => t.narrativeType === 'our' || t.narrativeType === 'family')
+const parentsTemplate = templates.find(t => t.narrativeType === 'parents')!
+
 // 색상 테마 정의 (에디터와 동일)
 const colorThemes = [
   { id: 'classic-rose', name: 'Classic Rose', colors: ['#E91E63', '#D4A574'] },
@@ -29,13 +33,22 @@ export default function GalleryPage() {
   const [selectedFont, setSelectedFont] = useState(fontStyles[2]) // romantic as default
   const [iframeKey, setIframeKey] = useState(0)
   const [hasInteracted, setHasInteracted] = useState(false)
+  const [isFontExpanded, setIsFontExpanded] = useState(false)
+  const [isColorExpanded, setIsColorExpanded] = useState(false)
 
   // 템플릿에 따른 샘플 URL (컬러 테마, 폰트 파라미터 포함)
   // 스타일 변경 시에는 skipIntro=true로 인트로 스킵
   const skipIntroParam = hasInteracted ? '&skipIntro=true' : ''
-  const sampleUrl = selectedTemplate.narrativeType === 'our'
-    ? `/i/sample-our?preview=true&colorTheme=${selectedColor.id}&fontStyle=${selectedFont.id}${skipIntroParam}`
-    : `/i/sample-family?preview=true&colorTheme=${selectedColor.id}&fontStyle=${selectedFont.id}${skipIntroParam}`
+  const getSampleUrl = () => {
+    if (selectedTemplate.narrativeType === 'our') {
+      return `/i/sample-our?preview=true&colorTheme=${selectedColor.id}&fontStyle=${selectedFont.id}${skipIntroParam}`
+    } else if (selectedTemplate.narrativeType === 'family') {
+      return `/i/sample-family?preview=true&colorTheme=${selectedColor.id}&fontStyle=${selectedFont.id}${skipIntroParam}`
+    } else {
+      return `/sample/parents?preview=true${skipIntroParam}`
+    }
+  }
+  const sampleUrl = getSampleUrl()
 
   // 컬러/폰트 변경 핸들러 (인트로 스킵 활성화)
   const handleColorChange = (theme: typeof colorThemes[0]) => {
@@ -78,7 +91,7 @@ export default function GalleryPage() {
           </span>
           <span className="flex items-center gap-2">
             <span className="w-1 h-1 bg-gray-700 rounded-full" />
-            5 Min Setup
+            15 Min Setup
           </span>
           <span className="flex items-center gap-2">
             <span className="w-1 h-1 bg-gray-700 rounded-full" />
@@ -130,11 +143,14 @@ export default function GalleryPage() {
 
             {/* Right: Template Selection & Options */}
             <div className="space-y-8">
-              {/* Template Selection */}
+              {/* Template Selection - 신랑신부용 */}
               <div>
-                <h2 className="text-lg font-medium text-gray-900 mb-4">템플릿 선택</h2>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-lg">💍</span>
+                  <h2 className="text-lg font-medium text-gray-900">신랑신부가 직접 만드는 청첩장</h2>
+                </div>
                 <div className="grid grid-cols-2 gap-4">
-                  {templates.map((template) => (
+                  {coupleTemplates.map((template) => (
                     <button
                       key={template.id}
                       onClick={() => setSelectedTemplate(template)}
@@ -159,63 +175,151 @@ export default function GalleryPage() {
                 </div>
               </div>
 
-              {/* Color Theme Selection */}
+              {/* Template Selection - 혼주용 */}
               <div>
-                <h2 className="text-lg font-medium text-gray-900 mb-4">컬러 테마</h2>
-                <div className="grid grid-cols-3 gap-3">
-                  {colorThemes.map((theme) => (
-                    <button
-                      key={theme.id}
-                      onClick={() => handleColorChange(theme)}
-                      className={`relative p-3 rounded-xl border-2 transition-all ${
-                        selectedColor.id === theme.id
-                          ? 'border-black'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <div className="flex gap-1 mb-2 justify-center">
-                        <div
-                          className="w-6 h-6 rounded-full border border-gray-200"
-                          style={{ backgroundColor: theme.colors[0] }}
-                        />
-                        <div
-                          className="w-6 h-6 rounded-full border border-gray-200"
-                          style={{ backgroundColor: theme.colors[1] }}
-                        />
-                      </div>
-                      <p className="text-xs font-medium text-gray-700 truncate">{theme.name}</p>
-                    </button>
-                  ))}
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-lg">💌</span>
+                  <h2 className="text-lg font-medium text-gray-900">혼주가 보내는 청첩장</h2>
+                  <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-medium rounded-full">NEW</span>
                 </div>
+                <button
+                  onClick={() => setSelectedTemplate(parentsTemplate)}
+                  className={`relative w-full p-5 rounded-2xl border-2 transition-all text-left ${
+                    selectedTemplate.id === parentsTemplate.id
+                      ? 'border-black bg-gray-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  {selectedTemplate.id === parentsTemplate.id && (
+                    <div className="absolute top-3 right-3 w-5 h-5 bg-black rounded-full flex items-center justify-center">
+                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  )}
+                  <div className="flex items-start gap-4">
+                    <div className="text-3xl">{parentsTemplate.emoji}</div>
+                    <div className="flex-1">
+                      <h3 className="font-medium text-gray-900">{parentsTemplate.name}</h3>
+                      <p className="text-xs text-gray-500 mt-1">{parentsTemplate.description}</p>
+                      <div className="flex flex-wrap gap-1.5 mt-3">
+                        {parentsTemplate.features.map((feature) => (
+                          <span key={feature} className="px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded-full">
+                            {feature}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </button>
               </div>
 
-              {/* Font Style Selection */}
-              <div>
-                <h2 className="text-lg font-medium text-gray-900 mb-4">폰트 스타일</h2>
-                <div className="grid grid-cols-1 gap-2">
-                  {fontStyles.map((font) => (
-                    <button
-                      key={font.id}
-                      onClick={() => handleFontChange(font)}
-                      className={`relative p-3 rounded-xl border-2 transition-all text-left ${
-                        selectedFont.id === font.id
-                          ? 'border-black bg-gray-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      {selectedFont.id === font.id && (
-                        <div className="absolute top-3 right-3 w-4 h-4 bg-black rounded-full flex items-center justify-center">
-                          <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                      )}
-                      <p className="font-medium text-gray-900 text-sm">{font.name}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{font.desc}</p>
-                    </button>
-                  ))}
+              {/* Color Theme Selection - 혼주용이 아닐 때만 표시 */}
+              {selectedTemplate.narrativeType !== 'parents' && (
+                <div>
+                  <button
+                    onClick={() => setIsColorExpanded(!isColorExpanded)}
+                    className="w-full flex items-center justify-between mb-4"
+                  >
+                    <h2 className="text-lg font-medium text-gray-900">컬러 테마</h2>
+                    <div className="flex items-center gap-2">
+                      <div className="flex gap-1">
+                        <div
+                          className="w-5 h-5 rounded-full border border-gray-200"
+                          style={{ backgroundColor: selectedColor.colors[0] }}
+                        />
+                        <div
+                          className="w-5 h-5 rounded-full border border-gray-200"
+                          style={{ backgroundColor: selectedColor.colors[1] }}
+                        />
+                      </div>
+                      <svg
+                        className={`w-5 h-5 text-gray-400 transition-transform ${isColorExpanded ? 'rotate-180' : ''}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </button>
+                  {isColorExpanded && (
+                    <div className="grid grid-cols-3 gap-3">
+                      {colorThemes.map((theme) => (
+                        <button
+                          key={theme.id}
+                          onClick={() => handleColorChange(theme)}
+                          className={`relative p-3 rounded-xl border-2 transition-all ${
+                            selectedColor.id === theme.id
+                              ? 'border-black'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          <div className="flex gap-1 mb-2 justify-center">
+                            <div
+                              className="w-6 h-6 rounded-full border border-gray-200"
+                              style={{ backgroundColor: theme.colors[0] }}
+                            />
+                            <div
+                              className="w-6 h-6 rounded-full border border-gray-200"
+                              style={{ backgroundColor: theme.colors[1] }}
+                            />
+                          </div>
+                          <p className="text-xs font-medium text-gray-700 truncate">{theme.name}</p>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              </div>
+              )}
+
+              {/* Font Style Selection - 혼주용이 아닐 때만 표시 */}
+              {selectedTemplate.narrativeType !== 'parents' && (
+                <div>
+                  <button
+                    onClick={() => setIsFontExpanded(!isFontExpanded)}
+                    className="w-full flex items-center justify-between mb-4"
+                  >
+                    <h2 className="text-lg font-medium text-gray-900">폰트 스타일</h2>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-500">{selectedFont.name}</span>
+                      <svg
+                        className={`w-5 h-5 text-gray-400 transition-transform ${isFontExpanded ? 'rotate-180' : ''}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </button>
+                  {isFontExpanded && (
+                    <div className="grid grid-cols-1 gap-2">
+                      {fontStyles.map((font) => (
+                        <button
+                          key={font.id}
+                          onClick={() => handleFontChange(font)}
+                          className={`relative p-3 rounded-xl border-2 transition-all text-left ${
+                            selectedFont.id === font.id
+                              ? 'border-black bg-gray-50'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          {selectedFont.id === font.id && (
+                            <div className="absolute top-3 right-3 w-4 h-4 bg-black rounded-full flex items-center justify-center">
+                              <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            </div>
+                          )}
+                          <p className="font-medium text-gray-900 text-sm">{font.name}</p>
+                          <p className="text-xs text-gray-500 mt-0.5">{font.desc}</p>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Template Features */}
               <div className="bg-white rounded-2xl p-6 border border-gray-100">
@@ -227,11 +331,11 @@ export default function GalleryPage() {
                     <>
                       <li className="flex items-start gap-3 text-sm text-gray-600">
                         <span className="text-green-500 mt-0.5">✓</span>
-                        <span>시네마틱 인트로 애니메이션</span>
+                        <span><strong>커플 서사 중심</strong> - 두 사람의 만남과 사랑 이야기</span>
                       </li>
                       <li className="flex items-start gap-3 text-sm text-gray-600">
                         <span className="text-green-500 mt-0.5">✓</span>
-                        <span>3페이지 스토리 구조 (커버 → 초대 → 메인)</span>
+                        <span>시네마틱 인트로 애니메이션</span>
                       </li>
                       <li className="flex items-start gap-3 text-sm text-gray-600">
                         <span className="text-green-500 mt-0.5">✓</span>
@@ -239,30 +343,69 @@ export default function GalleryPage() {
                       </li>
                       <li className="flex items-start gap-3 text-sm text-gray-600">
                         <span className="text-green-500 mt-0.5">✓</span>
-                        <span>우리의 이야기 타임라인</span>
+                        <span>우리의 이야기 (러브스토리) 타임라인</span>
                       </li>
                       <li className="flex items-start gap-3 text-sm text-gray-600">
                         <span className="text-green-500 mt-0.5">✓</span>
-                        <span>플로팅 메뉴 (연락처, 축의금, 위치, 공유)</span>
+                        <span>AI가 자동으로 스토리 생성</span>
+                      </li>
+                      <li className="flex items-start gap-3 text-sm text-gray-600">
+                        <span className="text-green-500 mt-0.5">✓</span>
+                        <span>6가지 컬러 & 5가지 폰트 테마</span>
+                      </li>
+                    </>
+                  ) : selectedTemplate.narrativeType === 'family' ? (
+                    <>
+                      <li className="flex items-start gap-3 text-sm text-gray-600">
+                        <span className="text-green-500 mt-0.5">✓</span>
+                        <span><strong>가족 서사 중심</strong> - 양가가 함께하는 이야기</span>
+                      </li>
+                      <li className="flex items-start gap-3 text-sm text-gray-600">
+                        <span className="text-green-500 mt-0.5">✓</span>
+                        <span>시네마틱 인트로 애니메이션</span>
+                      </li>
+                      <li className="flex items-start gap-3 text-sm text-gray-600">
+                        <span className="text-green-500 mt-0.5">✓</span>
+                        <span>양가 부모님 소개 & 인사말</span>
+                      </li>
+                      <li className="flex items-start gap-3 text-sm text-gray-600">
+                        <span className="text-green-500 mt-0.5">✓</span>
+                        <span>신랑 & 신부 성장 스토리</span>
+                      </li>
+                      <li className="flex items-start gap-3 text-sm text-gray-600">
+                        <span className="text-green-500 mt-0.5">✓</span>
+                        <span>AI가 자동으로 스토리 생성</span>
+                      </li>
+                      <li className="flex items-start gap-3 text-sm text-gray-600">
+                        <span className="text-green-500 mt-0.5">✓</span>
+                        <span>6가지 컬러 & 5가지 폰트 테마</span>
                       </li>
                     </>
                   ) : (
                     <>
                       <li className="flex items-start gap-3 text-sm text-gray-600">
                         <span className="text-green-500 mt-0.5">✓</span>
-                        <span>전통적인 청첩장 형식</span>
+                        <span><strong>혼주 시점</strong> - 부모님이 보내는 청첩장</span>
                       </li>
                       <li className="flex items-start gap-3 text-sm text-gray-600">
                         <span className="text-green-500 mt-0.5">✓</span>
-                        <span>양가 부모님 중심 소개</span>
+                        <span>3D 봉투 오프닝 애니메이션</span>
                       </li>
                       <li className="flex items-start gap-3 text-sm text-gray-600">
                         <span className="text-green-500 mt-0.5">✓</span>
-                        <span>격식 있는 인사말</span>
+                        <span>하객별 개인화된 인사말 (명단 업로드)</span>
                       </li>
                       <li className="flex items-start gap-3 text-sm text-gray-600">
                         <span className="text-green-500 mt-0.5">✓</span>
-                        <span>깔끔한 단일 페이지 레이아웃</span>
+                        <span>자녀 성장 사진 타임라인</span>
+                      </li>
+                      <li className="flex items-start gap-3 text-sm text-gray-600">
+                        <span className="text-green-500 mt-0.5">✓</span>
+                        <span>결혼식 안내 (셔틀버스, 화환, 답례품, 포토부스)</span>
+                      </li>
+                      <li className="flex items-start gap-3 text-sm text-gray-600">
+                        <span className="text-green-500 mt-0.5">✓</span>
+                        <span>6가지 프리미엄 컬러 테마</span>
                       </li>
                     </>
                   )}
@@ -271,29 +414,49 @@ export default function GalleryPage() {
 
               {/* CTA Button */}
               <Link
-                href={`/editor?template=${selectedTemplate.id}`}
-                className="block w-full py-4 bg-black text-white text-center rounded-xl font-medium hover:bg-gray-800 transition-colors"
+                href={selectedTemplate.narrativeType === 'parents' ? '/editor/parents' : `/editor?template=${selectedTemplate.id}`}
+                className={`block w-full py-4 text-white text-center rounded-xl font-medium transition-colors ${
+                  selectedTemplate.narrativeType === 'parents'
+                    ? 'bg-[#722F37] hover:bg-[#5a252c]'
+                    : 'bg-black hover:bg-gray-800'
+                }`}
               >
                 이 템플릿으로 시작하기
               </Link>
 
               {/* Sample Links */}
-              <div className="text-center pt-4 border-t border-gray-100">
-                <p className="text-xs text-gray-500 mb-3">샘플 청첩장 직접 보기</p>
-                <div className="flex justify-center gap-4">
+              <div className="bg-gray-50 rounded-2xl p-5">
+                <p className="text-sm font-medium text-gray-900 mb-3 text-center">샘플 청첩장 직접 보기</p>
+                <div className="grid grid-cols-3 gap-2">
                   <Link
                     href="/i/sample-our"
                     target="_blank"
-                    className="text-sm text-gray-600 hover:text-black underline"
+                    className="flex items-center justify-center gap-1 px-3 py-2.5 bg-white rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:border-black hover:text-black transition-all"
                   >
-                    OUR 템플릿 →
+                    OUR
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
                   </Link>
                   <Link
                     href="/i/sample-family"
                     target="_blank"
-                    className="text-sm text-gray-600 hover:text-black underline"
+                    className="flex items-center justify-center gap-1 px-3 py-2.5 bg-white rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:border-black hover:text-black transition-all"
                   >
-                    FAMILY 템플릿 →
+                    FAMILY
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </Link>
+                  <Link
+                    href="/sample/parents"
+                    target="_blank"
+                    className="flex items-center justify-center gap-1 px-3 py-2.5 bg-white rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:border-black hover:text-black transition-all"
+                  >
+                    PARENTS
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
                   </Link>
                 </div>
               </div>

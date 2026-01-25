@@ -8,6 +8,7 @@ export type AIQuestion = {
   required: boolean
   category: 'basic' | 'story' | 'style' | 'message'
   templateType?: 'all' | 'our' | 'family' // 특정 템플릿용 질문
+  person?: 'groom' | 'bride' // 신랑/신부 구분 (FAMILY 템플릿용)
 }
 
 export const aiQuestions: AIQuestion[] = [
@@ -335,6 +336,98 @@ export const familyTemplateQuestions: AIQuestion[] = [
     category: 'message',
     templateType: 'family',
   },
+]
+
+// FAMILY 템플릿 "서로를 선택한 이유" 섹션용 질문
+export const familyWhyWeChoseQuestions: AIQuestion[] = [
+  // 신랑 관련
+  {
+    id: 'groom_self_personality',
+    question: '스스로 어떤 성격이라고 생각하시나요?',
+    description: '본인의 성격을 솔직하게 알려주세요.',
+    placeholder: '예: 급한 편이에요 / 내성적이에요 / 계획적인 편이에요',
+    type: 'textarea',
+    required: true,
+    category: 'story',
+    templateType: 'family',
+    person: 'groom',
+  },
+  {
+    id: 'groom_self_weakness',
+    question: '부족한 점이나 약점이 있다면?',
+    description: '스스로 느끼는 부족한 부분을 알려주세요.',
+    placeholder: '예: 감정 표현이 서툴러요 / 우유부단해요 / 걱정이 많아요',
+    type: 'textarea',
+    required: true,
+    category: 'story',
+    templateType: 'family',
+    person: 'groom',
+  },
+  {
+    id: 'groom_partner_complement',
+    question: '신부님이 부족한 점을 어떻게 채워주나요?',
+    description: '상대방이 나를 어떻게 보완해주는지 알려주세요.',
+    placeholder: '예: 제가 급할 때 차분하게 정리해줘요 / 걱정이 많을 때 괜찮다고 안심시켜줘요',
+    type: 'textarea',
+    required: true,
+    category: 'story',
+    templateType: 'family',
+    person: 'groom',
+  },
+  // 신부 관련
+  {
+    id: 'bride_self_personality',
+    question: '스스로 어떤 성격이라고 생각하시나요?',
+    description: '본인의 성격을 솔직하게 알려주세요.',
+    placeholder: '예: 감성적이에요 / 활발해요 / 꼼꼼한 편이에요',
+    type: 'textarea',
+    required: true,
+    category: 'story',
+    templateType: 'family',
+    person: 'bride',
+  },
+  {
+    id: 'bride_self_weakness',
+    question: '부족한 점이나 약점이 있다면?',
+    description: '스스로 느끼는 부족한 부분을 알려주세요.',
+    placeholder: '예: 결정을 잘 못해요 / 너무 예민해요 / 표현이 서툴러요',
+    type: 'textarea',
+    required: true,
+    category: 'story',
+    templateType: 'family',
+    person: 'bride',
+  },
+  {
+    id: 'bride_partner_complement',
+    question: '신랑님이 부족한 점을 어떻게 채워주나요?',
+    description: '상대방이 나를 어떻게 보완해주는지 알려주세요.',
+    placeholder: '예: 결정을 못할 때 방향을 제시해줘요 / 힘들 때 묵묵히 곁에 있어줘요',
+    type: 'textarea',
+    required: true,
+    category: 'story',
+    templateType: 'family',
+    person: 'bride',
+  },
+]
+
+// 신랑 quote 선택 옵션
+export const groomQuoteOptions: string[] = [
+  '서로 아끼며 행복하게 살겠습니다',
+  '평생 곁에서 지키겠습니다',
+  '당신 덕분에 더 좋은 사람이 됩니다',
+  '함께라서 든든합니다',
+  '매일 감사하며 살겠습니다',
+  '언제나 당신 편이 되겠습니다',
+]
+
+// 신부 quote 선택 옵션
+export const brideQuoteOptions: string[] = [
+  '늘 처음처럼 행복하게 살겠습니다',
+  '함께여서 온전해집니다',
+  '당신과 함께라면 어디든 좋습니다',
+  '평생 웃으며 살겠습니다',
+  '매일 고맙고 사랑합니다',
+  '늘 당신 곁에 있겠습니다',
 ]
 
 export function getQuestionsByCategory(category: AIQuestion['category']): AIQuestion[] {

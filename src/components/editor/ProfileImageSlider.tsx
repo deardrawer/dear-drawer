@@ -6,6 +6,39 @@ interface ImageSettings {
   scale: number
   positionX: number
   positionY: number
+  cropX?: number
+  cropY?: number
+  cropWidth?: number
+  cropHeight?: number
+}
+
+// 이미지 크롭 스타일 계산 헬퍼 함수
+function getImageCropStyle(img: string, s: ImageSettings) {
+  const hasCropData = s.cropWidth !== undefined && s.cropHeight !== undefined && (s.cropWidth < 1 || s.cropHeight < 1)
+
+  if (hasCropData) {
+    const cw = s.cropWidth || 1
+    const ch = s.cropHeight || 1
+    const cx = s.cropX || 0
+    const cy = s.cropY || 0
+    const posX = cw >= 1 ? 0 : (cx / (1 - cw)) * 100
+    const posY = ch >= 1 ? 0 : (cy / (1 - ch)) * 100
+
+    return {
+      backgroundImage: `url(${img})`,
+      backgroundSize: `${100 / cw}% ${100 / ch}%`,
+      backgroundPosition: `${posX}% ${posY}%`,
+      backgroundRepeat: 'no-repeat' as const,
+    }
+  }
+
+  // 기존 scale/position 방식 (호환성 유지)
+  return {
+    backgroundImage: `url(${img})`,
+    backgroundSize: 'cover' as const,
+    backgroundPosition: 'center' as const,
+    transform: `scale(${s.scale || 1}) translate(${s.positionX || 0}%, ${s.positionY || 0}%)`,
+  }
 }
 
 interface ProfileImageSliderProps {
@@ -169,11 +202,8 @@ export default function ProfileImageSlider({
     return (
       <div className={`w-full aspect-[3/4] rounded-xl overflow-hidden ${className}`}>
         <div
-          className="w-full h-full bg-cover bg-center transition-transform duration-300"
-          style={{
-            backgroundImage: `url(${images[0]})`,
-            transform: `scale(${settings.scale}) translate(${settings.positionX}%, ${settings.positionY}%)`,
-          }}
+          className="w-full h-full transition-transform duration-300"
+          style={getImageCropStyle(images[0], settings)}
         />
       </div>
     )
@@ -216,11 +246,8 @@ export default function ProfileImageSlider({
                 className="w-full h-full flex-shrink-0 overflow-hidden"
               >
                 <div
-                  className="w-full h-full bg-cover bg-center transition-transform duration-300"
-                  style={{
-                    backgroundImage: `url(${image})`,
-                    transform: `scale(${settings.scale}) translate(${settings.positionX}%, ${settings.positionY}%)`,
-                  }}
+                  className="w-full h-full transition-transform duration-300"
+                  style={getImageCropStyle(image, settings)}
                 />
               </div>
             )

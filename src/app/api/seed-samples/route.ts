@@ -209,15 +209,45 @@ const familySampleContent = {
   },
   content: {
     ...ourSampleContent.content,
-    greeting: '두 집안의 경사를 알립니다\n\n김철수·박영희의 장남 민준\n이정호·최미경의 장녀 서연\n\n두 사람이 혼인하여\n한 가정을 이루게 되었습니다\n\n바쁘시더라도 오셔서\n축하해 주시면 감사하겠습니다',
+    greeting: '누군가와 나누고 싶은 순간들이 있죠.\n이 날이 바로 그런 날입니다.\n우리의 결혼식에 초대합니다.',
     quote: {
-      text: '두 가문의 아름다운 인연으로\n새로운 가정을 이루게 되었습니다',
+      text: 'We warmly invite you to our wedding.',
       author: '',
     },
+  },
+  media: {
+    ...ourSampleContent.media,
+    coverImage: '/sample/family-main.png',
   },
   intro: {
     ...ourSampleContent.intro,
     welcomeText: '결혼식에 초대합니다',
+  },
+  fullHeightDividers: {
+    enabled: true,
+    items: [
+      {
+        id: 'divider-1',
+        englishTitle: 'From Our Family to Yours',
+        koreanText: '우리의 봄이, 누군가의 평생이 됩니다',
+        image: '/sample/divider1.png',
+        imageSettings: { scale: 1.0, positionX: 0, positionY: 0, grayscale: 100, opacity: 100 },
+      },
+      {
+        id: 'divider-2',
+        englishTitle: 'Why We Chose Each Other for Life',
+        koreanText: '서로의 부족한 점을 채워줄 수 있는\n사람을 만났습니다.',
+        image: '/sample/divider2.png',
+        imageSettings: { scale: 1.0, positionX: 0, positionY: 0, grayscale: 100, opacity: 100 },
+      },
+      {
+        id: 'divider-3',
+        englishTitle: 'Our way to marriage',
+        koreanText: '같은 시간, 같은 마음으로\n하나의 계절을 준비하고 있습니다.',
+        image: '/sample/divider3.png',
+        imageSettings: { scale: 1.0, positionX: 0, positionY: 0, grayscale: 100, opacity: 100 },
+      },
+    ],
   },
 }
 
@@ -250,7 +280,7 @@ export async function POST(request: Request) {
     `).bind(
       'sample-our-id',
       sampleUserId,
-      'our',
+      'narrative-our',
       ourSampleContent.groom.name,
       ourSampleContent.bride.name,
       ourSampleContent.wedding.date,
@@ -276,7 +306,7 @@ export async function POST(request: Request) {
     `).bind(
       'sample-family-id',
       sampleUserId,
-      'family',
+      'narrative-family',
       familySampleContent.groom.name,
       familySampleContent.bride.name,
       familySampleContent.wedding.date,

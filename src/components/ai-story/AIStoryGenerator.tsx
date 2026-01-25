@@ -5,17 +5,21 @@ import { Button } from '@/components/ui/button'
 import GreetingForm from './GreetingForm'
 import ProfileForm from './ProfileForm'
 import StoryForm from './StoryForm'
+import WhyWeChoseForm from './WhyWeChoseForm'
 import InterviewForm from './InterviewForm'
 import ResultViewer from './ResultViewer'
 import {
   StepId,
+  Step,
   STEPS,
+  FAMILY_STEPS,
   AllFormData,
   GeneratedContent,
   defaultGreetingForm,
   defaultProfileForm,
   defaultStoryForm,
   defaultInterviewForm,
+  defaultWhyWeChoseForm,
 } from '@/types/ai-generator'
 
 // localStorage 키 (기존 청첩장용 - invitationId가 있는 경우에만 사용)
@@ -121,6 +125,12 @@ export default function AIStoryGenerator({
   templateId,
   onClose
 }: AIStoryGeneratorProps) {
+  // FAMILY 템플릿 여부 확인
+  const isFamilyTemplate = templateId === 'narrative-family'
+
+  // 현재 템플릿에 맞는 스텝 사용
+  const currentSteps: Step[] = isFamilyTemplate ? FAMILY_STEPS : STEPS
+
   // 초기 상태 생성
   const createInitialFormData = useCallback((): AllFormData => ({
     greeting: defaultGreetingForm,
@@ -128,6 +138,7 @@ export default function AIStoryGenerator({
     brideProfile: { ...defaultProfileForm, name: brideName },
     story: defaultStoryForm,
     interview: defaultInterviewForm,
+    whyWeChose: { ...defaultWhyWeChoseForm, groomName, brideName },
   }), [groomName, brideName])
 
   const [currentStep, setCurrentStep] = useState<StepId>('greeting')
@@ -184,8 +195,8 @@ export default function AIStoryGenerator({
     }
   }, [generatedContent, invitationId, isInitialized])
 
-  const currentStepIndex = STEPS.findIndex((s) => s.id === currentStep)
-  const currentStepData = STEPS[currentStepIndex]
+  const currentStepIndex = currentSteps.findIndex((s) => s.id === currentStep)
+  const currentStepData = currentSteps[currentStepIndex]
 
   const goToStep = (stepId: StepId) => {
     setCurrentStep(stepId)
@@ -194,8 +205,8 @@ export default function AIStoryGenerator({
 
   const goNext = () => {
     const nextIndex = currentStepIndex + 1
-    if (nextIndex < STEPS.length) {
-      setCurrentStep(STEPS[nextIndex].id)
+    if (nextIndex < currentSteps.length) {
+      setCurrentStep(currentSteps[nextIndex].id)
       setError(null)
     }
   }
@@ -203,7 +214,7 @@ export default function AIStoryGenerator({
   const goPrev = () => {
     const prevIndex = currentStepIndex - 1
     if (prevIndex >= 0) {
-      setCurrentStep(STEPS[prevIndex].id)
+      setCurrentStep(currentSteps[prevIndex].id)
       setError(null)
     }
   }
@@ -333,7 +344,7 @@ export default function AIStoryGenerator({
       {/* Step Progress */}
       <div className="flex items-center justify-center px-4 py-3 border-b border-gray-200 bg-gray-50">
         <div className="flex items-center gap-2">
-          {STEPS.map((step, index) => (
+          {currentSteps.map((step, index) => (
             <button
               key={step.id}
               onClick={() => goToStep(step.id)}
@@ -396,6 +407,14 @@ export default function AIStoryGenerator({
           <StoryForm
             data={formData.story}
             onChange={(data) => setFormData({ ...formData, story: data })}
+          />
+        )}
+
+        {/* FAMILY 템플릿: 서로를 선택한 이유 */}
+        {currentStep === 'whyWeChose' && formData.whyWeChose && (
+          <WhyWeChoseForm
+            data={formData.whyWeChose}
+            onChange={(data) => setFormData({ ...formData, whyWeChose: data })}
           />
         )}
 

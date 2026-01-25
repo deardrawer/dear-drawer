@@ -1,5 +1,33 @@
 // Kakao OAuth Types
 
+// Kakao Maps Types
+declare global {
+  interface Window {
+    kakao: {
+      maps: {
+        load: (callback: () => void) => void;
+        Map: new (container: HTMLElement, options: { center: any; level: number }) => any;
+        LatLng: new (lat: number, lng: number) => any;
+        Marker: new (options: { position: any }) => { setMap: (map: any) => void };
+        InfoWindow: new (options: { content: string }) => { open: (map: any, marker: any) => void };
+        services: {
+          Geocoder: new () => {
+            addressSearch: (
+              address: string,
+              callback: (result: { x: string; y: string }[], status: string) => void
+            ) => void;
+          };
+          Status: {
+            OK: string;
+            ZERO_RESULT: string;
+            ERROR: string;
+          };
+        };
+      };
+    };
+  }
+}
+
 export interface KakaoTokenResponse {
   access_token: string;
   token_type: string;

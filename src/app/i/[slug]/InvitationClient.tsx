@@ -464,11 +464,8 @@ const globalStyles = `
 
   /* Gallery Lightbox */
   .gallery-lightbox {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    position: absolute;
+    inset: 0;
     background: rgba(0, 0, 0, 0.95);
     z-index: 9999;
     opacity: 0;
@@ -924,6 +921,122 @@ const globalStyles = `
       display: contents;
     }
   }
+
+  /* Full Height Divider Section (FAMILY Template) */
+  @font-face {
+    font-family: 'KimJeongCheolHandwriting';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302_01@1.0/KimjungchulScript-Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-display: swap;
+  }
+
+  .full-height-divider {
+    position: relative;
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .full-height-divider-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    z-index: 0;
+  }
+
+  .full-height-divider-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.3) 0%,
+      rgba(0, 0, 0, 0.5) 50%,
+      rgba(0, 0, 0, 0.4) 100%
+    );
+    z-index: 1;
+  }
+
+  .full-height-divider-content {
+    position: relative;
+    z-index: 2;
+    padding: 60px 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .full-height-divider-english {
+    font-family: 'Cormorant Garamond', 'Times New Roman', serif;
+    font-style: italic;
+    font-size: 14px;
+    font-weight: 300;
+    color: rgba(255, 255, 255, 0.75);
+    letter-spacing: 2px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 1.2s ease, transform 1.2s ease;
+  }
+
+  .full-height-divider.in-view .full-height-divider-english {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .full-height-divider-korean {
+    font-family: 'KimJeongCheolHandwriting', cursive;
+    font-size: 26px;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.7;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 1.5s ease 0.3s, transform 1.5s ease 0.3s;
+  }
+
+  .full-height-divider.in-view .full-height-divider-korean {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .full-height-divider-quote {
+    position: relative;
+  }
+
+  .full-height-divider-quote::before,
+  .full-height-divider-quote::after {
+    content: '"';
+    font-family: 'Georgia', serif;
+    font-size: 40px;
+    color: rgba(255, 255, 255, 0.4);
+    position: absolute;
+    line-height: 1;
+  }
+
+  .full-height-divider-quote::before {
+    top: -20px;
+    left: -20px;
+  }
+
+  .full-height-divider-quote::after {
+    content: '"';
+    bottom: -40px;
+    right: -20px;
+  }
 `
 
 // Scroll Animation Hook
@@ -1195,6 +1308,78 @@ function DividerSection({
   )
 }
 
+// Full Height Divider Section Component (FAMILY Template)
+function FullHeightDividerSection({
+  englishTitle,
+  koreanText,
+  image,
+  imageSettings,
+}: {
+  englishTitle: string
+  koreanText: string
+  image?: string
+  imageSettings?: {
+    scale: number
+    positionX: number
+    positionY: number
+    grayscale: number
+    opacity: number
+  }
+}) {
+  const { ref, isVisible } = useScrollAnimation()
+
+  const settings = imageSettings || {
+    scale: 1,
+    positionX: 0,
+    positionY: 0,
+    grayscale: 100,
+    opacity: 100,
+  }
+
+  return (
+    <div
+      ref={ref}
+      className={`full-height-divider ${isVisible ? 'in-view' : ''}`}
+    >
+      {/* Background Image */}
+      {image && (
+        <div
+          className="full-height-divider-bg"
+          style={{
+            backgroundImage: `url(${image})`,
+            filter: `grayscale(${settings.grayscale}%)`,
+            opacity: settings.opacity / 100,
+            transform: `scale(${settings.scale}) translate(${settings.positionX}%, ${settings.positionY}%)`,
+          }}
+        />
+      )}
+
+      {/* Overlay */}
+      <div className="full-height-divider-overlay" />
+
+      {/* Content */}
+      <div className="full-height-divider-content">
+        {/* English Title */}
+        <p className="full-height-divider-english">
+          {englishTitle}
+        </p>
+
+        {/* Korean Text with quotes */}
+        <div className="full-height-divider-quote">
+          <p className="full-height-divider-korean">
+            {koreanText.split('\n').map((line, i) => (
+              <span key={i}>
+                {line}
+                {i < koreanText.split('\n').length - 1 && <br />}
+              </span>
+            ))}
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // Profile Section Component - with animated underline label
 function ProfileSection({
   profile,
@@ -1321,7 +1506,7 @@ function InfoBlock({
   return (
     <div
       ref={ref}
-      className="rounded-[20px] px-6 py-6 mb-4"
+      className="px-6 py-6 mb-4"
       style={{
         background: '#ffffff',
         boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06), 0 16px 32px rgba(0,0,0,0.04)',
@@ -1626,12 +1811,12 @@ type ColorTheme = 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-g
 interface ColorConfig { primary: string; secondary: string; accent: string; background: string; sectionBg: string; cardBg: string; divider: string; text: string; gray: string }
 
 const colorThemes: Record<ColorTheme, ColorConfig> = {
-  'classic-rose': { primary: '#E91E63', secondary: '#D4A574', accent: '#d4a574', background: '#FFF8F5', sectionBg: '#FFE8E8', cardBg: '#FFFFFF', divider: '#d4b896', text: '#333333', gray: '#666666' },
-  'modern-black': { primary: '#1A1A1A', secondary: '#888888', accent: '#1A1A1A', background: '#FFFFFF', sectionBg: '#F5F5F5', cardBg: '#FFFFFF', divider: '#CCCCCC', text: '#1A1A1A', gray: '#666666' },
-  'romantic-blush': { primary: '#D4A5A5', secondary: '#C9B8A8', accent: '#C9B8A8', background: '#FDF8F6', sectionBg: '#F8EFEC', cardBg: '#FFFFFF', divider: '#D4C4BC', text: '#5C4B4B', gray: '#8B7676' },
-  'nature-green': { primary: '#6B8E6B', secondary: '#A8B5A0', accent: '#8FA888', background: '#F5F7F4', sectionBg: '#EBF0E8', cardBg: '#FFFFFF', divider: '#A8B5A0', text: '#3D4A3D', gray: '#6B7B6B' },
-  'luxury-navy': { primary: '#1E3A5F', secondary: '#C9A96E', accent: '#C9A96E', background: '#F8F9FA', sectionBg: '#E8ECF0', cardBg: '#FFFFFF', divider: '#C9A96E', text: '#1E3A5F', gray: '#5A6B7C' },
-  'sunset-coral': { primary: '#E8846B', secondary: '#F5C7A9', accent: '#E8A87C', background: '#FFFAF7', sectionBg: '#FFEEE5', cardBg: '#FFFFFF', divider: '#E8A87C', text: '#5C4035', gray: '#8B6B5C' },
+  'classic-rose': { primary: '#E91E63', secondary: '#D4A574', accent: '#d4a574', background: '#FFF8F5', sectionBg: '#FFE8E8', cardBg: '#FFFFFF', divider: '#d4b896', text: '#1A1A1A', gray: '#444444' },
+  'modern-black': { primary: '#1A1A1A', secondary: '#888888', accent: '#1A1A1A', background: '#FFFFFF', sectionBg: '#F5F5F5', cardBg: '#FFFFFF', divider: '#CCCCCC', text: '#1A1A1A', gray: '#444444' },
+  'romantic-blush': { primary: '#D4A5A5', secondary: '#C9B8A8', accent: '#C9B8A8', background: '#FDF8F6', sectionBg: '#F8EFEC', cardBg: '#FFFFFF', divider: '#D4C4BC', text: '#3D2E2E', gray: '#5C4545' },
+  'nature-green': { primary: '#6B8E6B', secondary: '#A8B5A0', accent: '#8FA888', background: '#F5F7F4', sectionBg: '#EBF0E8', cardBg: '#FFFFFF', divider: '#A8B5A0', text: '#2D3A2D', gray: '#4A5A4A' },
+  'luxury-navy': { primary: '#1E3A5F', secondary: '#C9A96E', accent: '#C9A96E', background: '#F8F9FA', sectionBg: '#E8ECF0', cardBg: '#FFFFFF', divider: '#C9A96E', text: '#1E3A5F', gray: '#3A4B5C' },
+  'sunset-coral': { primary: '#E8846B', secondary: '#F5C7A9', accent: '#E8A87C', background: '#FFFAF7', sectionBg: '#FFEEE5', cardBg: '#FFFFFF', divider: '#E8A87C', text: '#3D2820', gray: '#5C4035' },
 }
 
 // Font styles
@@ -1864,6 +2049,15 @@ const mockInvitation = {
   },
 }
 
+// Guest info type
+interface GuestInfo {
+  id: string
+  name: string
+  relation: string | null
+  honorific: string
+  customMessage: string | null
+}
+
 // Props interface for InvitationClient
 interface InvitationClientProps {
   invitation: Invitation
@@ -1873,6 +2067,7 @@ interface InvitationClientProps {
   overrideColorTheme?: string
   overrideFontStyle?: string
   skipIntro?: boolean
+  guestInfo?: GuestInfo | null
 }
 
 // Type for display invitation data
@@ -1984,6 +2179,8 @@ interface PageProps {
   onScreenChange?: (screen: 'cover' | 'invitation') => void
   onOpenRsvp?: () => void
   onOpenLightbox?: (index: number) => void
+  guestGreeting?: string | null
+  guestCustomMessage?: string | null
 }
 
 // 방명록 메시지 타입
@@ -1998,7 +2195,7 @@ interface GuestbookMessage {
 // Intro Page Component - Screen-based transitions like original template
 type IntroScreen = 'cover' | 'invitation'
 
-function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors, onNavigate, onScreenChange }: PageProps) {
+function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors, onNavigate, onScreenChange, guestGreeting, guestCustomMessage }: PageProps) {
   const [showDirections, setShowDirections] = useState(false)
   const [directionsTab, setDirectionsTab] = useState<DirectionsTab>('car')
 
@@ -2329,6 +2526,26 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
                 style={{ background: themeColors.divider, animationDelay: '0.5s' }}
               />
             </div>
+          </div>
+        )}
+
+        {/* Guest Personalized Greeting */}
+        {guestGreeting && (
+          <div className="guest-greeting-section mb-6 text-center">
+            <p
+              className="text-[15px] font-medium leading-relaxed"
+              style={{ fontFamily: fonts.displayKr, color: themeColors.primary }}
+            >
+              {guestGreeting}
+            </p>
+            {guestCustomMessage && (
+              <p
+                className="text-[12px] font-light mt-2 leading-relaxed"
+                style={{ fontFamily: fonts.displayKr, color: themeColors.gray }}
+              >
+                {guestCustomMessage}
+              </p>
+            )}
           </div>
         )}
 
@@ -2666,7 +2883,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
         <div className="relative z-10 text-center text-white pb-8"><p className="text-xs font-light" style={{ fontFamily: fonts.displayKr, letterSpacing: '1.5px' }}>{invitation.groom.name} & {invitation.bride.name}<br/>결혼합니다</p></div>
       </section>
 
-      {/* Title Section - with divider bar animations */}
+      {/* Title Section - OUR 템플릿: DividerSection 사용 */}
       <DividerSection
         lines={[
           `${invitation.groom.name} & ${invitation.bride.name}`,
@@ -2727,7 +2944,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
         />
       )}
 
-      {/* Our Story Title Section - with divider bar animations and visibility toggle */}
+      {/* Our Story Title Section - OUR 템플릿: DividerSection 사용 */}
       {invitation.sectionVisibility?.ourStory !== false && invitation.relationship.stories.some(s => s.title || s.desc) && (
         <DividerSection
           lines={['사랑이 시작된', '작은 순간들']}
@@ -2778,7 +2995,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
         </div>
       </AnimatedSection>
 
-      {/* Interview Title Section - with divider bar animations and visibility toggle */}
+      {/* Interview Title Section - OUR 템플릿: DividerSection 사용 */}
       {invitation.sectionVisibility?.interview !== false && invitation.content.interviews.some(i => i.question || i.answer) && (
         <DividerSection
           lines={['결혼에 관한', '우리의 이야기']}
@@ -3204,19 +3421,28 @@ function InvitationErrorFallback({ resetError }: { resetError: () => void }) {
   )
 }
 
-function InvitationClientContent({ invitation: dbInvitation, content, isPaid, isPreview = false, overrideColorTheme, overrideFontStyle, skipIntro = false }: InvitationClientProps) {
+function InvitationClientContent({ invitation: dbInvitation, content, isPaid, isPreview = false, overrideColorTheme, overrideFontStyle, skipIntro = false, guestInfo }: InvitationClientProps) {
   // Transform DB data to display format
   const invitation = transformToDisplayData(dbInvitation, content)
 
-  // Override colorTheme if provided via URL parameter
+  // Guest personalization: create greeting with guest name if available
+  const guestGreeting = guestInfo
+    ? `${guestInfo.name}${guestInfo.honorific}`
+    : null
+
+  // Override colorTheme if provided via URL parameter (with fallback to 'classic-rose')
   const effectiveColorTheme = (overrideColorTheme && overrideColorTheme in colorThemes)
     ? overrideColorTheme as ColorTheme
-    : invitation.colorTheme
+    : (invitation.colorTheme && invitation.colorTheme in colorThemes)
+      ? invitation.colorTheme as ColorTheme
+      : 'classic-rose'
 
-  // Override fontStyle if provided via URL parameter
+  // Override fontStyle if provided via URL parameter (with fallback to 'elegant')
   const effectiveFontStyle = (overrideFontStyle && overrideFontStyle in fontStyles)
     ? overrideFontStyle as FontStyle
-    : invitation.fontStyle
+    : (invitation.fontStyle && invitation.fontStyle in fontStyles)
+      ? invitation.fontStyle as FontStyle
+      : 'elegant'
 
   // If skipIntro is true, start directly on main page
   const [currentPage, setCurrentPage] = useState<PageType>(skipIntro ? 'main' : 'intro')
@@ -3247,24 +3473,52 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
 
   // Prepare contacts for FloatingButton
   const contacts = [
-    invitation.groom.phone && { name: invitation.groom.name, phone: invitation.groom.phone, role: '신랑', side: 'groom' as const },
-    invitation.groom.father.phone && { name: invitation.groom.father.name, phone: invitation.groom.father.phone, role: '아버지', side: 'groom' as const },
-    invitation.groom.mother.phone && { name: invitation.groom.mother.name, phone: invitation.groom.mother.phone, role: '어머니', side: 'groom' as const },
-    invitation.bride.phone && { name: invitation.bride.name, phone: invitation.bride.phone, role: '신부', side: 'bride' as const },
-    invitation.bride.father.phone && { name: invitation.bride.father.name, phone: invitation.bride.father.phone, role: '아버지', side: 'bride' as const },
-    invitation.bride.mother.phone && { name: invitation.bride.mother.name, phone: invitation.bride.mother.phone, role: '어머니', side: 'bride' as const },
+    invitation.groom?.phone && { name: invitation.groom.name, phone: invitation.groom.phone, role: '신랑', side: 'groom' as const },
+    invitation.groom?.father?.phone && { name: invitation.groom.father.name, phone: invitation.groom.father.phone, role: '아버지', side: 'groom' as const },
+    invitation.groom?.mother?.phone && { name: invitation.groom.mother.name, phone: invitation.groom.mother.phone, role: '어머니', side: 'groom' as const },
+    invitation.bride?.phone && { name: invitation.bride.name, phone: invitation.bride.phone, role: '신부', side: 'bride' as const },
+    invitation.bride?.father?.phone && { name: invitation.bride.father.name, phone: invitation.bride.father.phone, role: '아버지', side: 'bride' as const },
+    invitation.bride?.mother?.phone && { name: invitation.bride.mother.name, phone: invitation.bride.mother.phone, role: '어머니', side: 'bride' as const },
   ].filter(Boolean) as { name: string; phone: string; role: string; side: 'groom' | 'bride' }[]
 
   // Prepare accounts for FloatingButton
   const accounts = [
-    { name: invitation.groom.name, bank: invitation.groom.bank, role: '신랑', side: 'groom' as const },
-    { name: invitation.bride.name, bank: invitation.bride.bank, role: '신부', side: 'bride' as const },
-  ]
+    invitation.groom?.name && { name: invitation.groom.name, bank: invitation.groom.bank, role: '신랑', side: 'groom' as const },
+    invitation.bride?.name && { name: invitation.bride.name, bank: invitation.bride.bank, role: '신부', side: 'bride' as const },
+  ].filter(Boolean) as { name: string; bank?: string; role: string; side: 'groom' | 'bride' }[]
 
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: globalStyles }} />
       <div className="desktop-frame-wrapper">
+        {/* 결제 안내 배너 - 핸드폰 프레임 밖 상단 */}
+        {!isPaid && !isPreview && (
+          <div
+            className="payment-notice-banner"
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              zIndex: 10000,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '10px 16px',
+              backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            }}
+          >
+            <span
+              style={{
+                color: 'rgba(255, 255, 255, 0.95)',
+                fontSize: '13px',
+                fontWeight: 500,
+              }}
+            >
+              결제 후 워터마크가 제거됩니다
+            </span>
+          </div>
+        )}
         <div className="mobile-frame">
           <div className="mobile-frame-screen">
             <div className="mobile-frame-content">
@@ -3286,6 +3540,8 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
                       themeColors={themeColors}
                       onNavigate={setCurrentPage}
                       onScreenChange={setIntroScreen}
+                      guestGreeting={guestGreeting}
+                      guestCustomMessage={guestInfo?.customMessage}
                     />
                   ) : (
                     <MainPage
@@ -3301,14 +3557,6 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
                       }}
                     />
                   )}
-
-                  {/* Gallery Lightbox */}
-                  <GalleryLightbox
-                    images={invitation.gallery?.images || []}
-                    isOpen={lightboxOpen}
-                    initialIndex={lightboxIndex}
-                    onClose={() => setLightboxOpen(false)}
-                  />
 
                   {/* Background Music */}
                   {invitation.media.bgm && (
@@ -3352,6 +3600,14 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
 
               {/* Music Toggle */}
               <MusicToggle audioRef={audioRef} isVisible={showMusicToggle} shouldAutoPlay={currentPage === 'main'} />
+
+              {/* Gallery Lightbox */}
+              <GalleryLightbox
+                images={invitation.gallery?.images || []}
+                isOpen={lightboxOpen}
+                initialIndex={lightboxIndex}
+                onClose={() => setLightboxOpen(false)}
+              />
             </div>
           </div>
         </div>

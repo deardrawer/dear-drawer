@@ -1,4 +1,4 @@
-export type NarrativeType = 'our' | 'family'
+export type NarrativeType = 'our' | 'family' | 'parents'
 
 export type TemplateSection = {
   id: string
@@ -90,6 +90,38 @@ export const templates: Template[] = [
       { id: 'closing', title: '클로징', aiGenerated: false },
     ],
   },
+  {
+    id: 'narrative-parents',
+    name: 'PARENTS',
+    description: '혼주가 보내는 청첩장입니다. 부모님의 시선으로 자녀의 결혼을 알리고, 소중한 분들을 초대하는 따뜻한 청첩장입니다.',
+    thumbnail: '/templates/narrative-parents.jpg',
+    narrativeType: 'parents',
+    emoji: '🎎',
+    colors: {
+      primary: '#722F37',
+      secondary: '#F5F0EB',
+      accent: '#C9A962',
+      background: '#FFFEF8',
+      text: '#1A1A1A',
+    },
+    fonts: {
+      heading: 'Noto Serif KR',
+      body: 'Pretendard',
+    },
+    features: ['혼주 시점', '봉투 오프닝', '버건디 테마', '타임라인'],
+    sections: [
+      { id: 'envelope', title: '봉투', aiGenerated: false },
+      { id: 'greeting', title: '인사말', aiGenerated: true },
+      { id: 'timeline', title: '타임라인', aiGenerated: false },
+      { id: 'gallery', title: '갤러리', aiGenerated: false },
+      { id: 'date', title: '날짜', aiGenerated: false },
+      { id: 'venue', title: '예식장', aiGenerated: false },
+      { id: 'wedding-info', title: '결혼식 안내', aiGenerated: false, optional: true },
+      { id: 'account', title: '마음 전하실 곳', aiGenerated: false },
+      { id: 'share', title: '공유하기', aiGenerated: false },
+      { id: 'rsvp', title: '참석 의사', aiGenerated: false },
+    ],
+  },
 ]
 
 export function getTemplateById(id: string): Template | undefined {
@@ -106,4 +138,8 @@ export function getOurTemplate(): Template {
 
 export function getFamilyTemplate(): Template {
   return templates.find((template) => template.narrativeType === 'family')!
+}
+
+export function getParentsTemplate(): Template {
+  return templates.find((template) => template.narrativeType === 'parents')!
 }

@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState, Suspense } from 'react'
+import { useEffect, useState, Suspense, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -14,6 +15,8 @@ import ShareModal from '@/components/share/ShareModal'
 import IntroSelector from '@/components/editor/IntroSelector'
 import IntroPreview from '@/components/editor/IntroPreview'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { AIStoryGenerator } from '@/components/ai-story'
+import { GeneratedContent } from '@/types/ai-generator'
 
 function EditorContent() {
   const searchParams = useSearchParams()
@@ -23,7 +26,7 @@ function EditorContent() {
   const templateId = searchParams.get('template') || 'narrative-our'
   const urlTemplate = getTemplateById(templateId)
 
-  const { invitation, template, initInvitation, updateMultipleFields, isDirty, isSaving, setSaving, resetDirty } = useEditorStore()
+  const { invitation, template, initInvitation, updateMultipleFields, updateNestedField, toggleSectionVisibility, isDirty, isSaving, setSaving, resetDirty } = useEditorStore()
 
   // editId가 있으면 store의 template 사용, 없으면 URL의 template 사용
   const activeTemplate = editId ? template : urlTemplate
@@ -32,8 +35,18 @@ function EditorContent() {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [isIntroSelectorOpen, setIsIntroSelectorOpen] = useState(false)
+  const [isAIStoryGeneratorOpen, setIsAIStoryGeneratorOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(!!editId)
   const [loadAttempted, setLoadAttempted] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  // 모바일 감지
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // 기존 청첩장 불러오기
   useEffect(() => {
@@ -53,6 +66,11 @@ function EditorContent() {
         .then((data) => {
           if (data.invitation) {
             const inv = data.invitation
+            // PARENTS 템플릿이면 parents 에디터로 리다이렉트
+            if (inv.template_id === 'narrative-parents' || inv.template_id === 'parents') {
+              router.push(`/editor/parents?id=${editId}`)
+              return
+            }
             // content 필드에서 전체 데이터 파싱
             if (inv.content) {
               try {
@@ -107,6 +125,12 @@ function EditorContent() {
     if (!invitation || !user) {
       alert('저장하려면 로그인이 필요합니다.')
       router.push('/login')
+      return
+    }
+
+    // 신랑/신부 이름 필수 검증
+    if (!invitation.groom.name?.trim() || !invitation.bride.name?.trim()) {
+      alert('신랑과 신부 이름을 모두 입력해주세요.')
       return
     }
 
@@ -200,6 +224,107 @@ function EditorContent() {
     setIsShareModalOpen(true)
   }
 
+  // AI 스토리 생성기 결과 적용 핸들러
+  const handleAIStoryGeneratorApply = (content: GeneratedContent) => {
+    // 인사말 적용
+    if (content.greeting) {
+      updateNestedField('content.greeting', content.greeting)
+    }
+
+    // 감사 인사 적용 (thankYou.message에 적용)
+    if (content.thanks) {
+      updateNestedField('content.thankYou.message', content.thanks)
+    }
+
+    // 신랑 소개 적용
+    if (content.groomProfile) {
+      updateNestedField('groom.profile.intro', content.groomProfile)
+    }
+
+    // 신부 소개 적용
+    if (content.brideProfile) {
+      updateNestedField('bride.profile.intro', content.brideProfile)
+    }
+
+    // 러브스토리 적용
+    if (content.story) {
+      const stories = []
+      if (content.story.first) {
+        stories.push({
+          date: '',
+          title: '연애의 시작',
+          desc: content.story.first,
+          images: [],
+          imageSettings: []
+        })
+      }
+      if (content.story.together) {
+        stories.push({
+          date: '',
+          title: '함께한 시간',
+          desc: content.story.together,
+          images: [],
+          imageSettings: []
+        })
+      }
+      if (content.story.preparation) {
+        stories.push({
+          date: '',
+          title: '결혼 준비',
+          desc: content.story.preparation,
+          images: [],
+          imageSettings: []
+        })
+      }
+      if (stories.length > 0) {
+        updateNestedField('relationship.stories', stories)
+        // 스토리 섹션 활성화
+        if (invitation && !invitation.sectionVisibility.ourStory) {
+          toggleSectionVisibility('ourStory')
+        }
+      }
+    }
+
+    // 인터뷰 적용
+    if (content.interview && content.interview.length > 0) {
+      const interviews = content.interview.map((item, index) => {
+        // 신랑/신부 개별 답변이나 공동 답변을 하나의 answer로 합침
+        let answer = ''
+        if (item.jointAnswer) {
+          answer = item.jointAnswer
+        } else {
+          const parts = []
+          if (item.groomAnswer) parts.push(`🤵 ${item.groomAnswer}`)
+          if (item.brideAnswer) parts.push(`👰 ${item.brideAnswer}`)
+          answer = parts.join('\n\n')
+        }
+
+        return {
+          question: item.question,
+          answer: answer,
+          images: [],
+          imageSettings: [],
+          bgClass: index % 2 === 0 ? 'white-bg' : 'pink-bg'
+        }
+      })
+      updateNestedField('content.interviews', interviews)
+      // 인터뷰 섹션 활성화
+      if (invitation && !invitation.sectionVisibility.interview) {
+        toggleSectionVisibility('interview')
+      }
+    }
+
+    // 프로필 섹션 활성화
+    if (content.groomProfile || content.brideProfile) {
+      if (invitation && !invitation.sectionVisibility.coupleProfile) {
+        toggleSectionVisibility('coupleProfile')
+      }
+    }
+
+    // 다이얼로그 닫기
+    setIsAIStoryGeneratorOpen(false)
+  }
+
   // 인증 상태 확인 중이거나 기존 청첩장 로딩 중이면 스피너 표시
   if ((editId && isLoading) || (editId && status === 'loading')) {
     return (
@@ -235,22 +360,23 @@ function EditorContent() {
   return (
     <div className="h-screen flex flex-col bg-white">
       {/* Action Bar */}
-      <header className="h-14 border-b border-gray-100 bg-white flex items-center justify-between px-6 shrink-0">
-        <div className="flex items-center gap-4">
+      <header className="h-12 sm:h-14 border-b border-gray-100 bg-white flex items-center justify-between px-3 sm:px-6 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-4">
           <Link href="/">
             <img
               src="/logo.png"
               alt="Dear Drawer"
-              className="h-6 w-auto"
+              className="h-5 sm:h-6 w-auto"
             />
           </Link>
-          <div className="h-4 w-px bg-gray-200" />
-          <span className="text-sm text-gray-400 font-light tracking-wide">
+          <div className="hidden sm:block h-4 w-px bg-gray-200" />
+          <span className="hidden sm:inline text-sm text-gray-400 font-light tracking-wide">
             {activeTemplate?.name || 'Loading...'}
-            {isDirty && <span className="ml-2 text-gray-600">• Unsaved</span>}
+            {isDirty && <span className="ml-2 text-gray-600">• 미저장</span>}
           </span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* 미리보기 버튼 - 항상 표시 */}
           <Button
             variant="outline"
             size="sm"
@@ -258,7 +384,7 @@ function EditorContent() {
             className="border-gray-200 text-gray-600 hover:bg-gray-50 rounded-none text-xs tracking-wide"
           >
             <svg
-              className="w-4 h-4 mr-2"
+              className="w-4 h-4 sm:mr-2"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -276,13 +402,14 @@ function EditorContent() {
                 d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
               />
             </svg>
-            Preview
+            <span className="hidden sm:inline">미리보기</span>
           </Button>
+          {/* 공유 버튼 - 데스크탑에서만 표시 */}
           <Button
             variant="outline"
             size="sm"
             onClick={handleShare}
-            className="border-gray-200 text-gray-600 hover:bg-gray-50 rounded-none text-xs tracking-wide"
+            className="hidden sm:flex border-gray-200 text-gray-600 hover:bg-gray-50 rounded-none text-xs tracking-wide"
           >
             <svg
               className="w-4 h-4 mr-2"
@@ -297,7 +424,7 @@ function EditorContent() {
                 d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
               />
             </svg>
-            Share
+            공유
           </Button>
           <Button
             size="sm"
@@ -307,13 +434,13 @@ function EditorContent() {
           >
             {isSaving ? (
               <>
-                <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2" />
-                Saving
+                <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full sm:mr-2" />
+                <span className="hidden sm:inline">저장 중</span>
               </>
             ) : (
               <>
                 <svg
-                  className="w-4 h-4 mr-2"
+                  className="w-4 h-4 sm:mr-2"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -325,7 +452,7 @@ function EditorContent() {
                     d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
                   />
                 </svg>
-                Save
+                <span className="hidden sm:inline">저장</span>
               </>
             )}
           </Button>
@@ -336,12 +463,13 @@ function EditorContent() {
       <div className="flex-1 flex overflow-hidden">
         {isIntroSelectorOpen ? (
           <>
-            {/* 인트로 선택 패널 - 40% */}
-            <div className="w-2/5 min-w-[400px] max-w-[500px] border-r overflow-y-auto">
+            {/* 인트로 선택 패널 - 모바일: 100%, 데스크탑: 40% */}
+            <div className={`${isMobile ? 'w-full' : 'w-2/5 min-w-[400px] max-w-[500px]'} border-r overflow-y-auto`}>
               <IntroSelector onBack={() => setIsIntroSelectorOpen(false)} />
             </div>
 
-            {/* 인트로 미리보기 - 60% */}
+            {/* 인트로 미리보기 - 데스크탑에서만 표시 */}
+            {!isMobile && (
             <div className="flex-1 bg-gray-900 flex items-center justify-center p-8">
               <div className="relative w-full max-w-[375px] h-[667px] bg-black rounded-[40px] overflow-hidden shadow-2xl">
                 {/* 인트로 미리보기 - 전체 영역 사용 */}
@@ -359,18 +487,29 @@ function EditorContent() {
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[30px] bg-black rounded-b-2xl z-50" />
               </div>
             </div>
+            )}
           </>
         ) : (
           <>
-            {/* Edit Panel - 40% */}
-            <div className="w-2/5 min-w-[400px] max-w-[500px]">
-              <EditPanel onOpenIntroSelector={() => setIsIntroSelectorOpen(true)} invitationId={invitationId} templateId={templateId} />
+            {/* Edit Panel - 모바일: 100%, 데스크탑: 40% */}
+            <div className={`${isMobile ? 'w-full' : 'w-2/5 min-w-[400px] max-w-[500px]'}`}>
+              {/* 모바일 안내 메시지 */}
+              {isMobile && (
+                <div className="bg-amber-50 border-b border-amber-200 px-4 py-3 text-center">
+                  <p className="text-sm text-amber-800">
+                    더 나은 편집 환경을 위해 데스크탑에서 작성해주세요
+                  </p>
+                </div>
+              )}
+              <EditPanel onOpenIntroSelector={() => setIsIntroSelectorOpen(true)} onOpenAIStoryGenerator={() => setIsAIStoryGeneratorOpen(true)} invitationId={invitationId} templateId={templateId} />
             </div>
 
-            {/* Preview - 60% */}
-            <div className="flex-1">
-              <Preview />
-            </div>
+            {/* Preview - 데스크탑에서만 표시 */}
+            {!isMobile && (
+              <div className="flex-1">
+                <Preview />
+              </div>
+            )}
           </>
         )}
       </div>
@@ -397,6 +536,75 @@ function EditorContent() {
           shareTitle={invitation.meta.title}
           shareDescription={invitation.meta.description}
         />
+      )}
+
+      {/* AI 스토리 생성기 다이얼로그 - React Portal로 직접 렌더링 */}
+      {isAIStoryGeneratorOpen && typeof document !== 'undefined' && createPortal(
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 2147483647, // 최대 z-index 값
+            isolation: 'isolate',
+          }}
+        >
+          {/* Backdrop */}
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            }}
+            onClick={() => setIsAIStoryGeneratorOpen(false)}
+          />
+          {/* Modal */}
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              pointerEvents: 'none',
+            }}
+          >
+            <div
+              className="relative bg-white rounded-lg shadow-lg max-w-3xl w-full mx-4 h-[85vh] max-h-[85vh] flex flex-col overflow-hidden"
+              style={{ pointerEvents: 'auto' }}
+            >
+              {/* Close button */}
+              <button
+                onClick={() => setIsAIStoryGeneratorOpen(false)}
+                className="absolute top-4 right-4 z-10 p-1 rounded-sm opacity-70 hover:opacity-100 transition-opacity"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                <span className="sr-only">Close</span>
+              </button>
+              <div className="flex-1 overflow-hidden">
+                <AIStoryGenerator
+                  groomName={invitation.groom.name}
+                  brideName={invitation.bride.name}
+                  invitationId={invitationId || undefined}
+                  templateId={templateId}
+                  onApply={handleAIStoryGeneratorApply}
+                  onClose={() => setIsAIStoryGeneratorOpen(false)}
+                />
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.getElementById('modal-root') || document.body
       )}
 
       {/* Mobile Preview Modal */}

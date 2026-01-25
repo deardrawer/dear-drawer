@@ -1,12 +1,14 @@
-import { getInvitationById, getInvitationBySlug, getInvitationByAlias, recordPageView } from "@/lib/db";
+import { getInvitationById, getInvitationBySlug, getInvitationByAlias, recordPageView, getGuestById, recordGuestView } from "@/lib/db";
 import { notFound, redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { isUUID } from "@/lib/slug";
 import InvitationClient from "@/app/i/[slug]/InvitationClient";
+import InvitationClientFamily from "@/app/i/[slug]/InvitationClientFamily";
 import type { Invitation } from "@/types/invitation";
 
 interface PageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ preview?: string; colorTheme?: string; fontStyle?: string; skipIntro?: string; guest?: string }>;
 }
 
 interface InvitationLookupResult {
@@ -44,17 +46,61 @@ async function getInvitation(key: string): Promise<InvitationLookupResult> {
   return { invitation: byId, isAlias: false };
 }
 
-export default async function InvitationPage({ params }: PageProps) {
+export default async function InvitationPage({ params, searchParams }: PageProps) {
   const { id } = await params;
+  const { preview, colorTheme, fontStyle, skipIntro, guest: guestId } = await searchParams;
+  const isPreview = preview === 'true';
+  const shouldSkipIntro = skipIntro === 'true';
+
   const { invitation, isAlias, canonicalSlug } = await getInvitation(id);
 
   if (!invitation) {
     notFound();
   }
 
+  // PARENTS 템플릿은 /invite/ 경로로 리다이렉트
+  const isParentsTemplate =
+    invitation.template_id === 'narrative-parents' ||
+    invitation.template_id === 'parents' ||
+    invitation.template_id === 'parents-formal';
+
+  if (isParentsTemplate) {
+    const slug = invitation.slug || invitation.id;
+    const redirectUrl = guestId
+      ? `/invite/${slug}?guest=${guestId}`
+      : `/invite/${slug}`;
+    redirect(redirectUrl);
+  }
+
   // alias로 접속한 경우 현재 slug로 301 리다이렉트
   if (isAlias && canonicalSlug) {
-    redirect(`/invitation/${canonicalSlug}`);
+    const redirectUrl = guestId
+      ? `/invitation/${canonicalSlug}?guest=${guestId}`
+      : `/invitation/${canonicalSlug}`;
+    redirect(redirectUrl);
+  }
+
+  // 게스트 정보 조회 (guest 파라미터가 있는 경우)
+  let guestInfo = null;
+  if (guestId) {
+    try {
+      const guest = await getGuestById(guestId);
+      // 게스트가 이 청첩장에 속하는지 확인
+      if (guest && guest.invitation_id === invitation.id) {
+        guestInfo = {
+          id: guest.id,
+          name: guest.name,
+          relation: guest.relation,
+          honorific: guest.honorific,
+          introGreeting: guest.intro_greeting,
+          customMessage: guest.custom_message,
+        };
+        // 게스트 열람 기록
+        await recordGuestView(guestId);
+      }
+    } catch (e) {
+      console.error("Failed to fetch guest info:", e);
+    }
   }
 
   // 페이지 조회 기록
@@ -79,12 +125,21 @@ export default async function InvitationPage({ params }: PageProps) {
   }
 
   const isPaid = invitation.is_paid === 1;
+  const isFamily = invitation.template_id === 'narrative-family';
+
+  // 템플릿에 따라 적절한 컴포넌트 렌더링
+  const ClientComponent = isFamily ? InvitationClientFamily : InvitationClient;
 
   return (
-    <InvitationClient
+    <ClientComponent
       invitation={invitation}
       content={invitationContent}
       isPaid={isPaid}
+      isPreview={isPreview}
+      overrideColorTheme={colorTheme}
+      overrideFontStyle={fontStyle}
+      skipIntro={shouldSkipIntro}
+      guestInfo={guestInfo}
     />
   );
 }

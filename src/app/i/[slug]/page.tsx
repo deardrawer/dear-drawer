@@ -1,25 +1,35 @@
-import { getInvitationBySlug, getInvitationByAlias, getInvitationById, recordPageView } from "@/lib/db";
+import { getInvitationBySlug, getInvitationByAlias, getInvitationById, recordPageView, getGuestById, recordGuestView } from "@/lib/db";
 import { notFound, redirect } from "next/navigation";
 import { headers } from "next/headers";
 import InvitationClient from "./InvitationClient";
+import InvitationClientFamily from "./InvitationClientFamily";
 import type { Invitation } from "@/types/invitation";
 import { isUUID } from "@/lib/slug";
+import { createSampleInvitation, ourSampleContent, familySampleContent } from "@/lib/sample-data";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ preview?: string; colorTheme?: string; fontStyle?: string; skipIntro?: string }>;
+  searchParams: Promise<{ preview?: string; colorTheme?: string; fontStyle?: string; skipIntro?: string; guest?: string }>;
 }
 
 export default async function InvitationPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
-  const { preview, colorTheme, fontStyle, skipIntro } = await searchParams;
+  const { preview, colorTheme, fontStyle, skipIntro, guest: guestId } = await searchParams;
   const isPreview = preview === 'true';
   const shouldSkipIntro = skipIntro === 'true';
 
   let invitation = null;
+  let isSampleInvitation = false;
+
+  // 샘플 청첩장 처리 (sample-our, sample-family)
+  if (slug === 'sample-our' || slug === 'sample-family') {
+    const sampleType = slug === 'sample-our' ? 'our' : 'family';
+    invitation = createSampleInvitation(sampleType);
+    isSampleInvitation = true;
+  }
 
   // UUID인 경우 ID로 먼저 조회
-  if (isUUID(slug)) {
+  if (!invitation && isUUID(slug)) {
     invitation = await getInvitationById(slug);
   }
 
@@ -32,8 +42,11 @@ export default async function InvitationPage({ params, searchParams }: PageProps
   if (!invitation) {
     const byAlias = await getInvitationByAlias(slug);
     if (byAlias) {
-      // 현재 slug로 리다이렉트
-      redirect(`/i/${byAlias.slug || byAlias.id}`);
+      // 현재 slug로 리다이렉트 (guest 파라미터 유지)
+      const redirectUrl = guestId
+        ? `/i/${byAlias.slug || byAlias.id}?guest=${guestId}`
+        : `/i/${byAlias.slug || byAlias.id}`;
+      redirect(redirectUrl);
     }
   }
 
@@ -41,15 +54,40 @@ export default async function InvitationPage({ params, searchParams }: PageProps
     notFound();
   }
 
-  // 페이지 조회 기록
-  const headersList = await headers();
-  const visitorIp = headersList.get("x-forwarded-for") || headersList.get("x-real-ip") || "unknown";
-  const userAgent = headersList.get("user-agent") || undefined;
+  // 게스트 정보 조회 (guest 파라미터가 있는 경우)
+  let guestInfo = null;
+  if (guestId) {
+    try {
+      const guest = await getGuestById(guestId);
+      // 게스트가 이 청첩장에 속하는지 확인
+      if (guest && guest.invitation_id === invitation.id) {
+        guestInfo = {
+          id: guest.id,
+          name: guest.name,
+          relation: guest.relation,
+          honorific: guest.honorific,
+          introGreeting: guest.intro_greeting,
+          customMessage: guest.custom_message,
+        };
+        // 게스트 열람 기록
+        await recordGuestView(guestId);
+      }
+    } catch (e) {
+      console.error("Failed to fetch guest info:", e);
+    }
+  }
 
-  try {
-    await recordPageView(invitation.id, visitorIp, userAgent);
-  } catch (e) {
-    console.error("Failed to record page view:", e);
+  // 페이지 조회 기록 (샘플 청첩장은 제외)
+  if (!isSampleInvitation) {
+    const headersList = await headers();
+    const visitorIp = headersList.get("x-forwarded-for") || headersList.get("x-real-ip") || "unknown";
+    const userAgent = headersList.get("user-agent") || undefined;
+
+    try {
+      await recordPageView(invitation.id, visitorIp, userAgent);
+    } catch (e) {
+      console.error("Failed to record page view:", e);
+    }
   }
 
   // content 필드에서 전체 데이터 파싱
@@ -63,9 +101,13 @@ export default async function InvitationPage({ params, searchParams }: PageProps
   }
 
   const isPaid = invitation.is_paid === 1;
+  const isFamily = invitation.template_id === 'narrative-family';
+
+  // 템플릿에 따라 적절한 컴포넌트 렌더링
+  const ClientComponent = isFamily ? InvitationClientFamily : InvitationClient;
 
   return (
-    <InvitationClient
+    <ClientComponent
       invitation={invitation}
       content={invitationContent}
       isPaid={isPaid}
@@ -73,6 +115,7 @@ export default async function InvitationPage({ params, searchParams }: PageProps
       overrideColorTheme={colorTheme}
       overrideFontStyle={fontStyle}
       skipIntro={shouldSkipIntro}
+      guestInfo={guestInfo}
     />
   );
 }
@@ -80,6 +123,46 @@ export default async function InvitationPage({ params, searchParams }: PageProps
 // 메타데이터 생성
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params;
+
+  // 샘플 청첩장 메타데이터 처리
+  if (slug === 'sample-our' || slug === 'sample-family') {
+    const sampleType = slug === 'sample-our' ? 'our' : 'family';
+    const content = sampleType === 'our' ? ourSampleContent : familySampleContent;
+    const title = `${content.groom.name} ♥ ${content.bride.name} 결혼합니다`;
+    const description = content.content.greeting;
+    const thumbnailImage = content.media.coverImage;
+    const baseUrl = "https://invite.deardrawer.com";
+
+    return {
+      title,
+      description,
+      openGraph: {
+        title,
+        description,
+        type: "website",
+        url: `${baseUrl}/i/${slug}`,
+        siteName: "dear drawer - 모바일 청첩장",
+        locale: "ko_KR",
+        ...(thumbnailImage && {
+          images: [
+            {
+              url: thumbnailImage,
+              width: 800,
+              height: 400,
+              alt: title,
+            },
+          ],
+        }),
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        ...(thumbnailImage && { images: [thumbnailImage] }),
+      },
+    };
+  }
+
   const invitation = await getInvitationBySlug(slug);
 
   if (!invitation) {

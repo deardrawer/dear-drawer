@@ -98,6 +98,102 @@ export interface InterviewFormData {
   hints?: Record<string, { groom?: string; bride?: string; joint?: string }>;
 }
 
+// FAMILY 템플릿: 서로를 선택한 이유 테마
+export type WhyWeChoseTheme =
+  | 'complement'  // 부족함을 채워주는
+  | 'respect'     // 존경하는
+  | 'trust'       // 믿어주는
+  | 'growth'      // 함께 성장하는
+  | 'comfort';    // 편안한
+
+export interface WhyWeChoseThemeOption {
+  id: WhyWeChoseTheme;
+  title: string;
+  description: string;
+  icon: string;
+  questions: {
+    q1: { label: string; placeholder: string };
+    q2: { label: string; placeholder: string };
+    q3: { label: string; placeholder: string };
+  };
+}
+
+// 테마별 옵션 정의
+export const WHY_WE_CHOSE_THEMES: WhyWeChoseThemeOption[] = [
+  {
+    id: 'complement',
+    title: '부족함을 채워주는',
+    description: '나의 약점을 보완해주는 사람',
+    icon: '🧩',
+    questions: {
+      q1: { label: '스스로 어떤 성격이라고 생각하시나요?', placeholder: '예: 급한 편이에요 / 내성적이에요' },
+      q2: { label: '부족한 점이나 약점이 있다면?', placeholder: '예: 감정 표현이 서툴러요 / 결정을 잘 못해요' },
+      q3: { label: '상대방이 그 부족함을 어떻게 채워주나요?', placeholder: '예: 제가 급할 때 차분하게 정리해줘요' },
+    },
+  },
+  {
+    id: 'respect',
+    title: '존경하는',
+    description: '이런 점이 너무 멋있어서',
+    icon: '✨',
+    questions: {
+      q1: { label: '상대방의 어떤 점이 가장 존경스러운가요?', placeholder: '예: 어떤 상황에서도 흔들리지 않는 모습' },
+      q2: { label: '그 모습을 보며 어떤 감정이 들었나요?', placeholder: '예: 나도 저렇게 되고 싶다고 생각했어요' },
+      q3: { label: '그 사람 곁에서 나는 어떻게 변했나요?', placeholder: '예: 더 단단해지고 성숙해진 것 같아요' },
+    },
+  },
+  {
+    id: 'trust',
+    title: '믿어주는',
+    description: '나를 있는 그대로 믿어주는 사람',
+    icon: '🤝',
+    questions: {
+      q1: { label: '상대방이 나를 어떻게 믿어주나요?', placeholder: '예: 내 결정을 항상 지지해줘요' },
+      q2: { label: '그 믿음이 가장 힘이 됐던 순간은?', placeholder: '예: 힘든 시기에 "넌 할 수 있어"라고 해줬어요' },
+      q3: { label: '그 사람의 믿음이 나에게 어떤 의미인가요?', placeholder: '예: 세상에서 가장 든든한 지원군이에요' },
+    },
+  },
+  {
+    id: 'growth',
+    title: '함께 성장하는',
+    description: '서로 더 나은 사람이 되게 해주는',
+    icon: '🌱',
+    questions: {
+      q1: { label: '함께하면서 어떻게 성장했나요?', placeholder: '예: 더 인내심이 생기고 배려를 배웠어요' },
+      q2: { label: '상대방은 어떻게 나를 성장하게 했나요?', placeholder: '예: 다른 시각으로 세상을 보게 해줬어요' },
+      q3: { label: '앞으로 함께 이루고 싶은 것은?', placeholder: '예: 서로의 꿈을 응원하며 함께 나아가고 싶어요' },
+    },
+  },
+  {
+    id: 'comfort',
+    title: '편안한',
+    description: '함께 있으면 마음이 편해지는',
+    icon: '☁️',
+    questions: {
+      q1: { label: '상대방과 함께 있으면 어떤 느낌인가요?', placeholder: '예: 아무것도 안 해도 편안해요' },
+      q2: { label: '가장 편안함을 느꼈던 순간은?', placeholder: '예: 말없이 같이 있어도 어색하지 않을 때' },
+      q3: { label: '그 편안함이 특별한 이유는?', placeholder: '예: 꾸미지 않아도 되는 유일한 사람이에요' },
+    },
+  },
+];
+
+// FAMILY 템플릿: 서로를 선택한 이유 폼 데이터
+export interface WhyWeChoseFormData {
+  version: Version;
+  groomName: string;
+  brideName: string;
+  // 신랑 관련
+  groomTheme: WhyWeChoseTheme | '';
+  groomAnswer1: string;
+  groomAnswer2: string;
+  groomAnswer3: string;
+  // 신부 관련
+  brideTheme: WhyWeChoseTheme | '';
+  brideAnswer1: string;
+  brideAnswer2: string;
+  brideAnswer3: string;
+}
+
 // 전체 폼 데이터
 export interface AllFormData {
   greeting: GreetingFormData;
@@ -105,6 +201,8 @@ export interface AllFormData {
   brideProfile: ProfileFormData;
   story: StoryFormData;
   interview: InterviewFormData;
+  // FAMILY 템플릿용
+  whyWeChose?: WhyWeChoseFormData;
 }
 
 // 생성된 결과
@@ -127,7 +225,7 @@ export interface GeneratedContent {
 }
 
 // 스텝 정의
-export type StepId = 'greeting' | 'profile' | 'story' | 'interview' | 'result';
+export type StepId = 'greeting' | 'profile' | 'story' | 'whyWeChose' | 'interview' | 'result';
 
 export interface Step {
   id: StepId;
@@ -135,10 +233,19 @@ export interface Step {
   description: string;
 }
 
+// OUR 템플릿용 스텝
 export const STEPS: Step[] = [
   { id: 'greeting', title: '인사말', description: '인사말과 감사의 글을 작성해요' },
   { id: 'profile', title: '소개', description: '신랑·신부를 소개해요' },
   { id: 'story', title: '스토리', description: '우리의 러브스토리를 작성해요' },
+  { id: 'interview', title: '인터뷰', description: '웨딩 인터뷰를 만들어요' },
+  { id: 'result', title: '결과', description: '생성된 결과를 확인해요' },
+];
+
+// FAMILY 템플릿용 스텝 (소개 스킵, 스토리 → 서로를 선택한 이유)
+export const FAMILY_STEPS: Step[] = [
+  { id: 'greeting', title: '인사말', description: '인사말과 감사의 글을 작성해요' },
+  { id: 'whyWeChose', title: '서로를 선택한 이유', description: '서로를 선택한 이유를 작성해요' },
   { id: 'interview', title: '인터뷰', description: '웨딩 인터뷰를 만들어요' },
   { id: 'result', title: '결과', description: '생성된 결과를 확인해요' },
 ];
@@ -178,6 +285,21 @@ export const defaultInterviewForm: InterviewFormData = {
   type: 'auto',
   topics: [],
   answerStyle: 'mixed',
+};
+
+// FAMILY 템플릿용 기본값
+export const defaultWhyWeChoseForm: WhyWeChoseFormData = {
+  version: 'short',
+  groomName: '',
+  brideName: '',
+  groomTheme: '',
+  groomAnswer1: '',
+  groomAnswer2: '',
+  groomAnswer3: '',
+  brideTheme: '',
+  brideAnswer1: '',
+  brideAnswer2: '',
+  brideAnswer3: '',
 };
 
 // 인기 인터뷰 질문

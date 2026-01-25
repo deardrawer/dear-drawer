@@ -39,17 +39,59 @@ type InvitationSummary = {
 
 // content JSON에서 커버 이미지와 인트로 정보 추출
 function parseInvitationContent(content?: string) {
-  if (!content) return { coverImage: '', introTitle: '', introSubTitle: '' }
+  if (!content) return { coverImage: '', introTitle: '', introSubTitle: '', senderSide: '' }
   try {
     const parsed = JSON.parse(content)
+    // OUR/FAMILY: media.coverImage, PARENTS: mainImage 또는 gallery.images[0]
+    const coverImage = parsed.media?.coverImage ||
+                       parsed.mainImage ||
+                       (parsed.gallery?.images?.[0]?.url || parsed.gallery?.images?.[0]) ||
+                       ''
     return {
-      coverImage: parsed.media?.coverImage || '',
+      coverImage,
       introTitle: parsed.intro?.mainTitle || parsed.design?.coverTitle || '',
       introSubTitle: parsed.intro?.subTitle || '',
+      senderSide: parsed.sender?.side || '', // groom or bride (혼주용 템플릿)
     }
   } catch {
-    return { coverImage: '', introTitle: '', introSubTitle: '' }
+    return { coverImage: '', introTitle: '', introSubTitle: '', senderSide: '' }
   }
+}
+
+// 템플릿 ID로 표시 이름 가져오기
+function getTemplateDisplayName(templateId: string, senderSide?: string) {
+  switch (templateId) {
+    case 'narrative-parents':
+    case 'parents':
+    case 'parents-formal':
+      if (senderSide === 'groom') return '신랑 혼주용'
+      if (senderSide === 'bride') return '신부 혼주용'
+      return '혼주용'
+    case 'narrative-our':
+    case 'our':
+      return 'OUR'
+    case 'narrative-family':
+    case 'family':
+      return 'FAMILY'
+    default:
+      return templateId || '기본'
+  }
+}
+
+// 템플릿 배지 색상
+function getTemplateBadgeColor(templateId: string, senderSide?: string) {
+  if (templateId === 'narrative-parents' || templateId === 'parents' || templateId === 'parents-formal') {
+    if (senderSide === 'groom') return 'bg-blue-100 text-blue-700'
+    if (senderSide === 'bride') return 'bg-pink-100 text-pink-700'
+    return 'bg-purple-100 text-purple-700'
+  }
+  if (templateId === 'narrative-our' || templateId === 'our') {
+    return 'bg-rose-100 text-rose-700'
+  }
+  if (templateId === 'narrative-family' || templateId === 'family') {
+    return 'bg-amber-100 text-amber-700'
+  }
+  return 'bg-gray-100 text-gray-600'
 }
 
 type RSVPData = {
@@ -77,6 +119,7 @@ export default function MyInvitationsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null)
 
   // 미리보기 모달 상태
   const [previewInvitation, setPreviewInvitation] = useState<InvitationSummary | null>(null)
@@ -101,8 +144,14 @@ export default function MyInvitationsPage() {
 
   // 공유 URL
   const baseUrl = 'https://invite.deardrawer.com'
-  const getInvitationUrl = (inv: InvitationSummary) =>
-    inv.slug ? `${baseUrl}/i/${inv.slug}` : `${baseUrl}/i/${inv.id}`
+  const getInvitationUrl = (inv: InvitationSummary) => {
+    const isParentsTemplate =
+      inv.template_id === 'narrative-parents' ||
+      inv.template_id === 'parents' ||
+      inv.template_id === 'parents-formal'
+    const path = isParentsTemplate ? '/invite' : '/i'
+    return inv.slug ? `${baseUrl}${path}/${inv.slug}` : `${baseUrl}${path}/${inv.id}`
+  }
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -212,6 +261,47 @@ export default function MyInvitationsPage() {
     } finally {
       setIsDeleting(false)
       setDeleteId(null)
+    }
+  }
+
+  // 청첩장 복제
+  const handleDuplicate = async (invitation: InvitationSummary) => {
+    if (duplicatingId) return
+
+    setDuplicatingId(invitation.id)
+    try {
+      // 기존 청첩장의 content 파싱
+      const content = invitation.content ? JSON.parse(invitation.content) : {}
+
+      // 새 청첩장 생성
+      const payload = {
+        template_id: invitation.template_id,
+        groom_name: invitation.groom_name,
+        bride_name: invitation.bride_name,
+        wedding_date: invitation.wedding_date,
+        wedding_time: invitation.wedding_time,
+        venue_name: invitation.venue_name,
+        content: JSON.stringify(content),
+      }
+
+      const response = await fetch('/api/invitations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      if (response.ok) {
+        alert('청첩장이 복제되었습니다!')
+        fetchInvitations() // 목록 새로고침
+      } else {
+        const data = await response.json()
+        alert(data.error || '복제에 실패했습니다.')
+      }
+    } catch (error) {
+      console.error('Failed to duplicate invitation:', error)
+      alert('복제에 실패했습니다.')
+    } finally {
+      setDuplicatingId(null)
     }
   }
 
@@ -473,8 +563,10 @@ export default function MyInvitationsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {invitations.map((invitation) => {
             const daysInfo = calculateDaysLeft(invitation)
-            const { coverImage, introTitle, introSubTitle } = parseInvitationContent(invitation.content)
+            const { coverImage, introTitle, introSubTitle, senderSide } = parseInvitationContent(invitation.content)
             const displayImage = coverImage || invitation.main_image
+            const templateName = getTemplateDisplayName(invitation.template_id, senderSide)
+            const templateBadgeColor = getTemplateBadgeColor(invitation.template_id, senderSide)
 
             return (
               <Card key={invitation.id} className="overflow-hidden">
@@ -516,6 +608,11 @@ export default function MyInvitationsPage() {
 
                   {/* 상단 배지 */}
                   <div className="absolute top-2 left-2 flex flex-col gap-1">
+                    {/* 템플릿 타입 배지 */}
+                    <span className={`px-2 py-1 text-xs rounded-full font-medium ${templateBadgeColor}`}>
+                      {templateName}
+                    </span>
+                    {/* 결제 상태 배지 */}
                     {invitation.is_paid ? (
                       <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">결제완료</span>
                     ) : (
@@ -551,10 +648,19 @@ export default function MyInvitationsPage() {
                     {invitation.is_paid ? '예식일로부터 30일 후 자동 삭제됩니다' : '결제하지 않은 청첩장은 생성일로부터 7일 후 자동 삭제됩니다'}
                   </p>
 
-                  <div className="grid grid-cols-3 gap-2 mb-2">
-                    <Link href={`/editor?id=${invitation.id}`}>
+                  <div className="grid grid-cols-4 gap-2 mb-2">
+                    <Link href={invitation.template_id === 'narrative-parents' || invitation.template_id === 'parents' ? `/editor/parents?id=${invitation.id}` : `/editor?id=${invitation.id}`}>
                       <Button variant="outline" size="sm" className="w-full">편집</Button>
                     </Link>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => handleDuplicate(invitation)}
+                      disabled={duplicatingId === invitation.id}
+                    >
+                      {duplicatingId === invitation.id ? '...' : '복제'}
+                    </Button>
                     <Button variant="outline" size="sm" className="w-full" onClick={() => setShareInvitation(invitation)}>
                       공유
                     </Button>
@@ -616,7 +722,17 @@ export default function MyInvitationsPage() {
                 닫기
               </Button>
               {previewInvitation && (
-                <iframe src={`/i/${previewInvitation.id}?preview=true`} className="w-full h-full border-0" title="청첩장 미리보기" />
+                <iframe
+                  src={
+                    previewInvitation.template_id === 'narrative-parents' ||
+                    previewInvitation.template_id === 'parents' ||
+                    previewInvitation.template_id === 'parents-formal'
+                      ? `/invite/${previewInvitation.id}?preview=true`
+                      : `/i/${previewInvitation.id}?preview=true`
+                  }
+                  className="w-full h-full border-0"
+                  title="청첩장 미리보기"
+                />
               )}
             </div>
           </div>

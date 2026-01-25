@@ -408,14 +408,56 @@ interface InvitationViewProps {
   isPaid: boolean
 }
 
+// 한글 이름을 성/이름으로 분리하는 헬퍼 함수
+function splitKoreanName(fullName: string): { lastName: string; firstName: string } {
+  if (!fullName || fullName.length === 0) {
+    return { lastName: '', firstName: '' }
+  }
+
+  // 한글 이름인 경우 첫 글자를 성으로 가정
+  if (/^[가-힣]+$/.test(fullName)) {
+    return {
+      lastName: fullName.charAt(0),
+      firstName: fullName.slice(1)
+    }
+  }
+
+  // 한글이 아닌 경우 그대로 반환
+  return { lastName: '', firstName: fullName }
+}
+
 // 기본값 생성 함수
 function createDefaultContent(invitation: Invitation): InvitationContent {
+  // 신랑/신부 이름 자동 분리
+  const groomNameParts = splitKoreanName(invitation.groom_name || '')
+  const brideNameParts = splitKoreanName(invitation.bride_name || '')
+
   return {
-    groom: { name: invitation.groom_name || '', nameEn: '', phone: '', father: { name: '', phone: '', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } }, mother: { name: '', phone: '', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } }, bank: { bank: '', account: '', holder: '', enabled: false }, profile: { images: [], imageSettings: [], aboutLabel: 'ABOUT GROOM', subtitle: '', intro: '', tag: '' } },
-    bride: { name: invitation.bride_name || '', nameEn: '', phone: '', father: { name: '', phone: '', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } }, mother: { name: '', phone: '', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } }, bank: { bank: '', account: '', holder: '', enabled: false }, profile: { images: [], imageSettings: [], aboutLabel: 'ABOUT BRIDE', subtitle: '', intro: '', tag: '' } },
+    groom: {
+      name: invitation.groom_name || '',
+      lastName: groomNameParts.lastName,
+      firstName: groomNameParts.firstName,
+      nameEn: '',
+      phone: '',
+      father: { name: '', phone: '', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
+      mother: { name: '', phone: '', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
+      bank: { bank: '', account: '', holder: '', enabled: false },
+      profile: { images: [], imageSettings: [], aboutLabel: 'ABOUT GROOM', subtitle: '', intro: '', tag: '' }
+    },
+    bride: {
+      name: invitation.bride_name || '',
+      lastName: brideNameParts.lastName,
+      firstName: brideNameParts.firstName,
+      nameEn: '',
+      phone: '',
+      father: { name: '', phone: '', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
+      mother: { name: '', phone: '', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
+      bank: { bank: '', account: '', holder: '', enabled: false },
+      profile: { images: [], imageSettings: [], aboutLabel: 'ABOUT BRIDE', subtitle: '', intro: '', tag: '' }
+    },
     wedding: { date: invitation.wedding_date || '', time: '', timeDisplay: invitation.wedding_time || '', dayOfWeek: '', title: 'OUR WEDDING', venue: { name: invitation.venue_name || '', hall: '', address: invitation.venue_address || '', mapUrl: '', naverMapUrl: '', kakaoMapUrl: '' }, directions: { car: { desc: '', route: '' }, subway: [], bus: { main: [], branch: [] }, parking: { location: '', fee: '' } } },
     relationship: { startDate: '', stories: [], closingText: '' },
-    content: { greeting: invitation.greeting_message || '', quote: { text: '', author: '' }, thankYou: { title: 'THANK YOU', message: '', sign: '' }, info: { dressCode: { title: '', content: '', enabled: false }, photoShare: { title: '', content: '', buttonText: '', url: '', enabled: false }, photoBooth: { title: '', content: '', enabled: false }, flowerChild: { title: '', content: '', enabled: false }, customItems: [] }, interviews: [], guestbookQuestions: [] },
+    content: { greeting: invitation.greeting_message || '', quote: { text: '', author: '' }, thankYou: { title: 'THANK YOU', message: '', sign: '' }, info: { dressCode: { title: '', content: '', enabled: false }, photoShare: { title: '', content: '', buttonText: '', url: '', enabled: false }, photoBooth: { title: '', content: '', enabled: false }, flowerChild: { title: '', content: '', enabled: false }, flowerGift: { title: '', content: '', enabled: false }, wreath: { title: '', content: '', enabled: false }, reception: { title: '', content: '', venue: '', datetime: '', enabled: false }, customItems: [], itemOrder: ['dressCode', 'photoBooth', 'photoShare', 'flowerGift', 'flowerChild', 'wreath', 'reception'] }, interviews: [], guestbookQuestions: [] },
     gallery: { images: [], imageSettings: [] },
     media: { coverImage: invitation.main_image || '', infoImage: '', bgm: '' },
     meta: { title: '', description: '', ogImage: '', kakaoThumbnail: '' },
@@ -436,6 +478,14 @@ function createDefaultContent(invitation: Invitation): InvitationContent {
     bgm: { enabled: false, url: '', autoplay: false },
     guidance: { enabled: false, title: '', content: '', image: '', imageSettings: { scale: 1, positionX: 0, positionY: 0 } },
     intro: getDefaultIntroSettings('cinematic'),
+    fullHeightDividers: {
+      enabled: false,
+      items: [
+        { id: 'divider-1', englishTitle: '', koreanText: '', image: '', imageSettings: { scale: 1, positionX: 0, positionY: 0, grayscale: 100, opacity: 100 } },
+        { id: 'divider-2', englishTitle: '', koreanText: '', image: '', imageSettings: { scale: 1, positionX: 0, positionY: 0, grayscale: 100, opacity: 100 } },
+        { id: 'divider-3', englishTitle: '', koreanText: '', image: '', imageSettings: { scale: 1, positionX: 0, positionY: 0, grayscale: 100, opacity: 100 } },
+      ],
+    },
     ourStory: '',
     decision: '',
     invitation: '',
@@ -450,7 +500,31 @@ export default function InvitationView({ invitation, content, isPaid }: Invitati
   const [showWhiteOverlay, setShowWhiteOverlay] = useState(false)
 
   // content가 없으면 기본값 사용
-  const displayData: InvitationContent = content || createDefaultContent(invitation)
+  let displayData: InvitationContent = content || createDefaultContent(invitation)
+
+  // content가 있지만 lastName/firstName이 없는 경우 자동 분리 (기존 데이터 호환)
+  if (displayData.groom && (!displayData.groom.lastName || !displayData.groom.firstName) && displayData.groom.name) {
+    const groomParts = splitKoreanName(displayData.groom.name)
+    displayData = {
+      ...displayData,
+      groom: {
+        ...displayData.groom,
+        lastName: groomParts.lastName,
+        firstName: groomParts.firstName
+      }
+    }
+  }
+  if (displayData.bride && (!displayData.bride.lastName || !displayData.bride.firstName) && displayData.bride.name) {
+    const brideParts = splitKoreanName(displayData.bride.name)
+    displayData = {
+      ...displayData,
+      bride: {
+        ...displayData.bride,
+        lastName: brideParts.lastName,
+        firstName: brideParts.firstName
+      }
+    }
+  }
 
   const groomName = displayData.groom?.name || 'Groom'
   const brideName = displayData.bride?.name || 'Bride'

@@ -10,52 +10,12 @@ interface WatermarkOverlayProps {
 }
 
 /**
- * 결제 전 이미지에 워터마크 오버레이를 표시하는 컴포넌트
- * isPaid가 false일 때만 워터마크가 표시됨
+ * 워터마크 오버레이 컴포넌트
+ * isPaid가 false일 때 배너가 외부에서 표시됨 (InvitationClient에서 처리)
  */
 export function WatermarkOverlay({ children, isPaid, className = '', style }: WatermarkOverlayProps) {
-  if (isPaid) {
-    return <div className={className} style={style}>{children}</div>
-  }
-
-  return (
-    <div className={`relative ${className}`} style={style}>
-      {children}
-      {/* 워터마크 오버레이 */}
-      <div
-        className="fixed inset-0 pointer-events-none overflow-hidden"
-        style={{ zIndex: 9999 }}
-      >
-        {/* 전체 화면 워터마크 */}
-        <div
-          className="absolute inset-0 flex items-center justify-center select-none"
-          style={{
-            transform: 'rotate(-30deg) scale(3)',
-          }}
-        >
-          {/* 반복되는 워터마크 그리드 */}
-          <div className="flex flex-col items-center gap-10">
-            {Array.from({ length: 50 }).map((_, row) => (
-              <div key={row} className="flex gap-6">
-                {Array.from({ length: 30 }).map((_, col) => (
-                  <span
-                    key={col}
-                    className="text-sm font-medium tracking-wider whitespace-nowrap select-none"
-                    style={{
-                      color: 'rgba(128, 128, 128, 0.3)',
-                      textShadow: '0 1px 2px rgba(255,255,255,0.5)',
-                    }}
-                  >
-                    dear drawer
-                  </span>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  )
+  // 워터마크 배경 제거됨 - 배너는 InvitationClient에서 핸드폰 프레임 밖에 표시
+  return <div className={className} style={style}>{children}</div>
 }
 
 /**

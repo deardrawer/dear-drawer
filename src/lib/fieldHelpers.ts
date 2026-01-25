@@ -347,13 +347,37 @@ export const fieldHelpers: Record<string, FieldHelper> = {
   'content.info.photoBooth.content': {
     label: '포토부스 안내',
     explanation: '포토부스 이용 안내예요',
-    example: '예식장 로비에 포토부스가 준비되어 있습니다. 많은 이용 부탁드려요!',
+    example: '소중한 하루를 오래 기억할 수 있도록\n포토부스가 준비되어 있습니다.\n즐거운 추억을 사진으로 남겨주세요.',
     previewSection: 'info',
   },
   'content.info.photoShare.content': {
     label: '사진 공유 안내',
     explanation: '사진 공유 방법을 안내해주세요',
     example: '예식 사진은 아래 링크에서 공유해 주세요!',
+    previewSection: 'info',
+  },
+  'content.info.flowerGift.content': {
+    label: '꽃 답례품 안내',
+    explanation: '꽃 답례품 안내 문구예요',
+    example: '예식 후 하객분들께 감사의 마음을 전하기 위해\n계절의 꽃으로 만든 작은 꽃다발을 준비했습니다.\n소중한 발걸음에 대한 감사의 선물로 받아주세요.',
+    previewSection: 'info',
+  },
+  'content.info.flowerChild.content': {
+    label: '화동 안내',
+    explanation: '화동 입장 안내 문구예요',
+    example: '예식 중 사랑스러운 화동 입장이 예정되어 있습니다.\n아이들의 소중한 순간도 함께 따뜻하게 지켜봐 주세요.',
+    previewSection: 'info',
+  },
+  'content.info.wreath.content': {
+    label: '화환 안내',
+    explanation: '화환 관련 안내 문구예요',
+    example: '축하의 마음만으로도 충분히 감사하여\n화환은 정중히 사양하고자 합니다.\n따뜻한 마음으로 축복해주시면 감사하겠습니다.',
+    previewSection: 'info',
+  },
+  'content.info.reception.content': {
+    label: '피로연 안내',
+    explanation: '피로연 안내 문구예요',
+    example: '피로연 자리를 마련하였습니다.\n\n참석하시어 두 사람의 앞날을\n따뜻한 축복으로 함께해 주시면\n감사하겠습니다.',
     previewSection: 'info',
   },
 

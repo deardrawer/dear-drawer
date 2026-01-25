@@ -1,37 +1,45 @@
-import { NextResponse } from 'next/server'
-import { getCloudflareContext } from '@opennextjs/cloudflare'
+import { NextResponse } from "next/server";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
-interface D1Database {
-  prepare(query: string): {
-    first<T = unknown>(): Promise<T | null>
-    run(): Promise<{ meta: { changes: number } }>
-    all<T = unknown>(): Promise<{ results?: T[] }>
-    bind(...values: unknown[]): {
-      first<T = unknown>(): Promise<T | null>
-      run(): Promise<{ meta: { changes: number } }>
-      all<T = unknown>(): Promise<{ results?: T[] }>
-    }
-  }
+interface PaymentRequest {
+  id: string;
+  user_id: string;
+  user_email: string | null;
+  invitation_id: string | null;
+  order_number: string;
+  buyer_name: string;
+  buyer_phone: string;
+  status: "pending" | "approved" | "rejected";
+  created_at: string;
 }
 
 export async function GET() {
   try {
-    const { env } = await getCloudflareContext() as { env: { DB?: D1Database } }
+    const { env } = await getCloudflareContext();
 
     if (!env.DB) {
-      return NextResponse.json({ error: 'Database not available' }, { status: 500 })
+      return NextResponse.json(
+        { error: "Database not available" },
+        { status: 500 }
+      );
     }
 
-    const db = env.DB
+    const db = env.DB;
 
-    // 모든 결제 요청 조회 (최신순)
-    const result = await db.prepare(`
-      SELECT * FROM payment_requests ORDER BY created_at DESC
-    `).all()
+    const { results } = await db
+      .prepare(
+        `SELECT * FROM payment_requests ORDER BY
+          CASE WHEN status = 'pending' THEN 0 ELSE 1 END,
+          created_at DESC`
+      )
+      .all<PaymentRequest>();
 
-    return NextResponse.json({ requests: result.results || [] })
+    return NextResponse.json({ requests: results || [] });
   } catch (error) {
-    console.error('Payment requests fetch error:', error)
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 })
+    console.error("Payment requests fetch error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch payment requests" },
+      { status: 500 }
+    );
   }
 }

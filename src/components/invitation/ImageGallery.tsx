@@ -24,7 +24,10 @@ export default function ImageGallery({
 
   if (!images || images.length === 0) {
     return (
-      <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
+      <div
+        className="aspect-square rounded-lg flex items-center justify-center"
+        style={{ backgroundColor: `${primaryColor}20` }}
+      >
         <div className="text-center text-gray-400">
           <svg
             className="w-12 h-12 mx-auto mb-2"
@@ -61,11 +64,12 @@ export default function ImageGallery({
           }}
           thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
           onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
-          className="aspect-[4/5] bg-gray-100"
+          className="aspect-[4/5]"
+          style={{ backgroundColor: `${primaryColor}20` }}
         >
           {images.map((image, index) => (
             <SwiperSlide key={index}>
-              <div className="w-full h-full flex items-center justify-center bg-gray-50">
+              <div className="w-full h-full flex items-center justify-center">
                 <img
                   src={image}
                   alt={`갤러리 이미지 ${index + 1}`}

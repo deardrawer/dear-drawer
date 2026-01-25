@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { useEditorStore, InvitationContent, PreviewSectionId } from '@/store/editorStore'
+import { useEditorStore, InvitationContent } from '@/store/editorStore'
 import { parseHighlight } from '@/lib/textUtils'
 import FloatingButton from './FloatingButton'
 import ProfileImageSlider from './ProfileImageSlider'
@@ -76,6 +76,35 @@ const fontStyles: Record<FontStyle, FontConfig> = {
   luxury: { display: "'EB Garamond', serif", displayKr: "'Nanum Myeongjo', serif", body: "'Nanum Myeongjo', serif" },
 }
 
+// 이미지 크롭 스타일 계산 헬퍼 함수
+function getImageCropStyle(img: string, s: { scale?: number; positionX?: number; positionY?: number; cropX?: number; cropY?: number; cropWidth?: number; cropHeight?: number }) {
+  const hasCropData = s.cropWidth !== undefined && s.cropHeight !== undefined && (s.cropWidth < 1 || s.cropHeight < 1)
+
+  if (hasCropData) {
+    const cw = s.cropWidth || 1
+    const ch = s.cropHeight || 1
+    const cx = s.cropX || 0
+    const cy = s.cropY || 0
+    const posX = cw >= 1 ? 0 : (cx / (1 - cw)) * 100
+    const posY = ch >= 1 ? 0 : (cy / (1 - ch)) * 100
+
+    return {
+      backgroundImage: `url(${img})`,
+      backgroundSize: `${100 / cw}% ${100 / ch}%`,
+      backgroundPosition: `${posX}% ${posY}%`,
+      backgroundRepeat: 'no-repeat' as const,
+    }
+  }
+
+  // 기존 scale/position 방식 (호환성 유지)
+  return {
+    backgroundImage: `url(${img})`,
+    backgroundSize: 'cover' as const,
+    backgroundPosition: 'center' as const,
+    transform: `scale(${s.scale || 1}) translate(${s.positionX || 0}%, ${s.positionY || 0}%)`,
+  }
+}
+
 function formatDateDisplay(d: string): string {
   if (!d) return '2024.11.04'
   const date = new Date(d), y = date.getFullYear(), m = date.getMonth() + 1, day = date.getDate()
@@ -114,57 +143,35 @@ const ParentName = ({ name, deceased, displayStyle = 'flower' }: { name: string;
 
 
 
-type PageType = 'intro' | 'main'
-
 export default function Preview() {
   const { invitation, template, activeSection } = useEditorStore()
-  const [currentPage, setCurrentPage] = useState<PageType>('intro')
   const previewContentRef = useRef<HTMLDivElement>(null)
 
   // activeSection이 변경되면 해당 섹션으로 스크롤
   useEffect(() => {
     if (!activeSection || !previewContentRef.current) return
 
-    // intro 관련 섹션이면 intro 페이지로, 아니면 main 페이지로 전환
-    const introSections: PreviewSectionId[] = ['intro-cover', 'invitation', 'venue-info']
-    const isIntroSection = introSections.includes(activeSection)
-
-    if (isIntroSection && currentPage !== 'intro') {
-      setCurrentPage('intro')
-    } else if (!isIntroSection && currentPage !== 'main') {
-      setCurrentPage('main')
+    const element = document.getElementById(`preview-${activeSection}`)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
-
-    // 페이지 전환 후 스크롤 (약간의 딜레이 필요)
-    const scrollToSection = () => {
-      const element = document.getElementById(`preview-${activeSection}`)
-      if (element && previewContentRef.current) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }
-    }
-
-    // 페이지 전환 시 약간의 딜레이 후 스크롤
-    const timer = setTimeout(scrollToSection, 100)
-    return () => clearTimeout(timer)
-  }, [activeSection, currentPage])
+  }, [activeSection])
 
   if (!invitation || !template) return <div className="h-full flex items-center justify-center bg-gray-100"><p className="text-gray-400">Loading...</p></div>
   const groomName = invitation.groom.name || 'Groom', brideName = invitation.bride.name || 'Bride'
   const fonts = fontStyles[invitation.fontStyle || 'classic'], themeColors = colorThemes[invitation.colorTheme || 'classic-rose']
   return (
     <div className="h-full bg-gray-100 flex flex-col">
-      <div className="sticky top-0 z-10 bg-gray-100 py-4 flex justify-center shrink-0">
-        <div className="flex bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <button onClick={() => setCurrentPage('intro')} className={`px-6 py-2.5 text-sm font-medium transition-all ${currentPage === 'intro' ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>Intro</button>
-          <button onClick={() => setCurrentPage('main')} className={`px-6 py-2.5 text-sm font-medium transition-all ${currentPage === 'main' ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>Main</button>
-        </div>
-      </div>
-      <div className="flex-1 overflow-y-auto flex justify-center px-6 pb-6">
+      <div className="flex-1 overflow-y-auto flex justify-center px-6 py-6">
         <div className="relative"><div className="w-[390px] bg-black rounded-[3rem] p-3 shadow-2xl">
           <div className="rounded-[2.5rem] overflow-hidden bg-white flex flex-col relative" style={{ height: '780px' }}>
             <div className="h-8 bg-black flex items-center justify-center flex-shrink-0"><div className="w-24 h-6 bg-black rounded-b-2xl" /></div>
             <div ref={previewContentRef} className={`flex-1 overflow-y-auto min-h-0 relative theme-${invitation.colorTheme || 'classic-rose'}`} id="preview-content" style={{ fontFamily: fonts.body, color: themeColors.text, letterSpacing: '-0.3px' }}>
-              {currentPage === 'intro' ? <IntroPage invitation={invitation} groomName={groomName} brideName={brideName} fonts={fonts} themeColors={themeColors} /> : <MainPage invitation={invitation} groomName={groomName} brideName={brideName} fonts={fonts} themeColors={themeColors} />}
+              <IntroPage invitation={invitation} groomName={groomName} brideName={brideName} fonts={fonts} themeColors={themeColors} />
+              {invitation.templateId === 'narrative-family'
+                ? <FamilyMainPage invitation={invitation} groomName={groomName} brideName={brideName} fonts={fonts} themeColors={themeColors} />
+                : <MainPage invitation={invitation} groomName={groomName} brideName={brideName} fonts={fonts} themeColors={themeColors} />
+              }
             </div>
             <FloatingButton themeColors={themeColors} fonts={fonts} invitation={{
               venue_name: invitation.wedding.venue.name,
@@ -253,7 +260,7 @@ function IntroPage({ invitation, groomName, brideName, fonts, themeColors }: Pag
           <div className="mb-5"><p className="text-xs mb-1" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400 }}>{invitation.wedding.venue.name} {invitation.wedding.venue.hall}</p><p className="text-[10px] font-light" style={{ color: '#999' }}>{invitation.wedding.venue.address || 'Please enter address'}</p></div>
           <button className="px-7 py-2.5 border border-gray-300 rounded-md text-[10px] font-light" style={{ color: '#666' }}>Get Directions</button>
         </div>
-        <div className="flex flex-col items-center"><span className="text-[13px] font-light" style={{ color: themeColors.gray, fontFamily: fonts.displayKr }}>다음 이야기</span><div className="flex flex-col items-center mt-4"><div className="w-px h-8 bg-gradient-to-b from-gray-400/30 to-transparent" /><div className="w-1 h-1 bg-gray-400 rounded-full opacity-30 animate-bounce" /></div></div>
+        <div className="flex flex-col items-center"><span className="text-[13px] font-light" style={{ color: themeColors.gray, fontFamily: fonts.displayKr }}>다음 이야기</span><div className="flex flex-col items-center mt-4"><div className="w-px h-8" style={{ background: `linear-gradient(to bottom, ${themeColors.gray}, transparent)` }} /><div className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ backgroundColor: themeColors.gray, opacity: 0.6 }} /></div></div>
       </section>
     </div>
   )
@@ -285,7 +292,7 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors }: Page
 
       {/* Our Story Section - with visibility toggle */}
       {sectionVisibility.ourStory && invitation.relationship.stories.some(s => s.title || s.desc) && <section id="preview-our-story" className="py-16 px-7 text-center" style={{ background: themeColors.cardBg }}><div className="w-px h-10 mx-auto mb-6" style={{ background: themeColors.divider }} /><p className="text-sm font-light mb-4" style={{ fontFamily: fonts.displayKr, color: themeColors.text, letterSpacing: '1px' }}>사랑이 시작된 작은 순간들</p><div className="w-px h-10 mx-auto mt-6" style={{ background: themeColors.divider }} /></section>}
-      {sectionVisibility.ourStory && invitation.relationship.stories.map((story, index) => story.title || story.desc ? <section key={index} className="px-7 py-14 text-center" style={{ background: themeColors.sectionBg }}>{story.date && <p className="text-[10px] font-light mb-3" style={{ fontFamily: fonts.display, color: themeColors.gray, letterSpacing: '2px' }}>{story.date}</p>}{story.title && <p className="text-[15px] mb-3" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400 }}>{story.title}</p>}{story.desc && <p className="text-[11px] font-light leading-[1.9] mb-7" style={{ color: '#777' }} dangerouslySetInnerHTML={{ __html: parseHighlight(story.desc) }} />}{story.images && story.images.length > 0 && <div className={`grid gap-3 ${story.images.length === 1 ? 'grid-cols-1' : story.images.length === 2 ? 'grid-cols-2' : 'grid-cols-2'}`}>{story.images.slice(0, 3).map((img, i) => { const s = story.imageSettings?.[i] || { scale: 1, positionX: 0, positionY: 0 }; return <div key={i} className={`rounded-lg overflow-hidden ${story.images.length === 3 && i === 0 ? 'col-span-2 aspect-[2/1]' : 'aspect-square'}`}><div className="w-full h-full bg-cover bg-center transition-transform duration-300" style={{ backgroundImage: `url(${img})`, transform: `scale(${s.scale}) translate(${s.positionX}%, ${s.positionY}%)` }} /></div> })}</div>}</section> : null)}
+      {sectionVisibility.ourStory && invitation.relationship.stories.map((story, index) => story.title || story.desc ? <section key={index} className="px-7 py-14 text-center" style={{ background: themeColors.sectionBg }}>{story.date && <p className="text-[10px] font-light mb-3" style={{ fontFamily: fonts.display, color: themeColors.gray, letterSpacing: '2px' }}>{story.date}</p>}{story.title && <p className="text-[15px] mb-3" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400 }}>{story.title}</p>}{story.desc && <p className="text-[11px] font-light leading-[1.9] mb-7" style={{ color: '#777' }} dangerouslySetInnerHTML={{ __html: parseHighlight(story.desc) }} />}{story.images && story.images.length > 0 && <div className={`grid gap-3 ${story.images.length === 1 ? 'grid-cols-1' : story.images.length === 2 ? 'grid-cols-2' : 'grid-cols-2'}`}>{story.images.slice(0, 3).map((img, i) => { const s = story.imageSettings?.[i] || { scale: 1, positionX: 0, positionY: 0 }; return <div key={i} className={`rounded-lg overflow-hidden ${story.images.length === 3 && i === 0 ? 'col-span-2 aspect-[2/1]' : 'aspect-square'}`}><div className="w-full h-full transition-transform duration-300" style={getImageCropStyle(img, s)} /></div> })}</div>}</section> : null)}
 
       {/* Our Story Closing Text */}
       {sectionVisibility.ourStory && invitation.relationship.stories.some(s => s.title || s.desc) && (
@@ -298,7 +305,7 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors }: Page
       {/* Gallery Section */}
       <section id="preview-gallery" className="px-5 py-10" style={{ background: themeColors.cardBg }}>
         <p className="text-[10px] font-light text-center mb-6" style={{ color: themeColors.gray, letterSpacing: '4px' }}>GALLERY</p>
-        <div className="grid grid-cols-2 gap-2">{invitation.gallery.images && invitation.gallery.images.length > 0 ? invitation.gallery.images.map((img, i) => { const s = invitation.gallery.imageSettings?.[i] || { scale: 1, positionX: 0, positionY: 0 }; return <div key={i} className="aspect-square rounded overflow-hidden"><div className="w-full h-full bg-cover bg-center transition-transform duration-300" style={{ backgroundImage: `url(${img})`, transform: `scale(${s.scale}) translate(${s.positionX}%, ${s.positionY}%)` }} /></div> }) : [1, 2, 3, 4, 5, 6].map(i => <div key={i} className="aspect-square rounded bg-gray-100 flex items-center justify-center"><svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg></div>)}</div>
+        <div className="grid grid-cols-2 gap-2">{invitation.gallery.images && invitation.gallery.images.length > 0 ? invitation.gallery.images.map((img, i) => { const s = invitation.gallery.imageSettings?.[i] || { scale: 1, positionX: 0, positionY: 0 }; return <div key={i} className="aspect-square rounded overflow-hidden"><div className="w-full h-full transition-transform duration-300" style={getImageCropStyle(img, s)} /></div> }) : [1, 2, 3, 4, 5, 6].map(i => <div key={i} className="aspect-square rounded bg-gray-100 flex items-center justify-center"><svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg></div>)}</div>
       </section>
 
       {/* Interview Section - with visibility toggle */}
@@ -419,6 +426,352 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors }: Page
               rsvpEnabled: invitation.rsvpEnabled,
               rsvpAllowGuestCount: invitation.rsvpAllowGuestCount,
             }} />
+    </div>
+  )
+}
+
+// Family Template Main Page - 부모님이 보내는 청첩장 스타일
+function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }: PageProps) {
+  const sectionVisibility = invitation.sectionVisibility || {
+    coupleProfile: true, ourStory: true, interview: true, guidance: true, bankAccounts: true, guestbook: true
+  }
+
+  // parentIntro와 whyWeChose 데이터 가져오기
+  const parentIntro = (invitation as any).parentIntro || {}
+  const whyWeChose = (invitation as any).whyWeChose || {}
+  const fullHeightDividers = (invitation as any).fullHeightDividers || {}
+
+  return (
+    <div className="relative">
+      {/* Full Height Divider - Title Section */}
+      <section
+        className="relative flex flex-col justify-center items-center text-center px-6"
+        style={{
+          height: '400px',
+          backgroundImage: fullHeightDividers?.items?.[0]?.image ? `url(${fullHeightDividers.items[0].image})` : 'linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }}
+      >
+        <div className="absolute inset-0 bg-black/40" />
+        <div className="relative z-10 text-white">
+          <p className="text-[10px] tracking-[4px] mb-3 opacity-80" style={{ fontFamily: fonts.display }}>
+            {fullHeightDividers?.items?.[0]?.englishTitle || 'From Our Family to Yours'}
+          </p>
+          <p className="text-sm leading-relaxed whitespace-pre-line" style={{ fontFamily: fonts.displayKr }}>
+            {fullHeightDividers?.items?.[0]?.koreanText || '우리의 봄이, 누군가의 평생이 됩니다'}
+          </p>
+        </div>
+      </section>
+
+      {/* 신랑측 부모님 소개 */}
+      {parentIntro?.groom?.enabled !== false && (
+        <section className="px-6 py-16" style={{ background: '#ffffff' }}>
+          <div className="text-center mb-8">
+            <p className="text-[11px] mb-2" style={{ color: themeColors.gray }}>
+              {parentIntro?.groom?.parentNames || `${invitation.groom.father?.name || '아버지'}, ${invitation.groom.mother?.name || '어머니'}의`}
+            </p>
+            <h3 className="text-lg" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>
+              {parentIntro?.groom?.childOrder || '첫째'}아들 <span style={{ color: themeColors.primary }}>{groomName}</span> 결혼합니다
+            </h3>
+          </div>
+          {/* 이미지 */}
+          <div className="w-full aspect-[4/5] bg-gray-100 mb-8 overflow-hidden">
+            <div
+              className="w-full h-full bg-cover bg-center"
+              style={{ backgroundImage: parentIntro?.groom?.images?.[0] ? `url(${parentIntro.groom.images[0]})` : undefined }}
+            />
+          </div>
+          {/* 메시지 */}
+          <p className="text-xs leading-[2.2] whitespace-pre-line text-center" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>
+            {parentIntro?.groom?.message || '저희 아들이 좋은 사람을 만나\n결혼하게 되었습니다.\n\n부디 오셔서 축복해 주시면 감사하겠습니다.'}
+          </p>
+        </section>
+      )}
+
+      {/* 선 확장 디바이더 */}
+      {parentIntro?.groom?.enabled !== false && parentIntro?.bride?.enabled !== false && (
+        <div className="flex items-center justify-center py-12" style={{ background: '#ffffff' }}>
+          <div className="flex items-center w-full max-w-[200px]">
+            <div className="flex-1 h-px" style={{ background: `${themeColors.primary}40` }} />
+            <div className="w-2 h-2 rounded-full mx-3" style={{ background: themeColors.primary, opacity: 0.6 }} />
+            <div className="flex-1 h-px" style={{ background: `${themeColors.primary}40` }} />
+          </div>
+        </div>
+      )}
+
+      {/* 신부측 부모님 소개 */}
+      {parentIntro?.bride?.enabled !== false && (
+        <section className="px-6 py-16" style={{ background: '#ffffff' }}>
+          <div className="text-center mb-8">
+            <p className="text-[11px] mb-2" style={{ color: themeColors.gray }}>
+              {parentIntro?.bride?.parentNames || `${invitation.bride.father?.name || '아버지'}, ${invitation.bride.mother?.name || '어머니'}의`}
+            </p>
+            <h3 className="text-lg" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>
+              {parentIntro?.bride?.childOrder || '첫째'}딸 <span style={{ color: themeColors.primary }}>{brideName}</span> 결혼합니다
+            </h3>
+          </div>
+          {/* 이미지 */}
+          <div className="w-full aspect-[4/5] bg-gray-100 mb-8 overflow-hidden">
+            <div
+              className="w-full h-full bg-cover bg-center"
+              style={{ backgroundImage: parentIntro?.bride?.images?.[0] ? `url(${parentIntro.bride.images[0]})` : undefined }}
+            />
+          </div>
+          {/* 메시지 */}
+          <p className="text-xs leading-[2.2] whitespace-pre-line text-center" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>
+            {parentIntro?.bride?.message || '저희 딸이 좋은 사람을 만나\n결혼하게 되었습니다.\n\n부디 오셔서 축복해 주시면 감사하겠습니다.'}
+          </p>
+        </section>
+      )}
+
+      {/* Why We Chose Each Other - Title Divider */}
+      {whyWeChose?.enabled !== false && (
+        <section
+          className="relative flex flex-col justify-center items-center text-center px-6"
+          style={{
+            height: '350px',
+            backgroundImage: fullHeightDividers?.items?.[1]?.image ? `url(${fullHeightDividers.items[1].image})` : 'linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
+          }}
+        >
+          <div className="absolute inset-0 bg-black/40" />
+          <div className="relative z-10 text-white">
+            <p className="text-[10px] tracking-[4px] mb-3 opacity-80" style={{ fontFamily: fonts.display }}>
+              {fullHeightDividers?.items?.[1]?.englishTitle || 'Why We Chose Each Other'}
+            </p>
+            <p className="text-sm leading-relaxed whitespace-pre-line" style={{ fontFamily: fonts.displayKr }}>
+              {fullHeightDividers?.items?.[1]?.koreanText || '서로의 부족한 점을 채워줄 수 있는\n사람을 만났습니다.'}
+            </p>
+          </div>
+        </section>
+      )}
+
+      {/* Why We Chose - Section Title */}
+      {whyWeChose?.enabled !== false && (
+        <section className="py-16 px-7 text-center" style={{ background: '#ffffff' }}>
+          <h3 className="text-base mb-3" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>
+            {whyWeChose?.title || '우리가 서로를 선택한 이유'}
+          </h3>
+          <p className="text-[11px]" style={{ color: themeColors.gray }}>
+            {whyWeChose?.subtitle || '오래 보아도 좋은 사람, 서로 그렇게 되기까지'}
+          </p>
+        </section>
+      )}
+
+      {/* 신랑이 선택한 이유 */}
+      {whyWeChose?.enabled !== false && whyWeChose?.groom?.enabled !== false && (
+        <section className="px-7 pb-16" style={{ background: '#ffffff' }}>
+          <ProfileImageSlider images={invitation.groom.profile.images} imageSettings={invitation.groom.profile.imageSettings} className="mb-10" />
+          {/* Description Card */}
+          <div className="relative p-6 mb-10" style={{ background: themeColors.cardBg, border: `1px solid ${themeColors.text}20` }}>
+            <p className="text-xs leading-[2.2] whitespace-pre-line" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>
+              {whyWeChose?.groom?.description || '이 사람과 함께라면\n더 따뜻한 사람이 될 수 있겠다는 마음이 들었습니다.'}
+            </p>
+          </div>
+          {/* Quote */}
+          <div className="text-right">
+            <p className="text-base mb-2" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>
+              &ldquo;{whyWeChose?.groom?.quote || '서로 아끼며 행복하게 살겠습니다.'}&rdquo;
+            </p>
+            <p className="text-[11px]" style={{ color: themeColors.gray }}>- {groomName}</p>
+          </div>
+        </section>
+      )}
+
+      {/* 신부가 선택한 이유 */}
+      {whyWeChose?.enabled !== false && whyWeChose?.bride?.enabled !== false && (
+        <section className="px-7 pb-16" style={{ background: '#ffffff' }}>
+          <ProfileImageSlider images={invitation.bride.profile.images} imageSettings={invitation.bride.profile.imageSettings} className="mb-10" />
+          {/* Description Card */}
+          <div className="relative p-6 mb-10" style={{ background: themeColors.cardBg, border: `1px solid ${themeColors.text}20` }}>
+            <p className="text-xs leading-[2.2] whitespace-pre-line" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>
+              {whyWeChose?.bride?.description || '내가 나다워도 괜찮다고 말해주는\n이 사람이라면 오래오래 곁에 두고 싶다고.'}
+            </p>
+          </div>
+          {/* Quote */}
+          <div className="text-left">
+            <p className="text-base mb-2" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>
+              &ldquo;{whyWeChose?.bride?.quote || '늘 처음처럼 행복하게 살겠습니다.'}&rdquo;
+            </p>
+            <p className="text-[11px]" style={{ color: themeColors.gray }}>- {brideName}</p>
+          </div>
+        </section>
+      )}
+
+      {/* Interview Title Divider */}
+      {sectionVisibility.interview && invitation.content.interviews.some(i => i.question || i.answer) && (
+        <section
+          className="relative flex flex-col justify-center items-center text-center px-6"
+          style={{
+            height: '350px',
+            backgroundImage: fullHeightDividers?.items?.[2]?.image ? `url(${fullHeightDividers.items[2].image})` : 'linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
+          }}
+        >
+          <div className="absolute inset-0 bg-black/40" />
+          <div className="relative z-10 text-white">
+            <p className="text-[10px] tracking-[4px] mb-3 opacity-80" style={{ fontFamily: fonts.display }}>
+              {fullHeightDividers?.items?.[2]?.englishTitle || 'Our way to marriage'}
+            </p>
+            <p className="text-sm leading-relaxed whitespace-pre-line" style={{ fontFamily: fonts.displayKr }}>
+              {fullHeightDividers?.items?.[2]?.koreanText || '같은 시간, 같은 마음으로\n하나의 계절을 준비하고 있습니다.'}
+            </p>
+          </div>
+        </section>
+      )}
+
+      {/* Gallery Section */}
+      <section id="preview-gallery" className="px-5 py-10" style={{ background: themeColors.sectionBg }}>
+        <div className="grid grid-cols-2 gap-2">{invitation.gallery.images && invitation.gallery.images.length > 0 ? invitation.gallery.images.map((img, i) => { const s = invitation.gallery.imageSettings?.[i] || { scale: 1, positionX: 0, positionY: 0 }; return <div key={i} className="aspect-square overflow-hidden"><div className="w-full h-full transition-transform duration-300" style={getImageCropStyle(img, s)} /></div> }) : [1, 2, 3, 4, 5, 6].map(i => <div key={i} className="aspect-square bg-gray-100 flex items-center justify-center"><svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg></div>)}</div>
+      </section>
+
+      {/* Interview Section */}
+      {sectionVisibility.interview && invitation.content.interviews.map((interview, index) => interview.question || interview.answer ? (
+        <section key={index} className="px-7 py-14" style={{ background: '#ffffff' }}>
+          {interview.images && interview.images.length > 0 ? (
+            <ProfileImageSlider images={interview.images} imageSettings={interview.imageSettings} className="mb-8" />
+          ) : (
+            <div className="w-full aspect-[4/5] rounded-xl mb-8 bg-gray-100 flex items-center justify-center">
+              <span className="text-gray-400 text-sm">Interview Image</span>
+            </div>
+          )}
+          {interview.question && (
+            <p className="text-sm mb-5 text-center">
+              <span className="anim-underline revealed" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400, display: 'inline-block' }}>
+                {interview.question}
+              </span>
+            </p>
+          )}
+          {interview.answer && (
+            <p className="text-[11px] font-light leading-[2.2]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: parseHighlight(interview.answer) }} />
+          )}
+        </section>
+      ) : null)}
+
+      {/* Guidance & Info Section */}
+      {sectionVisibility.guidance && (
+        <section className="px-6 py-14" style={{ background: themeColors.sectionBg }}>
+          <h3 className="text-[15px] text-center mb-3" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400 }}>
+            행복한 시간을 위한 안내
+          </h3>
+          <div className="w-10 h-px mx-auto mb-8" style={{ background: themeColors.divider }} />
+
+          {/* Info Blocks */}
+          {invitation.content.info.dressCode.enabled && (
+            <div className="px-6 py-6 mb-4" style={{ background: '#ffffff', boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
+              <h4 className="text-[13px] mb-4 flex items-center gap-2" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 500 }}>
+                <span className="w-[3px] h-[14px] rounded-sm" style={{ background: themeColors.accent }} />
+                {invitation.content.info.dressCode.title}
+              </h4>
+              <p className="text-xs leading-8" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: invitation.content.info.dressCode.content.replace(/\n/g, '<br/>') }} />
+            </div>
+          )}
+          {invitation.content.info.photoShare.enabled && (
+            <div className="px-6 py-6 mb-4" style={{ background: '#ffffff', boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
+              <h4 className="text-[13px] mb-4 flex items-center gap-2" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 500 }}>
+                <span className="w-[3px] h-[14px] rounded-sm" style={{ background: themeColors.accent }} />
+                {invitation.content.info.photoShare.title}
+              </h4>
+              <p className="text-xs leading-8" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: invitation.content.info.photoShare.content.replace(/\n/g, '<br/>') }} />
+              {invitation.content.info.photoShare.buttonText && (
+                <button className="mt-4 px-5 py-2.5 text-[11px] transition-all" style={{ background: themeColors.primary, color: '#fff' }}>
+                  {invitation.content.info.photoShare.buttonText}
+                </button>
+              )}
+            </div>
+          )}
+          {invitation.content.info.photoBooth?.enabled && (
+            <div className="px-6 py-6 mb-4" style={{ background: '#ffffff', boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
+              <h4 className="text-[13px] mb-4 flex items-center gap-2" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 500 }}>
+                <span className="w-[3px] h-[14px] rounded-sm" style={{ background: themeColors.accent }} />
+                {invitation.content.info.photoBooth.title}
+              </h4>
+              <p className="text-xs leading-8" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: invitation.content.info.photoBooth.content.replace(/\n/g, '<br/>') }} />
+            </div>
+          )}
+          {invitation.content.info.flowerChild?.enabled && (
+            <div className="px-6 py-6 mb-4" style={{ background: '#ffffff', boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
+              <h4 className="text-[13px] mb-4 flex items-center gap-2" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 500 }}>
+                <span className="w-[3px] h-[14px] rounded-sm" style={{ background: themeColors.accent }} />
+                {invitation.content.info.flowerChild.title}
+              </h4>
+              <p className="text-xs leading-8" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: invitation.content.info.flowerChild.content.replace(/\n/g, '<br/>') }} />
+            </div>
+          )}
+          {invitation.content.info.customItems?.map(item => item.enabled && (
+            <div key={item.id} className="px-6 py-6 mb-4" style={{ background: '#ffffff', boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
+              <h4 className="text-[13px] mb-4 flex items-center gap-2" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 500 }}>
+                <span className="w-[3px] h-[14px] rounded-sm" style={{ background: themeColors.accent }} />
+                {item.title}
+              </h4>
+              <p className="text-xs leading-8" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: item.content.replace(/\n/g, '<br/>') }} />
+            </div>
+          ))}
+        </section>
+      )}
+
+      {/* Thank You Section */}
+      <section className="min-h-[300px] flex flex-col justify-center items-center text-center px-7 py-20" style={{ background: themeColors.cardBg }}>
+        <p className="text-[10px] font-light mb-6" style={{ color: themeColors.gray, letterSpacing: '4px' }}>THANK YOU</p>
+        <h2 className="text-lg mb-7" style={{ fontFamily: fonts.display, color: themeColors.text, fontWeight: 400, letterSpacing: '4px' }}>{invitation.content.thankYou.title}</h2>
+        {invitation.content.thankYou.message ? (
+          <p className="text-[11px] font-light leading-[2.2] mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: invitation.content.thankYou.message.replace(/\n/g, '<br/>') }} />
+        ) : (
+          <p className="text-[11px] text-gray-400 italic mb-7">Please enter thank you message</p>
+        )}
+        {invitation.content.thankYou.sign && <p className="text-[11px] font-light" style={{ fontFamily: fonts.displayKr, color: themeColors.gray }}>{invitation.content.thankYou.sign}</p>}
+      </section>
+
+      {/* Guestbook Section */}
+      {sectionVisibility.guestbook && (
+        <section className="px-5 py-14 pb-20 text-center" style={{ background: themeColors.cardBg }}>
+          <p className="text-[10px] font-light mb-4" style={{ color: themeColors.gray, letterSpacing: '4px' }}>GUESTBOOK</p>
+          <h3 className="text-sm mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400 }}>축하의 한마디</h3>
+          <div className="max-w-[300px] mx-auto mb-9">
+            <p className="text-xs font-light leading-[1.7] mb-4 min-h-[40px]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>
+              {invitation.content.guestbookQuestions[0] || '두 사람에게 해주고 싶은 말은?'}
+            </p>
+            <div className="flex gap-2 mb-2.5">
+              <input type="text" className="flex-1 px-3.5 py-3 border border-gray-200 rounded-lg text-[11px] font-light" style={{ background: '#fafafa', color: themeColors.text }} placeholder="20자 이내로 답해주세요" disabled />
+              <button className="px-4 py-3 rounded-lg text-[10px] font-light text-white" style={{ background: themeColors.text }}>남기기</button>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Footer */}
+      <div className="px-6 py-10 text-center" style={{ background: themeColors.background }}>
+        <p className="text-[10px] font-light" style={{ color: '#999' }}>Thank you for celebrating with us</p>
+      </div>
+
+      <FloatingButton themeColors={themeColors} fonts={fonts} invitation={{
+        venue_name: invitation.wedding.venue.name,
+        venue_address: invitation.wedding.venue.address,
+        groom_name: invitation.groom.name,
+        bride_name: invitation.bride.name,
+        groom_father_name: invitation.groom.father.name,
+        groom_mother_name: invitation.groom.mother.name,
+        bride_father_name: invitation.bride.father.name,
+        bride_mother_name: invitation.bride.mother.name,
+        groom_phone: invitation.groom.phone,
+        bride_phone: invitation.bride.phone,
+        groom_father_phone: invitation.groom.father.phone,
+        groom_mother_phone: invitation.groom.mother.phone,
+        bride_father_phone: invitation.bride.father.phone,
+        bride_mother_phone: invitation.bride.mother.phone,
+        groom_bank_info: invitation.groom.bank,
+        groom_father_bank_info: invitation.groom.father.bank,
+        groom_mother_bank_info: invitation.groom.mother.bank,
+        bride_bank_info: invitation.bride.bank,
+        bride_father_bank_info: invitation.bride.father.bank,
+        bride_mother_bank_info: invitation.bride.mother.bank,
+        directions: invitation.wedding.directions,
+        rsvpEnabled: invitation.rsvpEnabled,
+        rsvpAllowGuestCount: invitation.rsvpAllowGuestCount,
+      }} />
     </div>
   )
 }

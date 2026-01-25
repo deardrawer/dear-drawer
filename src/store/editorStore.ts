@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { Template } from '@/lib/templates'
-import { GeneratedStory } from '@/app/api/ai/generate-story/route'
+import { GeneratedStory, FamilyWhyWeChoseStory } from '@/app/api/ai/generate-story/route'
 import { IntroSettings, IntroPresetId, getDefaultIntroSettings, mergeIntroSettings } from '@/lib/introPresets'
 
 // 계좌 정보
@@ -24,6 +24,11 @@ export interface ImageSettings {
   scale: number      // 0.5 ~ 2.0 (기본 1.0)
   positionX: number  // -50 ~ 50 (기본 0)
   positionY: number  // -50 ~ 50 (기본 0)
+  // 크롭 데이터 (프레임 방식)
+  cropX?: number      // 크롭 영역 X 시작점 (0~1)
+  cropY?: number      // 크롭 영역 Y 시작점 (0~1)
+  cropWidth?: number  // 크롭 영역 너비 (0~1)
+  cropHeight?: number // 크롭 영역 높이 (0~1)
 }
 
 // 프로필 정보
@@ -39,6 +44,8 @@ export interface ProfileInfo {
 // 커플 개인 정보
 export interface PersonInfo {
   name: string
+  lastName: string    // 성 (family 템플릿용)
+  firstName: string   // 이름 (family 템플릿용)
   nameEn: string
   phone: string
   father: ParentInfo
@@ -137,7 +144,25 @@ export interface InfoSettings {
     content: string
     enabled: boolean
   }
+  flowerGift: {
+    title: string
+    content: string
+    enabled: boolean
+  }
+  wreath: {
+    title: string
+    content: string
+    enabled: boolean
+  }
+  reception: {
+    title: string
+    content: string
+    venue?: string
+    datetime?: string
+    enabled: boolean
+  }
   customItems: CustomInfoItem[]
+  itemOrder: string[]  // 안내 항목 순서
 }
 
 // ===== 새로운 타입들 =====
@@ -214,6 +239,54 @@ export interface GuidanceSection {
   content: string
   image: string
   imageSettings: ImageSettings
+}
+
+// 풀하이트 디바이더 섹션 (FAMILY 템플릿용)
+export interface FullHeightDividerItem {
+  id: string
+  englishTitle: string     // 영문 타이틀 (상단 작은 텍스트)
+  koreanText: string       // 한글 텍스트 (큰 손글씨)
+  image: string            // 배경 이미지
+  imageSettings: ImageSettings & {
+    grayscale: number      // 흑백 정도 (0~100, 기본 100)
+    opacity: number        // 불투명도 (0~100, 기본 100)
+  }
+}
+
+export interface FullHeightDividers {
+  enabled: boolean
+  items: FullHeightDividerItem[]
+}
+
+// 부모님 소개 섹션 (FAMILY 템플릿용)
+export interface ParentIntroItem {
+  enabled: boolean
+  parentNames: string      // "전아빠, 김엄마의"
+  childOrder: string       // "첫째", "둘째", "막내" 등
+  images: string[]         // 가족 사진 (최대 2장, 4:3 비율)
+  message: string          // 부모님 메시지
+}
+
+export interface ParentIntro {
+  groom: ParentIntroItem
+  bride: ParentIntroItem
+}
+
+// 서로를 선택한 이유 섹션 (FAMILY 템플릿용)
+export interface WhyWeChoseItem {
+  enabled: boolean
+  images: string[]         // 1~3장
+  imageSettings?: { scale: number; positionX: number; positionY: number }[]
+  description: string      // 본문 (** 로 강조)
+  quote: string            // 하단 인용문
+}
+
+export interface WhyWeChose {
+  enabled: boolean
+  title: string            // "우리가 서로를 선택한 이유"
+  subtitle: string         // "오래 보아도 좋은 사람, 서로 그렇게 되기까지"
+  groom: WhyWeChoseItem
+  bride: WhyWeChoseItem
 }
 
 export interface InvitationContent {
@@ -303,6 +376,15 @@ export interface InvitationContent {
   // ===== 인트로 애니메이션 설정 =====
   intro: IntroSettings
 
+  // ===== 풀하이트 디바이더 섹션 (FAMILY 템플릿용) =====
+  fullHeightDividers?: FullHeightDividers
+
+  // ===== 부모님 소개 섹션 (FAMILY 템플릿용) =====
+  parentIntro?: ParentIntro
+
+  // ===== 서로를 선택한 이유 섹션 (FAMILY 템플릿용) =====
+  whyWeChose?: WhyWeChose
+
   // ===== 레거시 필드 (AI 스토리용) =====
   ourStory: string
   decision: string
@@ -326,6 +408,7 @@ interface EditorStore {
   updateNestedField: (path: string, value: unknown) => void
   updateMultipleFields: (fields: Partial<InvitationContent>) => void
   applyAIStory: (story: GeneratedStory) => void
+  applyFamilyAIStory: (story: FamilyWhyWeChoseStory & { groomQuote: string; brideQuote: string }, applyInterview?: GeneratedStory) => void
   setTemplate: (template: Template) => void
   setSaving: (saving: boolean) => void
   resetDirty: () => void
@@ -354,6 +437,8 @@ const createDefaultBankInfo = (): BankInfo => ({
 
 const createDefaultPerson = (isGroom: boolean): PersonInfo => ({
   name: '',
+  lastName: '',
+  firstName: '',
   nameEn: '',
   phone: '',
   father: { name: '', phone: '', deceased: false, bank: createDefaultBankInfo() },
@@ -422,9 +507,13 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
         url: '',
         enabled: false,
       },
-      photoBooth: { title: 'Photo Booth', content: '', enabled: false },
+      photoBooth: { title: '포토부스', content: '', enabled: false },
       flowerChild: { title: '화동 안내', content: '', enabled: false },
+      flowerGift: { title: '꽃 답례품', content: '', enabled: false },
+      wreath: { title: '화환 안내', content: '', enabled: false },
+      reception: { title: '피로연 안내', content: '', venue: '', datetime: '', enabled: false },
       customItems: [],
+      itemOrder: ['dressCode', 'photoBooth', 'photoShare', 'flowerGift', 'flowerChild', 'wreath', 'reception'],
     },
     interviews: [
       { question: '', answer: '', images: [], imageSettings: [], bgClass: 'pink-bg' },
@@ -512,13 +601,80 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
   // 인트로 애니메이션 설정
   intro: getDefaultIntroSettings('cinematic'),
 
+  // 풀하이트 디바이더 섹션
+  fullHeightDividers: {
+    enabled: false,
+    items: [
+      {
+        id: 'divider-1',
+        englishTitle: 'From Our Family to Yours',
+        koreanText: '우리의 봄이, 누군가의 평생이 됩니다',
+        image: '',
+        imageSettings: { scale: 1.0, positionX: 0, positionY: 0, grayscale: 100, opacity: 100 },
+      },
+      {
+        id: 'divider-2',
+        englishTitle: 'Why We Chose Each Other for Life',
+        koreanText: '서로의 부족한 점을 채워줄 수 있는\n사람을 만났습니다.',
+        image: '',
+        imageSettings: { scale: 1.0, positionX: 0, positionY: 0, grayscale: 100, opacity: 100 },
+      },
+      {
+        id: 'divider-3',
+        englishTitle: 'Our way to marriage',
+        koreanText: '같은 시간, 같은 마음으로\n하나의 계절을 준비하고 있습니다.',
+        image: '',
+        imageSettings: { scale: 1.0, positionX: 0, positionY: 0, grayscale: 100, opacity: 100 },
+      },
+    ],
+  },
+
+  // 부모님 소개 섹션
+  parentIntro: {
+    groom: {
+      enabled: true,
+      parentNames: '',
+      childOrder: '첫째',
+      images: [],
+      message: '',
+    },
+    bride: {
+      enabled: true,
+      parentNames: '',
+      childOrder: '첫째',
+      images: [],
+      message: '',
+    },
+  },
+
+  // 서로를 선택한 이유 섹션
+  whyWeChose: {
+    enabled: true,
+    title: '우리가 서로를 선택한 이유',
+    subtitle: '오래 보아도 좋은 사람, 서로 그렇게 되기까지',
+    groom: {
+      enabled: true,
+      images: [],
+      imageSettings: [],
+      description: '',
+      quote: '서로 아끼며 행복하게 살겠습니다.',
+    },
+    bride: {
+      enabled: true,
+      images: [],
+      imageSettings: [],
+      description: '',
+      quote: '늘 처음처럼 행복하게 살겠습니다.',
+    },
+  },
+
   // 레거시
   ourStory: '',
   decision: '',
   invitation: '',
 })
 
-// 중첩 객체 업데이트 헬퍼
+// 중첩 객체 업데이트 헬퍼 (배열 인덱스 지원)
 const setNestedValue = (obj: Record<string, unknown>, path: string, value: unknown): Record<string, unknown> => {
   const keys = path.split('.')
   const result = { ...obj }
@@ -526,7 +682,22 @@ const setNestedValue = (obj: Record<string, unknown>, path: string, value: unkno
 
   for (let i = 0; i < keys.length - 1; i++) {
     const key = keys[i]
-    current[key] = { ...(current[key] as Record<string, unknown>) }
+    const nextKey = keys[i + 1]
+    const isNextKeyArrayIndex = /^\d+$/.test(nextKey)
+
+    if (Array.isArray(current[key])) {
+      // 배열인 경우 배열로 복사
+      current[key] = [...(current[key] as unknown[])]
+    } else if (current[key] && typeof current[key] === 'object') {
+      // 객체인 경우 객체로 복사
+      current[key] = { ...(current[key] as Record<string, unknown>) }
+    } else if (isNextKeyArrayIndex) {
+      // 다음 키가 숫자이고 현재 값이 없으면 배열 생성
+      current[key] = []
+    } else {
+      // 그 외의 경우 객체 생성
+      current[key] = {}
+    }
     current = current[key] as Record<string, unknown>
   }
 
@@ -596,6 +767,66 @@ export const useEditorStore = create<EditorStore>((set) => ({
           ourStory: story.ourStory,
           decision: story.decision,
           invitation: story.invitation,
+        },
+        isDirty: true,
+      }
+    }),
+
+  applyFamilyAIStory: (story, applyInterview) =>
+    set((state) => {
+      if (!state.invitation) return state
+
+      // whyWeChose 업데이트 - 기본값 제공
+      const updatedWhyWeChose: WhyWeChose = {
+        enabled: true,
+        title: state.invitation.whyWeChose?.title || '우리가 서로를 선택한 이유',
+        subtitle: state.invitation.whyWeChose?.subtitle || '오래 보아도 좋은 사람, 서로 그렇게 되기까지',
+        groom: {
+          enabled: true,
+          images: state.invitation.whyWeChose?.groom?.images || [],
+          imageSettings: state.invitation.whyWeChose?.groom?.imageSettings,
+          description: story.groomDescription,
+          quote: story.groomQuote,
+        },
+        bride: {
+          enabled: true,
+          images: state.invitation.whyWeChose?.bride?.images || [],
+          imageSettings: state.invitation.whyWeChose?.bride?.imageSettings,
+          description: story.brideDescription,
+          quote: story.brideQuote,
+        },
+      }
+
+      // 인터뷰도 함께 적용할 경우
+      let updatedInterviews = state.invitation.content.interviews
+      if (applyInterview) {
+        updatedInterviews = [
+          {
+            ...state.invitation.content.interviews[0],
+            question: '두 분은 어떻게 만나셨나요?',
+            answer: applyInterview.ourStory,
+          },
+          {
+            ...state.invitation.content.interviews[1],
+            question: '결혼을 결심하게 된 계기는?',
+            answer: applyInterview.decision,
+          },
+          {
+            ...state.invitation.content.interviews[2],
+            question: '하객분들께 전하고 싶은 말씀은?',
+            answer: applyInterview.invitation,
+          },
+        ]
+      }
+
+      return {
+        invitation: {
+          ...state.invitation,
+          whyWeChose: updatedWhyWeChose,
+          content: {
+            ...state.invitation.content,
+            interviews: updatedInterviews,
+          },
         },
         isDirty: true,
       }

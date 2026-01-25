@@ -1,0 +1,277 @@
+'use client'
+
+import { useState, useEffect, useRef } from 'react'
+import { useSectionHighlight } from './SectionHighlightContext'
+import { useTheme } from './ThemeContext'
+
+interface VenueSectionProps {
+  venue?: {
+    name: string
+    hall: string
+    address: string
+    naverMapUrl?: string
+    kakaoMapUrl?: string
+    tmapUrl?: string
+  }
+  directions?: {
+    bus?: { lines: string; stop: string }
+    subway?: { line: string; station: string; exit: string; walk: string }
+    parking?: { capacity: string; free: string; note: string }
+  }
+}
+
+export default function VenueSection({
+  venue = {
+    name: '더채플앳청담',
+    hall: '5층 루체홀',
+    address: '서울특별시 강남구 청담동 123-45',
+  },
+  directions,
+}: VenueSectionProps) {
+  const { ref, isActive, hasAppeared } = useSectionHighlight('venue')
+  const theme = useTheme()
+  const [showDirectionsModal, setShowDirectionsModal] = useState(false)
+  const mapContainerRef = useRef<HTMLDivElement>(null)
+  const mapInitialized = useRef(false)
+  const [mapError, setMapError] = useState(false)
+
+  useEffect(() => {
+    if (mapInitialized.current || !venue.address) return
+
+    const initMapWithGeocoding = () => {
+      if (!mapContainerRef.current || !window.kakao?.maps) return
+
+      mapInitialized.current = true
+
+      // Geocoder로 주소를 좌표로 변환
+      const geocoder = new window.kakao.maps.services.Geocoder()
+
+      const container = mapContainerRef.current
+      if (!container) return
+
+      geocoder.addressSearch(venue.address, (result: { x: string; y: string }[], status: string) => {
+        if (status === window.kakao.maps.services.Status.OK && result[0]) {
+          const lat = parseFloat(result[0].y)
+          const lng = parseFloat(result[0].x)
+
+          const options = {
+            center: new window.kakao.maps.LatLng(lat, lng),
+            level: 3,
+          }
+
+          const map = new window.kakao.maps.Map(container, options)
+
+          const marker = new window.kakao.maps.Marker({
+            position: new window.kakao.maps.LatLng(lat, lng),
+          })
+          marker.setMap(map)
+
+          const infowindow = new window.kakao.maps.InfoWindow({
+            content: `<div style="padding:5px;font-size:12px;white-space:nowrap;">${venue.name}</div>`,
+          })
+          infowindow.open(map, marker)
+        } else {
+          // Geocoding 실패 시 기본 좌표 사용 (서울 중심)
+          console.warn('Geocoding failed, using default coordinates')
+          setMapError(true)
+        }
+      })
+    }
+
+    if (window.kakao?.maps?.services) {
+      initMapWithGeocoding()
+      return
+    }
+
+    const script = document.createElement('script')
+    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID}&libraries=services&autoload=false`
+    script.async = true
+    script.onload = () => {
+      window.kakao.maps.load(initMapWithGeocoding)
+    }
+    document.head.appendChild(script)
+  }, [venue.address, venue.name])
+
+  // 지도 앱 열기 - 링크가 있으면 사용, 없으면 주소 검색
+  const openNaverMap = () => {
+    if (venue.naverMapUrl) {
+      window.open(venue.naverMapUrl, '_blank')
+    } else {
+      window.open(`https://map.naver.com/v5/search/${encodeURIComponent(venue.address)}`, '_blank')
+    }
+  }
+
+  const openKakaoMap = () => {
+    if (venue.kakaoMapUrl) {
+      window.open(venue.kakaoMapUrl, '_blank')
+    } else {
+      window.open(`https://map.kakao.com/link/search/${encodeURIComponent(venue.address)}`, '_blank')
+    }
+  }
+
+  const openTmap = () => {
+    if (venue.tmapUrl) {
+      window.open(venue.tmapUrl, '_blank')
+    } else {
+      window.open(`https://tmap.life/search?keyword=${encodeURIComponent(venue.address)}`, '_blank')
+    }
+  }
+
+  // 오시는 길 정보가 있는지 확인
+  const hasDirections = directions && (directions.bus || directions.subway || directions.parking)
+
+  return (
+    <section
+      ref={ref as React.RefObject<HTMLDivElement>}
+      className="px-8 py-20 transition-all duration-500 min-h-screen flex flex-col items-center justify-center"
+      style={{
+        backgroundColor: theme.background,
+        opacity: hasAppeared ? (isActive ? 1 : 0.3) : 0,
+        transform: hasAppeared ? 'translateY(0)' : 'translateY(20px)',
+        filter: isActive ? 'none' : 'grayscale(30%)',
+      }}
+    >
+      <div className="text-center mb-10 w-full">
+        <p
+          className="font-serif text-xl mb-2 transition-colors duration-500"
+          style={{ color: isActive ? theme.text : '#999' }}
+        >
+          {venue.name}
+        </p>
+        {venue.hall && (
+          <p className="text-sm transition-colors duration-500" style={{ color: theme.accent }}>
+            {venue.hall}
+          </p>
+        )}
+        <p className="text-xs mt-2 transition-colors duration-500" style={{ color: isActive ? '#999' : '#bbb' }}>
+          {venue.address}
+        </p>
+      </div>
+
+      <div
+        ref={mapContainerRef}
+        className="w-full aspect-[16/9] rounded-sm mb-4 overflow-hidden transition-all duration-500"
+        style={{
+          backgroundColor: '#E8E4DC',
+          boxShadow: isActive ? '0 4px 20px rgba(0, 0, 0, 0.08)' : '0 2px 8px rgba(0, 0, 0, 0.02)',
+        }}
+      >
+        {mapError && (
+          <div className="w-full h-full flex items-center justify-center text-sm text-gray-400">
+            주소를 확인해주세요
+          </div>
+        )}
+      </div>
+
+      <div className="flex items-center justify-center gap-2 mb-6">
+        <button
+          onClick={openNaverMap}
+          className="px-4 py-2 text-xs tracking-wide rounded-full transition-all"
+          style={{ backgroundColor: '#F5F0EB', color: '#666' }}
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = theme.accent; e.currentTarget.style.color = 'white'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#F5F0EB'; e.currentTarget.style.color = '#666'; }}
+        >
+          네이버지도
+        </button>
+        <button
+          onClick={openKakaoMap}
+          className="px-4 py-2 text-xs tracking-wide rounded-full transition-all"
+          style={{ backgroundColor: '#F5F0EB', color: '#666' }}
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = theme.accent; e.currentTarget.style.color = 'white'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#F5F0EB'; e.currentTarget.style.color = '#666'; }}
+        >
+          카카오맵
+        </button>
+        <button
+          onClick={openTmap}
+          className="px-4 py-2 text-xs tracking-wide rounded-full transition-all"
+          style={{ backgroundColor: '#F5F0EB', color: '#666' }}
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = theme.accent; e.currentTarget.style.color = 'white'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#F5F0EB'; e.currentTarget.style.color = '#666'; }}
+        >
+          T맵
+        </button>
+      </div>
+
+      {hasDirections && (
+        <div className="w-full max-w-[340px]">
+          <button
+            onClick={() => setShowDirectionsModal(!showDirectionsModal)}
+            className="w-full py-3 border rounded-lg text-sm tracking-wide transition-all"
+            style={{
+              borderColor: showDirectionsModal ? theme.accent : '#E8E4DC',
+              color: showDirectionsModal ? theme.accent : (isActive ? '#666' : '#aaa'),
+              borderBottomLeftRadius: showDirectionsModal ? 0 : undefined,
+              borderBottomRightRadius: showDirectionsModal ? 0 : undefined,
+            }}
+          >
+            오시는 길 안내
+          </button>
+
+          <div
+            className="overflow-hidden transition-all duration-300 border border-t-0 rounded-b-lg"
+            style={{
+              maxHeight: showDirectionsModal ? '500px' : '0px',
+              borderColor: showDirectionsModal ? theme.accent : 'transparent',
+              opacity: showDirectionsModal ? 1 : 0,
+            }}
+          >
+            <div className="p-4" style={{ backgroundColor: '#FEFDFB' }}>
+              {directions?.bus && directions.bus.lines && (
+                <div className="mb-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-base">🚌</span>
+                    <h4 className="font-medium text-xs" style={{ color: '#1A1A1A' }}>버스</h4>
+                  </div>
+                  <div className="text-xs leading-relaxed pl-6" style={{ color: '#666' }}>
+                    <p className="mb-0.5">{directions.bus.lines}</p>
+                    {directions.bus.stop && (
+                      <p className="text-[10px] mt-1" style={{ color: '#999' }}>{directions.bus.stop}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {directions?.subway && directions.subway.station && (
+                <div className="mb-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-base">🚇</span>
+                    <h4 className="font-medium text-xs" style={{ color: '#1A1A1A' }}>지하철</h4>
+                  </div>
+                  <div className="text-xs leading-relaxed pl-6" style={{ color: '#666' }}>
+                    <p className="mb-0.5">
+                      {directions.subway.line && `${directions.subway.line} `}
+                      <span style={{ color: theme.accent }}>{directions.subway.station}</span>
+                      {directions.subway.exit && ` ${directions.subway.exit}`}
+                    </p>
+                    {directions.subway.walk && (
+                      <p className="text-[10px] mt-1" style={{ color: '#999' }}>{directions.subway.walk}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {directions?.parking && directions.parking.capacity && (
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-base">🅿️</span>
+                    <h4 className="font-medium text-xs" style={{ color: '#1A1A1A' }}>주차 안내</h4>
+                  </div>
+                  <div className="text-xs leading-relaxed pl-6" style={{ color: '#666' }}>
+                    <p className="mb-0.5">{directions.parking.capacity}</p>
+                    {directions.parking.free && (
+                      <p className="mb-0.5">{directions.parking.free}</p>
+                    )}
+                    {directions.parking.note && (
+                      <p className="text-[10px] mt-1" style={{ color: '#999' }}>{directions.parking.note}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  )
+}

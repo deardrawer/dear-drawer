@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, lazy, Suspense } from 'react'
 import {
   Accordion,
   AccordionContent,
@@ -14,21 +14,22 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { useEditorStore, ImageSettings, SectionVisibility, PreviewSectionId } from '@/store/editorStore'
-import StoryGeneratorModal from '@/components/ai/StoryGeneratorModal'
+import StoryGeneratorModal, { FamilyGeneratedResult } from '@/components/ai/StoryGeneratorModal'
 import HighlightTextarea from '@/components/editor/HighlightTextarea'
-import { AIStoryGenerator } from '@/components/ai-story'
 import { GeneratedStory } from '@/app/api/ai/generate-story/route'
-import { GeneratedContent } from '@/types/ai-generator'
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { fieldHelpers, sectionLabels, sectionColors, introAnimationOptions, PreviewSection } from '@/lib/fieldHelpers'
 import { getPresetById } from '@/lib/introPresets'
 import { uploadImage } from '@/lib/imageUpload'
 import { ChevronRight, Sparkles, Palette, FileText, Heart, Settings, ChevronsUpDown, Play, Pause, Music } from 'lucide-react'
+import InlineCropEditor from './InlineCropEditor'
+import { SortableList, SortableItem } from '@/components/ui/sortable-list'
 import { bgmPresets, getBgmPresetByUrl } from '@/lib/bgmPresets'
+
+// FAMILY 템플릿 전용 에디터 (동적 로드)
+const DividerSectionEditor = lazy(() => import('./DividerSectionEditor'))
+const ParentIntroEditor = lazy(() => import('./ParentIntroEditor'))
+const WhyWeChoseEditor = lazy(() => import('./WhyWeChoseEditor'))
+// const GuestManager = lazy(() => import('./GuestManager'))
 
 // 섹션 매핑 배지 컴포넌트
 function SectionBadge({ section }: { section?: PreviewSection }) {
@@ -89,9 +90,21 @@ function SectionGroupHeader({
 
 interface EditPanelProps {
   onOpenIntroSelector?: () => void
+  onOpenAIStoryGenerator?: () => void
   invitationId?: string | null
   templateId?: string // 새 템플릿의 경우 template 파라미터
 }
+
+// 안내 항목 설정
+const INFO_ITEMS_CONFIG: { key: string; label: string }[] = [
+  { key: 'dressCode', label: '드레스 코드' },
+  { key: 'photoBooth', label: '포토부스' },
+  { key: 'photoShare', label: '사진 공유' },
+  { key: 'flowerGift', label: '꽃 답례품' },
+  { key: 'flowerChild', label: '화동 안내' },
+  { key: 'wreath', label: '화환 안내' },
+  { key: 'reception', label: '피로연 안내' },
+]
 
 // 아코디언 아이템 → 미리보기 섹션 매핑
 const accordionToPreviewSection: Record<string, PreviewSectionId> = {
@@ -121,12 +134,13 @@ const accordionToPreviewSection: Record<string, PreviewSectionId> = {
   'contacts': 'thank-you',
 }
 
-export default function EditPanel({ onOpenIntroSelector, invitationId, templateId }: EditPanelProps) {
+export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator, invitationId, templateId }: EditPanelProps) {
   const {
     invitation,
     updateField,
     updateNestedField,
     applyAIStory,
+    applyFamilyAIStory,
     addStory,
     removeStory,
     addInterview,
@@ -135,7 +149,6 @@ export default function EditPanel({ onOpenIntroSelector, invitationId, templateI
     setActiveSection
   } = useEditorStore()
   const [isAIModalOpen, setIsAIModalOpen] = useState(false)
-  const [isAIStoryGeneratorOpen, setIsAIStoryGeneratorOpen] = useState(false)
   const [uploadingImages, setUploadingImages] = useState<Set<string>>(new Set())
 
   // BGM 미리듣기 관련
@@ -183,7 +196,7 @@ export default function EditPanel({ onOpenIntroSelector, invitationId, templateI
   // 아코디언 아이템 목록
   const designItems = ['design-theme', 'design-font', 'design-intro', 'design-cover', 'design-kakao']
   const requiredItems = ['couple-basic', 'family-info', 'greeting', 'wedding-info', 'directions', 'gallery']
-  const storyItems = ['profile', 'our-story', 'interview']
+  const storyItems = ['parent-intro', 'why-we-chose', 'profile', 'our-story', 'interview']
   const extrasItems = ['guidance', 'rsvp', 'account', 'contacts']
 
   // 토글 함수들
@@ -198,6 +211,11 @@ export default function EditPanel({ onOpenIntroSelector, invitationId, templateI
   }
   const toggleExtrasAll = () => {
     setExtrasAccordion(extrasAccordion.length === extrasItems.length ? [] : [...extrasItems])
+  }
+
+  // 안내 항목 순서 변경 함수 (드래그 앤 드롭)
+  const handleInfoItemReorder = (newOrder: string[]) => {
+    updateNestedField('content.info.itemOrder', newOrder)
   }
 
   // 아코디언 변경 핸들러 (activeSection도 함께 업데이트)
@@ -240,105 +258,17 @@ export default function EditPanel({ onOpenIntroSelector, invitationId, templateI
     applyAIStory(story)
   }
 
-  // AI 스토리 생성기 결과 적용 핸들러
-  const handleAIStoryGeneratorApply = (content: GeneratedContent) => {
-    // 인사말 적용
-    if (content.greeting) {
-      updateNestedField('content.greeting', content.greeting)
-    }
-
-    // 감사 인사 적용 (thankYou.message에 적용)
-    if (content.thanks) {
-      updateNestedField('content.thankYou.message', content.thanks)
-    }
-
-    // 신랑 소개 적용
-    if (content.groomProfile) {
-      updateNestedField('groom.profile.intro', content.groomProfile)
-    }
-
-    // 신부 소개 적용
-    if (content.brideProfile) {
-      updateNestedField('bride.profile.intro', content.brideProfile)
-    }
-
-    // 러브스토리 적용
-    if (content.story) {
-      const stories = []
-      if (content.story.first) {
-        stories.push({
-          date: '',
-          title: '연애의 시작',
-          desc: content.story.first,
-          images: [],
-          imageSettings: []
-        })
-      }
-      if (content.story.together) {
-        stories.push({
-          date: '',
-          title: '함께한 시간',
-          desc: content.story.together,
-          images: [],
-          imageSettings: []
-        })
-      }
-      if (content.story.preparation) {
-        stories.push({
-          date: '',
-          title: '결혼 준비',
-          desc: content.story.preparation,
-          images: [],
-          imageSettings: []
-        })
-      }
-      if (stories.length > 0) {
-        updateNestedField('relationship.stories', stories)
-        // 스토리 섹션 활성화
-        if (!invitation.sectionVisibility.ourStory) {
-          toggleSectionVisibility('ourStory')
-        }
-      }
-    }
-
-    // 인터뷰 적용
-    if (content.interview && content.interview.length > 0) {
-      const interviews = content.interview.map((item, index) => {
-        // 신랑/신부 개별 답변이나 공동 답변을 하나의 answer로 합침
-        let answer = ''
-        if (item.jointAnswer) {
-          answer = item.jointAnswer
-        } else {
-          const parts = []
-          if (item.groomAnswer) parts.push(`🤵 ${item.groomAnswer}`)
-          if (item.brideAnswer) parts.push(`👰 ${item.brideAnswer}`)
-          answer = parts.join('\n\n')
-        }
-
-        return {
-          question: item.question,
-          answer: answer,
-          images: [],
-          imageSettings: [],
-          bgClass: index % 2 === 0 ? 'white-bg' : 'pink-bg'
-        }
-      })
-      updateNestedField('content.interviews', interviews)
-      // 인터뷰 섹션 활성화
-      if (!invitation.sectionVisibility.interview) {
-        toggleSectionVisibility('interview')
-      }
-    }
-
-    // 프로필 섹션 활성화
-    if (content.groomProfile || content.brideProfile) {
-      if (!invitation.sectionVisibility.coupleProfile) {
-        toggleSectionVisibility('coupleProfile')
-      }
-    }
-
-    // 다이얼로그 닫기
-    setIsAIStoryGeneratorOpen(false)
+  // FAMILY 템플릿용 AI 스토리 결과 적용 핸들러
+  const handleFamilyAIComplete = (result: FamilyGeneratedResult) => {
+    applyFamilyAIStory(
+      {
+        groomDescription: result.groomDescription,
+        brideDescription: result.brideDescription,
+        groomQuote: result.groomQuote,
+        brideQuote: result.brideQuote,
+      },
+      result.interview
+    )
   }
 
   // 헬퍼 함수들
@@ -658,7 +588,7 @@ export default function EditPanel({ onOpenIntroSelector, invitationId, templateI
         {/* AI 스토리 작성하기 버튼 */}
         <div className="px-3 py-2 border-b bg-white shrink-0">
           <button
-            onClick={() => setIsAIStoryGeneratorOpen(true)}
+            onClick={() => onOpenAIStoryGenerator?.()}
             className="w-full py-2.5 px-4 rounded-lg bg-rose-500 text-white shadow hover:bg-rose-600 transition-all flex items-center justify-center gap-2"
           >
             <Sparkles className="w-4 h-4" />
@@ -667,31 +597,31 @@ export default function EditPanel({ onOpenIntroSelector, invitationId, templateI
         </div>
 
         <div className="border-b bg-white shrink-0">
-          <TabsList className="w-full h-auto p-1 bg-gray-50 rounded-none grid grid-cols-4 gap-1">
+          <TabsList className="w-full h-auto p-2 bg-gray-50 rounded-none grid grid-cols-4 gap-2">
             <TabsTrigger
               value="design"
-              className="flex flex-col items-center gap-0.5 py-2 px-1 text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm rounded"
+              className="flex flex-col items-center gap-1 py-2.5 px-2 text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-lg"
             >
               <Palette className="w-4 h-4" />
               <span>디자인</span>
             </TabsTrigger>
             <TabsTrigger
               value="required"
-              className="flex flex-col items-center gap-0.5 py-2 px-1 text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm rounded"
+              className="flex flex-col items-center gap-1 py-2.5 px-2 text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-lg"
             >
               <FileText className="w-4 h-4" />
               <span>필수입력</span>
             </TabsTrigger>
             <TabsTrigger
               value="story"
-              className="flex flex-col items-center gap-0.5 py-2 px-1 text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm rounded"
+              className="flex flex-col items-center gap-1 py-2.5 px-2 text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-lg"
             >
               <Heart className="w-4 h-4" />
               <span>스토리</span>
             </TabsTrigger>
             <TabsTrigger
               value="extras"
-              className="flex flex-col items-center gap-0.5 py-2 px-1 text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm rounded"
+              className="flex flex-col items-center gap-1 py-2.5 px-2 text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-lg"
             >
               <Settings className="w-4 h-4" />
               <span>추가기능</span>
@@ -971,6 +901,17 @@ export default function EditPanel({ onOpenIntroSelector, invitationId, templateI
           </AccordionContent>
         </AccordionItem>
 
+        {/* 풀하이트 디바이더 섹션 - FAMILY 템플릿에서만 동적 로드 */}
+        {(templateId === 'narrative-family' || invitation?.templateId === 'narrative-family') && (
+          <Suspense fallback={<div className="p-4 text-sm text-gray-400">로딩중...</div>}>
+            <DividerSectionEditor
+              uploadingImages={uploadingImages}
+              setUploadingImages={setUploadingImages}
+              handleImageUpload={handleImageUpload}
+            />
+          </Suspense>
+        )}
+
         {/* 표지 제목 */}
         <AccordionItem value="design-cover">
           <AccordionTrigger className="text-base font-medium">📝 표지 제목</AccordionTrigger>
@@ -1098,24 +1039,72 @@ export default function EditPanel({ onOpenIntroSelector, invitationId, templateI
             {/* 신랑 */}
             <div className="space-y-3 p-4 bg-blue-50 rounded-lg">
               <p className="text-sm font-semibold text-blue-800">신랑</p>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <FieldLabel fieldKey="groom.name" />
-                  <Input
-                    value={invitation.groom.name}
-                    onChange={(e) => updateNestedField('groom.name', e.target.value)}
-                    placeholder={fieldHelpers['groom.name']?.example}
-                  />
+              {/* family 템플릿: 성/이름 분리 */}
+              {(templateId === 'narrative-family' || invitation?.templateId === 'narrative-family') ? (
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">성</Label>
+                    <Input
+                      value={invitation.groom.lastName || ''}
+                      onChange={(e) => {
+                        const lastName = e.target.value
+                        const firstName = invitation.groom.firstName || ''
+                        // 단일 업데이트로 리렌더링 최소화
+                        updateField('groom', {
+                          ...invitation.groom,
+                          lastName,
+                          name: lastName + firstName
+                        })
+                      }}
+                      placeholder="김"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">이름</Label>
+                    <Input
+                      value={invitation.groom.firstName || ''}
+                      onChange={(e) => {
+                        const firstName = e.target.value
+                        const lastName = invitation.groom.lastName || ''
+                        // 단일 업데이트로 리렌더링 최소화
+                        updateField('groom', {
+                          ...invitation.groom,
+                          firstName,
+                          name: lastName + firstName
+                        })
+                      }}
+                      placeholder="철수"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <FieldLabel fieldKey="groom.nameEn" />
+                    <Input
+                      value={invitation.groom.nameEn}
+                      onChange={(e) => updateNestedField('groom.nameEn', e.target.value)}
+                      placeholder={fieldHelpers['groom.nameEn']?.example}
+                    />
+                  </div>
                 </div>
-                <div className="space-y-1.5">
-                  <FieldLabel fieldKey="groom.nameEn" />
-                  <Input
-                    value={invitation.groom.nameEn}
-                    onChange={(e) => updateNestedField('groom.nameEn', e.target.value)}
-                    placeholder={fieldHelpers['groom.nameEn']?.example}
-                  />
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <FieldLabel fieldKey="groom.name" />
+                    <Input
+                      value={invitation.groom.name}
+                      onChange={(e) => updateNestedField('groom.name', e.target.value)}
+                      placeholder={fieldHelpers['groom.name']?.example}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <FieldLabel fieldKey="groom.nameEn" />
+                    <Input
+                      value={invitation.groom.nameEn}
+                      onChange={(e) => updateNestedField('groom.nameEn', e.target.value)}
+                      placeholder={fieldHelpers['groom.nameEn']?.example}
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
               <div className="space-y-1.5">
                 <FieldLabel fieldKey="groom.phone" />
                 <Input
@@ -1129,24 +1118,72 @@ export default function EditPanel({ onOpenIntroSelector, invitationId, templateI
             {/* 신부 */}
             <div className="space-y-3 p-4 bg-pink-50 rounded-lg">
               <p className="text-sm font-semibold text-pink-800">신부</p>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <FieldLabel fieldKey="bride.name" />
-                  <Input
-                    value={invitation.bride.name}
-                    onChange={(e) => updateNestedField('bride.name', e.target.value)}
-                    placeholder={fieldHelpers['bride.name']?.example}
-                  />
+              {/* family 템플릿: 성/이름 분리 */}
+              {(templateId === 'narrative-family' || invitation?.templateId === 'narrative-family') ? (
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">성</Label>
+                    <Input
+                      value={invitation.bride.lastName || ''}
+                      onChange={(e) => {
+                        const lastName = e.target.value
+                        const firstName = invitation.bride.firstName || ''
+                        // 단일 업데이트로 리렌더링 최소화
+                        updateField('bride', {
+                          ...invitation.bride,
+                          lastName,
+                          name: lastName + firstName
+                        })
+                      }}
+                      placeholder="이"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">이름</Label>
+                    <Input
+                      value={invitation.bride.firstName || ''}
+                      onChange={(e) => {
+                        const firstName = e.target.value
+                        const lastName = invitation.bride.lastName || ''
+                        // 단일 업데이트로 리렌더링 최소화
+                        updateField('bride', {
+                          ...invitation.bride,
+                          firstName,
+                          name: lastName + firstName
+                        })
+                      }}
+                      placeholder="영희"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <FieldLabel fieldKey="bride.nameEn" />
+                    <Input
+                      value={invitation.bride.nameEn}
+                      onChange={(e) => updateNestedField('bride.nameEn', e.target.value)}
+                      placeholder={fieldHelpers['bride.nameEn']?.example}
+                    />
+                  </div>
                 </div>
-                <div className="space-y-1.5">
-                  <FieldLabel fieldKey="bride.nameEn" />
-                  <Input
-                    value={invitation.bride.nameEn}
-                    onChange={(e) => updateNestedField('bride.nameEn', e.target.value)}
-                    placeholder={fieldHelpers['bride.nameEn']?.example}
-                  />
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <FieldLabel fieldKey="bride.name" />
+                    <Input
+                      value={invitation.bride.name}
+                      onChange={(e) => updateNestedField('bride.name', e.target.value)}
+                      placeholder={fieldHelpers['bride.name']?.example}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <FieldLabel fieldKey="bride.nameEn" />
+                    <Input
+                      value={invitation.bride.nameEn}
+                      onChange={(e) => updateNestedField('bride.nameEn', e.target.value)}
+                      placeholder={fieldHelpers['bride.nameEn']?.example}
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
               <div className="space-y-1.5">
                 <FieldLabel fieldKey="bride.phone" />
                 <Input
@@ -1603,16 +1640,19 @@ export default function EditPanel({ onOpenIntroSelector, invitationId, templateI
               </div>
 
               {invitation.gallery.images?.length > 0 && (
-                <div className="mt-3 p-3 bg-purple-50 rounded-lg space-y-3">
-                  <p className="text-[10px] font-medium text-purple-700">이미지 크기/위치 조정</p>
-                  {invitation.gallery.images.map((_, imgIndex) => {
+                <div className="mt-3 p-3 bg-purple-50 rounded-lg space-y-4">
+                  <p className="text-[10px] font-medium text-purple-700">이미지 크롭 조정</p>
+                  {invitation.gallery.images.map((imageUrl, imgIndex) => {
                     const settings = invitation.gallery.imageSettings?.[imgIndex] || { scale: 1.0, positionX: 0, positionY: 0 }
                     return (
-                      <div key={imgIndex} className="space-y-2 pb-2 border-b border-purple-100 last:border-0 last:pb-0">
+                      <div key={imgIndex} className="space-y-2 pb-3 border-b border-purple-100 last:border-0 last:pb-0">
                         <p className="text-[9px] text-purple-600">사진 {imgIndex + 1}</p>
-                        <ImageSettingsSlider
+                        <InlineCropEditor
+                          imageUrl={imageUrl}
                           settings={settings}
                           onUpdate={(s) => updateGalleryImageSettings(imgIndex, s)}
+                          aspectRatio={1}
+                          containerWidth={180}
                           colorClass="purple"
                         />
                       </div>
@@ -1636,7 +1676,25 @@ export default function EditPanel({ onOpenIntroSelector, invitationId, templateI
           />
           <Accordion type="multiple" value={storyAccordion} onValueChange={handleStoryAccordionChange} className="px-4">
 
-        {/* 커플 소개 */}
+        {/* 부모님 소개 - FAMILY 템플릿에서만 표시 */}
+        {(templateId === 'narrative-family' || invitation?.templateId === 'narrative-family') && (
+          <Suspense fallback={<div className="p-4 text-sm text-gray-400">로딩중...</div>}>
+            <ParentIntroEditor
+              uploadingImages={uploadingImages}
+              handleImageUpload={handleImageUpload}
+            />
+          </Suspense>
+        )}
+
+        {/* 서로를 선택한 이유 - FAMILY 템플릿에서만 표시 */}
+        {(templateId === 'narrative-family' || invitation?.templateId === 'narrative-family') && (
+          <Suspense fallback={<div className="p-4 text-sm text-gray-400">로딩중...</div>}>
+            <WhyWeChoseEditor />
+          </Suspense>
+        )}
+
+        {/* 커플 소개 - OUR 템플릿에서만 표시 (FAMILY 템플릿에서는 숨김) */}
+        {templateId !== 'narrative-family' && invitation?.templateId !== 'narrative-family' && (
         <AccordionItem value="profile">
           <AccordionTrigger className="text-base font-medium">
             <div className="flex items-center justify-between w-full mr-2">
@@ -1719,16 +1777,19 @@ export default function EditPanel({ onOpenIntroSelector, invitationId, templateI
                 </div>
 
                 {invitation.groom.profile.images?.length > 0 && (
-                  <div className="mt-3 p-3 bg-white/70 rounded-lg space-y-3">
-                    <p className="text-[10px] font-medium text-blue-700">이미지 크기/위치 조정</p>
-                    {invitation.groom.profile.images.map((_, imgIndex) => {
+                  <div className="mt-3 p-3 bg-white/70 rounded-lg space-y-4">
+                    <p className="text-[10px] font-medium text-blue-700">이미지 크롭 조정</p>
+                    {invitation.groom.profile.images.map((imageUrl, imgIndex) => {
                       const settings = invitation.groom.profile.imageSettings?.[imgIndex] || { scale: 1.0, positionX: 0, positionY: 0 }
                       return (
-                        <div key={imgIndex} className="space-y-2 pb-2 border-b border-blue-100 last:border-0 last:pb-0">
+                        <div key={imgIndex} className="space-y-2 pb-3 border-b border-blue-100 last:border-0 last:pb-0">
                           <p className="text-[9px] text-blue-600">사진 {imgIndex + 1}</p>
-                          <ImageSettingsSlider
+                          <InlineCropEditor
+                            imageUrl={imageUrl}
                             settings={settings}
                             onUpdate={(s) => updateProfileImageSettings('groom', imgIndex, s)}
+                            aspectRatio={4/5}
+                            containerWidth={180}
                             colorClass="blue"
                           />
                         </div>
@@ -1840,16 +1901,19 @@ export default function EditPanel({ onOpenIntroSelector, invitationId, templateI
                 </div>
 
                 {invitation.bride.profile.images?.length > 0 && (
-                  <div className="mt-3 p-3 bg-white/70 rounded-lg space-y-3">
-                    <p className="text-[10px] font-medium text-pink-700">이미지 크기/위치 조정</p>
-                    {invitation.bride.profile.images.map((_, imgIndex) => {
+                  <div className="mt-3 p-3 bg-white/70 rounded-lg space-y-4">
+                    <p className="text-[10px] font-medium text-pink-700">이미지 크롭 조정</p>
+                    {invitation.bride.profile.images.map((imageUrl, imgIndex) => {
                       const settings = invitation.bride.profile.imageSettings?.[imgIndex] || { scale: 1.0, positionX: 0, positionY: 0 }
                       return (
-                        <div key={imgIndex} className="space-y-2 pb-2 border-b border-pink-100 last:border-0 last:pb-0">
+                        <div key={imgIndex} className="space-y-2 pb-3 border-b border-pink-100 last:border-0 last:pb-0">
                           <p className="text-[9px] text-pink-600">사진 {imgIndex + 1}</p>
-                          <ImageSettingsSlider
+                          <InlineCropEditor
+                            imageUrl={imageUrl}
                             settings={settings}
                             onUpdate={(s) => updateProfileImageSettings('bride', imgIndex, s)}
+                            aspectRatio={4/5}
+                            containerWidth={180}
                             colorClass="pink"
                           />
                         </div>
@@ -1896,8 +1960,10 @@ export default function EditPanel({ onOpenIntroSelector, invitationId, templateI
             </div>
           </AccordionContent>
         </AccordionItem>
+        )}
 
-        {/* 우리의 이야기 */}
+        {/* 우리의 이야기 - OUR 템플릿에서만 표시 (FAMILY 템플릿에서는 숨김) */}
+        {templateId !== 'narrative-family' && invitation?.templateId !== 'narrative-family' && (
         <AccordionItem value="stories">
           <AccordionTrigger className="text-base font-medium">
             <div className="flex items-center justify-between w-full mr-2">
@@ -2027,16 +2093,19 @@ export default function EditPanel({ onOpenIntroSelector, invitationId, templateI
                   </div>
 
                   {story.images?.length > 0 && (
-                    <div className="mt-3 p-3 bg-white/70 rounded-lg space-y-3">
-                      <p className="text-[10px] font-medium text-rose-700">이미지 크기/위치 조정</p>
-                      {story.images.map((_, imgIndex) => {
+                    <div className="mt-3 p-3 bg-white/70 rounded-lg space-y-4">
+                      <p className="text-[10px] font-medium text-rose-700">이미지 크롭 조정</p>
+                      {story.images.map((imageUrl, imgIndex) => {
                         const settings = story.imageSettings?.[imgIndex] || { scale: 1.0, positionX: 0, positionY: 0 }
                         return (
-                          <div key={imgIndex} className="space-y-2 pb-2 border-b border-rose-100 last:border-0 last:pb-0">
+                          <div key={imgIndex} className="space-y-2 pb-3 border-b border-rose-100 last:border-0 last:pb-0">
                             <p className="text-[9px] text-rose-600">사진 {imgIndex + 1}</p>
-                            <ImageSettingsSlider
+                            <InlineCropEditor
+                              imageUrl={imageUrl}
                               settings={settings}
                               onUpdate={(s) => updateStoryImageSettings(index, imgIndex, s)}
+                              aspectRatio={1}
+                              containerWidth={180}
                               colorClass="rose"
                             />
                           </div>
@@ -2070,6 +2139,7 @@ export default function EditPanel({ onOpenIntroSelector, invitationId, templateI
             </div>
           </AccordionContent>
         </AccordionItem>
+        )}
 
         {/* 인터뷰 */}
         <AccordionItem value="interviews">
@@ -2166,16 +2236,19 @@ export default function EditPanel({ onOpenIntroSelector, invitationId, templateI
                   </div>
 
                   {interview.images?.length > 0 && (
-                    <div className="mt-3 p-3 bg-white/70 rounded-lg space-y-3">
-                      <p className="text-[10px] font-medium text-amber-700">이미지 크기/위치 조정</p>
-                      {interview.images.map((_, imgIndex) => {
+                    <div className="mt-3 p-3 bg-white/70 rounded-lg space-y-4">
+                      <p className="text-[10px] font-medium text-amber-700">이미지 크롭 조정</p>
+                      {interview.images.map((imageUrl, imgIndex) => {
                         const settings = interview.imageSettings?.[imgIndex] || { scale: 1.0, positionX: 0, positionY: 0 }
                         return (
-                          <div key={imgIndex} className="space-y-2 pb-2 border-b border-amber-100 last:border-0 last:pb-0">
+                          <div key={imgIndex} className="space-y-2 pb-3 border-b border-amber-100 last:border-0 last:pb-0">
                             <p className="text-[9px] text-amber-600">사진 {imgIndex + 1}</p>
-                            <ImageSettingsSlider
+                            <InlineCropEditor
+                              imageUrl={imageUrl}
                               settings={settings}
                               onUpdate={(s) => updateInterviewImageSettings(index, imgIndex, s)}
+                              aspectRatio={4/5}
+                              containerWidth={180}
                               colorClass="amber"
                             />
                           </div>
@@ -2307,86 +2380,93 @@ export default function EditPanel({ onOpenIntroSelector, invitationId, templateI
               </div>
             </div>
 
-            {/* 드레스 코드 */}
-            <div className="space-y-2 p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">드레스 코드</span>
-                <Switch
-                  checked={invitation.content.info.dressCode.enabled}
-                  onCheckedChange={(checked) => updateNestedField('content.info.dressCode.enabled', checked)}
-                />
-              </div>
-              {invitation.content.info.dressCode.enabled && (
-                <div className="space-y-1.5 pt-2">
-                  <FieldLabel fieldKey="content.info.dressCode.content">안내 내용</FieldLabel>
-                  <Textarea
-                    value={invitation.content.info.dressCode.content}
-                    onChange={(e) => updateNestedField('content.info.dressCode.content', e.target.value)}
-                    placeholder={fieldHelpers['content.info.dressCode.content']?.example}
-                    rows={2}
-                    className="resize-none text-sm"
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* 포토부스 */}
-            <div className="space-y-2 p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">포토부스</span>
-                <Switch
-                  checked={invitation.content.info.photoBooth.enabled}
-                  onCheckedChange={(checked) => updateNestedField('content.info.photoBooth.enabled', checked)}
-                />
-              </div>
-              {invitation.content.info.photoBooth.enabled && (
-                <div className="space-y-1.5 pt-2">
-                  <FieldLabel fieldKey="content.info.photoBooth.content">안내 내용</FieldLabel>
-                  <Textarea
-                    value={invitation.content.info.photoBooth.content}
-                    onChange={(e) => updateNestedField('content.info.photoBooth.content', e.target.value)}
-                    placeholder={fieldHelpers['content.info.photoBooth.content']?.example}
-                    rows={2}
-                    className="resize-none text-sm"
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* 사진 공유 */}
-            <div className="space-y-2 p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">사진 공유</span>
-                <Switch
-                  checked={invitation.content.info.photoShare.enabled}
-                  onCheckedChange={(checked) => updateNestedField('content.info.photoShare.enabled', checked)}
-                />
-              </div>
-              {invitation.content.info.photoShare.enabled && (
-                <div className="space-y-2 pt-2">
-                  <div className="space-y-1.5">
-                    <FieldLabel fieldKey="content.info.photoShare.content">안내 내용</FieldLabel>
-                    <Textarea
-                      value={invitation.content.info.photoShare.content}
-                      onChange={(e) => updateNestedField('content.info.photoShare.content', e.target.value)}
-                      placeholder={fieldHelpers['content.info.photoShare.content']?.example}
-                      rows={2}
-                      className="resize-none text-sm"
-                    />
+            {/* 안내 항목들 (드래그로 순서 변경 가능) */}
+            <SortableList
+              items={invitation.content.info.itemOrder || INFO_ITEMS_CONFIG.map(item => item.key)}
+              onReorder={handleInfoItemReorder}
+              renderDragOverlay={(activeId) => {
+                const config = INFO_ITEMS_CONFIG.find(c => c.key === activeId)
+                return config ? (
+                  <div className="p-3 bg-gray-50">
+                    <span className="text-sm font-medium">{config.label}</span>
                   </div>
-                  <Input
-                    value={invitation.content.info.photoShare.url}
-                    onChange={(e) => updateNestedField('content.info.photoShare.url', e.target.value)}
-                    placeholder="공유 링크 URL"
-                  />
-                  <Input
-                    value={invitation.content.info.photoShare.buttonText}
-                    onChange={(e) => updateNestedField('content.info.photoShare.buttonText', e.target.value)}
-                    placeholder="버튼 텍스트 (예: 사진 공유하기)"
-                  />
-                </div>
-              )}
-            </div>
+                ) : null
+              }}
+            >
+              <div className="space-y-3">
+                {(invitation.content.info.itemOrder || INFO_ITEMS_CONFIG.map(item => item.key)).map((itemKey) => {
+                  const config = INFO_ITEMS_CONFIG.find(c => c.key === itemKey)
+                  if (!config) return null
+
+                  // 각 항목의 데이터 가져오기 (타입 안전하게)
+                  const infoData = invitation.content.info[itemKey as keyof typeof invitation.content.info]
+                  if (!infoData || typeof infoData !== 'object' || !('enabled' in infoData)) return null
+
+                  return (
+                    <SortableItem key={itemKey} id={itemKey}>
+                      <div className="space-y-2 p-3 bg-gray-50 rounded-lg border border-transparent hover:border-gray-200 transition-colors">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-sm font-medium">{config.label}</span>
+                          <Switch
+                            checked={infoData.enabled}
+                            onCheckedChange={(checked) => updateNestedField(`content.info.${itemKey}.enabled`, checked)}
+                          />
+                        </div>
+
+                        {/* 각 항목별 상세 입력 폼 */}
+                        {infoData.enabled && (
+                          <div className="space-y-2 pt-2">
+                            {/* 기본 안내 내용 (모든 항목 공통) */}
+                            <div className="space-y-1.5">
+                              <FieldLabel fieldKey={`content.info.${itemKey}.content`}>안내 내용</FieldLabel>
+                              <Textarea
+                                value={'content' in infoData ? (infoData.content as string) || '' : ''}
+                                onChange={(e) => updateNestedField(`content.info.${itemKey}.content`, e.target.value)}
+                                placeholder={fieldHelpers[`content.info.${itemKey}.content`]?.example}
+                                rows={itemKey === 'dressCode' || itemKey === 'photoBooth' ? 2 : 3}
+                                className="resize-none text-sm"
+                              />
+                            </div>
+
+                            {/* 사진 공유: URL과 버튼 텍스트 추가 */}
+                            {itemKey === 'photoShare' && (
+                              <>
+                                <Input
+                                  value={invitation.content.info.photoShare.url}
+                                  onChange={(e) => updateNestedField('content.info.photoShare.url', e.target.value)}
+                                  placeholder="공유 링크 URL"
+                                />
+                                <Input
+                                  value={invitation.content.info.photoShare.buttonText}
+                                  onChange={(e) => updateNestedField('content.info.photoShare.buttonText', e.target.value)}
+                                  placeholder="버튼 텍스트 (예: 사진 공유하기)"
+                                />
+                              </>
+                            )}
+
+                            {/* 피로연: 장소와 일시 추가 */}
+                            {itemKey === 'reception' && (
+                              <>
+                                <Input
+                                  value={invitation.content.info.reception?.venue || ''}
+                                  onChange={(e) => updateNestedField('content.info.reception.venue', e.target.value)}
+                                  placeholder="장소 (예: 예식장 2층 연회홀)"
+                                />
+                                <Input
+                                  value={invitation.content.info.reception?.datetime || ''}
+                                  onChange={(e) => updateNestedField('content.info.reception.datetime', e.target.value)}
+                                  placeholder="일시 (예: 예식 직후)"
+                                />
+                              </>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </SortableItem>
+                  )
+                })}
+              </div>
+            </SortableList>
 
             {/* 기타 안내 추가 */}
             <div className="space-y-3 p-4 bg-purple-50 rounded-lg">
@@ -2653,31 +2733,17 @@ export default function EditPanel({ onOpenIntroSelector, invitationId, templateI
         </AccordionItem>
           </Accordion>
         </TabsContent>
+
       </Tabs>
 
       {/* AI Story Generator Modal */}
       <StoryGeneratorModal
         open={isAIModalOpen}
         onOpenChange={setIsAIModalOpen}
+        templateType={templateId === 'narrative-family' || invitation?.templateId === 'narrative-family' ? 'family' : 'default'}
         onComplete={handleAIComplete}
+        onFamilyComplete={handleFamilyAIComplete}
       />
-
-      {/* AI 스토리 생성기 다이얼로그 */}
-      <Dialog open={isAIStoryGeneratorOpen} onOpenChange={setIsAIStoryGeneratorOpen}>
-        <DialogContent className="max-w-3xl h-[85vh] max-h-[85vh] p-0 flex flex-col overflow-hidden">
-          <DialogTitle className="sr-only">AI 스토리 생성기</DialogTitle>
-          <div className="flex-1 overflow-hidden">
-            <AIStoryGenerator
-              groomName={invitation.groom.name}
-              brideName={invitation.bride.name}
-              invitationId={invitationId || undefined}
-              templateId={templateId}
-              onApply={handleAIStoryGeneratorApply}
-              onClose={() => setIsAIStoryGeneratorOpen(false)}
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
           minute: '2-digit'
         })
 
-        const adminUrl = `${request.headers.get('origin') || 'https://invite.deardrawer.com'}/admin/simple`
+        const adminUrl = `${request.headers.get('origin') || 'https://invite.deardrawer.com'}/admin`
 
         const message = `🔔 <b>새로운 결제 요청</b>
 

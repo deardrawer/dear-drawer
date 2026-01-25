@@ -11,8 +11,12 @@ import {
   Cinzel,
   EB_Garamond,
   Nanum_Myeongjo,
+  Nanum_Gothic,
   Gowun_Batang,
   Gowun_Dodum,
+  Song_Myung,
+  Hahmlet,
+  IBM_Plex_Sans_KR,
 } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/providers/AuthProvider";
@@ -96,6 +100,31 @@ const ebGaramond = EB_Garamond({
   weight: ["400", "500", "600", "700"],
 });
 
+// 추가 한글 폰트 (Parents 템플릿용)
+const nanumGothic = Nanum_Gothic({
+  variable: "--font-nanum-gothic",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
+const songMyung = Song_Myung({
+  variable: "--font-song-myung",
+  weight: ["400"],
+});
+
+const hahmlet = Hahmlet({
+  variable: "--font-hahmlet",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const ibmPlexSansKR = IBM_Plex_Sans_KR({
+  variable: "--font-ibm-plex-sans-kr",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+});
+
+
 export const metadata: Metadata = {
   title: "dear drawer - 나만의 모바일 청첩장",
   description: "AI가 만들어주는 특별한 모바일 청첩장. 간단한 질문에 답하면 나만의 청첩장이 완성됩니다.",
@@ -115,6 +144,11 @@ const fontVariables = [
   cinzel.variable,
   gowunDodum.variable,
   ebGaramond.variable,
+  // Parents 템플릿용 추가 폰트
+  nanumGothic.variable,
+  songMyung.variable,
+  hahmlet.variable,
+  ibmPlexSansKR.variable,
 ].join(' ');
 
 export default function RootLayout({
@@ -128,6 +162,8 @@ export default function RootLayout({
         <ErrorBoundaryProvider>
           <AuthProvider>{children}</AuthProvider>
         </ErrorBoundaryProvider>
+        {/* Portal root for modals */}
+        <div id="modal-root" />
         <Script
           id="kakao-sdk"
           src="https://developers.kakao.com/sdk/js/kakao.min.js"

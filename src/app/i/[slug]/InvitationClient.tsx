@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react'
+import { createPortal } from 'react-dom'
 import GuestFloatingButton from '@/components/invitation/GuestFloatingButton'
 import ProfileImageSlider from '@/components/editor/ProfileImageSlider'
 import { WatermarkOverlay } from '@/components/ui/WatermarkOverlay'
@@ -3866,8 +3867,8 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
                 onClose={() => setLightboxOpen(false)}
               />
 
-              {/* Guestbook Modal - positioned at same level as GalleryLightbox */}
-              {guestbookModalOpen && (
+              {/* Guestbook Modal - Portal로 body에 직접 렌더링 */}
+              {guestbookModalOpen && typeof document !== 'undefined' && createPortal(
                 <GuestbookModal
                   key={`guestbook-${guestbookModalIndexRef.current}`}
                   messages={guestbookMessagesForModal}
@@ -3880,7 +3881,8 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
                   cardColors={['#FFF9F0', '#F0F7FF', '#F5FFF0', '#FFF0F5', '#F0FFFF']}
                   fonts={fonts}
                   themeColors={themeColors}
-                />
+                />,
+                document.body
               )}
             </div>
           </div>

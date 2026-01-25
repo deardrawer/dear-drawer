@@ -3518,52 +3518,27 @@ function GuestbookModal({
     }, 300)
   }
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartY.current = e.touches[0].clientY
-    isDragging.current = true
-    setDragY(0)
-  }
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging.current) return
-    const deltaY = e.touches[0].clientY - touchStartY.current
-    // 스와이프 중에만 기본 동작 방지 (스크롤 방지)
-    if (Math.abs(deltaY) > 10) {
-      e.preventDefault()
-    }
-    setDragY(deltaY)
-  }
-
-  const handleTouchEnd = () => {
-    isDragging.current = false
-    const swipeThreshold = 50
-
-    if (dragY < -swipeThreshold) {
-      // Swipe up - next card
-      handleNextCard()
-    } else if (dragY > swipeThreshold) {
-      // Swipe down - previous card
-      handlePrevCard()
-    }
-    // Tap은 onClick에서 처리됨
-    setDragY(0)
-  }
-
-  const handleMouseDown = (e: React.MouseEvent) => {
+  // Pointer Events - 마우스와 터치 통합 처리
+  const handlePointerDown = (e: React.PointerEvent) => {
+    // 포인터 캡처로 이벤트 확실히 받기
+    (e.target as HTMLElement).setPointerCapture(e.pointerId)
     touchStartY.current = e.clientY
     isDragging.current = true
     setDragY(0)
   }
 
-  const handleMouseMove = (e: React.MouseEvent) => {
+  const handlePointerMove = (e: React.PointerEvent) => {
     if (!isDragging.current) return
     const deltaY = e.clientY - touchStartY.current
     setDragY(deltaY)
   }
 
-  const handleMouseUp = () => {
+  const handlePointerUp = (e: React.PointerEvent) => {
+    // 포인터 캡처 해제
+    (e.target as HTMLElement).releasePointerCapture(e.pointerId)
     isDragging.current = false
     const swipeThreshold = 50
+    const tapThreshold = 10
 
     if (dragY < -swipeThreshold) {
       // Swipe up - next card
@@ -3571,16 +3546,16 @@ function GuestbookModal({
     } else if (dragY > swipeThreshold) {
       // Swipe down - previous card
       handlePrevCard()
+    } else if (Math.abs(dragY) < tapThreshold) {
+      // Tap - next card
+      handleNextCard()
     }
-    // Click은 onClick에서 처리됨
     setDragY(0)
   }
 
-  const handleMouseLeave = () => {
-    if (isDragging.current) {
-      isDragging.current = false
-      setDragY(0)
-    }
+  const handlePointerCancel = () => {
+    isDragging.current = false
+    setDragY(0)
   }
 
   // Get visible cards for infinite loop (current and next 2)
@@ -3629,14 +3604,10 @@ function GuestbookModal({
               key={`${msg.id}-${currentIndex}-${idx}`}
               className={`guestbook-stack-card ${isTopCard && swipingDirection === 'up' ? 'swipe-up' : ''} ${isTopCard && swipingDirection === 'down' ? 'swipe-down' : ''} ${isTopCard && dragY !== 0 ? 'swiping' : ''}`}
               style={cardStyle}
-              onClick={isTopCard ? handleNextCard : undefined}
-              onTouchStart={isTopCard ? handleTouchStart : undefined}
-              onTouchMove={isTopCard ? handleTouchMove : undefined}
-              onTouchEnd={isTopCard ? handleTouchEnd : undefined}
-              onMouseDown={isTopCard ? handleMouseDown : undefined}
-              onMouseMove={isTopCard ? handleMouseMove : undefined}
-              onMouseUp={isTopCard ? handleMouseUp : undefined}
-              onMouseLeave={isTopCard ? handleMouseLeave : undefined}
+              onPointerDown={isTopCard ? handlePointerDown : undefined}
+              onPointerMove={isTopCard ? handlePointerMove : undefined}
+              onPointerUp={isTopCard ? handlePointerUp : undefined}
+              onPointerCancel={isTopCard ? handlePointerCancel : undefined}
             >
               {msg.question && (
                 <p className="text-[10px] font-light text-gray-400 mb-3 leading-[1.5]">{msg.question}</p>

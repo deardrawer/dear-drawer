@@ -3315,11 +3315,15 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
             themeColors={themeColors}
           />
 
-          {/* 신랑이 신부를 선택한 이유 - 신랑 프로필 이미지 사용 */}
+          {/* 신랑이 신부를 선택한 이유 - whyWeChose 전용 이미지 사용 (없으면 프로필 이미지 fallback) */}
           {(invitation as any).whyWeChose?.groom?.enabled !== false && (
             <WhyWeChoseSection
-              images={invitation.groom.profile.images || ['/sample/groom-profile.jpg']}
-              imageSettings={invitation.groom.profile.imageSettings}
+              images={(invitation as any).whyWeChose?.groom?.images?.length > 0
+                ? (invitation as any).whyWeChose.groom.images
+                : (invitation.groom.profile.images || ['/sample/groom-profile.jpg'])}
+              imageSettings={(invitation as any).whyWeChose?.groom?.images?.length > 0
+                ? (invitation as any).whyWeChose.groom.imageSettings
+                : invitation.groom.profile.imageSettings}
               description={(invitation as any).whyWeChose?.groom?.description || '저는 신중한 편이고, 망설임이 많은 사람입니다.\n\n그래서 누군가에게 쉽게 다가가지도,\n쉽게 "함께하자"는 말을 하지도 않습니다.\n\n그런데 이 사람과 함께 있으면\n표현이 서툴러도 괜찮았고,\n**내가 다 준비되지 않아도 괜찮다는 생각**이 들었습니다.\n\n밝고 가벼운 말투 뒤에 있는 단단함을\n오랫동안 지켜봤고,\n그게 어느 순간 제 마음을 움직였습니다.\n\n**이 사람과 함께라면\n내가 더 따뜻한 사람이 될 수 있겠다는 마음**이 들었습니다.'}
               quote={(invitation as any).whyWeChose?.groom?.quote || '서로 아끼며 행복하게 살겠습니다.'}
               name={invitation.groom.name}
@@ -3329,11 +3333,15 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
             />
           )}
 
-          {/* 신부가 신랑을 선택한 이유 - 신부 프로필 이미지 사용 */}
+          {/* 신부가 신랑을 선택한 이유 - whyWeChose 전용 이미지 사용 (없으면 프로필 이미지 fallback) */}
           {(invitation as any).whyWeChose?.bride?.enabled !== false && (
             <WhyWeChoseSection
-              images={invitation.bride.profile.images || ['/sample/bride-profile.jpg']}
-              imageSettings={invitation.bride.profile.imageSettings}
+              images={(invitation as any).whyWeChose?.bride?.images?.length > 0
+                ? (invitation as any).whyWeChose.bride.images
+                : (invitation.bride.profile.images || ['/sample/bride-profile.jpg'])}
+              imageSettings={(invitation as any).whyWeChose?.bride?.images?.length > 0
+                ? (invitation as any).whyWeChose.bride.imageSettings
+                : invitation.bride.profile.imageSettings}
               description={(invitation as any).whyWeChose?.bride?.description || '저는 말도 빠르고, 마음도 앞서가는 사람이에요.\n좋아하면 티부터 나고,\n가끔은 걱정보다 웃음이 먼저 나오는 사람이에요.\n\n그런 저를\n이 사람은 한 번도 가볍다고 하지 않았습니다.\n\n오히려 감정이 넘칠 때마다\n조용히 곁에 머물러 주는 사람이었습니다.\n\n불안한 밤엔 말없이 손을 잡아주고,\n좋은 날엔 누구보다 먼저 축하주는 사람.\n그래서 생각했습니다.\n\n**내가 아무 나다워도 괜찮다고 말해주는 이 사람이라면\n오래오래 곁에 두고 싶다**고.'}
               quote={(invitation as any).whyWeChose?.bride?.quote || '늘 처음처럼 행복하게 살겠습니다.'}
               name={invitation.bride.name}

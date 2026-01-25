@@ -624,10 +624,14 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
         </section>
       )}
 
-      {/* 신랑이 선택한 이유 */}
+      {/* 신랑이 선택한 이유 - whyWeChose 전용 이미지 우선 사용 */}
       {whyWeChose?.enabled !== false && whyWeChose?.groom?.enabled !== false && (
         <section className="px-7 pb-16" style={{ background: '#ffffff' }}>
-          <ProfileImageSlider images={invitation.groom.profile.images} imageSettings={invitation.groom.profile.imageSettings} className="mb-10" />
+          <ProfileImageSlider
+            images={whyWeChose?.groom?.images?.length > 0 ? whyWeChose.groom.images : invitation.groom.profile.images}
+            imageSettings={whyWeChose?.groom?.images?.length > 0 ? whyWeChose.groom.imageSettings : invitation.groom.profile.imageSettings}
+            className="mb-10"
+          />
           {/* Description Card */}
           <div className="relative p-6 mb-10" style={{ background: themeColors.cardBg, border: `1px solid ${themeColors.text}20` }}>
             <p className="text-xs leading-[2.2] whitespace-pre-line" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>
@@ -644,10 +648,14 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
         </section>
       )}
 
-      {/* 신부가 선택한 이유 */}
+      {/* 신부가 선택한 이유 - whyWeChose 전용 이미지 우선 사용 */}
       {whyWeChose?.enabled !== false && whyWeChose?.bride?.enabled !== false && (
         <section className="px-7 pb-16" style={{ background: '#ffffff' }}>
-          <ProfileImageSlider images={invitation.bride.profile.images} imageSettings={invitation.bride.profile.imageSettings} className="mb-10" />
+          <ProfileImageSlider
+            images={whyWeChose?.bride?.images?.length > 0 ? whyWeChose.bride.images : invitation.bride.profile.images}
+            imageSettings={whyWeChose?.bride?.images?.length > 0 ? whyWeChose.bride.imageSettings : invitation.bride.profile.imageSettings}
+            className="mb-10"
+          />
           {/* Description Card */}
           <div className="relative p-6 mb-10" style={{ background: themeColors.cardBg, border: `1px solid ${themeColors.text}20` }}>
             <p className="text-xs leading-[2.2] whitespace-pre-line" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>

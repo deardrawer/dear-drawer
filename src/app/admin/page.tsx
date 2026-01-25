@@ -96,7 +96,7 @@ export default function AdminPage() {
         throw new Error('Failed to fetch')
       }
 
-      const data = await res.json()
+      const data = await res.json() as { invitations?: Invitation[]; stats?: Stats }
       setInvitations(data.invitations || [])
       setStats(data.stats || null)
       setIsAuthenticated(true)
@@ -139,7 +139,7 @@ export default function AdminPage() {
       })
 
       if (res.ok) {
-        const data = await res.json()
+        const data = await res.json() as { deleted?: number }
         alert(`${data.deleted}개의 청첩장이 삭제되었습니다`)
         fetchInvitations()
       }
@@ -153,7 +153,7 @@ export default function AdminPage() {
     try {
       const res = await fetch('/api/admin/payment-requests')
       if (res.ok) {
-        const data = await res.json()
+        const data = await res.json() as { requests?: PaymentRequest[] }
         setPaymentRequests(data.requests || [])
       }
     } catch (err) {
@@ -176,7 +176,7 @@ export default function AdminPage() {
         alert('승인되었습니다.')
         fetchPayments()
       } else {
-        const data = await res.json()
+        const data = await res.json() as { error?: string }
         alert(data.error || '승인에 실패했습니다.')
       }
     } catch {
@@ -201,7 +201,7 @@ export default function AdminPage() {
         alert('거절되었습니다.')
         fetchPayments()
       } else {
-        const data = await res.json()
+        const data = await res.json() as { error?: string }
         alert(data.error || '거절에 실패했습니다.')
       }
     } catch {
@@ -226,7 +226,7 @@ export default function AdminPage() {
         body: JSON.stringify({ password }),
       })
 
-      const data = await res.json()
+      const data = await res.json() as { success?: boolean; error?: string }
 
       if (data.success) {
         setIsAuthenticated(true)

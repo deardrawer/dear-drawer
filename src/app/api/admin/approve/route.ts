@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+import type { D1Database } from "@cloudflare/workers-types";
+
+interface CloudflareEnvWithDB {
+  DB?: D1Database;
+  TELEGRAM_BOT_TOKEN?: string;
+  TELEGRAM_CHAT_ID?: string;
+}
 
 interface PaymentRequest {
   id: string;
@@ -45,7 +52,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { env } = await getCloudflareContext();
+    const { env } = await getCloudflareContext() as { env: CloudflareEnvWithDB };
 
     if (!env.DB) {
       return NextResponse.json(

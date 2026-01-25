@@ -294,7 +294,7 @@ export default function MyInvitationsPage() {
         alert('청첩장이 복제되었습니다!')
         fetchInvitations() // 목록 새로고침
       } else {
-        const data = await response.json()
+        const data = await response.json() as { error?: string }
         alert(data.error || '복제에 실패했습니다.')
       }
     } catch (error) {

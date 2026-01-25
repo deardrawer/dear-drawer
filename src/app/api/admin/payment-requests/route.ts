@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+import type { D1Database } from "@cloudflare/workers-types";
+
+interface CloudflareEnvWithDB {
+  DB?: D1Database;
+}
 
 interface PaymentRequest {
   id: string;
@@ -15,7 +20,7 @@ interface PaymentRequest {
 
 export async function GET() {
   try {
-    const { env } = await getCloudflareContext();
+    const { env } = await getCloudflareContext() as { env: CloudflareEnvWithDB };
 
     if (!env.DB) {
       return NextResponse.json(

@@ -3437,12 +3437,12 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
       ? invitation.colorTheme as ColorTheme
       : 'classic-rose'
 
-  // Override fontStyle if provided via URL parameter (with fallback to 'elegant')
+  // Override fontStyle if provided via URL parameter (with fallback to 'romantic')
   const effectiveFontStyle = (overrideFontStyle && overrideFontStyle in fontStyles)
     ? overrideFontStyle as FontStyle
     : (invitation.fontStyle && invitation.fontStyle in fontStyles)
       ? invitation.fontStyle as FontStyle
-      : 'elegant'
+      : 'romantic'
 
   // If skipIntro is true, start directly on main page
   const [currentPage, setCurrentPage] = useState<PageType>(skipIntro ? 'main' : 'intro')
@@ -3481,11 +3481,11 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
     invitation.bride?.mother?.phone && { name: invitation.bride.mother.name, phone: invitation.bride.mother.phone, role: '어머니', side: 'bride' as const },
   ].filter(Boolean) as { name: string; phone: string; role: string; side: 'groom' | 'bride' }[]
 
-  // Prepare accounts for FloatingButton
+  // Prepare accounts for FloatingButton - only include if bank info is enabled
   const accounts = [
-    invitation.groom?.name && { name: invitation.groom.name, bank: invitation.groom.bank, role: '신랑', side: 'groom' as const },
-    invitation.bride?.name && { name: invitation.bride.name, bank: invitation.bride.bank, role: '신부', side: 'bride' as const },
-  ].filter(Boolean) as { name: string; bank?: string; role: string; side: 'groom' | 'bride' }[]
+    invitation.groom?.name && invitation.groom?.bank?.enabled && { name: invitation.groom.name, bank: invitation.groom.bank, role: '신랑', side: 'groom' as const },
+    invitation.bride?.name && invitation.bride?.bank?.enabled && { name: invitation.bride.name, bank: invitation.bride.bank, role: '신부', side: 'bride' as const },
+  ].filter(Boolean) as { name: string; bank: { bank: string; account: string; holder: string; enabled: boolean }; role: string; side: 'groom' | 'bride' }[]
 
   return (
     <>

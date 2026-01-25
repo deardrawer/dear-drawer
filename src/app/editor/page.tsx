@@ -321,6 +321,26 @@ function EditorContent() {
       }
     }
 
+    // FAMILY 템플릿: 서로를 선택한 이유 적용
+    if (content.whyWeChose) {
+      // 신부가 신랑을 선택한 이유 (groom 쪽에 적용)
+      if (content.whyWeChose.groomDescription) {
+        updateNestedField('whyWeChose.groom.description', content.whyWeChose.groomDescription)
+      }
+      if (content.whyWeChose.groomQuote) {
+        updateNestedField('whyWeChose.groom.quote', content.whyWeChose.groomQuote)
+      }
+      // 신랑이 신부를 선택한 이유 (bride 쪽에 적용)
+      if (content.whyWeChose.brideDescription) {
+        updateNestedField('whyWeChose.bride.description', content.whyWeChose.brideDescription)
+      }
+      if (content.whyWeChose.brideQuote) {
+        updateNestedField('whyWeChose.bride.quote', content.whyWeChose.brideQuote)
+      }
+      // 서로를 선택한 이유 섹션 활성화
+      updateNestedField('whyWeChose.enabled', true)
+    }
+
     // 다이얼로그 닫기
     setIsAIStoryGeneratorOpen(false)
   }

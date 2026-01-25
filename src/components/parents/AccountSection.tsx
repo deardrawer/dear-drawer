@@ -25,14 +25,32 @@ export default function AccountSection({
   const theme = useTheme()
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
-  const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text)
+  const handleCopy = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      alert('계좌번호가 복사되었습니다.')
+    } catch (err) {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea')
+      textArea.value = text
+      textArea.style.position = 'fixed'
+      textArea.style.left = '-999999px'
+      document.body.appendChild(textArea)
+      textArea.select()
+      try {
+        document.execCommand('copy')
+        alert('계좌번호가 복사되었습니다.')
+      } catch (e) {
+        alert('복사에 실패했습니다. 직접 복사해주세요.')
+      }
+      document.body.removeChild(textArea)
+    }
   }
 
   return (
     <section
       ref={ref as React.RefObject<HTMLDivElement>}
-      className="px-8 py-20 transition-all duration-500 min-h-screen flex flex-col items-center justify-center"
+      className="px-8 py-20 transition-all duration-500 flex flex-col items-center justify-center"
       style={{
         backgroundColor: theme.background,
         opacity: hasAppeared ? (isActive ? 1 : 0.3) : 0,
@@ -41,7 +59,7 @@ export default function AccountSection({
       }}
     >
       <h2
-        className="font-serif text-lg text-center mb-12 tracking-wider transition-colors duration-500"
+        className="font-serif text-lg font-semibold text-center mb-12 tracking-wider transition-colors duration-500"
         style={{ color: isActive ? theme.text : '#999' }}
       >
         마음 전하실 곳

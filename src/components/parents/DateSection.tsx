@@ -64,7 +64,7 @@ export default function DateSection({
   return (
     <section
       ref={ref as React.RefObject<HTMLDivElement>}
-      className="px-8 py-20 transition-all duration-500 min-h-screen flex flex-col items-center justify-center"
+      className="px-8 py-20 transition-all duration-500 flex flex-col items-center justify-center"
       style={{
         backgroundColor: theme.background,
         opacity: hasAppeared ? (isActive ? 1 : 0.3) : 0,

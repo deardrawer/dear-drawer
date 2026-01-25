@@ -23,7 +23,7 @@ export default function SectionDivider() {
   return (
     <div
       ref={ref}
-      className="flex flex-col items-center justify-center py-12"
+      className="flex flex-col items-center justify-center pt-0 pb-20"
       style={{ backgroundColor: theme.background }}
     >
       {/* 세로선 */}

@@ -108,7 +108,7 @@ export default function VenueSection({
   return (
     <section
       ref={ref as React.RefObject<HTMLDivElement>}
-      className="px-8 py-20 transition-all duration-500 min-h-screen flex flex-col items-center justify-center"
+      className="px-8 py-20 transition-all duration-500 flex flex-col items-center justify-center"
       style={{
         backgroundColor: theme.background,
         opacity: hasAppeared ? (isActive ? 1 : 0.3) : 0,
@@ -118,7 +118,7 @@ export default function VenueSection({
     >
       <div className="text-center mb-10 w-full">
         <p
-          className="font-serif text-xl mb-2 transition-colors duration-500"
+          className="font-serif text-xl font-semibold mb-2 transition-colors duration-500"
           style={{ color: isActive ? theme.text : '#999' }}
         >
           {venue.name}

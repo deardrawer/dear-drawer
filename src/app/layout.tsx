@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import {
   Noto_Sans_KR,
@@ -128,6 +128,14 @@ export const metadata: Metadata = {
   title: "dear drawer - 나만의 모바일 청첩장",
   description: "AI가 만들어주는 특별한 모바일 청첩장. 간단한 질문에 답하면 나만의 청첩장이 완성됩니다.",
   keywords: ["청첩장", "모바일청첩장", "웨딩", "결혼식", "AI청첩장", "dear drawer"],
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  interactiveWidget: "overlays-content", // 키보드가 콘텐츠를 resize하지 않고 overlay
 };
 
 const fontVariables = [

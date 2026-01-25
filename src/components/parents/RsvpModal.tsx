@@ -15,8 +15,10 @@ interface RsvpModalProps {
 
 export default function RsvpModal({ onSubmit, isPreview = false }: RsvpModalProps) {
   const ref = useRef<HTMLDivElement>(null)
+  const formRef = useRef<HTMLDivElement>(null)
   const theme = useTheme()
   const [isVisible, setIsVisible] = useState(false)
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     attendance: 'yes' as 'yes' | 'no' | 'maybe',
@@ -37,6 +39,55 @@ export default function RsvpModal({ onSubmit, isPreview = false }: RsvpModalProp
     return () => observer.disconnect()
   }, [])
 
+  // 키보드 감지 및 스크롤 방지
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    let scrollY = 0
+
+    // input focus 시 스크롤 위치 저장 및 복원
+    const handleFocusIn = (e: FocusEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        scrollY = window.scrollY
+        setIsKeyboardOpen(true)
+        // 스크롤 위치 복원
+        requestAnimationFrame(() => {
+          window.scrollTo(0, scrollY)
+        })
+      }
+    }
+
+    const handleFocusOut = (e: FocusEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        setIsKeyboardOpen(false)
+      }
+    }
+
+    // visualViewport API 사용 (iOS/Android 키보드 감지)
+    const handleResize = () => {
+      if (window.visualViewport) {
+        const viewportHeight = window.visualViewport.height
+        const windowHeight = window.innerHeight
+        const isOpen = viewportHeight < windowHeight * 0.8
+        setIsKeyboardOpen(isOpen)
+        // 키보드가 열릴 때 스크롤 방지
+        if (isOpen) {
+          window.scrollTo(0, scrollY)
+        }
+      }
+    }
+
+    document.addEventListener('focusin', handleFocusIn)
+    document.addEventListener('focusout', handleFocusOut)
+    window.visualViewport?.addEventListener('resize', handleResize)
+
+    return () => {
+      document.removeEventListener('focusin', handleFocusIn)
+      document.removeEventListener('focusout', handleFocusOut)
+      window.visualViewport?.removeEventListener('resize', handleResize)
+    }
+  }, [])
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (onSubmit) {
@@ -49,12 +100,17 @@ export default function RsvpModal({ onSubmit, isPreview = false }: RsvpModalProp
   return (
     <div ref={ref} className="min-h-[50vh]" style={{ backgroundColor: theme.background }}>
       <div
-        className={`${isPreview ? 'absolute' : 'fixed'} left-0 right-0 bottom-0 transition-transform duration-700 ease-out`}
+        ref={formRef}
+        className={`${isPreview ? 'absolute' : 'fixed'} left-0 right-0 transition-all duration-500 ease-out`}
         style={{
           transform: isVisible ? 'translateY(0)' : 'translateY(100%)',
           maxWidth: '390px',
           margin: '0 auto',
           zIndex: 100,
+          bottom: isKeyboardOpen ? 'auto' : 0,
+          top: isKeyboardOpen ? '10%' : 'auto',
+          maxHeight: isKeyboardOpen ? '80vh' : 'auto',
+          overflowY: isKeyboardOpen ? 'auto' : 'visible',
         }}
       >
         <div

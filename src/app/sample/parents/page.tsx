@@ -115,7 +115,7 @@ const sampleData: ParentsInvitationContent = {
       ],
     },
   },
-  colorTheme: 'burgundy',
+  colorTheme: 'dustyRose',
 }
 
 export default function FamilyInvitationPage() {

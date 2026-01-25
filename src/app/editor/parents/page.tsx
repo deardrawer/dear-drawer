@@ -81,10 +81,6 @@ export interface ParentsInvitationData {
       name: string
       hall: string
       address: string
-      mapUrl: string
-      naverMapUrl: string
-      kakaoMapUrl: string
-      tmapUrl: string
     }
     directions: {
       bus: {
@@ -187,6 +183,7 @@ export interface ParentsInvitationData {
     title: string
     description: string
     kakaoThumbnail: string
+    ogImage: string
   }
 
   // 디자인
@@ -221,10 +218,6 @@ const defaultData: ParentsInvitationData = {
       name: '',
       hall: '',
       address: '',
-      mapUrl: '',
-      naverMapUrl: '',
-      kakaoMapUrl: '',
-      tmapUrl: '',
     },
     directions: {
       bus: {
@@ -328,6 +321,7 @@ const defaultData: ParentsInvitationData = {
     title: '',
     description: '',
     kakaoThumbnail: '',
+    ogImage: '',
   },
   colorTheme: 'burgundy',
   fontStyle: 'elegant',

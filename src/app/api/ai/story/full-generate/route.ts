@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import type { AllFormData, GeneratedContent } from '@/types/ai-generator'
-import { generateFullPrompt } from '@/lib/ai-prompts'
+import { generateFullPrompt, generateFamilyFullPrompt } from '@/lib/ai-prompts'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -11,10 +11,11 @@ interface GenerateRequest {
   formData: AllFormData
   groomName: string
   brideName: string
+  templateId?: string // 'narrative-family' for FAMILY template
 }
 
 /**
- * 생성된 콘텐츠 검증
+ * 생성된 콘텐츠 검증 (OUR 템플릿)
  */
 function validateGeneratedContent(content: unknown): asserts content is GeneratedContent {
   if (!content || typeof content !== 'object') {
@@ -34,6 +35,35 @@ function validateGeneratedContent(content: unknown): asserts content is Generate
   const story = obj.story as Record<string, unknown>
   if (!story.first || !story.together || !story.preparation) {
     throw new Error('스토리 구조 오류')
+  }
+
+  // interview 배열 검증
+  if (!Array.isArray(obj.interview) || obj.interview.length === 0) {
+    throw new Error('인터뷰 데이터 오류')
+  }
+}
+
+/**
+ * 생성된 콘텐츠 검증 (FAMILY 템플릿)
+ */
+function validateFamilyGeneratedContent(content: unknown): asserts content is GeneratedContent {
+  if (!content || typeof content !== 'object') {
+    throw new Error('응답 형식 오류')
+  }
+
+  const obj = content as Record<string, unknown>
+  const required = ['greeting', 'thanks', 'whyWeChose', 'interview']
+
+  for (const field of required) {
+    if (!obj[field]) {
+      throw new Error(`필수 필드 누락: ${field}`)
+    }
+  }
+
+  // whyWeChose 구조 검증
+  const whyWeChose = obj.whyWeChose as Record<string, unknown>
+  if (!whyWeChose.groomDescription || !whyWeChose.brideDescription) {
+    throw new Error('서로를 선택한 이유 구조 오류')
   }
 
   // interview 배열 검증
@@ -73,7 +103,10 @@ export async function POST(request: NextRequest) {
     }
 
     const body: GenerateRequest = await request.json()
-    const { formData, groomName, brideName } = body
+    const { formData, groomName, brideName, templateId } = body
+
+    // FAMILY 템플릿 여부 확인
+    const isFamilyTemplate = templateId === 'narrative-family'
 
     // 입력 검증
     if (!formData) {
@@ -121,8 +154,10 @@ export async function POST(request: NextRequest) {
       customQuestions: formData.interview?.customQuestions,
     })
 
-    // 프롬프트 생성
-    const prompt = generateFullPrompt(formData, groomName, brideName)
+    // 프롬프트 생성 (템플릿에 따라 다른 프롬프트 사용)
+    const prompt = isFamilyTemplate
+      ? generateFamilyFullPrompt(formData, groomName, brideName)
+      : generateFullPrompt(formData, groomName, brideName)
 
     // 디버깅: 프롬프트 일부 출력
     console.log('=== 생성된 프롬프트 (처음 2000자) ===')
@@ -157,10 +192,21 @@ export async function POST(request: NextRequest) {
     // JSON 파싱
     const parsedContent = parseJsonResponse(textContent.text)
 
-    // 결과 검증
-    validateGeneratedContent(parsedContent)
+    // 결과 검증 (템플릿에 따라 다른 검증 사용)
+    if (isFamilyTemplate) {
+      validateFamilyGeneratedContent(parsedContent)
+    } else {
+      validateGeneratedContent(parsedContent)
+    }
 
     const generatedContent = parsedContent as GeneratedContent
+
+    // FAMILY 템플릿의 경우 빈 필드 기본값 설정
+    if (isFamilyTemplate) {
+      generatedContent.groomProfile = generatedContent.groomProfile || ''
+      generatedContent.brideProfile = generatedContent.brideProfile || ''
+      generatedContent.story = generatedContent.story || { first: '', together: '', preparation: '' }
+    }
 
     // 디버깅: interview 데이터 확인
     console.log('AI 전체 생성 완료')

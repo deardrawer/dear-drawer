@@ -222,6 +222,13 @@ export interface GeneratedContent {
     brideAnswer?: string;
     jointAnswer?: string;
   }>;
+  // FAMILY 템플릿용 필드
+  whyWeChose?: {
+    groomDescription: string;  // 신부가 신랑을 선택한 이유
+    groomQuote: string;        // 신부의 한마디
+    brideDescription: string;  // 신랑이 신부를 선택한 이유
+    brideQuote: string;        // 신랑의 한마디
+  };
 }
 
 // 스텝 정의

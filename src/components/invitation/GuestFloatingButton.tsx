@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 
 type ModalType = 'none' | 'contact' | 'rsvp' | 'location' | 'account' | 'share'
-type DirectionsTab = 'car' | 'subway' | 'bus' | 'parking'
+type DirectionsTab = 'car' | 'publicTransport' | 'train' | 'expressBus'
 
 interface BankAccount {
   bank: string
@@ -13,10 +13,10 @@ interface BankAccount {
 }
 
 interface DirectionsInfo {
-  car: { desc: string; route: string }
-  subway: string[]
-  bus: { main: string[]; branch: string[] }
-  parking: { location: string; fee: string }
+  car: string
+  publicTransport: string
+  train?: string
+  expressBus?: string
 }
 
 interface ContactInfo {
@@ -423,14 +423,11 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
 
                   {/* Transportation Tabs */}
                   {(() => {
-                    const hasSubway = invitation.directions?.subway?.some(s => s)
-                    const hasBus = (invitation.directions?.bus?.main?.length || 0) > 0 || (invitation.directions?.bus?.branch?.length || 0) > 0
-                    const hasParking = invitation.directions?.parking?.location || invitation.directions?.parking?.fee
                     const tabs = [
-                      { key: 'car' as DirectionsTab, label: '자가용', show: true },
-                      { key: 'subway' as DirectionsTab, label: '지하철', show: hasSubway },
-                      { key: 'bus' as DirectionsTab, label: '버스', show: hasBus },
-                      { key: 'parking' as DirectionsTab, label: '주차', show: hasParking },
+                      { key: 'car' as DirectionsTab, label: '자가용', show: !!invitation.directions?.car },
+                      { key: 'publicTransport' as DirectionsTab, label: '버스/지하철', show: !!invitation.directions?.publicTransport },
+                      { key: 'train' as DirectionsTab, label: '기차역', show: !!invitation.directions?.train },
+                      { key: 'expressBus' as DirectionsTab, label: '고속버스', show: !!invitation.directions?.expressBus },
                     ].filter(t => t.show)
 
                     return tabs.length > 1 ? (
@@ -444,21 +441,18 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
 
                   <div className="rounded-xl p-4 mb-3" style={{ background: themeColors.sectionBg, minHeight: '80px' }}>
                     {directionsTab === 'car' && (
-                      invitation.directions?.car?.desc || invitation.directions?.car?.route ? (
-                        <>{invitation.directions.car.desc && <p className="text-xs leading-relaxed mb-2" style={{ color: themeColors.text }}>{invitation.directions.car.desc}</p>}{invitation.directions.car.route && <p className="text-[11px] leading-relaxed" style={{ color: themeColors.gray }}>{invitation.directions.car.route}</p>}</>
+                      invitation.directions?.car ? (
+                        <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: themeColors.text }}>{invitation.directions.car}</p>
                       ) : <p className="text-xs text-center py-4" style={{ color: themeColors.gray }}>자가용 정보가 없습니다</p>
                     )}
-                    {directionsTab === 'subway' && invitation.directions?.subway?.some(s => s) && (
-                      <ul className="space-y-2">{invitation.directions.subway.filter(s => s).map((line, i) => <li key={i} className="flex items-start gap-2"><span className="w-1.5 h-1.5 rounded-full mt-1.5" style={{ background: themeColors.primary }} /><span className="text-xs leading-relaxed" style={{ color: themeColors.text }}>{line}</span></li>)}</ul>
+                    {directionsTab === 'publicTransport' && invitation.directions?.publicTransport && (
+                      <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: themeColors.text }}>{invitation.directions.publicTransport}</p>
                     )}
-                    {directionsTab === 'bus' && (invitation.directions?.bus?.main?.length || invitation.directions?.bus?.branch?.length) && (
-                      <div className="space-y-3">
-                        {invitation.directions?.bus?.main && invitation.directions.bus.main.length > 0 && <div><p className="text-[10px] font-medium mb-1.5" style={{ color: themeColors.primary }}>간선버스</p><div className="flex flex-wrap gap-1.5">{invitation.directions.bus.main.map((n, i) => <span key={i} className="px-2 py-0.5 rounded text-[10px]" style={{ background: '#3B5998', color: 'white' }}>{n}</span>)}</div></div>}
-                        {invitation.directions?.bus?.branch && invitation.directions.bus.branch.length > 0 && <div><p className="text-[10px] font-medium mb-1.5" style={{ color: themeColors.primary }}>지선버스</p><div className="flex flex-wrap gap-1.5">{invitation.directions.bus.branch.map((n, i) => <span key={i} className="px-2 py-0.5 rounded text-[10px]" style={{ background: '#5FB85D', color: 'white' }}>{n}</span>)}</div></div>}
-                      </div>
+                    {directionsTab === 'train' && invitation.directions?.train && (
+                      <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: themeColors.text }}>{invitation.directions.train}</p>
                     )}
-                    {directionsTab === 'parking' && (invitation.directions?.parking?.location || invitation.directions?.parking?.fee) && (
-                      <>{invitation.directions?.parking?.location && <div className="mb-2"><p className="text-[10px] font-medium mb-1" style={{ color: themeColors.primary }}>주차장 위치</p><p className="text-xs" style={{ color: themeColors.text }}>{invitation.directions.parking.location}</p></div>}{invitation.directions?.parking?.fee && <div><p className="text-[10px] font-medium mb-1" style={{ color: themeColors.primary }}>주차 요금</p><p className="text-xs" style={{ color: themeColors.text }}>{invitation.directions.parking.fee}</p></div>}</>
+                    {directionsTab === 'expressBus' && invitation.directions?.expressBus && (
+                      <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: themeColors.text }}>{invitation.directions.expressBus}</p>
                     )}
                   </div>
                   <button onClick={() => copyToClipboard(invitation.venue_address || '')} className="w-full py-2 rounded-xl text-xs" style={{ background: themeColors.sectionBg, color: themeColors.text }}>주소 복사</button>

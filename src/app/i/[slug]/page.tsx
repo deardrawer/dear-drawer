@@ -120,9 +120,24 @@ export default async function InvitationPage({ params, searchParams }: PageProps
   );
 }
 
+// 이미지 URL을 절대 경로로 변환
+function toAbsoluteImageUrl(imageUrl: string, baseUrl: string): string {
+  if (!imageUrl) return "";
+  // 이미 절대 URL인 경우 (http://, https://, //)
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://') || imageUrl.startsWith('//')) {
+    return imageUrl;
+  }
+  // 상대 경로인 경우 baseUrl 추가
+  if (imageUrl.startsWith('/')) {
+    return `${baseUrl}${imageUrl}`;
+  }
+  return `${baseUrl}/${imageUrl}`;
+}
+
 // 메타데이터 생성
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params;
+  const baseUrl = "https://invite.deardrawer.com";
 
   // 샘플 청첩장 메타데이터 처리
   if (slug === 'sample-our' || slug === 'sample-family') {
@@ -130,8 +145,7 @@ export async function generateMetadata({ params }: PageProps) {
     const content = sampleType === 'our' ? ourSampleContent : familySampleContent;
     const title = `${content.groom.name} ♥ ${content.bride.name} 결혼합니다`;
     const description = content.content.greeting;
-    const thumbnailImage = content.media.coverImage;
-    const baseUrl = "https://invite.deardrawer.com";
+    const thumbnailImage = toAbsoluteImageUrl(content.media.coverImage, baseUrl);
 
     return {
       title,
@@ -181,7 +195,7 @@ export async function generateMetadata({ params }: PageProps) {
   // content에서 커스텀 메타 정보 및 썸네일 추출
   let customTitle = "";
   let customDescription = "";
-  let thumbnailImage = "";
+  let rawThumbnailImage = "";
 
   if (invitation.content) {
     try {
@@ -190,7 +204,7 @@ export async function generateMetadata({ params }: PageProps) {
       customTitle = content?.meta?.title || "";
       customDescription = content?.meta?.description || "";
       // 우선순위: kakaoThumbnail > ogImage > coverImage > gallery 첫번째 이미지
-      thumbnailImage =
+      rawThumbnailImage =
         content?.meta?.kakaoThumbnail ||
         content?.meta?.ogImage ||
         content?.media?.coverImage ||
@@ -201,11 +215,12 @@ export async function generateMetadata({ params }: PageProps) {
     }
   }
 
+  // 이미지 URL을 절대 경로로 변환
+  const thumbnailImage = toAbsoluteImageUrl(rawThumbnailImage, baseUrl);
+
   // 커스텀 값이 있으면 사용, 없으면 자동 생성
   const title = customTitle || `${groomName} ♥ ${brideName} 결혼합니다`;
   const description = customDescription || invitation.greeting_message || "저희 결혼식에 초대합니다";
-
-  const baseUrl = "https://invite.deardrawer.com";
 
   return {
     title,

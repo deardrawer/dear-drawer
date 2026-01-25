@@ -334,22 +334,17 @@ function calculateDday(d: string): string {
 
 // 국화 아이콘 (고인 표시)
 const ChrysanthemumIcon = () => (
-  <svg className="inline-block w-3 h-3 mr-0.5" viewBox="0 0 24 24" fill="currentColor" opacity="0.7">
-    <path d="M12 2C12 2 14 6 14 8C14 10 12 12 12 12C12 12 10 10 10 8C10 6 12 2 12 2Z" />
-    <path d="M12 12C12 12 16 10 18 10C20 10 22 12 22 12C22 12 20 14 18 14C16 14 12 12 12 12Z" />
-    <path d="M12 12C12 12 8 10 6 10C4 10 2 12 2 12C2 12 4 14 6 14C8 14 12 12 12 12Z" />
-    <path d="M12 12C12 12 14 16 14 18C14 20 12 22 12 22C12 22 10 20 10 18C10 16 12 12 12 12Z" />
-    <path d="M12 12C12 12 15.5 7.5 17.5 6.5C19.5 5.5 22 6 22 6C22 6 21.5 8.5 19.5 10.5C17.5 12.5 12 12 12 12Z" />
-    <path d="M12 12C12 12 8.5 7.5 6.5 6.5C4.5 5.5 2 6 2 6C2 6 2.5 8.5 4.5 10.5C6.5 12.5 12 12 12 12Z" />
-    <path d="M12 12C12 12 15.5 16.5 17.5 17.5C19.5 18.5 22 18 22 18C22 18 21.5 15.5 19.5 13.5C17.5 11.5 12 12 12 12Z" />
-    <path d="M12 12C12 12 8.5 16.5 6.5 17.5C4.5 18.5 2 18 2 18C2 18 2.5 15.5 4.5 13.5C6.5 11.5 12 12 12 12Z" />
-    <circle cx="12" cy="12" r="2.5" />
-  </svg>
+  <img
+    src="/icons/chrysanthemum.svg"
+    alt="고인"
+    className="inline w-3 h-3 mr-0.5 opacity-70 align-middle"
+    style={{ verticalAlign: 'middle', marginTop: '-2px' }}
+  />
 )
 
 // 부모님 이름 표시
 const ParentName = ({ name, deceased }: { name: string; deceased?: boolean }) => (
-  <span className="inline-flex items-center">
+  <span>
     {deceased && <ChrysanthemumIcon />}
     {name}
   </span>
@@ -437,7 +432,6 @@ function createDefaultContent(invitation: Invitation): InvitationContent {
       name: invitation.groom_name || '',
       lastName: groomNameParts.lastName,
       firstName: groomNameParts.firstName,
-      nameEn: '',
       phone: '',
       father: { name: '', phone: '', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
       mother: { name: '', phone: '', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
@@ -448,16 +442,15 @@ function createDefaultContent(invitation: Invitation): InvitationContent {
       name: invitation.bride_name || '',
       lastName: brideNameParts.lastName,
       firstName: brideNameParts.firstName,
-      nameEn: '',
       phone: '',
       father: { name: '', phone: '', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
       mother: { name: '', phone: '', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
       bank: { bank: '', account: '', holder: '', enabled: false },
       profile: { images: [], imageSettings: [], aboutLabel: 'ABOUT BRIDE', subtitle: '', intro: '', tag: '' }
     },
-    wedding: { date: invitation.wedding_date || '', time: '', timeDisplay: invitation.wedding_time || '', dayOfWeek: '', title: 'OUR WEDDING', venue: { name: invitation.venue_name || '', hall: '', address: invitation.venue_address || '', mapUrl: '', naverMapUrl: '', kakaoMapUrl: '' }, directions: { car: { desc: '', route: '' }, subway: [], bus: { main: [], branch: [] }, parking: { location: '', fee: '' } } },
+    wedding: { date: invitation.wedding_date || '', time: '', timeDisplay: invitation.wedding_time || '', dayOfWeek: '', title: 'OUR WEDDING', venue: { name: invitation.venue_name || '', hall: '', address: invitation.venue_address || '' }, directions: { car: '', publicTransport: '', train: '', expressBus: '' } },
     relationship: { startDate: '', stories: [], closingText: '' },
-    content: { greeting: invitation.greeting_message || '', quote: { text: '', author: '' }, thankYou: { title: 'THANK YOU', message: '', sign: '' }, info: { dressCode: { title: '', content: '', enabled: false }, photoShare: { title: '', content: '', buttonText: '', url: '', enabled: false }, photoBooth: { title: '', content: '', enabled: false }, flowerChild: { title: '', content: '', enabled: false }, flowerGift: { title: '', content: '', enabled: false }, wreath: { title: '', content: '', enabled: false }, reception: { title: '', content: '', venue: '', datetime: '', enabled: false }, customItems: [], itemOrder: ['dressCode', 'photoBooth', 'photoShare', 'flowerGift', 'flowerChild', 'wreath', 'reception'] }, interviews: [], guestbookQuestions: [] },
+    content: { greeting: invitation.greeting_message || '', quote: { text: '', author: '' }, thankYou: { title: 'THANK YOU', message: '', sign: '' }, info: { dressCode: { title: '', content: '', enabled: false }, photoShare: { title: '', content: '', buttonText: '', url: '', enabled: false }, photoBooth: { title: '', content: '', enabled: false }, flowerChild: { title: '', content: '', enabled: false }, flowerGift: { title: '', content: '', enabled: false }, wreath: { title: '', content: '', enabled: false }, shuttle: { title: '', content: '', enabled: false }, reception: { title: '', content: '', venue: '', datetime: '', enabled: false }, customItems: [], itemOrder: ['dressCode', 'photoBooth', 'photoShare', 'flowerGift', 'flowerChild', 'wreath', 'shuttle', 'reception'] }, interviews: [], guestbookQuestions: [] },
     gallery: { images: [], imageSettings: [] },
     media: { coverImage: invitation.main_image || '', infoImage: '', bgm: '' },
     meta: { title: '', description: '', ogImage: '', kakaoThumbnail: '' },

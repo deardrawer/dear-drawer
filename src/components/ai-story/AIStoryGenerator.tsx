@@ -243,6 +243,7 @@ export default function AIStoryGenerator({
           formData,
           groomName: formData.groomProfile.name || groomName,
           brideName: formData.brideProfile.name || brideName,
+          templateId, // FAMILY 템플릿 구분용
         }),
       })
 
@@ -259,7 +260,7 @@ export default function AIStoryGenerator({
     } finally {
       setIsGenerating(false)
     }
-  }, [formData, groomName, brideName])
+  }, [formData, groomName, brideName, templateId])
 
   const regenerateSection = useCallback(async (section: string) => {
     if (!generatedContent) return

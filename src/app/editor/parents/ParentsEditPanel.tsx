@@ -653,6 +653,65 @@ export default function ParentsEditPanel({ data, updateData, updateNestedData, i
                 <p className="text-xs text-gray-400">
                   * 카카오톡 공유 시 표시되는 이미지입니다. 미설정 시 갤러리 첫 번째 이미지가 사용됩니다.
                 </p>
+
+                {/* 링크 공유 썸네일 이미지 (OG Image) */}
+                <div className="space-y-2 pt-4 border-t">
+                  <Label className="text-xs font-medium">링크 공유 썸네일</Label>
+                  <p className="text-xs text-gray-500">권장 사이즈: 1200 x 630px (가로 비율)</p>
+                  <p className="text-xs text-gray-400">문자, SNS 등 일반 링크 공유 시 표시됩니다.</p>
+                </div>
+
+                {/* OG 이미지 미리보기 및 업로드 */}
+                <div className="space-y-3">
+                  {data.meta?.ogImage ? (
+                    <div className="relative max-w-[300px]">
+                      <div
+                        className="w-full aspect-[1200/630] rounded-lg bg-cover bg-center border border-gray-200"
+                        style={{ backgroundImage: `url(${data.meta.ogImage})` }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => updateNestedData('meta.ogImage', '')}
+                        className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center max-w-[300px] aspect-[1200/630] border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 relative">
+                      <div className="flex flex-col items-center justify-center p-4">
+                        <svg className="w-8 h-8 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <p className="text-xs text-gray-500 text-center">클릭하여 업로드</p>
+                        <p className="text-xs text-gray-400 mt-1">1200 x 630px</p>
+                      </div>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) {
+                            handleImageUpload(file, 'og-image', (url) => updateNestedData('meta.ogImage', url))
+                            e.target.value = ''
+                          }
+                        }}
+                      />
+                      {uploadingImages.has('og-image') && (
+                        <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-lg">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+                        </div>
+                      )}
+                    </label>
+                  )}
+                </div>
+
+                <p className="text-xs text-gray-400">
+                  * 문자/SNS 링크 공유 시 표시되는 이미지입니다. 미설정 시 카카오 썸네일 또는 갤러리 첫 번째 이미지가 사용됩니다.
+                </p>
               </AccordionContent>
             </AccordionItem>
           </Accordion>
@@ -887,43 +946,6 @@ export default function ParentsEditPanel({ data, updateData, updateNestedData, i
                   onChange={(e) => updateNestedData('wedding.venue.address', e.target.value)}
                   placeholder="서울시 강남구..."
                 />
-              </div>
-
-              {/* 지도 링크 */}
-              <div className="pt-3 border-t space-y-3">
-                <div>
-                  <p className="text-xs font-medium text-gray-700 mb-1">지도 링크</p>
-                  <p className="text-[10px] text-gray-500">각 지도 앱에서 장소 검색 후 공유 링크를 복사해 붙여넣으세요.</p>
-                </div>
-                <div className="space-y-2">
-                  <div className="space-y-1">
-                    <Label className="text-[10px]">네이버지도 링크</Label>
-                    <Input
-                      value={data.wedding.venue.naverMapUrl || ''}
-                      onChange={(e) => updateNestedData('wedding.venue.naverMapUrl', e.target.value)}
-                      placeholder="https://naver.me/..."
-                      className="text-sm"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-[10px]">카카오맵 링크</Label>
-                    <Input
-                      value={data.wedding.venue.kakaoMapUrl || ''}
-                      onChange={(e) => updateNestedData('wedding.venue.kakaoMapUrl', e.target.value)}
-                      placeholder="https://place.map.kakao.com/..."
-                      className="text-sm"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-[10px]">T맵 링크</Label>
-                    <Input
-                      value={data.wedding.venue.tmapUrl || ''}
-                      onChange={(e) => updateNestedData('wedding.venue.tmapUrl', e.target.value)}
-                      placeholder="https://tmap.life/..."
-                      className="text-sm"
-                    />
-                  </div>
-                </div>
               </div>
 
               {/* 오시는 길 안내 */}

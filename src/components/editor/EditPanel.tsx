@@ -42,12 +42,24 @@ function SectionBadge({ section }: { section?: PreviewSection }) {
 }
 
 // 필드 헬퍼가 포함된 라벨 컴포넌트
-function FieldLabel({ fieldKey, children }: { fieldKey?: string; children?: React.ReactNode }) {
+// AI 스토리 생성 가능 표시
+function AiIndicator() {
+  return (
+    <span className="ml-2 text-[10px] text-pink-500 font-medium">
+      ✦ AI스토리 생성가능
+    </span>
+  )
+}
+
+function FieldLabel({ fieldKey, children, aiEnabled }: { fieldKey?: string; children?: React.ReactNode; aiEnabled?: boolean }) {
   const helper = fieldKey ? fieldHelpers[fieldKey] : null
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between gap-2">
-        <Label className="text-xs font-medium">{children || helper?.label}</Label>
+        <div className="flex items-center">
+          <Label className="text-xs font-medium">{children || helper?.label}</Label>
+          {aiEnabled && <AiIndicator />}
+        </div>
         {helper?.previewSection && <SectionBadge section={helper.previewSection} />}
       </div>
       {helper?.explanation && (
@@ -103,6 +115,7 @@ const INFO_ITEMS_CONFIG: { key: string; label: string }[] = [
   { key: 'flowerGift', label: '꽃 답례품' },
   { key: 'flowerChild', label: '화동 안내' },
   { key: 'wreath', label: '화환 안내' },
+  { key: 'shuttle', label: '셔틀버스 안내' },
   { key: 'reception', label: '피로연 안내' },
 ]
 
@@ -689,12 +702,13 @@ export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator,
           </AccordionContent>
         </AccordionItem>
 
-        {/* 인트로 애니메이션 */}
+        {/* 인트로(애니메이션,커버이미지) */}
         <AccordionItem value="design-animation">
-          <AccordionTrigger className="text-base font-medium">✨ 인트로 애니메이션</AccordionTrigger>
+          <AccordionTrigger className="text-base font-medium">✨ 인트로(애니메이션,커버이미지)</AccordionTrigger>
           <AccordionContent className="space-y-4 pb-4">
             <p className="text-xs text-gray-500">
               첫 화면에서 1회 재생되는 인트로 애니메이션을 선택하고 커스터마이징할 수 있어요.
+              <span className="block mt-1 text-primary/80">💡 인트로에 커버 이미지가 사용되므로 먼저 커버 이미지를 설정해주세요.</span>
             </p>
 
             {/* 현재 선택된 프리셋 표시 */}
@@ -1016,6 +1030,65 @@ export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator,
             <p className="text-xs text-gray-400">
               * 카카오톡 공유 시 표시되는 이미지입니다. 미설정 시 표지 이미지가 사용됩니다.
             </p>
+
+            {/* 링크 공유 썸네일 이미지 (OG Image) */}
+            <div className="space-y-2 pt-4 border-t">
+              <Label className="text-xs font-medium">링크 공유 썸네일</Label>
+              <p className="text-xs text-gray-500">권장 사이즈: 1200 x 630px (가로 비율)</p>
+              <p className="text-xs text-gray-400">문자, SNS 등 일반 링크 공유 시 표시됩니다.</p>
+            </div>
+
+            {/* OG 이미지 미리보기 및 업로드 */}
+            <div className="space-y-3">
+              {invitation.meta.ogImage ? (
+                <div className="relative max-w-[300px]">
+                  <div
+                    className="w-full aspect-[1200/630] rounded-lg bg-cover bg-center border border-gray-200"
+                    style={{ backgroundImage: `url(${invitation.meta.ogImage})` }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => updateNestedField('meta.ogImage', '')}
+                    className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center max-w-[300px] aspect-[1200/630] border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 relative">
+                  <div className="flex flex-col items-center justify-center p-4">
+                    <svg className="w-8 h-8 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <p className="text-xs text-gray-500 text-center">클릭하여 업로드</p>
+                    <p className="text-xs text-gray-400 mt-1">1200 x 630px</p>
+                  </div>
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        handleImageUpload(file, 'og-image', (url) => updateNestedField('meta.ogImage', url))
+                        e.target.value = ''
+                      }
+                    }}
+                  />
+                  {uploadingImages.has('og-image') && (
+                    <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-lg">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+                    </div>
+                  )}
+                </label>
+              )}
+            </div>
+
+            <p className="text-xs text-gray-400">
+              * 문자/SNS 링크 공유 시 표시되는 이미지입니다. 미설정 시 카카오 썸네일 또는 표지 이미지가 사용됩니다.
+            </p>
           </AccordionContent>
         </AccordionItem>
 
@@ -1076,33 +1149,15 @@ export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator,
                       placeholder="철수"
                     />
                   </div>
-                  <div className="space-y-1.5">
-                    <FieldLabel fieldKey="groom.nameEn" />
-                    <Input
-                      value={invitation.groom.nameEn}
-                      onChange={(e) => updateNestedField('groom.nameEn', e.target.value)}
-                      placeholder={fieldHelpers['groom.nameEn']?.example}
-                    />
-                  </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <FieldLabel fieldKey="groom.name" />
-                    <Input
-                      value={invitation.groom.name}
-                      onChange={(e) => updateNestedField('groom.name', e.target.value)}
-                      placeholder={fieldHelpers['groom.name']?.example}
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <FieldLabel fieldKey="groom.nameEn" />
-                    <Input
-                      value={invitation.groom.nameEn}
-                      onChange={(e) => updateNestedField('groom.nameEn', e.target.value)}
-                      placeholder={fieldHelpers['groom.nameEn']?.example}
-                    />
-                  </div>
+                <div className="space-y-1.5">
+                  <FieldLabel fieldKey="groom.name" />
+                  <Input
+                    value={invitation.groom.name}
+                    onChange={(e) => updateNestedField('groom.name', e.target.value)}
+                    placeholder={fieldHelpers['groom.name']?.example}
+                  />
                 </div>
               )}
               <div className="space-y-1.5">
@@ -1155,33 +1210,15 @@ export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator,
                       placeholder="영희"
                     />
                   </div>
-                  <div className="space-y-1.5">
-                    <FieldLabel fieldKey="bride.nameEn" />
-                    <Input
-                      value={invitation.bride.nameEn}
-                      onChange={(e) => updateNestedField('bride.nameEn', e.target.value)}
-                      placeholder={fieldHelpers['bride.nameEn']?.example}
-                    />
-                  </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <FieldLabel fieldKey="bride.name" />
-                    <Input
-                      value={invitation.bride.name}
-                      onChange={(e) => updateNestedField('bride.name', e.target.value)}
-                      placeholder={fieldHelpers['bride.name']?.example}
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <FieldLabel fieldKey="bride.nameEn" />
-                    <Input
-                      value={invitation.bride.nameEn}
-                      onChange={(e) => updateNestedField('bride.nameEn', e.target.value)}
-                      placeholder={fieldHelpers['bride.nameEn']?.example}
-                    />
-                  </div>
+                <div className="space-y-1.5">
+                  <FieldLabel fieldKey="bride.name" />
+                  <Input
+                    value={invitation.bride.name}
+                    onChange={(e) => updateNestedField('bride.name', e.target.value)}
+                    placeholder={fieldHelpers['bride.name']?.example}
+                  />
                 </div>
               )}
               <div className="space-y-1.5">
@@ -1356,7 +1393,7 @@ export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator,
           <AccordionTrigger className="text-base font-medium">✉️ 인사말</AccordionTrigger>
           <AccordionContent className="space-y-4 pb-4">
             <div className="space-y-1.5">
-              <FieldLabel fieldKey="content.greeting" />
+              <FieldLabel fieldKey="content.greeting" aiEnabled />
               <Textarea
                 value={invitation.content.greeting}
                 onChange={(e) => updateNestedField('content.greeting', e.target.value)}
@@ -1391,7 +1428,7 @@ export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator,
             <div className="space-y-3 p-3 bg-gray-50 rounded-lg">
               <p className="text-xs font-semibold text-gray-700">감사 인사</p>
               <div className="space-y-1.5">
-                <FieldLabel fieldKey="content.thankYou.message">감사 메시지</FieldLabel>
+                <FieldLabel fieldKey="content.thankYou.message" aiEnabled>감사 메시지</FieldLabel>
                 <Textarea
                   value={invitation.content.thankYou.message}
                   onChange={(e) => updateNestedField('content.thankYou.message', e.target.value)}
@@ -1476,24 +1513,6 @@ export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator,
                 placeholder={fieldHelpers['wedding.venue.address']?.example}
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs">네이버 지도 URL</Label>
-                <Input
-                  value={invitation.wedding.venue.naverMapUrl}
-                  onChange={(e) => updateNestedField('wedding.venue.naverMapUrl', e.target.value)}
-                  placeholder="https://map.naver.com/..."
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">카카오 지도 URL</Label>
-                <Input
-                  value={invitation.wedding.venue.kakaoMapUrl}
-                  onChange={(e) => updateNestedField('wedding.venue.kakaoMapUrl', e.target.value)}
-                  placeholder="https://map.kakao.com/..."
-                />
-              </div>
-            </div>
           </AccordionContent>
         </AccordionItem>
 
@@ -1501,75 +1520,54 @@ export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator,
         <AccordionItem value="directions">
           <AccordionTrigger className="text-base font-medium">🚗 오시는 길</AccordionTrigger>
           <AccordionContent className="space-y-4 pb-4">
+            {/* 자가용 (경로 + 주차 통합) */}
             <div className="space-y-2 p-3 bg-gray-50 rounded-lg">
               <p className="text-xs font-semibold text-gray-700">🚙 자가용</p>
-              <div className="space-y-1.5">
-                <FieldLabel fieldKey="wedding.directions.car.desc">주차장 안내</FieldLabel>
-                <Input
-                  value={invitation.wedding.directions.car.desc}
-                  onChange={(e) => updateNestedField('wedding.directions.car.desc', e.target.value)}
-                  placeholder={fieldHelpers['wedding.directions.car.desc']?.example}
-                />
-              </div>
               <Textarea
-                value={invitation.wedding.directions.car.route}
-                onChange={(e) => updateNestedField('wedding.directions.car.route', e.target.value)}
-                placeholder="오시는 경로 안내"
+                value={invitation.wedding.directions.car || ''}
+                onChange={(e) => updateNestedField('wedding.directions.car', e.target.value)}
+                placeholder="네비게이션: 더채플앳청담 또는 서울시 강남구 삼성로 614&#10;주차: 건물 내 지하주차장 이용 (2시간 무료)"
+                rows={4}
+                className="resize-none text-sm"
+              />
+              <p className="text-[10px] text-gray-400">경로 안내와 주차 정보를 함께 입력해주세요</p>
+            </div>
+
+            {/* 버스/지하철 (통합) */}
+            <div className="space-y-2 p-3 bg-gray-50 rounded-lg">
+              <p className="text-xs font-semibold text-gray-700">🚇 버스/지하철</p>
+              <Textarea
+                value={invitation.wedding.directions.publicTransport || ''}
+                onChange={(e) => updateNestedField('wedding.directions.publicTransport', e.target.value)}
+                placeholder="[지하철]&#10;2호선 삼성역 5번 출구 도보 5분&#10;9호선 봉은사역 1번 출구 도보 8분&#10;&#10;[버스]&#10;간선: 146, 341, 360&#10;지선: 3412, 4412"
+                rows={6}
+                className="resize-none text-sm"
+              />
+              <p className="text-[10px] text-gray-400">지하철, 버스 정보를 함께 입력해주세요</p>
+            </div>
+
+            {/* 기차역 (선택) */}
+            <div className="space-y-2 p-3 bg-gray-50 rounded-lg">
+              <p className="text-xs font-semibold text-gray-700">🚄 기차역 <span className="text-[10px] font-normal text-gray-400">(선택)</span></p>
+              <Textarea
+                value={invitation.wedding.directions.train || ''}
+                onChange={(e) => updateNestedField('wedding.directions.train', e.target.value)}
+                placeholder="KTX/SRT 수서역 하차 → 3호선 환승 → 압구정역 하차"
                 rows={2}
                 className="resize-none text-sm"
               />
             </div>
 
+            {/* 고속버스 (선택) */}
             <div className="space-y-2 p-3 bg-gray-50 rounded-lg">
-              <p className="text-xs font-semibold text-gray-700">🚇 지하철</p>
+              <p className="text-xs font-semibold text-gray-700">🚌 고속버스 <span className="text-[10px] font-normal text-gray-400">(선택)</span></p>
               <Textarea
-                value={invitation.wedding.directions.subway.join('\n')}
-                onChange={(e) => updateNestedField('wedding.directions.subway', e.target.value.split('\n'))}
-                placeholder="2호선 삼성역 5번 출구 도보 5분&#10;9호선 봉은사역 1번 출구 도보 8분"
-                rows={3}
+                value={invitation.wedding.directions.expressBus || ''}
+                onChange={(e) => updateNestedField('wedding.directions.expressBus', e.target.value)}
+                placeholder="센트럴시티터미널(고속) 하차 → 3호선 환승 → 압구정역 하차"
+                rows={2}
                 className="resize-none text-sm"
               />
-              <p className="text-[10px] text-gray-400">한 줄에 하나씩 입력</p>
-            </div>
-
-            <div className="space-y-2 p-3 bg-gray-50 rounded-lg">
-              <p className="text-xs font-semibold text-gray-700">🚌 버스</p>
-              <div className="space-y-1.5">
-                <Label className="text-[10px]">간선버스</Label>
-                <Input
-                  value={invitation.wedding.directions.bus.main.join(', ')}
-                  onChange={(e) => updateNestedField('wedding.directions.bus.main', e.target.value.split(', ').filter(Boolean))}
-                  placeholder="146, 341, 360"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-[10px]">지선버스</Label>
-                <Input
-                  value={invitation.wedding.directions.bus.branch.join(', ')}
-                  onChange={(e) => updateNestedField('wedding.directions.bus.branch', e.target.value.split(', ').filter(Boolean))}
-                  placeholder="3412, 4412"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2 p-3 bg-gray-50 rounded-lg">
-              <p className="text-xs font-semibold text-gray-700">🅿️ 주차</p>
-              <div className="space-y-1.5">
-                <FieldLabel fieldKey="wedding.directions.parking.location">주차장 위치</FieldLabel>
-                <Input
-                  value={invitation.wedding.directions.parking.location}
-                  onChange={(e) => updateNestedField('wedding.directions.parking.location', e.target.value)}
-                  placeholder={fieldHelpers['wedding.directions.parking.location']?.example}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <FieldLabel fieldKey="wedding.directions.parking.fee">주차 요금</FieldLabel>
-                <Input
-                  value={invitation.wedding.directions.parking.fee}
-                  onChange={(e) => updateNestedField('wedding.directions.parking.fee', e.target.value)}
-                  placeholder={fieldHelpers['wedding.directions.parking.fee']?.example}
-                />
-              </div>
             </div>
           </AccordionContent>
         </AccordionItem>
@@ -1816,7 +1814,7 @@ export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator,
                 />
               </div>
               <div className="space-y-1.5">
-                <FieldLabel fieldKey="groom.profile.intro">소개글</FieldLabel>
+                <FieldLabel fieldKey="groom.profile.intro" aiEnabled>소개글</FieldLabel>
                 <HighlightTextarea
                   value={invitation.groom.profile.intro}
                   onChange={(value) => updateNestedField('groom.profile.intro', value)}
@@ -1940,7 +1938,7 @@ export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator,
                 />
               </div>
               <div className="space-y-1.5">
-                <FieldLabel fieldKey="bride.profile.intro">소개글</FieldLabel>
+                <FieldLabel fieldKey="bride.profile.intro" aiEnabled>소개글</FieldLabel>
                 <HighlightTextarea
                   value={invitation.bride.profile.intro}
                   onChange={(value) => updateNestedField('bride.profile.intro', value)}
@@ -2021,7 +2019,7 @@ export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator,
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <FieldLabel fieldKey="relationship.stories[].desc">내용</FieldLabel>
+                  <FieldLabel fieldKey="relationship.stories[].desc" aiEnabled>내용</FieldLabel>
                   <HighlightTextarea
                     value={story.desc}
                     onChange={(value) => updateStoryField(index, 'desc', value)}
@@ -2267,7 +2265,7 @@ export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator,
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <FieldLabel fieldKey="content.interviews[].answer">답변</FieldLabel>
+                  <FieldLabel fieldKey="content.interviews[].answer" aiEnabled>답변</FieldLabel>
                   <HighlightTextarea
                     value={interview.answer}
                     onChange={(value) => updateInterviewField(index, 'answer', value)}
@@ -2333,7 +2331,7 @@ export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator,
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs">웨딩 사진 (선택)</Label>
+                <Label className="text-xs">웨딩 사진 (필수)</Label>
                 {invitation.guidance.image ? (
                   <div className="relative group w-full aspect-video">
                     <div

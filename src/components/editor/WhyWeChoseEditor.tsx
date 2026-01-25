@@ -7,6 +7,15 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 
+// AI 스토리 생성 가능 표시
+function AiIndicator() {
+  return (
+    <span className="ml-2 text-[10px] text-pink-500 font-medium">
+      ✦ AI스토리 생성가능
+    </span>
+  )
+}
+
 export default function WhyWeChoseEditor() {
   const { invitation, updateNestedField } = useEditorStore()
 
@@ -47,7 +56,10 @@ export default function WhyWeChoseEditor() {
 
             {/* 본문 */}
             <div className="space-y-2">
-              <Label className="text-xs">본문</Label>
+              <div className="flex items-center">
+                <Label className="text-xs">본문</Label>
+                <AiIndicator />
+              </div>
               <Textarea
                 value={data.description}
                 onChange={(e) => updateNestedField(`${fieldPrefix}.description`, e.target.value)}
@@ -59,7 +71,10 @@ export default function WhyWeChoseEditor() {
 
             {/* 인용문 */}
             <div className="space-y-2">
-              <Label className="text-xs">약속의 말</Label>
+              <div className="flex items-center">
+                <Label className="text-xs">약속의 말</Label>
+                <AiIndicator />
+              </div>
               <Input
                 value={data.quote}
                 onChange={(e) => updateNestedField(`${fieldPrefix}.quote`, e.target.value)}
@@ -75,16 +90,16 @@ export default function WhyWeChoseEditor() {
 
   return (
     <AccordionItem value="why-we-chose">
-      <AccordionTrigger className="text-base font-medium">
-        <div className="flex items-center justify-between w-full mr-2">
+      <div className="flex items-center justify-between">
+        <AccordionTrigger className="text-base font-medium flex-1">
           <span>💕 서로를 선택한 이유</span>
-          <Switch
-            checked={whyWeChose.enabled}
-            onCheckedChange={(checked) => updateNestedField('whyWeChose.enabled', checked)}
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
-      </AccordionTrigger>
+        </AccordionTrigger>
+        <Switch
+          checked={whyWeChose.enabled}
+          onCheckedChange={(checked) => updateNestedField('whyWeChose.enabled', checked)}
+          className="mr-2"
+        />
+      </div>
       <AccordionContent className="space-y-4 pb-4">
         {whyWeChose.enabled && (
           <>

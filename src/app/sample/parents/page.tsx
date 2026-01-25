@@ -31,7 +31,6 @@ const sampleData: ParentsInvitationContent = {
       name: '더채플앳청담',
       hall: '5층 루체홀',
       address: '서울특별시 강남구 청담동 123-45',
-      mapUrl: '',
     },
   },
   envelope: {

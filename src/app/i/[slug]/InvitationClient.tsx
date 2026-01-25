@@ -101,7 +101,8 @@ const ChrysanthemumIcon = () => (
   <img
     src="/icons/chrysanthemum.svg"
     alt="고인"
-    className="inline-block w-3 h-3 mr-0.5 opacity-70"
+    className="inline w-3 h-3 mr-0.5 opacity-70 align-middle"
+    style={{ verticalAlign: 'middle', marginTop: '-2px' }}
   />
 );
 
@@ -112,7 +113,7 @@ const HanjaDeceasedIcon = () => (
 
 // 부모님 이름 표시 (고인 시 선택된 스타일로 표시)
 const ParentName = ({ name, deceased, displayStyle = 'flower' }: { name: string; deceased?: boolean; displayStyle?: 'hanja' | 'flower' }) => (
-  <span className="inline-flex items-center">
+  <span>
     {deceased && (displayStyle === 'hanja' ? <HanjaDeceasedIcon /> : <ChrysanthemumIcon />)}
     {name}
   </span>
@@ -464,7 +465,7 @@ const globalStyles = `
 
   /* Gallery Lightbox */
   .gallery-lightbox {
-    position: absolute;
+    position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.95);
     z-index: 9999;
@@ -1518,7 +1519,7 @@ function InfoBlock({
       {/* Title with accent bar and animated underline */}
       <h4
         className={`profile-label-animated text-[13px] mb-4 flex items-center gap-2 ${titleRevealed ? 'revealed' : ''}`}
-        style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 500 }}
+        style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 600 }}
       >
         <span
           className="w-[3px] h-[14px] rounded-sm flex-shrink-0"
@@ -1529,7 +1530,7 @@ function InfoBlock({
 
       {/* Content */}
       <p
-        className="text-xs font-light leading-[2]"
+        className="text-xs font-light leading-[1.8]"
         style={{ color: '#666' }}
         dangerouslySetInnerHTML={{ __html: content.replace(/\n/g, '<br/>') }}
       />
@@ -1839,7 +1840,6 @@ const mockInvitation = {
 
   groom: {
     name: '김민준',
-    nameEn: 'Minjun Kim',
     phone: '010-1234-5678',
     father: { name: '김철수', phone: '010-1111-2222', deceased: false },
     mother: { name: '이영희', phone: '010-3333-4444', deceased: false },
@@ -1858,7 +1858,6 @@ const mockInvitation = {
   },
   bride: {
     name: '이서연',
-    nameEn: 'Seoyeon Lee',
     phone: '010-5678-1234',
     father: { name: '이정호', phone: '010-5555-6666', deceased: false },
     mother: { name: '박미경', phone: '010-7777-8888', deceased: false },
@@ -1886,27 +1885,12 @@ const mockInvitation = {
       name: '더채플앳청담',
       hall: '루체홀 5층',
       address: '서울특별시 강남구 청담동 123-45',
-      mapUrl: '',
-      naverMapUrl: '',
-      kakaoMapUrl: '',
     },
     directions: {
-      car: {
-        desc: '네비게이션에 "더채플앳청담" 검색',
-        route: '강남역 방면에서 청담사거리 방향으로 직진 후 우회전',
-      },
-      subway: [
-        '압구정로데오역 5번 출구 도보 10분',
-        '청담역 9번 출구 도보 15분',
-      ],
-      bus: {
-        main: ['146', '301', '401'],
-        branch: ['3422', '4412'],
-      },
-      parking: {
-        location: '건물 지하 1~3층 주차장 이용 가능',
-        fee: '3시간 무료 주차권 제공',
-      },
+      car: '네비게이션: 더채플앳청담 또는 서울시 강남구 청담동 123-45\n주차: 건물 지하 1~3층 주차장 이용 가능 (3시간 무료)',
+      publicTransport: '[지하철]\n압구정로데오역 5번 출구 도보 10분\n청담역 9번 출구 도보 15분\n\n[버스]\n간선: 146, 301, 401\n지선: 3422, 4412',
+      train: '',
+      expressBus: '',
     },
   },
 
@@ -1976,7 +1960,12 @@ const mockInvitation = {
       photoShare: { title: 'Photo Sharing', content: '결혼식 사진을 공유해주세요!', buttonText: '사진 공유하기', url: '', enabled: false },
       photoBooth: { title: 'Photo Booth', content: '로비에서 포토부스를 즐겨보세요!', enabled: false },
       flowerChild: { title: '화동 안내', content: '', enabled: false },
-      customItems: [],
+      flowerGift: { title: '꽃 답례품 안내', content: '', enabled: false },
+      wreath: { title: '화환 안내', content: '', enabled: false },
+      shuttle: { title: '셔틀버스 안내', content: '', enabled: false },
+      reception: { title: '피로연 안내', content: '', enabled: false },
+      customItems: [] as { id: string; title: string; content: string; enabled: boolean }[],
+      itemOrder: ['dressCode', 'photoBooth', 'photoShare', 'flowerGift', 'flowerChild', 'wreath', 'shuttle', 'reception'],
     },
   },
 
@@ -2168,7 +2157,7 @@ function formatDateEnglish(d: string): string {
 
 // Types for page components
 type PageType = 'intro' | 'main'
-type DirectionsTab = 'car' | 'subway' | 'bus' | 'parking'
+type DirectionsTab = 'car' | 'publicTransport' | 'train' | 'expressBus'
 
 interface PageProps {
   invitation: typeof mockInvitation
@@ -2291,10 +2280,10 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
 
   const directions = invitation.wedding.directions
   const availableTabs: { key: DirectionsTab; label: string }[] = [
-    { key: 'car', label: '자가용' },
-    ...(directions.subway && directions.subway.length > 0 ? [{ key: 'subway' as DirectionsTab, label: '지하철' }] : []),
-    ...(directions.bus && (directions.bus.main?.length > 0 || directions.bus.branch?.length > 0) ? [{ key: 'bus' as DirectionsTab, label: '버스' }] : []),
-    ...(directions.parking && (directions.parking.location || directions.parking.fee) ? [{ key: 'parking' as DirectionsTab, label: '주차' }] : []),
+    ...(directions.car ? [{ key: 'car' as DirectionsTab, label: '자가용' }] : []),
+    ...(directions.publicTransport ? [{ key: 'publicTransport' as DirectionsTab, label: '버스/지하철' }] : []),
+    ...(directions.train ? [{ key: 'train' as DirectionsTab, label: '기차역' }] : []),
+    ...(directions.expressBus ? [{ key: 'expressBus' as DirectionsTab, label: '고속버스' }] : []),
   ]
 
   return (
@@ -2681,75 +2670,26 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
             {/* Tab Content */}
             <div className="space-y-4">
               {directionsTab === 'car' && directions.car && (
-                <div className="space-y-3">
-                  {directions.car.desc && (
-                    <div className="p-4 rounded-xl bg-gray-50">
-                      <p className="text-xs font-medium mb-1" style={{ color: themeColors.gray }}>네비게이션</p>
-                      <p className="text-sm" style={{ color: themeColors.text }}>{directions.car.desc}</p>
-                    </div>
-                  )}
-                  {directions.car.route && (
-                    <div className="p-4 rounded-xl bg-gray-50">
-                      <p className="text-xs font-medium mb-1" style={{ color: themeColors.gray }}>경로 안내</p>
-                      <p className="text-sm" style={{ color: themeColors.text }}>{directions.car.route}</p>
-                    </div>
-                  )}
+                <div className="p-4 rounded-xl bg-gray-50">
+                  <p className="text-sm whitespace-pre-line" style={{ color: themeColors.text }}>{directions.car}</p>
                 </div>
               )}
 
-              {directionsTab === 'subway' && directions.subway && (
-                <div className="space-y-2">
-                  {directions.subway.map((line, i) => (
-                    <div key={i} className="p-4 rounded-xl bg-gray-50">
-                      <p className="text-sm" style={{ color: themeColors.text }}>{line}</p>
-                    </div>
-                  ))}
+              {directionsTab === 'publicTransport' && directions.publicTransport && (
+                <div className="p-4 rounded-xl bg-gray-50">
+                  <p className="text-sm whitespace-pre-line" style={{ color: themeColors.text }}>{directions.publicTransport}</p>
                 </div>
               )}
 
-              {directionsTab === 'bus' && directions.bus && (
-                <div className="space-y-3">
-                  {directions.bus.main && directions.bus.main.length > 0 && (
-                    <div className="p-4 rounded-xl bg-gray-50">
-                      <p className="text-xs font-medium mb-2" style={{ color: themeColors.gray }}>간선버스</p>
-                      <div className="flex flex-wrap gap-2">
-                        {directions.bus.main.map((bus, i) => (
-                          <span key={i} className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
-                            {bus}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {directions.bus.branch && directions.bus.branch.length > 0 && (
-                    <div className="p-4 rounded-xl bg-gray-50">
-                      <p className="text-xs font-medium mb-2" style={{ color: themeColors.gray }}>지선버스</p>
-                      <div className="flex flex-wrap gap-2">
-                        {directions.bus.branch.map((bus, i) => (
-                          <span key={i} className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                            {bus}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+              {directionsTab === 'train' && directions.train && (
+                <div className="p-4 rounded-xl bg-gray-50">
+                  <p className="text-sm whitespace-pre-line" style={{ color: themeColors.text }}>{directions.train}</p>
                 </div>
               )}
 
-              {directionsTab === 'parking' && directions.parking && (
-                <div className="space-y-3">
-                  {directions.parking.location && (
-                    <div className="p-4 rounded-xl bg-gray-50">
-                      <p className="text-xs font-medium mb-1" style={{ color: themeColors.gray }}>주차장 위치</p>
-                      <p className="text-sm" style={{ color: themeColors.text }}>{directions.parking.location}</p>
-                    </div>
-                  )}
-                  {directions.parking.fee && (
-                    <div className="p-4 rounded-xl bg-gray-50">
-                      <p className="text-xs font-medium mb-1" style={{ color: themeColors.gray }}>주차 요금</p>
-                      <p className="text-sm" style={{ color: themeColors.text }}>{directions.parking.fee}</p>
-                    </div>
-                  )}
+              {directionsTab === 'expressBus' && directions.expressBus && (
+                <div className="p-4 rounded-xl bg-gray-50">
+                  <p className="text-sm whitespace-pre-line" style={{ color: themeColors.text }}>{directions.expressBus}</p>
                 </div>
               )}
             </div>
@@ -3024,15 +2964,22 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
         style={{ background: `linear-gradient(180deg, ${themeColors.sectionBg} 0%, ${themeColors.background} 100%)` }}
       >
         {/* Info Photo */}
-        {invitation.media.infoImage && (
+        {invitation.guidance?.image && (
           <AnimatedSection className="mb-10">
             <div
-              className="w-full aspect-[4/5] rounded-2xl bg-cover bg-center"
+              className="w-full aspect-[4/5] rounded-2xl bg-cover bg-center overflow-hidden"
               style={{
-                backgroundImage: `url(${invitation.media.infoImage})`,
                 boxShadow: '0 4px 12px rgba(0,0,0,0.06), 0 12px 28px rgba(0,0,0,0.08)'
               }}
-            />
+            >
+              <div
+                className="w-full h-full bg-cover bg-center"
+                style={{
+                  backgroundImage: `url(${invitation.guidance.image})`,
+                  transform: `scale(${invitation.guidance.imageSettings?.scale || 1}) translate(${invitation.guidance.imageSettings?.positionX || 0}%, ${invitation.guidance.imageSettings?.positionY || 0}%)`
+                }}
+              />
+            </div>
           </AnimatedSection>
         )}
 
@@ -3068,6 +3015,77 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
             themeColors={themeColors}
           />
         )}
+
+        {/* Photo Booth Block */}
+        {invitation.content.info.photoBooth?.enabled && (
+          <InfoBlock
+            title={invitation.content.info.photoBooth.title}
+            content={invitation.content.info.photoBooth.content}
+            fonts={fonts}
+            themeColors={themeColors}
+          />
+        )}
+
+        {/* Flower Child Block */}
+        {invitation.content.info.flowerChild?.enabled && (
+          <InfoBlock
+            title={invitation.content.info.flowerChild.title}
+            content={invitation.content.info.flowerChild.content}
+            fonts={fonts}
+            themeColors={themeColors}
+          />
+        )}
+
+        {/* Flower Gift Block */}
+        {invitation.content.info.flowerGift?.enabled && (
+          <InfoBlock
+            title={invitation.content.info.flowerGift.title}
+            content={invitation.content.info.flowerGift.content}
+            fonts={fonts}
+            themeColors={themeColors}
+          />
+        )}
+
+        {/* Wreath Block */}
+        {invitation.content.info.wreath?.enabled && (
+          <InfoBlock
+            title={invitation.content.info.wreath.title}
+            content={invitation.content.info.wreath.content}
+            fonts={fonts}
+            themeColors={themeColors}
+          />
+        )}
+
+        {/* Shuttle Block */}
+        {invitation.content.info.shuttle?.enabled && (
+          <InfoBlock
+            title={invitation.content.info.shuttle.title}
+            content={invitation.content.info.shuttle.content}
+            fonts={fonts}
+            themeColors={themeColors}
+          />
+        )}
+
+        {/* Reception Block */}
+        {invitation.content.info.reception?.enabled && (
+          <InfoBlock
+            title={invitation.content.info.reception.title}
+            content={invitation.content.info.reception.content}
+            fonts={fonts}
+            themeColors={themeColors}
+          />
+        )}
+
+        {/* Custom Items */}
+        {invitation.content.info.customItems?.map(item => item.enabled && (
+          <InfoBlock
+            key={item.id}
+            title={item.title}
+            content={item.content}
+            fonts={fonts}
+            themeColors={themeColors}
+          />
+        ))}
       </section>
 
       {/* Thank You Section */}
@@ -3112,7 +3130,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
         <AnimatedSection className="px-5 py-14 pb-20 text-center" style={{ background: themeColors.cardBg }}>
           <h3 className="text-sm mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400 }}>Guestbook</h3>
           <div className="max-w-[300px] mx-auto mb-9">
-            <p className="text-xs font-light leading-[1.7] mb-4 min-h-[40px]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>{invitation.content.guestbookQuestions[currentQuestionIndex] || '두 사람에게 하고 싶은 말을 남겨주세요'}</p>
+            <p className="text-xs font-medium leading-[1.7] mb-4 min-h-[40px]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>{invitation.content.guestbookQuestions[currentQuestionIndex] || '두 사람에게 하고 싶은 말을 남겨주세요'}</p>
             <div className="space-y-2 mb-2.5">
               <input
                 type="text"
@@ -3458,8 +3476,8 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
   // Show floating button only on invitation screen or main page
   const showFloatingButton = currentPage === 'main' || (currentPage === 'intro' && introScreen === 'invitation')
 
-  // Show music toggle only on main page
-  const showMusicToggle = currentPage === 'main' && !!invitation.media.bgm
+  // Show music toggle only on main page (use bgm object, not media.bgm)
+  const showMusicToggle = currentPage === 'main' && invitation.bgm?.enabled && !!invitation.bgm?.url
 
   // Scroll to appropriate position when page changes
   useEffect(() => {
@@ -3558,10 +3576,10 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
                     />
                   )}
 
-                  {/* Background Music */}
-                  {invitation.media.bgm && (
+                  {/* Background Music (use bgm object, not media.bgm) */}
+                  {invitation.bgm?.enabled && invitation.bgm?.url && (
                     <audio ref={audioRef} loop preload="auto">
-                      <source src={invitation.media.bgm} type="audio/mpeg" />
+                      <source src={invitation.bgm.url} type="audio/mpeg" />
                     </audio>
                   )}
                 </div>
@@ -3599,7 +3617,7 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
               )}
 
               {/* Music Toggle */}
-              <MusicToggle audioRef={audioRef} isVisible={showMusicToggle} shouldAutoPlay={currentPage === 'main'} />
+              <MusicToggle audioRef={audioRef} isVisible={showMusicToggle} shouldAutoPlay={currentPage === 'main' && invitation.bgm?.autoplay === true} />
 
               {/* Gallery Lightbox */}
               <GalleryLightbox

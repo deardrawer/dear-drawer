@@ -84,12 +84,6 @@ export const fieldHelpers: Record<string, FieldHelper> = {
     example: '김민준',
     previewSection: 'cover',
   },
-  'groom.nameEn': {
-    label: '신랑 영문 이름',
-    explanation: '표지에 영문으로 표시될 이름이에요',
-    example: 'MINJUN',
-    previewSection: 'cover',
-  },
   'groom.phone': {
     label: '신랑 연락처 (선택)',
     explanation: '선택 입력이에요. 입력하면 하단 버튼의 "안내정보 → 연락처"에 표시돼요.',
@@ -100,12 +94,6 @@ export const fieldHelpers: Record<string, FieldHelper> = {
     label: '신부 이름',
     explanation: '청첩장에 표시될 신부 이름이에요',
     example: '이서연',
-    previewSection: 'cover',
-  },
-  'bride.nameEn': {
-    label: '신부 영문 이름',
-    explanation: '표지에 영문으로 표시될 이름이에요',
-    example: 'SEOYEON',
     previewSection: 'cover',
   },
   'bride.phone': {

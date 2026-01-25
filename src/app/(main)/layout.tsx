@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { usePathname } from 'next/navigation'
 import HeaderAuth from '@/components/layout/HeaderAuth'
 import { Menu, X } from 'lucide-react'
 
@@ -13,6 +14,7 @@ export default function MainLayout({
 }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const pathname = usePathname()
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
@@ -20,6 +22,13 @@ export default function MainLayout({
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
+
+  const isActive = (path: string) => {
+    if (path === '/gallery') {
+      return pathname === '/' || pathname === '/gallery'
+    }
+    return pathname === path || pathname?.startsWith(path + '/')
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -42,13 +51,21 @@ export default function MainLayout({
             <nav className="flex items-center gap-8">
               <Link
                 href="/gallery"
-                className="text-sm text-gray-700 hover:text-black transition-colors tracking-wide"
+                className={`text-sm transition-colors tracking-wide ${
+                  isActive('/gallery')
+                    ? 'text-black font-medium border-b-2 border-black pb-1'
+                    : 'text-gray-500 hover:text-black'
+                }`}
               >
                 Templates
               </Link>
               <Link
                 href="/my-invitations"
-                className="text-sm text-gray-700 hover:text-black transition-colors tracking-wide"
+                className={`text-sm transition-colors tracking-wide ${
+                  isActive('/my-invitations')
+                    ? 'text-black font-medium border-b-2 border-black pb-1'
+                    : 'text-gray-500 hover:text-black'
+                }`}
               >
                 My Invitations
               </Link>
@@ -78,14 +95,22 @@ export default function MainLayout({
             <nav className="container mx-auto px-4 py-4 flex flex-col gap-1">
               <Link
                 href="/gallery"
-                className="px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                className={`px-4 py-3 text-sm rounded-lg transition-colors ${
+                  isActive('/gallery')
+                    ? 'text-black font-medium bg-gray-100'
+                    : 'text-gray-500 hover:bg-gray-50'
+                }`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Templates
               </Link>
               <Link
                 href="/my-invitations"
-                className="px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                className={`px-4 py-3 text-sm rounded-lg transition-colors ${
+                  isActive('/my-invitations')
+                    ? 'text-black font-medium bg-gray-100'
+                    : 'text-gray-500 hover:bg-gray-50'
+                }`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 My Invitations

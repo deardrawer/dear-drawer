@@ -196,10 +196,6 @@ export interface ParentsInvitationContent {
       name: string
       hall: string
       address: string
-      mapUrl?: string
-      naverMapUrl?: string
-      kakaoMapUrl?: string
-      tmapUrl?: string
     }
     directions?: {
       bus?: { enabled?: boolean; lines?: string; stop?: string }
@@ -254,6 +250,14 @@ export interface ParentsInvitationContent {
   // 디자인
   colorTheme: ColorThemeId
   fontStyle?: FontStyleId
+
+  // 공유 메타 정보
+  meta?: {
+    title: string
+    description: string
+    kakaoThumbnail: string
+    ogImage: string
+  }
 }
 
 export interface GuestInfo {

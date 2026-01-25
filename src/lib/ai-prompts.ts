@@ -1364,3 +1364,179 @@ ${getInterviewPrompt(interview)}
 
   return sectionPrompts[section] || ''
 }
+
+// ============================================================
+// FAMILY Template Prompt Generator
+// ============================================================
+
+/**
+ * 서로를 선택한 이유 테마 설명
+ */
+function getWhyWeChoseThemeText(theme: string): string {
+  const themes: Record<string, string> = {
+    complement: '부족함을 채워주는',
+    respect: '존경하는',
+    trust: '믿어주는',
+    growth: '함께 성장하는',
+    comfort: '편안한',
+  }
+  return themes[theme] || theme
+}
+
+/**
+ * FAMILY 템플릿용 메인 프롬프트 생성
+ */
+export function generateFamilyFullPrompt(
+  formData: AllFormData,
+  groomName: string,
+  brideName: string
+): string {
+  const { greeting, interview, whyWeChose } = formData
+
+  const mainTone = greeting.greetingTone
+  const toneGuide = getToneGuideText(mainTone)
+
+  // 톤에 맞는 샘플 선택
+  const greetingSample = SAMPLE_TEXTS.greeting[mainTone as keyof typeof SAMPLE_TEXTS.greeting] || SAMPLE_TEXTS.greeting.sincere
+  const thanksSample = SAMPLE_TEXTS.thanks[mainTone as keyof typeof SAMPLE_TEXTS.thanks] || SAMPLE_TEXTS.thanks.sincere
+
+  // 서로를 선택한 이유 데이터
+  const groomTheme = whyWeChose?.groomTheme ? getWhyWeChoseThemeText(whyWeChose.groomTheme) : ''
+  const brideTheme = whyWeChose?.brideTheme ? getWhyWeChoseThemeText(whyWeChose.brideTheme) : ''
+
+  return `당신은 감성적인 한국 웨딩 스토리 전문 작가입니다.
+제공된 정보를 바탕으로 진정성 있고 아름다운 청첩장 텍스트를 작성해주세요.
+
+🚨🚨🚨 최우선 규칙 🚨🚨🚨
+1. 각 섹션의 "입력 정보"에 있는 값들을 반드시 활용해서 새로운 문장을 작성하세요
+2. 샘플/예시 문장을 절대로 그대로 복사하지 마세요
+3. 이 템플릿은 FAMILY(양가부모님께 드리는) 템플릿입니다
+4. 커플 소개, 러브스토리 대신 "서로를 선택한 이유" 섹션을 생성합니다
+
+═══════════════════════════════════════════════════
+전체 작성 규칙
+═══════════════════════════════════════════════════
+
+1. 한국어로 작성
+2. 전체 톤: \${getToneDescription(mainTone)}
+3. 진정성과 감성을 중시하되 과장 없이
+4. 문단 구분 시 빈 줄(\\n\\n)로 명확히 구분
+5. 어미 통일: 각 섹션별 지정된 톤에 맞게
+
+\${toneGuide}
+
+═══════════════════════════════════════════════════
+기본 정보
+═══════════════════════════════════════════════════
+
+신랑: \${groomName}
+신부: \${brideName}
+
+═══════════════════════════════════════════════════
+[1] 인사말 (greeting)
+═══════════════════════════════════════════════════
+
+▶ 형식: 2-3문단, 150-250자
+▶ 톤: \${getToneDescription(greeting.greetingTone)}
+▶ 구조:
+  - 첫 문단: 두 사람의 관계/여정 소개 (과거 회상)
+  - 중간 문단: 결혼의 의미와 다짐 (현재→미래)
+  - 마지막 문단: 초대 문구
+
+▶ 입력 정보:
+- 관계 기간: \${getRelationshipDurationText(greeting.relationshipDuration)}
+- 관계 특징: \${greeting.relationshipTraits.map(t => getRelationshipTraitText(t)).join(', ')}
+- 결혼의 의미: \${getMarriageMeaningText(greeting.marriageMeaning)}
+\${greeting.specialNote ? \`- 특별한 내용: \${greeting.specialNote}\` : ''}
+
+▶ 참고 샘플 (복사 금지, 스타일만 참고):
+"\${greetingSample}"
+
+═══════════════════════════════════════════════════
+[2] 감사말 (thanks)
+═══════════════════════════════════════════════════
+
+▶ 형식: 1-2문장, 50-100자
+▶ 스타일: \${getThanksStyleText(greeting.thanksStyle || 'formal')}
+
+▶ 참고 샘플:
+"\${thanksSample}"
+
+═══════════════════════════════════════════════════
+[3] 서로를 선택한 이유 (whyWeChose)
+═══════════════════════════════════════════════════
+
+이 섹션은 FAMILY 템플릿의 핵심입니다.
+신부가 신랑을 선택한 이유, 신랑이 신부를 선택한 이유를 각각 작성합니다.
+
+[3-1] 신부가 신랑을 선택한 이유 (groomDescription)
+▶ 형식: 2-3문단, 150-250자
+▶ 관점: 신부(\${brideName})가 신랑(\${groomName})을 선택한 이유를 서술
+▶ 테마: \${groomTheme || '(미선택)'}
+
+▶ 입력 정보:
+- 테마 관련 답변1: \${whyWeChose?.groomAnswer1 || '(미입력)'}
+- 테마 관련 답변2: \${whyWeChose?.groomAnswer2 || '(미입력)'}
+- 테마 관련 답변3: \${whyWeChose?.groomAnswer3 || '(미입력)'}
+
+위 답변들을 바탕으로 신부가 왜 신랑을 선택했는지 감성적으로 서술해주세요.
+
+[3-2] 신부의 한마디 (groomQuote)
+▶ 형식: 1-2문장
+▶ 신부가 신랑에게 전하는 짧고 진심어린 한마디
+
+[3-3] 신랑이 신부를 선택한 이유 (brideDescription)
+▶ 형식: 2-3문단, 150-250자
+▶ 관점: 신랑(\${groomName})이 신부(\${brideName})를 선택한 이유를 서술
+▶ 테마: \${brideTheme || '(미선택)'}
+
+▶ 입력 정보:
+- 테마 관련 답변1: \${whyWeChose?.brideAnswer1 || '(미입력)'}
+- 테마 관련 답변2: \${whyWeChose?.brideAnswer2 || '(미입력)'}
+- 테마 관련 답변3: \${whyWeChose?.brideAnswer3 || '(미입력)'}
+
+위 답변들을 바탕으로 신랑이 왜 신부를 선택했는지 감성적으로 서술해주세요.
+
+[3-4] 신랑의 한마디 (brideQuote)
+▶ 형식: 1-2문장
+▶ 신랑이 신부에게 전하는 짧고 진심어린 한마디
+
+═══════════════════════════════════════════════════
+[4] 웨딩 인터뷰 (interview)
+═══════════════════════════════════════════════════
+
+\${getInterviewPrompt(interview)}
+
+═══════════════════════════════════════════════════
+출력 형식 (FAMILY 템플릿용 - 반드시 준수)
+═══════════════════════════════════════════════════
+
+다음 JSON 형식으로 정확하게 출력해주세요.
+- 문단 구분은 \\n\\n (빈 줄)로 표시
+- 줄바꿈은 \\n으로 표시
+- JSON 외 다른 텍스트 없이 순수 JSON만 출력
+
+{
+  "greeting": "여기에 실제 인사말 내용 작성",
+  "thanks": "여기에 실제 감사말 내용 작성",
+  "whyWeChose": {
+    "groomDescription": "신부가 신랑을 선택한 이유 (2-3문단)",
+    "groomQuote": "신부가 신랑에게 전하는 한마디",
+    "brideDescription": "신랑이 신부를 선택한 이유 (2-3문단)",
+    "brideQuote": "신랑이 신부에게 전하는 한마디"
+  },
+  "interview": [
+    {
+      "question": "여기에 실제 질문 작성",
+      "groomAnswer": "신랑의 답변 (개별 답변 모드시)",
+      "brideAnswer": "신부의 답변 (개별 답변 모드시)",
+      "jointAnswer": "공동 답변 (공동 답변 모드시)"
+    }
+  ]
+}
+
+**중요**:
+- FAMILY 템플릿이므로 groomProfile, brideProfile, story 필드는 생성하지 않습니다
+- 대신 whyWeChose 필드에 서로를 선택한 이유를 작성합니다
+- interview 배열의 각 항목에 실제 답변 내용을 작성하세요`
+}

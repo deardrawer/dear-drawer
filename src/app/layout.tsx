@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import {
   Noto_Sans_KR,
-  Noto_Serif_KR,
   Cormorant_Garamond,
   Playfair_Display,
   Montserrat,
@@ -16,7 +15,6 @@ import {
   Gowun_Dodum,
   Song_Myung,
   Hahmlet,
-  IBM_Plex_Sans_KR,
 } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/providers/AuthProvider";
@@ -27,18 +25,14 @@ const notoSansKR = Noto_Sans_KR({
   variable: "--font-noto-sans-kr",
   subsets: ["latin"],
   weight: ["300", "400", "500", "700"],
-});
-
-const notoSerifKR = Noto_Serif_KR({
-  variable: "--font-noto-serif-kr",
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  display: "swap",
 });
 
 const cormorantGaramond = Cormorant_Garamond({
   variable: "--font-cormorant",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 // Classic 스타일
@@ -46,12 +40,14 @@ const playfairDisplay = Playfair_Display({
   variable: "--font-playfair",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 const nanumMyeongjo = Nanum_Myeongjo({
   variable: "--font-nanum-myeongjo",
   subsets: ["latin"],
   weight: ["400", "700"],
+  display: "swap",
 });
 
 // Modern 스타일
@@ -59,6 +55,7 @@ const montserrat = Montserrat({
   variable: "--font-montserrat",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
 });
 
 // Romantic 스타일
@@ -66,18 +63,21 @@ const greatVibes = Great_Vibes({
   variable: "--font-great-vibes",
   subsets: ["latin"],
   weight: ["400"],
+  display: "swap",
 });
 
 const lora = Lora({
   variable: "--font-lora",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 const gowunBatang = Gowun_Batang({
   variable: "--font-gowun-batang",
   subsets: ["latin"],
   weight: ["400", "700"],
+  display: "swap",
 });
 
 // Contemporary 스타일
@@ -85,12 +85,14 @@ const cinzel = Cinzel({
   variable: "--font-cinzel",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 const gowunDodum = Gowun_Dodum({
   variable: "--font-gowun-dodum",
   subsets: ["latin"],
   weight: ["400"],
+  display: "swap",
 });
 
 // Luxury 스타일
@@ -98,6 +100,7 @@ const ebGaramond = EB_Garamond({
   variable: "--font-eb-garamond",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 // 추가 한글 폰트 (Parents 템플릿용)
@@ -105,25 +108,21 @@ const nanumGothic = Nanum_Gothic({
   variable: "--font-nanum-gothic",
   subsets: ["latin"],
   weight: ["400", "700"],
+  display: "swap",
 });
 
 const songMyung = Song_Myung({
   variable: "--font-song-myung",
   weight: ["400"],
+  display: "swap",
 });
 
 const hahmlet = Hahmlet({
   variable: "--font-hahmlet",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
-
-const ibmPlexSansKR = IBM_Plex_Sans_KR({
-  variable: "--font-ibm-plex-sans-kr",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-});
-
 
 export const metadata: Metadata = {
   title: "dear drawer - 나만의 모바일 청첩장",
@@ -133,7 +132,6 @@ export const metadata: Metadata = {
 
 const fontVariables = [
   notoSansKR.variable,
-  notoSerifKR.variable,
   cormorantGaramond.variable,
   playfairDisplay.variable,
   nanumMyeongjo.variable,
@@ -148,7 +146,6 @@ const fontVariables = [
   nanumGothic.variable,
   songMyung.variable,
   hahmlet.variable,
-  ibmPlexSansKR.variable,
 ].join(' ');
 
 export default function RootLayout({

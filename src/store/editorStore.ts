@@ -46,7 +46,6 @@ export interface PersonInfo {
   name: string
   lastName: string    // 성 (family 템플릿용)
   firstName: string   // 이름 (family 템플릿용)
-  nameEn: string
   phone: string
   father: ParentInfo
   mother: ParentInfo
@@ -59,26 +58,14 @@ export interface VenueInfo {
   name: string
   hall: string
   address: string
-  mapUrl: string
-  naverMapUrl: string
-  kakaoMapUrl: string
 }
 
 // 오시는 길 정보
 export interface DirectionsInfo {
-  car: {
-    desc: string
-    route: string
-  }
-  subway: string[]
-  bus: {
-    main: string[]
-    branch: string[]
-  }
-  parking: {
-    location: string
-    fee: string
-  }
+  car: string              // 자가용 (경로 + 주차 통합)
+  publicTransport: string  // 버스/지하철 (지선 간선 통합)
+  train?: string           // 기차역 (선택)
+  expressBus?: string      // 고속버스 (선택)
 }
 
 // 스토리 아이템
@@ -150,6 +137,11 @@ export interface InfoSettings {
     enabled: boolean
   }
   wreath: {
+    title: string
+    content: string
+    enabled: boolean
+  }
+  shuttle: {
     title: string
     content: string
     enabled: boolean
@@ -439,7 +431,6 @@ const createDefaultPerson = (isGroom: boolean): PersonInfo => ({
   name: '',
   lastName: '',
   firstName: '',
-  nameEn: '',
   phone: '',
   father: { name: '', phone: '', deceased: false, bank: createDefaultBankInfo() },
   mother: { name: '', phone: '', deceased: false, bank: createDefaultBankInfo() },
@@ -470,15 +461,12 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
       name: '',
       hall: '',
       address: '',
-      mapUrl: '',
-      naverMapUrl: '',
-      kakaoMapUrl: '',
     },
     directions: {
-      car: { desc: '', route: '' },
-      subway: [''],
-      bus: { main: [], branch: [] },
-      parking: { location: '', fee: '' },
+      car: '',
+      publicTransport: '',
+      train: '',
+      expressBus: '',
     },
   },
 
@@ -499,21 +487,22 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
     quote: { text: '', author: '' },
     thankYou: { title: 'THANK YOU', message: '', sign: '' },
     info: {
-      dressCode: { title: 'Dress Code', content: '', enabled: false },
+      dressCode: { title: '드레스코드 안내', content: '결혼식에 맞는 옷차림을 고민하지 않으셔도 괜찮아요.\n여러분이 가장 좋아하는 옷,\n가장 여러분다운 모습으로 오셔서\n함께 웃고 즐겨주신다면 그걸로 충분합니다.', enabled: false },
       photoShare: {
         title: 'Photo Sharing',
-        content: '',
+        content: '결혼식에서 찍은 사진들을 공유해주세요!\n여러분의 시선으로 담긴 우리의 결혼식,\n소중한 추억으로 간직하겠습니다.',
         buttonText: '사진 공유하기',
         url: '',
         enabled: false,
       },
-      photoBooth: { title: '포토부스', content: '', enabled: false },
-      flowerChild: { title: '화동 안내', content: '', enabled: false },
-      flowerGift: { title: '꽃 답례품', content: '', enabled: false },
-      wreath: { title: '화환 안내', content: '', enabled: false },
-      reception: { title: '피로연 안내', content: '', venue: '', datetime: '', enabled: false },
+      photoBooth: { title: '포토부스', content: '소중한 하루를 오래 기억할 수 있도록\n포토부스가 준비되어 있습니다.\n즐거운 추억을 사진으로 남겨주세요.', enabled: false },
+      flowerChild: { title: '화동 안내', content: '본 예식에는\n소중한 반려견 푸코가 화동으로 함께합니다.\n혹시 강아지를 무서워 하는 분이 계신다면\n너른 마음으로 양해부탁 드리겠습니다.', enabled: false },
+      flowerGift: { title: '꽃 답례품 안내', content: '예식 후 하객분들께 감사의 마음을 전하기 위해\n계절의 꽃으로 만든 작은 꽃다발을 준비했습니다.\n소중한 발걸음에 대한 감사의 선물로 받아주세요.', enabled: false },
+      wreath: { title: '화환 안내', content: '마음만 감사히 받겠습니다.\n화환은 정중히 사양하오니\n너른 양해 부탁드립니다.', enabled: false },
+      shuttle: { title: '셔틀버스 안내', content: '예식 당일 셔틀버스가 운행될 예정입니다.\n탑승 장소와 시간은 아래 내용을 참고해 주세요.\n편안한 이동이 되시길 바랍니다.\n\n[출발 일시]\n0000년 0월 0일 (0요일)\n오전 00시 00분 출발\n\n[탑승 장소]\n00시 00구 00역 0번 출구 앞\n\n[복귀 일시]\n예식 종료 후\n오후 00시 00분 출발 예정\n\n[차량 번호]\n전세버스 ○○○○호\n\n안내 사항\n원활한 출발을 위해 출발 10분 전까지 도착 부탁드립니다.\n정시 출발로, 지각 시 탑승이 어려울 수 있습니다.\n복귀 시간은 현장 상황에 따라 변동될 수 있습니다.', enabled: false },
+      reception: { title: '피로연 안내', content: '먼 걸음이 어려우신 분들을 모시고자\n피로연 자리를 마련하였습니다.\n\n참석하시어 두 사람의 앞날을\n따뜻한 축복으로 함께해 주시면\n감사하겠습니다.\n\n[장소]\n장소 입력\n\n[일시]\n0년 0월 0일(0요일) 오후 0시 0분', venue: '', datetime: '', enabled: false },
       customItems: [],
-      itemOrder: ['dressCode', 'photoBooth', 'photoShare', 'flowerGift', 'flowerChild', 'wreath', 'reception'],
+      itemOrder: ['dressCode', 'photoBooth', 'photoShare', 'flowerGift', 'flowerChild', 'wreath', 'shuttle', 'reception'],
     },
     interviews: [
       { question: '', answer: '', images: [], imageSettings: [], bgClass: 'pink-bg' },

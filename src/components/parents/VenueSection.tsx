@@ -9,9 +9,6 @@ interface VenueSectionProps {
     name: string
     hall: string
     address: string
-    naverMapUrl?: string
-    kakaoMapUrl?: string
-    tmapUrl?: string
   }
   directions?: {
     bus?: { lines: string; stop: string }
@@ -92,29 +89,17 @@ export default function VenueSection({
     document.head.appendChild(script)
   }, [venue.address, venue.name])
 
-  // 지도 앱 열기 - 링크가 있으면 사용, 없으면 주소 검색
+  // 지도 앱 열기 - 주소로 검색
   const openNaverMap = () => {
-    if (venue.naverMapUrl) {
-      window.open(venue.naverMapUrl, '_blank')
-    } else {
-      window.open(`https://map.naver.com/v5/search/${encodeURIComponent(venue.address)}`, '_blank')
-    }
+    window.open(`https://map.naver.com/v5/search/${encodeURIComponent(venue.address)}`, '_blank')
   }
 
   const openKakaoMap = () => {
-    if (venue.kakaoMapUrl) {
-      window.open(venue.kakaoMapUrl, '_blank')
-    } else {
-      window.open(`https://map.kakao.com/link/search/${encodeURIComponent(venue.address)}`, '_blank')
-    }
+    window.open(`https://map.kakao.com/link/search/${encodeURIComponent(venue.address)}`, '_blank')
   }
 
   const openTmap = () => {
-    if (venue.tmapUrl) {
-      window.open(venue.tmapUrl, '_blank')
-    } else {
-      window.open(`https://tmap.life/search?keyword=${encodeURIComponent(venue.address)}`, '_blank')
-    }
+    window.open(`https://tmap.life/search?keyword=${encodeURIComponent(venue.address)}`, '_blank')
   }
 
   // 오시는 길 정보가 있는지 확인

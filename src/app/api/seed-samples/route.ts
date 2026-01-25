@@ -5,7 +5,6 @@ import { getCloudflareContext } from '@opennextjs/cloudflare'
 const ourSampleContent = {
   groom: {
     name: '김민준',
-    nameEn: 'Minjun Kim',
     phone: '010-1234-5678',
     father: { name: '김철수', phone: '010-1111-2222', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
     mother: { name: '박영희', phone: '010-3333-4444', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
@@ -21,7 +20,6 @@ const ourSampleContent = {
   },
   bride: {
     name: '이서연',
-    nameEn: 'Seoyeon Lee',
     phone: '010-5678-1234',
     father: { name: '이정호', phone: '010-5555-6666', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
     mother: { name: '최미경', phone: '010-7777-8888', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
@@ -45,9 +43,6 @@ const ourSampleContent = {
       name: '더채플앳청담',
       hall: '그랜드볼룸 5층',
       address: '서울특별시 강남구 청담동 123-45',
-      mapUrl: '',
-      naverMapUrl: 'https://map.naver.com',
-      kakaoMapUrl: 'https://map.kakao.com',
     },
     directions: {
       car: {

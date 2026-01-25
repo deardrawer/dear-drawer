@@ -175,9 +175,6 @@ export default function ParentsInvitationView({
                   name: data.wedding.venue.name || '예식장',
                   hall: data.wedding.venue.hall || '',
                   address: data.wedding.venue.address || '주소를 입력해주세요',
-                  naverMapUrl: data.wedding.venue.naverMapUrl,
-                  kakaoMapUrl: data.wedding.venue.kakaoMapUrl,
-                  tmapUrl: data.wedding.venue.tmapUrl,
                 }}
                 directions={{
                   bus: data.wedding.directions?.bus?.enabled ? {

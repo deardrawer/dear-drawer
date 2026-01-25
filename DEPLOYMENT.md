@@ -255,6 +255,55 @@ const handleKakaoShare = () => {
 
 ---
 
+### Issue #006: /samples/* 정적 파일 404 에러
+
+| 항목 | 내용 |
+|------|------|
+| **발생일** | 2026-01-26 |
+| **증상** | `/samples/parents/timeline/story2.jpeg` 등 timeline 이미지 404 반환 |
+| **원인** | `_routes.json`의 exclude 규칙에 `/samples/*` 경로가 포함되지 않아 Worker로 라우팅됨 |
+| **해결방법** | `package.json`의 `build:cloudflare` 스크립트에서 `_routes.json` exclude에 `/samples/*` 추가 |
+| **파일** | `package.json` |
+| **예방책** | 정적 파일 경로 추가 시 `_routes.json` exclude 규칙 확인 |
+
+**수정 전:**
+```json
+"exclude": ["/_next/static/*", "/*.ico", "/*.svg", "/*.png", "/*.jpg"]
+```
+
+**수정 후:**
+```json
+"exclude": ["/_next/static/*", "/samples/*", "/*.ico", "/*.svg", "/*.png", "/*.jpg", "/*.jpeg"]
+```
+
+---
+
+### Issue #007: PARENTS 템플릿 섹션 간격 및 모바일 키보드 문제
+
+| 항목 | 내용 |
+|------|------|
+| **발생일** | 2026-01-26 |
+| **증상** | 1) 본문과 디바이더 섹션 간격 불일치 2) 콘텐츠 적은 섹션 여백 과다 3) 모바일 RSVP 입력 시 화면 스크롤 점프 |
+| **원인** | 1) SectionDivider 패딩 설정 2) min-h-screen 적용 3) viewport 설정 및 scrollIntoView 호출 |
+| **해결방법** | 1) SectionDivider pt-0 pb-20 변경 2) Account/Date/Venue에서 min-h-screen 제거 3) viewport에 interactiveWidget 추가, 스크롤 방지 로직 |
+| **파일** | `SectionDivider.tsx`, `AccountSection.tsx`, `DateSection.tsx`, `VenueSection.tsx`, `RsvpModal.tsx`, `layout.tsx` |
+
+**주요 변경:**
+
+1. `SectionDivider.tsx`:
+```tsx
+className="flex flex-col items-center justify-center pt-0 pb-20"
+```
+
+2. `layout.tsx` viewport 설정:
+```tsx
+export const viewport: Viewport = {
+  interactiveWidget: "overlays-content", // 키보드가 콘텐츠를 resize하지 않음
+};
+```
+
+---
+
 ## 문제 기록 템플릿
 
 새로운 문제가 발생하면 아래 템플릿을 복사하여 [문제 해결 기록](#문제-해결-기록) 섹션에 추가하세요.
@@ -327,4 +376,4 @@ rm -rf .next .open-next .wrangler
 
 ---
 
-*마지막 업데이트: 2026-01-25*
+*마지막 업데이트: 2026-01-26*

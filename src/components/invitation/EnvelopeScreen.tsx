@@ -116,11 +116,12 @@ export default function EnvelopeScreen({
 
         {/* Recipient name */}
         <h1
-          className="font-serif tracking-wide"
+          className="font-serif"
           style={{
-            fontSize: '24px',
+            fontSize: '18px',
             color: '#1A1A1A',
             fontWeight: 400,
+            letterSpacing: '1px',
           }}
         >
           {recipientName} {honorific}

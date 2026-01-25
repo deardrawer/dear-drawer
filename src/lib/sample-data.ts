@@ -42,13 +42,8 @@ export const ourSampleContent = {
       address: '서울특별시 강남구 청담동 123-45',
     },
     directions: {
-      car: {
-        desc: '네비게이션에 "더채플앳청담" 검색',
-        route: '강남역 방면에서 청담사거리 방향으로 직진 후 우회전',
-      },
-      subway: ['압구정로데오역 5번 출구 도보 10분', '청담역 9번 출구 도보 15분'],
-      bus: { main: ['146', '301', '401'], branch: ['3422', '4412'] },
-      parking: { location: '건물 지하 1~3층 주차장 이용 가능', fee: '3시간 무료 주차권 제공' },
+      car: '네비게이션에 "더채플앳청담" 검색\n강남역 방면에서 청담사거리 방향으로 직진 후 우회전',
+      publicTransport: '지하철: 압구정로데오역 5번 출구 도보 10분, 청담역 9번 출구 도보 15분\n버스: 146, 301, 401, 3422, 4412',
     },
   },
   relationship: {
@@ -175,7 +170,7 @@ export const ourSampleContent = {
   guidance: { enabled: true, title: '행복한 시간을 위한 안내', content: '따뜻한 마음으로 함께해주세요', image: '/sample/info.png', imageSettings: { scale: 1, positionX: 0, positionY: 0 } },
   intro: {
     presetId: 'cinematic' as const,
-    welcomeText: 'Welcome to our wedding',
+    mainTitle: 'Welcome to our wedding',
     showDate: true,
     showVenue: false,
     backgroundOverlay: 0.4,
@@ -213,7 +208,7 @@ export const familySampleContent = {
   },
   intro: {
     ...ourSampleContent.intro,
-    welcomeText: '결혼식에 초대합니다',
+    mainTitle: 'Welcome to our wedding',
   },
   fullHeightDividers: {
     enabled: true,

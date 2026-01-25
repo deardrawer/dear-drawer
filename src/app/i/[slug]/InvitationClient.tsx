@@ -98,6 +98,73 @@ function MusicToggle({
   )
 }
 
+// Music Toggle Component for inside section (not fixed)
+function MusicToggleInSection({
+  audioRef,
+}: {
+  audioRef: React.RefObject<HTMLAudioElement | null>
+}) {
+  const [isPlaying, setIsPlaying] = useState(false)
+
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    const handlePlay = () => setIsPlaying(true)
+    const handlePause = () => setIsPlaying(false)
+
+    // Check initial state
+    if (!audio.paused) setIsPlaying(true)
+
+    audio.addEventListener('play', handlePlay)
+    audio.addEventListener('pause', handlePause)
+
+    return () => {
+      audio.removeEventListener('play', handlePlay)
+      audio.removeEventListener('pause', handlePause)
+    }
+  }, [audioRef])
+
+  const toggleMusic = () => {
+    if (!audioRef.current) return
+
+    if (audioRef.current.paused) {
+      audioRef.current.play()
+        .then(() => {
+          setIsPlaying(true)
+          localStorage.setItem('musicEnabled', 'true')
+        })
+        .catch(console.error)
+    } else {
+      audioRef.current.pause()
+      setIsPlaying(false)
+      localStorage.setItem('musicEnabled', 'false')
+    }
+  }
+
+  return (
+    <button
+      onClick={toggleMusic}
+      className="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center z-10 transition-all hover:scale-110 active:scale-95"
+      style={{
+        background: 'rgba(255,255,255,0.9)',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+      }}
+      aria-label={isPlaying ? '음악 끄기' : '음악 켜기'}
+    >
+      {isPlaying ? (
+        <svg className="w-5 h-5 text-gray-700" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+        </svg>
+      ) : (
+        <svg className="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+        </svg>
+      )}
+    </button>
+  )
+}
+
 // 국화 아이콘 (고인 표시 - 꽃 스타일)
 const ChrysanthemumIcon = () => (
   <img
@@ -698,8 +765,10 @@ const globalStyles = `
     box-shadow: 0 8px 32px rgba(0,0,0,0.12);
     text-align: center;
     transition: transform 0.4s ease, opacity 0.4s ease;
-    touch-action: pan-y;
+    touch-action: manipulation;
     cursor: grab;
+    -webkit-user-select: none;
+    user-select: none;
   }
 
   .guestbook-stack-card:active {
@@ -1339,6 +1408,7 @@ function GalleryLightbox({
 
 // Divider Section Component - matching original template exactly
 function DividerSection({
+  id,
   lines,
   dividerColor,
   fontFamily,
@@ -1346,6 +1416,7 @@ function DividerSection({
   bgColor,
   isChapterBreak = false
 }: {
+  id?: string
   lines: string[]
   dividerColor: string
   fontFamily: string
@@ -1357,6 +1428,7 @@ function DividerSection({
 
   return (
     <div
+      id={id}
       ref={ref}
       className={`divider-section ${isChapterBreak ? 'chapter-break' : ''} ${isVisible ? 'in-view' : ''}`}
       style={{ background: bgColor }}
@@ -2262,6 +2334,7 @@ interface PageProps {
   guestCustomMessage?: string | null
   isSample?: boolean
   introSettings?: IntroSettings
+  audioRef?: React.RefObject<HTMLAudioElement | null>
 }
 
 // 방명록 메시지 타입
@@ -2716,25 +2789,81 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
             <div className="space-y-4">
               {directionsTab === 'car' && directions.car && (
                 <div className="p-4 rounded-xl bg-gray-50">
-                  <p className="text-sm whitespace-pre-line" style={{ color: themeColors.text }}>{directions.car}</p>
+                  {typeof directions.car === 'string' ? (
+                    <p className="text-sm whitespace-pre-line" style={{ color: themeColors.text }}>{directions.car}</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {directions.car.desc && <p className="text-sm" style={{ color: themeColors.text }}>{directions.car.desc}</p>}
+                      {directions.car.route && <p className="text-sm text-gray-500">{directions.car.route}</p>}
+                    </div>
+                  )}
                 </div>
               )}
 
               {directionsTab === 'publicTransport' && directions.publicTransport && (
                 <div className="p-4 rounded-xl bg-gray-50">
-                  <p className="text-sm whitespace-pre-line" style={{ color: themeColors.text }}>{directions.publicTransport}</p>
+                  {typeof directions.publicTransport === 'string' ? (
+                    <p className="text-sm whitespace-pre-line" style={{ color: themeColors.text }}>{directions.publicTransport}</p>
+                  ) : Array.isArray(directions.publicTransport) ? (
+                    <div className="space-y-2">
+                      {directions.publicTransport.map((item: string, idx: number) => (
+                        <p key={idx} className="text-sm" style={{ color: themeColors.text }}>{item}</p>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {directions.publicTransport.subway && (
+                        <div>
+                          <p className="text-xs text-gray-500 mb-1">지하철</p>
+                          {Array.isArray(directions.publicTransport.subway)
+                            ? directions.publicTransport.subway.map((item: string, idx: number) => (
+                                <p key={idx} className="text-sm" style={{ color: themeColors.text }}>{item}</p>
+                              ))
+                            : <p className="text-sm" style={{ color: themeColors.text }}>{directions.publicTransport.subway}</p>
+                          }
+                        </div>
+                      )}
+                      {directions.publicTransport.bus && (
+                        <div>
+                          <p className="text-xs text-gray-500 mb-1">버스</p>
+                          <p className="text-sm" style={{ color: themeColors.text }}>
+                            {typeof directions.publicTransport.bus === 'string'
+                              ? directions.publicTransport.bus
+                              : Array.isArray(directions.publicTransport.bus)
+                                ? directions.publicTransport.bus.join(', ')
+                                : `${directions.publicTransport.bus.main?.join(', ') || ''} ${directions.publicTransport.bus.branch?.join(', ') || ''}`
+                            }
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
               {directionsTab === 'train' && directions.train && (
                 <div className="p-4 rounded-xl bg-gray-50">
-                  <p className="text-sm whitespace-pre-line" style={{ color: themeColors.text }}>{directions.train}</p>
+                  {typeof directions.train === 'string' ? (
+                    <p className="text-sm whitespace-pre-line" style={{ color: themeColors.text }}>{directions.train}</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {directions.train.station && <p className="text-sm" style={{ color: themeColors.text }}>{directions.train.station}</p>}
+                      {directions.train.desc && <p className="text-sm text-gray-500">{directions.train.desc}</p>}
+                    </div>
+                  )}
                 </div>
               )}
 
               {directionsTab === 'expressBus' && directions.expressBus && (
                 <div className="p-4 rounded-xl bg-gray-50">
-                  <p className="text-sm whitespace-pre-line" style={{ color: themeColors.text }}>{directions.expressBus}</p>
+                  {typeof directions.expressBus === 'string' ? (
+                    <p className="text-sm whitespace-pre-line" style={{ color: themeColors.text }}>{directions.expressBus}</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {directions.expressBus.terminal && <p className="text-sm" style={{ color: themeColors.text }}>{directions.expressBus.terminal}</p>}
+                      {directions.expressBus.desc && <p className="text-sm text-gray-500">{directions.expressBus.desc}</p>}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -2775,7 +2904,7 @@ const sampleGuestbookMessages: GuestbookMessage[] = [
 ]
 
 // Main Page Component - matching template exactly
-function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, onOpenRsvp, onOpenLightbox, onOpenGuestbookModal, isSample = false }: PageProps) {
+function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, onOpenRsvp, onOpenLightbox, onOpenGuestbookModal, isSample = false, audioRef }: PageProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
 
   // Section Highlight 상태
@@ -2806,6 +2935,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
   const [guestName, setGuestName] = useState('')
   const [guestMessage, setGuestMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+
 
   // 방명록 메시지 불러오기 (샘플이 아닌 경우에만)
   useEffect(() => {
@@ -2903,24 +3033,25 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
   return (
     <SectionHighlightContext.Provider value={{ activeSection, registerSection }}>
     <div className="relative">
-      {/* Mini Hero */}
-      <section className="relative h-[200px] flex items-end justify-center" style={{ backgroundImage: invitation.media.coverImage ? `url(${invitation.media.coverImage})` : 'linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-        <div className="relative z-10 text-center text-white pb-8"><p className="text-xs font-light" style={{ fontFamily: fonts.displayKr, letterSpacing: '1.5px' }}>{invitation.groom.name} & {invitation.bride.name}<br/>결혼합니다</p></div>
-      </section>
-
       {/* Title Section - OUR 템플릿: DividerSection 사용 */}
-      <DividerSection
-        lines={[
-          `${invitation.groom.name} & ${invitation.bride.name}`,
-          '결혼합니다'
-        ]}
-        dividerColor={themeColors.divider}
-        fontFamily={fonts.displayKr}
-        textColor={themeColors.text}
-        bgColor={themeColors.cardBg}
-        isChapterBreak={true}
-      />
+      <div className="relative">
+        <DividerSection
+          id="title-divider"
+          lines={[
+            `${invitation.groom.name} & ${invitation.bride.name}`,
+            '결혼합니다'
+          ]}
+          dividerColor={themeColors.divider}
+          fontFamily={fonts.displayKr}
+          textColor={themeColors.text}
+          bgColor={themeColors.cardBg}
+          isChapterBreak={true}
+        />
+        {/* 음악 토글 버튼 - DividerSection 상단에 고정 */}
+        {invitation.bgm?.enabled && invitation.bgm?.url && audioRef && (
+          <MusicToggleInSection audioRef={audioRef} />
+        )}
+      </div>
 
       {/* Wave Divider - transitions to section background */}
       {invitation.sectionVisibility?.coupleProfile !== false && invitation.bride.profile.intro && (
@@ -3290,6 +3421,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
                     style={{
                       background: cardColors[index % cardColors.length],
                       transform: `rotate(${index % 2 === 0 ? -3 : 2}deg)`,
+                      touchAction: 'manipulation',
                     }}
                     onClick={() => openGuestbookModal(index)}
                   >
@@ -3353,36 +3485,32 @@ function GuestbookModal({
   fonts: { body: string; displayKr: string; display: string }
   themeColors: { text: string; primary: string; background: string; cardBg: string; gray: string; divider: string }
 }) {
-  const [cardOffset, setCardOffset] = useState(0) // startIndex로부터의 오프셋
+  const [currentIndex, setCurrentIndex] = useState(startIndex)
   const [swipingDirection, setSwipingDirection] = useState<'none' | 'up' | 'down'>('none')
   const [dragY, setDragY] = useState(0)
   const touchStartY = useRef(0)
   const isDragging = useRef(false)
 
-  // 실제 현재 인덱스 = startIndex + offset
-  const currentIndex = startIndex + cardOffset
+  // 무한 루프를 위한 인덱스 계산
+  const getLoopedIndex = (index: number) => {
+    const len = messages.length
+    return ((index % len) + len) % len
+  }
 
   const handleNextCard = () => {
-    if (currentIndex < messages.length - 1) {
-      setSwipingDirection('up')
-      setTimeout(() => {
-        setCardOffset((prev) => prev + 1)
-        setSwipingDirection('none')
-      }, 300)
-    }
+    setSwipingDirection('up')
+    setTimeout(() => {
+      setCurrentIndex((prev) => getLoopedIndex(prev + 1))
+      setSwipingDirection('none')
+    }, 300)
   }
 
   const handlePrevCard = () => {
-    if (cardOffset > 0) {
-      setSwipingDirection('down')
-      setTimeout(() => {
-        setCardOffset((prev) => prev - 1)
-        setSwipingDirection('none')
-      }, 300)
-    } else {
-      // Close modal if at first card and swiping down
-      onClose()
-    }
+    setSwipingDirection('down')
+    setTimeout(() => {
+      setCurrentIndex((prev) => getLoopedIndex(prev - 1))
+      setSwipingDirection('none')
+    }, 300)
   }
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -3399,14 +3527,18 @@ function GuestbookModal({
 
   const handleTouchEnd = () => {
     isDragging.current = false
-    const threshold = 80
+    const swipeThreshold = 80
+    const tapThreshold = 10
 
-    if (dragY < -threshold) {
+    if (dragY < -swipeThreshold) {
       // Swipe up - next card
       handleNextCard()
-    } else if (dragY > threshold) {
-      // Swipe down - previous card or close
+    } else if (dragY > swipeThreshold) {
+      // Swipe down - previous card
       handlePrevCard()
+    } else if (Math.abs(dragY) < tapThreshold) {
+      // Tap - next card
+      handleNextCard()
     }
     setDragY(0)
   }
@@ -3425,12 +3557,18 @@ function GuestbookModal({
 
   const handleMouseUp = () => {
     isDragging.current = false
-    const threshold = 80
+    const swipeThreshold = 80
+    const tapThreshold = 10
 
-    if (dragY < -threshold) {
+    if (dragY < -swipeThreshold) {
+      // Swipe up - next card
       handleNextCard()
-    } else if (dragY > threshold) {
+    } else if (dragY > swipeThreshold) {
+      // Swipe down - previous card
       handlePrevCard()
+    } else if (Math.abs(dragY) < tapThreshold) {
+      // Click - next card
+      handleNextCard()
     }
     setDragY(0)
   }
@@ -3442,8 +3580,16 @@ function GuestbookModal({
     }
   }
 
-  // Get visible cards (current and next 2)
-  const visibleCards = messages.slice(currentIndex, currentIndex + 3)
+  // Get visible cards for infinite loop (current and next 2)
+  const getVisibleCards = () => {
+    const cards = []
+    for (let i = 0; i < 3; i++) {
+      const idx = getLoopedIndex(currentIndex + i)
+      cards.push({ ...messages[idx], _displayIndex: idx })
+    }
+    return cards
+  }
+  const visibleCards = getVisibleCards()
 
   if (!isOpen || messages.length === 0) return null
 
@@ -3453,6 +3599,7 @@ function GuestbookModal({
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose()
       }}
+      style={{ touchAction: 'manipulation' }}
     >
       <button className="guestbook-modal-close" onClick={onClose}>
         ✕
@@ -3460,7 +3607,7 @@ function GuestbookModal({
 
       <div className="guestbook-stack">
         {visibleCards.map((msg, idx) => {
-          const actualIndex = currentIndex + idx
+          const actualIndex = (msg as { _displayIndex: number })._displayIndex
           const isTopCard = idx === 0
           const cardStyle: React.CSSProperties = {
             background: cardColors[actualIndex % cardColors.length],
@@ -3468,11 +3615,12 @@ function GuestbookModal({
             transform: isTopCard && dragY !== 0
               ? `translateY(${dragY}px) rotate(${dragY > 0 ? 2 : -2}deg)`
               : undefined,
+            touchAction: 'manipulation',
           }
 
           return (
             <div
-              key={msg.id}
+              key={`${msg.id}-${currentIndex}-${idx}`}
               className={`guestbook-stack-card ${isTopCard && swipingDirection === 'up' ? 'swipe-up' : ''} ${isTopCard && swipingDirection === 'down' ? 'swipe-down' : ''} ${isTopCard && dragY !== 0 ? 'swiping' : ''}`}
               style={cardStyle}
               onTouchStart={isTopCard ? handleTouchStart : undefined}
@@ -3496,7 +3644,7 @@ function GuestbookModal({
 
         {/* Swipe hint */}
         <div className="guestbook-swipe-hint">
-          위로 밀어서 다음
+          터치하거나 밀어서 넘기기
         </div>
 
         {/* Card counter */}
@@ -3585,7 +3733,8 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
   const showFloatingButton = currentPage === 'main' || (currentPage === 'intro' && introScreen === 'invitation')
 
   // Show music toggle only on main page (use bgm object, not media.bgm)
-  const showMusicToggle = currentPage === 'main' && invitation.bgm?.enabled && !!invitation.bgm?.url
+  // main 페이지에서는 섹션 내부에 음악 토글이 있으므로 fixed MusicToggle은 숨김
+  const showMusicToggle = false
 
   // Scroll to appropriate position when page changes
   useEffect(() => {
@@ -3684,6 +3833,7 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
                         document.body.classList.add('guestbook-modal-open')
                       }}
                       isSample={isSample}
+                      audioRef={audioRef}
                     />
                   )}
 

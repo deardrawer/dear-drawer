@@ -721,8 +721,10 @@ const globalStyles = `
     box-shadow: 0 8px 32px rgba(0,0,0,0.12);
     text-align: center;
     transition: transform 0.4s ease, opacity 0.4s ease;
-    touch-action: pan-y;
+    touch-action: manipulation;
     cursor: grab;
+    -webkit-user-select: none;
+    user-select: none;
   }
 
   .guestbook-stack-card:active {

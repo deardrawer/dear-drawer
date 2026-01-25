@@ -325,8 +325,8 @@ export default function IntroAnimation({
 
         /* 글자 좁아지기 (시네마틱) */
         @keyframes introLetterSpread {
-          0% { opacity: 0; letter-spacing: 6px; }
-          100% { opacity: 1; letter-spacing: 3px; }
+          0% { opacity: 0; letter-spacing: 3px; }
+          100% { opacity: 1; letter-spacing: 1px; }
         }
         .intro-letter-spread { animation: introLetterSpread 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.15s forwards; opacity: 0; }
 
@@ -630,14 +630,15 @@ export default function IntroAnimation({
   )
 }
 
-// 날짜 포맷 헬퍼
+// 날짜 포맷 헬퍼 (영어식: May 24, 2025)
 function formatDate(dateString: string): string {
   if (!dateString) return ''
   const date = new Date(dateString)
-  const year = date.getFullYear()
-  const month = date.getMonth() + 1
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  const month = months[date.getMonth()]
   const day = date.getDate()
-  return `${year}.${month}.${day}`
+  const year = date.getFullYear()
+  return `${month} ${day}, ${year}`
 }
 
 // 공통 Props 타입
@@ -657,7 +658,7 @@ function CinematicIntro({ settings, backgroundStyle, overlayStyle, titleStyle }:
       <div className="absolute inset-0" style={overlayStyle} />
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
         <div className="intro-line-expand h-px bg-white/50 mb-5" />
-        <p className="text-[16px] intro-letter-spread uppercase whitespace-nowrap" style={{ ...titleStyle, fontFamily: "'Cormorant Garamond', serif" }}>
+        <p className="text-[16px] intro-letter-spread uppercase whitespace-nowrap" style={{ ...titleStyle, fontSize: '16px', fontFamily: "'Cormorant Garamond', serif" }}>
           {settings.mainTitle}
         </p>
         {settings.dateText && (

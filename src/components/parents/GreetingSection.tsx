@@ -61,7 +61,7 @@ export default function GreetingSection({
 
       <div className="text-center mb-12 max-w-[300px]">
         <p
-          className="font-serif text-sm leading-[2.2] transition-colors duration-500 whitespace-pre-line"
+          className="font-serif text-sm leading-[1.8] transition-colors duration-500 whitespace-pre-line"
           style={{ color: isActive ? theme.textLight : '#999' }}
         >
           {greeting}

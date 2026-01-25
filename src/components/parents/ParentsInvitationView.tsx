@@ -137,7 +137,38 @@ export default function ParentsInvitationView({
               }}
             />
           )}
-          <main className="animate-fade-in">
+          <main className="animate-fade-in relative">
+            {/* 음악 재생 버튼 - 첫 섹션 상단에 고정 */}
+            {!isPreview && (
+              <>
+                <audio ref={audioRef} loop preload="auto">
+                  <source src="/samples/parents/wedding-bgm.mp3" type="audio/mpeg" />
+                </audio>
+                <button
+                  onClick={toggleMusic}
+                  className="w-10 h-10 rounded-full flex items-center justify-center transition-all"
+                  style={{
+                    position: 'absolute',
+                    top: '20px',
+                    right: '20px',
+                    zIndex: 100,
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+                  }}
+                >
+                  {isPlaying ? (
+                    <svg className="w-5 h-5" fill={theme.primary} viewBox="0 0 24 24">
+                      <rect x="6" y="4" width="4" height="16" rx="1" />
+                      <rect x="14" y="4" width="4" height="16" rx="1" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill={theme.primary} viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  )}
+                </button>
+              </>
+            )}
             <div id="preview-greeting">
               <GreetingSection
                 childName={childFirstName || '○○'}
@@ -220,38 +251,6 @@ export default function ParentsInvitationView({
         </SectionHighlightProvider>
       )}
 
-      {/* 배경 음악 - 실제 청첩장에서만 표시 */}
-      {isEnvelopeOpen && !isPreview && (
-        <>
-          <audio ref={audioRef} loop preload="auto">
-            <source src="/samples/parents/wedding-bgm.mp3" type="audio/mpeg" />
-          </audio>
-
-          <button
-            onClick={toggleMusic}
-            className="w-10 h-10 rounded-full flex items-center justify-center transition-all"
-            style={{
-              position: 'fixed',
-              top: '20px',
-              right: '20px',
-              zIndex: 99999,
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-              boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
-            }}
-          >
-            {isPlaying ? (
-              <svg className="w-5 h-5" fill={theme.primary} viewBox="0 0 24 24">
-                <rect x="6" y="4" width="4" height="16" rx="1" />
-                <rect x="14" y="4" width="4" height="16" rx="1" />
-              </svg>
-            ) : (
-              <svg className="w-5 h-5" fill={theme.primary} viewBox="0 0 24 24">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-            )}
-          </button>
-          </>
-        )}
       </div>
     </ThemeProvider>
   )

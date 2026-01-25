@@ -82,7 +82,10 @@ export default function GalleryPage() {
         <p className="text-xs sm:text-sm md:text-base text-gray-800 max-w-lg mx-auto mb-8 md:mb-10 font-light leading-relaxed px-4 md:px-0">
           간단한 질문에 답하면
           <br />
-          AI가 두 분만의 이야기를 담은 청첩장을 만들어 드립니다.
+          AI가 두 분만의 이야기를 담은
+          <br className="sm:hidden" />
+          <span className="hidden sm:inline"> </span>
+          청첩장을 만들어 드립니다.
         </p>
         <div className="flex items-center justify-center gap-8 text-xs text-gray-700 tracking-wider">
           <span className="flex items-center gap-2">

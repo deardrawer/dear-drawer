@@ -69,7 +69,7 @@ export default function WeddingInfoSection({
       }}
     >
       <h2
-        className="font-serif text-lg text-center mb-8 tracking-wider transition-colors duration-500"
+        className="font-serif text-lg font-semibold text-center mb-8 tracking-wider transition-colors duration-500"
         style={{ color: isActive ? theme.text : '#999' }}
       >
         결혼식 안내

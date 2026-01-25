@@ -74,12 +74,12 @@ export default function GalleryPage() {
         <p className="text-[10px] tracking-[0.3em] text-gray-700 uppercase mb-6">
           AI-Powered Wedding Invitation
         </p>
-        <h1 className="text-4xl md:text-5xl font-medium text-black mb-6 tracking-wide">
+        <h1 className="text-2xl sm:text-3xl md:text-5xl font-medium text-black mb-4 md:mb-6 tracking-wide">
           Your Story,
           <br />
           <span className="font-semibold">Beautifully Told</span>
         </h1>
-        <p className="text-base text-gray-800 max-w-lg mx-auto mb-10 font-light leading-relaxed">
+        <p className="text-sm sm:text-base text-gray-800 max-w-lg mx-auto mb-8 md:mb-10 font-light leading-relaxed px-4 md:px-0">
           간단한 질문에 답하면 AI가 두 분만의 이야기를 담은
           <br />
           청첩장을 만들어 드립니다.
@@ -111,18 +111,15 @@ export default function GalleryPage() {
                 {/* Phone Frame */}
                 <div className="w-[320px] md:w-[360px] bg-black rounded-[3rem] p-3 shadow-2xl">
                   <div className="rounded-[2.5rem] overflow-hidden bg-white" style={{ height: '680px' }}>
-                    {/* Notch */}
-                    <div className="h-7 bg-black flex items-center justify-center">
-                      <div className="w-20 h-5 bg-black rounded-b-2xl" />
-                    </div>
-
                     {/* iframe Preview */}
-                    <div className="h-[calc(100%-28px)] relative">
+                    <div className="h-full relative">
                       <iframe
                         key={`${selectedTemplate.narrativeType}-${iframeKey}`}
                         src={sampleUrl}
                         className="w-full h-full border-0"
+                        style={{ overflow: 'hidden' }}
                         title="Wedding Invitation Preview"
+                        scrolling="no"
                       />
                     </div>
                   </div>
@@ -221,7 +218,10 @@ export default function GalleryPage() {
                     onClick={() => setIsColorExpanded(!isColorExpanded)}
                     className="w-full flex items-center justify-between mb-4"
                   >
-                    <h2 className="text-lg font-medium text-gray-900">컬러 테마</h2>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-lg font-medium text-gray-900">컬러 테마</h2>
+                      <span className="text-[10px] text-gray-400">에디터에서 수정가능</span>
+                    </div>
                     <div className="flex items-center gap-2">
                       <div className="flex gap-1">
                         <div
@@ -280,7 +280,10 @@ export default function GalleryPage() {
                     onClick={() => setIsFontExpanded(!isFontExpanded)}
                     className="w-full flex items-center justify-between mb-4"
                   >
-                    <h2 className="text-lg font-medium text-gray-900">폰트 스타일</h2>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-lg font-medium text-gray-900">폰트 스타일</h2>
+                      <span className="text-[10px] text-gray-400">에디터에서 수정가능</span>
+                    </div>
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-gray-500">{selectedFont.name}</span>
                       <svg

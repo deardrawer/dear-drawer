@@ -344,13 +344,34 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors }: Page
       {sectionVisibility.guidance && (
         <section id="preview-guidance" className="px-6 py-14" style={{ background: themeColors.background }}>
           {invitation.guidance?.image && (
-            <div className="w-full aspect-[4/5] rounded-2xl mb-8 bg-cover bg-center overflow-hidden" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.06), 0 12px 28px rgba(0,0,0,0.08)' }}>
+            <div className="w-full aspect-[4/5] rounded-2xl mb-8 overflow-hidden" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.06), 0 12px 28px rgba(0,0,0,0.08)' }}>
               <div
-                className="w-full h-full bg-cover bg-center transition-transform duration-300"
-                style={{
-                  backgroundImage: `url(${invitation.guidance.image})`,
-                  transform: `scale(${invitation.guidance.imageSettings?.scale || 1}) translate(${invitation.guidance.imageSettings?.positionX || 0}%, ${invitation.guidance.imageSettings?.positionY || 0}%)`
-                }}
+                className="w-full h-full transition-transform duration-300"
+                style={(() => {
+                  const s = invitation.guidance.imageSettings || {}
+                  const hasCropData = s.cropWidth !== undefined && s.cropHeight !== undefined && (s.cropWidth < 1 || s.cropHeight < 1)
+                  if (hasCropData) {
+                    const cw = s.cropWidth || 1
+                    const ch = s.cropHeight || 1
+                    const cx = s.cropX || 0
+                    const cy = s.cropY || 0
+                    const posX = cw >= 1 ? 0 : (cx / (1 - cw)) * 100
+                    const posY = ch >= 1 ? 0 : (cy / (1 - ch)) * 100
+                    return {
+                      backgroundImage: `url(${invitation.guidance.image})`,
+                      backgroundSize: `${100 / cw}% ${100 / ch}%`,
+                      backgroundPosition: `${posX}% ${posY}%`,
+                      backgroundRepeat: 'no-repeat' as const,
+                    }
+                  }
+                  // 기존 scale/position 방식 (호환성 유지)
+                  return {
+                    backgroundImage: `url(${invitation.guidance.image})`,
+                    backgroundSize: 'cover' as const,
+                    backgroundPosition: 'center' as const,
+                    transform: `scale(${s.scale || 1}) translate(${s.positionX || 0}%, ${s.positionY || 0}%)`,
+                  }
+                })()}
               />
             </div>
           )}

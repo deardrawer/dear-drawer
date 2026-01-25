@@ -48,22 +48,12 @@ export default function GreetingSection({
         filter: isActive ? 'none' : 'grayscale(30%)',
       }}
     >
-      <style jsx>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        .spinning-symbol {
-          animation: spin 8s linear infinite;
-          display: inline-block;
-        }
-      `}</style>
-      <span className="spinning-symbol text-2xl mb-8" style={{ color: theme.accent }}>
+      <span className="text-2xl mb-8" style={{ color: theme.accent }}>
         ✦
       </span>
 
       <h2
-        className="font-serif text-xl tracking-wider mb-10 transition-colors duration-500"
+        className="font-serif text-xl font-semibold tracking-wider mb-10 transition-colors duration-500"
         style={{ color: isActive ? theme.text : '#999' }}
       >
         저희 {childTitle} <span style={{ color: theme.accent }}>{childName}</span> 결혼합니다

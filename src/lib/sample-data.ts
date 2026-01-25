@@ -171,8 +171,8 @@ export const ourSampleContent = {
       guestbook: 'GUESTBOOK',
     },
   },
-  bgm: { enabled: false, url: '', autoplay: false },
-  guidance: { enabled: false, title: '행복한 시간을 위한 안내', content: '', image: '', imageSettings: { scale: 1, positionX: 0, positionY: 0 } },
+  bgm: { enabled: true, url: '/audio/wedding-bgm.mp3', autoplay: true },
+  guidance: { enabled: true, title: '행복한 시간을 위한 안내', content: '따뜻한 마음으로 함께해주세요', image: '/sample/info.png', imageSettings: { scale: 1, positionX: 0, positionY: 0 } },
   intro: {
     presetId: 'cinematic' as const,
     welcomeText: 'Welcome to our wedding',

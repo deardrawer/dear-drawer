@@ -40,8 +40,8 @@ export default function DividerSectionEditor({
       <AccordionContent className="space-y-4 pb-4">
         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
           <div>
-            <p className="text-sm font-medium">풀하이트 디바이더 사용</p>
-            <p className="text-xs text-gray-500">전체 화면 배경 이미지와 텍스트로 섹션을 구분해요</p>
+            <p className="text-sm font-medium">섹션 디바이더</p>
+            <p className="text-xs text-gray-500">흑백 웨딩사진 배경으로 섹션을 구분해요</p>
           </div>
           <Switch
             checked={fullHeightDividers?.enabled || false}

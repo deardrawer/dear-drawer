@@ -116,6 +116,7 @@ export default async function InvitationPage({ params, searchParams }: PageProps
       overrideFontStyle={fontStyle}
       skipIntro={shouldSkipIntro}
       guestInfo={guestInfo}
+      isSample={isSampleInvitation}
     />
   );
 }

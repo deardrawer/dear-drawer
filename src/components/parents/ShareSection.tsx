@@ -49,30 +49,56 @@ export default function ShareSection({
         소중한 분들께 알려주세요
       </p>
 
-      <div className="flex items-center justify-center gap-2">
+      <div className="flex items-center justify-center gap-3">
         <button
-          onClick={onKakaoShare}
+          onClick={() => {
+            if (onKakaoShare) {
+              onKakaoShare()
+            } else {
+              // Kakao SDK를 사용한 공유
+              if (typeof window !== 'undefined' && (window as any).Kakao) {
+                const Kakao = (window as any).Kakao
+                if (!Kakao.isInitialized()) {
+                  Kakao.init(process.env.NEXT_PUBLIC_KAKAO_JS_KEY || '')
+                }
+                Kakao.Share.sendDefault({
+                  objectType: 'feed',
+                  content: {
+                    title: '결혼식에 초대합니다',
+                    description: '소중한 분들을 결혼식에 초대합니다.',
+                    imageUrl: '',
+                    link: {
+                      mobileWebUrl: window.location.href,
+                      webUrl: window.location.href,
+                    },
+                  },
+                  buttons: [
+                    {
+                      title: '청첩장 보기',
+                      link: {
+                        mobileWebUrl: window.location.href,
+                        webUrl: window.location.href,
+                      },
+                    },
+                  ],
+                })
+              } else {
+                alert('카카오톡 공유 기능을 사용할 수 없습니다.')
+              }
+            }
+          }}
           onMouseEnter={(e) => buttonHoverStyle(e, true)}
           onMouseLeave={(e) => buttonHoverStyle(e, false)}
-          className="px-4 py-2 text-xs tracking-wide rounded-full transition-all"
-          style={{ backgroundColor: '#F5F0EB', color: '#666' }}
+          className="px-5 py-2.5 text-xs tracking-wide rounded-full transition-all"
+          style={{ backgroundColor: '#FEE500', color: '#3C1E1E' }}
         >
           카카오톡
-        </button>
-        <button
-          onClick={onSmsShare}
-          onMouseEnter={(e) => buttonHoverStyle(e, true)}
-          onMouseLeave={(e) => buttonHoverStyle(e, false)}
-          className="px-4 py-2 text-xs tracking-wide rounded-full transition-all"
-          style={{ backgroundColor: '#F5F0EB', color: '#666' }}
-        >
-          문자
         </button>
         <button
           onClick={handleCopyLink}
           onMouseEnter={(e) => buttonHoverStyle(e, true)}
           onMouseLeave={(e) => buttonHoverStyle(e, false)}
-          className="px-4 py-2 text-xs tracking-wide rounded-full transition-all"
+          className="px-5 py-2.5 text-xs tracking-wide rounded-full transition-all"
           style={{ backgroundColor: '#F5F0EB', color: '#666' }}
         >
           링크복사

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react'
 import { createPortal } from 'react-dom'
 import GuestFloatingButton from '@/components/invitation/GuestFloatingButton'
 import ProfileImageSlider from '@/components/editor/ProfileImageSlider'
@@ -8,6 +8,8 @@ import { WatermarkOverlay } from '@/components/ui/WatermarkOverlay'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import type { Invitation } from '@/types/invitation'
 import type { InvitationContent } from '@/store/editorStore'
+import IntroAnimation from '@/components/invitation/IntroAnimation'
+import { IntroSettings, getDefaultIntroSettings } from '@/lib/introPresets'
 
 // Music Toggle Component
 function MusicToggle({
@@ -262,12 +264,12 @@ const globalStyles = `
     justify-content: center;
     align-items: center;
     text-align: center;
-    padding: 180px 28px;
+    padding: 80px 28px;
   }
 
   .divider-section.chapter-break {
     min-height: 50vh;
-    padding: 100px 28px;
+    padding: 48px 28px;
   }
 
   .divider-line {
@@ -789,6 +791,11 @@ const globalStyles = `
     overflow: hidden;
   }
 
+  body.guestbook-modal-open .mobile-frame-fixed-ui {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
   /* Desktop Mobile Frame Wrapper */
   @media (min-width: 768px) {
     .desktop-frame-wrapper {
@@ -1128,6 +1135,43 @@ function useScrollAnimation() {
   }, [isMounted])
 
   return { ref, isVisible }
+}
+
+// Section Highlight Context - for dimming inactive sections
+const SectionHighlightContext = createContext<{
+  activeSection: string
+  registerSection: (id: string, ratio: number) => void
+}>({
+  activeSection: '',
+  registerSection: () => {},
+})
+
+function useSectionHighlight(sectionId: string) {
+  const ref = useRef<HTMLDivElement>(null)
+  const { activeSection, registerSection } = useContext(SectionHighlightContext)
+  const [hasAppeared, setHasAppeared] = useState(false)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasAppeared) {
+          setHasAppeared(true)
+        }
+        registerSection(sectionId, entry.intersectionRatio)
+      },
+      {
+        threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1],
+        rootMargin: '-10% 0px -10% 0px'
+      }
+    )
+
+    if (ref.current) observer.observe(ref.current)
+    return () => observer.disconnect()
+  }, [sectionId, registerSection, hasAppeared])
+
+  const isActive = activeSection === sectionId
+
+  return { ref, isActive, hasAppeared }
 }
 
 // Animated Section Component
@@ -1575,11 +1619,11 @@ function ParentIntroSection({
           <StaggeredText text={parentNames} isVisible={isVisible} delay={0.2} charDelay={0.04} />
         </p>
         <p
-          className="typo-title"
+          className="typo-title font-semibold"
           style={{ color: themeColors.text, fontFamily: fonts.body }}
         >
           <StaggeredText text={`${childOrder} ${sideLabel}, `} isVisible={isVisible} delay={0.8} charDelay={0.05} />
-          <span style={{ color: themeColors.accent, fontWeight: 600 }}>
+          <span style={{ color: themeColors.accent }}>
             <StaggeredText text={childName?.slice(1) || ''} isVisible={isVisible} delay={1.2} charDelay={0.08} />
           </span>
           <StaggeredText text=" 결혼합니다." isVisible={isVisible} delay={1.5} charDelay={0.05} />
@@ -1671,7 +1715,7 @@ function WhyWeChoseTitleSection({
       style={{ background: '#ffffff', paddingTop: '64px' }}
     >
       <h2
-        className="typo-title mb-2"
+        className="typo-title font-semibold mb-2"
         style={{
           color: themeColors.text,
           fontFamily: fonts.displayKr,
@@ -1769,8 +1813,8 @@ function WhyWeChoseSection({
           style={{
             background: themeColors.cardBg,
             backgroundImage: `
-              linear-gradient(to right, ${themeColors.text}15 1px, transparent 1px),
-              linear-gradient(to bottom, ${themeColors.text}15 1px, transparent 1px)
+              linear-gradient(to right, ${themeColors.text}08 1px, transparent 1px),
+              linear-gradient(to bottom, ${themeColors.text}08 1px, transparent 1px)
             `,
             backgroundSize: '24px 24px',
             border: `1px solid ${themeColors.text}20`,
@@ -1875,7 +1919,7 @@ function ProfileSection({
   return (
     <div
       ref={ref}
-      className="px-7 py-14"
+      className="px-7 py-10"
       style={{ background: bgColor }}
     >
       <div
@@ -2044,7 +2088,7 @@ function InterviewSection({
   return (
     <div
       ref={ref}
-      className="px-7 py-14"
+      className="px-7 py-10"
       style={{ background: bgColor }}
     >
       {/* Images - Auto Slide for 2+ images */}
@@ -2078,8 +2122,8 @@ function InterviewSection({
           }}
         >
           <p
-            className={`profile-label-animated typo-body inline-block ${titleRevealed ? 'revealed' : ''}`}
-            style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400 }}
+            className={`profile-label-animated typo-body font-semibold inline-block ${titleRevealed ? 'revealed' : ''}`}
+            style={{ fontFamily: fonts.displayKr, color: themeColors.text }}
           >
             {interview.question}
           </p>
@@ -2121,7 +2165,7 @@ function StorySection({
       ref={ref}
       className={`story-section ${isVisible ? 'in-view' : ''}`}
       style={{
-        padding: '60px 28px',
+        padding: '40px 28px',
         background: themeColors.sectionBg,
         textAlign: 'center'
       }}
@@ -2144,11 +2188,10 @@ function StorySection({
 
       {story.title && (
         <p
-          className="story-title"
+          className="story-title font-semibold"
           style={{
             fontFamily: fonts.displayKr,
             fontSize: '15px',
-            fontWeight: 400,
             color: themeColors.text,
             marginBottom: '12px'
           }}
@@ -2221,7 +2264,7 @@ function AnniversaryCounterSection({
       ref={ref}
       className={`anniversary-counter ${isVisible ? 'in-view' : ''}`}
       style={{
-        padding: '56px 28px',
+        padding: '40px 28px',
         textAlign: 'center',
         background: `linear-gradient(180deg, ${themeColors.sectionBg} 0%, ${themeColors.cardBg} 100%)`
       }}
@@ -2495,6 +2538,9 @@ const mockInvitation = {
     autoplay: true,
   },
 
+  // Intro animation settings
+  intro: getDefaultIntroSettings('cinematic'),
+
   // Guidance section
   guidance: {
     enabled: false,
@@ -2525,6 +2571,7 @@ interface InvitationClientProps {
   overrideFontStyle?: string
   skipIntro?: boolean
   guestInfo?: GuestInfo | null
+  isSample?: boolean
 }
 
 // Type for display invitation data
@@ -2555,6 +2602,7 @@ function transformToDisplayData(dbInvitation: Invitation, content: InvitationCon
     design: content.design || mockInvitation.design,
     bgm: content.bgm || mockInvitation.bgm,
     guidance: content.guidance || mockInvitation.guidance,
+    intro: content.intro || mockInvitation.intro,
     fullHeightDividers: content.fullHeightDividers,
     parentIntro: content.parentIntro,
     whyWeChose: content.whyWeChose,
@@ -2639,9 +2687,12 @@ interface PageProps {
   onScreenChange?: (screen: 'cover' | 'invitation') => void
   onOpenRsvp?: () => void
   onOpenLightbox?: (index: number) => void
+  onOpenGuestbookModal?: (index: number, messages: GuestbookMessage[]) => void
   audioRef?: React.RefObject<HTMLAudioElement | null>
   showMusicToggle?: boolean
   shouldAutoPlay?: boolean
+  isSample?: boolean
+  introSettings?: IntroSettings
 }
 
 // 방명록 메시지 타입
@@ -2656,15 +2707,13 @@ interface GuestbookMessage {
 // Intro Page Component - Screen-based transitions like original template
 type IntroScreen = 'cover' | 'invitation'
 
-function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors, onNavigate, onScreenChange }: PageProps) {
+function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors, onNavigate, onScreenChange, introSettings }: PageProps) {
   const [showDirections, setShowDirections] = useState(false)
   const [directionsTab, setDirectionsTab] = useState<DirectionsTab>('car')
 
-  // Cinematic intro states
-  const [cinematicActive, setCinematicActive] = useState(false)
-  const [showText, setShowText] = useState(false)
-  const [cinematicHidden, setCinematicHidden] = useState(false)
-  const [cinematicFadeOut, setCinematicFadeOut] = useState(false)
+  // Intro animation states (using IntroAnimation component)
+  const [introComplete, setIntroComplete] = useState(false)
+  const [showIntroAnimation, setShowIntroAnimation] = useState(true)
   const [coverAnimated, setCoverAnimated] = useState(false)
 
   // Screen transition states
@@ -2676,21 +2725,16 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
   // Touch handling for swipe
   const touchStartY = useRef(0)
 
-  // Trigger cinematic animations on mount - matching original template timing
-  useEffect(() => {
-    const bgTimer = setTimeout(() => setCinematicActive(true), 100)
-    const textTimer = setTimeout(() => setShowText(true), 1000)
-    const fadeOutTimer = setTimeout(() => setCinematicFadeOut(true), 3200)
-    const coverTimer = setTimeout(() => setCoverAnimated(true), 3800)
-    const hideTimer = setTimeout(() => setCinematicHidden(true), 4700)
+  // Get intro settings from invitation or use default
+  const effectiveIntroSettings = introSettings || invitation.intro || getDefaultIntroSettings('cinematic')
 
-    return () => {
-      clearTimeout(bgTimer)
-      clearTimeout(textTimer)
-      clearTimeout(fadeOutTimer)
-      clearTimeout(coverTimer)
-      clearTimeout(hideTimer)
-    }
+  // Handle intro animation complete
+  const handleIntroComplete = useCallback(() => {
+    setIntroComplete(true)
+    setTimeout(() => {
+      setShowIntroAnimation(false)
+      setCoverAnimated(true)
+    }, 500)
   }, [])
 
   // Switch screen function - matching original template
@@ -2760,58 +2804,18 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
 
   return (
     <div className="relative w-full h-screen">
-      {/* CINEMATIC INTRO - Fixed overlay that auto fades out (matching original template) */}
-      {!cinematicHidden && (
-        <div
-          className="fixed inset-0 z-50 flex flex-col justify-center items-center"
-          style={{
-            background: '#000',
-            opacity: cinematicFadeOut ? 0 : 1,
-            transition: 'opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1)',
-            pointerEvents: 'none'
-          }}
-        >
-          {/* Background Image with zoom animation */}
-          <div
-            className={`cinematic-bg absolute inset-0 ${cinematicActive ? 'active' : ''}`}
-            style={{
-              backgroundImage: invitation.media.coverImage
-                ? `url(${invitation.media.coverImage})`
-                : 'linear-gradient(135deg, #333 0%, #111 100%)',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center'
-            }}
-          />
-
-          {/* Dark Overlay */}
-          <div className="absolute inset-0" style={{ background: 'rgba(0, 0, 0, 0.45)' }} />
-
-          {/* Cinematic Content */}
-          <div className={`cinematic-content relative z-10 text-center ${showText ? 'show' : ''}`}>
-            {/* Horizontal Line */}
-            <div className="cinematic-line mx-auto mb-5" />
-
-            {/* Welcome Text */}
-            <p
-              className="cinematic-text text-[16px] font-normal text-white uppercase"
-              style={{ fontFamily: "'Cormorant Garamond', 'Playfair Display', serif" }}
-            >
-              Welcome to our wedding
-            </p>
-
-            {/* Date in English */}
-            <p
-              className="cinematic-subtext text-[12px] font-normal mt-3.5"
-              style={{
-                fontFamily: "'Cormorant Garamond', 'Playfair Display', serif",
-                color: 'rgba(255, 255, 255, 0.6)',
-                letterSpacing: '2px'
-              }}
-            >
-              {formatDateEnglish(invitation.wedding.date)}
-            </p>
-          </div>
-        </div>
+      {/* INTRO ANIMATION - Using IntroAnimation component based on saved preset */}
+      {showIntroAnimation && effectiveIntroSettings?.presetId && (
+        <IntroAnimation
+          settings={effectiveIntroSettings}
+          coverImage={invitation.media.coverImage}
+          groomName={invitation.groom.name}
+          brideName={invitation.bride.name}
+          weddingDate={invitation.wedding.date}
+          venueName={invitation.wedding.venue.name}
+          onComplete={handleIntroComplete}
+          isComplete={introComplete}
+        />
       )}
 
       {/* COVER SECTION - matching original template exactly */}
@@ -3152,22 +3156,53 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
   )
 }
 
+// 샘플 방명록 메시지
+const sampleGuestbookMessages: GuestbookMessage[] = [
+  { id: 'sample-1', guest_name: '김지은', message: '두 분의 결혼을 진심으로 축하드려요! 항상 행복하세요 💕', question: '두 사람에게 해주고 싶은 말은?', created_at: '2025-05-20T10:30:00Z' },
+  { id: 'sample-2', guest_name: '이준호', message: '결혼 축하해! 행복하게 잘 살아~', question: '두 사람에게 해주고 싶은 말은?', created_at: '2025-05-19T14:20:00Z' },
+  { id: 'sample-3', guest_name: '박서윤', message: '예쁜 커플 결혼 축하드립니다. 오래오래 사랑하세요!', question: '두 사람에게 해주고 싶은 말은?', created_at: '2025-05-18T09:15:00Z' },
+  { id: 'sample-4', guest_name: '최민수', message: '서로 배려하고 존중하는 마음이 가장 중요한 것 같아요', question: '결혼생활에서 가장 중요한 건?', created_at: '2025-05-17T16:45:00Z' },
+  { id: 'sample-5', guest_name: '정하나', message: '처음 봤을 때 정말 잘 어울린다고 생각했어요!', question: '두 사람의 첫인상은 어땠나요?', created_at: '2025-05-16T11:30:00Z' },
+  { id: 'sample-6', guest_name: '강민지', message: '행복한 가정 꾸리세요! 축하합니다 🎉', question: '두 사람에게 해주고 싶은 말은?', created_at: '2025-05-15T08:00:00Z' },
+]
+
 // Main Page Component - matching template exactly
-function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, onOpenRsvp, onOpenLightbox, audioRef, showMusicToggle, shouldAutoPlay }: PageProps) {
+function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, onOpenRsvp, onOpenLightbox, onOpenGuestbookModal, audioRef, showMusicToggle, shouldAutoPlay, isSample = false }: PageProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
 
+  // Section Highlight 상태
+  const [activeSection, setActiveSection] = useState('invitation')
+  const visibilityRatios = useRef<Map<string, number>>(new Map())
+
+  const registerSection = useCallback((id: string, ratio: number) => {
+    visibilityRatios.current.set(id, ratio)
+
+    // 가장 높은 가시성 비율을 가진 섹션 찾기
+    let maxRatio = 0
+    let maxId = 'invitation'
+
+    visibilityRatios.current.forEach((r, sectionId) => {
+      if (r > maxRatio) {
+        maxRatio = r
+        maxId = sectionId
+      }
+    })
+
+    if (maxRatio > 0) {
+      setActiveSection(maxId)
+    }
+  }, [])
+
   // 방명록 상태
-  const [guestbookMessages, setGuestbookMessages] = useState<GuestbookMessage[]>([])
+  const [guestbookMessages, setGuestbookMessages] = useState<GuestbookMessage[]>(isSample ? sampleGuestbookMessages : [])
   const [guestName, setGuestName] = useState('')
   const [guestMessage, setGuestMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // 방명록 모달 상태
-  const [guestbookModalOpen, setGuestbookModalOpen] = useState(false)
-  const [guestbookModalIndex, setGuestbookModalIndex] = useState(0)
-
-  // 방명록 메시지 불러오기
+  // 방명록 메시지 불러오기 (샘플이 아닌 경우에만)
   useEffect(() => {
+    if (isSample) return // 샘플 청첩장은 API 호출하지 않음
+
     const fetchMessages = async () => {
       try {
         const res = await fetch(`/api/guestbook?invitationId=${invitationId}`)
@@ -3180,7 +3215,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
       }
     }
     fetchMessages()
-  }, [invitationId])
+  }, [invitationId, isSample])
 
   // 방명록 메시지 등록
   const handleSubmitGuestbook = async () => {
@@ -3191,6 +3226,22 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
 
     if (guestMessage.length > 100) {
       alert('메시지는 100자 이내로 입력해주세요.')
+      return
+    }
+
+    // 샘플 청첩장인 경우 로컬에서만 처리
+    if (isSample) {
+      const newMessage: GuestbookMessage = {
+        id: `sample-new-${Date.now()}`,
+        guest_name: guestName.trim(),
+        message: guestMessage.trim(),
+        question: invitation.content.guestbookQuestions[currentQuestionIndex] || null,
+        created_at: new Date().toISOString(),
+      }
+      setGuestbookMessages((prev) => [newMessage, ...prev])
+      setGuestName('')
+      setGuestMessage('')
+      alert('방명록이 등록되었습니다! (샘플 미리보기)')
       return
     }
 
@@ -3236,19 +3287,13 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
   // 방명록 카드 색상 배열
   const cardColors = ['#FFF9F0', '#F0F7FF', '#F5FFF0', '#FFF0F5', '#F0FFFF']
 
-  // 방명록 모달 열기/닫기
+  // 방명록 모달 열기 (callback을 통해 상위 컴포넌트에서 관리)
   const openGuestbookModal = (index: number) => {
-    setGuestbookModalIndex(index)
-    setGuestbookModalOpen(true)
-    document.body.classList.add('guestbook-modal-open')
-  }
-
-  const closeGuestbookModal = () => {
-    setGuestbookModalOpen(false)
-    document.body.classList.remove('guestbook-modal-open')
+    onOpenGuestbookModal?.(index, guestbookMessages)
   }
 
   return (
+    <SectionHighlightContext.Provider value={{ activeSection, registerSection }}>
     <div className="relative">
       {/* Title Section - FAMILY 템플릿: 항상 FullHeightDividerSection 사용 */}
       <div className="relative">
@@ -3395,24 +3440,44 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
 
       {/* Info Section - matching original template */}
       <section
-        className="px-6 py-14"
+        className="px-6 py-6"
         style={{ background: themeColors.sectionBg }}
       >
         {/* Info Photo */}
         {invitation.guidance?.image && (
           <AnimatedSection className="mb-10">
             <div
-              className="w-full aspect-[4/5] rounded-2xl bg-cover bg-center overflow-hidden"
+              className="w-full aspect-[4/5] rounded-2xl overflow-hidden"
               style={{
                 boxShadow: '0 4px 12px rgba(0,0,0,0.06), 0 12px 28px rgba(0,0,0,0.08)'
               }}
             >
               <div
-                className="w-full h-full bg-cover bg-center"
-                style={{
-                  backgroundImage: `url(${invitation.guidance.image})`,
-                  transform: `scale(${invitation.guidance.imageSettings?.scale || 1}) translate(${invitation.guidance.imageSettings?.positionX || 0}%, ${invitation.guidance.imageSettings?.positionY || 0}%)`
-                }}
+                className="w-full h-full"
+                style={(() => {
+                  const s = invitation.guidance.imageSettings as { scale?: number; positionX?: number; positionY?: number; cropX?: number; cropY?: number; cropWidth?: number; cropHeight?: number } || {}
+                  const hasCropData = s.cropWidth !== undefined && s.cropHeight !== undefined && (s.cropWidth < 1 || s.cropHeight < 1)
+                  if (hasCropData) {
+                    const cw = s.cropWidth || 1
+                    const ch = s.cropHeight || 1
+                    const cx = s.cropX || 0
+                    const cy = s.cropY || 0
+                    const posX = cw >= 1 ? 0 : (cx / (1 - cw)) * 100
+                    const posY = ch >= 1 ? 0 : (cy / (1 - ch)) * 100
+                    return {
+                      backgroundImage: `url(${invitation.guidance.image})`,
+                      backgroundSize: `${100 / cw}% ${100 / ch}%`,
+                      backgroundPosition: `${posX}% ${posY}%`,
+                      backgroundRepeat: 'no-repeat' as const,
+                    }
+                  }
+                  return {
+                    backgroundImage: `url(${invitation.guidance.image})`,
+                    backgroundSize: 'cover' as const,
+                    backgroundPosition: 'center' as const,
+                    transform: `scale(${s.scale || 1}) translate(${s.positionX || 0}%, ${s.positionY || 0}%)`,
+                  }
+                })()}
               />
             </div>
           </AnimatedSection>
@@ -3421,8 +3486,8 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
         {/* Section Title */}
         <AnimatedSection className="text-center mb-8">
           <h3
-            className="text-[15px] relative inline-block"
-            style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400 }}
+            className="text-[15px] font-semibold relative inline-block"
+            style={{ fontFamily: fonts.displayKr, color: themeColors.text }}
           >
             행복한 시간을 위한 안내
           </h3>
@@ -3524,7 +3589,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
       </section>
 
       {/* Thank You Section */}
-      <AnimatedSection className="min-h-[300px] flex flex-col justify-center items-center text-center px-7 py-20" style={{ background: themeColors.sectionBg }}>
+      <AnimatedSection className="min-h-[300px] flex flex-col justify-center items-center text-center px-7 py-12" style={{ background: themeColors.sectionBg }}>
         <h2 className="typo-title mb-7" style={{ fontFamily: fonts.display, color: themeColors.text }}>{invitation.content.thankYou.title}</h2>
         {invitation.content.thankYou.message ? (
           <p className="typo-body mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: invitation.content.thankYou.message.replace(/\n/g, '<br/>') }} />
@@ -3562,7 +3627,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
 
       {/* Guestbook Section - with visibility toggle */}
       {invitation.sectionVisibility?.guestbook !== false && (
-        <AnimatedSection className="px-5 py-14 pb-20 text-center" style={{ background: themeColors.cardBg }}>
+        <AnimatedSection className="px-5 py-10 pb-14 text-center" style={{ background: themeColors.cardBg }}>
           <h3 className="typo-body mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>Guestbook</h3>
           <div className="max-w-[300px] mx-auto mb-9">
             <p className="typo-body font-medium mb-4 min-h-[40px]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>{invitation.content.guestbookQuestions[currentQuestionIndex] || '두 사람에게 하고 싶은 말을 남겨주세요'}</p>
@@ -3640,7 +3705,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
 
       {/* RSVP Section */}
       {invitation.rsvpEnabled && (
-        <AnimatedSection className="px-6 py-14 text-center" style={{ background: themeColors.cardBg }}>
+        <AnimatedSection className="px-6 py-10 text-center" style={{ background: themeColors.cardBg }}>
           <p className="typo-caption mb-6" style={{ color: themeColors.gray }}>RSVP</p>
           <p className="typo-body mb-4" style={{ color: '#666' }}>참석 여부를 알려주세요</p>
           <button
@@ -3659,18 +3724,8 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
         <p className="typo-caption" style={{ color: '#999' }}>Thank you for celebrating with us</p>
         <p className="typo-caption mt-2" style={{ color: '#ccc' }}>Made with dear drawer</p>
       </div>
-
-      {/* Guestbook Modal */}
-      <GuestbookModal
-        messages={guestbookMessages}
-        isOpen={guestbookModalOpen}
-        startIndex={guestbookModalIndex}
-        onClose={closeGuestbookModal}
-        cardColors={cardColors}
-        fonts={fonts}
-        themeColors={themeColors}
-      />
     </div>
+    </SectionHighlightContext.Provider>
   )
 }
 
@@ -3692,34 +3747,30 @@ function GuestbookModal({
   fonts: { body: string; displayKr: string; display: string }
   themeColors: { text: string; primary: string; background: string; cardBg: string; gray: string; divider: string }
 }) {
-  const [currentIndex, setCurrentIndex] = useState(startIndex)
+  const [cardOffset, setCardOffset] = useState(0) // startIndex로부터의 오프셋
   const [swipingDirection, setSwipingDirection] = useState<'none' | 'up' | 'down'>('none')
   const [dragY, setDragY] = useState(0)
   const touchStartY = useRef(0)
   const isDragging = useRef(false)
 
-  // Reset index when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      setCurrentIndex(startIndex)
-    }
-  }, [isOpen, startIndex])
+  // 실제 현재 인덱스 = startIndex + offset
+  const currentIndex = startIndex + cardOffset
 
   const handleNextCard = () => {
     if (currentIndex < messages.length - 1) {
       setSwipingDirection('up')
       setTimeout(() => {
-        setCurrentIndex((prev) => prev + 1)
+        setCardOffset((prev) => prev + 1)
         setSwipingDirection('none')
       }, 300)
     }
   }
 
   const handlePrevCard = () => {
-    if (currentIndex > 0) {
+    if (cardOffset > 0) {
       setSwipingDirection('down')
       setTimeout(() => {
-        setCurrentIndex((prev) => prev - 1)
+        setCardOffset((prev) => prev - 1)
         setSwipingDirection('none')
       }, 300)
     } else {
@@ -3874,7 +3925,7 @@ function InvitationErrorFallback({ resetError }: { resetError: () => void }) {
   )
 }
 
-function InvitationClientContent({ invitation: dbInvitation, content, isPaid, isPreview = false, overrideColorTheme, overrideFontStyle, skipIntro = false }: InvitationClientProps) {
+function InvitationClientContent({ invitation: dbInvitation, content, isPaid, isPreview = false, overrideColorTheme, overrideFontStyle, skipIntro = false, isSample = false }: InvitationClientProps) {
   // Transform DB data to display format
   const invitation = transformToDisplayData(dbInvitation, content)
 
@@ -3895,6 +3946,22 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
   const [openModalType, setOpenModalType] = useState<'none' | 'rsvp'>('none')
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
+
+  // Guestbook modal state (lifted from MainPage for proper positioning)
+  const [guestbookModalOpen, setGuestbookModalOpen] = useState(false)
+  const guestbookModalIndexRef = useRef(0)
+  const [guestbookMessagesForModal, setGuestbookMessagesForModal] = useState<GuestbookMessage[]>([])
+
+  // Tooltip delay - show after 3 seconds on invitation screen
+  const [tooltipReady, setTooltipReady] = useState(false)
+  useEffect(() => {
+    if (currentPage === 'intro' && introScreen === 'invitation') {
+      const timer = setTimeout(() => setTooltipReady(true), 3000)
+      return () => clearTimeout(timer)
+    } else {
+      setTooltipReady(false)
+    }
+  }, [currentPage, introScreen])
 
   const themeColors = colorThemes[effectiveColorTheme]
   const fonts = fontStyles[effectiveFontStyle]
@@ -3951,6 +4018,7 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
                       themeColors={themeColors}
                       onNavigate={setCurrentPage}
                       onScreenChange={setIntroScreen}
+                      introSettings={invitation.intro as IntroSettings}
                     />
                   ) : (
                     <MainPage
@@ -3964,9 +4032,16 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
                         setLightboxIndex(index)
                         setLightboxOpen(true)
                       }}
+                      onOpenGuestbookModal={(index, messages) => {
+                        guestbookModalIndexRef.current = index
+                        setGuestbookMessagesForModal(messages)
+                        setGuestbookModalOpen(true)
+                        document.body.classList.add('guestbook-modal-open')
+                      }}
                       audioRef={audioRef}
                       showMusicToggle={showMusicToggle}
                       shouldAutoPlay={currentPage === 'main' && invitation.bgm?.autoplay === true}
+                      isSample={isSample}
                     />
                   )}
 
@@ -3989,7 +4064,7 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
                   fonts={fonts}
                   openModal={openModalType}
                   onModalClose={() => setOpenModalType('none')}
-                  showTooltip={currentPage === 'intro' && introScreen === 'invitation'}
+                  showTooltip={currentPage === 'intro' && introScreen === 'invitation' && tooltipReady}
                   invitation={{
                     venue_name: invitation.wedding.venue.name,
                     venue_address: invitation.wedding.venue.address,
@@ -4017,6 +4092,23 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
                 initialIndex={lightboxIndex}
                 onClose={() => setLightboxOpen(false)}
               />
+
+              {/* Guestbook Modal - positioned at same level as GalleryLightbox */}
+              {guestbookModalOpen && (
+                <GuestbookModal
+                  key={`guestbook-${guestbookModalIndexRef.current}`}
+                  messages={guestbookMessagesForModal}
+                  isOpen={guestbookModalOpen}
+                  startIndex={guestbookModalIndexRef.current}
+                  onClose={() => {
+                    setGuestbookModalOpen(false)
+                    document.body.classList.remove('guestbook-modal-open')
+                  }}
+                  cardColors={['#FFF9F0', '#F0F7FF', '#F5FFF0', '#FFF0F5', '#F0FFFF']}
+                  fonts={fonts}
+                  themeColors={themeColors}
+                />
+              )}
             </div>
           </div>
         </div>

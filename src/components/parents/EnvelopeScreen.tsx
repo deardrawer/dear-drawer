@@ -34,6 +34,16 @@ export default function EnvelopeScreen({
   const [stage, setStage] = useState(0)
   const [isExtracted, setIsExtracted] = useState(false)
   const [isHidden, setIsHidden] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
+
+  // 마운트 후 컴포넌트 표시 (CSS 로딩 전 깜빡임 방지)
+  useEffect(() => {
+    // 두 프레임 대기 후 표시 (CSS 완전 적용 보장)
+    const timer = setTimeout(() => {
+      setIsMounted(true)
+    }, 50)
+    return () => clearTimeout(timer)
+  }, [])
 
   // 에디터에서 게스트가 변경되면 애니메이션 리셋
   useEffect(() => {
@@ -85,6 +95,8 @@ export default function EnvelopeScreen({
         '--accent-color': accentColor,
         '--envelope-font': fontFamily,
         fontFamily: fontFamily || 'inherit',
+        opacity: isMounted ? 1 : 0,
+        transition: 'opacity 0.15s ease-in',
       } as React.CSSProperties}
     >
       <style jsx>{`
@@ -298,12 +310,19 @@ export default function EnvelopeScreen({
         }
       `}</style>
 
-      <div className="envelope-wrapper" onClick={handleClick}>
-        <div className={`envelope-container ${stage >= 1 ? 'flipped' : ''}`}>
-          {/* 봉투 앞면 */}
+      <div className="envelope-wrapper" onClick={handleClick} style={{ perspective: '1500px' }}>
+        <div
+          className={`envelope-container ${stage >= 1 ? 'flipped' : ''}`}
+          style={{ transformStyle: 'preserve-3d' }}
+        >
+          {/* 봉투 앞면 - 인라인 스타일로 backface-visibility 즉시 적용 */}
           <div
             className="envelope-front"
-            style={{ opacity: isHidden ? 0 : 1, transition: 'opacity 0.6s ease' }}
+            style={{
+              opacity: isHidden ? 0 : 1,
+              transition: 'opacity 0.6s ease',
+              backfaceVisibility: 'hidden',
+            }}
           >
             <div className="h-px w-[60px] my-4" style={{ backgroundColor: accentColor }} />
             {recipientRelation && (
@@ -317,9 +336,13 @@ export default function EnvelopeScreen({
             <div className="h-px w-[60px] my-4" style={{ backgroundColor: accentColor }} />
           </div>
 
-          {/* 봉투 뒷면 */}
+          {/* 봉투 뒷면 - 인라인 스타일로 backface-visibility 즉시 적용 */}
           <div
             className={`envelope-back ${stage >= 2 && !isExtracted ? 'open' : ''} ${isExtracted ? 'extracted' : ''}`}
+            style={{
+              backfaceVisibility: 'hidden',
+              transform: 'rotateY(180deg)',
+            }}
           >
             <div className="sealing-wax" style={{ opacity: isHidden ? 0 : 1, transition: 'opacity 0.6s ease' }}>
               <img src="/images/shilling2.png" alt="seal" />

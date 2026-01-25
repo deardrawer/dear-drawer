@@ -22,6 +22,7 @@ import { getPresetById } from '@/lib/introPresets'
 import { uploadImage } from '@/lib/imageUpload'
 import { ChevronRight, Sparkles, Palette, FileText, Heart, Settings, ChevronsUpDown, Play, Pause, Music } from 'lucide-react'
 import InlineCropEditor from './InlineCropEditor'
+import ImageCropEditor, { CropData } from '@/components/parents/ImageCropEditor'
 import { SortableList, SortableItem } from '@/components/ui/sortable-list'
 import { bgmPresets, getBgmPresetByUrl } from '@/lib/bgmPresets'
 
@@ -1279,7 +1280,8 @@ export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator,
             {/* 신랑측 */}
             <div className="space-y-3 p-4 bg-blue-50 rounded-lg">
               <p className="text-sm font-semibold text-blue-800">신랑측</p>
-              <div className="grid grid-cols-2 gap-3">
+              {/* 아버지 */}
+              <div className="grid grid-cols-2 gap-3 items-end">
                 <div className="space-y-1.5">
                   <FieldLabel fieldKey="groom.father.name" />
                   <Input
@@ -1295,16 +1297,17 @@ export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator,
                     onChange={(e) => handlePhoneChange('groom.father.phone', e.target.value)}
                     placeholder="010-0000-0000"
                   />
-                  <div className="flex items-center gap-2 mt-1">
-                    <Switch
-                      checked={invitation.groom.father.deceased || false}
-                      onCheckedChange={(checked) => updateNestedField('groom.father.deceased', checked)}
-                    />
-                    <span className="text-xs text-gray-500">고인</span>
-                  </div>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={invitation.groom.father.deceased || false}
+                  onCheckedChange={(checked) => updateNestedField('groom.father.deceased', checked)}
+                />
+                <span className="text-xs text-gray-500">아버지 고인</span>
+              </div>
+              {/* 어머니 */}
+              <div className="grid grid-cols-2 gap-3 items-end">
                 <div className="space-y-1.5">
                   <FieldLabel fieldKey="groom.mother.name" />
                   <Input
@@ -1320,21 +1323,22 @@ export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator,
                     onChange={(e) => handlePhoneChange('groom.mother.phone', e.target.value)}
                     placeholder="010-0000-0000"
                   />
-                  <div className="flex items-center gap-2 mt-1">
-                    <Switch
-                      checked={invitation.groom.mother.deceased || false}
-                      onCheckedChange={(checked) => updateNestedField('groom.mother.deceased', checked)}
-                    />
-                    <span className="text-xs text-gray-500">고인</span>
-                  </div>
                 </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={invitation.groom.mother.deceased || false}
+                  onCheckedChange={(checked) => updateNestedField('groom.mother.deceased', checked)}
+                />
+                <span className="text-xs text-gray-500">어머니 고인</span>
               </div>
             </div>
 
             {/* 신부측 */}
             <div className="space-y-3 p-4 bg-pink-50 rounded-lg">
               <p className="text-sm font-semibold text-pink-800">신부측</p>
-              <div className="grid grid-cols-2 gap-3">
+              {/* 아버지 */}
+              <div className="grid grid-cols-2 gap-3 items-end">
                 <div className="space-y-1.5">
                   <FieldLabel fieldKey="bride.father.name" />
                   <Input
@@ -1350,16 +1354,17 @@ export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator,
                     onChange={(e) => handlePhoneChange('bride.father.phone', e.target.value)}
                     placeholder="010-0000-0000"
                   />
-                  <div className="flex items-center gap-2 mt-1">
-                    <Switch
-                      checked={invitation.bride.father.deceased || false}
-                      onCheckedChange={(checked) => updateNestedField('bride.father.deceased', checked)}
-                    />
-                    <span className="text-xs text-gray-500">고인</span>
-                  </div>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={invitation.bride.father.deceased || false}
+                  onCheckedChange={(checked) => updateNestedField('bride.father.deceased', checked)}
+                />
+                <span className="text-xs text-gray-500">아버지 고인</span>
+              </div>
+              {/* 어머니 */}
+              <div className="grid grid-cols-2 gap-3 items-end">
                 <div className="space-y-1.5">
                   <FieldLabel fieldKey="bride.mother.name" />
                   <Input
@@ -1375,14 +1380,14 @@ export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator,
                     onChange={(e) => handlePhoneChange('bride.mother.phone', e.target.value)}
                     placeholder="010-0000-0000"
                   />
-                  <div className="flex items-center gap-2 mt-1">
-                    <Switch
-                      checked={invitation.bride.mother.deceased || false}
-                      onCheckedChange={(checked) => updateNestedField('bride.mother.deceased', checked)}
-                    />
-                    <span className="text-xs text-gray-500">고인</span>
-                  </div>
                 </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={invitation.bride.mother.deceased || false}
+                  onCheckedChange={(checked) => updateNestedField('bride.mother.deceased', checked)}
+                />
+                <span className="text-xs text-gray-500">어머니 고인</span>
               </div>
             </div>
           </AccordionContent>
@@ -1471,7 +1476,7 @@ export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator,
                 />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 items-end">
               <div className="space-y-1.5">
                 <FieldLabel fieldKey="wedding.timeDisplay" />
                 <Input
@@ -2332,49 +2337,29 @@ export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator,
 
               <div className="space-y-2">
                 <Label className="text-xs">웨딩 사진 (필수)</Label>
-                {invitation.guidance.image ? (
-                  <div className="relative group w-full aspect-video">
-                    <div
-                      className="w-full h-full rounded-lg bg-cover bg-center border border-cyan-200"
-                      style={{ backgroundImage: `url(${invitation.guidance.image})` }}
-                    />
-                    <button
-                      onClick={() => updateNestedField('guidance.image', '')}
-                      className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ) : (
-                  <label className={`w-full aspect-video border-2 border-dashed border-cyan-200 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-cyan-400 transition-colors bg-white/50 ${uploadingImages.has('guidance') ? 'opacity-50' : ''}`}>
-                    {uploadingImages.has('guidance') ? (
-                      <>
-                        <div className="w-8 h-8 border-2 border-cyan-300 border-t-cyan-600 rounded-full animate-spin" />
-                        <span className="text-xs text-cyan-400 mt-2">업로드중...</span>
-                      </>
-                    ) : (
-                      <>
-                        <svg className="w-8 h-8 text-cyan-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                        </svg>
-                        <span className="text-xs text-cyan-400 mt-2">사진 추가</span>
-                      </>
-                    )}
-                    <input
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp"
-                      className="hidden"
-                      disabled={uploadingImages.has('guidance')}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0]
-                        if (file) {
-                          handleImageUpload(file, 'guidance', addGuidanceImage)
-                          e.target.value = ''
-                        }
-                      }}
-                    />
-                  </label>
-                )}
+                <ImageCropEditor
+                  value={{
+                    url: invitation.guidance.image || '',
+                    cropX: invitation.guidance.imageSettings?.cropX || 0,
+                    cropY: invitation.guidance.imageSettings?.cropY || 0,
+                    cropWidth: invitation.guidance.imageSettings?.cropWidth || 1,
+                    cropHeight: invitation.guidance.imageSettings?.cropHeight || 1,
+                  }}
+                  onChange={(data: CropData) => {
+                    updateNestedField('guidance.image', data.url)
+                    updateNestedField('guidance.imageSettings', {
+                      ...invitation.guidance.imageSettings,
+                      cropX: data.cropX,
+                      cropY: data.cropY,
+                      cropWidth: data.cropWidth,
+                      cropHeight: data.cropHeight,
+                    })
+                  }}
+                  aspectRatio={4/5}
+                  containerWidth={240}
+                  invitationId={invitationId || undefined}
+                  label=""
+                />
               </div>
             </div>
 

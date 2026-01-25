@@ -2793,8 +2793,8 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
                     <p className="text-sm whitespace-pre-line" style={{ color: themeColors.text }}>{directions.car}</p>
                   ) : (
                     <div className="space-y-2">
-                      {directions.car.desc && <p className="text-sm" style={{ color: themeColors.text }}>{directions.car.desc}</p>}
-                      {directions.car.route && <p className="text-sm text-gray-500">{directions.car.route}</p>}
+                      {(directions.car as { desc?: string; route?: string }).desc && <p className="text-sm" style={{ color: themeColors.text }}>{(directions.car as { desc?: string; route?: string }).desc}</p>}
+                      {(directions.car as { desc?: string; route?: string }).route && <p className="text-sm text-gray-500">{(directions.car as { desc?: string; route?: string }).route}</p>}
                     </div>
                   )}
                 </div>
@@ -2806,37 +2806,42 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
                     <p className="text-sm whitespace-pre-line" style={{ color: themeColors.text }}>{directions.publicTransport}</p>
                   ) : Array.isArray(directions.publicTransport) ? (
                     <div className="space-y-2">
-                      {directions.publicTransport.map((item: string, idx: number) => (
+                      {(directions.publicTransport as string[]).map((item: string, idx: number) => (
                         <p key={idx} className="text-sm" style={{ color: themeColors.text }}>{item}</p>
                       ))}
                     </div>
                   ) : (
-                    <div className="space-y-2">
-                      {directions.publicTransport.subway && (
-                        <div>
-                          <p className="text-xs text-gray-500 mb-1">지하철</p>
-                          {Array.isArray(directions.publicTransport.subway)
-                            ? directions.publicTransport.subway.map((item: string, idx: number) => (
-                                <p key={idx} className="text-sm" style={{ color: themeColors.text }}>{item}</p>
-                              ))
-                            : <p className="text-sm" style={{ color: themeColors.text }}>{directions.publicTransport.subway}</p>
-                          }
+                    (() => {
+                      const pt = directions.publicTransport as { subway?: string | string[]; bus?: string | string[] | { main?: string[]; branch?: string[] } }
+                      return (
+                        <div className="space-y-2">
+                          {pt.subway && (
+                            <div>
+                              <p className="text-xs text-gray-500 mb-1">지하철</p>
+                              {Array.isArray(pt.subway)
+                                ? pt.subway.map((item: string, idx: number) => (
+                                    <p key={idx} className="text-sm" style={{ color: themeColors.text }}>{item}</p>
+                                  ))
+                                : <p className="text-sm" style={{ color: themeColors.text }}>{pt.subway}</p>
+                              }
+                            </div>
+                          )}
+                          {pt.bus && (
+                            <div>
+                              <p className="text-xs text-gray-500 mb-1">버스</p>
+                              <p className="text-sm" style={{ color: themeColors.text }}>
+                                {typeof pt.bus === 'string'
+                                  ? pt.bus
+                                  : Array.isArray(pt.bus)
+                                    ? pt.bus.join(', ')
+                                    : `${(pt.bus as { main?: string[]; branch?: string[] }).main?.join(', ') || ''} ${(pt.bus as { main?: string[]; branch?: string[] }).branch?.join(', ') || ''}`
+                                }
+                              </p>
+                            </div>
+                          )}
                         </div>
-                      )}
-                      {directions.publicTransport.bus && (
-                        <div>
-                          <p className="text-xs text-gray-500 mb-1">버스</p>
-                          <p className="text-sm" style={{ color: themeColors.text }}>
-                            {typeof directions.publicTransport.bus === 'string'
-                              ? directions.publicTransport.bus
-                              : Array.isArray(directions.publicTransport.bus)
-                                ? directions.publicTransport.bus.join(', ')
-                                : `${directions.publicTransport.bus.main?.join(', ') || ''} ${directions.publicTransport.bus.branch?.join(', ') || ''}`
-                            }
-                          </p>
-                        </div>
-                      )}
-                    </div>
+                      )
+                    })()
                   )}
                 </div>
               )}
@@ -2847,8 +2852,8 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
                     <p className="text-sm whitespace-pre-line" style={{ color: themeColors.text }}>{directions.train}</p>
                   ) : (
                     <div className="space-y-2">
-                      {directions.train.station && <p className="text-sm" style={{ color: themeColors.text }}>{directions.train.station}</p>}
-                      {directions.train.desc && <p className="text-sm text-gray-500">{directions.train.desc}</p>}
+                      {(directions.train as { station?: string; desc?: string }).station && <p className="text-sm" style={{ color: themeColors.text }}>{(directions.train as { station?: string; desc?: string }).station}</p>}
+                      {(directions.train as { station?: string; desc?: string }).desc && <p className="text-sm text-gray-500">{(directions.train as { station?: string; desc?: string }).desc}</p>}
                     </div>
                   )}
                 </div>
@@ -2860,8 +2865,8 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
                     <p className="text-sm whitespace-pre-line" style={{ color: themeColors.text }}>{directions.expressBus}</p>
                   ) : (
                     <div className="space-y-2">
-                      {directions.expressBus.terminal && <p className="text-sm" style={{ color: themeColors.text }}>{directions.expressBus.terminal}</p>}
-                      {directions.expressBus.desc && <p className="text-sm text-gray-500">{directions.expressBus.desc}</p>}
+                      {(directions.expressBus as { terminal?: string; desc?: string }).terminal && <p className="text-sm" style={{ color: themeColors.text }}>{(directions.expressBus as { terminal?: string; desc?: string }).terminal}</p>}
+                      {(directions.expressBus as { terminal?: string; desc?: string }).desc && <p className="text-sm text-gray-500">{(directions.expressBus as { terminal?: string; desc?: string }).desc}</p>}
                     </div>
                   )}
                 </div>

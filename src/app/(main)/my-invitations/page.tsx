@@ -37,6 +37,16 @@ type InvitationSummary = {
   content?: string
 }
 
+// PARENTS 템플릿 컬러 테마 맵핑
+const PARENTS_COLOR_MAP: Record<string, string> = {
+  burgundy: '#722F37',
+  navy: '#1E3A5F',
+  sage: '#7D8471',
+  dustyRose: '#C4A4A4',
+  emerald: '#2D5A4A',
+  slateBlue: '#6B7B8C',
+}
+
 // content JSON에서 커버 이미지와 인트로 정보 추출
 function parseInvitationContent(content?: string) {
   if (!content) return { coverImage: '', introTitle: '', introSubTitle: '', senderSide: '', envelopeTheme: '' }
@@ -47,12 +57,17 @@ function parseInvitationContent(content?: string) {
                        parsed.mainImage ||
                        (parsed.gallery?.images?.[0]?.url || parsed.gallery?.images?.[0]) ||
                        ''
+
+    // PARENTS 템플릿의 colorTheme ID를 실제 hex 컬러로 변환
+    const colorThemeId = parsed.colorTheme || 'burgundy'
+    const envelopeTheme = PARENTS_COLOR_MAP[colorThemeId] || '#722F37'
+
     return {
       coverImage,
       introTitle: parsed.intro?.mainTitle || parsed.design?.coverTitle || '',
       introSubTitle: parsed.intro?.subTitle || '',
       senderSide: parsed.sender?.side || '', // groom or bride (혼주용 템플릿)
-      envelopeTheme: parsed.design?.themeColor || '#722F37', // 혼주용 봉투 테마 컬러
+      envelopeTheme, // 혼주용 봉투 테마 컬러 (hex)
     }
   } catch {
     return { coverImage: '', introTitle: '', introSubTitle: '', senderSide: '', envelopeTheme: '' }

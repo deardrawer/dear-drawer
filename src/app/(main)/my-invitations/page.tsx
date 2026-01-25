@@ -39,7 +39,7 @@ type InvitationSummary = {
 
 // content JSON에서 커버 이미지와 인트로 정보 추출
 function parseInvitationContent(content?: string) {
-  if (!content) return { coverImage: '', introTitle: '', introSubTitle: '', senderSide: '' }
+  if (!content) return { coverImage: '', introTitle: '', introSubTitle: '', senderSide: '', envelopeTheme: '' }
   try {
     const parsed = JSON.parse(content)
     // OUR/FAMILY: media.coverImage, PARENTS: mainImage 또는 gallery.images[0]
@@ -52,9 +52,10 @@ function parseInvitationContent(content?: string) {
       introTitle: parsed.intro?.mainTitle || parsed.design?.coverTitle || '',
       introSubTitle: parsed.intro?.subTitle || '',
       senderSide: parsed.sender?.side || '', // groom or bride (혼주용 템플릿)
+      envelopeTheme: parsed.design?.themeColor || '#722F37', // 혼주용 봉투 테마 컬러
     }
   } catch {
-    return { coverImage: '', introTitle: '', introSubTitle: '', senderSide: '' }
+    return { coverImage: '', introTitle: '', introSubTitle: '', senderSide: '', envelopeTheme: '' }
   }
 }
 
@@ -575,10 +576,11 @@ export default function MyInvitationsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {invitations.map((invitation) => {
             const daysInfo = calculateDaysLeft(invitation)
-            const { coverImage, introTitle, introSubTitle, senderSide } = parseInvitationContent(invitation.content)
+            const { coverImage, introTitle, introSubTitle, senderSide, envelopeTheme } = parseInvitationContent(invitation.content)
             const displayImage = coverImage || invitation.main_image
             const templateName = getTemplateDisplayName(invitation.template_id, senderSide)
             const templateBadgeColor = getTemplateBadgeColor(invitation.template_id, senderSide)
+            const isParentsTemplate = invitation.template_id === 'narrative-parents' || invitation.template_id === 'parents' || invitation.template_id === 'parents-formal'
 
             return (
               <Card key={invitation.id} className="overflow-hidden">
@@ -609,6 +611,28 @@ export default function MyInvitationsPage() {
                         )}
                       </div>
                     </>
+                  ) : isParentsTemplate ? (
+                    /* 혼주용 템플릿: 봉투 스타일 미리보기 */
+                    <div
+                      className="absolute inset-0 flex flex-col items-center justify-center"
+                      style={{ backgroundColor: envelopeTheme || '#722F37' }}
+                    >
+                      {/* 봉투 미리보기 */}
+                      <div className="w-[70%] aspect-[3/4] bg-gradient-to-b from-[#F7F4EF] to-[#EDE9E3] rounded-none shadow-lg flex flex-col items-center justify-center relative">
+                        {/* 실링 왁스 장식 */}
+                        <div className="absolute top-4 left-1/2 -translate-x-1/2 w-8 h-8">
+                          <img src="/images/shilling2.png" alt="" className="w-full h-full object-contain" />
+                        </div>
+                        {/* 구분선 */}
+                        <div className="w-10 h-px bg-[#C9A962] mb-3 mt-8" />
+                        {/* 받는 분 */}
+                        <p className="text-[#2C2C2C] text-base tracking-wide">소중한분께</p>
+                        {/* 구분선 */}
+                        <div className="w-10 h-px bg-[#C9A962] mt-3" />
+                      </div>
+                      {/* 힌트 텍스트 */}
+                      <p className="text-white/60 text-xs mt-4">터치하여 열기</p>
+                    </div>
                   ) : (
                     <div className="absolute inset-0 bg-gradient-to-b from-rose-50 to-white flex flex-col items-center justify-center text-center p-4">
                       <h3 className="font-medium text-gray-900 text-lg">

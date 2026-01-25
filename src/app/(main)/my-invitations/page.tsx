@@ -325,7 +325,6 @@ export default function MyInvitationsPage() {
   const handleKakaoShare = () => {
     if (!shareInvitation) return
     const url = getInvitationUrl(shareInvitation)
-    const { coverImage } = parseInvitationContent(shareInvitation.content)
 
     const kakaoWindow = window as typeof window & {
       Kakao?: {
@@ -344,23 +343,12 @@ export default function MyInvitationsPage() {
           })
         : '날짜 미정'
 
-      // 이미지 URL 결정 (커버 이미지 > 기본 이미지)
-      let imageUrl = 'https://invite.deardrawer.com/og-image.png'
-      if (coverImage) {
-        if (coverImage.startsWith('https://')) {
-          imageUrl = coverImage
-        } else if (coverImage.startsWith('/')) {
-          // 상대 경로를 절대 URL로 변환
-          imageUrl = `https://invite.deardrawer.com${coverImage}`
-        }
-      }
-
       kakaoWindow.Kakao.Share.sendDefault({
         objectType: 'feed',
         content: {
           title: `${shareInvitation.groom_name || '신랑'} ❤️ ${shareInvitation.bride_name || '신부'}의 결혼식`,
           description: `${formattedDate}\n${shareInvitation.venue_name || ''}`,
-          imageUrl,
+          imageUrl: 'https://invite.deardrawer.com/og-image.png',
           link: { mobileWebUrl: url, webUrl: url },
         },
         buttons: [{ title: '모바일 청첩장 보기', link: { mobileWebUrl: url, webUrl: url } }],

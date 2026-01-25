@@ -3527,13 +3527,16 @@ function GuestbookModal({
   const handleTouchMove = (e: React.TouchEvent) => {
     if (!isDragging.current) return
     const deltaY = e.touches[0].clientY - touchStartY.current
+    // 스와이프 중에만 기본 동작 방지 (스크롤 방지)
+    if (Math.abs(deltaY) > 10) {
+      e.preventDefault()
+    }
     setDragY(deltaY)
   }
 
   const handleTouchEnd = () => {
     isDragging.current = false
-    const swipeThreshold = 80
-    const tapThreshold = 10
+    const swipeThreshold = 50
 
     if (dragY < -swipeThreshold) {
       // Swipe up - next card
@@ -3541,10 +3544,8 @@ function GuestbookModal({
     } else if (dragY > swipeThreshold) {
       // Swipe down - previous card
       handlePrevCard()
-    } else if (Math.abs(dragY) < tapThreshold) {
-      // Tap - next card
-      handleNextCard()
     }
+    // Tap은 onClick에서 처리됨
     setDragY(0)
   }
 
@@ -3562,8 +3563,7 @@ function GuestbookModal({
 
   const handleMouseUp = () => {
     isDragging.current = false
-    const swipeThreshold = 80
-    const tapThreshold = 10
+    const swipeThreshold = 50
 
     if (dragY < -swipeThreshold) {
       // Swipe up - next card
@@ -3571,10 +3571,8 @@ function GuestbookModal({
     } else if (dragY > swipeThreshold) {
       // Swipe down - previous card
       handlePrevCard()
-    } else if (Math.abs(dragY) < tapThreshold) {
-      // Click - next card
-      handleNextCard()
     }
+    // Click은 onClick에서 처리됨
     setDragY(0)
   }
 
@@ -3620,7 +3618,10 @@ function GuestbookModal({
             transform: isTopCard && dragY !== 0
               ? `translateY(${dragY}px) rotate(${dragY > 0 ? 2 : -2}deg)`
               : undefined,
-            touchAction: 'manipulation',
+            touchAction: 'none',
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+            cursor: isTopCard ? 'pointer' : 'default',
           }
 
           return (
@@ -3628,6 +3629,7 @@ function GuestbookModal({
               key={`${msg.id}-${currentIndex}-${idx}`}
               className={`guestbook-stack-card ${isTopCard && swipingDirection === 'up' ? 'swipe-up' : ''} ${isTopCard && swipingDirection === 'down' ? 'swipe-down' : ''} ${isTopCard && dragY !== 0 ? 'swiping' : ''}`}
               style={cardStyle}
+              onClick={isTopCard ? handleNextCard : undefined}
               onTouchStart={isTopCard ? handleTouchStart : undefined}
               onTouchMove={isTopCard ? handleTouchMove : undefined}
               onTouchEnd={isTopCard ? handleTouchEnd : undefined}

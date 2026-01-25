@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useTheme } from './ThemeContext'
 
 interface RsvpModalProps {
@@ -185,49 +186,53 @@ export default function RsvpModal({ onSubmit, isPreview = false }: RsvpModalProp
     </form>
   )
 
+  // 풀스크린 모달 컨텐츠
+  const fullscreenModal = isFullscreen && typeof document !== 'undefined' ? createPortal(
+    <div
+      className="fixed inset-0 z-[10000] flex flex-col"
+      style={{ backgroundColor: '#FFFFFF' }}
+    >
+      {/* 헤더 */}
+      <div
+        className="flex items-center justify-between px-4 py-3 border-b"
+        style={{ borderColor: '#E8E4DC' }}
+      >
+        <button
+          type="button"
+          onClick={exitFullscreen}
+          className="text-sm px-3 py-1"
+          style={{ color: '#666' }}
+        >
+          취소
+        </button>
+        <h3
+          className="font-serif text-base tracking-wider"
+          style={{ color: theme.text }}
+        >
+          참석 의사 전달
+        </h3>
+        <button
+          type="button"
+          onClick={handleSubmit}
+          className="text-sm px-3 py-1 font-medium"
+          style={{ color: theme.primary }}
+        >
+          완료
+        </button>
+      </div>
+
+      {/* 폼 */}
+      <div className="flex-1 overflow-auto px-6 py-6">
+        <FormContent />
+      </div>
+    </div>,
+    document.body
+  ) : null
+
   return (
     <>
-      {/* 풀스크린 모달 (키보드 입력 시) */}
-      {isFullscreen && (
-        <div
-          className="fixed inset-0 z-[9999] flex flex-col"
-          style={{ backgroundColor: '#FFFFFF' }}
-        >
-          {/* 헤더 */}
-          <div
-            className="flex items-center justify-between px-4 py-3 border-b"
-            style={{ borderColor: '#E8E4DC' }}
-          >
-            <button
-              type="button"
-              onClick={exitFullscreen}
-              className="text-sm px-3 py-1"
-              style={{ color: '#666' }}
-            >
-              취소
-            </button>
-            <h3
-              className="font-serif text-base tracking-wider"
-              style={{ color: theme.text }}
-            >
-              참석 의사 전달
-            </h3>
-            <button
-              type="button"
-              onClick={handleSubmit}
-              className="text-sm px-3 py-1 font-medium"
-              style={{ color: theme.primary }}
-            >
-              완료
-            </button>
-          </div>
-
-          {/* 폼 */}
-          <div className="flex-1 overflow-auto px-6 py-6">
-            <FormContent />
-          </div>
-        </div>
-      )}
+      {/* 풀스크린 모달 (Portal로 body에 렌더링) */}
+      {fullscreenModal}
 
       {/* 기본 바텀시트 */}
       <div ref={ref} className="min-h-[50vh]" style={{ backgroundColor: theme.background }}>

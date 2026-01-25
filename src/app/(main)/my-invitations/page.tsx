@@ -559,8 +559,8 @@ export default function MyInvitationsPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">내 청첩장</h1>
-          <p className="text-gray-500 mt-1">생성한 청첩장을 관리하세요</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">내 청첩장</h1>
+          <p className="text-xs sm:text-sm text-gray-500 mt-1">생성한 청첩장을 관리하세요</p>
         </div>
         <Link href="/gallery">
           <Button>
@@ -580,8 +580,8 @@ export default function MyInvitationsPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
-            <h3 className="text-lg font-medium text-gray-600 mb-2">아직 청첩장이 없습니다</h3>
-            <p className="text-gray-400 mb-6">템플릿을 선택하고 나만의 청첩장을 만들어보세요</p>
+            <h3 className="text-base sm:text-lg font-medium text-gray-600 mb-2">아직 청첩장이 없습니다</h3>
+            <p className="text-xs sm:text-sm text-gray-400 mb-6">템플릿을 선택하고 나만의 청첩장을 만들어보세요</p>
             <Link href="/gallery">
               <Button>청첩장 만들기</Button>
             </Link>
@@ -686,17 +686,17 @@ export default function MyInvitationsPage() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <p className="text-sm font-medium text-gray-900">
+                      <p className="text-xs sm:text-sm font-medium text-gray-900">
                         {invitation.title || `${invitation.groom_name} & ${invitation.bride_name}`}
                       </p>
-                      <p className="text-xs text-gray-400">수정: {new Date(invitation.updated_at).toLocaleDateString('ko-KR')}</p>
+                      <p className="text-[10px] sm:text-xs text-gray-400">수정: {new Date(invitation.updated_at).toLocaleDateString('ko-KR')}</p>
                     </div>
                     {invitation.rsvp_count !== undefined && invitation.rsvp_count > 0 && (
                       <span className="text-xs px-2 py-1 bg-rose-50 text-rose-600 rounded-full">RSVP {invitation.rsvp_count}</span>
                     )}
                   </div>
 
-                  <p className="text-xs text-gray-400 mb-3">
+                  <p className="text-[10px] sm:text-xs text-gray-400 mb-3">
                     {invitation.is_paid ? '예식일로부터 30일 후 자동 삭제됩니다' : '결제하지 않은 청첩장은 생성일로부터 7일 후 자동 삭제됩니다'}
                   </p>
 

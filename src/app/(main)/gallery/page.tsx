@@ -74,12 +74,12 @@ export default function GalleryPage() {
         <p className="text-[10px] tracking-[0.3em] text-gray-700 uppercase mb-6">
           AI-Powered Wedding Invitation
         </p>
-        <h1 className="text-2xl sm:text-3xl md:text-5xl font-medium text-black mb-4 md:mb-6 tracking-wide">
+        <h1 className="text-xl sm:text-2xl md:text-5xl font-medium text-black mb-4 md:mb-6 tracking-wide">
           Your Story,
           <br />
           <span className="font-semibold">Beautifully Told</span>
         </h1>
-        <p className="text-sm sm:text-base text-gray-800 max-w-lg mx-auto mb-8 md:mb-10 font-light leading-relaxed px-4 md:px-0">
+        <p className="text-xs sm:text-sm md:text-base text-gray-800 max-w-lg mx-auto mb-8 md:mb-10 font-light leading-relaxed px-4 md:px-0">
           간단한 질문에 답하면
           <br />
           AI가 두 분만의 이야기를 담은 청첩장을 만들어 드립니다.
@@ -144,7 +144,7 @@ export default function GalleryPage() {
               <div>
                 <div className="flex items-center gap-2 mb-4">
                   <span className="text-lg">💍</span>
-                  <h2 className="text-lg font-medium text-gray-900">신랑신부가 직접 만드는 청첩장</h2>
+                  <h2 className="text-base sm:text-lg font-medium text-gray-900">신랑신부가 직접 만드는 청첩장</h2>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {coupleTemplates.map((template) => (
@@ -176,7 +176,7 @@ export default function GalleryPage() {
               <div>
                 <div className="flex items-center gap-2 mb-4">
                   <span className="text-lg">💌</span>
-                  <h2 className="text-lg font-medium text-gray-900">혼주가 보내는 청첩장</h2>
+                  <h2 className="text-base sm:text-lg font-medium text-gray-900">혼주가 보내는 청첩장</h2>
                   <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-medium rounded-full">NEW</span>
                 </div>
                 <button
@@ -219,7 +219,7 @@ export default function GalleryPage() {
                     className="w-full flex items-center justify-between mb-4"
                   >
                     <div className="flex items-center gap-2">
-                      <h2 className="text-lg font-medium text-gray-900">컬러 테마</h2>
+                      <h2 className="text-base sm:text-lg font-medium text-gray-900">컬러 테마</h2>
                       <span className="text-[10px] text-gray-400">에디터에서 수정가능</span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -281,7 +281,7 @@ export default function GalleryPage() {
                     className="w-full flex items-center justify-between mb-4"
                   >
                     <div className="flex items-center gap-2">
-                      <h2 className="text-lg font-medium text-gray-900">폰트 스타일</h2>
+                      <h2 className="text-base sm:text-lg font-medium text-gray-900">폰트 스타일</h2>
                       <span className="text-[10px] text-gray-400">에디터에서 수정가능</span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -326,7 +326,7 @@ export default function GalleryPage() {
 
               {/* Template Features */}
               <div className="bg-white rounded-2xl p-6 border border-gray-100">
-                <h2 className="text-lg font-medium text-gray-900 mb-4">
+                <h2 className="text-base sm:text-lg font-medium text-gray-900 mb-4">
                   {selectedTemplate.name} 템플릿 특징
                 </h2>
                 <ul className="space-y-3">
@@ -471,7 +471,7 @@ export default function GalleryPage() {
       {/* Features Section */}
       <section className="py-20 px-6 bg-white border-t border-gray-100">
         <div className="container mx-auto max-w-4xl">
-          <h2 className="text-2xl font-medium text-center text-gray-900 mb-12">
+          <h2 className="text-xl sm:text-2xl font-medium text-center text-gray-900 mb-12">
             왜 dear drawer인가요?
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

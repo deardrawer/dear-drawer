@@ -32,6 +32,26 @@ const sampleData: ParentsInvitationContent = {
       hall: '5층 루체홀',
       address: '서울특별시 강남구 청담동 123-45',
     },
+    directions: {
+      bus: {
+        enabled: true,
+        lines: '143, 240, 463번',
+        stop: '청담사거리 하차 후 도보 5분',
+      },
+      subway: {
+        enabled: true,
+        line: '7호선',
+        station: '청담역',
+        exit: '9번 출구',
+        walk: '도보 8분',
+      },
+      parking: {
+        enabled: true,
+        capacity: '건물 내 지하주차장 이용 가능',
+        free: '3시간 무료 (이후 30분당 1,000원)',
+        note: '주차 공간이 협소하오니 가급적 대중교통을 이용해주세요',
+      },
+    },
   },
   envelope: {
     message: [

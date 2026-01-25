@@ -3749,135 +3749,210 @@ function GuestbookModal({
   fonts: { body: string; displayKr: string; display: string }
   themeColors: { text: string; primary: string; background: string; cardBg: string; gray: string; divider: string }
 }) {
-  const [cardOffset, setCardOffset] = useState(0) // startIndex로부터의 오프셋
+  const [currentIndex, setCurrentIndex] = useState(startIndex)
   const [swipingDirection, setSwipingDirection] = useState<'none' | 'up' | 'down'>('none')
   const [dragY, setDragY] = useState(0)
   const touchStartY = useRef(0)
   const isDragging = useRef(false)
 
-  // 실제 현재 인덱스 = startIndex + offset
-  const currentIndex = startIndex + cardOffset
+  // 무한 루프를 위한 인덱스 계산
+  const getLoopedIndex = (index: number) => {
+    const len = messages.length
+    return ((index % len) + len) % len
+  }
 
   const handleNextCard = () => {
-    if (currentIndex < messages.length - 1) {
-      setSwipingDirection('up')
-      setTimeout(() => {
-        setCardOffset((prev) => prev + 1)
-        setSwipingDirection('none')
-      }, 300)
-    }
+    setSwipingDirection('up')
+    setTimeout(() => {
+      setCurrentIndex((prev) => getLoopedIndex(prev + 1))
+      setSwipingDirection('none')
+    }, 300)
   }
 
   const handlePrevCard = () => {
-    if (cardOffset > 0) {
-      setSwipingDirection('down')
-      setTimeout(() => {
-        setCardOffset((prev) => prev - 1)
-        setSwipingDirection('none')
-      }, 300)
-    } else {
-      // Close modal if at first card and swiping down
-      onClose()
-    }
+    setSwipingDirection('down')
+    setTimeout(() => {
+      setCurrentIndex((prev) => getLoopedIndex(prev - 1))
+      setSwipingDirection('none')
+    }, 300)
   }
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartY.current = e.touches[0].clientY
-    isDragging.current = true
-    setDragY(0)
-  }
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging.current) return
-    const deltaY = e.touches[0].clientY - touchStartY.current
-    setDragY(deltaY)
-  }
-
-  const handleTouchEnd = () => {
-    isDragging.current = false
-    const threshold = 80
-
-    if (dragY < -threshold) {
-      // Swipe up - next card
-      handleNextCard()
-    } else if (dragY > threshold) {
-      // Swipe down - previous card or close
-      handlePrevCard()
-    }
-    setDragY(0)
-  }
-
-  const handleMouseDown = (e: React.MouseEvent) => {
+  // Pointer Events - 마우스와 터치 통합 처리
+  const handlePointerDown = (e: React.PointerEvent) => {
+    (e.target as HTMLElement).setPointerCapture(e.pointerId)
     touchStartY.current = e.clientY
     isDragging.current = true
     setDragY(0)
   }
 
-  const handleMouseMove = (e: React.MouseEvent) => {
+  const handlePointerMove = (e: React.PointerEvent) => {
     if (!isDragging.current) return
     const deltaY = e.clientY - touchStartY.current
     setDragY(deltaY)
   }
 
-  const handleMouseUp = () => {
+  const handlePointerUp = (e: React.PointerEvent) => {
+    (e.target as HTMLElement).releasePointerCapture(e.pointerId)
     isDragging.current = false
-    const threshold = 80
+    const swipeThreshold = 50
+    const tapThreshold = 10
 
-    if (dragY < -threshold) {
+    if (dragY < -swipeThreshold) {
       handleNextCard()
-    } else if (dragY > threshold) {
+    } else if (dragY > swipeThreshold) {
       handlePrevCard()
+    } else if (Math.abs(dragY) < tapThreshold) {
+      handleNextCard()
     }
     setDragY(0)
   }
 
-  const handleMouseLeave = () => {
-    if (isDragging.current) {
-      isDragging.current = false
-      setDragY(0)
-    }
+  const handlePointerCancel = () => {
+    isDragging.current = false
+    setDragY(0)
   }
 
-  // Get visible cards (current and next 2)
-  const visibleCards = messages.slice(currentIndex, currentIndex + 3)
+  // Get visible cards for infinite loop (current and next 2)
+  const getVisibleCards = () => {
+    const cards = []
+    for (let i = 0; i < 3; i++) {
+      const idx = getLoopedIndex(currentIndex + i)
+      cards.push({ ...messages[idx], _displayIndex: idx })
+    }
+    return cards
+  }
+  const visibleCards = getVisibleCards()
 
   if (!isOpen || messages.length === 0) return null
 
+  // 모달 인라인 스타일 - Portal에서도 확실하게 적용
+  const modalStyle: React.CSSProperties = {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    background: 'rgba(250, 250, 250, 0.55)',
+    backdropFilter: 'blur(2px)',
+    WebkitBackdropFilter: 'blur(2px)',
+    zIndex: 9999,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    pointerEvents: 'auto',
+  }
+
+  // 닫기 버튼 스타일
+  const closeButtonStyle: React.CSSProperties = {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    width: 44,
+    height: 44,
+    background: '#fff',
+    border: 'none',
+    borderRadius: '50%',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 20,
+    color: '#666',
+    zIndex: 10001,
+    pointerEvents: 'auto',
+    touchAction: 'manipulation',
+  }
+
+  // 카드 스택 스타일
+  const stackStyle: React.CSSProperties = {
+    position: 'relative',
+    width: 280,
+    height: 360,
+    perspective: 1000,
+    pointerEvents: 'auto',
+  }
+
   return (
     <div
-      className={`guestbook-modal ${isOpen ? 'active' : ''}`}
+      style={modalStyle}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose()
       }}
     >
-      <button className="guestbook-modal-close" onClick={onClose}>
+      <button
+        style={closeButtonStyle}
+        onClick={(e) => {
+          e.stopPropagation()
+          onClose()
+        }}
+        onTouchEnd={(e) => {
+          e.stopPropagation()
+          onClose()
+        }}
+      >
         ✕
       </button>
 
-      <div className="guestbook-stack">
+      <div style={stackStyle}>
         {visibleCards.map((msg, idx) => {
-          const actualIndex = currentIndex + idx
+          const actualIndex = (msg as { _displayIndex: number })._displayIndex
           const isTopCard = idx === 0
+
+          // 카드 스타일 - 인라인으로 전체 적용
           const cardStyle: React.CSSProperties = {
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            minHeight: 200,
+            padding: '32px 28px',
             background: cardColors[actualIndex % cardColors.length],
+            borderRadius: 20,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+            textAlign: 'center',
+            transition: dragY !== 0 ? 'none' : 'transform 0.4s ease, opacity 0.4s ease',
             zIndex: 3 - idx,
             transform: isTopCard && dragY !== 0
               ? `translateY(${dragY}px) rotate(${dragY > 0 ? 2 : -2}deg)`
+              : isTopCard && swipingDirection === 'up'
+              ? 'translateY(-150%) rotate(-5deg)'
+              : isTopCard && swipingDirection === 'down'
+              ? 'translateY(150%) rotate(5deg)'
+              : idx === 1
+              ? 'translateY(20px) scale(0.95)'
+              : idx === 2
+              ? 'translateY(40px) scale(0.9)'
               : undefined,
+            opacity: isTopCard && (swipingDirection === 'up' || swipingDirection === 'down')
+              ? 0
+              : idx === 1
+              ? 0.7
+              : idx === 2
+              ? 0.4
+              : 1,
+            touchAction: 'none',
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+            cursor: isTopCard ? 'pointer' : 'default',
+            pointerEvents: isTopCard ? 'auto' : 'none',
+            WebkitTapHighlightColor: 'transparent',
           }
 
           return (
             <div
-              key={msg.id}
-              className={`guestbook-stack-card ${isTopCard && swipingDirection === 'up' ? 'swipe-up' : ''} ${isTopCard && swipingDirection === 'down' ? 'swipe-down' : ''} ${isTopCard && dragY !== 0 ? 'swiping' : ''}`}
+              key={`${msg.id}-${currentIndex}-${idx}`}
               style={cardStyle}
-              onTouchStart={isTopCard ? handleTouchStart : undefined}
-              onTouchMove={isTopCard ? handleTouchMove : undefined}
-              onTouchEnd={isTopCard ? handleTouchEnd : undefined}
-              onMouseDown={isTopCard ? handleMouseDown : undefined}
-              onMouseMove={isTopCard ? handleMouseMove : undefined}
-              onMouseUp={isTopCard ? handleMouseUp : undefined}
-              onMouseLeave={isTopCard ? handleMouseLeave : undefined}
+              onPointerDown={isTopCard ? handlePointerDown : undefined}
+              onPointerMove={isTopCard ? handlePointerMove : undefined}
+              onPointerUp={isTopCard ? handlePointerUp : undefined}
+              onPointerCancel={isTopCard ? handlePointerCancel : undefined}
+              onClick={isTopCard ? (e) => {
+                e.stopPropagation()
+                if (Math.abs(dragY) < 10) {
+                  handleNextCard()
+                }
+              } : undefined}
             >
               {msg.question && (
                 <p className="typo-caption text-gray-400 mb-3">{msg.question}</p>
@@ -3891,12 +3966,30 @@ function GuestbookModal({
         })}
 
         {/* Swipe hint */}
-        <div className="guestbook-swipe-hint">
-          위로 밀어서 다음
+        <div style={{
+          position: 'absolute',
+          bottom: -50,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          fontSize: 11,
+          color: '#aaa',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 6,
+        }}>
+          터치하거나 밀어서 넘기기
         </div>
 
         {/* Card counter */}
-        <div className="absolute -bottom-24 left-1/2 -translate-x-1/2 typo-caption text-gray-400">
+        <div style={{
+          position: 'absolute',
+          bottom: -80,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          fontSize: 11,
+          color: '#aaa',
+        }}>
           {currentIndex + 1} / {messages.length}
         </div>
       </div>
@@ -4095,8 +4188,8 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
                 onClose={() => setLightboxOpen(false)}
               />
 
-              {/* Guestbook Modal - positioned at same level as GalleryLightbox */}
-              {guestbookModalOpen && (
+              {/* Guestbook Modal - Portal로 body에 직접 렌더링 */}
+              {guestbookModalOpen && typeof document !== 'undefined' && createPortal(
                 <GuestbookModal
                   key={`guestbook-${guestbookModalIndexRef.current}`}
                   messages={guestbookMessagesForModal}
@@ -4109,7 +4202,8 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
                   cardColors={['#FFF9F0', '#F0F7FF', '#F5FFF0', '#FFF0F5', '#F0FFFF']}
                   fonts={fonts}
                   themeColors={themeColors}
-                />
+                />,
+                document.body
               )}
             </div>
           </div>

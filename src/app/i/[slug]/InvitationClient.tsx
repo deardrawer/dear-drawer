@@ -3572,43 +3572,135 @@ function GuestbookModal({
 
   if (!isOpen || messages.length === 0) return null
 
+  // 모달 인라인 스타일 - Portal에서도 확실하게 적용
+  const modalStyle: React.CSSProperties = {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    background: 'rgba(250, 250, 250, 0.55)',
+    backdropFilter: 'blur(2px)',
+    WebkitBackdropFilter: 'blur(2px)',
+    zIndex: 9999,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    pointerEvents: 'auto',
+  }
+
+  // 닫기 버튼 스타일
+  const closeButtonStyle: React.CSSProperties = {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    width: 44,
+    height: 44,
+    background: '#fff',
+    border: 'none',
+    borderRadius: '50%',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 20,
+    color: '#666',
+    zIndex: 10001,
+    pointerEvents: 'auto',
+    touchAction: 'manipulation',
+  }
+
+  // 카드 스택 스타일
+  const stackStyle: React.CSSProperties = {
+    position: 'relative',
+    width: 280,
+    height: 360,
+    perspective: 1000,
+    pointerEvents: 'auto',
+  }
+
   return (
     <div
-      className={`guestbook-modal ${isOpen ? 'active' : ''}`}
+      style={modalStyle}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose()
       }}
-      style={{ touchAction: 'manipulation' }}
     >
-      <button className="guestbook-modal-close" onClick={onClose}>
+      <button
+        style={closeButtonStyle}
+        onClick={(e) => {
+          e.stopPropagation()
+          onClose()
+        }}
+        onTouchEnd={(e) => {
+          e.stopPropagation()
+          onClose()
+        }}
+      >
         ✕
       </button>
 
-      <div className="guestbook-stack">
+      <div style={stackStyle}>
         {visibleCards.map((msg, idx) => {
           const actualIndex = (msg as { _displayIndex: number })._displayIndex
           const isTopCard = idx === 0
+
+          // 카드 스타일 - 인라인으로 전체 적용
           const cardStyle: React.CSSProperties = {
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            minHeight: 200,
+            padding: '32px 28px',
             background: cardColors[actualIndex % cardColors.length],
+            borderRadius: 20,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+            textAlign: 'center',
+            transition: dragY !== 0 ? 'none' : 'transform 0.4s ease, opacity 0.4s ease',
             zIndex: 3 - idx,
             transform: isTopCard && dragY !== 0
               ? `translateY(${dragY}px) rotate(${dragY > 0 ? 2 : -2}deg)`
+              : isTopCard && swipingDirection === 'up'
+              ? 'translateY(-150%) rotate(-5deg)'
+              : isTopCard && swipingDirection === 'down'
+              ? 'translateY(150%) rotate(5deg)'
+              : idx === 1
+              ? 'translateY(20px) scale(0.95)'
+              : idx === 2
+              ? 'translateY(40px) scale(0.9)'
               : undefined,
+            opacity: isTopCard && (swipingDirection === 'up' || swipingDirection === 'down')
+              ? 0
+              : idx === 1
+              ? 0.7
+              : idx === 2
+              ? 0.4
+              : 1,
             touchAction: 'none',
             userSelect: 'none',
             WebkitUserSelect: 'none',
             cursor: isTopCard ? 'pointer' : 'default',
+            pointerEvents: isTopCard ? 'auto' : 'none',
+            WebkitTapHighlightColor: 'transparent',
           }
 
           return (
             <div
               key={`${msg.id}-${currentIndex}-${idx}`}
-              className={`guestbook-stack-card ${isTopCard && swipingDirection === 'up' ? 'swipe-up' : ''} ${isTopCard && swipingDirection === 'down' ? 'swipe-down' : ''} ${isTopCard && dragY !== 0 ? 'swiping' : ''}`}
               style={cardStyle}
               onPointerDown={isTopCard ? handlePointerDown : undefined}
               onPointerMove={isTopCard ? handlePointerMove : undefined}
               onPointerUp={isTopCard ? handlePointerUp : undefined}
               onPointerCancel={isTopCard ? handlePointerCancel : undefined}
+              onClick={isTopCard ? (e) => {
+                e.stopPropagation()
+                // onClick도 탭으로 처리 (모바일 폴백)
+                if (Math.abs(dragY) < 10) {
+                  handleNextCard()
+                }
+              } : undefined}
             >
               {msg.question && (
                 <p className="text-[10px] font-light text-gray-400 mb-3 leading-[1.5]">{msg.question}</p>

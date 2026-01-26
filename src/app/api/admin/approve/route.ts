@@ -90,9 +90,10 @@ export async function POST(request: NextRequest) {
       .run();
 
     // Update invitation is_paid status
+    let updateResult;
     try {
       if (paymentRequest.invitation_id) {
-        await db
+        updateResult = await db
           .prepare(
             `UPDATE invitations
              SET is_paid = 1, imweb_order_no = ?
@@ -100,9 +101,10 @@ export async function POST(request: NextRequest) {
           )
           .bind(paymentRequest.order_number, paymentRequest.invitation_id)
           .run();
+        console.log(`Updated invitation ${paymentRequest.invitation_id}, changes: ${updateResult.meta?.changes}`);
       } else {
-        // D1(SQLite)는 UPDATE...ORDER BY...LIMIT을 지원하지 않으므로 서브쿼리 사용
-        await db
+        // invitation_id가 없으면 해당 사용자의 최신 미결제 청첩장 업데이트
+        updateResult = await db
           .prepare(
             `UPDATE invitations
              SET is_paid = 1, imweb_order_no = ?
@@ -115,9 +117,16 @@ export async function POST(request: NextRequest) {
           )
           .bind(paymentRequest.order_number, paymentRequest.user_id)
           .run();
+        console.log(`Updated invitation for user ${paymentRequest.user_id}, changes: ${updateResult.meta?.changes}`);
+      }
+
+      // 업데이트된 행이 없으면 경고
+      if (!updateResult.meta?.changes || updateResult.meta.changes === 0) {
+        console.warn("No invitation was updated! invitation_id:", paymentRequest.invitation_id, "user_id:", paymentRequest.user_id);
       }
     } catch (error) {
-      console.warn("Could not update invitation is_paid status:", error);
+      console.error("Failed to update invitation is_paid status:", error);
+      // 에러가 발생해도 결제 승인은 성공으로 처리하되 로그 남김
     }
 
     // Send Telegram notification

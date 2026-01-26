@@ -101,13 +101,17 @@ export async function POST(request: NextRequest) {
           .bind(paymentRequest.order_number, paymentRequest.invitation_id)
           .run();
       } else {
+        // D1(SQLite)는 UPDATE...ORDER BY...LIMIT을 지원하지 않으므로 서브쿼리 사용
         await db
           .prepare(
             `UPDATE invitations
              SET is_paid = 1, imweb_order_no = ?
-             WHERE user_id = ? AND (is_paid = 0 OR is_paid IS NULL)
-             ORDER BY created_at DESC
-             LIMIT 1`
+             WHERE id = (
+               SELECT id FROM invitations
+               WHERE user_id = ? AND (is_paid = 0 OR is_paid IS NULL)
+               ORDER BY created_at DESC
+               LIMIT 1
+             )`
           )
           .bind(paymentRequest.order_number, paymentRequest.user_id)
           .run();

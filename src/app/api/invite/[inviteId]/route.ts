@@ -42,6 +42,7 @@ export async function GET(
         gallery_images: invitation.gallery_images,
         greeting_message: invitation.greeting_message,
         content: invitation.content,
+        is_paid: invitation.is_paid,
       },
     });
   } catch (error) {

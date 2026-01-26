@@ -84,15 +84,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '이미 접수된 주문번호입니다.' }, { status: 400 })
     }
 
-    // ID 생성 (UUID 형식)
-    const requestId = crypto.randomUUID()
-
-    // payment_requests 테이블에 INSERT (id 포함)
+    // payment_requests 테이블에 INSERT (id는 자동생성)
     await db.prepare(`
-      INSERT INTO payment_requests (id, user_id, invitation_id, order_number, buyer_name, buyer_phone, status, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, 'pending', datetime('now'))
+      INSERT INTO payment_requests (user_id, invitation_id, order_number, buyer_name, buyer_phone, status, created_at)
+      VALUES (?, ?, ?, ?, ?, 'pending', datetime('now'))
     `).bind(
-      requestId,
       userId,
       invitationId || null,
       orderNumber,
@@ -100,7 +96,7 @@ export async function POST(request: NextRequest) {
       buyerPhone
     ).run()
 
-    console.log(`Payment request created: id=${requestId}, invitationId=${invitationId || 'null'}, userId=${userId}`)
+    console.log(`Payment request created: invitationId=${invitationId || 'null'}, userId=${userId}`)
 
     // 텔레그램 알림 전송
     try {

@@ -3,9 +3,8 @@ compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
 
 [vars]
-NEXT_PUBLIC_KAKAO_CLIENT_ID = "45cff9edef371e0e18394dfd5d0f29f7"
-NEXT_PUBLIC_KAKAO_REDIRECT_URI = "https://invite.deardrawer.com/api/auth/kakao/callback"
-NEXTAUTH_URL = "https://invite.deardrawer.com"
+# Kakao OAuth vars are set as secrets in Cloudflare Pages dashboard
+# NEXT_PUBLIC_KAKAO_CLIENT_ID, NEXT_PUBLIC_KAKAO_REDIRECT_URI
 
 # Telegram notification settings
 # Note: TELEGRAM_BOT_TOKEN should be added as a secret via Cloudflare dashboard

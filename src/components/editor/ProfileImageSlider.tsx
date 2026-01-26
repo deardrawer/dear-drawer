@@ -61,6 +61,7 @@ export default function ProfileImageSlider({
   const [touchEnd, setTouchEnd] = useState<number | null>(null)
   const [isPaused, setIsPaused] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(false)
+  const [enableTransition, setEnableTransition] = useState(true) // transition 활성화 상태
   const autoPlayRef = useRef<NodeJS.Timeout | null>(null)
   const slidesRef = useRef<HTMLDivElement>(null)
 
@@ -104,30 +105,22 @@ export default function ProfileImageSlider({
   const handleTransitionEnd = () => {
     if (currentIndex === images.length + 1) {
       // 마지막 클론에서 실제 첫번째로 즉시 점프
-      if (slidesRef.current) {
-        slidesRef.current.style.transition = 'none'
-      }
+      setEnableTransition(false)
       setCurrentIndex(1)
       // 두 프레임 후에 트랜지션 복원 (점프가 완료된 후)
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          if (slidesRef.current) {
-            slidesRef.current.style.transition = 'transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
-          }
+          setEnableTransition(true)
           setIsTransitioning(false)
         })
       })
     } else if (currentIndex === 0) {
       // 첫번째 클론에서 실제 마지막으로 즉시 점프
-      if (slidesRef.current) {
-        slidesRef.current.style.transition = 'none'
-      }
+      setEnableTransition(false)
       setCurrentIndex(images.length)
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          if (slidesRef.current) {
-            slidesRef.current.style.transition = 'transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
-          }
+          setEnableTransition(true)
           setIsTransitioning(false)
         })
       })
@@ -137,12 +130,14 @@ export default function ProfileImageSlider({
   }
 
   const goToSlide = useCallback((index: number) => {
+    setEnableTransition(true)
     setIsTransitioning(true)
     setCurrentIndex(index + 1) // 클론 때문에 +1
   }, [])
 
   const goToNext = useCallback(() => {
     if (!isTransitioning) {
+      setEnableTransition(true)
       setIsTransitioning(true)
       setCurrentIndex((prev) => prev + 1)
     }
@@ -150,6 +145,7 @@ export default function ProfileImageSlider({
 
   const goToPrev = useCallback(() => {
     if (!isTransitioning) {
+      setEnableTransition(true)
       setIsTransitioning(true)
       setCurrentIndex((prev) => prev - 1)
     }
@@ -234,7 +230,7 @@ export default function ProfileImageSlider({
           className="flex h-full"
           style={{
             transform: `translateX(-${currentIndex * 100}%)`,
-            transition: 'transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+            transition: enableTransition ? 'transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)' : 'none'
           }}
           onTransitionEnd={handleTransitionEnd}
         >

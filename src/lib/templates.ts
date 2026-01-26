@@ -33,7 +33,7 @@ export const templates: Template[] = [
   {
     id: 'narrative-our',
     name: 'OUR',
-    description: '커플의 서사가 중심이 되는 청첩장입니다. 두 사람이 어떻게 만나고, 어떤 시간을 지나 결혼을 결심하게 되었는지를 담습니다.',
+    description: '두 사람의 사랑을 한 편의 이야기로',
     thumbnail: '/templates/narrative-our.jpg',
     narrativeType: 'our',
     emoji: '💕',
@@ -62,7 +62,7 @@ export const templates: Template[] = [
   {
     id: 'narrative-family',
     name: 'FAMILY',
-    description: '가족의 서사가 함께하는 청첩장입니다. 신랑신부 각각의 성장 배경과 부모님의 마음, 가족이 되어가는 의미를 담습니다.',
+    description: '두 가족이 함께 써 내려가는 결혼 이야기',
     thumbnail: '/templates/narrative-family.jpg',
     narrativeType: 'family',
     emoji: '👨‍👩‍👧‍👦',
@@ -93,7 +93,7 @@ export const templates: Template[] = [
   {
     id: 'narrative-parents',
     name: 'PARENTS',
-    description: '혼주가 보내는 청첩장입니다. 부모님의 시선으로 자녀의 결혼을 알리고, 소중한 분들을 초대하는 따뜻한 청첩장입니다.',
+    description: '부모의 시선으로 전하는 초대',
     thumbnail: '/templates/narrative-parents.jpg',
     narrativeType: 'parents',
     emoji: '🎎',

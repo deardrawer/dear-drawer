@@ -199,7 +199,7 @@ export default function GalleryPage() {
             <p className="text-sm text-gray-500">원하는 템플릿을 선택하세요</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 justify-items-center">
             {/* OUR, FAMILY 카드 */}
             {coupleTemplates.map((template, index) => (
               <button
@@ -208,7 +208,7 @@ export default function GalleryPage() {
                   setSelectedTemplate(template)
                   document.getElementById('preview')?.scrollIntoView({ behavior: 'smooth' })
                 }}
-                className={`relative p-6 rounded-2xl border-2 text-left group ${staggeredClass(section1Visible, index)} ${
+                className={`relative w-full max-w-sm p-6 rounded-2xl border-2 text-left group ${staggeredClass(section1Visible, index)} ${
                   selectedTemplate.id === template.id
                     ? 'border-black bg-gray-50 shadow-lg'
                     : 'border-gray-200 hover:border-gray-400 hover:shadow-xl hover:scale-[1.02] bg-white'
@@ -234,7 +234,7 @@ export default function GalleryPage() {
                 setSelectedTemplate(parentsTemplate)
                 document.getElementById('preview')?.scrollIntoView({ behavior: 'smooth' })
               }}
-              className={`relative p-6 rounded-2xl border-2 text-left group ${staggeredClass(section1Visible, 2)} ${
+              className={`relative w-full max-w-sm p-6 rounded-2xl border-2 text-left group ${staggeredClass(section1Visible, 2)} ${
                 selectedTemplate.id === parentsTemplate.id
                   ? 'border-black bg-gray-50 shadow-lg'
                   : 'border-gray-200 hover:border-gray-400 hover:shadow-xl hover:scale-[1.02] bg-white'

@@ -208,7 +208,7 @@ export default function GalleryPage() {
                   setSelectedTemplate(template)
                   document.getElementById('preview')?.scrollIntoView({ behavior: 'smooth' })
                 }}
-                className={`relative w-full max-w-sm p-6 rounded-2xl border-2 text-left group ${staggeredClass(section1Visible, index)} ${
+                className={`relative w-full max-w-sm p-6 rounded-2xl border-2 text-center group ${staggeredClass(section1Visible, index)} ${
                   selectedTemplate.id === template.id
                     ? 'border-black bg-gray-50 shadow-lg'
                     : 'border-gray-200 hover:border-gray-400 hover:shadow-xl hover:scale-[1.02] bg-white'
@@ -234,7 +234,7 @@ export default function GalleryPage() {
                 setSelectedTemplate(parentsTemplate)
                 document.getElementById('preview')?.scrollIntoView({ behavior: 'smooth' })
               }}
-              className={`relative w-full max-w-sm p-6 rounded-2xl border-2 text-left group ${staggeredClass(section1Visible, 2)} ${
+              className={`relative w-full max-w-sm p-6 rounded-2xl border-2 text-center group ${staggeredClass(section1Visible, 2)} ${
                 selectedTemplate.id === parentsTemplate.id
                   ? 'border-black bg-gray-50 shadow-lg'
                   : 'border-gray-200 hover:border-gray-400 hover:shadow-xl hover:scale-[1.02] bg-white'

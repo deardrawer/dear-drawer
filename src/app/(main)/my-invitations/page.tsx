@@ -137,6 +137,9 @@ export default function MyInvitationsPage() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null)
 
+  // 필터 상태
+  const [filterType, setFilterType] = useState<'all' | 'our' | 'family' | 'parents'>('all')
+
   // 미리보기 모달 상태
   const [previewInvitation, setPreviewInvitation] = useState<InvitationSummary | null>(null)
 
@@ -547,49 +550,188 @@ export default function MyInvitationsPage() {
     totalGuests: rsvpData.filter(r => r.attendance === 'attending').reduce((sum, r) => sum + (r.guest_count || 1), 0),
   }
 
+  // 전체 통계
+  const stats = {
+    total: invitations.length,
+    paid: invitations.filter(inv => inv.is_paid).length,
+    totalRsvp: invitations.reduce((sum, inv) => sum + (inv.rsvp_count || 0), 0),
+  }
+
+  // 필터링된 청첩장
+  const filteredInvitations = invitations.filter(inv => {
+    if (filterType === 'all') return true
+    if (filterType === 'our') return inv.template_id === 'narrative-our' || inv.template_id === 'our'
+    if (filterType === 'family') return inv.template_id === 'narrative-family' || inv.template_id === 'family'
+    if (filterType === 'parents') return inv.template_id === 'narrative-parents' || inv.template_id === 'parents' || inv.template_id === 'parents-formal'
+    return true
+  })
+
+  // 스켈레톤 카드 컴포넌트
+  const SkeletonCard = () => (
+    <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 animate-pulse">
+      <div className="aspect-[3/4] bg-gray-200" />
+      <div className="p-4 space-y-3">
+        <div className="h-4 bg-gray-200 rounded w-3/4" />
+        <div className="h-3 bg-gray-100 rounded w-1/2" />
+        <div className="flex gap-2 mt-4">
+          <div className="h-8 bg-gray-100 rounded flex-1" />
+          <div className="h-8 bg-gray-100 rounded flex-1" />
+          <div className="h-8 bg-gray-100 rounded flex-1" />
+        </div>
+      </div>
+    </div>
+  )
+
   if (status === 'loading' || isLoading) {
     return (
-      <div className="container mx-auto px-4 py-12 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-rose-200 border-t-rose-600" />
+      <div className="container mx-auto px-4 py-8">
+        {/* 스켈레톤 헤더 */}
+        <div className="bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl p-6 mb-8 animate-pulse">
+          <div className="h-6 bg-white/50 rounded w-32 mb-2" />
+          <div className="h-4 bg-white/30 rounded w-48" />
+        </div>
+        {/* 스켈레톤 카드 그리드 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
       </div>
     )
   }
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">내 청첩장</h1>
-          <p className="text-xs sm:text-sm text-gray-500 mt-1">생성한 청첩장을 관리하세요</p>
+      {/* 히어로 헤더 */}
+      <div className="bg-gradient-to-r from-rose-50 via-pink-50 to-purple-50 rounded-2xl p-6 md:p-8 mb-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">내 청첩장</h1>
+            {stats.total > 0 ? (
+              <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 bg-rose-400 rounded-full" />
+                  총 {stats.total}개
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 bg-green-400 rounded-full" />
+                  결제완료 {stats.paid}개
+                </span>
+                {stats.totalRsvp > 0 && (
+                  <span className="flex items-center gap-1">
+                    <span className="w-2 h-2 bg-blue-400 rounded-full" />
+                    RSVP {stats.totalRsvp}명
+                  </span>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">아직 청첩장이 없습니다</p>
+            )}
+          </div>
+          <Link href="/gallery">
+            <Button className="bg-black hover:bg-gray-800 shadow-lg hover:shadow-xl transition-all hover:scale-105">
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              새 청첩장 만들기
+            </Button>
+          </Link>
         </div>
-        <Link href="/gallery">
-          <Button>
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            새 청첩장 만들기
-          </Button>
-        </Link>
       </div>
 
+      {/* 필터 바 */}
+      {invitations.length > 0 && (
+        <div className="mb-6">
+          {/* 템플릿 필터 탭 */}
+          <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg w-fit">
+            {[
+              { key: 'all', label: '전체' },
+              { key: 'our', label: 'OUR' },
+              { key: 'family', label: 'FAMILY' },
+              { key: 'parents', label: 'PARENTS' },
+            ].map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setFilterType(tab.key as typeof filterType)}
+                className={`px-3 py-1.5 text-sm rounded-md transition-all ${
+                  filterType === tab.key
+                    ? 'bg-white text-gray-900 shadow-sm font-medium'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {invitations.length === 0 ? (
-        <Card>
-          <CardContent className="py-16 text-center">
-            <div className="text-gray-400 mb-4">
-              <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
+        <div className="bg-white rounded-2xl border border-gray-100 p-8 md:p-12">
+          {/* 감성 일러스트 */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-rose-100 to-pink-100 rounded-full mb-6">
+              <span className="text-5xl">💌</span>
             </div>
-            <h3 className="text-base sm:text-lg font-medium text-gray-600 mb-2">아직 청첩장이 없습니다</h3>
-            <p className="text-xs sm:text-sm text-gray-400 mb-6">템플릿을 선택하고 나만의 청첩장을 만들어보세요</p>
+            <h3 className="text-xl font-medium text-gray-900 mb-2">아직 청첩장이 없습니다</h3>
+            <p className="text-gray-500">AI와 함께 특별한 청첩장을 만들어보세요</p>
+          </div>
+
+          {/* 3단계 안내 */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 max-w-3xl mx-auto">
+            <div className="text-center p-4 rounded-xl bg-gray-50">
+              <div className="w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <span className="text-rose-600 font-semibold">1</span>
+              </div>
+              <h4 className="font-medium text-gray-900 mb-1">템플릿 선택</h4>
+              <p className="text-sm text-gray-500">OUR, FAMILY, PARENTS 중 선택</p>
+            </div>
+            <div className="text-center p-4 rounded-xl bg-gray-50">
+              <div className="w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <span className="text-rose-600 font-semibold">2</span>
+              </div>
+              <h4 className="font-medium text-gray-900 mb-1">AI 스토리 생성</h4>
+              <p className="text-sm text-gray-500">질문에 답하면 AI가 이야기 작성</p>
+            </div>
+            <div className="text-center p-4 rounded-xl bg-gray-50">
+              <div className="w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <span className="text-rose-600 font-semibold">3</span>
+              </div>
+              <h4 className="font-medium text-gray-900 mb-1">공유하기</h4>
+              <p className="text-sm text-gray-500">카카오톡, 문자로 손쉽게 공유</p>
+            </div>
+          </div>
+
+          {/* CTA 버튼 */}
+          <div className="text-center">
             <Link href="/gallery">
-              <Button>청첩장 만들기</Button>
+              <Button size="lg" className="bg-black hover:bg-gray-800 px-8 shadow-lg hover:shadow-xl transition-all hover:scale-105">
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                청첩장 만들기
+              </Button>
             </Link>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+      ) : filteredInvitations.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
+          <div className="text-gray-400 mb-4">
+            <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <p className="text-gray-500">해당 템플릿의 청첩장이 없습니다</p>
+          <button
+            onClick={() => setFilterType('all')}
+            className="mt-4 text-sm text-rose-600 hover:text-rose-700 font-medium"
+          >
+            전체 보기
+          </button>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {invitations.map((invitation) => {
+          {filteredInvitations.map((invitation) => {
             const daysInfo = calculateDaysLeft(invitation)
             const { coverImage, introTitle, introSubTitle, senderSide, envelopeTheme } = parseInvitationContent(invitation.content)
             const displayImage = coverImage || invitation.main_image
@@ -598,7 +740,7 @@ export default function MyInvitationsPage() {
             const isParentsTemplate = invitation.template_id === 'narrative-parents' || invitation.template_id === 'parents' || invitation.template_id === 'parents-formal'
 
             return (
-              <Card key={invitation.id} className="overflow-hidden">
+              <Card key={invitation.id} className="overflow-hidden group hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                 <div
                   className="aspect-[3/4] relative cursor-pointer hover:opacity-90 transition-opacity overflow-hidden"
                   onClick={() => setPreviewInvitation(invitation)}
@@ -1012,6 +1154,20 @@ export default function MyInvitationsPage() {
           </Tabs>
         </DialogContent>
       </Dialog>
+
+      {/* 모바일 플로팅 버튼 */}
+      <div className="fixed bottom-6 right-6 md:hidden z-40">
+        <Link href="/gallery">
+          <Button
+            size="lg"
+            className="rounded-full w-14 h-14 p-0 bg-black hover:bg-gray-800 shadow-2xl hover:scale-110 transition-all"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+          </Button>
+        </Link>
+      </div>
     </div>
   )
 }

@@ -1,7 +1,9 @@
 'use client'
 
+import { useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
 import { ParentsInvitationView } from '@/components/parents'
-import type { ParentsInvitationContent } from '@/components/parents'
+import type { ParentsInvitationContent, ColorThemeId, FontStyleId } from '@/components/parents'
 
 // 샘플 데이터
 const sampleData: ParentsInvitationContent = {
@@ -64,7 +66,7 @@ const sampleData: ParentsInvitationContent = {
       '꼭 오셔서',
       '축복해 주세요',
     ],
-    defaultGreeting: '김영희님께',
+    defaultGreeting: '김도현님께',
   },
   greeting: `서연이는 저희 부부에게
 늘 선물 같은 아이였습니다.
@@ -119,11 +121,46 @@ const sampleData: ParentsInvitationContent = {
   fontStyle: 'soft',
 }
 
-export default function FamilyInvitationPage() {
+// 유효한 컬러 테마 ID 목록
+const validColorThemes: ColorThemeId[] = ['burgundy', 'navy', 'sage', 'dustyRose', 'emerald', 'slateBlue']
+// 유효한 폰트 스타일 ID 목록
+const validFontStyles: FontStyleId[] = ['elegant', 'soft', 'classic', 'brush', 'modern', 'friendly']
+
+function ParentsSampleContent() {
+  const searchParams = useSearchParams()
+
+  // URL 쿼리에서 colorTheme과 fontStyle 읽기
+  const colorThemeParam = searchParams.get('colorTheme')
+  const fontStyleParam = searchParams.get('fontStyle')
+
+  // 유효한 값인지 확인 후 적용, 아니면 기본값 사용
+  const colorTheme: ColorThemeId = validColorThemes.includes(colorThemeParam as ColorThemeId)
+    ? (colorThemeParam as ColorThemeId)
+    : sampleData.colorTheme
+
+  const fontStyle: FontStyleId = validFontStyles.includes(fontStyleParam as FontStyleId)
+    ? (fontStyleParam as FontStyleId)
+    : (sampleData.fontStyle || 'soft')
+
+  // 쿼리 파라미터로 오버라이드된 데이터
+  const dataWithOverrides: ParentsInvitationContent = {
+    ...sampleData,
+    colorTheme,
+    fontStyle,
+  }
+
   return (
     <ParentsInvitationView
-      data={sampleData}
-      guestInfo={{ id: 'sample', name: '김영희', honorific: '님께' }}
+      data={dataWithOverrides}
+      guestInfo={{ id: 'sample', name: '김도현', honorific: '님께' }}
     />
+  )
+}
+
+export default function FamilyInvitationPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-100 animate-pulse" />}>
+      <ParentsSampleContent />
+    </Suspense>
   )
 }

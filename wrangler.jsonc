@@ -37,7 +37,7 @@
       ],
       "vars": {
         "NEXT_PUBLIC_KAKAO_CLIENT_ID": "45cff9edef371e0e18394dfd5d0f29f7",
-        "NEXT_PUBLIC_KAKAO_REDIRECT_URI": "https://dear-drawer.pages.dev/auth/kakao/callback",
+        "NEXT_PUBLIC_KAKAO_REDIRECT_URI": "https://invite.deardrawer.com/api/auth/kakao/callback",
         "NEXT_PUBLIC_R2_PUBLIC_URL": "https://pub-dear-drawer.r2.dev"
       }
     },
@@ -57,7 +57,7 @@
       ],
       "vars": {
         "NEXT_PUBLIC_KAKAO_CLIENT_ID": "45cff9edef371e0e18394dfd5d0f29f7",
-        "NEXT_PUBLIC_KAKAO_REDIRECT_URI": "https://dear-drawer.pages.dev/auth/kakao/callback",
+        "NEXT_PUBLIC_KAKAO_REDIRECT_URI": "https://invite.deardrawer.com/api/auth/kakao/callback",
         "NEXT_PUBLIC_R2_PUBLIC_URL": "https://pub-dear-drawer.r2.dev"
       }
     }

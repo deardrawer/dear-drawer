@@ -1780,7 +1780,7 @@ function InterviewSection({
       {/* Answer */}
       {interview.answer && (
         <p
-          className="text-[13px] font-light leading-[2.2]"
+          className="text-[13px] font-light leading-[2.0]"
           style={{
             fontFamily: fonts.displayKr,
             color: themeColors.text,
@@ -1854,7 +1854,7 @@ function StorySection({
             fontSize: '13px',
             fontWeight: 300,
             color: '#777',
-            lineHeight: 1.9,
+            lineHeight: 1.6,
             marginBottom: '28px'
           }}
           dangerouslySetInnerHTML={{ __html: story.desc.replace(/\n/g, '<br/>') }}
@@ -1955,7 +1955,7 @@ function AnniversaryCounterSection({
           fontFamily: fonts.displayKr,
           fontSize: '13px',
           fontWeight: 300,
-          lineHeight: 2,
+          lineHeight: 1.6,
           color: themeColors.gray
         }}
         dangerouslySetInnerHTML={{ __html: displayClosingText.replace(/\n/g, '<br/>') }}
@@ -1969,12 +1969,12 @@ type ColorTheme = 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-g
 interface ColorConfig { primary: string; secondary: string; accent: string; background: string; sectionBg: string; cardBg: string; divider: string; text: string; gray: string }
 
 const colorThemes: Record<ColorTheme, ColorConfig> = {
-  'classic-rose': { primary: '#E91E63', secondary: '#D4A574', accent: '#d4a574', background: '#FFF8F5', sectionBg: '#FFE8E8', cardBg: '#FFFFFF', divider: '#d4b896', text: '#1A1A1A', gray: '#444444' },
-  'modern-black': { primary: '#1A1A1A', secondary: '#888888', accent: '#1A1A1A', background: '#FFFFFF', sectionBg: '#F5F5F5', cardBg: '#FFFFFF', divider: '#CCCCCC', text: '#1A1A1A', gray: '#444444' },
-  'romantic-blush': { primary: '#D4A5A5', secondary: '#C9B8A8', accent: '#C9B8A8', background: '#FDF8F6', sectionBg: '#F8EFEC', cardBg: '#FFFFFF', divider: '#D4C4BC', text: '#3D2E2E', gray: '#5C4545' },
-  'nature-green': { primary: '#6B8E6B', secondary: '#A8B5A0', accent: '#8FA888', background: '#F5F7F4', sectionBg: '#EBF0E8', cardBg: '#FFFFFF', divider: '#A8B5A0', text: '#2D3A2D', gray: '#4A5A4A' },
-  'luxury-navy': { primary: '#1E3A5F', secondary: '#C9A96E', accent: '#C9A96E', background: '#F8F9FA', sectionBg: '#E8ECF0', cardBg: '#FFFFFF', divider: '#C9A96E', text: '#1E3A5F', gray: '#3A4B5C' },
-  'sunset-coral': { primary: '#E8846B', secondary: '#F5C7A9', accent: '#E8A87C', background: '#FFFAF7', sectionBg: '#FFEEE5', cardBg: '#FFFFFF', divider: '#E8A87C', text: '#3D2820', gray: '#5C4035' },
+  'classic-rose': { primary: '#E91E63', secondary: '#D4A574', accent: '#d4a574', background: '#FFF8F5', sectionBg: '#FFE8E8', cardBg: '#FFFFFF', divider: '#d4b896', text: '#111111', gray: '#333333' },
+  'modern-black': { primary: '#1A1A1A', secondary: '#888888', accent: '#1A1A1A', background: '#FFFFFF', sectionBg: '#F5F5F5', cardBg: '#FFFFFF', divider: '#CCCCCC', text: '#111111', gray: '#333333' },
+  'romantic-blush': { primary: '#D4A5A5', secondary: '#C9B8A8', accent: '#C9B8A8', background: '#FDF8F6', sectionBg: '#F8EFEC', cardBg: '#FFFFFF', divider: '#D4C4BC', text: '#2A1E1E', gray: '#443030' },
+  'nature-green': { primary: '#6B8E6B', secondary: '#A8B5A0', accent: '#8FA888', background: '#F5F7F4', sectionBg: '#EBF0E8', cardBg: '#FFFFFF', divider: '#A8B5A0', text: '#1E2B1E', gray: '#354535' },
+  'luxury-navy': { primary: '#1E3A5F', secondary: '#C9A96E', accent: '#C9A96E', background: '#F8F9FA', sectionBg: '#E8ECF0', cardBg: '#FFFFFF', divider: '#C9A96E', text: '#142840', gray: '#2A3B4C' },
+  'sunset-coral': { primary: '#E8846B', secondary: '#F5C7A9', accent: '#E8A87C', background: '#FFFAF7', sectionBg: '#FFEEE5', cardBg: '#FFFFFF', divider: '#E8A87C', text: '#2D1A14', gray: '#44302A' },
 }
 
 // Font styles
@@ -2090,19 +2090,19 @@ const mockInvitation = {
     interviews: [
       {
         question: '상대방의 첫인상은 어땠나요?',
-        answer: '처음 본 순간, 이 사람이다 싶었어요. 말로 설명하기 어려운 느낌이었는데, 대화를 나눌수록 확신이 들었습니다. 서로의 눈을 바라보며 웃던 그 순간을 잊을 수 없어요.',
+        answer: '처음 본 순간,\n이 사람이다 싶었어요.\n\n말로 설명하기 어려운 느낌이었는데,\n대화를 나눌수록 확신이 들었습니다.\n\n서로의 눈을 바라보며 웃던\n그 순간을 잊을 수 없어요.',
         images: ['/sample/interview1-1.png', '/sample/interview1-2.png'],
         bgClass: 'pink-bg',
       },
       {
         question: '결혼을 결심하게 된 계기는?',
-        answer: '함께 있을 때 가장 나다울 수 있었어요. 아무리 힘든 일이 있어도 이 사람 곁에 있으면 괜찮아지더라구요. 평생 이 사람과 함께라면 어떤 일이든 해낼 수 있을 것 같았습니다.',
+        answer: '함께 있을 때\n가장 나다울 수 있었어요.\n\n아무리 힘든 일이 있어도\n이 사람 곁에 있으면\n괜찮아지더라구요.\n\n평생 이 사람과 함께라면\n어떤 일이든 해낼 수 있을 것 같았습니다.',
         images: ['/sample/interview2-1.png', '/sample/interview2-2.png'],
         bgClass: 'white-bg',
       },
       {
         question: '앞으로의 결혼생활 계획은?',
-        answer: '서로를 존중하고 배려하며 살고 싶어요. 작은 일상에서도 감사함을 잊지 않고, 함께 웃으며 나이 들어가고 싶습니다. 무엇보다 서로의 꿈을 응원하는 부부가 되고 싶어요.',
+        answer: '서로를 존중하고\n배려하며 살고 싶어요.\n\n작은 일상에서도 감사함을 잊지 않고,\n함께 웃으며 나이 들어가고 싶습니다.\n\n무엇보다 서로의 꿈을 응원하는\n부부가 되고 싶어요.',
         images: ['/sample/interview3-1.png', '/sample/interview3-2.png'],
         bgClass: 'pink-bg',
       },
@@ -2659,7 +2659,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
 
         {/* Greeting Section */}
         <div className="greeting-section mb-11">
-          <p className="text-[13px] font-light leading-[2.1]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: invitation.content.greeting ? invitation.content.greeting.replace(/\n/g, '<br/>') : '인사말을 입력해주세요' }} />
+          <p className="text-[13px] font-light leading-[1.6]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: invitation.content.greeting ? invitation.content.greeting.replace(/\n/g, '<br/>') : '인사말을 입력해주세요' }} />
         </div>
 
         {/* Parents Info */}

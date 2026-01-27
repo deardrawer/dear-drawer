@@ -135,7 +135,7 @@ const globalStyles = `
   .typo-body {
     font-size: 13px;
     letter-spacing: -0.3px;
-    line-height: 1.8;
+    line-height: 1.6;
     font-weight: 300;
   }
 
@@ -1396,7 +1396,7 @@ function DividerSection({
               fontFamily,
               fontSize: '14px',
               color: textColor,
-              lineHeight: 1.9
+              lineHeight: 1.6
             }}
           >
             {line}
@@ -2209,7 +2209,7 @@ function StorySection({
             fontSize: '13px',
             fontWeight: 300,
             color: '#777',
-            lineHeight: 1.9,
+            lineHeight: 1.6,
             marginBottom: '28px'
           }}
           dangerouslySetInnerHTML={{ __html: story.desc.replace(/\n/g, '<br/>') }}
@@ -2310,7 +2310,7 @@ function AnniversaryCounterSection({
           fontFamily: fonts.displayKr,
           fontSize: '13px',
           fontWeight: 300,
-          lineHeight: 2,
+          lineHeight: 1.6,
           color: themeColors.gray
         }}
         dangerouslySetInnerHTML={{ __html: displayClosingText.replace(/\n/g, '<br/>') }}
@@ -2324,12 +2324,12 @@ type ColorTheme = 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-g
 interface ColorConfig { primary: string; secondary: string; accent: string; background: string; sectionBg: string; cardBg: string; divider: string; text: string; gray: string }
 
 const colorThemes: Record<ColorTheme, ColorConfig> = {
-  'classic-rose': { primary: '#E91E63', secondary: '#D4A574', accent: '#d4a574', background: '#FFF8F5', sectionBg: '#FFE8E8', cardBg: '#FFFFFF', divider: '#d4b896', text: '#1A1A1A', gray: '#444444' },
-  'modern-black': { primary: '#1A1A1A', secondary: '#888888', accent: '#1A1A1A', background: '#FFFFFF', sectionBg: '#F5F5F5', cardBg: '#FFFFFF', divider: '#CCCCCC', text: '#1A1A1A', gray: '#444444' },
-  'romantic-blush': { primary: '#D4A5A5', secondary: '#C9B8A8', accent: '#C9B8A8', background: '#FDF8F6', sectionBg: '#F8EFEC', cardBg: '#FFFFFF', divider: '#D4C4BC', text: '#3D2E2E', gray: '#5C4545' },
-  'nature-green': { primary: '#6B8E6B', secondary: '#A8B5A0', accent: '#8FA888', background: '#F5F7F4', sectionBg: '#EBF0E8', cardBg: '#FFFFFF', divider: '#A8B5A0', text: '#2D3A2D', gray: '#4A5A4A' },
-  'luxury-navy': { primary: '#1E3A5F', secondary: '#C9A96E', accent: '#C9A96E', background: '#F8F9FA', sectionBg: '#E8ECF0', cardBg: '#FFFFFF', divider: '#C9A96E', text: '#1E3A5F', gray: '#3A4B5C' },
-  'sunset-coral': { primary: '#E8846B', secondary: '#F5C7A9', accent: '#E8A87C', background: '#FFFAF7', sectionBg: '#FFEEE5', cardBg: '#FFFFFF', divider: '#E8A87C', text: '#3D2820', gray: '#5C4035' },
+  'classic-rose': { primary: '#E91E63', secondary: '#D4A574', accent: '#d4a574', background: '#FFF8F5', sectionBg: '#FFE8E8', cardBg: '#FFFFFF', divider: '#d4b896', text: '#111111', gray: '#333333' },
+  'modern-black': { primary: '#1A1A1A', secondary: '#888888', accent: '#1A1A1A', background: '#FFFFFF', sectionBg: '#F5F5F5', cardBg: '#FFFFFF', divider: '#CCCCCC', text: '#111111', gray: '#333333' },
+  'romantic-blush': { primary: '#D4A5A5', secondary: '#C9B8A8', accent: '#C9B8A8', background: '#FDF8F6', sectionBg: '#F8EFEC', cardBg: '#FFFFFF', divider: '#D4C4BC', text: '#2A1E1E', gray: '#443030' },
+  'nature-green': { primary: '#6B8E6B', secondary: '#A8B5A0', accent: '#8FA888', background: '#F5F7F4', sectionBg: '#EBF0E8', cardBg: '#FFFFFF', divider: '#A8B5A0', text: '#1E2B1E', gray: '#354535' },
+  'luxury-navy': { primary: '#1E3A5F', secondary: '#C9A96E', accent: '#C9A96E', background: '#F8F9FA', sectionBg: '#E8ECF0', cardBg: '#FFFFFF', divider: '#C9A96E', text: '#142840', gray: '#2A3B4C' },
+  'sunset-coral': { primary: '#E8846B', secondary: '#F5C7A9', accent: '#E8A87C', background: '#FFFAF7', sectionBg: '#FFEEE5', cardBg: '#FFFFFF', divider: '#E8A87C', text: '#2D1A14', gray: '#44302A' },
 }
 
 // Font styles

@@ -67,12 +67,6 @@ const accordionToPreviewSection: Record<string, string> = {
 // 폰트 스타일 옵션 (한글 중심)
 const FONT_STYLE_OPTIONS = [
   {
-    id: 'elegant',
-    name: '정갈한 명조',
-    desc: '나눔명조',
-    preview: '격식 있고 전통적'
-  },
-  {
     id: 'soft',
     name: '부드러운 바탕',
     desc: '고운바탕',
@@ -85,12 +79,6 @@ const FONT_STYLE_OPTIONS = [
     preview: '고급스럽고 정제된'
   },
   {
-    id: 'brush',
-    name: '전통 붓글씨',
-    desc: '송명 (Song Myung)',
-    preview: '전통적인 붓글씨 느낌'
-  },
-  {
     id: 'modern',
     name: '모던 고딕',
     desc: 'IBM Plex Sans KR',
@@ -101,6 +89,18 @@ const FONT_STYLE_OPTIONS = [
     name: '친근한 고딕',
     desc: '나눔고딕',
     preview: '부드럽고 읽기 쉬운'
+  },
+  {
+    id: 'ridibatang',
+    name: '리디바탕',
+    desc: 'RIDIBatang',
+    preview: '깔끔하고 가독성 좋은'
+  },
+  {
+    id: 'okticon',
+    name: '오케이티콘',
+    desc: 'Okticon',
+    preview: '손글씨 느낌의 귀여운'
   },
 ] as const
 

@@ -65,12 +65,12 @@ const parentsColorThemes = [
 
 // PARENTS 템플릿용 폰트 스타일 (실제 지원되는 스타일)
 const parentsFontStyles = [
-  { id: 'elegant', name: '정갈한 명조', desc: '나눔명조' },
   { id: 'soft', name: '부드러운 바탕', desc: '고운바탕' },
   { id: 'classic', name: '고전 세리프', desc: '함렛 (Hahmlet)' },
-  { id: 'brush', name: '전통 붓글씨', desc: '송명 (Song Myung)' },
   { id: 'modern', name: '모던 고딕', desc: 'IBM Plex Sans KR' },
   { id: 'friendly', name: '친근한 고딕', desc: '나눔고딕' },
+  { id: 'ridibatang', name: '리디바탕', desc: 'RIDIBatang' },
+  { id: 'okticon', name: '오케이티콘', desc: 'Okticon' },
 ]
 
 export default function GalleryPage() {

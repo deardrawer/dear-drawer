@@ -257,7 +257,7 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
               fontFamily: "'Noto Sans KR', sans-serif",
             }}
           >
-            결혼식 정보는 여기에서
+            결혼식 정보 확인하기
             {/* Speech bubble tail */}
             <div
               className="absolute"
@@ -395,7 +395,7 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
                     </div>
                   )}
                   <textarea placeholder="메시지 (선택)" value={rsvpForm.message} onChange={(e) => setRsvpForm({ ...rsvpForm, message: e.target.value })} className="w-full p-3 rounded-xl mb-4 text-sm outline-none resize-none h-16" style={{ background: themeColors.sectionBg, color: themeColors.text }} />
-                  <button onClick={handleRsvpSubmit} disabled={isSubmitting} className="w-full py-3 rounded-xl text-sm text-white" style={{ background: themeColors.primary }}>{isSubmitting ? '전송중...' : '제출하기'}</button>
+                  <button onClick={handleRsvpSubmit} disabled={isSubmitting || !rsvpForm.name.trim() || !rsvpForm.attendance} className="w-full py-3 rounded-xl text-sm text-white transition-opacity" style={{ background: themeColors.primary, opacity: (!rsvpForm.name.trim() || !rsvpForm.attendance) ? 0.4 : 1 }}>{isSubmitting ? '전송중...' : '제출하기'}</button>
                 </>
               )}
 

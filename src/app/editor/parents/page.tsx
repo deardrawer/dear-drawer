@@ -188,7 +188,7 @@ export interface ParentsInvitationData {
 
   // 디자인
   colorTheme: ColorThemeId
-  fontStyle: 'elegant' | 'soft' | 'classic' | 'brush' | 'modern' | 'friendly'
+  fontStyle: 'elegant' | 'soft' | 'classic' | 'brush' | 'modern' | 'friendly' | 'ridibatang' | 'gangwon' | 'okticon'
 }
 
 const defaultData: ParentsInvitationData = {

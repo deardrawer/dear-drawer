@@ -828,3 +828,63 @@
 .font-parents-friendly * {
   font-family: var(--font-nanum-gothic), sans-serif !important;
 }
+
+/* 강원교육모두체 웹폰트 */
+@font-face {
+  font-family: 'GangwonEducationModuche';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEdu_OTFLightA.woff') format('woff');
+  font-weight: 300;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'GangwonEducationModuche';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEdu_OTFBoldA.woff') format('woff');
+  font-weight: 700;
+  font-display: swap;
+}
+
+.font-parents-gangwon,
+.font-parents-gangwon * {
+  font-family: 'GangwonEducationModuche', serif !important;
+}
+
+/* 옥티콘 웹폰트 */
+@font-face {
+  font-family: 'Okticon';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408@1.0/Ownglyph_okticon-Lt.woff2') format('woff2');
+  font-weight: 300;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Okticon';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408@1.0/Ownglyph_okticon-Rg.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Okticon';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408@1.0/Ownglyph_okticon-Bd.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}
+
+.font-parents-okticon,
+.font-parents-okticon * {
+  font-family: 'Okticon', serif !important;
+}
+
+/* 리디바탕 웹폰트 */
+@font-face {
+  font-family: 'Ridibatang';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.0/RIDIBatang.woff') format('woff');
+  font-weight: normal;
+  font-display: swap;
+}
+
+.font-parents-ridibatang,
+.font-parents-ridibatang * {
+  font-family: 'Ridibatang', serif !important;
+}

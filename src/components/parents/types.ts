@@ -1,7 +1,7 @@
 // Parents 청첩장 공통 타입
 
 // 폰트 스타일 타입 (한글 중심)
-export type FontStyleId = 'elegant' | 'soft' | 'classic' | 'brush' | 'modern' | 'friendly'
+export type FontStyleId = 'elegant' | 'soft' | 'classic' | 'brush' | 'modern' | 'friendly' | 'ridibatang' | 'gangwon' | 'okticon'
 
 // 폰트 스타일 정의
 export interface FontStyle {
@@ -55,6 +55,27 @@ export const FONT_STYLES: Record<FontStyleId, FontStyle> = {
     fontName: '나눔고딕',
     className: 'font-parents-friendly',
     cssVariable: 'var(--font-nanum-gothic), sans-serif',
+  },
+  ridibatang: {
+    id: 'ridibatang',
+    name: '리디바탕',
+    fontName: 'RIDIBatang',
+    className: 'font-parents-ridibatang',
+    cssVariable: "'Ridibatang', serif",
+  },
+  gangwon: {
+    id: 'gangwon',
+    name: '강원교육모두체',
+    fontName: 'GangwonEducationModuche',
+    className: 'font-parents-gangwon',
+    cssVariable: "'GangwonEducationModuche', serif",
+  },
+  okticon: {
+    id: 'okticon',
+    name: '오케이티콘',
+    fontName: 'Okticon',
+    className: 'font-parents-okticon',
+    cssVariable: "'Okticon', serif",
   },
 }
 

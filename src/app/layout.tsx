@@ -177,7 +177,7 @@ export default function RootLayout({
         <Script id="kakao-init" strategy="lazyOnload">
           {`
             (function() {
-              var kakaoKey = '${process.env.NEXT_PUBLIC_KAKAO_JS_KEY || ''}';
+              var kakaoKey = '${process.env.NEXT_PUBLIC_KAKAO_JS_KEY || '0890847927f3189d845391481ead8ecc'}';
               function initKakao() {
                 if (window.Kakao && !window.Kakao.isInitialized() && kakaoKey) {
                   window.Kakao.init(kakaoKey);

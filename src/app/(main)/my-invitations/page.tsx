@@ -53,10 +53,12 @@ function parseInvitationContent(content?: string) {
   try {
     const parsed = JSON.parse(content)
     // OUR/FAMILY: media.coverImage, PARENTS: mainImage 또는 gallery.images[0]
-    const coverImage = parsed.media?.coverImage ||
+    const rawCoverImage = parsed.media?.coverImage ||
                        parsed.mainImage ||
                        (parsed.gallery?.images?.[0]?.url || parsed.gallery?.images?.[0]) ||
                        ''
+    // 객체일 수 있으므로 문자열로 변환
+    const coverImage = typeof rawCoverImage === 'string' ? rawCoverImage : (rawCoverImage?.url || '')
 
     // PARENTS 템플릿의 colorTheme ID를 실제 hex 컬러로 변환
     const colorThemeId = parsed.colorTheme || 'burgundy'

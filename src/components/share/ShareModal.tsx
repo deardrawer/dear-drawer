@@ -139,7 +139,7 @@ export default function ShareModal({
         body: JSON.stringify({ slug }),
       })
 
-      const data = await response.json()
+      const data: { error?: string; suggestions?: string[]; success?: boolean; slug?: string } = await response.json()
 
       if (!response.ok) {
         if (data.suggestions?.length) {
@@ -153,7 +153,6 @@ export default function ShareModal({
 
       setSlugSaved(true)
       setSlugAvailable(false)
-      // Notify parent if callback provided
       if (onSlugChange) {
         onSlugChange(data.slug || slug)
       }

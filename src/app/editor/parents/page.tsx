@@ -339,6 +339,8 @@ function ParentsEditorContent() {
   const [isSaving, setIsSaving] = useState(false)
   const [isDirty, setIsDirty] = useState(false)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+  const [validationError, setValidationError] = useState<{ tab: string; message: string } | null>(null)
+  const [forceActiveTab, setForceActiveTab] = useState<string | null>(null)
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
   const [previewTab, setPreviewTab] = useState<'intro' | 'main'>('intro')
   const [fullscreenTab, setFullscreenTab] = useState<'intro' | 'main'>('intro')
@@ -413,13 +415,15 @@ function ParentsEditorContent() {
     const groomName = `${data.groom.lastName}${data.groom.firstName}`.trim()
     const brideName = `${data.bride.lastName}${data.bride.firstName}`.trim()
     if (!groomName || !brideName) {
-      alert('신랑과 신부 이름을 모두 입력해주세요.')
+      setForceActiveTab('required')
+      setValidationError({ tab: 'required', message: '📋 필수입력 > 신랑/신부 이름을 모두 입력해주세요.' })
       return
     }
 
     // 카카오톡 공유 썸네일 필수 검증
     if (!data.meta?.kakaoThumbnail?.trim()) {
-      alert('카카오톡 공유 썸네일 이미지를 등록해주세요.\n\n에디터 하단 "공유 설정" 섹션에서 업로드할 수 있습니다.')
+      setForceActiveTab('design')
+      setValidationError({ tab: 'design', message: '🎨 디자인 > 공유 미리보기 설정 > 카카오톡 공유 썸네일을 추가해주세요.' })
       return
     }
 
@@ -577,6 +581,9 @@ function ParentsEditorContent() {
             selectedGuest={selectedGuest}
             onSelectGuest={setSelectedGuest}
             onActiveSectionChange={setActiveSection}
+            validationError={validationError}
+            onClearValidationError={() => setValidationError(null)}
+            forceActiveTab={forceActiveTab}
           />
         </div>
 

@@ -6,8 +6,9 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
-import { X, Upload } from 'lucide-react'
+import { X, Upload, AlignLeft, AlignCenter, AlignRight } from 'lucide-react'
 import Image from 'next/image'
+import HighlightTextarea from './HighlightTextarea'
 
 interface ParentIntroEditorProps {
   uploadingImages: Set<string>
@@ -147,10 +148,39 @@ export default function ParentIntroEditor({
             {/* 부모님 메시지 */}
             <div className="space-y-2">
               <Label className="text-xs">부모님 메시지</Label>
-              <Textarea
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] text-gray-500">행간</span>
+                  {[1.4, 1.6, 1.8, 2.0, 2.2].map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => updateNestedField('parentIntroTextStyle', { ...invitation.parentIntroTextStyle, lineHeight: v })}
+                      className={`px-1.5 py-0.5 text-[10px] rounded border ${(invitation.parentIntroTextStyle?.lineHeight ?? 2.0) === v ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400'}`}
+                    >
+                      {v}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] text-gray-500">정렬</span>
+                  {([['left', AlignLeft], ['center', AlignCenter], ['right', AlignRight]] as const).map(([align, Icon]) => (
+                    <button
+                      key={align}
+                      type="button"
+                      onClick={() => updateNestedField('parentIntroTextStyle', { ...invitation.parentIntroTextStyle, textAlign: align })}
+                      className={`p-1 rounded border ${(invitation.parentIntroTextStyle?.textAlign ?? 'left') === align ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-400 border-gray-200 hover:border-gray-400'}`}
+                    >
+                      <Icon className="w-3 h-3" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <HighlightTextarea
                 value={data.message}
-                onChange={(e) => updateNestedField(`${fieldPrefix}.message`, e.target.value)}
+                onChange={(value) => updateNestedField(`${fieldPrefix}.message`, value)}
                 placeholder="자녀를 소개하는 부모님의 진심어린 메시지를 작성해주세요..."
+                rows={8}
                 className="text-sm min-h-[200px] leading-relaxed"
               />
               <p className="text-[10px] text-gray-400">줄바꿈을 사용하여 문단을 나눌 수 있습니다</p>

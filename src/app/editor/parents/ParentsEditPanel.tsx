@@ -49,6 +49,9 @@ interface ParentsEditPanelProps {
   selectedGuest?: { name: string; honorific: string; relation?: string; intro_greeting?: string; custom_message?: string } | null
   onSelectGuest?: (guest: { name: string; honorific: string; relation?: string; intro_greeting?: string; custom_message?: string } | null) => void
   onActiveSectionChange?: (section: string | null) => void
+  validationError?: { tab: string; message: string } | null
+  onClearValidationError?: () => void
+  forceActiveTab?: string | null
 }
 
 // 아코디언 항목 → 미리보기 섹션 ID 매핑
@@ -116,7 +119,15 @@ const PARENTS_INFO_ITEMS_CONFIG: { key: string; label: string; emoji: string }[]
 
 const DEFAULT_ITEM_ORDER = PARENTS_INFO_ITEMS_CONFIG.map(item => item.key)
 
-export default function ParentsEditPanel({ data, updateData, updateNestedData, invitationId, selectedGuest, onSelectGuest, onActiveSectionChange }: ParentsEditPanelProps) {
+export default function ParentsEditPanel({ data, updateData, updateNestedData, invitationId, selectedGuest, onSelectGuest, onActiveSectionChange, validationError, onClearValidationError, forceActiveTab }: ParentsEditPanelProps) {
+  // 탭 상태
+  const [activeTab, setActiveTab] = useState('design')
+
+  // forceActiveTab이 변경되면 탭 이동
+  useEffect(() => {
+    if (forceActiveTab) setActiveTab(forceActiveTab)
+  }, [forceActiveTab])
+
   // 게스트 관리 상태
   const [guests, setGuests] = useState<Guest[]>([])
   const [guestStats, setGuestStats] = useState<GuestStats>({ total: 0, opened: 0, unopened: 0, withRsvp: 0 })
@@ -252,7 +263,7 @@ export default function ParentsEditPanel({ data, updateData, updateNestedData, i
   return (
     <div className="h-full flex flex-col bg-white">
       {/* 상단 탭 네비게이션 */}
-      <Tabs defaultValue="design" className="flex-1 flex flex-col min-h-0">
+      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); onClearValidationError?.() }} className="flex-1 flex flex-col min-h-0">
         <div className="border-b bg-white shrink-0">
           <TabsList className="w-full h-auto p-1 bg-gray-50 rounded-none grid grid-cols-4 gap-1">
             <TabsTrigger
@@ -285,6 +296,15 @@ export default function ParentsEditPanel({ data, updateData, updateNestedData, i
             </TabsTrigger>
           </TabsList>
         </div>
+
+        {/* Validation Error Banner */}
+        {validationError && (
+          <div className="px-3 py-2 bg-red-50 border-b border-red-200 flex items-center gap-2 shrink-0">
+            <span className="text-red-500 text-lg">⚠</span>
+            <p className="text-xs text-red-600 font-medium flex-1">{validationError.message}</p>
+            <button onClick={() => onClearValidationError?.()} className="text-red-400 hover:text-red-600 text-sm">✕</button>
+          </div>
+        )}
 
         {/* ==================== 디자인 탭 ==================== */}
         <TabsContent value="design" className="flex-1 overflow-y-auto m-0 data-[state=inactive]:hidden">

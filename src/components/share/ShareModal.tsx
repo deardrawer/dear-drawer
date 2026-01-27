@@ -53,6 +53,8 @@ export default function ShareModal({
   const [qrCodeUrl, setQrCodeUrl] = useState('')
   const [qrColor, setQrColor] = useState('#000000')
   const [copied, setCopied] = useState(false)
+  const [isSavingSlug, setIsSavingSlug] = useState(false)
+  const [slugSaved, setSlugSaved] = useState(false)
   const [pageViews, setPageViews] = useState({ total: 0, today: 0 })
   const qrCanvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -124,9 +126,42 @@ export default function ShareModal({
     setSlugError('')
   }
 
-  const handleSaveSlug = () => {
-    if (slugAvailable && onSlugChange) {
-      onSlugChange(slug)
+  const handleSaveSlug = async () => {
+    if (!slugAvailable || !slug || !invitationId) return
+
+    setIsSavingSlug(true)
+    setSlugError('')
+
+    try {
+      const response = await fetch(`/api/invitations/${invitationId}/slug`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        if (data.suggestions?.length) {
+          setSlugError(`${data.error} 추천: ${data.suggestions.join(', ')}`)
+        } else {
+          setSlugError(data.error || '저장 중 오류가 발생했습니다.')
+        }
+        setSlugAvailable(false)
+        return
+      }
+
+      setSlugSaved(true)
+      setSlugAvailable(false)
+      // Notify parent if callback provided
+      if (onSlugChange) {
+        onSlugChange(data.slug || slug)
+      }
+      setTimeout(() => setSlugSaved(false), 3000)
+    } catch {
+      setSlugError('저장 중 오류가 발생했습니다.')
+    } finally {
+      setIsSavingSlug(false)
     }
   }
 
@@ -296,9 +331,13 @@ export default function ShareModal({
               )}
             </div>
 
+            {slugSaved && (
+              <p className="text-sm text-green-500 text-center">URL이 저장되었습니다!</p>
+            )}
+
             {slugAvailable && (
-              <Button onClick={handleSaveSlug} className="w-full">
-                URL 저장하기
+              <Button onClick={handleSaveSlug} className="w-full" disabled={isSavingSlug}>
+                {isSavingSlug ? '저장 중...' : 'URL 저장하기'}
               </Button>
             )}
 

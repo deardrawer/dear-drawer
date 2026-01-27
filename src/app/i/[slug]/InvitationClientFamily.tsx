@@ -10,6 +10,7 @@ import type { Invitation } from '@/types/invitation'
 import type { InvitationContent } from '@/store/editorStore'
 import IntroAnimation from '@/components/invitation/IntroAnimation'
 import { IntroSettings, getDefaultIntroSettings } from '@/lib/introPresets'
+import { parseHighlight } from '@/lib/textUtils'
 
 // Music Toggle Component
 function MusicToggle({
@@ -1580,6 +1581,7 @@ function ParentIntroSection({
   side,
   fonts,
   themeColors,
+  textStyle,
 }: {
   parentNames: string // "전아빠, 김엄마의"
   childOrder: string // "첫째"
@@ -1589,6 +1591,7 @@ function ParentIntroSection({
   side: 'groom' | 'bride'
   fonts: FontConfig
   themeColors: ColorConfig
+  textStyle?: { lineHeight?: number; textAlign?: 'left' | 'center' | 'right' }
 }) {
   const { ref, isVisible } = useScrollAnimation()
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -1678,7 +1681,7 @@ function ParentIntroSection({
 
       {/* Message */}
       <div
-        className="text-center px-6"
+        className="px-6"
         style={{
           opacity: isVisible ? 1 : 0,
           transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
@@ -1686,11 +1689,15 @@ function ParentIntroSection({
         }}
       >
         <p
-          className="typo-body whitespace-pre-line"
-          style={{ color: themeColors.text, fontFamily: fonts.body }}
-        >
-          {message}
-        </p>
+          className="typo-body"
+          style={{
+            color: themeColors.text,
+            fontFamily: fonts.body,
+            lineHeight: textStyle?.lineHeight || 2.0,
+            textAlign: textStyle?.textAlign || 'left',
+          }}
+          dangerouslySetInnerHTML={{ __html: parseHighlight(message) }}
+        />
       </div>
     </div>
   )
@@ -1901,11 +1908,13 @@ function ProfileSection({
   fonts,
   themeColors,
   bgColor,
+  textStyle,
 }: {
   profile: { images: string[]; imageSettings?: { scale: number; positionX: number; positionY: number }[]; aboutLabel: string; subtitle: string; intro: string; tag?: string }
   fonts: FontConfig
   themeColors: ColorConfig
   bgColor: string
+  textStyle?: { lineHeight?: number; textAlign?: 'left' | 'center' | 'right' }
 }) {
   const { ref, isVisible } = useScrollAnimation()
   const [labelRevealed, setLabelRevealed] = useState(false)
@@ -1963,15 +1972,17 @@ function ProfileSection({
         </p>
       </div>
       <div
-        className="typo-body text-left"
+        className="typo-body"
         style={{
           fontFamily: fonts.displayKr,
           color: themeColors.text,
+          lineHeight: textStyle?.lineHeight || 2.2,
+          textAlign: textStyle?.textAlign || 'left',
           opacity: isVisible ? 1 : 0,
           transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
           transition: 'opacity 2.5s ease 1.5s, transform 2.5s ease 1.5s',
         }}
-        dangerouslySetInnerHTML={{ __html: profile.intro.replace(/\n/g, '<br/>') }}
+        dangerouslySetInnerHTML={{ __html: parseHighlight(profile.intro) }}
       />
       {profile.tag && (
         <div
@@ -2045,7 +2056,7 @@ function InfoBlock({
       <p
         className="typo-body leading-[1.8]"
         style={{ color: '#666' }}
-        dangerouslySetInnerHTML={{ __html: content.replace(/\n/g, '<br/>') }}
+        dangerouslySetInnerHTML={{ __html: parseHighlight(content) }}
       />
 
       {/* Optional Button */}
@@ -2071,11 +2082,13 @@ function InterviewSection({
   fonts,
   themeColors,
   bgColor,
+  textStyle,
 }: {
   interview: { question?: string; answer?: string; images?: string[] }
   fonts: FontConfig
   themeColors: ColorConfig
   bgColor: string
+  textStyle?: { lineHeight?: number; textAlign?: 'left' | 'center' | 'right' }
 }) {
   const { ref, isVisible } = useScrollAnimation()
   const [titleRevealed, setTitleRevealed] = useState(false)
@@ -2139,11 +2152,13 @@ function InterviewSection({
           style={{
             fontFamily: fonts.displayKr,
             color: themeColors.text,
+            lineHeight: textStyle?.lineHeight || 2.0,
+            textAlign: textStyle?.textAlign || 'left',
             opacity: isVisible ? 1 : 0,
             transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
             transition: 'opacity 2.5s ease 1.5s, transform 2.5s ease 1.5s',
           }}
-          dangerouslySetInnerHTML={{ __html: interview.answer.replace(/\n/g, '<br/>') }}
+          dangerouslySetInnerHTML={{ __html: parseHighlight(interview.answer) }}
         />
       )}
     </div>
@@ -2212,7 +2227,7 @@ function StorySection({
             lineHeight: 1.6,
             marginBottom: '28px'
           }}
-          dangerouslySetInnerHTML={{ __html: story.desc.replace(/\n/g, '<br/>') }}
+          dangerouslySetInnerHTML={{ __html: parseHighlight(story.desc) }}
         />
       )}
 
@@ -2313,7 +2328,7 @@ function AnniversaryCounterSection({
           lineHeight: 1.6,
           color: themeColors.gray
         }}
-        dangerouslySetInnerHTML={{ __html: displayClosingText.replace(/\n/g, '<br/>') }}
+        dangerouslySetInnerHTML={{ __html: parseHighlight(displayClosingText) }}
       />
     </div>
   )
@@ -2505,6 +2520,10 @@ const mockInvitation = {
   // 고인 표시 스타일
   deceasedDisplayStyle: 'flower',
 
+  profileTextStyle: undefined as { lineHeight: number; textAlign: 'left' | 'center' | 'right' } | undefined,
+  interviewTextStyle: undefined as { lineHeight: number; textAlign: 'left' | 'center' | 'right' } | undefined,
+  parentIntroTextStyle: undefined as { lineHeight: number; textAlign: 'left' | 'center' | 'right' } | undefined,
+
   // Section visibility toggles
   sectionVisibility: {
     coupleProfile: true,
@@ -2600,6 +2619,9 @@ function transformToDisplayData(dbInvitation: Invitation, content: InvitationCon
     rsvpEnabled: content.rsvpEnabled ?? true,
     rsvpDeadline: content.rsvpDeadline || '',
     rsvpAllowGuestCount: content.rsvpAllowGuestCount ?? true,
+    profileTextStyle: content.profileTextStyle,
+    interviewTextStyle: content.interviewTextStyle,
+    parentIntroTextStyle: content.parentIntroTextStyle,
     sectionVisibility: content.sectionVisibility || mockInvitation.sectionVisibility,
     design: content.design || mockInvitation.design,
     bgm: content.bgm || mockInvitation.bgm,
@@ -2976,31 +2998,35 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
 
         {/* Greeting Section */}
         <div className="greeting-section mb-11">
-          <p className="typo-body" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: invitation.content.greeting ? invitation.content.greeting.replace(/\n/g, '<br/>') : '인사말을 입력해주세요' }} />
+          <p className="typo-body" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: invitation.content.greeting ? parseHighlight(invitation.content.greeting) : '인사말을 입력해주세요' }} />
         </div>
 
         {/* Parents Info */}
         <div className="parents-section mb-9 text-center" style={{ fontFamily: fonts.displayKr }}>
+          {(invitation.groom.father.name || invitation.groom.mother.name) && (
           <div className="mb-1">
             <p className="typo-caption" style={{ color: themeColors.text }}>
-              {invitation.groom.father.name && <><ParentName name={invitation.groom.father.name} deceased={invitation.groom.father.deceased} displayStyle={invitation.deceasedDisplayStyle as 'hanja' | 'flower'} /> · </>}
+              {invitation.groom.father.name && <><ParentName name={invitation.groom.father.name} deceased={invitation.groom.father.deceased} displayStyle={invitation.deceasedDisplayStyle as 'hanja' | 'flower'} />{invitation.groom.mother.name && ' · '}</>}
               {invitation.groom.mother.name && <ParentName name={invitation.groom.mother.name} deceased={invitation.groom.mother.deceased} displayStyle={invitation.deceasedDisplayStyle as 'hanja' | 'flower'} />}
-              {(invitation.groom.father.name || invitation.groom.mother.name) && <span style={{ color: themeColors.gray }}> 의 아들 </span>}
+              <span style={{ color: themeColors.gray }}> 의 아들 </span>
               <span style={{ color: themeColors.primary, fontWeight: 500 }}>{invitation.groom.name?.slice(1)}</span>
             </p>
           </div>
+          )}
           {/* Heart */}
           <div className="my-2">
             <span style={{ color: themeColors.primary, fontSize: '12px' }}>♥</span>
           </div>
+          {(invitation.bride.father.name || invitation.bride.mother.name) && (
           <div>
             <p className="typo-caption" style={{ color: themeColors.text }}>
-              {invitation.bride.father.name && <><ParentName name={invitation.bride.father.name} deceased={invitation.bride.father.deceased} displayStyle={invitation.deceasedDisplayStyle as 'hanja' | 'flower'} /> · </>}
+              {invitation.bride.father.name && <><ParentName name={invitation.bride.father.name} deceased={invitation.bride.father.deceased} displayStyle={invitation.deceasedDisplayStyle as 'hanja' | 'flower'} />{invitation.bride.mother.name && ' · '}</>}
               {invitation.bride.mother.name && <ParentName name={invitation.bride.mother.name} deceased={invitation.bride.mother.deceased} displayStyle={invitation.deceasedDisplayStyle as 'hanja' | 'flower'} />}
-              {(invitation.bride.father.name || invitation.bride.mother.name) && <span style={{ color: themeColors.gray }}> 의 딸 </span>}
+              <span style={{ color: themeColors.gray }}> 의 딸 </span>
               <span style={{ color: themeColors.primary, fontWeight: 500 }}>{invitation.bride.name?.slice(1)}</span>
             </p>
           </div>
+          )}
         </div>
 
         {/* Wedding Info Card */}
@@ -3319,6 +3345,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
           side="groom"
           fonts={fonts}
           themeColors={themeColors}
+          textStyle={(invitation as any).parentIntroTextStyle}
         />
       )}
 
@@ -3339,6 +3366,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
           side="bride"
           fonts={fonts}
           themeColors={themeColors}
+          textStyle={(invitation as any).parentIntroTextStyle}
         />
       )}
 
@@ -3437,6 +3465,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
           fonts={fonts}
           themeColors={themeColors}
           bgColor="#ffffff"
+          textStyle={invitation.interviewTextStyle}
         />
       ) : null)}
 
@@ -3594,7 +3623,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
       <AnimatedSection className="min-h-[300px] flex flex-col justify-center items-center text-center px-7 py-12" style={{ background: themeColors.sectionBg }}>
         <h2 className="typo-title mb-7" style={{ fontFamily: fonts.display, color: themeColors.text }}>{invitation.content.thankYou.title}</h2>
         {invitation.content.thankYou.message ? (
-          <p className="typo-body mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: invitation.content.thankYou.message.replace(/\n/g, '<br/>') }} />
+          <p className="typo-body mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.thankYou.message) }} />
         ) : (
           <p className="typo-body text-gray-400 italic mb-7">감사 메시지를 입력해주세요</p>
         )}

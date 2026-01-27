@@ -20,7 +20,7 @@ import { GeneratedStory } from '@/app/api/ai/generate-story/route'
 import { fieldHelpers, sectionLabels, sectionColors, introAnimationOptions, PreviewSection } from '@/lib/fieldHelpers'
 import { getPresetById } from '@/lib/introPresets'
 import { uploadImage } from '@/lib/imageUpload'
-import { ChevronRight, Sparkles, Palette, FileText, Heart, Settings, ChevronsUpDown, Play, Pause, Music } from 'lucide-react'
+import { ChevronRight, Sparkles, Palette, FileText, Heart, Settings, ChevronsUpDown, Play, Pause, Music, AlignLeft, AlignCenter, AlignRight } from 'lucide-react'
 import InlineCropEditor from './InlineCropEditor'
 import ImageCropEditor, { CropData } from '@/components/parents/ImageCropEditor'
 import { SortableList, SortableItem } from '@/components/ui/sortable-list'
@@ -101,6 +101,61 @@ function SectionGroupHeader({
   )
 }
 
+// 텍스트 스타일 컨트롤 (행간 + 정렬)
+function TextStyleControls({
+  lineHeight = 2.0,
+  textAlign = 'left',
+  onLineHeightChange,
+  onTextAlignChange,
+}: {
+  lineHeight?: number
+  textAlign?: 'left' | 'center' | 'right'
+  onLineHeightChange: (v: number) => void
+  onTextAlignChange: (v: 'left' | 'center' | 'right') => void
+}) {
+  const lineHeightOptions = [1.4, 1.6, 1.8, 2.0, 2.2]
+  const alignOptions = [
+    { value: 'left' as const, icon: AlignLeft },
+    { value: 'center' as const, icon: AlignCenter },
+    { value: 'right' as const, icon: AlignRight },
+  ]
+  return (
+    <div className="flex items-center gap-3 py-1">
+      <div className="flex items-center gap-1">
+        <span className="text-[10px] text-gray-400 mr-0.5">행간</span>
+        {lineHeightOptions.map((v) => (
+          <button
+            key={v}
+            type="button"
+            onClick={() => onLineHeightChange(v)}
+            className={`text-[10px] px-1.5 py-0.5 rounded transition-colors ${
+              lineHeight === v ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+            }`}
+          >
+            {v}
+          </button>
+        ))}
+      </div>
+      <div className="w-px h-4 bg-gray-200" />
+      <div className="flex items-center gap-0.5">
+        <span className="text-[10px] text-gray-400 mr-0.5">정렬</span>
+        {alignOptions.map(({ value, icon: Icon }) => (
+          <button
+            key={value}
+            type="button"
+            onClick={() => onTextAlignChange(value)}
+            className={`p-1 rounded transition-colors ${
+              textAlign === value ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+            }`}
+          >
+            <Icon className="w-3.5 h-3.5" />
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 interface EditPanelProps {
   onOpenIntroSelector?: () => void
   onOpenAIStoryGenerator?: () => void
@@ -160,7 +215,11 @@ export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator,
     addInterview,
     removeInterview,
     toggleSectionVisibility,
-    setActiveSection
+    setActiveSection,
+    editorActiveTab,
+    setEditorActiveTab,
+    validationError,
+    setValidationError
   } = useEditorStore()
   const [isAIModalOpen, setIsAIModalOpen] = useState(false)
   const [uploadingImages, setUploadingImages] = useState<Set<string>>(new Set())
@@ -598,7 +657,7 @@ export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator,
   return (
     <div className="h-full flex flex-col bg-white border-r overflow-hidden">
       {/* 상단 탭 네비게이션 */}
-      <Tabs defaultValue="design" className="flex-1 flex flex-col min-h-0">
+      <Tabs value={editorActiveTab} onValueChange={(v) => { setEditorActiveTab(v); setValidationError(null) }} className="flex-1 flex flex-col min-h-0">
         {/* AI 스토리 작성하기 버튼 */}
         <div className="px-3 py-2 border-b bg-white shrink-0">
           <button
@@ -642,6 +701,15 @@ export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator,
             </TabsTrigger>
           </TabsList>
         </div>
+
+        {/* Validation Error Banner */}
+        {validationError && (
+          <div className="px-3 py-2 bg-red-50 border-b border-red-200 flex items-center gap-2 shrink-0">
+            <span className="text-red-500 text-lg">⚠</span>
+            <p className="text-xs text-red-600 font-medium flex-1">{validationError.message}</p>
+            <button onClick={() => setValidationError(null)} className="text-red-400 hover:text-red-600 text-sm">✕</button>
+          </div>
+        )}
 
         {/* ========== A. 디자인 설정 탭 ========== */}
         <TabsContent value="design" className="flex-1 overflow-y-auto mt-0 min-h-0">
@@ -1042,20 +1110,48 @@ export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator,
             {/* OG 이미지 미리보기 및 업로드 */}
             <div className="space-y-3">
               {invitation.meta.ogImage ? (
-                <div className="relative max-w-[300px]">
-                  <div
-                    className="w-full aspect-[1200/630] rounded-lg bg-cover bg-center border border-gray-200"
-                    style={{ backgroundImage: `url(${invitation.meta.ogImage})` }}
+                <div className="max-w-[300px] space-y-2">
+                  <InlineCropEditor
+                    imageUrl={invitation.meta.ogImage}
+                    settings={invitation.meta.ogImageSettings || { scale: 1.0, positionX: 0, positionY: 0 }}
+                    onUpdate={(s) => {
+                      const current = invitation.meta.ogImageSettings || { scale: 1.0, positionX: 0, positionY: 0 }
+                      updateNestedField('meta.ogImageSettings', { ...current, ...s })
+                    }}
+                    aspectRatio={1200 / 630}
+                    containerWidth={300}
+                    colorClass="gray"
                   />
-                  <button
-                    type="button"
-                    onClick={() => updateNestedField('meta.ogImage', '')}
-                    className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                  </button>
+                  <div className="flex gap-2">
+                    <label className="flex-1 text-center text-xs py-1.5 px-3 bg-gray-100 hover:bg-gray-200 rounded-md cursor-pointer transition-colors">
+                      이미지 교체
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) {
+                            handleImageUpload(file, 'og-image', (url) => {
+                              updateNestedField('meta.ogImage', url)
+                              updateNestedField('meta.ogImageSettings', { scale: 1.0, positionX: 0, positionY: 0 })
+                            })
+                            e.target.value = ''
+                          }
+                        }}
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        updateNestedField('meta.ogImage', '')
+                        updateNestedField('meta.ogImageSettings', undefined)
+                      }}
+                      className="text-xs py-1.5 px-3 bg-red-50 text-red-600 hover:bg-red-100 rounded-md transition-colors"
+                    >
+                      삭제
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <label className="flex flex-col items-center justify-center max-w-[300px] aspect-[1200/630] border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 relative">
@@ -1399,9 +1495,9 @@ export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator,
           <AccordionContent className="space-y-4 pb-4">
             <div className="space-y-1.5">
               <FieldLabel fieldKey="content.greeting" aiEnabled />
-              <Textarea
+              <HighlightTextarea
                 value={invitation.content.greeting}
-                onChange={(e) => updateNestedField('content.greeting', e.target.value)}
+                onChange={(value) => updateNestedField('content.greeting', value)}
                 placeholder={fieldHelpers['content.greeting']?.example}
                 rows={8}
                 className="resize-none"
@@ -1820,6 +1916,12 @@ export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator,
               </div>
               <div className="space-y-1.5">
                 <FieldLabel fieldKey="groom.profile.intro" aiEnabled>소개글</FieldLabel>
+                <TextStyleControls
+                  lineHeight={invitation.profileTextStyle?.lineHeight}
+                  textAlign={invitation.profileTextStyle?.textAlign}
+                  onLineHeightChange={(v) => updateNestedField('profileTextStyle', { ...invitation.profileTextStyle, lineHeight: v })}
+                  onTextAlignChange={(v) => updateNestedField('profileTextStyle', { ...invitation.profileTextStyle, textAlign: v })}
+                />
                 <HighlightTextarea
                   value={invitation.groom.profile.intro}
                   onChange={(value) => updateNestedField('groom.profile.intro', value)}
@@ -1944,6 +2046,12 @@ export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator,
               </div>
               <div className="space-y-1.5">
                 <FieldLabel fieldKey="bride.profile.intro" aiEnabled>소개글</FieldLabel>
+                <TextStyleControls
+                  lineHeight={invitation.profileTextStyle?.lineHeight}
+                  textAlign={invitation.profileTextStyle?.textAlign}
+                  onLineHeightChange={(v) => updateNestedField('profileTextStyle', { ...invitation.profileTextStyle, lineHeight: v })}
+                  onTextAlignChange={(v) => updateNestedField('profileTextStyle', { ...invitation.profileTextStyle, textAlign: v })}
+                />
                 <HighlightTextarea
                   value={invitation.bride.profile.intro}
                   onChange={(value) => updateNestedField('bride.profile.intro', value)}
@@ -1961,6 +2069,7 @@ export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator,
                 />
               </div>
             </div>
+
           </AccordionContent>
         </AccordionItem>
         )}
@@ -2271,6 +2380,12 @@ export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator,
                 </div>
                 <div className="space-y-1.5">
                   <FieldLabel fieldKey="content.interviews[].answer" aiEnabled>답변</FieldLabel>
+                  <TextStyleControls
+                    lineHeight={invitation.interviewTextStyle?.lineHeight}
+                    textAlign={invitation.interviewTextStyle?.textAlign}
+                    onLineHeightChange={(v) => updateNestedField('interviewTextStyle', { ...invitation.interviewTextStyle, lineHeight: v })}
+                    onTextAlignChange={(v) => updateNestedField('interviewTextStyle', { ...invitation.interviewTextStyle, textAlign: v })}
+                  />
                   <HighlightTextarea
                     value={interview.answer}
                     onChange={(value) => updateInterviewField(index, 'answer', value)}
@@ -2290,6 +2405,7 @@ export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator,
             >
               + 인터뷰 추가
             </Button>
+
           </AccordionContent>
         </AccordionItem>
           </Accordion>

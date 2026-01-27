@@ -130,13 +130,15 @@ function EditorContent() {
 
     // 신랑/신부 이름 필수 검증
     if (!invitation.groom.name?.trim() || !invitation.bride.name?.trim()) {
-      alert('신랑과 신부 이름을 모두 입력해주세요.')
+      useEditorStore.getState().setEditorActiveTab('required')
+      useEditorStore.getState().setValidationError({ tab: 'required', message: '📋 필수입력 > 신랑/신부 이름을 모두 입력해주세요.' })
       return
     }
 
     // 카카오톡 공유 썸네일 필수 검증
     if (!invitation.meta.kakaoThumbnail?.trim()) {
-      alert('카카오톡 공유 썸네일 이미지를 등록해주세요.\n\n에디터 하단 "공유 설정" 섹션에서 업로드할 수 있습니다.')
+      useEditorStore.getState().setEditorActiveTab('design')
+      useEditorStore.getState().setValidationError({ tab: 'design', message: '🎨 디자인 > 공유 미리보기 설정 > 카카오톡 공유 썸네일을 추가해주세요.' })
       return
     }
 

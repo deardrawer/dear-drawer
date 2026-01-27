@@ -87,15 +87,15 @@ export default function HighlightTextarea({
   return (
     <div className="space-y-1.5">
       {/* 하이라이트 툴바 */}
-      <div className="flex items-center gap-1">
-        <span className="text-[10px] text-gray-400 mr-1">하이라이트:</span>
+      <div className="flex items-center gap-1.5">
+        <span className="text-[10px] text-gray-400 mr-0.5">텍스트 선택 후 클릭 →</span>
         <Button
           type="button"
           variant="outline"
           size="sm"
           className="h-6 px-2 text-[10px] gap-1"
           onClick={() => applyHighlight('yellow')}
-          title="노란색 하이라이트 (==텍스트==)"
+          title="텍스트를 드래그한 후 클릭하면 노란색 하이라이트가 적용됩니다"
         >
           <span className="w-3 h-3 rounded-sm" style={{ background: 'linear-gradient(transparent 50%, #FFEB3B 50%)' }} />
           노란색
@@ -106,7 +106,7 @@ export default function HighlightTextarea({
           size="sm"
           className="h-6 px-2 text-[10px] gap-1"
           onClick={() => applyHighlight('white')}
-          title="흰색 하이라이트 (~~텍스트~~)"
+          title="텍스트를 드래그한 후 클릭하면 흰색 하이라이트가 적용됩니다"
         >
           <span className="w-3 h-3 rounded-sm border border-gray-300" style={{ background: 'linear-gradient(transparent 50%, rgba(255,255,255,0.9) 50%)', boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.05)' }} />
           흰색

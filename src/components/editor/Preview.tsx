@@ -261,26 +261,30 @@ function IntroPage({ invitation, groomName, brideName, fonts, themeColors }: Pag
       </section>
       <section id="preview-invitation" className="px-7 py-10 text-center" style={{ background: themeColors.background }}>
         <p className="text-[10px] font-light mb-9" style={{ color: themeColors.gray, letterSpacing: '4px' }}>INVITATION</p>
-        {invitation.content.quote.text && <div className="py-5 mb-9" style={{ borderTop: `1px solid ${themeColors.divider}`, borderBottom: `1px solid ${themeColors.divider}` }}><p className="text-[13px] font-light leading-[1.9] mb-2" style={{ fontFamily: fonts.displayKr, color: themeColors.primary }} dangerouslySetInnerHTML={{ __html: invitation.content.quote.text.replace(/\n/g, '<br/>') }} />{invitation.content.quote.author && <p className="text-[11px] font-light" style={{ color: themeColors.gray }}>{invitation.content.quote.author}</p>}</div>}
-        <div className="mb-11"><p className="text-[13px] font-light leading-[2.1]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: invitation.content.greeting ? invitation.content.greeting.replace(/\n/g, '<br/>') : 'Please enter greeting' }} /></div>
+        {invitation.content.quote.text && <div className="py-5 mb-9" style={{ borderTop: `1px solid ${themeColors.divider}`, borderBottom: `1px solid ${themeColors.divider}` }}><p className="text-[13px] font-light leading-[1.9] mb-2" style={{ fontFamily: fonts.displayKr, color: themeColors.primary }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.quote.text) }} />{invitation.content.quote.author && <p className="text-[11px] font-light" style={{ color: themeColors.gray }}>{invitation.content.quote.author}</p>}</div>}
+        <div className="mb-11"><p className="text-[13px] font-light leading-[2.1]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: invitation.content.greeting ? parseHighlight(invitation.content.greeting) : 'Please enter greeting' }} /></div>
         {/* 부모님 정보 */}
         <div className="mb-9 text-center" style={{ fontFamily: fonts.displayKr }}>
+          {(invitation.groom.father.name || invitation.groom.mother.name) && (
           <div className="mb-3">
             <p className="text-[11px] font-light leading-[2]" style={{ color: themeColors.text }}>
-              {invitation.groom.father.name && <><ParentName name={invitation.groom.father.name} deceased={invitation.groom.father.deceased} displayStyle={invitation.deceasedDisplayStyle} /> · </>}
+              {invitation.groom.father.name && <><ParentName name={invitation.groom.father.name} deceased={invitation.groom.father.deceased} displayStyle={invitation.deceasedDisplayStyle} />{invitation.groom.mother.name && ' · '}</>}
               {invitation.groom.mother.name && <><ParentName name={invitation.groom.mother.name} deceased={invitation.groom.mother.deceased} displayStyle={invitation.deceasedDisplayStyle} /></>}
-              {(invitation.groom.father.name || invitation.groom.mother.name) && <span style={{ color: themeColors.gray }}> 의 아들 </span>}
+              <span style={{ color: themeColors.gray }}> 의 아들 </span>
               <span style={{ color: themeColors.primary, fontWeight: 500 }}>{groomName}</span>
             </p>
           </div>
+          )}
+          {(invitation.bride.father.name || invitation.bride.mother.name) && (
           <div>
             <p className="text-[11px] font-light leading-[2]" style={{ color: themeColors.text }}>
-              {invitation.bride.father.name && <><ParentName name={invitation.bride.father.name} deceased={invitation.bride.father.deceased} displayStyle={invitation.deceasedDisplayStyle} /> · </>}
+              {invitation.bride.father.name && <><ParentName name={invitation.bride.father.name} deceased={invitation.bride.father.deceased} displayStyle={invitation.deceasedDisplayStyle} />{invitation.bride.mother.name && ' · '}</>}
               {invitation.bride.mother.name && <><ParentName name={invitation.bride.mother.name} deceased={invitation.bride.mother.deceased} displayStyle={invitation.deceasedDisplayStyle} /></>}
-              {(invitation.bride.father.name || invitation.bride.mother.name) && <span style={{ color: themeColors.gray }}> 의 딸 </span>}
+              <span style={{ color: themeColors.gray }}> 의 딸 </span>
               <span style={{ color: themeColors.primary, fontWeight: 500 }}>{brideName}</span>
             </p>
           </div>
+          )}
         </div>
         <div id="preview-venue-info" className="rounded-2xl px-6 py-7 mb-9" style={{ background: themeColors.cardBg, boxShadow: '0 0 0 1px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.04), 0 4px 8px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.06)' }}>
           <span className="inline-block text-[9px] font-light px-3 py-1 rounded-full mb-5" style={{ background: '#f0f0f0', color: '#888' }}>Until wedding {calculateDday(invitation.wedding.date)}</span>
@@ -315,8 +319,8 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors }: Page
       </section>
 
       {/* Couple Profile Section - with visibility toggle */}
-      {sectionVisibility.coupleProfile && invitation.bride.profile.intro && <section id="preview-couple-profile" className="px-7 py-14" style={{ background: themeColors.sectionBg }}><ProfileImageSlider images={invitation.bride.profile.images} imageSettings={invitation.bride.profile.imageSettings} className="mb-10" /><div className="text-center mb-8"><p className="text-[10px] font-light mb-4 anim-underline revealed" style={{ fontFamily: fonts.display, color: themeColors.gray, letterSpacing: '3px', display: 'inline-block' }}>{invitation.bride.profile.aboutLabel}</p><p className="text-[11px] font-light" style={{ color: '#999' }}>{invitation.bride.profile.subtitle}</p></div><div className="text-xs font-light leading-[2.2] text-left" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.bride.profile.intro) }} />{invitation.bride.profile.tag && <div className="inline-flex items-center gap-1.5 mt-5 px-3.5 py-2 rounded-md text-[10px] font-light" style={{ background: 'rgba(0,0,0,0.03)', color: '#777' }}>&#9829; {invitation.bride.profile.tag}</div>}</section>}
-      {sectionVisibility.coupleProfile && invitation.groom.profile.intro && <section className="px-7 py-14" style={{ background: themeColors.sectionBg }}><ProfileImageSlider images={invitation.groom.profile.images} imageSettings={invitation.groom.profile.imageSettings} className="mb-10" /><div className="text-center mb-8"><p className="text-[10px] font-light mb-4 anim-underline revealed" style={{ fontFamily: fonts.display, color: themeColors.gray, letterSpacing: '3px', display: 'inline-block' }}>{invitation.groom.profile.aboutLabel}</p><p className="text-[11px] font-light" style={{ color: '#999' }}>{invitation.groom.profile.subtitle}</p></div><div className="text-xs font-light leading-[2.2] text-left" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.groom.profile.intro) }} />{invitation.groom.profile.tag && <div className="inline-flex items-center gap-1.5 mt-5 px-3.5 py-2 rounded-md text-[10px] font-light" style={{ background: 'rgba(0,0,0,0.03)', color: '#777' }}>&#9829; {invitation.groom.profile.tag}</div>}</section>}
+      {sectionVisibility.coupleProfile && invitation.bride.profile.intro && <section id="preview-couple-profile" className="px-7 py-14" style={{ background: themeColors.sectionBg }}><ProfileImageSlider images={invitation.bride.profile.images} imageSettings={invitation.bride.profile.imageSettings} className="mb-10" /><div className="text-center mb-8"><p className="text-[10px] font-light mb-4 anim-underline revealed" style={{ fontFamily: fonts.display, color: themeColors.gray, letterSpacing: '3px', display: 'inline-block' }}>{invitation.bride.profile.aboutLabel}</p><p className="text-[11px] font-light" style={{ color: '#999' }}>{invitation.bride.profile.subtitle}</p></div><div className="text-xs font-light" style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: invitation.profileTextStyle?.lineHeight || 2.2, textAlign: invitation.profileTextStyle?.textAlign || 'left' }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.bride.profile.intro) }} />{invitation.bride.profile.tag && <div className="inline-flex items-center gap-1.5 mt-5 px-3.5 py-2 rounded-md text-[10px] font-light" style={{ background: 'rgba(0,0,0,0.03)', color: '#777' }}>&#9829; {invitation.bride.profile.tag}</div>}</section>}
+      {sectionVisibility.coupleProfile && invitation.groom.profile.intro && <section className="px-7 py-14" style={{ background: themeColors.sectionBg }}><ProfileImageSlider images={invitation.groom.profile.images} imageSettings={invitation.groom.profile.imageSettings} className="mb-10" /><div className="text-center mb-8"><p className="text-[10px] font-light mb-4 anim-underline revealed" style={{ fontFamily: fonts.display, color: themeColors.gray, letterSpacing: '3px', display: 'inline-block' }}>{invitation.groom.profile.aboutLabel}</p><p className="text-[11px] font-light" style={{ color: '#999' }}>{invitation.groom.profile.subtitle}</p></div><div className="text-xs font-light" style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: invitation.profileTextStyle?.lineHeight || 2.2, textAlign: invitation.profileTextStyle?.textAlign || 'left' }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.groom.profile.intro) }} />{invitation.groom.profile.tag && <div className="inline-flex items-center gap-1.5 mt-5 px-3.5 py-2 rounded-md text-[10px] font-light" style={{ background: 'rgba(0,0,0,0.03)', color: '#777' }}>&#9829; {invitation.groom.profile.tag}</div>}</section>}
 
       {/* Our Story Section - with visibility toggle */}
       {sectionVisibility.ourStory && invitation.relationship.stories.some(s => s.title || s.desc) && <section id="preview-our-story" className="py-16 px-7 text-center" style={{ background: themeColors.cardBg }}><div className="w-px h-10 mx-auto mb-6" style={{ background: themeColors.divider }} /><p className="text-sm font-light mb-4" style={{ fontFamily: fonts.displayKr, color: themeColors.text, letterSpacing: '1px' }}>사랑이 시작된 작은 순간들</p><div className="w-px h-10 mx-auto mt-6" style={{ background: themeColors.divider }} /></section>}
@@ -338,7 +342,7 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors }: Page
 
       {/* Interview Section - with visibility toggle */}
       {sectionVisibility.interview && invitation.content.interviews.some(i => i.question || i.answer) && <section id="preview-interview" className="py-16 px-7 text-center" style={{ background: themeColors.cardBg }}><div className="w-px h-10 mx-auto mb-6" style={{ background: themeColors.divider }} /><p className="text-sm font-light mb-4" style={{ fontFamily: fonts.displayKr, color: themeColors.text, letterSpacing: '1px' }}>결혼에 관한 우리의 이야기</p><div className="w-px h-10 mx-auto mt-6" style={{ background: themeColors.divider }} /></section>}
-      {sectionVisibility.interview && invitation.content.interviews.map((interview, index) => interview.question || interview.answer ? <section key={index} className="px-7 py-14" style={{ background: interview.bgClass === 'pink-bg' ? themeColors.sectionBg : themeColors.cardBg }}>{interview.images && interview.images.length > 0 ? <ProfileImageSlider images={interview.images} imageSettings={interview.imageSettings} className="mb-8" /> : <div className="w-full aspect-[4/5] rounded-xl mb-8 bg-gray-100 flex items-center justify-center"><span className="text-gray-400 text-sm">Interview Image</span></div>}{interview.question && <p className="text-sm mb-5 text-center"><span className="anim-underline revealed" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400, display: 'inline-block' }}>{interview.question}</span></p>}{interview.answer && <p className="text-[11px] font-light leading-[2.2]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: parseHighlight(interview.answer) }} />}</section> : null)}
+      {sectionVisibility.interview && invitation.content.interviews.map((interview, index) => interview.question || interview.answer ? <section key={index} className="px-7 py-14" style={{ background: interview.bgClass === 'pink-bg' ? themeColors.sectionBg : themeColors.cardBg }}>{interview.images && interview.images.length > 0 ? <ProfileImageSlider images={interview.images} imageSettings={interview.imageSettings} className="mb-8" /> : <div className="w-full aspect-[4/5] rounded-xl mb-8 bg-gray-100 flex items-center justify-center"><span className="text-gray-400 text-sm">Interview Image</span></div>}{interview.question && <p className="text-sm mb-5 text-center"><span className="anim-underline revealed" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400, display: 'inline-block' }}>{interview.question}</span></p>}{interview.answer && <p className="text-[11px] font-light" style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: invitation.interviewTextStyle?.lineHeight ?? 2.0, textAlign: invitation.interviewTextStyle?.textAlign ?? 'left' }} dangerouslySetInnerHTML={{ __html: parseHighlight(interview.answer) }} />}</section> : null)}
 
       {/* Guidance & Info Section - 통합 섹션 */}
       {sectionVisibility.guidance && (
@@ -386,7 +390,7 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors }: Page
                 <span className="w-0.5 h-3.5 rounded" style={{ background: themeColors.accent }} />
                 {invitation.content.info.dressCode.title}
               </h4>
-              <p className="text-xs font-light leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: invitation.content.info.dressCode.content.replace(/\n/g, '<br/>') }} />
+              <p className="text-xs font-light leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.info.dressCode.content) }} />
             </div>
           )}
           {invitation.content.info.photoShare.enabled && (
@@ -395,7 +399,7 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors }: Page
                 <span className="w-0.5 h-3.5 rounded" style={{ background: themeColors.accent }} />
                 {invitation.content.info.photoShare.title}
               </h4>
-              <p className="text-xs font-light leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: invitation.content.info.photoShare.content.replace(/\n/g, '<br/>') }} />
+              <p className="text-xs font-light leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.info.photoShare.content) }} />
               <button className="mt-4 px-7 py-3.5 rounded-xl text-xs" style={{ background: 'linear-gradient(135deg, #f5ebe0 0%, #ede4d8 100%)', color: '#6b5a48', fontWeight: 400, letterSpacing: '0.5px', boxShadow: '0 2px 4px rgba(0,0,0,0.04), 0 4px 12px rgba(180,150,120,0.12)' }}>
                 {invitation.content.info.photoShare.buttonText}
               </button>
@@ -407,7 +411,7 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors }: Page
                 <span className="w-0.5 h-3.5 rounded" style={{ background: themeColors.accent }} />
                 {invitation.content.info.photoBooth.title}
               </h4>
-              <p className="text-xs font-light leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: invitation.content.info.photoBooth.content.replace(/\n/g, '<br/>') }} />
+              <p className="text-xs font-light leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.info.photoBooth.content) }} />
             </div>
           )}
           {invitation.content.info.flowerChild?.enabled && (
@@ -416,7 +420,7 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors }: Page
                 <span className="w-0.5 h-3.5 rounded" style={{ background: themeColors.accent }} />
                 {invitation.content.info.flowerChild.title}
               </h4>
-              <p className="text-xs font-light leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: invitation.content.info.flowerChild.content.replace(/\n/g, '<br/>') }} />
+              <p className="text-xs font-light leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.info.flowerChild.content) }} />
             </div>
           )}
           {invitation.content.info.flowerGift?.enabled && (
@@ -425,7 +429,7 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors }: Page
                 <span className="w-0.5 h-3.5 rounded" style={{ background: themeColors.accent }} />
                 {invitation.content.info.flowerGift.title}
               </h4>
-              <p className="text-xs font-light leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: invitation.content.info.flowerGift.content.replace(/\n/g, '<br/>') }} />
+              <p className="text-xs font-light leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.info.flowerGift.content) }} />
             </div>
           )}
           {invitation.content.info.wreath?.enabled && (
@@ -434,7 +438,7 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors }: Page
                 <span className="w-0.5 h-3.5 rounded" style={{ background: themeColors.accent }} />
                 {invitation.content.info.wreath.title}
               </h4>
-              <p className="text-xs font-light leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: invitation.content.info.wreath.content.replace(/\n/g, '<br/>') }} />
+              <p className="text-xs font-light leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.info.wreath.content) }} />
             </div>
           )}
           {invitation.content.info.shuttle?.enabled && (
@@ -443,7 +447,7 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors }: Page
                 <span className="w-0.5 h-3.5 rounded" style={{ background: themeColors.accent }} />
                 {invitation.content.info.shuttle.title}
               </h4>
-              <p className="text-xs font-light leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: invitation.content.info.shuttle.content.replace(/\n/g, '<br/>') }} />
+              <p className="text-xs font-light leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.info.shuttle.content) }} />
             </div>
           )}
           {invitation.content.info.reception?.enabled && (
@@ -452,7 +456,7 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors }: Page
                 <span className="w-0.5 h-3.5 rounded" style={{ background: themeColors.accent }} />
                 {invitation.content.info.reception.title}
               </h4>
-              <p className="text-xs font-light leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: invitation.content.info.reception.content.replace(/\n/g, '<br/>') }} />
+              <p className="text-xs font-light leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.info.reception.content) }} />
             </div>
           )}
           {invitation.content.info.customItems?.map(item => item.enabled && (
@@ -461,7 +465,7 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors }: Page
                 <span className="w-0.5 h-3.5 rounded" style={{ background: themeColors.accent }} />
                 {item.title}
               </h4>
-              <p className="text-xs font-light leading-8" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: item.content.replace(/\n/g, '<br/>') }} />
+              <p className="text-xs font-light leading-8" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: parseHighlight(item.content) }} />
             </div>
           ))}
         </section>
@@ -469,7 +473,7 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors }: Page
       {/* Thank You Section */}
       <section id="preview-thank-you" className="min-h-[300px] flex flex-col justify-center items-center text-center px-7 py-20" style={{ background: themeColors.sectionBg }}>
         <p className="text-[10px] font-light mb-6" style={{ color: themeColors.gray, letterSpacing: '4px' }}>THANK YOU</p>
-        <h2 className="text-lg mb-7" style={{ fontFamily: fonts.display, color: themeColors.text, fontWeight: 400, letterSpacing: '4px' }}>{invitation.content.thankYou.title}</h2>{invitation.content.thankYou.message ? <p className="text-[11px] font-light leading-[2.2] mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: invitation.content.thankYou.message.replace(/\n/g, '<br/>') }} /> : <p className="text-[11px] text-gray-400 italic mb-7">Please enter thank you message</p>}{invitation.content.thankYou.sign && <p className="text-[11px] font-light" style={{ fontFamily: fonts.displayKr, color: themeColors.gray }}>{invitation.content.thankYou.sign}</p>}
+        <h2 className="text-lg mb-7" style={{ fontFamily: fonts.display, color: themeColors.text, fontWeight: 400, letterSpacing: '4px' }}>{invitation.content.thankYou.title}</h2>{invitation.content.thankYou.message ? <p className="text-[11px] font-light leading-[2.2] mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.thankYou.message) }} /> : <p className="text-[11px] text-gray-400 italic mb-7">Please enter thank you message</p>}{invitation.content.thankYou.sign && <p className="text-[11px] font-light" style={{ fontFamily: fonts.displayKr, color: themeColors.gray }}>{invitation.content.thankYou.sign}</p>}
       </section>
       <div className="relative h-[60px] overflow-hidden" style={{ background: themeColors.sectionBg }}><div className="absolute bottom-0 left-0 w-full h-full" style={{ background: themeColors.cardBg }} /><svg className="absolute bottom-0 w-[250%]" viewBox="0 0 2880 120" preserveAspectRatio="none" style={{ left: '-5%', height: '100%' }}><path fill={`${themeColors.cardBg}66`} d="M0,40 Q180,80 360,40 T720,40 T1080,40 T1440,40 T1800,40 T2160,40 T2520,40 T2880,40 L2880,120 L0,120 Z" /><path fill={`${themeColors.cardBg}99`} d="M0,50 Q240,90 480,50 T960,50 T1440,50 T1920,50 T2400,50 T2880,50 L2880,120 L0,120 Z" /><path fill={themeColors.cardBg} d="M0,70 Q360,100 720,70 T1440,70 T2160,70 T2880,70 L2880,120 L0,120 Z" /></svg></div>
 
@@ -568,9 +572,7 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
             />
           </div>
           {/* 메시지 */}
-          <p className="text-xs leading-[2.2] whitespace-pre-line text-center" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>
-            {parentIntro?.groom?.message || '저희 아들이 좋은 사람을 만나\n결혼하게 되었습니다.\n\n부디 오셔서 축복해 주시면 감사하겠습니다.'}
-          </p>
+          <p className="text-xs" style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: invitation.parentIntroTextStyle?.lineHeight || 2.0, textAlign: invitation.parentIntroTextStyle?.textAlign || 'left' }} dangerouslySetInnerHTML={{ __html: parseHighlight(parentIntro?.groom?.message || '저희 아들이 좋은 사람을 만나\n결혼하게 되었습니다.\n\n부디 오셔서 축복해 주시면 감사하겠습니다.') }} />
         </section>
       )}
 
@@ -604,9 +606,7 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
             />
           </div>
           {/* 메시지 */}
-          <p className="text-xs leading-[2.2] whitespace-pre-line text-center" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>
-            {parentIntro?.bride?.message || '저희 딸이 좋은 사람을 만나\n결혼하게 되었습니다.\n\n부디 오셔서 축복해 주시면 감사하겠습니다.'}
-          </p>
+          <p className="text-xs" style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: invitation.parentIntroTextStyle?.lineHeight || 2.0, textAlign: invitation.parentIntroTextStyle?.textAlign || 'left' }} dangerouslySetInnerHTML={{ __html: parseHighlight(parentIntro?.bride?.message || '저희 딸이 좋은 사람을 만나\n결혼하게 되었습니다.\n\n부디 오셔서 축복해 주시면 감사하겠습니다.') }} />
         </section>
       )}
 
@@ -739,7 +739,7 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
             </p>
           )}
           {interview.answer && (
-            <p className="text-[11px] font-light leading-[2.2]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: parseHighlight(interview.answer) }} />
+            <p className="text-[11px] font-light" style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: invitation.interviewTextStyle?.lineHeight ?? 2.0, textAlign: invitation.interviewTextStyle?.textAlign ?? 'left' }} dangerouslySetInnerHTML={{ __html: parseHighlight(interview.answer) }} />
           )}
         </section>
       ) : null)}
@@ -759,7 +759,7 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
                 <span className="w-[3px] h-[14px] rounded-sm" style={{ background: themeColors.accent }} />
                 {invitation.content.info.dressCode.title}
               </h4>
-              <p className="text-xs leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: invitation.content.info.dressCode.content.replace(/\n/g, '<br/>') }} />
+              <p className="text-xs leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.info.dressCode.content) }} />
             </div>
           )}
           {invitation.content.info.photoShare.enabled && (
@@ -768,7 +768,7 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
                 <span className="w-[3px] h-[14px] rounded-sm" style={{ background: themeColors.accent }} />
                 {invitation.content.info.photoShare.title}
               </h4>
-              <p className="text-xs leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: invitation.content.info.photoShare.content.replace(/\n/g, '<br/>') }} />
+              <p className="text-xs leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.info.photoShare.content) }} />
               {invitation.content.info.photoShare.buttonText && (
                 <button className="mt-4 px-5 py-2.5 text-[11px] transition-all" style={{ background: themeColors.primary, color: '#fff' }}>
                   {invitation.content.info.photoShare.buttonText}
@@ -782,7 +782,7 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
                 <span className="w-[3px] h-[14px] rounded-sm" style={{ background: themeColors.accent }} />
                 {invitation.content.info.photoBooth.title}
               </h4>
-              <p className="text-xs leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: invitation.content.info.photoBooth.content.replace(/\n/g, '<br/>') }} />
+              <p className="text-xs leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.info.photoBooth.content) }} />
             </div>
           )}
           {invitation.content.info.flowerChild?.enabled && (
@@ -791,7 +791,7 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
                 <span className="w-[3px] h-[14px] rounded-sm" style={{ background: themeColors.accent }} />
                 {invitation.content.info.flowerChild.title}
               </h4>
-              <p className="text-xs leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: invitation.content.info.flowerChild.content.replace(/\n/g, '<br/>') }} />
+              <p className="text-xs leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.info.flowerChild.content) }} />
             </div>
           )}
           {invitation.content.info.flowerGift?.enabled && (
@@ -800,7 +800,7 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
                 <span className="w-[3px] h-[14px] rounded-sm" style={{ background: themeColors.accent }} />
                 {invitation.content.info.flowerGift.title}
               </h4>
-              <p className="text-xs leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: invitation.content.info.flowerGift.content.replace(/\n/g, '<br/>') }} />
+              <p className="text-xs leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.info.flowerGift.content) }} />
             </div>
           )}
           {invitation.content.info.wreath?.enabled && (
@@ -809,7 +809,7 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
                 <span className="w-[3px] h-[14px] rounded-sm" style={{ background: themeColors.accent }} />
                 {invitation.content.info.wreath.title}
               </h4>
-              <p className="text-xs leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: invitation.content.info.wreath.content.replace(/\n/g, '<br/>') }} />
+              <p className="text-xs leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.info.wreath.content) }} />
             </div>
           )}
           {invitation.content.info.shuttle?.enabled && (
@@ -818,7 +818,7 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
                 <span className="w-[3px] h-[14px] rounded-sm" style={{ background: themeColors.accent }} />
                 {invitation.content.info.shuttle.title}
               </h4>
-              <p className="text-xs leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: invitation.content.info.shuttle.content.replace(/\n/g, '<br/>') }} />
+              <p className="text-xs leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.info.shuttle.content) }} />
             </div>
           )}
           {invitation.content.info.reception?.enabled && (
@@ -827,7 +827,7 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
                 <span className="w-[3px] h-[14px] rounded-sm" style={{ background: themeColors.accent }} />
                 {invitation.content.info.reception.title}
               </h4>
-              <p className="text-xs leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: invitation.content.info.reception.content.replace(/\n/g, '<br/>') }} />
+              <p className="text-xs leading-6" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.info.reception.content) }} />
             </div>
           )}
           {invitation.content.info.customItems?.map(item => item.enabled && (
@@ -836,7 +836,7 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
                 <span className="w-[3px] h-[14px] rounded-sm" style={{ background: themeColors.accent }} />
                 {item.title}
               </h4>
-              <p className="text-xs leading-8" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: item.content.replace(/\n/g, '<br/>') }} />
+              <p className="text-xs leading-8" style={{ color: '#666' }} dangerouslySetInnerHTML={{ __html: parseHighlight(item.content) }} />
             </div>
           ))}
         </section>
@@ -847,7 +847,7 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
         <p className="text-[10px] font-light mb-6" style={{ color: themeColors.gray, letterSpacing: '4px' }}>THANK YOU</p>
         <h2 className="text-lg mb-7" style={{ fontFamily: fonts.display, color: themeColors.text, fontWeight: 400, letterSpacing: '4px' }}>{invitation.content.thankYou.title}</h2>
         {invitation.content.thankYou.message ? (
-          <p className="text-[11px] font-light leading-[2.2] mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: invitation.content.thankYou.message.replace(/\n/g, '<br/>') }} />
+          <p className="text-[11px] font-light leading-[2.2] mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.thankYou.message) }} />
         ) : (
           <p className="text-[11px] text-gray-400 italic mb-7">Please enter thank you message</p>
         )}

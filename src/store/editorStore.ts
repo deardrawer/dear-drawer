@@ -32,6 +32,11 @@ export interface ImageSettings {
 }
 
 // 프로필 정보
+export interface TextStyle {
+  lineHeight: number    // 1.4 ~ 2.2 (기본 2.0)
+  textAlign: 'left' | 'center' | 'right'  // 기본 'left'
+}
+
 export interface ProfileInfo {
   images: string[]
   imageSettings: ImageSettings[]  // 각 이미지별 설정
@@ -39,6 +44,7 @@ export interface ProfileInfo {
   subtitle: string
   intro: string
   tag: string
+  textStyle?: TextStyle
 }
 
 // 커플 개인 정보
@@ -84,6 +90,7 @@ export interface InterviewItem {
   images: string[]
   imageSettings: ImageSettings[]  // 각 이미지별 설정
   bgClass: string
+  textStyle?: TextStyle
 }
 
 // 명언
@@ -332,6 +339,7 @@ export interface InvitationContent {
     title: string
     description: string
     ogImage: string
+    ogImageSettings?: ImageSettings
     kakaoThumbnail: string
   }
 
@@ -352,6 +360,11 @@ export interface InvitationContent {
 
   // ===== 고인 표시 스타일 =====
   deceasedDisplayStyle: DeceasedDisplayStyle
+
+  // ===== 섹션별 텍스트 스타일 =====
+  profileTextStyle?: TextStyle
+  interviewTextStyle?: TextStyle
+  parentIntroTextStyle?: TextStyle
 
   // ===== 섹션 공개 설정 =====
   sectionVisibility: SectionVisibility
@@ -389,6 +402,8 @@ interface EditorStore {
   isDirty: boolean
   isSaving: boolean
   activeSection: PreviewSectionId  // 현재 편집 중인 섹션
+  editorActiveTab: string  // 에디터 탭 제어
+  validationError: { tab: string; message: string } | null
 
   // Actions
   initInvitation: (template: Template) => void
@@ -412,6 +427,8 @@ interface EditorStore {
   // 인트로 관련 액션
   updateIntroPreset: (presetId: IntroPresetId) => void
   updateIntroField: <K extends keyof IntroSettings>(field: K, value: IntroSettings[K]) => void
+  setEditorActiveTab: (tab: string) => void
+  setValidationError: (error: { tab: string; message: string } | null) => void
 }
 
 const createDefaultImageSettings = (): ImageSettings => ({
@@ -700,6 +717,8 @@ export const useEditorStore = create<EditorStore>((set) => ({
   isDirty: false,
   isSaving: false,
   activeSection: null,
+  editorActiveTab: 'design',
+  validationError: null,
 
   initInvitation: (template) =>
     set({
@@ -950,4 +969,7 @@ export const useEditorStore = create<EditorStore>((set) => ({
         isDirty: true,
       }
     }),
+
+  setEditorActiveTab: (tab) => set({ editorActiveTab: tab }),
+  setValidationError: (error) => set({ validationError: error }),
 }))

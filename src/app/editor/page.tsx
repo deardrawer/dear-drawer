@@ -134,6 +134,12 @@ function EditorContent() {
       return
     }
 
+    // 카카오톡 공유 썸네일 필수 검증
+    if (!invitation.meta.kakaoThumbnail?.trim()) {
+      alert('카카오톡 공유 썸네일 이미지를 등록해주세요.\n\n에디터 하단 "공유 설정" 섹션에서 업로드할 수 있습니다.')
+      return
+    }
+
     setSaving(true)
 
     try {

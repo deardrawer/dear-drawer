@@ -53,6 +53,7 @@ export default function ShareModal({
   const [copied, setCopied] = useState(false)
   const [isSavingSlug, setIsSavingSlug] = useState(false)
   const [slugSaved, setSlugSaved] = useState(false)
+  const [activeTab, setActiveTab] = useState('url')
   const [pageViews, setPageViews] = useState({ total: 0, today: 0 })
   const qrCanvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -70,28 +71,35 @@ export default function ShareModal({
     }
   }, [groomName, brideName, weddingDate, slug])
 
-  // Generate QR code
+  // Generate QR code when QR tab is active and canvas is available
   useEffect(() => {
-    if (invitationUrl && qrCanvasRef.current) {
-      QRCode.toCanvas(qrCanvasRef.current, invitationUrl, {
-        width: 256,
-        margin: 2,
-        color: {
-          dark: qrColor,
-          light: '#FFFFFF',
-        },
-      })
+    if (activeTab !== 'qr' || !invitationUrl) return
 
-      QRCode.toDataURL(invitationUrl, {
-        width: 1024,
-        margin: 2,
-        color: {
-          dark: qrColor,
-          light: '#FFFFFF',
-        },
-      }).then(setQrCodeUrl)
-    }
-  }, [invitationUrl, qrColor])
+    // Wait for canvas to mount after tab switch
+    const timer = setTimeout(() => {
+      if (qrCanvasRef.current) {
+        QRCode.toCanvas(qrCanvasRef.current, invitationUrl, {
+          width: 256,
+          margin: 2,
+          color: {
+            dark: qrColor,
+            light: '#FFFFFF',
+          },
+        })
+
+        QRCode.toDataURL(invitationUrl, {
+          width: 1024,
+          margin: 2,
+          color: {
+            dark: qrColor,
+            light: '#FFFFFF',
+          },
+        }).then(setQrCodeUrl)
+      }
+    }, 50)
+
+    return () => clearTimeout(timer)
+  }, [invitationUrl, qrColor, activeTab])
 
   const handleSlugChange = (value: string) => {
     const sanitized = value.toLowerCase().replace(/[^a-z0-9-]/g, '')
@@ -274,7 +282,7 @@ export default function ShareModal({
           <DialogTitle>청첩장 공유하기</DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="url" className="mt-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="url">URL 설정</TabsTrigger>
             <TabsTrigger value="qr">QR 코드</TabsTrigger>

@@ -47,9 +47,7 @@ export default function ShareModal({
   shareDescription,
 }: ShareModalProps) {
   const [slug, setSlug] = useState(currentSlug || '')
-  const [isCheckingSlug, setIsCheckingSlug] = useState(false)
   const [slugError, setSlugError] = useState('')
-  const [slugAvailable, setSlugAvailable] = useState(false)
   const [qrCodeUrl, setQrCodeUrl] = useState('')
   const [qrColor, setQrColor] = useState('#000000')
   const [copied, setCopied] = useState(false)
@@ -95,70 +93,53 @@ export default function ShareModal({
     }
   }, [invitationUrl, qrColor])
 
-  const checkSlugAvailability = async () => {
-    if (!slug) return
-
-    setIsCheckingSlug(true)
-    setSlugError('')
-    setSlugAvailable(false)
-
-    try {
-      const response = await fetch(`/api/invitations/check-slug?slug=${encodeURIComponent(slug)}`)
-      const data: { available?: boolean } = await response.json()
-
-      if (data.available) {
-        setSlugAvailable(true)
-      } else {
-        setSlugError('이미 사용 중인 URL입니다.')
-      }
-    } catch {
-      setSlugError('확인 중 오류가 발생했습니다.')
-    } finally {
-      setIsCheckingSlug(false)
-    }
-  }
-
   const handleSlugChange = (value: string) => {
-    // Only allow lowercase letters, numbers, and hyphens
     const sanitized = value.toLowerCase().replace(/[^a-z0-9-]/g, '')
     setSlug(sanitized)
-    setSlugAvailable(false)
     setSlugError('')
+    setSlugSaved(false)
   }
 
   const handleSaveSlug = async () => {
-    if (!slugAvailable || !slug || !invitationId) return
+    if (!slug.trim() || !invitationId) return
+
+    const slugRegex = /^[a-z0-9-]+$/
+    if (!slugRegex.test(slug)) {
+      setSlugError('영문 소문자, 숫자, 하이픈(-)만 사용할 수 있습니다')
+      return
+    }
 
     setIsSavingSlug(true)
     setSlugError('')
 
     try {
-      const response = await fetch(`/api/invitations/${invitationId}/slug`, {
+      // 중복 확인
+      const checkRes = await fetch(`/api/invitations/check-slug?slug=${encodeURIComponent(slug)}&excludeId=${invitationId}`)
+      const checkData: { available?: boolean } = await checkRes.json()
+      if (!checkData.available) {
+        setSlugError('이미 사용 중인 주소입니다')
+        setIsSavingSlug(false)
+        return
+      }
+
+      // 저장
+      const response = await fetch(`/api/invitations/${invitationId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ slug }),
       })
 
-      const data: { error?: string; suggestions?: string[]; success?: boolean; slug?: string } = await response.json()
-
-      if (!response.ok) {
-        if (data.suggestions?.length) {
-          setSlugError(`${data.error} 추천: ${data.suggestions.join(', ')}`)
-        } else {
-          setSlugError(data.error || '저장 중 오류가 발생했습니다.')
+      if (response.ok) {
+        setSlugSaved(true)
+        if (onSlugChange) {
+          onSlugChange(slug)
         }
-        setSlugAvailable(false)
-        return
+        setTimeout(() => setSlugSaved(false), 3000)
+      } else {
+        setSlugError('주소 변경에 실패했습니다')
       }
-
-      setSlugSaved(true)
-      setSlugAvailable(false)
-      if (onSlugChange) {
-        onSlugChange(data.slug || slug)
-      }
-      setTimeout(() => setSlugSaved(false), 3000)
     } catch {
-      setSlugError('저장 중 오류가 발생했습니다.')
+      setSlugError('주소 변경에 실패했습니다')
     } finally {
       setIsSavingSlug(false)
     }
@@ -302,43 +283,28 @@ export default function ShareModal({
 
           {/* URL Tab */}
           <TabsContent value="url" className="space-y-4 mt-4">
-            <div className="space-y-2">
-              <Label>커스텀 URL</Label>
-              <div className="flex gap-2">
-                <div className="flex-1 flex items-center bg-gray-100 rounded-lg px-3">
-                  <span className="text-gray-500 text-sm">invite.deardrawer.com/</span>
-                  <Input
-                    value={slug}
-                    onChange={(e) => handleSlugChange(e.target.value)}
-                    className="border-0 bg-transparent px-1 focus-visible:ring-0"
-                    placeholder="custom-url"
-                  />
+            <div>
+              <p className="text-sm font-medium text-gray-700 mb-2">커스텀 주소 설정</p>
+              <div className="flex gap-2 items-start">
+                <div className="flex-1">
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm text-gray-500 whitespace-nowrap">{baseUrl}/i/</span>
+                    <Input
+                      value={slug}
+                      onChange={(e) => handleSlugChange(e.target.value)}
+                      placeholder="my-wedding"
+                      className="flex-1 text-sm"
+                    />
+                  </div>
+                  {slugError && <p className="text-xs text-red-500 mt-1">{slugError}</p>}
+                  {slugSaved && <p className="text-xs text-green-500 mt-1">주소가 저장되었습니다!</p>}
+                  <p className="text-xs text-gray-400 mt-1">영문 소문자, 숫자, 하이픈(-)만 사용 가능</p>
                 </div>
-                <Button
-                  variant="outline"
-                  onClick={checkSlugAvailability}
-                  disabled={isCheckingSlug || !slug}
-                >
-                  {isCheckingSlug ? '확인 중...' : '중복 확인'}
+                <Button onClick={handleSaveSlug} disabled={isSavingSlug || slug === currentSlug} size="sm">
+                  {isSavingSlug ? '저장 중...' : '저장'}
                 </Button>
               </div>
-              {slugError && (
-                <p className="text-sm text-red-500">{slugError}</p>
-              )}
-              {slugAvailable && (
-                <p className="text-sm text-green-500">사용 가능한 URL입니다!</p>
-              )}
             </div>
-
-            {slugSaved && (
-              <p className="text-sm text-green-500 text-center">URL이 저장되었습니다!</p>
-            )}
-
-            {slugAvailable && (
-              <Button onClick={handleSaveSlug} className="w-full" disabled={isSavingSlug}>
-                {isSavingSlug ? '저장 중...' : 'URL 저장하기'}
-              </Button>
-            )}
 
             <div className="pt-4 border-t">
               <div className="flex items-center justify-between text-sm">

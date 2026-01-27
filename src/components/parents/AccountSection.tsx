@@ -69,7 +69,7 @@ export default function AccountSection({
         {accounts.map((item, index) => (
           <button
             key={item.name}
-            onClick={() => handleCopy(item.account)}
+            onClick={() => handleCopy(item.account.replace(/[^0-9]/g, ''))}
             onMouseEnter={() => setHoveredIndex(index)}
             onMouseLeave={() => setHoveredIndex(null)}
             className="w-full p-4 rounded-lg border text-left transition-all duration-500"

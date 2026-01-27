@@ -2822,7 +2822,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
   const availableTabs: { key: DirectionsTab; label: string }[] = [
     ...(directions.car ? [{ key: 'car' as DirectionsTab, label: '자가용' }] : []),
     ...(directions.publicTransport ? [{ key: 'publicTransport' as DirectionsTab, label: '버스/지하철' }] : []),
-    ...(directions.train ? [{ key: 'train' as DirectionsTab, label: '기차역' }] : []),
+    ...(directions.train ? [{ key: 'train' as DirectionsTab, label: '기차' }] : []),
     ...(directions.expressBus ? [{ key: 'expressBus' as DirectionsTab, label: '고속버스' }] : []),
   ]
 
@@ -4113,9 +4113,13 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
 
   // Prepare accounts for FloatingButton
   const accounts = [
-    { name: invitation.groom.name, bank: invitation.groom.bank, role: '신랑', side: 'groom' as const },
-    { name: invitation.bride.name, bank: invitation.bride.bank, role: '신부', side: 'bride' as const },
-  ]
+    invitation.groom?.bank?.enabled && { name: invitation.groom.name, bank: invitation.groom.bank, role: '신랑', side: 'groom' as const },
+    (invitation.groom?.father as any)?.bank?.enabled && { name: invitation.groom.father.name, bank: (invitation.groom.father as any).bank, role: '아버지', side: 'groom' as const },
+    (invitation.groom?.mother as any)?.bank?.enabled && { name: invitation.groom.mother.name, bank: (invitation.groom.mother as any).bank, role: '어머니', side: 'groom' as const },
+    invitation.bride?.bank?.enabled && { name: invitation.bride.name, bank: invitation.bride.bank, role: '신부', side: 'bride' as const },
+    (invitation.bride?.father as any)?.bank?.enabled && { name: invitation.bride.father.name, bank: (invitation.bride.father as any).bank, role: '아버지', side: 'bride' as const },
+    (invitation.bride?.mother as any)?.bank?.enabled && { name: invitation.bride.mother.name, bank: (invitation.bride.mother as any).bank, role: '어머니', side: 'bride' as const },
+  ].filter(Boolean) as { name: string; bank: { bank: string; account: string; holder: string; enabled: boolean }; role: string; side: 'groom' | 'bride' }[]
 
   return (
     <>

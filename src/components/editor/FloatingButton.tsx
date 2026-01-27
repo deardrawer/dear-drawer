@@ -465,7 +465,7 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7v10M16 7v10M8 11h8M5 21l2-4h10l2 4M12 3v4m-4 0h8a2 2 0 012 2v8a2 2 0 01-2 2H8a2 2 0 01-2-2V9a2 2 0 012-2z" />
                   </svg>
                 )},
-                { key: 'train' as DirectionsTab, label: '기차역', show: !!invitation?.directions?.train, icon: (
+                { key: 'train' as DirectionsTab, label: '기차', show: !!invitation?.directions?.train, icon: (
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 18h.01M16 18h.01M6 6h12a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2zm0 0V4h12v2M6 10h12" />
                   </svg>

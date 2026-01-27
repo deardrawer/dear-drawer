@@ -101,14 +101,15 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
     }
     setIsSubmitting(true)
     try {
+      const attendanceMap: Record<string, string> = { yes: 'attending', no: 'not_attending' }
       const res = await fetch('/api/rsvp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          invitation_id: invitation.invitationId,
-          guest_name: rsvpForm.name,
-          attendance: rsvpForm.attendance,
-          guest_count: rsvpForm.attendance === 'yes' ? rsvpForm.guestCount : 0,
+          invitationId: invitation.invitationId,
+          guestName: rsvpForm.name,
+          attendance: attendanceMap[rsvpForm.attendance] || rsvpForm.attendance,
+          guestCount: rsvpForm.attendance === 'yes' ? rsvpForm.guestCount : 0,
           message: rsvpForm.message,
         }),
       })
@@ -426,7 +427,7 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
                     const tabs = [
                       { key: 'car' as DirectionsTab, label: '자가용', show: !!invitation.directions?.car },
                       { key: 'publicTransport' as DirectionsTab, label: '버스/지하철', show: !!invitation.directions?.publicTransport },
-                      { key: 'train' as DirectionsTab, label: '기차역', show: !!invitation.directions?.train },
+                      { key: 'train' as DirectionsTab, label: '기차', show: !!invitation.directions?.train },
                       { key: 'expressBus' as DirectionsTab, label: '고속버스', show: !!invitation.directions?.expressBus },
                     ].filter(t => t.show)
 
@@ -470,7 +471,7 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
                           <div key={i} className="p-3 rounded-xl bg-blue-50 border border-blue-100">
                             <div className="flex items-center justify-between mb-1">
                               <span className="text-xs font-medium text-blue-900">{a.role} {a.name}</span>
-                              <button onClick={() => copyToClipboard(`${a.bank.bank} ${a.bank.account}`)} className="text-[10px] px-2.5 py-1 rounded-full bg-blue-100 text-blue-700">복사</button>
+                              <button onClick={() => copyToClipboard(a.bank.account.replace(/[^0-9]/g, ''))} className="text-[10px] px-2.5 py-1 rounded-full bg-blue-100 text-blue-700">복사</button>
                             </div>
                             <p className="text-[10px] text-blue-600">{a.bank.holder}</p>
                             <p className="text-xs text-blue-800">{a.bank.bank} {a.bank.account}</p>
@@ -487,7 +488,7 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
                           <div key={i} className="p-3 rounded-xl bg-pink-50 border border-pink-100">
                             <div className="flex items-center justify-between mb-1">
                               <span className="text-xs font-medium text-pink-900">{a.role} {a.name}</span>
-                              <button onClick={() => copyToClipboard(`${a.bank.bank} ${a.bank.account}`)} className="text-[10px] px-2.5 py-1 rounded-full bg-pink-100 text-pink-700">복사</button>
+                              <button onClick={() => copyToClipboard(a.bank.account.replace(/[^0-9]/g, ''))} className="text-[10px] px-2.5 py-1 rounded-full bg-pink-100 text-pink-700">복사</button>
                             </div>
                             <p className="text-[10px] text-pink-600">{a.bank.holder}</p>
                             <p className="text-xs text-pink-800">{a.bank.bank} {a.bank.account}</p>

@@ -95,19 +95,16 @@ export async function POST(request: NextRequest) {
       if (paymentRequest.invitation_id) {
         updateResult = await db
           .prepare(
-            `UPDATE invitations
-             SET is_paid = 1, imweb_order_no = ?
-             WHERE id = ?`
+            `UPDATE invitations SET is_paid = 1 WHERE id = ?`
           )
-          .bind(paymentRequest.order_number, paymentRequest.invitation_id)
+          .bind(paymentRequest.invitation_id)
           .run();
         console.log(`Updated invitation ${paymentRequest.invitation_id}, changes: ${updateResult.meta?.changes}`);
       } else {
         // invitation_id가 없으면 해당 사용자의 최신 미결제 청첩장 업데이트
         updateResult = await db
           .prepare(
-            `UPDATE invitations
-             SET is_paid = 1, imweb_order_no = ?
+            `UPDATE invitations SET is_paid = 1
              WHERE id = (
                SELECT id FROM invitations
                WHERE user_id = ? AND (is_paid = 0 OR is_paid IS NULL)
@@ -115,7 +112,7 @@ export async function POST(request: NextRequest) {
                LIMIT 1
              )`
           )
-          .bind(paymentRequest.order_number, paymentRequest.user_id)
+          .bind(paymentRequest.user_id)
           .run();
         console.log(`Updated invitation for user ${paymentRequest.user_id}, changes: ${updateResult.meta?.changes}`);
       }

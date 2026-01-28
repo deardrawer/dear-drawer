@@ -128,10 +128,6 @@ export const metadata: Metadata = {
   title: "dear drawer - 나만의 모바일 청첩장",
   description: "AI가 만들어주는 특별한 모바일 청첩장. 간단한 질문에 답하면 나만의 청첩장이 완성됩니다.",
   keywords: ["청첩장", "모바일청첩장", "웨딩", "결혼식", "AI청첩장", "dear drawer"],
-  icons: {
-    icon: "/favicon.png",
-    apple: "/favicon.png",
-  },
 };
 
 export const viewport: Viewport = {

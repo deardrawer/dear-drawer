@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Users, Copy, Check, Eye, Mail, Heart, MapPin, Clock, ImagePlus, Bus, Plus, X, Upload, Palette, FileText, Settings, Music, Share2, CreditCard, Play, Pause, Type } from 'lucide-react'
 import { SortableList, SortableItem } from '@/components/ui/sortable-list'
 import { bgmPresets } from '@/lib/bgmPresets'
+import { uploadImage } from '@/lib/imageUpload'
 import type { ParentsInvitationData, TimelineItem, ImageCropData } from './page'
 import { COLOR_THEMES, type ColorThemeId } from '@/components/parents/types'
 import ImageCropEditor from '@/components/parents/ImageCropEditor'
@@ -232,25 +233,16 @@ export default function ParentsEditPanel({ data, updateData, updateNestedData, i
     setUploadingImages(prev => new Set(prev).add(key))
 
     try {
-      const formData = new FormData()
-      formData.append('file', file)
-      if (invitationId) {
-        formData.append('invitationId', invitationId)
-      }
+      const result = await uploadImage(file, { invitationId: invitationId || undefined })
 
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      })
-
-      if (res.ok) {
-        const { url }: { url: string } = await res.json()
-        onSuccess(url)
+      if (result.success && result.webUrl) {
+        onSuccess(result.webUrl)
       } else {
-        console.error('Upload failed')
+        alert(result.error || '이미지 업로드에 실패했습니다.')
       }
     } catch (error) {
       console.error('Upload error:', error)
+      alert('이미지 업로드 중 오류가 발생했습니다.')
     } finally {
       setUploadingImages(prev => {
         const newSet = new Set(prev)

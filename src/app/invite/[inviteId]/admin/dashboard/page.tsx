@@ -48,6 +48,7 @@ export default function AdminDashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [token, setToken] = useState<string | null>(null)
+  const [invitationInfo, setInvitationInfo] = useState<{ kakaoThumbnail?: string; groomName?: string; brideName?: string } | null>(null)
 
   // 게스트 추가/수정 모달
   const [showGuestModal, setShowGuestModal] = useState(false)
@@ -120,9 +121,10 @@ export default function AdminDashboardPage() {
     try {
       const headers = { Authorization: `Bearer ${token}` }
 
-      const [guestsRes, templatesRes] = await Promise.all([
+      const [guestsRes, templatesRes, inviteRes] = await Promise.all([
         fetch(`/api/invite/${inviteId}/admin/guests`, { headers }),
         fetch(`/api/invite/${inviteId}/admin/templates`, { headers }),
+        fetch(`/api/invite/${inviteId}`),
       ])
 
       if (guestsRes.status === 401 || templatesRes.status === 401) {
@@ -133,10 +135,21 @@ export default function AdminDashboardPage() {
 
       const guestsData: { guests?: unknown[]; stats?: unknown } = await guestsRes.json()
       const templatesData: { templates?: unknown[] } = await templatesRes.json()
+      const inviteData: { invitation?: { content?: string; groom_name?: string; bride_name?: string } } = await inviteRes.json()
 
       setGuests((guestsData.guests || []) as Guest[])
       setStats((guestsData.stats || null) as GuestStats | null)
       setTemplates((templatesData.templates || []) as Template[])
+
+      // 청첩장 정보 설정 (카카오 공유용)
+      if (inviteData.invitation) {
+        const content = inviteData.invitation.content ? JSON.parse(inviteData.invitation.content) : {}
+        setInvitationInfo({
+          kakaoThumbnail: content?.meta?.kakaoThumbnail || content?.gallery?.[0]?.url,
+          groomName: inviteData.invitation.groom_name,
+          brideName: inviteData.invitation.bride_name,
+        })
+      }
     } catch (error) {
       console.error('Fetch error:', error)
       showToastMsg('데이터를 불러오는데 실패했습니다', 'error')
@@ -584,6 +597,9 @@ export default function AdminDashboardPage() {
                 onDelete={handleDeleteGuest}
                 onAdd={openAddGuestModal}
                 onShowToast={(msg) => showToastMsg(msg, 'info')}
+                kakaoThumbnail={invitationInfo?.kakaoThumbnail}
+                groomName={invitationInfo?.groomName}
+                brideName={invitationInfo?.brideName}
               />
             </div>
           </div>

@@ -6,16 +6,12 @@ import { parseHighlight } from '@/lib/textUtils'
 import FloatingButton from './FloatingButton'
 import ProfileImageSlider from './ProfileImageSlider'
 
-// BGM Player Component
+// BGM Player Component (에디터 미리보기용 - 자동재생 비활성화)
 function BgmPlayer({ bgm }: { bgm: InvitationContent['bgm'] }) {
   const audioRef = useRef<HTMLAudioElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
 
-  useEffect(() => {
-    if (bgm?.enabled && bgm.autoplay && audioRef.current) {
-      audioRef.current.play().catch(() => setIsPlaying(false))
-    }
-  }, [bgm])
+  // 에디터에서는 자동재생 비활성화 (수동 재생만 가능)
 
   if (!bgm?.enabled || !bgm.url) return null
 

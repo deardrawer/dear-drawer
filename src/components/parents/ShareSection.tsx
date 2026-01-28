@@ -59,7 +59,7 @@ export default function ShareSection({
               if (typeof window !== 'undefined' && (window as any).Kakao) {
                 const Kakao = (window as any).Kakao
                 if (!Kakao.isInitialized()) {
-                  Kakao.init(process.env.NEXT_PUBLIC_KAKAO_JS_KEY || '')
+                  Kakao.init(process.env.NEXT_PUBLIC_KAKAO_JS_KEY || '0890847927f3189d845391481ead8ecc')
                 }
                 Kakao.Share.sendDefault({
                   objectType: 'feed',

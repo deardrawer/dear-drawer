@@ -28,6 +28,7 @@ interface ShareModalProps {
   thumbnailUrl?: string
   shareTitle?: string
   shareDescription?: string
+  templateType?: 'our' | 'family' | 'parents'
 }
 
 export default function ShareModal({
@@ -45,6 +46,7 @@ export default function ShareModal({
   thumbnailUrl,
   shareTitle,
   shareDescription,
+  templateType,
 }: ShareModalProps) {
   const [slug, setSlug] = useState(currentSlug || '')
   const [slugError, setSlugError] = useState('')
@@ -59,8 +61,9 @@ export default function ShareModal({
 
   // 공유 URL은 프로덕션 도메인 사용 (카카오 공유 호환성)
   const baseUrl = 'https://invite.deardrawer.com'
-  // /i/ 경로 사용 (슬러그 또는 ID)
-  const invitationUrl = `${baseUrl}/i/${currentSlug || invitationId}`
+  // 템플릿에 따라 경로 분기: Parents는 /invite/, 나머지는 /i/
+  const urlPath = templateType === 'parents' ? '/invite/' : '/i/'
+  const invitationUrl = `${baseUrl}${urlPath}${currentSlug || invitationId}`
 
   // Generate default slug
   useEffect(() => {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -90,6 +90,15 @@ export default function StoryGeneratorModal({
   const [isLoading, setIsLoading] = useState(false)
   const [regeneratingSection, setRegeneratingSection] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  const contentRef = useRef<HTMLDivElement>(null)
+
+  // 모달 열릴 때, 단계/질문 변경 시 스크롤 최상단으로
+  useEffect(() => {
+    if (open && contentRef.current) {
+      contentRef.current.scrollTop = 0
+    }
+  }, [open, step, phase, currentQuestionIndex])
 
   // 현재 질문 세트 결정
   const getCurrentQuestions = (): AIQuestion[] => {
@@ -346,8 +355,8 @@ export default function StoryGeneratorModal({
         onOpenChange(isOpen)
       }}
     >
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>{getStepTitle()}</DialogTitle>
           {templateType === 'family' && step === 'questions' && (
             <p className="text-sm text-gray-500 mt-1">
@@ -356,6 +365,7 @@ export default function StoryGeneratorModal({
           )}
         </DialogHeader>
 
+        <div ref={contentRef} className="flex-1 overflow-y-auto">
         {error && (
           <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4">
             {error}
@@ -686,6 +696,7 @@ export default function StoryGeneratorModal({
             </div>
           </div>
         )}
+        </div>
       </DialogContent>
     </Dialog>
   )

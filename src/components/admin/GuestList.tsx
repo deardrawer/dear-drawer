@@ -90,17 +90,47 @@ export default function GuestList({
     }
   }
 
-  // 카카오톡 공유
+  // 카카오톡 공유 (SDK 방식)
   const handleKakaoShare = (guest: Guest) => {
     const link = getGuestLink(guest.id)
     const displayName = guest.relation
       ? `${guest.name} ${guest.relation}${guest.honorific}`
       : `${guest.name} ${guest.honorific}`
 
-    // 카카오톡 공유 (메시지와 함께)
-    const text = `${displayName}\n청첩장이 도착했습니다 💌`
-    const kakaoUrl = `https://sharer.kakao.com/talk/friends/picker/link?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`
-    window.open(kakaoUrl, '_blank', 'width=600,height=700')
+    const kakaoWindow = window as typeof window & {
+      Kakao?: {
+        isInitialized?: () => boolean
+        Share?: { sendDefault: (config: object) => void }
+      }
+    }
+
+    if (typeof window !== 'undefined' && kakaoWindow.Kakao?.Share && kakaoWindow.Kakao.isInitialized?.()) {
+      kakaoWindow.Kakao.Share.sendDefault({
+        objectType: 'feed',
+        content: {
+          title: `${displayName}`,
+          description: '청첩장이 도착했습니다 💌',
+          imageUrl: 'https://invite.deardrawer.com/og-image.png',
+          link: {
+            mobileWebUrl: link,
+            webUrl: link,
+          },
+        },
+        buttons: [
+          {
+            title: '청첩장 보기',
+            link: {
+              mobileWebUrl: link,
+              webUrl: link,
+            },
+          },
+        ],
+      })
+    } else {
+      // SDK 사용 불가 시 링크 복사
+      navigator.clipboard.writeText(link)
+      onShowToast('카카오톡 공유를 사용할 수 없어 링크가 복사되었습니다')
+    }
   }
 
   // 삭제 확인

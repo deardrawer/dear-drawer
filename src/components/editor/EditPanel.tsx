@@ -1670,6 +1670,19 @@ export default function EditPanel({ onOpenIntroSelector, onOpenAIStoryGenerator,
                 className="resize-none text-sm"
               />
             </div>
+
+            {/* 셔틀버스 (선택) */}
+            <div className="space-y-2 p-3 bg-gray-50 rounded-lg">
+              <p className="text-xs font-semibold text-gray-700">🚐 셔틀버스 <span className="text-[10px] font-normal text-gray-400">(선택)</span></p>
+              <Textarea
+                value={invitation.wedding.directions.shuttle || ''}
+                onChange={(e) => updateNestedField('wedding.directions.shuttle', e.target.value)}
+                placeholder="[탑승 장소]&#10;서울 강남역 11번 출구 앞&#10;&#10;[운행 시간]&#10;출발: 오전 10시 30분&#10;복귀: 오후 4시 (예식 종료 후)&#10;&#10;[안내]&#10;출발 10분 전까지 탑승 부탁드립니다."
+                rows={6}
+                className="resize-none text-sm"
+              />
+              <p className="text-[10px] text-gray-400">탑승 장소, 운행 시간, 안내 사항을 입력해주세요</p>
+            </div>
           </AccordionContent>
         </AccordionItem>
 

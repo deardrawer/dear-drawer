@@ -72,6 +72,7 @@ export interface DirectionsInfo {
   publicTransport: string  // 버스/지하철 (지선 간선 통합)
   train?: string           // 기차역 (선택)
   expressBus?: string      // 고속버스 (선택)
+  shuttle?: string         // 셔틀버스 (선택)
 }
 
 // 스토리 아이템

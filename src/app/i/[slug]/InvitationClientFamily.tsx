@@ -2700,7 +2700,7 @@ function formatDateEnglish(d: string): string {
 
 // Types for page components
 type PageType = 'intro' | 'main'
-type DirectionsTab = 'car' | 'publicTransport' | 'train' | 'expressBus'
+type DirectionsTab = 'car' | 'publicTransport' | 'train' | 'expressBus' | 'shuttle'
 
 interface PageProps {
   invitation: typeof mockInvitation
@@ -2824,6 +2824,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
     ...(directions.publicTransport ? [{ key: 'publicTransport' as DirectionsTab, label: '버스/지하철' }] : []),
     ...(directions.train ? [{ key: 'train' as DirectionsTab, label: '기차' }] : []),
     ...(directions.expressBus ? [{ key: 'expressBus' as DirectionsTab, label: '고속버스' }] : []),
+    ...(directions.shuttle ? [{ key: 'shuttle' as DirectionsTab, label: '셔틀버스' }] : []),
   ]
 
   return (
@@ -3155,6 +3156,12 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
               {directionsTab === 'expressBus' && directions.expressBus && (
                 <div className="p-4 rounded-xl bg-gray-50">
                   <p className="text-sm whitespace-pre-line" style={{ color: themeColors.text }}>{directions.expressBus}</p>
+                </div>
+              )}
+
+              {directionsTab === 'shuttle' && directions.shuttle && (
+                <div className="p-4 rounded-xl bg-gray-50">
+                  <p className="text-sm whitespace-pre-line" style={{ color: themeColors.text }}>{directions.shuttle}</p>
                 </div>
               )}
             </div>

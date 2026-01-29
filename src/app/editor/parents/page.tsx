@@ -101,6 +101,13 @@ export interface ParentsInvitationData {
         free: string
         note: string
       }
+      shuttle: {
+        enabled: boolean
+        location: string
+        departureTime: string
+        returnTime: string
+        note: string
+      }
     }
   }
 
@@ -184,6 +191,15 @@ export interface ParentsInvitationData {
     description: string
     kakaoThumbnail: string
     ogImage: string
+    ogImageSettings?: {
+      scale: number
+      positionX: number
+      positionY: number
+      cropX?: number
+      cropY?: number
+      cropWidth?: number
+      cropHeight?: number
+    }
   }
 
   // 디자인
@@ -236,6 +252,13 @@ const defaultData: ParentsInvitationData = {
         enabled: false,
         capacity: '',
         free: '',
+        note: '',
+      },
+      shuttle: {
+        enabled: false,
+        location: '',
+        departureTime: '',
+        returnTime: '',
         note: '',
       },
     },

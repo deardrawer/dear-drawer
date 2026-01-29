@@ -20,6 +20,7 @@ import { uploadImage } from '@/lib/imageUpload'
 import type { ParentsInvitationData, TimelineItem, ImageCropData } from './page'
 import { COLOR_THEMES, type ColorThemeId } from '@/components/parents/types'
 import ImageCropEditor from '@/components/parents/ImageCropEditor'
+import InlineCropEditor from '@/components/editor/InlineCropEditor'
 
 interface Guest {
   id: string
@@ -676,20 +677,48 @@ export default function ParentsEditPanel({ data, updateData, updateNestedData, i
                 {/* OG 이미지 미리보기 및 업로드 */}
                 <div className="space-y-3">
                   {data.meta?.ogImage ? (
-                    <div className="relative max-w-[300px]">
-                      <div
-                        className="w-full aspect-[1200/630] rounded-lg bg-cover bg-center border border-gray-200"
-                        style={{ backgroundImage: `url(${data.meta.ogImage})` }}
+                    <div className="max-w-[300px] space-y-2">
+                      <InlineCropEditor
+                        imageUrl={data.meta.ogImage}
+                        settings={data.meta.ogImageSettings || { scale: 1.0, positionX: 0, positionY: 0 }}
+                        onUpdate={(s) => {
+                          const current = data.meta?.ogImageSettings || { scale: 1.0, positionX: 0, positionY: 0 }
+                          updateNestedData('meta.ogImageSettings', { ...current, ...s })
+                        }}
+                        aspectRatio={1200 / 630}
+                        containerWidth={300}
+                        colorClass="gray"
                       />
-                      <button
-                        type="button"
-                        onClick={() => updateNestedData('meta.ogImage', '')}
-                        className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                        </svg>
-                      </button>
+                      <div className="flex gap-2">
+                        <label className="flex-1 text-center text-xs py-1.5 px-3 bg-gray-100 hover:bg-gray-200 rounded-md cursor-pointer transition-colors">
+                          이미지 교체
+                          <input
+                            type="file"
+                            className="hidden"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0]
+                              if (file) {
+                                handleImageUpload(file, 'og-image', (url) => {
+                                  updateNestedData('meta.ogImage', url)
+                                  updateNestedData('meta.ogImageSettings', { scale: 1.0, positionX: 0, positionY: 0 })
+                                })
+                                e.target.value = ''
+                              }
+                            }}
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            updateNestedData('meta.ogImage', '')
+                            updateNestedData('meta.ogImageSettings', undefined)
+                          }}
+                          className="text-xs py-1.5 px-3 bg-red-50 text-red-600 hover:bg-red-100 rounded-md transition-colors"
+                        >
+                          삭제
+                        </button>
+                      </div>
                     </div>
                   ) : (
                     <label className="flex flex-col items-center justify-center max-w-[300px] aspect-[1200/630] border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 relative">
@@ -1061,6 +1090,56 @@ export default function ParentsEditPanel({ data, updateData, updateNestedData, i
                         placeholder="주말 혼잡하오니 대중교통 이용을 권장드립니다."
                         className="text-sm"
                       />
+                    </div>
+                  )}
+                </div>
+
+                {/* 셔틀버스 */}
+                <div className="border rounded-lg p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-medium">🚐 셔틀버스</Label>
+                    <Switch
+                      checked={data.wedding.directions?.shuttle?.enabled ?? false}
+                      onCheckedChange={(checked) => updateNestedData('wedding.directions.shuttle.enabled', checked)}
+                    />
+                  </div>
+                  {data.wedding.directions?.shuttle?.enabled && (
+                    <div className="space-y-2">
+                      <Input
+                        value={data.wedding.directions?.shuttle?.location || ''}
+                        onChange={(e) => updateNestedData('wedding.directions.shuttle.location', e.target.value)}
+                        placeholder="강남역 11번 출구 앞"
+                        className="text-sm"
+                      />
+                      <p className="text-[10px] text-gray-400">탑승 장소</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <Input
+                            value={data.wedding.directions?.shuttle?.departureTime || ''}
+                            onChange={(e) => updateNestedData('wedding.directions.shuttle.departureTime', e.target.value)}
+                            placeholder="오전 10:30"
+                            className="text-sm"
+                          />
+                          <p className="text-[10px] text-gray-400 mt-1">출발 시간</p>
+                        </div>
+                        <div>
+                          <Input
+                            value={data.wedding.directions?.shuttle?.returnTime || ''}
+                            onChange={(e) => updateNestedData('wedding.directions.shuttle.returnTime', e.target.value)}
+                            placeholder="오후 4:00"
+                            className="text-sm"
+                          />
+                          <p className="text-[10px] text-gray-400 mt-1">복귀 시간</p>
+                        </div>
+                      </div>
+                      <Textarea
+                        value={data.wedding.directions?.shuttle?.note || ''}
+                        onChange={(e) => updateNestedData('wedding.directions.shuttle.note', e.target.value)}
+                        placeholder="출발 10분 전까지 탑승 부탁드립니다."
+                        rows={2}
+                        className="text-sm resize-none"
+                      />
+                      <p className="text-[10px] text-gray-400">안내 사항</p>
                     </div>
                   )}
                 </div>

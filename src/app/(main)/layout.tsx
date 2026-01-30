@@ -109,13 +109,15 @@ export default function MainLayout({
               >
                 모바일 청첩장
               </a>
-              <Link
-                href="/my-invitations"
-                className="mx-4 my-2 py-3 text-sm font-medium text-center bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                제작내역
-              </Link>
+              <div className="px-4 my-2">
+                <Link
+                  href="/my-invitations"
+                  className="block w-full py-3 text-sm font-medium text-center bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  제작내역
+                </Link>
+              </div>
               <div className="px-4 py-3 border-t border-gray-100 mt-2">
                 <HeaderAuth />
               </div>

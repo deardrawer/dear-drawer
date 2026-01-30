@@ -105,13 +105,13 @@ export default function GalleryPage() {
       ref={containerRef}
       className="h-screen overflow-hidden bg-white"
     >
-      {/* 섹션 인디케이터 */}
-      <div className="fixed right-6 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-3">
+      {/* 섹션 인디케이터 - 모바일에서는 작게 */}
+      <div className="fixed right-4 sm:right-6 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-2 sm:gap-3">
         {Array.from({ length: totalSections }).map((_, i) => (
           <button
             key={i}
             onClick={() => scrollToSection(i)}
-            className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+            className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full transition-all duration-300 ${
               currentSection === i
                 ? 'bg-black scale-125'
                 : 'bg-gray-300 hover:bg-gray-400'
@@ -159,14 +159,14 @@ export default function GalleryPage() {
             <p className="text-base sm:text-lg text-white/90 mb-12">
               세상에 하나뿐인 여러분의 스토리를 담아보세요.
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-white">
-              <span className="flex items-center gap-2 px-5 py-2.5 bg-white/20 backdrop-blur-sm rounded-full">
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs sm:text-sm text-white">
+              <span className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 bg-white/20 backdrop-blur-sm rounded-full">
                 <span>💌</span> 읽고 싶어지는 청첩장
               </span>
-              <span className="flex items-center gap-2 px-5 py-2.5 bg-white/20 backdrop-blur-sm rounded-full">
+              <span className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 bg-white/20 backdrop-blur-sm rounded-full">
                 <span>💕</span> 하객이 감동받는 이야기
               </span>
-              <span className="flex items-center gap-2 px-5 py-2.5 bg-white/20 backdrop-blur-sm rounded-full">
+              <span className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 bg-white/20 backdrop-blur-sm rounded-full">
                 <span>✨</span> 우리를 더 알게 되는 순간
               </span>
             </div>

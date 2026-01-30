@@ -141,7 +141,7 @@ export default function GalleryPage() {
       >
         {/* ===== 섹션 1: 히어로 ===== */}
         <section
-          className="h-screen flex flex-col items-center justify-center px-6 pb-20 relative bg-cover bg-center bg-no-repeat"
+          className="h-screen flex flex-col items-center justify-center px-4 sm:px-6 pb-16 sm:pb-20 relative overflow-hidden bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${BACKGROUND_IMAGES.hero})` }}
         >
           {/* 어두운 오버레이 */}
@@ -175,7 +175,7 @@ export default function GalleryPage() {
 
         {/* ===== 섹션 2: 브랜드 철학 ===== */}
         <section
-          className="h-screen flex flex-col items-center justify-center px-6 pb-20 relative bg-cover bg-center bg-no-repeat"
+          className="h-screen flex flex-col items-center justify-center px-4 sm:px-6 pb-16 sm:pb-20 relative overflow-hidden bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${BACKGROUND_IMAGES.philosophy})` }}
         >
           {/* 어두운 오버레이 */}
@@ -206,23 +206,23 @@ export default function GalleryPage() {
         </section>
 
         {/* ===== 섹션 3: 템플릿 선택 ===== */}
-        <section className="h-screen flex flex-col items-center justify-center px-6 pb-20 bg-gradient-to-br from-rose-50 via-white to-blue-50">
-          <div className="w-full max-w-4xl">
-            <div className="text-center mb-12">
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
+        <section className="h-screen flex flex-col items-center justify-center px-4 sm:px-6 pt-16 pb-8 sm:pb-20 overflow-hidden bg-gradient-to-br from-rose-50 via-white to-blue-50">
+          <div className="w-full max-w-4xl overflow-y-auto max-h-full">
+            <div className="text-center mb-4 sm:mb-12">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 sm:mb-3">
                 어떤 이야기를 담을까요?
               </h2>
-              <p className="text-gray-600">두 분에게 맞는 템플릿을 선택하세요</p>
+              <p className="text-sm sm:text-base text-gray-600">두 분에게 맞는 템플릿을 선택하세요</p>
             </div>
 
             {/* 템플릿 카드 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6 mb-4 sm:mb-8">
               {/* OUR 카드 */}
-              <div className="group relative p-8 rounded-3xl border-2 border-gray-100 bg-white/90 backdrop-blur-sm shadow-lg hover:border-rose-400 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
-                <div className="text-5xl mb-4">💕</div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-2">OUR</h3>
-                <p className="text-gray-600 mb-6">커플의 서사가 중심이 되는 청첩장</p>
-                <div className="space-y-2 mb-8 text-sm text-gray-500">
+              <div className="group relative p-4 sm:p-8 rounded-2xl sm:rounded-3xl border-2 border-gray-100 bg-white/90 backdrop-blur-sm shadow-lg hover:border-rose-400 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
+                <div className="text-3xl sm:text-5xl mb-2 sm:mb-4">💕</div>
+                <h3 className="text-lg sm:text-2xl font-semibold text-gray-900 mb-1 sm:mb-2">OUR</h3>
+                <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-6">커플의 서사가 중심이 되는 청첩장</p>
+                <div className="space-y-1 sm:space-y-2 mb-4 sm:mb-8 text-xs sm:text-sm text-gray-500">
                   <p className="flex items-center gap-2"><span className="text-rose-400">♥</span> 장기연애를 해온 커플</p>
                   <p className="flex items-center gap-2"><span className="text-rose-400">♥</span> 특별한 스토리가 있는 커플</p>
                   <p className="flex items-center gap-2"><span className="text-rose-400">♥</span> 우리만의 이야기를 담고 싶은 커플</p>
@@ -230,7 +230,7 @@ export default function GalleryPage() {
                 <div className="flex items-center justify-between">
                   <Link
                     href="/editor?template=narrative-our"
-                    className="text-sm text-rose-500 font-medium hover:underline"
+                    className="text-xs sm:text-sm text-rose-500 font-medium hover:underline"
                   >
                     시작하기 →
                   </Link>
@@ -246,11 +246,11 @@ export default function GalleryPage() {
               </div>
 
               {/* FAMILY 카드 */}
-              <div className="group relative p-8 rounded-3xl border-2 border-gray-100 bg-white/90 backdrop-blur-sm shadow-lg hover:border-blue-400 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
-                <div className="text-5xl mb-4">👨‍👩‍👧‍👦</div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-2">FAMILY</h3>
-                <p className="text-gray-600 mb-6">가족의 이야기로 하나가 되는 청첩장</p>
-                <div className="space-y-2 mb-8 text-sm text-gray-500">
+              <div className="group relative p-4 sm:p-8 rounded-2xl sm:rounded-3xl border-2 border-gray-100 bg-white/90 backdrop-blur-sm shadow-lg hover:border-blue-400 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
+                <div className="text-3xl sm:text-5xl mb-2 sm:mb-4">👨‍👩‍👧‍👦</div>
+                <h3 className="text-lg sm:text-2xl font-semibold text-gray-900 mb-1 sm:mb-2">FAMILY</h3>
+                <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-6">가족의 이야기로 하나가 되는 청첩장</p>
+                <div className="space-y-1 sm:space-y-2 mb-4 sm:mb-8 text-xs sm:text-sm text-gray-500">
                   <p className="flex items-center gap-2"><span className="text-blue-400">♥</span> 두 가정이 하나 됨을 표현하고 싶은 커플</p>
                   <p className="flex items-center gap-2"><span className="text-blue-400">♥</span> 부모님의 이야기와 함께 전하고 싶은 커플</p>
                   <p className="flex items-center gap-2"><span className="text-blue-400">♥</span> 가족의 의미를 담고 싶은 커플</p>
@@ -258,7 +258,7 @@ export default function GalleryPage() {
                 <div className="flex items-center justify-between">
                   <Link
                     href="/editor?template=narrative-family"
-                    className="text-sm text-blue-500 font-medium hover:underline"
+                    className="text-xs sm:text-sm text-blue-500 font-medium hover:underline"
                   >
                     시작하기 →
                   </Link>
@@ -276,14 +276,14 @@ export default function GalleryPage() {
 
             {/* PARENTS 서브 */}
             <div className="text-center">
-              <p className="text-xs text-gray-400 mb-3">부모님용 청첩장도 준비되어 있어요</p>
+              <p className="text-xs text-gray-400 mb-2 sm:mb-3">부모님용 청첩장도 준비되어 있어요</p>
               <Link
                 href="/editor/parents"
-                className="inline-flex items-center gap-3 px-6 py-3 rounded-full border border-gray-200 hover:border-amber-400 hover:bg-amber-50 transition-all text-sm"
+                className="inline-flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3 rounded-full border border-gray-200 hover:border-amber-400 hover:bg-amber-50 transition-all text-xs sm:text-sm"
               >
-                <span className="text-xl">🎎</span>
+                <span className="text-lg sm:text-xl">🎎</span>
                 <span className="text-gray-700">PARENTS - 혼주용 청첩장</span>
-                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </Link>
@@ -293,49 +293,49 @@ export default function GalleryPage() {
 
         {/* ===== 섹션 4: 왜 dear drawer? ===== */}
         <section
-          className="h-screen flex flex-col items-center justify-center px-6 pb-20 relative bg-cover bg-center bg-no-repeat"
+          className="h-screen flex flex-col items-center justify-center px-4 sm:px-6 pt-16 pb-8 sm:pb-20 relative overflow-hidden bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${BACKGROUND_IMAGES.features})` }}
         >
           {/* 어두운 오버레이 */}
           <div className="absolute inset-0 bg-black/50" />
 
-          <div className="w-full max-w-4xl relative z-10">
-            <div className="text-center mb-16">
-              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 drop-shadow-lg">
+          <div className="w-full max-w-4xl relative z-10 overflow-y-auto max-h-full">
+            <div className="text-center mb-6 sm:mb-16">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-2 sm:mb-3 drop-shadow-lg">
                 왜 dear drawer인가요?
               </h2>
-              <p className="text-white/90">우리만의 이야기를 담을 수 있는 청첩장</p>
+              <p className="text-sm sm:text-base text-white/90">우리만의 이야기를 담을 수 있는 청첩장</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="text-center p-8 bg-white/10 backdrop-blur-sm rounded-3xl">
-                <div className="w-20 h-20 bg-white/20 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                  <span className="text-4xl">🪄</span>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-8">
+              <div className="text-center p-4 sm:p-8 bg-white/10 backdrop-blur-sm rounded-2xl sm:rounded-3xl">
+                <div className="w-14 h-14 sm:w-20 sm:h-20 bg-white/20 rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto mb-3 sm:mb-6">
+                  <span className="text-2xl sm:text-4xl">🪄</span>
                 </div>
-                <h3 className="text-lg font-bold text-white mb-3">스토리 초안 작성</h3>
-                <p className="text-white/80 leading-relaxed">
+                <h3 className="text-base sm:text-lg font-bold text-white mb-2 sm:mb-3">스토리 초안 작성</h3>
+                <p className="text-xs sm:text-base text-white/80 leading-relaxed">
                   질문에 답하면<br />
                   디어드로어가<br />
                   스토리 초안을 작성해 드려요
                 </p>
               </div>
-              <div className="text-center p-8 bg-white/10 backdrop-blur-sm rounded-3xl">
-                <div className="w-20 h-20 bg-white/20 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                  <span className="text-4xl">📖</span>
+              <div className="text-center p-4 sm:p-8 bg-white/10 backdrop-blur-sm rounded-2xl sm:rounded-3xl">
+                <div className="w-14 h-14 sm:w-20 sm:h-20 bg-white/20 rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto mb-3 sm:mb-6">
+                  <span className="text-2xl sm:text-4xl">📖</span>
                 </div>
-                <h3 className="text-lg font-bold text-white mb-3">인터랙티브 스토리</h3>
-                <p className="text-white/80 leading-relaxed">
+                <h3 className="text-base sm:text-lg font-bold text-white mb-2 sm:mb-3">인터랙티브 스토리</h3>
+                <p className="text-xs sm:text-base text-white/80 leading-relaxed">
                   스크롤만 하는 청첩장은 그만<br />
                   클릭할수록 빠져드는<br />
                   이야기형 청첩장
                 </p>
               </div>
-              <div className="text-center p-8 bg-white/10 backdrop-blur-sm rounded-3xl">
-                <div className="w-20 h-20 bg-white/20 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                  <span className="text-4xl">✉️</span>
+              <div className="text-center p-4 sm:p-8 bg-white/10 backdrop-blur-sm rounded-2xl sm:rounded-3xl">
+                <div className="w-14 h-14 sm:w-20 sm:h-20 bg-white/20 rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto mb-3 sm:mb-6">
+                  <span className="text-2xl sm:text-4xl">✉️</span>
                 </div>
-                <h3 className="text-lg font-bold text-white mb-3">하객 맞춤 개인화</h3>
-                <p className="text-white/80 leading-relaxed">
+                <h3 className="text-base sm:text-lg font-bold text-white mb-2 sm:mb-3">하객 맞춤 개인화</h3>
+                <p className="text-xs sm:text-base text-white/80 leading-relaxed">
                   하객별 개인화 링크로<br />
                   "OO님, 초대합니다"<br />
                   특별한 환영 메시지
@@ -346,7 +346,7 @@ export default function GalleryPage() {
         </section>
 
         {/* ===== 섹션 5: CTA ===== */}
-        <section className="h-screen flex flex-col items-center justify-center px-6 pb-20 bg-black text-white">
+        <section className="h-screen flex flex-col items-center justify-center px-4 sm:px-6 pb-16 sm:pb-20 overflow-hidden bg-black text-white">
           <div className="text-center max-w-2xl">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 leading-tight">
               지금 바로<br />

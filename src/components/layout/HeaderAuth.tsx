@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import Link from 'next/link'
 import Image from 'next/image'
 import { useAuth } from '@/components/providers/AuthProvider'
 
@@ -80,14 +79,6 @@ export default function HeaderAuth() {
       {/* Dropdown Menu */}
       {isDropdownOpen && (
         <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-100 rounded-lg shadow-lg py-1 z-50">
-          <Link
-            href="/my-invitations"
-            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-            onClick={() => setIsDropdownOpen(false)}
-          >
-            My Invitations
-          </Link>
-          <hr className="my-1 border-gray-100" />
           <button
             onClick={handleLogout}
             className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50"

@@ -153,7 +153,7 @@ export default function GalleryPage() {
       >
         {/* ===== 섹션 1: 히어로 ===== */}
         <section
-          className="h-screen flex flex-col items-center justify-center px-4 sm:px-6 pb-16 sm:pb-20 relative overflow-hidden bg-cover bg-center bg-no-repeat"
+          className="h-screen flex flex-col items-center justify-center px-4 sm:px-6 py-4 sm:py-10 relative overflow-hidden bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${BACKGROUND_IMAGES.hero})` }}
         >
           {/* 어두운 오버레이 */}
@@ -187,7 +187,7 @@ export default function GalleryPage() {
 
         {/* ===== 섹션 2: 브랜드 철학 ===== */}
         <section
-          className="h-screen flex flex-col items-center justify-center px-4 sm:px-6 pb-16 sm:pb-20 relative overflow-hidden bg-cover bg-center bg-no-repeat"
+          className="h-screen flex flex-col items-center justify-center px-4 sm:px-6 py-4 sm:py-10 relative overflow-hidden bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${BACKGROUND_IMAGES.philosophy})` }}
         >
           {/* 어두운 오버레이 */}
@@ -218,7 +218,7 @@ export default function GalleryPage() {
         </section>
 
         {/* ===== 섹션 3: 템플릿 선택 ===== */}
-        <section className="h-screen flex flex-col items-center justify-center px-3 sm:px-6 pt-14 pb-6 sm:pb-20 overflow-hidden bg-gradient-to-br from-rose-50 via-white to-blue-50">
+        <section className="h-screen flex flex-col items-center justify-center px-3 sm:px-6 py-4 sm:py-10 overflow-hidden bg-gradient-to-br from-rose-50 via-white to-blue-50">
           <div className="w-full max-w-4xl overflow-y-auto max-h-full">
             <div className="text-center mb-3 sm:mb-12">
               <h2 className="text-base sm:text-2xl md:text-3xl font-bold text-gray-900 mb-1 sm:mb-3">
@@ -305,7 +305,7 @@ export default function GalleryPage() {
 
         {/* ===== 섹션 4: 왜 dear drawer? ===== */}
         <section
-          className="h-screen flex flex-col items-center justify-center px-3 sm:px-6 pt-14 pb-6 sm:pb-20 relative overflow-hidden bg-cover bg-center bg-no-repeat"
+          className="h-screen flex flex-col items-center justify-center px-3 sm:px-6 py-4 sm:py-10 relative overflow-hidden bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${BACKGROUND_IMAGES.features})` }}
         >
           {/* 어두운 오버레이 */}
@@ -358,7 +358,7 @@ export default function GalleryPage() {
         </section>
 
         {/* ===== 섹션 5: CTA ===== */}
-        <section className="h-screen flex flex-col items-center justify-center px-4 sm:px-6 pb-12 sm:pb-20 overflow-hidden bg-black text-white">
+        <section className="h-screen flex flex-col items-center justify-center px-4 sm:px-6 py-4 sm:py-10 overflow-hidden bg-black text-white">
           <div className="text-center max-w-2xl">
             <h2 className="text-xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-6 leading-tight">
               지금 바로<br />

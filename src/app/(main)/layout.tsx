@@ -49,16 +49,12 @@ export default function MainLayout({
           {/* Desktop Navigation - 768px 이상 */}
           {!isMobile && (
             <nav className="flex items-center gap-8">
-              <Link
-                href="/gallery"
-                className={`text-sm transition-colors tracking-wide ${
-                  isActive('/gallery')
-                    ? 'text-black font-medium border-b-2 border-black pb-1'
-                    : 'text-gray-500 hover:text-black'
-                }`}
+              <a
+                href="https://www.deardrawer.com/invitation"
+                className="text-sm transition-colors tracking-wide text-gray-500 hover:text-black"
               >
-                Templates
-              </Link>
+                모바일 청첩장
+              </a>
               <Link
                 href="/my-invitations"
                 className={`text-sm transition-colors tracking-wide ${
@@ -67,8 +63,16 @@ export default function MainLayout({
                     : 'text-gray-500 hover:text-black'
                 }`}
               >
-                My Invitations
+                제작내역
               </Link>
+              <a
+                href="https://pf.kakao.com/_bEpxen/chat"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm transition-colors tracking-wide text-gray-500 hover:text-black"
+              >
+                문의하기
+              </a>
               <HeaderAuth />
             </nav>
           )}
@@ -93,17 +97,13 @@ export default function MainLayout({
         {isMobile && isMobileMenuOpen && (
           <div className="border-t border-gray-100 bg-white">
             <nav className="container mx-auto px-4 py-4 flex flex-col gap-1">
-              <Link
-                href="/gallery"
-                className={`px-4 py-3 text-sm rounded-lg transition-colors ${
-                  isActive('/gallery')
-                    ? 'text-black font-medium bg-gray-100'
-                    : 'text-gray-500 hover:bg-gray-50'
-                }`}
+              <a
+                href="https://www.deardrawer.com/invitation"
+                className="px-4 py-3 text-sm rounded-lg transition-colors text-gray-500 hover:bg-gray-50"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Templates
-              </Link>
+                모바일 청첩장
+              </a>
               <Link
                 href="/my-invitations"
                 className={`px-4 py-3 text-sm rounded-lg transition-colors ${
@@ -113,8 +113,17 @@ export default function MainLayout({
                 }`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                My Invitations
+                제작내역
               </Link>
+              <a
+                href="https://pf.kakao.com/_bEpxen/chat"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-3 text-sm rounded-lg transition-colors text-gray-500 hover:bg-gray-50"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                문의하기
+              </a>
               <div className="px-4 py-3 border-t border-gray-100 mt-2">
                 <HeaderAuth />
               </div>
@@ -123,6 +132,8 @@ export default function MainLayout({
         )}
       </header>
       <main>{children}</main>
+      {/* 갤러리 페이지에서는 Full-page 스크롤 사용으로 푸터 숨김 */}
+      {pathname !== '/gallery' && pathname !== '/' && (
       <footer className="border-t border-gray-100 py-10 sm:py-14 mt-12 sm:mt-20 bg-gray-50">
         <div className="container mx-auto px-4 sm:px-6">
           {/* 상단: 로고 + 링크들 */}
@@ -137,7 +148,7 @@ export default function MainLayout({
                 className="h-6 w-auto mb-3 opacity-70"
               />
               <p className="text-xs text-gray-500 text-center md:text-left">
-                AI가 만드는 세상에서 하나뿐인 청첩장
+                세상에 하나뿐인 우리의 이야기를 담은 청첩장
               </p>
             </div>
 
@@ -228,6 +239,7 @@ export default function MainLayout({
           </div>
         </div>
       </footer>
+      )}
     </div>
   )
 }

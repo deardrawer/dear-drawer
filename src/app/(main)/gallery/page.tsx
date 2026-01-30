@@ -37,6 +37,18 @@ export default function GalleryPage() {
     }, 1000)
   }
 
+  // 모바일에서 섹션 1 이후에는 헤더 숨기기
+  useEffect(() => {
+    if (currentSection > 0) {
+      document.body.classList.add('gallery-scrolled')
+    } else {
+      document.body.classList.remove('gallery-scrolled')
+    }
+    return () => {
+      document.body.classList.remove('gallery-scrolled')
+    }
+  }, [currentSection])
+
   // 휠 이벤트 핸들러
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
@@ -159,15 +171,15 @@ export default function GalleryPage() {
             <p className="text-base sm:text-lg text-white/90 mb-12">
               세상에 하나뿐인 여러분의 스토리를 담아보세요.
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs sm:text-sm text-white">
-              <span className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 bg-white/20 backdrop-blur-sm rounded-full">
-                <span>💌</span> 읽고 싶어지는 청첩장
+            <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-4 text-[10px] sm:text-sm text-white">
+              <span className="flex items-center gap-1 sm:gap-2 px-2.5 sm:px-5 py-1.5 sm:py-2.5 bg-white/20 backdrop-blur-sm rounded-full">
+                <span className="text-xs sm:text-base">💌</span> 읽고 싶어지는 청첩장
               </span>
-              <span className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 bg-white/20 backdrop-blur-sm rounded-full">
-                <span>💕</span> 하객이 감동받는 이야기
+              <span className="flex items-center gap-1 sm:gap-2 px-2.5 sm:px-5 py-1.5 sm:py-2.5 bg-white/20 backdrop-blur-sm rounded-full">
+                <span className="text-xs sm:text-base">💕</span> 하객이 감동받는 이야기
               </span>
-              <span className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 bg-white/20 backdrop-blur-sm rounded-full">
-                <span>✨</span> 우리를 더 알게 되는 순간
+              <span className="flex items-center gap-1 sm:gap-2 px-2.5 sm:px-5 py-1.5 sm:py-2.5 bg-white/20 backdrop-blur-sm rounded-full">
+                <span className="text-xs sm:text-base">✨</span> 우리를 더 알게 되는 순간
               </span>
             </div>
           </div>
@@ -348,21 +360,21 @@ export default function GalleryPage() {
         {/* ===== 섹션 5: CTA ===== */}
         <section className="h-screen flex flex-col items-center justify-center px-4 sm:px-6 pb-16 sm:pb-20 overflow-hidden bg-black text-white">
           <div className="text-center max-w-2xl">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 leading-tight">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6 leading-tight">
               지금 바로<br />
               <span className="font-bold">시작해보세요</span>
             </h2>
-            <p className="text-lg text-gray-400 mb-12">
+            <p className="text-sm sm:text-lg text-gray-400 mb-8 sm:mb-12">
               세상에 하나뿐인 우리의 이야기를 담은 청첩장
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
               <Link
                 href="/editor?template=narrative-our"
-                className="px-10 py-4 bg-white text-black rounded-full font-medium hover:bg-gray-100 transition-all hover:scale-105"
+                className="px-6 sm:px-10 py-3 sm:py-4 text-sm sm:text-base bg-white text-black rounded-full font-medium hover:bg-gray-100 transition-all hover:scale-105"
               >
                 청첩장 만들기
               </Link>
-              <div className="flex items-center gap-4 text-sm text-gray-500">
+              <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-gray-500">
                 <Link href="/i/sample-our" target="_blank" className="hover:text-white transition-colors">
                   OUR 샘플
                 </Link>

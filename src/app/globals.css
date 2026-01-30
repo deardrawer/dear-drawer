@@ -888,3 +888,15 @@
 .font-parents-ridibatang * {
   font-family: 'Ridibatang', serif !important;
 }
+
+/* =====================
+   Gallery Page - 모바일 헤더 숨김
+   ===================== */
+@media (max-width: 767px) {
+  body.gallery-scrolled header {
+    transform: translateY(-100%);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+}

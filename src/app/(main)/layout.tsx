@@ -35,7 +35,7 @@ export default function MainLayout({
       <header className="border-b border-gray-100 bg-white/90 backdrop-blur-md sticky top-0 z-50">
         <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex-shrink-0">
+          <Link href="/gallery" className="flex-shrink-0">
             <Image
               src="/logo.png"
               alt="dear drawer"
@@ -48,23 +48,7 @@ export default function MainLayout({
 
           {/* Desktop Navigation - 768px 이상 */}
           {!isMobile && (
-            <nav className="flex items-center gap-8">
-              <a
-                href="https://www.deardrawer.com/invitation"
-                className="text-sm transition-colors tracking-wide text-gray-500 hover:text-black"
-              >
-                모바일 청첩장
-              </a>
-              <Link
-                href="/my-invitations"
-                className={`text-sm transition-colors tracking-wide ${
-                  isActive('/my-invitations')
-                    ? 'text-black font-medium border-b-2 border-black pb-1'
-                    : 'text-gray-500 hover:text-black'
-                }`}
-              >
-                제작내역
-              </Link>
+            <nav className="flex items-center gap-6">
               <a
                 href="https://pf.kakao.com/_bEpxen/chat"
                 target="_blank"
@@ -73,6 +57,18 @@ export default function MainLayout({
               >
                 문의하기
               </a>
+              <a
+                href="https://www.deardrawer.com/invitation"
+                className="text-sm transition-colors tracking-wide text-gray-500 hover:text-black"
+              >
+                모바일 청첩장
+              </a>
+              <Link
+                href="/my-invitations"
+                className="text-sm font-medium px-4 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
+              >
+                제작내역
+              </Link>
               <HeaderAuth />
             </nav>
           )}
@@ -98,24 +94,6 @@ export default function MainLayout({
           <div className="border-t border-gray-100 bg-white">
             <nav className="container mx-auto px-4 py-4 flex flex-col gap-1">
               <a
-                href="https://www.deardrawer.com/invitation"
-                className="px-4 py-3 text-sm rounded-lg transition-colors text-gray-500 hover:bg-gray-50"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                모바일 청첩장
-              </a>
-              <Link
-                href="/my-invitations"
-                className={`px-4 py-3 text-sm rounded-lg transition-colors ${
-                  isActive('/my-invitations')
-                    ? 'text-black font-medium bg-gray-100'
-                    : 'text-gray-500 hover:bg-gray-50'
-                }`}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                제작내역
-              </Link>
-              <a
                 href="https://pf.kakao.com/_bEpxen/chat"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -124,6 +102,20 @@ export default function MainLayout({
               >
                 문의하기
               </a>
+              <a
+                href="https://www.deardrawer.com/invitation"
+                className="px-4 py-3 text-sm rounded-lg transition-colors text-gray-500 hover:bg-gray-50"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                모바일 청첩장
+              </a>
+              <Link
+                href="/my-invitations"
+                className="mx-4 my-2 py-3 text-sm font-medium text-center bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                제작내역
+              </Link>
               <div className="px-4 py-3 border-t border-gray-100 mt-2">
                 <HeaderAuth />
               </div>

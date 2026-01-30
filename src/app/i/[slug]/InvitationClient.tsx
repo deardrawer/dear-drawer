@@ -2070,6 +2070,7 @@ const mockInvitation = {
       publicTransport: '[지하철]\n압구정로데오역 5번 출구 도보 10분\n청담역 9번 출구 도보 15분\n\n[버스]\n간선: 146, 301, 401\n지선: 3422, 4412',
       train: '',
       expressBus: '',
+      shuttle: '',
     },
   },
 

@@ -186,6 +186,7 @@ export const ourSampleContent = {
 export const familySampleContent = {
   ...ourSampleContent,
   templateId: 'family',
+  fontStyle: 'contemporary' as const,
   wedding: {
     ...ourSampleContent.wedding,
     title: 'WEDDING INVITATION',

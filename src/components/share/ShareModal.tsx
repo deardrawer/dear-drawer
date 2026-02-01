@@ -294,25 +294,12 @@ export default function ShareModal({
 
           {/* URL Tab */}
           <TabsContent value="url" className="space-y-4 mt-4">
-            <div>
-              <p className="text-sm font-medium text-gray-700 mb-2">커스텀 주소 설정</p>
-              <div className="flex gap-2 items-start">
-                <div className="flex-1">
-                  <div className="flex items-center gap-1">
-                    <span className="text-sm text-gray-500 whitespace-nowrap">{baseUrl}/i/</span>
-                    <Input
-                      value={slug}
-                      onChange={(e) => handleSlugChange(e.target.value)}
-                      placeholder="my-wedding"
-                      className="flex-1 text-sm"
-                    />
-                  </div>
-                  {slugError && <p className="text-xs text-red-500 mt-1">{slugError}</p>}
-                  {slugSaved && <p className="text-xs text-green-500 mt-1">주소가 저장되었습니다!</p>}
-                  <p className="text-xs text-gray-400 mt-1">영문 소문자, 숫자, 하이픈(-)만 사용 가능</p>
-                </div>
-                <Button onClick={handleSaveSlug} disabled={isSavingSlug || slug === currentSlug} size="sm">
-                  {isSavingSlug ? '저장 중...' : '저장'}
+            <div className="space-y-2">
+              <Label>청첩장 링크</Label>
+              <div className="flex gap-2">
+                <Input value={invitationUrl} readOnly className="flex-1" />
+                <Button onClick={handleCopyLink}>
+                  {copied ? '복사됨!' : '복사'}
                 </Button>
               </div>
             </div>

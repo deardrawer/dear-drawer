@@ -200,15 +200,9 @@ function EditorContent() {
 
     // 신랑/신부 이름 필수 검증
     if (!invitation.groom.name?.trim() || !invitation.bride.name?.trim()) {
-      useEditorStore.getState().setEditorActiveTab('required')
-      useEditorStore.getState().setValidationError({ tab: 'required', message: '📋 필수입력 > 신랑/신부 이름을 모두 입력해주세요.' })
-      return
-    }
-
-    // 카카오톡 공유 썸네일 필수 검증
-    if (!invitation.meta.kakaoThumbnail?.trim()) {
-      useEditorStore.getState().setEditorActiveTab('design')
-      useEditorStore.getState().setValidationError({ tab: 'design', message: '🎨 디자인 > 공유 미리보기 설정 > 카카오톡 공유 썸네일을 추가해주세요.' })
+      alert('📋 신랑/신부 이름을 모두 입력해주세요.')
+      useEditorStore.getState().setWizardStep(2)  // 인트로 탭으로 이동
+      useEditorStore.getState().setValidationError({ tab: 'names', message: '신랑/신부 이름을 입력해주세요.' })
       return
     }
 
@@ -563,11 +557,12 @@ function EditorContent() {
               <>
                 {/* 인트로 미리보기 - 왼쪽 sticky */}
                 {!isMobile && (
-                  <div className="w-[450px] min-w-[450px] sticky top-0 h-[calc(100vh-120px)] flex items-center justify-center p-6 bg-white border-r border-gray-100">
-                    <div className="relative w-full max-w-[320px] aspect-[9/16] overflow-hidden shadow-lg border border-gray-100 rounded-2xl">
+                  <div className="w-[480px] min-w-[480px] sticky top-0 h-[calc(100vh-120px)] flex items-center justify-center p-6 bg-white border-r border-gray-100">
+                    <div className="relative w-full max-w-[360px] aspect-[9/16] overflow-hidden shadow-lg border border-gray-100 rounded-2xl">
                       <IntroPreview
                         settings={invitation.intro}
                         coverImage={invitation.media.coverImage}
+                        coverImageSettings={invitation.media.coverImageSettings}
                         autoPlay={true}
                         weddingDate={invitation.wedding.date}
                         weddingTime={invitation.wedding.time}

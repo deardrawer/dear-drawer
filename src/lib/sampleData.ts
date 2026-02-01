@@ -1,10 +1,20 @@
 // 미리보기 및 에디터에서 사용하는 기본 샘플 데이터
 
-export const SAMPLE_GREETING = `두 사람이 한 길을 걸어갑니다.
-서로의 손을 잡고
-같은 곳을 바라보며
+export const SAMPLE_GREETING = `서로의 가장 좋은 친구이자
+든든한 지지자였던 두 사람이
+이제 평생의 동반자가 되려 합니다.
 
-소중한 분들을 초대합니다.`
+함께 웃고, 함께 울며
+같은 방향을 바라보던 시간들이
+저희를 여기까지 이끌었습니다.
+
+새로운 시작을 함께해 주세요.`
+
+// 명언 샘플
+export const SAMPLE_QUOTE = {
+  text: '사랑은 서로를 바라보는 것이 아니라\n함께 같은 방향을 바라보는 것이다.',
+  author: '생텍쥐페리',
+}
 
 export const SAMPLE_PROFILES = {
   groom: {
@@ -81,7 +91,7 @@ export const SAMPLE_DIRECTIONS = {
 }
 
 export const SAMPLE_THANK_YOU = {
-  message: '저희의 새로운 시작을 축하해 주셔서 감사합니다.\n\n오시는 모든 분들께 감사의 마음을 전합니다.',
+  message: '저희의 새로운 시작을 축하해 주셔서 감사합니다.\n오시는 모든 분들께 감사의 마음을 전합니다.',
   sign: '신랑 ○○ & 신부 ○○ 드림',
 }
 

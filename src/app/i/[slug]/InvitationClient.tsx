@@ -2493,6 +2493,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
         <IntroAnimation
           settings={effectiveIntroSettings}
           coverImage={invitation.media.coverImage}
+          coverImageSettings={invitation.media.coverImageSettings}
           groomName={invitation.groom.name}
           brideName={invitation.bride.name}
           weddingDate={invitation.wedding.date}

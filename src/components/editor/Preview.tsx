@@ -13,6 +13,7 @@ import { useEditorStore, InvitationContent, PreviewSectionId } from '@/store/edi
 import { parseHighlight } from '@/lib/textUtils'
 import {
   SAMPLE_GREETING,
+  SAMPLE_QUOTE,
   SAMPLE_PROFILES,
   SAMPLE_STORIES,
   SAMPLE_INTERVIEWS,
@@ -367,7 +368,7 @@ function IntroPage({ invitation, groomName, brideName, fonts, themeColors }: Pag
       </section>
       <section id="preview-invitation" className="px-7 py-10 text-center" style={{ background: themeColors.background }}>
         <p className="text-[10px] font-light mb-9" style={{ color: themeColors.gray, letterSpacing: '4px' }}>INVITATION</p>
-        {invitation.content.quote.text && <div className="py-5 mb-9" style={{ borderTop: `1px solid ${themeColors.divider}`, borderBottom: `1px solid ${themeColors.divider}` }}><p className="text-[13px] font-light leading-[1.9] mb-2" style={{ fontFamily: fonts.displayKr, color: themeColors.primary }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.quote.text) }} />{invitation.content.quote.author && <p className="text-[11px] font-light" style={{ color: themeColors.gray }}>{invitation.content.quote.author}</p>}</div>}
+        <div className={`py-5 mb-9 ${isEmpty(invitation.content.quote?.text) ? 'opacity-50' : ''}`} style={{ borderTop: `1px solid ${themeColors.divider}`, borderBottom: `1px solid ${themeColors.divider}` }}><p className="text-[13px] font-light leading-[1.9] mb-2" style={{ fontFamily: fonts.displayKr, color: themeColors.primary }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.quote?.text || SAMPLE_QUOTE.text) }} /><p className="text-[11px] font-light" style={{ color: themeColors.gray }}>{invitation.content.quote?.author || SAMPLE_QUOTE.author}</p></div>
         <div className={`mb-11 ${isEmpty(invitation.content.greeting) ? 'opacity-50' : ''}`}><p className="text-[13px] font-light leading-[2.1]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.greeting || SAMPLE_GREETING) }} /></div>
         {/* 부모님 정보 */}
         <div className="mb-9 text-center" style={{ fontFamily: fonts.displayKr }}>
@@ -414,10 +415,6 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors }: Page
       {/* BGM Player */}
       <BgmPlayer bgm={invitation.bgm} />
 
-      <section className="relative h-[200px] flex items-end justify-center" style={invitation.media.coverImage ? getImageCropStyle(invitation.media.coverImage, invitation.media.coverImageSettings || {}) : { background: 'linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)' }}>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-        <div className="relative z-10 text-center text-white pb-8"><p className="text-xs font-light" style={{ fontFamily: fonts.displayKr, letterSpacing: '1.5px' }}>{groomName} & {brideName}<br/>결혼합니다.</p></div>
-      </section>
       <section className="py-20 px-7 text-center" style={{ background: themeColors.cardBg }}>
         <div className="w-px h-10 mx-auto mb-6" style={{ background: themeColors.divider }} />
         <div style={{ fontFamily: fonts.displayKr, fontSize: '14px', color: themeColors.text, letterSpacing: '3px', lineHeight: 1.9 }}><span className="block">{groomName} & {brideName}</span><span className="block">결혼합니다.</span></div>

@@ -88,7 +88,7 @@ export default function HighlightTextarea({
     <div className="space-y-1.5">
       {/* 하이라이트 툴바 */}
       <div className="flex items-center gap-1.5">
-        <span className="text-[10px] text-gray-400 mr-0.5">텍스트 선택 후 클릭 →</span>
+        <span className="text-[10px] text-gray-400 mr-0.5">강조하고 싶은 텍스트 선택 후 클릭 →</span>
         <Button
           type="button"
           variant="outline"

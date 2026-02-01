@@ -10,7 +10,7 @@ interface Step2BasicInfoProps {
 }
 
 export default function Step2BasicInfo({ templateId }: Step2BasicInfoProps) {
-  const { invitation, updateField, updateNestedField } = useEditorStore()
+  const { invitation, updateField, updateNestedField, validationError } = useEditorStore()
 
   if (!invitation) return null
 
@@ -77,7 +77,11 @@ export default function Step2BasicInfo({ templateId }: Step2BasicInfoProps) {
                 value={invitation.groom.name}
                 onChange={(e) => updateNestedField('groom.name', e.target.value)}
                 placeholder="김민준"
+                className={validationError?.tab === 'names' && !invitation.groom.name?.trim() ? 'border-red-500 ring-2 ring-red-200' : ''}
               />
+              {validationError?.tab === 'names' && !invitation.groom.name?.trim() && (
+                <p className="text-xs text-red-500">신랑 이름을 입력해주세요</p>
+              )}
             </div>
           )}
         </div>
@@ -127,7 +131,11 @@ export default function Step2BasicInfo({ templateId }: Step2BasicInfoProps) {
                 value={invitation.bride.name}
                 onChange={(e) => updateNestedField('bride.name', e.target.value)}
                 placeholder="이서연"
+                className={validationError?.tab === 'names' && !invitation.bride.name?.trim() ? 'border-red-500 ring-2 ring-red-200' : ''}
               />
+              {validationError?.tab === 'names' && !invitation.bride.name?.trim() && (
+                <p className="text-xs text-red-500">신부 이름을 입력해주세요</p>
+              )}
             </div>
           )}
         </div>

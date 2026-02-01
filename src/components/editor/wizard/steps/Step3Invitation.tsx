@@ -10,6 +10,7 @@ import ImageUploader from '@/components/editor/ImageUploader'
 import InlineCropEditor from '@/components/editor/InlineCropEditor'
 import ImageCropEditor, { CropData } from '@/components/parents/ImageCropEditor'
 import { getPresetById } from '@/lib/introPresets'
+import { SAMPLE_GREETING, SAMPLE_QUOTE } from '@/lib/sampleData'
 import { Sparkles, X, Loader2 } from 'lucide-react'
 
 interface Step3InvitationProps {
@@ -43,17 +44,6 @@ const GREETING_QUESTIONS = [
   },
 ]
 
-// 샘플 인사말 데이터
-const SAMPLE_GREETING = `서로의 가장 좋은 친구이자
-든든한 지지자였던 두 사람이
-이제 평생의 동반자가 되려 합니다.
-
-함께 웃고, 함께 울며
-같은 방향을 바라보던 시간들이
-저희를 여기까지 이끌었습니다.
-
-새로운 시작을 함께해 주세요.`
-
 type GreetingAnswers = {
   relationship_duration: string
   relationship_character: string
@@ -62,7 +52,7 @@ type GreetingAnswers = {
 }
 
 export default function Step3Invitation({ onOpenIntroSelector, templateId, onScrollPreviewToTop, invitationId }: Step3InvitationProps) {
-  const { invitation, updateField, updateNestedField, setActiveSection } = useEditorStore()
+  const { invitation, updateField, updateNestedField, setActiveSection, validationError } = useEditorStore()
 
   // AI 인사말 생성 상태
   const [greetingModalOpen, setGreetingModalOpen] = useState(false)
@@ -250,7 +240,11 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
                 value={invitation.groom.name}
                 onChange={(e) => updateNestedField('groom.name', e.target.value)}
                 placeholder="김민준"
+                className={validationError?.tab === 'names' && !invitation.groom.name?.trim() ? 'border-red-500 ring-2 ring-red-200' : ''}
               />
+              {validationError?.tab === 'names' && !invitation.groom.name?.trim() && (
+                <p className="text-xs text-red-500">신랑 이름을 입력해주세요</p>
+              )}
             </div>
           )}
         </div>
@@ -300,7 +294,11 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
                 value={invitation.bride.name}
                 onChange={(e) => updateNestedField('bride.name', e.target.value)}
                 placeholder="이서연"
+                className={validationError?.tab === 'names' && !invitation.bride.name?.trim() ? 'border-red-500 ring-2 ring-red-200' : ''}
               />
+              {validationError?.tab === 'names' && !invitation.bride.name?.trim() && (
+                <p className="text-xs text-red-500">신부 이름을 입력해주세요</p>
+              )}
             </div>
           )}
         </div>
@@ -333,7 +331,7 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
               value={invitation.content.quote?.text || ''}
               onChange={(e) => updateNestedField('content.quote.text', e.target.value)}
               onFocus={() => setActiveSection('invitation')}
-              placeholder="사랑은 서로를 바라보는 것이 아니라&#10;함께 같은 방향을 바라보는 것이다."
+              placeholder={SAMPLE_QUOTE.text}
               rows={2}
               className="resize-none"
             />
@@ -343,7 +341,7 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
             <Input
               value={invitation.content.quote?.author || ''}
               onChange={(e) => updateNestedField('content.quote.author', e.target.value)}
-              placeholder="생텍쥐페리"
+              placeholder={SAMPLE_QUOTE.author}
             />
           </div>
         </div>

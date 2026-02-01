@@ -2,10 +2,12 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { IntroSettings } from '@/lib/introPresets'
+import { ImageSettings } from '@/store/editorStore'
 
 interface IntroAnimationProps {
   settings: IntroSettings
   coverImage?: string
+  coverImageSettings?: Partial<ImageSettings>
   groomName: string
   brideName: string
   weddingDate?: string
@@ -174,6 +176,7 @@ function ScrollIndicator({ color = 'white' }: { color?: 'white' | 'amber' | 'pin
 export default function IntroAnimation({
   settings,
   coverImage,
+  coverImageSettings,
   groomName,
   brideName,
   weddingDate,
@@ -193,12 +196,31 @@ export default function IntroAnimation({
     return () => clearTimeout(timer)
   }, [onComplete])
 
-  // backgroundScale을 cover 기반 줌으로 계산 (100 = cover, 150 = 줌인)
-  const scale = settings.backgroundScale || 100
+  // 크롭 설정을 반영한 배경 스타일 계산
+  const cropX = coverImageSettings?.cropX ?? 0
+  const cropY = coverImageSettings?.cropY ?? 0
+  const cropWidth = coverImageSettings?.cropWidth ?? 1
+  const cropHeight = coverImageSettings?.cropHeight ?? 1
+  const hasCrop = cropWidth < 1 || cropHeight < 1
+
+  // 크롭 영역을 container에 맞게 확대 (비율 유지를 위해 단일 스케일 사용)
+  const scaleX = 100 / cropWidth
+  const scaleY = 100 / cropHeight
+  // cover 효과를 위해 더 큰 스케일 사용 (비율 유지)
+  const baseScale = Math.max(scaleX, scaleY)
+
+  // 사용자 정의 스케일 추가 (기본 100)
+  const userScale = settings.backgroundScale || 100
+  const finalScale = baseScale * (userScale / 100)
+
+  // 위치 계산: 크롭 시작점 기준
+  const positionX = hasCrop ? (cropX / (1 - cropWidth)) * 100 : (settings.backgroundPositionX ?? 50)
+  const positionY = hasCrop ? (cropY / (1 - cropHeight)) * 100 : (settings.backgroundPositionY ?? 50)
+
   const backgroundStyle = {
     backgroundImage: coverImage ? `url(${coverImage})` : 'linear-gradient(135deg, #333 0%, #111 100%)',
-    backgroundSize: scale > 100 ? `${scale}%` : 'cover',
-    backgroundPosition: `${settings.backgroundPositionX ?? 50}% ${settings.backgroundPositionY ?? 50}%`,
+    backgroundSize: hasCrop ? `${finalScale}%` : (userScale > 100 ? `${userScale}%` : 'cover'),
+    backgroundPosition: `${Math.min(Math.max(positionX, 0), 100)}% ${Math.min(Math.max(positionY, 0), 100)}%`,
     backgroundRepeat: 'no-repeat' as const,
     filter: `brightness(${(settings.backgroundBrightness || 100) / 100})`,
   }
@@ -248,8 +270,6 @@ export default function IntroAnimation({
         return <LightrayIntro {...commonProps} />
       case 'film':
         return <FilmIntro {...commonProps} />
-      case 'ripple':
-        return <RippleIntro {...commonProps} />
       case 'gold':
         return <GoldIntro {...commonProps} />
       case 'focus':
@@ -651,18 +671,18 @@ interface IntroComponentProps {
 }
 
 // 시네마틱 인트로
-function CinematicIntro({ settings, backgroundStyle, overlayStyle, titleStyle }: IntroComponentProps) {
+function CinematicIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
   return (
     <div className="relative h-full">
       <div className="absolute inset-0 intro-fade-in intro-zoom-out" style={{ ...backgroundStyle, filter: `${backgroundStyle.filter} grayscale(100%)` }} />
       <div className="absolute inset-0" style={overlayStyle} />
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
         <div className="intro-line-expand h-px bg-white/50 mb-5" />
-        <p className="text-[16px] intro-letter-spread uppercase whitespace-nowrap" style={{ ...titleStyle, fontSize: '16px', fontFamily: "'Cormorant Garamond', serif" }}>
+        <p className="intro-letter-spread uppercase whitespace-nowrap" style={titleStyle}>
           {settings.mainTitle}
         </p>
         {settings.dateText && (
-          <p className="text-[12px] mt-3.5 intro-fade-in-delay" style={{ color: 'rgba(255,255,255,0.6)', letterSpacing: '2px', fontFamily: "'Cormorant Garamond', serif" }}>
+          <p className="text-[12px] mt-3.5 intro-fade-in-delay" style={{ ...subTitleStyle, letterSpacing: '2px' }}>
             {settings.dateText}
           </p>
         )}
@@ -743,7 +763,7 @@ function BlurIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTit
             {settings.subTitle}
           </p>
         )}
-        <p className="text-2xl font-serif intro-fade-in-up" style={{ ...titleStyle, animationDelay: '2s', animationDuration: '1.5s', opacity: 0 }}>
+        <p className="intro-fade-in-up" style={{ ...titleStyle, animationDelay: '2s', animationDuration: '1.5s', opacity: 0 }}>
           {settings.mainTitle}
         </p>
         <div className="w-16 h-px bg-white/50 my-6 intro-split-reveal" style={{ animationDelay: '2.5s' }} />
@@ -769,16 +789,16 @@ function ZoomIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTit
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
       <div className="relative z-10 h-full flex flex-col items-center justify-end pb-20 text-white px-4">
         {settings.subTitle && (
-          <p className="text-xs tracking-[4px] mb-4 intro-fade-in-up" style={{ ...subTitleStyle, animationDelay: '2s', animationDuration: '1.5s', opacity: 0 }}>
+          <p className="text-xs tracking-[4px] mb-4 intro-fade-in-up" style={{ ...subTitleStyle, animationDelay: '1s', animationDuration: '1.2s', opacity: 0 }}>
             {settings.subTitle}
           </p>
         )}
-        <p className="text-xl font-serif intro-fade-in-up" style={{ ...titleStyle, animationDelay: '2.4s', animationDuration: '1.5s', opacity: 0 }}>
+        <p className="intro-fade-in-up" style={{ ...titleStyle, animationDelay: '1.3s', animationDuration: '1.2s', opacity: 0 }}>
           {settings.mainTitle}
         </p>
-        <div className="w-16 h-px bg-white/50 my-6 intro-split-reveal" style={{ animationDelay: '2.8s' }} />
+        <div className="w-16 h-px bg-white/50 my-6 intro-split-reveal" style={{ animationDelay: '1.6s' }} />
         {settings.dateText && (
-          <p className="text-sm intro-fade-in-up" style={{ ...subTitleStyle, animationDelay: '3.2s', animationDuration: '1.5s', opacity: 0 }}>
+          <p className="text-sm intro-fade-in-up" style={{ ...subTitleStyle, animationDelay: '1.9s', animationDuration: '1.2s', opacity: 0 }}>
             {settings.dateText}
           </p>
         )}
@@ -817,7 +837,9 @@ function BokehIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTi
 }
 
 // 편지 인트로 (봉투 열림 애니메이션)
-function LetterIntro({ settings, backgroundStyle, titleStyle }: IntroComponentProps) {
+function LetterIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
+  // 편지 카드 내부는 밝은 배경이므로 흰색 텍스트면 어두운 색으로 변환
+  const cardTitleColor = titleStyle.color === '#ffffff' ? '#4a4a4a' : titleStyle.color
   return (
     <div className="relative h-full flex items-center justify-center overflow-hidden">
       {/* 흑백 웨딩사진 배경 */}
@@ -863,8 +885,8 @@ function LetterIntro({ settings, backgroundStyle, titleStyle }: IntroComponentPr
               animation: 'introCardSlideOut 1.2s ease-out 1.5s forwards',
             }}
           >
-            <p className="text-[8px] text-gray-400 tracking-[2px] mb-0.5">{settings.subTitle}</p>
-            <p className="text-base text-gray-600 mb-3" style={{ color: titleStyle.color === '#ffffff' ? '#4a4a4a' : titleStyle.color }}>
+            <p className="text-[8px] tracking-[2px] mb-0.5" style={{ color: subTitleStyle.color === 'rgba(255,255,255,0.8)' ? '#9ca3af' : subTitleStyle.color }}>{settings.subTitle}</p>
+            <p className="mb-3" style={{ ...titleStyle, color: cardTitleColor, fontSize: `${Math.min(parseInt(titleStyle.fontSize as string) || 24, 20)}px` }}>
               {settings.mainTitle}
             </p>
             <div className="w-8 h-px bg-[#d4a574] mb-3" />
@@ -919,8 +941,8 @@ function LetterIntro({ settings, backgroundStyle, titleStyle }: IntroComponentPr
           animation: 'introCardExpand 1s ease-out 4s forwards',
         }}
       >
-        <p className="text-[11px] text-gray-400 tracking-[4px] mb-1">{settings.subTitle}</p>
-        <p className="text-2xl text-gray-600 mb-4" style={{ color: titleStyle.color === '#ffffff' ? '#4a4a4a' : titleStyle.color }}>
+        <p className="text-[11px] tracking-[4px] mb-1" style={{ color: subTitleStyle.color === 'rgba(255,255,255,0.8)' ? '#9ca3af' : subTitleStyle.color }}>{settings.subTitle}</p>
+        <p className="mb-4" style={{ ...titleStyle, color: cardTitleColor }}>
           {settings.mainTitle}
         </p>
         <div className="w-12 h-px bg-[#d4a574] mb-4" />
@@ -933,7 +955,10 @@ function LetterIntro({ settings, backgroundStyle, titleStyle }: IntroComponentPr
 }
 
 // 꽃잎 인트로
-function PetalIntro({ settings, backgroundStyle, titleStyle }: IntroComponentProps) {
+function PetalIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
+  // 밝은 배경이므로 흰색 텍스트면 어두운 색으로 변환
+  const adjustedTitleColor = titleStyle.color === '#ffffff' ? '#374151' : titleStyle.color
+  const adjustedSubColor = subTitleStyle.color === 'rgba(255,255,255,0.8)' ? '#f472b6' : subTitleStyle.color
   return (
     <div className="relative h-full overflow-hidden">
       <div className="absolute inset-0 intro-fade-in" style={backgroundStyle} />
@@ -941,16 +966,16 @@ function PetalIntro({ settings, backgroundStyle, titleStyle }: IntroComponentPro
       <FallingPetals count={25} />
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
         {settings.subTitle && (
-          <p className="text-xs tracking-[6px] mb-4 intro-wave-text" style={{ color: '#f472b6' }}>
+          <p className="text-xs tracking-[6px] mb-4 intro-wave-text" style={{ color: adjustedSubColor, opacity: 0 }}>
             {settings.subTitle}
           </p>
         )}
-        <p className="text-xl font-serif intro-rotate-in" style={{ ...titleStyle, color: '#374151' }}>
+        <p className="intro-rotate-in" style={{ ...titleStyle, color: adjustedTitleColor, opacity: 0 }}>
           {settings.mainTitle}
         </p>
-        <div className="w-20 h-px bg-pink-300 mx-auto my-6 intro-split-reveal" style={{ animationDelay: '0.8s' }} />
+        <div className="w-20 h-px bg-pink-300 mx-auto my-6 intro-split-reveal" style={{ animationDelay: '0.8s', opacity: 0 }} />
         {settings.dateText && (
-          <p className="text-xs text-gray-400 intro-rotate-in-delay" style={{ animationDelay: '1.2s' }}>
+          <p className="text-xs intro-rotate-in-delay" style={{ color: adjustedSubColor, opacity: 0, animationDelay: '1.2s' }}>
             {settings.dateText}
           </p>
         )}
@@ -961,7 +986,10 @@ function PetalIntro({ settings, backgroundStyle, titleStyle }: IntroComponentPro
 }
 
 // 수채화 인트로
-function WatercolorIntro({ settings, backgroundStyle, titleStyle }: IntroComponentProps) {
+function WatercolorIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
+  // 밝은 배경이므로 흰색 텍스트면 어두운 색으로 변환
+  const adjustedTitleColor = titleStyle.color === '#ffffff' ? '#374151' : titleStyle.color
+  const adjustedSubColor = subTitleStyle.color === 'rgba(255,255,255,0.8)' ? 'rgba(8,145,178,0.7)' : subTitleStyle.color
   return (
     <div className="relative h-full overflow-hidden">
       <div className="absolute inset-0 intro-fade-in" style={backgroundStyle} />
@@ -985,26 +1013,26 @@ function WatercolorIntro({ settings, backgroundStyle, titleStyle }: IntroCompone
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4 gap-3">
         {settings.subTitle && (
           <p
-            className="text-xs text-cyan-600/70 tracking-[6px] intro-text-spread"
-            style={{ animationDelay: '1.5s' }}
+            className="text-xs tracking-[6px] intro-text-spread"
+            style={{ color: adjustedSubColor, opacity: 0, animationDelay: '1.5s' }}
           >
             {settings.subTitle}
           </p>
         )}
         <div
-          className="font-serif text-gray-700 intro-text-spread"
-          style={{ animationDelay: '2s' }}
+          className="intro-text-spread"
+          style={{ opacity: 0, animationDelay: '2s' }}
         >
-          <p className="text-2xl">{settings.mainTitle}</p>
+          <p style={{ ...titleStyle, color: adjustedTitleColor }}>{settings.mainTitle}</p>
         </div>
         <div
           className="w-16 h-px bg-cyan-400/50 intro-text-spread"
-          style={{ animationDelay: '2.4s' }}
+          style={{ opacity: 0, animationDelay: '2.4s' }}
         />
         {settings.dateText && (
           <p
-            className="text-gray-500 text-sm intro-text-spread"
-            style={{ animationDelay: '2.7s' }}
+            className="text-sm intro-text-spread"
+            style={{ color: adjustedSubColor, opacity: 0, animationDelay: '2.7s' }}
           >
             {settings.dateText}
           </p>
@@ -1016,7 +1044,7 @@ function WatercolorIntro({ settings, backgroundStyle, titleStyle }: IntroCompone
 }
 
 // 빛의 커튼 인트로
-function LightrayIntro({ settings, backgroundStyle, titleStyle }: IntroComponentProps) {
+function LightrayIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
   return (
     <div className="relative h-full overflow-hidden">
       <div className="absolute inset-0 intro-fade-in" style={backgroundStyle} />
@@ -1027,25 +1055,25 @@ function LightrayIntro({ settings, backgroundStyle, titleStyle }: IntroComponent
         {settings.subTitle && (
           <p
             className="text-xs tracking-[6px] mb-4 intro-slide-in-left"
-            style={{ color: 'rgba(253,230,138,0.6)', animationDelay: '0.5s' }}
+            style={{ ...subTitleStyle, opacity: 0, animationDelay: '0.5s' }}
           >
             {settings.subTitle}
           </p>
         )}
         <p
-          className="text-2xl font-serif intro-glow-in"
-          style={{ ...titleStyle, animationDelay: '1s' }}
+          className="intro-glow-in"
+          style={{ ...titleStyle, opacity: 0, animationDelay: '1s' }}
         >
           {settings.mainTitle}
         </p>
         <div
           className="w-20 h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent mx-auto my-6 intro-split-reveal"
-          style={{ animationDelay: '1.8s' }}
+          style={{ opacity: 0, animationDelay: '1.8s' }}
         />
         {settings.dateText && (
           <p
             className="text-sm intro-slide-in-right"
-            style={{ color: 'rgba(255,255,255,0.6)', animationDelay: '2.2s' }}
+            style={{ ...subTitleStyle, opacity: 0, animationDelay: '2.2s' }}
           >
             {settings.dateText}
           </p>
@@ -1081,14 +1109,14 @@ function FilmIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: Int
         {settings.subTitle && (
           <p
             className="text-xs tracking-[6px] mb-4 intro-blur-to-sharp"
-            style={{ color: 'rgba(254,243,199,0.8)', fontFamily: 'serif' }}
+            style={subTitleStyle}
           >
             {settings.subTitle}
           </p>
         )}
         <p
-          className="text-2xl font-serif intro-blur-to-sharp"
-          style={{ ...titleStyle, color: '#fef3c7', animationDelay: '1s' }}
+          className="intro-blur-to-sharp"
+          style={{ ...titleStyle, animationDelay: '1s' }}
         >
           {settings.mainTitle}
         </p>
@@ -1096,7 +1124,7 @@ function FilmIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: Int
         {settings.dateText && (
           <p
             className="text-sm intro-blur-to-sharp"
-            style={{ color: 'rgba(254,243,199,0.6)', animationDelay: '2.5s' }}
+            style={{ ...subTitleStyle, animationDelay: '2.5s' }}
           >
             {settings.dateText}
           </p>
@@ -1107,77 +1135,8 @@ function FilmIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: Int
   )
 }
 
-// 물결 반사 인트로
-function RippleIntro({ settings, backgroundStyle, titleStyle }: IntroComponentProps) {
-  return (
-    <div className="relative h-full overflow-hidden flex flex-col">
-      {/* 상단: 원본 이미지 */}
-      <div className="relative h-1/2">
-        <div
-          className="absolute inset-0 bg-cover bg-bottom"
-          style={backgroundStyle}
-        />
-      </div>
-
-      {/* 하단: 반사 이미지 (뒤집힘 + 물결) */}
-      <div className="relative h-1/2 overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-top"
-          style={{
-            ...backgroundStyle,
-            transform: 'scaleY(-1)',
-            opacity: 0.6,
-          }}
-        />
-        {/* 물결 오버레이 */}
-        <div className="absolute inset-0 bg-gradient-to-b from-sky-900/30 to-sky-950/50" />
-
-        {/* 물결 라인들 */}
-        {[20, 35, 50, 65, 80].map((top, i) => (
-          <div
-            key={i}
-            className="intro-water-ripple-line"
-            style={{
-              top: `${top}%`,
-              animation: `introWaterDistort${i % 2 === 0 ? '' : '2'} ${2 + i * 0.3}s ease-in-out infinite`,
-              animationDelay: `${i * 0.2}s`,
-            }}
-          />
-        ))}
-
-        <div className="intro-water-shine" />
-        <div className="intro-water-glow" />
-      </div>
-
-      {/* 중앙 텍스트 */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 z-10">
-        <div className="bg-black/30 backdrop-blur-sm px-8 py-6 rounded-lg">
-          {settings.subTitle && (
-            <p className="text-[10px] text-sky-200/80 tracking-[4px] mb-3 intro-wave-text">
-              {settings.subTitle}
-            </p>
-          )}
-          <p className="text-lg font-serif text-white mb-2 intro-wave-text-delay" style={titleStyle}>
-            {settings.mainTitle}
-          </p>
-          <div className="w-12 h-px bg-sky-200/50 mx-auto my-3 intro-split-reveal" style={{ animationDelay: '1s' }} />
-          {settings.dateText && (
-            <p
-              className="text-sky-100/70 text-xs intro-wave-text"
-              style={{ animationDelay: '1.4s', opacity: 0 }}
-            >
-              {settings.dateText}
-            </p>
-          )}
-        </div>
-      </div>
-      <ScrollIndicator color="sky" />
-    </div>
-  )
-}
-
 // 골드 인트로
-function GoldIntro({ settings, backgroundStyle, titleStyle }: IntroComponentProps) {
+function GoldIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
   return (
     <div className="relative h-full overflow-hidden">
       <div className="absolute inset-0 intro-fade-in" style={backgroundStyle} />
@@ -1187,25 +1146,25 @@ function GoldIntro({ settings, backgroundStyle, titleStyle }: IntroComponentProp
         {settings.subTitle && (
           <p
             className="text-xs tracking-[6px] mb-4 intro-scale-up"
-            style={{ color: 'rgba(251,191,36,0.6)', animationDelay: '1.5s' }}
+            style={{ ...subTitleStyle, opacity: 0, animationDelay: '1.5s' }}
           >
             {settings.subTitle}
           </p>
         )}
         <p
-          className="text-2xl font-serif intro-glow-in"
-          style={{ ...titleStyle, color: '#fef3c7', animationDelay: '2s' }}
+          className="intro-glow-in"
+          style={{ ...titleStyle, opacity: 0, animationDelay: '2s' }}
         >
           {settings.mainTitle}
         </p>
         <div
           className="w-20 h-px bg-gradient-to-r from-transparent via-amber-400 to-transparent mx-auto my-6 intro-split-reveal"
-          style={{ animationDelay: '2.5s' }}
+          style={{ opacity: 0, animationDelay: '2.5s' }}
         />
         {settings.dateText && (
           <p
             className="text-sm intro-scale-up"
-            style={{ color: 'rgba(253,230,138,0.6)', animationDelay: '2.9s' }}
+            style={{ ...subTitleStyle, opacity: 0, animationDelay: '2.9s' }}
           >
             {settings.dateText}
           </p>
@@ -1213,7 +1172,7 @@ function GoldIntro({ settings, backgroundStyle, titleStyle }: IntroComponentProp
         {settings.venueText && (
           <p
             className="text-xs mt-2 intro-scale-up"
-            style={{ color: 'rgba(253,230,138,0.4)', animationDelay: '3.2s' }}
+            style={{ ...subTitleStyle, opacity: 0, animationDelay: '3.2s' }}
           >
             {settings.venueText}
           </p>
@@ -1225,7 +1184,7 @@ function GoldIntro({ settings, backgroundStyle, titleStyle }: IntroComponentProp
 }
 
 // 포커스 인트로
-function FocusIntro({ settings, backgroundStyle, overlayStyle, titleStyle }: IntroComponentProps) {
+function FocusIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
   return (
     <div className="relative h-full overflow-hidden">
       {/* 배경 (아웃포커스) */}
@@ -1238,16 +1197,16 @@ function FocusIntro({ settings, backgroundStyle, overlayStyle, titleStyle }: Int
 
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
         {settings.subTitle && (
-          <p className="text-xs tracking-[6px] mb-4 intro-letter-spread" style={{ color: 'rgba(255,255,255,0.6)' }}>
+          <p className="text-xs tracking-[6px] mb-4 intro-letter-spread" style={{ ...subTitleStyle, opacity: 0, animationDelay: '1.2s' }}>
             {settings.subTitle}
           </p>
         )}
-        <p className="text-2xl font-serif intro-depth-shift" style={{ ...titleStyle, animationDelay: '0.8s' }}>
+        <p className="intro-depth-shift" style={{ ...titleStyle, opacity: 0, animationDelay: '0.5s' }}>
           {settings.mainTitle}
         </p>
-        <div className="w-16 h-px bg-white/50 my-6 intro-split-reveal" style={{ animationDelay: '1.4s' }} />
+        <div className="w-16 h-px bg-white/50 my-6 intro-split-reveal" style={{ opacity: 0, animationDelay: '1.6s' }} />
         {settings.dateText && (
-          <p className="text-sm intro-slide-in-right-delay" style={{ color: 'rgba(255,255,255,0.6)', animationDelay: '1.8s' }}>
+          <p className="text-sm intro-slide-in-right-delay" style={{ ...subTitleStyle, opacity: 0, animationDelay: '2s' }}>
             {settings.dateText}
           </p>
         )}

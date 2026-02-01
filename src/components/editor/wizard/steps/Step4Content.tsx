@@ -14,6 +14,7 @@ import {
   SAMPLE_PROFILES,
   SAMPLE_STORIES,
   SAMPLE_INTERVIEWS,
+  SAMPLE_THANK_YOU,
 } from '@/lib/sampleData'
 import { parseHighlight } from '@/lib/textUtils'
 import { AlignLeft, AlignCenter, AlignRight, X, Plus } from 'lucide-react'
@@ -339,18 +340,18 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
               {/* 소개글 */}
               <div className="space-y-1.5">
                 <Label className="text-xs">소개글</Label>
+                <TextStyleControls
+                  lineHeight={invitation.profileTextStyle?.lineHeight}
+                  textAlign={invitation.profileTextStyle?.textAlign}
+                  onLineHeightChange={(v) => updateNestedField('profileTextStyle', { ...invitation.profileTextStyle, lineHeight: v })}
+                  onTextAlignChange={(v) => updateNestedField('profileTextStyle', { ...invitation.profileTextStyle, textAlign: v })}
+                />
                 <HighlightTextarea
                   value={invitation.groom.profile.intro}
                   onChange={(value) => updateNestedField('groom.profile.intro', value)}
                   placeholder={SAMPLE_PROFILES.groom.intro}
                   rows={4}
                   className="bg-white"
-                />
-                <TextStyleControls
-                  lineHeight={invitation.profileTextStyle?.lineHeight}
-                  textAlign={invitation.profileTextStyle?.textAlign}
-                  onLineHeightChange={(v) => updateNestedField('profileTextStyle', { ...invitation.profileTextStyle, lineHeight: v })}
-                  onTextAlignChange={(v) => updateNestedField('profileTextStyle', { ...invitation.profileTextStyle, textAlign: v })}
                 />
               </div>
 
@@ -436,18 +437,18 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
               {/* 소개글 */}
               <div className="space-y-1.5">
                 <Label className="text-xs">소개글</Label>
+                <TextStyleControls
+                  lineHeight={invitation.profileTextStyle?.lineHeight}
+                  textAlign={invitation.profileTextStyle?.textAlign}
+                  onLineHeightChange={(v) => updateNestedField('profileTextStyle', { ...invitation.profileTextStyle, lineHeight: v })}
+                  onTextAlignChange={(v) => updateNestedField('profileTextStyle', { ...invitation.profileTextStyle, textAlign: v })}
+                />
                 <HighlightTextarea
                   value={invitation.bride.profile.intro}
                   onChange={(value) => updateNestedField('bride.profile.intro', value)}
                   placeholder={SAMPLE_PROFILES.bride.intro}
                   rows={4}
                   className="bg-white"
-                />
-                <TextStyleControls
-                  lineHeight={invitation.profileTextStyle?.lineHeight}
-                  textAlign={invitation.profileTextStyle?.textAlign}
-                  onLineHeightChange={(v) => updateNestedField('profileTextStyle', { ...invitation.profileTextStyle, lineHeight: v })}
-                  onTextAlignChange={(v) => updateNestedField('profileTextStyle', { ...invitation.profileTextStyle, textAlign: v })}
                 />
               </div>
 
@@ -541,7 +542,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                       <Input
                         value={story.date}
                         onChange={(e) => updateNestedField(`relationship.stories.${index}.date`, e.target.value)}
-                        placeholder="2020.05"
+                        placeholder={SAMPLE_STORIES[index]?.date || '2020.05'}
                       />
                     </div>
                     <div className="space-y-1">
@@ -549,7 +550,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                       <Input
                         value={story.title}
                         onChange={(e) => updateNestedField(`relationship.stories.${index}.title`, e.target.value)}
-                        placeholder="첫 만남"
+                        placeholder={SAMPLE_STORIES[index]?.title || '제목을 입력하세요'}
                       />
                     </div>
                   </div>
@@ -558,7 +559,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                     <HighlightTextarea
                       value={story.desc}
                       onChange={(value) => updateNestedField(`relationship.stories.${index}.desc`, value)}
-                      placeholder="스토리 내용을 입력해주세요"
+                      placeholder={SAMPLE_STORIES[index]?.desc || '스토리 내용을 입력해주세요'}
                       rows={3}
                     />
                   </div>
@@ -1296,22 +1297,22 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                   <Input
                     value={interview.question}
                     onChange={(e) => updateNestedField(`content.interviews.${index}.question`, e.target.value)}
-                    placeholder="두 분은 어떻게 만나셨나요?"
+                    placeholder={SAMPLE_INTERVIEWS[index]?.question || '질문을 입력해주세요'}
                   />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">답변</Label>
-                  <HighlightTextarea
-                    value={interview.answer}
-                    onChange={(value) => updateNestedField(`content.interviews.${index}.answer`, value)}
-                    placeholder="답변을 입력해주세요"
-                    rows={3}
-                  />
                   <TextStyleControls
                     lineHeight={invitation.interviewTextStyle?.lineHeight}
                     textAlign={invitation.interviewTextStyle?.textAlign}
                     onLineHeightChange={(v) => updateNestedField('interviewTextStyle', { ...invitation.interviewTextStyle, lineHeight: v })}
                     onTextAlignChange={(v) => updateNestedField('interviewTextStyle', { ...invitation.interviewTextStyle, textAlign: v })}
+                  />
+                  <HighlightTextarea
+                    value={interview.answer}
+                    onChange={(value) => updateNestedField(`content.interviews.${index}.answer`, value)}
+                    placeholder={SAMPLE_INTERVIEWS[index]?.answer || '답변을 입력해주세요'}
+                    rows={3}
                   />
                 </div>
                 {/* 미리보기 */}
@@ -1503,7 +1504,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
             <HighlightTextarea
               value={invitation.content.thankYou.message}
               onChange={(value) => updateNestedField('content.thankYou.message', value)}
-              placeholder="저희의 새로운 시작을 축하해주셔서 감사합니다."
+              placeholder={SAMPLE_THANK_YOU.message}
               rows={3}
             />
           </div>
@@ -1512,7 +1513,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
             <Input
               value={invitation.content.thankYou.sign}
               onChange={(e) => updateNestedField('content.thankYou.sign', e.target.value)}
-              placeholder="신랑 ○○ & 신부 ○○ 드림"
+              placeholder={SAMPLE_THANK_YOU.sign}
             />
           </div>
         </div>

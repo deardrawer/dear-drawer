@@ -4,15 +4,13 @@ import { useState, useRef } from 'react'
 import { useEditorStore, ImageSettings } from '@/store/editorStore'
 import { introPresets, IntroPresetId, IntroSettings, getPresetById, availableFonts } from '@/lib/introPresets'
 import { uploadImage } from '@/lib/imageUpload'
-import { bgmPresets } from '@/lib/bgmPresets'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
-import { Switch } from '@/components/ui/switch'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Check, ChevronLeft, Info, Sparkles, Type, Settings2, Music, Image as ImageIcon, Upload, X } from 'lucide-react'
+import { Check, ChevronLeft, Info, Sparkles, Type, Settings2, Image as ImageIcon, Upload } from 'lucide-react'
 import InlineCropEditor from './InlineCropEditor'
 
 interface IntroSelectorProps {
@@ -22,14 +20,14 @@ interface IntroSelectorProps {
 // BGM 프리셋은 @/lib/bgmPresets에서 import
 
 export default function IntroSelector({ onBack }: IntroSelectorProps) {
-  const { invitation, updateIntroPreset, updateIntroField, updateField, updateNestedField } = useEditorStore()
+  const { invitation, updateIntroPreset, updateIntroField, updateNestedField } = useEditorStore()
   const [activeTab, setActiveTab] = useState<'preset' | 'customize'>('preset')
   const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   if (!invitation) return null
 
-  const { intro, bgm, media } = invitation
+  const { intro, media } = invitation
   const coverImage = media.coverImage
   const currentPreset = getPresetById(intro.presetId)
 
@@ -246,58 +244,6 @@ export default function IntroSelector({ onBack }: IntroSelectorProps) {
                 </div>
               </div>
 
-              {/* 텍스트 편집 섹션 (스타일 선택 탭) */}
-              <div className="border-t pt-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <Type className="w-4 h-4 text-gray-500" />
-                  <h3 className="font-medium text-gray-900">텍스트 편집</h3>
-                </div>
-                <p className="text-xs text-gray-500 mb-3">
-                  선택한 스타일의 텍스트를 수정할 수 있어요.
-                </p>
-
-                <div className="space-y-3">
-                  <div>
-                    <Label className="text-xs text-gray-600">메인 타이틀</Label>
-                    <Input
-                      value={intro.mainTitle}
-                      onChange={(e) => handleFieldChange('mainTitle', e.target.value)}
-                      placeholder={currentPreset?.defaults.mainTitle || '메인 타이틀'}
-                      className="mt-1 h-9 text-sm"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-xs text-gray-600">서브 문구</Label>
-                    <Input
-                      value={intro.subTitle}
-                      onChange={(e) => handleFieldChange('subTitle', e.target.value)}
-                      placeholder={currentPreset?.defaults.subTitle || '서브 문구'}
-                      className="mt-1 h-9 text-sm"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-xs text-gray-600 mb-2 block">폰트</Label>
-                    <div className="grid grid-cols-2 gap-1.5">
-                      {availableFonts.map((font) => (
-                        <button
-                          key={font.value}
-                          onClick={() => handleFieldChange('titleFontFamily', font.value)}
-                          className={`px-2 py-1.5 text-xs rounded-md border transition-all ${
-                            intro.titleFontFamily === font.value
-                              ? 'border-primary bg-primary/5 text-primary'
-                              : 'border-gray-200 hover:border-gray-300'
-                          }`}
-                          style={{ fontFamily: font.value }}
-                        >
-                          {font.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </ScrollArea>
         </TabsContent>
@@ -306,12 +252,31 @@ export default function IntroSelector({ onBack }: IntroSelectorProps) {
         <TabsContent value="customize" className="flex-1 mt-0">
           <ScrollArea className="h-[calc(100vh-180px)]">
             <div className="p-4 space-y-6">
-              {/* 현재 선택된 프리셋 표시 */}
-              <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-                <Sparkles className="w-4 h-4 text-primary" />
-                <span className="text-sm">
-                  <strong>{currentPreset?.name}</strong> 스타일 편집 중
-                </span>
+              {/* 현재 선택된 프리셋 표시 + 기본값 복원 */}
+              <div className="flex items-center justify-between gap-2 p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  <span className="text-sm">
+                    <strong>{currentPreset?.name}</strong> 스타일 편집 중
+                  </span>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-pink-300 bg-pink-50 text-pink-600 hover:bg-pink-100 hover:border-pink-400 text-xs px-3"
+                  onClick={() => {
+                    if (currentPreset) {
+                      const defaults = currentPreset.defaults
+                      Object.entries(defaults).forEach(([key, value]) => {
+                        if (value !== undefined) {
+                          handleFieldChange(key as keyof IntroSettings, value as IntroSettings[keyof IntroSettings])
+                        }
+                      })
+                    }
+                  }}
+                >
+                  기본값 복원
+                </Button>
               </div>
 
               {/* 텍스트 편집 섹션 */}
@@ -441,83 +406,6 @@ export default function IntroSelector({ onBack }: IntroSelectorProps) {
                 </div>
               </div>
 
-              {/* 배경음악 섹션 */}
-              <div className="space-y-4 pt-4 border-t">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Music className="w-4 h-4 text-gray-500" />
-                    <h3 className="font-medium text-gray-900">배경음악</h3>
-                  </div>
-                  <Switch
-                    checked={bgm.enabled}
-                    onCheckedChange={(checked) => updateField('bgm', { ...bgm, enabled: checked })}
-                  />
-                </div>
-
-                {bgm.enabled && (
-                  <div className="space-y-2">
-                    {bgmPresets.map((preset) => {
-                      const isSelected = bgm.url === preset.url
-                      return (
-                        <button
-                          key={preset.id}
-                          onClick={() => updateField('bgm', { ...bgm, url: preset.url, enabled: true })}
-                          className={`w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all text-left ${
-                            isSelected
-                              ? 'border-gray-900 bg-gray-50'
-                              : 'border-gray-200 hover:border-gray-300'
-                          }`}
-                        >
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                            isSelected ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-500'
-                          }`}>
-                            {isSelected ? (
-                              <Check className="w-4 h-4" />
-                            ) : (
-                              <Music className="w-4 h-4" />
-                            )}
-                          </div>
-                          <div className="flex-1">
-                            <span className="font-medium text-gray-900 block">{preset.name}</span>
-                            <span className="text-xs text-gray-400">{preset.description}</span>
-                          </div>
-                        </button>
-                      )
-                    })}
-
-                    <div className="flex items-center gap-2 pt-2">
-                      <Switch
-                        checked={bgm.autoplay}
-                        onCheckedChange={(checked) => updateField('bgm', { ...bgm, autoplay: checked })}
-                      />
-                      <span className="text-sm text-gray-600">자동 재생</span>
-                    </div>
-                    <p className="text-xs text-gray-400">
-                      * 자동 재생은 브라우저 정책에 따라 지원되지 않을 수 있습니다.
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* 기본값 복원 버튼 */}
-              <div className="pt-4 border-t">
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => {
-                    if (currentPreset) {
-                      const defaults = currentPreset.defaults
-                      Object.entries(defaults).forEach(([key, value]) => {
-                        if (value !== undefined) {
-                          handleFieldChange(key as keyof IntroSettings, value as IntroSettings[keyof IntroSettings])
-                        }
-                      })
-                    }
-                  }}
-                >
-                  기본값으로 복원
-                </Button>
-              </div>
             </div>
           </ScrollArea>
         </TabsContent>

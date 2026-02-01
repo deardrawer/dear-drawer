@@ -621,6 +621,7 @@ export default function InvitationView({ invitation, content, isPaid }: Invitati
         <IntroAnimation
           settings={introSettings}
           coverImage={displayData.media?.coverImage}
+          coverImageSettings={displayData.media?.coverImageSettings}
           groomName={groomName}
           brideName={brideName}
           weddingDate={displayData.wedding?.date}

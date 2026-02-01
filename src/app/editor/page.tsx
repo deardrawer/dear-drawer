@@ -34,6 +34,7 @@ function EditorContent() {
   const activeTemplate = editId ? template : urlTemplate
 
   const [invitationId, setInvitationId] = useState<string | null>(editId)
+  const [savedSlug, setSavedSlug] = useState<string | null>(urlSlug || null)
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [isIntroSelectorOpen, setIsIntroSelectorOpen] = useState(false)
@@ -126,10 +127,14 @@ function EditorContent() {
       // 로그인하지 않은 경우에도 청첩장 데이터는 로드 (공개 데이터)
       setIsLoading(true)
       fetch(`/api/invitations/${editId}`)
-        .then(async res => await res.json() as { invitation?: { content?: string; template_id?: string } })
+        .then(async res => await res.json() as { invitation?: { content?: string; template_id?: string; slug?: string } })
         .then((data) => {
           if (data.invitation) {
             const inv = data.invitation
+            // 저장된 slug가 있으면 업데이트
+            if (inv.slug) {
+              setSavedSlug(inv.slug)
+            }
             // PARENTS 템플릿이면 parents 에디터로 리다이렉트
             if (inv.template_id === 'narrative-parents' || inv.template_id === 'parents') {
               router.push(`/editor/parents?id=${editId}`)
@@ -632,6 +637,8 @@ function EditorContent() {
           open={isShareModalOpen}
           onOpenChange={setIsShareModalOpen}
           invitationId={invitationId}
+          currentSlug={savedSlug || undefined}
+          onSlugChange={setSavedSlug}
           groomName={invitation.groom.name}
           brideName={invitation.bride.name}
           weddingDate={invitation.wedding.date}
@@ -647,6 +654,7 @@ function EditorContent() {
           }
           shareTitle={invitation.meta.title}
           shareDescription={invitation.meta.description}
+          templateType={template?.id === 'narrative-family' ? 'family' : 'our'}
         />
       )}
 

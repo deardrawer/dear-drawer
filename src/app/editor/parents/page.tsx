@@ -359,6 +359,7 @@ function ParentsEditorContent() {
 
   const [data, setData] = useState<ParentsInvitationData>(defaultData)
   const [invitationId, setInvitationId] = useState<string | null>(editId)
+  const [savedSlug, setSavedSlug] = useState<string | null>(urlSlug || null)
   const [isLoading, setIsLoading] = useState(!!editId)
   const [isSaving, setIsSaving] = useState(false)
   const [isDirty, setIsDirty] = useState(false)
@@ -416,14 +417,20 @@ function ParentsEditorContent() {
     if (editId) {
       setIsLoading(true)
       fetch(`/api/invitations/${editId}`)
-        .then(async res => await res.json() as { invitation?: { content?: string; template_id?: string } })
+        .then(async res => await res.json() as { invitation?: { content?: string; template_id?: string; slug?: string } })
         .then((result) => {
-          if (result.invitation?.content) {
-            try {
-              const content = JSON.parse(result.invitation.content)
-              setData({ ...defaultData, ...content })
-            } catch (e) {
-              console.error('Failed to parse content:', e)
+          if (result.invitation) {
+            // 저장된 slug가 있으면 업데이트
+            if (result.invitation.slug) {
+              setSavedSlug(result.invitation.slug)
+            }
+            if (result.invitation.content) {
+              try {
+                const content = JSON.parse(result.invitation.content)
+                setData({ ...defaultData, ...content })
+              } catch (e) {
+                console.error('Failed to parse content:', e)
+              }
             }
           }
         })
@@ -739,6 +746,8 @@ function ParentsEditorContent() {
           open={isShareModalOpen}
           onOpenChange={setIsShareModalOpen}
           invitationId={invitationId}
+          currentSlug={savedSlug || undefined}
+          onSlugChange={setSavedSlug}
           groomName={`${data.groom.lastName}${data.groom.firstName}`}
           brideName={`${data.bride.lastName}${data.bride.firstName}`}
           weddingDate={data.wedding.date}

@@ -232,10 +232,9 @@ export default function IntroAnimation({
         filter: `brightness(${(settings.backgroundBrightness || 100) / 100})`,
       }
     : {
-        // 크롭이 없을 때: position을 background-position으로 변환 (애니메이션 transform과 충돌 방지)
-        // imgPositionX/Y는 -50 ~ 50 범위의 offset, 이를 0% ~ 100% 범위의 background-position으로 변환
+        // 크롭이 없을 때: cover를 사용하되, scale이 1보다 크면 확대
         backgroundImage: coverImage ? `url(${coverImage})` : 'linear-gradient(135deg, #333 0%, #111 100%)',
-        backgroundSize: `${imgScale * 100}%`,
+        backgroundSize: imgScale > 1 ? `${imgScale * 100}%` : 'cover',
         backgroundPosition: `${50 - imgPositionX}% ${50 - imgPositionY}%`,
         backgroundRepeat: 'no-repeat' as const,
         filter: `brightness(${(settings.backgroundBrightness || 100) / 100})`,

@@ -604,7 +604,7 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
     ourStory: true,
     parentsGreeting: true,
     interview: true,
-    guidance: false,
+    guidance: true,
     contacts: true,
     bankAccounts: true,
     guestbook: true,
@@ -640,7 +640,7 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
 
   // 행복한 시간을 위한 안내
   guidance: {
-    enabled: false,
+    enabled: true,
     title: '행복한 시간을 위한 안내',
     content: '',
     image: '',

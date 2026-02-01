@@ -84,16 +84,6 @@ export default function WizardNavigation({ onSave, isSaving }: WizardNavigationP
           <ChevronRight className="w-5 h-5 ml-1" />
         </Button>
       </div>
-
-      {/* 건너뛰기 (선택 단계: 2, 3, 4) */}
-      {(wizardStep === 2 || wizardStep === 3 || wizardStep === 4) && (
-        <button
-          onClick={handleNext}
-          className="w-full mt-3 text-sm text-gray-400 hover:text-gray-600 underline"
-        >
-          나중에 할게요
-        </button>
-      )}
     </div>
   )
 }

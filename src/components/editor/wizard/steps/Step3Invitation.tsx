@@ -59,6 +59,8 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
   const [greetingAnswers, setGreetingAnswers] = useState<Partial<GreetingAnswers>>({})
   const [isGeneratingGreeting, setIsGeneratingGreeting] = useState(false)
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
+  const [greetingGenerationCount, setGreetingGenerationCount] = useState(0)
+  const MAX_GREETING_GENERATIONS = 3
 
   if (!invitation) return null
 
@@ -92,6 +94,12 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
 
   // AI 인사말 생성 API 호출
   const generateGreeting = async () => {
+    // 횟수 제한 확인
+    if (greetingGenerationCount >= MAX_GREETING_GENERATIONS) {
+      alert(`인사말 초안 작성은 최대 ${MAX_GREETING_GENERATIONS}회까지 가능합니다.`)
+      return
+    }
+
     // 모든 질문에 답변했는지 확인
     const allAnswered = GREETING_QUESTIONS.every(q => greetingAnswers[q.id as keyof GreetingAnswers])
     if (!allAnswered) {
@@ -122,6 +130,7 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
 
       if (data.greeting) {
         updateNestedField('content.greeting', data.greeting)
+        setGreetingGenerationCount(prev => prev + 1)
         setGreetingModalOpen(false)
       }
     } catch (error) {
@@ -387,10 +396,19 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
         {/* 초안 작성 버튼 */}
         <button
           onClick={openGreetingModal}
-          className="w-full py-3 px-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg transition-all flex items-center justify-center gap-2 shadow-md"
+          disabled={greetingGenerationCount >= MAX_GREETING_GENERATIONS}
+          className={`w-full py-3 px-4 text-white rounded-lg transition-all flex items-center justify-center gap-2 shadow-md ${
+            greetingGenerationCount >= MAX_GREETING_GENERATIONS
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600'
+          }`}
         >
           <Sparkles className="w-4 h-4" />
-          <span>인사말 초안 작성하기</span>
+          <span>
+            {greetingGenerationCount >= MAX_GREETING_GENERATIONS
+              ? '초안 작성 횟수 초과'
+              : `인사말 초안 작성하기 (${MAX_GREETING_GENERATIONS - greetingGenerationCount}회 남음)`}
+          </span>
         </button>
 
         <Textarea

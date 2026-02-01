@@ -1108,6 +1108,17 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
               <input type="text" className="flex-1 px-3.5 py-3 border border-gray-200 rounded-lg text-[11px] font-light" style={{ background: '#fafafa', color: themeColors.text }} placeholder="20자 이내로 답해주세요" disabled />
               <button className="px-4 py-3 rounded-lg text-[10px] font-light text-white" style={{ background: themeColors.text }}>남기기</button>
             </div>
+            <button className="text-[10px] font-light" style={{ color: '#aaa' }}>다른 질문 보기</button>
+          </div>
+          <div className="relative min-h-[200px]">
+            <div className="absolute w-[130px] px-3 py-3.5 bg-[#FFF9F0] rounded-lg text-left shadow-sm" style={{ transform: 'rotate(-3deg)', top: '10px', left: '20px' }}>
+              <p className="text-[9px] font-light text-gray-400 mb-1.5 leading-[1.4]">두 사람에게 해주고 싶은 말은?</p>
+              <p className="text-[11px] font-light leading-[1.6]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>행복하세요!</p>
+            </div>
+            <div className="absolute w-[130px] px-3 py-3.5 bg-[#F0F7FF] rounded-lg text-left shadow-sm" style={{ transform: 'rotate(2deg)', top: '80px', right: '20px' }}>
+              <p className="text-[9px] font-light text-gray-400 mb-1.5 leading-[1.4]">결혼생활에서 가장 중요한 건?</p>
+              <p className="text-[11px] font-light leading-[1.6]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>서로 믿는 것</p>
+            </div>
           </div>
         </section>
       )}

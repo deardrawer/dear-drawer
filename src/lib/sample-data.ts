@@ -137,7 +137,7 @@ export const ourSampleContent = {
   accentColor: '#d4a574',
   backgroundColor: '#FDF8F5',
   textColor: '#333333',
-  fontStyle: 'romantic' as const,
+  fontStyle: 'luxury' as const,
   colorTheme: 'classic-rose' as const,
   rsvpEnabled: true,
   rsvpDeadline: '2025-05-17',

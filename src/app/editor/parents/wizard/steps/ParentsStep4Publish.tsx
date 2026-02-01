@@ -1,10 +1,14 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
+import {
+  Dialog,
+  DialogContent,
+} from '@/components/ui/dialog'
 import type { ParentsInvitationData } from '../../page'
 
 interface ParentsStep4PublishProps {
@@ -12,111 +16,37 @@ interface ParentsStep4PublishProps {
   updateData: (updates: Partial<ParentsInvitationData>) => void
   updateNestedData: (path: string, value: unknown) => void
   invitationId: string | null
-  onPublish?: (slug: string) => Promise<void>
-}
-
-interface SlugCheckResult {
-  available: boolean
-  slug?: string
-  error?: string
-  suggestions?: string[]
+  slug?: string | null
+  onSave?: () => Promise<void>
+  isPaid?: boolean
 }
 
 export default function ParentsStep4Publish({
   data,
-  updateNestedData,
   invitationId,
-  onPublish,
+  slug,
+  onSave,
+  isPaid = false,
 }: ParentsStep4PublishProps) {
-  const [slug, setSlug] = useState('')
-  const [isChecking, setIsChecking] = useState(false)
-  const [checkResult, setCheckResult] = useState<SlugCheckResult | null>(null)
-  const [isApplied, setIsApplied] = useState(false)
-  const [isPublished, setIsPublished] = useState(false)
+  const router = useRouter()
   const [isPublishing, setIsPublishing] = useState(false)
+  const [isPublished, setIsPublished] = useState(false)
   const [publishError, setPublishError] = useState<string | null>(null)
   const [validationErrors, setValidationErrors] = useState<string[]>([])
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [copied, setCopied] = useState(false)
 
-  // 슬러그 자동 생성
-  useEffect(() => {
-    if (!slug && data) {
-      const groomName = `${data.groom.lastName}${data.groom.firstName}`.replace(/\s/g, '') || 'groom'
-      const brideName = `${data.bride.lastName}${data.bride.firstName}`.replace(/\s/g, '') || 'bride'
-      const dateStr = data.wedding.date?.replace(/-/g, '').slice(4) || ''
-      const suggestedSlug = `${groomName}-${brideName}${dateStr ? `-${dateStr}` : ''}`
-        .toLowerCase()
-        .replace(/[^a-z0-9-]/g, '')
-        .replace(/-+/g, '-')
-        .slice(0, 50)
+  // 청첩장 URL
+  const invitationUrl = slug
+    ? `https://invite.deardrawer.com/invite/${slug}`
+    : invitationId
+    ? `https://invite.deardrawer.com/invite/${invitationId}`
+    : null
 
-      if (suggestedSlug.length >= 3) {
-        setSlug(suggestedSlug)
-      }
-    }
-  }, [data, slug])
-
-  // 슬러그 중복 체크
-  const checkSlugAvailability = useCallback(async (slugToCheck: string) => {
-    if (slugToCheck.length < 3) {
-      setCheckResult({ available: false, error: '3자 이상 입력해주세요.' })
-      return
-    }
-
-    setIsChecking(true)
-    try {
-      const params = new URLSearchParams({ slug: slugToCheck })
-      if (invitationId) {
-        params.append('excludeId', invitationId)
-      }
-
-      const response = await fetch(`/api/invitations/check-slug?${params}`)
-      const result: SlugCheckResult = await response.json()
-      setCheckResult(result)
-    } catch (error) {
-      console.error('Slug check error:', error)
-      setCheckResult({ available: false, error: '확인 중 오류가 발생했습니다.' })
-    } finally {
-      setIsChecking(false)
-    }
-  }, [invitationId])
-
-  // 슬러그 길이 검증
-  useEffect(() => {
-    if (slug.length > 0 && slug.length < 3) {
-      setCheckResult({ available: false, error: '3자 이상 입력해주세요.' })
-    } else if (slug.length === 0) {
-      setCheckResult(null)
-    }
-  }, [slug])
-
-  // 슬러그 입력 핸들러
-  const handleSlugChange = (value: string) => {
-    const normalized = value
-      .toLowerCase()
-      .replace(/[^a-z0-9-]/g, '')
-      .replace(/-+/g, '-')
-      .replace(/^-/, '')
-      .slice(0, 50)
-
-    setSlug(normalized)
-    setCheckResult(null)
-    setIsApplied(false)
-  }
-
-  // 수동 중복 확인
-  const handleCheckSlug = () => {
-    if (slug.length >= 3) {
-      checkSlugAvailability(slug)
-    }
-  }
-
-  // 슬러그 적용
-  const handleApplySlug = () => {
-    if (checkResult?.available && slug.length >= 3) {
-      updateNestedData('slug', slug)
-      setIsApplied(true)
-    }
-  }
+  // 게스트 관리 페이지 URL
+  const adminUrl = invitationId
+    ? `https://invite.deardrawer.com/invite/${invitationId}/admin`
+    : null
 
   // 발행 핸들러
   const handlePublish = async () => {
@@ -131,15 +61,6 @@ export default function ParentsStep4Publish({
     if (!data.wedding.date) allErrors.push('결혼식 날짜를 입력해주세요.')
     if (!data.wedding.venue.name) allErrors.push('예식장 이름을 입력해주세요.')
 
-    // 슬러그 검증
-    if (!slug || slug.length < 3) {
-      allErrors.push('청첩장 URL을 입력해주세요.')
-    } else if (!checkResult?.available) {
-      allErrors.push('사용 가능한 URL을 입력해주세요.')
-    } else if (!isApplied) {
-      allErrors.push('청첩장 URL을 적용해주세요.')
-    }
-
     if (allErrors.length > 0) {
       setValidationErrors(allErrors)
       return
@@ -150,10 +71,11 @@ export default function ParentsStep4Publish({
     setValidationErrors([])
 
     try {
-      if (onPublish) {
-        await onPublish(slug)
+      if (onSave) {
+        await onSave()
       }
       setIsPublished(true)
+      setShowSuccessModal(true)
     } catch (error) {
       console.error('Publish error:', error)
       setPublishError('발행 중 오류가 발생했습니다. 다시 시도해주세요.')
@@ -162,124 +84,100 @@ export default function ParentsStep4Publish({
     }
   }
 
+  // 링크 복사
+  const handleCopyLink = () => {
+    if (invitationUrl) {
+      navigator.clipboard.writeText(invitationUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
+  // 카카오톡 공유
+  const handleKakaoShare = () => {
+    if (!invitationUrl) return
+
+    const groomName = `${data.groom.lastName}${data.groom.firstName}`.trim() || '신랑'
+    const brideName = `${data.bride.lastName}${data.bride.firstName}`.trim() || '신부'
+
+    const kakaoWindow = window as typeof window & {
+      Kakao?: {
+        isInitialized?: () => boolean
+        Share?: { sendDefault: (config: object) => void }
+      }
+    }
+
+    if (typeof window !== 'undefined' && kakaoWindow.Kakao?.Share && kakaoWindow.Kakao.isInitialized?.()) {
+      kakaoWindow.Kakao.Share.sendDefault({
+        objectType: 'feed',
+        content: {
+          title: `${groomName} ❤️ ${brideName}의 결혼식`,
+          description: '모바일 청첩장이 도착했습니다',
+          imageUrl: data.meta?.kakaoThumbnail || data.gallery?.images?.[0]?.url || 'https://invite.deardrawer.com/og-image.png',
+          link: { mobileWebUrl: invitationUrl, webUrl: invitationUrl },
+        },
+        buttons: [{ title: '청첩장 보기', link: { mobileWebUrl: invitationUrl, webUrl: invitationUrl } }],
+      })
+    } else {
+      navigator.clipboard.writeText(invitationUrl)
+      alert('카카오톡 공유를 사용할 수 없어 링크가 복사되었습니다.')
+    }
+  }
+
+  // 모달 닫기 → /my-invitations 이동
+  const handleCloseModal = () => {
+    setShowSuccessModal(false)
+    router.push('/my-invitations')
+  }
+
+  // 워터마크 제거 (결제 페이지로)
+  const handleRemoveWatermark = () => {
+    if (invitationId) {
+      router.push(`/dashboard/payment?invitationId=${invitationId}`)
+    }
+  }
+
+  // 게스트 관리 페이지로 이동
+  const handleGoToAdmin = () => {
+    if (adminUrl) {
+      window.open(adminUrl, '_blank')
+    }
+  }
+
   return (
     <div className="p-6 space-y-8">
       {/* 안내 */}
-      {!isPublished ? (
-        <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-          <p className="text-base text-purple-800 font-medium mb-1">거의 다 왔어요!</p>
-          <p className="text-sm text-purple-700">
-            💡 마지막으로 청첩장 URL을 설정하고 발행해주세요.
-          </p>
-        </div>
-      ) : (
-        <div className="p-6 bg-green-50 border border-green-200 rounded-xl text-center">
-          <div className="text-4xl mb-3">🎊</div>
-          <p className="text-xl text-green-800 font-bold mb-2">청첩장이 발행되었습니다!</p>
-          <p className="text-sm text-green-700">
-            이제 청첩장을 공유해보세요.
-          </p>
-        </div>
-      )}
-
-      {/* 커스텀 URL 설정 */}
-      <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          🔗 청첩장 주소 설정 <span className="text-red-500">*</span>
-        </h3>
-        <p className="text-sm text-blue-600">
-          💡 청첩장을 공유할 때 사용할 고유 주소를 설정해주세요.<br />
-          팁: 신랑신부 이름과 날짜 조합을 추천드려요. 예) minjun-yuna-0321
+      <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+        <p className="text-base text-purple-800 font-medium mb-1">거의 다 왔어요!</p>
+        <p className="text-sm text-purple-700">
+          💙 청첩장을 발행하면 바로 공유할 수 있어요.
         </p>
+      </div>
 
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-            <span className="text-sm text-gray-500 whitespace-nowrap">deardrawer.com/i/</span>
-            <Input
-              autoFocus
-              value={slug}
-              onChange={(e) => handleSlugChange(e.target.value)}
-              placeholder="minjun-yuna-0321"
-              className="flex-1 font-mono text-sm"
-              disabled={isPublished || isApplied}
-            />
+      {/* 청첩장 주소 표시 */}
+      {invitationUrl && (
+        <section className="space-y-4">
+          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+            🔗 청첩장 주소
+          </h3>
+
+          <div className="p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center gap-2">
+              <Input
+                value={invitationUrl}
+                readOnly
+                className="font-mono text-sm bg-white"
+              />
+              <Button
+                variant="outline"
+                onClick={handleCopyLink}
+              >
+                {copied ? '복사됨!' : '복사'}
+              </Button>
+            </div>
           </div>
-
-          {/* 중복확인 / 적용하기 버튼 */}
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleCheckSlug}
-              disabled={slug.length < 3 || isChecking || isPublished || isApplied}
-              className="flex-1"
-            >
-              {isChecking ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin mr-2" />
-                  확인 중...
-                </>
-              ) : (
-                '중복확인'
-              )}
-            </Button>
-            <Button
-              type="button"
-              onClick={handleApplySlug}
-              disabled={!checkResult?.available || isPublished || isApplied}
-              className="flex-1 bg-black text-white hover:bg-gray-800"
-            >
-              {isApplied ? '✓ 적용완료' : '적용하기'}
-            </Button>
-          </div>
-
-          {/* 검증 결과 표시 */}
-          {isChecking ? (
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-              <span>확인 중...</span>
-            </div>
-          ) : checkResult ? (
-            <div className={`flex items-center gap-2 text-sm ${
-              checkResult.available ? 'text-green-600' : 'text-red-500'
-            }`}>
-              {checkResult.available ? (
-                <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>사용 가능한 주소입니다</span>
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                  <span>{checkResult.error}</span>
-                </>
-              )}
-            </div>
-          ) : null}
-
-          {/* 추천 슬러그 */}
-          {checkResult?.suggestions && checkResult.suggestions.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-xs text-gray-500">추천 주소:</p>
-              <div className="flex flex-wrap gap-2">
-                {checkResult.suggestions.map((suggestion) => (
-                  <button
-                    key={suggestion}
-                    onClick={() => setSlug(suggestion)}
-                    className="px-3 py-1 text-xs bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition-colors"
-                  >
-                    {suggestion}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* 공개 설정 */}
       <section className="space-y-4">
@@ -321,64 +219,135 @@ export default function ParentsStep4Publish({
       )}
 
       {/* 발행 버튼 */}
-      {!isPublished ? (
-        <Button
-          onClick={handlePublish}
-          disabled={isPublishing || !checkResult?.available}
-          className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-        >
-          {isPublishing ? (
-            <div className="flex items-center gap-2">
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              <span>발행 중...</span>
-            </div>
-          ) : (
-            '✨ 청첩장 발행하기'
-          )}
-        </Button>
-      ) : (
-        <div className="space-y-4">
-          {/* 발행된 URL 표시 */}
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <Label className="text-sm text-gray-500 mb-2 block">청첩장 주소</Label>
-            <div className="flex items-center gap-2">
-              <Input
-                value={`https://deardrawer.com/i/${slug}`}
-                readOnly
-                className="font-mono text-sm bg-white"
-              />
-              <Button
-                variant="outline"
-                onClick={() => {
-                  navigator.clipboard.writeText(`https://deardrawer.com/i/${slug}`)
-                  alert('주소가 복사되었습니다.')
-                }}
-              >
-                복사
-              </Button>
-            </div>
+      <Button
+        onClick={handlePublish}
+        disabled={isPublishing || isPublished}
+        className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+      >
+        {isPublishing ? (
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            <span>발행 중...</span>
           </div>
-
-          {/* 미리보기 버튼 */}
-          <Button
-            variant="outline"
-            onClick={() => window.open(`/i/${slug}`, '_blank')}
-            className="w-full"
-          >
-            🔍 청첩장 미리보기
-          </Button>
-        </div>
-      )}
+        ) : isPublished ? (
+          '✓ 발행 완료'
+        ) : (
+          '✨ 청첩장 발행하기'
+        )}
+      </Button>
 
       {/* 도움말 */}
       <div className="p-4 bg-gray-50 rounded-lg text-sm text-gray-600 space-y-2">
         <p className="font-medium text-gray-900">알려드립니다</p>
         <ul className="space-y-1 list-disc list-inside">
           <li>발행 후에도 청첩장 내용은 수정할 수 있습니다.</li>
-          <li>URL은 한 번 설정하면 변경할 수 없으니 신중하게 결정해주세요.</li>
-          <li>카카오톡, 문자 메시지로 쉽게 공유할 수 있습니다.</li>
+          <li>게스트 관리 페이지에서 개인별 링크를 생성할 수 있습니다.</li>
         </ul>
       </div>
+
+      {/* 발행 완료 모달 */}
+      <Dialog open={showSuccessModal} onOpenChange={handleCloseModal}>
+        <DialogContent className="max-w-sm mx-auto">
+          {/* 축하 헤더 */}
+          <div className="text-center pt-2 pb-4">
+            <div className="text-5xl mb-3 animate-bounce">🎊</div>
+            <h2 className="text-xl font-bold text-gray-900 mb-1">축하합니다!</h2>
+            <p className="text-sm text-gray-600">청첩장이 발행되었습니다</p>
+          </div>
+
+          {/* 공유 링크 */}
+          {invitationUrl && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-gray-700">🔗 공유 링크</p>
+              <div className="flex items-center gap-2">
+                <Input
+                  value={invitationUrl}
+                  readOnly
+                  className="font-mono text-xs bg-gray-50"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopyLink}
+                  className="shrink-0"
+                >
+                  {copied ? '완료!' : '복사'}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* 액션 버튼들 */}
+          <div className="grid grid-cols-3 gap-2 mt-4">
+            {/* 미리보기 */}
+            <button
+              onClick={() => invitationUrl && window.open(invitationUrl, '_blank')}
+              className="flex flex-col items-center gap-1.5 p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors"
+            >
+              <span className="text-xl">📱</span>
+              <span className="text-xs font-medium text-gray-700">미리보기</span>
+            </button>
+
+            {/* 카카오톡 공유 */}
+            <button
+              onClick={handleKakaoShare}
+              className="flex flex-col items-center gap-1.5 p-3 bg-yellow-50 hover:bg-yellow-100 rounded-xl transition-colors"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="#3C1E1E">
+                <path d="M12 3C6.477 3 2 6.463 2 10.691c0 2.643 1.765 4.966 4.412 6.286l-.893 3.27a.3.3 0 00.455.334l3.862-2.552c.67.097 1.357.148 2.055.148 5.523 0 10-3.463 10-7.777C22 6.463 17.523 3 12 3z" />
+              </svg>
+              <span className="text-xs font-medium text-gray-700">카카오톡</span>
+            </button>
+
+            {/* 게스트 관리 */}
+            <button
+              onClick={handleGoToAdmin}
+              className="flex flex-col items-center gap-1.5 p-3 bg-amber-50 hover:bg-amber-100 rounded-xl transition-colors"
+            >
+              <span className="text-xl">👥</span>
+              <span className="text-xs font-medium text-gray-700">게스트관리</span>
+            </button>
+          </div>
+
+          {/* 게스트 관리 안내 */}
+          <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+            <p className="text-xs text-amber-700">
+              💡 <span className="font-medium">게스트 관리</span>에서 하객별 맞춤 링크를 생성하고 열람 여부를 확인할 수 있어요
+            </p>
+          </div>
+
+          {/* 워터마크 안내 (미결제 시) */}
+          {!isPaid && (
+            <div className="mt-3 p-4 bg-rose-50 border border-rose-200 rounded-xl">
+              <div className="flex items-start gap-3">
+                <span className="text-xl">💎</span>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-rose-800 mb-1">워터마크 제거</p>
+                  <p className="text-xs text-rose-600 mb-3">
+                    결제 후 워터마크가 제거된 깔끔한 청첩장을 공유하세요
+                  </p>
+                  <Button
+                    onClick={handleRemoveWatermark}
+                    size="sm"
+                    className="w-full bg-rose-500 hover:bg-rose-600"
+                  >
+                    워터마크 제거하기
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 하단 버튼 */}
+          <Button
+            onClick={handleCloseModal}
+            variant="outline"
+            className="w-full mt-4"
+          >
+            내 청첩장 목록으로 이동
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

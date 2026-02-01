@@ -8,6 +8,7 @@ import { Highlighter } from 'lucide-react'
 interface HighlightTextareaProps {
   value: string
   onChange: (value: string) => void
+  onFocus?: () => void
   placeholder?: string
   rows?: number
   className?: string
@@ -24,6 +25,7 @@ interface HighlightTextareaProps {
 export default function HighlightTextarea({
   value,
   onChange,
+  onFocus,
   placeholder,
   rows = 4,
   className = ''
@@ -118,6 +120,7 @@ export default function HighlightTextarea({
         ref={textareaRef}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onFocus={onFocus}
         placeholder={placeholder}
         rows={rows}
         className={className}

@@ -153,7 +153,7 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
           ✨ 인트로 스타일
         </h3>
-        <p className="text-sm text-blue-600">💡 커버 이미지, 애니메이션 효과, 텍스트를 한 곳에서 설정하세요</p>
+        <p className="text-sm text-blue-600">💙 커버 이미지, 애니메이션 효과, 텍스트를 한 곳에서 설정하세요</p>
 
         {/* 미리보기 썸네일 */}
         {media.coverImage && (
@@ -322,7 +322,7 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
             </button>
           )}
         </div>
-        <p className="text-sm text-blue-600">💡 인트로에 표시될 명언이나 슬로건을 입력해주세요. (선택)</p>
+        <p className="text-sm text-blue-600">💙 인트로에 표시될 명언이나 슬로건을 입력해주세요. (선택)</p>
 
         <div className="p-4 bg-gray-50 rounded-lg space-y-3">
           <div className="space-y-1.5">
@@ -362,11 +362,11 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
             </button>
           )}
         </div>
-        <p className="text-sm text-blue-600">💡 초안을 작성하거나, 샘플을 참고하여 직접 작성해보세요.</p>
+        <p className="text-sm text-blue-600">💙 초안을 작성하거나, 샘플을 참고하여 직접 작성해보세요.</p>
 
         {/* TIP 섹션 */}
         <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-sm text-blue-800 mb-2">💡 두 분이 왜 이 선택을 했는지, 시작의 마음을 담아 적어보세요.</p>
+          <p className="text-sm text-blue-800 mb-2">💙 두 분이 왜 이 선택을 했는지, 시작의 마음을 담아 적어보세요.</p>
           <details className="text-xs text-blue-700">
             <summary className="cursor-pointer font-medium hover:text-blue-900">가이드 보기</summary>
             <div className="mt-3 space-y-3 pl-2 border-l-2 border-blue-300">
@@ -408,7 +408,7 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
           👨‍👩‍👧‍👦 부모님 정보
         </h3>
-        <p className="text-sm text-blue-600">💡 인트로에 표시될 부모님 성함을 입력해주세요.</p>
+        <p className="text-sm text-blue-600">💙 인트로에 표시될 부모님 성함을 입력해주세요.</p>
 
         {/* 신랑측 */}
         <div className="space-y-3 p-4 bg-blue-50 rounded-lg">
@@ -537,7 +537,7 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
           💒 결혼식 정보
         </h3>
-        <p className="text-sm text-blue-600">💡 인트로 페이지, 오시는 길 안내, 카카오톡 공유 설정시 사용됩니다.</p>
+        <p className="text-sm text-blue-600">💙 인트로 페이지, 오시는 길 안내, 카카오톡 공유 설정시 사용됩니다.</p>
 
         <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
           {/* 날짜/시간 */}
@@ -599,7 +599,7 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
           📲 카카오톡 공유 설정
         </h3>
         <p className="text-sm text-blue-600">
-          💡 카카오톡으로 공유할 때 표시되는 정보를 설정해주세요.
+          💙 카카오톡으로 공유할 때 표시되는 정보를 설정해주세요.
         </p>
 
         {/* 경고 문구 */}
@@ -706,7 +706,7 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
         </h3>
         <div className="p-3 bg-blue-50 rounded-lg">
           <p className="text-xs text-blue-700">
-            💡 <strong>권장 크기:</strong> 1200 x 630 픽셀 (가로형)<br />
+            💙 <strong>권장 크기:</strong> 1200 x 630 픽셀 (가로형)<br />
             카카오톡 이외의 플랫폼(문자, 인스타그램, 페이스북 등)에서 공유할 때 표시되는 이미지입니다.<br />
             카카오톡 썸네일과 다른 이미지를 사용하면 플랫폼별로 다른 미리보기를 보여줄 수 있어요.
           </p>

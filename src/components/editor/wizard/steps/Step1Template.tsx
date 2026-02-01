@@ -102,7 +102,7 @@ export default function Step1Template({ templateId }: Step1TemplateProps) {
       <div className="text-center">
         <h3 className="text-xl font-medium text-gray-900 mb-2">템플릿을 선택해주세요</h3>
         <p className="text-sm text-blue-600">
-          💡 청첩장의 전체적인 분위기와 구성을 결정합니다.
+          💙 청첩장의 전체적인 분위기와 구성을 결정합니다.
         </p>
       </div>
 
@@ -156,7 +156,7 @@ export default function Step1Template({ templateId }: Step1TemplateProps) {
 
                 {/* 타겟 */}
                 <div className="flex items-start gap-2 p-3 bg-gray-50 rounded-lg">
-                  <span className="text-lg">💡</span>
+                  <span className="text-lg">💙</span>
                   <p className="text-xs text-gray-600 leading-relaxed">{details.target}</p>
                 </div>
 
@@ -213,7 +213,7 @@ export default function Step1Template({ templateId }: Step1TemplateProps) {
       {/* 안내 */}
       <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
         <p className="text-sm text-purple-700">
-          💡 템플릿을 변경해도 입력한 내용은 그대로 유지됩니다.
+          💙 템플릿을 변경해도 입력한 내용은 그대로 유지됩니다.
         </p>
       </div>
     </div>

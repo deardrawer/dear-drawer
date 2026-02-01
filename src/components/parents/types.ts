@@ -58,7 +58,7 @@ export const FONT_STYLES: Record<FontStyleId, FontStyle> = {
   },
   ridibatang: {
     id: 'ridibatang',
-    name: '리디바탕',
+    name: '가독성 좋은 바탕',
     fontName: 'RIDIBatang',
     className: 'font-parents-ridibatang',
     cssVariable: "'Ridibatang', serif",
@@ -72,7 +72,7 @@ export const FONT_STYLES: Record<FontStyleId, FontStyle> = {
   },
   okticon: {
     id: 'okticon',
-    name: '오케이티콘',
+    name: '손글씨체',
     fontName: 'Okticon',
     className: 'font-parents-okticon',
     cssVariable: "'Okticon', serif",

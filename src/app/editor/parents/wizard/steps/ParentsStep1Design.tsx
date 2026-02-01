@@ -22,8 +22,8 @@ const FONT_STYLE_OPTIONS = [
   { id: 'classic', name: '고전 세리프', desc: '함렛 (Hahmlet)', preview: '고급스럽고 정제된' },
   { id: 'modern', name: '모던 고딕', desc: 'IBM Plex Sans KR', preview: '깔끔하고 현대적' },
   { id: 'friendly', name: '친근한 고딕', desc: '나눔고딕', preview: '부드럽고 읽기 쉬운' },
-  { id: 'ridibatang', name: '리디바탕', desc: 'RIDIBatang', preview: '깔끔하고 가독성 좋은' },
-  { id: 'okticon', name: '오케이티콘', desc: 'Okticon', preview: '손글씨 느낌의 귀여운' },
+  { id: 'ridibatang', name: '가독성 좋은 바탕', desc: 'RIDIBatang', preview: '깔끔하고 가독성 좋은' },
+  { id: 'okticon', name: '손글씨체', desc: 'Okticon', preview: '손글씨 느낌의 귀여운' },
 ] as const
 
 export default function ParentsStep1Design({
@@ -61,7 +61,7 @@ export default function ParentsStep1Design({
       <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
         <p className="text-base text-purple-800 font-medium mb-1">디자인 선택</p>
         <p className="text-sm text-purple-700">
-          💡 청첩장의 분위기를 결정하는 컬러와 폰트, 배경음악을 선택해주세요.
+          💙 청첩장의 분위기를 결정하는 컬러와 폰트, 배경음악을 선택해주세요.
         </p>
       </div>
 
@@ -76,7 +76,7 @@ export default function ParentsStep1Design({
           </div>
           컬러 테마
         </h3>
-        <p className="text-sm text-blue-600">💡 청첩장 전체 분위기를 결정하는 컬러 테마를 선택하세요.</p>
+        <p className="text-sm text-blue-600">💙 청첩장 전체 분위기를 결정하는 컬러 테마를 선택하세요.</p>
 
         <div className="grid grid-cols-2 gap-3">
           {(Object.keys(COLOR_THEMES) as ColorThemeId[]).map((themeId) => {
@@ -117,7 +117,7 @@ export default function ParentsStep1Design({
           </div>
           폰트 스타일
         </h3>
-        <p className="text-sm text-blue-600">💡 청첩장의 분위기를 결정하는 폰트 스타일을 선택하세요.</p>
+        <p className="text-sm text-blue-600">💙 청첩장의 분위기를 결정하는 폰트 스타일을 선택하세요.</p>
 
         <div className="space-y-2">
           {FONT_STYLE_OPTIONS.map((font) => {
@@ -166,7 +166,7 @@ export default function ParentsStep1Design({
           />
         </div>
         <p className="text-sm text-blue-600">
-          💡 스토리에 어울리는 배경음악을 선택해주세요.<br />
+          💙 스토리에 어울리는 배경음악을 선택해주세요.<br />
           <span className="text-amber-600">⚠️ 브라우저 정책에 따라 자동재생 기능이 동작하지 않을 수 있습니다.</span>
         </p>
 

@@ -72,8 +72,8 @@ export default function RsvpModal({ onSubmit, isPreview = false }: RsvpModalProp
     exitFullscreen()
   }
 
-  // 폼 컨텐츠 (공통)
-  const FormContent = () => (
+  // 폼 컨텐츠 (JSX 변수로 정의 - 함수 컴포넌트로 만들면 리렌더링 시 unmount됨)
+  const formContent = (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div>
         <label className="block text-xs mb-2" style={{ color: '#999' }}>
@@ -82,7 +82,7 @@ export default function RsvpModal({ onSubmit, isPreview = false }: RsvpModalProp
         <input
           type="text"
           value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
           placeholder="성함을 입력해주세요"
           className="w-full px-4 py-3 rounded-lg border text-sm outline-none transition-all"
           style={{ borderColor: '#E8E4DC', color: theme.text }}
@@ -107,7 +107,7 @@ export default function RsvpModal({ onSubmit, isPreview = false }: RsvpModalProp
             <button
               key={option.value}
               type="button"
-              onClick={() => setFormData({ ...formData, attendance: option.value as 'yes' | 'no' | 'maybe' })}
+              onClick={() => setFormData(prev => ({ ...prev, attendance: option.value as 'yes' | 'no' | 'maybe' }))}
               className="flex-1 py-3 rounded-lg border text-sm transition-all"
               style={{
                 borderColor: formData.attendance === option.value ? theme.primary : '#E8E4DC',
@@ -129,7 +129,7 @@ export default function RsvpModal({ onSubmit, isPreview = false }: RsvpModalProp
           <div className="flex items-center gap-4">
             <button
               type="button"
-              onClick={() => setFormData({ ...formData, guestCount: Math.max(1, formData.guestCount - 1) })}
+              onClick={() => setFormData(prev => ({ ...prev, guestCount: Math.max(1, prev.guestCount - 1) }))}
               onMouseEnter={() => setHoveredButton('minus')}
               onMouseLeave={() => setHoveredButton(null)}
               className="w-10 h-10 rounded-full border flex items-center justify-center transition-all"
@@ -142,7 +142,7 @@ export default function RsvpModal({ onSubmit, isPreview = false }: RsvpModalProp
             </span>
             <button
               type="button"
-              onClick={() => setFormData({ ...formData, guestCount: formData.guestCount + 1 })}
+              onClick={() => setFormData(prev => ({ ...prev, guestCount: prev.guestCount + 1 }))}
               onMouseEnter={() => setHoveredButton('plus')}
               onMouseLeave={() => setHoveredButton(null)}
               className="w-10 h-10 rounded-full border flex items-center justify-center transition-all"
@@ -160,7 +160,7 @@ export default function RsvpModal({ onSubmit, isPreview = false }: RsvpModalProp
         </label>
         <textarea
           value={formData.message}
-          onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+          onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
           placeholder="신랑신부에게 전할 메시지를 남겨주세요"
           rows={3}
           className="w-full px-4 py-3 rounded-lg border text-sm outline-none transition-all resize-none"
@@ -223,7 +223,7 @@ export default function RsvpModal({ onSubmit, isPreview = false }: RsvpModalProp
 
       {/* 폼 */}
       <div className="flex-1 overflow-auto px-6 py-6">
-        <FormContent />
+        {formContent}
       </div>
     </div>,
     document.body
@@ -265,7 +265,7 @@ export default function RsvpModal({ onSubmit, isPreview = false }: RsvpModalProp
               참석 의사 전달
             </h3>
 
-            <FormContent />
+            {formContent}
           </div>
         </div>
       </div>

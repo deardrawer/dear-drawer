@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react'
 
-// OmuDaye 폰트 크기 조정 스타일
+// 로맨틱 폰트 크기 조정 스타일
 const romanticFontStyles = `
   .font-romantic .text-\\[11px\\] { font-size: 12px !important; }
   .font-romantic .text-\\[13px\\] { font-size: 14px !important; }
@@ -72,14 +72,14 @@ function BgmPlayer({ bgm }: { bgm: InvitationContent['bgm'] }) {
 }
 
 type ColorTheme = 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-green' | 'luxury-navy' | 'sunset-coral'
-interface ColorConfig { primary: string; secondary: string; accent: string; background: string; sectionBg: string; cardBg: string; divider: string; text: string; gray: string }
+interface ColorConfig { primary: string; secondary: string; accent: string; background: string; sectionBg: string; cardBg: string; divider: string; text: string; gray: string; highlight?: string }
 
 const colorThemes: Record<ColorTheme, ColorConfig> = {
   'classic-rose': { primary: '#C41050', secondary: '#B8956A', accent: '#B8956A', background: '#FFF8F5', sectionBg: '#FFE8E8', cardBg: '#FFFFFF', divider: '#d4b896', text: '#2a2a2a', gray: '#444444' },
-  'modern-black': { primary: '#111111', secondary: '#555555', accent: '#111111', background: '#FFFFFF', sectionBg: '#F5F5F5', cardBg: '#FFFFFF', divider: '#CCCCCC', text: '#2a2a2a', gray: '#444444' },
+  'modern-black': { primary: '#111111', secondary: '#555555', accent: '#111111', background: '#FFFFFF', sectionBg: '#F5F5F5', cardBg: '#FFFFFF', divider: '#CCCCCC', text: '#2a2a2a', gray: '#444444', highlight: '#888888' },
   'romantic-blush': { primary: '#A67A7A', secondary: '#8a7068', accent: '#8a7068', background: '#FDF8F6', sectionBg: '#F8EFEC', cardBg: '#FFFFFF', divider: '#D4C4BC', text: '#2a2a2a', gray: '#444444' },
-  'nature-green': { primary: '#3A5A3A', secondary: '#6A7A62', accent: '#5A7A52', background: '#F5F7F4', sectionBg: '#EBF0E8', cardBg: '#FFFFFF', divider: '#A8B5A0', text: '#2a2a2a', gray: '#444444' },
-  'luxury-navy': { primary: '#0f2035', secondary: '#8A6A3A', accent: '#8A6A3A', background: '#F8F9FA', sectionBg: '#E8ECF0', cardBg: '#FFFFFF', divider: '#C9A96E', text: '#2a2a2a', gray: '#444444' },
+  'nature-green': { primary: '#3A5A3A', secondary: '#6A7A62', accent: '#5A7A52', background: '#F5F7F4', sectionBg: '#EBF0E8', cardBg: '#FFFFFF', divider: '#A8B5A0', text: '#2a2a2a', gray: '#444444', highlight: '#5A8A52' },
+  'luxury-navy': { primary: '#0f2035', secondary: '#8A6A3A', accent: '#8A6A3A', background: '#F8F9FA', sectionBg: '#E8ECF0', cardBg: '#FFFFFF', divider: '#C9A96E', text: '#2a2a2a', gray: '#444444', highlight: '#8A6A3A' },
   'sunset-coral': { primary: '#B85040', secondary: '#B88060', accent: '#B8683A', background: '#FFFAF7', sectionBg: '#FFEEE5', cardBg: '#FFFFFF', divider: '#E8A87C', text: '#2a2a2a', gray: '#444444' },
 }
 
@@ -89,7 +89,7 @@ interface FontConfig { display: string; displayKr: string; body: string }
 const fontStyles: Record<FontStyle, FontConfig> = {
   classic: { display: "'Playfair Display', serif", displayKr: "'Ridibatang', serif", body: "'Ridibatang', serif" },
   modern: { display: "'Montserrat', sans-serif", displayKr: "'Pretendard', sans-serif", body: "'Pretendard', sans-serif" },
-  romantic: { display: "'Lora', serif", displayKr: "'OmuDaye', sans-serif", body: "'OmuDaye', sans-serif" },
+  romantic: { display: "'Lora', serif", displayKr: "'Okticon', serif", body: "'Okticon', serif" },
   contemporary: { display: "'Cinzel', serif", displayKr: "'JeonnamEducationBarun', sans-serif", body: "'JeonnamEducationBarun', sans-serif" },
   luxury: { display: "'EB Garamond', serif", displayKr: "'ELandChoice', serif", body: "'ELandChoice', serif" },
 }
@@ -203,83 +203,121 @@ const Preview = forwardRef<PreviewHandle, object>(function Preview(_, ref) {
   const [currentPage, setCurrentPage] = useState<PageType>('intro')
   const previewContentRef = useRef<HTMLDivElement>(null)
 
+  // 탭 전환 안정화를 위한 refs
+  const userTabClickRef = useRef(false) // 사용자가 직접 탭을 클릭했는지 추적
+  const userTabClickTimeoutRef = useRef<NodeJS.Timeout | null>(null) // 클릭 후 잠금 해제 타이머
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null) // 스크롤 타이머 정리용
+  const lastPageRef = useRef<PageType>('intro') // 최신 페이지 상태 추적 (closure 문제 해결)
+
+  // 페이지 변경 시 ref도 업데이트
+  useEffect(() => {
+    lastPageRef.current = currentPage
+  }, [currentPage])
+
   // 외부에서 호출 가능한 메서드 노출
   useImperativeHandle(ref, () => ({
     scrollToTop: () => {
       setCurrentPage('intro')
-      setTimeout(() => {
+      // 스크롤 타이머 정리
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current)
+      }
+      scrollTimeoutRef.current = setTimeout(() => {
         previewContentRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
       }, 100)
     }
   }))
 
-  // 위자드 스텝에 따른 미리보기 섹션 매핑 (5단계 위자드)
-  const wizardStepToPreview: Record<number, { page: PageType; sectionId?: string; scrollToTop?: boolean }> = {
-    1: { page: 'intro', sectionId: 'intro-cover' },    // 디자인 → 인트로 커버
-    2: { page: 'intro', scrollToTop: true },           // 인트로 → 인트로 커버 (최상단)
-    3: { page: 'main', scrollToTop: true },            // 스토리 → 메인 페이지 상단
-    4: { page: 'main', sectionId: 'rsvp' },            // 추가기능 → RSVP/계좌
-    5: { page: 'intro', sectionId: 'intro-cover' },    // 발행 → 전체 보기 (인트로부터)
+  // 사용자 탭 클릭 핸들러 (스크롤 이동 없이 탭만 전환)
+  const handleTabClick = useCallback((page: PageType) => {
+    // 이미 같은 페이지면 무시
+    if (lastPageRef.current === page) return
+
+    // 사용자 클릭 플래그 설정 (시스템 자동 전환 방지)
+    userTabClickRef.current = true
+
+    // 이전 타이머 정리
+    if (userTabClickTimeoutRef.current) {
+      clearTimeout(userTabClickTimeoutRef.current)
+    }
+
+    // 페이지 전환 (스크롤 없음)
+    setCurrentPage(page)
+
+    // 500ms 후 플래그 해제 (연속 클릭 보호)
+    userTabClickTimeoutRef.current = setTimeout(() => {
+      userTabClickRef.current = false
+    }, 500)
+  }, [])
+
+  // 위자드 스텝에 따른 미리보기 페이지 매핑 (5단계 위자드)
+  const wizardStepToPage: Record<number, PageType> = {
+    1: 'intro',    // 디자인 → 인트로
+    2: 'intro',    // 인트로 → 인트로
+    3: 'main',     // 스토리 → 메인
+    4: 'main',     // 추가기능 → 메인
+    5: 'intro',    // 발행 → 인트로
   }
 
-  // 위자드 스텝이 변경되면 해당 섹션으로 자동 포커싱
+  // 위자드 스텝이 변경되면 해당 페이지로 전환 (사용자 클릭 시 무시)
   useEffect(() => {
-    if (!wizardStep || !previewContentRef.current) return
+    if (!wizardStep) return
+    // 사용자가 직접 탭을 클릭한 경우 시스템 자동 전환 무시
+    if (userTabClickRef.current) return
 
-    const target = wizardStepToPreview[wizardStep]
-    if (!target) return
-
-    // 페이지 전환
-    if (target.page !== currentPage) {
-      setCurrentPage(target.page)
+    const targetPage = wizardStepToPage[wizardStep]
+    if (targetPage && targetPage !== lastPageRef.current) {
+      setCurrentPage(targetPage)
     }
-
-    // 스크롤 (페이지 전환 후 딜레이)
-    const scrollToSection = () => {
-      if (target.scrollToTop) {
-        // 명시적으로 맨 위로 스크롤
-        previewContentRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
-      } else if (target.sectionId) {
-        const element = document.getElementById(`preview-${target.sectionId}`)
-        if (element && previewContentRef.current) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        }
-      } else {
-        // sectionId가 없으면 맨 위로 스크롤
-        previewContentRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
-      }
-    }
-
-    const timer = setTimeout(scrollToSection, 150)
-    return () => clearTimeout(timer)
   }, [wizardStep])
 
-  // activeSection이 변경되면 해당 섹션으로 스크롤
+  // activeSection이 변경되면 해당 섹션으로 스크롤 (사용자 클릭 시 무시)
   useEffect(() => {
     if (!activeSection || !previewContentRef.current) return
+    // 사용자가 직접 탭을 클릭한 경우 시스템 자동 전환 무시
+    if (userTabClickRef.current) return
 
     // intro 관련 섹션이면 intro 페이지로, 아니면 main 페이지로 전환
     const introSections: PreviewSectionId[] = ['intro-cover', 'invitation', 'venue-info']
     const isIntroSection = introSections.includes(activeSection)
 
-    if (isIntroSection && currentPage !== 'intro') {
+    if (isIntroSection && lastPageRef.current !== 'intro') {
       setCurrentPage('intro')
-    } else if (!isIntroSection && currentPage !== 'main') {
+    } else if (!isIntroSection && lastPageRef.current !== 'main') {
       setCurrentPage('main')
     }
 
+    // 이전 스크롤 타이머 정리
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current)
+    }
+
     // 페이지 전환 후 스크롤 (약간의 딜레이 필요)
-    const scrollToSection = () => {
+    scrollTimeoutRef.current = setTimeout(() => {
       const element = document.getElementById(`preview-${activeSection}`)
       if (element && previewContentRef.current) {
         element.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }
-    }
+    }, 100)
 
-    // 페이지 전환 시 약간의 딜레이 후 스크롤
-    const timer = setTimeout(scrollToSection, 100)
-    return () => clearTimeout(timer)
-  }, [activeSection, currentPage])
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current)
+      }
+    }
+  }, [activeSection])
+
+  // 컴포넌트 언마운트 시 타이머 정리
+  useEffect(() => {
+    return () => {
+      if (userTabClickTimeoutRef.current) {
+        clearTimeout(userTabClickTimeoutRef.current)
+      }
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current)
+      }
+    }
+  }, [])
 
   if (!invitation || !template) return <div className="h-full flex items-center justify-center bg-gray-100"><p className="text-gray-400">Loading...</p></div>
   const groomName = invitation.groom.name || 'Groom', brideName = invitation.bride.name || 'Bride'
@@ -290,11 +328,18 @@ const Preview = forwardRef<PreviewHandle, object>(function Preview(_, ref) {
       <style dangerouslySetInnerHTML={{ __html: romanticFontStyles }} />
       <div className="sticky top-0 z-10 bg-white py-4 flex justify-center shrink-0">
         <div className="flex bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <button onClick={() => {
-            setCurrentPage('intro')
-            setTimeout(() => previewContentRef.current?.scrollTo({ top: 0, behavior: 'smooth' }), 100)
-          }} className={`px-6 py-2.5 text-sm font-medium transition-all ${currentPage === 'intro' ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>Intro</button>
-          <button onClick={() => setCurrentPage('main')} className={`px-6 py-2.5 text-sm font-medium transition-all ${currentPage === 'main' ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>Main</button>
+          <button
+            onClick={() => handleTabClick('intro')}
+            className={`px-6 py-2.5 text-sm font-medium transition-all select-none ${currentPage === 'intro' ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+          >
+            Intro
+          </button>
+          <button
+            onClick={() => handleTabClick('main')}
+            className={`px-6 py-2.5 text-sm font-medium transition-all select-none ${currentPage === 'main' ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+          >
+            Main
+          </button>
         </div>
       </div>
       <div className="flex-1 overflow-hidden flex justify-center px-6 pb-6">
@@ -378,7 +423,7 @@ function IntroPage({ invitation, groomName, brideName, fonts, themeColors }: Pag
               {invitation.groom.father.name && <><ParentName name={invitation.groom.father.name} deceased={invitation.groom.father.deceased} displayStyle={invitation.deceasedDisplayStyle} />{invitation.groom.mother.name && ' · '}</>}
               {invitation.groom.mother.name && <><ParentName name={invitation.groom.mother.name} deceased={invitation.groom.mother.deceased} displayStyle={invitation.deceasedDisplayStyle} /></>}
               <span style={{ color: themeColors.gray }}> 의 아들 </span>
-              <span style={{ color: themeColors.primary, fontWeight: 500 }}>{groomName}</span>
+              <span style={{ color: themeColors.highlight || themeColors.primary, fontWeight: 500 }}>{groomName}</span>
             </p>
           </div>
           )}
@@ -388,7 +433,7 @@ function IntroPage({ invitation, groomName, brideName, fonts, themeColors }: Pag
               {invitation.bride.father.name && <><ParentName name={invitation.bride.father.name} deceased={invitation.bride.father.deceased} displayStyle={invitation.deceasedDisplayStyle} />{invitation.bride.mother.name && ' · '}</>}
               {invitation.bride.mother.name && <><ParentName name={invitation.bride.mother.name} deceased={invitation.bride.mother.deceased} displayStyle={invitation.deceasedDisplayStyle} /></>}
               <span style={{ color: themeColors.gray }}> 의 딸 </span>
-              <span style={{ color: themeColors.primary, fontWeight: 500 }}>{brideName}</span>
+              <span style={{ color: themeColors.highlight || themeColors.primary, fontWeight: 500 }}>{brideName}</span>
             </p>
           </div>
           )}
@@ -423,26 +468,60 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors }: Page
 
       {/* Couple Profile Section - with visibility toggle and sample fallback */}
       {sectionVisibility.coupleProfile && (
-        <section id="preview-couple-profile" className="px-7 py-14" style={{ background: themeColors.sectionBg }}>
-          <ProfileImageSlider images={invitation.bride.profile.images} imageSettings={invitation.bride.profile.imageSettings} className="mb-10" />
-          <div className="text-center mb-8">
-            <p className="text-[10px] font-light mb-4 anim-underline revealed" style={{ fontFamily: fonts.display, color: themeColors.gray, letterSpacing: '3px', display: 'inline-block' }}>{invitation.bride.profile.aboutLabel}</p>
-            <p className="text-[11px] font-light" style={{ color: '#999' }}>{invitation.bride.profile.subtitle}</p>
-          </div>
-          <div className={`text-xs font-light ${isEmpty(invitation.bride.profile.intro) ? 'opacity-50' : ''}`} style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: invitation.profileTextStyle?.lineHeight || 2.2, textAlign: invitation.profileTextStyle?.textAlign || 'left' }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.bride.profile.intro || SAMPLE_PROFILES.bride.intro) }} />
-          {(invitation.bride.profile.tag || isEmpty(invitation.bride.profile.intro)) && <div className={`inline-flex items-center gap-1.5 mt-5 px-3.5 py-2 rounded-md text-[10px] font-light ${isEmpty(invitation.bride.profile.intro) ? 'opacity-50' : ''}`} style={{ background: 'rgba(0,0,0,0.03)', color: '#777' }}>&#9829; {invitation.bride.profile.tag || SAMPLE_PROFILES.bride.tag}</div>}
-        </section>
-      )}
-      {sectionVisibility.coupleProfile && (
-        <section className="px-7 py-14" style={{ background: themeColors.sectionBg }}>
-          <ProfileImageSlider images={invitation.groom.profile.images} imageSettings={invitation.groom.profile.imageSettings} className="mb-10" />
-          <div className="text-center mb-8">
-            <p className="text-[10px] font-light mb-4 anim-underline revealed" style={{ fontFamily: fonts.display, color: themeColors.gray, letterSpacing: '3px', display: 'inline-block' }}>{invitation.groom.profile.aboutLabel}</p>
-            <p className="text-[11px] font-light" style={{ color: '#999' }}>{invitation.groom.profile.subtitle}</p>
-          </div>
-          <div className={`text-xs font-light ${isEmpty(invitation.groom.profile.intro) ? 'opacity-50' : ''}`} style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: invitation.profileTextStyle?.lineHeight || 2.2, textAlign: invitation.profileTextStyle?.textAlign || 'left' }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.groom.profile.intro || SAMPLE_PROFILES.groom.intro) }} />
-          {(invitation.groom.profile.tag || isEmpty(invitation.groom.profile.intro)) && <div className={`inline-flex items-center gap-1.5 mt-5 px-3.5 py-2 rounded-md text-[10px] font-light ${isEmpty(invitation.groom.profile.intro) ? 'opacity-50' : ''}`} style={{ background: 'rgba(0,0,0,0.03)', color: '#777' }}>&#9829; {invitation.groom.profile.tag || SAMPLE_PROFILES.groom.tag}</div>}
-        </section>
+        <>
+          {/* First Profile - depends on profileOrder */}
+          <section id="preview-couple-profile" className="px-7 py-14" style={{ background: themeColors.sectionBg }}>
+            <ProfileImageSlider
+              images={invitation.profileOrder === 'bride-first' ? invitation.bride.profile.images : invitation.groom.profile.images}
+              imageSettings={invitation.profileOrder === 'bride-first' ? invitation.bride.profile.imageSettings : invitation.groom.profile.imageSettings}
+              className="mb-10"
+            />
+            <div className="text-center mb-8">
+              <p className="text-[10px] font-light mb-4 anim-underline revealed" style={{ fontFamily: fonts.display, color: themeColors.gray, letterSpacing: '3px', display: 'inline-block' }}>
+                {invitation.profileOrder === 'bride-first' ? invitation.bride.profile.aboutLabel : invitation.groom.profile.aboutLabel}
+              </p>
+              <p className="text-[11px] font-light" style={{ color: '#999' }}>
+                {invitation.profileOrder === 'bride-first' ? invitation.bride.profile.subtitle : invitation.groom.profile.subtitle}
+              </p>
+            </div>
+            <div
+              className={`text-xs font-light ${isEmpty(invitation.profileOrder === 'bride-first' ? invitation.bride.profile.intro : invitation.groom.profile.intro) ? 'opacity-50' : ''}`}
+              style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: invitation.profileTextStyle?.lineHeight || 2.2, textAlign: invitation.profileTextStyle?.textAlign || 'left' }}
+              dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.profileOrder === 'bride-first' ? (invitation.bride.profile.intro || SAMPLE_PROFILES.bride.intro) : (invitation.groom.profile.intro || SAMPLE_PROFILES.groom.intro)) }}
+            />
+            {((invitation.profileOrder === 'bride-first' ? invitation.bride.profile.tag : invitation.groom.profile.tag) || isEmpty(invitation.profileOrder === 'bride-first' ? invitation.bride.profile.intro : invitation.groom.profile.intro)) &&
+              <div className={`inline-flex items-center gap-1.5 mt-5 px-3.5 py-2 rounded-md text-[10px] font-light ${isEmpty(invitation.profileOrder === 'bride-first' ? invitation.bride.profile.intro : invitation.groom.profile.intro) ? 'opacity-50' : ''}`} style={{ background: 'rgba(0,0,0,0.03)', color: '#777' }}>
+                &#9829; {invitation.profileOrder === 'bride-first' ? (invitation.bride.profile.tag || SAMPLE_PROFILES.bride.tag) : (invitation.groom.profile.tag || SAMPLE_PROFILES.groom.tag)}
+              </div>
+            }
+          </section>
+          {/* Second Profile - depends on profileOrder */}
+          <section className="px-7 py-14" style={{ background: themeColors.sectionBg }}>
+            <ProfileImageSlider
+              images={invitation.profileOrder === 'bride-first' ? invitation.groom.profile.images : invitation.bride.profile.images}
+              imageSettings={invitation.profileOrder === 'bride-first' ? invitation.groom.profile.imageSettings : invitation.bride.profile.imageSettings}
+              className="mb-10"
+            />
+            <div className="text-center mb-8">
+              <p className="text-[10px] font-light mb-4 anim-underline revealed" style={{ fontFamily: fonts.display, color: themeColors.gray, letterSpacing: '3px', display: 'inline-block' }}>
+                {invitation.profileOrder === 'bride-first' ? invitation.groom.profile.aboutLabel : invitation.bride.profile.aboutLabel}
+              </p>
+              <p className="text-[11px] font-light" style={{ color: '#999' }}>
+                {invitation.profileOrder === 'bride-first' ? invitation.groom.profile.subtitle : invitation.bride.profile.subtitle}
+              </p>
+            </div>
+            <div
+              className={`text-xs font-light ${isEmpty(invitation.profileOrder === 'bride-first' ? invitation.groom.profile.intro : invitation.bride.profile.intro) ? 'opacity-50' : ''}`}
+              style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: invitation.profileTextStyle?.lineHeight || 2.2, textAlign: invitation.profileTextStyle?.textAlign || 'left' }}
+              dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.profileOrder === 'bride-first' ? (invitation.groom.profile.intro || SAMPLE_PROFILES.groom.intro) : (invitation.bride.profile.intro || SAMPLE_PROFILES.bride.intro)) }}
+            />
+            {((invitation.profileOrder === 'bride-first' ? invitation.groom.profile.tag : invitation.bride.profile.tag) || isEmpty(invitation.profileOrder === 'bride-first' ? invitation.groom.profile.intro : invitation.bride.profile.intro)) &&
+              <div className={`inline-flex items-center gap-1.5 mt-5 px-3.5 py-2 rounded-md text-[10px] font-light ${isEmpty(invitation.profileOrder === 'bride-first' ? invitation.groom.profile.intro : invitation.bride.profile.intro) ? 'opacity-50' : ''}`} style={{ background: 'rgba(0,0,0,0.03)', color: '#777' }}>
+                &#9829; {invitation.profileOrder === 'bride-first' ? (invitation.groom.profile.tag || SAMPLE_PROFILES.groom.tag) : (invitation.bride.profile.tag || SAMPLE_PROFILES.bride.tag)}
+              </div>
+            }
+          </section>
+        </>
       )}
 
       {/* Our Story Section - with visibility toggle and sample fallback */}
@@ -470,36 +549,37 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors }: Page
         ) : null)
       })()}
 
-      {/* 함께한 시간 - OUR 템플릿, 처음 만난 날 입력 시 표시 */}
-      {sectionVisibility.ourStory && invitation.relationship.startDate && (() => {
-        const duration = calculateRelationshipDuration(invitation.relationship.startDate)
-        if (!duration) return null
-        return (
-          <section className="px-7 py-12 text-center" style={{ background: themeColors.sectionBg }}>
-            <div className="flex justify-center items-center gap-6">
-              <div className="text-center">
-                <span className="text-lg font-light" style={{ color: themeColors.primary }}>{duration.days.toLocaleString()}</span>
-                <span className="text-[10px] ml-0.5" style={{ color: themeColors.gray }}>일</span>
-              </div>
-              <div className="text-center">
-                <span className="text-lg font-light" style={{ color: themeColors.primary }}>{duration.weeks.toLocaleString()}</span>
-                <span className="text-[10px] ml-0.5" style={{ color: themeColors.gray }}>주</span>
-              </div>
-              <div className="text-center">
-                <span className="text-lg font-light" style={{ color: themeColors.primary }}>
-                  {duration.years > 0 && `${duration.years}년 `}{duration.months}개월
-                </span>
-              </div>
-            </div>
-            <div className="w-px h-8 mx-auto mt-8 mb-4" style={{ background: themeColors.divider }} />
-          </section>
-        )
-      })()}
-
-      {/* Our Story Closing Text */}
+      {/* 함께한 시간 + 클로징 문구 통합 섹션 */}
       {sectionVisibility.ourStory && (
-        <section className={`px-7 py-10 text-center ${!invitation.relationship.stories.some(s => s.title || s.desc) ? 'opacity-50' : ''}`} style={{ background: themeColors.sectionBg }}>
-          <p className="text-sm leading-relaxed" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>
+        <section className="text-center px-7 py-12" style={{ background: themeColors.sectionBg }}>
+          {/* 함께한 시간 - startDate가 있을 때만 표시 */}
+          {invitation.relationship.startDate && (() => {
+            const duration = calculateRelationshipDuration(invitation.relationship.startDate)
+            if (!duration) return null
+            return (
+              <div className="flex justify-center items-center gap-6 mb-8">
+                <div className="text-center">
+                  <span className="text-lg font-light" style={{ color: themeColors.primary }}>{duration.days.toLocaleString()}</span>
+                  <span className="text-[10px] ml-0.5" style={{ color: themeColors.gray }}>일</span>
+                </div>
+                <div className="text-center">
+                  <span className="text-lg font-light" style={{ color: themeColors.primary }}>{duration.weeks.toLocaleString()}</span>
+                  <span className="text-[10px] ml-0.5" style={{ color: themeColors.gray }}>주</span>
+                </div>
+                <div className="text-center">
+                  <span className="text-lg font-light" style={{ color: themeColors.primary }}>
+                    {duration.years > 0 && `${duration.years}년 `}{duration.months}개월
+                  </span>
+                </div>
+              </div>
+            )
+          })()}
+
+          {/* 세로 구분선 */}
+          <div className="w-px h-8 mx-auto mb-8" style={{ background: themeColors.divider }} />
+
+          {/* 클로징 문구 */}
+          <p className={`text-sm leading-relaxed ${!invitation.relationship.stories.some(s => s.title || s.desc) ? 'opacity-50' : ''}`} style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>
             {invitation.relationship.closingText || '그리고 이제 드디어 부르는 서로의 이름에 \'신랑\', \'신부\'라는 호칭을 담습니다.'}
           </p>
         </section>

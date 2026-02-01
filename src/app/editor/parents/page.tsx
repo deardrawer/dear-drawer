@@ -355,6 +355,7 @@ function ParentsEditorContent() {
   const router = useRouter()
   const { user, status } = useAuth()
   const editId = searchParams.get('id')
+  const urlSlug = searchParams.get('slug') // 템플릿 시작 시 설정한 커스텀 URL
 
   const [data, setData] = useState<ParentsInvitationData>(defaultData)
   const [invitationId, setInvitationId] = useState<string | null>(editId)
@@ -365,8 +366,40 @@ function ParentsEditorContent() {
     const [isShareModalOpen, setIsShareModalOpen] = useState(false)
   const [previewTab, setPreviewTab] = useState<'intro' | 'main'>('intro')
   const [fullscreenTab, setFullscreenTab] = useState<'intro' | 'main'>('intro')
+  const [currentWizardStep, setCurrentWizardStep] = useState<number>(1)
   const [selectedGuest, setSelectedGuest] = useState<{ name: string; honorific: string; relation?: string; custom_message?: string } | null>(null)
   const [isMobile, setIsMobile] = useState(false)
+  const [activeSection, setActiveSection] = useState<string | null>(null)
+  const [isExitModalOpen, setIsExitModalOpen] = useState(false)
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
+
+  // 나가기 방지 (미저장 변경사항이 있을 때)
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault()
+        e.returnValue = '저장하지 않은 변경사항이 있습니다. 페이지를 떠나시겠습니까?'
+        return e.returnValue
+      }
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [isDirty])
+
+  // 브라우저 뒤로가기 방지
+  useEffect(() => {
+    if (isDirty) {
+      window.history.pushState(null, '', window.location.href)
+
+      const handlePopState = () => {
+        window.history.pushState(null, '', window.location.href)
+        setIsExitModalOpen(true)
+      }
+
+      window.addEventListener('popstate', handlePopState)
+      return () => window.removeEventListener('popstate', handlePopState)
+    }
+  }, [isDirty])
 
   // 모바일 감지
   useEffect(() => {
@@ -448,7 +481,7 @@ function ParentsEditorContent() {
     setIsSaving(true)
 
     try {
-      const payload = {
+      const payload: Record<string, unknown> = {
         template_id: 'narrative-parents',
         groom_name: `${data.groom.lastName}${data.groom.firstName}`,
         bride_name: `${data.bride.lastName}${data.bride.firstName}`,
@@ -458,6 +491,11 @@ function ParentsEditorContent() {
         venue_address: data.wedding.venue.address,
         venue_hall: data.wedding.venue.hall,
         content: JSON.stringify(data),
+      }
+
+      // 새 청첩장 생성 시 slug 포함
+      if (!invitationId && urlSlug) {
+        payload.slug = urlSlug
       }
 
       let response
@@ -525,7 +563,7 @@ function ParentsEditorContent() {
           <div className="hidden sm:block h-4 w-px bg-gray-200" />
           <span className="hidden sm:inline text-sm text-gray-400 font-light tracking-wide">
             혼주용 청첩장
-            {isDirty && <span className="ml-2 text-gray-600">• Unsaved</span>}
+            {isDirty && <span className="ml-2 text-gray-600">• 미저장</span>}
           </span>
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
@@ -593,33 +631,36 @@ function ParentsEditorContent() {
           <div className="bg-white flex">
             {/* Preview - 왼쪽 sticky 고정, 세로 중앙 */}
             <div className="w-[450px] min-w-[450px] sticky top-0 h-[calc(100vh-56px)] overflow-hidden bg-gray-50 flex flex-col justify-center items-center p-6">
-              {/* 탭 버튼 */}
+              {/* 탭 버튼 - 봉투(2), 본문(3) 단계에서는 숨김 */}
               {(() => {
                 const currentTheme = COLOR_THEMES[data.colorTheme || 'burgundy']
+                const showTabs = currentWizardStep !== 2 && currentWizardStep !== 3
                 return (
                   <>
-                    <div className="flex mb-4 bg-white rounded-lg shadow-sm overflow-hidden">
-                      <button
-                        onClick={() => setPreviewTab('intro')}
-                        className="px-6 py-2.5 text-sm font-medium transition-colors"
-                        style={{
-                          backgroundColor: previewTab === 'intro' ? currentTheme.primary : 'transparent',
-                          color: previewTab === 'intro' ? 'white' : '#4B5563',
-                        }}
-                      >
-                        인트로 (봉투)
-                      </button>
-                      <button
-                        onClick={() => setPreviewTab('main')}
-                        className="px-6 py-2.5 text-sm font-medium transition-colors"
-                        style={{
-                          backgroundColor: previewTab === 'main' ? currentTheme.primary : 'transparent',
-                          color: previewTab === 'main' ? 'white' : '#4B5563',
-                        }}
-                      >
-                        본문
-                      </button>
-                    </div>
+                    {showTabs && (
+                      <div className="flex mb-4 bg-white rounded-lg shadow-sm overflow-hidden">
+                        <button
+                          onClick={() => setPreviewTab('intro')}
+                          className="px-6 py-2.5 text-sm font-medium transition-colors"
+                          style={{
+                            backgroundColor: previewTab === 'intro' ? currentTheme.primary : 'transparent',
+                            color: previewTab === 'intro' ? 'white' : '#4B5563',
+                          }}
+                        >
+                          인트로 (봉투)
+                        </button>
+                        <button
+                          onClick={() => setPreviewTab('main')}
+                          className="px-6 py-2.5 text-sm font-medium transition-colors"
+                          style={{
+                            backgroundColor: previewTab === 'main' ? currentTheme.primary : 'transparent',
+                            color: previewTab === 'main' ? 'white' : '#4B5563',
+                          }}
+                        >
+                          본문
+                        </button>
+                      </div>
+                    )}
 
                     {/* 미리보기 영역 */}
                     <div
@@ -627,7 +668,7 @@ function ParentsEditorContent() {
                       style={{ backgroundColor: currentTheme.primary }}
                     >
                       <div className="w-full h-full overflow-hidden rounded-[32px] m-1" style={{ width: 'calc(100% - 8px)', height: 'calc(100% - 8px)' }}>
-                        <ParentsPreview data={data} activeTab={previewTab} onTabChange={setPreviewTab} selectedGuest={selectedGuest} />
+                        <ParentsPreview data={data} activeTab={previewTab} onTabChange={setPreviewTab} selectedGuest={selectedGuest} activeSection={activeSection} />
                       </div>
                     </div>
                   </>
@@ -650,7 +691,11 @@ function ParentsEditorContent() {
                 invitationId={invitationId}
                 selectedGuest={selectedGuest}
                 onSelectGuest={setSelectedGuest}
+                setActiveSection={setActiveSection}
+                slug={urlSlug || (invitationId ? invitationId : null)}
+                onSave={handleSave}
                 onStepChange={(step) => {
+                  setCurrentWizardStep(step)
                   // 봉투(2) → 인트로, 본문(3) → 본문
                   if (step === 2) {
                     setPreviewTab('intro')
@@ -680,7 +725,7 @@ function ParentsEditorContent() {
             <div className="w-[375px] bg-gray-900 rounded-[50px] p-3 shadow-2xl border border-gray-700">
               <div className="rounded-[40px] overflow-hidden bg-white relative" style={{ height: '812px' }}>
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[35px] bg-black rounded-b-3xl z-10 pointer-events-none" />
-                <ParentsPreview data={data} fullscreen activeTab={fullscreenTab} onTabChange={setFullscreenTab} selectedGuest={selectedGuest} />
+                <ParentsPreview data={data} fullscreen activeTab={fullscreenTab} onTabChange={setFullscreenTab} selectedGuest={selectedGuest} activeSection={activeSection} />
                 <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-gray-300 rounded-full" />
               </div>
             </div>
@@ -710,6 +755,49 @@ function ParentsEditorContent() {
           shareDescription={data.meta.description}
           templateType="parents"
         />
+      )}
+
+      {/* 나가기 확인 모달 */}
+      {isExitModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full mx-4 shadow-xl">
+            <div className="flex flex-col items-center">
+              <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 text-center">
+                저장하지 않은 변경사항이 있어요
+              </h3>
+              <p className="text-sm text-gray-500 text-center mt-2">
+                지금 나가면 작업한 내용이 사라집니다.<br />저장하고 나가시겠어요?
+              </p>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setIsExitModalOpen(false)}
+                className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+              >
+                계속 편집
+              </button>
+              <button
+                onClick={() => {
+                  setIsDirty(false)
+                  setIsExitModalOpen(false)
+                  if (pendingNavigation) {
+                    router.push(pendingNavigation)
+                  } else {
+                    router.back()
+                  }
+                }}
+                className="flex-1 px-4 py-2.5 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
+              >
+                저장 안 함
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

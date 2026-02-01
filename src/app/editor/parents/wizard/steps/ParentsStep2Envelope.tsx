@@ -4,9 +4,11 @@ import { useState } from 'react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Mail, Heart, Share2, Upload, X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Mail, Heart, Share2, Upload, X, Sparkles } from 'lucide-react'
 import { uploadImage } from '@/lib/imageUpload'
 import InlineCropEditor from '@/components/editor/InlineCropEditor'
+import ImageCropEditor from '@/components/parents/ImageCropEditor'
 import type { ParentsInvitationData } from '../../page'
 
 interface ParentsStep2EnvelopeProps {
@@ -54,7 +56,7 @@ export default function ParentsStep2Envelope({
       <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
         <p className="text-base text-purple-800 font-medium mb-1">봉투 인트로 작성</p>
         <p className="text-sm text-purple-700">
-          💡 청첩장 봉투에 표시될 정보를 입력해주세요.
+          💙 청첩장 봉투에 표시될 정보를 입력해주세요.
         </p>
       </div>
 
@@ -66,7 +68,7 @@ export default function ParentsStep2Envelope({
           </div>
           보내는 사람
         </h3>
-        <p className="text-sm text-blue-600">💡 누구의 청첩장인지 선택하고 부모님 정보를 입력해주세요.</p>
+        <p className="text-sm text-blue-600">💙 누구의 청첩장인지 선택하고 부모님 정보를 입력해주세요.</p>
 
         {/* 혼주 선택 */}
         <div className="space-y-2">
@@ -117,7 +119,21 @@ export default function ParentsStep2Envelope({
 
         {/* 서명 */}
         <div className="space-y-1.5">
-          <Label className="text-xs">편지 서명</Label>
+          <div className="flex items-center justify-between">
+            <Label className="text-xs">편지 서명</Label>
+            <button
+              type="button"
+              className="text-[11px] text-blue-500 hover:text-blue-600 flex items-center gap-1"
+              onClick={() => {
+                const fatherName = data.sender.fatherName || '홍길동'
+                const motherName = data.sender.motherName || '김영희'
+                updateNestedData('sender.signature', `아버지 ${fatherName} · 어머니 ${motherName} 드림`)
+              }}
+            >
+              <Sparkles className="w-3 h-3" />
+              샘플입력
+            </button>
+          </div>
           <Input
             value={data.sender.signature}
             onChange={(e) => updateNestedData('sender.signature', e.target.value)}
@@ -134,7 +150,7 @@ export default function ParentsStep2Envelope({
           </div>
           신랑 · 신부
         </h3>
-        <p className="text-sm text-blue-600">💡 결혼하는 자녀와 양가 부모님 정보를 입력해주세요.</p>
+        <p className="text-sm text-blue-600">💙 결혼하는 자녀와 양가 부모님 정보를 입력해주세요.</p>
 
         {/* 신랑 */}
         <div className="space-y-3 p-3 bg-blue-50/50 rounded-lg">
@@ -223,7 +239,7 @@ export default function ParentsStep2Envelope({
           </div>
           봉투 메시지
         </h3>
-        <p className="text-sm text-blue-600">💡 청첩장 봉투에 표시될 메시지를 작성해주세요.</p>
+        <p className="text-sm text-blue-600">💙 청첩장 봉투에 표시될 메시지를 작성해주세요.</p>
 
         <div className="space-y-1.5">
           <Label className="text-xs">편지 메시지 (줄바꿈으로 구분)</Label>
@@ -253,7 +269,7 @@ export default function ParentsStep2Envelope({
           </div>
           공유 설정
         </h3>
-        <p className="text-sm text-blue-600">💡 카카오톡, 문자 등으로 청첩장을 공유할 때 표시되는 정보입니다.</p>
+        <p className="text-sm text-blue-600">💙 카카오톡, 문자 등으로 청첩장을 공유할 때 표시되는 정보입니다.</p>
 
         {/* 공유 제목 */}
         <div className="space-y-2">
@@ -282,50 +298,22 @@ export default function ParentsStep2Envelope({
         {/* 카카오톡 공유 썸네일 */}
         <div className="space-y-2 pt-3 border-t">
           <Label className="text-xs font-medium">카카오톡 공유 썸네일</Label>
-          <p className="text-xs text-blue-600">💡 권장 사이즈: 600 x 800px (3:4 세로 비율)</p>
+          <p className="text-xs text-blue-600">💙 권장 사이즈: 800 x 800px (1:1 정사각형)</p>
         </div>
 
         <div className="space-y-3">
-          {data.meta?.kakaoThumbnail ? (
-            <div className="relative max-w-[200px]">
-              <div
-                className="w-full aspect-[3/4] rounded-lg bg-cover bg-center border border-gray-200"
-                style={{ backgroundImage: `url(${data.meta.kakaoThumbnail})` }}
-              />
-              <button
-                type="button"
-                onClick={() => updateNestedData('meta.kakaoThumbnail', '')}
-                className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          ) : (
-            <label className="flex flex-col items-center justify-center max-w-[200px] aspect-[3/4] border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 relative">
-              <div className="flex flex-col items-center justify-center p-4">
-                <Upload className="w-8 h-8 mb-2 text-gray-400" />
-                <p className="text-xs text-gray-500 text-center">클릭하여 업로드</p>
-                <p className="text-xs text-gray-400 mt-1">600 x 800px</p>
-              </div>
-              <input
-                type="file"
-                className="hidden"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (file) {
-                    handleImageUpload(file, 'kakao-thumbnail', (url) => updateNestedData('meta.kakaoThumbnail', url))
-                    e.target.value = ''
-                  }
-                }}
-              />
-              {uploadingImages.has('kakao-thumbnail') && (
-                <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-lg">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
-                </div>
-              )}
-            </label>
-          )}
+          <ImageCropEditor
+            value={
+              typeof data.meta?.kakaoThumbnail === 'string'
+                ? { url: data.meta.kakaoThumbnail, cropX: 0, cropY: 0, cropWidth: 1, cropHeight: 1 }
+                : data.meta?.kakaoThumbnail || { url: '', cropX: 0, cropY: 0, cropWidth: 1, cropHeight: 1 }
+            }
+            onChange={(cropData) => updateNestedData('meta.kakaoThumbnail', cropData.url)}
+            aspectRatio={1}
+            containerWidth={200}
+            invitationId={invitationId || undefined}
+            label=""
+          />
         </div>
 
         <p className="text-xs text-gray-400">
@@ -336,7 +324,7 @@ export default function ParentsStep2Envelope({
         <div className="space-y-2 pt-4 border-t">
           <Label className="text-xs font-medium">링크 공유 썸네일 (OG 이미지)</Label>
           <p className="text-xs text-blue-600">
-            💡 권장 크기: 1200 x 630 픽셀 (가로형)<br />
+            💙 권장 크기: 1200 x 630 픽셀 (가로형)<br />
             카카오톡 이외의 플랫폼(문자, 인스타그램, 페이스북 등)에서 공유할 때 표시되는 이미지입니다.<br />
             카카오톡 썸네일과 다른 이미지를 사용하면 플랫폼별로 다른 미리보기를 보여줄 수 있어요.
           </p>

@@ -1,265 +1,186 @@
-'use client'
+import { getInvitationById, getGuestById, recordPageView, recordGuestView } from "@/lib/db";
+import { notFound } from "next/navigation";
+import { headers } from "next/headers";
+import InvitationClientPage from "./InvitationClientPage";
+import type { Metadata } from "next";
 
-import { useState, useEffect } from 'react'
-import { useParams, useSearchParams } from 'next/navigation'
-import ParentsInvitationView from '@/components/parents/ParentsInvitationView'
-import type { ParentsInvitationContent, GuestInfo } from '@/components/parents/types'
-
-interface InvitationData {
-  id: string
-  template_id: string | null
-  content: string | ParentsInvitationContent | null
-  is_paid?: number | boolean
+interface PageProps {
+  params: Promise<{ inviteId: string }>;
+  searchParams: Promise<{ preview?: string; guest?: string }>;
 }
 
-// 핸드폰 프레임 스타일
-const frameStyles = `
-  @media (min-width: 768px) {
-    .desktop-frame-wrapper {
-      min-height: 100vh;
-      background: linear-gradient(135deg, #f8f8f8 0%, #e8e8e8 100%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px 20px 40px;
-    }
+// 이미지 URL을 절대 경로로 변환
+function toAbsoluteImageUrl(imageUrl: string, baseUrl: string): string {
+  if (!imageUrl) return "";
+  // 이미 절대 URL인 경우 (http://, https://, //)
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://') || imageUrl.startsWith('//')) {
+    return imageUrl;
+  }
+  // 상대 경로인 경우 baseUrl 추가
+  if (imageUrl.startsWith('/')) {
+    return `${baseUrl}${imageUrl}`;
+  }
+  return `${baseUrl}/${imageUrl}`;
+}
 
-    .mobile-frame {
-      position: relative;
-      width: 390px;
-      min-height: 844px;
-      background: #1a1a1a;
-      border-radius: 50px;
-      padding: 12px;
-      box-shadow:
-        0 50px 100px rgba(0,0,0,0.25),
-        0 30px 60px rgba(0,0,0,0.15),
-        inset 0 0 0 2px rgba(255,255,255,0.1);
-    }
+// 메타데이터 생성
+export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
+  const { inviteId } = await params;
+  const { guest: guestId } = await searchParams;
+  const baseUrl = "https://invite.deardrawer.com";
 
-    .mobile-frame::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 150px;
-      height: 30px;
-      background: #1a1a1a;
-      border-radius: 0 0 20px 20px;
-      z-index: 10;
-    }
+  const invitation = await getInvitationById(inviteId);
 
-    .mobile-frame::after {
-      content: '';
-      position: absolute;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 80px;
-      height: 8px;
-      background: #333;
-      border-radius: 10px;
-      z-index: 11;
-    }
-
-    .mobile-frame-screen {
-      width: 100%;
-      height: 844px;
-      background: #fff;
-      border-radius: 40px;
-      overflow: hidden;
-      position: relative;
-      border: 8px solid #722F37;
-      box-sizing: border-box;
-    }
-
-    .mobile-frame-content {
-      width: 100%;
-      height: 100%;
-      overflow-y: auto;
-      overflow-x: hidden;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .mobile-frame-content::-webkit-scrollbar {
-      display: none;
-    }
-
-    .mobile-frame-content {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
+  if (!invitation) {
+    return {
+      title: "청첩장을 찾을 수 없습니다",
+    };
   }
 
-  @media (max-width: 767px) {
-    .desktop-frame-wrapper {
-      min-height: 100vh;
-    }
+  // content에서 메타 정보 추출
+  let customTitle = "";
+  let customDescription = "";
+  let rawThumbnailImage = "";
+  let senderName = "";
+  let receiverName = "";
 
-    .mobile-frame {
-      min-height: 100vh;
-    }
-
-    .mobile-frame-screen {
-      min-height: 100vh;
-    }
-
-    .mobile-frame-content {
-      min-height: 100vh;
-    }
-  }
-`
-
-export default function InvitationPage() {
-  const params = useParams()
-  const searchParams = useSearchParams()
-  const inviteId = params.inviteId as string
-  const guestId = searchParams.get('guest')
-  const isPreview = searchParams.get('preview') === 'true'
-
-  const [invitation, setInvitation] = useState<InvitationData | null>(null)
-  const [guestInfo, setGuestInfo] = useState<GuestInfo | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true)
-      setError(null)
-
-      try {
-        // 청첩장 정보 조회
-        const inviteRes = await fetch(`/api/invite/${inviteId}`)
-        if (!inviteRes.ok) {
-          throw new Error('청첩장을 찾을 수 없습니다')
-        }
-        const inviteData: { invitation?: unknown } = await inviteRes.json()
-        setInvitation(inviteData.invitation as typeof invitation)
-
-        // 게스트 정보 조회 (파라미터가 있는 경우)
-        if (guestId) {
-          const guestRes = await fetch(`/api/invite/${inviteId}/guest/${guestId}`)
-          if (guestRes.ok) {
-            const guestData: unknown = await guestRes.json()
-            setGuestInfo(guestData as typeof guestInfo)
-          }
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : '오류가 발생했습니다')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchData()
-  }, [inviteId, guestId])
-
-  // 로딩 화면
-  if (isLoading) {
-    return (
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: '#F5F3EE' }}
-      >
-        <div
-          className="w-10 h-10 border-2 rounded-full animate-spin"
-          style={{ borderColor: '#C9A962', borderTopColor: 'transparent' }}
-        />
-      </div>
-    )
-  }
-
-  // 에러 화면
-  if (error) {
-    return (
-      <div
-        className="min-h-screen flex items-center justify-center px-4"
-        style={{ backgroundColor: '#F5F3EE' }}
-      >
-        <div className="text-center">
-          <p className="text-lg mb-2" style={{ color: '#666' }}>
-            {error}
-          </p>
-        </div>
-      </div>
-    )
-  }
-
-  // content 파싱
-  let parsedContent: ParentsInvitationContent | null = null
-  if (invitation?.content) {
+  if (invitation.content) {
     try {
-      parsedContent = typeof invitation.content === 'string'
-        ? JSON.parse(invitation.content)
-        : invitation.content
+      const content = JSON.parse(invitation.content);
+      // 커스텀 제목/설명 (설정된 경우)
+      customTitle = content?.meta?.title || "";
+      customDescription = content?.meta?.description || "";
+      // 명시적으로 설정된 썸네일만 사용
+      rawThumbnailImage =
+        content?.meta?.kakaoThumbnail ||
+        content?.meta?.ogImage ||
+        content?.envelope?.thumbnailImage ||
+        "";
+      // 발신자/수신자 이름
+      senderName = content?.envelope?.senderName || "";
+      receiverName = content?.envelope?.receiverName || "";
     } catch (e) {
-      console.error('Failed to parse content:', e)
+      console.error("Failed to parse content for metadata:", e);
     }
   }
 
-  // content가 없는 경우
-  if (!parsedContent) {
-    return (
-      <div
-        className="min-h-screen flex items-center justify-center px-4"
-        style={{ backgroundColor: '#F5F3EE' }}
-      >
-        <div className="text-center">
-          <p className="text-lg mb-2" style={{ color: '#666' }}>
-            청첩장 내용을 불러올 수 없습니다
-          </p>
-        </div>
-      </div>
-    )
+  // 게스트 정보로 제목 커스텀
+  let guestName = "";
+  if (guestId) {
+    try {
+      const guest = await getGuestById(guestId);
+      if (guest && guest.invitation_id === invitation.id) {
+        guestName = guest.name || "";
+      }
+    } catch (e) {
+      console.error("Failed to fetch guest for metadata:", e);
+    }
   }
 
-  // 결제 상태 확인
-  const isPaid = invitation?.is_paid === 1 || invitation?.is_paid === true
+  // 이미지 URL을 절대 경로로 변환
+  const thumbnailImage = toAbsoluteImageUrl(rawThumbnailImage, baseUrl);
 
-  // Parents 템플릿으로 렌더링
+  // 기본 제목/설명 생성
+  const groomName = invitation.groom_name || senderName || "신랑";
+  const brideName = invitation.bride_name || receiverName || "신부";
+
+  // 게스트 이름이 있으면 포함
+  let title = customTitle;
+  if (!title) {
+    if (guestName) {
+      title = `${guestName}님께 보내는 청첩장`;
+    } else {
+      title = `${groomName} ♥ ${brideName} 결혼합니다`;
+    }
+  }
+
+  const description = customDescription || invitation.greeting_message || "소중한 분들을 결혼식에 초대합니다";
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      url: `${baseUrl}/invite/${inviteId}${guestId ? `?guest=${guestId}` : ''}`,
+      siteName: "dear drawer - 모바일 청첩장",
+      locale: "ko_KR",
+      ...(thumbnailImage && {
+        images: [
+          {
+            url: thumbnailImage,
+            width: 800,
+            height: 800,
+            alt: title,
+          },
+        ],
+      }),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      ...(thumbnailImage && { images: [thumbnailImage] }),
+    },
+  };
+}
+
+export default async function InvitationPage({ params, searchParams }: PageProps) {
+  const { inviteId } = await params;
+  const { guest: guestId } = await searchParams;
+
+  const invitation = await getInvitationById(inviteId);
+
+  if (!invitation) {
+    notFound();
+  }
+
+  // 게스트 정보 조회 (guest 파라미터가 있는 경우)
+  let guestInfo = null;
+  if (guestId) {
+    try {
+      const guest = await getGuestById(guestId);
+      // 게스트가 이 청첩장에 속하는지 확인
+      if (guest && guest.invitation_id === invitation.id) {
+        guestInfo = {
+          id: guest.id,
+          name: guest.name,
+          relation: guest.relation || undefined,
+          honorific: guest.honorific || undefined,
+          custom_message: guest.custom_message || undefined,
+        };
+        // 게스트 열람 기록
+        await recordGuestView(guestId);
+      }
+    } catch (e) {
+      console.error("Failed to fetch guest info:", e);
+    }
+  }
+
+  // 페이지 조회 기록
+  const headersList = await headers();
+  const visitorIp = headersList.get("x-forwarded-for") || headersList.get("x-real-ip") || "unknown";
+  const userAgent = headersList.get("user-agent") || undefined;
+
+  try {
+    await recordPageView(invitation.id, visitorIp, userAgent);
+  } catch (e) {
+    console.error("Failed to record page view:", e);
+  }
+
+  // 초기 데이터를 클라이언트 컴포넌트에 전달
+  const initialInvitation = {
+    id: invitation.id,
+    template_id: invitation.template_id,
+    content: invitation.content,
+    is_paid: invitation.is_paid,
+  };
+
   return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: frameStyles }} />
-      <div className="desktop-frame-wrapper">
-        {/* 결제 안내 배너 - 핸드폰 프레임 밖 상단 */}
-        {!isPaid && !isPreview && (
-          <div
-            style={{
-              width: '100%',
-              maxWidth: '390px',
-              marginBottom: '16px',
-              padding: '12px 16px',
-              backgroundColor: 'rgba(0, 0, 0, 0.9)',
-              borderRadius: '12px',
-              textAlign: 'center',
-            }}
-          >
-            <span
-              style={{
-                color: 'rgba(255, 255, 255, 0.95)',
-                fontSize: '13px',
-                fontWeight: 500,
-              }}
-            >
-              결제 후 워터마크가 제거됩니다
-            </span>
-          </div>
-        )}
-        <div className="mobile-frame">
-          <div className="mobile-frame-screen">
-            <div className="mobile-frame-content">
-              <ParentsInvitationView
-                data={parsedContent}
-                guestInfo={guestInfo}
-                isPreview={false}
-                isPaid={isPaid || isPreview}
-                hideInternalFrame={true}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
-  )
+    <InvitationClientPage
+      initialInvitation={initialInvitation}
+      initialGuestInfo={guestInfo}
+    />
+  );
 }

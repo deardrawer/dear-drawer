@@ -56,17 +56,18 @@ export default function InlineCropEditor({
         // 처음 크롭 데이터가 없으면 초기화
         if (settings.cropWidth === undefined || settings.cropHeight === undefined) {
           const imgAspect = img.naturalWidth / img.naturalHeight
+          const maxInitSize = 0.98 // 최대 크기 제한 (항상 이동 여유 확보)
           let cW, cH, cX, cY
 
           if (imgAspect > aspectRatio) {
-            cH = 1
-            cW = (aspectRatio * img.naturalHeight) / img.naturalWidth
+            cH = maxInitSize
+            cW = Math.min(maxInitSize, (aspectRatio * img.naturalHeight) / img.naturalWidth)
             cX = (1 - cW) / 2
-            cY = 0
+            cY = (1 - cH) / 2
           } else {
-            cW = 1
-            cH = img.naturalWidth / (aspectRatio * img.naturalHeight)
-            cX = 0
+            cW = maxInitSize
+            cH = Math.min(maxInitSize, img.naturalWidth / (aspectRatio * img.naturalHeight))
+            cX = (1 - cW) / 2
             cY = (1 - cH) / 2
           }
 
@@ -117,6 +118,7 @@ export default function InlineCropEditor({
     let newCropH = dragStart.cropH
 
     const minSize = 0.2
+    const maxSize = 0.98 // 최대 크기 제한 (항상 2%의 이동 여유 확보)
     const imgAspect = imageSize.width / imageSize.height
     const targetAspect = aspectRatio / imgAspect
 
@@ -127,55 +129,71 @@ export default function InlineCropEditor({
       const diagonal = (dx + dy) / 2
 
       if (dragType === 'se') {
-        newCropW = Math.max(minSize, Math.min(1 - dragStart.cropX, dragStart.cropW + diagonal))
+        newCropW = Math.max(minSize, Math.min(Math.min(maxSize, 1 - dragStart.cropX), dragStart.cropW + diagonal))
         newCropH = newCropW / targetAspect
+        if (newCropH > maxSize) {
+          newCropH = maxSize
+          newCropW = newCropH * targetAspect
+        }
         if (dragStart.cropY + newCropH > 1) {
-          newCropH = 1 - dragStart.cropY
+          newCropH = Math.min(maxSize, 1 - dragStart.cropY)
           newCropW = newCropH * targetAspect
         }
       } else if (dragType === 'sw') {
         const delta = (-dx + dy) / 2
-        newCropW = Math.max(minSize, dragStart.cropW + delta)
+        newCropW = Math.max(minSize, Math.min(maxSize, dragStart.cropW + delta))
         newCropH = newCropW / targetAspect
+        if (newCropH > maxSize) {
+          newCropH = maxSize
+          newCropW = newCropH * targetAspect
+        }
         const oldRight = dragStart.cropX + dragStart.cropW
         newCropX = oldRight - newCropW
         if (newCropX < 0) {
           newCropX = 0
-          newCropW = oldRight
+          newCropW = Math.min(maxSize, oldRight)
           newCropH = newCropW / targetAspect
         }
         if (dragStart.cropY + newCropH > 1) {
-          newCropH = 1 - dragStart.cropY
+          newCropH = Math.min(maxSize, 1 - dragStart.cropY)
           newCropW = newCropH * targetAspect
           newCropX = oldRight - newCropW
         }
       } else if (dragType === 'ne') {
         const delta = (dx - dy) / 2
-        newCropW = Math.max(minSize, Math.min(1 - dragStart.cropX, dragStart.cropW + delta))
+        newCropW = Math.max(minSize, Math.min(Math.min(maxSize, 1 - dragStart.cropX), dragStart.cropW + delta))
         newCropH = newCropW / targetAspect
+        if (newCropH > maxSize) {
+          newCropH = maxSize
+          newCropW = newCropH * targetAspect
+        }
         const oldBottom = dragStart.cropY + dragStart.cropH
         newCropY = oldBottom - newCropH
         if (newCropY < 0) {
           newCropY = 0
-          newCropH = oldBottom
+          newCropH = Math.min(maxSize, oldBottom)
           newCropW = newCropH * targetAspect
         }
       } else if (dragType === 'nw') {
-        newCropW = Math.max(minSize, dragStart.cropW - diagonal)
+        newCropW = Math.max(minSize, Math.min(maxSize, dragStart.cropW - diagonal))
         newCropH = newCropW / targetAspect
+        if (newCropH > maxSize) {
+          newCropH = maxSize
+          newCropW = newCropH * targetAspect
+        }
         const oldRight = dragStart.cropX + dragStart.cropW
         const oldBottom = dragStart.cropY + dragStart.cropH
         newCropX = oldRight - newCropW
         newCropY = oldBottom - newCropH
         if (newCropX < 0) {
           newCropX = 0
-          newCropW = oldRight
+          newCropW = Math.min(maxSize, oldRight)
           newCropH = newCropW / targetAspect
           newCropY = oldBottom - newCropH
         }
         if (newCropY < 0) {
           newCropY = 0
-          newCropH = oldBottom
+          newCropH = Math.min(maxSize, oldBottom)
           newCropW = newCropH * targetAspect
           newCropX = oldRight - newCropW
         }
@@ -217,17 +235,18 @@ export default function InlineCropEditor({
     if (!imageSize.width || !imageSize.height) return
 
     const imgAspect = imageSize.width / imageSize.height
+    const maxResetSize = 0.98 // 최대 크기 제한 (항상 이동 여유 확보)
     let cW, cH, cX, cY
 
     if (imgAspect > aspectRatio) {
-      cH = 1
-      cW = (aspectRatio * imageSize.height) / imageSize.width
+      cH = maxResetSize
+      cW = Math.min(maxResetSize, (aspectRatio * imageSize.height) / imageSize.width)
       cX = (1 - cW) / 2
-      cY = 0
+      cY = (1 - cH) / 2
     } else {
-      cW = 1
-      cH = imageSize.width / (aspectRatio * imageSize.height)
-      cX = 0
+      cW = maxResetSize
+      cH = Math.min(maxResetSize, imageSize.width / (aspectRatio * imageSize.height))
+      cX = (1 - cW) / 2
       cY = (1 - cH) / 2
     }
 

@@ -21,7 +21,7 @@ const COLOR_THEMES = [
 const FONT_STYLES = [
   { id: 'classic', name: '클래식', sample: '우리 결혼합니다', fontFamily: "'Ridibatang', serif", desc: '정갈한 바탕체' },
   { id: 'modern', name: '모던', sample: '우리 결혼합니다', fontFamily: "'Pretendard', sans-serif", desc: '세련된 산세리프체' },
-  { id: 'romantic', name: '로맨틱', sample: '우리 결혼합니다', fontFamily: "'OmuDaye', sans-serif", desc: '귀여운 손글씨체' },
+  { id: 'romantic', name: '손글씨', sample: '우리 결혼합니다', fontFamily: "'Okticon', serif", desc: 'okticon' },
   { id: 'contemporary', name: '컨템포러리', sample: '우리 결혼합니다', fontFamily: "'JeonnamEducationBarun', sans-serif", desc: '깔끔한 바른체' },
   { id: 'luxury', name: '포멀', sample: '우리 결혼합니다', fontFamily: "'ELandChoice', serif", desc: '고급스러운 명조체' },
 ] as const
@@ -76,7 +76,7 @@ export default function Step2Style({ templateId }: Step2StyleProps) {
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
           ✒️ 폰트 스타일
         </h3>
-        <p className="text-sm text-blue-600">💡 텍스트의 글꼴을 선택해주세요.</p>
+        <p className="text-sm text-blue-600">💙 텍스트의 글꼴을 선택해주세요.</p>
 
         <div className="grid grid-cols-1 gap-2">
           {FONT_STYLES.map((font) => {
@@ -121,7 +121,7 @@ export default function Step2Style({ templateId }: Step2StyleProps) {
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
           🎨 색상 테마
         </h3>
-        <p className="text-sm text-blue-600">💡 청첩장의 전체적인 색상 분위기를 선택해주세요.</p>
+        <p className="text-sm text-blue-600">💙 청첩장의 전체적인 색상 분위기를 선택해주세요.</p>
 
         <div className="grid grid-cols-3 gap-3">
           {COLOR_THEMES.map((theme) => {
@@ -163,7 +163,7 @@ export default function Step2Style({ templateId }: Step2StyleProps) {
           />
         </div>
         <p className="text-sm text-blue-600">
-          💡 스토리에 어울리는 배경음악을 선택해주세요.<br />
+          💙 스토리에 어울리는 배경음악을 선택해주세요.<br />
           <span className="text-amber-600">⚠️ 브라우저 정책에 따라 자동재생 기능이 동작하지 않을 수 있습니다.</span>
         </p>
 

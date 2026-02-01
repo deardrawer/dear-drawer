@@ -1021,19 +1021,19 @@ export async function createDefaultGreetingTemplates(invitationId: string): Prom
   const defaultTemplates = [
     {
       name: '기본형',
-      content: '항상 저희 가족을 챙겨주셔서 감사합니다.\n\n저희 아이가 좋은 사람을 만나 결혼하게 되었습니다.\n\n꼭 오셔서 축복해 주세요.',
+      content: '항상 저희 가족을 챙겨주셔서 감사합니다.\n저희 아이가 좋은 사람을 만나 결혼하게 되었습니다.\n꼭 오셔서 축복해 주세요.',
       is_default: true,
       sort_order: 0,
     },
     {
       name: '친척용',
-      content: '늘 따뜻하게 보살펴 주셔서 감사합니다.\n\n저희 집안의 경사를 함께 나누고 싶어 이렇게 초대합니다.\n\n바쁘시더라도 꼭 참석해 주시면 감사하겠습니다.',
+      content: '늘 따뜻하게 보살펴 주셔서 감사합니다.\n저희 집안의 경사를 함께 나누고 싶어 이렇게 초대합니다.\n바쁘시더라도 꼭 참석해 주시면 감사하겠습니다.',
       is_default: false,
       sort_order: 1,
     },
     {
       name: '직장용',
-      content: '항상 좋은 인연으로 함께해 주셔서 감사합니다.\n\n저희 자녀의 결혼식에 초대합니다.\n\n귀한 시간 내어 자리를 빛내 주시면 감사하겠습니다.',
+      content: '항상 좋은 인연으로 함께해 주셔서 감사합니다.\n저희 자녀의 결혼식에 초대합니다.\n귀한 시간 내어 자리를 빛내 주시면 감사하겠습니다.',
       is_default: false,
       sort_order: 2,
     },

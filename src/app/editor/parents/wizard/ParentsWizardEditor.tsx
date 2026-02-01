@@ -28,8 +28,10 @@ interface ParentsWizardEditorProps {
   invitationId: string | null
   selectedGuest?: { name: string; honorific: string; relation?: string; intro_greeting?: string; custom_message?: string } | null
   onSelectGuest?: (guest: { name: string; honorific: string; relation?: string; intro_greeting?: string; custom_message?: string } | null) => void
-  onPublish?: (slug: string) => Promise<void>
+  slug?: string | null
+  onSave?: () => Promise<void>
   onStepChange?: (step: ParentsWizardStep) => void
+  setActiveSection?: (section: string | null) => void
 }
 
 export default function ParentsWizardEditor({
@@ -39,8 +41,10 @@ export default function ParentsWizardEditor({
   invitationId,
   selectedGuest,
   onSelectGuest,
-  onPublish,
+  slug,
+  onSave,
   onStepChange,
+  setActiveSection,
 }: ParentsWizardEditorProps) {
   const [currentStep, setCurrentStep] = useState<ParentsWizardStep>(1)
   const [completedSteps, setCompletedSteps] = useState<ParentsWizardStep[]>([])
@@ -117,9 +121,9 @@ export default function ParentsWizardEditor({
       case 2:
         return <ParentsStep2Envelope {...commonProps} />
       case 3:
-        return <ParentsStep3Content {...commonProps} />
+        return <ParentsStep3Content {...commonProps} setActiveSection={setActiveSection} />
       case 4:
-        return <ParentsStep4Publish {...commonProps} onPublish={onPublish} />
+        return <ParentsStep4Publish {...commonProps} slug={slug} onSave={onSave} />
       case 5:
         return (
           <ParentsStep5Guests

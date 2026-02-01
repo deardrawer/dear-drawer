@@ -952,15 +952,15 @@ const globalStyles = `
     }
   }
 
-  /* OmuDaye Font for Romantic Style */
+  /* Okticon Font for Romantic Style */
   @font-face {
-    font-family: 'OmuDaye';
-    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2304-01@1.0/omyu_pretty.woff2') format('woff2');
-    font-weight: normal;
+    font-family: 'Okticon';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408@1.0/Ownglyph_okticon-Bd.woff2') format('woff2');
+    font-weight: 700;
     font-display: swap;
   }
 
-  /* OmuDaye 폰트 크기 보정 */
+  /* 로맨틱 폰트 크기 보정 */
   .font-romantic .text-\[11px\] { font-size: 12px !important; }
   .font-romantic .text-\[13px\] { font-size: 14px !important; }
   .font-romantic .text-xs { font-size: 13px !important; }
@@ -1633,7 +1633,7 @@ function ParentIntroSection({
           <StaggeredText text={parentNames} isVisible={isVisible} delay={0.2} charDelay={0.04} />
         </p>
         <p
-          className="typo-title font-semibold"
+          className="typo-title font-light"
           style={{ color: themeColors.text, fontFamily: fonts.body }}
         >
           <StaggeredText text={`${childOrder === '표기안함' ? '' : childOrder + ' '}${sideLabel}, `} isVisible={isVisible} delay={0.8} charDelay={0.05} />
@@ -1733,7 +1733,7 @@ function WhyWeChoseTitleSection({
       style={{ background: '#ffffff', paddingTop: '64px' }}
     >
       <h2
-        className="typo-title font-semibold mb-2"
+        className="typo-title font-light mb-2"
         style={{
           color: themeColors.text,
           fontFamily: fonts.displayKr,
@@ -2147,7 +2147,7 @@ function InterviewSection({
           }}
         >
           <p
-            className={`profile-label-animated typo-body font-semibold inline-block ${titleRevealed ? 'revealed' : ''}`}
+            className={`profile-label-animated typo-body font-light inline-block ${titleRevealed ? 'revealed' : ''}`}
             style={{ fontFamily: fonts.displayKr, color: themeColors.text }}
           >
             {interview.question}
@@ -2215,7 +2215,7 @@ function StorySection({
 
       {story.title && (
         <p
-          className="story-title font-semibold"
+          className="story-title font-light"
           style={{
             fontFamily: fonts.displayKr,
             fontSize: '15px',
@@ -2347,14 +2347,14 @@ function AnniversaryCounterSection({
 
 // Color themes
 type ColorTheme = 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-green' | 'luxury-navy' | 'sunset-coral'
-interface ColorConfig { primary: string; secondary: string; accent: string; background: string; sectionBg: string; cardBg: string; divider: string; text: string; gray: string }
+interface ColorConfig { primary: string; secondary: string; accent: string; background: string; sectionBg: string; cardBg: string; divider: string; text: string; gray: string; highlight?: string }
 
 const colorThemes: Record<ColorTheme, ColorConfig> = {
   'classic-rose': { primary: '#C41050', secondary: '#B8956A', accent: '#B8956A', background: '#FFF8F5', sectionBg: '#FFE8E8', cardBg: '#FFFFFF', divider: '#d4b896', text: '#2a2a2a', gray: '#444444' },
-  'modern-black': { primary: '#111111', secondary: '#555555', accent: '#111111', background: '#FFFFFF', sectionBg: '#F5F5F5', cardBg: '#FFFFFF', divider: '#CCCCCC', text: '#2a2a2a', gray: '#444444' },
+  'modern-black': { primary: '#111111', secondary: '#555555', accent: '#111111', background: '#FFFFFF', sectionBg: '#F5F5F5', cardBg: '#FFFFFF', divider: '#CCCCCC', text: '#2a2a2a', gray: '#444444', highlight: '#888888' },
   'romantic-blush': { primary: '#A67A7A', secondary: '#8a7068', accent: '#8a7068', background: '#FDF8F6', sectionBg: '#F8EFEC', cardBg: '#FFFFFF', divider: '#D4C4BC', text: '#2a2a2a', gray: '#444444' },
-  'nature-green': { primary: '#3A5A3A', secondary: '#6A7A62', accent: '#5A7A52', background: '#F5F7F4', sectionBg: '#EBF0E8', cardBg: '#FFFFFF', divider: '#A8B5A0', text: '#2a2a2a', gray: '#444444' },
-  'luxury-navy': { primary: '#0f2035', secondary: '#8A6A3A', accent: '#8A6A3A', background: '#F8F9FA', sectionBg: '#E8ECF0', cardBg: '#FFFFFF', divider: '#C9A96E', text: '#2a2a2a', gray: '#444444' },
+  'nature-green': { primary: '#3A5A3A', secondary: '#6A7A62', accent: '#5A7A52', background: '#F5F7F4', sectionBg: '#EBF0E8', cardBg: '#FFFFFF', divider: '#A8B5A0', text: '#2a2a2a', gray: '#444444', highlight: '#5A8A52' },
+  'luxury-navy': { primary: '#0f2035', secondary: '#8A6A3A', accent: '#8A6A3A', background: '#F8F9FA', sectionBg: '#E8ECF0', cardBg: '#FFFFFF', divider: '#C9A96E', text: '#2a2a2a', gray: '#444444', highlight: '#8A6A3A' },
   'sunset-coral': { primary: '#B85040', secondary: '#B88060', accent: '#B8683A', background: '#FFFAF7', sectionBg: '#FFEEE5', cardBg: '#FFFFFF', divider: '#E8A87C', text: '#2a2a2a', gray: '#444444' },
 }
 
@@ -2365,7 +2365,7 @@ interface FontConfig { display: string; displayKr: string; body: string }
 const fontStyles: Record<FontStyle, FontConfig> = {
   classic: { display: "'Playfair Display', serif", displayKr: "'Ridibatang', serif", body: "'Ridibatang', serif" },
   modern: { display: "'Montserrat', sans-serif", displayKr: "'Pretendard', sans-serif", body: "'Pretendard', sans-serif" },
-  romantic: { display: "'Lora', serif", displayKr: "'OmuDaye', sans-serif", body: "'OmuDaye', sans-serif" },
+  romantic: { display: "'Lora', serif", displayKr: "'Okticon', serif", body: "'Okticon', serif" },
   contemporary: { display: "'Cinzel', serif", displayKr: "'JeonnamEducationBarun', sans-serif", body: "'JeonnamEducationBarun', sans-serif" },
   luxury: { display: "'EB Garamond', serif", displayKr: "'ELandChoice', serif", body: "'ELandChoice', serif" },
 }
@@ -2577,10 +2577,10 @@ const mockInvitation = {
 
   // Guidance section
   guidance: {
-    enabled: false,
+    enabled: true,
     title: '행복한 시간을 위한 안내',
     content: '',
-    image: '',
+    image: '/sample/info.png',
     imageSettings: { scale: 1, positionX: 0, positionY: 0 },
   },
 }
@@ -3012,32 +3012,28 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
 
         {/* Greeting Section */}
         <div className="greeting-section mb-11">
-          <p className="typo-body" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: invitation.content.greeting ? parseHighlight(invitation.content.greeting) : '인사말을 입력해주세요' }} />
+          <p className="text-[13px] font-light leading-[2.1]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: invitation.content.greeting ? parseHighlight(invitation.content.greeting) : '인사말을 입력해주세요' }} />
         </div>
 
         {/* Parents Info */}
         <div className="parents-section mb-9 text-center" style={{ fontFamily: fonts.displayKr }}>
           {(invitation.groom.father.name || invitation.groom.mother.name) && (
-          <div className="mb-1">
-            <p className="typo-caption" style={{ color: themeColors.text }}>
+          <div className="mb-3">
+            <p className="text-[11px] font-light leading-[2]" style={{ color: themeColors.text }}>
               {invitation.groom.father.name && <><ParentName name={invitation.groom.father.name} deceased={invitation.groom.father.deceased} displayStyle={invitation.deceasedDisplayStyle as 'hanja' | 'flower'} />{invitation.groom.mother.name && ' · '}</>}
               {invitation.groom.mother.name && <ParentName name={invitation.groom.mother.name} deceased={invitation.groom.mother.deceased} displayStyle={invitation.deceasedDisplayStyle as 'hanja' | 'flower'} />}
               <span style={{ color: themeColors.gray }}> 의 아들 </span>
-              <span style={{ color: themeColors.primary, fontWeight: 500 }}>{invitation.groom.name?.slice(1)}</span>
+              <span style={{ color: themeColors.highlight || themeColors.primary, fontWeight: 500 }}>{invitation.groom.name?.slice(1)}</span>
             </p>
           </div>
           )}
-          {/* Heart */}
-          <div className="my-2">
-            <span style={{ color: themeColors.primary, fontSize: '12px' }}>♥</span>
-          </div>
           {(invitation.bride.father.name || invitation.bride.mother.name) && (
           <div>
-            <p className="typo-caption" style={{ color: themeColors.text }}>
+            <p className="text-[11px] font-light leading-[2]" style={{ color: themeColors.text }}>
               {invitation.bride.father.name && <><ParentName name={invitation.bride.father.name} deceased={invitation.bride.father.deceased} displayStyle={invitation.deceasedDisplayStyle as 'hanja' | 'flower'} />{invitation.bride.mother.name && ' · '}</>}
               {invitation.bride.mother.name && <ParentName name={invitation.bride.mother.name} deceased={invitation.bride.mother.deceased} displayStyle={invitation.deceasedDisplayStyle as 'hanja' | 'flower'} />}
               <span style={{ color: themeColors.gray }}> 의 딸 </span>
-              <span style={{ color: themeColors.primary, fontWeight: 500 }}>{invitation.bride.name?.slice(1)}</span>
+              <span style={{ color: themeColors.highlight || themeColors.primary, fontWeight: 500 }}>{invitation.bride.name?.slice(1)}</span>
             </p>
           </div>
           )}
@@ -3343,15 +3339,9 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
   return (
     <SectionHighlightContext.Provider value={{ activeSection, registerSection }}>
     <div className="relative">
-      {/* Title Section - FAMILY 템플릿: 항상 FullHeightDividerSection 사용 */}
+      {/* Title Section - FAMILY 템플릿 */}
       <div className="relative">
         {audioRef && <MusicToggle audioRef={audioRef} isVisible={showMusicToggle ?? false} shouldAutoPlay={shouldAutoPlay ?? false} />}
-        <FullHeightDividerSection
-          englishTitle={(invitation as any).fullHeightDividers?.items?.[0]?.englishTitle || 'From Our Family to Yours'}
-          koreanText={(invitation as any).fullHeightDividers?.items?.[0]?.koreanText || '우리의 봄이, 누군가의 평생이 됩니다'}
-          image={(invitation as any).fullHeightDividers?.items?.[0]?.image}
-          imageSettings={(invitation as any).fullHeightDividers?.items?.[0]?.imageSettings}
-        />
       </div>
 
       {/* 신랑측 부모님 소개 */}
@@ -3390,13 +3380,13 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
         />
       )}
 
-      {/* Our Story Title Section - FAMILY 템플릿: 신부 부모님 소개 아래 */}
-      {invitation.sectionVisibility?.ourStory !== false && invitation.relationship.stories.some(s => s.title || s.desc) && (
+      {/* 첫 번째 디바이더 - 부모님 소개 섹션 하단 (부모님 소개 중 하나라도 켜져 있으면 표시) */}
+      {((invitation as any).parentIntro?.groom?.enabled !== false || (invitation as any).parentIntro?.bride?.enabled !== false) && (
         <FullHeightDividerSection
-          englishTitle={(invitation as any).fullHeightDividers?.items?.[1]?.englishTitle || 'Why We Chose Each Other for Life'}
-          koreanText={(invitation as any).fullHeightDividers?.items?.[1]?.koreanText || '서로의 부족한 점을 채워줄 수 있는\n사람을 만났습니다.'}
-          image={(invitation as any).fullHeightDividers?.items?.[1]?.image}
-          imageSettings={(invitation as any).fullHeightDividers?.items?.[1]?.imageSettings}
+          englishTitle={(invitation as any).fullHeightDividers?.items?.[0]?.englishTitle || 'From Our Family to Yours'}
+          koreanText={(invitation as any).fullHeightDividers?.items?.[0]?.koreanText || '우리의 봄이, 누군가의 평생이 됩니다'}
+          image={(invitation as any).fullHeightDividers?.items?.[0]?.image}
+          imageSettings={(invitation as any).fullHeightDividers?.items?.[0]?.imageSettings}
         />
       )}
 
@@ -3448,13 +3438,13 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
         </>
       )}
 
-      {/* Interview Title Section - FAMILY 템플릿: 서로를 선택한 이유 아래 */}
-      {invitation.sectionVisibility?.interview !== false && invitation.content.interviews.some(i => i.question || i.answer) && (
+      {/* 두 번째 디바이더 - 서로를 선택한 이유 섹션 하단 (whyWeChose 섹션이 켜져 있으면 표시) */}
+      {(invitation as any).whyWeChose?.enabled !== false && (
         <FullHeightDividerSection
-          englishTitle={(invitation as any).fullHeightDividers?.items?.[2]?.englishTitle || 'Our way to marriage'}
-          koreanText={(invitation as any).fullHeightDividers?.items?.[2]?.koreanText || '같은 시간, 같은 마음으로\n하나의 계절을 준비하고 있습니다.'}
-          image={(invitation as any).fullHeightDividers?.items?.[2]?.image}
-          imageSettings={(invitation as any).fullHeightDividers?.items?.[2]?.imageSettings}
+          englishTitle={(invitation as any).fullHeightDividers?.items?.[1]?.englishTitle || 'Why We Chose Each Other for Life'}
+          koreanText={(invitation as any).fullHeightDividers?.items?.[1]?.koreanText || '서로의 부족한 점을 채워줄 수 있는\n사람을 만났습니다.'}
+          image={(invitation as any).fullHeightDividers?.items?.[1]?.image}
+          imageSettings={(invitation as any).fullHeightDividers?.items?.[1]?.imageSettings}
         />
       )}
 
@@ -3479,6 +3469,16 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
           ))}
         </div>
       </AnimatedSection>
+
+      {/* 세 번째 디바이더 - 갤러리 섹션 하단 (갤러리에 이미지가 있으면 표시) */}
+      {invitation.gallery.images && invitation.gallery.images.length > 0 && (
+        <FullHeightDividerSection
+          englishTitle={(invitation as any).fullHeightDividers?.items?.[2]?.englishTitle || 'Our way to marriage'}
+          koreanText={(invitation as any).fullHeightDividers?.items?.[2]?.koreanText || '같은 시간, 같은 마음으로\n하나의 계절을 준비하고 있습니다.'}
+          image={(invitation as any).fullHeightDividers?.items?.[2]?.image}
+          imageSettings={(invitation as any).fullHeightDividers?.items?.[2]?.imageSettings}
+        />
+      )}
 
       {/* Interview Items - with visibility toggle */}
       {invitation.sectionVisibility?.interview !== false && invitation.content.interviews.map((interview, index) => interview.question || interview.answer ? (
@@ -3540,7 +3540,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
         {/* Section Title */}
         <AnimatedSection className="text-center mb-8">
           <h3
-            className="text-[15px] font-semibold relative inline-block"
+            className="text-[15px] font-light relative inline-block"
             style={{ fontFamily: fonts.displayKr, color: themeColors.text }}
           >
             행복한 시간을 위한 안내

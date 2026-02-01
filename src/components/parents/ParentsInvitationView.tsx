@@ -201,6 +201,7 @@ export default function ParentsInvitationView({
                 weddingTimeDisplay={data.wedding.timeDisplay || 'Saturday, 4pm'}
               />
               <SectionDivider />
+              <div id="preview-venue">
               <VenueSection
                 venue={{
                   name: data.wedding.venue.name || '예식장',
@@ -225,6 +226,7 @@ export default function ParentsInvitationView({
                   } : undefined,
                 }}
               />
+              </div>
             </div>
             <div id="preview-weddingInfo">
               <SectionDivider />

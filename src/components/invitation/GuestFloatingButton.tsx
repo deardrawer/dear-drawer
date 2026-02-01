@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 
 type ModalType = 'none' | 'contact' | 'rsvp' | 'location' | 'account' | 'share'
 type DirectionsTab = 'car' | 'publicTransport' | 'train' | 'expressBus'
@@ -46,6 +46,7 @@ interface GuestFloatingButtonProps {
   openModal?: ModalType
   onModalClose?: () => void
   showTooltip?: boolean
+  scrollContainerRef?: React.RefObject<HTMLDivElement | null>
   invitation: {
     venue_name?: string
     venue_address?: string
@@ -65,12 +66,13 @@ interface GuestFloatingButtonProps {
   }
 }
 
-export default function GuestFloatingButton({ themeColors, fonts, invitation, openModal: externalOpenModal, onModalClose, showTooltip = false }: GuestFloatingButtonProps) {
+export default function GuestFloatingButton({ themeColors, fonts, invitation, openModal: externalOpenModal, onModalClose, showTooltip = false, scrollContainerRef }: GuestFloatingButtonProps) {
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false)
   const [activeModal, setActiveModal] = useState<ModalType>('none')
   const [directionsTab, setDirectionsTab] = useState<DirectionsTab>('car')
   const [rsvpForm, setRsvpForm] = useState({ name: '', attendance: '', guestCount: 1, message: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const scrollPositionRef = useRef(0)
 
   // 외부에서 모달 열기
   useEffect(() => {
@@ -79,14 +81,58 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
     }
   }, [externalOpenModal])
 
-  const openModal = (modal: ModalType) => {
+  // 스크롤 위치 저장 함수
+  const saveScrollPosition = useCallback(() => {
+    const container = scrollContainerRef?.current
+    scrollPositionRef.current = container ? container.scrollTop : window.scrollY
+  }, [scrollContainerRef])
+
+  // 스크롤 위치 복원 함수
+  const restoreScrollPosition = useCallback(() => {
+    const container = scrollContainerRef?.current
+    if (container) {
+      container.scrollTop = scrollPositionRef.current
+    } else {
+      window.scrollTo(0, scrollPositionRef.current)
+    }
+  }, [scrollContainerRef])
+
+  // 바텀시트 열기 (스크롤 위치 먼저 저장)
+  const handleOpenBottomSheet = useCallback(() => {
+    saveScrollPosition()
+    setIsBottomSheetOpen(true)
+    // 렌더링 후 스크롤 복원
+    requestAnimationFrame(restoreScrollPosition)
+    setTimeout(restoreScrollPosition, 50)
+    setTimeout(restoreScrollPosition, 100)
+  }, [saveScrollPosition, restoreScrollPosition])
+
+  // 바텀시트 닫기 (스크롤 위치 복원)
+  const handleCloseBottomSheet = useCallback(() => {
     setIsBottomSheetOpen(false)
-    setTimeout(() => setActiveModal(modal), 200)
+    // 닫힌 후 스크롤 복원
+    requestAnimationFrame(restoreScrollPosition)
+    setTimeout(restoreScrollPosition, 50)
+  }, [restoreScrollPosition])
+
+  const openModal = (modal: ModalType) => {
+    // 스크롤 위치 다시 저장 (바텀시트 열린 동안 스크롤이 변경되었을 수 있음)
+    saveScrollPosition()
+    setIsBottomSheetOpen(false)
+    setTimeout(() => {
+      setActiveModal(modal)
+      // 모달 열린 후 스크롤 복원
+      requestAnimationFrame(restoreScrollPosition)
+      setTimeout(restoreScrollPosition, 50)
+    }, 200)
   }
 
   const closeModal = () => {
     setActiveModal('none')
     onModalClose?.()
+    // 모달 닫힌 후 스크롤 복원
+    requestAnimationFrame(restoreScrollPosition)
+    setTimeout(restoreScrollPosition, 50)
   }
 
   const copyToClipboard = (text: string) => {
@@ -278,7 +324,7 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
 
         {/* 햄버거 메뉴 버튼 */}
         <button
-          onClick={() => setIsBottomSheetOpen(true)}
+          onClick={handleOpenBottomSheet}
           className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-105 active:scale-95"
           style={{ background: themeColors.cardBg, boxShadow: '0 4px 12px rgba(0,0,0,0.12)' }}
         >
@@ -293,7 +339,7 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
       {/* Bottom Sheet */}
       {isBottomSheetOpen && (
         <>
-          <div className="fixed inset-0 bg-black/50 z-50" onClick={() => setIsBottomSheetOpen(false)} />
+          <div className="fixed inset-0 bg-black/50 z-50" onClick={handleCloseBottomSheet} />
           <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 p-6 pb-8" style={{ maxHeight: '70%' }}>
             <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-6" />
             <h3 className="text-center text-sm mb-6" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 500 }}>결혼식 정보</h3>
@@ -305,16 +351,16 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
                 </button>
               ))}
             </div>
-            <button onClick={() => setIsBottomSheetOpen(false)} className="w-full mt-6 py-3 rounded-xl text-xs" style={{ background: themeColors.background, color: themeColors.gray }}>닫기</button>
+            <button onClick={handleCloseBottomSheet} className="w-full mt-6 py-3 rounded-xl text-xs" style={{ background: themeColors.background, color: themeColors.gray }}>닫기</button>
           </div>
         </>
       )}
 
       {/* Unified Modal with Tab Navigation */}
       {activeModal !== 'none' && (
-        <>
-          <div className="fixed inset-0 bg-black/50 z-50" onClick={closeModal} />
-          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 bg-white rounded-2xl z-50 max-h-[80%] overflow-hidden flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={closeModal}>
+          <div className="absolute inset-0 bg-black/50" />
+          <div className="relative bg-white rounded-2xl max-h-[80%] w-full max-w-md overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
             {/* Tab Navigation */}
             <div className="flex border-b border-gray-100 flex-shrink-0">
               {menuItems.map((item) => (
@@ -545,7 +591,7 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
               <button onClick={closeModal} className="w-full py-3 rounded-xl text-sm" style={{ background: themeColors.background, color: themeColors.gray }}>닫기</button>
             </div>
           </div>
-        </>
+        </div>
       )}
     </>
   )

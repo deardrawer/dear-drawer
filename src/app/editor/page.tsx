@@ -24,6 +24,7 @@ function EditorContent() {
   const { user, status } = useAuth()
   const editId = searchParams.get('id') // 기존 청첩장 편집용 ID
   const templateId = searchParams.get('template') || 'narrative-our'
+  const urlSlug = searchParams.get('slug') // 템플릿 시작 시 설정한 커스텀 URL
   const urlTemplate = getTemplateById(templateId)
 
   const { invitation, template, initInvitation, updateMultipleFields, updateNestedField, toggleSectionVisibility, isDirty, isSaving, setSaving, resetDirty, markStepsSaved, setWizardStep } = useEditorStore()
@@ -229,7 +230,7 @@ function EditorContent() {
       }
       cleanImages(cleanInvitation)
 
-      const payload = {
+      const payload: Record<string, unknown> = {
         template_id: templateId,
         groom_name: invitation.groom.name,
         bride_name: invitation.bride.name,
@@ -239,6 +240,11 @@ function EditorContent() {
         venue_address: invitation.wedding.venue.address,
         venue_hall: invitation.wedding.venue.hall,
         content: JSON.stringify(cleanInvitation),
+      }
+
+      // 새 청첩장 생성 시 slug 포함
+      if (!invitationId && urlSlug) {
+        payload.slug = urlSlug
       }
 
       let response
@@ -299,10 +305,8 @@ function EditorContent() {
 
   // AI 스토리 생성기 결과 적용 핸들러
   const handleAIStoryGeneratorApply = (content: GeneratedContent) => {
-    // 인사말 적용
-    if (content.greeting) {
-      updateNestedField('content.greeting', content.greeting)
-    }
+    // 인사말 적용 제거됨 - 인사말 질문 플로우가 스토리탭에서 제거됨
+    // greeting은 Step3에서 별도로 관리됨
 
     // 감사 인사 적용 (thankYou.message에 적용)
     if (content.thanks) {
@@ -611,27 +615,8 @@ function EditorContent() {
                     onScrollPreviewToTop={() => previewRef.current?.scrollToTop()}
                     invitationId={invitationId}
                     templateId={templateId}
+                    slug={urlSlug || invitationId}
                     onSave={handleSave}
-                    onPublish={async (slug: string) => {
-                      // 먼저 저장
-                      await handleSave()
-                      // 슬러그 설정 (실제 구현에서는 API 호출 필요)
-                      if (invitationId) {
-                        try {
-                          const response = await fetch(`/api/invitations/${invitationId}/slug`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ slug }),
-                          })
-                          if (!response.ok) {
-                            throw new Error('슬러그 설정에 실패했습니다.')
-                          }
-                        } catch (error) {
-                          console.error('Slug update error:', error)
-                          throw error
-                        }
-                      }
-                    }}
                     isSaving={isSaving}
                   />
                 </div>

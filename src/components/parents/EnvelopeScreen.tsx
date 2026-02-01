@@ -97,15 +97,19 @@ export default function EnvelopeScreen({
         fontFamily: fontFamily || 'inherit',
         opacity: isMounted ? 1 : 0,
         transition: 'opacity 0.15s ease-in',
+        cursor: 'pointer',
       } as React.CSSProperties}
+      onClick={handleClick}
     >
       <style jsx>{`
         .envelope-wrapper {
           perspective: 1500px;
-          height: 720px;
+          height: auto;
           display: flex;
           justify-content: center;
           align-items: center;
+          padding-top: 40px;
+          padding-bottom: 20px;
         }
 
         .envelope-container {
@@ -389,18 +393,32 @@ export default function EnvelopeScreen({
         </div>
       </div>
 
+      {/* 안내 문구 - 봉투 바로 아래, 시각적으로 연결 */}
       <div
-        className="hint text-center mt-2"
-        onClick={() => {
-          if (stage === 3 && isExtracted) {
-            onOpen()
-          }
+        className="hint text-center"
+        style={{
+          cursor: 'pointer',
+          marginTop: '24px',
+          marginBottom: '60px',
         }}
-        style={{ cursor: stage === 3 ? 'pointer' : 'default' }}
       >
-        <p className="text-[18px] mb-1" style={{ color: 'rgba(255,255,255,0.7)' }}>↑</p>
-        <p className="text-[12px]" style={{ color: 'rgba(255,255,255,0.7)' }}>
-          {stage === 0 ? '터치하여 열기' : stage === 3 ? '터치하여 청첩장 보기' : ''}
+        <p
+          className="text-[14px] leading-relaxed px-4"
+          style={{
+            color: 'rgba(255,255,255,0.95)',
+            textShadow: '0 1px 3px rgba(0,0,0,0.3)',
+            fontWeight: 300,
+            letterSpacing: '0.5px',
+          }}
+        >
+          {stage === 0 ? (
+            <>
+              편지가 도착했어요.<br />
+              클릭하여 편지를 열어주세요.
+            </>
+          ) : stage === 3 ? (
+            '클릭하여 청첩장 보기'
+          ) : ''}
         </p>
       </div>
     </div>

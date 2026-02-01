@@ -202,7 +202,7 @@ export default function Step2BasicInfo({ templateId }: Step2BasicInfoProps) {
           📲 카카오톡 공유 썸네일 <span className="text-red-500">*</span>
         </h3>
         <p className="text-sm text-blue-600">
-          💡 카카오톡으로 공유할 때 표시되는 이미지입니다. (권장: 1:1 비율)
+          💙 카카오톡으로 공유할 때 표시되는 이미지입니다. (권장: 1:1 비율)
         </p>
 
         {/* 경고 문구 */}

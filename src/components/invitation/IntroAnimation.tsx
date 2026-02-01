@@ -203,6 +203,11 @@ export default function IntroAnimation({
   const cropHeight = coverImageSettings?.cropHeight ?? 1
   const hasCrop = cropWidth < 1 || cropHeight < 1
 
+  // 이미지 위치 설정 (크롭이 없을 때도 positionX/Y 사용)
+  const imgScale = coverImageSettings?.scale ?? 1
+  const imgPositionX = coverImageSettings?.positionX ?? 0
+  const imgPositionY = coverImageSettings?.positionY ?? 0
+
   // 크롭 영역을 container에 맞게 확대 (비율 유지를 위해 단일 스케일 사용)
   const scaleX = 100 / cropWidth
   const scaleY = 100 / cropHeight
@@ -213,17 +218,28 @@ export default function IntroAnimation({
   const userScale = settings.backgroundScale || 100
   const finalScale = baseScale * (userScale / 100)
 
-  // 위치 계산: 크롭 시작점 기준
-  const positionX = hasCrop ? (cropX / (1 - cropWidth)) * 100 : (settings.backgroundPositionX ?? 50)
-  const positionY = hasCrop ? (cropY / (1 - cropHeight)) * 100 : (settings.backgroundPositionY ?? 50)
+  // 위치 계산: 크롭이 있으면 크롭 시작점 기준, 없으면 coverImageSettings의 position 사용
+  const positionX = hasCrop ? (cropX / (1 - cropWidth)) * 100 : 50
+  const positionY = hasCrop ? (cropY / (1 - cropHeight)) * 100 : 50
 
-  const backgroundStyle = {
-    backgroundImage: coverImage ? `url(${coverImage})` : 'linear-gradient(135deg, #333 0%, #111 100%)',
-    backgroundSize: hasCrop ? `${finalScale}%` : (userScale > 100 ? `${userScale}%` : 'cover'),
-    backgroundPosition: `${Math.min(Math.max(positionX, 0), 100)}% ${Math.min(Math.max(positionY, 0), 100)}%`,
-    backgroundRepeat: 'no-repeat' as const,
-    filter: `brightness(${(settings.backgroundBrightness || 100) / 100})`,
-  }
+  // 배경 스타일 계산
+  const backgroundStyle = hasCrop
+    ? {
+        backgroundImage: coverImage ? `url(${coverImage})` : 'linear-gradient(135deg, #333 0%, #111 100%)',
+        backgroundSize: `${finalScale}%`,
+        backgroundPosition: `${Math.min(Math.max(positionX, 0), 100)}% ${Math.min(Math.max(positionY, 0), 100)}%`,
+        backgroundRepeat: 'no-repeat' as const,
+        filter: `brightness(${(settings.backgroundBrightness || 100) / 100})`,
+      }
+    : {
+        // 크롭이 없을 때: position을 background-position으로 변환 (애니메이션 transform과 충돌 방지)
+        // imgPositionX/Y는 -50 ~ 50 범위의 offset, 이를 0% ~ 100% 범위의 background-position으로 변환
+        backgroundImage: coverImage ? `url(${coverImage})` : 'linear-gradient(135deg, #333 0%, #111 100%)',
+        backgroundSize: `${imgScale * 100}%`,
+        backgroundPosition: `${50 - imgPositionX}% ${50 - imgPositionY}%`,
+        backgroundRepeat: 'no-repeat' as const,
+        filter: `brightness(${(settings.backgroundBrightness || 100) / 100})`,
+      }
 
   const overlayStyle = {
     backgroundColor: `rgba(0, 0, 0, ${(settings.overlayOpacity || 30) / 100})`,
@@ -233,6 +249,7 @@ export default function IntroAnimation({
     fontSize: `${settings.titleFontSize || 24}px`,
     letterSpacing: `${settings.titleLetterSpacing || 3}px`,
     color: settings.titleColor || '#ffffff',
+    fontFamily: settings.titleFontFamily || "'Noto Serif KR', serif",
   }
 
   const subTitleStyle = {

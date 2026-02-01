@@ -112,7 +112,7 @@ export const TEMPLATES: Template[] = [
   },
   {
     id: "romantic",
-    name: "로맨틱",
+    name: "손글씨",
     description: "따뜻하고 감성적인 디자인",
     thumbnail: "/templates/romantic.png",
     isPremium: true,

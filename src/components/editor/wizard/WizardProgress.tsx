@@ -18,18 +18,9 @@ export default function WizardProgress() {
   const progressPercent = Math.round((wizardStep / 5) * 100)
 
   // 자유롭게 이동 가능 (검증 없이)
+  // 탭 전환 시 스크롤 위치 유지 (옵션 비교 UX 개선)
   const handleStepClick = (step: WizardStep) => {
-    // 스텝 변경
     setWizardStep(step)
-    // DOM 업데이트 후 스크롤
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        const scrollContainer = document.getElementById('editor-scroll-container')
-        if (scrollContainer) {
-          scrollContainer.scrollTop = 0
-        }
-      })
-    })
   }
 
   // Step 저장 완료 여부 확인 (저장된 스텝 + 검증 통과)

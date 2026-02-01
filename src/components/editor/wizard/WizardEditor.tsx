@@ -28,8 +28,8 @@ interface WizardEditorProps {
   onScrollPreviewToTop?: () => void
   invitationId?: string | null
   templateId?: string
-  onSave?: () => void
-  onPublish?: (slug: string) => Promise<void>
+  slug?: string | null
+  onSave?: () => Promise<void>
   isSaving?: boolean
 }
 
@@ -40,8 +40,8 @@ export default function WizardEditor({
   onScrollPreviewToTop,
   invitationId,
   templateId,
+  slug,
   onSave,
-  onPublish,
   isSaving,
 }: WizardEditorProps) {
   const { wizardStep } = useEditorStore()
@@ -66,7 +66,7 @@ export default function WizardEditor({
       case 4:
         return <Step4MenuSettings />
       case 5:
-        return <Step5Publish {...props} invitationId={invitationId} onPublish={onPublish} onOpenShareModal={onOpenShareModal} />
+        return <Step5Publish {...props} invitationId={invitationId} slug={slug} onSave={onSave} onOpenShareModal={onOpenShareModal} />
       default:
         return null
     }

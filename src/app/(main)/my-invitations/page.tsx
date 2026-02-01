@@ -182,10 +182,9 @@ export default function MyInvitationsPage() {
     }
   }, [status, router])
 
-  // 공유 모달 열릴 때 QR 코드 생성 및 슬러그 초기화
+  // 공유 모달 열릴 때 QR 코드 생성
   useEffect(() => {
     if (shareInvitation) {
-      setCustomSlug(shareInvitation.slug || '')
       // 캔버스가 마운트될 시간을 주고 QR 코드 생성
       const timer = setTimeout(() => {
         generateQRCode(shareInvitation)
@@ -422,57 +421,6 @@ export default function MyInvitationsPage() {
     }
   }
 
-  const handleShareUpdateSlug = async () => {
-    if (!shareInvitation || !customSlug.trim()) return
-
-    // 슬러그 유효성 검사
-    const slugRegex = /^[a-z0-9-]+$/
-    if (!slugRegex.test(customSlug)) {
-      setSlugError('영문 소문자, 숫자, 하이픈(-)만 사용할 수 있습니다')
-      return
-    }
-
-    setIsUpdatingSlug(true)
-    setSlugError('')
-
-    try {
-      // 슬러그 중복 확인
-      const checkRes = await fetch(`/api/invitations/check-slug?slug=${customSlug}&excludeId=${shareInvitation.id}`)
-      const checkData: { available?: boolean } = await checkRes.json()
-
-      if (!checkData.available) {
-        setSlugError('이미 사용 중인 주소입니다')
-        setIsUpdatingSlug(false)
-        return
-      }
-
-      // 슬러그 업데이트
-      const updateRes = await fetch(`/api/invitations/${shareInvitation.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug: customSlug }),
-      })
-
-      if (updateRes.ok) {
-        // 로컬 상태 업데이트
-        setInvitations((prev) =>
-          prev.map((inv) =>
-            inv.id === shareInvitation.id ? { ...inv, slug: customSlug } : inv
-          )
-        )
-        setShareInvitation({ ...shareInvitation, slug: customSlug })
-        generateQRCode({ ...shareInvitation, slug: customSlug })
-      } else {
-        setSlugError('주소 변경에 실패했습니다')
-      }
-    } catch (error) {
-      console.error('Failed to update slug:', error)
-      setSlugError('주소 변경에 실패했습니다')
-    } finally {
-      setIsUpdatingSlug(false)
-    }
-  }
-
   const handleExportRSVP = () => {
     if (!manageInvitation) return
     window.open(`/api/rsvp/export?invitationId=${manageInvitation.id}`, '_blank')
@@ -630,7 +578,7 @@ export default function MyInvitationsPage() {
               <p className="text-sm text-gray-500">아직 청첩장이 없습니다</p>
             )}
           </div>
-          <Link href="/editor?step=4">
+          <Link href="/templates">
             <Button className="bg-black hover:bg-gray-800 shadow-lg hover:shadow-xl transition-all hover:scale-105">
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -844,37 +792,39 @@ export default function MyInvitationsPage() {
                     {invitation.is_paid ? '예식일로부터 30일 후 자동 삭제됩니다' : '결제하지 않은 청첩장은 생성일로부터 7일 후 자동 삭제됩니다'}
                   </p>
 
-                  <div className="grid grid-cols-4 gap-2 mb-2">
-                    <Link href={invitation.template_id === 'narrative-parents' || invitation.template_id === 'parents' ? `/editor/parents?id=${invitation.id}` : `/editor?id=${invitation.id}`}>
-                      <Button variant="outline" size="sm" className="w-full">편집</Button>
+                  {/* 상단: 주요 액션 (에디터 편집, 워터마크 제거) */}
+                  <div className={`grid gap-2 mb-2 ${invitation.is_paid ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                    <Link href={invitation.template_id === 'narrative-parents' || invitation.template_id === 'parents' ? `/editor/parents?id=${invitation.id}` : `/editor?id=${invitation.id}`} className={invitation.is_paid ? 'col-span-1' : ''}>
+                      <Button size="sm" className="w-full bg-gray-900 hover:bg-gray-800 text-white">에디터 편집하기</Button>
                     </Link>
+                    {!invitation.is_paid && (
+                      <Link href={`/dashboard/payment?invitationId=${invitation.id}`}>
+                        <Button size="sm" className="w-full bg-rose-500 hover:bg-rose-600 text-white">워터마크 제거하기</Button>
+                      </Link>
+                    )}
+                  </div>
+                  {/* 하단: 보조 액션 (복제, 공유, 관리, 삭제) */}
+                  <div className="grid grid-cols-4 gap-2">
                     <Button
                       variant="outline"
                       size="sm"
-                      className="w-full"
+                      className="w-full text-xs"
                       onClick={() => handleDuplicate(invitation)}
                       disabled={duplicatingId === invitation.id}
                     >
                       {duplicatingId === invitation.id ? '...' : '복제'}
                     </Button>
-                    <Button variant="outline" size="sm" className="w-full" onClick={() => setShareInvitation(invitation)}>
+                    <Button variant="outline" size="sm" className="w-full text-xs" onClick={() => setShareInvitation(invitation)}>
                       공유
                     </Button>
-                    <Button variant="outline" size="sm" className="w-full" onClick={() => setManageInvitation(invitation)}>
+                    <Button variant="outline" size="sm" className="w-full text-xs" onClick={() => setManageInvitation(invitation)}>
                       관리
                     </Button>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    {!invitation.is_paid && (
-                      <Link href={`/dashboard/payment?invitationId=${invitation.id}`}>
-                        <Button size="sm" className="w-full bg-rose-500 hover:bg-rose-600">워터마크 제거하기</Button>
-                      </Link>
-                    )}
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setDeleteId(invitation.id)}
-                      className={`${!invitation.is_paid ? '' : 'col-span-2'} text-red-500 hover:text-red-600 hover:bg-red-50`}
+                      className="w-full text-xs text-red-500 hover:text-red-600 hover:bg-red-50"
                     >
                       삭제
                     </Button>
@@ -952,31 +902,6 @@ export default function MyInvitationsPage() {
                 <Input value={shareInvitation ? getInvitationUrl(shareInvitation) : ''} readOnly className="flex-1 text-sm" />
                 <Button onClick={handleCopyLink} variant="outline" size="sm">
                   {copied ? '복사됨!' : '복사'}
-                </Button>
-              </div>
-            </div>
-
-            <div>
-              <p className="text-sm font-medium text-gray-700 mb-2">커스텀 주소 설정</p>
-              <div className="flex gap-2 items-start">
-                <div className="flex-1">
-                  <div className="flex items-center gap-1">
-                    <span className="text-sm text-gray-500 whitespace-nowrap">{baseUrl}/i/</span>
-                    <Input
-                      value={customSlug}
-                      onChange={(e) => {
-                        setCustomSlug(e.target.value.toLowerCase())
-                        setSlugError('')
-                      }}
-                      placeholder="my-wedding"
-                      className="flex-1 text-sm"
-                    />
-                  </div>
-                  {slugError && <p className="text-xs text-red-500 mt-1">{slugError}</p>}
-                  <p className="text-xs text-gray-400 mt-1">영문 소문자, 숫자, 하이픈(-)만 사용 가능</p>
-                </div>
-                <Button onClick={handleShareUpdateSlug} disabled={isUpdatingSlug || customSlug === shareInvitation?.slug} size="sm">
-                  {isUpdatingSlug ? '저장 중...' : '저장'}
                 </Button>
               </div>
             </div>

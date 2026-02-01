@@ -16,6 +16,7 @@ interface ParentsStep3ContentProps {
   updateData: (updates: Partial<ParentsInvitationData>) => void
   updateNestedData: (path: string, value: unknown) => void
   invitationId: string | null
+  setActiveSection?: (section: string | null) => void
 }
 
 // 결혼식 안내 항목 설정
@@ -35,6 +36,7 @@ export default function ParentsStep3Content({
   updateData,
   updateNestedData,
   invitationId,
+  setActiveSection,
 }: ParentsStep3ContentProps) {
   // 안내 항목 순서 변경 함수 (드래그 앤 드롭)
   const handleInfoItemReorder = (newOrder: string[]) => {
@@ -58,7 +60,7 @@ export default function ParentsStep3Content({
       <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
         <p className="text-base text-purple-800 font-medium mb-1">본문 내용 작성</p>
         <p className="text-sm text-purple-700">
-          💡 청첩장 본문에 표시될 내용을 작성해주세요.
+          💙 청첩장 본문에 표시될 내용을 작성해주세요.
         </p>
       </div>
 
@@ -70,11 +72,12 @@ export default function ParentsStep3Content({
           </div>
           본문 인사말
         </h3>
-        <p className="text-sm text-blue-600">💡 청첩장 본문에 표시될 인사말을 작성해주세요.</p>
+        <p className="text-sm text-blue-600">💙 청첩장 본문에 표시될 인사말을 작성해주세요.</p>
 
         <Textarea
           value={data.greeting}
           onChange={(e) => updateData({ greeting: e.target.value })}
+          onFocus={() => setActiveSection?.('greeting')}
           placeholder="서로 다른 길을 걸어온 두 사람이&#10;이제 같은 길을 함께 걸어가려 합니다.&#10;&#10;저희의 새로운 시작을&#10;축복해 주시면 감사하겠습니다."
           rows={6}
           className="font-light leading-relaxed"
@@ -89,7 +92,7 @@ export default function ParentsStep3Content({
           </div>
           타임라인
         </h3>
-        <p className="text-sm text-blue-600">💡 부모님 시점에서 아이의 성장 이야기를 담아보세요.</p>
+        <p className="text-sm text-blue-600">💙 부모님 시점에서 아이의 성장 이야기를 담아보세요.</p>
 
         {/* ON/OFF 토글 */}
         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -130,6 +133,7 @@ export default function ParentsStep3Content({
                         newTimeline[index] = { ...newTimeline[index], year: e.target.value }
                         updateData({ timeline: newTimeline })
                       }}
+                      onFocus={() => setActiveSection?.('timeline')}
                       placeholder="1992"
                       className="text-sm"
                     />
@@ -143,6 +147,7 @@ export default function ParentsStep3Content({
                         newTimeline[index] = { ...newTimeline[index], description: e.target.value }
                         updateData({ timeline: newTimeline })
                       }}
+                      onFocus={() => setActiveSection?.('timeline')}
                       placeholder="저희가 결혼하던 날"
                       className="text-sm"
                     />
@@ -162,7 +167,7 @@ export default function ParentsStep3Content({
                       }
                       updateData({ timeline: newTimeline })
                     }}
-                    aspectRatio={1}
+                    aspectRatio={4/3}
                     containerWidth={220}
                     invitationId={invitationId || undefined}
                     label=""
@@ -201,7 +206,7 @@ export default function ParentsStep3Content({
           갤러리
           <span className="text-xs text-gray-400 font-normal">({data.gallery?.images?.length || 0}장)</span>
         </h3>
-        <p className="text-sm text-blue-600">💡 신랑신부 사진을 추가하세요. (최대 10장)</p>
+        <p className="text-sm text-blue-600">💙 신랑신부 사진을 추가하세요. (최대 10장)</p>
 
         {data.gallery?.images?.map((img, index) => (
           <div key={index} className="border rounded-lg p-3 space-y-3">
@@ -256,7 +261,7 @@ export default function ParentsStep3Content({
           </div>
           결혼식 정보
         </h3>
-        <p className="text-sm text-blue-600">💡 결혼식 날짜, 시간, 장소를 입력해주세요.</p>
+        <p className="text-sm text-blue-600">💙 결혼식 날짜, 시간, 장소를 입력해주세요.</p>
 
         {/* 날짜/시간 */}
         <div className="grid grid-cols-2 gap-3">
@@ -266,6 +271,7 @@ export default function ParentsStep3Content({
               type="date"
               value={data.wedding.date}
               onChange={(e) => updateNestedData('wedding.date', e.target.value)}
+              onFocus={() => setActiveSection?.('wedding')}
             />
           </div>
           <div className="space-y-1.5">
@@ -273,6 +279,7 @@ export default function ParentsStep3Content({
             <Input
               value={data.wedding.timeDisplay}
               onChange={(e) => updateNestedData('wedding.timeDisplay', e.target.value)}
+              onFocus={() => setActiveSection?.('wedding')}
               placeholder="오후 12시"
             />
           </div>
@@ -284,6 +291,7 @@ export default function ParentsStep3Content({
           <Input
             value={data.wedding.venue.name}
             onChange={(e) => updateNestedData('wedding.venue.name', e.target.value)}
+            onFocus={() => setActiveSection?.('venue')}
             placeholder="더채플앳청담"
           />
         </div>
@@ -292,6 +300,7 @@ export default function ParentsStep3Content({
           <Input
             value={data.wedding.venue.hall}
             onChange={(e) => updateNestedData('wedding.venue.hall', e.target.value)}
+            onFocus={() => setActiveSection?.('venue')}
             placeholder="그랜드볼룸"
           />
         </div>
@@ -300,6 +309,7 @@ export default function ParentsStep3Content({
           <Input
             value={data.wedding.venue.address}
             onChange={(e) => updateNestedData('wedding.venue.address', e.target.value)}
+            onFocus={() => setActiveSection?.('venue')}
             placeholder="서울시 강남구..."
           />
         </div>
@@ -468,7 +478,7 @@ export default function ParentsStep3Content({
           </div>
           결혼식 안내
         </h3>
-        <p className="text-sm text-blue-600">💡 답례품, 화환, 피로연, 셔틀버스 등 안내 정보를 입력해주세요.</p>
+        <p className="text-sm text-blue-600">💙 답례품, 화환, 피로연, 셔틀버스 등 안내 정보를 입력해주세요.</p>
 
         {/* 섹션 전체 ON/OFF */}
         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -627,7 +637,7 @@ export default function ParentsStep3Content({
           </div>
           RSVP (참석의사전달)
         </h3>
-        <p className="text-sm text-blue-600">💡 RSVP 기능은 게스트 설정 단계에서 확인하실 수 있습니다.</p>
+        <p className="text-sm text-blue-600">💙 RSVP 기능은 게스트 설정 단계에서 확인하실 수 있습니다.</p>
 
         <div className="p-4 bg-gray-50 rounded-lg text-center">
           <p className="text-sm text-gray-600">
@@ -647,7 +657,7 @@ export default function ParentsStep3Content({
           </div>
           계좌 안내
         </h3>
-        <p className="text-sm text-blue-600">💡 마음 전달을 위한 계좌 정보를 입력하세요.</p>
+        <p className="text-sm text-blue-600">💙 마음 전달을 위한 계좌 정보를 입력하세요.</p>
 
         {/* ON/OFF 토글 */}
         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -688,6 +698,7 @@ export default function ParentsStep3Content({
                         newList[index] = { ...newList[index], name: e.target.value }
                         updateNestedData('accounts.list', newList)
                       }}
+                      onFocus={() => setActiveSection?.('accounts')}
                       placeholder="예금주명"
                       className="text-sm"
                     />
@@ -702,6 +713,7 @@ export default function ParentsStep3Content({
                           newList[index] = { ...newList[index], bank: e.target.value }
                           updateNestedData('accounts.list', newList)
                         }}
+                        onFocus={() => setActiveSection?.('accounts')}
                         placeholder="은행명"
                         className="text-sm"
                       />
@@ -715,6 +727,7 @@ export default function ParentsStep3Content({
                           newList[index] = { ...newList[index], accountNumber: e.target.value }
                           updateNestedData('accounts.list', newList)
                         }}
+                        onFocus={() => setActiveSection?.('accounts')}
                         placeholder="123-456-789012"
                         className="text-sm"
                       />

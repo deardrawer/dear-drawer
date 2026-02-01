@@ -1,13 +1,12 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* OmuDaye Font for Romantic Style */
+/* Okticon Font for Romantic Style */
 @font-face {
-  font-family: 'OmuDaye';
-  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2304-01@1.0/omyu_pretty.woff2') format('woff2');
-  font-weight: normal;
+  font-family: 'Okticon';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408@1.0/Ownglyph_okticon-Bd.woff2') format('woff2');
+  font-weight: 700;
   font-display: swap;
-  size-adjust: 107%;
 }
 
 /* Ridibatang Font for Classic Style */

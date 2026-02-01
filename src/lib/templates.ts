@@ -47,7 +47,7 @@ export const templates: Template[] = [
       text: '#3D3D3D',
     },
     fonts: {
-      heading: 'OmuDaye',
+      heading: 'Okticon',
       body: 'Pretendard',
     },
     features: ['커플 서사 중심', '감성적 톤', '에디토리얼 레이아웃', '스토리 초안 작성'],

@@ -80,7 +80,7 @@ interface Step4ContentProps {
 }
 
 export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Step4ContentProps) {
-  const { invitation, updateNestedField, addStory, removeStory, addInterview, removeInterview, toggleSectionVisibility } = useEditorStore()
+  const { invitation, updateNestedField, addStory, removeStory, addInterview, removeInterview, toggleSectionVisibility, setActiveSection } = useEditorStore()
   const [uploadingImages, setUploadingImages] = useState<Set<string>>(new Set())
 
   if (!invitation) return null
@@ -224,7 +224,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
           </div>
           {/* TIP 섹션 */}
           <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-sm text-blue-800 mb-2">💡 내가 사랑하는 사람을 소개해 주세요. 함께 지내며 느낀 그 사람의 모습이면 충분합니다.</p>
+            <p className="text-sm text-blue-800 mb-2">💙 내가 사랑하는 사람을 소개해 주세요. 함께 지내며 느낀 그 사람의 모습이면 충분합니다.</p>
             <details className="text-xs text-blue-700">
               <summary className="cursor-pointer font-medium hover:text-blue-900">가이드 보기</summary>
               <div className="mt-3 space-y-3 pl-2 border-l-2 border-blue-300">
@@ -317,13 +317,15 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
 
               {/* 소개 레이블 */}
               <div className="space-y-1.5">
-                <Label className="text-xs">소개 레이블</Label>
+                <Label className="text-xs">소개 레이블 (영문)</Label>
                 <Input
                   value={invitation.groom.profile.aboutLabel || ''}
                   onChange={(e) => updateNestedField('groom.profile.aboutLabel', e.target.value)}
-                  placeholder="ABOUT GROOM"
+                  onFocus={() => setActiveSection('couple-profile')}
+                  placeholder="ABOUT MINJUN"
                   className="bg-white"
                 />
+                <p className="text-[10px] text-gray-400">예: ABOUT MINJUN, ABOUT 민준</p>
               </div>
 
               {/* 서브타이틀 */}
@@ -332,9 +334,11 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                 <Input
                   value={invitation.groom.profile.subtitle || ''}
                   onChange={(e) => updateNestedField('groom.profile.subtitle', e.target.value)}
-                  placeholder="IT 스타트업 개발자"
+                  onFocus={() => setActiveSection('couple-profile')}
+                  placeholder="서연이가 소개하는 민준"
                   className="bg-white"
                 />
+                <p className="text-[10px] text-gray-400">예: 서연이가 소개하는 민준</p>
               </div>
 
               {/* 소개글 */}
@@ -349,6 +353,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                 <HighlightTextarea
                   value={invitation.groom.profile.intro}
                   onChange={(value) => updateNestedField('groom.profile.intro', value)}
+                  onFocus={() => setActiveSection('couple-profile')}
                   placeholder={SAMPLE_PROFILES.groom.intro}
                   rows={4}
                   className="bg-white"
@@ -361,6 +366,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                 <Input
                   value={invitation.groom.profile.tag || ''}
                   onChange={(e) => updateNestedField('groom.profile.tag', e.target.value)}
+                  onFocus={() => setActiveSection('couple-profile')}
                   placeholder="세상에서 가장 따뜻한 사람"
                   className="bg-white"
                 />
@@ -414,13 +420,15 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
 
               {/* 소개 레이블 */}
               <div className="space-y-1.5">
-                <Label className="text-xs">소개 레이블</Label>
+                <Label className="text-xs">소개 레이블 (영문)</Label>
                 <Input
                   value={invitation.bride.profile.aboutLabel || ''}
                   onChange={(e) => updateNestedField('bride.profile.aboutLabel', e.target.value)}
-                  placeholder="ABOUT BRIDE"
+                  onFocus={() => setActiveSection('couple-profile')}
+                  placeholder="ABOUT SEOYEON"
                   className="bg-white"
                 />
+                <p className="text-[10px] text-gray-400">예: ABOUT SEOYEON, ABOUT 서연</p>
               </div>
 
               {/* 서브타이틀 */}
@@ -429,9 +437,11 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                 <Input
                   value={invitation.bride.profile.subtitle || ''}
                   onChange={(e) => updateNestedField('bride.profile.subtitle', e.target.value)}
-                  placeholder="플로리스트"
+                  onFocus={() => setActiveSection('couple-profile')}
+                  placeholder="민준이가 소개하는 서연"
                   className="bg-white"
                 />
+                <p className="text-[10px] text-gray-400">예: 민준이가 소개하는 서연</p>
               </div>
 
               {/* 소개글 */}
@@ -446,6 +456,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                 <HighlightTextarea
                   value={invitation.bride.profile.intro}
                   onChange={(value) => updateNestedField('bride.profile.intro', value)}
+                  onFocus={() => setActiveSection('couple-profile')}
                   placeholder={SAMPLE_PROFILES.bride.intro}
                   rows={4}
                   className="bg-white"
@@ -458,6 +469,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                 <Input
                   value={invitation.bride.profile.tag || ''}
                   onChange={(e) => updateNestedField('bride.profile.tag', e.target.value)}
+                  onFocus={() => setActiveSection('couple-profile')}
                   placeholder="매일 웃게 해주는 사람"
                   className="bg-white"
                 />
@@ -484,7 +496,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
 
           {/* TIP 섹션 */}
           <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-sm text-blue-800 mb-2">💡 첫 만남부터 결혼을 결심하기까지, 그때의 이야기와 사진을 함께 담아주세요.</p>
+            <p className="text-sm text-blue-800 mb-2">💙 첫 만남부터 결혼을 결심하기까지, 그때의 이야기와 사진을 함께 담아주세요.</p>
             <details className="text-xs text-blue-700">
               <summary className="cursor-pointer font-medium hover:text-blue-900">가이드 보기</summary>
               <div className="mt-3 space-y-4 pl-2 border-l-2 border-blue-300">
@@ -542,6 +554,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                       <Input
                         value={story.date}
                         onChange={(e) => updateNestedField(`relationship.stories.${index}.date`, e.target.value)}
+                        onFocus={() => setActiveSection('our-story')}
                         placeholder={SAMPLE_STORIES[index]?.date || '2020.05'}
                       />
                     </div>
@@ -550,6 +563,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                       <Input
                         value={story.title}
                         onChange={(e) => updateNestedField(`relationship.stories.${index}.title`, e.target.value)}
+                        onFocus={() => setActiveSection('our-story')}
                         placeholder={SAMPLE_STORIES[index]?.title || '제목을 입력하세요'}
                       />
                     </div>
@@ -559,6 +573,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                     <HighlightTextarea
                       value={story.desc}
                       onChange={(value) => updateNestedField(`relationship.stories.${index}.desc`, value)}
+                      onFocus={() => setActiveSection('our-story')}
                       placeholder={SAMPLE_STORIES[index]?.desc || '스토리 내용을 입력해주세요'}
                       rows={3}
                     />
@@ -625,7 +640,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
             <div className="space-y-4">
               {/* TIP 섹션 */}
               <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <p className="text-sm text-blue-800 mb-2">💡 부모님의 시선으로 자녀를 소개하고, 함께 축하 인사를 전해보세요.</p>
+                <p className="text-sm text-blue-800 mb-2">💙 부모님의 시선으로 자녀를 소개하고, 함께 축하 인사를 전해보세요.</p>
                 <details className="text-xs text-blue-700">
                   <summary className="cursor-pointer font-medium hover:text-blue-900">가이드 보기</summary>
                   <div className="mt-3 space-y-3 pl-2 border-l-2 border-blue-300">
@@ -662,6 +677,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                       <Input
                         value={parentIntro.groom?.parentNames || ''}
                         onChange={(e) => updateNestedField('parentIntro.groom.parentNames', e.target.value)}
+                        onFocus={() => setActiveSection('couple-profile')}
                         placeholder="예: 홍길동, 김영희의"
                         className="bg-white"
                       />
@@ -701,6 +717,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                       <HighlightTextarea
                         value={parentIntro.groom?.message || ''}
                         onChange={(value) => updateNestedField('parentIntro.groom.message', value)}
+                        onFocus={() => setActiveSection('couple-profile')}
                         placeholder="자녀를 소개하는 부모님의 진심어린 메시지를 작성해주세요..."
                         rows={6}
                         className="bg-white"
@@ -738,6 +755,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                       <Input
                         value={parentIntro.bride?.parentNames || ''}
                         onChange={(e) => updateNestedField('parentIntro.bride.parentNames', e.target.value)}
+                        onFocus={() => setActiveSection('couple-profile')}
                         placeholder="예: 이철수, 박순이의"
                         className="bg-white"
                       />
@@ -777,6 +795,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                       <HighlightTextarea
                         value={parentIntro.bride?.message || ''}
                         onChange={(value) => updateNestedField('parentIntro.bride.message', value)}
+                        onFocus={() => setActiveSection('couple-profile')}
                         placeholder="자녀를 소개하는 부모님의 진심어린 메시지를 작성해주세요..."
                         rows={6}
                         className="bg-white"
@@ -814,7 +833,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
             <div className="space-y-4">
               {/* TIP 섹션 */}
               <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <p className="text-sm text-blue-800 mb-2">💡 상대에게 느낀 특별함을, 두 분의 말로 직접 전해 보세요.</p>
+                <p className="text-sm text-blue-800 mb-2">💙 상대에게 느낀 특별함을, 두 분의 말로 직접 전해 보세요.</p>
                 <details className="text-xs text-blue-700">
                   <summary className="cursor-pointer font-medium hover:text-blue-900">가이드 보기</summary>
                   <div className="mt-3 space-y-3 pl-2 border-l-2 border-blue-300">
@@ -838,6 +857,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                   <Input
                     value={whyWeChose.title || ''}
                     onChange={(e) => updateNestedField('whyWeChose.title', e.target.value)}
+                    onFocus={() => setActiveSection('our-story')}
                     placeholder="우리가 서로를 선택한 이유"
                     className="bg-white"
                   />
@@ -847,6 +867,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                   <Input
                     value={whyWeChose.subtitle || ''}
                     onChange={(e) => updateNestedField('whyWeChose.subtitle', e.target.value)}
+                    onFocus={() => setActiveSection('our-story')}
                     placeholder="오래 보아도 좋은 사람, 서로 그렇게 되기까지"
                     className="bg-white"
                   />
@@ -886,6 +907,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                       <Textarea
                         value={whyWeChose.groom?.description || ''}
                         onChange={(e) => updateNestedField('whyWeChose.groom.description', e.target.value)}
+                        onFocus={() => setActiveSection('our-story')}
                         placeholder="상대방을 선택한 이유를 작성해주세요..."
                         rows={5}
                         className="bg-white text-sm leading-relaxed"
@@ -899,6 +921,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                       <Input
                         value={whyWeChose.groom?.quote || ''}
                         onChange={(e) => updateNestedField('whyWeChose.groom.quote', e.target.value)}
+                        onFocus={() => setActiveSection('our-story')}
                         placeholder="예: 서로 아끼며 행복하게 살겠습니다."
                         className="bg-white"
                       />
@@ -940,6 +963,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                       <Textarea
                         value={whyWeChose.bride?.description || ''}
                         onChange={(e) => updateNestedField('whyWeChose.bride.description', e.target.value)}
+                        onFocus={() => setActiveSection('our-story')}
                         placeholder="상대방을 선택한 이유를 작성해주세요..."
                         rows={5}
                         className="bg-white text-sm leading-relaxed"
@@ -953,6 +977,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                       <Input
                         value={whyWeChose.bride?.quote || ''}
                         onChange={(e) => updateNestedField('whyWeChose.bride.quote', e.target.value)}
+                        onFocus={() => setActiveSection('our-story')}
                         placeholder="예: 늘 처음처럼 행복하게 살겠습니다."
                         className="bg-white"
                       />
@@ -972,7 +997,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
             🎬 포토 디바이더
           </h3>
 
-          <p className="text-sm text-blue-600">💡 흑백 웨딩사진 배경으로 섹션을 구분하는 감성적인 연출이에요.</p>
+          <p className="text-sm text-blue-600">💙 흑백 웨딩사진 배경으로 섹션을 구분하는 감성적인 연출이에요.</p>
 
           <div className="space-y-4">
             {(invitation.fullHeightDividers?.items || []).map((item: any, index: number) => {
@@ -1179,7 +1204,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
         </h3>
         {/* 가이드 섹션 */}
         <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-sm text-blue-800 mb-2">💡 두 사람의 사진을 업로드해 주세요. 스토리에서 쓰지 않은 사진들이 잘 어울립니다.</p>
+          <p className="text-sm text-blue-800 mb-2">💙 두 사람의 사진을 업로드해 주세요. 스토리에서 쓰지 않은 사진들이 잘 어울립니다.</p>
           <details className="text-xs text-blue-700">
             <summary className="cursor-pointer font-medium hover:text-blue-900">📖 가이드 보기</summary>
             <div className="mt-3 space-y-3 pl-2 border-l-2 border-blue-300">
@@ -1241,7 +1266,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
 
             {/* TIP 섹션 */}
             <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <p className="text-sm text-blue-800 mb-2">💡 결혼을 앞둔 두 분의 생각과 이야기를, 질문에 답하듯 솔직하게 들려주세요.</p>
+              <p className="text-sm text-blue-800 mb-2">💙 결혼을 앞둔 두 분의 생각과 이야기를, 질문에 답하듯 솔직하게 들려주세요.</p>
               <details className="text-xs text-blue-700">
                 <summary className="cursor-pointer font-medium hover:text-blue-900">가이드 보기</summary>
                 <div className="mt-3 space-y-3 pl-2 border-l-2 border-blue-300">
@@ -1274,6 +1299,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
               <Input
                 value={invitation.content.interviewIntro || ''}
                 onChange={(e) => updateNestedField('content.interviewIntro', e.target.value)}
+                onFocus={() => setActiveSection('interview')}
                 placeholder="결혼에 관한 우리의 이야기"
               />
               <p className="text-[10px] text-gray-400">인터뷰 섹션 상단에 표시되는 문구입니다</p>
@@ -1297,6 +1323,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                   <Input
                     value={interview.question}
                     onChange={(e) => updateNestedField(`content.interviews.${index}.question`, e.target.value)}
+                    onFocus={() => setActiveSection('interview')}
                     placeholder={SAMPLE_INTERVIEWS[index]?.question || '질문을 입력해주세요'}
                   />
                 </div>
@@ -1311,6 +1338,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                   <HighlightTextarea
                     value={interview.answer}
                     onChange={(value) => updateNestedField(`content.interviews.${index}.answer`, value)}
+                    onFocus={() => setActiveSection('interview')}
                     placeholder={SAMPLE_INTERVIEWS[index]?.answer || '답변을 입력해주세요'}
                     rows={3}
                   />
@@ -1373,21 +1401,80 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
         )}
       </section>
 
-      {/* 안내사항 - 모든 템플릿에서 스토리 탭에 표시 */}
+      {/* 안내사항 - 모든 템플릿에서 스토리 탭에 표시 (항상 펼쳐짐) */}
       <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-              ℹ️ 안내사항
-            </h3>
-            <Switch
-              checked={invitation.sectionVisibility.guidance}
-              onCheckedChange={() => toggleSectionVisibility('guidance')}
-            />
-          </div>
+          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+            ℹ️ 안내사항
+          </h3>
 
-          {invitation.sectionVisibility.guidance && (
-            <div className="space-y-4">
-              <p className="text-sm text-blue-600">💡 하객분들께 전달할 안내사항을 작성해주세요.</p>
+          <div className="space-y-4">
+            <p className="text-sm text-blue-600">💙 하객분들께 전달할 안내사항을 작성해주세요. 필요한 항목만 켜서 사용하세요.</p>
+
+              {/* 웨딩사진 */}
+              <div className="p-4 bg-gradient-to-br from-rose-50 to-pink-50 rounded-lg space-y-3">
+                <Label className="text-sm font-medium text-rose-800">웨딩사진</Label>
+                <p className="text-xs text-rose-600">안내사항 상단에 표시될 웨딩사진을 추가해주세요.</p>
+
+                {invitation.guidance?.image ? (
+                  <div className="space-y-3">
+                    {/* 이미지 미리보기 */}
+                    <div className="relative aspect-[4/5] w-full max-w-[200px] mx-auto rounded-lg overflow-hidden bg-gray-100">
+                      <img
+                        src={invitation.guidance.image}
+                        alt="웨딩사진"
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        onClick={() => updateNestedField('guidance.image', '')}
+                        className="absolute top-2 right-2 w-6 h-6 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+
+                    {/* 이미지 크롭 조정 */}
+                    <div className="p-3 bg-white/70 rounded-lg space-y-2">
+                      <p className="text-[10px] font-medium text-rose-700">이미지 크롭 조정</p>
+                      <InlineCropEditor
+                        imageUrl={invitation.guidance.image}
+                        settings={invitation.guidance.imageSettings || { scale: 1.0, positionX: 0, positionY: 0 }}
+                        onUpdate={(s) => updateNestedField('guidance.imageSettings', s)}
+                        aspectRatio={4/5}
+                        containerWidth={140}
+                        colorClass="rose"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <label className="block cursor-pointer">
+                    <div className="aspect-[4/5] w-full max-w-[200px] mx-auto border-2 border-dashed border-rose-300 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-rose-400 hover:bg-rose-50/50 transition-colors">
+                      {uploadingImages.has('guidance-image') ? (
+                        <div className="animate-spin w-6 h-6 border-2 border-rose-400 border-t-transparent rounded-full" />
+                      ) : (
+                        <>
+                          <Plus className="w-8 h-8 text-rose-400" />
+                          <span className="text-xs text-rose-500">사진 추가</span>
+                        </>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      disabled={uploadingImages.has('guidance-image')}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) {
+                          handleImageUpload(file, 'guidance-image', (url) => {
+                            updateNestedField('guidance.image', url)
+                          })
+                          e.target.value = ''
+                        }
+                      }}
+                    />
+                  </label>
+                )}
+              </div>
 
               <div className="space-y-3">
                 {/* 드레스코드 */}
@@ -1469,9 +1556,75 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                     />
                   )}
                 </div>
+
+                {/* 커스텀 안내 항목들 */}
+                {invitation.content.info.customItems?.map((item, index) => (
+                  <div key={item.id} className="p-4 bg-gray-50 rounded-lg space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Input
+                        value={item.title}
+                        onChange={(e) => {
+                          const newItems = [...(invitation.content.info.customItems || [])]
+                          newItems[index] = { ...newItems[index], title: e.target.value }
+                          updateNestedField('content.info.customItems', newItems)
+                        }}
+                        placeholder="항목 제목"
+                        className="text-sm font-medium bg-transparent border-none p-0 h-auto focus-visible:ring-0 w-auto flex-1"
+                      />
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={item.enabled}
+                          onCheckedChange={(checked) => {
+                            const newItems = [...(invitation.content.info.customItems || [])]
+                            newItems[index] = { ...newItems[index], enabled: checked }
+                            updateNestedField('content.info.customItems', newItems)
+                          }}
+                        />
+                        <button
+                          onClick={() => {
+                            const newItems = (invitation.content.info.customItems || []).filter((_, i) => i !== index)
+                            updateNestedField('content.info.customItems', newItems)
+                          }}
+                          className="text-gray-400 hover:text-red-500 transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                    {item.enabled && (
+                      <Textarea
+                        value={item.content}
+                        onChange={(e) => {
+                          const newItems = [...(invitation.content.info.customItems || [])]
+                          newItems[index] = { ...newItems[index], content: e.target.value }
+                          updateNestedField('content.info.customItems', newItems)
+                        }}
+                        rows={3}
+                        className="resize-none"
+                        placeholder="안내 내용을 입력해주세요."
+                      />
+                    )}
+                  </div>
+                ))}
+
+                {/* 커스텀 항목 추가 버튼 */}
+                <button
+                  onClick={() => {
+                    const newItem = {
+                      id: `custom-${Date.now()}`,
+                      title: '새 안내사항',
+                      content: '',
+                      enabled: true
+                    }
+                    const newItems = [...(invitation.content.info.customItems || []), newItem]
+                    updateNestedField('content.info.customItems', newItems)
+                  }}
+                  className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  + 안내사항 추가
+                </button>
               </div>
             </div>
-          )}
         </section>
 
       {/* 감사 인사 */}
@@ -1482,7 +1635,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
 
         {/* TIP 섹션 */}
         <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-sm text-blue-800 mb-2">💡 두 분의 진심이 담긴 감사 인사로, 청첩장을 마무리해 주세요.</p>
+          <p className="text-sm text-blue-800 mb-2">💙 두 분의 진심이 담긴 감사 인사로, 청첩장을 마무리해 주세요.</p>
           <details className="text-xs text-blue-700">
             <summary className="cursor-pointer font-medium hover:text-blue-900">가이드 보기</summary>
             <div className="mt-3 space-y-3 pl-2 border-l-2 border-blue-300">
@@ -1530,7 +1683,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
             onCheckedChange={() => toggleSectionVisibility('guestbook')}
           />
         </div>
-        <p className="text-sm text-blue-600">💡 하객분들이 축하 메시지를 남길 수 있는 방명록이 표시됩니다.</p>
+        <p className="text-sm text-blue-600">💙 하객분들이 축하 메시지를 남길 수 있는 방명록이 표시됩니다.</p>
 
         {invitation.sectionVisibility.guestbook && (
           <div className="space-y-4">

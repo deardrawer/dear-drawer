@@ -69,7 +69,7 @@ export default function Step5MenuSettings() {
 
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-blue-600">💡 교통 안내 정보를 입력해주세요.</p>
+            <p className="text-sm text-blue-600">💙 교통 안내 정보를 입력해주세요.</p>
             {!invitation.wedding.directions.car && !invitation.wedding.directions.publicTransport && (
               <button onClick={applySampleDirections} className="text-xs text-blue-600 hover:underline">
                 샘플 적용
@@ -143,7 +143,7 @@ export default function Step5MenuSettings() {
             onCheckedChange={() => toggleSectionVisibility('contacts')}
           />
         </div>
-        <p className="text-sm text-blue-600">💡 하객분들이 축하 전화를 드릴 수 있는 연락처를 입력해주세요. 입력된 연락처만 표시됩니다.</p>
+        <p className="text-sm text-blue-600">💙 하객분들이 축하 전화를 드릴 수 있는 연락처를 입력해주세요. 입력된 연락처만 표시됩니다.</p>
 
         <div className="space-y-4">
           {/* 신랑측 연락처 */}

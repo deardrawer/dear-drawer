@@ -18,14 +18,14 @@ export const SAMPLE_QUOTE = {
 
 export const SAMPLE_PROFILES = {
   groom: {
-    aboutLabel: 'ABOUT GROOM',
-    subtitle: '따뜻한 마음을 가진 사람',
+    aboutLabel: 'ABOUT MINJUN',
+    subtitle: '서연이가 소개하는 민준',
     intro: '따뜻한 마음으로 가족을 사랑하는 사람입니다.\n음악과 여행을 좋아하며, 주말이면 카페에서 책 읽는 것을 즐깁니다.',
     tag: '#낙천적 #유머러스 #다정함',
   },
   bride: {
-    aboutLabel: 'ABOUT BRIDE',
-    subtitle: '밝은 미소를 가진 사람',
+    aboutLabel: 'ABOUT SEOYEON',
+    subtitle: '민준이가 소개하는 서연',
     intro: '밝은 미소로 주변을 환하게 만드는 사람입니다.\n요리와 그림 그리기를 좋아하며, 작은 것에도 행복을 느끼는 낙천적인 성격입니다.',
     tag: '#꼼꼼함 #따뜻함 #행복전도사',
   },

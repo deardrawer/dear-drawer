@@ -754,8 +754,8 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors }: Page
       )}
 
       {/* RSVP Section */}
-      {invitation.rsvpEnabled && <section id="preview-rsvp" className="px-6 py-14 text-center" style={{ background: themeColors.cardBg }}><p className="text-[10px] font-light mb-6" style={{ color: themeColors.gray, letterSpacing: '4px' }}>RSVP</p><p className="text-sm mb-4" style={{ color: '#666' }}>Please let us know if you can attend</p><button className="w-full py-3 rounded-lg text-xs" style={{ background: themeColors.primary, color: '#fff' }}>Submit RSVP</button>{invitation.rsvpDeadline && <p className="text-[10px] font-light mt-3" style={{ color: '#999' }}>Deadline: {formatDateDisplay(invitation.rsvpDeadline)}</p>}</section>}
-      <div className="px-6 py-10 text-center" style={{ background: themeColors.background }}><p className="text-[10px] font-light" style={{ color: '#999' }}>Thank you for celebrating with us</p></div>
+      {invitation.rsvpEnabled && <section id="preview-rsvp" className="px-6 py-14 text-center" style={{ background: themeColors.cardBg }}><p className="text-[10px] font-light mb-6" style={{ color: themeColors.gray, letterSpacing: '4px' }}>RSVP</p><p className="text-sm mb-4" style={{ color: '#666' }}>참석 여부를 알려주세요</p><button className="w-full py-3 rounded-lg text-xs" style={{ background: themeColors.primary, color: '#fff' }}>참석 의사 전달하기</button>{invitation.rsvpDeadline && <p className="text-[10px] font-light mt-3" style={{ color: '#999' }}>마감일: {formatDateDisplay(invitation.rsvpDeadline)}</p>}</section>}
+      <div className="px-6 py-10 text-center" style={{ background: themeColors.background }}><p className="text-[10px] font-light" style={{ color: '#999' }}>소중한 시간 내어주셔서 감사합니다</p></div>
     </div>
   )
 }
@@ -1125,7 +1125,7 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
 
       {/* Footer */}
       <div className="px-6 py-10 text-center" style={{ background: themeColors.background }}>
-        <p className="text-[10px] font-light" style={{ color: '#999' }}>Thank you for celebrating with us</p>
+        <p className="text-[10px] font-light" style={{ color: '#999' }}>소중한 시간 내어주셔서 감사합니다</p>
       </div>
     </div>
   )

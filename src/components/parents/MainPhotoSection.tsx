@@ -66,6 +66,14 @@ export default function MainPhotoSection({
     }
   }
 
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev - 1 + photos.length) % photos.length)
+  }
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % photos.length)
+  }
+
   return (
     <section
       ref={ref as React.RefObject<HTMLDivElement>}
@@ -83,6 +91,54 @@ export default function MainPhotoSection({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
+        {/* 좌측 네비게이션 버튼 */}
+        <button
+          onClick={handlePrev}
+          className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
+          style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+          }}
+          aria-label="이전 사진"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={theme.accent}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
+
+        {/* 우측 네비게이션 버튼 */}
+        <button
+          onClick={handleNext}
+          className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
+          style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+          }}
+          aria-label="다음 사진"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={theme.accent}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
+
         <div className="flex justify-center">
           {photos.map((photo, index) => {
             let diff = index - currentIndex

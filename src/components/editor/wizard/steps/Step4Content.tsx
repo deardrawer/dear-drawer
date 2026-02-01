@@ -1497,6 +1497,38 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                   )}
                 </div>
 
+                {/* 사진공유 */}
+                <div className="p-4 bg-gray-50 rounded-lg space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-medium">사진 공유</Label>
+                    <Switch
+                      checked={invitation.content.info.photoShare.enabled}
+                      onCheckedChange={(checked) => updateNestedField('content.info.photoShare.enabled', checked)}
+                    />
+                  </div>
+                  {invitation.content.info.photoShare.enabled && (
+                    <div className="space-y-2">
+                      <Textarea
+                        value={invitation.content.info.photoShare.content}
+                        onChange={(e) => updateNestedField('content.info.photoShare.content', e.target.value)}
+                        rows={3}
+                        className="resize-none"
+                        placeholder="결혼식에서 찍은 사진들을 공유해주세요!"
+                      />
+                      <Input
+                        value={invitation.content.info.photoShare.buttonText}
+                        onChange={(e) => updateNestedField('content.info.photoShare.buttonText', e.target.value)}
+                        placeholder="버튼 텍스트 (예: 사진 공유하기)"
+                      />
+                      <Input
+                        value={invitation.content.info.photoShare.url}
+                        onChange={(e) => updateNestedField('content.info.photoShare.url', e.target.value)}
+                        placeholder="공유 링크 URL (예: https://photos.google.com/...)"
+                      />
+                    </div>
+                  )}
+                </div>
+
                 {/* 화환 안내 */}
                 <div className="p-4 bg-gray-50 rounded-lg space-y-2">
                   <div className="flex items-center justify-between">

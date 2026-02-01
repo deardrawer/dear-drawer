@@ -613,7 +613,7 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors }: Page
       {/* Guidance & Info Section - 통합 섹션 */}
       {sectionVisibility.guidance && (
         <section id="preview-guidance" className="px-6 py-14" style={{ background: themeColors.background }}>
-          {invitation.guidance?.image && (
+          {invitation.guidance?.image ? (
             <div className="w-full aspect-[4/5] rounded-2xl mb-8 overflow-hidden" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.06), 0 12px 28px rgba(0,0,0,0.08)' }}>
               <div
                 className="w-full h-full transition-transform duration-300"
@@ -643,6 +643,10 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors }: Page
                   }
                 })()}
               />
+            </div>
+          ) : (
+            <div className="w-full aspect-[4/5] rounded-2xl mb-8 bg-gray-100 flex items-center justify-center opacity-50" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.06), 0 12px 28px rgba(0,0,0,0.08)' }}>
+              <span className="text-gray-400 text-sm">안내 이미지</span>
             </div>
           )}
           <h3 className="text-[15px] text-center mb-3" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400, letterSpacing: '1px' }}>
@@ -992,8 +996,43 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
       {/* Guidance & Info Section */}
       {sectionVisibility.guidance && (
         <section className="px-6 py-14" style={{ background: themeColors.sectionBg }}>
+          {invitation.guidance?.image ? (
+            <div className="w-full aspect-[4/5] rounded-2xl mb-8 overflow-hidden" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.06), 0 12px 28px rgba(0,0,0,0.08)' }}>
+              <div
+                className="w-full h-full transition-transform duration-300"
+                style={(() => {
+                  const s = invitation.guidance.imageSettings || {}
+                  const hasCropData = s.cropWidth !== undefined && s.cropHeight !== undefined && (s.cropWidth < 1 || s.cropHeight < 1)
+                  if (hasCropData) {
+                    const cw = s.cropWidth || 1
+                    const ch = s.cropHeight || 1
+                    const cx = s.cropX || 0
+                    const cy = s.cropY || 0
+                    const posX = cw >= 1 ? 0 : (cx / (1 - cw)) * 100
+                    const posY = ch >= 1 ? 0 : (cy / (1 - ch)) * 100
+                    return {
+                      backgroundImage: `url(${invitation.guidance.image})`,
+                      backgroundSize: `${100 / cw}% ${100 / ch}%`,
+                      backgroundPosition: `${posX}% ${posY}%`,
+                      backgroundRepeat: 'no-repeat' as const,
+                    }
+                  }
+                  return {
+                    backgroundImage: `url(${invitation.guidance.image})`,
+                    backgroundSize: 'cover' as const,
+                    backgroundPosition: 'center' as const,
+                    transform: `scale(${s.scale || 1}) translate(${s.positionX || 0}%, ${s.positionY || 0}%)`,
+                  }
+                })()}
+              />
+            </div>
+          ) : (
+            <div className="w-full aspect-[4/5] rounded-2xl mb-8 bg-gray-100 flex items-center justify-center opacity-50" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.06), 0 12px 28px rgba(0,0,0,0.08)' }}>
+              <span className="text-gray-400 text-sm">안내 이미지</span>
+            </div>
+          )}
           <h3 className="text-[15px] text-center mb-3" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400 }}>
-            행복한 시간을 위한 안내
+            {invitation.guidance?.title || '행복한 시간을 위한 안내'}
           </h3>
           <div className="w-10 h-px mx-auto mb-8" style={{ background: themeColors.divider }} />
 

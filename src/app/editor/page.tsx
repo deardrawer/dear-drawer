@@ -620,9 +620,16 @@ function EditorContent() {
                     onScrollPreviewToTop={() => previewRef.current?.scrollToTop()}
                     invitationId={invitationId}
                     templateId={templateId}
-                    slug={urlSlug || invitationId}
+                    slug={savedSlug || urlSlug || invitationId}
                     onSave={handleSave}
                     isSaving={isSaving}
+                    onSlugChange={(newSlug) => {
+                      setSavedSlug(newSlug)
+                      // URL 파라미터 업데이트
+                      const url = new URL(window.location.href)
+                      url.searchParams.set('slug', newSlug)
+                      window.history.replaceState({}, '', url.toString())
+                    }}
                   />
                 </div>
               </>

@@ -31,6 +31,7 @@ interface WizardEditorProps {
   slug?: string | null
   onSave?: () => Promise<void>
   isSaving?: boolean
+  onSlugChange?: (newSlug: string) => void
 }
 
 export default function WizardEditor({
@@ -43,6 +44,7 @@ export default function WizardEditor({
   slug,
   onSave,
   isSaving,
+  onSlugChange,
 }: WizardEditorProps) {
   const { wizardStep } = useEditorStore()
 
@@ -66,7 +68,7 @@ export default function WizardEditor({
       case 4:
         return <Step4MenuSettings />
       case 5:
-        return <Step5Publish {...props} invitationId={invitationId} slug={slug} onSave={onSave} onOpenShareModal={onOpenShareModal} />
+        return <Step5Publish {...props} invitationId={invitationId} slug={slug} onSave={onSave} onOpenShareModal={onOpenShareModal} onSlugChange={onSlugChange} />
       default:
         return null
     }

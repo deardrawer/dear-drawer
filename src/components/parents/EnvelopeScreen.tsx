@@ -72,13 +72,7 @@ export default function EnvelopeScreen({
         setTimeout(() => {
           setIsExtracted(true)
           setStage(3)
-
-          // 본문으로 자동 전환 (에디터 미리보기에서는 비활성화)
-          if (!isPreview) {
-            setTimeout(() => {
-              onOpen()
-            }, 1500)
-          }
+          // 자동 전환 제거 - 클릭해야만 본문으로 이동
         }, 1000)
       }, 800)
     } else if (stage === 3 && isExtracted) {

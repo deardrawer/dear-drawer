@@ -39,3 +39,4 @@ public/uploads/
 next-env.d.ts
 nul
 .open-next/
+.wrangler/

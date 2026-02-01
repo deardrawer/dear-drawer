@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import {
   Noto_Sans_KR,
+  Noto_Serif_KR,
   Cormorant_Garamond,
   Playfair_Display,
   Montserrat,
@@ -103,6 +104,13 @@ const ebGaramond = EB_Garamond({
   display: "swap",
 });
 
+const notoSerifKR = Noto_Serif_KR({
+  variable: "--font-noto-serif-kr",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
 // 추가 한글 폰트 (Parents 템플릿용)
 const nanumGothic = Nanum_Gothic({
   variable: "--font-nanum-gothic",
@@ -125,9 +133,9 @@ const hahmlet = Hahmlet({
 });
 
 export const metadata: Metadata = {
-  title: "dear drawer - 나만의 모바일 청첩장",
-  description: "AI가 만들어주는 특별한 모바일 청첩장. 간단한 질문에 답하면 나만의 청첩장이 완성됩니다.",
-  keywords: ["청첩장", "모바일청첩장", "웨딩", "결혼식", "AI청첩장", "dear drawer"],
+  title: "dear drawer - 세상에 하나뿐인 우리의 이야기를 담은 청첩장",
+  description: "우리만의 특별한 이야기를 담은 모바일 청첩장. 디어드로어가 여러분의 스토리 초안 작성을 도와드려요.",
+  keywords: ["청첩장", "모바일청첩장", "웨딩", "결혼식", "스토리청첩장", "dear drawer"],
   icons: {
     icon: "/favicon.png",
     apple: "/favicon.png",
@@ -154,6 +162,7 @@ const fontVariables = [
   cinzel.variable,
   gowunDodum.variable,
   ebGaramond.variable,
+  notoSerifKR.variable,
   // Parents 템플릿용 추가 폰트
   nanumGothic.variable,
   songMyung.variable,

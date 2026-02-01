@@ -1,6 +1,47 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* OmuDaye Font for Romantic Style */
+@font-face {
+  font-family: 'OmuDaye';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2304-01@1.0/omyu_pretty.woff2') format('woff2');
+  font-weight: normal;
+  font-display: swap;
+  size-adjust: 107%;
+}
+
+/* Ridibatang Font for Classic Style */
+@font-face {
+  font-family: 'Ridibatang';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.0/RIDIBatang.woff') format('woff');
+  font-weight: normal;
+  font-display: swap;
+}
+
+/* Pretendard Font for Modern Style */
+@font-face {
+  font-family: 'Pretendard';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-display: swap;
+}
+
+/* ELandChoice Font for Luxury Style */
+@font-face {
+  font-family: 'ELandChoice';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts-20-12@1.0/ELAND_Choice_M.woff') format('woff');
+  font-weight: 500;
+  font-display: swap;
+}
+
+/* JeonnamEducationBarun Font for Contemporary Style */
+@font-face {
+  font-family: 'JeonnamEducationBarun';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-1@1.0/JNE-Bareun-TTF-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

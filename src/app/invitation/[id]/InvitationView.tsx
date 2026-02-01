@@ -296,12 +296,12 @@ type ColorTheme = 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-g
 interface ColorConfig { primary: string; secondary: string; accent: string; background: string; sectionBg: string; cardBg: string; divider: string; text: string; gray: string }
 
 const colorThemes: Record<ColorTheme, ColorConfig> = {
-  'classic-rose': { primary: '#E91E63', secondary: '#D4A574', accent: '#d4a574', background: '#FFF8F5', sectionBg: '#FFE8E8', cardBg: '#FFFFFF', divider: '#d4b896', text: '#333333', gray: '#666666' },
-  'modern-black': { primary: '#1A1A1A', secondary: '#888888', accent: '#1A1A1A', background: '#FFFFFF', sectionBg: '#F5F5F5', cardBg: '#FFFFFF', divider: '#CCCCCC', text: '#1A1A1A', gray: '#666666' },
-  'romantic-blush': { primary: '#D4A5A5', secondary: '#C9B8A8', accent: '#C9B8A8', background: '#FDF8F6', sectionBg: '#F8EFEC', cardBg: '#FFFFFF', divider: '#D4C4BC', text: '#5C4B4B', gray: '#8B7676' },
-  'nature-green': { primary: '#6B8E6B', secondary: '#A8B5A0', accent: '#8FA888', background: '#F5F7F4', sectionBg: '#EBF0E8', cardBg: '#FFFFFF', divider: '#A8B5A0', text: '#3D4A3D', gray: '#6B7B6B' },
-  'luxury-navy': { primary: '#1E3A5F', secondary: '#C9A96E', accent: '#C9A96E', background: '#F8F9FA', sectionBg: '#E8ECF0', cardBg: '#FFFFFF', divider: '#C9A96E', text: '#1E3A5F', gray: '#5A6B7C' },
-  'sunset-coral': { primary: '#E8846B', secondary: '#F5C7A9', accent: '#E8A87C', background: '#FFFAF7', sectionBg: '#FFEEE5', cardBg: '#FFFFFF', divider: '#E8A87C', text: '#5C4035', gray: '#8B6B5C' },
+  'classic-rose': { primary: '#C41050', secondary: '#B8956A', accent: '#B8956A', background: '#FFF8F5', sectionBg: '#FFE8E8', cardBg: '#FFFFFF', divider: '#d4b896', text: '#2a2a2a', gray: '#444444' },
+  'modern-black': { primary: '#111111', secondary: '#555555', accent: '#111111', background: '#FFFFFF', sectionBg: '#F5F5F5', cardBg: '#FFFFFF', divider: '#CCCCCC', text: '#2a2a2a', gray: '#444444' },
+  'romantic-blush': { primary: '#A67A7A', secondary: '#8a7068', accent: '#8a7068', background: '#FDF8F6', sectionBg: '#F8EFEC', cardBg: '#FFFFFF', divider: '#D4C4BC', text: '#2a2a2a', gray: '#444444' },
+  'nature-green': { primary: '#3A5A3A', secondary: '#6A7A62', accent: '#5A7A52', background: '#F5F7F4', sectionBg: '#EBF0E8', cardBg: '#FFFFFF', divider: '#A8B5A0', text: '#2a2a2a', gray: '#444444' },
+  'luxury-navy': { primary: '#0f2035', secondary: '#8A6A3A', accent: '#8A6A3A', background: '#F8F9FA', sectionBg: '#E8ECF0', cardBg: '#FFFFFF', divider: '#C9A96E', text: '#2a2a2a', gray: '#444444' },
+  'sunset-coral': { primary: '#B85040', secondary: '#B88060', accent: '#B8683A', background: '#FFFAF7', sectionBg: '#FFEEE5', cardBg: '#FFFFFF', divider: '#E8A87C', text: '#2a2a2a', gray: '#444444' },
 }
 
 // 폰트 스타일 정의
@@ -309,11 +309,11 @@ type FontStyle = 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury'
 interface FontConfig { display: string; displayKr: string; body: string }
 
 const fontStyles: Record<FontStyle, FontConfig> = {
-  classic: { display: "'Playfair Display', serif", displayKr: "'Nanum Myeongjo', serif", body: "'Nanum Myeongjo', serif" },
-  modern: { display: "'Montserrat', sans-serif", displayKr: "'Noto Sans KR', sans-serif", body: "'Noto Sans KR', sans-serif" },
-  romantic: { display: "'Lora', serif", displayKr: "'Gowun Batang', serif", body: "'Gowun Batang', serif" },
-  contemporary: { display: "'Cinzel', serif", displayKr: "'Gowun Dodum', sans-serif", body: "'Gowun Dodum', sans-serif" },
-  luxury: { display: "'EB Garamond', serif", displayKr: "'Nanum Myeongjo', serif", body: "'Nanum Myeongjo', serif" },
+  classic: { display: "'Playfair Display', serif", displayKr: "'Ridibatang', serif", body: "'Ridibatang', serif" },
+  modern: { display: "'Montserrat', sans-serif", displayKr: "'Pretendard', sans-serif", body: "'Pretendard', sans-serif" },
+  romantic: { display: "'Lora', serif", displayKr: "'OmuDaye', sans-serif", body: "'OmuDaye', sans-serif" },
+  contemporary: { display: "'Cinzel', serif", displayKr: "'JeonnamEducationBarun', sans-serif", body: "'JeonnamEducationBarun', sans-serif" },
+  luxury: { display: "'EB Garamond', serif", displayKr: "'ELandChoice', serif", body: "'ELandChoice', serif" },
 }
 
 // 날짜 포맷
@@ -450,10 +450,10 @@ function createDefaultContent(invitation: Invitation): InvitationContent {
     },
     wedding: { date: invitation.wedding_date || '', time: '', timeDisplay: invitation.wedding_time || '', dayOfWeek: '', title: 'OUR WEDDING', venue: { name: invitation.venue_name || '', hall: '', address: invitation.venue_address || '' }, directions: { car: '', publicTransport: '', train: '', expressBus: '' } },
     relationship: { startDate: '', stories: [], closingText: '' },
-    content: { greeting: invitation.greeting_message || '', quote: { text: '', author: '' }, thankYou: { title: 'THANK YOU', message: '', sign: '' }, info: { dressCode: { title: '', content: '', enabled: false }, photoShare: { title: '', content: '', buttonText: '', url: '', enabled: false }, photoBooth: { title: '', content: '', enabled: false }, flowerChild: { title: '', content: '', enabled: false }, flowerGift: { title: '', content: '', enabled: false }, wreath: { title: '', content: '', enabled: false }, shuttle: { title: '', content: '', enabled: false }, reception: { title: '', content: '', venue: '', datetime: '', enabled: false }, customItems: [], itemOrder: ['dressCode', 'photoBooth', 'photoShare', 'flowerGift', 'flowerChild', 'wreath', 'shuttle', 'reception'] }, interviews: [], guestbookQuestions: [] },
+    content: { greeting: invitation.greeting_message || '', quote: { text: '', author: '' }, thankYou: { title: 'THANK YOU', message: '', sign: '' }, info: { dressCode: { title: '', content: '', enabled: false }, photoShare: { title: '', content: '', buttonText: '', url: '', enabled: false }, photoBooth: { title: '', content: '', enabled: false }, flowerChild: { title: '', content: '', enabled: false }, flowerGift: { title: '', content: '', enabled: false }, wreath: { title: '', content: '', enabled: false }, shuttle: { title: '', content: '', enabled: false }, reception: { title: '', content: '', venue: '', datetime: '', enabled: false }, customItems: [], itemOrder: ['dressCode', 'photoBooth', 'photoShare', 'flowerGift', 'flowerChild', 'wreath', 'shuttle', 'reception'] }, interviews: [], guestbookQuestions: [], parentsGreeting: '', parentsSign: '', interviewIntro: '' },
     gallery: { images: [], imageSettings: [] },
     media: { coverImage: invitation.main_image || '', infoImage: '', bgm: '' },
-    meta: { title: '', description: '', ogImage: '', kakaoThumbnail: '' },
+    meta: { title: '', description: '', ogImage: '', kakaoThumbnail: '', kakaoTitle: '', kakaoDescription: '' },
     templateId: 'narrative-our',
     primaryColor: '#E91E63',
     secondaryColor: '#D4A574',
@@ -466,7 +466,8 @@ function createDefaultContent(invitation: Invitation): InvitationContent {
     rsvpDeadline: '',
     rsvpAllowGuestCount: true,
     deceasedDisplayStyle: 'flower',
-    sectionVisibility: { coupleProfile: true, ourStory: true, interview: true, guidance: false, bankAccounts: true, guestbook: true },
+    sectionVisibility: { coupleProfile: true, ourStory: true, parentsGreeting: true, interview: true, guidance: false, bankAccounts: true, guestbook: true, contacts: true },
+    profileOrder: 'groom-first',
     design: { introAnimation: 'fade-in', coverTitle: 'OUR WEDDING', sectionDividers: { invitation: 'INVITATION', ourStory: 'OUR STORY', aboutUs: 'ABOUT US', interview: 'INTERVIEW', gallery: 'GALLERY', information: 'INFORMATION', location: 'LOCATION', rsvp: 'RSVP', thankYou: 'THANK YOU', guestbook: 'GUESTBOOK' } },
     bgm: { enabled: false, url: '', autoplay: false },
     guidance: { enabled: false, title: '', content: '', image: '', imageSettings: { scale: 1, positionX: 0, positionY: 0 } },
@@ -1085,7 +1086,7 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors, isPaid
         <>
           <section className="anim-section py-16 px-7 text-center" style={{ background: themeColors.cardBg }}>
             <div className="anim-line anim-line-top w-px h-10 mx-auto mb-6" style={{ background: themeColors.divider }} />
-            <p className="anim-title text-sm font-light mb-4" style={{ fontFamily: fonts.displayKr, color: themeColors.text, letterSpacing: '1px' }}>결혼에 관한 우리의 이야기</p>
+            <p className="anim-title text-sm font-light mb-4" style={{ fontFamily: fonts.displayKr, color: themeColors.text, letterSpacing: '1px' }}>{invitation.content?.interviewIntro || '결혼에 관한 우리의 이야기'}</p>
             <div className="anim-line anim-line-bottom w-px h-10 mx-auto mt-6" style={{ background: themeColors.divider }} />
           </section>
           {invitation.content.interviews.map((interview, index) => interview.question || interview.answer ? (
@@ -1188,7 +1189,7 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors, isPaid
         {invitation.content?.thankYou?.message ? (
           <p className="anim-paragraph text-[11px] font-light leading-[2.2] mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: invitation.content.thankYou.message.replace(/\n/g, '<br/>') }} />
         ) : (
-          <p className="anim-paragraph text-[11px] text-gray-400 italic mb-7">참석해 주셔서 감사합니다.</p>
+          <p className="anim-paragraph text-[11px] text-gray-400 mb-7">참석해 주셔서 감사합니다.</p>
         )}
         {invitation.content?.thankYou?.sign && <p className="anim-fade text-[11px] font-light" style={{ fontFamily: fonts.displayKr, color: themeColors.gray }}>{invitation.content.thankYou.sign}</p>}
       </section>

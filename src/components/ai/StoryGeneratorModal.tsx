@@ -45,20 +45,28 @@ const exampleAnswers: Record<string, string> = {
   bride_partner_complement: '결정을 못할 때 방향을 제시해주고, 힘들 때 묵묵히 곁에 있어줘요.',
 }
 
+// 순서: 소개 → 스토리 → 인터뷰 → 감사인사
 const sectionLabels: Record<keyof GeneratedStory, { title: string; description: string }> = {
+  profileIntro: {
+    title: '커플 소개',
+    description: '서로를 소개하는 글',
+  },
   ourStory: {
-    title: '두 분은 어떻게 만나셨나요?',
+    title: '러브스토리',
     description: '두 사람의 만남과 사랑 이야기',
   },
   decision: {
-    title: '결혼을 결심하게 된 계기는?',
-    description: '결혼을 결심하게 된 계기',
+    title: '결혼을 결심한 이유',
+    description: '인터뷰 Q&A 형식',
   },
-  invitation: {
-    title: '하객분들께 전하고 싶은 말씀은?',
-    description: '하객들에게 전하는 인사',
+  thankYou: {
+    title: '감사 인사',
+    description: '하객분들께 전하는 감사',
   },
 }
+
+// 섹션 순서 배열
+const sectionOrder: (keyof GeneratedStory)[] = ['profileIntro', 'ourStory', 'decision', 'thankYou']
 
 interface StoryGeneratorModalProps {
   open: boolean
@@ -183,7 +191,7 @@ export default function StoryGeneratorModal({
 
       if (!response.ok) {
         const errorData: { error?: string } = await response.json()
-        throw new Error(errorData.error || '스토리 생성에 실패했습니다.')
+        throw new Error(errorData.error || '스토리 작성에 실패했습니다.')
       }
 
       const story: FamilyWhyWeChoseStory = await response.json()
@@ -194,7 +202,7 @@ export default function StoryGeneratorModal({
       setCurrentQuestionIndex(0)
       setStep('questions')
     } catch (err) {
-      setError(err instanceof Error ? err.message : '스토리 생성 중 오류가 발생했습니다.')
+      setError(err instanceof Error ? err.message : '스토리 작성 중 오류가 발생했습니다.')
       setStep('questions')
     } finally {
       setIsLoading(false)
@@ -216,14 +224,14 @@ export default function StoryGeneratorModal({
 
       if (!response.ok) {
         const errorData: { error?: string } = await response.json()
-        throw new Error(errorData.error || '스토리 생성에 실패했습니다.')
+        throw new Error(errorData.error || '스토리 작성에 실패했습니다.')
       }
 
       const story: GeneratedStory = await response.json()
       setGeneratedStory(story)
       setStep('results')
     } catch (err) {
-      setError(err instanceof Error ? err.message : '스토리 생성 중 오류가 발생했습니다.')
+      setError(err instanceof Error ? err.message : '스토리 작성 중 오류가 발생했습니다.')
       setStep('questions')
     } finally {
       setIsLoading(false)
@@ -249,7 +257,7 @@ export default function StoryGeneratorModal({
 
       if (!response.ok) {
         const errorData: { error?: string } = await response.json()
-        throw new Error(errorData.error || '섹션 재생성에 실패했습니다.')
+        throw new Error(errorData.error || '섹션 재작성에 실패했습니다.')
       }
 
       const result: Record<string, string> = await response.json()
@@ -258,7 +266,7 @@ export default function StoryGeneratorModal({
         [section]: result[section],
       })
     } catch (err) {
-      setError(err instanceof Error ? err.message : '섹션 재생성 중 오류가 발생했습니다.')
+      setError(err instanceof Error ? err.message : '섹션 재작성 중 오류가 발생했습니다.')
     } finally {
       setRegeneratingSection(null)
     }
@@ -283,7 +291,7 @@ export default function StoryGeneratorModal({
 
       if (!response.ok) {
         const errorData: { error?: string } = await response.json()
-        throw new Error(errorData.error || '섹션 재생성에 실패했습니다.')
+        throw new Error(errorData.error || '섹션 재작성에 실패했습니다.')
       }
 
       const result: FamilyWhyWeChoseStory = await response.json()
@@ -292,7 +300,7 @@ export default function StoryGeneratorModal({
         [section]: result[section],
       })
     } catch (err) {
-      setError(err instanceof Error ? err.message : '섹션 재생성 중 오류가 발생했습니다.')
+      setError(err instanceof Error ? err.message : '섹션 재작성 중 오류가 발생했습니다.')
     } finally {
       setRegeneratingSection(null)
     }
@@ -339,12 +347,12 @@ export default function StoryGeneratorModal({
 
   // 현재 단계 타이틀
   const getStepTitle = () => {
-    if (step === 'generating') return 'AI가 스토리를 작성 중입니다...'
-    if (step === 'results') return '생성된 스토리'
+    if (step === 'generating') return '스토리 초안을 작성 중입니다...'
+    if (step === 'results') return '작성된 스토리'
     if (templateType === 'family') {
       return phase === 'whyWeChose' ? '서로를 선택한 이유' : '인터뷰 질문'
     }
-    return 'AI 스토리 생성'
+    return '스토리 초안 작성'
   }
 
   return (
@@ -475,7 +483,7 @@ export default function StoryGeneratorModal({
                   disabled={currentQuestion.required && !currentAnswer.trim()}
                 >
                   {currentQuestionIndex === questions.length - 1
-                    ? (templateType === 'family' && phase === 'whyWeChose' ? '다음 단계로' : 'AI 생성 시작')
+                    ? (templateType === 'family' && phase === 'whyWeChose' ? '다음 단계로' : '초안 작성 시작')
                     : '다음'}
                 </Button>
               </div>
@@ -488,7 +496,7 @@ export default function StoryGeneratorModal({
           <div className="py-12 text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-rose-200 border-t-rose-600 mb-4" />
             <p className="text-gray-600">
-              AI가 두 분의 이야기를 바탕으로
+              두 분의 이야기를 바탕으로
               <br />
               {templateType === 'family' && phase === 'whyWeChose'
                 ? '"서로를 선택한 이유"를 작성하고 있습니다...'
@@ -521,9 +529,9 @@ export default function StoryGeneratorModal({
                           {regeneratingSection === 'groomDescription' ? (
                             <span className="flex items-center gap-1">
                               <span className="animate-spin h-3 w-3 border-2 border-gray-300 border-t-gray-600 rounded-full" />
-                              재생성 중
+                              재작성 중
                             </span>
-                          ) : '재생성'}
+                          ) : '재작성'}
                         </Button>
                       </div>
                     </CardHeader>
@@ -569,9 +577,9 @@ export default function StoryGeneratorModal({
                           {regeneratingSection === 'brideDescription' ? (
                             <span className="flex items-center gap-1">
                               <span className="animate-spin h-3 w-3 border-2 border-gray-300 border-t-gray-600 rounded-full" />
-                              재생성 중
+                              재작성 중
                             </span>
-                          ) : '재생성'}
+                          ) : '재작성'}
                         </Button>
                       </div>
                     </CardHeader>
@@ -603,11 +611,11 @@ export default function StoryGeneratorModal({
                   </div>
                 </div>
 
-                {/* 인터뷰 결과 */}
+                {/* 작성된 콘텐츠 결과 */}
                 {generatedStory && (
                   <div>
-                    <h3 className="font-medium text-gray-900 mb-3">인터뷰</h3>
-                    {(Object.keys(sectionLabels) as Array<keyof GeneratedStory>).map((section) => (
+                    <h3 className="font-medium text-gray-900 mb-3">작성된 콘텐츠</h3>
+                    {sectionOrder.map((section) => (
                       <Card key={section} className="mb-3">
                         <CardHeader className="pb-2">
                           <div className="flex items-center justify-between">
@@ -625,9 +633,9 @@ export default function StoryGeneratorModal({
                               {regeneratingSection === section ? (
                                 <span className="flex items-center gap-1">
                                   <span className="animate-spin h-3 w-3 border-2 border-gray-300 border-t-gray-600 rounded-full" />
-                                  재생성 중
+                                  재작성 중
                                 </span>
-                              ) : '재생성'}
+                              ) : '재작성'}
                             </Button>
                           </div>
                         </CardHeader>
@@ -643,10 +651,10 @@ export default function StoryGeneratorModal({
               </>
             )}
 
-            {/* 기본: 인터뷰 결과만 */}
+            {/* 기본: 작성된 콘텐츠 */}
             {templateType === 'default' && generatedStory && (
               <>
-                {(Object.keys(sectionLabels) as Array<keyof GeneratedStory>).map((section) => (
+                {sectionOrder.map((section) => (
                   <Card key={section}>
                     <CardHeader className="pb-2">
                       <div className="flex items-center justify-between">
@@ -668,7 +676,7 @@ export default function StoryGeneratorModal({
                           {regeneratingSection === section ? (
                             <span className="flex items-center gap-1">
                               <span className="animate-spin h-3 w-3 border-2 border-gray-300 border-t-gray-600 rounded-full" />
-                              재생성 중
+                              재작성 중
                             </span>
                           ) : (
                             '재생성'

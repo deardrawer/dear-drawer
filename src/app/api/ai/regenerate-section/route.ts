@@ -6,12 +6,13 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 })
 
-type Section = 'ourStory' | 'decision' | 'invitation'
+type Section = 'profileIntro' | 'ourStory' | 'decision' | 'thankYou'
 
 const sectionDescriptions: Record<Section, string> = {
-  ourStory: '두 사람의 만남과 사랑 이야기 (첫 만남, 연애 과정)',
-  decision: '결혼을 결심하게 된 계기와 서로에 대한 마음',
-  invitation: '하객들에게 전하는 초대의 말씀',
+  profileIntro: '커플 소개 (서로를 소개하는 글, 어떤 사람인지)',
+  ourStory: '러브스토리 (두 사람의 만남과 사랑 이야기)',
+  decision: '결혼을 결심하게 된 계기 (인터뷰 Q&A 형식)',
+  thankYou: '감사 인사 (하객분들께 전하는 따뜻한 감사)',
 }
 
 export async function POST(request: NextRequest) {
@@ -29,7 +30,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!['ourStory', 'decision', 'invitation'].includes(section)) {
+    if (!['profileIntro', 'ourStory', 'decision', 'thankYou'].includes(section)) {
       return NextResponse.json(
         { error: '유효하지 않은 섹션입니다.' },
         { status: 400 }
@@ -61,7 +62,11 @@ ${answersContext}
 ${currentContent || '없음'}
 
 [요구사항]
-1. 길이: 120-180자, 3-5문장
+1. 길이 가이드:
+   - profileIntro: 80-120자
+   - ourStory: 120-180자
+   - decision: 100-150자
+   - thankYou: 60-100자
 2. 어조: 진솔하고 따뜻한 경어체
 3. 이전 내용과 다른 새로운 표현과 구조로 작성
 4. 제공된 답변을 자연스럽게 녹여서 작성

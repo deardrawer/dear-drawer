@@ -9,7 +9,7 @@ import { useAuth } from '@/components/providers/AuthProvider'
 import { getTemplateById } from '@/lib/templates'
 import { Button } from '@/components/ui/button'
 import { useEditorStore } from '@/store/editorStore'
-import EditPanel from '@/components/editor/EditPanel'
+import WizardEditor from '@/components/editor/wizard/WizardEditor'
 import Preview from '@/components/editor/Preview'
 import ShareModal from '@/components/share/ShareModal'
 import IntroSelector from '@/components/editor/IntroSelector'
@@ -26,7 +26,8 @@ function EditorContent() {
   const templateId = searchParams.get('template') || 'narrative-our'
   const urlTemplate = getTemplateById(templateId)
 
-  const { invitation, template, initInvitation, updateMultipleFields, updateNestedField, toggleSectionVisibility, isDirty, isSaving, setSaving, resetDirty } = useEditorStore()
+  const { invitation, template, initInvitation, updateMultipleFields, updateNestedField, toggleSectionVisibility, isDirty, isSaving, setSaving, resetDirty, markStepsSaved, setWizardStep } = useEditorStore()
+  const initialStep = searchParams.get('step') // URL에서 시작 스텝 파라미터
 
   // editId가 있으면 store의 template 사용, 없으면 URL의 template 사용
   const activeTemplate = editId ? template : urlTemplate
@@ -39,6 +40,9 @@ function EditorContent() {
   const [isLoading, setIsLoading] = useState(!!editId)
   const [loadAttempted, setLoadAttempted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [isExitModalOpen, setIsExitModalOpen] = useState(false)
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
+  const previewRef = useRef<{ scrollToTop: () => void } | null>(null)
 
   // 모바일 감지
   useEffect(() => {
@@ -47,6 +51,65 @@ function EditorContent() {
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
+
+  // 나가기 방지 (미저장 변경사항이 있을 때)
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault()
+        e.returnValue = '저장하지 않은 변경사항이 있습니다. 페이지를 떠나시겠습니까?'
+        return e.returnValue
+      }
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [isDirty])
+
+  // 브라우저 뒤로가기 방지
+  useEffect(() => {
+    if (isDirty) {
+      // 히스토리에 현재 상태 추가 (뒤로가기 방지용)
+      window.history.pushState(null, '', window.location.href)
+
+      const handlePopState = () => {
+        // 뒤로가기 시 모달 표시
+        window.history.pushState(null, '', window.location.href)
+        setPendingNavigation('/')
+        setIsExitModalOpen(true)
+      }
+
+      window.addEventListener('popstate', handlePopState)
+      return () => window.removeEventListener('popstate', handlePopState)
+    }
+  }, [isDirty])
+
+  // 내부 링크 나가기 처리
+  const handleNavigate = (path: string) => {
+    if (isDirty) {
+      setPendingNavigation(path)
+      setIsExitModalOpen(true)
+    } else {
+      router.push(path)
+    }
+  }
+
+  // 저장 후 나가기
+  const handleSaveAndExit = async () => {
+    await handleSave()
+    if (pendingNavigation) {
+      router.push(pendingNavigation)
+    }
+    setIsExitModalOpen(false)
+  }
+
+  // 저장하지 않고 나가기
+  const handleExitWithoutSave = () => {
+    resetDirty()
+    if (pendingNavigation) {
+      router.push(pendingNavigation)
+    }
+    setIsExitModalOpen(false)
+  }
 
   // 기존 청첩장 불러오기
   useEffect(() => {
@@ -117,8 +180,15 @@ function EditorContent() {
     // 새 청첩장인 경우 항상 초기화 (이전 데이터 무시)
     if (urlTemplate && isNewInvitation) {
       initInvitation(urlTemplate)
+      // URL에 step 파라미터가 있으면 해당 스텝으로 이동
+      if (initialStep) {
+        const step = parseInt(initialStep, 10)
+        if (step >= 1 && step <= 5) {
+          setTimeout(() => setWizardStep(step as 1 | 2 | 3 | 4 | 5), 0)
+        }
+      }
     }
-  }, [urlTemplate, isNewInvitation, initInvitation])
+  }, [urlTemplate, isNewInvitation, initInvitation, initialStep, setWizardStep])
 
   // Save invitation to database
   const handleSave = async () => {
@@ -205,6 +275,7 @@ function EditorContent() {
       }
 
       resetDirty()
+      markStepsSaved()  // 현재까지 방문한 스텝을 저장됨으로 표시
       alert('저장되었습니다!')
     } catch (error) {
       console.error('Save error:', error)
@@ -329,24 +400,11 @@ function EditorContent() {
       }
     }
 
-    // FAMILY 템플릿: 서로를 선택한 이유 적용
-    if (content.whyWeChose) {
-      // 신부가 신랑을 선택한 이유 (groom 쪽에 적용)
-      if (content.whyWeChose.groomDescription) {
-        updateNestedField('whyWeChose.groom.description', content.whyWeChose.groomDescription)
-      }
-      if (content.whyWeChose.groomQuote) {
-        updateNestedField('whyWeChose.groom.quote', content.whyWeChose.groomQuote)
-      }
-      // 신랑이 신부를 선택한 이유 (bride 쪽에 적용)
-      if (content.whyWeChose.brideDescription) {
-        updateNestedField('whyWeChose.bride.description', content.whyWeChose.brideDescription)
-      }
-      if (content.whyWeChose.brideQuote) {
-        updateNestedField('whyWeChose.bride.quote', content.whyWeChose.brideQuote)
-      }
-      // 서로를 선택한 이유 섹션 활성화
-      updateNestedField('whyWeChose.enabled', true)
+    // FAMILY 템플릿: 부모님 인사말 적용
+    if (content.parentsGreeting) {
+      updateNestedField('content.parentsGreeting', content.parentsGreeting)
+      // 부모님 인사말 섹션 활성화
+      toggleSectionVisibility('parentsGreeting')
     }
 
     // 다이얼로그 닫기
@@ -390,13 +448,23 @@ function EditorContent() {
       {/* Action Bar */}
       <header className="h-12 sm:h-14 border-b border-gray-100 bg-white flex items-center justify-between px-3 sm:px-6 shrink-0">
         <div className="flex items-center gap-2 sm:gap-4">
-          <Link href="/">
+          <button onClick={() => handleNavigate('/')} className="cursor-pointer">
             <img
               src="/logo.png"
               alt="Dear Drawer"
               className="h-5 sm:h-6 w-auto"
             />
-          </Link>
+          </button>
+          {/* 템플릿 타입 배지 - URL 또는 invitation에서 확인 */}
+          {(templateId === 'narrative-family' || invitation?.templateId === 'narrative-family') ? (
+            <span className="px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700 rounded-full">
+              family
+            </span>
+          ) : (
+            <span className="px-2 py-0.5 text-xs font-medium bg-rose-100 text-rose-700 rounded-full">
+              our
+            </span>
+          )}
           <div className="hidden sm:block h-4 w-px bg-gray-200" />
           <span className="hidden sm:inline text-sm text-gray-400 font-light tracking-wide">
             {activeTemplate?.name || 'Loading...'}
@@ -487,59 +555,95 @@ function EditorContent() {
         </div>
       </header>
 
-      {/* Main Editor Area */}
-      <div className="flex-1 flex overflow-hidden">
-        {isIntroSelectorOpen ? (
-          <>
-            {/* 인트로 선택 패널 - 모바일: 100%, 데스크탑: 40% */}
-            <div className={`${isMobile ? 'w-full' : 'w-2/5 min-w-[400px] max-w-[500px]'} border-r overflow-y-auto`}>
-              <IntroSelector onBack={() => setIsIntroSelectorOpen(false)} />
-            </div>
+      {/* Main Editor Area - 페이지 레벨 스크롤 */}
+      <div id="editor-scroll-container" className="flex-1 overflow-y-scroll bg-white">
+        <div className="w-full max-w-7xl mx-auto">
+          <div className="bg-white flex">
+            {isIntroSelectorOpen ? (
+              <>
+                {/* 인트로 미리보기 - 왼쪽 sticky */}
+                {!isMobile && (
+                  <div className="w-[450px] min-w-[450px] sticky top-0 h-[calc(100vh-120px)] flex items-center justify-center p-6 bg-white border-r border-gray-100">
+                    <div className="relative w-full max-w-[320px] aspect-[9/16] overflow-hidden shadow-lg border border-gray-100 rounded-2xl">
+                      <IntroPreview
+                        settings={invitation.intro}
+                        coverImage={invitation.media.coverImage}
+                        autoPlay={true}
+                        weddingDate={invitation.wedding.date}
+                        weddingTime={invitation.wedding.time}
+                        venueName={invitation.wedding.venue.name}
+                      />
+                    </div>
+                  </div>
+                )}
 
-            {/* 인트로 미리보기 - 데스크탑에서만 표시 */}
-            {!isMobile && (
-            <div className="flex-1 bg-gray-900 flex items-center justify-center p-8">
-              <div className="relative w-full max-w-[375px] h-[667px] bg-black rounded-[40px] overflow-hidden shadow-2xl">
-                {/* 인트로 미리보기 - 전체 영역 사용 */}
-                <div className="w-full h-full">
-                  <IntroPreview
-                    settings={invitation.intro}
-                    coverImage={invitation.media.coverImage}
-                    autoPlay={true}
-                    weddingDate={invitation.wedding.date}
-                    weddingTime={invitation.wedding.time}
-                    venueName={invitation.wedding.venue.name}
+                {/* 인트로 선택 패널 - 오른쪽 */}
+                <div className={`${isMobile ? 'w-full' : 'flex-1'}`}>
+                  <IntroSelector onBack={() => setIsIntroSelectorOpen(false)} />
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Preview - 왼쪽 sticky 고정, 세로 중앙 */}
+                {!isMobile && (
+                  <div className="w-[450px] min-w-[450px] sticky top-0 h-[calc(100vh-120px)] overflow-hidden bg-white flex justify-center items-center">
+                    <Preview ref={previewRef} />
+                  </div>
+                )}
+
+                {/* 구분선 - 부드러운 그라데이션 그림자 */}
+                {!isMobile && (
+                  <div className="w-8 mx-1 relative">
+                    <div className="absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-gray-100/80 to-transparent" />
+                    <div className="absolute inset-y-0 right-0 w-4 bg-gradient-to-l from-gray-100/80 to-transparent" />
+                  </div>
+                )}
+
+                {/* Edit Panel - 오른쪽, 자연스러운 스크롤 */}
+                <div className={`${isMobile ? 'w-full' : 'flex-1'} min-h-[calc(100vh-120px)]`}>
+                  {/* 모바일 안내 메시지 */}
+                  {isMobile && (
+                    <div className="bg-amber-50 border-b border-amber-200 px-4 py-3 text-center">
+                      <p className="text-sm text-amber-800">
+                        더 나은 편집 환경을 위해 데스크탑에서 작성해주세요
+                      </p>
+                    </div>
+                  )}
+                  <WizardEditor
+                    onOpenIntroSelector={() => setIsIntroSelectorOpen(true)}
+                    onOpenAIStoryGenerator={() => setIsAIStoryGeneratorOpen(true)}
+                    onOpenShareModal={() => setIsShareModalOpen(true)}
+                    onScrollPreviewToTop={() => previewRef.current?.scrollToTop()}
+                    invitationId={invitationId}
+                    templateId={templateId}
+                    onSave={handleSave}
+                    onPublish={async (slug: string) => {
+                      // 먼저 저장
+                      await handleSave()
+                      // 슬러그 설정 (실제 구현에서는 API 호출 필요)
+                      if (invitationId) {
+                        try {
+                          const response = await fetch(`/api/invitations/${invitationId}/slug`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ slug }),
+                          })
+                          if (!response.ok) {
+                            throw new Error('슬러그 설정에 실패했습니다.')
+                          }
+                        } catch (error) {
+                          console.error('Slug update error:', error)
+                          throw error
+                        }
+                      }
+                    }}
+                    isSaving={isSaving}
                   />
                 </div>
-                {/* 폰 노치 - 콘텐츠 위에 오버레이 */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[30px] bg-black rounded-b-2xl z-50" />
-              </div>
-            </div>
+              </>
             )}
-          </>
-        ) : (
-          <>
-            {/* Edit Panel - 모바일: 100%, 데스크탑: 40% */}
-            <div className={`${isMobile ? 'w-full' : 'w-2/5 min-w-[400px] max-w-[500px]'}`}>
-              {/* 모바일 안내 메시지 */}
-              {isMobile && (
-                <div className="bg-amber-50 border-b border-amber-200 px-4 py-3 text-center">
-                  <p className="text-sm text-amber-800">
-                    더 나은 편집 환경을 위해 데스크탑에서 작성해주세요
-                  </p>
-                </div>
-              )}
-              <EditPanel onOpenIntroSelector={() => setIsIntroSelectorOpen(true)} onOpenAIStoryGenerator={() => setIsAIStoryGeneratorOpen(true)} invitationId={invitationId} templateId={templateId} />
-            </div>
-
-            {/* Preview - 데스크탑에서만 표시 */}
-            {!isMobile && (
-              <div className="flex-1">
-                <Preview />
-              </div>
-            )}
-          </>
-        )}
+          </div>
+        </div>
       </div>
 
       {/* Share Modal */}
@@ -680,6 +784,51 @@ function EditorContent() {
                 {/* Home indicator */}
                 <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-gray-300 rounded-full" />
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 나가기 확인 모달 */}
+      {isExitModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
+            {/* 헤더 */}
+            <div className="p-6 pb-4">
+              <div className="w-12 h-12 mx-auto mb-4 bg-amber-100 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 text-center">
+                저장하지 않은 변경사항이 있어요
+              </h3>
+              <p className="text-sm text-gray-500 text-center mt-2">
+                지금 나가면 작업한 내용이 사라집니다.<br />저장하고 나가시겠어요?
+              </p>
+            </div>
+
+            {/* 버튼 영역 */}
+            <div className="p-4 pt-0 flex flex-col gap-2">
+              <button
+                onClick={handleSaveAndExit}
+                disabled={isSaving}
+                className="w-full py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors disabled:opacity-50"
+              >
+                {isSaving ? '저장 중...' : '저장하고 나가기'}
+              </button>
+              <button
+                onClick={handleExitWithoutSave}
+                className="w-full py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+              >
+                저장하지 않고 나가기
+              </button>
+              <button
+                onClick={() => setIsExitModalOpen(false)}
+                className="w-full py-3 text-gray-500 font-medium hover:text-gray-700 transition-colors"
+              >
+                계속 작업하기
+              </button>
             </div>
           </div>
         </div>

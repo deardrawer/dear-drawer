@@ -630,7 +630,7 @@ export default function MyInvitationsPage() {
               <p className="text-sm text-gray-500">아직 청첩장이 없습니다</p>
             )}
           </div>
-          <Link href="/gallery">
+          <Link href="/editor?step=4">
             <Button className="bg-black hover:bg-gray-800 shadow-lg hover:shadow-xl transition-all hover:scale-105">
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -676,7 +676,7 @@ export default function MyInvitationsPage() {
               <span className="text-5xl">💌</span>
             </div>
             <h3 className="text-xl font-medium text-gray-900 mb-2">아직 청첩장이 없습니다</h3>
-            <p className="text-gray-500">AI와 함께 특별한 청첩장을 만들어보세요</p>
+            <p className="text-gray-500">세상에 하나뿐인 우리의 이야기를 담아보세요</p>
           </div>
 
           {/* 3단계 안내 */}
@@ -692,8 +692,8 @@ export default function MyInvitationsPage() {
               <div className="w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-3">
                 <span className="text-rose-600 font-semibold">2</span>
               </div>
-              <h4 className="font-medium text-gray-900 mb-1">AI 스토리 생성</h4>
-              <p className="text-sm text-gray-500">질문에 답하면 AI가 이야기 작성</p>
+              <h4 className="font-medium text-gray-900 mb-1">스토리 초안 작성</h4>
+              <p className="text-sm text-gray-500">질문에 답하면 초안을 작성해드려요</p>
             </div>
             <div className="text-center p-4 rounded-xl bg-gray-50">
               <div className="w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -706,7 +706,7 @@ export default function MyInvitationsPage() {
 
           {/* CTA 버튼 */}
           <div className="text-center">
-            <Link href="/gallery">
+            <Link href="/editor?step=4">
               <Button size="lg" className="bg-black hover:bg-gray-800 px-8 shadow-lg hover:shadow-xl transition-all hover:scale-105">
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -1159,7 +1159,7 @@ export default function MyInvitationsPage() {
 
       {/* 모바일 플로팅 버튼 */}
       <div className="fixed bottom-6 right-6 md:hidden z-40">
-        <Link href="/gallery">
+        <Link href="/editor?step=4">
           <Button
             size="lg"
             className="rounded-full w-14 h-14 p-0 bg-black hover:bg-gray-800 shadow-2xl hover:scale-110 transition-all"

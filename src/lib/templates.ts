@@ -12,6 +12,7 @@ export type Template = {
   name: string
   description: string
   thumbnail: string
+  defaultCoverImage: string  // 기본 커버 이미지
   narrativeType: NarrativeType
   emoji: string
   colors: {
@@ -35,6 +36,7 @@ export const templates: Template[] = [
     name: 'OUR',
     description: '두 사람의 사랑을 한 편의 이야기로',
     thumbnail: '/templates/narrative-our.jpg',
+    defaultCoverImage: '/images/our-cover.png',  // OUR 템플릿 기본 커버 이미지
     narrativeType: 'our',
     emoji: '💕',
     colors: {
@@ -45,10 +47,10 @@ export const templates: Template[] = [
       text: '#3D3D3D',
     },
     fonts: {
-      heading: 'Gowun Batang',
+      heading: 'OmuDaye',
       body: 'Pretendard',
     },
-    features: ['커플 서사 중심', '감성적 톤', '에디토리얼 레이아웃', 'AI 스토리 생성'],
+    features: ['커플 서사 중심', '감성적 톤', '에디토리얼 레이아웃', '스토리 초안 작성'],
     sections: [
       { id: 'opening', title: '오프닝', aiGenerated: false },
       { id: 'first-chapter', title: '만남', aiGenerated: true },
@@ -64,6 +66,7 @@ export const templates: Template[] = [
     name: 'FAMILY',
     description: '두 가족이 함께 써 내려가는 결혼 이야기',
     thumbnail: '/templates/narrative-family.jpg',
+    defaultCoverImage: '/samples/parents/1.png',  // FAMILY 템플릿 기본 커버 이미지
     narrativeType: 'family',
     emoji: '👨‍👩‍👧‍👦',
     colors: {
@@ -77,7 +80,7 @@ export const templates: Template[] = [
       heading: 'Noto Serif KR',
       body: 'Noto Sans KR',
     },
-    features: ['가족 서사 중심', '정중한 톤', '클래식 레이아웃', 'AI 스토리 생성'],
+    features: ['가족 서사 중심', '정중한 톤', '클래식 레이아웃', '스토리 초안 작성'],
     sections: [
       { id: 'opening', title: '오프닝', aiGenerated: false },
       { id: 'groom-story', title: '신랑 이야기', aiGenerated: true },
@@ -95,6 +98,7 @@ export const templates: Template[] = [
     name: 'PARENTS',
     description: '부모의 시선으로 전하는 초대',
     thumbnail: '/templates/narrative-parents.jpg',
+    defaultCoverImage: 'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=800&q=80',  // 클래식 웨딩 이미지
     narrativeType: 'parents',
     emoji: '🎎',
     colors: {

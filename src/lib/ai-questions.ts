@@ -15,7 +15,7 @@ export const aiQuestions: AIQuestion[] = [
   {
     id: 'couple_story',
     question: '두 분은 어떻게 만나셨나요?',
-    description: '첫 만남의 에피소드를 들려주세요. AI가 감동적인 스토리로 만들어 드립니다.',
+    description: '첫 만남의 에피소드를 들려주세요. 감동적인 스토리로 만들어 드릴게요.',
     placeholder: '예: 대학교 동아리에서 처음 만났어요. 같은 프로젝트 팀이 되면서 자연스럽게 가까워졌습니다.',
     type: 'textarea',
     required: true,

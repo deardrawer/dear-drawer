@@ -11,11 +11,11 @@ import { Switch } from '@/components/ui/switch'
 import { uploadImage } from '@/lib/imageUpload'
 import InlineCropEditor from './InlineCropEditor'
 
-// AI 스토리 생성 가능 표시
+// 초안 작성 가능 표시
 function AiIndicator() {
   return (
     <span className="ml-2 text-[10px] text-pink-500 font-medium">
-      ✦ AI스토리 생성가능
+      ✦ 초안 작성 가능
     </span>
   )
 }

@@ -1,37 +1,51 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { useEditorStore } from '@/store/editorStore'
+import { useEditorStore, ImageSettings } from '@/store/editorStore'
 import { introPresets, IntroPresetId, IntroSettings, getPresetById, availableFonts } from '@/lib/introPresets'
+import { uploadImage } from '@/lib/imageUpload'
+import { bgmPresets } from '@/lib/bgmPresets'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
+import { Switch } from '@/components/ui/switch'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Check, ChevronLeft, Info, Sparkles, Type, Image as ImageIcon, Settings2, Upload, X } from 'lucide-react'
-import { uploadImage } from '@/lib/imageUpload'
+import { Check, ChevronLeft, Info, Sparkles, Type, Settings2, Music, Image as ImageIcon, Upload, X } from 'lucide-react'
+import InlineCropEditor from './InlineCropEditor'
 
 interface IntroSelectorProps {
   onBack?: () => void
 }
 
+// BGM 프리셋은 @/lib/bgmPresets에서 import
+
 export default function IntroSelector({ onBack }: IntroSelectorProps) {
-  const { invitation, updateIntroPreset, updateIntroField, updateNestedField } = useEditorStore()
+  const { invitation, updateIntroPreset, updateIntroField, updateField, updateNestedField } = useEditorStore()
   const [activeTab, setActiveTab] = useState<'preset' | 'customize'>('preset')
   const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   if (!invitation) return null
 
-  const coverImage = invitation.media.coverImage
+  const { intro, bgm, media } = invitation
+  const coverImage = media.coverImage
+  const currentPreset = getPresetById(intro.presetId)
 
-  // 이미지 업로드 핸들러
+  const handlePresetSelect = (presetId: IntroPresetId) => {
+    updateIntroPreset(presetId)
+  }
+
+  const handleFieldChange = <K extends keyof IntroSettings>(field: K, value: IntroSettings[K]) => {
+    updateIntroField(field, value)
+  }
+
+  // 커버 이미지 업로드 핸들러
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // 파일 크기 체크 (30MB - uploadImage에서 자체 검증도 함)
     if (file.size > 30 * 1024 * 1024) {
       alert('파일 크기는 30MB 이하여야 합니다.')
       return
@@ -39,18 +53,13 @@ export default function IntroSelector({ onBack }: IntroSelectorProps) {
 
     setIsUploading(true)
     try {
-      // 먼저 기존 이미지를 제거하고 transform 값을 초기화
       updateNestedField('media.coverImage', '')
-      updateIntroField('backgroundScale', 100)
-      updateIntroField('backgroundPositionX', 50)
-      updateIntroField('backgroundPositionY', 50)
+      updateNestedField('media.coverImageSettings', undefined)
       updateIntroField('backgroundBrightness', 100)
 
-      // R2에 업로드
       const result = await uploadImage(file)
 
       if (result.success && result.webUrl) {
-        // 새 이미지 설정 (초기화 후)
         setTimeout(() => {
           updateNestedField('media.coverImage', result.webUrl as string)
           setIsUploading(false)
@@ -66,28 +75,14 @@ export default function IntroSelector({ onBack }: IntroSelectorProps) {
     }
   }
 
-  // 이미지 삭제 핸들러
+  // 커버 이미지 삭제 핸들러
   const handleRemoveImage = () => {
     updateNestedField('media.coverImage', '')
-    // transform 값도 초기화
-    updateIntroField('backgroundScale', 100)
-    updateIntroField('backgroundPositionX', 50)
-    updateIntroField('backgroundPositionY', 50)
+    updateNestedField('media.coverImageSettings', undefined)
     updateIntroField('backgroundBrightness', 100)
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
-  }
-
-  const { intro } = invitation
-  const currentPreset = getPresetById(intro.presetId)
-
-  const handlePresetSelect = (presetId: IntroPresetId) => {
-    updateIntroPreset(presetId)
-  }
-
-  const handleFieldChange = <K extends keyof IntroSettings>(field: K, value: IntroSettings[K]) => {
-    updateIntroField(field, value)
   }
 
   return (
@@ -121,12 +116,12 @@ export default function IntroSelector({ onBack }: IntroSelectorProps) {
         {/* 프리셋 선택 탭 */}
         <TabsContent value="preset" className="flex-1 mt-0">
           <ScrollArea className="h-[calc(100vh-180px)]">
-            <div className="p-4 space-y-4">
-              {/* 커버 사진 섹션 */}
+            <div className="p-4 space-y-6">
+              {/* 커버 이미지 섹션 */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <ImageIcon className="w-4 h-4 text-gray-500" />
-                  <h3 className="font-medium text-gray-900">커버 사진</h3>
+                  <h3 className="font-medium text-gray-900">커버 이미지</h3>
                 </div>
 
                 <input
@@ -138,97 +133,35 @@ export default function IntroSelector({ onBack }: IntroSelectorProps) {
                 />
 
                 {coverImage ? (
-                  <div className="relative rounded-lg overflow-hidden bg-gray-100">
-                    <div className="aspect-[3/4] relative overflow-hidden">
-                      {/* 원본 이미지 기준으로 zoom/pan 적용 */}
-                      <div
-                        className="absolute inset-0"
-                        style={{
-                          backgroundImage: `url(${coverImage})`,
-                          backgroundSize: intro.backgroundScale <= 100 ? 'cover' : `${intro.backgroundScale}%`,
-                          backgroundPosition: `${intro.backgroundPositionX}% ${intro.backgroundPositionY}%`,
-                          backgroundRepeat: 'no-repeat',
-                          filter: `brightness(${intro.backgroundBrightness / 100})`,
-                        }}
-                      />
-                    </div>
-                    <button
-                      onClick={handleRemoveImage}
-                      className="absolute top-2 right-2 p-1.5 bg-black/50 hover:bg-black/70 rounded-full text-white transition-colors"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="absolute bottom-2 right-2 px-3 py-1.5 bg-black/50 hover:bg-black/70 rounded-lg text-white text-xs transition-colors"
-                    >
-                      변경
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploading}
-                    className="w-full aspect-[3/4] border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-gray-400 hover:bg-gray-50 transition-colors"
-                  >
-                    {isUploading ? (
-                      <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-300 border-t-gray-600" />
-                    ) : (
-                      <>
-                        <Upload className="w-8 h-8 text-gray-400" />
-                        <span className="text-sm text-gray-500">클릭하여 커버 사진 추가</span>
-                        <span className="text-xs text-gray-400">권장: 3:4 비율</span>
-                      </>
-                    )}
-                  </button>
-                )}
+                  <div className="space-y-3">
+                    {/* 크롭 에디터 */}
+                    <InlineCropEditor
+                      imageUrl={coverImage}
+                      settings={media.coverImageSettings || {}}
+                      onUpdate={(settings) => updateNestedField('media.coverImageSettings', { ...media.coverImageSettings, ...settings })}
+                      aspectRatio={9/16}
+                      containerWidth={180}
+                      colorClass="rose"
+                    />
 
-                {/* 이미지 조절 옵션 (이미지가 있을 때만 표시) */}
-                {coverImage && (
-                  <div className="space-y-3 pt-3 border-t border-gray-100">
-                    <div>
-                      <div className="flex justify-between mb-1.5">
-                        <Label className="text-xs text-gray-600">사진 크기</Label>
-                        <span className="text-xs text-gray-500">{intro.backgroundScale}%</span>
-                      </div>
-                      <Slider
-                        value={[intro.backgroundScale]}
-                        onValueChange={([v]) => handleFieldChange('backgroundScale', v)}
-                        min={100}
-                        max={150}
-                        step={5}
-                      />
+                    {/* 버튼들 */}
+                    <div className="flex gap-2 justify-center">
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs text-gray-700 transition-colors"
+                      >
+                        사진 변경
+                      </button>
+                      <button
+                        onClick={handleRemoveImage}
+                        className="px-3 py-1.5 bg-red-50 hover:bg-red-100 rounded-lg text-xs text-red-600 transition-colors"
+                      >
+                        삭제
+                      </button>
                     </div>
 
-                    <div>
-                      <div className="flex justify-between mb-1.5">
-                        <Label className="text-xs text-gray-600">가로 위치</Label>
-                        <span className="text-xs text-gray-500">{intro.backgroundPositionX}%</span>
-                      </div>
-                      <Slider
-                        value={[intro.backgroundPositionX]}
-                        onValueChange={([v]) => handleFieldChange('backgroundPositionX', v)}
-                        min={0}
-                        max={100}
-                        step={5}
-                      />
-                    </div>
-
-                    <div>
-                      <div className="flex justify-between mb-1.5">
-                        <Label className="text-xs text-gray-600">세로 위치</Label>
-                        <span className="text-xs text-gray-500">{intro.backgroundPositionY}%</span>
-                      </div>
-                      <Slider
-                        value={[intro.backgroundPositionY]}
-                        onValueChange={([v]) => handleFieldChange('backgroundPositionY', v)}
-                        min={0}
-                        max={100}
-                        step={5}
-                      />
-                    </div>
-
-                    <div>
+                    {/* 밝기 조절 */}
+                    <div className="p-3 bg-gray-50 rounded-lg">
                       <div className="flex justify-between mb-1.5">
                         <Label className="text-xs text-gray-600">밝기</Label>
                         <span className="text-xs text-gray-500">{intro.backgroundBrightness}%</span>
@@ -242,11 +175,30 @@ export default function IntroSelector({ onBack }: IntroSelectorProps) {
                       />
                     </div>
                   </div>
+                ) : (
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="w-full max-w-[180px] mx-auto aspect-[9/16] border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-gray-400 hover:bg-gray-50 transition-colors"
+                  >
+                    {isUploading ? (
+                      <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-300 border-t-gray-600" />
+                    ) : (
+                      <>
+                        <Upload className="w-6 h-6 text-gray-400" />
+                        <span className="text-xs text-gray-500">커버 사진 추가</span>
+                        <span className="text-[10px] text-gray-400">권장: 9:16 비율</span>
+                      </>
+                    )}
+                  </button>
                 )}
               </div>
 
               {/* 구분선 */}
-              <div className="border-t pt-4">
+              <div className="border-t" />
+
+              {/* 애니메이션 스타일 섹션 */}
+              <div>
                 <div className="flex items-center gap-2 mb-3">
                   <Sparkles className="w-4 h-4 text-gray-500" />
                   <h3 className="font-medium text-gray-900">애니메이션 스타일</h3>
@@ -487,6 +439,64 @@ export default function IntroSelector({ onBack }: IntroSelectorProps) {
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* 배경음악 섹션 */}
+              <div className="space-y-4 pt-4 border-t">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Music className="w-4 h-4 text-gray-500" />
+                    <h3 className="font-medium text-gray-900">배경음악</h3>
+                  </div>
+                  <Switch
+                    checked={bgm.enabled}
+                    onCheckedChange={(checked) => updateField('bgm', { ...bgm, enabled: checked })}
+                  />
+                </div>
+
+                {bgm.enabled && (
+                  <div className="space-y-2">
+                    {bgmPresets.map((preset) => {
+                      const isSelected = bgm.url === preset.url
+                      return (
+                        <button
+                          key={preset.id}
+                          onClick={() => updateField('bgm', { ...bgm, url: preset.url, enabled: true })}
+                          className={`w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all text-left ${
+                            isSelected
+                              ? 'border-gray-900 bg-gray-50'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            isSelected ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-500'
+                          }`}>
+                            {isSelected ? (
+                              <Check className="w-4 h-4" />
+                            ) : (
+                              <Music className="w-4 h-4" />
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <span className="font-medium text-gray-900 block">{preset.name}</span>
+                            <span className="text-xs text-gray-400">{preset.description}</span>
+                          </div>
+                        </button>
+                      )
+                    })}
+
+                    <div className="flex items-center gap-2 pt-2">
+                      <Switch
+                        checked={bgm.autoplay}
+                        onCheckedChange={(checked) => updateField('bgm', { ...bgm, autoplay: checked })}
+                      />
+                      <span className="text-sm text-gray-600">자동 재생</span>
+                    </div>
+                    <p className="text-xs text-gray-400">
+                      * 자동 재생은 브라우저 정책에 따라 지원되지 않을 수 있습니다.
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* 기본값 복원 버튼 */}

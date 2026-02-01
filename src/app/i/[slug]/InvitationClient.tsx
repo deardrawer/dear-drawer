@@ -12,6 +12,35 @@ import IntroAnimation from '@/components/invitation/IntroAnimation'
 import { IntroSettings, getDefaultIntroSettings } from '@/lib/introPresets'
 import { parseHighlight } from '@/lib/textUtils'
 
+// 이미지 크롭 스타일 계산 헬퍼 함수
+function getImageCropStyle(img: string, s: { scale?: number; positionX?: number; positionY?: number; cropX?: number; cropY?: number; cropWidth?: number; cropHeight?: number }) {
+  const hasCropData = s.cropWidth !== undefined && s.cropHeight !== undefined && (s.cropWidth < 1 || s.cropHeight < 1)
+
+  if (hasCropData) {
+    const cw = s.cropWidth || 1
+    const ch = s.cropHeight || 1
+    const cx = s.cropX || 0
+    const cy = s.cropY || 0
+    const posX = cw >= 1 ? 0 : (cx / (1 - cw)) * 100
+    const posY = ch >= 1 ? 0 : (cy / (1 - ch)) * 100
+
+    return {
+      backgroundImage: `url(${img})`,
+      backgroundSize: `${100 / cw}% ${100 / ch}%`,
+      backgroundPosition: `${posX}% ${posY}%`,
+      backgroundRepeat: 'no-repeat' as const,
+    }
+  }
+
+  // 기존 scale/position 방식 (호환성 유지)
+  return {
+    backgroundImage: `url(${img})`,
+    backgroundSize: 'cover' as const,
+    backgroundPosition: 'center' as const,
+    transform: `scale(${s.scale || 1}) translate(${s.positionX || 0}%, ${s.positionY || 0}%)`,
+  }
+}
+
 // Music Toggle Component
 function MusicToggle({
   audioRef,
@@ -857,73 +886,40 @@ const globalStyles = `
     pointer-events: none;
   }
 
-  /* Desktop Mobile Frame Wrapper */
+  /* Desktop Mobile Frame Wrapper - No phone frame, clean display */
   @media (min-width: 768px) {
     .desktop-frame-wrapper {
       min-height: 100vh;
-      background: linear-gradient(135deg, #f8f8f8 0%, #e8e8e8 100%);
+      background: #f5f5f5;
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      padding: 40px 20px;
+      padding: 0;
     }
 
     .mobile-frame {
       position: relative;
-      width: 390px;
-      min-height: 844px;
-      background: #1a1a1a;
-      border-radius: 50px;
-      padding: 12px;
-      box-shadow:
-        0 50px 100px rgba(0,0,0,0.25),
-        0 30px 60px rgba(0,0,0,0.15),
-        inset 0 0 0 2px rgba(255,255,255,0.1);
-    }
-
-    .mobile-frame::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 150px;
-      height: 30px;
-      background: #1a1a1a;
-      border-radius: 0 0 20px 20px;
-      z-index: 10;
-    }
-
-    .mobile-frame::after {
-      content: '';
-      position: absolute;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 80px;
-      height: 8px;
-      background: #333;
-      border-radius: 10px;
-      z-index: 11;
+      width: 430px;
+      min-height: 100vh;
+      background: #fff;
+      box-shadow: 0 0 40px rgba(0,0,0,0.1);
     }
 
     .mobile-frame-screen {
       width: 100%;
       height: 100%;
       background: #fff;
-      border-radius: 40px;
       overflow: hidden;
       position: relative;
     }
 
     .mobile-frame-content {
       width: 100%;
-      height: 844px;
+      min-height: 100vh;
       overflow-y: auto;
       overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
       position: relative;
-      /* Create new containing block for fixed positioned elements */
       transform: translateZ(0);
     }
 
@@ -1014,6 +1010,20 @@ const globalStyles = `
     }
   }
 
+  /* OmuDaye Font for Romantic Style */
+  @font-face {
+    font-family: 'OmuDaye';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2304-01@1.0/omyu_pretty.woff2') format('woff2');
+    font-weight: normal;
+    font-display: swap;
+  }
+
+  /* OmuDaye 폰트 크기 보정 */
+  .font-romantic .text-\[11px\] { font-size: 12px !important; }
+  .font-romantic .text-\[13px\] { font-size: 14px !important; }
+  .font-romantic .text-xs { font-size: 13px !important; }
+  .font-romantic .text-sm { font-size: 15px !important; }
+
   /* Full Height Divider Section (FAMILY Template) */
   @font-face {
     font-family: 'KimJeongCheolHandwriting';
@@ -1072,7 +1082,6 @@ const globalStyles = `
 
   .full-height-divider-english {
     font-family: 'Cormorant Garamond', 'Times New Roman', serif;
-    font-style: italic;
     font-size: 14px;
     font-weight: 300;
     color: rgba(255, 255, 255, 0.75);
@@ -1769,6 +1778,7 @@ function InterviewSection({
         {interview.images && interview.images.length > 0 ? (
           <ProfileImageSlider
             images={interview.images}
+            imageSettings={(interview as any).imageSettings || []}
             className="mb-8"
           />
         ) : (
@@ -1892,20 +1902,21 @@ function StorySection({
             gap: '12px'
           }}
         >
-          {story.images.slice(0, 3).map((img, i) => (
-            <div
-              key={i}
-              className={story.images!.length === 3 && i === 0 ? 'col-span-2' : ''}
-              style={{
-                aspectRatio: story.images!.length === 3 && i === 0 ? '2/1' : '1',
-                backgroundImage: img ? `url(${img})` : undefined,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundColor: '#f5f5f5',
-                borderRadius: '8px'
-              }}
-            />
-          ))}
+          {story.images.slice(0, 3).map((img, i) => {
+            const imgSettings = (story as any).imageSettings?.[i] || { scale: 1, positionX: 0, positionY: 0 }
+            return (
+              <div
+                key={i}
+                className={story.images!.length === 3 && i === 0 ? 'col-span-2' : ''}
+                style={{
+                  aspectRatio: story.images!.length === 3 && i === 0 ? '2/1' : '1',
+                  ...(img ? getImageCropStyle(img, imgSettings) : {}),
+                  backgroundColor: '#f5f5f5',
+                  borderRadius: '8px'
+                }}
+              />
+            )
+          })}
         </div>
       )}
     </div>
@@ -1991,24 +2002,24 @@ type ColorTheme = 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-g
 interface ColorConfig { primary: string; secondary: string; accent: string; background: string; sectionBg: string; cardBg: string; divider: string; text: string; gray: string }
 
 const colorThemes: Record<ColorTheme, ColorConfig> = {
-  'classic-rose': { primary: '#E91E63', secondary: '#D4A574', accent: '#d4a574', background: '#FFF8F5', sectionBg: '#FFE8E8', cardBg: '#FFFFFF', divider: '#d4b896', text: '#111111', gray: '#333333' },
-  'modern-black': { primary: '#1A1A1A', secondary: '#888888', accent: '#1A1A1A', background: '#FFFFFF', sectionBg: '#F5F5F5', cardBg: '#FFFFFF', divider: '#CCCCCC', text: '#111111', gray: '#333333' },
-  'romantic-blush': { primary: '#D4A5A5', secondary: '#C9B8A8', accent: '#C9B8A8', background: '#FDF8F6', sectionBg: '#F8EFEC', cardBg: '#FFFFFF', divider: '#D4C4BC', text: '#2A1E1E', gray: '#443030' },
-  'nature-green': { primary: '#6B8E6B', secondary: '#A8B5A0', accent: '#8FA888', background: '#F5F7F4', sectionBg: '#EBF0E8', cardBg: '#FFFFFF', divider: '#A8B5A0', text: '#1E2B1E', gray: '#354535' },
-  'luxury-navy': { primary: '#1E3A5F', secondary: '#C9A96E', accent: '#C9A96E', background: '#F8F9FA', sectionBg: '#E8ECF0', cardBg: '#FFFFFF', divider: '#C9A96E', text: '#142840', gray: '#2A3B4C' },
-  'sunset-coral': { primary: '#E8846B', secondary: '#F5C7A9', accent: '#E8A87C', background: '#FFFAF7', sectionBg: '#FFEEE5', cardBg: '#FFFFFF', divider: '#E8A87C', text: '#2D1A14', gray: '#44302A' },
+  'classic-rose': { primary: '#C41050', secondary: '#B8956A', accent: '#B8956A', background: '#FFF8F5', sectionBg: '#FFE8E8', cardBg: '#FFFFFF', divider: '#d4b896', text: '#2a2a2a', gray: '#444444' },
+  'modern-black': { primary: '#111111', secondary: '#555555', accent: '#111111', background: '#FFFFFF', sectionBg: '#F5F5F5', cardBg: '#FFFFFF', divider: '#CCCCCC', text: '#2a2a2a', gray: '#444444' },
+  'romantic-blush': { primary: '#A67A7A', secondary: '#8a7068', accent: '#8a7068', background: '#FDF8F6', sectionBg: '#F8EFEC', cardBg: '#FFFFFF', divider: '#D4C4BC', text: '#2a2a2a', gray: '#444444' },
+  'nature-green': { primary: '#3A5A3A', secondary: '#6A7A62', accent: '#5A7A52', background: '#F5F7F4', sectionBg: '#EBF0E8', cardBg: '#FFFFFF', divider: '#A8B5A0', text: '#2a2a2a', gray: '#444444' },
+  'luxury-navy': { primary: '#0f2035', secondary: '#8A6A3A', accent: '#8A6A3A', background: '#F8F9FA', sectionBg: '#E8ECF0', cardBg: '#FFFFFF', divider: '#C9A96E', text: '#2a2a2a', gray: '#444444' },
+  'sunset-coral': { primary: '#B85040', secondary: '#B88060', accent: '#B8683A', background: '#FFFAF7', sectionBg: '#FFEEE5', cardBg: '#FFFFFF', divider: '#E8A87C', text: '#2a2a2a', gray: '#444444' },
 }
 
 // Font styles
 type FontStyle = 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury'
-interface FontConfig { display: string; displayKr: string; body: string }
+interface FontConfig { display: string; displayKr: string; body: string; scale?: number }
 
 const fontStyles: Record<FontStyle, FontConfig> = {
-  classic: { display: "'Playfair Display', serif", displayKr: "'Nanum Myeongjo', serif", body: "'Nanum Myeongjo', serif" },
-  modern: { display: "'Montserrat', sans-serif", displayKr: "'Noto Sans KR', sans-serif", body: "'Noto Sans KR', sans-serif" },
-  romantic: { display: "'Lora', serif", displayKr: "'Gowun Batang', serif", body: "'Gowun Batang', serif" },
-  contemporary: { display: "'Cinzel', serif", displayKr: "'Gowun Dodum', sans-serif", body: "'Gowun Dodum', sans-serif" },
-  luxury: { display: "'EB Garamond', serif", displayKr: "'Nanum Myeongjo', serif", body: "'Nanum Myeongjo', serif" },
+  classic: { display: "'Playfair Display', serif", displayKr: "'Ridibatang', serif", body: "'Ridibatang', serif" },
+  modern: { display: "'Montserrat', sans-serif", displayKr: "'Pretendard', sans-serif", body: "'Pretendard', sans-serif" },
+  romantic: { display: "'Lora', serif", displayKr: "'OmuDaye', sans-serif", body: "'OmuDaye', sans-serif", scale: 1.15 },
+  contemporary: { display: "'Cinzel', serif", displayKr: "'JeonnamEducationBarun', sans-serif", body: "'JeonnamEducationBarun', sans-serif" },
+  luxury: { display: "'EB Garamond', serif", displayKr: "'ELandChoice', serif", body: "'ELandChoice', serif" },
 }
 
 // Mock invitation data
@@ -2162,6 +2173,7 @@ const mockInvitation = {
 
   media: {
     coverImage: '/demo/cover.jpg',
+    coverImageSettings: undefined as { scale?: number; positionX?: number; positionY?: number; cropX?: number; cropY?: number; cropWidth?: number; cropHeight?: number } | undefined,
     infoImage: '/demo/info.jpg',
     bgm: '/samples/parents/wedding-bgm.mp3',
   },
@@ -2508,11 +2520,10 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
         <div
           className="absolute inset-0"
           style={{
-            backgroundImage: invitation.media.coverImage
-              ? `url(${invitation.media.coverImage})`
-              : 'linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
+            ...(invitation.media.coverImage
+              ? getImageCropStyle(invitation.media.coverImage, invitation.media.coverImageSettings || {})
+              : { background: 'linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)' }
+            ),
             opacity: coverAnimated ? 1 : 0,
             transform: coverAnimated ? 'scale(1)' : 'scale(1.03)',
             transition: 'opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1), transform 1.1s cubic-bezier(0.22, 1, 0.36, 1)'
@@ -3183,15 +3194,18 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
       {/* Gallery Section */}
       <AnimatedSection className="px-5 py-10" style={{ background: themeColors.cardBg }}>
         <div className="grid grid-cols-2 gap-2">
-          {invitation.gallery.images && invitation.gallery.images.length > 0 ? invitation.gallery.images.map((img, i) => (
-            <div
-              key={i}
-              className="aspect-square rounded overflow-hidden cursor-pointer transition-transform hover:scale-[1.02]"
-              onClick={() => onOpenLightbox?.(i)}
-            >
-              <div className="w-full h-full bg-cover bg-center bg-gray-100" style={{ backgroundImage: img ? `url(${img})` : undefined }} />
-            </div>
-          )) : [1, 2, 3, 4, 5, 6].map(i => (
+          {invitation.gallery.images && invitation.gallery.images.length > 0 ? invitation.gallery.images.map((img, i) => {
+            const imgSettings = (invitation.gallery as any).imageSettings?.[i] || { scale: 1, positionX: 0, positionY: 0 }
+            return (
+              <div
+                key={i}
+                className="aspect-square rounded overflow-hidden cursor-pointer transition-transform hover:scale-[1.02]"
+                onClick={() => onOpenLightbox?.(i)}
+              >
+                <div className="w-full h-full bg-gray-100" style={img ? getImageCropStyle(img, imgSettings) : undefined} />
+              </div>
+            )
+          }) : [1, 2, 3, 4, 5, 6].map(i => (
             <div key={i} className="aspect-square rounded bg-gray-100 flex items-center justify-center">
               <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
             </div>
@@ -3379,7 +3393,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
         {invitation.content.thankYou.message ? (
           <p className="text-[11px] font-light leading-[2.2] mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.thankYou.message) }} />
         ) : (
-          <p className="text-[11px] text-gray-400 italic mb-7">감사 메시지를 입력해주세요</p>
+          <p className="text-[11px] text-gray-400 mb-7">감사 메시지를 입력해주세요</p>
         )}
         {invitation.content.thankYou.sign && <p className="text-[11px] font-light" style={{ fontFamily: fonts.displayKr, color: themeColors.gray }}>{invitation.content.thankYou.sign}</p>}
       </AnimatedSection>
@@ -3911,7 +3925,7 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
             <div className="mobile-frame-content">
               <WatermarkOverlay isPaid={isPaid || isPreview} className="relative w-full min-h-screen">
                 <div
-                  className={`relative w-full min-h-screen overflow-x-hidden theme-${invitation.colorTheme}`}
+                  className={`relative w-full min-h-screen overflow-x-hidden theme-${invitation.colorTheme} ${effectiveFontStyle === 'romantic' ? 'font-romantic' : ''}`}
                   style={{
                     backgroundColor: themeColors.background,
                     fontFamily: fonts.body,

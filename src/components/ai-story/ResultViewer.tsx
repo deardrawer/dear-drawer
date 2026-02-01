@@ -798,7 +798,7 @@ export default function ResultViewer({
             <span className="text-2xl">✨</span>
           </div>
         </div>
-        <p className="text-gray-700 font-medium">AI가 텍스트를 생성하고 있어요...</p>
+        <p className="text-gray-700 font-medium">스토리 초안을 작성하고 있어요...</p>
         <p className="text-sm text-gray-500">잠시만 기다려주세요</p>
       </div>
     )

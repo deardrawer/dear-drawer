@@ -219,7 +219,7 @@ export default function GalleryPage() {
 
         {/* ===== 섹션 3: 템플릿 선택 ===== */}
         <section className="h-screen flex flex-col items-center justify-center px-3 sm:px-6 py-4 sm:py-10 overflow-hidden bg-gradient-to-br from-rose-50 via-white to-blue-50">
-          <div className="w-full max-w-4xl overflow-y-auto max-h-full">
+          <div className="w-full max-w-4xl overflow-y-auto overflow-x-hidden max-h-full">
             <div className="text-center mb-3 sm:mb-12">
               <h2 className="text-base sm:text-2xl md:text-3xl font-bold text-gray-900 mb-1 sm:mb-3">
                 어떤 이야기를 담을까요?
@@ -261,11 +261,11 @@ export default function GalleryPage() {
               <div className="group relative p-3 sm:p-8 rounded-xl sm:rounded-3xl border border-gray-100 bg-white/90 backdrop-blur-sm shadow-md hover:border-blue-400 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
                 <div className="text-2xl sm:text-5xl mb-1 sm:mb-4">👨‍👩‍👧‍👦</div>
                 <h3 className="text-sm sm:text-2xl font-semibold text-gray-900 mb-0.5 sm:mb-2">FAMILY</h3>
-                <p className="text-[10px] sm:text-base text-gray-600 mb-2 sm:mb-6">가족의 이야기로 하나가 되는 청첩장</p>
+                <p className="text-[10px] sm:text-base text-gray-600 mb-2 sm:mb-6">두 가족의 축복으로 완성되는 청첩장</p>
                 <div className="space-y-0.5 sm:space-y-2 mb-2 sm:mb-8 text-[9px] sm:text-sm text-gray-500">
-                  <p className="flex items-center gap-1 sm:gap-2"><span className="text-blue-400">♥</span> 두 가정이 하나 됨을 표현하고 싶은 커플</p>
-                  <p className="flex items-center gap-1 sm:gap-2"><span className="text-blue-400">♥</span> 부모님의 이야기와 함께 전하고 싶은 커플</p>
-                  <p className="flex items-center gap-1 sm:gap-2"><span className="text-blue-400">♥</span> 가족의 의미를 담고 싶은 커플</p>
+                  <p className="flex items-center gap-1 sm:gap-2"><span className="text-blue-400">♥</span> 양가 부모님의 축하 인사말</p>
+                  <p className="flex items-center gap-1 sm:gap-2"><span className="text-blue-400">♥</span> 서로가 선택한 이유 (신랑/신부 소개)</p>
+                  <p className="flex items-center gap-1 sm:gap-2"><span className="text-blue-400">♥</span> 커플 인터뷰 & 풀스크린 포토</p>
                 </div>
                 <div className="flex items-center justify-between">
                   <Link
@@ -289,16 +289,24 @@ export default function GalleryPage() {
             {/* PARENTS 서브 */}
             <div className="text-center">
               <p className="text-[9px] sm:text-xs text-gray-400 mb-1.5 sm:mb-3">부모님용 청첩장도 준비되어 있어요</p>
-              <Link
-                href="/editor/parents"
-                className="inline-flex items-center gap-1.5 sm:gap-3 px-3 sm:px-6 py-1.5 sm:py-3 rounded-full border border-gray-200 hover:border-amber-400 hover:bg-amber-50 transition-all text-[10px] sm:text-sm"
-              >
+              <div className="inline-flex items-center gap-1.5 sm:gap-3 px-3 sm:px-6 py-1.5 sm:py-3 rounded-full border border-gray-200 hover:border-amber-400 hover:bg-amber-50 transition-all text-[10px] sm:text-sm">
                 <span className="text-base sm:text-xl">🎎</span>
-                <span className="text-gray-700">PARENTS - 혼주용</span>
-                <svg className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </Link>
+                <Link
+                  href="/editor/parents"
+                  className="text-gray-700 hover:text-amber-600 transition-colors"
+                >
+                  PARENTS - 혼주용
+                </Link>
+                <span className="text-gray-300">|</span>
+                <a
+                  href="/sample/parents"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-amber-600 transition-colors"
+                >
+                  샘플보기
+                </a>
+              </div>
             </div>
           </div>
         </section>
@@ -311,7 +319,7 @@ export default function GalleryPage() {
           {/* 어두운 오버레이 */}
           <div className="absolute inset-0 bg-black/50" />
 
-          <div className="w-full max-w-4xl relative z-10 overflow-y-auto max-h-full">
+          <div className="w-full max-w-4xl relative z-10">
             <div className="text-center mb-4 sm:mb-16">
               <h2 className="text-base sm:text-2xl md:text-3xl font-bold text-white mb-1 sm:mb-3 drop-shadow-lg">
                 왜 dear drawer인가요?
@@ -320,8 +328,8 @@ export default function GalleryPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-8">
-              <div className="text-center p-3 sm:p-8 bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-3xl">
-                <div className="w-10 h-10 sm:w-20 sm:h-20 bg-white/20 rounded-xl sm:rounded-3xl flex items-center justify-center mx-auto mb-2 sm:mb-6">
+              <div className="text-center p-3 sm:p-8 bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-3xl hover:bg-white/20 hover:scale-105 hover:shadow-2xl transition-all duration-300 cursor-pointer">
+                <div className="w-10 h-10 sm:w-20 sm:h-20 bg-white/20 rounded-xl sm:rounded-3xl flex items-center justify-center mx-auto mb-2 sm:mb-6 group-hover:bg-white/30 transition-colors">
                   <span className="text-lg sm:text-4xl">🪄</span>
                 </div>
                 <h3 className="text-xs sm:text-lg font-bold text-white mb-1 sm:mb-3">스토리 초안 작성</h3>
@@ -331,8 +339,8 @@ export default function GalleryPage() {
                   스토리 초안을 작성해 드려요
                 </p>
               </div>
-              <div className="text-center p-3 sm:p-8 bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-3xl">
-                <div className="w-10 h-10 sm:w-20 sm:h-20 bg-white/20 rounded-xl sm:rounded-3xl flex items-center justify-center mx-auto mb-2 sm:mb-6">
+              <div className="text-center p-3 sm:p-8 bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-3xl hover:bg-white/20 hover:scale-105 hover:shadow-2xl transition-all duration-300 cursor-pointer">
+                <div className="w-10 h-10 sm:w-20 sm:h-20 bg-white/20 rounded-xl sm:rounded-3xl flex items-center justify-center mx-auto mb-2 sm:mb-6 group-hover:bg-white/30 transition-colors">
                   <span className="text-lg sm:text-4xl">📖</span>
                 </div>
                 <h3 className="text-xs sm:text-lg font-bold text-white mb-1 sm:mb-3">인터랙티브 스토리</h3>
@@ -342,8 +350,8 @@ export default function GalleryPage() {
                   이야기형 청첩장
                 </p>
               </div>
-              <div className="text-center p-3 sm:p-8 bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-3xl">
-                <div className="w-10 h-10 sm:w-20 sm:h-20 bg-white/20 rounded-xl sm:rounded-3xl flex items-center justify-center mx-auto mb-2 sm:mb-6">
+              <div className="text-center p-3 sm:p-8 bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-3xl hover:bg-white/20 hover:scale-105 hover:shadow-2xl transition-all duration-300 cursor-pointer">
+                <div className="w-10 h-10 sm:w-20 sm:h-20 bg-white/20 rounded-xl sm:rounded-3xl flex items-center justify-center mx-auto mb-2 sm:mb-6 group-hover:bg-white/30 transition-colors">
                   <span className="text-lg sm:text-4xl">✉️</span>
                 </div>
                 <h3 className="text-xs sm:text-lg font-bold text-white mb-1 sm:mb-3">하객 맞춤 개인화</h3>
@@ -367,27 +375,12 @@ export default function GalleryPage() {
             <p className="text-xs sm:text-lg text-gray-400 mb-6 sm:mb-12">
               세상에 하나뿐인 우리의 이야기를 담은 청첩장
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
-              <Link
-                href="/editor?template=narrative-our"
-                className="px-5 sm:px-10 py-2 sm:py-4 text-xs sm:text-base bg-white text-black rounded-full font-medium hover:bg-gray-100 transition-all hover:scale-105"
-              >
-                청첩장 만들기
-              </Link>
-              <div className="flex items-center gap-2 sm:gap-4 text-[10px] sm:text-sm text-gray-500">
-                <Link href="/i/sample-our" target="_blank" className="hover:text-white transition-colors">
-                  OUR 샘플
-                </Link>
-                <span>·</span>
-                <Link href="/i/sample-family" target="_blank" className="hover:text-white transition-colors">
-                  FAMILY 샘플
-                </Link>
-                <span>·</span>
-                <Link href="/sample/parents" target="_blank" className="hover:text-white transition-colors">
-                  PARENTS 샘플
-                </Link>
-              </div>
-            </div>
+            <Link
+              href="/templates"
+              className="px-5 sm:px-10 py-2 sm:py-4 text-xs sm:text-base bg-white text-black rounded-full font-medium hover:bg-gray-100 transition-all hover:scale-105"
+            >
+              청첩장 만들기
+            </Link>
           </div>
         </section>
       </div>

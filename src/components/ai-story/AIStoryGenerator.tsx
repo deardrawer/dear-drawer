@@ -2,25 +2,24 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import GreetingForm from './GreetingForm'
 import ProfileForm from './ProfileForm'
 import StoryForm from './StoryForm'
-import WhyWeChoseForm from './WhyWeChoseForm'
+import ParentsGreetingForm, { defaultParentsGreetingForm, ParentsGreetingFormData } from './ParentsGreetingForm'
 import InterviewForm from './InterviewForm'
+import ThanksForm from './ThanksForm'
 import ResultViewer from './ResultViewer'
 import {
   StepId,
   Step,
   STEPS,
   FAMILY_STEPS,
-  AllFormData,
   GeneratedContent,
   defaultGreetingForm,
   defaultProfileForm,
   defaultStoryForm,
   defaultInterviewForm,
-  defaultWhyWeChoseForm,
 } from '@/types/ai-generator'
+import type { AllFormData } from '@/types/ai-generator'
 
 // localStorage 키 (기존 청첩장용 - invitationId가 있는 경우에만 사용)
 const STORAGE_KEY = 'ai-story-generator-data'
@@ -138,10 +137,11 @@ export default function AIStoryGenerator({
     brideProfile: { ...defaultProfileForm, name: brideName },
     story: defaultStoryForm,
     interview: defaultInterviewForm,
-    whyWeChose: { ...defaultWhyWeChoseForm, groomName, brideName },
+    parentsGreeting: { ...defaultParentsGreetingForm, childName: brideName || groomName },
   }), [groomName, brideName])
 
-  const [currentStep, setCurrentStep] = useState<StepId>('greeting')
+  // OUR 템플릿은 'profile', FAMILY 템플릿은 'parentsGreeting'로 시작
+  const [currentStep, setCurrentStep] = useState<StepId>(isFamilyTemplate ? 'parentsGreeting' : 'profile')
   const [formData, setFormData] = useState<AllFormData>(createInitialFormData)
   const [generatedContent, setGeneratedContent] = useState<GeneratedContent | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
@@ -157,11 +157,21 @@ export default function AIStoryGenerator({
 
     if (storedData) {
       setFormData(storedData.formData)
-      setCurrentStep(storedData.currentStep)
+      // 저장된 스텝이 현재 템플릿에 유효한지 확인
+      const validSteps = isFamilyTemplate
+        ? ['parentsGreeting', 'interview', 'thanks', 'result']
+        : ['profile', 'story', 'interview', 'thanks', 'result']
+      if (validSteps.includes(storedData.currentStep)) {
+        setCurrentStep(storedData.currentStep)
+      } else {
+        // 유효하지 않으면 첫 스텝으로 설정
+        setCurrentStep(isFamilyTemplate ? 'parentsGreeting' : 'profile')
+      }
     } else {
       // 저장된 데이터가 없으면 초기화
       setFormData(createInitialFormData())
-      setCurrentStep('greeting')
+      // OUR 템플릿은 'profile', FAMILY 템플릿은 'parentsGreeting'로 시작
+      setCurrentStep(isFamilyTemplate ? 'parentsGreeting' : 'profile')
     }
 
     if (storedResult) {
@@ -171,7 +181,7 @@ export default function AIStoryGenerator({
     }
 
     setIsInitialized(true)
-  }, [invitationId, createInitialFormData])
+  }, [invitationId, createInitialFormData, isFamilyTemplate])
 
   // formData 변경 시 저장 (invitationId 있을 때만)
   useEffect(() => {
@@ -226,7 +236,8 @@ export default function AIStoryGenerator({
       clearStoredData(invitationId)
       setFormData(createInitialFormData())
       setGeneratedContent(null)
-      setCurrentStep('greeting')
+      // OUR 템플릿은 'profile', FAMILY 템플릿은 'parentsGreeting'로 시작
+      setCurrentStep(isFamilyTemplate ? 'parentsGreeting' : 'profile')
       setError(null)
     }
   }
@@ -381,13 +392,6 @@ export default function AIStoryGenerator({
 
       {/* Form Content */}
       <div className="flex-1 min-h-0 overflow-y-auto p-4">
-        {currentStep === 'greeting' && (
-          <GreetingForm
-            data={formData.greeting}
-            onChange={(data) => setFormData({ ...formData, greeting: data })}
-          />
-        )}
-
         {currentStep === 'profile' && (
           <div className="space-y-8">
             <ProfileForm
@@ -411,11 +415,11 @@ export default function AIStoryGenerator({
           />
         )}
 
-        {/* FAMILY 템플릿: 서로를 선택한 이유 */}
-        {currentStep === 'whyWeChose' && formData.whyWeChose && (
-          <WhyWeChoseForm
-            data={formData.whyWeChose}
-            onChange={(data) => setFormData({ ...formData, whyWeChose: data })}
+        {/* FAMILY 템플릿: 부모님 인사말 */}
+        {currentStep === 'parentsGreeting' && formData.parentsGreeting && (
+          <ParentsGreetingForm
+            data={formData.parentsGreeting}
+            onChange={(data) => setFormData({ ...formData, parentsGreeting: data })}
           />
         )}
 
@@ -423,8 +427,13 @@ export default function AIStoryGenerator({
           <InterviewForm
             data={formData.interview}
             onChange={(data) => setFormData({ ...formData, interview: data })}
-            onGenerate={generateContent}
-            isGenerating={isGenerating}
+          />
+        )}
+
+        {currentStep === 'thanks' && (
+          <ThanksForm
+            data={formData.greeting}
+            onChange={(data) => setFormData({ ...formData, greeting: data })}
           />
         )}
 
@@ -472,7 +481,7 @@ export default function AIStoryGenerator({
             </Button>
           )}
 
-          {currentStep === 'interview' ? (
+          {currentStep === 'thanks' ? (
             <Button
               onClick={generateContent}
               disabled={isGenerating}
@@ -484,7 +493,7 @@ export default function AIStoryGenerator({
                   생성 중...
                 </>
               ) : (
-                'AI로 생성하기'
+                '초안 생성하기'
               )}
             </Button>
           ) : currentStep === 'result' ? (

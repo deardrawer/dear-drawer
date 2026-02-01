@@ -1,0 +1,748 @@
+'use client'
+
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Switch } from '@/components/ui/switch'
+import { Heart, Clock, ImagePlus, MapPin, Bus, CreditCard, Plus, X, MessageSquare } from 'lucide-react'
+import { SortableList, SortableItem } from '@/components/ui/sortable-list'
+import ImageCropEditor from '@/components/parents/ImageCropEditor'
+import type { ParentsInvitationData, TimelineItem } from '../../page'
+
+interface ParentsStep3ContentProps {
+  data: ParentsInvitationData
+  updateData: (updates: Partial<ParentsInvitationData>) => void
+  updateNestedData: (path: string, value: unknown) => void
+  invitationId: string | null
+}
+
+// 결혼식 안내 항목 설정
+const PARENTS_INFO_ITEMS_CONFIG: { key: string; label: string; emoji: string }[] = [
+  { key: 'flowerGift', label: '꽃 답례품 안내', emoji: '💐' },
+  { key: 'wreath', label: '화환 안내', emoji: '🌸' },
+  { key: 'flowerChild', label: '화동 안내', emoji: '🌼' },
+  { key: 'reception', label: '피로연 안내', emoji: '🍽' },
+  { key: 'photoBooth', label: '포토부스 안내', emoji: '📸' },
+  { key: 'shuttle', label: '셔틀버스 운행', emoji: '🚌' },
+]
+
+const DEFAULT_ITEM_ORDER = PARENTS_INFO_ITEMS_CONFIG.map(item => item.key)
+
+export default function ParentsStep3Content({
+  data,
+  updateData,
+  updateNestedData,
+  invitationId,
+}: ParentsStep3ContentProps) {
+  // 안내 항목 순서 변경 함수 (드래그 앤 드롭)
+  const handleInfoItemReorder = (newOrder: string[]) => {
+    if (!Array.isArray(newOrder) || newOrder.length === 0) {
+      return
+    }
+
+    const validKeys = PARENTS_INFO_ITEMS_CONFIG.map(item => item.key)
+    const isValidOrder = newOrder.every(key => validKeys.includes(key))
+
+    if (!isValidOrder) {
+      return
+    }
+
+    updateNestedData('weddingInfo.itemOrder', newOrder)
+  }
+
+  return (
+    <div className="p-6 space-y-8">
+      {/* 안내 */}
+      <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+        <p className="text-base text-purple-800 font-medium mb-1">본문 내용 작성</p>
+        <p className="text-sm text-purple-700">
+          💡 청첩장 본문에 표시될 내용을 작성해주세요.
+        </p>
+      </div>
+
+      {/* 본문 인사말 */}
+      <section className="space-y-4">
+        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+          <div className="w-6 h-6 rounded-full bg-cyan-100 flex items-center justify-center">
+            <Heart className="w-3 h-3 text-cyan-500" />
+          </div>
+          본문 인사말
+        </h3>
+        <p className="text-sm text-blue-600">💡 청첩장 본문에 표시될 인사말을 작성해주세요.</p>
+
+        <Textarea
+          value={data.greeting}
+          onChange={(e) => updateData({ greeting: e.target.value })}
+          placeholder="서로 다른 길을 걸어온 두 사람이&#10;이제 같은 길을 함께 걸어가려 합니다.&#10;&#10;저희의 새로운 시작을&#10;축복해 주시면 감사하겠습니다."
+          rows={6}
+          className="font-light leading-relaxed"
+        />
+      </section>
+
+      {/* 타임라인 */}
+      <section className="space-y-4">
+        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+          <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center">
+            <Clock className="w-3 h-3 text-indigo-500" />
+          </div>
+          타임라인
+        </h3>
+        <p className="text-sm text-blue-600">💡 부모님 시점에서 아이의 성장 이야기를 담아보세요.</p>
+
+        {/* ON/OFF 토글 */}
+        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div>
+            <p className="text-sm font-medium">타임라인 표시</p>
+            <p className="text-xs text-gray-500">부모님 시점의 성장 스토리</p>
+          </div>
+          <Switch
+            checked={data.timelineEnabled !== false}
+            onCheckedChange={(checked) => updateData({ timelineEnabled: checked })}
+          />
+        </div>
+
+        {data.timelineEnabled !== false && (
+          <>
+            {data.timeline?.map((item, index) => (
+              <div key={index} className="border rounded-lg p-3 space-y-3 bg-white">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-gray-600">스토리 {index + 1}</span>
+                  <button
+                    onClick={() => {
+                      const newTimeline = data.timeline?.filter((_, i) => i !== index) || []
+                      updateData({ timeline: newTimeline })
+                    }}
+                    className="p-1 rounded hover:bg-red-100 text-red-400"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-[10px]">연도</Label>
+                    <Input
+                      value={item.year}
+                      onChange={(e) => {
+                        const newTimeline = [...(data.timeline || [])]
+                        newTimeline[index] = { ...newTimeline[index], year: e.target.value }
+                        updateData({ timeline: newTimeline })
+                      }}
+                      placeholder="1992"
+                      className="text-sm"
+                    />
+                  </div>
+                  <div className="col-span-2 space-y-1">
+                    <Label className="text-[10px]">설명</Label>
+                    <Input
+                      value={item.description}
+                      onChange={(e) => {
+                        const newTimeline = [...(data.timeline || [])]
+                        newTimeline[index] = { ...newTimeline[index], description: e.target.value }
+                        updateData({ timeline: newTimeline })
+                      }}
+                      placeholder="저희가 결혼하던 날"
+                      className="text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-[10px]">이미지</Label>
+                  <ImageCropEditor
+                    value={item.image || { url: item.imageUrl || '', cropX: 0, cropY: 0, cropWidth: 1, cropHeight: 1 }}
+                    onChange={(cropData) => {
+                      const newTimeline = [...(data.timeline || [])]
+                      newTimeline[index] = {
+                        ...newTimeline[index],
+                        image: cropData,
+                        imageUrl: cropData.url
+                      }
+                      updateData({ timeline: newTimeline })
+                    }}
+                    aspectRatio={1}
+                    containerWidth={220}
+                    invitationId={invitationId || undefined}
+                    label=""
+                  />
+                </div>
+              </div>
+            ))}
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const newTimeline = [...(data.timeline || []), {
+                  year: '',
+                  description: '',
+                  imageUrl: '',
+                  image: { url: '', cropX: 0, cropY: 0, cropWidth: 1, cropHeight: 1 }
+                }]
+                updateData({ timeline: newTimeline })
+              }}
+              className="w-full"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              스토리 추가
+            </Button>
+          </>
+        )}
+      </section>
+
+      {/* 갤러리 */}
+      <section className="space-y-4">
+        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+          <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center">
+            <ImagePlus className="w-3 h-3 text-emerald-500" />
+          </div>
+          갤러리
+          <span className="text-xs text-gray-400 font-normal">({data.gallery?.images?.length || 0}장)</span>
+        </h3>
+        <p className="text-sm text-blue-600">💡 신랑신부 사진을 추가하세요. (최대 10장)</p>
+
+        {data.gallery?.images?.map((img, index) => (
+          <div key={index} className="border rounded-lg p-3 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-gray-600">사진 {index + 1}</span>
+              <button
+                onClick={() => {
+                  const newImages = data.gallery?.images?.filter((_, i) => i !== index) || []
+                  updateNestedData('gallery.images', newImages)
+                }}
+                className="p-1 rounded hover:bg-red-100 text-red-400"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <ImageCropEditor
+              value={img}
+              onChange={(cropData) => {
+                const newImages = [...(data.gallery?.images || [])]
+                newImages[index] = cropData
+                updateNestedData('gallery.images', newImages)
+              }}
+              aspectRatio={3/4}
+              containerWidth={240}
+              invitationId={invitationId || undefined}
+              label=""
+            />
+          </div>
+        ))}
+
+        {(data.gallery?.images?.length || 0) < 10 && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const newImages = [...(data.gallery?.images || []), { url: '', cropX: 0, cropY: 0, cropWidth: 1, cropHeight: 1 }]
+              updateNestedData('gallery.images', newImages)
+            }}
+            className="w-full"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            이미지 추가
+          </Button>
+        )}
+      </section>
+
+      {/* 결혼식 정보 */}
+      <section className="space-y-4">
+        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+          <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center">
+            <MapPin className="w-3 h-3 text-purple-500" />
+          </div>
+          결혼식 정보
+        </h3>
+        <p className="text-sm text-blue-600">💡 결혼식 날짜, 시간, 장소를 입력해주세요.</p>
+
+        {/* 날짜/시간 */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label className="text-xs">결혼식 날짜</Label>
+            <Input
+              type="date"
+              value={data.wedding.date}
+              onChange={(e) => updateNestedData('wedding.date', e.target.value)}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">시간 표시</Label>
+            <Input
+              value={data.wedding.timeDisplay}
+              onChange={(e) => updateNestedData('wedding.timeDisplay', e.target.value)}
+              placeholder="오후 12시"
+            />
+          </div>
+        </div>
+
+        {/* 장소 */}
+        <div className="space-y-1.5">
+          <Label className="text-xs">예식장 이름</Label>
+          <Input
+            value={data.wedding.venue.name}
+            onChange={(e) => updateNestedData('wedding.venue.name', e.target.value)}
+            placeholder="더채플앳청담"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs">홀 이름</Label>
+          <Input
+            value={data.wedding.venue.hall}
+            onChange={(e) => updateNestedData('wedding.venue.hall', e.target.value)}
+            placeholder="그랜드볼룸"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs">주소</Label>
+          <Input
+            value={data.wedding.venue.address}
+            onChange={(e) => updateNestedData('wedding.venue.address', e.target.value)}
+            placeholder="서울시 강남구..."
+          />
+        </div>
+
+        {/* 오시는 길 안내 */}
+        <div className="pt-3 border-t space-y-3">
+          <p className="text-xs font-medium text-gray-700">오시는 길 안내</p>
+
+          {/* 버스 */}
+          <div className="border rounded-lg p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-medium">🚌 버스</Label>
+              <Switch
+                checked={data.wedding.directions?.bus?.enabled ?? false}
+                onCheckedChange={(checked) => updateNestedData('wedding.directions.bus.enabled', checked)}
+              />
+            </div>
+            {data.wedding.directions?.bus?.enabled && (
+              <div className="space-y-2">
+                <Input
+                  value={data.wedding.directions?.bus?.lines || ''}
+                  onChange={(e) => updateNestedData('wedding.directions.bus.lines', e.target.value)}
+                  placeholder="143, 240, 463 / 3412, 4412"
+                  className="text-sm"
+                />
+                <Input
+                  value={data.wedding.directions?.bus?.stop || ''}
+                  onChange={(e) => updateNestedData('wedding.directions.bus.stop', e.target.value)}
+                  placeholder="청담사거리 정류장 하차 후 도보 5분"
+                  className="text-sm"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* 지하철 */}
+          <div className="border rounded-lg p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-medium">🚇 지하철</Label>
+              <Switch
+                checked={data.wedding.directions?.subway?.enabled ?? false}
+                onCheckedChange={(checked) => updateNestedData('wedding.directions.subway.enabled', checked)}
+              />
+            </div>
+            {data.wedding.directions?.subway?.enabled && (
+              <div className="space-y-2">
+                <div className="grid grid-cols-3 gap-2">
+                  <Input
+                    value={data.wedding.directions?.subway?.line || ''}
+                    onChange={(e) => updateNestedData('wedding.directions.subway.line', e.target.value)}
+                    placeholder="7호선"
+                    className="text-sm"
+                  />
+                  <Input
+                    value={data.wedding.directions?.subway?.station || ''}
+                    onChange={(e) => updateNestedData('wedding.directions.subway.station', e.target.value)}
+                    placeholder="청담역"
+                    className="text-sm"
+                  />
+                  <Input
+                    value={data.wedding.directions?.subway?.exit || ''}
+                    onChange={(e) => updateNestedData('wedding.directions.subway.exit', e.target.value)}
+                    placeholder="9번 출구"
+                    className="text-sm"
+                  />
+                </div>
+                <Input
+                  value={data.wedding.directions?.subway?.walk || ''}
+                  onChange={(e) => updateNestedData('wedding.directions.subway.walk', e.target.value)}
+                  placeholder="도보 약 7분 / 택시 약 3분"
+                  className="text-sm"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* 주차 */}
+          <div className="border rounded-lg p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-medium">🅿️ 주차 안내</Label>
+              <Switch
+                checked={data.wedding.directions?.parking?.enabled ?? false}
+                onCheckedChange={(checked) => updateNestedData('wedding.directions.parking.enabled', checked)}
+              />
+            </div>
+            {data.wedding.directions?.parking?.enabled && (
+              <div className="space-y-2">
+                <Input
+                  value={data.wedding.directions?.parking?.capacity || ''}
+                  onChange={(e) => updateNestedData('wedding.directions.parking.capacity', e.target.value)}
+                  placeholder="지하 2~4층 주차 가능 (200대)"
+                  className="text-sm"
+                />
+                <Input
+                  value={data.wedding.directions?.parking?.free || ''}
+                  onChange={(e) => updateNestedData('wedding.directions.parking.free', e.target.value)}
+                  placeholder="주차권 2시간 무료 (안내데스크 수령)"
+                  className="text-sm"
+                />
+                <Input
+                  value={data.wedding.directions?.parking?.note || ''}
+                  onChange={(e) => updateNestedData('wedding.directions.parking.note', e.target.value)}
+                  placeholder="주말 혼잡하오니 대중교통 이용을 권장드립니다."
+                  className="text-sm"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* 셔틀버스 (오시는길) */}
+          <div className="border rounded-lg p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-medium">🚐 셔틀버스</Label>
+              <Switch
+                checked={data.wedding.directions?.shuttle?.enabled ?? false}
+                onCheckedChange={(checked) => updateNestedData('wedding.directions.shuttle.enabled', checked)}
+              />
+            </div>
+            {data.wedding.directions?.shuttle?.enabled && (
+              <div className="space-y-2">
+                <Input
+                  value={data.wedding.directions?.shuttle?.location || ''}
+                  onChange={(e) => updateNestedData('wedding.directions.shuttle.location', e.target.value)}
+                  placeholder="강남역 11번 출구 앞"
+                  className="text-sm"
+                />
+                <p className="text-[10px] text-gray-400">탑승 장소</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Input
+                      value={data.wedding.directions?.shuttle?.departureTime || ''}
+                      onChange={(e) => updateNestedData('wedding.directions.shuttle.departureTime', e.target.value)}
+                      placeholder="오전 10:30"
+                      className="text-sm"
+                    />
+                    <p className="text-[10px] text-gray-400 mt-1">출발 시간</p>
+                  </div>
+                  <div>
+                    <Input
+                      value={data.wedding.directions?.shuttle?.returnTime || ''}
+                      onChange={(e) => updateNestedData('wedding.directions.shuttle.returnTime', e.target.value)}
+                      placeholder="오후 4:00"
+                      className="text-sm"
+                    />
+                    <p className="text-[10px] text-gray-400 mt-1">복귀 시간</p>
+                  </div>
+                </div>
+                <Textarea
+                  value={data.wedding.directions?.shuttle?.note || ''}
+                  onChange={(e) => updateNestedData('wedding.directions.shuttle.note', e.target.value)}
+                  placeholder="출발 10분 전까지 탑승 부탁드립니다."
+                  rows={2}
+                  className="text-sm resize-none"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* 결혼식 안내 */}
+      <section className="space-y-4">
+        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+          <div className="w-6 h-6 rounded-full bg-rose-100 flex items-center justify-center">
+            <Bus className="w-3 h-3 text-rose-500" />
+          </div>
+          결혼식 안내
+        </h3>
+        <p className="text-sm text-blue-600">💡 답례품, 화환, 피로연, 셔틀버스 등 안내 정보를 입력해주세요.</p>
+
+        {/* 섹션 전체 ON/OFF */}
+        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <Label className="text-sm font-medium">결혼식 안내 섹션 표시</Label>
+          <Switch
+            checked={data.weddingInfo?.enabled ?? true}
+            onCheckedChange={(checked) => updateNestedData('weddingInfo.enabled', checked)}
+          />
+        </div>
+
+        {data.weddingInfo?.enabled !== false && (
+          <SortableList
+            items={data.weddingInfo?.itemOrder || DEFAULT_ITEM_ORDER}
+            onReorder={handleInfoItemReorder}
+            renderDragOverlay={(activeId) => {
+              const config = PARENTS_INFO_ITEMS_CONFIG.find(c => c.key === activeId)
+              return config ? (
+                <div className="p-3 bg-white">
+                  <span className="text-xs font-medium">{config.emoji} {config.label}</span>
+                </div>
+              ) : null
+            }}
+          >
+            <div className="space-y-3">
+              {(data.weddingInfo?.itemOrder || DEFAULT_ITEM_ORDER).map((itemKey) => {
+                const config = PARENTS_INFO_ITEMS_CONFIG.find(c => c.key === itemKey)
+                if (!config) return null
+
+                const weddingInfo = data.weddingInfo || {}
+                const itemData = weddingInfo[itemKey as keyof typeof weddingInfo]
+                const isEnabled = typeof itemData === 'object' && itemData !== null && 'enabled' in itemData ? itemData.enabled : false
+
+                const placeholders: Record<string, string> = {
+                  flowerGift: '예식 후 하객분들께 감사의 마음을 전하기 위해...',
+                  wreath: '축하의 마음만으로도 충분히 감사하여...',
+                  flowerChild: '예식 중 사랑스러운 화동 입장이 예정되어 있습니다...',
+                  reception: '피로연 자리를 마련하였습니다...',
+                  photoBooth: '소중한 하루를 오래 기억할 수 있도록...',
+                }
+
+                return (
+                  <SortableItem key={itemKey} id={itemKey}>
+                    <div className="border rounded-lg p-3 space-y-2 bg-white hover:border-gray-300 transition-colors">
+                      <div className="flex items-center justify-between gap-2">
+                        <Label className="text-xs font-medium">{config.emoji} {config.label}</Label>
+                        <Switch
+                          checked={isEnabled ?? false}
+                          onCheckedChange={(checked) => updateNestedData(`weddingInfo.${itemKey}.enabled`, checked)}
+                        />
+                      </div>
+
+                      {isEnabled && (
+                        <div className="space-y-2">
+                          {itemKey !== 'shuttle' && (
+                            <Textarea
+                              value={(itemData as { content?: string })?.content || ''}
+                              onChange={(e) => updateNestedData(`weddingInfo.${itemKey}.content`, e.target.value)}
+                              placeholder={placeholders[itemKey] || '안내 내용을 입력하세요'}
+                              rows={3}
+                              className="text-sm"
+                            />
+                          )}
+
+                          {itemKey === 'reception' && (
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="space-y-1">
+                                <Label className="text-[10px]">장소</Label>
+                                <Input
+                                  value={data.weddingInfo?.reception?.venue || ''}
+                                  onChange={(e) => updateNestedData('weddingInfo.reception.venue', e.target.value)}
+                                  placeholder="피로연 장소"
+                                  className="text-sm"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-[10px]">일시</Label>
+                                <Input
+                                  value={data.weddingInfo?.reception?.datetime || ''}
+                                  onChange={(e) => updateNestedData('weddingInfo.reception.datetime', e.target.value)}
+                                  placeholder="0년 0월 0일 오후 0시"
+                                  className="text-sm"
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          {itemKey === 'shuttle' && (
+                            <div className="space-y-3 pt-2">
+                              <div className="grid grid-cols-2 gap-2">
+                                <div className="space-y-1">
+                                  <Label className="text-[10px]">출발 일시</Label>
+                                  <Input
+                                    value={data.weddingInfo?.shuttle?.departureDate || ''}
+                                    onChange={(e) => updateNestedData('weddingInfo.shuttle.departureDate', e.target.value)}
+                                    placeholder="2027년 1월 9일"
+                                    className="text-sm"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <Label className="text-[10px]">출발 시간</Label>
+                                  <Input
+                                    value={data.weddingInfo?.shuttle?.departureTime || ''}
+                                    onChange={(e) => updateNestedData('weddingInfo.shuttle.departureTime', e.target.value)}
+                                    placeholder="오전 10시"
+                                    className="text-sm"
+                                  />
+                                </div>
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-[10px]">탑승 장소</Label>
+                                <Input
+                                  value={data.weddingInfo?.shuttle?.departureLocation || ''}
+                                  onChange={(e) => updateNestedData('weddingInfo.shuttle.departureLocation', e.target.value)}
+                                  placeholder="서울시 강남구 청담역 9번 출구"
+                                  className="text-sm"
+                                />
+                              </div>
+                              <div className="grid grid-cols-2 gap-2">
+                                <div className="space-y-1">
+                                  <Label className="text-[10px]">복귀 시간</Label>
+                                  <Input
+                                    value={data.weddingInfo?.shuttle?.returnTime || ''}
+                                    onChange={(e) => updateNestedData('weddingInfo.shuttle.returnTime', e.target.value)}
+                                    placeholder="오후 5시"
+                                    className="text-sm"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <Label className="text-[10px]">차량 번호</Label>
+                                  <Input
+                                    value={data.weddingInfo?.shuttle?.vehicleNumber || ''}
+                                    onChange={(e) => updateNestedData('weddingInfo.shuttle.vehicleNumber', e.target.value)}
+                                    placeholder="전세버스 1234호"
+                                    className="text-sm"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </SortableItem>
+                )
+              })}
+            </div>
+          </SortableList>
+        )}
+      </section>
+
+      {/* RSVP (참석의사전달) */}
+      <section className="space-y-4">
+        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+          <div className="w-6 h-6 rounded-full bg-violet-100 flex items-center justify-center">
+            <MessageSquare className="w-3 h-3 text-violet-500" />
+          </div>
+          RSVP (참석의사전달)
+        </h3>
+        <p className="text-sm text-blue-600">💡 RSVP 기능은 게스트 설정 단계에서 확인하실 수 있습니다.</p>
+
+        <div className="p-4 bg-gray-50 rounded-lg text-center">
+          <p className="text-sm text-gray-600">
+            게스트에게 참석 여부를 편리하게 받을 수 있어요.
+          </p>
+          <p className="text-xs text-gray-500 mt-2">
+            청첩장 발행 후 게스트 관리 페이지에서 응답을 확인할 수 있습니다.
+          </p>
+        </div>
+      </section>
+
+      {/* 계좌 안내 */}
+      <section className="space-y-4">
+        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+          <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
+            <CreditCard className="w-3 h-3 text-green-600" />
+          </div>
+          계좌 안내
+        </h3>
+        <p className="text-sm text-blue-600">💡 마음 전달을 위한 계좌 정보를 입력하세요.</p>
+
+        {/* ON/OFF 토글 */}
+        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div>
+            <p className="text-sm font-medium">계좌 안내 표시</p>
+            <p className="text-xs text-gray-500">마음 전하실 곳 정보</p>
+          </div>
+          <Switch
+            checked={data.accounts?.enabled !== false}
+            onCheckedChange={(checked) => updateNestedData('accounts.enabled', checked)}
+          />
+        </div>
+
+        {data.accounts?.enabled !== false && (
+          <>
+            {data.accounts?.list?.map((account, index) => (
+              <div key={index} className="border rounded-lg p-3 space-y-3 bg-white">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-gray-600">계좌 {index + 1}</span>
+                  <button
+                    onClick={() => {
+                      const newList = data.accounts?.list?.filter((_, i) => i !== index) || []
+                      updateNestedData('accounts.list', newList)
+                    }}
+                    className="p-1 rounded hover:bg-red-100 text-red-400"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="space-y-1">
+                    <Label className="text-[10px]">예금주</Label>
+                    <Input
+                      value={account.name}
+                      onChange={(e) => {
+                        const newList = [...(data.accounts?.list || [])]
+                        newList[index] = { ...newList[index], name: e.target.value }
+                        updateNestedData('accounts.list', newList)
+                      }}
+                      placeholder="예금주명"
+                      className="text-sm"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <Label className="text-[10px]">은행</Label>
+                      <Input
+                        value={account.bank}
+                        onChange={(e) => {
+                          const newList = [...(data.accounts?.list || [])]
+                          newList[index] = { ...newList[index], bank: e.target.value }
+                          updateNestedData('accounts.list', newList)
+                        }}
+                        placeholder="은행명"
+                        className="text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px]">계좌번호</Label>
+                      <Input
+                        value={account.accountNumber}
+                        onChange={(e) => {
+                          const newList = [...(data.accounts?.list || [])]
+                          newList[index] = { ...newList[index], accountNumber: e.target.value }
+                          updateNestedData('accounts.list', newList)
+                        }}
+                        placeholder="123-456-789012"
+                        className="text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const newList = [...(data.accounts?.list || []), {
+                  name: '',
+                  bank: '',
+                  accountNumber: ''
+                }]
+                updateNestedData('accounts.list', newList)
+              }}
+              className="w-full"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              계좌 추가
+            </Button>
+          </>
+        )}
+      </section>
+    </div>
+  )
+}

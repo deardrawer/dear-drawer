@@ -83,7 +83,7 @@ export function useGenerateContent(): UseGenerateContentReturn {
     ): Promise<GeneratedContent> => {
       setIsLoading(true)
       setError(null)
-      setProgress('AI가 콘텐츠를 생성하고 있어요...')
+      setProgress('스토리 초안을 작성하고 있어요...')
 
       try {
         // 새로 생성시 카운터 리셋

@@ -1,0 +1,240 @@
+'use client'
+
+import { useEditorStore } from '@/store/editorStore'
+import { useState, useRef } from 'react'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
+import { Play, Pause } from 'lucide-react'
+import { bgmPresets } from '@/lib/bgmPresets'
+
+// 색상 테마 옵션
+const COLOR_THEMES = [
+  { id: 'classic-rose', name: '클래식 로즈', primary: '#E91E63', preview: 'bg-gradient-to-br from-rose-100 to-rose-300' },
+  { id: 'modern-black', name: '모던 블랙', primary: '#1A1A1A', preview: 'bg-gradient-to-br from-gray-200 to-gray-400' },
+  { id: 'romantic-blush', name: '로맨틱 블러시', primary: '#D4A5A5', preview: 'bg-gradient-to-br from-pink-100 to-pink-200' },
+  { id: 'nature-green', name: '네이처 그린', primary: '#6B8E6B', preview: 'bg-gradient-to-br from-green-100 to-green-300' },
+  { id: 'luxury-navy', name: '럭셔리 네이비', primary: '#1E3A5F', preview: 'bg-gradient-to-br from-blue-200 to-indigo-300' },
+  { id: 'sunset-coral', name: '선셋 코럴', primary: '#E8846B', preview: 'bg-gradient-to-br from-orange-100 to-orange-300' },
+] as const
+
+// 폰트 스타일 옵션
+const FONT_STYLES = [
+  { id: 'classic', name: '클래식', sample: '우리 결혼합니다', fontFamily: "'Ridibatang', serif", desc: '정갈한 바탕체' },
+  { id: 'modern', name: '모던', sample: '우리 결혼합니다', fontFamily: "'Pretendard', sans-serif", desc: '세련된 산세리프체' },
+  { id: 'romantic', name: '로맨틱', sample: '우리 결혼합니다', fontFamily: "'OmuDaye', sans-serif", desc: '귀여운 손글씨체' },
+  { id: 'contemporary', name: '컨템포러리', sample: '우리 결혼합니다', fontFamily: "'JeonnamEducationBarun', sans-serif", desc: '깔끔한 바른체' },
+  { id: 'luxury', name: '포멀', sample: '우리 결혼합니다', fontFamily: "'ELandChoice', serif", desc: '고급스러운 명조체' },
+] as const
+
+// BGM 프리셋은 @/lib/bgmPresets에서 import
+
+interface Step2StyleProps {
+  templateId?: string
+}
+
+export default function Step2Style({ templateId }: Step2StyleProps) {
+  const { invitation, updateField, updateNestedField } = useEditorStore()
+  const [playingBgm, setPlayingBgm] = useState<string | null>(null)
+  const audioRef = useRef<HTMLAudioElement>(null)
+
+  if (!invitation) return null
+
+  const { colorTheme, fontStyle, bgm } = invitation
+
+  // BGM 재생/정지 토글
+  const toggleBgmPreview = (url: string) => {
+    if (playingBgm === url) {
+      audioRef.current?.pause()
+      setPlayingBgm(null)
+    } else {
+      if (audioRef.current) {
+        audioRef.current.src = url
+        audioRef.current.play()
+        setPlayingBgm(url)
+      }
+    }
+  }
+
+  // BGM 선택
+  const selectBgm = (url: string) => {
+    updateNestedField('bgm.url', url)
+    updateNestedField('bgm.enabled', true)
+  }
+
+  return (
+    <div className="p-6 space-y-8">
+      {/* 안내 */}
+      <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+        <p className="text-base text-purple-800 font-medium mb-1">디자인 설정</p>
+        <p className="text-sm text-purple-700">
+          청첩장의 폰트, 색상, 배경음악을 설정해주세요.
+        </p>
+      </div>
+
+      {/* 폰트 스타일 */}
+      <section className="space-y-4">
+        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+          ✒️ 폰트 스타일
+        </h3>
+        <p className="text-sm text-blue-600">💡 텍스트의 글꼴을 선택해주세요.</p>
+
+        <div className="grid grid-cols-1 gap-2">
+          {FONT_STYLES.map((font) => {
+            const isSelected = fontStyle === font.id
+            return (
+              <button
+                key={font.id}
+                onClick={() => updateField('fontStyle', font.id as typeof fontStyle)}
+                className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all ${
+                  isSelected
+                    ? 'border-gray-900 bg-gray-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  {isSelected && (
+                    <div className="w-5 h-5 bg-black rounded-full flex items-center justify-center shrink-0">
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  )}
+                  <div className="text-left">
+                    <span className="text-sm font-medium text-gray-700 block">{font.name}</span>
+                    <span className="text-xs text-gray-400">{font.desc}</span>
+                  </div>
+                </div>
+                <span
+                  className="text-lg text-gray-800"
+                  style={{ fontFamily: font.fontFamily }}
+                >
+                  {font.sample}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </section>
+
+      {/* 색상 테마 */}
+      <section className="space-y-4">
+        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+          🎨 색상 테마
+        </h3>
+        <p className="text-sm text-blue-600">💡 청첩장의 전체적인 색상 분위기를 선택해주세요.</p>
+
+        <div className="grid grid-cols-3 gap-3">
+          {COLOR_THEMES.map((theme) => {
+            const isSelected = colorTheme === theme.id
+            return (
+              <button
+                key={theme.id}
+                onClick={() => updateField('colorTheme', theme.id as typeof colorTheme)}
+                className={`relative p-3 rounded-xl border-2 transition-all ${
+                  isSelected
+                    ? 'border-gray-900 ring-2 ring-gray-900/20'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                {isSelected && (
+                  <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-black rounded-full flex items-center justify-center">
+                    <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                )}
+                <div className={`w-full h-12 rounded-lg mb-2 ${theme.preview}`} />
+                <p className="text-xs text-gray-700 font-medium">{theme.name}</p>
+              </button>
+            )
+          })}
+        </div>
+      </section>
+
+      {/* 배경음악 */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+            🎵 배경음악
+          </h3>
+          <Switch
+            checked={bgm?.enabled || false}
+            onCheckedChange={(checked) => updateNestedField('bgm.enabled', checked)}
+          />
+        </div>
+        <p className="text-sm text-blue-600">
+          💡 스토리에 어울리는 배경음악을 선택해주세요.<br />
+          <span className="text-amber-600">⚠️ 브라우저 정책에 따라 자동재생 기능이 동작하지 않을 수 있습니다.</span>
+        </p>
+
+        {(bgm?.enabled || bgm?.url) && (
+          <div className="space-y-4">
+
+            {/* 프리셋 BGM */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">추천 배경음악</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {bgmPresets.map((preset) => {
+                  const isSelected = bgm?.url === preset.url
+                  const isPlaying = playingBgm === preset.url
+                  return (
+                    <div
+                      key={preset.id}
+                      className={`relative flex items-center gap-2 p-3 rounded-xl border-2 transition-all cursor-pointer ${
+                        isSelected
+                          ? 'border-gray-900 bg-gray-50'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                      onClick={() => selectBgm(preset.url)}
+                    >
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          toggleBgmPreview(preset.url)
+                        }}
+                        className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                          isPlaying ? 'bg-gray-900 text-white' : 'bg-gray-200 text-gray-600'
+                        }`}
+                      >
+                        {isPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3 ml-0.5" />}
+                      </button>
+                      <div className="flex-1 min-w-0">
+                        <span className="text-xs text-gray-700 block">{preset.name}</span>
+                        <span className="text-[10px] text-gray-400 block truncate">{preset.description}</span>
+                      </div>
+                      {isSelected && (
+                        <div className="w-4 h-4 bg-black rounded-full flex items-center justify-center shrink-0">
+                          <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* 자동재생 설정 */}
+            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+              <Switch
+                checked={bgm?.autoplay ?? true}
+                onCheckedChange={(checked) => updateNestedField('bgm.autoplay', checked)}
+              />
+              <span className="text-sm text-gray-700">자동 재생</span>
+              <span className="text-xs text-gray-400 ml-auto">모바일에서 자동재생</span>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* 오디오 플레이어 (숨김) */}
+      <audio
+        ref={audioRef}
+        onEnded={() => setPlayingBgm(null)}
+        className="hidden"
+      />
+    </div>
+  )
+}

@@ -230,7 +230,7 @@ interface FullPageLoadingProps {
 }
 
 export function FullPageLoading({
-  message = 'AI가 콘텐츠를 생성하고 있어요...',
+  message = '스토리 초안을 작성하고 있어요...',
   subMessage = '잠시만 기다려주세요'
 }: FullPageLoadingProps) {
   return (

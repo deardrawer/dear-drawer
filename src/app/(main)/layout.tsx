@@ -57,12 +57,12 @@ export default function MainLayout({
               >
                 문의하기
               </a>
-              <a
-                href="https://www.deardrawer.com/invitation"
+              <Link
+                href="/templates"
                 className="text-sm transition-colors tracking-wide text-gray-500 hover:text-black"
               >
                 모바일 청첩장
-              </a>
+              </Link>
               <Link
                 href="/my-invitations"
                 className="text-sm font-medium px-4 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
@@ -102,13 +102,13 @@ export default function MainLayout({
               >
                 문의하기
               </a>
-              <a
-                href="https://www.deardrawer.com/invitation"
+              <Link
+                href="/templates"
                 className="px-4 py-3 text-sm rounded-lg transition-colors text-gray-500 hover:bg-gray-50"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 모바일 청첩장
-              </a>
+              </Link>
               <div className="px-4 my-2">
                 <Link
                   href="/my-invitations"

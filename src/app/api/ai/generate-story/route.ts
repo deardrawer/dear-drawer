@@ -7,10 +7,12 @@ const anthropic = new Anthropic({
 })
 
 // 기본 스토리 타입 (OUR 템플릿, 인터뷰용)
+// 순서: 소개(profileIntro) → 스토리(ourStory) → 인터뷰(decision) → 감사인사(thankYou)
 export type GeneratedStory = {
-  ourStory: string
-  decision: string
-  invitation: string
+  profileIntro: string  // 커플 소개
+  ourStory: string      // 러브스토리
+  decision: string      // 결혼 결심 (인터뷰용)
+  thankYou: string      // 감사인사
 }
 
 // FAMILY 템플릿 "서로를 선택한 이유" 타입
@@ -57,23 +59,27 @@ export async function POST(request: NextRequest) {
 ${answersContext}
 
 [요구사항]
-1. 3개의 섹션을 작성해 주세요:
-   - ourStory: 두 사람의 만남과 사랑 이야기 (첫 만남, 연애 과정)
-   - decision: 결혼을 결심하게 된 계기와 서로에 대한 마음
-   - invitation: 하객들에게 전하는 초대의 말씀
+1. 4개의 섹션을 작성해 주세요 (순서대로):
+   - profileIntro: 커플 소개글 (신랑신부가 서로를 소개하는 내용, 어떤 사람인지)
+   - ourStory: 러브스토리 (두 사람의 만남과 사랑 이야기, 첫 만남, 연애 과정)
+   - decision: 결혼을 결심하게 된 계기 (인터뷰 Q&A 답변 형식으로)
+   - thankYou: 감사 인사 (하객분들께 전하는 따뜻한 감사의 말)
 
 2. 각 섹션 작성 가이드:
-   - 길이: 각 120-180자, 3-5문장
+   - profileIntro: 80-120자, 상대방의 매력과 좋은 점 위주로
+   - ourStory: 120-180자, 구체적인 에피소드 중심으로
+   - decision: 100-150자, 결혼을 결심한 순간과 이유
+   - thankYou: 60-100자, 간결하고 진심어린 감사
    - 어조: 진솔하고 따뜻한 경어체
-   - 내용: 제공된 답변을 자연스럽게 녹여서 작성
    - 과장되거나 뻔한 표현 지양
    - 두 사람만의 특별한 이야기가 드러나도록
 
 3. 반드시 아래 JSON 형식으로만 응답해 주세요:
 {
+  "profileIntro": "텍스트",
   "ourStory": "텍스트",
   "decision": "텍스트",
-  "invitation": "텍스트"
+  "thankYou": "텍스트"
 }`
 
     const message = await anthropic.messages.create({

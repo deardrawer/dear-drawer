@@ -1,7 +1,7 @@
 // 필드 헬퍼 - 각 입력 필드에 대한 설명과 예시 제공
 
 export type PreviewSection =
-  | 'cover'           // 표지
+  | 'intro'           // 인트로
   | 'greeting'        // 인사말
   | 'family'          // 가족 소개
   | 'couple-profile'  // 커플 소개
@@ -24,7 +24,7 @@ export interface FieldHelper {
 
 // 섹션 라벨 (한글)
 export const sectionLabels: Record<PreviewSection, string> = {
-  'cover': '표지',
+  'intro': '인트로',
   'greeting': '인사말',
   'family': '가족 소개',
   'couple-profile': '커플 소개',
@@ -41,7 +41,7 @@ export const sectionLabels: Record<PreviewSection, string> = {
 
 // 섹션 배지 색상
 export const sectionColors: Record<PreviewSection, string> = {
-  'cover': 'bg-purple-100 text-purple-700',
+  'intro': 'bg-purple-100 text-purple-700',
   'greeting': 'bg-blue-100 text-blue-700',
   'family': 'bg-amber-100 text-amber-700',
   'couple-profile': 'bg-pink-100 text-pink-700',
@@ -59,46 +59,46 @@ export const sectionColors: Record<PreviewSection, string> = {
 export const fieldHelpers: Record<string, FieldHelper> = {
   // ===== 디자인 설정 =====
   'design.coverTitle': {
-    label: '표지 제목',
-    explanation: '청첩장 표지에 크게 표시되는 제목이에요',
+    label: '인트로 제목',
+    explanation: '청첩장을 처음 열었을 때 가장 먼저 보이는 메인 타이틀이에요. 영문이나 한글 모두 괜찮아요!',
     example: 'OUR WEDDING',
-    previewSection: 'cover',
+    previewSection: 'intro',
   },
   'design.introAnimation': {
     label: '인트로 애니메이션',
-    explanation: '청첩장을 열었을 때 나타나는 애니메이션 효과예요',
+    explanation: '청첩장이 열릴 때 보이는 특별한 효과예요. 첫인상을 더 드라마틱하게 만들어줘요.',
     example: '페이드 인',
-    previewSection: 'cover',
+    previewSection: 'intro',
   },
   'bgm.url': {
-    label: '배경음악 URL',
-    explanation: '청첩장에 재생될 배경음악 링크예요',
-    example: 'https://example.com/wedding-bgm.mp3',
-    previewSection: 'cover',
+    label: '배경음악',
+    explanation: '청첩장을 볼 때 흐르는 배경음악이에요. 추천 음악 중에서 골라보세요!',
+    example: '로맨틱한 피아노 음악',
+    previewSection: 'intro',
   },
 
   // ===== 신랑신부 기본정보 =====
   'groom.name': {
     label: '신랑 이름',
-    explanation: '청첩장에 표시될 신랑 이름이에요',
+    explanation: '인트로와 청첩장 곳곳에 표시돼요. 풀네임을 입력해주세요.',
     example: '김민준',
-    previewSection: 'cover',
+    previewSection: 'intro',
   },
   'groom.phone': {
-    label: '신랑 연락처 (선택)',
-    explanation: '선택 입력이에요. 입력하면 하단 버튼의 "안내정보 → 연락처"에 표시돼요.',
+    label: '신랑 연락처',
+    explanation: '하객분들이 연락할 수 있도록 하단 "연락처" 버튼에 표시돼요. 비워두셔도 괜찮아요.',
     example: '010-1234-5678',
     previewSection: 'info',
   },
   'bride.name': {
     label: '신부 이름',
-    explanation: '청첩장에 표시될 신부 이름이에요',
+    explanation: '인트로와 청첩장 곳곳에 표시돼요. 풀네임을 입력해주세요.',
     example: '이서연',
-    previewSection: 'cover',
+    previewSection: 'intro',
   },
   'bride.phone': {
-    label: '신부 연락처 (선택)',
-    explanation: '선택 입력이에요. 입력하면 하단 버튼의 "안내정보 → 연락처"에 표시돼요.',
+    label: '신부 연락처',
+    explanation: '하객분들이 연락할 수 있도록 하단 "연락처" 버튼에 표시돼요. 비워두셔도 괜찮아요.',
     example: '010-8765-4321',
     previewSection: 'info',
   },
@@ -106,25 +106,25 @@ export const fieldHelpers: Record<string, FieldHelper> = {
   // ===== 가족 정보 =====
   'groom.father.name': {
     label: '신랑 아버지 성함',
-    explanation: '청첩장에 표시될 신랑 아버지 성함이에요',
+    explanation: '인트로 하단과 가족 소개에 표시돼요. 성함만 입력하시면 돼요.',
     example: '김철수',
     previewSection: 'family',
   },
   'groom.mother.name': {
     label: '신랑 어머니 성함',
-    explanation: '청첩장에 표시될 신랑 어머니 성함이에요',
+    explanation: '인트로 하단과 가족 소개에 표시돼요. 성함만 입력하시면 돼요.',
     example: '박영희',
     previewSection: 'family',
   },
   'bride.father.name': {
     label: '신부 아버지 성함',
-    explanation: '청첩장에 표시될 신부 아버지 성함이에요',
+    explanation: '인트로 하단과 가족 소개에 표시돼요. 성함만 입력하시면 돼요.',
     example: '이정호',
     previewSection: 'family',
   },
   'bride.mother.name': {
     label: '신부 어머니 성함',
-    explanation: '청첩장에 표시될 신부 어머니 성함이에요',
+    explanation: '인트로 하단과 가족 소개에 표시돼요. 성함만 입력하시면 돼요.',
     example: '김미영',
     previewSection: 'family',
   },
@@ -132,19 +132,19 @@ export const fieldHelpers: Record<string, FieldHelper> = {
   // ===== 인사말 =====
   'content.greeting': {
     label: '인사말',
-    explanation: '하객분들께 전하는 인사말이에요. 형식적인 말보다 두 사람의 이야기를 담아보세요.',
-    example: '처음 만난 순간부터 지금까지, 서로의 곁에서 함께 웃고 울며 걸어왔습니다. 이제 평생을 약속하는 자리에 소중한 분들을 초대합니다.',
+    explanation: '인트로 바로 다음에 보이는 첫 인사예요. "저희 결혼합니다" 같은 딱딱한 말 대신, 두 분만의 감성을 담아보세요. AI로 초안을 작성해드릴 수도 있어요!',
+    example: '처음 만난 순간부터 지금까지, 서로의 곁에서 함께 웃고 울며 걸어왔습니다.',
     previewSection: 'greeting',
   },
   'content.quote.text': {
     label: '명언/문구',
-    explanation: '인사말 위에 표시될 특별한 문구예요 (선택사항)',
+    explanation: '인사말 위에 작게 표시되는 특별한 문구예요. 좋아하는 명언이나 책 구절을 넣어보세요. 비워두셔도 괜찮아요!',
     example: '사랑한다는 것은 서로의 눈을 바라보는 것이 아니라, 같은 방향을 바라보는 것이다.',
     previewSection: 'greeting',
   },
   'content.quote.author': {
     label: '명언 출처',
-    explanation: '문구의 출처나 작가 이름이에요',
+    explanation: '문구의 출처나 작가 이름이에요. 명언을 입력하셨다면 함께 적어주세요.',
     example: '생텍쥐페리',
     previewSection: 'greeting',
   },
@@ -152,37 +152,37 @@ export const fieldHelpers: Record<string, FieldHelper> = {
   // ===== 결혼식 정보 =====
   'wedding.date': {
     label: '결혼식 날짜',
-    explanation: '예식 날짜를 선택해주세요',
+    explanation: '예식 날짜를 선택해주세요. 인트로와 캘린더에 표시돼요.',
     example: '2024-11-04',
-    previewSection: 'cover',
+    previewSection: 'intro',
   },
   'wedding.time': {
     label: '결혼식 시간',
-    explanation: '예식 시간을 선택해주세요',
+    explanation: '예식 시간을 선택해주세요. "오후 2시" 형식으로 자동 변환돼요.',
     example: '14:00',
-    previewSection: 'cover',
+    previewSection: 'intro',
   },
   'wedding.timeDisplay': {
     label: '시간 표시 형식',
-    explanation: '청첩장에 표시될 시간 형식이에요',
+    explanation: '청첩장에 실제로 보이는 시간 형식이에요. 직접 수정하실 수도 있어요.',
     example: '오후 2시',
-    previewSection: 'cover',
+    previewSection: 'intro',
   },
   'wedding.venue.name': {
     label: '예식장명',
-    explanation: '결혼식이 진행될 예식장 이름이에요',
+    explanation: '인트로와 오시는 길에 표시돼요. 정확한 상호명을 입력해주세요.',
     example: '더클래식500',
     previewSection: 'directions',
   },
   'wedding.venue.hall': {
     label: '홀/층',
-    explanation: '예식장 내 구체적인 위치예요',
+    explanation: '예식장 내 정확한 위치예요. 하객분들이 찾기 쉽도록 입력해주세요.',
     example: '5층 그랜드홀',
     previewSection: 'directions',
   },
   'wedding.venue.address': {
     label: '주소',
-    explanation: '예식장 주소예요',
+    explanation: '지도와 길찾기에 사용돼요. 도로명 주소를 권장드려요.',
     example: '서울특별시 강남구 테헤란로 123',
     previewSection: 'directions',
   },
@@ -210,95 +210,95 @@ export const fieldHelpers: Record<string, FieldHelper> = {
   // ===== 커플 소개 =====
   'groom.profile.aboutLabel': {
     label: '소개 라벨',
-    explanation: '프로필 섹션의 제목이에요',
+    explanation: '프로필 카드 상단에 표시되는 영문 타이틀이에요.',
     example: 'ABOUT GROOM',
     previewSection: 'couple-profile',
   },
   'groom.profile.subtitle': {
     label: '소개 부제목',
-    explanation: '누가 작성한 소개인지 알려주는 부제목이에요',
+    explanation: '누가 작성한 소개인지 알려주는 부제목이에요. "신부가 소개하는 신랑" 처럼 적어보세요.',
     example: '신부가 소개하는 신랑',
     previewSection: 'couple-profile',
   },
   'groom.profile.intro': {
     label: '신랑 소개글',
-    explanation: '신부가 작성하는 신랑 소개예요. 어떤 사람인지, 어떤 점이 좋은지 자유롭게 써보세요.',
-    example: '처음 만났을 때 무뚝뚝해 보였는데, 알고 보니 세상에서 가장 따뜻한 사람이었어요. 힘들 때 말없이 옆에 있어주는 사람, 그게 이 사람이에요.',
+    explanation: '신부가 쓰는 신랑 소개예요! 처음 만났을 때 느낌, 좋아하는 점, 함께하면서 느낀 것 등을 자유롭게 써보세요.',
+    example: '처음 만났을 때 무뚝뚝해 보였는데, 알고 보니 세상에서 가장 따뜻한 사람이었어요.',
     previewSection: 'couple-profile',
   },
   'groom.profile.tag': {
-    label: '신랑 태그',
-    explanation: '신랑을 한마디로 표현하는 태그예요',
-    example: '세상에서 제일 따뜻한 사람',
+    label: '성격 태그',
+    explanation: '신랑의 성격이나 매력을 표현하는 키워드예요. # 기호와 함께 적어주세요.',
+    example: '#낙천적 #유머러스 #다정함',
     previewSection: 'couple-profile',
   },
   'bride.profile.aboutLabel': {
     label: '소개 라벨',
-    explanation: '프로필 섹션의 제목이에요',
+    explanation: '프로필 카드 상단에 표시되는 영문 타이틀이에요.',
     example: 'ABOUT BRIDE',
     previewSection: 'couple-profile',
   },
   'bride.profile.subtitle': {
     label: '소개 부제목',
-    explanation: '누가 작성한 소개인지 알려주는 부제목이에요',
+    explanation: '누가 작성한 소개인지 알려주는 부제목이에요. "신랑이 소개하는 신부" 처럼 적어보세요.',
     example: '신랑이 소개하는 신부',
     previewSection: 'couple-profile',
   },
   'bride.profile.intro': {
     label: '신부 소개글',
-    explanation: '신랑이 작성하는 신부 소개예요. 어떤 사람인지, 어떤 점이 좋은지 자유롭게 써보세요.',
-    example: '언제나 밝은 미소로 주변을 환하게 만드는 사람이에요. 이 사람 옆에 있으면 왠지 모든 게 잘 될 것 같은 기분이 들어요.',
+    explanation: '신랑이 쓰는 신부 소개예요! 처음 만났을 때 느낌, 좋아하는 점, 함께하면서 느낀 것 등을 자유롭게 써보세요.',
+    example: '언제나 밝은 미소로 주변을 환하게 만드는 사람이에요.',
     previewSection: 'couple-profile',
   },
   'bride.profile.tag': {
-    label: '신부 태그',
-    explanation: '신부를 한마디로 표현하는 태그예요',
-    example: '웃음이 예쁜 사람',
+    label: '성격 태그',
+    explanation: '신부의 성격이나 매력을 표현하는 키워드예요. # 기호와 함께 적어주세요.',
+    example: '#꼼꼼함 #따뜻함 #행복전도사',
     previewSection: 'couple-profile',
   },
 
   // ===== 우리의 이야기 =====
   'relationship.startDate': {
     label: '처음 만난 날',
-    explanation: '두 사람이 처음 만난 날짜예요',
+    explanation: '두 분의 시작점이에요. D-Day 계산에도 활용돼요.',
     example: '2020-03-15',
     previewSection: 'our-story',
   },
   'relationship.closingText': {
     label: '마무리 문구',
-    explanation: '연애 이야기 마지막을 장식할 문장이에요',
-    example: '그리고 이제 드디어 부르는 서로의 이름에 \'신랑\', \'신부\'라는 호칭을 담습니다.',
+    explanation: '러브스토리의 마지막을 장식하는 감동적인 한마디예요.',
+    example: '그리고 이제, 서로를 "신랑", "신부"라고 부르게 됩니다.',
     previewSection: 'our-story',
   },
   'relationship.stories[].date': {
     label: '날짜/시기',
-    explanation: '이 이야기가 있었던 시기예요',
+    explanation: '언제의 이야기인지 알려주세요. "2020년 봄", "첫 만남 후 6개월" 등 자유롭게 적어도 돼요.',
     example: '2020년 봄',
     previewSection: 'our-story',
   },
   'relationship.stories[].title': {
     label: '제목',
-    explanation: '이 시기를 한 문장으로 표현해보세요',
+    explanation: '이 시기를 대표하는 짧은 제목이에요. 눈에 띄는 한마디로 적어보세요!',
     example: '어색한 첫 만남',
     previewSection: 'our-story',
   },
   'relationship.stories[].desc': {
     label: '내용',
-    explanation: '그때의 이야기를 편하게 써보세요',
-    example: '친구 소개로 처음 만났어요. 어색하게 커피만 마시다 헤어졌는데, 집에 가는 내내 그 사람 생각만 났어요.',
+    explanation: '그때의 이야기를 자유롭게 풀어보세요. 두 분만 아는 에피소드라면 더 좋아요! **별표**로 강조할 수 있어요.',
+    example: '친구 소개로 처음 만났어요. 집에 가는 내내 그 사람 생각만 났어요.',
     previewSection: 'our-story',
   },
 
   // ===== 인터뷰 =====
   'content.interviews[].question': {
     label: '질문',
-    explanation: '하객분들께 보여줄 웨딩 인터뷰 질문이에요',
+    explanation: 'Q&A 형식의 인터뷰 질문이에요. 하객분들이 두 분을 더 알아갈 수 있어요.',
     example: '결혼을 결심하게 된 계기는 무엇인가요?',
     previewSection: 'interview',
   },
   'content.interviews[].answer': {
     label: '답변',
-    explanation: '인터뷰 질문에 대한 두 분의 답변이에요',
+    explanation: '질문에 대한 진솔한 답변을 적어주세요. **별표**로 강조할 수 있어요.',
     example: '함께하는 모든 순간이 행복했고, 이 사람과 평생을 함께하고 싶다는 확신이 들었어요.',
     previewSection: 'interview',
   },
@@ -306,7 +306,7 @@ export const fieldHelpers: Record<string, FieldHelper> = {
   // ===== 갤러리 =====
   'gallery.images': {
     label: '사진 갤러리',
-    explanation: '두 사람의 특별한 순간들을 담은 사진이에요 (최대 6장)',
+    explanation: '두 분의 특별한 순간을 담은 사진들이에요. 스와이프로 넘겨볼 수 있어요! (최대 10장)',
     example: '사진을 추가하세요',
     previewSection: 'gallery',
   },
@@ -372,33 +372,33 @@ export const fieldHelpers: Record<string, FieldHelper> = {
   // ===== 감사 인사 =====
   'content.thankYou.message': {
     label: '감사 메시지',
-    explanation: '청첩장 마지막에 전하는 감사의 말이에요',
-    example: '바쁘신 와중에도 저희의 결혼을 축하해 주셔서 진심으로 감사드립니다. 함께해 주신 모든 분들의 사랑을 가슴 깊이 간직하며, 더 예쁘게 살겠습니다.',
+    explanation: '청첩장의 마지막을 장식하는 따뜻한 감사 인사예요. 하객분들께 전하고 싶은 마음을 담아보세요.',
+    example: '바쁘신 와중에도 저희의 결혼을 축하해 주셔서 진심으로 감사드립니다.',
     previewSection: 'thank-you',
   },
   'content.thankYou.sign': {
     label: '서명',
-    explanation: '감사 인사 아래 표시될 서명이에요',
+    explanation: '감사 인사 아래 두 분의 이름이 표시돼요.',
     example: '민준 & 서연 드림',
     previewSection: 'thank-you',
   },
 
   // ===== 축의금 =====
   'groom.bank.bank': {
-    label: '신랑 은행',
-    explanation: '축의금을 받을 은행이에요',
+    label: '은행명',
+    explanation: '축의금을 받으실 은행이에요. 하단 버튼의 "축의금" 탭에 표시돼요.',
     example: '국민은행',
     previewSection: 'bank-accounts',
   },
   'groom.bank.account': {
-    label: '신랑 계좌번호',
-    explanation: '축의금을 받을 계좌번호예요',
+    label: '계좌번호',
+    explanation: '계좌번호를 입력해주세요. 복사 버튼이 자동으로 생겨요.',
     example: '123-456-789012',
     previewSection: 'bank-accounts',
   },
   'groom.bank.holder': {
     label: '예금주',
-    explanation: '계좌 예금주 이름이에요',
+    explanation: '계좌 예금주 이름이에요. 정확하게 입력해주세요.',
     example: '김민준',
     previewSection: 'bank-accounts',
   },
@@ -406,7 +406,7 @@ export const fieldHelpers: Record<string, FieldHelper> = {
   // ===== RSVP =====
   'rsvpDeadline': {
     label: '회신 마감일',
-    explanation: '참석 여부를 알려주실 마감 날짜예요',
+    explanation: '하객분들이 참석 여부를 알려주실 마감일이에요. 결혼식 1~2주 전으로 설정하시는 것을 추천드려요.',
     example: '2024-10-25',
     previewSection: 'rsvp',
   },

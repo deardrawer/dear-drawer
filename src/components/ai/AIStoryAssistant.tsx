@@ -97,7 +97,7 @@ export default function AIStoryAssistant({
       const data: { content?: string; error?: string } = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || '스토리 생성에 실패했습니다.')
+        throw new Error(data.error || '스토리 작성에 실패했습니다.')
       }
 
       setGeneratedText(data.content || '')
@@ -180,7 +180,7 @@ export default function AIStoryAssistant({
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'write' | 'ai')} className="flex-1 flex flex-col overflow-hidden">
           <TabsList className="mx-6 mt-4 grid w-auto grid-cols-2">
             <TabsTrigger value="write">직접 작성</TabsTrigger>
-            <TabsTrigger value="ai">AI 도움받기</TabsTrigger>
+            <TabsTrigger value="ai">도움받기</TabsTrigger>
           </TabsList>
 
           {/* 직접 작성 탭 */}
@@ -196,7 +196,7 @@ export default function AIStoryAssistant({
               {/* 수정 옵션 */}
               {manualText.trim() && (
                 <div className="space-y-3">
-                  <p className="text-sm text-gray-500">AI로 수정하기</p>
+                  <p className="text-sm text-gray-500">문장 다듬기</p>
                   <div className="flex flex-wrap gap-2">
                     {MODIFICATION_OPTIONS.map((option) => (
                       <Button
@@ -250,7 +250,7 @@ export default function AIStoryAssistant({
               {!generatedText && (
                 <div className="space-y-4">
                   <p className="text-sm text-gray-600">
-                    아래 질문에 답해주시면 AI가 {STORY_TYPE_LABELS[type]}를 작성해드립니다.
+                    아래 질문에 답해주시면 {STORY_TYPE_LABELS[type]} 초안을 작성해드려요.
                   </p>
                   {questions.map((q) => (
                     <div key={q.id} className="space-y-1.5">
@@ -274,14 +274,14 @@ export default function AIStoryAssistant({
                     {isGenerating ? (
                       <>
                         <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2" />
-                        스토리 생성 중...
+                        스토리 작성 중...
                       </>
                     ) : (
                       <>
                         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
-                        스토리 생성하기
+                        스토리 작성하기
                       </>
                     )}
                   </Button>
@@ -292,7 +292,7 @@ export default function AIStoryAssistant({
               {generatedText && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-gray-700">생성된 스토리</p>
+                    <p className="text-sm font-medium text-gray-700">작성된 스토리</p>
                     <Button
                       variant="ghost"
                       size="sm"

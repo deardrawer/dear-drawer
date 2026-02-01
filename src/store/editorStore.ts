@@ -169,10 +169,12 @@ export interface InfoSettings {
 
 // 섹션 공개 설정
 export interface SectionVisibility {
-  coupleProfile: boolean    // 커플 소개
-  ourStory: boolean         // 우리의 이야기
+  coupleProfile: boolean    // 커플 소개 (OUR 템플릿)
+  ourStory: boolean         // 우리의 이야기 (OUR 템플릿)
+  parentsGreeting: boolean  // 부모님 인사말 (FAMILY 템플릿)
   interview: boolean        // 인터뷰
   guidance: boolean         // 행복한 시간을 위한 안내
+  contacts: boolean         // 연락처
   bankAccounts: boolean     // 축의금
   guestbook: boolean        // 방명록
 }
@@ -221,7 +223,7 @@ export interface SectionDividerTexts {
 // 디자인 설정
 export interface DesignSettings {
   introAnimation: IntroAnimationType
-  coverTitle: string              // 표지 제목 (기본: "OUR WEDDING")
+  coverTitle: string              // 인트로 제목 (기본: "OUR WEDDING")
   sectionDividers: SectionDividerTexts
 }
 
@@ -319,7 +321,10 @@ export interface InvitationContent {
     thankYou: ThankYouInfo
     info: InfoSettings
     interviews: InterviewItem[]
+    interviewIntro: string      // 인터뷰 섹션 소개 문구
     guestbookQuestions: string[]
+    parentsGreeting: string   // 부모님 인사말 (FAMILY 템플릿)
+    parentsSign: string       // 부모님 서명 (FAMILY 템플릿)
   }
 
   // ===== 갤러리 =====
@@ -331,6 +336,7 @@ export interface InvitationContent {
   // ===== 미디어 =====
   media: {
     coverImage: string
+    coverImageSettings?: ImageSettings
     infoImage: string
     bgm: string
   }
@@ -342,6 +348,9 @@ export interface InvitationContent {
     ogImage: string
     ogImageSettings?: ImageSettings
     kakaoThumbnail: string
+    kakaoThumbnailSettings?: ImageSettings
+    kakaoTitle: string        // 카카오톡 공유 제목
+    kakaoDescription: string  // 카카오톡 공유 설명
   }
 
   // ===== 테마 =====
@@ -370,6 +379,9 @@ export interface InvitationContent {
   // ===== 섹션 공개 설정 =====
   sectionVisibility: SectionVisibility
 
+  // ===== 프로필 순서 (신랑먼저/신부먼저) =====
+  profileOrder: 'groom-first' | 'bride-first'
+
   // ===== 디자인 설정 =====
   design: DesignSettings
 
@@ -397,6 +409,12 @@ export interface InvitationContent {
   invitation: string
 }
 
+// 위자드 Step 타입 (템플릿 선택은 /templates 페이지에서 처리)
+export type WizardStep = 1 | 2 | 3 | 4 | 5
+
+// 위자드 미리보기 모드
+export type WizardPreviewMode = 'cover' | 'content' | 'menu' | 'full'
+
 interface EditorStore {
   invitation: InvitationContent | null
   template: Template | null
@@ -405,6 +423,13 @@ interface EditorStore {
   activeSection: PreviewSectionId  // 현재 편집 중인 섹션
   editorActiveTab: string  // 에디터 탭 제어
   validationError: { tab: string; message: string } | null
+
+  // 위자드 모드 관련
+  wizardMode: boolean  // true면 위자드, false면 자유 편집
+  wizardStep: WizardStep
+  wizardPreviewMode: WizardPreviewMode
+  wizardVisitedSteps: WizardStep[]  // 방문한 스텝 기록
+  wizardSavedSteps: WizardStep[]  // 저장된 스텝 기록 (저장 시 체크마크 표시용)
 
   // Actions
   initInvitation: (template: Template) => void
@@ -430,6 +455,14 @@ interface EditorStore {
   updateIntroField: <K extends keyof IntroSettings>(field: K, value: IntroSettings[K]) => void
   setEditorActiveTab: (tab: string) => void
   setValidationError: (error: { tab: string; message: string } | null) => void
+  // 위자드 모드 액션
+  setWizardMode: (mode: boolean) => void
+  setWizardStep: (step: WizardStep) => void
+  markStepsSaved: () => void  // 현재까지 방문한 스텝을 저장됨으로 표시
+  setWizardPreviewMode: (mode: WizardPreviewMode) => void
+  nextWizardStep: () => void
+  prevWizardStep: () => void
+  validateWizardStep: (step: WizardStep) => { valid: boolean; errors: string[] }
 }
 
 const createDefaultImageSettings = (): ImageSettings => ({
@@ -485,6 +518,7 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
       publicTransport: '',
       train: '',
       expressBus: '',
+      shuttle: '',
     },
   },
 
@@ -527,21 +561,24 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
       { question: '', answer: '', images: [], imageSettings: [], bgClass: 'white-bg' },
       { question: '', answer: '', images: [], imageSettings: [], bgClass: 'pink-bg' },
     ],
+    interviewIntro: '',
     guestbookQuestions: [
       '두 사람에게 해주고 싶은 말은?',
       '결혼생활에서 가장 중요한 건?',
       '두 사람의 첫인상은 어땠나요?',
     ],
+    parentsGreeting: '',
+    parentsSign: '',
   },
 
   // 갤러리
   gallery: { images: [], imageSettings: [] },
 
-  // 미디어
-  media: { coverImage: '', infoImage: '', bgm: '' },
+  // 미디어 (템플릿별 기본 커버 이미지 사용)
+  media: { coverImage: template.defaultCoverImage || '', infoImage: '', bgm: '' },
 
   // 메타
-  meta: { title: '', description: '', ogImage: '', kakaoThumbnail: '' },
+  meta: { title: '', description: '', ogImage: '', ogImageSettings: { scale: 1, positionX: 0, positionY: 0, cropX: 0, cropY: 0, cropWidth: 1, cropHeight: 1 }, kakaoThumbnail: '', kakaoThumbnailSettings: { scale: 1, positionX: 0, positionY: 0, cropX: 0, cropY: 0, cropWidth: 1, cropHeight: 1 }, kakaoTitle: '', kakaoDescription: '' },
 
   // 테마
   templateId: template.id,
@@ -565,11 +602,16 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
   sectionVisibility: {
     coupleProfile: true,
     ourStory: true,
+    parentsGreeting: true,
     interview: true,
     guidance: false,
+    contacts: true,
     bankAccounts: true,
     guestbook: true,
   },
+
+  // 프로필 순서
+  profileOrder: 'groom-first',
 
   // 디자인 설정
   design: {
@@ -712,7 +754,7 @@ const setNestedValue = (obj: Record<string, unknown>, path: string, value: unkno
   return result
 }
 
-export const useEditorStore = create<EditorStore>((set) => ({
+export const useEditorStore = create<EditorStore>((set, get) => ({
   invitation: null,
   template: null,
   isDirty: false,
@@ -721,12 +763,25 @@ export const useEditorStore = create<EditorStore>((set) => ({
   editorActiveTab: 'design',
   validationError: null,
 
+  // 위자드 모드 상태
+  wizardMode: true,  // 기본값: 위자드 모드
+  wizardStep: 1 as WizardStep,
+  wizardVisitedSteps: [1] as WizardStep[],  // 첫 스텝은 방문한 것으로 시작
+  wizardSavedSteps: [] as WizardStep[],  // 저장된 스텝 (저장 시 체크마크 표시)
+  wizardPreviewMode: 'cover' as WizardPreviewMode,
+
   initInvitation: (template) =>
     set({
       invitation: createDefaultInvitation(template),
       template,
       isDirty: false,
       activeSection: null,
+      // 위자드 상태 리셋
+      wizardStep: 1 as WizardStep,
+      wizardVisitedSteps: [1] as WizardStep[],
+      wizardSavedSteps: [] as WizardStep[],
+      wizardPreviewMode: 'cover' as WizardPreviewMode,
+      validationError: null,
     }),
 
   setActiveSection: (section) => set({ activeSection: section }),
@@ -764,18 +819,50 @@ export const useEditorStore = create<EditorStore>((set) => ({
     set((state) => {
       if (!state.invitation) return state
 
-      const combinedGreeting = `${story.ourStory}\n\n${story.decision}\n\n${story.invitation}`
+      // 프로필 소개 업데이트
+      const updatedGroom = {
+        ...state.invitation.groom,
+        profile: {
+          ...state.invitation.groom.profile,
+          intro: story.profileIntro,
+        },
+      }
+
+      // 러브스토리 업데이트 (첫번째 스토리)
+      const updatedStories = [...state.invitation.relationship.stories]
+      if (updatedStories.length > 0) {
+        updatedStories[0] = {
+          ...updatedStories[0],
+          desc: story.ourStory,
+        }
+      }
+
+      // 인터뷰 업데이트 (결혼 결심)
+      const updatedInterviews = [...state.invitation.content.interviews]
+      if (updatedInterviews.length > 0) {
+        updatedInterviews[0] = {
+          ...updatedInterviews[0],
+          question: '결혼을 결심하게 된 계기는?',
+          answer: story.decision,
+        }
+      }
 
       return {
         invitation: {
           ...state.invitation,
+          groom: updatedGroom,
+          relationship: {
+            ...state.invitation.relationship,
+            stories: updatedStories,
+          },
           content: {
             ...state.invitation.content,
-            greeting: combinedGreeting,
+            interviews: updatedInterviews,
+            thankYou: {
+              ...state.invitation.content.thankYou,
+              message: story.thankYou,
+            },
           },
-          ourStory: story.ourStory,
-          decision: story.decision,
-          invitation: story.invitation,
         },
         isDirty: true,
       }
@@ -806,35 +893,60 @@ export const useEditorStore = create<EditorStore>((set) => ({
         },
       }
 
-      // 인터뷰도 함께 적용할 경우
+      // 인터뷰도 함께 적용할 경우 (소개, 스토리, 인터뷰, 감사인사 순서)
       let updatedInterviews = state.invitation.content.interviews
+      let updatedThankYou = state.invitation.content.thankYou
+      let updatedGroom = state.invitation.groom
+      let updatedStories = state.invitation.relationship.stories
+
       if (applyInterview) {
+        // 프로필 소개 업데이트
+        updatedGroom = {
+          ...state.invitation.groom,
+          profile: {
+            ...state.invitation.groom.profile,
+            intro: applyInterview.profileIntro,
+          },
+        }
+
+        // 러브스토리 업데이트
+        updatedStories = [...state.invitation.relationship.stories]
+        if (updatedStories.length > 0) {
+          updatedStories[0] = {
+            ...updatedStories[0],
+            desc: applyInterview.ourStory,
+          }
+        }
+
+        // 인터뷰 업데이트
         updatedInterviews = [
           {
             ...state.invitation.content.interviews[0],
-            question: '두 분은 어떻게 만나셨나요?',
-            answer: applyInterview.ourStory,
-          },
-          {
-            ...state.invitation.content.interviews[1],
             question: '결혼을 결심하게 된 계기는?',
             answer: applyInterview.decision,
           },
-          {
-            ...state.invitation.content.interviews[2],
-            question: '하객분들께 전하고 싶은 말씀은?',
-            answer: applyInterview.invitation,
-          },
         ]
+
+        // 감사인사 업데이트
+        updatedThankYou = {
+          ...state.invitation.content.thankYou,
+          message: applyInterview.thankYou,
+        }
       }
 
       return {
         invitation: {
           ...state.invitation,
+          groom: updatedGroom,
           whyWeChose: updatedWhyWeChose,
+          relationship: {
+            ...state.invitation.relationship,
+            stories: updatedStories,
+          },
           content: {
             ...state.invitation.content,
             interviews: updatedInterviews,
+            thankYou: updatedThankYou,
           },
         },
         isDirty: true,
@@ -973,4 +1085,97 @@ export const useEditorStore = create<EditorStore>((set) => ({
 
   setEditorActiveTab: (tab) => set({ editorActiveTab: tab }),
   setValidationError: (error) => set({ validationError: error }),
+
+  // 위자드 모드 액션
+  setWizardMode: (mode) => set({ wizardMode: mode }),
+  setWizardStep: (step) => {
+    const { wizardVisitedSteps } = get()
+    // Step에 따른 미리보기 모드 자동 설정
+    const previewModeMap: Record<WizardStep, WizardPreviewMode> = {
+      1: 'cover',
+      2: 'cover',
+      3: 'content',
+      4: 'menu',
+      5: 'full',
+    }
+    // 방문 기록 추가
+    const newVisited = wizardVisitedSteps.includes(step)
+      ? wizardVisitedSteps
+      : [...wizardVisitedSteps, step]
+    set({ wizardStep: step, wizardPreviewMode: previewModeMap[step], wizardVisitedSteps: newVisited })
+  },
+  setWizardPreviewMode: (mode) => set({ wizardPreviewMode: mode }),
+
+  // 저장 시 현재까지 방문한 스텝을 저장됨으로 표시
+  markStepsSaved: () => {
+    const { wizardVisitedSteps } = get()
+    set({ wizardSavedSteps: [...wizardVisitedSteps] })
+  },
+
+  // 자유롭게 이동 가능 (검증 없이, 발행 시에만 검증)
+  nextWizardStep: () => {
+    const { wizardStep, wizardVisitedSteps } = get()
+    if (wizardStep < 5) {
+      const nextStep = (wizardStep + 1) as WizardStep
+      const previewModeMap: Record<WizardStep, WizardPreviewMode> = {
+        1: 'cover',
+        2: 'cover',
+        3: 'content',
+        4: 'menu',
+        5: 'full',
+      }
+      const newVisited = wizardVisitedSteps.includes(nextStep)
+        ? wizardVisitedSteps
+        : [...wizardVisitedSteps, nextStep]
+      set({ wizardStep: nextStep, wizardPreviewMode: previewModeMap[nextStep], wizardVisitedSteps: newVisited, validationError: null })
+    }
+  },
+
+  prevWizardStep: () => {
+    const { wizardStep } = get()
+    if (wizardStep > 1) {
+      const prevStep = (wizardStep - 1) as WizardStep
+      const previewModeMap: Record<WizardStep, WizardPreviewMode> = {
+        1: 'cover',
+        2: 'cover',
+        3: 'content',
+        4: 'menu',
+        5: 'full',
+      }
+      set({ wizardStep: prevStep, wizardPreviewMode: previewModeMap[prevStep], validationError: null })
+    }
+  },
+
+  validateWizardStep: (step) => {
+    const { invitation } = get()
+    const errors: string[] = []
+
+    if (!invitation) {
+      return { valid: false, errors: ['청첩장 데이터가 없습니다.'] }
+    }
+
+    switch (step) {
+      case 1:
+        // 기본 정보 필수 검증 (기존 Step 2)
+        if (!invitation.groom.name?.trim()) errors.push('신랑 이름을 입력해주세요.')
+        if (!invitation.bride.name?.trim()) errors.push('신부 이름을 입력해주세요.')
+        if (!invitation.wedding.date) errors.push('결혼 날짜를 선택해주세요.')
+        if (!invitation.wedding.venue.name?.trim()) errors.push('예식장 이름을 입력해주세요.')
+        if (!invitation.wedding.venue.address?.trim()) errors.push('예식장 주소를 입력해주세요.')
+        break
+      case 2:
+        // 인트로 - 카카오 썸네일 필수 (기존 Step 3)
+        if (!invitation.meta.kakaoThumbnail?.trim()) errors.push('카카오톡 공유 썸네일을 업로드해주세요.')
+        break
+      case 3:
+      case 4:
+        // 선택 항목이므로 통과 (기존 Step 4, 5)
+        break
+      case 5:
+        // 발행 - 나중에 slug 검증 추가 (기존 Step 6)
+        break
+    }
+
+    return { valid: errors.length === 0, errors }
+  },
 }))

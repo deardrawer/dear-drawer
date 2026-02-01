@@ -194,6 +194,15 @@ export interface WhyWeChoseFormData {
   brideAnswer3: string;
 }
 
+// 부모님 인사말 폼 데이터 (FAMILY 템플릿용)
+export interface ParentsGreetingFormData {
+  childName: string;
+  childDescription: string;
+  partnerDescription: string;
+  parentsFeelings: string;
+  greetingStyle: 'proud' | 'emotional' | 'grateful' | 'simple';
+}
+
 // 전체 폼 데이터
 export interface AllFormData {
   greeting: GreetingFormData;
@@ -202,7 +211,7 @@ export interface AllFormData {
   story: StoryFormData;
   interview: InterviewFormData;
   // FAMILY 템플릿용
-  whyWeChose?: WhyWeChoseFormData;
+  parentsGreeting?: ParentsGreetingFormData;
 }
 
 // 생성된 결과
@@ -223,16 +232,14 @@ export interface GeneratedContent {
     jointAnswer?: string;
   }>;
   // FAMILY 템플릿용 필드
-  whyWeChose?: {
-    groomDescription: string;  // 신부가 신랑을 선택한 이유
-    groomQuote: string;        // 신부의 한마디
-    brideDescription: string;  // 신랑이 신부를 선택한 이유
-    brideQuote: string;        // 신랑의 한마디
-  };
+  parentsGreeting?: string;  // 부모님 인사말 생성 결과
 }
 
 // 스텝 정의
-export type StepId = 'greeting' | 'profile' | 'story' | 'whyWeChose' | 'interview' | 'result';
+// 인사말은 인트로에서 별도 AI로 생성하므로 제외
+// OUR: 소개(연인의 시선) → 러브스토리 → 인터뷰 → 감사인사 → 결과
+// FAMILY: 부모님인사말 → 인터뷰 → 감사인사 → 결과
+export type StepId = 'profile' | 'story' | 'parentsGreeting' | 'interview' | 'thanks' | 'result';
 
 export interface Step {
   id: StepId;
@@ -241,19 +248,21 @@ export interface Step {
 }
 
 // OUR 템플릿용 스텝
+// 연인의 시선으로 신랑신부 소개 + 러브스토리 + 커플인터뷰
 export const STEPS: Step[] = [
-  { id: 'greeting', title: '인사말', description: '인사말과 감사의 글을 작성해요' },
-  { id: 'profile', title: '소개', description: '신랑·신부를 소개해요' },
-  { id: 'story', title: '스토리', description: '우리의 러브스토리를 작성해요' },
-  { id: 'interview', title: '인터뷰', description: '웨딩 인터뷰를 만들어요' },
+  { id: 'profile', title: '소개', description: '연인의 시선으로 서로를 소개해요' },
+  { id: 'story', title: '러브스토리', description: '우리의 러브스토리를 작성해요' },
+  { id: 'interview', title: '인터뷰', description: '커플 인터뷰를 만들어요' },
+  { id: 'thanks', title: '감사인사', description: '하객분들께 전하는 감사의 글' },
   { id: 'result', title: '결과', description: '생성된 결과를 확인해요' },
 ];
 
-// FAMILY 템플릿용 스텝 (소개 스킵, 스토리 → 서로를 선택한 이유)
+// FAMILY 템플릿용 스텝
+// 부모님 인사말 + 커플인터뷰 (커플 소개, 러브스토리 없음)
 export const FAMILY_STEPS: Step[] = [
-  { id: 'greeting', title: '인사말', description: '인사말과 감사의 글을 작성해요' },
-  { id: 'whyWeChose', title: '서로를 선택한 이유', description: '서로를 선택한 이유를 작성해요' },
-  { id: 'interview', title: '인터뷰', description: '웨딩 인터뷰를 만들어요' },
+  { id: 'parentsGreeting', title: '부모님 인사말', description: '부모님의 마음을 담은 인사말을 작성해요' },
+  { id: 'interview', title: '인터뷰', description: '커플 인터뷰를 만들어요' },
+  { id: 'thanks', title: '감사인사', description: '하객분들께 전하는 감사의 글' },
   { id: 'result', title: '결과', description: '생성된 결과를 확인해요' },
 ];
 

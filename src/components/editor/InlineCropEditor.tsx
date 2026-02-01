@@ -7,7 +7,7 @@ import { ImageSettings } from '@/store/editorStore'
 
 interface InlineCropEditorProps {
   imageUrl: string
-  settings: ImageSettings
+  settings: Partial<ImageSettings>
   onUpdate: (settings: Partial<ImageSettings>) => void
   aspectRatio?: number // 고정 비율 (1 = 정사각형, 3/4 = 세로형)
   containerWidth?: number

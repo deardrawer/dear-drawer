@@ -5,8 +5,8 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/components/providers/AuthProvider'
 import { Button } from '@/components/ui/button'
-import ParentsEditPanel from './ParentsEditPanel'
 import ParentsPreview from './ParentsPreview'
+import ParentsWizardEditor from './wizard/ParentsWizardEditor'
 import ShareModal from '@/components/share/ShareModal'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { COLOR_THEMES, type ColorThemeId } from '@/components/parents/types'
@@ -362,14 +362,11 @@ function ParentsEditorContent() {
   const [isSaving, setIsSaving] = useState(false)
   const [isDirty, setIsDirty] = useState(false)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
-  const [validationError, setValidationError] = useState<{ tab: string; message: string } | null>(null)
-  const [forceActiveTab, setForceActiveTab] = useState<string | null>(null)
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false)
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false)
   const [previewTab, setPreviewTab] = useState<'intro' | 'main'>('intro')
   const [fullscreenTab, setFullscreenTab] = useState<'intro' | 'main'>('intro')
   const [selectedGuest, setSelectedGuest] = useState<{ name: string; honorific: string; relation?: string; custom_message?: string } | null>(null)
   const [isMobile, setIsMobile] = useState(false)
-  const [activeSection, setActiveSection] = useState<string | null>(null)
 
   // 모바일 감지
   useEffect(() => {
@@ -438,15 +435,13 @@ function ParentsEditorContent() {
     const groomName = `${data.groom.lastName}${data.groom.firstName}`.trim()
     const brideName = `${data.bride.lastName}${data.bride.firstName}`.trim()
     if (!groomName || !brideName) {
-      setForceActiveTab('required')
-      setValidationError({ tab: 'required', message: '📋 필수입력 > 신랑/신부 이름을 모두 입력해주세요.' })
+      alert('신랑/신부 이름을 모두 입력해주세요.')
       return
     }
 
     // 카카오톡 공유 썸네일 필수 검증
     if (!data.meta?.kakaoThumbnail?.trim()) {
-      setForceActiveTab('design')
-      setValidationError({ tab: 'design', message: '🎨 디자인 > 공유 미리보기 설정 > 카카오톡 공유 썸네일을 추가해주세요.' })
+      alert('카카오톡 공유 썸네일을 추가해주세요.')
       return
     }
 
@@ -534,7 +529,7 @@ function ParentsEditorContent() {
           </span>
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* 모바일: 미리보기 버튼 (항상 표시) */}
+          {/* 미리보기 버튼 */}
           <Button
             variant="outline"
             size="sm"
@@ -592,66 +587,80 @@ function ParentsEditorContent() {
         </div>
       </header>
 
-      {/* Main Editor Area */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Edit Panel - 45% */}
-        <div className="w-[45%] min-w-[400px] max-w-[550px] border-r overflow-y-auto">
-          <ParentsEditPanel
-            data={data}
-            updateData={updateData}
-            updateNestedData={updateNestedData}
-            invitationId={invitationId}
-            selectedGuest={selectedGuest}
-            onSelectGuest={setSelectedGuest}
-            onActiveSectionChange={setActiveSection}
-            validationError={validationError}
-            onClearValidationError={() => setValidationError(null)}
-            forceActiveTab={forceActiveTab}
-          />
-        </div>
+      {/* Main Editor Area - 페이지 레벨 스크롤 */}
+      <div id="parents-editor-scroll-container" className="flex-1 overflow-y-scroll bg-white">
+        <div className="w-full max-w-7xl mx-auto">
+          <div className="bg-white flex">
+            {/* Preview - 왼쪽 sticky 고정, 세로 중앙 */}
+            <div className="w-[450px] min-w-[450px] sticky top-0 h-[calc(100vh-56px)] overflow-hidden bg-gray-50 flex flex-col justify-center items-center p-6">
+              {/* 탭 버튼 */}
+              {(() => {
+                const currentTheme = COLOR_THEMES[data.colorTheme || 'burgundy']
+                return (
+                  <>
+                    <div className="flex mb-4 bg-white rounded-lg shadow-sm overflow-hidden">
+                      <button
+                        onClick={() => setPreviewTab('intro')}
+                        className="px-6 py-2.5 text-sm font-medium transition-colors"
+                        style={{
+                          backgroundColor: previewTab === 'intro' ? currentTheme.primary : 'transparent',
+                          color: previewTab === 'intro' ? 'white' : '#4B5563',
+                        }}
+                      >
+                        인트로 (봉투)
+                      </button>
+                      <button
+                        onClick={() => setPreviewTab('main')}
+                        className="px-6 py-2.5 text-sm font-medium transition-colors"
+                        style={{
+                          backgroundColor: previewTab === 'main' ? currentTheme.primary : 'transparent',
+                          color: previewTab === 'main' ? 'white' : '#4B5563',
+                        }}
+                      >
+                        본문
+                      </button>
+                    </div>
 
-        {/* Preview - 55% */}
-        <div className="flex-1 bg-gray-100 flex flex-col items-center justify-center p-8">
-          {/* 탭 버튼 - 폰 프레임 바깥 */}
-          {(() => {
-            const currentTheme = COLOR_THEMES[data.colorTheme || 'burgundy']
-            return (
-              <>
-                <div className="flex mb-4 bg-white rounded-lg shadow-sm overflow-hidden">
-                  <button
-                    onClick={() => setPreviewTab('intro')}
-                    className="px-6 py-2.5 text-sm font-medium transition-colors"
-                    style={{
-                      backgroundColor: previewTab === 'intro' ? currentTheme.primary : 'transparent',
-                      color: previewTab === 'intro' ? 'white' : '#4B5563',
-                    }}
-                  >
-                    인트로 (봉투)
-                  </button>
-                  <button
-                    onClick={() => setPreviewTab('main')}
-                    className="px-6 py-2.5 text-sm font-medium transition-colors"
-                    style={{
-                      backgroundColor: previewTab === 'main' ? currentTheme.primary : 'transparent',
-                      color: previewTab === 'main' ? 'white' : '#4B5563',
-                    }}
-                  >
-                    본문
-                  </button>
-                </div>
+                    {/* 미리보기 영역 */}
+                    <div
+                      className="relative w-full max-w-[320px] aspect-[9/19] rounded-[40px] overflow-hidden shadow-2xl transition-colors duration-300"
+                      style={{ backgroundColor: currentTheme.primary }}
+                    >
+                      <div className="w-full h-full overflow-hidden rounded-[32px] m-1" style={{ width: 'calc(100% - 8px)', height: 'calc(100% - 8px)' }}>
+                        <ParentsPreview data={data} activeTab={previewTab} onTabChange={setPreviewTab} selectedGuest={selectedGuest} />
+                      </div>
+                    </div>
+                  </>
+                )
+              })()}
+            </div>
 
-                {/* 미리보기 영역 */}
-                <div
-                  className="relative w-full max-w-[375px] h-[700px] rounded-[40px] overflow-hidden shadow-2xl transition-colors duration-300"
-                  style={{ backgroundColor: currentTheme.primary }}
-                >
-                  <div className="w-full h-full overflow-hidden rounded-[32px] m-1" style={{ width: 'calc(100% - 8px)', height: 'calc(100% - 8px)' }}>
-                    <ParentsPreview data={data} activeTab={previewTab} onTabChange={setPreviewTab} selectedGuest={selectedGuest} activeSection={activeSection} />
-                  </div>
-                </div>
-              </>
-            )
-          })()}
+            {/* 구분선 - 부드러운 그라데이션 그림자 */}
+            <div className="w-8 mx-1 relative">
+              <div className="absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-gray-100/80 to-transparent" />
+              <div className="absolute inset-y-0 right-0 w-4 bg-gradient-to-l from-gray-100/80 to-transparent" />
+            </div>
+
+            {/* Edit Panel - 오른쪽, 자연스러운 스크롤 */}
+            <div className="flex-1 min-h-[calc(100vh-56px)]">
+              <ParentsWizardEditor
+                data={data}
+                updateData={updateData}
+                updateNestedData={updateNestedData}
+                invitationId={invitationId}
+                selectedGuest={selectedGuest}
+                onSelectGuest={setSelectedGuest}
+                onStepChange={(step) => {
+                  // 봉투(2) → 인트로, 본문(3) → 본문
+                  if (step === 2) {
+                    setPreviewTab('intro')
+                  } else if (step === 3) {
+                    setPreviewTab('main')
+                  }
+                }}
+              />
+            </div>
+          </div>
         </div>
       </div>
 

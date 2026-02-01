@@ -1391,7 +1391,7 @@ export function generateFamilyFullPrompt(
   groomName: string,
   brideName: string
 ): string {
-  const { greeting, interview, whyWeChose } = formData
+  const { greeting, interview, parentsGreeting } = formData
 
   const mainTone = greeting.greetingTone
   const toneGuide = getToneGuideText(mainTone)
@@ -1400,9 +1400,8 @@ export function generateFamilyFullPrompt(
   const greetingSample = SAMPLE_TEXTS.greeting[mainTone as keyof typeof SAMPLE_TEXTS.greeting] || SAMPLE_TEXTS.greeting.sincere
   const thanksSample = SAMPLE_TEXTS.thanks[mainTone as keyof typeof SAMPLE_TEXTS.thanks] || SAMPLE_TEXTS.thanks.sincere
 
-  // 서로를 선택한 이유 데이터
-  const groomTheme = whyWeChose?.groomTheme ? getWhyWeChoseThemeText(whyWeChose.groomTheme) : ''
-  const brideTheme = whyWeChose?.brideTheme ? getWhyWeChoseThemeText(whyWeChose.brideTheme) : ''
+  // 부모님 인사말 데이터 (FAMILY 템플릿용)
+  const parentsStyle = parentsGreeting?.greetingStyle || 'proud'
 
   return `당신은 감성적인 한국 웨딩 스토리 전문 작가입니다.
 제공된 정보를 바탕으로 진정성 있고 아름다운 청첩장 텍스트를 작성해주세요.
@@ -1463,43 +1462,26 @@ export function generateFamilyFullPrompt(
 "\${thanksSample}"
 
 ═══════════════════════════════════════════════════
-[3] 서로를 선택한 이유 (whyWeChose)
+[3] 부모님 인사말 (parentsGreeting)
 ═══════════════════════════════════════════════════
 
 이 섹션은 FAMILY 템플릿의 핵심입니다.
-신부가 신랑을 선택한 이유, 신랑이 신부를 선택한 이유를 각각 작성합니다.
+부모님의 시선에서 자녀의 결혼을 축하하는 인사말을 작성합니다.
 
-[3-1] 신부가 신랑을 선택한 이유 (groomDescription)
-▶ 형식: 2-3문단, 150-250자
-▶ 관점: 신부(\${brideName})가 신랑(\${groomName})을 선택한 이유를 서술
-▶ 테마: \${groomTheme || '(미선택)'}
-
-▶ 입력 정보:
-- 테마 관련 답변1: \${whyWeChose?.groomAnswer1 || '(미입력)'}
-- 테마 관련 답변2: \${whyWeChose?.groomAnswer2 || '(미입력)'}
-- 테마 관련 답변3: \${whyWeChose?.groomAnswer3 || '(미입력)'}
-
-위 답변들을 바탕으로 신부가 왜 신랑을 선택했는지 감성적으로 서술해주세요.
-
-[3-2] 신부의 한마디 (groomQuote)
-▶ 형식: 1-2문장
-▶ 신부가 신랑에게 전하는 짧고 진심어린 한마디
-
-[3-3] 신랑이 신부를 선택한 이유 (brideDescription)
-▶ 형식: 2-3문단, 150-250자
-▶ 관점: 신랑(\${groomName})이 신부(\${brideName})를 선택한 이유를 서술
-▶ 테마: \${brideTheme || '(미선택)'}
+▶ 형식: 3-5문단, 200-350자
+▶ 관점: 부모님이 자녀의 결혼을 축하하며 하객분들께 전하는 인사말
+▶ 스타일: \${parentsStyle}
 
 ▶ 입력 정보:
-- 테마 관련 답변1: \${whyWeChose?.brideAnswer1 || '(미입력)'}
-- 테마 관련 답변2: \${whyWeChose?.brideAnswer2 || '(미입력)'}
-- 테마 관련 답변3: \${whyWeChose?.brideAnswer3 || '(미입력)'}
+- 자녀 이름: \${parentsGreeting?.childName || '(미입력)'}
+- 자녀에 대한 설명: \${parentsGreeting?.childDescription || '(미입력)'}
+- 배우자에 대한 인상: \${parentsGreeting?.partnerDescription || '(미입력)'}
+- 부모님의 마음: \${parentsGreeting?.parentsFeelings || '(미입력)'}
 
-위 답변들을 바탕으로 신랑이 왜 신부를 선택했는지 감성적으로 서술해주세요.
-
-[3-4] 신랑의 한마디 (brideQuote)
-▶ 형식: 1-2문장
-▶ 신랑이 신부에게 전하는 짧고 진심어린 한마디
+위 내용을 바탕으로 부모님의 마음이 담긴 따뜻한 인사말을 작성해주세요.
+- 자녀가 어떻게 자랐는지
+- 좋은 사람을 만나게 되어 기쁜 마음
+- 하객분들께 감사드리며 축복을 부탁드리는 내용
 
 ═══════════════════════════════════════════════════
 [4] 웨딩 인터뷰 (interview)
@@ -1519,12 +1501,7 @@ export function generateFamilyFullPrompt(
 {
   "greeting": "여기에 실제 인사말 내용 작성",
   "thanks": "여기에 실제 감사말 내용 작성",
-  "whyWeChose": {
-    "groomDescription": "신부가 신랑을 선택한 이유 (2-3문단)",
-    "groomQuote": "신부가 신랑에게 전하는 한마디",
-    "brideDescription": "신랑이 신부를 선택한 이유 (2-3문단)",
-    "brideQuote": "신랑이 신부에게 전하는 한마디"
-  },
+  "parentsGreeting": "부모님의 시선에서 작성한 인사말 (3-5문단)",
   "interview": [
     {
       "question": "여기에 실제 질문 작성",
@@ -1537,6 +1514,6 @@ export function generateFamilyFullPrompt(
 
 **중요**:
 - FAMILY 템플릿이므로 groomProfile, brideProfile, story 필드는 생성하지 않습니다
-- 대신 whyWeChose 필드에 서로를 선택한 이유를 작성합니다
+- 대신 parentsGreeting 필드에 부모님 인사말을 작성합니다
 - interview 배열의 각 항목에 실제 답변 내용을 작성하세요`
 }

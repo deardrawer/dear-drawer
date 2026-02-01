@@ -319,7 +319,7 @@ export default function InterviewForm({
         <TabsContent value="auto" className="mt-6 space-y-6">
           <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
             <p className="text-sm text-blue-800">
-              💡 입력하신 스토리 정보를 바탕으로 AI가 2-3개의 질문을 만들어드려요
+              💡 입력하신 스토리 정보를 바탕으로 2-3개의 질문을 만들어드려요
             </p>
             <p className="text-xs text-blue-600 mt-1">
               간결한 버전: 핵심 위주 답변 (5-7문장) / 풍부한 버전: 에피소드 포함 상세 답변 (10-15문장)
@@ -329,7 +329,7 @@ export default function InterviewForm({
           <div className="space-y-2">
             <FieldLabel
               required
-              hint="선택하신 주제로 AI가 질문을 생성합니다"
+              hint="선택하신 주제로 질문을 생성해드려요"
             >
               어떤 주제의 질문을 원하세요? (2-3개 선택)
             </FieldLabel>
@@ -490,7 +490,7 @@ export default function InterviewForm({
               ✏️ 우리만의 특별한 질문을 직접 만들어보세요 (2-3개)
             </p>
             <p className="text-xs text-green-600 mt-1">
-              답변 힌트를 입력하면 AI가 선택하신 버전에 맞게 답변을 작성합니다
+              답변 힌트를 입력하면 선택하신 버전에 맞게 답변을 작성해드려요
             </p>
           </div>
 
@@ -554,7 +554,7 @@ export default function InterviewForm({
 
                 {/* 답변 힌트 */}
                 <div className="space-y-2 pt-2 border-t border-gray-200">
-                  <FieldLabel optional hint="AI가 답변을 작성할 때 참고할 키워드나 내용을 적어주세요">
+                  <FieldLabel optional hint="답변을 작성할 때 참고할 키워드나 내용을 적어주세요">
                     답변 힌트
                   </FieldLabel>
                   {q.answerStyle === 'individual' ? (
@@ -619,7 +619,7 @@ export default function InterviewForm({
         </TabsContent>
       </Tabs>
 
-      {/* AI로 전체 생성하기 버튼 */}
+      {/* 초안 생성하기 버튼 */}
       {onGenerate && (
         <div className="pt-4 border-t border-gray-200">
           <Button
@@ -634,7 +634,7 @@ export default function InterviewForm({
               </span>
             ) : (
               <span className="flex items-center gap-2">
-                ✨ AI로 전체 생성하기
+                ✨ 초안 생성하기
               </span>
             )}
           </Button>
@@ -652,7 +652,7 @@ export default function InterviewForm({
       <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
         <p className="text-sm text-blue-800 font-medium">💡 Tip</p>
         <p className="text-xs text-blue-700 mt-1">
-          인터뷰 내용은 AI가 입력하신 정보를 바탕으로 자연스럽게 만들어드려요.
+          인터뷰 내용은 입력하신 정보를 바탕으로 자연스럽게 만들어드려요.
           생성 후 원하는 대로 수정할 수 있어요!
         </p>
       </div>

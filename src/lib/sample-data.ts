@@ -187,6 +187,22 @@ export const familySampleContent = {
   ...ourSampleContent,
   templateId: 'family',
   fontStyle: 'contemporary' as const,
+  groom: {
+    ...ourSampleContent.groom,
+    profile: {
+      ...ourSampleContent.groom.profile,
+      images: ['/images/son.png'],
+      imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }],
+    },
+  },
+  bride: {
+    ...ourSampleContent.bride,
+    profile: {
+      ...ourSampleContent.bride.profile,
+      images: ['/images/daughter.png'],
+      imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }],
+    },
+  },
   wedding: {
     ...ourSampleContent.wedding,
     title: 'WEDDING INVITATION',

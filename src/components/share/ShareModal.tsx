@@ -55,7 +55,7 @@ export default function ShareModal({
   const [copied, setCopied] = useState(false)
   const [isSavingSlug, setIsSavingSlug] = useState(false)
   const [slugSaved, setSlugSaved] = useState(false)
-  const [activeTab, setActiveTab] = useState('url')
+  const [activeTab, setActiveTab] = useState('share')
   const [pageViews, setPageViews] = useState({ total: 0, today: 0 })
   const qrCanvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -286,35 +286,10 @@ export default function ShareModal({
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="url">URL 설정</TabsTrigger>
-            <TabsTrigger value="qr">QR 코드</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="share">공유하기</TabsTrigger>
+            <TabsTrigger value="qr">QR 코드</TabsTrigger>
           </TabsList>
-
-          {/* URL Tab */}
-          <TabsContent value="url" className="space-y-4 mt-4">
-            <div className="space-y-2">
-              <Label>청첩장 링크</Label>
-              <div className="flex gap-2">
-                <Input value={invitationUrl} readOnly className="flex-1" />
-                <Button onClick={handleCopyLink}>
-                  {copied ? '복사됨!' : '복사'}
-                </Button>
-              </div>
-            </div>
-
-            <div className="pt-4 border-t">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">총 방문자 수</span>
-                <span className="font-medium">{pageViews.total}명</span>
-              </div>
-              <div className="flex items-center justify-between text-sm mt-2">
-                <span className="text-gray-500">오늘 방문자</span>
-                <span className="font-medium">{pageViews.today}명</span>
-              </div>
-            </div>
-          </TabsContent>
 
           {/* QR Code Tab */}
           <TabsContent value="qr" className="space-y-4 mt-4">
@@ -356,6 +331,18 @@ export default function ShareModal({
                 <Button onClick={handleCopyLink}>
                   {copied ? '복사됨!' : '복사'}
                 </Button>
+              </div>
+            </div>
+
+            <div className="flex gap-4 p-3 bg-gray-50 rounded-lg">
+              <div className="flex-1 text-center">
+                <p className="text-xs text-gray-500">총 방문자</p>
+                <p className="text-lg font-semibold">{pageViews.total}명</p>
+              </div>
+              <div className="w-px bg-gray-200" />
+              <div className="flex-1 text-center">
+                <p className="text-xs text-gray-500">오늘 방문자</p>
+                <p className="text-lg font-semibold">{pageViews.today}명</p>
               </div>
             </div>
 

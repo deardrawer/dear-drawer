@@ -1703,7 +1703,7 @@ function ParentIntroSection({
             color: themeColors.text,
             fontFamily: fonts.body,
             lineHeight: textStyle?.lineHeight || 2.0,
-            textAlign: textStyle?.textAlign || 'left',
+            textAlign: textStyle?.textAlign || (side === 'groom' ? 'left' : 'right'),
           }}
           dangerouslySetInnerHTML={{ __html: parseHighlight(message) }}
         />

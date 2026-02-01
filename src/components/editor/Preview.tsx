@@ -847,7 +847,7 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
             />
           </div>
           {/* 메시지 */}
-          <p className={`text-xs ${isEmpty(parentIntro?.bride?.message) ? 'opacity-50' : ''}`} style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: invitation.parentIntroTextStyle?.lineHeight || 2.0, textAlign: invitation.parentIntroTextStyle?.textAlign || 'left' }} dangerouslySetInnerHTML={{ __html: parseHighlight(parentIntro?.bride?.message || SAMPLE_FAMILY.parentIntro.bride.message) }} />
+          <p className={`text-xs ${isEmpty(parentIntro?.bride?.message) ? 'opacity-50' : ''}`} style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: invitation.parentIntroTextStyle?.lineHeight || 2.0, textAlign: invitation.parentIntroTextStyle?.textAlign || 'right' }} dangerouslySetInnerHTML={{ __html: parseHighlight(parentIntro?.bride?.message || SAMPLE_FAMILY.parentIntro.bride.message) }} />
         </section>
       )}
 

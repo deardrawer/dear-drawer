@@ -203,6 +203,24 @@ export const familySampleContent = {
       imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }],
     },
   },
+  parentIntro: {
+    groom: {
+      enabled: true,
+      parentNames: '김○○ · 박○○의',
+      childOrder: '첫째 아들',
+      images: ['/images/son.png'],
+      imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }],
+      message: '어느덧 훌쩍 커버린 아들이\n이제는 누군가의 남편으로,\n새로운 가정의 가장으로\n첫 걸음을 내딛습니다.\n\n축복해 주세요.',
+    },
+    bride: {
+      enabled: true,
+      parentNames: '이○○ · 김○○의',
+      childOrder: '첫째 딸',
+      images: ['/images/daughter.png'],
+      imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }],
+      message: '눈에 넣어도 안 아플 만큼\n예쁘게 자란 딸이\n이제 누군가의 아내로,\n새로운 가정의 일원으로\n새 출발을 합니다.\n\n축복해 주세요.',
+    },
+  },
   wedding: {
     ...ourSampleContent.wedding,
     title: 'WEDDING INVITATION',

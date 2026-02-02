@@ -128,6 +128,26 @@ export default function Step5MenuSettings() {
                 className="resize-none"
               />
             </div>
+
+            {/* 추가 안내사항 */}
+            <div className="border-t pt-4 mt-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium">추가 안내사항</Label>
+                <Switch
+                  checked={invitation.wedding.directions.extraInfoEnabled || false}
+                  onCheckedChange={(checked) => updateNestedField('wedding.directions.extraInfoEnabled', checked)}
+                />
+              </div>
+              {invitation.wedding.directions.extraInfoEnabled && (
+                <Textarea
+                  value={invitation.wedding.directions.extraInfoText || ''}
+                  onChange={(e) => updateNestedField('wedding.directions.extraInfoText', e.target.value)}
+                  placeholder="예: 주차권은 안내데스크에서 수령 / 혼잡 시간대는 대중교통 추천 / 예식장 입구는 ○○문입니다"
+                  rows={3}
+                  className="resize-none"
+                />
+              )}
+            </div>
           </div>
         </div>
       </section>

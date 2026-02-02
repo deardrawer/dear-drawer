@@ -73,6 +73,8 @@ export interface DirectionsInfo {
   train?: string           // 기차역 (선택)
   expressBus?: string      // 고속버스 (선택)
   shuttle?: string         // 셔틀버스 (선택)
+  extraInfoEnabled?: boolean  // 추가 안내사항 사용 여부
+  extraInfoText?: string      // 추가 안내사항 텍스트
 }
 
 // 스토리 아이템
@@ -522,6 +524,8 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
       train: '',
       expressBus: '',
       shuttle: '',
+      extraInfoEnabled: false,
+      extraInfoText: '',
     },
   },
 

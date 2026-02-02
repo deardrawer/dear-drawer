@@ -992,9 +992,8 @@ const globalStyles = `
     left: 0;
     width: 100%;
     height: 100%;
-    background-size: cover;
-    background-position: center;
     z-index: 0;
+    /* background-size와 background-position은 인라인 스타일로 제어 (getImageCropStyle) */
   }
 
   .full-height-divider-overlay {
@@ -1488,19 +1487,20 @@ function FullHeightDividerSection({
   koreanText: string
   image?: string
   imageSettings?: {
-    scale: number
-    positionX: number
-    positionY: number
-    grayscale: number
-    opacity: number
+    scale?: number
+    positionX?: number
+    positionY?: number
+    cropX?: number
+    cropY?: number
+    cropWidth?: number
+    cropHeight?: number
+    grayscale?: number
+    opacity?: number
   }
 }) {
   const { ref, isVisible } = useScrollAnimation()
 
   const settings = imageSettings || {
-    scale: 1,
-    positionX: 0,
-    positionY: 0,
     grayscale: 100,
     opacity: 100,
   }
@@ -1515,10 +1515,9 @@ function FullHeightDividerSection({
         <div
           className="full-height-divider-bg"
           style={{
-            backgroundImage: `url(${image})`,
-            filter: `grayscale(${settings.grayscale}%)`,
-            opacity: settings.opacity / 100,
-            transform: `scale(${settings.scale}) translate(${settings.positionX}%, ${settings.positionY}%)`,
+            ...getImageCropStyle(image, settings),
+            filter: `grayscale(${settings.grayscale ?? 100}%)`,
+            opacity: (settings.opacity ?? 100) / 100,
           }}
         />
       )}
@@ -1788,7 +1787,7 @@ function WhyWeChoseSection({
     return parts.map((part, index) => {
       if (part.startsWith('**') && part.endsWith('**')) {
         return (
-          <span key={index} style={{ color: themeColors.primary, fontWeight: 400 }}>
+          <span key={index} style={{ color: themeColors.highlight || themeColors.primary, fontWeight: 400 }}>
             {part.slice(2, -2)}
           </span>
         )
@@ -3013,7 +3012,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
         {/* Quote Section */}
         {invitation.content.quote.text && (
           <div className="quote-section mb-9">
-            <p className="typo-body" style={{ fontFamily: fonts.displayKr, color: themeColors.primary }}>
+            <p className="typo-body" style={{ fontFamily: fonts.displayKr, color: themeColors.highlight || themeColors.primary }}>
               <StaggeredText text={invitation.content.quote.text} isVisible={invitationAnimated} delay={0.5} charDelay={0.05} />
             </p>
             {invitation.content.quote.author && <p className="typo-caption mt-2" style={{ color: themeColors.gray }}>{invitation.content.quote.author}</p>}
@@ -4122,7 +4121,13 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
     }
   }, [currentPage, introScreen])
 
-  const themeColors = colorThemes[effectiveColorTheme]
+  // 커스텀 텍스트 색상을 테마에 오버라이드 (사용자 설정이 있으면 적용)
+  const baseThemeColors = colorThemes[effectiveColorTheme]
+  const themeColors: ColorConfig = {
+    ...baseThemeColors,
+    text: invitation.bodyTextColor || baseThemeColors.text,
+    highlight: invitation.accentTextColor || baseThemeColors.highlight || baseThemeColors.primary,
+  }
   const fonts = fontStyles[effectiveFontStyle]
 
   // Show floating button only on invitation screen or main page

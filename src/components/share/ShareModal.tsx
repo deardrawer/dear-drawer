@@ -207,10 +207,10 @@ export default function ShareModal({
         if (thumbnailUrl.startsWith('https://')) {
           // 이미 https URL인 경우 그대로 사용
           imageUrl = thumbnailUrl
-        } else if (thumbnailUrl.startsWith('/uploads/') || thumbnailUrl.startsWith('/api/r2/')) {
-          // 업로드된 이미지 (상대 경로)를 절대 URL로 변환
+        } else if (thumbnailUrl.startsWith('/uploads/') || thumbnailUrl.startsWith('/api/r2/') || thumbnailUrl.startsWith('/sample/')) {
+          // 업로드된 이미지 또는 샘플 이미지 (상대 경로)를 절대 URL로 변환
           // localhost에서는 외부 접근 불가하므로 production URL 사용
-          const productionUrl = 'https://dear-drawer.pages.dev'
+          const productionUrl = 'https://invite.deardrawer.com'
           imageUrl = `${productionUrl}${thumbnailUrl}`
         }
         // /demo/ 경로 이미지는 기본 이미지 사용 (외부 접근 불가)
@@ -350,12 +350,12 @@ export default function ShareModal({
               <Button
                 variant="outline"
                 onClick={handleKakaoShare}
-                className="h-16 flex-col gap-1"
+                className="h-16 flex-col gap-1 bg-[#FEE500] hover:bg-[#FDD835] border-[#FEE500] hover:border-[#FDD835]"
               >
                 <svg className="w-6 h-6" viewBox="0 0 24 24" fill="#3C1E1E">
                   <path d="M12 3C6.477 3 2 6.463 2 10.691c0 2.643 1.765 4.966 4.412 6.286l-.893 3.27a.3.3 0 00.455.334l3.862-2.552c.67.097 1.357.148 2.055.148 5.523 0 10-3.463 10-7.777C22 6.463 17.523 3 12 3z" />
                 </svg>
-                <span className="text-xs">카카오톡</span>
+                <span className="text-xs text-[#3C1E1E]">카카오톡</span>
               </Button>
 
               <Button

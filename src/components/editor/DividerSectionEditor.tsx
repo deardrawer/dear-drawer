@@ -148,53 +148,6 @@ export default function DividerSectionEditor({
                       />
                     </div>
 
-                    {/* 크기 */}
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-[10px] text-gray-500">
-                        <span>크기</span>
-                        <span>{((item.imageSettings?.scale || 1) * 100).toFixed(0)}%</span>
-                      </div>
-                      <input
-                        type="range"
-                        min="100"
-                        max="200"
-                        value={(item.imageSettings?.scale || 1) * 100}
-                        onChange={(e) => updateNestedField(`fullHeightDividers.items.${index}.imageSettings.scale`, parseInt(e.target.value) / 100)}
-                        className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-gray-600"
-                      />
-                    </div>
-
-                    {/* 위치 X */}
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-[10px] text-gray-500">
-                        <span>좌우 위치</span>
-                        <span>{item.imageSettings?.positionX || 0}%</span>
-                      </div>
-                      <input
-                        type="range"
-                        min="-50"
-                        max="50"
-                        value={item.imageSettings?.positionX || 0}
-                        onChange={(e) => updateNestedField(`fullHeightDividers.items.${index}.imageSettings.positionX`, parseInt(e.target.value))}
-                        className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-gray-600"
-                      />
-                    </div>
-
-                    {/* 위치 Y */}
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-[10px] text-gray-500">
-                        <span>상하 위치</span>
-                        <span>{item.imageSettings?.positionY || 0}%</span>
-                      </div>
-                      <input
-                        type="range"
-                        min="-50"
-                        max="50"
-                        value={item.imageSettings?.positionY || 0}
-                        onChange={(e) => updateNestedField(`fullHeightDividers.items.${index}.imageSettings.positionY`, parseInt(e.target.value))}
-                        className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-gray-600"
-                      />
-                    </div>
                   </div>
                 )}
 

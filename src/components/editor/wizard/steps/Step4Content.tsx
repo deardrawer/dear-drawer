@@ -158,6 +158,150 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
     })
   }
 
+  // 포토 디바이더 에디터 컴포넌트 (섹션별 종속)
+  const PhotoDividerEditor = ({
+    dividerIndex,
+    label,
+    defaultEnglishTitle,
+    defaultKoreanText,
+  }: {
+    dividerIndex: number
+    label: string
+    defaultEnglishTitle: string
+    defaultKoreanText: string
+  }) => {
+    const item = invitation.fullHeightDividers?.items?.[dividerIndex] || {
+      id: `divider-${dividerIndex}`,
+      image: '',
+      imageSettings: { scale: 1, positionX: 0, positionY: 0, grayscale: 100, opacity: 100 },
+      englishTitle: defaultEnglishTitle,
+      koreanText: defaultKoreanText,
+    }
+
+    return (
+      <div className="p-4 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl space-y-4 mb-4">
+        <p className="text-sm font-semibold text-white flex items-center gap-2">
+          🎬 {label}
+        </p>
+        <p className="text-xs text-gray-300">흑백 웨딩사진 배경으로 섹션을 구분해요</p>
+
+        {/* 이미지 업로드 및 크롭 */}
+        <div className="space-y-3">
+          {item.image ? (
+            <div className="space-y-3">
+              {/* InlineCropEditor로 크롭 */}
+              <InlineCropEditor
+                imageUrl={item.image}
+                settings={item.imageSettings || { scale: 1, positionX: 0, positionY: 0, grayscale: 100, opacity: 100 }}
+                onUpdate={(settings) => {
+                  const current = item.imageSettings || { grayscale: 100, opacity: 100 }
+                  updateNestedField(`fullHeightDividers.items.${dividerIndex}.imageSettings`, { ...current, ...settings })
+                }}
+                aspectRatio={3/4}
+                containerWidth={160}
+                colorClass="gray"
+              />
+
+              {/* 흑백/밝기 슬라이더 */}
+              <div className="space-y-2 p-3 bg-white/10 rounded-lg">
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[10px] text-gray-300">
+                    <span>흑백</span>
+                    <span>{item.imageSettings?.grayscale ?? 100}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={item.imageSettings?.grayscale ?? 100}
+                    onChange={(e) => updateNestedField(`fullHeightDividers.items.${dividerIndex}.imageSettings.grayscale`, parseInt(e.target.value))}
+                    className="w-full h-1.5 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-white"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[10px] text-gray-300">
+                    <span>밝기</span>
+                    <span>{item.imageSettings?.opacity ?? 100}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="20"
+                    max="100"
+                    value={item.imageSettings?.opacity ?? 100}
+                    onChange={(e) => updateNestedField(`fullHeightDividers.items.${dividerIndex}.imageSettings.opacity`, parseInt(e.target.value))}
+                    className="w-full h-1.5 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-white"
+                  />
+                </div>
+              </div>
+
+              {/* 이미지 삭제 버튼 */}
+              <button
+                onClick={() => updateNestedField(`fullHeightDividers.items.${dividerIndex}.image`, '')}
+                className="text-xs text-red-400 hover:text-red-300"
+              >
+                이미지 삭제
+              </button>
+            </div>
+          ) : (
+            <label className={`block max-w-[160px] aspect-[3/4] border-2 border-dashed border-gray-500 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 transition-colors bg-white/5 ${uploadingImages.has(`divider-${dividerIndex}`) ? 'opacity-50' : ''}`}>
+              {uploadingImages.has(`divider-${dividerIndex}`) ? (
+                <>
+                  <div className="w-6 h-6 border-2 border-gray-400 border-t-white rounded-full animate-spin" />
+                  <span className="text-xs text-gray-400 mt-2">업로드중...</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span className="text-xs text-gray-400 mt-2">배경 이미지 추가</span>
+                </>
+              )}
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                disabled={uploadingImages.has(`divider-${dividerIndex}`)}
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) {
+                    handleImageUpload(file, `divider-${dividerIndex}`, (url) => {
+                      updateNestedField(`fullHeightDividers.items.${dividerIndex}.image`, url)
+                    })
+                    e.target.value = ''
+                  }
+                }}
+              />
+            </label>
+          )}
+        </div>
+
+        {/* 텍스트 입력 */}
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <Label className="text-xs text-gray-300">영문 타이틀</Label>
+            <Input
+              value={item.englishTitle || ''}
+              onChange={(e) => updateNestedField(`fullHeightDividers.items.${dividerIndex}.englishTitle`, e.target.value)}
+              placeholder={defaultEnglishTitle}
+              className="text-sm italic bg-white/10 border-gray-600 text-white placeholder:text-gray-500"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-gray-300">한글 텍스트</Label>
+            <Textarea
+              value={item.koreanText || ''}
+              onChange={(e) => updateNestedField(`fullHeightDividers.items.${dividerIndex}.koreanText`, e.target.value)}
+              placeholder={defaultKoreanText}
+              rows={2}
+              className="text-sm resize-none bg-white/10 border-gray-600 text-white placeholder:text-gray-500"
+            />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   // 프로필 이미지 크롭 설정 업데이트
   const updateProfileImageSettings = (side: 'groom' | 'bride', imgIndex: number, settings: { scale?: number; positionX?: number; positionY?: number }) => {
     const currentSettings = invitation[side].profile.imageSettings || []
@@ -656,6 +800,14 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                 </details>
               </div>
 
+              {/* 포토 디바이더 - 부모님 소개 상단 */}
+              <PhotoDividerEditor
+                dividerIndex={0}
+                label="부모님 소개 상단 디바이더"
+                defaultEnglishTitle="From Our Family to Yours"
+                defaultKoreanText="우리의 봄이, 누군가의 평생이 됩니다"
+              />
+
               {/* 신랑측 부모님 소개 */}
               <div className="p-4 bg-blue-50 rounded-lg space-y-4">
                 <div className="flex items-center justify-between">
@@ -714,6 +866,12 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                     {/* 부모님 메시지 */}
                     <div className="space-y-1.5">
                       <Label className="text-xs">부모님 메시지</Label>
+                      <TextStyleControls
+                        lineHeight={invitation.parentIntroTextStyle?.lineHeight}
+                        textAlign={invitation.parentIntroTextStyle?.textAlign}
+                        onLineHeightChange={(v) => updateNestedField('parentIntroTextStyle', { ...invitation.parentIntroTextStyle, lineHeight: v })}
+                        onTextAlignChange={(v) => updateNestedField('parentIntroTextStyle', { ...invitation.parentIntroTextStyle, textAlign: v })}
+                      />
                       <HighlightTextarea
                         value={parentIntro.groom?.message || ''}
                         onChange={(value) => updateNestedField('parentIntro.groom.message', value)}
@@ -723,13 +881,6 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                         className="bg-white"
                       />
                     </div>
-                    {/* 미리보기 */}
-                    {parentIntro.groom?.message && (
-                      <div className="p-3 bg-white rounded-lg border border-blue-200">
-                        <p className="text-[10px] text-blue-600 mb-2">미리보기</p>
-                        <p className="text-xs leading-relaxed text-gray-700" style={{ lineHeight: 2 }} dangerouslySetInnerHTML={{ __html: parseHighlight(parentIntro.groom.message) }} />
-                      </div>
-                    )}
                   </>
                 )}
               </div>
@@ -792,6 +943,12 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                     {/* 부모님 메시지 */}
                     <div className="space-y-1.5">
                       <Label className="text-xs">부모님 메시지</Label>
+                      <TextStyleControls
+                        lineHeight={invitation.parentIntroTextStyle?.lineHeight}
+                        textAlign={invitation.parentIntroTextStyle?.textAlign}
+                        onLineHeightChange={(v) => updateNestedField('parentIntroTextStyle', { ...invitation.parentIntroTextStyle, lineHeight: v })}
+                        onTextAlignChange={(v) => updateNestedField('parentIntroTextStyle', { ...invitation.parentIntroTextStyle, textAlign: v })}
+                      />
                       <HighlightTextarea
                         value={parentIntro.bride?.message || ''}
                         onChange={(value) => updateNestedField('parentIntro.bride.message', value)}
@@ -801,13 +958,6 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                         className="bg-white"
                       />
                     </div>
-                    {/* 미리보기 */}
-                    {parentIntro.bride?.message && (
-                      <div className="p-3 bg-white rounded-lg border border-pink-200">
-                        <p className="text-[10px] text-pink-600 mb-2">미리보기</p>
-                        <p className="text-xs leading-relaxed text-gray-700" style={{ lineHeight: 2 }} dangerouslySetInnerHTML={{ __html: parseHighlight(parentIntro.bride.message) }} />
-                      </div>
-                    )}
                   </>
                 )}
               </div>
@@ -848,6 +998,14 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                   </div>
                 </details>
               </div>
+
+              {/* 포토 디바이더 - 서로를 선택한 이유 상단 */}
+              <PhotoDividerEditor
+                dividerIndex={1}
+                label="서로를 선택한 이유 상단 디바이더"
+                defaultEnglishTitle="Why We Chose Each Other"
+                defaultKoreanText="서로의 부족한 점을 채워줄 수 있는\n사람을 만났습니다."
+              />
 
               {/* 섹션 제목 설정 */}
               <div className="p-4 bg-gray-50 rounded-lg space-y-3">
@@ -904,15 +1062,20 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                     {/* 본문 */}
                     <div className="space-y-1.5">
                       <Label className="text-xs">본문 <span className="text-pink-500 text-[10px] ml-1">✦ 초안 작성 가능</span></Label>
-                      <Textarea
+                      <TextStyleControls
+                        lineHeight={invitation.whyWeChoseTextStyle?.lineHeight}
+                        textAlign={invitation.whyWeChoseTextStyle?.textAlign}
+                        onLineHeightChange={(v) => updateNestedField('whyWeChoseTextStyle', { ...invitation.whyWeChoseTextStyle, lineHeight: v })}
+                        onTextAlignChange={(v) => updateNestedField('whyWeChoseTextStyle', { ...invitation.whyWeChoseTextStyle, textAlign: v })}
+                      />
+                      <HighlightTextarea
                         value={whyWeChose.groom?.description || ''}
-                        onChange={(e) => updateNestedField('whyWeChose.groom.description', e.target.value)}
+                        onChange={(value) => updateNestedField('whyWeChose.groom.description', value)}
                         onFocus={() => setActiveSection('our-story')}
                         placeholder="상대방을 선택한 이유를 작성해주세요..."
                         rows={5}
                         className="bg-white text-sm leading-relaxed"
                       />
-                      <p className="text-[10px] text-gray-400">**강조텍스트** 형식으로 강조할 수 있습니다</p>
                     </div>
 
                     {/* 약속의 말 */}
@@ -960,15 +1123,20 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                     {/* 본문 */}
                     <div className="space-y-1.5">
                       <Label className="text-xs">본문 <span className="text-pink-500 text-[10px] ml-1">✦ 초안 작성 가능</span></Label>
-                      <Textarea
+                      <TextStyleControls
+                        lineHeight={invitation.whyWeChoseTextStyle?.lineHeight}
+                        textAlign={invitation.whyWeChoseTextStyle?.textAlign}
+                        onLineHeightChange={(v) => updateNestedField('whyWeChoseTextStyle', { ...invitation.whyWeChoseTextStyle, lineHeight: v })}
+                        onTextAlignChange={(v) => updateNestedField('whyWeChoseTextStyle', { ...invitation.whyWeChoseTextStyle, textAlign: v })}
+                      />
+                      <HighlightTextarea
                         value={whyWeChose.bride?.description || ''}
-                        onChange={(e) => updateNestedField('whyWeChose.bride.description', e.target.value)}
+                        onChange={(value) => updateNestedField('whyWeChose.bride.description', value)}
                         onFocus={() => setActiveSection('our-story')}
                         placeholder="상대방을 선택한 이유를 작성해주세요..."
                         rows={5}
                         className="bg-white text-sm leading-relaxed"
                       />
-                      <p className="text-[10px] text-gray-400">**강조텍스트** 형식으로 강조할 수 있습니다</p>
                     </div>
 
                     {/* 약속의 말 */}
@@ -987,195 +1155,6 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
               </div>
             </div>
           )}
-        </section>
-      )}
-
-      {/* 포토 디바이더 - FAMILY 템플릿에서만 표시 (필수) */}
-      {isFamily && (
-        <section className="space-y-4">
-          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            🎬 포토 디바이더
-          </h3>
-
-          <p className="text-sm text-blue-600">💙 흑백 웨딩사진 배경으로 섹션을 구분하는 감성적인 연출이에요.</p>
-
-          <div className="space-y-4">
-            {(invitation.fullHeightDividers?.items || []).map((item: any, index: number) => {
-              const positionLabels = ['부모님 소개 상단', '서로를 선택한 이유 상단', '갤러리 상단']
-              return (
-                <div key={item.id} className="p-3 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg space-y-3">
-                  <p className="text-xs font-semibold text-gray-700">
-                    {index + 1}. {positionLabels[index] || `디바이더 ${index + 1}`}
-                  </p>
-
-                  {/* 이미지 업로드 */}
-                  <div className="space-y-2">
-                    <Label className="text-xs">배경 이미지</Label>
-                    {item.image ? (
-                      <div className="relative group max-w-[140px]">
-                        <div
-                          className="w-full aspect-[3/4] rounded-lg overflow-hidden border border-gray-200"
-                          style={{
-                            backgroundImage: `url(${item.image})`,
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center',
-                            filter: `grayscale(${item.imageSettings?.grayscale || 100}%)`,
-                            opacity: (item.imageSettings?.opacity || 100) / 100,
-                          }}
-                        />
-                        <button
-                          onClick={() => updateNestedField(`fullHeightDividers.items.${index}.image`, '')}
-                          className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ) : (
-                      <label className={`block max-w-[140px] aspect-[3/4] border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 transition-colors bg-white ${uploadingImages.has(`divider-${index}`) ? 'opacity-50' : ''}`}>
-                        {uploadingImages.has(`divider-${index}`) ? (
-                          <>
-                            <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-                            <span className="text-xs text-gray-400 mt-2">업로드중...</span>
-                          </>
-                        ) : (
-                          <>
-                            <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                            <span className="text-xs text-gray-400 mt-2">이미지 추가</span>
-                          </>
-                        )}
-                        <input
-                          type="file"
-                          accept="image/jpeg,image/png,image/webp"
-                          className="hidden"
-                          disabled={uploadingImages.has(`divider-${index}`)}
-                          onChange={(e) => {
-                            const file = e.target.files?.[0]
-                            if (file) {
-                              handleImageUpload(file, `divider-${index}`, (url) => {
-                                updateNestedField(`fullHeightDividers.items.${index}.image`, url)
-                              })
-                              e.target.value = ''
-                            }
-                          }}
-                        />
-                      </label>
-                    )}
-                  </div>
-
-                  {/* 이미지 설정 슬라이더 */}
-                  {item.image && (
-                    <div className="space-y-3 p-3 bg-white rounded-lg">
-                      <p className="text-[10px] font-medium text-gray-600">이미지 설정</p>
-
-                      {/* 흑백 */}
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-[10px] text-gray-500">
-                          <span>흑백</span>
-                          <span>{item.imageSettings?.grayscale || 100}%</span>
-                        </div>
-                        <input
-                          type="range"
-                          min="0"
-                          max="100"
-                          value={item.imageSettings?.grayscale || 100}
-                          onChange={(e) => updateNestedField(`fullHeightDividers.items.${index}.imageSettings.grayscale`, parseInt(e.target.value))}
-                          className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-gray-600"
-                        />
-                      </div>
-
-                      {/* 밝기 */}
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-[10px] text-gray-500">
-                          <span>밝기</span>
-                          <span>{item.imageSettings?.opacity || 100}%</span>
-                        </div>
-                        <input
-                          type="range"
-                          min="20"
-                          max="100"
-                          value={item.imageSettings?.opacity || 100}
-                          onChange={(e) => updateNestedField(`fullHeightDividers.items.${index}.imageSettings.opacity`, parseInt(e.target.value))}
-                          className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-gray-600"
-                        />
-                      </div>
-
-                      {/* 크기 */}
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-[10px] text-gray-500">
-                          <span>크기</span>
-                          <span>{((item.imageSettings?.scale || 1) * 100).toFixed(0)}%</span>
-                        </div>
-                        <input
-                          type="range"
-                          min="100"
-                          max="200"
-                          value={(item.imageSettings?.scale || 1) * 100}
-                          onChange={(e) => updateNestedField(`fullHeightDividers.items.${index}.imageSettings.scale`, parseInt(e.target.value) / 100)}
-                          className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-gray-600"
-                        />
-                      </div>
-
-                      {/* 좌우 위치 */}
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-[10px] text-gray-500">
-                          <span>좌우 위치</span>
-                          <span>{item.imageSettings?.positionX || 0}%</span>
-                        </div>
-                        <input
-                          type="range"
-                          min="-50"
-                          max="50"
-                          value={item.imageSettings?.positionX || 0}
-                          onChange={(e) => updateNestedField(`fullHeightDividers.items.${index}.imageSettings.positionX`, parseInt(e.target.value))}
-                          className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-gray-600"
-                        />
-                      </div>
-
-                      {/* 상하 위치 */}
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-[10px] text-gray-500">
-                          <span>상하 위치</span>
-                          <span>{item.imageSettings?.positionY || 0}%</span>
-                        </div>
-                        <input
-                          type="range"
-                          min="-50"
-                          max="50"
-                          value={item.imageSettings?.positionY || 0}
-                          onChange={(e) => updateNestedField(`fullHeightDividers.items.${index}.imageSettings.positionY`, parseInt(e.target.value))}
-                          className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-gray-600"
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* 텍스트 입력 */}
-                  <div className="space-y-3">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">영문 타이틀</Label>
-                      <Input
-                        value={item.englishTitle}
-                        onChange={(e) => updateNestedField(`fullHeightDividers.items.${index}.englishTitle`, e.target.value)}
-                        placeholder="From Our Family to Yours"
-                        className="text-sm italic bg-white"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">한글 텍스트</Label>
-                      <Textarea
-                        value={item.koreanText}
-                        onChange={(e) => updateNestedField(`fullHeightDividers.items.${index}.koreanText`, e.target.value)}
-                        placeholder="우리의 봄이, 누군가의 평생이 됩니다"
-                        rows={2}
-                        className="text-sm resize-none bg-white"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )})}
-          </div>
         </section>
       )}
 
@@ -1200,7 +1179,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
       {/* 갤러리 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          📸 갤러리
+          📸 갤러리 <span className="text-xs font-normal text-gray-500">(최대 10장)</span>
         </h3>
         {/* 가이드 섹션 */}
         <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
@@ -1293,6 +1272,16 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
               </details>
             </div>
 
+            {/* 포토 디바이더 - 인터뷰 상단 (FAMILY 템플릿에서만) */}
+            {isFamily && (
+              <PhotoDividerEditor
+                dividerIndex={2}
+                label="인터뷰 상단 디바이더"
+                defaultEnglishTitle="Our way to marriage"
+                defaultKoreanText="같은 시간, 같은 마음으로\n하나의 계절을 준비하고 있습니다."
+              />
+            )}
+
             {/* 인터뷰 소개 문구 */}
             <div className="p-4 bg-gray-50 rounded-lg space-y-2">
               <Label className="text-xs font-medium">소개 문구</Label>
@@ -1343,18 +1332,6 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                     rows={3}
                   />
                 </div>
-                {/* 미리보기 */}
-                {(interview.question || interview.answer) && (
-                  <div className="p-3 bg-white rounded-lg border border-gray-200">
-                    <p className="text-[10px] text-gray-500 mb-2">미리보기</p>
-                    {interview.question && (
-                      <p className="text-xs font-medium text-center mb-2 pb-2 border-b border-gray-100">{interview.question}</p>
-                    )}
-                    {interview.answer && (
-                      <p className="text-[11px] leading-relaxed text-gray-700" style={{ lineHeight: 2 }} dangerouslySetInnerHTML={{ __html: parseHighlight(interview.answer) }} />
-                    )}
-                  </div>
-                )}
                 {/* 인터뷰 이미지 */}
                 <div className="space-y-1">
                   <Label className="text-xs">사진 (슬라이드 형식)</Label>

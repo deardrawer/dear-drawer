@@ -870,6 +870,16 @@ export async function recordAdminLogin(invitationId: string): Promise<void> {
     .run();
 }
 
+// 관리자 삭제 (비밀번호 리셋용)
+export async function deleteInvitationAdmin(invitationId: string): Promise<boolean> {
+  const db = await getDB();
+  const result = await db
+    .prepare("DELETE FROM invitation_admins WHERE invitation_id = ?")
+    .bind(invitationId)
+    .run();
+  return result.meta.changes > 0;
+}
+
 // ==================== Greeting Template Functions (인사말 템플릿) ====================
 
 export interface GreetingTemplate {

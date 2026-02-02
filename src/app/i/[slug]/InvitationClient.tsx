@@ -2671,7 +2671,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
               />
             </div>
 
-            <p className="text-[13px] font-light leading-[1.9] mb-2" style={{ fontFamily: fonts.displayKr, color: themeColors.primary }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.quote.text) }} />
+            <p className="text-[13px] font-light leading-[1.9] mb-2" style={{ fontFamily: fonts.displayKr, color: themeColors.highlight || themeColors.primary }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.quote.text) }} />
             {invitation.content.quote.author && <p className="text-[11px] font-light mb-5" style={{ color: themeColors.gray }}>{invitation.content.quote.author}</p>}
 
             {/* Bottom divider bar with animation */}
@@ -2693,7 +2693,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
           <div className="guest-greeting-section mb-6 text-center">
             <p
               className="text-[15px] font-medium leading-relaxed"
-              style={{ fontFamily: fonts.displayKr, color: themeColors.primary }}
+              style={{ fontFamily: fonts.displayKr, color: themeColors.highlight || themeColors.primary }}
             >
               {guestGreeting}
             </p>
@@ -3471,7 +3471,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
               <button
                 onClick={handleNextQuestion}
                 className="text-[10px] font-light cursor-pointer hover:underline active:opacity-70 transition-all"
-                style={{ color: themeColors.primary }}
+                style={{ color: themeColors.highlight || themeColors.primary }}
               >
                 다른 질문 보기 →
               </button>
@@ -3861,7 +3861,13 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
     }
   }, [currentPage, introScreen])
 
-  const themeColors = colorThemes[effectiveColorTheme]
+  // 커스텀 텍스트 색상을 테마에 오버라이드 (사용자 설정이 있으면 적용)
+  const baseThemeColors = colorThemes[effectiveColorTheme]
+  const themeColors: ColorConfig = {
+    ...baseThemeColors,
+    text: invitation.bodyTextColor || baseThemeColors.text,
+    highlight: invitation.accentTextColor || baseThemeColors.highlight || baseThemeColors.primary,
+  }
   const fonts = fontStyles[effectiveFontStyle]
 
   // Show floating button only on invitation screen or main page

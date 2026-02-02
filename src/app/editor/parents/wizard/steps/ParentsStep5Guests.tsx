@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
-import { Users, Copy, Check, Eye } from 'lucide-react'
+import { Users, Copy, Check, Eye, KeyRound, AlertTriangle } from 'lucide-react'
 import type { ParentsInvitationData } from '../../page'
 
 interface Guest {
@@ -45,6 +45,12 @@ export default function ParentsStep5Guests({
   const [isLoadingGuests, setIsLoadingGuests] = useState(false)
   const [copiedId, setCopiedId] = useState<string | null>(null)
 
+  // 비밀번호 리셋 관련 상태
+  const [hasPassword, setHasPassword] = useState(false)
+  const [showResetConfirm, setShowResetConfirm] = useState(false)
+  const [isResetting, setIsResetting] = useState(false)
+  const [resetMessage, setResetMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
   // 게스트 목록 불러오기
   const fetchGuests = useCallback(async () => {
     if (!invitationId) return
@@ -67,6 +73,52 @@ export default function ParentsStep5Guests({
   useEffect(() => {
     fetchGuests()
   }, [fetchGuests])
+
+  // 비밀번호 상태 확인
+  const checkPasswordStatus = useCallback(async () => {
+    if (!invitationId) return
+    try {
+      const res = await fetch(`/api/invite/${invitationId}/admin/owner-reset`)
+      const data = await res.json() as { hasPassword?: boolean }
+      if (res.ok) {
+        setHasPassword(!!data.hasPassword)
+      }
+    } catch (error) {
+      console.error('Failed to check password status:', error)
+    }
+  }, [invitationId])
+
+  useEffect(() => {
+    checkPasswordStatus()
+  }, [checkPasswordStatus])
+
+  // 비밀번호 리셋
+  const handleResetPassword = async () => {
+    if (!invitationId) return
+
+    setIsResetting(true)
+    setResetMessage(null)
+
+    try {
+      const res = await fetch(`/api/invite/${invitationId}/admin/owner-reset`, {
+        method: 'DELETE',
+      })
+      const data = await res.json() as { success?: boolean; message?: string; error?: string }
+
+      if (data.success) {
+        setResetMessage({ type: 'success', text: data.message || '비밀번호가 리셋되었습니다' })
+        setHasPassword(false)
+        setShowResetConfirm(false)
+      } else {
+        setResetMessage({ type: 'error', text: data.error || '리셋에 실패했습니다' })
+      }
+    } catch (error) {
+      console.error('Failed to reset password:', error)
+      setResetMessage({ type: 'error', text: '오류가 발생했습니다' })
+    } finally {
+      setIsResetting(false)
+    }
+  }
 
   // 링크 복사
   const handleCopyLink = async (guest: Guest) => {
@@ -120,6 +172,82 @@ export default function ParentsStep5Guests({
           </div>
         )}
       </section>
+
+      {/* 비밀번호 설정/리셋 */}
+      {invitationId && (
+        <section className="space-y-4">
+          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+            <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center">
+              <KeyRound className="w-3 h-3 text-gray-600" />
+            </div>
+            관리자 비밀번호
+          </h3>
+          <p className="text-sm text-gray-600">
+            게스트 관리 페이지 접근을 위한 4자리 비밀번호입니다.
+          </p>
+
+          {/* 비밀번호 상태 표시 */}
+          <div className={`p-3 rounded-lg text-sm ${hasPassword ? 'bg-green-50 text-green-700' : 'bg-gray-50 text-gray-500'}`}>
+            {hasPassword ? '비밀번호가 설정되어 있습니다' : '비밀번호가 설정되지 않았습니다'}
+          </div>
+
+          {/* 리셋 메시지 */}
+          {resetMessage && (
+            <div className={`p-3 rounded-lg text-sm ${resetMessage.type === 'success' ? 'bg-blue-50 text-blue-700' : 'bg-red-50 text-red-700'}`}>
+              {resetMessage.text}
+            </div>
+          )}
+
+          {/* 리셋 버튼 또는 확인 대화상자 */}
+          {hasPassword && !showResetConfirm && (
+            <Button
+              variant="outline"
+              onClick={() => setShowResetConfirm(true)}
+              className="w-full border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400"
+            >
+              <KeyRound className="w-4 h-4 mr-2" />
+              비밀번호 리셋
+            </Button>
+          )}
+
+          {showResetConfirm && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg space-y-3">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium text-red-800">비밀번호를 리셋하시겠습니까?</p>
+                  <p className="text-sm text-red-600 mt-1">
+                    기존 비밀번호가 삭제됩니다. 게스트 관리 페이지에서 새 비밀번호를 설정해야 합니다.
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowResetConfirm(false)}
+                  disabled={isResetting}
+                  className="flex-1"
+                >
+                  취소
+                </Button>
+                <Button
+                  onClick={handleResetPassword}
+                  disabled={isResetting}
+                  className="flex-1 bg-red-500 hover:bg-red-600 text-white"
+                >
+                  {isResetting ? '리셋 중...' : '리셋 확인'}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {!hasPassword && (
+            <p className="text-xs text-gray-500">
+              게스트 관리 페이지에서 처음 접속 시 새 비밀번호를 설정할 수 있습니다.
+            </p>
+          )}
+        </section>
+      )}
 
       {/* 통계 */}
       {invitationId && guestStats.total > 0 && (

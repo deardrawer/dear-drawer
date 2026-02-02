@@ -263,6 +263,7 @@ export default function InvitationClientPage({ initialInvitation, initialGuestIn
                 isPreview={false}
                 isPaid={isPaid || isPreview}
                 hideInternalFrame={true}
+                invitationId={invitation?.id}
               />
             </div>
           </div>

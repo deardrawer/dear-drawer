@@ -12,9 +12,10 @@ interface RsvpModalProps {
     message: string
   }) => void
   isPreview?: boolean
+  invitationId?: string  // RSVP 저장을 위한 청첩장 ID
 }
 
-export default function RsvpModal({ onSubmit, isPreview = false }: RsvpModalProps) {
+export default function RsvpModal({ onSubmit, isPreview = false, invitationId }: RsvpModalProps) {
   const ref = useRef<HTMLDivElement>(null)
   const formRef = useRef<HTMLDivElement>(null)
   const theme = useTheme()
@@ -27,6 +28,9 @@ export default function RsvpModal({ onSubmit, isPreview = false }: RsvpModalProp
     message: '',
   })
   const [hoveredButton, setHoveredButton] = useState<'minus' | 'plus' | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -62,22 +66,111 @@ export default function RsvpModal({ onSubmit, isPreview = false }: RsvpModalProp
     }
   }, [])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setSubmitError(null)
+
+    // 이름 필수 체크
+    if (!formData.name.trim()) {
+      setSubmitError('이름을 입력해 주세요.')
+      return
+    }
+
+    // 커스텀 onSubmit이 있으면 사용
     if (onSubmit) {
       onSubmit(formData)
-    } else {
-      alert('참석 의사가 전달되었습니다. 감사합니다!')
+      exitFullscreen()
+      return
     }
-    exitFullscreen()
+
+    // invitationId가 없으면 미리보기 모드
+    if (!invitationId) {
+      alert('참석 의사가 전달되었습니다. 감사합니다!')
+      exitFullscreen()
+      return
+    }
+
+    // API 호출
+    setIsSubmitting(true)
+    try {
+      // attendance 값 변환 (yes -> attending, no -> not_attending, maybe -> pending)
+      const attendanceMap = {
+        yes: 'attending',
+        no: 'not_attending',
+        maybe: 'pending',
+      } as const
+
+      const response = await fetch('/api/rsvp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          invitationId,
+          guestName: formData.name.trim(),
+          attendance: attendanceMap[formData.attendance],
+          guestCount: formData.attendance === 'yes' ? formData.guestCount : 0,
+          message: formData.message.trim() || undefined,
+        }),
+      })
+
+      if (!response.ok) {
+        const data: { error?: string } = await response.json()
+        throw new Error(data.error || '제출에 실패했습니다.')
+      }
+
+      setIsSubmitted(true)
+      exitFullscreen()
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : '제출에 실패했습니다.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
+  // 성공 메시지 컨텐츠
+  const successContent = (
+    <div className="text-center py-8">
+      <div
+        className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
+        style={{ backgroundColor: `${theme.primary}20` }}
+      >
+        <svg
+          className="w-8 h-8"
+          style={{ color: theme.primary }}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M5 13l4 4L19 7"
+          />
+        </svg>
+      </div>
+      <h3 className="text-lg font-medium mb-2" style={{ color: theme.text }}>감사합니다!</h3>
+      <p className="text-sm" style={{ color: '#999' }}>
+        참석 여부가 성공적으로 전달되었습니다.
+      </p>
+      {formData.attendance === 'yes' && (
+        <p className="text-sm mt-1" style={{ color: '#999' }}>
+          결혼식에서 뵙겠습니다.
+        </p>
+      )}
+    </div>
+  )
+
   // 폼 컨텐츠 (JSX 변수로 정의 - 함수 컴포넌트로 만들면 리렌더링 시 unmount됨)
-  const formContent = (
+  const formContent = isSubmitted ? successContent : (
     <form onSubmit={handleSubmit} className="space-y-5">
+      {submitError && (
+        <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">
+          {submitError}
+        </div>
+      )}
       <div>
         <label className="block text-xs mb-2" style={{ color: '#999' }}>
-          성함
+          성함 <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
@@ -175,13 +268,21 @@ export default function RsvpModal({ onSubmit, isPreview = false }: RsvpModalProp
 
       <button
         type="submit"
-        className="w-full py-4 rounded-lg text-sm tracking-wider transition-all"
+        disabled={isSubmitting || !formData.name.trim()}
+        className="w-full py-4 rounded-lg text-sm tracking-wider transition-all disabled:opacity-50"
         style={{
           backgroundColor: theme.primary,
           color: '#FFFFFF',
         }}
       >
-        전달하기
+        {isSubmitting ? (
+          <span className="flex items-center justify-center gap-2">
+            <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+            전송 중...
+          </span>
+        ) : (
+          '전달하기'
+        )}
       </button>
     </form>
   )

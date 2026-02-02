@@ -13,6 +13,35 @@ import { getPresetById } from '@/lib/introPresets'
 import { SAMPLE_GREETING, SAMPLE_QUOTE } from '@/lib/sampleData'
 import { Sparkles, X, Loader2 } from 'lucide-react'
 
+// 이미지 크롭 스타일 계산 헬퍼 함수 (Preview.tsx와 동일)
+function getImageCropStyle(img: string, s: { scale?: number; positionX?: number; positionY?: number; cropX?: number; cropY?: number; cropWidth?: number; cropHeight?: number }) {
+  const hasCropData = s.cropWidth !== undefined && s.cropHeight !== undefined && (s.cropWidth < 1 || s.cropHeight < 1)
+
+  if (hasCropData) {
+    const cw = s.cropWidth || 1
+    const ch = s.cropHeight || 1
+    const cx = s.cropX || 0
+    const cy = s.cropY || 0
+    const posX = cw >= 1 ? 0 : (cx / (1 - cw)) * 100
+    const posY = ch >= 1 ? 0 : (cy / (1 - ch)) * 100
+
+    return {
+      backgroundImage: `url(${img})`,
+      backgroundSize: `${100 / cw}% ${100 / ch}%`,
+      backgroundPosition: `${posX}% ${posY}%`,
+      backgroundRepeat: 'no-repeat' as const,
+    }
+  }
+
+  // 기존 scale/position 방식 (호환성 유지)
+  return {
+    backgroundImage: `url(${img})`,
+    backgroundSize: 'cover' as const,
+    backgroundPosition: 'center' as const,
+    transform: `scale(${s.scale || 1}) translate(${s.positionX || 0}%, ${s.positionY || 0}%)`,
+  }
+}
+
 interface Step3InvitationProps {
   onOpenIntroSelector?: () => void
   templateId?: string
@@ -164,17 +193,12 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
         </h3>
         <p className="text-sm text-blue-600">💙 커버 이미지, 애니메이션 효과, 텍스트를 한 곳에서 설정하세요</p>
 
-        {/* 미리보기 썸네일 */}
+        {/* 미리보기 썸네일 - media.coverImageSettings 기준 (Preview.tsx와 동일) */}
         {media.coverImage && (
           <div className="relative w-full max-w-[160px] aspect-[9/16] mx-auto rounded-lg overflow-hidden shadow-md">
             <div
               className="absolute inset-0"
-              style={{
-                backgroundImage: `url(${media.coverImage})`,
-                backgroundSize: 'cover',
-                backgroundPosition: `${intro.backgroundPositionX}% ${intro.backgroundPositionY}%`,
-                filter: `brightness(${intro.backgroundBrightness / 100})`,
-              }}
+              style={getImageCropStyle(media.coverImage, media.coverImageSettings || {})}
             />
             <div className="absolute inset-0 flex items-center justify-center bg-black/20">
               <span className="text-white text-xs font-medium px-2 py-1 bg-black/50 rounded">

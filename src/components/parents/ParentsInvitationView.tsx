@@ -22,6 +22,7 @@ interface ParentsInvitationViewProps {
   isPreview?: boolean
   isPaid?: boolean
   hideInternalFrame?: boolean  // 외부에서 프레임을 제공할 때 내부 프레임 숨김
+  invitationId?: string  // RSVP 저장을 위한 청첩장 ID
 }
 
 export default function ParentsInvitationView({
@@ -30,6 +31,7 @@ export default function ParentsInvitationView({
   isPreview = false,
   isPaid = true,
   hideInternalFrame = false,
+  invitationId,
 }: ParentsInvitationViewProps) {
   const [isEnvelopeOpen, setIsEnvelopeOpen] = useState(isPreview)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -248,7 +250,7 @@ export default function ParentsInvitationView({
             )}
             <SectionDivider />
             <ShareSection />
-            <RsvpModal isPreview={isPreview} />
+            <RsvpModal isPreview={isPreview} invitationId={invitationId} />
           </main>
         </SectionHighlightProvider>
       )}

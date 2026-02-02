@@ -377,6 +377,7 @@ export interface InvitationContent {
   profileTextStyle?: TextStyle
   interviewTextStyle?: TextStyle
   parentIntroTextStyle?: TextStyle
+  whyWeChoseTextStyle?: TextStyle
 
   // ===== 섹션 공개 설정 =====
   sectionVisibility: SectionVisibility

@@ -903,9 +903,7 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
           />
           {/* Description Card */}
           <div className={`relative p-6 mb-10 ${isEmpty(whyWeChose?.groom?.description) ? 'opacity-50' : ''}`} style={{ background: themeColors.cardBg, border: `1px solid ${themeColors.text}20` }}>
-            <p className="text-xs leading-[2.2] whitespace-pre-line" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>
-              {whyWeChose?.groom?.description || SAMPLE_FAMILY.whyWeChose.groom.description}
-            </p>
+            <p className="text-xs" style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: invitation.whyWeChoseTextStyle?.lineHeight || 2.2, textAlign: invitation.whyWeChoseTextStyle?.textAlign || 'left' }} dangerouslySetInnerHTML={{ __html: parseHighlight(whyWeChose?.groom?.description || SAMPLE_FAMILY.whyWeChose.groom.description) }} />
           </div>
           {/* Quote */}
           <div className={`text-right ${isEmpty(whyWeChose?.groom?.quote) ? 'opacity-50' : ''}`}>
@@ -927,9 +925,7 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
           />
           {/* Description Card */}
           <div className={`relative p-6 mb-10 ${isEmpty(whyWeChose?.bride?.description) ? 'opacity-50' : ''}`} style={{ background: themeColors.cardBg, border: `1px solid ${themeColors.text}20` }}>
-            <p className="text-xs leading-[2.2] whitespace-pre-line" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>
-              {whyWeChose?.bride?.description || SAMPLE_FAMILY.whyWeChose.bride.description}
-            </p>
+            <p className="text-xs" style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: invitation.whyWeChoseTextStyle?.lineHeight || 2.2, textAlign: invitation.whyWeChoseTextStyle?.textAlign || 'left' }} dangerouslySetInnerHTML={{ __html: parseHighlight(whyWeChose?.bride?.description || SAMPLE_FAMILY.whyWeChose.bride.description) }} />
           </div>
           {/* Quote */}
           <div className={`text-left ${isEmpty(whyWeChose?.bride?.quote) ? 'opacity-50' : ''}`}>

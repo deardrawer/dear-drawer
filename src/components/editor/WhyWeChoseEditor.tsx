@@ -6,10 +6,11 @@ import { useEditorStore, ImageSettings } from '@/store/editorStore'
 import { AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { uploadImage } from '@/lib/imageUpload'
+import { AlignLeft, AlignCenter, AlignRight } from 'lucide-react'
 import InlineCropEditor from './InlineCropEditor'
+import HighlightTextarea from './HighlightTextarea'
 
 // 초안 작성 가능 표시
 function AiIndicator() {
@@ -208,13 +209,41 @@ export default function WhyWeChoseEditor() {
                 <Label className="text-xs">본문</Label>
                 <AiIndicator />
               </div>
-              <Textarea
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] text-gray-500">행간</span>
+                  {[1.4, 1.6, 1.8, 2.0, 2.2].map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => updateNestedField('whyWeChoseTextStyle', { ...invitation.whyWeChoseTextStyle, lineHeight: v })}
+                      className={`px-1.5 py-0.5 text-[10px] rounded border ${(invitation.whyWeChoseTextStyle?.lineHeight ?? 2.0) === v ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400'}`}
+                    >
+                      {v}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] text-gray-500">정렬</span>
+                  {([['left', AlignLeft], ['center', AlignCenter], ['right', AlignRight]] as const).map(([align, Icon]) => (
+                    <button
+                      key={align}
+                      type="button"
+                      onClick={() => updateNestedField('whyWeChoseTextStyle', { ...invitation.whyWeChoseTextStyle, textAlign: align })}
+                      className={`p-1 rounded border ${(invitation.whyWeChoseTextStyle?.textAlign ?? 'left') === align ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-400 border-gray-200 hover:border-gray-400'}`}
+                    >
+                      <Icon className="w-3 h-3" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <HighlightTextarea
                 value={data.description}
-                onChange={(e) => updateNestedField(`${fieldPrefix}.description`, e.target.value)}
-                placeholder="상대방을 선택한 이유를 작성해주세요...&#10;&#10;강조하고 싶은 부분은 **텍스트** 로 감싸주세요."
+                onChange={(value) => updateNestedField(`${fieldPrefix}.description`, value)}
+                placeholder="상대방을 선택한 이유를 작성해주세요..."
+                rows={8}
                 className="text-sm min-h-[200px] leading-relaxed"
               />
-              <p className="text-[10px] text-gray-400">**강조텍스트** 형식으로 강조할 수 있습니다</p>
             </div>
 
             {/* 인용문 */}

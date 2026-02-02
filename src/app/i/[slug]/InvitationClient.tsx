@@ -2036,6 +2036,7 @@ const mockInvitation = {
   fontStyle: 'romantic' as FontStyle,
   accentTextColor: undefined as string | undefined,
   bodyTextColor: undefined as string | undefined,
+  whyWeChoseTextStyle: undefined as { lineHeight?: number; textAlign?: 'left' | 'center' | 'right' } | undefined,
 
   groom: {
     name: '김민준',

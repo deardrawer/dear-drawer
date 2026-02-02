@@ -1767,6 +1767,7 @@ function WhyWeChoseSection({
   side,
   fonts,
   themeColors,
+  textStyle,
 }: {
   images: string[]
   imageSettings?: { scale: number; positionX: number; positionY: number }[]
@@ -1776,6 +1777,7 @@ function WhyWeChoseSection({
   side: 'groom' | 'bride'
   fonts: FontConfig
   themeColors: ColorConfig
+  textStyle?: { lineHeight?: number; textAlign?: 'left' | 'center' | 'right' }
 }) {
   const { ref, isVisible } = useScrollAnimation()
   const sideLabel = side === 'groom' ? '신랑' : '신부'
@@ -1842,8 +1844,13 @@ function WhyWeChoseSection({
         {/* Content */}
         <div className="relative py-10 px-6">
           <p
-            className="typo-body text-center whitespace-pre-line"
-            style={{ color: themeColors.text, fontFamily: fonts.body }}
+            className="typo-body whitespace-pre-line"
+            style={{
+              color: themeColors.text,
+              fontFamily: fonts.body,
+              lineHeight: textStyle?.lineHeight || 2.2,
+              textAlign: textStyle?.textAlign || 'center',
+            }}
           >
             {renderDescription(description)}
           </p>
@@ -2377,6 +2384,7 @@ const mockInvitation = {
   fontStyle: 'romantic' as FontStyle,
   accentTextColor: undefined as string | undefined,
   bodyTextColor: undefined as string | undefined,
+  whyWeChoseTextStyle: undefined as { lineHeight?: number; textAlign?: 'left' | 'center' | 'right' } | undefined,
 
   groom: {
     name: '김민준',
@@ -3417,6 +3425,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
               side="groom"
               fonts={fonts}
               themeColors={themeColors}
+              textStyle={(invitation as any).whyWeChoseTextStyle}
             />
           )}
 
@@ -3435,6 +3444,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
               side="bride"
               fonts={fonts}
               themeColors={themeColors}
+              textStyle={(invitation as any).whyWeChoseTextStyle}
             />
           )}
         </>

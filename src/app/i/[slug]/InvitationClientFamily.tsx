@@ -2375,6 +2375,7 @@ const mockInvitation = {
   id: 'demo-invitation-id',
   colorTheme: 'classic-rose' as ColorTheme,
   fontStyle: 'romantic' as FontStyle,
+  accentTextColor: undefined as string | undefined,
 
   groom: {
     name: '김민준',

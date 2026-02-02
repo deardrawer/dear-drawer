@@ -226,6 +226,8 @@ export default function ParentsInvitationView({
                     free: data.wedding.directions.parking.free || '',
                     note: data.wedding.directions.parking.note || '',
                   } : undefined,
+                  extraInfoEnabled: data.wedding.directions?.extraInfoEnabled,
+                  extraInfoText: data.wedding.directions?.extraInfoText,
                 }}
               />
               </div>

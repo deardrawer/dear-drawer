@@ -222,6 +222,8 @@ export interface ParentsInvitationContent {
       bus?: { enabled?: boolean; lines?: string; stop?: string }
       subway?: { enabled?: boolean; line?: string; station?: string; exit?: string; walk?: string }
       parking?: { enabled?: boolean; capacity?: string; free?: string; note?: string }
+      extraInfoEnabled?: boolean
+      extraInfoText?: string
     }
   }
 

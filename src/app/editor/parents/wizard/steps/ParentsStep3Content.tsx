@@ -419,52 +419,23 @@ export default function ParentsStep3Content({
             )}
           </div>
 
-          {/* 셔틀버스 (오시는길) */}
+          {/* 추가 안내사항 */}
           <div className="border rounded-lg p-3 space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-medium">🚐 셔틀버스</Label>
+              <Label className="text-xs font-medium">📝 추가 안내사항</Label>
               <Switch
-                checked={data.wedding.directions?.shuttle?.enabled ?? false}
-                onCheckedChange={(checked) => updateNestedData('wedding.directions.shuttle.enabled', checked)}
+                checked={data.wedding.directions?.extraInfoEnabled ?? false}
+                onCheckedChange={(checked) => updateNestedData('wedding.directions.extraInfoEnabled', checked)}
               />
             </div>
-            {data.wedding.directions?.shuttle?.enabled && (
-              <div className="space-y-2">
-                <Input
-                  value={data.wedding.directions?.shuttle?.location || ''}
-                  onChange={(e) => updateNestedData('wedding.directions.shuttle.location', e.target.value)}
-                  placeholder="강남역 11번 출구 앞"
-                  className="text-sm"
-                />
-                <p className="text-[10px] text-gray-400">탑승 장소</p>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <Input
-                      value={data.wedding.directions?.shuttle?.departureTime || ''}
-                      onChange={(e) => updateNestedData('wedding.directions.shuttle.departureTime', e.target.value)}
-                      placeholder="오전 10:30"
-                      className="text-sm"
-                    />
-                    <p className="text-[10px] text-gray-400 mt-1">출발 시간</p>
-                  </div>
-                  <div>
-                    <Input
-                      value={data.wedding.directions?.shuttle?.returnTime || ''}
-                      onChange={(e) => updateNestedData('wedding.directions.shuttle.returnTime', e.target.value)}
-                      placeholder="오후 4:00"
-                      className="text-sm"
-                    />
-                    <p className="text-[10px] text-gray-400 mt-1">복귀 시간</p>
-                  </div>
-                </div>
-                <Textarea
-                  value={data.wedding.directions?.shuttle?.note || ''}
-                  onChange={(e) => updateNestedData('wedding.directions.shuttle.note', e.target.value)}
-                  placeholder="출발 10분 전까지 탑승 부탁드립니다."
-                  rows={2}
-                  className="text-sm resize-none"
-                />
-              </div>
+            {data.wedding.directions?.extraInfoEnabled && (
+              <Textarea
+                value={data.wedding.directions?.extraInfoText || ''}
+                onChange={(e) => updateNestedData('wedding.directions.extraInfoText', e.target.value)}
+                placeholder="예: 주차권은 안내데스크에서 수령 / 혼잡 시간대는 대중교통 추천 / 예식장 입구는 ○○문입니다"
+                rows={3}
+                className="text-sm resize-none"
+              />
             )}
           </div>
         </div>

@@ -14,6 +14,8 @@ interface VenueSectionProps {
     bus?: { lines: string; stop: string }
     subway?: { line: string; station: string; exit: string; walk: string }
     parking?: { capacity: string; free: string; note: string }
+    extraInfoEnabled?: boolean
+    extraInfoText?: string
   }
 }
 
@@ -104,7 +106,7 @@ export default function VenueSection({
   }
 
   // 오시는 길 정보가 있는지 확인
-  const hasDirections = directions && (directions.bus || directions.subway || directions.parking)
+  const hasDirections = directions && (directions.bus || directions.subway || directions.parking || (directions.extraInfoEnabled && directions.extraInfoText))
 
   return (
     <section
@@ -251,6 +253,15 @@ export default function VenueSection({
                     {directions.parking.note && (
                       <p className="text-[10px] mt-1" style={{ color: '#999' }}>{directions.parking.note}</p>
                     )}
+                  </div>
+                </div>
+              )}
+
+              {/* 추가 안내사항 */}
+              {directions?.extraInfoEnabled && directions?.extraInfoText && (
+                <div className="mt-4 pt-4 border-t" style={{ borderColor: '#E8E4DC' }}>
+                  <div className="text-xs leading-relaxed whitespace-pre-line" style={{ color: '#666' }}>
+                    {directions.extraInfoText}
                   </div>
                 </div>
               )}

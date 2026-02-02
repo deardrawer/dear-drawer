@@ -40,6 +40,8 @@ interface DirectionsInfo {
   publicTransport: string
   train?: string
   expressBus?: string
+  extraInfoEnabled?: boolean
+  extraInfoText?: string
 }
 
 interface FloatingButtonProps {
@@ -570,6 +572,16 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
                       </p>
                     )}
                   </div>
+
+                  {/* 추가 안내사항 */}
+                  {invitation?.directions?.extraInfoEnabled && invitation?.directions?.extraInfoText && (
+                    <div className="mt-4 p-3 rounded-xl bg-amber-50 border border-amber-200">
+                      <p className="text-[10px] font-medium text-amber-800 mb-1">추가 안내사항</p>
+                      <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: themeColors.text }}>
+                        {invitation.directions.extraInfoText}
+                      </p>
+                    </div>
+                  )}
 
                   <button
                     onClick={() => copyToClipboard(invitation?.venue_address || '')}

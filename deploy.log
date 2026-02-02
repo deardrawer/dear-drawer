@@ -1,0 +1,22 @@
+
+ ⛅️ wrangler 4.61.0 (update available 4.61.1)
+─────────────────────────────────────────────
+Uploading... (3611/3611)
+✨ Success! Uploaded 0 files (3611 already uploaded) (0.82 sec)
+
+✨ Compiled Worker successfully
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mA file or directory could not be found.[0m
+
+  
+  Missing file or directory: C:\Users\dorot\Desktop\VibeCoding\Study-02\wedding-link\.wrangler\tmp\pages-mvcBAa\77d9faebf7af9e421806970ce10a58e9d83116d7-resvg.wasm?module
+  
+  This is typically caused by:
+    - The file or directory does not exist
+    - A typo in the file path
+    - The file was moved or deleted
+  
+  Please check the file path and try again.
+
+
+🪵  Logs were written to "C:\Users\dorot\AppData\Roaming\xdg.config\.wrangler\logs\wrangler-2026-02-02_16-12-45_875.log"

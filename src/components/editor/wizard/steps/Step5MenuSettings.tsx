@@ -118,17 +118,6 @@ export default function Step5MenuSettings() {
                 className="resize-none"
               />
             </div>
-            <div className="space-y-1.5">
-              <Label className="text-sm font-medium">셔틀버스</Label>
-              <Textarea
-                value={invitation.wedding.directions.shuttle || ''}
-                onChange={(e) => updateNestedField('wedding.directions.shuttle', e.target.value)}
-                placeholder="예: 강남역 10번 출구에서 30분 간격 운행 (오전 10시부터)"
-                rows={2}
-                className="resize-none"
-              />
-            </div>
-
             {/* 추가 안내사항 */}
             <div className="border-t pt-4 mt-4 space-y-3">
               <div className="flex items-center justify-between">

@@ -4,6 +4,7 @@
  * 사용법:
  * - ==텍스트== : 노란색 하이라이트
  * - ~~텍스트~~ : 흰색 하이라이트
+ * - **텍스트** : 강조 색상 (테마별 메인 컬러)
  */
 
 /**
@@ -19,6 +20,9 @@ export function parseHighlight(text: string): string {
 
   // ~~텍스트~~ → 흰색 하이라이트
   result = result.replace(/~~([^~]+)~~/g, '<span class="highlight-white">$1</span>')
+
+  // **텍스트** → 강조 텍스트 색상 (테마별 메인 컬러)
+  result = result.replace(/\*\*([^*]+)\*\*/g, '<span class="text-accent">$1</span>')
 
   // 줄바꿈 처리
   result = result.replace(/\n/g, '<br/>')
@@ -41,6 +45,9 @@ export function highlightToMarkup(html: string): string {
 
   // <span class="highlight-white">텍스트</span> → ~~텍스트~~
   result = result.replace(/<span class="highlight-white">([^<]+)<\/span>/g, '~~$1~~')
+
+  // <span class="text-accent">텍스트</span> → **텍스트**
+  result = result.replace(/<span class="text-accent">([^<]+)<\/span>/g, '**$1**')
 
   // <br/> → \n
   result = result.replace(/<br\s*\/?>/g, '\n')

@@ -362,6 +362,7 @@ export interface InvitationContent {
   textColor: string
   fontStyle: 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury'
   colorTheme: 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-green' | 'luxury-navy' | 'sunset-coral'
+  accentTextColor?: string  // 강조 텍스트 색상 (사용자 커스텀, 없으면 테마 기본값 사용)
 
   // ===== RSVP =====
   rsvpEnabled: boolean

@@ -3,7 +3,7 @@
 import { useRef, useCallback } from 'react'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
-import { Highlighter } from 'lucide-react'
+import { Type } from 'lucide-react'
 
 interface HighlightTextareaProps {
   value: string
@@ -18,9 +18,10 @@ interface HighlightTextareaProps {
  * 하이라이트 기능이 있는 Textarea 컴포넌트
  *
  * 사용법:
- * - 텍스트 선택 후 노란색/핑크색 버튼 클릭
+ * - 텍스트 선택 후 버튼 클릭
  * - ==텍스트== : 노란색 하이라이트
- * - ~~텍스트~~ : 핑크색 하이라이트
+ * - ~~텍스트~~ : 흰색 하이라이트
+ * - **텍스트** : 강조 색상 (테마별 메인 컬러)
  */
 export default function HighlightTextarea({
   value,
@@ -32,7 +33,7 @@ export default function HighlightTextarea({
 }: HighlightTextareaProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  const applyHighlight = useCallback((type: 'yellow' | 'white') => {
+  const applyHighlight = useCallback((type: 'yellow' | 'white' | 'accent') => {
     const textarea = textareaRef.current
     if (!textarea) return
 
@@ -45,7 +46,7 @@ export default function HighlightTextarea({
       return
     }
 
-    const wrapper = type === 'yellow' ? ['==', '=='] : ['~~', '~~']
+    const wrapper = type === 'yellow' ? ['==', '=='] : type === 'white' ? ['~~', '~~'] : ['**', '**']
 
     // 이미 하이라이트가 적용되어 있는지 확인
     const beforeText = value.substring(0, start)
@@ -89,8 +90,8 @@ export default function HighlightTextarea({
   return (
     <div className="space-y-1.5">
       {/* 하이라이트 툴바 */}
-      <div className="flex items-center gap-1.5">
-        <span className="text-[10px] text-gray-400 mr-0.5">강조하고 싶은 텍스트 선택 후 클릭 →</span>
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <span className="text-[10px] text-gray-400 mr-0.5">텍스트 선택 후 →</span>
         <Button
           type="button"
           variant="outline"
@@ -112,6 +113,17 @@ export default function HighlightTextarea({
         >
           <span className="w-3 h-3 rounded-sm border border-gray-300" style={{ background: 'linear-gradient(transparent 50%, rgba(255,255,255,0.9) 50%)', boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.05)' }} />
           흰색
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-6 px-2 text-[10px] gap-1"
+          onClick={() => applyHighlight('accent')}
+          title="텍스트를 드래그한 후 클릭하면 테마 강조색이 적용됩니다"
+        >
+          <Type className="w-3 h-3 text-rose-500" />
+          강조색
         </Button>
       </div>
 

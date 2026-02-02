@@ -421,41 +421,53 @@
   padding: 0 2px;
 }
 
+/* 강조 텍스트 색상 (테마별 메인 컬러) */
+.text-accent {
+  color: var(--text-accent);
+  font-weight: 500;
+}
+
 /* 테마별 하이라이트 색상 */
-/* Classic Rose - 따뜻한 노란색 + 순백 */
+/* Classic Rose - 따뜻한 노란색 + 순백 + 로즈 강조 */
 .theme-classic-rose {
   --highlight-yellow: #FFE082;
   --highlight-white: #FFFFFF;
+  --text-accent: #C41050;
 }
 
-/* Modern Black - 밝은 노란색 + 라이트 그레이 */
+/* Modern Black - 밝은 노란색 + 라이트 그레이 + 딥블랙 강조 */
 .theme-modern-black {
   --highlight-yellow: #FFEB3B;
   --highlight-white: #E0E0E0;
+  --text-accent: #000000;
 }
 
-/* Romantic Blush - 소프트 옐로우 + 순백 */
+/* Romantic Blush - 소프트 옐로우 + 순백 + 블러쉬 강조 */
 .theme-romantic-blush {
   --highlight-yellow: #FFE0B2;
   --highlight-white: #FFFFFF;
+  --text-accent: #A67A7A;
 }
 
-/* Nature Green - 따뜻한 노란색 + 순백 */
+/* Nature Green - 따뜻한 노란색 + 순백 + 밝은 그린 강조 */
 .theme-nature-green {
   --highlight-yellow: #FFF59D;
   --highlight-white: #FFFFFF;
+  --text-accent: #4A7A4A;
 }
 
-/* Luxury Navy - 골드 + 순백 */
+/* Luxury Navy - 골드 + 순백 + 골드 강조 */
 .theme-luxury-navy {
   --highlight-yellow: #FFD54F;
   --highlight-white: #FFFFFF;
+  --text-accent: #B8956A;
 }
 
-/* Sunset Coral - 따뜻한 옐로우 + 순백 */
+/* Sunset Coral - 따뜻한 옐로우 + 순백 + 코랄 강조 */
 .theme-sunset-coral {
   --highlight-yellow: #FFCC80;
   --highlight-white: #FFFFFF;
+  --text-accent: #B85040;
 }
 
 /* 하이라이트 애니메이션 (그려지듯 등장) */

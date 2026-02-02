@@ -4158,6 +4158,7 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
                     backgroundColor: themeColors.background,
                     fontFamily: fonts.body,
                     color: themeColors.text,
+                    ...(invitation.accentTextColor ? { '--text-accent': invitation.accentTextColor } as React.CSSProperties : {}),
                   }}
                 >
                   {/* Page Content */}

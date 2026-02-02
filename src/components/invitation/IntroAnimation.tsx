@@ -694,7 +694,7 @@ function CinematicIntro({ settings, backgroundStyle, overlayStyle, titleStyle, s
       <div className="absolute inset-0" style={overlayStyle} />
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
         <div className="intro-line-expand h-px bg-white/50 mb-5" />
-        <p className="intro-letter-spread uppercase whitespace-nowrap" style={titleStyle}>
+        <p className="intro-letter-spread uppercase text-center break-words max-w-full" style={titleStyle}>
           {settings.mainTitle}
         </p>
         {settings.dateText && (
@@ -742,7 +742,7 @@ function TypingIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subT
       <div className="absolute inset-0" style={overlayStyle} />
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
         {settings.subTitle && (
-          <p className="text-xs tracking-[6px] mb-6 intro-slide-up" style={subTitleStyle}>
+          <p className="text-xs tracking-[3px] sm:tracking-[6px] mb-6 intro-slide-up" style={subTitleStyle}>
             {settings.subTitle}
           </p>
         )}
@@ -775,7 +775,7 @@ function BlurIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTit
       <div className="absolute inset-0" style={overlayStyle} />
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
         {settings.subTitle && (
-          <p className="text-xs tracking-[8px] mb-4 intro-fade-in-up" style={{ ...subTitleStyle, animationDelay: '1.5s', animationDuration: '1.5s', opacity: 0 }}>
+          <p className="text-xs tracking-[4px] sm:tracking-[8px] mb-4 intro-fade-in-up" style={{ ...subTitleStyle, animationDelay: '1.5s', animationDuration: '1.5s', opacity: 0 }}>
             {settings.subTitle}
           </p>
         )}
@@ -833,7 +833,7 @@ function BokehIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTi
       <BokehParticles count={35} color="warm" />
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
         {settings.subTitle && (
-          <p className="text-xs tracking-[6px] mb-4" style={{ ...subTitleStyle, animation: 'introLetterSpread 2s ease-out forwards', animationDuration: '2s' }}>
+          <p className="text-xs tracking-[3px] sm:tracking-[6px] mb-4" style={{ ...subTitleStyle, animation: 'introLetterSpread 2s ease-out forwards', animationDuration: '2s' }}>
             {settings.subTitle}
           </p>
         )}
@@ -982,7 +982,7 @@ function PetalIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: In
       <FallingPetals count={25} />
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
         {settings.subTitle && (
-          <p className="text-xs tracking-[6px] mb-4 intro-wave-text" style={{ color: adjustedSubColor, opacity: 0 }}>
+          <p className="text-xs tracking-[3px] sm:tracking-[6px] mb-4 intro-wave-text" style={{ color: adjustedSubColor, opacity: 0 }}>
             {settings.subTitle}
           </p>
         )}
@@ -1029,7 +1029,7 @@ function WatercolorIntro({ settings, backgroundStyle, titleStyle, subTitleStyle 
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4 gap-3">
         {settings.subTitle && (
           <p
-            className="text-xs tracking-[6px] intro-text-spread"
+            className="text-xs tracking-[3px] sm:tracking-[6px] intro-text-spread"
             style={{ color: adjustedSubColor, opacity: 0, animationDelay: '1.5s' }}
           >
             {settings.subTitle}
@@ -1070,7 +1070,7 @@ function LightrayIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }:
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
         {settings.subTitle && (
           <p
-            className="text-xs tracking-[6px] mb-4 intro-slide-in-left"
+            className="text-xs tracking-[3px] sm:tracking-[6px] mb-4 intro-slide-in-left"
             style={{ ...subTitleStyle, opacity: 0, animationDelay: '0.5s' }}
           >
             {settings.subTitle}
@@ -1124,7 +1124,7 @@ function FilmIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: Int
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
         {settings.subTitle && (
           <p
-            className="text-xs tracking-[6px] mb-4 intro-blur-to-sharp"
+            className="text-xs tracking-[3px] sm:tracking-[6px] mb-4 intro-blur-to-sharp"
             style={subTitleStyle}
           >
             {settings.subTitle}
@@ -1161,7 +1161,7 @@ function GoldIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: Int
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
         {settings.subTitle && (
           <p
-            className="text-xs tracking-[6px] mb-4 intro-scale-up"
+            className="text-xs tracking-[3px] sm:tracking-[6px] mb-4 intro-scale-up"
             style={{ ...subTitleStyle, opacity: 0, animationDelay: '1.5s' }}
           >
             {settings.subTitle}
@@ -1213,7 +1213,7 @@ function FocusIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTi
 
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
         {settings.subTitle && (
-          <p className="text-xs tracking-[6px] mb-4 intro-letter-spread" style={{ ...subTitleStyle, opacity: 0, animationDelay: '1.2s' }}>
+          <p className="text-xs tracking-[3px] sm:tracking-[6px] mb-4 intro-letter-spread" style={{ ...subTitleStyle, opacity: 0, animationDelay: '1.2s' }}>
             {settings.subTitle}
           </p>
         )}

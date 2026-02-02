@@ -1027,6 +1027,10 @@ const globalStyles = `
     font-weight: 300;
     color: rgba(255, 255, 255, 0.75);
     letter-spacing: 2px;
+    text-align: center;
+    width: 100%;
+    word-break: keep-all;
+    overflow-wrap: break-word;
   }
 
   .full-height-divider-korean {

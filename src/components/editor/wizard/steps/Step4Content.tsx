@@ -17,7 +17,7 @@ import {
   SAMPLE_THANK_YOU,
 } from '@/lib/sampleData'
 import { parseHighlight } from '@/lib/textUtils'
-import { AlignLeft, AlignCenter, AlignRight, X, Plus } from 'lucide-react'
+import { AlignLeft, AlignCenter, AlignRight, X, Plus, ChevronUp, ChevronDown, GripVertical } from 'lucide-react'
 
 // 텍스트 스타일 컨트롤 (행간 + 정렬)
 function TextStyleControls({
@@ -1477,117 +1477,95 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
               </div>
 
               <div className="space-y-3">
-                {/* 드레스코드 */}
-                <div className="p-4 bg-gray-50 rounded-lg space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium">드레스코드</Label>
-                    <Switch
-                      checked={invitation.content.info.dressCode.enabled}
-                      onCheckedChange={(checked) => updateNestedField('content.info.dressCode.enabled', checked)}
-                    />
-                  </div>
-                  {invitation.content.info.dressCode.enabled && (
-                    <Textarea
-                      value={invitation.content.info.dressCode.content}
-                      onChange={(e) => updateNestedField('content.info.dressCode.content', e.target.value)}
-                      rows={3}
-                      className="resize-none"
-                      placeholder="단정한 복장으로 와주세요."
-                    />
-                  )}
-                </div>
+                {/* 순서 변경 가능한 안내 항목들 */}
+                {(() => {
+                  const itemOrder = invitation.content.info.itemOrder || ['dressCode', 'photoBooth', 'photoShare', 'flowerGift', 'flowerChild', 'wreath', 'shuttle', 'reception']
 
-                {/* 사진공유 */}
-                <div className="p-4 bg-gray-50 rounded-lg space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium">사진 공유</Label>
-                    <Switch
-                      checked={invitation.content.info.photoShare.enabled}
-                      onCheckedChange={(checked) => updateNestedField('content.info.photoShare.enabled', checked)}
-                    />
-                  </div>
-                  {invitation.content.info.photoShare.enabled && (
-                    <div className="space-y-2">
-                      <Textarea
-                        value={invitation.content.info.photoShare.content}
-                        onChange={(e) => updateNestedField('content.info.photoShare.content', e.target.value)}
-                        rows={3}
-                        className="resize-none"
-                        placeholder="결혼식에서 찍은 사진들을 공유해주세요!"
-                      />
-                      <Input
-                        value={invitation.content.info.photoShare.buttonText}
-                        onChange={(e) => updateNestedField('content.info.photoShare.buttonText', e.target.value)}
-                        placeholder="버튼 텍스트 (예: 사진 공유하기)"
-                      />
-                      <Input
-                        value={invitation.content.info.photoShare.url}
-                        onChange={(e) => updateNestedField('content.info.photoShare.url', e.target.value)}
-                        placeholder="공유 링크 URL (예: https://photos.google.com/...)"
-                      />
-                    </div>
-                  )}
-                </div>
+                  const moveItem = (itemId: string, direction: 'up' | 'down') => {
+                    const currentIndex = itemOrder.indexOf(itemId)
+                    if (currentIndex === -1) return
+                    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
+                    if (newIndex < 0 || newIndex >= itemOrder.length) return
+                    const newOrder = [...itemOrder]
+                    ;[newOrder[currentIndex], newOrder[newIndex]] = [newOrder[newIndex], newOrder[currentIndex]]
+                    updateNestedField('content.info.itemOrder', newOrder)
+                  }
 
-                {/* 화환 안내 */}
-                <div className="p-4 bg-gray-50 rounded-lg space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium">화환 안내</Label>
-                    <Switch
-                      checked={invitation.content.info.wreath.enabled}
-                      onCheckedChange={(checked) => updateNestedField('content.info.wreath.enabled', checked)}
-                    />
-                  </div>
-                  {invitation.content.info.wreath.enabled && (
-                    <Textarea
-                      value={invitation.content.info.wreath.content}
-                      onChange={(e) => updateNestedField('content.info.wreath.content', e.target.value)}
-                      rows={3}
-                      className="resize-none"
-                      placeholder="화환 대신 축의금으로 마음을 전해주시면 감사하겠습니다."
-                    />
-                  )}
-                </div>
+                  const itemConfigs: Record<string, { label: string; placeholder: string; hasExtra?: boolean }> = {
+                    dressCode: { label: '드레스코드', placeholder: '단정한 복장으로 와주세요.' },
+                    photoBooth: { label: '포토부스', placeholder: '로비에서 포토부스를 즐겨보세요!' },
+                    photoShare: { label: '사진 공유', placeholder: '결혼식에서 찍은 사진들을 공유해주세요!', hasExtra: true },
+                    flowerGift: { label: '꽃 답례품', placeholder: '꽃 답례품 안내를 입력해주세요.' },
+                    flowerChild: { label: '화동 안내', placeholder: '화동 안내를 입력해주세요.' },
+                    wreath: { label: '화환 안내', placeholder: '화환 대신 축의금으로 마음을 전해주시면 감사하겠습니다.' },
+                    shuttle: { label: '셔틀버스 안내', placeholder: '셔틀버스 운행 안내를 입력해주세요.' },
+                    reception: { label: '피로연 안내', placeholder: '피로연 안내를 입력해주세요.' },
+                  }
 
-                {/* 포토부스 */}
-                <div className="p-4 bg-gray-50 rounded-lg space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium">포토부스</Label>
-                    <Switch
-                      checked={invitation.content.info.photoBooth.enabled}
-                      onCheckedChange={(checked) => updateNestedField('content.info.photoBooth.enabled', checked)}
-                    />
-                  </div>
-                  {invitation.content.info.photoBooth.enabled && (
-                    <Textarea
-                      value={invitation.content.info.photoBooth.content}
-                      onChange={(e) => updateNestedField('content.info.photoBooth.content', e.target.value)}
-                      rows={3}
-                      className="resize-none"
-                      placeholder="로비에서 포토부스를 즐겨보세요!"
-                    />
-                  )}
-                </div>
+                  return itemOrder.map((itemId, index) => {
+                    const config = itemConfigs[itemId]
+                    if (!config) return null
+                    const itemData = invitation.content.info[itemId as keyof typeof invitation.content.info]
+                    if (!itemData || typeof itemData !== 'object' || !('enabled' in itemData)) return null
 
-                {/* 셔틀버스 안내 */}
-                <div className="p-4 bg-gray-50 rounded-lg space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium">셔틀버스 안내</Label>
-                    <Switch
-                      checked={invitation.content.info.shuttle.enabled}
-                      onCheckedChange={(checked) => updateNestedField('content.info.shuttle.enabled', checked)}
-                    />
-                  </div>
-                  {invitation.content.info.shuttle.enabled && (
-                    <Textarea
-                      value={invitation.content.info.shuttle.content}
-                      onChange={(e) => updateNestedField('content.info.shuttle.content', e.target.value)}
-                      rows={3}
-                      className="resize-none"
-                      placeholder="셔틀버스 운행 안내를 입력해주세요."
-                    />
-                  )}
-                </div>
+                    return (
+                      <div key={itemId} className="p-4 bg-gray-50 rounded-lg space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-1">
+                            <div className="flex flex-col">
+                              <button
+                                onClick={() => moveItem(itemId, 'up')}
+                                disabled={index === 0}
+                                className="p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                                title="위로 이동"
+                              >
+                                <ChevronUp className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => moveItem(itemId, 'down')}
+                                disabled={index === itemOrder.length - 1}
+                                className="p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                                title="아래로 이동"
+                              >
+                                <ChevronDown className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                            <Label className="text-sm font-medium">{config.label}</Label>
+                          </div>
+                          <Switch
+                            checked={itemData.enabled}
+                            onCheckedChange={(checked) => updateNestedField(`content.info.${itemId}.enabled`, checked)}
+                          />
+                        </div>
+                        {itemData.enabled && (
+                          <div className="space-y-2">
+                            <Textarea
+                              value={itemData.content}
+                              onChange={(e) => updateNestedField(`content.info.${itemId}.content`, e.target.value)}
+                              rows={3}
+                              className="resize-none"
+                              placeholder={config.placeholder}
+                            />
+                            {itemId === 'photoShare' && (
+                              <>
+                                <Input
+                                  value={(itemData as typeof invitation.content.info.photoShare).buttonText || ''}
+                                  onChange={(e) => updateNestedField('content.info.photoShare.buttonText', e.target.value)}
+                                  placeholder="버튼 텍스트 (예: 사진 공유하기)"
+                                />
+                                <Input
+                                  value={(itemData as typeof invitation.content.info.photoShare).url || ''}
+                                  onChange={(e) => updateNestedField('content.info.photoShare.url', e.target.value)}
+                                  placeholder="공유 링크 URL (예: https://photos.google.com/...)"
+                                />
+                              </>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })
+                })()}
 
                 {/* 커스텀 안내 항목들 */}
                 {invitation.content.info.customItems?.map((item, index) => (

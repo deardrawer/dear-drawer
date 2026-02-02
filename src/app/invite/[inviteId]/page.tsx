@@ -50,11 +50,13 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
       // 커스텀 제목/설명 (설정된 경우)
       customTitle = content?.meta?.title || "";
       customDescription = content?.meta?.description || "";
-      // 명시적으로 설정된 썸네일만 사용
+      // 썸네일 우선순위: kakaoThumbnail > ogImage > envelope 썸네일 > coverImage > gallery 첫번째 이미지
       rawThumbnailImage =
         content?.meta?.kakaoThumbnail ||
         content?.meta?.ogImage ||
         content?.envelope?.thumbnailImage ||
+        content?.media?.coverImage ||
+        content?.gallery?.images?.[0] ||
         "";
       // 발신자/수신자 이름
       senderName = content?.envelope?.senderName || "";

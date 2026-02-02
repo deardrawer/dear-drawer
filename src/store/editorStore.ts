@@ -541,7 +541,7 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
     info: {
       dressCode: { title: '드레스코드 안내', content: '결혼식에 맞는 옷차림을 고민하지 않으셔도 괜찮아요.\n여러분이 가장 좋아하는 옷,\n가장 여러분다운 모습으로 오셔서\n함께 웃고 즐겨주신다면 그걸로 충분합니다.', enabled: false },
       photoShare: {
-        title: 'Photo Sharing',
+        title: '사진 공유',
         content: '결혼식에서 찍은 사진들을 공유해주세요!\n여러분의 시선으로 담긴 우리의 결혼식,\n소중한 추억으로 간직하겠습니다.',
         buttonText: '사진 공유하기',
         url: '',

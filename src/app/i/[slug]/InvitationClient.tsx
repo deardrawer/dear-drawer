@@ -2009,12 +2009,12 @@ type ColorTheme = 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-g
 interface ColorConfig { primary: string; secondary: string; accent: string; background: string; sectionBg: string; cardBg: string; divider: string; text: string; gray: string; highlight?: string }
 
 const colorThemes: Record<ColorTheme, ColorConfig> = {
-  'classic-rose': { primary: '#C41050', secondary: '#B8956A', accent: '#B8956A', background: '#FFF8F5', sectionBg: '#FFE8E8', cardBg: '#FFFFFF', divider: '#d4b896', text: '#2a2a2a', gray: '#444444' },
-  'modern-black': { primary: '#111111', secondary: '#555555', accent: '#111111', background: '#FFFFFF', sectionBg: '#F5F5F5', cardBg: '#FFFFFF', divider: '#CCCCCC', text: '#2a2a2a', gray: '#444444', highlight: '#888888' },
-  'romantic-blush': { primary: '#A67A7A', secondary: '#8a7068', accent: '#8a7068', background: '#FDF8F6', sectionBg: '#F8EFEC', cardBg: '#FFFFFF', divider: '#D4C4BC', text: '#2a2a2a', gray: '#444444' },
-  'nature-green': { primary: '#3A5A3A', secondary: '#6A7A62', accent: '#5A7A52', background: '#F5F7F4', sectionBg: '#EBF0E8', cardBg: '#FFFFFF', divider: '#A8B5A0', text: '#2a2a2a', gray: '#444444', highlight: '#5A8A52' },
-  'luxury-navy': { primary: '#0f2035', secondary: '#8A6A3A', accent: '#8A6A3A', background: '#F8F9FA', sectionBg: '#E8ECF0', cardBg: '#FFFFFF', divider: '#C9A96E', text: '#2a2a2a', gray: '#444444', highlight: '#8A6A3A' },
-  'sunset-coral': { primary: '#B85040', secondary: '#B88060', accent: '#B8683A', background: '#FFFAF7', sectionBg: '#FFEEE5', cardBg: '#FFFFFF', divider: '#E8A87C', text: '#2a2a2a', gray: '#444444' },
+  'classic-rose': { primary: '#C41050', secondary: '#B8956A', accent: '#B8956A', background: '#FFF8F5', sectionBg: '#FFE8E8', cardBg: '#FFFFFF', divider: '#d4b896', text: '#3d3d3d', gray: '#555555' },
+  'modern-black': { primary: '#111111', secondary: '#555555', accent: '#111111', background: '#FFFFFF', sectionBg: '#F5F5F5', cardBg: '#FFFFFF', divider: '#CCCCCC', text: '#3d3d3d', gray: '#555555', highlight: '#888888' },
+  'romantic-blush': { primary: '#A67A7A', secondary: '#8a7068', accent: '#8a7068', background: '#FDF8F6', sectionBg: '#F8EFEC', cardBg: '#FFFFFF', divider: '#D4C4BC', text: '#3d3d3d', gray: '#555555' },
+  'nature-green': { primary: '#3A5A3A', secondary: '#6A7A62', accent: '#5A7A52', background: '#F5F7F4', sectionBg: '#EBF0E8', cardBg: '#FFFFFF', divider: '#A8B5A0', text: '#3d3d3d', gray: '#555555', highlight: '#5A8A52' },
+  'luxury-navy': { primary: '#0f2035', secondary: '#8A6A3A', accent: '#8A6A3A', background: '#F8F9FA', sectionBg: '#E8ECF0', cardBg: '#FFFFFF', divider: '#C9A96E', text: '#3d3d3d', gray: '#555555', highlight: '#8A6A3A' },
+  'sunset-coral': { primary: '#B85040', secondary: '#B88060', accent: '#B8683A', background: '#FFFAF7', sectionBg: '#FFEEE5', cardBg: '#FFFFFF', divider: '#E8A87C', text: '#3d3d3d', gray: '#555555' },
 }
 
 // Font styles
@@ -2154,9 +2154,9 @@ const mockInvitation = {
       '두 사람의 첫인상은 어땠나요?',
     ],
     info: {
-      dressCode: { title: 'Dress Code', content: '단정한 복장으로 와주세요.\n흰색 계열 의상은 피해주시면 감사하겠습니다.', enabled: true },
-      photoShare: { title: 'Photo Sharing', content: '결혼식 사진을 공유해주세요!', buttonText: '사진 공유하기', url: '', enabled: false },
-      photoBooth: { title: 'Photo Booth', content: '로비에서 포토부스를 즐겨보세요!', enabled: false },
+      dressCode: { title: '드레스코드', content: '단정한 복장으로 와주세요.\n흰색 계열 의상은 피해주시면 감사하겠습니다.', enabled: true },
+      photoShare: { title: '사진 공유', content: '결혼식 사진을 공유해주세요!', buttonText: '사진 공유하기', url: '', enabled: false },
+      photoBooth: { title: '포토부스', content: '로비에서 포토부스를 즐겨보세요!', enabled: false },
       flowerChild: { title: '화동 안내', content: '', enabled: false },
       flowerGift: { title: '꽃 답례품 안내', content: '', enabled: false },
       wreath: { title: '화환 안내', content: '', enabled: false },

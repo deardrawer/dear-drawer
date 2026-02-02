@@ -204,10 +204,12 @@ export async function generateMetadata({ params }: PageProps) {
       // 커스텀 제목/설명 (설정된 경우)
       customTitle = content?.meta?.title || "";
       customDescription = content?.meta?.description || "";
-      // 명시적으로 설정된 썸네일만 사용 (fallback 없음)
+      // 썸네일 우선순위: kakaoThumbnail > ogImage > coverImage > gallery 첫번째 이미지
       rawThumbnailImage =
         content?.meta?.kakaoThumbnail ||
         content?.meta?.ogImage ||
+        content?.media?.coverImage ||
+        content?.gallery?.images?.[0] ||
         "";
     } catch (e) {
       console.error("Failed to parse content for metadata:", e);

@@ -93,9 +93,9 @@ const ourSampleContent = {
       sign: '민준 & 서연 올림',
     },
     info: {
-      dressCode: { title: 'Dress Code', content: '결혼식에 맞는 옷차림을 고민하지 않으셔도 괜찮아요.\n여러분이 가장 좋아하는 옷, 가장 여러분 다운 모습으로 오셔서 함께 웃고 즐겨주신다면 그걸로 충분합니다.\n우리의 특별한 하루를 함께 빛내주세요.', enabled: true },
-      photoShare: { title: 'Photo Sharing', content: '결혼식에서 찍은 사진들을 공유해주세요!\n여러분의 시선으로 담긴 우리의 결혼식,\n소중한 추억으로 간직하겠습니다.', buttonText: '사진 공유하기', url: 'https://photos.google.com', enabled: true },
-      photoBooth: { title: 'Photo Booth', content: '로비에서 포토부스를 즐겨보세요!', enabled: false },
+      dressCode: { title: '드레스코드', content: '결혼식에 맞는 옷차림을 고민하지 않으셔도 괜찮아요.\n여러분이 가장 좋아하는 옷, 가장 여러분 다운 모습으로 오셔서 함께 웃고 즐겨주신다면 그걸로 충분합니다.\n우리의 특별한 하루를 함께 빛내주세요.', enabled: true },
+      photoShare: { title: '사진 공유', content: '결혼식에서 찍은 사진들을 공유해주세요!\n여러분의 시선으로 담긴 우리의 결혼식,\n소중한 추억으로 간직하겠습니다.', buttonText: '사진 공유하기', url: 'https://photos.google.com', enabled: true },
+      photoBooth: { title: '포토부스', content: '로비에서 포토부스를 즐겨보세요!', enabled: false },
       flowerChild: { title: '화동 안내', content: '', enabled: false },
       customItems: [],
     },

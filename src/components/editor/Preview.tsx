@@ -323,8 +323,9 @@ const Preview = forwardRef<PreviewHandle, object>(function Preview(_, ref) {
   const groomName = invitation.groom.name || 'Groom', brideName = invitation.bride.name || 'Bride'
   const fonts = fontStyles[invitation.fontStyle || 'classic'], themeColors = colorThemes[invitation.colorTheme || 'classic-rose']
   const isRomantic = invitation.fontStyle === 'romantic'
-  // 커스텀 강조 텍스트 색상 (사용자 설정 or 테마 기본값)
+  // 커스텀 텍스트 색상 (사용자 설정 or 테마 기본값)
   const customAccentTextColor = invitation.accentTextColor
+  const customBodyTextColor = invitation.bodyTextColor || themeColors.text
   return (
     <div className="h-full bg-white flex flex-col">
       <style dangerouslySetInnerHTML={{ __html: romanticFontStyles }} />
@@ -347,7 +348,7 @@ const Preview = forwardRef<PreviewHandle, object>(function Preview(_, ref) {
       <div className="flex-1 overflow-hidden flex justify-center px-6 pb-6">
         <div className="relative">
           <div className="w-[360px] shadow-2xl bg-white flex flex-col relative border border-gray-200" style={{ height: '710px' }}>
-            <div ref={previewContentRef} className={`flex-1 overflow-y-auto min-h-0 relative theme-${invitation.colorTheme || 'classic-rose'} ${isRomantic ? 'font-romantic' : ''}`} id="preview-content" style={{ fontFamily: fonts.body, color: themeColors.text, letterSpacing: '-0.3px', ...(customAccentTextColor ? { '--text-accent': customAccentTextColor } as React.CSSProperties : {}) }}>
+            <div ref={previewContentRef} className={`flex-1 overflow-y-auto min-h-0 relative theme-${invitation.colorTheme || 'classic-rose'} ${isRomantic ? 'font-romantic' : ''}`} id="preview-content" style={{ fontFamily: fonts.body, color: customBodyTextColor, letterSpacing: '-0.3px', ...(customAccentTextColor ? { '--text-accent': customAccentTextColor } as React.CSSProperties : {}) }}>
               {currentPage === 'intro'
                 ? <IntroPage invitation={invitation} groomName={groomName} brideName={brideName} fonts={fonts} themeColors={themeColors} />
                 : invitation.templateId === 'narrative-family'

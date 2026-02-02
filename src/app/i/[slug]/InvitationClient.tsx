@@ -2035,6 +2035,7 @@ const mockInvitation = {
   colorTheme: 'classic-rose' as ColorTheme,
   fontStyle: 'romantic' as FontStyle,
   accentTextColor: undefined as string | undefined,
+  bodyTextColor: undefined as string | undefined,
 
   groom: {
     name: '김민준',
@@ -3935,7 +3936,7 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
                   style={{
                     backgroundColor: themeColors.background,
                     fontFamily: fonts.body,
-                    color: themeColors.text,
+                    color: invitation.bodyTextColor || themeColors.text,
                     ...(invitation.accentTextColor ? { '--text-accent': invitation.accentTextColor } as React.CSSProperties : {}),
                   }}
                 >

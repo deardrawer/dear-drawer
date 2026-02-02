@@ -27,6 +27,16 @@ const DEFAULT_ACCENT_TEXT_COLORS: Record<string, string> = {
   'sunset-coral': '#B85040',
 }
 
+// 테마별 기본 본문 텍스트 색상
+const DEFAULT_BODY_TEXT_COLORS: Record<string, string> = {
+  'classic-rose': '#3d3d3d',
+  'modern-black': '#3d3d3d',
+  'romantic-blush': '#3d3d3d',
+  'nature-green': '#3d3d3d',
+  'luxury-navy': '#3d3d3d',
+  'sunset-coral': '#3d3d3d',
+}
+
 // 폰트 스타일 옵션
 const FONT_STYLES = [
   { id: 'classic', name: '클래식', sample: '우리 결혼합니다', fontFamily: "'Ridibatang', serif", desc: '정갈한 바탕체' },
@@ -49,12 +59,22 @@ export default function Step2Style({ templateId }: Step2StyleProps) {
 
   if (!invitation) return null
 
-  const { colorTheme, fontStyle, bgm, accentTextColor } = invitation
+  const { colorTheme, fontStyle, bgm, accentTextColor, bodyTextColor } = invitation
 
-  // 현재 테마의 기본 강조 색상
+  // 현재 테마의 기본 색상들
   const defaultAccentColor = DEFAULT_ACCENT_TEXT_COLORS[colorTheme] || '#C41050'
+  const defaultBodyColor = DEFAULT_BODY_TEXT_COLORS[colorTheme] || '#3d3d3d'
   // 사용자가 설정한 색상이 없으면 기본값 사용
   const currentAccentColor = accentTextColor || defaultAccentColor
+  const currentBodyColor = bodyTextColor || defaultBodyColor
+
+  // 테마 변경 핸들러 (색상들도 함께 초기화)
+  const handleThemeChange = (themeId: string) => {
+    updateField('colorTheme', themeId as typeof colorTheme)
+    // 테마 변경 시 커스텀 색상 초기화 (새 테마의 기본값 사용)
+    updateField('accentTextColor', undefined as unknown as string)
+    updateField('bodyTextColor', undefined as unknown as string)
+  }
 
   // BGM 재생/정지 토글
   const toggleBgmPreview = (url: string) => {
@@ -144,7 +164,7 @@ export default function Step2Style({ templateId }: Step2StyleProps) {
             return (
               <button
                 key={theme.id}
-                onClick={() => updateField('colorTheme', theme.id as typeof colorTheme)}
+                onClick={() => handleThemeChange(theme.id)}
                 className={`relative p-3 rounded-xl border-2 transition-all ${
                   isSelected
                     ? 'border-gray-900 ring-2 ring-gray-900/20'
@@ -165,12 +185,33 @@ export default function Step2Style({ templateId }: Step2StyleProps) {
           })}
         </div>
 
-        {/* 강조 텍스트 색상 */}
-        <div className="mt-4 p-4 bg-gray-50 rounded-xl space-y-3">
+        {/* 텍스트 색상 커스텀 */}
+        <div className="mt-4 p-4 bg-gray-50 rounded-xl space-y-4">
+          <h4 className="text-sm font-medium text-gray-800">텍스트 색상 설정</h4>
+
+          {/* 본문 텍스트 색상 */}
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="text-sm font-medium text-gray-800">강조 텍스트 색상</h4>
-              <p className="text-xs text-gray-500">**텍스트** 형식의 강조 색상을 변경합니다</p>
+              <p className="text-sm text-gray-700">본문 색상</p>
+              <p className="text-xs text-gray-500">청첩장 전체 글자색</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={currentBodyColor}
+                onChange={(e) => updateField('bodyTextColor', e.target.value)}
+                className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300"
+                style={{ padding: 0 }}
+              />
+              <span className="text-xs text-gray-600 font-mono w-16">{currentBodyColor}</span>
+            </div>
+          </div>
+
+          {/* 강조 텍스트 색상 */}
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-700">강조 색상</p>
+              <p className="text-xs text-gray-500">**텍스트** 형식 강조색</p>
             </div>
             <div className="flex items-center gap-2">
               <input
@@ -180,22 +221,26 @@ export default function Step2Style({ templateId }: Step2StyleProps) {
                 className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300"
                 style={{ padding: 0 }}
               />
-              <span className="text-xs text-gray-600 font-mono">{currentAccentColor}</span>
+              <span className="text-xs text-gray-600 font-mono w-16">{currentAccentColor}</span>
             </div>
           </div>
 
           {/* 미리보기 */}
           <div className="p-3 bg-white rounded-lg border border-gray-200">
-            <p className="text-sm text-gray-700">
-              일반 텍스트와 <span style={{ color: currentAccentColor, fontWeight: 500 }}>강조된 텍스트</span>를 비교해 보세요
+            <p className="text-sm" style={{ color: currentBodyColor }}>
+              본문 텍스트와 <span style={{ color: currentAccentColor, fontWeight: 500 }}>강조된 텍스트</span>를 비교해 보세요
             </p>
           </div>
 
           {/* 기본값 복원 버튼 */}
-          {accentTextColor && accentTextColor !== defaultAccentColor && (
+          {((accentTextColor && accentTextColor !== defaultAccentColor) ||
+            (bodyTextColor && bodyTextColor !== defaultBodyColor)) && (
             <button
               type="button"
-              onClick={() => updateField('accentTextColor', undefined as unknown as string)}
+              onClick={() => {
+                updateField('accentTextColor', undefined as unknown as string)
+                updateField('bodyTextColor', undefined as unknown as string)
+              }}
               className="text-xs text-blue-600 hover:text-blue-700"
             >
               테마 기본 색상으로 복원

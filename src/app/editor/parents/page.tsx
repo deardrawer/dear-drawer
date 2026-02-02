@@ -108,6 +108,8 @@ export interface ParentsInvitationData {
         returnTime: string
         note: string
       }
+      extraInfoEnabled: boolean
+      extraInfoText: string
     }
   }
 
@@ -261,6 +263,8 @@ const defaultData: ParentsInvitationData = {
         returnTime: '',
         note: '',
       },
+      extraInfoEnabled: false,
+      extraInfoText: '',
     },
   },
   envelope: {

@@ -2402,7 +2402,18 @@ type IntroScreen = 'cover' | 'invitation'
 
 function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors, onNavigate, onScreenChange, guestGreeting, guestCustomMessage, introSettings }: PageProps) {
   const [showDirections, setShowDirections] = useState(false)
-  const [directionsTab, setDirectionsTab] = useState<DirectionsTab>('car')
+
+  // 첫 번째 가능한 탭으로 초기화
+  const directions = invitation.wedding.directions
+  const getFirstAvailableTab = (): DirectionsTab => {
+    if (directions.car) return 'car'
+    if (directions.publicTransport) return 'publicTransport'
+    if (directions.train) return 'train'
+    if (directions.expressBus) return 'expressBus'
+    if (directions.shuttle) return 'shuttle'
+    return 'car'
+  }
+  const [directionsTab, setDirectionsTab] = useState<DirectionsTab>(getFirstAvailableTab)
 
   // Intro animation states (using IntroAnimation component)
   const [introComplete, setIntroComplete] = useState(false)
@@ -2487,7 +2498,6 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
     }
   }
 
-  const directions = invitation.wedding.directions
   const availableTabs: { key: DirectionsTab; label: string }[] = [
     ...(directions.car ? [{ key: 'car' as DirectionsTab, label: '자가용' }] : []),
     ...(directions.publicTransport ? [{ key: 'publicTransport' as DirectionsTab, label: '버스/지하철' }] : []),

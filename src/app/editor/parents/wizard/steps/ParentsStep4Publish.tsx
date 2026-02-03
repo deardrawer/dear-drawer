@@ -108,12 +108,24 @@ export default function ParentsStep4Publish({
     }
 
     if (typeof window !== 'undefined' && kakaoWindow.Kakao?.Share && kakaoWindow.Kakao.isInitialized?.()) {
+      // 이미지 URL을 절대 경로로 변환
+      const productionUrl = 'https://invite.deardrawer.com'
+      const rawImage = data.meta?.kakaoThumbnail || data.meta?.ogImage || data.gallery?.images?.[0]?.url
+      let imageUrl = `${productionUrl}/og-image.png`
+      if (rawImage) {
+        if (rawImage.startsWith('https://')) {
+          imageUrl = rawImage
+        } else if (rawImage.startsWith('/uploads/') || rawImage.startsWith('/api/r2/') || rawImage.startsWith('/sample/')) {
+          imageUrl = `${productionUrl}${rawImage}`
+        }
+      }
+
       kakaoWindow.Kakao.Share.sendDefault({
         objectType: 'feed',
         content: {
           title: `${groomName} ❤️ ${brideName}의 결혼식`,
           description: '모바일 청첩장이 도착했습니다',
-          imageUrl: data.meta?.kakaoThumbnail || data.gallery?.images?.[0]?.url || 'https://invite.deardrawer.com/og-image.png',
+          imageUrl,
           link: { mobileWebUrl: invitationUrl, webUrl: invitationUrl },
         },
         buttons: [{ title: '청첩장 보기', link: { mobileWebUrl: invitationUrl, webUrl: invitationUrl } }],
@@ -130,10 +142,10 @@ export default function ParentsStep4Publish({
     router.push('/my-invitations')
   }
 
-  // 워터마크 제거 (결제 페이지로)
+  // 워터마크 제거 (결제 페이지로 - 새 창)
   const handleRemoveWatermark = () => {
     if (invitationId) {
-      router.push(`/dashboard/payment?invitationId=${invitationId}`)
+      window.open(`/dashboard/payment?invitationId=${invitationId}`, '_blank')
     }
   }
 

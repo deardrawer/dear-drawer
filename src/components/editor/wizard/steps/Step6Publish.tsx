@@ -191,12 +191,28 @@ export default function Step6Publish({
     }
 
     if (typeof window !== 'undefined' && kakaoWindow.Kakao?.Share && kakaoWindow.Kakao.isInitialized?.()) {
+      // 이미지 URL을 절대 경로로 변환
+      const productionUrl = 'https://invite.deardrawer.com'
+      const rawImage = (invitation as Record<string, unknown>).meta
+        ? ((invitation as Record<string, unknown>).meta as Record<string, string>)?.kakaoThumbnail ||
+          ((invitation as Record<string, unknown>).meta as Record<string, string>)?.ogImage
+        : null
+      const coverImage = rawImage || invitation.media?.coverImage
+      let imageUrl = `${productionUrl}/og-image.png`
+      if (coverImage) {
+        if (coverImage.startsWith('https://')) {
+          imageUrl = coverImage
+        } else if (coverImage.startsWith('/uploads/') || coverImage.startsWith('/api/r2/') || coverImage.startsWith('/sample/')) {
+          imageUrl = `${productionUrl}${coverImage}`
+        }
+      }
+
       kakaoWindow.Kakao.Share.sendDefault({
         objectType: 'feed',
         content: {
           title: `${invitation.groom.name || '신랑'} ❤️ ${invitation.bride.name || '신부'}의 결혼식`,
           description: '모바일 청첩장이 도착했습니다',
-          imageUrl: invitation.media?.coverImage || 'https://invite.deardrawer.com/og-image.png',
+          imageUrl,
           link: { mobileWebUrl: invitationUrl, webUrl: invitationUrl },
         },
         buttons: [{ title: '청첩장 보기', link: { mobileWebUrl: invitationUrl, webUrl: invitationUrl } }],
@@ -213,10 +229,10 @@ export default function Step6Publish({
     router.push('/my-invitations')
   }
 
-  // 워터마크 제거 (결제 페이지로)
+  // 워터마크 제거 (결제 페이지로 - 새 창)
   const handleRemoveWatermark = () => {
     if (invitationId) {
-      router.push(`/dashboard/payment?invitationId=${invitationId}`)
+      window.open(`/dashboard/payment?invitationId=${invitationId}`, '_blank')
     }
   }
 

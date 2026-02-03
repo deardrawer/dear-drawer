@@ -402,6 +402,10 @@ export default function IntroSelector({ onBack }: IntroSelectorProps) {
                         />
                       ))}
                     </div>
+                    <p className="text-[11px] text-gray-400 mt-2 leading-relaxed">
+                      본문 입력 후 텍스트 색상을 조절하시는 것을 권장드립니다.<br />
+                      샘플 글씨는 실제 적용 색상이 아닌 미리보기용으로 연하게 표시됩니다.
+                    </p>
                   </div>
                 </div>
               </div>

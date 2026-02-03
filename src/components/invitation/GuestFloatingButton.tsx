@@ -17,6 +17,8 @@ interface DirectionsInfo {
   publicTransport: string
   train?: string
   expressBus?: string
+  extraInfoEnabled?: boolean
+  extraInfoText?: string
 }
 
 interface ContactInfo {
@@ -502,7 +504,14 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
                       <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: themeColors.text }}>{invitation.directions.expressBus}</p>
                     )}
                   </div>
-                  <button onClick={() => copyToClipboard(invitation.venue_address || '')} className="w-full py-2 rounded-xl text-xs" style={{ background: themeColors.sectionBg, color: themeColors.text }}>주소 복사</button>
+                  {/* 추가 안내사항 */}
+                  {invitation.directions?.extraInfoEnabled && invitation.directions?.extraInfoText && (
+                    <div className="mt-3 p-3 rounded-xl border" style={{ background: `${themeColors.primary}10`, borderColor: `${themeColors.primary}30` }}>
+                      <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: themeColors.text }}>{invitation.directions.extraInfoText}</p>
+                    </div>
+                  )}
+
+                  <button onClick={() => copyToClipboard(invitation.venue_address || '')} className="w-full mt-4 py-2 rounded-xl text-xs" style={{ background: themeColors.sectionBg, color: themeColors.text }}>주소 복사</button>
                 </>
               )}
 

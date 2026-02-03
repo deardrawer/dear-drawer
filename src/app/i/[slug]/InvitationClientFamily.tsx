@@ -3202,7 +3202,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
 
             {/* 추가 안내사항 */}
             {directions.extraInfoEnabled && directions.extraInfoText && (
-              <div className="mt-6 p-4 rounded-xl bg-pink-50 border border-pink-200">
+              <div className="mt-6 p-4 rounded-xl border" style={{ background: `${themeColors.primary}10`, borderColor: `${themeColors.primary}30` }}>
                 <p className="text-sm whitespace-pre-line" style={{ color: themeColors.text }}>{directions.extraInfoText}</p>
               </div>
             )}

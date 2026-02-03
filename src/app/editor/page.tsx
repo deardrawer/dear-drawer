@@ -559,7 +559,7 @@ function EditorContent() {
       </header>
 
       {/* Main Editor Area - 페이지 레벨 스크롤 */}
-      <div id="editor-scroll-container" className="flex-1 overflow-y-scroll bg-white">
+      <div id="editor-scroll-container" className="flex-1 overflow-y-scroll bg-white" style={{ overflowAnchor: 'none' }}>
         <div className="w-full max-w-7xl mx-auto">
           <div className="bg-white flex">
             {isIntroSelectorOpen ? (
@@ -590,7 +590,7 @@ function EditorContent() {
               <>
                 {/* Preview - 왼쪽 sticky 고정, 세로 중앙 */}
                 {!isMobile && (
-                  <div className="w-[450px] min-w-[450px] sticky top-0 h-[calc(100vh-120px)] overflow-hidden bg-white flex justify-center items-center">
+                  <div className="w-[450px] min-w-[450px] sticky top-0 h-[calc(100vh-120px)] overflow-hidden bg-white flex justify-center items-center" style={{ contain: 'layout style', willChange: 'transform' }}>
                     <Preview ref={previewRef} />
                   </div>
                 )}

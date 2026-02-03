@@ -268,6 +268,7 @@ export interface ParentIntroItem {
   parentNames: string      // "전아빠, 김엄마의"
   childOrder: string       // "첫째", "둘째", "막내" 등
   images: string[]         // 가족 사진 (최대 2장, 4:3 비율)
+  imageSettings?: ImageSettings[]  // 각 이미지별 크롭 설정
   message: string          // 부모님 메시지
 }
 

@@ -9,6 +9,7 @@ import { Switch } from '@/components/ui/switch'
 import { X, Upload, AlignLeft, AlignCenter, AlignRight } from 'lucide-react'
 import Image from 'next/image'
 import HighlightTextarea from './HighlightTextarea'
+import InlineCropEditor from './InlineCropEditor'
 
 interface ParentIntroEditorProps {
   uploadingImages: Set<string>
@@ -143,6 +144,35 @@ export default function ParentIntroEditor({
                 })}
               </div>
               <p className="text-[10px] text-gray-400">2장 등록 시 자동 슬라이드됩니다</p>
+
+              {/* 이미지 크롭 조정 */}
+              {(data.images || []).length > 0 && (
+                <div className="mt-3 p-3 bg-white rounded-lg space-y-4">
+                  <p className="text-[10px] font-medium text-gray-600">이미지 크롭 조정</p>
+                  {(data.images || []).map((imageUrl, imgIndex) => {
+                    const settings = data.imageSettings?.[imgIndex] || { scale: 1.0, positionX: 0, positionY: 0 }
+                    return (
+                      <div key={imgIndex} className="space-y-2 pb-3 border-b border-gray-200 last:border-0 last:pb-0">
+                        <p className="text-[9px] text-gray-500">사진 {imgIndex + 1}</p>
+                        <InlineCropEditor
+                          imageUrl={imageUrl}
+                          settings={settings}
+                          onUpdate={(newSettings) => {
+                            const currentSettings = [...(data.imageSettings || [])]
+                            while (currentSettings.length <= imgIndex) {
+                              currentSettings.push({ scale: 1.0, positionX: 0, positionY: 0 })
+                            }
+                            currentSettings[imgIndex] = { ...currentSettings[imgIndex], ...newSettings }
+                            updateNestedField(`${fieldPrefix}.imageSettings`, currentSettings)
+                          }}
+                          aspectRatio={4/3}
+                          containerWidth={140}
+                        />
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
             </div>
 
             {/* 부모님 메시지 */}

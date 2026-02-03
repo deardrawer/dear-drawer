@@ -731,32 +731,6 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
 
   return (
     <div className="relative">
-      {/* Full Height Divider - Title Section */}
-      <section
-        className="relative flex flex-col justify-center items-center text-center px-6 overflow-hidden"
-        style={{ height: '400px' }}
-      >
-        <div
-          className="absolute inset-0"
-          style={{
-            ...(fullHeightDividers?.items?.[0]?.image
-              ? getImageCropStyle(fullHeightDividers.items[0].image, fullHeightDividers.items[0].imageSettings || {})
-              : { background: 'linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)' }),
-            filter: `grayscale(${fullHeightDividers?.items?.[0]?.imageSettings?.grayscale ?? 100}%)`,
-            opacity: (fullHeightDividers?.items?.[0]?.imageSettings?.opacity ?? 100) / 100,
-          }}
-        />
-        <div className="absolute inset-0 bg-black/40" />
-        <div className="relative z-10 text-white">
-          <p className="text-[10px] tracking-[4px] mb-3 opacity-80" style={{ fontFamily: fonts.display }}>
-            {fullHeightDividers?.items?.[0]?.englishTitle || 'From Our Family to Yours'}
-          </p>
-          <p className="text-sm leading-relaxed whitespace-pre-line" style={{ fontFamily: fonts.displayKr }}>
-            {fullHeightDividers?.items?.[0]?.koreanText || '우리의 봄이, 누군가의 평생이 됩니다'}
-          </p>
-        </div>
-      </section>
-
       {/* 신랑측 부모님 소개 */}
       {parentIntro?.groom?.enabled !== false && (
         <section id="preview-couple-profile" className="px-6 py-16" style={{ background: '#ffffff' }}>
@@ -771,8 +745,8 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
           {/* 이미지 */}
           <div className="w-full aspect-[4/3] bg-gray-100 mb-8 overflow-hidden">
             <div
-              className="w-full h-full bg-cover bg-center"
-              style={{ backgroundImage: parentIntro?.groom?.images?.[0] ? `url(${parentIntro.groom.images[0]})` : undefined }}
+              className="w-full h-full"
+              style={parentIntro?.groom?.images?.[0] ? getImageCropStyle(parentIntro.groom.images[0], parentIntro.groom.imageSettings?.[0] || {}) : {}}
             />
           </div>
           {/* 메시지 */}
@@ -805,14 +779,40 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
           {/* 이미지 */}
           <div className="w-full aspect-[4/3] bg-gray-100 mb-8 overflow-hidden">
             <div
-              className="w-full h-full bg-cover bg-center"
-              style={{ backgroundImage: parentIntro?.bride?.images?.[0] ? `url(${parentIntro.bride.images[0]})` : undefined }}
+              className="w-full h-full"
+              style={parentIntro?.bride?.images?.[0] ? getImageCropStyle(parentIntro.bride.images[0], parentIntro.bride.imageSettings?.[0] || {}) : {}}
             />
           </div>
           {/* 메시지 */}
           <p className={`text-xs ${isEmpty(parentIntro?.bride?.message) ? 'opacity-50' : ''}`} style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: invitation.parentIntroTextStyle?.lineHeight || 2.0, textAlign: invitation.parentIntroTextStyle?.textAlign || 'right' }} dangerouslySetInnerHTML={{ __html: parseHighlight(parentIntro?.bride?.message || SAMPLE_FAMILY.parentIntro.bride.message) }} />
         </section>
       )}
+
+      {/* Full Height Divider - Title Section (부모님소개 하단) */}
+      <section
+        className="relative flex flex-col justify-center items-center text-center px-6 overflow-hidden"
+        style={{ height: '400px' }}
+      >
+        <div
+          className="absolute inset-0"
+          style={{
+            ...(fullHeightDividers?.items?.[0]?.image
+              ? getImageCropStyle(fullHeightDividers.items[0].image, fullHeightDividers.items[0].imageSettings || {})
+              : { background: 'linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)' }),
+            filter: `grayscale(${fullHeightDividers?.items?.[0]?.imageSettings?.grayscale ?? 100}%)`,
+            opacity: (fullHeightDividers?.items?.[0]?.imageSettings?.opacity ?? 100) / 100,
+          }}
+        />
+        <div className="absolute inset-0 bg-black/40" />
+        <div className="relative z-10 text-white">
+          <p className="text-[10px] tracking-[4px] mb-3 opacity-80" style={{ fontFamily: fonts.display }}>
+            {fullHeightDividers?.items?.[0]?.englishTitle || 'From Our Family to Yours'}
+          </p>
+          <p className="text-sm leading-relaxed whitespace-pre-line" style={{ fontFamily: fonts.displayKr }}>
+            {fullHeightDividers?.items?.[0]?.koreanText || '우리의 봄이, 누군가의 평생이 됩니다'}
+          </p>
+        </div>
+      </section>
 
       {/* Why We Chose Each Other - Title Divider */}
       {whyWeChose?.enabled !== false && (

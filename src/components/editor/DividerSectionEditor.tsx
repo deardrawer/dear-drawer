@@ -116,17 +116,66 @@ export default function DividerSectionEditor({
                   <div className="space-y-3 p-3 bg-white rounded-lg">
                     <p className="text-[10px] font-medium text-gray-600">이미지 설정</p>
 
+                    {/* 확대 */}
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-[10px] text-gray-500">
+                        <span>확대</span>
+                        <span>{Math.round((item.imageSettings?.scale || 1.0) * 100)}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="100"
+                        max="300"
+                        step="5"
+                        value={Math.round((item.imageSettings?.scale || 1.0) * 100)}
+                        onChange={(e) => updateNestedField(`fullHeightDividers.items.${index}.imageSettings.scale`, parseInt(e.target.value) / 100)}
+                        className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-gray-600"
+                      />
+                    </div>
+
+                    {/* 좌우 위치 */}
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-[10px] text-gray-500">
+                        <span>좌우 위치</span>
+                        <span>{item.imageSettings?.positionX || 0}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="-50"
+                        max="50"
+                        value={item.imageSettings?.positionX || 0}
+                        onChange={(e) => updateNestedField(`fullHeightDividers.items.${index}.imageSettings.positionX`, parseInt(e.target.value))}
+                        className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-gray-600"
+                      />
+                    </div>
+
+                    {/* 상하 위치 */}
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-[10px] text-gray-500">
+                        <span>상하 위치</span>
+                        <span>{item.imageSettings?.positionY || 0}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="-50"
+                        max="50"
+                        value={item.imageSettings?.positionY || 0}
+                        onChange={(e) => updateNestedField(`fullHeightDividers.items.${index}.imageSettings.positionY`, parseInt(e.target.value))}
+                        className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-gray-600"
+                      />
+                    </div>
+
                     {/* 흑백 */}
                     <div className="space-y-1">
                       <div className="flex justify-between text-[10px] text-gray-500">
                         <span>흑백</span>
-                        <span>{item.imageSettings?.grayscale || 100}%</span>
+                        <span>{item.imageSettings?.grayscale ?? 100}%</span>
                       </div>
                       <input
                         type="range"
                         min="0"
                         max="100"
-                        value={item.imageSettings?.grayscale || 100}
+                        value={item.imageSettings?.grayscale ?? 100}
                         onChange={(e) => updateNestedField(`fullHeightDividers.items.${index}.imageSettings.grayscale`, parseInt(e.target.value))}
                         className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-gray-600"
                       />
@@ -136,13 +185,13 @@ export default function DividerSectionEditor({
                     <div className="space-y-1">
                       <div className="flex justify-between text-[10px] text-gray-500">
                         <span>밝기</span>
-                        <span>{item.imageSettings?.opacity || 100}%</span>
+                        <span>{item.imageSettings?.opacity ?? 100}%</span>
                       </div>
                       <input
                         type="range"
                         min="20"
                         max="100"
-                        value={item.imageSettings?.opacity || 100}
+                        value={item.imageSettings?.opacity ?? 100}
                         onChange={(e) => updateNestedField(`fullHeightDividers.items.${index}.imageSettings.opacity`, parseInt(e.target.value))}
                         className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-gray-600"
                       />

@@ -1589,6 +1589,7 @@ function ParentIntroSection({
   childOrder,
   childName,
   images,
+  imageSettings,
   message,
   side,
   fonts,
@@ -1599,6 +1600,7 @@ function ParentIntroSection({
   childOrder: string // "첫째"
   childName: string // "해온"
   images: string[]
+  imageSettings?: { scale?: number; positionX?: number; positionY?: number; cropX?: number; cropY?: number; cropWidth?: number; cropHeight?: number }[]
   message: string
   side: 'groom' | 'bride'
   fonts: FontConfig
@@ -1657,21 +1659,38 @@ function ParentIntroSection({
           transition: 'opacity 1.5s ease 0.3s, transform 1.5s ease 0.3s',
         }}
       >
-        {images.map((img, index) => (
-          <div
-            key={index}
-            className="absolute inset-0 transition-opacity duration-1000"
-            style={{
-              opacity: currentSlide === index ? 1 : 0,
-            }}
-          >
-            <img
-              src={img}
-              alt={`가족사진 ${index + 1}`}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        ))}
+        {images.map((img, index) => {
+          const s = imageSettings?.[index]
+          const hasCrop = s?.cropWidth !== undefined && s?.cropHeight !== undefined && ((s?.cropWidth || 1) < 1 || (s?.cropHeight || 1) < 1)
+          return (
+            <div
+              key={index}
+              className="absolute inset-0 transition-opacity duration-1000"
+              style={{
+                opacity: currentSlide === index ? 1 : 0,
+              }}
+            >
+              {hasCrop ? (
+                <div
+                  className="w-full h-full"
+                  style={{
+                    backgroundImage: `url(${img})`,
+                    backgroundSize: `${100 / (s?.cropWidth || 1)}% ${100 / (s?.cropHeight || 1)}%`,
+                    backgroundPosition: `${(s?.cropWidth || 1) >= 1 ? 0 : ((s?.cropX || 0) / (1 - (s?.cropWidth || 1))) * 100}% ${(s?.cropHeight || 1) >= 1 ? 0 : ((s?.cropY || 0) / (1 - (s?.cropHeight || 1))) * 100}%`,
+                    backgroundRepeat: 'no-repeat',
+                  }}
+                />
+              ) : (
+                <img
+                  src={img}
+                  alt={`가족사진 ${index + 1}`}
+                  className="w-full h-full object-cover"
+                  style={s ? { transform: `scale(${s.scale || 1}) translate(${s.positionX || 0}%, ${s.positionY || 0}%)` } : undefined}
+                />
+              )}
+            </div>
+          )
+        })}
 
         {/* 슬라이드 인디케이터 */}
         {images.length > 1 && (
@@ -3383,6 +3402,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
           childOrder={(invitation as any).parentIntro?.groom?.childOrder || '첫째'}
           childName={invitation.groom.name}
           images={(invitation as any).parentIntro?.groom?.images || ['/sample/story1.jpg']}
+          imageSettings={(invitation as any).parentIntro?.groom?.imageSettings}
           message={(invitation as any).parentIntro?.groom?.message || '말벌보다 초승이 더 많았던 아이였습니다.\n잠든 얼굴을 한참 바라보다가\n\n\'이 아이가 어떤 사람과 함께할까\' 상상하던 밤이\n아직도 선명합니다.\n\n축구를 좋아해서 해 질 때까지 뛰던 아이가\n지금은 누군가를 찾게 하고, 지켜주고 싶다는 사람이\n되었습니다.\n\n처음으로, "이 사람이 있으면 마음이 편안해요"라고 말했을\n때 더는 더 이상 바랄 게 없겠다는 생각이 들었습니다.\n\n그렇게, 저희 아들이 사랑하는 사람과 인생의 길을 함께\n걸어가려 합니다.\n\n기쁘고, 설레는 이 시작에,\n모여서 따뜻한 마음으로 축복해주신다면\n부모로서 얼마나 감사하겠습니다.'}
           side="groom"
           fonts={fonts}
@@ -3404,6 +3424,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
           childOrder={(invitation as any).parentIntro?.bride?.childOrder || '첫째'}
           childName={invitation.bride.name}
           images={(invitation as any).parentIntro?.bride?.images || ['/sample/story2.jpg']}
+          imageSettings={(invitation as any).parentIntro?.bride?.imageSettings}
           message={(invitation as any).parentIntro?.bride?.message || '어릴 적부터 마음이 따뜻했던 아이입니다.\n\n항상 주변 사람들을 먼저 생각하고\n작은 것에도 감사할 줄 아는 딸이었습니다.\n\n그런 아이가 평생을 함께할 사람을 만났다고 했을 때,\n부모로서 이보다 더 큰 기쁨이 없었습니다.\n\n두 사람이 서로를 아끼고 사랑하며\n행복한 가정을 이루길 진심으로 바랍니다.\n\n부디 오셔서 두 사람의 새로운 시작을\n축복해 주시면 감사하겠습니다.'}
           side="bride"
           fonts={fonts}

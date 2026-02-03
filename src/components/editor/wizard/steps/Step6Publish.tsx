@@ -193,10 +193,8 @@ export default function Step6Publish({
     if (typeof window !== 'undefined' && kakaoWindow.Kakao?.Share && kakaoWindow.Kakao.isInitialized?.()) {
       // 이미지 URL을 절대 경로로 변환
       const productionUrl = 'https://invite.deardrawer.com'
-      const rawImage = (invitation as Record<string, unknown>).meta
-        ? ((invitation as Record<string, unknown>).meta as Record<string, string>)?.kakaoThumbnail ||
-          ((invitation as Record<string, unknown>).meta as Record<string, string>)?.ogImage
-        : null
+      const inv = invitation as unknown as Record<string, Record<string, string>>
+      const rawImage = inv.meta?.kakaoThumbnail || inv.meta?.ogImage || null
       const coverImage = rawImage || invitation.media?.coverImage
       let imageUrl = `${productionUrl}/og-image.png`
       if (coverImage) {

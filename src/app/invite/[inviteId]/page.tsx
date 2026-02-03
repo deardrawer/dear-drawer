@@ -1,4 +1,4 @@
-import { getInvitationById, getGuestById, recordPageView, recordGuestView } from "@/lib/db";
+import { getInvitationById, getInvitationBySlug, getGuestById, recordPageView, recordGuestView } from "@/lib/db";
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import InvitationClientPage from "./InvitationClientPage";
@@ -29,7 +29,11 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
   const { guest: guestId } = await searchParams;
   const baseUrl = "https://invite.deardrawer.com";
 
-  const invitation = await getInvitationById(inviteId);
+  // ID로 먼저 조회, 없으면 slug로 조회
+  let invitation = await getInvitationById(inviteId);
+  if (!invitation) {
+    invitation = await getInvitationBySlug(inviteId);
+  }
 
   if (!invitation) {
     return {
@@ -50,13 +54,13 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
       // 커스텀 제목/설명 (설정된 경우)
       customTitle = content?.meta?.title || "";
       customDescription = content?.meta?.description || "";
-      // 썸네일 우선순위: kakaoThumbnail > ogImage > envelope 썸네일 > coverImage > gallery 첫번째 이미지
+      // OG 썸네일 우선순위: ogImage > envelope 썸네일 > coverImage > gallery 첫번째 이미지 > kakaoThumbnail
       rawThumbnailImage =
-        content?.meta?.kakaoThumbnail ||
         content?.meta?.ogImage ||
         content?.envelope?.thumbnailImage ||
         content?.media?.coverImage ||
         content?.gallery?.images?.[0] ||
+        content?.meta?.kakaoThumbnail ||
         "";
       // 발신자/수신자 이름
       senderName = content?.envelope?.senderName || "";
@@ -132,7 +136,11 @@ export default async function InvitationPage({ params, searchParams }: PageProps
   const { inviteId } = await params;
   const { guest: guestId } = await searchParams;
 
-  const invitation = await getInvitationById(inviteId);
+  // ID로 먼저 조회, 없으면 slug로 조회
+  let invitation = await getInvitationById(inviteId);
+  if (!invitation) {
+    invitation = await getInvitationBySlug(inviteId);
+  }
 
   if (!invitation) {
     notFound();

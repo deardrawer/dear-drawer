@@ -23,6 +23,24 @@ interface Guest {
   templateName: string | null
 }
 
+interface RsvpResponse {
+  id: string
+  guest_name: string
+  guest_phone: string | null
+  attendance: 'attending' | 'not_attending' | 'pending'
+  guest_count: number
+  message: string | null
+  created_at: string
+}
+
+interface RsvpSummary {
+  total: number
+  attending: number
+  notAttending: number
+  pending: number
+  totalGuests: number
+}
+
 interface GuestStats {
   total: number
   opened: number
@@ -49,6 +67,10 @@ export default function AdminDashboardPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [token, setToken] = useState<string | null>(null)
   const [invitationInfo, setInvitationInfo] = useState<{ kakaoThumbnail?: string; groomName?: string; brideName?: string } | null>(null)
+
+  // RSVP 응답
+  const [rsvpResponses, setRsvpResponses] = useState<RsvpResponse[]>([])
+  const [rsvpSummary, setRsvpSummary] = useState<RsvpSummary | null>(null)
 
   // 게스트 추가/수정 모달
   const [showGuestModal, setShowGuestModal] = useState(false)
@@ -121,10 +143,11 @@ export default function AdminDashboardPage() {
     try {
       const headers = { Authorization: `Bearer ${token}` }
 
-      const [guestsRes, templatesRes, inviteRes] = await Promise.all([
+      const [guestsRes, templatesRes, inviteRes, rsvpRes] = await Promise.all([
         fetch(`/api/invite/${inviteId}/admin/guests`, { headers }),
         fetch(`/api/invite/${inviteId}/admin/templates`, { headers }),
         fetch(`/api/invite/${inviteId}`),
+        fetch(`/api/rsvp?invitationId=${inviteId}`),
       ])
 
       if (guestsRes.status === 401 || templatesRes.status === 401) {
@@ -136,10 +159,13 @@ export default function AdminDashboardPage() {
       const guestsData: { guests?: unknown[]; stats?: unknown } = await guestsRes.json()
       const templatesData: { templates?: unknown[] } = await templatesRes.json()
       const inviteData: { invitation?: { content?: string; groom_name?: string; bride_name?: string } } = await inviteRes.json()
+      const rsvpData: { data?: RsvpResponse[]; summary?: RsvpSummary } = await rsvpRes.json()
 
       setGuests((guestsData.guests || []) as Guest[])
       setStats((guestsData.stats || null) as GuestStats | null)
       setTemplates((templatesData.templates || []) as Template[])
+      setRsvpResponses(rsvpData.data || [])
+      setRsvpSummary(rsvpData.summary || null)
 
       // 청첩장 정보 설정 (카카오 공유용)
       if (inviteData.invitation) {
@@ -532,7 +558,7 @@ export default function AdminDashboardPage() {
             { label: '전체', value: stats.total, color: '#2C2C2C' },
             { label: '열람', value: stats.opened, color: '#4CAF50' },
             { label: '미열람', value: stats.notOpened, color: '#FF9800' },
-            { label: 'RSVP', value: stats.withRsvp, color: '#C9A962' },
+            { label: 'RSVP', value: rsvpSummary?.total || stats.withRsvp, color: '#C9A962' },
           ].map((item) => (
             <div
               key={item.label}
@@ -605,6 +631,117 @@ export default function AdminDashboardPage() {
           </div>
         )}
       </div>
+
+      {/* RSVP 응답 섹션 */}
+      {rsvpResponses.length > 0 && (
+        <div className="px-4 mb-4">
+          <button
+            onClick={() => toggleSection('rsvp')}
+            className="w-full flex items-center justify-between p-4 rounded-t-lg"
+            style={{
+              backgroundColor: '#FFF',
+              borderBottom: openSections.includes('rsvp') ? '1px solid #E8E4DD' : 'none',
+              borderRadius: openSections.includes('rsvp') ? '12px 12px 0 0' : '12px',
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-lg">📋</span>
+              <span className="font-semibold" style={{ color: '#2C2C2C' }}>
+                RSVP 응답
+              </span>
+              <span
+                className="text-xs px-2 py-0.5 rounded-full font-medium"
+                style={{ backgroundColor: '#C9A962', color: '#FFF' }}
+              >
+                {rsvpResponses.length}
+              </span>
+            </div>
+            <span
+              className="transition-transform duration-200"
+              style={{
+                transform: openSections.includes('rsvp') ? 'rotate(180deg)' : 'rotate(0deg)',
+                color: '#888',
+              }}
+            >
+              ▼
+            </span>
+          </button>
+
+          {openSections.includes('rsvp') && (
+            <div
+              className="rounded-b-lg overflow-hidden"
+              style={{ backgroundColor: '#FFF' }}
+            >
+              {/* RSVP 요약 */}
+              {rsvpSummary && (
+                <div className="px-4 pt-4 pb-2 grid grid-cols-4 gap-2">
+                  {[
+                    { label: '총 응답', value: rsvpSummary.total, color: '#2C2C2C' },
+                    { label: '참석', value: rsvpSummary.attending, color: '#4CAF50' },
+                    { label: '불참', value: rsvpSummary.notAttending, color: '#EF4444' },
+                    { label: '예상인원', value: rsvpSummary.totalGuests, color: '#C9A962' },
+                  ].map((item) => (
+                    <div
+                      key={item.label}
+                      className="text-center py-2 rounded-lg"
+                      style={{ backgroundColor: '#F8F6F2' }}
+                    >
+                      <div className="text-lg font-semibold" style={{ color: item.color }}>
+                        {item.value}
+                      </div>
+                      <div className="text-[10px] font-medium" style={{ color: '#888' }}>
+                        {item.label}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* RSVP 목록 */}
+              <div className="p-4 space-y-2">
+                {rsvpResponses.map((r) => (
+                  <div
+                    key={r.id}
+                    className="flex items-center justify-between p-3 rounded-lg"
+                    style={{ backgroundColor: '#F8F6F2' }}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm" style={{ color: '#2C2C2C' }}>
+                          {r.guest_name}
+                        </span>
+                        <span
+                          className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
+                          style={{
+                            backgroundColor:
+                              r.attendance === 'attending' ? '#DCFCE7' :
+                              r.attendance === 'not_attending' ? '#FEE2E2' : '#FEF9C3',
+                            color:
+                              r.attendance === 'attending' ? '#166534' :
+                              r.attendance === 'not_attending' ? '#991B1B' : '#854D0E',
+                          }}
+                        >
+                          {r.attendance === 'attending' ? '참석' :
+                           r.attendance === 'not_attending' ? '불참' : '미정'}
+                          {r.attendance === 'attending' && r.guest_count > 0 && ` ${r.guest_count}명`}
+                        </span>
+                      </div>
+                      {r.message && (
+                        <p className="text-xs mt-1 truncate" style={{ color: '#888' }}>
+                          {r.message}
+                        </p>
+                      )}
+                    </div>
+                    <span className="text-[10px] shrink-0 ml-2" style={{ color: '#AAA' }}>
+                      {new Date(r.created_at).toLocaleDateString('ko-KR')}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* 인사말 템플릿 섹션 */}
       <div className="px-4 mb-4">

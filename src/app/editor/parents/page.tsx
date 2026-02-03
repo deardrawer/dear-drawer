@@ -467,26 +467,28 @@ function ParentsEditorContent() {
     setIsDirty(true)
   }
 
-  // 저장
-  const handleSave = async () => {
+  // 저장 (silent: true일 때 alert 표시하지 않고, 에러 시 throw)
+  const handleSave = async (silent = false) => {
     if (!user) {
-      alert('저장하려면 로그인이 필요합니다.')
+      if (!silent) alert('저장하려면 로그인이 필요합니다.')
       router.push('/login')
-      return
+      throw new Error('로그인이 필요합니다.')
     }
 
     // 신랑/신부 이름 필수 검증
     const groomName = `${data.groom.lastName}${data.groom.firstName}`.trim()
     const brideName = `${data.bride.lastName}${data.bride.firstName}`.trim()
     if (!groomName || !brideName) {
-      alert('신랑/신부 이름을 모두 입력해주세요.')
-      return
+      const msg = '신랑/신부 이름을 모두 입력해주세요.'
+      if (!silent) alert(msg)
+      throw new Error(msg)
     }
 
     // 카카오톡 공유 썸네일 필수 검증
     if (!data.meta?.kakaoThumbnail?.trim()) {
-      alert('카카오톡 공유 썸네일을 추가해주세요.')
-      return
+      const msg = '카카오톡 공유 썸네일을 추가해주세요.'
+      if (!silent) alert(msg)
+      throw new Error(msg)
     }
 
     setIsSaving(true)
@@ -537,10 +539,11 @@ function ParentsEditorContent() {
       }
 
       setIsDirty(false)
-      alert('저장되었습니다!')
+      if (!silent) alert('저장되었습니다!')
     } catch (error) {
       console.error('Save error:', error)
-      alert(error instanceof Error ? error.message : '저장에 실패했습니다.')
+      if (!silent) alert(error instanceof Error ? error.message : '저장에 실패했습니다.')
+      throw error
     } finally {
       setIsSaving(false)
     }
@@ -616,7 +619,7 @@ function ParentsEditorContent() {
           <Button
             size="sm"
             disabled={isSaving}
-            onClick={handleSave}
+            onClick={() => handleSave()}
             className="bg-black text-white hover:bg-gray-800 rounded-none text-xs tracking-wide"
           >
             {isSaving ? (
@@ -704,7 +707,7 @@ function ParentsEditorContent() {
                 onSelectGuest={setSelectedGuest}
                 setActiveSection={setActiveSection}
                 slug={urlSlug || (invitationId ? invitationId : null)}
-                onSave={handleSave}
+                onSave={() => handleSave(true)}
                 onStepChange={(step) => {
                   setCurrentWizardStep(step)
                   // 봉투(2) → 인트로, 본문(3) → 본문

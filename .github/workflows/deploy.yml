@@ -28,6 +28,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify critical routes
+        run: node scripts/verify-routes.mjs
+
       - name: Build for Cloudflare
         run: npm run build:cloudflare
         env:

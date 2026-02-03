@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "build:cloudflare": "npx @opennextjs/cloudflare build && cp .open-next/worker.js .open-next/_worker.js && cp -r .open-next/assets/* .open-next/ && echo '{\"version\":1,\"include\":[\"/*\"],\"exclude\":[\"/_next/static/*\",\"/samples/*\",\"/*.ico\",\"/*.svg\",\"/*.png\",\"/*.jpg\",\"/*.jpeg\"]}' > .open-next/_routes.json",
+    "build:cloudflare": "npx @opennextjs/cloudflare build && cp .open-next/worker.js .open-next/_worker.js && cp -r .open-next/assets/* .open-next/ && cp cloudflare/_routes.json .open-next/_routes.json",
     "preview": "npm run build:cloudflare && wrangler dev",
     "deploy": "npm run build:cloudflare && wrangler pages deploy",
     "db:init": "wrangler d1 execute dear-drawer-db --file=./schema.sql",

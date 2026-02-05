@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect, useRef, memo } from 'react'
 
 interface ImageSettings {
   scale: number
@@ -49,7 +49,7 @@ interface ProfileImageSliderProps {
   autoPlayInterval?: number
 }
 
-export default function ProfileImageSlider({
+function ProfileImageSliderComponent({
   images,
   imageSettings = [],
   className = '',
@@ -295,3 +295,26 @@ export default function ProfileImageSlider({
     </div>
   )
 }
+
+// 이미지 배열 비교 함수 (배열 내용이 같으면 리렌더링 방지)
+function arePropsEqual(prevProps: ProfileImageSliderProps, nextProps: ProfileImageSliderProps): boolean {
+  // 이미지 배열 비교
+  if (prevProps.images.length !== nextProps.images.length) return false
+  if (prevProps.images.some((img, i) => img !== nextProps.images[i])) return false
+
+  // 이미지 설정 비교
+  const prevSettings = prevProps.imageSettings || []
+  const nextSettings = nextProps.imageSettings || []
+  if (prevSettings.length !== nextSettings.length) return false
+  if (prevSettings.some((s, i) => JSON.stringify(s) !== JSON.stringify(nextSettings[i]))) return false
+
+  // 기타 props 비교
+  if (prevProps.className !== nextProps.className) return false
+  if (prevProps.autoPlay !== nextProps.autoPlay) return false
+  if (prevProps.autoPlayInterval !== nextProps.autoPlayInterval) return false
+
+  return true
+}
+
+const ProfileImageSlider = memo(ProfileImageSliderComponent, arePropsEqual)
+export default ProfileImageSlider

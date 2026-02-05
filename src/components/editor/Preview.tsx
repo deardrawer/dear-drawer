@@ -765,7 +765,7 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
               {parentIntro?.groom?.parentNames || `${invitation.groom.father?.name || '아버지'}, ${invitation.groom.mother?.name || '어머니'}의`}
             </p>
             <h3 className="text-lg" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>
-              {parentIntro?.groom?.childOrder === '표기안함' ? '' : (parentIntro?.groom?.childOrder || '첫째')}아들 <span style={{ color: themeColors.highlight || themeColors.primary }}>{groomName}</span> 결혼합니다
+              {parentIntro?.groom?.childOrder === '표기안함' ? '' : (parentIntro?.groom?.childOrder || '첫째')}아들 <span style={{ color: themeColors.highlight || themeColors.primary }}>{invitation.groom.firstName || groomName}</span> 결혼합니다
             </h3>
           </div>
           {/* 이미지 */}
@@ -799,7 +799,7 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
               {parentIntro?.bride?.parentNames || `${invitation.bride.father?.name || '아버지'}, ${invitation.bride.mother?.name || '어머니'}의`}
             </p>
             <h3 className="text-lg" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>
-              {parentIntro?.bride?.childOrder === '표기안함' ? '' : (parentIntro?.bride?.childOrder || '첫째')}딸 <span style={{ color: themeColors.highlight || themeColors.primary }}>{brideName}</span> 결혼합니다
+              {parentIntro?.bride?.childOrder === '표기안함' ? '' : (parentIntro?.bride?.childOrder || '첫째')}딸 <span style={{ color: themeColors.highlight || themeColors.primary }}>{invitation.bride.firstName || brideName}</span> 결혼합니다
             </h3>
           </div>
           {/* 이미지 */}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useCallback } from 'react'
+import { useRef, useCallback, useState, useEffect } from 'react'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Type } from 'lucide-react'
@@ -33,13 +33,61 @@ export default function HighlightTextarea({
 }: HighlightTextareaProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
+  // 로컬 상태로 입력값 관리 (깜빡임 방지)
+  const [localValue, setLocalValue] = useState(value)
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
+
+  // 외부 value가 변경되면 로컬 상태 동기화 (blur 후 외부에서 변경된 경우)
+  useEffect(() => {
+    // debounce 중이 아닐 때만 외부 값으로 동기화
+    if (!debounceTimerRef.current) {
+      setLocalValue(value)
+    }
+  }, [value])
+
+  // 컴포넌트 언마운트 시 타이머 정리
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+      }
+    }
+  }, [])
+
+  // 로컬 값 변경 시 debounce로 스토어 업데이트
+  const handleLocalChange = useCallback((newValue: string) => {
+    setLocalValue(newValue)
+
+    // 기존 타이머 클리어
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+    }
+
+    // 300ms 후 스토어 업데이트
+    debounceTimerRef.current = setTimeout(() => {
+      onChange(newValue)
+      debounceTimerRef.current = null
+    }, 300)
+  }, [onChange])
+
+  // blur 시 즉시 스토어 업데이트
+  const handleBlur = useCallback(() => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+      debounceTimerRef.current = null
+    }
+    if (localValue !== value) {
+      onChange(localValue)
+    }
+  }, [localValue, value, onChange])
+
   const applyHighlight = useCallback((type: 'yellow' | 'white' | 'accent') => {
     const textarea = textareaRef.current
     if (!textarea) return
 
     const start = textarea.selectionStart
     const end = textarea.selectionEnd
-    const selectedText = value.substring(start, end)
+    const selectedText = localValue.substring(start, end)
 
     if (!selectedText) {
       // 선택된 텍스트가 없으면 알림
@@ -49,8 +97,8 @@ export default function HighlightTextarea({
     const wrapper = type === 'yellow' ? ['==', '=='] : type === 'white' ? ['~~', '~~'] : ['**', '**']
 
     // 이미 하이라이트가 적용되어 있는지 확인
-    const beforeText = value.substring(0, start)
-    const afterText = value.substring(end)
+    const beforeText = localValue.substring(0, start)
+    const afterText = localValue.substring(end)
 
     // 이미 같은 타입의 하이라이트가 적용되어 있으면 제거
     if (
@@ -61,7 +109,8 @@ export default function HighlightTextarea({
         beforeText.slice(0, -wrapper[0].length) +
         selectedText +
         afterText.slice(wrapper[1].length)
-      onChange(newValue)
+      setLocalValue(newValue)
+      onChange(newValue) // 하이라이트 적용은 즉시 반영
 
       // 커서 위치 조정
       setTimeout(() => {
@@ -77,7 +126,8 @@ export default function HighlightTextarea({
       beforeText +
       wrapper[0] + selectedText + wrapper[1] +
       afterText
-    onChange(newValue)
+    setLocalValue(newValue)
+    onChange(newValue) // 하이라이트 적용은 즉시 반영
 
     // 커서 위치 조정
     setTimeout(() => {
@@ -85,7 +135,7 @@ export default function HighlightTextarea({
       textarea.selectionEnd = end + wrapper[0].length
       textarea.focus()
     }, 0)
-  }, [value, onChange])
+  }, [localValue, onChange])
 
   return (
     <div className="space-y-1.5">
@@ -130,9 +180,10 @@ export default function HighlightTextarea({
       {/* Textarea */}
       <Textarea
         ref={textareaRef}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        value={localValue}
+        onChange={(e) => handleLocalChange(e.target.value)}
         onFocus={onFocus}
+        onBlur={handleBlur}
         placeholder={placeholder}
         rows={rows}
         className={className}

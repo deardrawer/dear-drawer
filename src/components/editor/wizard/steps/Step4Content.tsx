@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { MultiImageUploader } from '@/components/editor/ImageUploader'
 import HighlightTextarea from '@/components/editor/HighlightTextarea'
+import { DebouncedInput, DebouncedTextarea } from '@/components/editor/DebouncedInput'
 import InlineCropEditor from '@/components/editor/InlineCropEditor'
 import { uploadImage } from '@/lib/imageUpload'
 import {
@@ -280,18 +281,18 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
         <div className="space-y-3">
           <div className="space-y-1.5">
             <Label className="text-xs text-gray-300">영문 타이틀</Label>
-            <Input
+            <DebouncedInput
               value={item.englishTitle || ''}
-              onChange={(e) => updateNestedField(`fullHeightDividers.items.${dividerIndex}.englishTitle`, e.target.value)}
+              onChange={(value) => updateNestedField(`fullHeightDividers.items.${dividerIndex}.englishTitle`, value)}
               placeholder={defaultEnglishTitle}
               className="text-sm italic bg-white/10 border-gray-600 text-white placeholder:text-gray-500"
             />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs text-gray-300">한글 텍스트</Label>
-            <Textarea
+            <DebouncedTextarea
               value={item.koreanText || ''}
-              onChange={(e) => updateNestedField(`fullHeightDividers.items.${dividerIndex}.koreanText`, e.target.value)}
+              onChange={(value) => updateNestedField(`fullHeightDividers.items.${dividerIndex}.koreanText`, value)}
               placeholder={defaultKoreanText}
               rows={2}
               className="text-sm resize-none bg-white/10 border-gray-600 text-white placeholder:text-gray-500"
@@ -826,9 +827,9 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                     {/* 부모님 표기 */}
                     <div className="space-y-1.5">
                       <Label className="text-xs">부모님 표기</Label>
-                      <Input
+                      <DebouncedInput
                         value={parentIntro.groom?.parentNames || ''}
-                        onChange={(e) => updateNestedField('parentIntro.groom.parentNames', e.target.value)}
+                        onChange={(value) => updateNestedField('parentIntro.groom.parentNames', value)}
                         onFocus={() => setActiveSection('couple-profile')}
                         placeholder="예: 홍길동, 김영희의"
                         className="bg-white"
@@ -903,9 +904,9 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                     {/* 부모님 표기 */}
                     <div className="space-y-1.5">
                       <Label className="text-xs">부모님 표기</Label>
-                      <Input
+                      <DebouncedInput
                         value={parentIntro.bride?.parentNames || ''}
-                        onChange={(e) => updateNestedField('parentIntro.bride.parentNames', e.target.value)}
+                        onChange={(value) => updateNestedField('parentIntro.bride.parentNames', value)}
                         onFocus={() => setActiveSection('couple-profile')}
                         placeholder="예: 이철수, 박순이의"
                         className="bg-white"
@@ -1012,9 +1013,9 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                 <p className="font-medium text-sm text-gray-700">섹션 제목</p>
                 <div className="space-y-1.5">
                   <Label className="text-xs">제목</Label>
-                  <Input
+                  <DebouncedInput
                     value={whyWeChose.title || ''}
-                    onChange={(e) => updateNestedField('whyWeChose.title', e.target.value)}
+                    onChange={(value) => updateNestedField('whyWeChose.title', value)}
                     onFocus={() => setActiveSection('our-story')}
                     placeholder="우리가 서로를 선택한 이유"
                     className="bg-white"
@@ -1022,9 +1023,9 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">부제목</Label>
-                  <Input
+                  <DebouncedInput
                     value={whyWeChose.subtitle || ''}
-                    onChange={(e) => updateNestedField('whyWeChose.subtitle', e.target.value)}
+                    onChange={(value) => updateNestedField('whyWeChose.subtitle', value)}
                     onFocus={() => setActiveSection('our-story')}
                     placeholder="오래 보아도 좋은 사람, 서로 그렇게 되기까지"
                     className="bg-white"
@@ -1081,9 +1082,9 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                     {/* 약속의 말 */}
                     <div className="space-y-1.5">
                       <Label className="text-xs">약속의 말</Label>
-                      <Input
+                      <DebouncedInput
                         value={whyWeChose.groom?.quote || ''}
-                        onChange={(e) => updateNestedField('whyWeChose.groom.quote', e.target.value)}
+                        onChange={(value) => updateNestedField('whyWeChose.groom.quote', value)}
                         onFocus={() => setActiveSection('our-story')}
                         placeholder="예: 서로 아끼며 행복하게 살겠습니다."
                         className="bg-white"
@@ -1142,9 +1143,9 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                     {/* 약속의 말 */}
                     <div className="space-y-1.5">
                       <Label className="text-xs">약속의 말</Label>
-                      <Input
+                      <DebouncedInput
                         value={whyWeChose.bride?.quote || ''}
-                        onChange={(e) => updateNestedField('whyWeChose.bride.quote', e.target.value)}
+                        onChange={(value) => updateNestedField('whyWeChose.bride.quote', value)}
                         onFocus={() => setActiveSection('our-story')}
                         placeholder="예: 늘 처음처럼 행복하게 살겠습니다."
                         className="bg-white"

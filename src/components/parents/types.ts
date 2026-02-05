@@ -1,5 +1,14 @@
 // Parents 청첩장 공통 타입
 
+// 이미지 크롭 데이터 타입
+export interface ImageCropData {
+  url: string
+  cropX: number
+  cropY: number
+  cropWidth: number
+  cropHeight: number
+}
+
 // 폰트 스타일 타입 (한글 중심)
 export type FontStyleId = 'elegant' | 'soft' | 'classic' | 'brush' | 'modern' | 'friendly' | 'ridibatang' | 'gangwon' | 'okticon'
 
@@ -285,7 +294,7 @@ export interface ParentsInvitationContent {
   meta?: {
     title: string
     description: string
-    kakaoThumbnail: string
+    kakaoThumbnail: string | ImageCropData
     ogImage: string
   }
 }

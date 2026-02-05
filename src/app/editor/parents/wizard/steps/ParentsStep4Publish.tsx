@@ -203,7 +203,9 @@ export default function ParentsStep4Publish({
     if (typeof window !== 'undefined' && kakaoWindow.Kakao?.Share && kakaoWindow.Kakao.isInitialized?.()) {
       // 이미지 URL을 절대 경로로 변환
       const productionUrl = 'https://invite.deardrawer.com'
-      const rawImage = data.meta?.kakaoThumbnail || data.meta?.ogImage || data.gallery?.images?.[0]?.url
+      const kakaoThumb = data.meta?.kakaoThumbnail
+      const kakaoThumbUrl = typeof kakaoThumb === 'string' ? kakaoThumb : kakaoThumb?.url
+      const rawImage = kakaoThumbUrl || data.meta?.ogImage || data.gallery?.images?.[0]?.url
       let imageUrl = `${productionUrl}/og-image.png`
       if (rawImage) {
         if (rawImage.startsWith('https://')) {

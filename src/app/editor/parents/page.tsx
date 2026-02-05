@@ -199,7 +199,7 @@ export interface ParentsInvitationData {
   meta: {
     title: string
     description: string
-    kakaoThumbnail: string
+    kakaoThumbnail: string | ImageCropData
     ogImage: string
     ogImageSettings?: {
       scale: number
@@ -493,7 +493,9 @@ function ParentsEditorContent() {
     }
 
     // 카카오톡 공유 썸네일 필수 검증
-    if (!data.meta?.kakaoThumbnail?.trim()) {
+    const kakaoThumb = data.meta?.kakaoThumbnail
+    const kakaoThumbUrl = typeof kakaoThumb === 'string' ? kakaoThumb : kakaoThumb?.url
+    if (!kakaoThumbUrl?.trim()) {
       const msg = '카카오톡 공유 썸네일을 추가해주세요.'
       if (!silent) alert(msg)
       throw new Error(msg)
@@ -711,12 +713,22 @@ function ParentsEditorContent() {
                       </div>
                     )}
 
-                    {/* 미리보기 영역 */}
+                    {/* 미리보기 영역 - 390px 기준 콘텐츠를 0.8 스케일로 축소 (312px/390px) */}
                     <div
                       className="relative w-full max-w-[320px] aspect-[9/19] rounded-[40px] overflow-hidden shadow-2xl transition-colors duration-300"
                       style={{ backgroundColor: currentTheme.primary }}
                     >
-                      <div className="w-full h-full overflow-hidden rounded-[32px] m-1" style={{ width: 'calc(100% - 8px)', height: 'calc(100% - 8px)' }}>
+                      <div
+                        className="absolute overflow-hidden rounded-[32px] bg-white"
+                        style={{
+                          top: '4px',
+                          left: '4px',
+                          width: '390px',
+                          height: '834px', // 390 * 19/9 ≈ 823, 여유분 포함
+                          transform: 'scale(0.8)',
+                          transformOrigin: 'top left',
+                        }}
+                      >
                         <ParentsPreview data={data} activeTab={previewTab} onTabChange={setPreviewTab} selectedGuest={selectedGuest} activeSection={activeSection} />
                       </div>
                     </div>
@@ -798,7 +810,7 @@ function ParentsEditorContent() {
           venueName={data.wedding.venue.name}
           venueAddress={data.wedding.venue.address}
           thumbnailUrl={
-            data.meta.kakaoThumbnail ||
+            (typeof data.meta.kakaoThumbnail === 'string' ? data.meta.kakaoThumbnail : data.meta.kakaoThumbnail?.url) ||
             data.mainImage?.url ||
             data.gallery.images?.[0]?.url ||
             ''

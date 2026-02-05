@@ -3,7 +3,6 @@
 import { useState, useRef } from 'react'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { Input } from '@/components/ui/input'
 import { Palette, Type, Music, Play, Pause } from 'lucide-react'
 import { COLOR_THEMES, type ColorThemeId } from '@/components/parents/types'
 import { bgmPresets } from '@/lib/bgmPresets'
@@ -32,7 +31,6 @@ export default function ParentsStep1Design({
   updateNestedData,
 }: ParentsStep1DesignProps) {
   const [previewingBgmId, setPreviewingBgmId] = useState<string | null>(null)
-  const [isCustomBgm, setIsCustomBgm] = useState(false)
   const bgmAudioRef = useRef<HTMLAudioElement>(null)
 
   // BGM 미리듣기
@@ -52,7 +50,6 @@ export default function ParentsStep1Design({
   // BGM 선택
   const handleBgmSelect = (url: string) => {
     updateNestedData('bgm.url', url)
-    setIsCustomBgm(false)
   }
 
   return (
@@ -183,7 +180,7 @@ export default function ParentsStep1Design({
             <Label className="text-xs font-medium">음악 선택</Label>
             <div className="space-y-2">
               {bgmPresets.map((preset) => {
-                const isSelected = !isCustomBgm && data.bgm?.url === preset.url
+                const isSelected = data.bgm?.url === preset.url
                 const isPreviewing = previewingBgmId === preset.id
 
                 return (
@@ -221,20 +218,6 @@ export default function ParentsStep1Design({
                 )
               })}
             </div>
-          </div>
-
-          {/* 직접 입력 */}
-          <div className="space-y-2">
-            <Label className="text-xs font-medium">또는 직접 입력</Label>
-            <Input
-              value={isCustomBgm ? data.bgm?.url || '' : ''}
-              onChange={(e) => {
-                setIsCustomBgm(true)
-                updateNestedData('bgm.url', e.target.value)
-              }}
-              placeholder="MP3 파일 URL 입력"
-              className="text-sm"
-            />
           </div>
 
           {/* 자동 재생 토글 */}

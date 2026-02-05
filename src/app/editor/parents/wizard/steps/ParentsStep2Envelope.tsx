@@ -308,7 +308,7 @@ export default function ParentsStep2Envelope({
                 ? { url: data.meta.kakaoThumbnail, cropX: 0, cropY: 0, cropWidth: 1, cropHeight: 1 }
                 : data.meta?.kakaoThumbnail || { url: '', cropX: 0, cropY: 0, cropWidth: 1, cropHeight: 1 }
             }
-            onChange={(cropData) => updateNestedData('meta.kakaoThumbnail', cropData.url)}
+            onChange={(cropData) => updateNestedData('meta.kakaoThumbnail', cropData)}
             aspectRatio={1}
             containerWidth={280}
             invitationId={invitationId || undefined}

@@ -250,13 +250,22 @@ export default function AIStoryGenerator({
     setError(null)
 
     try {
+      // FAMILY 템플릿: whyWeChose 폼에서 이름 가져오기
+      // OUR 템플릿: groomProfile/brideProfile에서 이름 가져오기
+      const finalGroomName = isFamilyTemplate
+        ? (formData.whyWeChose?.groomName || groomName)
+        : (formData.groomProfile.name || groomName)
+      const finalBrideName = isFamilyTemplate
+        ? (formData.whyWeChose?.brideName || brideName)
+        : (formData.brideProfile.name || brideName)
+
       const response = await fetch('/api/ai/story/full-generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           formData,
-          groomName: formData.groomProfile.name || groomName,
-          brideName: formData.brideProfile.name || brideName,
+          groomName: finalGroomName,
+          brideName: finalBrideName,
           templateId, // FAMILY 템플릿 구분용
         }),
       })
@@ -274,7 +283,7 @@ export default function AIStoryGenerator({
     } finally {
       setIsGenerating(false)
     }
-  }, [formData, groomName, brideName, templateId])
+  }, [formData, groomName, brideName, templateId, isFamilyTemplate])
 
   const regenerateSection = useCallback(async (section: string) => {
     if (!generatedContent) return
@@ -283,14 +292,23 @@ export default function AIStoryGenerator({
     setError(null)
 
     try {
+      // FAMILY 템플릿: whyWeChose 폼에서 이름 가져오기
+      // OUR 템플릿: groomProfile/brideProfile에서 이름 가져오기
+      const finalGroomName = isFamilyTemplate
+        ? (formData.whyWeChose?.groomName || groomName)
+        : (formData.groomProfile.name || groomName)
+      const finalBrideName = isFamilyTemplate
+        ? (formData.whyWeChose?.brideName || brideName)
+        : (formData.brideProfile.name || brideName)
+
       const response = await fetch('/api/ai/story/regenerate-section', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           section,
           formData,
-          groomName: formData.groomProfile.name || groomName,
-          brideName: formData.brideProfile.name || brideName,
+          groomName: finalGroomName,
+          brideName: finalBrideName,
           currentContent: generatedContent,
         }),
       })
@@ -338,7 +356,7 @@ export default function AIStoryGenerator({
     } finally {
       setIsGenerating(false)
     }
-  }, [formData, generatedContent, groomName, brideName])
+  }, [formData, generatedContent, groomName, brideName, isFamilyTemplate])
 
   const handleApply = (content: GeneratedContent) => {
     onApply?.(content)

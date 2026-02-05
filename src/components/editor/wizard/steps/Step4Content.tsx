@@ -725,11 +725,11 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                   </div>
                   {/* 스토리 이미지 */}
                   <div className="space-y-1">
-                    <Label className="text-xs">사진 (최대 3장)</Label>
+                    <Label className="text-xs">사진 (최대 2장)</Label>
                     <MultiImageUploader
                       images={story.images || []}
                       onChange={(images) => updateNestedField(`relationship.stories.${index}.images`, images)}
-                      maxImages={3}
+                      maxImages={2}
                       placeholder="사진 추가"
                       aspectRatio="aspect-square"
                     />

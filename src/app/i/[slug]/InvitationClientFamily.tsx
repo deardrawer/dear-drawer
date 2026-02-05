@@ -3403,6 +3403,14 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
         {audioRef && <MusicToggle audioRef={audioRef} isVisible={showMusicToggle ?? false} shouldAutoPlay={shouldAutoPlay ?? false} />}
       </div>
 
+      {/* 첫 번째 디바이더 (Divider 0) - 부모님 소개 섹션 상단 */}
+      <FullHeightDividerSection
+        englishTitle={(invitation as any).fullHeightDividers?.items?.[0]?.englishTitle || 'From Our Family to Yours'}
+        koreanText={(invitation as any).fullHeightDividers?.items?.[0]?.koreanText || '우리의 봄이, 누군가의 평생이 됩니다'}
+        image={(invitation as any).fullHeightDividers?.items?.[0]?.image}
+        imageSettings={(invitation as any).fullHeightDividers?.items?.[0]?.imageSettings}
+      />
+
       {/* 신랑측 부모님 소개 */}
       {(invitation as any).parentIntro?.groom?.enabled !== false && (
         <ParentIntroSection
@@ -3441,13 +3449,13 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
         />
       )}
 
-      {/* 첫 번째 디바이더 - 부모님 소개 섹션 하단 (부모님 소개 중 하나라도 켜져 있으면 표시) */}
-      {((invitation as any).parentIntro?.groom?.enabled !== false || (invitation as any).parentIntro?.bride?.enabled !== false) && (
+      {/* 두 번째 디바이더 (Divider 1) - 부모님 소개 섹션 하단, 서로를 선택한 이유 상단 */}
+      {(invitation as any).whyWeChose?.enabled !== false && (
         <FullHeightDividerSection
-          englishTitle={(invitation as any).fullHeightDividers?.items?.[0]?.englishTitle || 'From Our Family to Yours'}
-          koreanText={(invitation as any).fullHeightDividers?.items?.[0]?.koreanText || '우리의 봄이, 누군가의 평생이 됩니다'}
-          image={(invitation as any).fullHeightDividers?.items?.[0]?.image}
-          imageSettings={(invitation as any).fullHeightDividers?.items?.[0]?.imageSettings}
+          englishTitle={(invitation as any).fullHeightDividers?.items?.[1]?.englishTitle || 'Why We Chose Each Other for Life'}
+          koreanText={(invitation as any).fullHeightDividers?.items?.[1]?.koreanText || '서로의 부족한 점을 채워줄 수 있는\n사람을 만났습니다.'}
+          image={(invitation as any).fullHeightDividers?.items?.[1]?.image}
+          imageSettings={(invitation as any).fullHeightDividers?.items?.[1]?.imageSettings}
         />
       )}
 
@@ -3499,16 +3507,6 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
             />
           )}
         </>
-      )}
-
-      {/* 두 번째 디바이더 - 서로를 선택한 이유 섹션 하단 (whyWeChose 섹션이 켜져 있으면 표시) */}
-      {(invitation as any).whyWeChose?.enabled !== false && (
-        <FullHeightDividerSection
-          englishTitle={(invitation as any).fullHeightDividers?.items?.[1]?.englishTitle || 'Why We Chose Each Other for Life'}
-          koreanText={(invitation as any).fullHeightDividers?.items?.[1]?.koreanText || '서로의 부족한 점을 채워줄 수 있는\n사람을 만났습니다.'}
-          image={(invitation as any).fullHeightDividers?.items?.[1]?.image}
-          imageSettings={(invitation as any).fullHeightDividers?.items?.[1]?.imageSettings}
-        />
       )}
 
       {/* Gallery Section */}

@@ -30,11 +30,14 @@ export default function InlineCropEditor({
   const [dragType, setDragType] = useState<'move' | 'nw' | 'ne' | 'sw' | 'se' | null>(null)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0, cropX: 0, cropY: 0, cropW: 0, cropH: 0 })
 
-  // 현재 크롭 값 (없으면 기본값)
-  const cropX = settings.cropX ?? 0
-  const cropY = settings.cropY ?? 0
-  const cropWidth = settings.cropWidth ?? 1
-  const cropHeight = settings.cropHeight ?? 1
+  // 드래그 중 로컬 크롭 값 (깜빡임 방지)
+  const [localCrop, setLocalCrop] = useState<{ cropX: number; cropY: number; cropWidth: number; cropHeight: number } | null>(null)
+
+  // 현재 크롭 값 (드래그 중에는 로컬 값 사용, 아니면 props에서)
+  const cropX = localCrop?.cropX ?? settings.cropX ?? 0
+  const cropY = localCrop?.cropY ?? settings.cropY ?? 0
+  const cropWidth = localCrop?.cropWidth ?? settings.cropWidth ?? 1
+  const cropHeight = localCrop?.cropHeight ?? settings.cropHeight ?? 1
 
   // 이미지 로드 시 크기 계산 및 초기 크롭 영역 설정
   useEffect(() => {
@@ -200,18 +203,23 @@ export default function InlineCropEditor({
       }
     }
 
-    onUpdate({
+    // 드래그 중에는 로컬 상태만 업데이트 (깜빡임 방지)
+    setLocalCrop({
       cropX: newCropX,
       cropY: newCropY,
       cropWidth: newCropW,
       cropHeight: newCropH,
     })
-  }, [dragType, dragStart, containerSize, onUpdate, aspectRatio, imageSize])
+  }, [dragType, dragStart, containerSize, aspectRatio, imageSize])
 
-  // 드래그 종료
+  // 드래그 종료 - 최종 값을 부모에게 전달
   const handleDragEnd = useCallback(() => {
+    if (localCrop) {
+      onUpdate(localCrop)
+      setLocalCrop(null)
+    }
     setDragType(null)
-  }, [])
+  }, [localCrop, onUpdate])
 
   // 이벤트 리스너
   useEffect(() => {
@@ -383,7 +391,7 @@ export default function InlineCropEditor({
           variant="ghost"
           size="sm"
           onClick={handleReset}
-          className="text-[10px] h-6 px-2"
+          className={`text-[10px] h-6 px-2 ${colorClass === 'gray' ? 'text-white hover:text-white hover:bg-white/20' : ''}`}
         >
           <RotateCcw className="w-3 h-3 mr-1" />
           리셋

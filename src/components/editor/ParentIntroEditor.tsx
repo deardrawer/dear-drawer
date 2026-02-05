@@ -185,8 +185,8 @@ export default function ParentIntroEditor({
                     <button
                       key={v}
                       type="button"
-                      onClick={() => updateNestedField('parentIntroTextStyle', { ...invitation.parentIntroTextStyle, lineHeight: v })}
-                      className={`px-1.5 py-0.5 text-[10px] rounded border ${(invitation.parentIntroTextStyle?.lineHeight ?? 2.0) === v ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400'}`}
+                      onClick={() => updateNestedField(`${fieldPrefix}.lineHeight`, v)}
+                      className={`px-1.5 py-0.5 text-[10px] rounded border ${(data.lineHeight ?? invitation.parentIntroTextStyle?.lineHeight ?? 2.0) === v ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400'}`}
                     >
                       {v}
                     </button>
@@ -198,8 +198,8 @@ export default function ParentIntroEditor({
                     <button
                       key={align}
                       type="button"
-                      onClick={() => updateNestedField('parentIntroTextStyle', { ...invitation.parentIntroTextStyle, textAlign: align })}
-                      className={`p-1 rounded border ${(invitation.parentIntroTextStyle?.textAlign ?? 'left') === align ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-400 border-gray-200 hover:border-gray-400'}`}
+                      onClick={() => updateNestedField(`${fieldPrefix}.textAlign`, align)}
+                      className={`p-1 rounded border ${(data.textAlign ?? invitation.parentIntroTextStyle?.textAlign ?? 'left') === align ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-400 border-gray-200 hover:border-gray-400'}`}
                     >
                       <Icon className="w-3 h-3" />
                     </button>

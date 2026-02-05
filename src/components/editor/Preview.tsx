@@ -760,7 +760,7 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
       {/* 신랑측 부모님 소개 */}
       {parentIntro?.groom?.enabled !== false && (
         <section id="preview-couple-profile" className="px-6 py-16" style={{ background: '#ffffff' }}>
-          <div className="mb-8" style={{ textAlign: invitation.parentIntroTextStyle?.textAlign || 'left' }}>
+          <div className="mb-8" style={{ textAlign: parentIntro?.groom?.textAlign ?? invitation.parentIntroTextStyle?.textAlign ?? 'left' }}>
             <p className="text-[11px] mb-2" style={{ color: themeColors.gray }}>
               {parentIntro?.groom?.parentNames || `${invitation.groom.father?.name || '아버지'}, ${invitation.groom.mother?.name || '어머니'}의`}
             </p>
@@ -776,7 +776,7 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
             />
           </div>
           {/* 메시지 */}
-          <p className={`text-xs ${isEmpty(parentIntro?.groom?.message) ? 'opacity-50' : ''}`} style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: invitation.parentIntroTextStyle?.lineHeight || 2.0, textAlign: invitation.parentIntroTextStyle?.textAlign || 'left' }} dangerouslySetInnerHTML={{ __html: parseHighlight(parentIntro?.groom?.message || SAMPLE_FAMILY.parentIntro.groom.message) }} />
+          <p className={`text-xs ${isEmpty(parentIntro?.groom?.message) ? 'opacity-50' : ''}`} style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: parentIntro?.groom?.lineHeight ?? invitation.parentIntroTextStyle?.lineHeight ?? 2.0, textAlign: parentIntro?.groom?.textAlign ?? invitation.parentIntroTextStyle?.textAlign ?? 'left' }} dangerouslySetInnerHTML={{ __html: parseHighlight(parentIntro?.groom?.message || SAMPLE_FAMILY.parentIntro.groom.message) }} />
         </section>
       )}
 
@@ -794,7 +794,7 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
       {/* 신부측 부모님 소개 */}
       {parentIntro?.bride?.enabled !== false && (
         <section className="px-6 py-16" style={{ background: '#ffffff' }}>
-          <div className="mb-8" style={{ textAlign: invitation.parentIntroTextStyle?.textAlign || 'right' }}>
+          <div className="mb-8" style={{ textAlign: parentIntro?.bride?.textAlign ?? invitation.parentIntroTextStyle?.textAlign ?? 'right' }}>
             <p className="text-[11px] mb-2" style={{ color: themeColors.gray }}>
               {parentIntro?.bride?.parentNames || `${invitation.bride.father?.name || '아버지'}, ${invitation.bride.mother?.name || '어머니'}의`}
             </p>
@@ -810,7 +810,7 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
             />
           </div>
           {/* 메시지 */}
-          <p className={`text-xs ${isEmpty(parentIntro?.bride?.message) ? 'opacity-50' : ''}`} style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: invitation.parentIntroTextStyle?.lineHeight || 2.0, textAlign: invitation.parentIntroTextStyle?.textAlign || 'right' }} dangerouslySetInnerHTML={{ __html: parseHighlight(parentIntro?.bride?.message || SAMPLE_FAMILY.parentIntro.bride.message) }} />
+          <p className={`text-xs ${isEmpty(parentIntro?.bride?.message) ? 'opacity-50' : ''}`} style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: parentIntro?.bride?.lineHeight ?? invitation.parentIntroTextStyle?.lineHeight ?? 2.0, textAlign: parentIntro?.bride?.textAlign ?? invitation.parentIntroTextStyle?.textAlign ?? 'right' }} dangerouslySetInnerHTML={{ __html: parseHighlight(parentIntro?.bride?.message || SAMPLE_FAMILY.parentIntro.bride.message) }} />
         </section>
       )}
 

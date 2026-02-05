@@ -3423,7 +3423,10 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
           side="groom"
           fonts={fonts}
           themeColors={themeColors}
-          textStyle={(invitation as any).parentIntroTextStyle}
+          textStyle={{
+            lineHeight: (invitation as any).parentIntro?.groom?.lineHeight ?? (invitation as any).parentIntroTextStyle?.lineHeight,
+            textAlign: (invitation as any).parentIntro?.groom?.textAlign ?? (invitation as any).parentIntroTextStyle?.textAlign,
+          }}
         />
       )}
 
@@ -3445,7 +3448,10 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
           side="bride"
           fonts={fonts}
           themeColors={themeColors}
-          textStyle={(invitation as any).parentIntroTextStyle}
+          textStyle={{
+            lineHeight: (invitation as any).parentIntro?.bride?.lineHeight ?? (invitation as any).parentIntroTextStyle?.lineHeight,
+            textAlign: (invitation as any).parentIntro?.bride?.textAlign ?? (invitation as any).parentIntroTextStyle?.textAlign,
+          }}
         />
       )}
 

@@ -271,6 +271,9 @@ export interface ParentIntroItem {
   images: string[]         // 가족 사진 (최대 2장, 4:3 비율)
   imageSettings?: ImageSettings[]  // 각 이미지별 크롭 설정
   message: string          // 부모님 메시지
+  // 개별 텍스트 스타일 (신랑측/신부측 별도 설정)
+  lineHeight?: number      // 행간 (기본: 2.0)
+  textAlign?: 'left' | 'center' | 'right'  // 정렬
 }
 
 export interface ParentIntro {

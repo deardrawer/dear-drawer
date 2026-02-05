@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -19,6 +19,7 @@ interface ParentsStep4PublishProps {
   slug?: string | null
   onSave?: () => Promise<void>
   isPaid?: boolean
+  onSlugChange?: (newSlug: string) => void
 }
 
 export default function ParentsStep4Publish({
@@ -27,6 +28,7 @@ export default function ParentsStep4Publish({
   slug,
   onSave,
   isPaid = false,
+  onSlugChange,
 }: ParentsStep4PublishProps) {
   const router = useRouter()
   const [isPublishing, setIsPublishing] = useState(false)
@@ -36,12 +38,103 @@ export default function ParentsStep4Publish({
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [copied, setCopied] = useState(false)
 
+  // URL 변경 상태
+  const [isEditingSlug, setIsEditingSlug] = useState(false)
+  const [customSlug, setCustomSlug] = useState(slug || '')
+  const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'unavailable'>('idle')
+  const [slugError, setSlugError] = useState('')
+  const debounceRef = useRef<NodeJS.Timeout | null>(null)
+
+  // 현재 슬러그 (변경된 경우 customSlug, 아니면 기존 slug)
+  const currentSlug = customSlug || slug
+
   // 청첩장 URL
-  const invitationUrl = slug
-    ? `https://invite.deardrawer.com/invite/${slug}`
+  const invitationUrl = currentSlug
+    ? `https://invite.deardrawer.com/invite/${currentSlug}`
     : invitationId
     ? `https://invite.deardrawer.com/invite/${invitationId}`
     : null
+
+  // 슬러그 유효성 검사
+  const validateSlug = (slugValue: string) => {
+    if (!slugValue.trim()) return '주소를 입력해주세요'
+    if (slugValue.length < 3) return '3자 이상 입력해주세요'
+    if (slugValue.length > 30) return '30자 이하로 입력해주세요'
+    if (!/^[a-z0-9-]+$/.test(slugValue)) return '영문 소문자, 숫자, 하이픈(-)만 사용 가능합니다'
+    if (slugValue.startsWith('-') || slugValue.endsWith('-')) return '하이픈으로 시작하거나 끝날 수 없습니다'
+    return ''
+  }
+
+  // 실시간 중복 검사
+  useEffect(() => {
+    if (!isEditingSlug) return
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+
+    const error = validateSlug(customSlug)
+    if (error || !customSlug.trim()) {
+      setSlugStatus('idle')
+      return
+    }
+
+    // 기존 슬러그와 동일하면 검사 생략
+    if (customSlug === slug) {
+      setSlugStatus('available')
+      return
+    }
+
+    setSlugStatus('checking')
+
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/invitations/check-slug?slug=${customSlug}`)
+        if (!res.ok) {
+          setSlugStatus('available')
+          setSlugError('')
+          return
+        }
+
+        const data: { available?: boolean } = await res.json()
+        if (data.available) {
+          setSlugStatus('available')
+          setSlugError('')
+        } else {
+          setSlugStatus('unavailable')
+          setSlugError('이미 사용 중인 주소입니다')
+        }
+      } catch {
+        setSlugStatus('idle')
+      }
+    }, 300)
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [customSlug, isEditingSlug, slug])
+
+  // 슬러그 변경 확정
+  const handleSlugSave = () => {
+    const error = validateSlug(customSlug)
+    if (error) {
+      setSlugError(error)
+      return
+    }
+    if (slugStatus !== 'available') {
+      return
+    }
+
+    if (onSlugChange && customSlug !== slug) {
+      onSlugChange(customSlug)
+    }
+    setIsEditingSlug(false)
+  }
+
+  // 슬러그 변경 취소
+  const handleSlugCancel = () => {
+    setCustomSlug(slug || '')
+    setSlugError('')
+    setSlugStatus('idle')
+    setIsEditingSlug(false)
+  }
 
   // 게스트 관리 페이지 URL
   const adminUrl = invitationId
@@ -173,20 +266,90 @@ export default function ParentsStep4Publish({
             🔗 청첩장 주소
           </h3>
 
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center gap-2">
-              <Input
-                value={invitationUrl}
-                readOnly
-                className="font-mono text-sm bg-white"
-              />
-              <Button
-                variant="outline"
-                onClick={handleCopyLink}
-              >
-                {copied ? '복사됨!' : '복사'}
-              </Button>
-            </div>
+          <div className="p-4 bg-gray-50 rounded-lg space-y-3">
+            {isEditingSlug ? (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    주소 변경
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-500 whitespace-nowrap">
+                      invite.deardrawer.com/invite/
+                    </span>
+                    <Input
+                      value={customSlug}
+                      onChange={(e) => {
+                        setCustomSlug(e.target.value.toLowerCase())
+                        setSlugError('')
+                      }}
+                      placeholder="my-wedding"
+                      className="flex-1 text-sm"
+                    />
+                  </div>
+                  {slugStatus === 'checking' && (
+                    <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                      <span className="inline-block w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin" />
+                      확인 중...
+                    </p>
+                  )}
+                  {slugStatus === 'available' && !slugError && customSlug && (
+                    <p className="text-xs text-green-600 mt-1">✓ 사용할 수 있는 주소입니다</p>
+                  )}
+                  {slugStatus === 'unavailable' && (
+                    <p className="text-xs text-red-500 mt-1">✗ 이미 사용 중인 주소입니다</p>
+                  )}
+                  {slugError && (
+                    <p className="text-xs text-red-500 mt-1">{slugError}</p>
+                  )}
+                  <p className="text-xs text-gray-400 mt-2">
+                    영문 소문자, 숫자, 하이픈(-)만 사용 가능 (3~30자)
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSlugCancel}
+                    className="flex-1"
+                  >
+                    취소
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleSlugSave}
+                    disabled={slugStatus === 'checking' || slugStatus === 'unavailable' || !customSlug}
+                    className="flex-1"
+                  >
+                    저장
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={invitationUrl}
+                    readOnly
+                    className="font-mono text-sm bg-white"
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={handleCopyLink}
+                  >
+                    {copied ? '복사됨!' : '복사'}
+                  </Button>
+                </div>
+                {!isPublished && (
+                  <button
+                    onClick={() => setIsEditingSlug(true)}
+                    className="text-xs text-blue-600 hover:underline"
+                  >
+                    주소 변경하기
+                  </button>
+                )}
+              </>
+            )}
           </div>
         </section>
       )}

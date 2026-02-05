@@ -1630,7 +1630,7 @@ function ParentIntroSection({
       style={{ background: '#ffffff' }}
     >
       {/* Title */}
-      <div className={`${side === 'groom' ? 'text-left' : 'text-right'} mb-8 px-6`}>
+      <div className="mb-8 px-6" style={{ textAlign: textStyle?.textAlign || (side === 'groom' ? 'left' : 'right') }}>
         <p
           className="typo-caption mb-2"
           style={{ color: themeColors.gray, fontFamily: fonts.body }}

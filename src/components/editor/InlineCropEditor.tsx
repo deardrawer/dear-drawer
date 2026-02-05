@@ -32,6 +32,7 @@ export default function InlineCropEditor({
 
   // 드래그 중 로컬 크롭 값 (깜빡임 방지)
   const [localCrop, setLocalCrop] = useState<{ cropX: number; cropY: number; cropWidth: number; cropHeight: number } | null>(null)
+  const pendingUpdateRef = useRef(false)
 
   // 현재 크롭 값 (드래그 중에는 로컬 값 사용, 아니면 props에서)
   const cropX = localCrop?.cropX ?? settings.cropX ?? 0
@@ -212,14 +213,22 @@ export default function InlineCropEditor({
     })
   }, [dragType, dragStart, containerSize, aspectRatio, imageSize])
 
-  // 드래그 종료 - 최종 값을 부모에게 전달
+  // 드래그 종료 - 최종 값을 부모에게 전달 (localCrop은 유지하여 깜빡임 방지)
   const handleDragEnd = useCallback(() => {
     if (localCrop) {
+      pendingUpdateRef.current = true
       onUpdate(localCrop)
-      setLocalCrop(null)
     }
     setDragType(null)
   }, [localCrop, onUpdate])
+
+  // props.settings가 변경되면 localCrop 초기화 (부모가 업데이트 완료)
+  useEffect(() => {
+    if (pendingUpdateRef.current) {
+      pendingUpdateRef.current = false
+      setLocalCrop(null)
+    }
+  }, [settings.cropX, settings.cropY, settings.cropWidth, settings.cropHeight])
 
   // 이벤트 리스너
   useEffect(() => {

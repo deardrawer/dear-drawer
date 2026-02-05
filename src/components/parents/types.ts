@@ -174,6 +174,13 @@ export interface ImageCropData {
   cropHeight: number // 크롭 영역 높이 (0~1)
 }
 
+// 지하철 노선 정보
+export interface SubwayLine {
+  line: string
+  station: string
+  exit: string
+}
+
 // 셔틀버스 정보
 export interface ShuttleInfo {
   enabled?: boolean
@@ -220,7 +227,7 @@ export interface ParentsInvitationContent {
     }
     directions?: {
       bus?: { enabled?: boolean; lines?: string; stop?: string }
-      subway?: { enabled?: boolean; line?: string; station?: string; exit?: string; walk?: string }
+      subway?: { enabled?: boolean; line?: string; station?: string; exit?: string; walk?: string; lines?: SubwayLine[] }
       parking?: { enabled?: boolean; capacity?: string; free?: string; note?: string }
       extraInfoEnabled?: boolean
       extraInfoText?: string

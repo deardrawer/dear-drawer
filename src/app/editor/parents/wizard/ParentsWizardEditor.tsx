@@ -32,6 +32,7 @@ interface ParentsWizardEditorProps {
   onSave?: () => Promise<void>
   onStepChange?: (step: ParentsWizardStep) => void
   setActiveSection?: (section: string | null) => void
+  onSlugChange?: (newSlug: string) => void
 }
 
 export default function ParentsWizardEditor({
@@ -45,6 +46,7 @@ export default function ParentsWizardEditor({
   onSave,
   onStepChange,
   setActiveSection,
+  onSlugChange,
 }: ParentsWizardEditorProps) {
   const [currentStep, setCurrentStep] = useState<ParentsWizardStep>(1)
   const [completedSteps, setCompletedSteps] = useState<ParentsWizardStep[]>([])
@@ -123,7 +125,7 @@ export default function ParentsWizardEditor({
       case 3:
         return <ParentsStep3Content {...commonProps} setActiveSection={setActiveSection} />
       case 4:
-        return <ParentsStep4Publish {...commonProps} slug={slug} onSave={onSave} />
+        return <ParentsStep4Publish {...commonProps} slug={slug} onSave={onSave} onSlugChange={onSlugChange} />
       case 5:
         return (
           <ParentsStep5Guests

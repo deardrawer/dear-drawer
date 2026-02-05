@@ -760,7 +760,7 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
       {/* 신랑측 부모님 소개 */}
       {parentIntro?.groom?.enabled !== false && (
         <section id="preview-couple-profile" className="px-6 py-16" style={{ background: '#ffffff' }}>
-          <div className="text-center mb-8">
+          <div className="mb-8" style={{ textAlign: invitation.parentIntroTextStyle?.textAlign || 'left' }}>
             <p className="text-[11px] mb-2" style={{ color: themeColors.gray }}>
               {parentIntro?.groom?.parentNames || `${invitation.groom.father?.name || '아버지'}, ${invitation.groom.mother?.name || '어머니'}의`}
             </p>
@@ -794,7 +794,7 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
       {/* 신부측 부모님 소개 */}
       {parentIntro?.bride?.enabled !== false && (
         <section className="px-6 py-16" style={{ background: '#ffffff' }}>
-          <div className="text-center mb-8">
+          <div className="mb-8" style={{ textAlign: invitation.parentIntroTextStyle?.textAlign || 'right' }}>
             <p className="text-[11px] mb-2" style={{ color: themeColors.gray }}>
               {parentIntro?.bride?.parentNames || `${invitation.bride.father?.name || '아버지'}, ${invitation.bride.mother?.name || '어머니'}의`}
             </p>
@@ -903,8 +903,8 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
         <div className="grid grid-cols-2 gap-2">{invitation.gallery.images && invitation.gallery.images.length > 0 ? invitation.gallery.images.map((img, i) => { const s = invitation.gallery.imageSettings?.[i] || { scale: 1, positionX: 0, positionY: 0 }; return <div key={i} className="aspect-square overflow-hidden"><div className="w-full h-full transition-transform duration-300" style={getImageCropStyle(img, s)} /></div> }) : [1, 2, 3, 4, 5, 6].map(i => <div key={i} className="aspect-square bg-gray-100 flex items-center justify-center"><svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg></div>)}</div>
       </section>
 
-      {/* Interview Title Divider - 갤러리 섹션 하단 */}
-      {sectionVisibility.interview && invitation.content.interviews.some(i => i.question || i.answer) && (
+      {/* Interview Title Divider (Divider 2) - 갤러리 섹션 하단 */}
+      {sectionVisibility.interview && (
         <section
           className="relative flex flex-col justify-center items-center text-center px-6 overflow-hidden"
           style={{ height: '350px' }}

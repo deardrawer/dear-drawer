@@ -220,6 +220,7 @@ export default function ParentsInvitationView({
                     station: data.wedding.directions.subway.station || '',
                     exit: data.wedding.directions.subway.exit || '',
                     walk: data.wedding.directions.subway.walk || '',
+                    lines: data.wedding.directions.subway.lines,
                   } : undefined,
                   parking: data.wedding.directions?.parking?.enabled ? {
                     capacity: data.wedding.directions.parking.capacity || '',
@@ -232,18 +233,29 @@ export default function ParentsInvitationView({
               />
               </div>
             </div>
-            <div id="preview-weddingInfo">
-              <SectionDivider />
-              <WeddingInfoSection
-                enabled={data.weddingInfo?.enabled}
-                flowerGift={data.weddingInfo?.flowerGift}
-                wreath={data.weddingInfo?.wreath}
-                flowerChild={data.weddingInfo?.flowerChild}
-                reception={data.weddingInfo?.reception}
-                photoBooth={data.weddingInfo?.photoBooth}
-                shuttle={data.weddingInfo?.shuttle}
-              />
-            </div>
+            {/* 결혼식 안내 - 활성화된 항목이 있을 때만 표시 */}
+            {data.weddingInfo?.enabled && (
+              data.weddingInfo?.flowerGift?.enabled ||
+              data.weddingInfo?.wreath?.enabled ||
+              data.weddingInfo?.flowerChild?.enabled ||
+              data.weddingInfo?.reception?.enabled ||
+              data.weddingInfo?.photoBooth?.enabled ||
+              data.weddingInfo?.shuttle?.enabled
+            ) && (
+              <div id="preview-weddingInfo">
+                <SectionDivider />
+                <WeddingInfoSection
+                  enabled={data.weddingInfo?.enabled}
+                  flowerGift={data.weddingInfo?.flowerGift}
+                  wreath={data.weddingInfo?.wreath}
+                  flowerChild={data.weddingInfo?.flowerChild}
+                  reception={data.weddingInfo?.reception}
+                  photoBooth={data.weddingInfo?.photoBooth}
+                  shuttle={data.weddingInfo?.shuttle}
+                />
+              </div>
+            )}
+            {/* 계좌 안내 - 활성화되고 계좌가 있을 때만 표시 */}
             {data.accounts?.enabled !== false && accounts.length > 0 && (
               <div id="preview-accounts">
                 <SectionDivider />

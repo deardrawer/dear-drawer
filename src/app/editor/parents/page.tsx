@@ -25,6 +25,13 @@ export interface TimelineItem {
   }
 }
 
+// 지하철 노선 정보
+export interface SubwayLine {
+  line: string
+  station: string
+  exit: string
+}
+
 // 셔틀버스 정보 타입
 export interface ShuttleInfo {
   enabled: boolean
@@ -94,6 +101,7 @@ export interface ParentsInvitationData {
         station: string
         exit: string
         walk: string
+        lines?: SubwayLine[]
       }
       parking: {
         enabled: boolean
@@ -558,6 +566,33 @@ function ParentsEditorContent() {
     setIsShareModalOpen(true)
   }
 
+  // Slug 변경 핸들러
+  const handleSlugChange = async (newSlug: string) => {
+    if (!invitationId) {
+      alert('슬러그를 변경하려면 먼저 저장해주세요.')
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/invitations/${invitationId}/slug`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug: newSlug }),
+      })
+
+      if (!response.ok) {
+        const result = await response.json() as { error?: string }
+        throw new Error(result.error || '슬러그 변경에 실패했습니다.')
+      }
+
+      setSavedSlug(newSlug)
+      alert('주소가 변경되었습니다!')
+    } catch (error) {
+      console.error('Slug update error:', error)
+      alert(error instanceof Error ? error.message : '주소 변경에 실패했습니다.')
+    }
+  }
+
   if ((editId && isLoading) || status === 'loading') {
     return (
       <div className="h-screen flex items-center justify-center bg-white">
@@ -706,8 +741,9 @@ function ParentsEditorContent() {
                 selectedGuest={selectedGuest}
                 onSelectGuest={setSelectedGuest}
                 setActiveSection={setActiveSection}
-                slug={urlSlug || (invitationId ? invitationId : null)}
+                slug={savedSlug || urlSlug || (invitationId ? invitationId : null)}
                 onSave={() => handleSave(true)}
+                onSlugChange={handleSlugChange}
                 onStepChange={(step) => {
                   setCurrentWizardStep(step)
                   // 봉투(2) → 인트로, 본문(3) → 본문

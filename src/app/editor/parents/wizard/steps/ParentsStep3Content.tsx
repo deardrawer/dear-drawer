@@ -355,27 +355,120 @@ export default function ParentsStep3Content({
               />
             </div>
             {data.wedding.directions?.subway?.enabled && (
-              <div className="space-y-2">
-                <div className="grid grid-cols-3 gap-2">
-                  <Input
-                    value={data.wedding.directions?.subway?.line || ''}
-                    onChange={(e) => updateNestedData('wedding.directions.subway.line', e.target.value)}
-                    placeholder="7호선"
-                    className="text-sm"
-                  />
-                  <Input
-                    value={data.wedding.directions?.subway?.station || ''}
-                    onChange={(e) => updateNestedData('wedding.directions.subway.station', e.target.value)}
-                    placeholder="청담역"
-                    className="text-sm"
-                  />
-                  <Input
-                    value={data.wedding.directions?.subway?.exit || ''}
-                    onChange={(e) => updateNestedData('wedding.directions.subway.exit', e.target.value)}
-                    placeholder="9번 출구"
-                    className="text-sm"
-                  />
-                </div>
+              <div className="space-y-3">
+                {/* 다중 노선 지원 */}
+                {(data.wedding.directions?.subway?.lines && data.wedding.directions.subway.lines.length > 0) ? (
+                  // 다중 노선 모드
+                  <>
+                    {data.wedding.directions.subway.lines.map((subwayLine, idx) => (
+                      <div key={idx} className="relative">
+                        <div className="grid grid-cols-3 gap-2">
+                          <Input
+                            value={subwayLine.line || ''}
+                            onChange={(e) => {
+                              const newLines = [...(data.wedding.directions?.subway?.lines || [])]
+                              newLines[idx] = { ...newLines[idx], line: e.target.value }
+                              updateNestedData('wedding.directions.subway.lines', newLines)
+                            }}
+                            placeholder="7호선"
+                            className="text-sm"
+                          />
+                          <Input
+                            value={subwayLine.station || ''}
+                            onChange={(e) => {
+                              const newLines = [...(data.wedding.directions?.subway?.lines || [])]
+                              newLines[idx] = { ...newLines[idx], station: e.target.value }
+                              updateNestedData('wedding.directions.subway.lines', newLines)
+                            }}
+                            placeholder="청담역"
+                            className="text-sm"
+                          />
+                          <div className="flex gap-1">
+                            <Input
+                              value={subwayLine.exit || ''}
+                              onChange={(e) => {
+                                const newLines = [...(data.wedding.directions?.subway?.lines || [])]
+                                newLines[idx] = { ...newLines[idx], exit: e.target.value }
+                                updateNestedData('wedding.directions.subway.lines', newLines)
+                              }}
+                              placeholder="9번 출구"
+                              className="text-sm flex-1"
+                            />
+                            {(data.wedding.directions?.subway?.lines?.length || 0) > 1 && (
+                              <button
+                                onClick={() => {
+                                  const newLines = data.wedding.directions?.subway?.lines?.filter((_, i) => i !== idx) || []
+                                  updateNestedData('wedding.directions.subway.lines', newLines)
+                                }}
+                                className="p-1.5 rounded hover:bg-red-100 text-red-400 shrink-0"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const newLines = [...(data.wedding.directions?.subway?.lines || []), { line: '', station: '', exit: '' }]
+                        updateNestedData('wedding.directions.subway.lines', newLines)
+                      }}
+                      className="w-full text-xs"
+                    >
+                      <Plus className="w-3 h-3 mr-1" />
+                      지하철 노선 추가
+                    </Button>
+                  </>
+                ) : (
+                  // 단일 노선 모드 (기존 데이터 호환성 + 다중 노선 전환)
+                  <>
+                    <div className="grid grid-cols-3 gap-2">
+                      <Input
+                        value={data.wedding.directions?.subway?.line || ''}
+                        onChange={(e) => updateNestedData('wedding.directions.subway.line', e.target.value)}
+                        placeholder="7호선"
+                        className="text-sm"
+                      />
+                      <Input
+                        value={data.wedding.directions?.subway?.station || ''}
+                        onChange={(e) => updateNestedData('wedding.directions.subway.station', e.target.value)}
+                        placeholder="청담역"
+                        className="text-sm"
+                      />
+                      <Input
+                        value={data.wedding.directions?.subway?.exit || ''}
+                        onChange={(e) => updateNestedData('wedding.directions.subway.exit', e.target.value)}
+                        placeholder="9번 출구"
+                        className="text-sm"
+                      />
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        // 기존 단일 노선 데이터를 다중 노선 배열로 변환
+                        const currentLine = {
+                          line: data.wedding.directions?.subway?.line || '',
+                          station: data.wedding.directions?.subway?.station || '',
+                          exit: data.wedding.directions?.subway?.exit || ''
+                        }
+                        const hasData = currentLine.line || currentLine.station || currentLine.exit
+                        const newLines = hasData
+                          ? [currentLine, { line: '', station: '', exit: '' }]
+                          : [{ line: '', station: '', exit: '' }]
+                        updateNestedData('wedding.directions.subway.lines', newLines)
+                      }}
+                      className="w-full text-xs"
+                    >
+                      <Plus className="w-3 h-3 mr-1" />
+                      지하철 노선 추가
+                    </Button>
+                  </>
+                )}
+                {/* 도보 안내 (공통) */}
                 <Input
                   value={data.wedding.directions?.subway?.walk || ''}
                   onChange={(e) => updateNestedData('wedding.directions.subway.walk', e.target.value)}

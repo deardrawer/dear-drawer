@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useEditorStore } from '@/store/editorStore'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -19,6 +19,58 @@ import {
 } from '@/lib/sampleData'
 import { parseHighlight } from '@/lib/textUtils'
 import { AlignLeft, AlignCenter, AlignRight, X, Plus, ChevronUp, ChevronDown, GripVertical } from 'lucide-react'
+
+// 로컬 상태 슬라이더 (깜빡임 방지)
+function LocalSlider({
+  value,
+  min,
+  max,
+  onChange,
+  className,
+}: {
+  value: number
+  min: number
+  max: number
+  onChange: (value: number) => void
+  className?: string
+}) {
+  const [localValue, setLocalValue] = useState<number | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+
+  const displayValue = localValue ?? value
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = parseInt(e.target.value)
+    setLocalValue(newValue)
+  }
+
+  const handlePointerDown = () => {
+    setIsDragging(true)
+    setLocalValue(value)
+  }
+
+  const handlePointerUp = () => {
+    if (isDragging && localValue !== null) {
+      onChange(localValue)
+    }
+    setIsDragging(false)
+    setLocalValue(null)
+  }
+
+  return (
+    <input
+      type="range"
+      min={min}
+      max={max}
+      value={displayValue}
+      onChange={handleChange}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerLeave={handlePointerUp}
+      className={className}
+    />
+  )
+}
 
 // 텍스트 스타일 컨트롤 (행간 + 정렬)
 function TextStyleControls({
@@ -210,12 +262,11 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                     <span>흑백</span>
                     <span>{item.imageSettings?.grayscale ?? 100}%</span>
                   </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
+                  <LocalSlider
+                    min={0}
+                    max={100}
                     value={item.imageSettings?.grayscale ?? 100}
-                    onChange={(e) => updateNestedField(`fullHeightDividers.items.${dividerIndex}.imageSettings.grayscale`, parseInt(e.target.value))}
+                    onChange={(v) => updateNestedField(`fullHeightDividers.items.${dividerIndex}.imageSettings.grayscale`, v)}
                     className="w-full h-1.5 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-white"
                   />
                 </div>
@@ -224,12 +275,11 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                     <span>밝기</span>
                     <span>{item.imageSettings?.opacity ?? 100}%</span>
                   </div>
-                  <input
-                    type="range"
-                    min="20"
-                    max="100"
+                  <LocalSlider
+                    min={20}
+                    max={100}
                     value={item.imageSettings?.opacity ?? 100}
-                    onChange={(e) => updateNestedField(`fullHeightDividers.items.${dividerIndex}.imageSettings.opacity`, parseInt(e.target.value))}
+                    onChange={(v) => updateNestedField(`fullHeightDividers.items.${dividerIndex}.imageSettings.opacity`, v)}
                     className="w-full h-1.5 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-white"
                   />
                 </div>
@@ -327,6 +377,24 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
     const updatedSettings = [...currentSettings]
     updatedSettings[imgIndex] = { ...currentSettings[imgIndex], ...settings }
     updateNestedField(`content.interviews.${interviewIndex}.imageSettings`, updatedSettings)
+  }
+
+  // 부모님 소개 이미지 크롭 설정 업데이트
+  const updateParentIntroImageSettings = (side: 'groom' | 'bride', imgIndex: number, settings: Partial<{ cropX: number; cropY: number; cropWidth: number; cropHeight: number }>) => {
+    const parentData = (invitation as any).parentIntro?.[side]
+    const currentSettings = parentData?.imageSettings || []
+    const updatedSettings = [...currentSettings]
+    updatedSettings[imgIndex] = { ...currentSettings[imgIndex], ...settings }
+    updateNestedField(`parentIntro.${side}.imageSettings`, updatedSettings)
+  }
+
+  // 서로를 선택한 이유 이미지 크롭 설정 업데이트
+  const updateWhyWeChoseImageSettings = (side: 'groom' | 'bride', imgIndex: number, settings: Partial<{ cropX: number; cropY: number; cropWidth: number; cropHeight: number }>) => {
+    const whyData = (invitation as any).whyWeChose?.[side]
+    const currentSettings = whyData?.imageSettings || []
+    const updatedSettings = [...currentSettings]
+    updatedSettings[imgIndex] = { ...currentSettings[imgIndex], ...settings }
+    updateNestedField(`whyWeChose.${side}.imageSettings`, updatedSettings)
   }
 
   return (
@@ -862,6 +930,28 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                         aspectRatio="aspect-[4/3]"
                       />
                       <p className="text-[10px] text-gray-400">2장 등록 시 자동 슬라이드됩니다</p>
+                      {/* 이미지 크롭 조정 */}
+                      {(parentIntro.groom?.images?.length || 0) > 0 && (
+                        <div className="mt-2 p-3 bg-blue-50 rounded-lg space-y-3">
+                          <p className="text-[10px] font-medium text-blue-700">이미지 크롭 조정</p>
+                          {parentIntro.groom?.images?.map((imageUrl: string, imgIndex: number) => {
+                            const settings = parentIntro.groom?.imageSettings?.[imgIndex] || {}
+                            return (
+                              <div key={imgIndex} className="space-y-2 pb-3 border-b border-blue-100 last:border-0 last:pb-0">
+                                <p className="text-[9px] text-blue-600">사진 {imgIndex + 1}</p>
+                                <InlineCropEditor
+                                  imageUrl={imageUrl}
+                                  settings={settings}
+                                  onUpdate={(s) => updateParentIntroImageSettings('groom', imgIndex, s)}
+                                  aspectRatio={4/3}
+                                  containerWidth={140}
+                                  colorClass="blue"
+                                />
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )}
                     </div>
 
                     {/* 부모님 메시지 */}
@@ -939,6 +1029,28 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                         aspectRatio="aspect-[4/3]"
                       />
                       <p className="text-[10px] text-gray-400">2장 등록 시 자동 슬라이드됩니다</p>
+                      {/* 이미지 크롭 조정 */}
+                      {(parentIntro.bride?.images?.length || 0) > 0 && (
+                        <div className="mt-2 p-3 bg-pink-50 rounded-lg space-y-3">
+                          <p className="text-[10px] font-medium text-pink-700">이미지 크롭 조정</p>
+                          {parentIntro.bride?.images?.map((imageUrl: string, imgIndex: number) => {
+                            const settings = parentIntro.bride?.imageSettings?.[imgIndex] || {}
+                            return (
+                              <div key={imgIndex} className="space-y-2 pb-3 border-b border-pink-100 last:border-0 last:pb-0">
+                                <p className="text-[9px] text-pink-600">사진 {imgIndex + 1}</p>
+                                <InlineCropEditor
+                                  imageUrl={imageUrl}
+                                  settings={settings}
+                                  onUpdate={(s) => updateParentIntroImageSettings('bride', imgIndex, s)}
+                                  aspectRatio={4/3}
+                                  containerWidth={140}
+                                  colorClass="pink"
+                                />
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )}
                     </div>
 
                     {/* 부모님 메시지 */}
@@ -1058,6 +1170,28 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                         placeholder="사진 추가"
                         aspectRatio="aspect-square"
                       />
+                      {/* 이미지 크롭 조정 */}
+                      {(whyWeChose.groom?.images?.length || 0) > 0 && (
+                        <div className="mt-2 p-3 bg-blue-100/50 rounded-lg space-y-3">
+                          <p className="text-[10px] font-medium text-blue-700">이미지 크롭 조정</p>
+                          {whyWeChose.groom?.images?.map((imageUrl: string, imgIndex: number) => {
+                            const settings = whyWeChose.groom?.imageSettings?.[imgIndex] || {}
+                            return (
+                              <div key={imgIndex} className="space-y-2 pb-3 border-b border-blue-200 last:border-0 last:pb-0">
+                                <p className="text-[9px] text-blue-600">사진 {imgIndex + 1}</p>
+                                <InlineCropEditor
+                                  imageUrl={imageUrl}
+                                  settings={settings}
+                                  onUpdate={(s) => updateWhyWeChoseImageSettings('groom', imgIndex, s)}
+                                  aspectRatio={1}
+                                  containerWidth={140}
+                                  colorClass="blue"
+                                />
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )}
                     </div>
 
                     {/* 본문 */}
@@ -1119,6 +1253,28 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                         placeholder="사진 추가"
                         aspectRatio="aspect-square"
                       />
+                      {/* 이미지 크롭 조정 */}
+                      {(whyWeChose.bride?.images?.length || 0) > 0 && (
+                        <div className="mt-2 p-3 bg-pink-100/50 rounded-lg space-y-3">
+                          <p className="text-[10px] font-medium text-pink-700">이미지 크롭 조정</p>
+                          {whyWeChose.bride?.images?.map((imageUrl: string, imgIndex: number) => {
+                            const settings = whyWeChose.bride?.imageSettings?.[imgIndex] || {}
+                            return (
+                              <div key={imgIndex} className="space-y-2 pb-3 border-b border-pink-200 last:border-0 last:pb-0">
+                                <p className="text-[9px] text-pink-600">사진 {imgIndex + 1}</p>
+                                <InlineCropEditor
+                                  imageUrl={imageUrl}
+                                  settings={settings}
+                                  onUpdate={(s) => updateWhyWeChoseImageSettings('bride', imgIndex, s)}
+                                  aspectRatio={1}
+                                  containerWidth={140}
+                                  colorClass="pink"
+                                />
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )}
                     </div>
 
                     {/* 본문 */}
@@ -1315,9 +1471,9 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
             {/* 인터뷰 소개 문구 */}
             <div className="p-4 bg-gray-50 rounded-lg space-y-2">
               <Label className="text-xs font-medium">소개 문구</Label>
-              <Input
+              <DebouncedInput
                 value={invitation.content.interviewIntro || ''}
-                onChange={(e) => updateNestedField('content.interviewIntro', e.target.value)}
+                onChange={(value) => updateNestedField('content.interviewIntro', value)}
                 onFocus={() => setActiveSection('interview')}
                 placeholder="결혼에 관한 우리의 이야기"
               />
@@ -1339,9 +1495,9 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">질문</Label>
-                  <Input
+                  <DebouncedInput
                     value={interview.question}
-                    onChange={(e) => updateNestedField(`content.interviews.${index}.question`, e.target.value)}
+                    onChange={(value) => updateNestedField(`content.interviews.${index}.question`, value)}
                     onFocus={() => setActiveSection('interview')}
                     placeholder={SAMPLE_INTERVIEWS[index]?.question || '질문을 입력해주세요'}
                   />
@@ -1680,9 +1836,9 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
           </div>
           <div className="space-y-1.5">
             <Label className="text-sm font-medium">서명</Label>
-            <Input
+            <DebouncedInput
               value={invitation.content.thankYou.sign}
-              onChange={(e) => updateNestedField('content.thankYou.sign', e.target.value)}
+              onChange={(value) => updateNestedField('content.thankYou.sign', value)}
               placeholder={SAMPLE_THANK_YOU.sign}
             />
           </div>

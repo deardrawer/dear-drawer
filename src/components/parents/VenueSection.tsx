@@ -4,6 +4,12 @@ import { useState, useEffect, useRef } from 'react'
 import { useSectionHighlight } from './SectionHighlightContext'
 import { useTheme } from './ThemeContext'
 
+interface SubwayLine {
+  line: string
+  station: string
+  exit: string
+}
+
 interface VenueSectionProps {
   venue?: {
     name: string
@@ -12,7 +18,13 @@ interface VenueSectionProps {
   }
   directions?: {
     bus?: { lines: string; stop: string }
-    subway?: { line: string; station: string; exit: string; walk: string }
+    subway?: {
+      line?: string  // 단일 노선 (호환성)
+      station?: string
+      exit?: string
+      walk?: string
+      lines?: SubwayLine[]  // 다중 노선
+    }
     parking?: { capacity: string; free: string; note: string }
     extraInfoEnabled?: boolean
     extraInfoText?: string
@@ -220,18 +232,30 @@ export default function VenueSection({
                 </div>
               )}
 
-              {directions?.subway && directions.subway.station && (
+              {directions?.subway && (directions.subway.station || (directions.subway.lines && directions.subway.lines.length > 0)) && (
                 <div className="mb-4">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-base">🚇</span>
                     <h4 className="font-medium text-xs" style={{ color: '#1A1A1A' }}>지하철</h4>
                   </div>
-                  <div className="text-xs leading-relaxed pl-6" style={{ color: '#666' }}>
-                    <p className="mb-0.5">
-                      {directions.subway.line && `${directions.subway.line} `}
-                      <span style={{ color: theme.accent }}>{directions.subway.station}</span>
-                      {directions.subway.exit && ` ${directions.subway.exit}`}
-                    </p>
+                  <div className="text-xs leading-relaxed pl-6 space-y-1" style={{ color: '#666' }}>
+                    {/* 다중 노선 표시 */}
+                    {directions.subway.lines && directions.subway.lines.length > 0 ? (
+                      directions.subway.lines.map((item, idx) => (
+                        <p key={idx} className="mb-0.5">
+                          {item.line && `${item.line} `}
+                          <span style={{ color: theme.accent }}>{item.station}</span>
+                          {item.exit && ` ${item.exit}`}
+                        </p>
+                      ))
+                    ) : (
+                      /* 단일 노선 (호환성) */
+                      <p className="mb-0.5">
+                        {directions.subway.line && `${directions.subway.line} `}
+                        <span style={{ color: theme.accent }}>{directions.subway.station}</span>
+                        {directions.subway.exit && ` ${directions.subway.exit}`}
+                      </p>
+                    )}
                     {directions.subway.walk && (
                       <p className="text-[10px] mt-1" style={{ color: '#999' }}>{directions.subway.walk}</p>
                     )}

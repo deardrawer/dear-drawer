@@ -64,6 +64,7 @@ export interface VenueInfo {
   name: string
   hall: string
   address: string
+  hideHall?: boolean  // 예식홀 표시안함
 }
 
 // 오시는 길 정보

@@ -178,11 +178,31 @@ export default function Step2BasicInfo({ templateId }: Step2BasicInfoProps) {
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-sm font-medium">예식 홀</Label>
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-medium">예식 홀</Label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <span className="text-xs text-gray-500">표시안함</span>
+                <button
+                  type="button"
+                  onClick={() => updateNestedField('wedding.venue.hideHall', !invitation.wedding.venue.hideHall)}
+                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                    invitation.wedding.venue.hideHall ? 'bg-gray-400' : 'bg-gray-200'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                      invitation.wedding.venue.hideHall ? 'translate-x-4' : 'translate-x-0.5'
+                    }`}
+                  />
+                </button>
+              </label>
+            </div>
             <Input
               value={invitation.wedding.venue.hall}
               onChange={(e) => updateNestedField('wedding.venue.hall', e.target.value)}
               placeholder="그랜드볼룸 3층"
+              disabled={invitation.wedding.venue.hideHall}
+              className={invitation.wedding.venue.hideHall ? 'bg-gray-100 text-gray-400' : ''}
             />
           </div>
           <div className="space-y-1.5">

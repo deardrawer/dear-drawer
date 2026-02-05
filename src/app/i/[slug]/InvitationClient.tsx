@@ -2085,6 +2085,7 @@ const mockInvitation = {
       name: '더채플앳청담',
       hall: '루체홀 5층',
       address: '서울특별시 강남구 청담동 123-45',
+      hideHall: false,
     },
     directions: {
       car: '네비게이션: 더채플앳청담 또는 서울시 강남구 청담동 123-45\n주차: 건물 지하 1~3층 주차장 이용 가능 (3시간 무료)',
@@ -2757,7 +2758,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
             <p className="text-[11px] font-light" style={{ color: '#777' }}>{invitation.wedding.timeDisplay}</p>
           </div>
           <div className="mb-5">
-            <p className="text-xs mb-1" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400 }}>{invitation.wedding.venue.name} {invitation.wedding.venue.hall}</p>
+            <p className="text-xs mb-1" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400 }}>{invitation.wedding.venue.name}{!invitation.wedding.venue.hideHall && ` ${invitation.wedding.venue.hall}`}</p>
             <p className="text-[10px] font-light" style={{ color: '#999' }}>{invitation.wedding.venue.address || '주소를 입력해주세요'}</p>
           </div>
           <button
@@ -2826,7 +2827,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
             {/* Venue Info */}
             <div className="mb-6 p-4 rounded-xl" style={{ background: themeColors.sectionBg }}>
               <p className="text-sm font-medium mb-1" style={{ color: themeColors.text }}>
-                {invitation.wedding.venue.name} {invitation.wedding.venue.hall}
+                {invitation.wedding.venue.name}{!invitation.wedding.venue.hideHall && ` ${invitation.wedding.venue.hall}`}
               </p>
               <p className="text-xs" style={{ color: themeColors.gray }}>{invitation.wedding.venue.address}</p>
             </div>

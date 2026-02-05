@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { SectionHighlightProvider } from './SectionHighlightContext'
 import EnvelopeScreen from './EnvelopeScreen'
 import SectionDivider from './SectionDivider'
@@ -15,6 +15,18 @@ import ShareSection from './ShareSection'
 import RsvpModal from './RsvpModal'
 import { COLOR_THEMES, FONT_STYLES, type ParentsInvitationContent, type GuestInfo } from './types'
 import { ThemeProvider } from './ThemeContext'
+
+// 글자 크기 타입
+type FontSizeLevel = 'normal' | 'large' | 'xlarge'
+
+// 글자 크기 설정
+const FONT_SIZE_CONFIG: Record<FontSizeLevel, { label: string; scale: number; icon: string }> = {
+  normal: { label: '보통', scale: 1, icon: '가' },
+  large: { label: '크게', scale: 1.15, icon: '가+' },
+  xlarge: { label: '아주 크게', scale: 1.3, icon: '가++' },
+}
+
+const FONT_SIZE_ORDER: FontSizeLevel[] = ['normal', 'large', 'xlarge']
 
 interface ParentsInvitationViewProps {
   data: ParentsInvitationContent
@@ -35,7 +47,29 @@ export default function ParentsInvitationView({
 }: ParentsInvitationViewProps) {
   const [isEnvelopeOpen, setIsEnvelopeOpen] = useState(isPreview)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [fontSize, setFontSize] = useState<FontSizeLevel>('normal')
   const audioRef = useRef<HTMLAudioElement>(null)
+
+  // localStorage에서 글자 크기 설정 불러오기
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !isPreview) {
+      const saved = localStorage.getItem('parents-invitation-font-size')
+      if (saved && FONT_SIZE_ORDER.includes(saved as FontSizeLevel)) {
+        setFontSize(saved as FontSizeLevel)
+      }
+    }
+  }, [isPreview])
+
+  // 글자 크기 변경
+  const cycleFontSize = () => {
+    const currentIndex = FONT_SIZE_ORDER.indexOf(fontSize)
+    const nextIndex = (currentIndex + 1) % FONT_SIZE_ORDER.length
+    const nextSize = FONT_SIZE_ORDER[nextIndex]
+    setFontSize(nextSize)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('parents-invitation-font-size', nextSize)
+    }
+  }
 
   // 컬러 테마
   const theme = COLOR_THEMES[data.colorTheme || 'burgundy']
@@ -103,9 +137,18 @@ export default function ParentsInvitationView({
     }
   }
 
+  // 현재 글자 크기 설정
+  const currentFontConfig = FONT_SIZE_CONFIG[fontSize]
+
   return (
     <ThemeProvider themeId={data.colorTheme || 'burgundy'}>
-      <div className={`relative max-w-[390px] mx-auto min-h-screen ${fontStyle.className}`} style={{ backgroundColor: theme.background }}>
+      <div
+        className={`relative max-w-[390px] mx-auto min-h-screen ${fontStyle.className}`}
+        style={{
+          backgroundColor: theme.background,
+          fontSize: `${currentFontConfig.scale * 100}%`,
+        }}
+      >
         {/* 봉투 화면 */}
         {!isEnvelopeOpen && (
           <EnvelopeScreen
@@ -140,9 +183,39 @@ export default function ParentsInvitationView({
             />
           )}
           <main className="animate-fade-in relative">
-            {/* 음악 재생 버튼 - 첫 섹션 상단에 고정 */}
+            {/* 상단 컨트롤 버튼들 */}
             {!isPreview && (
               <>
+                {/* 글자 크기 조절 버튼 - 좌측 상단 */}
+                <button
+                  onClick={cycleFontSize}
+                  className="flex items-center justify-center transition-all"
+                  style={{
+                    position: 'absolute',
+                    top: '20px',
+                    left: '20px',
+                    zIndex: 100,
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+                    borderRadius: '20px',
+                    padding: '8px 12px',
+                    minWidth: '44px',
+                    height: '40px',
+                  }}
+                  title={`글자 크기: ${currentFontConfig.label}`}
+                >
+                  <span
+                    className="font-medium"
+                    style={{
+                      color: theme.primary,
+                      fontSize: fontSize === 'normal' ? '14px' : fontSize === 'large' ? '12px' : '11px',
+                    }}
+                  >
+                    {currentFontConfig.icon}
+                  </span>
+                </button>
+
+                {/* 음악 재생 버튼 - 우측 상단 */}
                 <audio ref={audioRef} loop preload="auto">
                   <source src="/samples/parents/wedding-bgm.mp3" type="audio/mpeg" />
                 </audio>

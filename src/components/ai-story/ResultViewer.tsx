@@ -16,14 +16,8 @@ import {
   canRegenerate,
   incrementRegenCount,
   MAX_REGEN_PER_SECTION,
-  getRegenCounts,
   type RegenStatus
 } from '@/lib/regen-utils'
-import {
-  saveGeneratedContent,
-  updateGeneratedContent,
-  loadGeneratedContent,
-} from '@/lib/storage'
 
 // ============================================================
 // Types
@@ -557,10 +551,6 @@ export default function ResultViewer({
   } | null>(null)
   const [regenStatuses, setRegenStatuses] = useState<Record<string, RegenStatus>>({})
 
-  // D1 저장 관련 상태
-  const [savedId, setSavedId] = useState<string | null>(null)
-  const [isSaving, setIsSaving] = useState(false)
-  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null)
 
   // content 변경시 editedContent 동기화
   useEffect(() => {
@@ -615,68 +605,6 @@ export default function ResultViewer({
     [showToast]
   )
 
-  // D1 데이터베이스에 저장
-  const handleSave = useCallback(async () => {
-    if (!editedContent || !formData) {
-      showToast('저장할 콘텐츠가 없습니다.', 'error')
-      return
-    }
-
-    setIsSaving(true)
-
-    try {
-      const regenCounts = getRegenCounts()
-
-      if (savedId) {
-        // 기존 데이터 수정
-        const result = await updateGeneratedContent(savedId, editedContent, regenCounts)
-        if (result.success) {
-          setLastSavedAt(new Date())
-          showToast('수정 저장되었습니다!', 'success')
-        } else {
-          showToast(`저장 실패: ${result.error}`, 'error')
-        }
-      } else {
-        // 새로 저장
-        const result = await saveGeneratedContent(
-          formData,
-          editedContent,
-          'anonymous', // TODO: 실제 사용자 ID 연동
-          regenCounts
-        )
-
-        if (result.success && result.id) {
-          setSavedId(result.id)
-          setLastSavedAt(new Date())
-          showToast(`저장되었습니다! (ID: ${result.id.slice(0, 12)}...)`, 'success')
-        } else {
-          showToast(`저장 실패: ${result.error}`, 'error')
-        }
-      }
-    } catch (error) {
-      showToast('저장 중 오류가 발생했습니다.', 'error')
-      console.error('Save error:', error)
-    } finally {
-      setIsSaving(false)
-    }
-  }, [editedContent, formData, savedId, showToast])
-
-  // ID로 불러오기
-  const handleLoad = useCallback(async (id: string) => {
-    try {
-      const result = await loadGeneratedContent(id)
-      if (result.success && result.data) {
-        setEditedContent(result.data.generatedContent)
-        setSavedId(id)
-        showToast('불러오기 완료!', 'success')
-      } else {
-        showToast(`불러오기 실패: ${result.error}`, 'error')
-      }
-    } catch (error) {
-      showToast('불러오기 중 오류가 발생했습니다.', 'error')
-      console.error('Load error:', error)
-    }
-  }, [showToast])
 
   // 섹션 수정 시작
   const startEdit = useCallback((section: string, currentText: string) => {
@@ -1224,45 +1152,14 @@ export default function ResultViewer({
 
       {/* 하단 액션 버튼 */}
       <div className="flex flex-col items-center gap-4 pt-6 animate-fade-in">
-        {/* 저장 상태 표시 */}
-        {savedId && (
-          <div className="text-sm text-gray-500 flex items-center gap-2">
-            <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-            저장됨 {lastSavedAt && `(${lastSavedAt.toLocaleTimeString()})`}
-          </div>
-        )}
-
-        <div className="flex gap-4">
-          {/* 저장 버튼 */}
-          <Button
-            onClick={handleSave}
-            size="lg"
-            variant="outline"
-            disabled={isSaving}
-            className="px-8 py-6 text-lg font-medium border-2 border-gray-300 hover:border-gray-400 transition-all duration-300"
-          >
-            {isSaving ? (
-              <>
-                <span className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin mr-2"></span>
-                저장 중...
-              </>
-            ) : savedId ? (
-              '💾 수정 저장'
-            ) : (
-              '💾 저장하기'
-            )}
-          </Button>
-
-          {/* 적용 버튼 */}
-          <Button
-            onClick={() => editedContent && onApply(editedContent)}
-            size="lg"
-            disabled={!editedContent}
-            className="bg-rose-500 hover:bg-rose-600 text-white px-12 py-6 text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-          >
-            ✨ 청첩장에 적용하기
-          </Button>
-        </div>
+        <Button
+          onClick={() => editedContent && onApply(editedContent)}
+          size="lg"
+          disabled={!editedContent}
+          className="bg-rose-500 hover:bg-rose-600 text-white px-12 py-6 text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+        >
+          ✨ 에디터에 적용하기
+        </Button>
       </div>
 
       {/* 토스트 알림 */}

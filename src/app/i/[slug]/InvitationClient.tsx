@@ -1917,11 +1917,19 @@ function StorySection({
                 className={story.images!.length === 3 && i === 0 ? 'col-span-2' : ''}
                 style={{
                   aspectRatio: story.images!.length === 3 && i === 0 ? '2/1' : '1',
-                  ...(img ? getImageCropStyle(img, imgSettings) : {}),
                   backgroundColor: '#f5f5f5',
-                  borderRadius: '8px'
+                  borderRadius: '8px',
+                  overflow: 'hidden'
                 }}
-              />
+              >
+                <div
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    ...(img ? getImageCropStyle(img, imgSettings) : {})
+                  }}
+                />
+              </div>
             )
           })}
         </div>

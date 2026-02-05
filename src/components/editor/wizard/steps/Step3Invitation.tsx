@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useEditorStore } from '@/store/editorStore'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -12,6 +12,30 @@ import ImageCropEditor, { CropData } from '@/components/parents/ImageCropEditor'
 import { getPresetById } from '@/lib/introPresets'
 import { SAMPLE_GREETING, SAMPLE_QUOTE } from '@/lib/sampleData'
 import { Sparkles, X, Loader2 } from 'lucide-react'
+
+// 공유 설명 자동 생성 헬퍼 함수
+function generateKakaoDescription(date: string, time: string, venueName: string): string {
+  if (!date) return ''
+
+  const dateObj = new Date(date)
+  const year = dateObj.getFullYear()
+  const month = dateObj.getMonth() + 1
+  const day = dateObj.getDate()
+  const dayOfWeek = ['일', '월', '화', '수', '목', '금', '토'][dateObj.getDay()]
+
+  let timeStr = ''
+  if (time) {
+    const [hour, minute] = time.split(':').map(Number)
+    const period = hour < 12 ? '오전' : '오후'
+    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour
+    timeStr = minute === 0 ? ` ${period} ${displayHour}시` : ` ${period} ${displayHour}시 ${minute}분`
+  }
+
+  const dateLine = `${year}년 ${month}월 ${day}일 ${dayOfWeek}요일${timeStr}`
+  const venueLine = venueName || ''
+
+  return venueLine ? `${dateLine}\n${venueLine}` : dateLine
+}
 
 // 이미지 크롭 스타일 계산 헬퍼 함수 (Preview.tsx와 동일)
 function getImageCropStyle(img: string, s: { scale?: number; positionX?: number; positionY?: number; cropX?: number; cropY?: number; cropWidth?: number; cropHeight?: number }) {
@@ -82,6 +106,29 @@ type GreetingAnswers = {
 
 export default function Step3Invitation({ onOpenIntroSelector, templateId, onScrollPreviewToTop, invitationId }: Step3InvitationProps) {
   const { invitation, updateField, updateNestedField, setActiveSection, validationError } = useEditorStore()
+
+  // 공유설명 자동 업데이트 함수
+  const updateKakaoDescriptionIfAuto = useCallback((newDate?: string, newTime?: string, newVenueName?: string) => {
+    if (!invitation) return
+
+    const date = newDate ?? invitation.wedding.date
+    const time = newTime ?? invitation.wedding.time
+    const venueName = newVenueName ?? invitation.wedding.venue.name
+    const currentDesc = invitation.meta.description || ''
+
+    // 현재 description이 비어있거나 자동 생성된 값과 같으면 자동 업데이트
+    const currentAutoDesc = generateKakaoDescription(
+      invitation.wedding.date,
+      invitation.wedding.time,
+      invitation.wedding.venue.name
+    )
+
+    // 비어있거나 이전 자동생성 값과 같은 경우에만 업데이트
+    if (!currentDesc.trim() || currentDesc === currentAutoDesc) {
+      const newDesc = generateKakaoDescription(date, time, venueName)
+      updateNestedField('meta.description', newDesc)
+    }
+  }, [invitation, updateNestedField])
 
   // AI 인사말 생성 상태
   const [greetingModalOpen, setGreetingModalOpen] = useState(false)
@@ -589,7 +636,11 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
               <Input
                 type="date"
                 value={invitation.wedding.date}
-                onChange={(e) => updateNestedField('wedding.date', e.target.value)}
+                onChange={(e) => {
+                  const newDate = e.target.value
+                  updateNestedField('wedding.date', newDate)
+                  updateKakaoDescriptionIfAuto(newDate, undefined, undefined)
+                }}
                 onFocus={() => setActiveSection('venue-info')}
               />
             </div>
@@ -598,7 +649,11 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
               <Input
                 type="time"
                 value={invitation.wedding.time}
-                onChange={(e) => updateNestedField('wedding.time', e.target.value)}
+                onChange={(e) => {
+                  const newTime = e.target.value
+                  updateNestedField('wedding.time', newTime)
+                  updateKakaoDescriptionIfAuto(undefined, newTime, undefined)
+                }}
                 onFocus={() => setActiveSection('venue-info')}
               />
             </div>
@@ -609,7 +664,11 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
             <Label className="text-sm font-medium">예식장 이름 <span className="text-red-500">*</span></Label>
             <Input
               value={invitation.wedding.venue.name}
-              onChange={(e) => updateNestedField('wedding.venue.name', e.target.value)}
+              onChange={(e) => {
+                const newVenueName = e.target.value
+                updateNestedField('wedding.venue.name', newVenueName)
+                updateKakaoDescriptionIfAuto(undefined, undefined, newVenueName)
+              }}
               onFocus={() => setActiveSection('venue-info')}
               placeholder="더채플앳청담"
             />
@@ -752,7 +811,7 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
             <Textarea
               value={invitation.meta.description || ''}
               onChange={(e) => updateNestedField('meta.description', e.target.value)}
-              placeholder="2025년 5월 24일 토요일 오후 2시&#10;더채플앳청담"
+              placeholder={generateKakaoDescription(invitation.wedding.date, invitation.wedding.time, invitation.wedding.venue.name) || '2025년 5월 24일 토요일 오후 2시\n더채플앳청담'}
               rows={2}
               className="resize-none"
             />

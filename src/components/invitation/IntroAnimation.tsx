@@ -803,7 +803,7 @@ function ZoomIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTit
       <div className="absolute inset-0 bg-black intro-dark-to-light" />
       <div className="absolute inset-0" style={overlayStyle} />
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-      <div className="relative z-10 h-full flex flex-col items-center justify-end pb-20 text-white px-4">
+      <div className="relative z-10 h-full flex flex-col items-center justify-end pb-36 text-white px-4">
         {settings.subTitle && (
           <p className="text-xs tracking-[4px] mb-4 intro-fade-in-up" style={{ ...subTitleStyle, animationDelay: '1s', animationDuration: '1.2s', opacity: 0 }}>
             {settings.subTitle}

@@ -958,10 +958,10 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                     <div className="space-y-1.5">
                       <Label className="text-xs">부모님 메시지</Label>
                       <TextStyleControls
-                        lineHeight={invitation.parentIntroTextStyle?.lineHeight}
-                        textAlign={invitation.parentIntroTextStyle?.textAlign}
-                        onLineHeightChange={(v) => updateNestedField('parentIntroTextStyle', { ...invitation.parentIntroTextStyle, lineHeight: v })}
-                        onTextAlignChange={(v) => updateNestedField('parentIntroTextStyle', { ...invitation.parentIntroTextStyle, textAlign: v })}
+                        lineHeight={parentIntro.groom?.lineHeight ?? invitation.parentIntroTextStyle?.lineHeight}
+                        textAlign={parentIntro.groom?.textAlign ?? invitation.parentIntroTextStyle?.textAlign}
+                        onLineHeightChange={(v) => updateNestedField('parentIntro.groom.lineHeight', v)}
+                        onTextAlignChange={(v) => updateNestedField('parentIntro.groom.textAlign', v)}
                       />
                       <HighlightTextarea
                         value={parentIntro.groom?.message || ''}
@@ -1057,10 +1057,10 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                     <div className="space-y-1.5">
                       <Label className="text-xs">부모님 메시지</Label>
                       <TextStyleControls
-                        lineHeight={invitation.parentIntroTextStyle?.lineHeight}
-                        textAlign={invitation.parentIntroTextStyle?.textAlign}
-                        onLineHeightChange={(v) => updateNestedField('parentIntroTextStyle', { ...invitation.parentIntroTextStyle, lineHeight: v })}
-                        onTextAlignChange={(v) => updateNestedField('parentIntroTextStyle', { ...invitation.parentIntroTextStyle, textAlign: v })}
+                        lineHeight={parentIntro.bride?.lineHeight ?? invitation.parentIntroTextStyle?.lineHeight}
+                        textAlign={parentIntro.bride?.textAlign ?? invitation.parentIntroTextStyle?.textAlign}
+                        onLineHeightChange={(v) => updateNestedField('parentIntro.bride.lineHeight', v)}
+                        onTextAlignChange={(v) => updateNestedField('parentIntro.bride.textAlign', v)}
                       />
                       <HighlightTextarea
                         value={parentIntro.bride?.message || ''}

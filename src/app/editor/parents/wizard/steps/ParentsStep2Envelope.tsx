@@ -310,7 +310,7 @@ export default function ParentsStep2Envelope({
             }
             onChange={(cropData) => updateNestedData('meta.kakaoThumbnail', cropData.url)}
             aspectRatio={1}
-            containerWidth={200}
+            containerWidth={280}
             invitationId={invitationId || undefined}
             label=""
           />

@@ -9,6 +9,38 @@ import { Button } from '@/components/admin/ui/Button'
 import { Input, Textarea, Select } from '@/components/admin/ui/Input'
 import { AdminToast } from '@/components/admin/ui/Toast'
 
+declare global {
+  interface Window {
+    Kakao?: {
+      isInitialized: () => boolean
+      init: (key: string) => void
+      Share?: {
+        sendDefault: (options: KakaoShareOptions) => void
+      }
+    }
+  }
+}
+
+interface KakaoShareOptions {
+  objectType: 'feed'
+  content: {
+    title: string
+    description: string
+    imageUrl: string
+    link: {
+      mobileWebUrl: string
+      webUrl: string
+    }
+  }
+  buttons: Array<{
+    title: string
+    link: {
+      mobileWebUrl: string
+      webUrl: string
+    }
+  }>
+}
+
 interface Guest {
   id: string
   name: string
@@ -120,6 +152,9 @@ export default function AdminDashboardPage() {
 
   // 토스트
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' as 'success' | 'error' | 'info' })
+
+  // 부모님 공유 모달
+  const [showShareModal, setShowShareModal] = useState(false)
 
   const showToastMsg = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
     setToast({ show: true, message, type })
@@ -492,6 +527,61 @@ export default function AdminDashboardPage() {
     }
   }
 
+  // 부모님께 공유 - 링크 복사
+  const handleCopyShareLink = async () => {
+    const shareUrl = `${window.location.origin}/invite/${inviteId}/admin`
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      showToastMsg('링크가 복사되었습니다', 'success')
+    } catch {
+      showToastMsg('링크 복사에 실패했습니다', 'error')
+    }
+  }
+
+  // 부모님께 공유 - 카카오톡
+  const handleKakaoShare = () => {
+    const shareUrl = `${window.location.origin}/invite/${inviteId}/admin`
+    const guideUrl = `${window.location.origin}/invite/${inviteId}/admin/guide`
+
+    if (window.Kakao && window.Kakao.Share) {
+      window.Kakao.Share.sendDefault({
+        objectType: 'feed',
+        content: {
+          title: '청첩장 게스트 관리 페이지',
+          description: '하객분들께 보낼 청첩장 링크를 관리할 수 있어요',
+          imageUrl: invitationInfo?.kakaoThumbnail || 'https://deardrawer.com/images/kakao-share.png',
+          link: {
+            mobileWebUrl: shareUrl,
+            webUrl: shareUrl,
+          },
+        },
+        buttons: [
+          {
+            title: '사용 가이드',
+            link: {
+              mobileWebUrl: guideUrl,
+              webUrl: guideUrl,
+            },
+          },
+          {
+            title: '관리 페이지 열기',
+            link: {
+              mobileWebUrl: shareUrl,
+              webUrl: shareUrl,
+            },
+          },
+        ],
+      })
+    } else {
+      showToastMsg('카카오톡 공유를 사용할 수 없습니다', 'error')
+    }
+  }
+
+  // 가이드 페이지로 이동
+  const handleGoToGuide = () => {
+    router.push(`/invite/${inviteId}/admin/guide`)
+  }
+
   // 호칭 옵션
   const honorificOptions = [
     { value: '님께', label: '님께' },
@@ -542,8 +632,14 @@ export default function AdminDashboardPage() {
           </h1>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="secondary" size="sm" onClick={handleGoToGuide}>
+            도움말
+          </Button>
+          <Button variant="secondary" size="sm" onClick={() => setShowShareModal(true)}>
+            공유
+          </Button>
           <Button variant="secondary" size="sm" onClick={openPasswordModal}>
-            🔐
+            비밀번호
           </Button>
           <Button variant="secondary" size="sm" onClick={handleLogout}>
             로그아웃
@@ -1038,6 +1134,82 @@ export default function AdminDashboardPage() {
             변경하기
           </Button>
         </ModalFooter>
+      </Modal>
+
+      {/* 부모님께 공유 모달 */}
+      <Modal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        title="부모님께 관리 페이지 공유"
+        position="bottom"
+      >
+        <ModalBody className="space-y-4">
+          <div className="text-center py-4">
+            <div className="text-4xl mb-3">👨‍👩‍👧</div>
+            <p className="text-sm" style={{ color: '#555' }}>
+              부모님도 게스트 관리를 할 수 있어요
+            </p>
+            <p className="text-xs mt-2" style={{ color: '#888' }}>
+              관리 페이지 링크를 공유하면<br />
+              부모님이 직접 하객분들께 청첩장을 보낼 수 있어요
+            </p>
+          </div>
+
+          {/* 공유 버튼들 */}
+          <div className="flex gap-3">
+            <button
+              onClick={handleKakaoShare}
+              className="flex-1 flex flex-col items-center gap-2 py-4 rounded-xl transition-all active:scale-[0.98]"
+              style={{ backgroundColor: '#FEE500' }}
+            >
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="#3C1E1E">
+                <path d="M12 3C6.477 3 2 6.477 2 10.5c0 2.47 1.607 4.647 4.03 5.938-.128.469-.823 3.015-.853 3.227 0 0-.017.169.09.234.107.066.232.029.232.029.307-.043 3.558-2.313 4.118-2.71.457.063.922.098 1.383.098 5.523 0 10-3.477 10-7.768C22 6.477 17.523 3 12 3z"/>
+              </svg>
+              <span className="text-xs font-medium" style={{ color: '#3C1E1E' }}>
+                카카오톡 공유
+              </span>
+            </button>
+            <button
+              onClick={handleCopyShareLink}
+              className="flex-1 flex flex-col items-center gap-2 py-4 rounded-xl transition-all active:scale-[0.98]"
+              style={{ backgroundColor: '#F5F3EE' }}
+            >
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+              </svg>
+              <span className="text-xs font-medium" style={{ color: '#555' }}>
+                링크 복사
+              </span>
+            </button>
+          </div>
+
+          {/* 안내 문구 */}
+          <div
+            className="p-4 rounded-xl"
+            style={{ backgroundColor: '#FFFBF0', border: '1px solid #F5E6B8' }}
+          >
+            <div className="flex items-start gap-2">
+              <span className="text-sm">💡</span>
+              <div className="text-xs" style={{ color: '#8B7355' }}>
+                <p className="font-medium mb-1">PIN 번호는 별도로 전달해주세요</p>
+                <p>보안을 위해 PIN 번호는 카카오톡 메시지에 포함되지 않아요. 전화나 문자로 따로 알려주세요.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 가이드 링크 */}
+          <button
+            onClick={() => {
+              setShowShareModal(false)
+              handleGoToGuide()
+            }}
+            className="w-full py-3 text-sm font-medium rounded-xl transition-all"
+            style={{ backgroundColor: '#F5F3EE', color: '#555' }}
+          >
+            📖 사용 가이드 보기
+          </button>
+        </ModalBody>
       </Modal>
 
       {/* 토스트 */}

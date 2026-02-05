@@ -1168,7 +1168,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                         onChange={(images) => updateNestedField('whyWeChose.groom.images', images)}
                         maxImages={2}
                         placeholder="사진 추가"
-                        aspectRatio="aspect-square"
+                        aspectRatio="aspect-[4/5]"
                       />
                       {/* 이미지 크롭 조정 */}
                       {(whyWeChose.groom?.images?.length || 0) > 0 && (
@@ -1183,7 +1183,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                                   imageUrl={imageUrl}
                                   settings={settings}
                                   onUpdate={(s) => updateWhyWeChoseImageSettings('groom', imgIndex, s)}
-                                  aspectRatio={1}
+                                  aspectRatio={4/5}
                                   containerWidth={140}
                                   colorClass="blue"
                                 />
@@ -1251,7 +1251,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                         onChange={(images) => updateNestedField('whyWeChose.bride.images', images)}
                         maxImages={2}
                         placeholder="사진 추가"
-                        aspectRatio="aspect-square"
+                        aspectRatio="aspect-[4/5]"
                       />
                       {/* 이미지 크롭 조정 */}
                       {(whyWeChose.bride?.images?.length || 0) > 0 && (
@@ -1266,7 +1266,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                                   imageUrl={imageUrl}
                                   settings={settings}
                                   onUpdate={(s) => updateWhyWeChoseImageSettings('bride', imgIndex, s)}
-                                  aspectRatio={1}
+                                  aspectRatio={4/5}
                                   containerWidth={140}
                                   colorClass="pink"
                                 />

@@ -56,34 +56,59 @@ export default function ShareSection({
               onKakaoShare()
             } else {
               // Kakao SDK를 사용한 공유
-              if (typeof window !== 'undefined' && (window as any).Kakao) {
-                const Kakao = (window as any).Kakao
-                if (!Kakao.isInitialized()) {
-                  Kakao.init(process.env.NEXT_PUBLIC_KAKAO_JS_KEY || '0890847927f3189d845391481ead8ecc')
+              const kakaoWindow = window as typeof window & {
+                Kakao?: {
+                  isInitialized?: () => boolean
+                  init?: (key: string) => void
+                  Share?: { sendDefault: (config: object) => void }
                 }
-                Kakao.Share.sendDefault({
-                  objectType: 'feed',
-                  content: {
-                    title: '결혼식에 초대합니다',
-                    description: '소중한 분들을 결혼식에 초대합니다.',
-                    imageUrl: '',
-                    link: {
-                      mobileWebUrl: window.location.href,
-                      webUrl: window.location.href,
-                    },
-                  },
-                  buttons: [
-                    {
-                      title: '청첩장 보기',
-                      link: {
-                        mobileWebUrl: window.location.href,
-                        webUrl: window.location.href,
+              }
+
+              if (typeof window !== 'undefined' && kakaoWindow.Kakao) {
+                try {
+                  // SDK 초기화 확인 및 초기화
+                  if (!kakaoWindow.Kakao.isInitialized?.()) {
+                    const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY || '0890847927f3189d845391481ead8ecc'
+                    kakaoWindow.Kakao.init?.(kakaoKey)
+                  }
+
+                  // Share 기능 사용 가능 여부 확인
+                  if (kakaoWindow.Kakao.Share?.sendDefault) {
+                    kakaoWindow.Kakao.Share.sendDefault({
+                      objectType: 'feed',
+                      content: {
+                        title: '결혼식에 초대합니다',
+                        description: '소중한 분들을 결혼식에 초대합니다.',
+                        imageUrl: 'https://invite.deardrawer.com/og-image.png',
+                        link: {
+                          mobileWebUrl: window.location.href,
+                          webUrl: window.location.href,
+                        },
                       },
-                    },
-                  ],
-                })
+                      buttons: [
+                        {
+                          title: '청첩장 보기',
+                          link: {
+                            mobileWebUrl: window.location.href,
+                            webUrl: window.location.href,
+                          },
+                        },
+                      ],
+                    })
+                  } else {
+                    // SDK가 아직 로딩 중일 수 있음 - 링크 복사로 대체
+                    navigator.clipboard.writeText(window.location.href)
+                    alert('카카오톡 공유 준비 중입니다. 링크가 복사되었습니다.')
+                  }
+                } catch (error) {
+                  console.error('Kakao share error:', error)
+                  navigator.clipboard.writeText(window.location.href)
+                  alert('카카오톡 공유에 실패했습니다. 링크가 복사되었습니다.')
+                }
               } else {
-                alert('카카오톡 공유 기능을 사용할 수 없습니다.')
+                // SDK 로드 안됨 - 링크 복사로 대체
+                navigator.clipboard.writeText(window.location.href)
+                alert('카카오톡 공유를 사용할 수 없습니다. 링크가 복사되었습니다.')
               }
             }
           }}

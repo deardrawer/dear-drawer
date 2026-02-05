@@ -543,37 +543,51 @@ export default function AdminDashboardPage() {
     const shareUrl = `${window.location.origin}/invite/${inviteId}/admin`
     const guideUrl = `${window.location.origin}/invite/${inviteId}/admin/guide`
 
-    if (window.Kakao && window.Kakao.Share) {
-      window.Kakao.Share.sendDefault({
-        objectType: 'feed',
-        content: {
-          title: '청첩장 게스트 관리 페이지',
-          description: '하객분들께 보낼 청첩장 링크를 관리할 수 있어요',
-          imageUrl: invitationInfo?.kakaoThumbnail || 'https://deardrawer.com/images/kakao-share.png',
-          link: {
-            mobileWebUrl: shareUrl,
-            webUrl: shareUrl,
-          },
-        },
-        buttons: [
-          {
-            title: '사용 가이드',
-            link: {
-              mobileWebUrl: guideUrl,
-              webUrl: guideUrl,
-            },
-          },
-          {
-            title: '관리 페이지 열기',
+    try {
+      // SDK 초기화 확인 및 초기화
+      if (window.Kakao && !window.Kakao.isInitialized()) {
+        const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY || '0890847927f3189d845391481ead8ecc'
+        window.Kakao.init(kakaoKey)
+      }
+
+      if (window.Kakao?.Share?.sendDefault) {
+        window.Kakao.Share.sendDefault({
+          objectType: 'feed',
+          content: {
+            title: '청첩장 게스트 관리 페이지',
+            description: '하객분들께 보낼 청첩장 링크를 관리할 수 있어요',
+            imageUrl: invitationInfo?.kakaoThumbnail || 'https://invite.deardrawer.com/og-image.png',
             link: {
               mobileWebUrl: shareUrl,
               webUrl: shareUrl,
             },
           },
-        ],
-      })
-    } else {
-      showToastMsg('카카오톡 공유를 사용할 수 없습니다', 'error')
+          buttons: [
+            {
+              title: '사용 가이드',
+              link: {
+                mobileWebUrl: guideUrl,
+                webUrl: guideUrl,
+              },
+            },
+            {
+              title: '관리 페이지 열기',
+              link: {
+                mobileWebUrl: shareUrl,
+                webUrl: shareUrl,
+              },
+            },
+          ],
+        })
+      } else {
+        // SDK 아직 로딩 중 - 링크 복사로 대체
+        handleCopyShareLink()
+        showToastMsg('카카오톡 공유 준비 중입니다. 링크가 복사되었습니다.', 'info')
+      }
+    } catch (error) {
+      console.error('Kakao share error:', error)
+      handleCopyShareLink()
+      showToastMsg('카카오톡 공유에 실패했습니다. 링크가 복사되었습니다.', 'error')
     }
   }
 

@@ -19,11 +19,11 @@ import { ThemeProvider } from './ThemeContext'
 // 글자 크기 타입
 type FontSizeLevel = 'normal' | 'large' | 'xlarge'
 
-// 글자 크기 설정
-const FONT_SIZE_CONFIG: Record<FontSizeLevel, { label: string; scale: number; icon: string }> = {
-  normal: { label: '보통', scale: 1, icon: '가' },
-  large: { label: '크게', scale: 1.15, icon: '가+' },
-  xlarge: { label: '아주 크게', scale: 1.3, icon: '가++' },
+// 글자 크기 설정 (zoom 사용)
+const FONT_SIZE_CONFIG: Record<FontSizeLevel, { label: string; zoom: number; icon: string }> = {
+  normal: { label: '보통', zoom: 1, icon: '가' },
+  large: { label: '크게', zoom: 1.12, icon: '가+' },
+  xlarge: { label: '아주 크게', zoom: 1.24, icon: '가++' },
 }
 
 const FONT_SIZE_ORDER: FontSizeLevel[] = ['normal', 'large', 'xlarge']
@@ -48,17 +48,32 @@ export default function ParentsInvitationView({
   const [isEnvelopeOpen, setIsEnvelopeOpen] = useState(isPreview)
   const [isPlaying, setIsPlaying] = useState(false)
   const [fontSize, setFontSize] = useState<FontSizeLevel>('normal')
+  const [showFontSizeToast, setShowFontSizeToast] = useState(false)
+  const [fontSizeToastMessage, setFontSizeToastMessage] = useState('')
   const audioRef = useRef<HTMLAudioElement>(null)
 
-  // localStorage에서 글자 크기 설정 불러오기
+  // localStorage에서 글자 크기 설정 불러오기 + 첫 방문 안내
   useEffect(() => {
     if (typeof window !== 'undefined' && !isPreview) {
       const saved = localStorage.getItem('parents-invitation-font-size')
+      const hasSeenGuide = localStorage.getItem('parents-font-size-guide-seen')
+
       if (saved && FONT_SIZE_ORDER.includes(saved as FontSizeLevel)) {
         setFontSize(saved as FontSizeLevel)
       }
+
+      // 첫 방문자에게 안내 (봉투 열린 후 2초 뒤)
+      if (!hasSeenGuide) {
+        const timer = setTimeout(() => {
+          setFontSizeToastMessage('좌측 상단 버튼으로 글자 크기를 조절할 수 있어요')
+          setShowFontSizeToast(true)
+          localStorage.setItem('parents-font-size-guide-seen', 'true')
+          setTimeout(() => setShowFontSizeToast(false), 4000)
+        }, 2000)
+        return () => clearTimeout(timer)
+      }
     }
-  }, [isPreview])
+  }, [isPreview, isEnvelopeOpen])
 
   // 글자 크기 변경
   const cycleFontSize = () => {
@@ -66,9 +81,15 @@ export default function ParentsInvitationView({
     const nextIndex = (currentIndex + 1) % FONT_SIZE_ORDER.length
     const nextSize = FONT_SIZE_ORDER[nextIndex]
     setFontSize(nextSize)
+
     if (typeof window !== 'undefined') {
       localStorage.setItem('parents-invitation-font-size', nextSize)
     }
+
+    // 변경 알림 토스트
+    setFontSizeToastMessage(`글자 크기: ${FONT_SIZE_CONFIG[nextSize].label}`)
+    setShowFontSizeToast(true)
+    setTimeout(() => setShowFontSizeToast(false), 1500)
   }
 
   // 컬러 테마
@@ -146,7 +167,11 @@ export default function ParentsInvitationView({
         className={`relative max-w-[390px] mx-auto min-h-screen ${fontStyle.className}`}
         style={{
           backgroundColor: theme.background,
-          fontSize: `${currentFontConfig.scale * 100}%`,
+          zoom: currentFontConfig.zoom,
+          // Firefox 대응 (zoom 미지원)
+          // @ts-expect-error - MozTransform is vendor-specific
+          MozTransform: currentFontConfig.zoom !== 1 ? `scale(${currentFontConfig.zoom})` : undefined,
+          MozTransformOrigin: currentFontConfig.zoom !== 1 ? 'top center' : undefined,
         }}
       >
         {/* 봉투 화면 */}
@@ -189,31 +214,50 @@ export default function ParentsInvitationView({
                 {/* 글자 크기 조절 버튼 - 좌측 상단 */}
                 <button
                   onClick={cycleFontSize}
-                  className="flex items-center justify-center transition-all"
+                  className="flex items-center gap-1.5 transition-all active:scale-95"
                   style={{
                     position: 'absolute',
                     top: '20px',
                     left: '20px',
                     zIndex: 100,
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
                     boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
                     borderRadius: '20px',
-                    padding: '8px 12px',
-                    minWidth: '44px',
+                    padding: '8px 14px',
                     height: '40px',
                   }}
                   title={`글자 크기: ${currentFontConfig.label}`}
                 >
-                  <span
-                    className="font-medium"
-                    style={{
-                      color: theme.primary,
-                      fontSize: fontSize === 'normal' ? '14px' : fontSize === 'large' ? '12px' : '11px',
-                    }}
-                  >
-                    {currentFontConfig.icon}
+                  <span style={{ color: theme.primary, fontSize: '16px', fontWeight: 600 }}>
+                    가
+                  </span>
+                  <span style={{ color: '#666', fontSize: '11px', fontWeight: 500 }}>
+                    {currentFontConfig.label}
                   </span>
                 </button>
+
+                {/* 글자 크기 안내 토스트 */}
+                {showFontSizeToast && (
+                  <div
+                    className="animate-fade-in"
+                    style={{
+                      position: 'absolute',
+                      top: '70px',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      zIndex: 100,
+                      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                      color: '#fff',
+                      padding: '10px 16px',
+                      borderRadius: '20px',
+                      fontSize: '13px',
+                      whiteSpace: 'nowrap',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                    }}
+                  >
+                    {fontSizeToastMessage}
+                  </div>
+                )}
 
                 {/* 음악 재생 버튼 - 우측 상단 */}
                 <audio ref={audioRef} loop preload="auto">

@@ -18,9 +18,7 @@ import {
   SAMPLE_THANK_YOU,
 } from '@/lib/sampleData'
 import { parseHighlight } from '@/lib/textUtils'
-import { AlignLeft, AlignCenter, AlignRight, X, Plus, ChevronUp, ChevronDown, GripVertical, Sparkles } from 'lucide-react'
-import StoryGeneratorModal, { FamilyGeneratedResult } from '@/components/ai/StoryGeneratorModal'
-import { GeneratedStory } from '@/app/api/ai/generate-story/route'
+import { AlignLeft, AlignCenter, AlignRight, X, Plus, ChevronUp, ChevronDown, GripVertical } from 'lucide-react'
 
 // 로컬 상태 슬라이더 (깜빡임 방지)
 function LocalSlider({
@@ -137,8 +135,6 @@ interface Step4ContentProps {
 export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Step4ContentProps) {
   const { invitation, updateNestedField, addStory, removeStory, addInterview, removeInterview, toggleSectionVisibility, setActiveSection } = useEditorStore()
   const [uploadingImages, setUploadingImages] = useState<Set<string>>(new Set())
-  // AI 초안 작성 모달 상태
-  const [isWhyWeChoseModalOpen, setIsWhyWeChoseModalOpen] = useState(false)
 
   if (!invitation) return null
 
@@ -213,26 +209,6 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
     SAMPLE_INTERVIEWS.forEach((interview, index) => {
       updateNestedField(`content.interviews.${index}`, { ...interview })
     })
-  }
-
-  // AI 서로를 선택한 이유 초안 적용
-  const handleWhyWeChoseAIComplete = (result: FamilyGeneratedResult) => {
-    // 신랑 description 적용
-    if (result.groomDescription) {
-      updateNestedField('whyWeChose.groom.description', result.groomDescription)
-    }
-    // 신랑 quote 적용
-    if (result.groomQuote) {
-      updateNestedField('whyWeChose.groom.quote', result.groomQuote)
-    }
-    // 신부 description 적용
-    if (result.brideDescription) {
-      updateNestedField('whyWeChose.bride.description', result.brideDescription)
-    }
-    // 신부 quote 적용
-    if (result.brideQuote) {
-      updateNestedField('whyWeChose.bride.quote', result.brideQuote)
-    }
   }
 
   // 포토 디바이더 에디터 컴포넌트 (섹션별 종속)
@@ -1118,18 +1094,6 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
 
           {whyWeChose.enabled !== false && (
             <div className="space-y-4">
-              {/* AI 초안 작성 버튼 - 상단 버튼으로 통합됨 (추후 삭제 예정)
-              <button
-                type="button"
-                onClick={() => setIsWhyWeChoseModalOpen(true)}
-                className="w-full py-3 px-4 rounded-lg border-2 border-dashed border-green-300 bg-green-50 hover:bg-green-100 transition-colors flex items-center justify-center gap-2 text-green-700"
-              >
-                <Sparkles className="w-4 h-4" />
-                <span className="text-sm font-medium">AI가 초안을 작성해드려요</span>
-                <span className="text-xs text-green-600">(질문에 답하면 자동 생성)</span>
-              </button>
-              */}
-
               {/* TIP 섹션 */}
               <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                 <p className="text-sm text-blue-800 mb-2">💙 상대에게 느낀 특별함을, 두 분의 말로 직접 전해 보세요.</p>
@@ -1948,16 +1912,6 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
           </div>
         )}
       </section>
-
-      {/* AI 서로를 선택한 이유 초안 작성 모달 - 상단 버튼으로 통합됨 (추후 삭제 예정)
-      <StoryGeneratorModal
-        open={isWhyWeChoseModalOpen}
-        onOpenChange={setIsWhyWeChoseModalOpen}
-        templateType="family"
-        onComplete={() => {}}
-        onFamilyComplete={handleWhyWeChoseAIComplete}
-      />
-      */}
     </div>
   )
 }

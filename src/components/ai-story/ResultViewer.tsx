@@ -35,6 +35,7 @@ interface ResultViewerProps {
   onRegenerate: (section: string) => void
   onApply: (content: GeneratedContent) => void
   formData?: AllFormData
+  isFamilyTemplate?: boolean
 }
 
 interface SectionCardProps {
@@ -537,6 +538,7 @@ export default function ResultViewer({
   onRegenerate,
   onApply,
   formData,
+  isFamilyTemplate = false,
 }: ResultViewerProps) {
   const [editedContent, setEditedContent] = useState<GeneratedContent | null>(
     content
@@ -583,8 +585,14 @@ export default function ResultViewer({
     updateRegenStatuses()
   }, [updateRegenStatuses])
 
-  const groomName = formData?.groomProfile?.name || '신랑'
-  const brideName = formData?.brideProfile?.name || '신부'
+  // FAMILY 템플릿: whyWeChose에서 이름 가져오기
+  // OUR 템플릿: groomProfile/brideProfile에서 이름 가져오기
+  const groomName = isFamilyTemplate
+    ? (formData?.whyWeChose?.groomName || '신랑')
+    : (formData?.groomProfile?.name || '신랑')
+  const brideName = isFamilyTemplate
+    ? (formData?.whyWeChose?.brideName || '신부')
+    : (formData?.brideProfile?.name || '신부')
 
   // 토스트 표시
   const showToast = useCallback(
@@ -805,7 +813,13 @@ export default function ResultViewer({
   }
 
   // 콘텐츠 없음 또는 필수 필드 누락
-  if (!content || !editedContent || !editedContent.story) {
+  // FAMILY 템플릿: story 대신 whyWeChose 확인
+  // OUR 템플릿: story 확인
+  const hasRequiredContent = isFamilyTemplate
+    ? (content && editedContent && editedContent.whyWeChose)
+    : (content && editedContent && editedContent.story)
+
+  if (!hasRequiredContent) {
     return (
       <div className="text-center py-16">
         <div className="text-5xl mb-4">📝</div>
@@ -817,8 +831,10 @@ export default function ResultViewer({
     )
   }
 
-  // story 객체 안전 검사
-  const story = editedContent.story || { first: '', together: '', preparation: '' }
+  // story 객체 안전 검사 (OUR 템플릿용)
+  const story = editedContent?.story || { first: '', together: '', preparation: '' }
+  // whyWeChose 객체 안전 검사 (FAMILY 템플릿용)
+  const whyWeChose = editedContent?.whyWeChose || { groomDescription: '', brideDescription: '' }
 
   return (
     <div className="space-y-6 pb-8">
@@ -835,177 +851,289 @@ export default function ResultViewer({
         </p>
       </div>
 
-      {/* 1. 인사말 */}
-      <SectionCard
-        title="인사말"
-        icon="📝"
-        content={editedContent.greeting}
-        sectionKey="greeting"
-        isEditing={editingSection === 'greeting'}
-        editedText={editedText}
-        isRegenerating={regeneratingSection === 'greeting'}
-        regenStatus={regenStatuses['greeting'] || defaultRegenStatus}
-        onEdit={() => startEdit('greeting', editedContent.greeting)}
-        onSave={() => saveEdit('greeting')}
-        onCancel={cancelEdit}
-        onRegenerate={() => handleRegenerate('greeting')}
-        onCopy={() => copyToClipboard(editedContent.greeting, '인사말')}
-        onTextChange={setEditedText}
-      />
+      {/* ============================================================ */}
+      {/* FAMILY 템플릿 전용 섹션 */}
+      {/* ============================================================ */}
+      {isFamilyTemplate && (
+        <>
+          {/* 서로를 선택한 이유 */}
+          <Card className="animate-fade-in shadow-sm">
+            <CardHeader className="border-b pb-4">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <span>💕</span>
+                서로를 선택한 이유
+              </CardTitle>
+              <CardAction>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleRegenerate('whyWeChose')}
+                  disabled={!!regeneratingSection || !regenStatuses['whyWeChose']?.canRegenerate}
+                  className={`text-xs h-8 ${
+                    regenStatuses['whyWeChose']?.canRegenerate !== false
+                      ? 'text-rose-600 hover:text-rose-700 border-rose-200 hover:border-rose-300'
+                      : 'text-gray-400 border-gray-200 cursor-not-allowed'
+                  }`}
+                >
+                  {regeneratingSection === 'whyWeChose' ? '생성 중...' : '🔄 다시 생성'}
+                </Button>
+              </CardAction>
+            </CardHeader>
 
-      {/* 2. 감사말 */}
-      <SectionCard
-        title="감사 인사"
-        icon="💕"
-        content={editedContent.thanks}
-        sectionKey="thanks"
-        isEditing={editingSection === 'thanks'}
-        editedText={editedText}
-        isRegenerating={regeneratingSection === 'thanks'}
-        regenStatus={regenStatuses['thanks'] || defaultRegenStatus}
-        onEdit={() => startEdit('thanks', editedContent.thanks)}
-        onSave={() => saveEdit('thanks')}
-        onCancel={cancelEdit}
-        onRegenerate={() => handleRegenerate('thanks')}
-        onCopy={() => copyToClipboard(editedContent.thanks, '감사 인사')}
-        onTextChange={setEditedText}
-      />
+            <CardContent className="pt-4 space-y-4">
+              {regeneratingSection === 'whyWeChose' ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="w-8 h-8 border-3 border-rose-200 border-t-rose-500 rounded-full animate-spin mr-3" />
+                  <span className="text-gray-600">새로운 내용을 생성하고 있어요...</span>
+                </div>
+              ) : (
+                <>
+                  {/* 신랑이 신부를 선택한 이유 */}
+                  <SectionCard
+                    title={`${groomName}이 ${brideName}을 선택한 이유`}
+                    icon="🤵"
+                    content={whyWeChose.groomDescription}
+                    sectionKey="whyWeChose.groomDescription"
+                    isEditing={editingSection === 'whyWeChose.groomDescription'}
+                    editedText={editedText}
+                    isRegenerating={false}
+                    regenStatus={defaultRegenStatus}
+                    onEdit={() => startEdit('whyWeChose.groomDescription', whyWeChose.groomDescription)}
+                    onSave={() => {
+                      if (!editedContent) return
+                      const updated = {
+                        ...editedContent,
+                        whyWeChose: { ...whyWeChose, groomDescription: editedText }
+                      }
+                      setEditedContent(updated)
+                      setEditingSection(null)
+                      setEditedText('')
+                      showToast('수정 사항이 저장되었습니다.', 'success')
+                    }}
+                    onCancel={cancelEdit}
+                    onRegenerate={() => {}}
+                    onCopy={() => copyToClipboard(whyWeChose.groomDescription, '신랑이 선택한 이유')}
+                    onTextChange={setEditedText}
+                    compact
+                    hideRegenerate
+                  />
 
-      {/* 3. 신랑 소개 */}
-      <SectionCard
-        title={`신랑 소개 (${groomName})`}
-        icon="🤵"
-        content={editedContent.groomProfile}
-        sectionKey="groomProfile"
-        isEditing={editingSection === 'groomProfile'}
-        editedText={editedText}
-        isRegenerating={regeneratingSection === 'groomProfile'}
-        regenStatus={regenStatuses['groomProfile'] || defaultRegenStatus}
-        onEdit={() => startEdit('groomProfile', editedContent.groomProfile)}
-        onSave={() => saveEdit('groomProfile')}
-        onCancel={cancelEdit}
-        onRegenerate={() => handleRegenerate('groomProfile')}
-        onCopy={() => copyToClipboard(editedContent.groomProfile, '신랑 소개')}
-        onTextChange={setEditedText}
-      />
+                  {/* 신부가 신랑을 선택한 이유 */}
+                  <SectionCard
+                    title={`${brideName}이 ${groomName}을 선택한 이유`}
+                    icon="👰"
+                    content={whyWeChose.brideDescription}
+                    sectionKey="whyWeChose.brideDescription"
+                    isEditing={editingSection === 'whyWeChose.brideDescription'}
+                    editedText={editedText}
+                    isRegenerating={false}
+                    regenStatus={defaultRegenStatus}
+                    onEdit={() => startEdit('whyWeChose.brideDescription', whyWeChose.brideDescription)}
+                    onSave={() => {
+                      if (!editedContent) return
+                      const updated = {
+                        ...editedContent,
+                        whyWeChose: { ...whyWeChose, brideDescription: editedText }
+                      }
+                      setEditedContent(updated)
+                      setEditingSection(null)
+                      setEditedText('')
+                      showToast('수정 사항이 저장되었습니다.', 'success')
+                    }}
+                    onCancel={cancelEdit}
+                    onRegenerate={() => {}}
+                    onCopy={() => copyToClipboard(whyWeChose.brideDescription, '신부가 선택한 이유')}
+                    onTextChange={setEditedText}
+                    compact
+                    hideRegenerate
+                  />
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </>
+      )}
 
-      {/* 4. 신부 소개 */}
-      <SectionCard
-        title={`신부 소개 (${brideName})`}
-        icon="👰"
-        content={editedContent.brideProfile}
-        sectionKey="brideProfile"
-        isEditing={editingSection === 'brideProfile'}
-        editedText={editedText}
-        isRegenerating={regeneratingSection === 'brideProfile'}
-        regenStatus={regenStatuses['brideProfile'] || defaultRegenStatus}
-        onEdit={() => startEdit('brideProfile', editedContent.brideProfile)}
-        onSave={() => saveEdit('brideProfile')}
-        onCancel={cancelEdit}
-        onRegenerate={() => handleRegenerate('brideProfile')}
-        onCopy={() => copyToClipboard(editedContent.brideProfile, '신부 소개')}
-        onTextChange={setEditedText}
-      />
-
-      {/* 5. 러브스토리 */}
-      <Card className="animate-fade-in shadow-sm">
-        <CardHeader className="border-b pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <span>💑</span>
-            우리의 러브스토리
-          </CardTitle>
-          <CardAction>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleRegenerate('story')}
-              disabled={!!regeneratingSection || !regenStatuses['story']?.canRegenerate}
-              className={`text-xs h-8 ${
-                regenStatuses['story']?.canRegenerate
-                  ? 'text-rose-600 hover:text-rose-700 border-rose-200 hover:border-rose-300'
-                  : 'text-gray-400 border-gray-200 cursor-not-allowed'
-              }`}
-            >
-              {regeneratingSection === 'story' ? '생성 중...' : '🔄 전체 다시 생성'}
-              {regenStatuses['story'] && <RegenBadge status={regenStatuses['story']} />}
-            </Button>
-          </CardAction>
-        </CardHeader>
-
-        <CardContent className="pt-4 space-y-4">
-          {/* 1단계: 연애의 시작 */}
+      {/* ============================================================ */}
+      {/* OUR 템플릿 전용 섹션 */}
+      {/* ============================================================ */}
+      {!isFamilyTemplate && (
+        <>
+          {/* 1. 인사말 */}
           <SectionCard
-            title="1단계: 연애의 시작"
-            icon=""
-            content={story.first}
-            sectionKey="story.first"
-            isEditing={editingSection === 'story.first'}
+            title="인사말"
+            icon="📝"
+            content={editedContent.greeting}
+            sectionKey="greeting"
+            isEditing={editingSection === 'greeting'}
             editedText={editedText}
-            isRegenerating={regeneratingSection === 'story.first'}
-            regenStatus={regenStatuses['story.first'] || defaultRegenStatus}
-            onEdit={() => startEdit('story.first', story.first)}
-            onSave={() => saveEdit('story.first')}
+            isRegenerating={regeneratingSection === 'greeting'}
+            regenStatus={regenStatuses['greeting'] || defaultRegenStatus}
+            onEdit={() => startEdit('greeting', editedContent.greeting)}
+            onSave={() => saveEdit('greeting')}
             onCancel={cancelEdit}
-            onRegenerate={() => handleRegenerate('story.first')}
-            onCopy={() =>
-              copyToClipboard(story.first, '연애의 시작')
-            }
+            onRegenerate={() => handleRegenerate('greeting')}
+            onCopy={() => copyToClipboard(editedContent.greeting, '인사말')}
             onTextChange={setEditedText}
-            compact
-            hideRegenerate
           />
 
-          {/* 2단계: 함께 성장한 시간 */}
+          {/* 2. 감사말 */}
           <SectionCard
-            title="2단계: 함께 성장한 시간"
-            icon=""
-            content={story.together}
-            sectionKey="story.together"
-            isEditing={editingSection === 'story.together'}
+            title="감사 인사"
+            icon="💕"
+            content={editedContent.thanks}
+            sectionKey="thanks"
+            isEditing={editingSection === 'thanks'}
             editedText={editedText}
-            isRegenerating={regeneratingSection === 'story.together'}
-            regenStatus={regenStatuses['story.together'] || defaultRegenStatus}
-            onEdit={() =>
-              startEdit('story.together', story.together)
-            }
-            onSave={() => saveEdit('story.together')}
+            isRegenerating={regeneratingSection === 'thanks'}
+            regenStatus={regenStatuses['thanks'] || defaultRegenStatus}
+            onEdit={() => startEdit('thanks', editedContent.thanks)}
+            onSave={() => saveEdit('thanks')}
             onCancel={cancelEdit}
-            onRegenerate={() => handleRegenerate('story.together')}
-            onCopy={() =>
-              copyToClipboard(story.together, '함께 성장한 시간')
-            }
+            onRegenerate={() => handleRegenerate('thanks')}
+            onCopy={() => copyToClipboard(editedContent.thanks, '감사 인사')}
             onTextChange={setEditedText}
-            compact
-            hideRegenerate
           />
 
-          {/* 3단계: 결혼 준비 */}
+          {/* 3. 신랑 소개 */}
           <SectionCard
-            title="3단계: 결혼 준비"
-            icon=""
-            content={story.preparation}
-            sectionKey="story.preparation"
-            isEditing={editingSection === 'story.preparation'}
+            title={`신랑 소개 (${groomName})`}
+            icon="🤵"
+            content={editedContent.groomProfile}
+            sectionKey="groomProfile"
+            isEditing={editingSection === 'groomProfile'}
             editedText={editedText}
-            isRegenerating={regeneratingSection === 'story.preparation'}
-            regenStatus={regenStatuses['story.preparation'] || defaultRegenStatus}
-            onEdit={() =>
-              startEdit('story.preparation', story.preparation)
-            }
-            onSave={() => saveEdit('story.preparation')}
+            isRegenerating={regeneratingSection === 'groomProfile'}
+            regenStatus={regenStatuses['groomProfile'] || defaultRegenStatus}
+            onEdit={() => startEdit('groomProfile', editedContent.groomProfile)}
+            onSave={() => saveEdit('groomProfile')}
             onCancel={cancelEdit}
-            onRegenerate={() => handleRegenerate('story.preparation')}
-            onCopy={() =>
-              copyToClipboard(story.preparation, '결혼 준비')
-            }
+            onRegenerate={() => handleRegenerate('groomProfile')}
+            onCopy={() => copyToClipboard(editedContent.groomProfile, '신랑 소개')}
             onTextChange={setEditedText}
-            compact
-            hideRegenerate
           />
-        </CardContent>
-      </Card>
 
-      {/* 6. 웨딩 인터뷰 */}
+          {/* 4. 신부 소개 */}
+          <SectionCard
+            title={`신부 소개 (${brideName})`}
+            icon="👰"
+            content={editedContent.brideProfile}
+            sectionKey="brideProfile"
+            isEditing={editingSection === 'brideProfile'}
+            editedText={editedText}
+            isRegenerating={regeneratingSection === 'brideProfile'}
+            regenStatus={regenStatuses['brideProfile'] || defaultRegenStatus}
+            onEdit={() => startEdit('brideProfile', editedContent.brideProfile)}
+            onSave={() => saveEdit('brideProfile')}
+            onCancel={cancelEdit}
+            onRegenerate={() => handleRegenerate('brideProfile')}
+            onCopy={() => copyToClipboard(editedContent.brideProfile, '신부 소개')}
+            onTextChange={setEditedText}
+          />
+
+          {/* 5. 러브스토리 */}
+          <Card className="animate-fade-in shadow-sm">
+            <CardHeader className="border-b pb-4">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <span>💑</span>
+                우리의 러브스토리
+              </CardTitle>
+              <CardAction>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleRegenerate('story')}
+                  disabled={!!regeneratingSection || !regenStatuses['story']?.canRegenerate}
+                  className={`text-xs h-8 ${
+                    regenStatuses['story']?.canRegenerate
+                      ? 'text-rose-600 hover:text-rose-700 border-rose-200 hover:border-rose-300'
+                      : 'text-gray-400 border-gray-200 cursor-not-allowed'
+                  }`}
+                >
+                  {regeneratingSection === 'story' ? '생성 중...' : '🔄 전체 다시 생성'}
+                  {regenStatuses['story'] && <RegenBadge status={regenStatuses['story']} />}
+                </Button>
+              </CardAction>
+            </CardHeader>
+
+            <CardContent className="pt-4 space-y-4">
+              {/* 1단계: 연애의 시작 */}
+              <SectionCard
+                title="1단계: 연애의 시작"
+                icon=""
+                content={story.first}
+                sectionKey="story.first"
+                isEditing={editingSection === 'story.first'}
+                editedText={editedText}
+                isRegenerating={regeneratingSection === 'story.first'}
+                regenStatus={regenStatuses['story.first'] || defaultRegenStatus}
+                onEdit={() => startEdit('story.first', story.first)}
+                onSave={() => saveEdit('story.first')}
+                onCancel={cancelEdit}
+                onRegenerate={() => handleRegenerate('story.first')}
+                onCopy={() =>
+                  copyToClipboard(story.first, '연애의 시작')
+                }
+                onTextChange={setEditedText}
+                compact
+                hideRegenerate
+              />
+
+              {/* 2단계: 함께 성장한 시간 */}
+              <SectionCard
+                title="2단계: 함께 성장한 시간"
+                icon=""
+                content={story.together}
+                sectionKey="story.together"
+                isEditing={editingSection === 'story.together'}
+                editedText={editedText}
+                isRegenerating={regeneratingSection === 'story.together'}
+                regenStatus={regenStatuses['story.together'] || defaultRegenStatus}
+                onEdit={() =>
+                  startEdit('story.together', story.together)
+                }
+                onSave={() => saveEdit('story.together')}
+                onCancel={cancelEdit}
+                onRegenerate={() => handleRegenerate('story.together')}
+                onCopy={() =>
+                  copyToClipboard(story.together, '함께 성장한 시간')
+                }
+                onTextChange={setEditedText}
+                compact
+                hideRegenerate
+              />
+
+              {/* 3단계: 결혼 준비 */}
+              <SectionCard
+                title="3단계: 결혼 준비"
+                icon=""
+                content={story.preparation}
+                sectionKey="story.preparation"
+                isEditing={editingSection === 'story.preparation'}
+                editedText={editedText}
+                isRegenerating={regeneratingSection === 'story.preparation'}
+                regenStatus={regenStatuses['story.preparation'] || defaultRegenStatus}
+                onEdit={() =>
+                  startEdit('story.preparation', story.preparation)
+                }
+                onSave={() => saveEdit('story.preparation')}
+                onCancel={cancelEdit}
+                onRegenerate={() => handleRegenerate('story.preparation')}
+                onCopy={() =>
+                  copyToClipboard(story.preparation, '결혼 준비')
+                }
+                onTextChange={setEditedText}
+                compact
+                hideRegenerate
+              />
+            </CardContent>
+          </Card>
+        </>
+      )}
+
+      {/* ============================================================ */}
+      {/* 공통 섹션: 웨딩 인터뷰 */}
+      {/* ============================================================ */}
       {editedContent.interview && editedContent.interview.length > 0 && (
         <Card className="animate-fade-in shadow-sm">
           <CardHeader className="border-b pb-4">
@@ -1070,6 +1198,28 @@ export default function ResultViewer({
             )}
           </CardContent>
         </Card>
+      )}
+
+      {/* ============================================================ */}
+      {/* FAMILY 템플릿: 감사인사 (인터뷰 다음, 하단에 위치) */}
+      {/* ============================================================ */}
+      {isFamilyTemplate && (
+        <SectionCard
+          title="감사 인사"
+          icon="🙏"
+          content={editedContent.thanks}
+          sectionKey="thanks"
+          isEditing={editingSection === 'thanks'}
+          editedText={editedText}
+          isRegenerating={regeneratingSection === 'thanks'}
+          regenStatus={regenStatuses['thanks'] || defaultRegenStatus}
+          onEdit={() => startEdit('thanks', editedContent.thanks)}
+          onSave={() => saveEdit('thanks')}
+          onCancel={cancelEdit}
+          onRegenerate={() => handleRegenerate('thanks')}
+          onCopy={() => copyToClipboard(editedContent.thanks, '감사 인사')}
+          onTextChange={setEditedText}
+        />
       )}
 
       {/* 하단 액션 버튼 */}

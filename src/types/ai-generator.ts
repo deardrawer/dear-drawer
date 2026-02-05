@@ -233,7 +233,11 @@ export interface GeneratedContent {
     jointAnswer?: string;
   }>;
   // FAMILY 템플릿용 필드
-  parentsGreeting?: string;  // 부모님 인사말 생성 결과
+  parentsGreeting?: string;  // 부모님 인사말 생성 결과 (deprecated)
+  whyWeChose?: {
+    groomDescription: string;  // 신랑이 신부를 선택한 이유
+    brideDescription: string;  // 신부가 신랑을 선택한 이유
+  };
 }
 
 // 스텝 정의

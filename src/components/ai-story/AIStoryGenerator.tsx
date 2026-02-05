@@ -465,6 +465,7 @@ export default function AIStoryGenerator({
             onRegenerate={regenerateSection}
             onApply={handleApply}
             formData={formData}
+            isFamilyTemplate={isFamilyTemplate}
           />
         )}
       </div>

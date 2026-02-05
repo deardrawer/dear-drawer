@@ -212,6 +212,7 @@ export interface AllFormData {
   interview: InterviewFormData;
   // FAMILY 템플릿용
   parentsGreeting?: ParentsGreetingFormData;
+  whyWeChose?: WhyWeChoseFormData;
 }
 
 // 생성된 결과
@@ -238,8 +239,8 @@ export interface GeneratedContent {
 // 스텝 정의
 // 인사말은 인트로에서 별도 AI로 생성하므로 제외
 // OUR: 소개(연인의 시선) → 러브스토리 → 인터뷰 → 감사인사 → 결과
-// FAMILY: 부모님인사말 → 인터뷰 → 감사인사 → 결과
-export type StepId = 'profile' | 'story' | 'parentsGreeting' | 'interview' | 'thanks' | 'result';
+// FAMILY: 서로를 선택한 이유 → 인터뷰 → 감사인사 → 결과
+export type StepId = 'profile' | 'story' | 'parentsGreeting' | 'whyWeChose' | 'interview' | 'thanks' | 'result';
 
 export interface Step {
   id: StepId;
@@ -258,9 +259,9 @@ export const STEPS: Step[] = [
 ];
 
 // FAMILY 템플릿용 스텝
-// 부모님 인사말 + 커플인터뷰 (커플 소개, 러브스토리 없음)
+// 서로를 선택한 이유 + 커플인터뷰 (커플 소개, 러브스토리 없음)
 export const FAMILY_STEPS: Step[] = [
-  { id: 'parentsGreeting', title: '부모님 인사말', description: '부모님의 마음을 담은 인사말을 작성해요' },
+  { id: 'whyWeChose', title: '서로를 선택한 이유', description: '서로를 선택한 이유를 작성해요' },
   { id: 'interview', title: '인터뷰', description: '커플 인터뷰를 만들어요' },
   { id: 'thanks', title: '감사인사', description: '하객분들께 전하는 감사의 글' },
   { id: 'result', title: '결과', description: '생성된 결과를 확인해요' },

@@ -169,7 +169,6 @@ export default function ParentsInvitationView({
           backgroundColor: theme.background,
           zoom: currentFontConfig.zoom,
           // Firefox 대응 (zoom 미지원)
-          // @ts-expect-error - MozTransform is vendor-specific
           MozTransform: currentFontConfig.zoom !== 1 ? `scale(${currentFontConfig.zoom})` : undefined,
           MozTransformOrigin: currentFontConfig.zoom !== 1 ? 'top center' : undefined,
         }}

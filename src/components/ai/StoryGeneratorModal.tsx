@@ -36,13 +36,15 @@ const exampleAnswers: Record<string, string> = {
   formality_level: '적당히 격식있게',
   venue_description: '한강이 보이는 호텔에서 진행해요. 통유리창으로 노을이 예쁘게 보입니다.',
   additional_info: '주차는 2시간 무료이며, 드레스코드는 세미 포멀입니다.',
-  // FAMILY 서로를 선택한 이유 예시
-  groom_self_personality: '급하고 걱정이 많은 편이에요. 계획대로 되지 않으면 불안해합니다.',
-  groom_self_weakness: '감정 표현이 서툴러요. 고마운 마음도 잘 말하지 못해요.',
-  groom_partner_complement: '제가 급할 때 차분하게 정리해주고, 괜찮다고 안심시켜줘요.',
-  bride_self_personality: '감성적이고 예민한 편이에요. 작은 일에도 쉽게 울어요.',
-  bride_self_weakness: '결정을 잘 못해요. 우유부단하다는 말을 많이 들어요.',
-  bride_partner_complement: '결정을 못할 때 방향을 제시해주고, 힘들 때 묵묵히 곁에 있어줘요.',
+  // FAMILY 서로를 선택한 이유 예시 (개선된 질문 구조)
+  groom_self_personality: '신중한 편이에요. 결정하는 데 시간이 오래 걸리고, 여러 가지를 따져본 후에야 움직여요.',
+  groom_self_weakness: '감정 표현이 서툴러요. 고마운 마음을 말로 전하는 게 어색해서 그냥 넘어갈 때가 많아요.',
+  groom_partner_how_fills: '제가 결정을 못 내리고 있을 때 기다려주면서 같이 고민해줘요. 서두르지 않아도 된다고, 천천히 해도 괜찮다고요.',
+  groom_decision_moment: '제가 아팠을 때 밤새 곁을 지켜줬어요. 그 모습을 보면서 이 사람이면 평생 함께해도 되겠다 싶었어요.',
+  bride_self_personality: '말이 빠르고 마음이 앞서가요. 생각보다 행동이 먼저 나갈 때가 많아요.',
+  bride_self_weakness: '너무 급해서 상대방을 재촉할 때가 있어요. 기다리는 게 힘들어서 속상하게 만들 때도 있고요.',
+  bride_partner_how_fills: '제가 급할 때 차분하게 정리해줘요. "괜찮아, 천천히 해"라고 말해주면 마음이 편해져요.',
+  bride_decision_moment: '힘든 시기에 아무 말 없이 곁을 지켜주는 걸 봤어요. 그냥 옆에 있어주는 것만으로도 큰 힘이 됐고, 그때 확신했어요.',
 }
 
 // 순서: 소개 → 스토리 → 인터뷰 → 감사인사
@@ -391,8 +393,8 @@ export default function StoryGeneratorModal({
                     {currentQuestion.person === 'groom' ? '신랑' : '신부'}{' '}
                     {currentQuestion.person === 'groom'
                       ? currentQuestionIndex + 1
-                      : currentQuestionIndex - 2}{' '}
-                    / 3
+                      : currentQuestionIndex - 3}{' '}
+                    / 4
                   </span>
                 ) : (
                   <span>질문 {currentQuestionIndex + 1} / {questions.length}</span>

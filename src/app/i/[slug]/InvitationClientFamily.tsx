@@ -2314,7 +2314,7 @@ function AnniversaryCounterSection({
 }) {
   const { ref, isVisible } = useScrollAnimation()
   const anniversary = calculateAnniversary(startDate)
-  const displayClosingText = closingText || '그리고 이제 드디어 부르는 서로의 이름에 \'신랑\', \'신부\'라는 호칭을 담습니다.'
+  const displayClosingText = closingText || '그리고 이제 드디어 부르는 서로의 이름에\n\'신랑\', \'신부\'라는 호칭을 담습니다.'
 
   return (
     <div
@@ -2489,7 +2489,7 @@ const mockInvitation = {
         images: ['/sample/story3-1.jpeg', '/sample/story3-2.png'],
       },
     ],
-    closingText: '그리고 이제 드디어 부르는 서로의 이름에 \'신랑\', \'신부\'라는 호칭을 담습니다.',
+    closingText: '그리고 이제 드디어 부르는 서로의 이름에\n\'신랑\', \'신부\'라는 호칭을 담습니다.',
   },
 
   content: {

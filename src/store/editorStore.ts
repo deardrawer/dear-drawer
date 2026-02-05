@@ -538,7 +538,7 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
       { date: '', title: '', desc: '', images: [], imageSettings: [] },
       { date: '', title: '', desc: '', images: [], imageSettings: [] },
     ],
-    closingText: '그리고 이제 드디어 부르는 서로의 이름에 \'신랑\', \'신부\'라는 호칭을 담습니다.',
+    closingText: '그리고 이제 드디어 부르는 서로의 이름에\n\'신랑\', \'신부\'라는 호칭을 담습니다.',
   },
 
   // 콘텐츠

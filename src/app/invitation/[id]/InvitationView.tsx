@@ -1051,7 +1051,7 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors, isPaid
           {/* Closing Text */}
           <section className="anim-section px-7 py-10 text-center" style={{ background: themeColors.sectionBg }}>
             <p className="anim-paragraph text-sm leading-relaxed" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>
-              {invitation.relationship.closingText || "그리고 이제 드디어 부르는 서로의 이름에 '신랑', '신부'라는 호칭을 담습니다."}
+              {invitation.relationship.closingText || "그리고 이제 드디어 부르는 서로의 이름에\n'신랑', '신부'라는 호칭을 담습니다."}
             </p>
           </section>
         </>

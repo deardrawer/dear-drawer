@@ -590,7 +590,7 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors }: Page
 
           {/* 클로징 문구 */}
           <p className={`text-sm leading-relaxed ${!invitation.relationship.stories.some(s => s.title || s.desc) ? 'opacity-50' : ''}`} style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>
-            {invitation.relationship.closingText || '그리고 이제 드디어 부르는 서로의 이름에 \'신랑\', \'신부\'라는 호칭을 담습니다.'}
+            {invitation.relationship.closingText || '그리고 이제 드디어 부르는 서로의 이름에\n\'신랑\', \'신부\'라는 호칭을 담습니다.'}
           </p>
         </section>
       )}

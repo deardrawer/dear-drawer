@@ -1784,8 +1784,8 @@ function InterviewSection({
       >
         {interview.images && interview.images.length > 0 ? (
           <ProfileImageSlider
-            images={interview.images}
-            imageSettings={(interview as any).imageSettings || []}
+            images={interview.images.slice(0, 2)}
+            imageSettings={(interview as any).imageSettings?.slice(0, 2) || []}
             className="mb-8"
           />
         ) : (
@@ -1909,14 +1909,13 @@ function StorySection({
             gap: '12px'
           }}
         >
-          {story.images.slice(0, 3).map((img, i) => {
+          {story.images.slice(0, 2).map((img, i) => {
             const imgSettings = (story as any).imageSettings?.[i] || { scale: 1, positionX: 0, positionY: 0 }
             return (
               <div
                 key={i}
-                className={story.images!.length === 3 && i === 0 ? 'col-span-2' : ''}
                 style={{
-                  aspectRatio: story.images!.length === 3 && i === 0 ? '2/1' : '1',
+                  aspectRatio: '1',
                   backgroundColor: '#f5f5f5',
                   borderRadius: '8px',
                   overflow: 'hidden'

@@ -1035,11 +1035,11 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors, isPaid
               {story.title && <p className="anim-title text-[15px] mb-3" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400 }}>{story.title}</p>}
               {story.desc && <p className="anim-paragraph text-[11px] font-light leading-[1.9] mb-7" style={{ color: '#777' }} dangerouslySetInnerHTML={{ __html: parseHighlight(story.desc) }} />}
               {story.images && story.images.length > 0 && (
-                <div className={`anim-stagger grid gap-3 ${story.images.length === 1 ? 'grid-cols-1' : story.images.length === 2 ? 'grid-cols-2' : 'grid-cols-2'}`}>
-                  {story.images.slice(0, 3).map((img, i) => {
+                <div className={`anim-stagger grid gap-3 ${story.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                  {story.images.slice(0, 2).map((img, i) => {
                     const s = story.imageSettings?.[i] || { scale: 1, positionX: 0, positionY: 0 }
                     return (
-                      <div key={i} className={`rounded-lg overflow-hidden ${story.images && story.images.length === 3 && i === 0 ? 'col-span-2 aspect-[2/1]' : 'aspect-square'}`}>
+                      <div key={i} className="rounded-lg overflow-hidden aspect-square">
                         <div className="w-full h-full bg-cover bg-center transition-transform duration-300" style={{ backgroundImage: `url(${img})`, transform: `scale(${s.scale}) translate(${s.positionX}%, ${s.positionY}%)` }} />
                       </div>
                     )
@@ -1094,8 +1094,8 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors, isPaid
             <section key={index} className="anim-section px-7 py-14" style={{ background: interview.bgClass === 'pink-bg' ? themeColors.sectionBg : themeColors.cardBg }}>
               {interview.images && interview.images.length > 0 ? (
                 <ProfileImageSlider
-                  images={interview.images}
-                  imageSettings={interview.imageSettings}
+                  images={interview.images.slice(0, 2)}
+                  imageSettings={interview.imageSettings?.slice(0, 2)}
                   className="anim-image mb-8"
                   autoPlay={true}
                   autoPlayInterval={4000}

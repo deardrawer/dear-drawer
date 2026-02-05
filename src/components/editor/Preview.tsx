@@ -551,8 +551,8 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors }: Page
             {story.title && <p className="text-[15px] mb-3" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400 }}>{story.title}</p>}
             {story.desc && <p className="text-[11px] font-light leading-[1.9] mb-7" style={{ color: '#777' }} dangerouslySetInnerHTML={{ __html: parseHighlight(story.desc) }} />}
             {story.images && story.images.length > 0 && (
-              <div className={`grid gap-3 ${story.images.length === 1 ? 'grid-cols-1' : story.images.length === 2 ? 'grid-cols-2' : 'grid-cols-2'}`}>
-                {story.images.slice(0, 3).map((img, i) => { const s = story.imageSettings?.[i] || { scale: 1, positionX: 0, positionY: 0 }; return <div key={i} className={`rounded-lg overflow-hidden ${story.images.length === 3 && i === 0 ? 'col-span-2 aspect-[2/1]' : 'aspect-square'}`}><div className="w-full h-full transition-transform duration-300" style={getImageCropStyle(img, s)} /></div> })}
+              <div className={`grid gap-3 ${story.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                {story.images.slice(0, 2).map((img, i) => { const s = story.imageSettings?.[i] || { scale: 1, positionX: 0, positionY: 0 }; return <div key={i} className="rounded-lg overflow-hidden aspect-square"><div className="w-full h-full transition-transform duration-300" style={getImageCropStyle(img, s)} /></div> })}
               </div>
             )}
           </section>
@@ -613,7 +613,7 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors }: Page
         const interviewsToShow = hasRealInterviews ? invitation.content.interviews : SAMPLE_INTERVIEWS
         return interviewsToShow.map((interview, index) => (interview.question || interview.answer) ? (
           <section key={index} className={`px-7 py-14 ${!hasRealInterviews ? 'opacity-50' : ''}`} style={{ background: interview.bgClass === 'pink-bg' ? themeColors.sectionBg : themeColors.cardBg }}>
-            {interview.images && interview.images.length > 0 ? <ProfileImageSlider images={interview.images} imageSettings={interview.imageSettings} className="mb-8" /> : <div className="w-full aspect-[4/5] rounded-xl mb-8 bg-gray-100 flex items-center justify-center"><span className="text-gray-400 text-sm">Interview Image</span></div>}
+            {interview.images && interview.images.length > 0 ? <ProfileImageSlider images={interview.images.slice(0, 2)} imageSettings={interview.imageSettings?.slice(0, 2)} className="mb-8" /> : <div className="w-full aspect-[4/5] rounded-xl mb-8 bg-gray-100 flex items-center justify-center"><span className="text-gray-400 text-sm">Interview Image</span></div>}
             {interview.question && <p className="text-sm mb-5 text-center"><span className="anim-underline revealed" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400, display: 'inline-block' }}>{interview.question}</span></p>}
             {interview.answer && <p className="text-[11px] font-light" style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: invitation.interviewTextStyle?.lineHeight ?? 2.0, textAlign: invitation.interviewTextStyle?.textAlign ?? 'left' }} dangerouslySetInnerHTML={{ __html: parseHighlight(interview.answer) }} />}
           </section>
@@ -938,7 +938,7 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
         return interviewsToShow.map((interview, index) => (interview.question || interview.answer) ? (
           <section key={index} id={index === 0 ? 'preview-interview' : undefined} className={`px-7 py-14 ${!hasRealInterviews ? 'opacity-50' : ''}`} style={{ background: '#ffffff' }}>
             {interview.images && interview.images.length > 0 ? (
-              <ProfileImageSlider images={interview.images} imageSettings={interview.imageSettings} className="mb-8" />
+              <ProfileImageSlider images={interview.images.slice(0, 2)} imageSettings={interview.imageSettings?.slice(0, 2)} className="mb-8" />
             ) : (
               <div className="w-full aspect-[4/5] rounded-xl mb-8 bg-gray-100 flex items-center justify-center">
                 <span className="text-gray-400 text-sm">Interview Image</span>

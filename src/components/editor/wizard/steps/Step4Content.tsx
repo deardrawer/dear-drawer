@@ -1363,11 +1363,11 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                 </div>
                 {/* 인터뷰 이미지 */}
                 <div className="space-y-1">
-                  <Label className="text-xs">사진 (슬라이드 형식)</Label>
+                  <Label className="text-xs">사진 (슬라이드 형식, 최대 2장)</Label>
                   <MultiImageUploader
                     images={interview.images || []}
                     onChange={(images) => updateNestedField(`content.interviews.${index}.images`, images)}
-                    maxImages={5}
+                    maxImages={2}
                     placeholder="사진 추가"
                     aspectRatio="aspect-[4/5]"
                   />

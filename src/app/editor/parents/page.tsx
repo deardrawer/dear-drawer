@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, Suspense } from 'react'
+import { useEffect, useState, Suspense, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/components/providers/AuthProvider'
@@ -380,6 +380,7 @@ function ParentsEditorContent() {
   const [previewTab, setPreviewTab] = useState<'intro' | 'main'>('intro')
   const [fullscreenTab, setFullscreenTab] = useState<'intro' | 'main'>('intro')
   const [currentWizardStep, setCurrentWizardStep] = useState<number>(1)
+  const wizardStepRef = useRef<number>(1) // 스텝 상태 보존용
   const [selectedGuest, setSelectedGuest] = useState<{ name: string; honorific: string; relation?: string; custom_message?: string } | null>(null)
   const [isMobile, setIsMobile] = useState(false)
   const [activeSection, setActiveSection] = useState<string | null>(null)
@@ -756,8 +757,10 @@ function ParentsEditorContent() {
                 slug={savedSlug || urlSlug || (invitationId ? invitationId : null)}
                 onSave={() => handleSave(true)}
                 onSlugChange={handleSlugChange}
+                initialStep={wizardStepRef.current as 1 | 2 | 3 | 4 | 5}
                 onStepChange={(step) => {
                   setCurrentWizardStep(step)
+                  wizardStepRef.current = step // ref에도 저장하여 리마운트 시 복원
                   // 봉투(2) → 인트로, 본문(3) → 본문
                   if (step === 2) {
                     setPreviewTab('intro')

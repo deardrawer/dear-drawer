@@ -33,6 +33,7 @@ interface ParentsWizardEditorProps {
   onStepChange?: (step: ParentsWizardStep) => void
   setActiveSection?: (section: string | null) => void
   onSlugChange?: (newSlug: string) => void
+  initialStep?: ParentsWizardStep // 초기 스텝 (리마운트 시 복원용)
 }
 
 export default function ParentsWizardEditor({
@@ -47,8 +48,9 @@ export default function ParentsWizardEditor({
   onStepChange,
   setActiveSection,
   onSlugChange,
+  initialStep = 1,
 }: ParentsWizardEditorProps) {
-  const [currentStep, setCurrentStep] = useState<ParentsWizardStep>(1)
+  const [currentStep, setCurrentStep] = useState<ParentsWizardStep>(initialStep)
   const [completedSteps, setCompletedSteps] = useState<ParentsWizardStep[]>([])
   const [visitedSteps, setVisitedSteps] = useState<ParentsWizardStep[]>([1])
   const [validationError, setValidationError] = useState<string | null>(null)

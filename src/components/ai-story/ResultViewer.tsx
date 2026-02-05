@@ -854,7 +854,7 @@ export default function ResultViewer({
       {/* ============================================================ */}
       {/* FAMILY 템플릿 전용 섹션 */}
       {/* ============================================================ */}
-      {isFamilyTemplate && (
+      {isFamilyTemplate && editedContent && (
         <>
           {/* 서로를 선택한 이유 */}
           <Card className="animate-fade-in shadow-sm">
@@ -957,7 +957,7 @@ export default function ResultViewer({
       {/* ============================================================ */}
       {/* OUR 템플릿 전용 섹션 */}
       {/* ============================================================ */}
-      {!isFamilyTemplate && (
+      {!isFamilyTemplate && editedContent && (
         <>
           {/* 1. 인사말 */}
           <SectionCard
@@ -1134,7 +1134,7 @@ export default function ResultViewer({
       {/* ============================================================ */}
       {/* 공통 섹션: 웨딩 인터뷰 */}
       {/* ============================================================ */}
-      {editedContent.interview && editedContent.interview.length > 0 && (
+      {editedContent && editedContent.interview && editedContent.interview.length > 0 && (
         <Card className="animate-fade-in shadow-sm">
           <CardHeader className="border-b pb-4">
             <CardTitle className="flex items-center gap-2 text-lg">
@@ -1203,7 +1203,7 @@ export default function ResultViewer({
       {/* ============================================================ */}
       {/* FAMILY 템플릿: 감사인사 (인터뷰 다음, 하단에 위치) */}
       {/* ============================================================ */}
-      {isFamilyTemplate && (
+      {isFamilyTemplate && editedContent && (
         <SectionCard
           title="감사 인사"
           icon="🙏"
@@ -1255,8 +1255,9 @@ export default function ResultViewer({
 
           {/* 적용 버튼 */}
           <Button
-            onClick={() => onApply(editedContent)}
+            onClick={() => editedContent && onApply(editedContent)}
             size="lg"
+            disabled={!editedContent}
             className="bg-rose-500 hover:bg-rose-600 text-white px-12 py-6 text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300"
           >
             ✨ 청첩장에 적용하기

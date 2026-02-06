@@ -1,4 +1,4 @@
-import { getInvitationBySlug, getInvitationByAlias, getInvitationById, recordPageView, getGuestById, recordGuestView } from "@/lib/db";
+import { getInvitationBySlug, getInvitationByAlias, getInvitationById, recordPageView, getGuestById, getGreetingTemplateById, recordGuestView } from "@/lib/db";
 import { notFound, redirect } from "next/navigation";
 import { headers } from "next/headers";
 import InvitationClient from "./InvitationClient";
@@ -70,13 +70,31 @@ export default async function InvitationPage({ params, searchParams }: PageProps
       const guest = await getGuestById(guestId);
       // 게스트가 이 청첩장에 속하는지 확인
       if (guest && guest.invitation_id === invitation.id) {
+        // 맞춤 인사말 결정: 템플릿 > custom_message
+        let customMessage = guest.custom_message || undefined;
+
+        // greeting_template_id가 있으면 템플릿 내용 가져오기
+        if (guest.greeting_template_id && !customMessage) {
+          try {
+            const template = await getGreetingTemplateById(guest.greeting_template_id);
+            if (template) {
+              // 템플릿 내용에서 변수 치환 ({이름}, {관계})
+              customMessage = template.content
+                .replace(/\{이름\}/g, guest.name || '')
+                .replace(/\{관계\}/g, guest.relation || '');
+            }
+          } catch (templateErr) {
+            console.error("Failed to fetch greeting template:", templateErr);
+          }
+        }
+
         guestInfo = {
           id: guest.id,
           name: guest.name,
           relation: guest.relation,
           honorific: guest.honorific,
           introGreeting: guest.intro_greeting,
-          customMessage: guest.custom_message,
+          customMessage: customMessage,
         };
         // 게스트 열람 기록
         await recordGuestView(guestId);

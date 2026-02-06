@@ -3074,7 +3074,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
 
         {/* Greeting Section */}
         <div className="greeting-section mb-11">
-          <p className="text-[13px] font-light leading-[2.1]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: invitation.content.greeting ? parseHighlight(invitation.content.greeting) : '인사말을 입력해주세요' }} />
+          <p className="text-[13px] font-light leading-[2.1]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: (guestInfo?.customMessage || invitation.content.greeting) ? parseHighlight(guestInfo?.customMessage || invitation.content.greeting || '') : '인사말을 입력해주세요' }} />
         </div>
 
         {/* Parents Info */}
@@ -4149,7 +4149,7 @@ function InvitationErrorFallback({ resetError }: { resetError: () => void }) {
   )
 }
 
-function InvitationClientContent({ invitation: dbInvitation, content, isPaid, isPreview = false, overrideColorTheme, overrideFontStyle, skipIntro = false, isSample = false }: InvitationClientProps) {
+function InvitationClientContent({ invitation: dbInvitation, content, isPaid, isPreview = false, overrideColorTheme, overrideFontStyle, skipIntro = false, guestInfo, isSample = false }: InvitationClientProps) {
   // Transform DB data to display format
   const invitation = transformToDisplayData(dbInvitation, content)
 

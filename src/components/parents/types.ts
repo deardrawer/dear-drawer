@@ -304,5 +304,6 @@ export interface GuestInfo {
   name: string
   relation?: string
   honorific?: string
+  intro_greeting?: string
   custom_message?: string
 }

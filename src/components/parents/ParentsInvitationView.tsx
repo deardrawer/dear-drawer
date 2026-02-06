@@ -290,7 +290,7 @@ export default function ParentsInvitationView({
             <div id="preview-greeting">
               <GreetingSection
                 childName={childFirstName || '○○'}
-                greeting={data.greeting}
+                greeting={guestInfo?.custom_message || data.greeting}
                 parentSignature={`아버지 ${data.sender.fatherName || '○○○'} · 어머니 ${data.sender.motherName || '○○○'}`}
                 senderSide={data.sender.side}
               />

@@ -124,12 +124,18 @@ export default function GuestList({
           const coupleNames = groomName && brideName ? `${groomName} ♥ ${brideName}` : ''
           const shareTitle = coupleNames ? `${coupleNames} 결혼합니다` : '청첩장이 도착했습니다'
 
+          // 이미지 URL 유효성 검사 - 빈 문자열, undefined, null 모두 체크
+          const defaultImage = 'https://invite.deardrawer.com/og-image.png'
+          const validImageUrl = (kakaoThumbnail && kakaoThumbnail.trim() !== '' && kakaoThumbnail.startsWith('http'))
+            ? kakaoThumbnail
+            : defaultImage
+
           kakaoWindow.Kakao.Share.sendDefault({
             objectType: 'feed',
             content: {
               title: shareTitle,
               description: `${displayName}께 전하는 청첩장입니다 💌`,
-              imageUrl: kakaoThumbnail || 'https://invite.deardrawer.com/og-image.png',
+              imageUrl: validImageUrl,
               link: {
                 mobileWebUrl: link,
                 webUrl: link,

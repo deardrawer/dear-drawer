@@ -213,13 +213,23 @@ export default function AdminDashboardPage() {
         const kakaoThumbnailUrl = typeof kakaoThumb === 'string'
           ? kakaoThumb
           : kakaoThumb?.url
+
+        // mainImage도 객체일 수 있음 (FAMILY 템플릿)
+        const mainImageUrl = typeof content?.mainImage === 'string'
+          ? content?.mainImage
+          : content?.mainImage?.url
+
         // 갤러리 이미지도 객체일 수 있음
         const galleryFirstUrl = typeof content?.gallery?.[0] === 'string'
           ? content?.gallery?.[0]
           : content?.gallery?.[0]?.url || content?.gallery?.images?.[0]?.url
 
+        // 유효한 이미지 URL 찾기 (우선순위: kakaoThumbnail > mainImage > gallery)
+        const validThumbnail = [kakaoThumbnailUrl, mainImageUrl, galleryFirstUrl]
+          .find(url => url && url.trim() !== '' && url.startsWith('http'))
+
         setInvitationInfo({
-          kakaoThumbnail: kakaoThumbnailUrl || galleryFirstUrl || '',
+          kakaoThumbnail: validThumbnail || '',
           groomName: inviteData.invitation.groom_name,
           brideName: inviteData.invitation.bride_name,
         })

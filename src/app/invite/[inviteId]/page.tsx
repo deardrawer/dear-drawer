@@ -2,7 +2,15 @@ import { getInvitationById, getInvitationBySlug, getGuestById, recordPageView, r
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import InvitationClientPage from "./InvitationClientPage";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+
+// 핀치 줌 비활성화를 위한 viewport 설정
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
 
 interface PageProps {
   params: Promise<{ inviteId: string }>;

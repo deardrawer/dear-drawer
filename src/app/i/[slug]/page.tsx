@@ -4,8 +4,17 @@ import { headers } from "next/headers";
 import InvitationClient from "./InvitationClient";
 import InvitationClientFamily from "./InvitationClientFamily";
 import type { Invitation } from "@/types/invitation";
+import type { Viewport } from "next";
 import { isUUID } from "@/lib/slug";
 import { createSampleInvitation, ourSampleContent, familySampleContent } from "@/lib/sample-data";
+
+// 핀치 줌 비활성화를 위한 viewport 설정
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
 
 interface PageProps {
   params: Promise<{ slug: string }>;

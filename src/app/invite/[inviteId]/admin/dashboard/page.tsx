@@ -120,6 +120,9 @@ export default function AdminDashboardPage() {
   // 아코디언 섹션
   const [openSections, setOpenSections] = useState<string[]>(['guests'])
 
+  // 헤더 메뉴
+  const [showHeaderMenu, setShowHeaderMenu] = useState(false)
+
   const toggleSection = (section: string) => {
     setOpenSections((prev) =>
       prev.includes(section)
@@ -205,8 +208,18 @@ export default function AdminDashboardPage() {
       // 청첩장 정보 설정 (카카오 공유용)
       if (inviteData.invitation) {
         const content = inviteData.invitation.content ? JSON.parse(inviteData.invitation.content) : {}
+        // kakaoThumbnail이 객체일 수도 있고 문자열일 수도 있음
+        const kakaoThumb = content?.meta?.kakaoThumbnail
+        const kakaoThumbnailUrl = typeof kakaoThumb === 'string'
+          ? kakaoThumb
+          : kakaoThumb?.url
+        // 갤러리 이미지도 객체일 수 있음
+        const galleryFirstUrl = typeof content?.gallery?.[0] === 'string'
+          ? content?.gallery?.[0]
+          : content?.gallery?.[0]?.url || content?.gallery?.images?.[0]?.url
+
         setInvitationInfo({
-          kakaoThumbnail: content?.meta?.kakaoThumbnail || content?.gallery?.[0]?.url,
+          kakaoThumbnail: kakaoThumbnailUrl || galleryFirstUrl || '',
           groomName: inviteData.invitation.groom_name,
           brideName: inviteData.invitation.bride_name,
         })
@@ -543,6 +556,13 @@ export default function AdminDashboardPage() {
     const shareUrl = `${window.location.origin}/invite/${inviteId}/admin`
     const guideUrl = `${window.location.origin}/invite/${inviteId}/admin/guide`
 
+    // 이미지 URL 유효성 검사 - 빈 문자열, undefined, null 모두 체크
+    const defaultImage = 'https://invite.deardrawer.com/og-image.png'
+    const thumbnailUrl = invitationInfo?.kakaoThumbnail
+    const imageUrl = (thumbnailUrl && thumbnailUrl.trim() !== '' && thumbnailUrl.startsWith('http'))
+      ? thumbnailUrl
+      : defaultImage
+
     try {
       // SDK 초기화 확인 및 초기화
       if (window.Kakao && !window.Kakao.isInitialized()) {
@@ -556,7 +576,7 @@ export default function AdminDashboardPage() {
           content: {
             title: '청첩장 게스트 관리 페이지',
             description: '하객분들께 보낼 청첩장 링크를 관리할 수 있어요',
-            imageUrl: invitationInfo?.kakaoThumbnail || 'https://invite.deardrawer.com/og-image.png',
+            imageUrl: imageUrl,
             link: {
               mobileWebUrl: shareUrl,
               webUrl: shareUrl,
@@ -645,19 +665,83 @@ export default function AdminDashboardPage() {
             게스트 관리
           </h1>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="secondary" size="sm" onClick={handleGoToGuide}>
-            도움말
-          </Button>
-          <Button variant="secondary" size="sm" onClick={() => setShowShareModal(true)}>
-            공유
-          </Button>
-          <Button variant="secondary" size="sm" onClick={openPasswordModal}>
-            비밀번호
-          </Button>
-          <Button variant="secondary" size="sm" onClick={handleLogout}>
-            로그아웃
-          </Button>
+
+        {/* 모바일 메뉴 버튼 */}
+        <div className="relative">
+          <button
+            onClick={() => setShowHeaderMenu(!showHeaderMenu)}
+            className="p-2 rounded-lg transition-all active:scale-95"
+            style={{ backgroundColor: showHeaderMenu ? '#E8E4DD' : '#F5F3EE' }}
+            aria-label="메뉴 열기"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2" strokeLinecap="round">
+              <circle cx="12" cy="5" r="1.5" fill="#555" />
+              <circle cx="12" cy="12" r="1.5" fill="#555" />
+              <circle cx="12" cy="19" r="1.5" fill="#555" />
+            </svg>
+          </button>
+
+          {/* 드롭다운 메뉴 */}
+          {showHeaderMenu && (
+            <>
+              {/* 오버레이 */}
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setShowHeaderMenu(false)}
+              />
+              {/* 메뉴 */}
+              <div
+                className="absolute right-0 top-full mt-2 z-50 py-2 rounded-xl shadow-lg min-w-[160px]"
+                style={{ backgroundColor: '#FFF', border: '1px solid #E8E4DD' }}
+              >
+                <button
+                  onClick={() => {
+                    setShowHeaderMenu(false)
+                    handleGoToGuide()
+                  }}
+                  className="w-full px-4 py-3 text-left text-sm font-medium flex items-center gap-3 transition-colors hover:bg-gray-50"
+                  style={{ color: '#2C2C2C' }}
+                >
+                  <span className="text-base">📖</span>
+                  도움말
+                </button>
+                <button
+                  onClick={() => {
+                    setShowHeaderMenu(false)
+                    setShowShareModal(true)
+                  }}
+                  className="w-full px-4 py-3 text-left text-sm font-medium flex items-center gap-3 transition-colors hover:bg-gray-50"
+                  style={{ color: '#2C2C2C' }}
+                >
+                  <span className="text-base">📤</span>
+                  부모님께 공유
+                </button>
+                <div className="h-px mx-4 my-1" style={{ backgroundColor: '#E8E4DD' }} />
+                <button
+                  onClick={() => {
+                    setShowHeaderMenu(false)
+                    openPasswordModal()
+                  }}
+                  className="w-full px-4 py-3 text-left text-sm font-medium flex items-center gap-3 transition-colors hover:bg-gray-50"
+                  style={{ color: '#2C2C2C' }}
+                >
+                  <span className="text-base">🔒</span>
+                  비밀번호 변경
+                </button>
+                <button
+                  onClick={() => {
+                    setShowHeaderMenu(false)
+                    handleLogout()
+                  }}
+                  className="w-full px-4 py-3 text-left text-sm font-medium flex items-center gap-3 transition-colors hover:bg-gray-50"
+                  style={{ color: '#DC2626' }}
+                >
+                  <span className="text-base">🚪</span>
+                  로그아웃
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </header>
 

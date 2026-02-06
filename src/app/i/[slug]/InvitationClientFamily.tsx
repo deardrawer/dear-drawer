@@ -1118,6 +1118,16 @@ const globalStyles = `
     }
   }
 
+  /* 핀치 줌 비활성화 - 스크롤은 허용 */
+  html, body {
+    touch-action: pan-y;
+    -webkit-touch-callout: none;
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
 `
 
 // Scroll Animation Hook

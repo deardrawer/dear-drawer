@@ -920,7 +920,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* RSVP 응답 섹션 */}
-      {rsvpResponses.length > 0 && (
+      {(
         <div className="px-4 mb-4">
           <button
             onClick={() => toggleSection('rsvp')}

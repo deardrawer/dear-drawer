@@ -1379,6 +1379,17 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
         <MultiImageUploader
           images={invitation.gallery.images}
           onChange={(images) => updateNestedField('gallery.images', images)}
+          onReorder={(newImages) => {
+            const oldImages = invitation.gallery.images
+            const currentSettings = invitation.gallery.imageSettings || []
+            const newSettings = newImages.map((img) => {
+              const oldIdx = oldImages.indexOf(img)
+              return currentSettings[oldIdx] || { scale: 1.0, positionX: 0, positionY: 0 }
+            })
+            updateNestedField('gallery.images', newImages)
+            updateNestedField('gallery.imageSettings', newSettings)
+          }}
+          sortable={true}
           maxImages={10}
           placeholder="사진 추가"
           aspectRatio="aspect-square"
@@ -1656,7 +1667,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
 
                   const itemConfigs: Record<string, { label: string; placeholder: string; hasExtra?: boolean }> = {
                     dressCode: { label: '드레스코드', placeholder: '단정한 복장으로 와주세요.' },
-                    photoBooth: { label: '포토부스', placeholder: '로비에서 포토부스를 즐겨보세요!' },
+                    photoBooth: { label: '포토부스 안내', placeholder: '로비에서 포토부스를 즐겨보세요!' },
                     photoShare: { label: '사진 공유', placeholder: '결혼식에서 찍은 사진들을 공유해주세요!', hasExtra: true },
                     flowerGift: { label: '꽃 답례품', placeholder: '꽃 답례품 안내를 입력해주세요.' },
                     flowerChild: { label: '화동 안내', placeholder: '화동 안내를 입력해주세요.' },
@@ -1858,6 +1869,59 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
         </div>
         <p className="text-sm text-blue-600">💙 하객분들이 축하 메시지를 남길 수 있는 방명록이 표시됩니다.</p>
 
+        <details>
+          <summary className="text-xs text-blue-600 cursor-pointer hover:text-blue-700 select-none">
+            질문 예시 ) 펼쳐보기 💙
+          </summary>
+          <div className="mt-2 space-y-2 text-xs text-blue-600">
+            <div>
+              <p className="font-semibold">① 기본 축하형</p>
+              <ul className="ml-3 space-y-0.5 list-disc list-inside">
+                <li>두 사람에게 해주고 싶은 말은?</li>
+                <li>결혼을 축하하며 한마디 남긴다면?</li>
+                <li>오늘의 축하 메시지를 한 문장으로 표현한다면?</li>
+                <li>이 날을 기억하며 남기고 싶은 말은?</li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-semibold">② 관계·조언형</p>
+              <ul className="ml-3 space-y-0.5 list-disc list-inside">
+                <li>결혼생활에서 가장 중요하다고 생각하는 건?</li>
+                <li>신혼부부에게 꼭 해주고 싶은 조언 하나!</li>
+                <li>부부로 오래 잘 지내는 비결이 있다면?</li>
+                <li>힘들 때 꼭 기억했으면 하는 말은?</li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-semibold">③ 감성·기억형</p>
+              <ul className="ml-3 space-y-0.5 list-disc list-inside">
+                <li>두 사람을 떠올리면 생각나는 단어 하나는?</li>
+                <li>두 사람의 관계가 닮았다고 느껴지는 장면은?</li>
+                <li>앞으로의 두 사람에게 바라는 모습이 있다면?</li>
+                <li>나중에 이 방명록을 다시 볼 두 사람에게 하고 싶은 말은?</li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-semibold">④ 첫인상·이미지형</p>
+              <ul className="ml-3 space-y-0.5 list-disc list-inside">
+                <li>두 사람의 첫인상은 어땠나요?</li>
+                <li>함께 있을 때 가장 잘 어울린다고 느낀 순간은?</li>
+                <li>주변에서 본 두 사람의 가장 좋은 모습은?</li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-semibold">⑤ 가벼운 위트형</p>
+              <ul className="ml-3 space-y-0.5 list-disc list-inside">
+                <li>신랑·신부에게 각각 한마디씩 남긴다면?</li>
+                <li>신혼집에 꼭 있어야 할 물건 하나 추천한다면? 😆</li>
+                <li>이 부부에게 붙여주고 싶은 별명은?</li>
+                <li>10년 후 두 사람의 모습, 한 줄로 상상해본다면?</li>
+                <li>오늘 축하 점수! (100점 만점 중 몇 점?)</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
         {invitation.sectionVisibility.guestbook && (
           <div className="space-y-4">
             {/* 방명록 질문 설정 */}
@@ -1908,6 +1972,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                   질문 추가
                 </button>
               )}
+
             </div>
           </div>
         )}

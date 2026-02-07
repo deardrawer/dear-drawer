@@ -188,6 +188,10 @@ export default function Step2Style({ templateId }: Step2StyleProps) {
         {/* 텍스트 색상 커스텀 */}
         <div className="mt-4 p-4 bg-gray-50 rounded-xl space-y-4">
           <h4 className="text-sm font-medium text-gray-800">텍스트 색상 설정</h4>
+          <p className="text-[11px] text-gray-400 leading-relaxed">
+            본문 입력 후 텍스트 색상을 조절하시는 것을 권장드립니다.<br />
+            샘플 글씨는 실제 적용 색상이 아닌 미리보기용으로 연하게 표시됩니다.
+          </p>
 
           {/* 본문 텍스트 색상 */}
           <div className="flex items-center justify-between">

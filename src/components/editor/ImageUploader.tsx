@@ -3,6 +3,10 @@
 import { useState, useRef, useCallback } from 'react'
 import { uploadImage, UploadResult, isBase64, isUrl } from '@/lib/imageUpload'
 import { Button } from '@/components/ui/button'
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core'
+import { SortableContext, useSortable, rectSortingStrategy, arrayMove } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import { GripVertical } from 'lucide-react'
 
 interface ImageUploaderProps {
   value?: string  // 현재 이미지 URL 또는 base64
@@ -177,11 +181,74 @@ export default function ImageUploader({
 }
 
 /**
+ * 드래그 가능한 이미지 아이템
+ */
+function SortableImageItem({
+  id,
+  img,
+  index,
+  onChangeImage,
+  onDeleteImage,
+  invitationId,
+  aspectRatio,
+  itemClassName,
+  disabled,
+}: {
+  id: string
+  img: string
+  index: number
+  onChangeImage: (index: number, url: string) => void
+  onDeleteImage: (index: number) => void
+  invitationId?: string
+  aspectRatio: string
+  itemClassName: string
+  disabled: boolean
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id })
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+    zIndex: isDragging ? 50 : undefined,
+  }
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} className="relative">
+      {/* 드래그 핸들 */}
+      <div
+        {...listeners}
+        className="absolute top-1 left-1 z-10 p-1 rounded bg-black/40 cursor-grab active:cursor-grabbing touch-manipulation"
+      >
+        <GripVertical className="w-3.5 h-3.5 text-white" />
+      </div>
+      <ImageUploader
+        value={img}
+        onChange={(url) => onChangeImage(index, url)}
+        onDelete={() => onDeleteImage(index)}
+        invitationId={invitationId}
+        aspectRatio={aspectRatio}
+        className={itemClassName}
+        disabled={disabled}
+      />
+    </div>
+  )
+}
+
+/**
  * 다중 이미지 업로더
  */
 interface MultiImageUploaderProps {
   images: string[]
   onChange: (images: string[]) => void
+  onReorder?: (newImages: string[]) => void
   invitationId?: string
   maxImages?: number
   placeholder?: string
@@ -189,11 +256,13 @@ interface MultiImageUploaderProps {
   itemClassName?: string
   aspectRatio?: string
   disabled?: boolean
+  sortable?: boolean
 }
 
 export function MultiImageUploader({
   images,
   onChange,
+  onReorder,
   invitationId,
   maxImages = 10,
   placeholder = '이미지 추가',
@@ -201,7 +270,14 @@ export function MultiImageUploader({
   itemClassName = '',
   aspectRatio = 'aspect-square',
   disabled = false,
+  sortable = false,
 }: MultiImageUploaderProps) {
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    })
+  )
+
   const handleAdd = (url: string) => {
     if (images.length < maxImages) {
       onChange([...images, url])
@@ -219,7 +295,61 @@ export function MultiImageUploader({
     onChange(newImages)
   }
 
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const sortableIds = images.map((img, i) => `${img}-${i}`)
+    const oldIndex = sortableIds.indexOf(active.id as string)
+    const newIndex = sortableIds.indexOf(over.id as string)
+    if (oldIndex === -1 || newIndex === -1) return
+
+    const newImages = arrayMove(images, oldIndex, newIndex)
+    if (onReorder) {
+      onReorder(newImages)
+    } else {
+      onChange(newImages)
+    }
+  }
+
   const canAdd = images.length < maxImages
+  const sortableIds = images.map((img, i) => `${img}-${i}`)
+
+  if (sortable && images.length > 1) {
+    return (
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={sortableIds} strategy={rectSortingStrategy}>
+          <div className={`grid grid-cols-3 gap-2 ${className}`}>
+            {images.map((img, index) => (
+              <SortableImageItem
+                key={sortableIds[index]}
+                id={sortableIds[index]}
+                img={img}
+                index={index}
+                onChangeImage={handleChange}
+                onDeleteImage={handleDelete}
+                invitationId={invitationId}
+                aspectRatio={aspectRatio}
+                itemClassName={itemClassName}
+                disabled={disabled}
+              />
+            ))}
+            {canAdd && (
+              <ImageUploader
+                value=""
+                onChange={handleAdd}
+                invitationId={invitationId}
+                placeholder={placeholder}
+                aspectRatio={aspectRatio}
+                className={itemClassName}
+                disabled={disabled}
+              />
+            )}
+          </div>
+        </SortableContext>
+      </DndContext>
+    )
+  }
 
   return (
     <div className={`grid grid-cols-3 gap-2 ${className}`}>

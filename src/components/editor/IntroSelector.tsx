@@ -311,13 +311,16 @@ export default function IntroSelector({ onBack }: IntroSelectorProps) {
                   </div>
 
                   <div>
-                    <Label className="text-sm text-gray-700">날짜</Label>
+                    <Label className="text-sm text-gray-700">날짜 (수동입력)</Label>
                     <Input
                       value={intro.dateText}
                       onChange={(e) => handleFieldChange('dateText', e.target.value)}
                       placeholder={currentPreset?.defaults.dateText || '예: 2025. 05. 24'}
                       className="mt-1"
                     />
+                    <p className="text-[11px] text-gray-400 mt-1">
+                      비워두면 결혼 정보의 날짜가 자동 표시됩니다.
+                    </p>
                   </div>
 
                   <div>
@@ -402,10 +405,6 @@ export default function IntroSelector({ onBack }: IntroSelectorProps) {
                         />
                       ))}
                     </div>
-                    <p className="text-[11px] text-gray-400 mt-2 leading-relaxed">
-                      본문 입력 후 텍스트 색상을 조절하시는 것을 권장드립니다.<br />
-                      샘플 글씨는 실제 적용 색상이 아닌 미리보기용으로 연하게 표시됩니다.
-                    </p>
                   </div>
                 </div>
               </div>

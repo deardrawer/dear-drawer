@@ -181,8 +181,8 @@ export default function IntroPreview({
   // 메인 타이틀: 프리셋 기본값 유지 (사용자가 커스터마이징 탭에서 수정 가능)
   // 날짜/장소: 청첩장 값이 있으면 청첩장 우선, 없으면 프리셋 기본값 사용
   const effectiveMainTitle = settings.mainTitle
-  const effectiveDateText = weddingDate ? `${formatDate(weddingDate)}${weddingTime ? ` ${weddingTime}` : ''}` : settings.dateText
-  const effectiveVenueText = venueName || settings.venueText || ''
+  const effectiveDateText = settings.dateText || (weddingDate ? `${formatDate(weddingDate)}${weddingTime ? ` ${weddingTime}` : ''}` : '')
+  const effectiveVenueText = settings.venueText || venueName || ''
 
   // settings에 청첩장 정보 반영
   const effectiveSettings = {
@@ -335,8 +335,8 @@ export default function IntroPreview({
 
         /* 글자 좁아지기 */
         @keyframes introLetterSpread {
-          0% { opacity: 0; letter-spacing: 3px; }
-          100% { opacity: 1; letter-spacing: 1px; }
+          0% { opacity: 0; }
+          100% { opacity: 1; }
         }
         .intro-letter-spread { animation: introLetterSpread 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.15s forwards; opacity: 0; }
 

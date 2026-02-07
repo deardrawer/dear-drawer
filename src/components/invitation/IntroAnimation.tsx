@@ -361,8 +361,8 @@ export default function IntroAnimation({
 
         /* 글자 좁아지기 (시네마틱) */
         @keyframes introLetterSpread {
-          0% { opacity: 0; letter-spacing: 3px; }
-          100% { opacity: 1; letter-spacing: 1px; }
+          0% { opacity: 0; }
+          100% { opacity: 1; }
         }
         .intro-letter-spread { animation: introLetterSpread 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.15s forwards; opacity: 0; }
 

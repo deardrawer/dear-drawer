@@ -237,9 +237,6 @@ export default function InterviewForm({
     <div className="space-y-8">
       {/* 헤더 */}
       <div className="text-center pb-4 border-b border-gray-100">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">Step 4/4</span>
-        </div>
         <h2 className="text-lg font-bold text-gray-900">웨딩 인터뷰</h2>
         <p className="text-sm text-gray-500 mt-1">두 분의 생각과 마음을 담은 인터뷰를 만들어드려요</p>
       </div>

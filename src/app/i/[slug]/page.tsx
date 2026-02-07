@@ -94,7 +94,7 @@ export default async function InvitationPage({ params, searchParams }: PageProps
           relation: guest.relation,
           honorific: guest.honorific,
           introGreeting: guest.intro_greeting,
-          customMessage: customMessage,
+          customMessage: customMessage ?? null,
         };
         // 게스트 열람 기록
         await recordGuestView(guestId);

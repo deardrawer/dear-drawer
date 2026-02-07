@@ -417,7 +417,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
             <span className="text-2xl">✨</span>
             <div className="text-left">
               <p className="font-semibold text-lg">초안 작성해드려요</p>
-              <p className="text-sm text-white/80">{isFamily ? '12가지' : '10가지'} 질문에 답하면 맞춤 콘텐츠를 작성해드려요</p>
+              <p className="text-sm text-white/80">질문에 답하면 맞춤 콘텐츠를 작성해드려요</p>
             </div>
           </div>
         </button>

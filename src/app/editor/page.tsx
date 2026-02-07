@@ -236,7 +236,7 @@ function EditorContent() {
       cleanImages(cleanInvitation)
 
       const payload: Record<string, unknown> = {
-        template_id: templateId,
+        template_id: template?.id || templateId,
         groom_name: invitation.groom.name,
         bride_name: invitation.bride.name,
         wedding_date: invitation.wedding.date,

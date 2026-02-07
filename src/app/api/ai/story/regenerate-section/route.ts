@@ -172,8 +172,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log(`AI 섹션 재생성 시작: ${section}`)
-
     // Anthropic API 호출 (재생성시 약간 더 높은 temperature)
     const message = await anthropic.messages.create({
       model: 'claude-3-haiku-20240307',
@@ -192,8 +190,6 @@ export async function POST(request: NextRequest) {
     if (!textContent || textContent.type !== 'text') {
       throw new Error('AI 응답에서 텍스트를 찾을 수 없습니다.')
     }
-
-    console.log(`AI 섹션 재생성 완료: ${section}`)
 
     // 섹션에 따라 다른 파싱
     if (section === 'interview') {
@@ -235,7 +231,7 @@ export async function POST(request: NextRequest) {
 
     if (error instanceof Anthropic.APIError) {
       return NextResponse.json(
-        { error: `AI 서비스 오류: ${error.message}` },
+        { error: 'AI 서비스 오류가 발생했습니다.' },
         { status: error.status || 500 }
       )
     }
@@ -247,9 +243,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류'
     return NextResponse.json(
-      { error: `재생성 실패: ${errorMessage}` },
+      { error: '재생성 중 오류가 발생했습니다.' },
       { status: 500 }
     )
   }

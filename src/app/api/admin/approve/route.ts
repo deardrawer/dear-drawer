@@ -99,7 +99,6 @@ export async function POST(request: NextRequest) {
           )
           .bind(paymentRequest.invitation_id)
           .run();
-        console.log(`Updated invitation ${paymentRequest.invitation_id}, changes: ${updateResult.meta?.changes}`);
       } else {
         // invitation_id가 없으면 해당 사용자의 최신 미결제 청첩장 업데이트
         updateResult = await db
@@ -114,7 +113,6 @@ export async function POST(request: NextRequest) {
           )
           .bind(paymentRequest.user_id)
           .run();
-        console.log(`Updated invitation for user ${paymentRequest.user_id}, changes: ${updateResult.meta?.changes}`);
       }
 
       // 업데이트된 행이 없으면 경고

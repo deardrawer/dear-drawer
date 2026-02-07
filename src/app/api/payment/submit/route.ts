@@ -96,8 +96,6 @@ export async function POST(request: NextRequest) {
       buyerPhone
     ).run()
 
-    console.log(`Payment request created: invitationId=${invitationId || 'null'}, userId=${userId}`)
-
     // 텔레그램 알림 전송
     try {
       if (env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHAT_ID) {
@@ -131,7 +129,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, message: '접수되었습니다.' })
   } catch (error) {
     console.error('Payment submit error:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-    return NextResponse.json({ error: `서버 오류: ${errorMessage}` }, { status: 500 })
+    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 })
   }
 }

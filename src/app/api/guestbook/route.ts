@@ -58,6 +58,12 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+    if (question && question.length > 200) {
+      return NextResponse.json(
+        { error: "질문은 200자 이내여야 합니다." },
+        { status: 400 }
+      );
+    }
 
     // 청첩장 존재 여부 확인
     const invitation = await getInvitationById(invitationId);

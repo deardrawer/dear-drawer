@@ -155,7 +155,7 @@ ${answers.bride_name ? `- 신부 이름: ${answers.bride_name}` : ''}
   } catch (error) {
     console.error('Greeting generation error:', error)
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : '인사말 생성에 실패했습니다.' },
+      { error: '인사말 생성에 실패했습니다.' },
       { status: 500 }
     )
   }

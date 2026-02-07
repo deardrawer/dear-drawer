@@ -135,50 +135,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 디버깅: 입력 데이터 로깅
-    console.log('=== AI 생성 입력 데이터 ===')
-    console.log('신랑:', groomName, '신부:', brideName)
-    console.log('인사말 데이터:', {
-      relationshipDuration: formData.greeting?.relationshipDuration,
-      relationshipTraits: formData.greeting?.relationshipTraits,
-      marriageMeaning: formData.greeting?.marriageMeaning,
-      greetingTone: formData.greeting?.greetingTone,
-    })
-    console.log('신랑 프로필:', {
-      metaphor: formData.groomProfile?.metaphor,
-      characteristics: formData.groomProfile?.characteristics,
-      togetherFeeling: formData.groomProfile?.togetherFeeling,
-    })
-    console.log('신부 프로필:', {
-      metaphor: formData.brideProfile?.metaphor,
-      characteristics: formData.brideProfile?.characteristics,
-      togetherFeeling: formData.brideProfile?.togetherFeeling,
-    })
-    console.log('스토리:', {
-      firstMeetPlace: formData.story?.firstMeetPlace,
-      howStarted: formData.story?.howStarted,
-      memorableEvents: formData.story?.memorableEvents,
-    })
-    console.log('인터뷰:', {
-      type: formData.interview?.type,
-      topics: formData.interview?.topics,
-      selectedQuestions: formData.interview?.selectedQuestions,
-      customQuestions: formData.interview?.customQuestions,
-    })
-
     // 프롬프트 생성 (템플릿에 따라 다른 프롬프트 사용)
     const prompt = isFamilyTemplate
       ? generateFamilyFullPrompt(formData, groomName, brideName)
       : generateFullPrompt(formData, groomName, brideName)
-
-    // 디버깅: 프롬프트 일부 출력
-    console.log('=== 생성된 프롬프트 (처음 2000자) ===')
-    console.log(prompt.substring(0, 2000))
-    console.log('...(중략)...')
-    console.log('=== 프롬프트 끝 (마지막 500자) ===')
-    console.log(prompt.substring(prompt.length - 500))
-
-    console.log('AI 전체 생성 시작:', { groomName, brideName })
 
     // Anthropic API 호출 (Haiku 모델)
     const message = await anthropic.messages.create({
@@ -199,8 +159,6 @@ export async function POST(request: NextRequest) {
       throw new Error('AI 응답에서 텍스트를 찾을 수 없습니다.')
     }
 
-    console.log('AI 응답 수신 완료')
-
     // JSON 파싱
     const parsedContent = parseJsonResponse(textContent.text)
 
@@ -219,26 +177,6 @@ export async function POST(request: NextRequest) {
       generatedContent.brideProfile = generatedContent.brideProfile || ''
       generatedContent.story = generatedContent.story || { first: '', together: '', preparation: '' }
     }
-
-    // 디버깅: interview 데이터 확인
-    console.log('AI 전체 생성 완료')
-    console.log('Interview 항목 수:', generatedContent.interview?.length || 0)
-    if (generatedContent.interview) {
-      generatedContent.interview.forEach((item, i) => {
-        console.log(`Interview ${i + 1}:`, {
-          question: item.question?.substring(0, 30),
-          groomAnswerLen: item.groomAnswer?.length || 0,
-          brideAnswerLen: item.brideAnswer?.length || 0,
-          jointAnswerLen: item.jointAnswer?.length || 0,
-          groomAnswerPreview: item.groomAnswer?.substring(0, 50) || '(없음)',
-          brideAnswerPreview: item.brideAnswer?.substring(0, 50) || '(없음)',
-          jointAnswerPreview: item.jointAnswer?.substring(0, 50) || '(없음)'
-        })
-      })
-    }
-
-    // 원본 JSON 응답 로깅 (처음 500자만)
-    console.log('원본 AI 응답 (앞부분):', textContent.text.substring(0, 500))
 
     return NextResponse.json(generatedContent)
   } catch (error) {
@@ -272,9 +210,8 @@ export async function POST(request: NextRequest) {
     }
 
     // 기타 에러
-    const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류'
     return NextResponse.json(
-      { error: `콘텐츠 생성 중 오류: ${errorMessage}` },
+      { error: '콘텐츠 생성 중 오류가 발생했습니다.' },
       { status: 500 }
     )
   }

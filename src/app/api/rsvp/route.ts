@@ -64,6 +64,12 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+    if (body.guestPhone && body.guestPhone.length > 20) {
+      return NextResponse.json(
+        { error: "전화번호 형식이 올바르지 않습니다." },
+        { status: 400 }
+      );
+    }
     if (body.message && body.message.length > 500) {
       return NextResponse.json(
         { error: "메시지는 500자 이내로 입력해주세요." },

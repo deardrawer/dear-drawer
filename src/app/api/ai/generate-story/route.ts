@@ -125,7 +125,7 @@ ${answersContext}
 
     if (error instanceof Anthropic.APIError) {
       return NextResponse.json(
-        { error: `AI API 오류: ${error.message}` },
+        { error: 'AI 서비스 오류가 발생했습니다.' },
         { status: error.status || 500 }
       )
     }
@@ -217,7 +217,7 @@ ${answersContext}
 
     if (error instanceof Anthropic.APIError) {
       return NextResponse.json(
-        { error: `AI API 오류: ${error.message}` },
+        { error: 'AI 서비스 오류가 발생했습니다.' },
         { status: error.status || 500 }
       )
     }

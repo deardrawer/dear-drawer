@@ -105,9 +105,6 @@ export async function getKakaoToken(code: string) {
   const clientSecret = await getEnvVar("KAKAO_CLIENT_SECRET");
   const redirectUri = await getEnvVar("NEXT_PUBLIC_KAKAO_REDIRECT_URI");
 
-  console.log("getKakaoToken - clientId:", clientId ? "있음" : "없음");
-  console.log("getKakaoToken - redirectUri:", redirectUri ? "있음" : "없음");
-
   if (!clientId || !redirectUri) {
     throw new Error(`Kakao OAuth environment variables are not configured. clientId: ${!!clientId}, redirectUri: ${!!redirectUri}`);
   }

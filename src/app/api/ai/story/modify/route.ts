@@ -86,14 +86,13 @@ export async function POST(request: NextRequest) {
 
     if (error instanceof Anthropic.APIError) {
       return NextResponse.json(
-        { error: `AI API 오류: ${error.message}` },
+        { error: 'AI 서비스 오류가 발생했습니다.' },
         { status: error.status || 500 }
       );
     }
 
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: `텍스트 수정 중 오류가 발생했습니다: ${errorMessage}` },
+      { error: '텍스트 수정 중 오류가 발생했습니다.' },
       { status: 500 }
     );
   }

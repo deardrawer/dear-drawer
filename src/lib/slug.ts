@@ -10,7 +10,7 @@ export const RESERVED_SLUGS = [
   'www', 'mail', 'ftp', 'smtp', 'pop', 'imap',
   'help', 'support', 'contact', 'about', 'terms', 'privacy',
   'new', 'create', 'edit', 'delete', 'update', 'view',
-  'test', 'demo', 'sample', 'example',
+  'test', 'demo', 'sample', 'example', 'sample-our', 'sample-family',
   // 서비스명
   'dear-drawer', 'deardrawer', 'wedding', 'weddinglink',
 ];

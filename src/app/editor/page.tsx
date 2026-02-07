@@ -406,8 +406,10 @@ function EditorContent() {
     // FAMILY 템플릿: 부모님 인사말 적용
     if (content.parentsGreeting) {
       updateNestedField('content.parentsGreeting', content.parentsGreeting)
-      // 부모님 인사말 섹션 활성화
-      toggleSectionVisibility('parentsGreeting')
+      // 부모님 인사말 섹션 활성화 (이미 활성화되어 있으면 토글하지 않음)
+      if (invitation && !invitation.sectionVisibility.parentsGreeting) {
+        toggleSectionVisibility('parentsGreeting')
+      }
     }
 
     // 다이얼로그 닫기
@@ -619,7 +621,7 @@ function EditorContent() {
                     onOpenShareModal={() => setIsShareModalOpen(true)}
                     onScrollPreviewToTop={() => previewRef.current?.scrollToTop()}
                     invitationId={invitationId}
-                    templateId={templateId}
+                    templateId={template?.id || templateId}
                     slug={savedSlug || urlSlug || invitationId}
                     onSave={handleSave}
                     isSaving={isSaving}
@@ -737,7 +739,7 @@ function EditorContent() {
                   groomName={invitation.groom.name}
                   brideName={invitation.bride.name}
                   invitationId={invitationId || undefined}
-                  templateId={templateId}
+                  templateId={template?.id || templateId}
                   onApply={handleAIStoryGeneratorApply}
                   onClose={() => setIsAIStoryGeneratorOpen(false)}
                 />

@@ -178,7 +178,7 @@ export default function ParentsInvitationView({
           <EnvelopeScreen
           recipientName={recipientName}
           recipientTitle={recipientTitle}
-          message={data.envelope.message}
+          message={guestInfo?.custom_message ? guestInfo.custom_message.split('\n') : data.envelope.message}
           signature={senderSignature}
           onOpen={() => setIsEnvelopeOpen(true)}
           isPreview={isPreview}
@@ -290,7 +290,7 @@ export default function ParentsInvitationView({
             <div id="preview-greeting">
               <GreetingSection
                 childName={childFirstName || '○○'}
-                greeting={guestInfo?.custom_message || data.greeting}
+                greeting={data.greeting}
                 parentSignature={`아버지 ${data.sender.fatherName || '○○○'} · 어머니 ${data.sender.motherName || '○○○'}`}
                 senderSide={data.sender.side}
               />

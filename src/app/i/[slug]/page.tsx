@@ -231,12 +231,20 @@ export async function generateMetadata({ params }: PageProps) {
       // 커스텀 제목/설명 (설정된 경우)
       customTitle = content?.meta?.title || "";
       customDescription = content?.meta?.description || "";
-      // OG 썸네일 우선순위: ogImage > coverImage > gallery 첫번째 이미지 > kakaoThumbnail
+      // 이미지 값에서 URL 추출 (string 또는 ImageCropData 객체 대응)
+      const extractImageUrl = (img: unknown): string => {
+        if (!img) return "";
+        if (typeof img === "string") return img;
+        if (typeof img === "object" && img !== null && "url" in img) return (img as { url: string }).url || "";
+        return "";
+      };
+      // OG 썸네일 우선순위: ogImage > coverImage > mainImage > gallery 첫번째 이미지 > kakaoThumbnail
       rawThumbnailImage =
-        content?.meta?.ogImage ||
-        content?.media?.coverImage ||
-        content?.gallery?.images?.[0] ||
-        content?.meta?.kakaoThumbnail ||
+        extractImageUrl(content?.meta?.ogImage) ||
+        extractImageUrl(content?.media?.coverImage) ||
+        extractImageUrl(content?.mainImage) ||
+        extractImageUrl(content?.gallery?.images?.[0]) ||
+        extractImageUrl(content?.meta?.kakaoThumbnail) ||
         "";
     } catch (e) {
       console.error("Failed to parse content for metadata:", e);

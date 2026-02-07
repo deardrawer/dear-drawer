@@ -98,7 +98,7 @@ export default function AdminDashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [token, setToken] = useState<string | null>(null)
-  const [invitationInfo, setInvitationInfo] = useState<{ kakaoThumbnail?: string; groomName?: string; brideName?: string } | null>(null)
+  const [invitationInfo, setInvitationInfo] = useState<{ kakaoThumbnail?: string; groomName?: string; brideName?: string; themeColor?: string; accentColor?: string } | null>(null)
 
   // RSVP 응답
   const [rsvpResponses, setRsvpResponses] = useState<RsvpResponse[]>([])
@@ -236,10 +236,24 @@ export default function AdminDashboardPage() {
           .map(u => toAbsUrl(u))
           .find(url => url !== '')
 
+        // 테마 색상 추출
+        const colorThemeId = content?.colorTheme || 'burgundy'
+        const themeMap: Record<string, { primary: string; accent: string }> = {
+          burgundy: { primary: '#722F37', accent: '#C9A962' },
+          navy: { primary: '#1B2A4A', accent: '#C9A962' },
+          green: { primary: '#2D5A3D', accent: '#C9A962' },
+          pink: { primary: '#B5616F', accent: '#D4A976' },
+          brown: { primary: '#6B4C3B', accent: '#C9A962' },
+          black: { primary: '#1A1A1A', accent: '#C9A962' },
+        }
+        const themeColors = themeMap[colorThemeId] || themeMap.burgundy
+
         setInvitationInfo({
           kakaoThumbnail: validThumbnail || '',
           groomName: inviteData.invitation.groom_name,
           brideName: inviteData.invitation.bride_name,
+          themeColor: themeColors.primary,
+          accentColor: themeColors.accent,
         })
       }
     } catch (error) {
@@ -1038,7 +1052,7 @@ export default function AdminDashboardPage() {
               {/* 봉투 앞면 */}
               <div
                 className="py-10 px-6"
-                style={{ backgroundColor: '#722F37' }}
+                style={{ backgroundColor: invitationInfo?.themeColor || '#722F37' }}
               >
                 <div
                   className="mx-auto max-w-[260px] py-8 px-6 text-center"
@@ -1047,7 +1061,7 @@ export default function AdminDashboardPage() {
                     boxShadow: '0 8px 30px rgba(0,0,0,0.2)',
                   }}
                 >
-                  <div className="h-px w-[60px] mx-auto mb-4" style={{ backgroundColor: '#C9A962' }} />
+                  <div className="h-px w-[60px] mx-auto mb-4" style={{ backgroundColor: invitationInfo?.accentColor || '#C9A962' }} />
                   {guestForm.relation && (
                     <p className="text-xs mb-1" style={{ color: '#666' }}>
                       {guestForm.relation}
@@ -1059,7 +1073,7 @@ export default function AdminDashboardPage() {
                   >
                     {guestForm.name} {guestForm.honorific}
                   </p>
-                  <div className="h-px w-[60px] mx-auto mt-4" style={{ backgroundColor: '#C9A962' }} />
+                  <div className="h-px w-[60px] mx-auto mt-4" style={{ backgroundColor: invitationInfo?.accentColor || '#C9A962' }} />
                 </div>
               </div>
             </div>
@@ -1095,7 +1109,7 @@ export default function AdminDashboardPage() {
                 </div>
                 <div
                   className="py-6 px-4"
-                  style={{ backgroundColor: '#722F37' }}
+                  style={{ backgroundColor: invitationInfo?.themeColor || '#722F37' }}
                 >
                   <div
                     className="mx-auto max-w-[280px] py-6 px-5 text-center rounded-xl"
@@ -1104,10 +1118,10 @@ export default function AdminDashboardPage() {
                       boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                     }}
                   >
-                    <p className="text-[10px] tracking-[2px] mb-3" style={{ color: '#C9A962' }}>
+                    <p className="text-[10px] tracking-[2px] mb-3" style={{ color: invitationInfo?.accentColor || '#C9A962' }}>
                       WEDDING INVITATION
                     </p>
-                    <div className="h-px w-[40px] mx-auto mb-3" style={{ backgroundColor: '#C9A962' }} />
+                    <div className="h-px w-[40px] mx-auto mb-3" style={{ backgroundColor: invitationInfo?.accentColor || '#C9A962' }} />
                     <p
                       className="text-sm mb-4"
                       style={{ color: '#2C2C2C', fontFamily: "'Noto Serif KR', Georgia, serif" }}
@@ -1120,7 +1134,7 @@ export default function AdminDashboardPage() {
                     >
                       {greetingContent}
                     </div>
-                    <div className="h-px w-[40px] mx-auto mb-2" style={{ backgroundColor: '#C9A962' }} />
+                    <div className="h-px w-[40px] mx-auto mb-2" style={{ backgroundColor: invitationInfo?.accentColor || '#C9A962' }} />
                     <p className="text-[10px]" style={{ color: '#888' }}>
                       아버지 ○○○ · 어머니 ○○○ 드림
                     </p>

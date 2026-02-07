@@ -383,6 +383,41 @@ export async function createRSVP(input: RSVPInput): Promise<RSVPResponse> {
   return result;
 }
 
+// RSVP 기존 응답 조회 (같은 청첩장 + 이름 + 전화번호)
+export async function findExistingRSVP(
+  invitationId: string,
+  guestName: string,
+  guestPhone?: string | null
+): Promise<RSVPResponse | null> {
+  const db = await getDB();
+  const result = guestPhone
+    ? await db
+        .prepare("SELECT * FROM rsvp_responses WHERE invitation_id = ? AND guest_name = ? AND guest_phone = ?")
+        .bind(invitationId, guestName, guestPhone)
+        .first<RSVPResponse>()
+    : await db
+        .prepare("SELECT * FROM rsvp_responses WHERE invitation_id = ? AND guest_name = ? AND guest_phone IS NULL")
+        .bind(invitationId, guestName)
+        .first<RSVPResponse>();
+  return result || null;
+}
+
+// RSVP 업데이트 (기존 응답 수정)
+export async function updateRSVP(
+  id: string,
+  input: Omit<RSVPInput, "invitation_id" | "guest_name">
+): Promise<RSVPResponse | null> {
+  const db = await getDB();
+  const result = await db
+    .prepare(
+      `UPDATE rsvp_responses SET attendance = ?, guest_count = ?, message = ?, side = ?, guest_phone = ?
+       WHERE id = ? RETURNING *`
+    )
+    .bind(input.attendance, input.guest_count, input.message || null, input.side || null, input.guest_phone || null, id)
+    .first<RSVPResponse>();
+  return result || null;
+}
+
 // RSVP 목록 조회
 export async function getRSVPsByInvitationId(invitationId: string): Promise<RSVPResponse[]> {
   const db = await getDB();
@@ -565,6 +600,23 @@ export async function createGuestbookMessage(input: GuestbookInput): Promise<Gue
   }
 
   return result;
+}
+
+// 방명록 최근 메시지 확인 (스팸 방지)
+export async function getRecentGuestbookMessage(
+  invitationId: string,
+  guestName: string,
+  secondsAgo: number = 30
+): Promise<GuestbookMessage | null> {
+  const db = await getDB();
+  const cutoff = new Date(Date.now() - secondsAgo * 1000).toISOString();
+  const result = await db
+    .prepare(
+      "SELECT * FROM guestbook_messages WHERE invitation_id = ? AND guest_name = ? AND created_at > ? LIMIT 1"
+    )
+    .bind(invitationId, guestName, cutoff)
+    .first<GuestbookMessage>();
+  return result || null;
 }
 
 // 방명록 메시지 목록 조회

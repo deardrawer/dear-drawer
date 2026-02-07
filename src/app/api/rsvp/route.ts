@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createRSVP, getRSVPsByInvitationId, getRSVPSummary, deleteRSVP, getInvitationById } from "@/lib/db";
+import { createRSVP, findExistingRSVP, updateRSVP, getRSVPsByInvitationId, getRSVPSummary, deleteRSVP, getInvitationById } from "@/lib/db";
 import { verifyToken, getAuthCookieName } from "@/lib/auth";
 
 export type RSVPSubmission = {
@@ -57,20 +57,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Insert RSVP response
-    const data = await createRSVP({
-      invitation_id: body.invitationId,
-      guest_name: body.guestName,
-      guest_phone: body.guestPhone,
-      attendance: body.attendance,
-      guest_count: guestCount,
-      message: body.message,
-      side: body.side,
-    });
+    // 기존 RSVP 확인 (같은 이름+전화번호 → 업데이트)
+    const existing = await findExistingRSVP(body.invitationId, body.guestName, body.guestPhone);
+
+    let data;
+    if (existing) {
+      data = await updateRSVP(existing.id, {
+        guest_phone: body.guestPhone,
+        attendance: body.attendance,
+        guest_count: guestCount,
+        message: body.message,
+        side: body.side,
+      });
+    } else {
+      data = await createRSVP({
+        invitation_id: body.invitationId,
+        guest_name: body.guestName,
+        guest_phone: body.guestPhone,
+        attendance: body.attendance,
+        guest_count: guestCount,
+        message: body.message,
+        side: body.side,
+      });
+    }
 
     return NextResponse.json({
       success: true,
-      message: "참석 여부가 저장되었습니다.",
+      message: existing ? "참석 여부가 수정되었습니다." : "참석 여부가 저장되었습니다.",
       data,
     });
   } catch (error) {

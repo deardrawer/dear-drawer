@@ -4,6 +4,7 @@ import {
   getGuestbookMessages,
   deleteGuestbookMessage,
   getInvitationById,
+  getRecentGuestbookMessage,
 } from "@/lib/db";
 import { verifyToken, getAuthCookieName } from "@/lib/auth";
 
@@ -64,6 +65,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Invitation not found" },
         { status: 404 }
+      );
+    }
+
+    // 스팸 방지: 같은 이름으로 30초 이내 중복 등록 차단
+    const recent = await getRecentGuestbookMessage(invitationId, guestName, 30);
+    if (recent) {
+      return NextResponse.json(
+        { error: "잠시 후 다시 시도해주세요." },
+        { status: 429 }
       );
     }
 

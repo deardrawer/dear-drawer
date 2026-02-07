@@ -101,6 +101,7 @@ export interface InterviewItem {
 export interface QuoteInfo {
   text: string
   author: string
+  hideAuthor?: boolean
 }
 
 // 감사 인사

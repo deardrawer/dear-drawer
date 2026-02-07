@@ -2515,6 +2515,7 @@ const mockInvitation = {
     quote: {
       text: '사랑한다는 것은\n같은 방향을 바라보는 것이다.',
       author: '생텍쥐페리',
+      hideAuthor: false,
     },
     thankYou: {
       title: 'THANK YOU',
@@ -3069,7 +3070,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
             <p className="typo-body" style={{ fontFamily: fonts.displayKr, color: themeColors.highlight || themeColors.primary }}>
               <StaggeredText text={invitation.content.quote.text} isVisible={invitationAnimated} delay={0.5} charDelay={0.05} />
             </p>
-            {invitation.content.quote.author && <p className="typo-caption mt-2" style={{ color: themeColors.gray }}>{invitation.content.quote.author}</p>}
+            {invitation.content.quote.author && !invitation.content.quote.hideAuthor && <p className="typo-caption mt-2" style={{ color: themeColors.gray }}>{invitation.content.quote.author}</p>}
           </div>
         )}
 

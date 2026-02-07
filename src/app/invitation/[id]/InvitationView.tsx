@@ -450,7 +450,7 @@ function createDefaultContent(invitation: Invitation): InvitationContent {
     },
     wedding: { date: invitation.wedding_date || '', time: '', timeDisplay: invitation.wedding_time || '', dayOfWeek: '', title: 'OUR WEDDING', venue: { name: invitation.venue_name || '', hall: '', address: invitation.venue_address || '' }, directions: { car: '', publicTransport: '', train: '', expressBus: '' } },
     relationship: { startDate: '', stories: [], closingText: '' },
-    content: { greeting: invitation.greeting_message || '', quote: { text: '', author: '' }, thankYou: { title: 'THANK YOU', message: '', sign: '' }, info: { dressCode: { title: '', content: '', enabled: false }, photoShare: { title: '', content: '', buttonText: '', url: '', enabled: false }, photoBooth: { title: '', content: '', enabled: false }, flowerChild: { title: '', content: '', enabled: false }, flowerGift: { title: '', content: '', enabled: false }, wreath: { title: '', content: '', enabled: false }, shuttle: { title: '', content: '', enabled: false }, reception: { title: '', content: '', venue: '', datetime: '', enabled: false }, customItems: [], itemOrder: ['dressCode', 'photoBooth', 'photoShare', 'flowerGift', 'flowerChild', 'wreath', 'shuttle', 'reception'] }, interviews: [], guestbookQuestions: [], parentsGreeting: '', parentsSign: '', interviewIntro: '' },
+    content: { greeting: invitation.greeting_message || '', quote: { text: '', author: '', hideAuthor: false }, thankYou: { title: 'THANK YOU', message: '', sign: '' }, info: { dressCode: { title: '', content: '', enabled: false }, photoShare: { title: '', content: '', buttonText: '', url: '', enabled: false }, photoBooth: { title: '', content: '', enabled: false }, flowerChild: { title: '', content: '', enabled: false }, flowerGift: { title: '', content: '', enabled: false }, wreath: { title: '', content: '', enabled: false }, shuttle: { title: '', content: '', enabled: false }, reception: { title: '', content: '', venue: '', datetime: '', enabled: false }, customItems: [], itemOrder: ['dressCode', 'photoBooth', 'photoShare', 'flowerGift', 'flowerChild', 'wreath', 'shuttle', 'reception'] }, interviews: [], guestbookQuestions: [], parentsGreeting: '', parentsSign: '', interviewIntro: '' },
     gallery: { images: [], imageSettings: [] },
     media: { coverImage: invitation.main_image || '', infoImage: '', bgm: '' },
     meta: { title: '', description: '', ogImage: '', kakaoThumbnail: '', kakaoTitle: '', kakaoDescription: '' },
@@ -821,7 +821,7 @@ function InvitationScreen({ invitation, groomName, brideName, fonts, themeColors
               style={{ fontFamily: fonts.displayKr, color: themeColors.primary }}
               dangerouslySetInnerHTML={{ __html: invitation.content.quote.text.replace(/\n/g, '<br/>') }}
             />
-            {invitation.content.quote.author && (
+            {invitation.content.quote.author && !invitation.content.quote.hideAuthor && (
               <p className="text-[11px] font-light" style={{ color: themeColors.gray }}>
                 {invitation.content.quote.author}
               </p>

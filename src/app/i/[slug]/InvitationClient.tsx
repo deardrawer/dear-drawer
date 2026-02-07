@@ -2145,6 +2145,7 @@ const mockInvitation = {
     quote: {
       text: '사랑한다는 것은\n같은 방향을 바라보는 것이다.',
       author: '생텍쥐페리',
+      hideAuthor: false,
     },
     thankYou: {
       title: 'THANK YOU',
@@ -2702,7 +2703,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
             </div>
 
             <p className="text-[13px] font-light leading-[1.9] mb-2" style={{ fontFamily: fonts.displayKr, color: themeColors.highlight || themeColors.primary }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.quote.text) }} />
-            {invitation.content.quote.author && <p className="text-[11px] font-light mb-5" style={{ color: themeColors.gray }}>{invitation.content.quote.author}</p>}
+            {invitation.content.quote.author && !invitation.content.quote.hideAuthor && <p className="text-[11px] font-light mb-5" style={{ color: themeColors.gray }}>{invitation.content.quote.author}</p>}
 
             {/* Bottom divider bar with animation */}
             <div className="flex items-center justify-center">

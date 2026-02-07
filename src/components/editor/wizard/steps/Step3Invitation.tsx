@@ -417,11 +417,33 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-sm font-medium">출처</Label>
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-medium">출처</Label>
+              <label className="flex items-center gap-1.5 cursor-pointer">
+                <span className="text-xs text-gray-500">표시안함</span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={invitation.content.quote?.hideAuthor || false}
+                  onClick={() => updateNestedField('content.quote.hideAuthor', !invitation.content.quote?.hideAuthor)}
+                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                    invitation.content.quote?.hideAuthor ? 'bg-gray-900' : 'bg-gray-200'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${
+                      invitation.content.quote?.hideAuthor ? 'translate-x-[18px]' : 'translate-x-[3px]'
+                    }`}
+                  />
+                </button>
+              </label>
+            </div>
             <Input
               value={invitation.content.quote?.author || ''}
               onChange={(e) => updateNestedField('content.quote.author', e.target.value)}
               placeholder={SAMPLE_QUOTE.author}
+              disabled={invitation.content.quote?.hideAuthor}
+              className={invitation.content.quote?.hideAuthor ? 'opacity-50' : ''}
             />
           </div>
         </div>

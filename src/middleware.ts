@@ -1,50 +1,61 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// CSRF 보호 대상: 관리자용 API (인증 필요한 엔드포인트)
+const CSRF_PROTECTED_ROUTES: { path: string; methods: string[] }[] = [
+  // RSVP 관리 (GET=목록조회, DELETE=삭제)
+  { path: "/api/rsvp", methods: ["GET", "DELETE"] },
+  // RSVP CSV 내보내기
+  { path: "/api/rsvp/export", methods: ["GET"] },
+  // 방명록 관리 (DELETE=삭제)
+  { path: "/api/guestbook", methods: ["DELETE"] },
+  // 방명록 CSV 내보내기
+  { path: "/api/guestbook/export", methods: ["GET"] },
+  // 청첩장 CRUD (PUT=수정, DELETE=삭제)
+  { path: "/api/invitations", methods: ["PUT", "DELETE"] },
+  // 이미지 삭제
+  { path: "/api/upload", methods: ["DELETE"] },
+];
+
+function isCsrfProtected(pathname: string, method: string): boolean {
+  return CSRF_PROTECTED_ROUTES.some(
+    (route) =>
+      pathname.startsWith(route.path) && route.methods.includes(method)
+  );
+}
+
 export function middleware(request: NextRequest) {
   const response = NextResponse.next();
 
-  // ===== 1. Security Headers (CSP 등) =====
-  // XSS 방지
+  // ===== 1. Security Headers =====
   response.headers.set("X-Content-Type-Options", "nosniff");
-  response.headers.set("X-Frame-Options", "DENY");
-  response.headers.set("X-XSS-Protection", "1; mode=block");
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
 
   // Content-Security-Policy
   const csp = [
     "default-src 'self'",
-    // Next.js 및 인라인 스크립트/스타일 허용
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://t1.kakaocdn.net https://developers.kakao.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com data:",
-    // 이미지: 자체 + Supabase + R2 + Kakao + data URI
-    "img-src 'self' data: blob: https://*.supabase.co https://*.r2.cloudflarestorage.com https://invite.deardrawer.com https://k.kakaocdn.net https://t1.kakaocdn.net",
-    // API 연결
-    "connect-src 'self' https://*.supabase.co https://api.anthropic.com https://openrouter.ai https://kapi.kakao.com",
-    // 프레임 (카카오 SDK 등)
+    "img-src 'self' data: blob: https://*.supabase.co https://*.r2.cloudflarestorage.com https://invite.deardrawer.com https://*.kakaocdn.net",
+    "connect-src 'self' https://*.supabase.co https://kapi.kakao.com",
     "frame-src 'self' https://accounts.kakao.com",
+    "frame-ancestors 'none'",
   ].join("; ");
 
   response.headers.set("Content-Security-Policy", csp);
 
-  // ===== 2. CSRF Protection (API 변경 요청) =====
-  if (request.nextUrl.pathname.startsWith("/api/")) {
-    const method = request.method;
+  // ===== 2. CSRF Protection (관리자용 API만) =====
+  const pathname = request.nextUrl.pathname;
+  const method = request.method;
 
-    // 읽기 전용 메서드는 CSRF 체크 스킵
-    if (method === "GET" || method === "HEAD" || method === "OPTIONS") {
-      return response;
-    }
-
-    // Origin/Referer 헤더로 CSRF 검증
+  if (isCsrfProtected(pathname, method)) {
     const origin = request.headers.get("origin");
     const referer = request.headers.get("referer");
     const host = request.headers.get("host");
 
-    // 허용 도메인 목록
     const allowedOrigins = [
       `https://${host}`,
-      `http://${host}`, // 로컬 개발용
+      `http://${host}`,
       "https://invite.deardrawer.com",
       "http://localhost:3000",
     ];
@@ -56,8 +67,7 @@ export function middleware(request: NextRequest) {
       ? allowedOrigins.some((allowed) => referer.startsWith(allowed))
       : false;
 
-    // Origin도 Referer도 없으면 서버 간 호출일 수 있으므로 허용
-    // (브라우저는 항상 Origin 또는 Referer를 보냄)
+    // Origin도 Referer도 없으면 서버 간 호출 가능성 → 허용
     if (!origin && !referer) {
       return response;
     }
@@ -75,7 +85,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // 정적 파일, _next, 파비콘 제외
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

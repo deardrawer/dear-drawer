@@ -44,14 +44,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "권한이 없습니다." }, { status: 403 });
     }
 
-    // 결제 완료 사용자만 slug 설정 가능
-    if (invitation.is_paid !== 1) {
-      return NextResponse.json(
-        { error: "슬러그 설정은 결제 후 이용 가능합니다." },
-        { status: 403 }
-      );
-    }
-
     const body = await request.json() as { slug: string | null };
     const { slug } = body;
 

@@ -216,8 +216,6 @@ export default function SlugSettings({ invitationId }: SlugSettingsProps) {
         </div>
 
         {/* 슬러그 입력 */}
-        {isPaid ? (
-          <>
             <div className="space-y-2">
               <Label htmlFor="slug">커스텀 슬러그</Label>
               <div className="flex items-center gap-2">
@@ -320,14 +318,6 @@ export default function SlugSettings({ invitationId }: SlugSettingsProps) {
             {error && (
               <p className="text-sm text-red-600">{error}</p>
             )}
-          </>
-        ) : (
-          <div className="p-4 bg-yellow-50 rounded-lg">
-            <p className="text-sm text-yellow-800">
-              커스텀 URL 설정은 결제 후 이용 가능합니다.
-            </p>
-          </div>
-        )}
       </CardContent>
     </Card>
   )

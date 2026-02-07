@@ -176,11 +176,30 @@ export default function ShareModal({
     const kakaoWindow = window as typeof window & {
       Kakao?: {
         isInitialized?: () => boolean
+        init?: (key: string) => void
         Share?: { sendDefault: (config: object) => void }
       }
     }
 
-    if (typeof window !== 'undefined' && kakaoWindow.Kakao?.Share && kakaoWindow.Kakao.isInitialized?.()) {
+    if (typeof window === 'undefined' || !kakaoWindow.Kakao) {
+      navigator.clipboard.writeText(invitationUrl)
+      alert('카카오톡 공유를 사용할 수 없어 링크가 복사되었습니다.\n카카오톡에서 직접 붙여넣기 해주세요.')
+      return
+    }
+
+    try {
+      // SDK 초기화 확인 및 재초기화
+      if (!kakaoWindow.Kakao.isInitialized?.()) {
+        const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY || '0890847927f3189d845391481ead8ecc'
+        kakaoWindow.Kakao.init?.(kakaoKey)
+      }
+
+      if (!kakaoWindow.Kakao.Share?.sendDefault) {
+        navigator.clipboard.writeText(invitationUrl)
+        alert('카카오톡 공유 준비 중입니다. 링크가 복사되었습니다.')
+        return
+      }
+
       // 날짜 포맷팅
       const formattedDate = weddingDate
         ? new Date(weddingDate).toLocaleDateString('ko-KR', {
@@ -199,21 +218,17 @@ export default function ShareModal({
       const venueDetail = venueAddress ? `\n${venueAddress}` : ''
 
       // 기본 이미지
-      const defaultImage = 'https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png'
+      const defaultImage = 'https://invite.deardrawer.com/og-image.png'
       // 카카오 공유에 사용할 이미지 URL 결정
       let imageUrl = defaultImage
 
       if (thumbnailUrl) {
         if (thumbnailUrl.startsWith('https://')) {
-          // 이미 https URL인 경우 그대로 사용
           imageUrl = thumbnailUrl
-        } else if (thumbnailUrl.startsWith('/uploads/') || thumbnailUrl.startsWith('/api/r2/') || thumbnailUrl.startsWith('/sample/')) {
-          // 업로드된 이미지 또는 샘플 이미지 (상대 경로)를 절대 URL로 변환
-          // localhost에서는 외부 접근 불가하므로 production URL 사용
+        } else if (thumbnailUrl.startsWith('/')) {
           const productionUrl = 'https://invite.deardrawer.com'
           imageUrl = `${productionUrl}${thumbnailUrl}`
         }
-        // /demo/ 경로 이미지는 기본 이미지 사용 (외부 접근 불가)
       }
 
       // 공유 제목 (커스텀 제목이 있으면 사용, 없으면 기본 형식)
@@ -223,7 +238,6 @@ export default function ShareModal({
       const displayDescription = shareDescription ||
         `${formattedDate} ${formattedTime}\n${venueDisplay}${venueDetail}`
 
-      // 피드형 템플릿 (objectType: 'feed')
       kakaoWindow.Kakao.Share.sendDefault({
         objectType: 'feed',
         content: {
@@ -245,10 +259,10 @@ export default function ShareModal({
           },
         ],
       })
-    } else {
-      // 카카오 SDK 미초기화 시 링크 복사로 대체
+    } catch (error) {
+      console.error('Kakao share error:', error)
       navigator.clipboard.writeText(invitationUrl)
-      alert('카카오톡 공유를 사용할 수 없어 링크가 복사되었습니다.\n카카오톡에서 직접 붙여넣기 해주세요.')
+      alert('카카오톡 공유에 실패했습니다. 링크가 복사되었습니다.')
     }
   }
 

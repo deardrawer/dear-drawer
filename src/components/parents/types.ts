@@ -274,6 +274,7 @@ export interface ParentsInvitationContent {
     photoBooth?: { enabled?: boolean; content?: string }
     shuttle?: ShuttleInfo
     itemOrder?: string[]  // 안내 항목 순서
+    customItems?: { id?: string; enabled?: boolean; title?: string; content?: string; emoji?: string }[]
   }
 
   // 계좌 안내
@@ -285,6 +286,9 @@ export interface ParentsInvitationContent {
       accountNumber: string
     }[]
   }
+
+  // RSVP
+  rsvpEnabled?: boolean
 
   // 디자인
   colorTheme: ColorThemeId

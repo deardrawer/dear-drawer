@@ -368,6 +368,8 @@ export default function ParentsInvitationView({
                   reception={data.weddingInfo?.reception}
                   photoBooth={data.weddingInfo?.photoBooth}
                   shuttle={data.weddingInfo?.shuttle}
+                  customItems={data.weddingInfo?.customItems}
+                  itemOrder={data.weddingInfo?.itemOrder}
                 />
               </div>
             )}
@@ -379,8 +381,19 @@ export default function ParentsInvitationView({
               </div>
             )}
             <SectionDivider />
-            <ShareSection />
-            <RsvpModal isPreview={isPreview} invitationId={invitationId} />
+            <ShareSection
+              shareTitle={data.meta?.title || `${data.groom?.lastName || ''}${data.groom?.firstName || ''} ❤️ ${data.bride?.lastName || ''}${data.bride?.firstName || ''}의 결혼식`}
+              shareDescription={data.meta?.description}
+              thumbnailUrl={
+                (typeof data.meta?.kakaoThumbnail === 'string' ? data.meta.kakaoThumbnail : (data.meta?.kakaoThumbnail as { url?: string })?.url)
+                || data.meta?.ogImage
+                || data.gallery?.images?.[0]?.url
+                || data.mainImage?.url
+              }
+            />
+            {data.rsvpEnabled !== false && (
+              <RsvpModal isPreview={isPreview} invitationId={invitationId} />
+            )}
           </main>
         </SectionHighlightProvider>
       )}

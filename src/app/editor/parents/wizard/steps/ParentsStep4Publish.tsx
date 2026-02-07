@@ -277,7 +277,7 @@ export default function ParentsStep4Publish({
                   </label>
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-gray-500 whitespace-nowrap">
-                      invite.deardrawer.com/invite/
+                      invite.deardrawer.com/i/
                     </span>
                     <Input
                       value={customSlug}

@@ -176,6 +176,8 @@ export interface ParentsInvitationData {
     shuttle: ShuttleInfo
     // 항목 순서
     itemOrder: string[]
+    // 사용자 정의 안내 항목
+    customItems?: { id?: string; enabled?: boolean; title?: string; content?: string; emoji?: string }[]
   }
 
   // 계좌 안내
@@ -211,6 +213,9 @@ export interface ParentsInvitationData {
       cropHeight?: number
     }
   }
+
+  // RSVP
+  rsvpEnabled?: boolean
 
   // 디자인
   colorTheme: ColorThemeId
@@ -340,6 +345,7 @@ const defaultData: ParentsInvitationData = {
       notes: ['원활한 출발을 위해 출발 10분 전까지 도착 부탁드립니다.'],
     },
     itemOrder: ['flowerGift', 'wreath', 'flowerChild', 'reception', 'photoBooth', 'shuttle'],
+    customItems: [],
   },
   accounts: {
     enabled: true,
@@ -466,7 +472,11 @@ function ParentsEditorContent() {
       let current: Record<string, unknown> = newData
 
       for (let i = 0; i < keys.length - 1; i++) {
-        current[keys[i]] = { ...(current[keys[i]] as Record<string, unknown>) }
+        const child = current[keys[i]]
+        // 배열은 배열로 복사, 객체는 객체로 복사
+        current[keys[i]] = Array.isArray(child)
+          ? [...child]
+          : { ...(child as Record<string, unknown>) }
         current = current[keys[i]] as Record<string, unknown>
       }
 

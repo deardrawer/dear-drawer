@@ -49,6 +49,7 @@ type InvitationInfo = {
   venue_name: string
   venue_address: string
   slug: string | null
+  thumbnail_url: string | null
 }
 
 const COLORS = ['#10B981', '#EF4444', '#F59E0B']
@@ -178,24 +179,32 @@ export default function DashboardPage() {
   const fetchInvitationInfo = async () => {
     try {
       const response = await fetch(`/api/invitations/${invitationId}`)
-      const data: {
-        groom_name?: string
-        bride_name?: string
-        wedding_date?: string
-        wedding_time?: string
-        venue_name?: string
-        venue_address?: string
-        slug?: string | null
-      } = await response.json()
+      const result = await response.json() as Record<string, unknown>
+      const data = (result.invitation || result) as Record<string, unknown>
       if (data) {
+        // 썸네일 URL 추출: content JSON에서 meta.kakaoThumbnail 또는 gallery 첫번째 이미지
+        let thumbnailUrl: string | null = null
+        try {
+          const rawContent = data.content
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const content: any = typeof rawContent === 'string' ? JSON.parse(rawContent) : rawContent
+          if (content) {
+            const kakaoThumb = content.meta?.kakaoThumbnail
+            const ogImage = content.meta?.ogImage
+            const galleryFirstUrl = content.gallery?.images?.[0]?.url || content.gallery?.images?.[0]
+            thumbnailUrl = (typeof kakaoThumb === 'string' ? kakaoThumb : kakaoThumb?.url) || ogImage || galleryFirstUrl || (data.main_image as string) || null
+          }
+        } catch { /* content parsing failed */ }
+
         setInvitationInfo({
-          groom_name: data.groom_name || '',
-          bride_name: data.bride_name || '',
-          wedding_date: data.wedding_date || '',
-          wedding_time: data.wedding_time || '',
-          venue_name: data.venue_name || '',
-          venue_address: data.venue_address || '',
-          slug: data.slug || null,
+          groom_name: (data.groom_name as string) || '',
+          bride_name: (data.bride_name as string) || '',
+          wedding_date: (data.wedding_date as string) || '',
+          wedding_time: (data.wedding_time as string) || '',
+          venue_name: (data.venue_name as string) || '',
+          venue_address: (data.venue_address as string) || '',
+          slug: (data.slug as string) || null,
+          thumbnail_url: thumbnailUrl,
         })
       }
     } catch (error) {
@@ -226,11 +235,30 @@ export default function DashboardPage() {
     const kakaoWindow = window as typeof window & {
       Kakao?: {
         isInitialized?: () => boolean
+        init?: (key: string) => void
         Share?: { sendDefault: (config: object) => void }
       }
     }
 
-    if (typeof window !== 'undefined' && kakaoWindow.Kakao?.Share && kakaoWindow.Kakao.isInitialized?.()) {
+    if (typeof window === 'undefined' || !kakaoWindow.Kakao) {
+      navigator.clipboard.writeText(invitationUrl)
+      alert('카카오톡 공유를 사용할 수 없어 링크가 복사되었습니다.')
+      return
+    }
+
+    try {
+      // SDK 초기화 확인 및 재초기화
+      if (!kakaoWindow.Kakao.isInitialized?.()) {
+        const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY || '0890847927f3189d845391481ead8ecc'
+        kakaoWindow.Kakao.init?.(kakaoKey)
+      }
+
+      if (!kakaoWindow.Kakao.Share?.sendDefault) {
+        navigator.clipboard.writeText(invitationUrl)
+        alert('카카오톡 공유 준비 중입니다. 링크가 복사되었습니다.')
+        return
+      }
+
       const formattedDate = invitationInfo?.wedding_date
         ? new Date(invitationInfo.wedding_date).toLocaleDateString('ko-KR', {
             year: 'numeric',
@@ -240,12 +268,23 @@ export default function DashboardPage() {
           })
         : '날짜 미정'
 
+      // 이미지 URL 결정
+      let imageUrl = 'https://invite.deardrawer.com/og-image.png'
+      const thumbUrl = invitationInfo?.thumbnail_url
+      if (thumbUrl) {
+        if (thumbUrl.startsWith('https://')) {
+          imageUrl = thumbUrl
+        } else if (thumbUrl.startsWith('/')) {
+          imageUrl = `https://invite.deardrawer.com${thumbUrl}`
+        }
+      }
+
       kakaoWindow.Kakao.Share.sendDefault({
         objectType: 'feed',
         content: {
           title: `${invitationInfo?.groom_name || '신랑'} ❤️ ${invitationInfo?.bride_name || '신부'}의 결혼식`,
           description: `${formattedDate}\n${invitationInfo?.venue_name || ''}`,
-          imageUrl: 'https://invite.deardrawer.com/og-image.png',
+          imageUrl,
           link: {
             mobileWebUrl: invitationUrl,
             webUrl: invitationUrl,
@@ -261,9 +300,10 @@ export default function DashboardPage() {
           },
         ],
       })
-    } else {
+    } catch (error) {
+      console.error('Kakao share error:', error)
       navigator.clipboard.writeText(invitationUrl)
-      alert('카카오톡 공유를 사용할 수 없어 링크가 복사되었습니다.')
+      alert('카카오톡 공유에 실패했습니다. 링크가 복사되었습니다.')
     }
   }
 

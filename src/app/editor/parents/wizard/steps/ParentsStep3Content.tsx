@@ -6,9 +6,12 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
-import { Heart, Clock, ImagePlus, MapPin, Bus, CreditCard, Plus, X, MessageSquare } from 'lucide-react'
+import { Heart, Clock, ImagePlus, MapPin, Bus, CreditCard, Plus, X, MessageSquare, GripVertical } from 'lucide-react'
 import { SortableList, SortableItem } from '@/components/ui/sortable-list'
 import ImageCropEditor from '@/components/parents/ImageCropEditor'
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core'
+import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import type { ParentsInvitationData, TimelineItem } from '../../page'
 
 interface ParentsStep3ContentProps {
@@ -17,6 +20,69 @@ interface ParentsStep3ContentProps {
   updateNestedData: (path: string, value: unknown) => void
   invitationId: string | null
   setActiveSection?: (section: string | null) => void
+}
+
+// 드래그 가능한 갤러리 카드
+function SortableGalleryCard({
+  id,
+  img,
+  index,
+  onDelete,
+  onChange,
+  invitationId,
+}: {
+  id: string
+  img: { url: string; cropX: number; cropY: number; cropWidth: number; cropHeight: number }
+  index: number
+  onDelete: () => void
+  onChange: (cropData: { url: string; cropX: number; cropY: number; cropWidth: number; cropHeight: number }) => void
+  invitationId?: string
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id })
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+    zIndex: isDragging ? 50 : undefined,
+  }
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} className="border rounded-lg p-3 space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div
+            {...listeners}
+            className="p-1 rounded cursor-grab active:cursor-grabbing hover:bg-gray-100 touch-manipulation"
+          >
+            <GripVertical className="w-4 h-4 text-gray-400" />
+          </div>
+          <span className="text-xs font-medium text-gray-600">사진 {index + 1}</span>
+        </div>
+        <button
+          onClick={onDelete}
+          className="p-1 rounded hover:bg-red-100 text-red-400"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+      <ImageCropEditor
+        value={img}
+        onChange={onChange}
+        aspectRatio={3/4}
+        containerWidth={240}
+        invitationId={invitationId}
+        label=""
+      />
+    </div>
+  )
 }
 
 // 결혼식 안내 항목 설정
@@ -38,6 +104,10 @@ export default function ParentsStep3Content({
   invitationId,
   setActiveSection,
 }: ParentsStep3ContentProps) {
+  const gallerySensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+  )
+
   // 안내 항목 순서 변경 함수 (드래그 앤 드롭)
   const handleInfoItemReorder = (newOrder: string[]) => {
     if (!Array.isArray(newOrder) || newOrder.length === 0) {
@@ -45,7 +115,7 @@ export default function ParentsStep3Content({
     }
 
     const validKeys = PARENTS_INFO_ITEMS_CONFIG.map(item => item.key)
-    const isValidOrder = newOrder.every(key => validKeys.includes(key))
+    const isValidOrder = newOrder.every(key => validKeys.includes(key) || key.startsWith('custom-'))
 
     if (!isValidOrder) {
       return
@@ -207,35 +277,77 @@ export default function ParentsStep3Content({
           <span className="text-xs text-gray-400 font-normal">({data.gallery?.images?.length || 0}장)</span>
         </h3>
         <p className="text-sm text-blue-600">💙 신랑신부 사진을 추가하세요. (최대 10장)</p>
+        <p className="text-xs text-gray-500">사진이 2장 이상이면 드래그하여 순서를 변경할 수 있습니다.</p>
 
-        {data.gallery?.images?.map((img, index) => (
-          <div key={index} className="border rounded-lg p-3 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-gray-600">사진 {index + 1}</span>
-              <button
-                onClick={() => {
-                  const newImages = data.gallery?.images?.filter((_, i) => i !== index) || []
-                  updateNestedData('gallery.images', newImages)
-                }}
-                className="p-1 rounded hover:bg-red-100 text-red-400"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <ImageCropEditor
-              value={img}
-              onChange={(cropData) => {
-                const newImages = [...(data.gallery?.images || [])]
-                newImages[index] = cropData
-                updateNestedData('gallery.images', newImages)
-              }}
-              aspectRatio={3/4}
-              containerWidth={240}
-              invitationId={invitationId || undefined}
-              label=""
-            />
-          </div>
-        ))}
+        {(() => {
+          const images = data.gallery?.images || []
+          const sortableIds = images.map((_, i) => `gallery-img-${i}`)
+
+          const handleGalleryDragEnd = (event: DragEndEvent) => {
+            const { active, over } = event
+            if (!over || active.id === over.id) return
+            const oldIndex = sortableIds.indexOf(active.id as string)
+            const newIndex = sortableIds.indexOf(over.id as string)
+            if (oldIndex === -1 || newIndex === -1) return
+            updateNestedData('gallery.images', arrayMove(images, oldIndex, newIndex))
+          }
+
+          if (images.length < 2) {
+            return images.map((img, index) => (
+              <div key={index} className="border rounded-lg p-3 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-gray-600">사진 {index + 1}</span>
+                  <button
+                    onClick={() => {
+                      const newImages = images.filter((_, i) => i !== index)
+                      updateNestedData('gallery.images', newImages)
+                    }}
+                    className="p-1 rounded hover:bg-red-100 text-red-400"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <ImageCropEditor
+                  value={img}
+                  onChange={(cropData) => {
+                    const newImages = [...images]
+                    newImages[index] = cropData
+                    updateNestedData('gallery.images', newImages)
+                  }}
+                  aspectRatio={3/4}
+                  containerWidth={240}
+                  invitationId={invitationId || undefined}
+                  label=""
+                />
+              </div>
+            ))
+          }
+
+          return (
+            <DndContext sensors={gallerySensors} collisionDetection={closestCenter} onDragEnd={handleGalleryDragEnd}>
+              <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
+                {images.map((img, index) => (
+                  <SortableGalleryCard
+                    key={sortableIds[index]}
+                    id={sortableIds[index]}
+                    img={img}
+                    index={index}
+                    onDelete={() => {
+                      const newImages = images.filter((_, i) => i !== index)
+                      updateNestedData('gallery.images', newImages)
+                    }}
+                    onChange={(cropData) => {
+                      const newImages = [...images]
+                      newImages[index] = cropData
+                      updateNestedData('gallery.images', newImages)
+                    }}
+                    invitationId={invitationId || undefined}
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
+          )
+        })()}
 
         {(data.gallery?.images?.length || 0) < 10 && (
           <Button
@@ -554,20 +666,97 @@ export default function ParentsStep3Content({
         </div>
 
         {data.weddingInfo?.enabled !== false && (
+          <>
           <SortableList
             items={data.weddingInfo?.itemOrder || DEFAULT_ITEM_ORDER}
             onReorder={handleInfoItemReorder}
             renderDragOverlay={(activeId) => {
               const config = PARENTS_INFO_ITEMS_CONFIG.find(c => c.key === activeId)
-              return config ? (
-                <div className="p-3 bg-white">
-                  <span className="text-xs font-medium">{config.emoji} {config.label}</span>
-                </div>
-              ) : null
+              if (config) {
+                return (
+                  <div className="p-3 bg-white">
+                    <span className="text-xs font-medium">{config.emoji} {config.label}</span>
+                  </div>
+                )
+              }
+              if (activeId.startsWith('custom-')) {
+                const customId = activeId.replace('custom-', '')
+                const custom = data.weddingInfo?.customItems?.find(c => c.id === customId)
+                return (
+                  <div className="p-3 bg-white">
+                    <span className="text-xs font-medium">{custom?.emoji || '📌'} {custom?.title || '사용자 안내'}</span>
+                  </div>
+                )
+              }
+              return null
             }}
           >
             <div className="space-y-3">
               {(data.weddingInfo?.itemOrder || DEFAULT_ITEM_ORDER).map((itemKey) => {
+                // 커스텀 항목 처리
+                if (itemKey.startsWith('custom-')) {
+                  const customId = itemKey.replace('custom-', '')
+                  const customItems = data.weddingInfo?.customItems || []
+                  const customIdx = customItems.findIndex(c => c.id === customId)
+                  const custom = customIdx >= 0 ? customItems[customIdx] : null
+                  if (!custom) return null
+
+                  return (
+                    <SortableItem key={itemKey} id={itemKey}>
+                      <div className="border rounded-lg p-3 space-y-2 bg-white hover:border-gray-300 transition-colors">
+                        <div className="flex items-center justify-between gap-2">
+                          <Label className="text-xs font-medium">{custom.emoji || '📌'} {custom.title || '사용자 안내'}</Label>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => {
+                                const newItems = customItems.filter(c => c.id !== customId)
+                                updateNestedData('weddingInfo.customItems', newItems)
+                                const newOrder = (data.weddingInfo?.itemOrder || DEFAULT_ITEM_ORDER).filter(k => k !== itemKey)
+                                updateNestedData('weddingInfo.itemOrder', newOrder)
+                              }}
+                              className="p-1 rounded hover:bg-red-100 text-red-400"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                            <Switch
+                              checked={custom.enabled ?? false}
+                              onCheckedChange={(checked) => updateNestedData(`weddingInfo.customItems.${customIdx}.enabled`, checked)}
+                            />
+                          </div>
+                        </div>
+
+                        {custom.enabled && (
+                          <div className="space-y-2">
+                            <div className="grid grid-cols-[1fr_auto] gap-2">
+                              <Input
+                                value={custom.title || ''}
+                                onChange={(e) => updateNestedData(`weddingInfo.customItems.${customIdx}.title`, e.target.value)}
+                                placeholder="안내 제목"
+                                className="text-sm"
+                              />
+                              <Input
+                                value={custom.emoji || ''}
+                                onChange={(e) => updateNestedData(`weddingInfo.customItems.${customIdx}.emoji`, e.target.value)}
+                                placeholder="📌"
+                                className="text-sm w-14 text-center"
+                                maxLength={2}
+                              />
+                            </div>
+                            <Textarea
+                              value={custom.content || ''}
+                              onChange={(e) => updateNestedData(`weddingInfo.customItems.${customIdx}.content`, e.target.value)}
+                              placeholder="안내 내용을 입력하세요"
+                              rows={3}
+                              className="text-sm"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </SortableItem>
+                  )
+                }
+
+                // 기본 항목 처리
                 const config = PARENTS_INFO_ITEMS_CONFIG.find(c => c.key === itemKey)
                 if (!config) return null
 
@@ -690,27 +879,54 @@ export default function ParentsStep3Content({
               })}
             </div>
           </SortableList>
+
+          {/* 사용자 정의 안내 항목 추가 버튼 */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const customItems = [...(data.weddingInfo?.customItems || [])]
+              const newId = `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
+              customItems.push({ id: newId, enabled: true, title: '', content: '', emoji: '📌' })
+              updateNestedData('weddingInfo.customItems', customItems)
+              const currentOrder = data.weddingInfo?.itemOrder || DEFAULT_ITEM_ORDER
+              updateNestedData('weddingInfo.itemOrder', [...currentOrder, `custom-${newId}`])
+            }}
+            className="w-full"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            안내 항목 추가
+          </Button>
+          </>
         )}
       </section>
 
       {/* RSVP (참석의사전달) */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-violet-100 flex items-center justify-center">
-            <MessageSquare className="w-3 h-3 text-violet-500" />
-          </div>
-          RSVP (참석의사전달)
-        </h3>
-        <p className="text-sm text-blue-600">💙 RSVP 기능은 게스트 설정 단계에서 확인하실 수 있습니다.</p>
-
-        <div className="p-4 bg-gray-50 rounded-lg text-center">
-          <p className="text-sm text-gray-600">
-            게스트에게 참석 여부를 편리하게 받을 수 있어요.
-          </p>
-          <p className="text-xs text-gray-500 mt-2">
-            청첩장 발행 후 게스트 관리 페이지에서 응답을 확인할 수 있습니다.
-          </p>
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+            <div className="w-6 h-6 rounded-full bg-violet-100 flex items-center justify-center">
+              <MessageSquare className="w-3 h-3 text-violet-500" />
+            </div>
+            RSVP (참석의사전달)
+          </h3>
+          <Switch
+            checked={data.rsvpEnabled !== false}
+            onCheckedChange={(checked) => updateData({ rsvpEnabled: checked })}
+          />
         </div>
+        <p className="text-sm text-blue-600">💙 하객분들이 참석 여부를 전달할 수 있는 RSVP 기능이 표시됩니다.</p>
+
+        {data.rsvpEnabled !== false && (
+          <div className="p-4 bg-gray-50 rounded-lg text-center">
+            <p className="text-sm text-gray-600">
+              게스트에게 참석 여부를 편리하게 받을 수 있어요.
+            </p>
+            <p className="text-xs text-gray-500 mt-2">
+              청첩장 발행 후 게스트 관리 페이지에서 응답을 확인할 수 있습니다.
+            </p>
+          </div>
+        )}
       </section>
 
       {/* 계좌 안내 */}

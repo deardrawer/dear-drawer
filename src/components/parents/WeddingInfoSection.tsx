@@ -4,6 +4,14 @@ import { useState } from 'react'
 import { useSectionHighlight } from './SectionHighlightContext'
 import { useTheme } from './ThemeContext'
 
+interface CustomInfoItem {
+  id?: string
+  enabled?: boolean
+  title?: string
+  content?: string
+  emoji?: string
+}
+
 interface WeddingInfoSectionProps {
   enabled?: boolean
   flowerGift?: { enabled?: boolean; content?: string }
@@ -20,6 +28,8 @@ interface WeddingInfoSectionProps {
     vehicleNumber?: string
     notes?: string[]
   }
+  customItems?: CustomInfoItem[]
+  itemOrder?: string[]
 }
 
 // 기본값들
@@ -37,20 +47,49 @@ export default function WeddingInfoSection({
   reception,
   photoBooth,
   shuttle,
+  customItems,
+  itemOrder,
 }: WeddingInfoSectionProps) {
   const { ref, isActive, hasAppeared } = useSectionHighlight('wedding-info')
   const theme = useTheme()
 
-  // 활성화된 탭들 계산
+  // 기본 탭 정의
+  const builtInTabs: Record<string, { label: string; emoji: string; enabled: boolean }> = {
+    flowerGift: { label: '꽃 답례품', emoji: '💐', enabled: !!flowerGift?.enabled },
+    wreath: { label: '화환 안내', emoji: '🌸', enabled: !!wreath?.enabled },
+    flowerChild: { label: '화동 안내', emoji: '🌼', enabled: !!flowerChild?.enabled },
+    reception: { label: '피로연', emoji: '🍽', enabled: !!reception?.enabled },
+    photoBooth: { label: '포토부스', emoji: '📸', enabled: !!photoBooth?.enabled },
+    shuttle: { label: '셔틀버스', emoji: '🚌', enabled: !!shuttle?.enabled },
+  }
+
+  // itemOrder 기반으로 탭 순서 결정
+  const defaultOrder = ['flowerGift', 'wreath', 'flowerChild', 'reception', 'photoBooth', 'shuttle']
+  const order = itemOrder || defaultOrder
+
+  // 커스텀 항목도 포함하여 순서대로 활성화된 탭 계산
   const enabledTabs: { id: string; label: string; emoji: string }[] = []
-  if (flowerGift?.enabled) enabledTabs.push({ id: 'flowerGift', label: '꽃 답례품', emoji: '💐' })
-  if (wreath?.enabled) enabledTabs.push({ id: 'wreath', label: '화환 안내', emoji: '🌸' })
-  if (flowerChild?.enabled) enabledTabs.push({ id: 'flowerChild', label: '화동 안내', emoji: '🌼' })
-  if (reception?.enabled) enabledTabs.push({ id: 'reception', label: '피로연', emoji: '🍽' })
-  if (photoBooth?.enabled) enabledTabs.push({ id: 'photoBooth', label: '포토부스', emoji: '📸' })
-  if (shuttle?.enabled) enabledTabs.push({ id: 'shuttle', label: '셔틀버스', emoji: '🚌' })
+  for (const key of order) {
+    if (key.startsWith('custom-')) {
+      const customId = key.replace('custom-', '')
+      // ID 기반 조회 (우선) → 레거시 인덱스 기반 fallback
+      let custom = customItems?.find(c => c.id === customId)
+      if (!custom) {
+        const idx = parseInt(customId, 10)
+        if (!isNaN(idx)) custom = customItems?.[idx]
+      }
+      if (custom?.enabled && custom.title) {
+        enabledTabs.push({ id: key, label: custom.title, emoji: custom.emoji || '📌' })
+      }
+    } else if (builtInTabs[key]?.enabled) {
+      enabledTabs.push({ id: key, label: builtInTabs[key].label, emoji: builtInTabs[key].emoji })
+    }
+  }
 
   const [activeTab, setActiveTab] = useState(enabledTabs[0]?.id || 'flowerGift')
+
+  // 현재 선택된 탭이 활성 탭 목록에 없으면 첫 번째 탭으로 보정
+  const effectiveTab = enabledTabs.find(t => t.id === activeTab) ? activeTab : enabledTabs[0]?.id
 
   // 섹션이 비활성화되었거나 활성화된 항목이 없으면 렌더링 안함
   if (!enabled || enabledTabs.length === 0) {
@@ -83,8 +122,8 @@ export default function WeddingInfoSection({
             onClick={() => setActiveTab(tab.id)}
             className="px-3 py-2 text-xs tracking-wide rounded-full transition-all"
             style={{
-              backgroundColor: activeTab === tab.id ? theme.accent : '#F5F0EB',
-              color: activeTab === tab.id ? '#fff' : '#666',
+              backgroundColor: effectiveTab === tab.id ? theme.accent : '#F5F0EB',
+              color: effectiveTab === tab.id ? '#fff' : '#666',
             }}
           >
             {tab.label}
@@ -100,7 +139,7 @@ export default function WeddingInfoSection({
         }}
       >
         {/* 💐 꽃 답례품 */}
-        {activeTab === 'flowerGift' && flowerGift?.enabled && (
+        {effectiveTab === 'flowerGift' && flowerGift?.enabled && (
           <div className="animate-fade-in">
             <div className="text-3xl mb-6">💐</div>
             <h3 className="font-serif text-base mb-4 tracking-wide" style={{ color: theme.text }}>
@@ -113,7 +152,7 @@ export default function WeddingInfoSection({
         )}
 
         {/* 🌸 화환 안내 */}
-        {activeTab === 'wreath' && wreath?.enabled && (
+        {effectiveTab === 'wreath' && wreath?.enabled && (
           <div className="animate-fade-in">
             <div className="text-3xl mb-6">🌸</div>
             <h3 className="font-serif text-base mb-4 tracking-wide" style={{ color: theme.text }}>
@@ -126,7 +165,7 @@ export default function WeddingInfoSection({
         )}
 
         {/* 🌼 화동 안내 */}
-        {activeTab === 'flowerChild' && flowerChild?.enabled && (
+        {effectiveTab === 'flowerChild' && flowerChild?.enabled && (
           <div className="animate-fade-in">
             <div className="text-3xl mb-6">🌼</div>
             <h3 className="font-serif text-base mb-4 tracking-wide" style={{ color: theme.text }}>
@@ -139,7 +178,7 @@ export default function WeddingInfoSection({
         )}
 
         {/* 🍽 피로연 안내 */}
-        {activeTab === 'reception' && reception?.enabled && (
+        {effectiveTab === 'reception' && reception?.enabled && (
           <div className="animate-fade-in">
             <div className="text-3xl mb-6">🍽</div>
             <h3 className="font-serif text-base mb-4 tracking-wide" style={{ color: theme.text }}>
@@ -169,7 +208,7 @@ export default function WeddingInfoSection({
         )}
 
         {/* 📸 포토부스 안내 */}
-        {activeTab === 'photoBooth' && photoBooth?.enabled && (
+        {effectiveTab === 'photoBooth' && photoBooth?.enabled && (
           <div className="animate-fade-in">
             <div className="text-3xl mb-6">📸</div>
             <h3 className="font-serif text-base mb-4 tracking-wide" style={{ color: theme.text }}>
@@ -182,7 +221,7 @@ export default function WeddingInfoSection({
         )}
 
         {/* 🚌 셔틀버스 안내 */}
-        {activeTab === 'shuttle' && shuttle?.enabled && (
+        {effectiveTab === 'shuttle' && shuttle?.enabled && (
           <div className="animate-fade-in">
             <div className="text-3xl mb-6">🚌</div>
             <h3 className="font-serif text-base mb-4 tracking-wide" style={{ color: theme.text }}>
@@ -241,6 +280,31 @@ export default function WeddingInfoSection({
             )}
           </div>
         )}
+
+        {/* 커스텀 안내 항목 */}
+        {effectiveTab?.startsWith('custom-') && (() => {
+          const customId = (effectiveTab || '').replace('custom-', '')
+          // ID 기반 조회 (우선) → 레거시 인덱스 기반 fallback
+          let custom = customItems?.find(c => c.id === customId)
+          if (!custom) {
+            const idx = parseInt(customId, 10)
+            if (!isNaN(idx)) custom = customItems?.[idx]
+          }
+          if (!custom?.enabled || !custom.title) return null
+          return (
+            <div className="animate-fade-in">
+              <div className="text-3xl mb-6">{custom.emoji || '📌'}</div>
+              <h3 className="font-serif text-base mb-4 tracking-wide" style={{ color: theme.text }}>
+                {custom.title}
+              </h3>
+              {custom.content && (
+                <p className="text-xs leading-[2] whitespace-pre-line" style={{ color: '#666' }}>
+                  {custom.content}
+                </p>
+              )}
+            </div>
+          )
+        })()}
       </div>
     </section>
   )

@@ -7,12 +7,18 @@ interface ShareSectionProps {
   onKakaoShare?: () => void
   onSmsShare?: () => void
   onCopyLink?: () => void
+  shareTitle?: string
+  shareDescription?: string
+  thumbnailUrl?: string
 }
 
 export default function ShareSection({
   onKakaoShare,
   onSmsShare,
   onCopyLink,
+  shareTitle,
+  shareDescription,
+  thumbnailUrl,
 }: ShareSectionProps) {
   const { ref, isActive, hasAppeared } = useSectionHighlight('share')
   const theme = useTheme()
@@ -74,12 +80,22 @@ export default function ShareSection({
 
                   // Share 기능 사용 가능 여부 확인
                   if (kakaoWindow.Kakao.Share?.sendDefault) {
+                    // 이미지 URL 결정
+                    let imageUrl = 'https://invite.deardrawer.com/og-image.png'
+                    if (thumbnailUrl) {
+                      if (thumbnailUrl.startsWith('https://')) {
+                        imageUrl = thumbnailUrl
+                      } else if (thumbnailUrl.startsWith('/')) {
+                        imageUrl = `https://invite.deardrawer.com${thumbnailUrl}`
+                      }
+                    }
+
                     kakaoWindow.Kakao.Share.sendDefault({
                       objectType: 'feed',
                       content: {
-                        title: '결혼식에 초대합니다',
-                        description: '소중한 분들을 결혼식에 초대합니다.',
-                        imageUrl: 'https://invite.deardrawer.com/og-image.png',
+                        title: shareTitle || '결혼식에 초대합니다',
+                        description: shareDescription || '소중한 분들을 결혼식에 초대합니다.',
+                        imageUrl,
                         link: {
                           mobileWebUrl: window.location.href,
                           webUrl: window.location.href,

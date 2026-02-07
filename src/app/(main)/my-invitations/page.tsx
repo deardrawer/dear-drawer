@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useAuth } from '@/components/providers/AuthProvider'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -119,6 +119,7 @@ type RSVPData = {
   attendance: 'attending' | 'not_attending' | 'pending'
   guest_count: number
   message: string | null
+  side: 'groom' | 'bride' | null
   created_at: string
 }
 
@@ -163,6 +164,12 @@ export default function MyInvitationsPage() {
   const manageQrCanvasRef = useRef<HTMLCanvasElement>(null)
   const [manageQrCodeUrl, setManageQrCodeUrl] = useState('')
 
+  // RSVP 필터/검색/정렬
+  const [rsvpFilter, setRsvpFilter] = useState<'all' | 'attending' | 'not_attending' | 'pending' | 'groom' | 'bride'>('all')
+  const [rsvpSearch, setRsvpSearch] = useState('')
+  const [rsvpSort, setRsvpSort] = useState<'date' | 'name' | 'count'>('date')
+  const [deletingRsvpId, setDeletingRsvpId] = useState<string | null>(null)
+
   // 공유 URL
   const baseUrl = 'https://invite.deardrawer.com'
   const getInvitationUrl = (inv: InvitationSummary) => {
@@ -199,6 +206,9 @@ export default function MyInvitationsPage() {
       fetchManageData(manageInvitation.id)
       setCustomSlug(manageInvitation.slug || '')
       generateManageQRCode(manageInvitation)
+      setRsvpFilter('all')
+      setRsvpSearch('')
+      setRsvpSort('date')
     }
   }, [manageInvitation])
 
@@ -465,6 +475,21 @@ export default function MyInvitationsPage() {
     }
   }
 
+  const handleDeleteRsvp = async (rsvpId: string) => {
+    if (!manageInvitation) return
+    setDeletingRsvpId(null)
+    try {
+      const response = await fetch(`/api/rsvp?id=${rsvpId}&invitationId=${manageInvitation.id}`, {
+        method: 'DELETE',
+      })
+      if (response.ok) {
+        setRsvpData((prev) => prev.filter((r) => r.id !== rsvpId))
+      }
+    } catch (error) {
+      console.error('Failed to delete RSVP:', error)
+    }
+  }
+
   const formatDate = (dateString: string) => {
     if (!dateString) return '-'
     return new Date(dateString).toLocaleDateString('ko-KR', {
@@ -508,13 +533,44 @@ export default function MyInvitationsPage() {
     }
   }
 
-  const rsvpSummary = {
-    total: rsvpData.length,
-    attending: rsvpData.filter(r => r.attendance === 'attending').length,
-    notAttending: rsvpData.filter(r => r.attendance === 'not_attending').length,
-    pending: rsvpData.filter(r => r.attendance === 'pending').length,
-    totalGuests: rsvpData.filter(r => r.attendance === 'attending').reduce((sum, r) => sum + (r.guest_count || 1), 0),
-  }
+  const rsvpSummary = useMemo(() => {
+    const attending = rsvpData.filter(r => r.attendance === 'attending')
+    return {
+      total: rsvpData.length,
+      attending: attending.length,
+      notAttending: rsvpData.filter(r => r.attendance === 'not_attending').length,
+      pending: rsvpData.filter(r => r.attendance === 'pending').length,
+      totalGuests: attending.reduce((sum, r) => sum + (r.guest_count || 1), 0),
+      groomSide: attending.filter(r => r.side === 'groom').length,
+      brideSide: attending.filter(r => r.side === 'bride').length,
+      groomSideGuests: attending.filter(r => r.side === 'groom').reduce((sum, r) => sum + (r.guest_count || 1), 0),
+      brideSideGuests: attending.filter(r => r.side === 'bride').reduce((sum, r) => sum + (r.guest_count || 1), 0),
+    }
+  }, [rsvpData])
+
+  // RSVP 필터링/검색/정렬
+  const filteredRsvpData = useMemo(() => {
+    let filtered = [...rsvpData]
+
+    if (rsvpFilter === 'groom' || rsvpFilter === 'bride') {
+      filtered = filtered.filter((r) => r.side === rsvpFilter)
+    } else if (rsvpFilter !== 'all') {
+      filtered = filtered.filter((r) => r.attendance === rsvpFilter)
+    }
+
+    if (rsvpSearch.trim()) {
+      const query = rsvpSearch.trim().toLowerCase()
+      filtered = filtered.filter((r) => r.guest_name.toLowerCase().includes(query))
+    }
+
+    filtered.sort((a, b) => {
+      if (rsvpSort === 'name') return a.guest_name.localeCompare(b.guest_name, 'ko')
+      if (rsvpSort === 'count') return b.guest_count - a.guest_count
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    })
+
+    return filtered
+  }, [rsvpData, rsvpFilter, rsvpSearch, rsvpSort])
 
   // 전체 통계
   const stats = {
@@ -978,11 +1034,8 @@ export default function MyInvitationsPage() {
                 {/* RSVP 탭 */}
                 <TabsContent value="rsvp" className="flex-1 overflow-auto mt-4">
                   <div className="space-y-4">
+                    {/* 요약 카드 */}
                     <div className="grid grid-cols-4 gap-2 text-center">
-                      <div className="p-3 bg-gray-50 rounded-lg">
-                        <p className="text-2xl font-bold">{rsvpSummary.total}</p>
-                        <p className="text-xs text-gray-500">총 응답</p>
-                      </div>
                       <div className="p-3 bg-green-50 rounded-lg">
                         <p className="text-2xl font-bold text-green-600">{rsvpSummary.attending}</p>
                         <p className="text-xs text-green-600">참석</p>
@@ -991,50 +1044,159 @@ export default function MyInvitationsPage() {
                         <p className="text-2xl font-bold text-red-600">{rsvpSummary.notAttending}</p>
                         <p className="text-xs text-red-600">불참</p>
                       </div>
+                      <div className="p-3 bg-yellow-50 rounded-lg">
+                        <p className="text-2xl font-bold text-yellow-600">{rsvpSummary.pending}</p>
+                        <p className="text-xs text-yellow-600">미정</p>
+                      </div>
                       <div className="p-3 bg-rose-50 rounded-lg">
                         <p className="text-2xl font-bold text-rose-600">{rsvpSummary.totalGuests}명</p>
-                        <p className="text-xs text-rose-600">예상 인원</p>
+                        <p className="text-xs text-rose-600">식사인원</p>
                       </div>
                     </div>
 
-                    <div className="flex justify-end">
-                      <Button variant="outline" size="sm" onClick={handleExportRSVP}>
-                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {/* 참석률 프로그레스 바 */}
+                    {rsvpSummary.total > 0 && (
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs font-medium text-gray-600">
+                            참석률 {Math.round((rsvpSummary.attending / rsvpSummary.total) * 100)}%
+                          </span>
+                          <span className="text-xs text-gray-400">
+                            {rsvpSummary.attending}/{rsvpSummary.total}
+                          </span>
+                        </div>
+                        <div className="w-full h-2 bg-gray-100 rounded-full">
+                          <div
+                            className="h-full bg-green-500 rounded-full transition-all duration-500"
+                            style={{ width: `${(rsvpSummary.attending / rsvpSummary.total) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 신랑측/신부측 분리 */}
+                    {(rsvpSummary.groomSide > 0 || rsvpSummary.brideSide > 0) && (
+                      <div className="flex items-center justify-center gap-4 text-xs text-gray-600">
+                        <span>
+                          신랑측 <span className="font-semibold">{rsvpSummary.groomSide}명</span>
+                          <span className="text-gray-400">({rsvpSummary.groomSideGuests}명)</span>
+                        </span>
+                        <span className="text-gray-300">|</span>
+                        <span>
+                          신부측 <span className="font-semibold">{rsvpSummary.brideSide}명</span>
+                          <span className="text-gray-400">({rsvpSummary.brideSideGuests}명)</span>
+                        </span>
+                      </div>
+                    )}
+
+                    {/* 필터 탭 + CSV */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex gap-1 overflow-x-auto flex-1">
+                        {([
+                          { key: 'all' as const, label: '전체', count: rsvpData.length },
+                          { key: 'attending' as const, label: '참석', count: rsvpSummary.attending },
+                          { key: 'not_attending' as const, label: '불참', count: rsvpSummary.notAttending },
+                          { key: 'pending' as const, label: '미정', count: rsvpSummary.pending },
+                          ...(rsvpSummary.groomSide > 0 || rsvpSummary.brideSide > 0 ? [
+                            { key: 'groom' as const, label: '신랑측', count: rsvpSummary.groomSide },
+                            { key: 'bride' as const, label: '신부측', count: rsvpSummary.brideSide },
+                          ] : []),
+                        ]).map((tab) => (
+                          <button
+                            key={tab.key}
+                            onClick={() => setRsvpFilter(tab.key)}
+                            className={`flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
+                              rsvpFilter === tab.key
+                                ? 'bg-gray-900 text-white'
+                                : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                            }`}
+                          >
+                            {tab.label} {tab.count}
+                          </button>
+                        ))}
+                      </div>
+                      <Button variant="outline" size="sm" onClick={handleExportRSVP} className="flex-shrink-0 h-7 px-2 text-xs">
+                        <svg className="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
-                        CSV 내보내기
+                        CSV
                       </Button>
                     </div>
 
-                    {rsvpData.length > 0 ? (
-                      <div className="overflow-x-auto max-h-[300px] overflow-y-auto">
-                        <table className="w-full text-sm">
-                          <thead className="sticky top-0 bg-white">
-                            <tr className="border-b">
-                              <th className="text-left py-2 px-2 font-medium">이름</th>
-                              <th className="text-left py-2 px-2 font-medium">참석</th>
-                              <th className="text-left py-2 px-2 font-medium">인원</th>
-                              <th className="text-left py-2 px-2 font-medium">메시지</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {rsvpData.map((r) => (
-                              <tr key={r.id} className="border-b">
-                                <td className="py-2 px-2">{r.guest_name}</td>
-                                <td className="py-2 px-2">
-                                  <span className={`px-2 py-0.5 rounded-full text-xs ${getAttendanceColor(r.attendance)}`}>
+                    {/* 검색 + 정렬 */}
+                    <div className="flex gap-2">
+                      <div className="flex-1 relative">
+                        <svg
+                          className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400"
+                          fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        >
+                          <circle cx="11" cy="11" r="8" strokeWidth={2} />
+                          <line x1="21" y1="21" x2="16.65" y2="16.65" strokeWidth={2} />
+                        </svg>
+                        <Input
+                          placeholder="이름 검색"
+                          value={rsvpSearch}
+                          onChange={(e) => setRsvpSearch(e.target.value)}
+                          className="pl-8 h-8 text-xs"
+                        />
+                      </div>
+                      <select
+                        value={rsvpSort}
+                        onChange={(e) => setRsvpSort(e.target.value as 'date' | 'name' | 'count')}
+                        className="h-8 px-2 text-xs border border-gray-200 rounded-md bg-white text-gray-600"
+                      >
+                        <option value="date">최신순</option>
+                        <option value="name">이름순</option>
+                        <option value="count">인원순</option>
+                      </select>
+                    </div>
+
+                    {/* RSVP 목록 */}
+                    {filteredRsvpData.length > 0 ? (
+                      <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                        {filteredRsvpData.map((r) => (
+                          <div key={r.id} className="p-3 bg-gray-50 rounded-lg">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium text-sm text-gray-900">{r.guest_name}</span>
+                                  {r.side && (
+                                    <span className="text-[10px] text-gray-400">
+                                      {r.side === 'groom' ? '신랑측' : '신부측'}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${getAttendanceColor(r.attendance)}`}>
                                     {getAttendanceLabel(r.attendance)}
+                                    {r.attendance === 'attending' && r.guest_count > 0 && ` ${r.guest_count}명`}
                                   </span>
-                                </td>
-                                <td className="py-2 px-2">{r.attendance === 'attending' ? r.guest_count : '-'}</td>
-                                <td className="py-2 px-2 text-gray-500 max-w-[150px] truncate">{r.message || '-'}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                                  <span className="text-[10px] text-gray-400">
+                                    {new Date(r.created_at).toLocaleDateString('ko-KR')}
+                                  </span>
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => setDeletingRsvpId(r.id)}
+                                className="p-1 text-gray-300 hover:text-red-400 transition-colors flex-shrink-0"
+                                title="삭제"
+                              >
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                  <polyline points="3 6 5 6 21 6" />
+                                  <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                                </svg>
+                              </button>
+                            </div>
+                            {r.message && (
+                              <p className="text-xs text-gray-500 mt-2">&ldquo;{r.message}&rdquo;</p>
+                            )}
+                          </div>
+                        ))}
                       </div>
                     ) : (
-                      <p className="text-center text-gray-400 py-8">아직 RSVP 응답이 없습니다</p>
+                      <p className="text-center text-gray-400 py-8">
+                        {rsvpSearch || rsvpFilter !== 'all' ? '검색 결과가 없습니다' : '아직 RSVP 응답이 없습니다'}
+                      </p>
                     )}
                   </div>
                 </TabsContent>
@@ -1095,6 +1257,24 @@ export default function MyInvitationsPage() {
               </>
             )}
           </Tabs>
+        </DialogContent>
+      </Dialog>
+
+      {/* RSVP 삭제 확인 Dialog */}
+      <Dialog open={!!deletingRsvpId} onOpenChange={() => setDeletingRsvpId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>RSVP 응답 삭제</DialogTitle>
+            <DialogDescription>
+              이 RSVP 응답을 삭제하시겠습니까?<br />삭제된 응답은 복구할 수 없습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeletingRsvpId(null)}>취소</Button>
+            <Button variant="destructive" onClick={() => deletingRsvpId && handleDeleteRsvp(deletingRsvpId)}>
+              삭제
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

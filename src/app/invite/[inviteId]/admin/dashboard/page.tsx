@@ -108,7 +108,7 @@ export default function AdminDashboardPage() {
   // RSVP 응답
   const [rsvpResponses, setRsvpResponses] = useState<RsvpResponse[]>([])
   const [rsvpSummary, setRsvpSummary] = useState<RsvpSummary | null>(null)
-  const [rsvpFilter, setRsvpFilter] = useState<'all' | 'attending' | 'not_attending' | 'pending'>('all')
+  const [rsvpFilter, setRsvpFilter] = useState<'all' | 'attending' | 'not_attending' | 'pending' | 'groom' | 'bride'>('all')
   const [rsvpSearch, setRsvpSearch] = useState('')
   const [rsvpSort, setRsvpSort] = useState<'date' | 'name' | 'count'>('date')
   const [deletingRsvpId, setDeletingRsvpId] = useState<string | null>(null)
@@ -699,7 +699,9 @@ export default function AdminDashboardPage() {
     let filtered = [...rsvpResponses]
 
     // 필터
-    if (rsvpFilter !== 'all') {
+    if (rsvpFilter === 'groom' || rsvpFilter === 'bride') {
+      filtered = filtered.filter((r) => r.side === rsvpFilter)
+    } else if (rsvpFilter !== 'all') {
       filtered = filtered.filter((r) => r.attendance === rsvpFilter)
     }
 
@@ -1048,6 +1050,10 @@ export default function AdminDashboardPage() {
                     { key: 'attending' as const, label: '참석', count: rsvpSummary?.attending || 0 },
                     { key: 'not_attending' as const, label: '불참', count: rsvpSummary?.notAttending || 0 },
                     { key: 'pending' as const, label: '미정', count: rsvpSummary?.pending || 0 },
+                    ...((rsvpSummary?.groomSide || 0) > 0 || (rsvpSummary?.brideSide || 0) > 0 ? [
+                      { key: 'groom' as const, label: '신랑측', count: rsvpSummary?.groomSide || 0 },
+                      { key: 'bride' as const, label: '신부측', count: rsvpSummary?.brideSide || 0 },
+                    ] : []),
                   ]).map((tab) => (
                     <button
                       key={tab.key}

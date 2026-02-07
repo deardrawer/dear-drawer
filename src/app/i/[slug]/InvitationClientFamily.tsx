@@ -2782,6 +2782,7 @@ interface PageProps {
   shouldAutoPlay?: boolean
   isSample?: boolean
   introSettings?: IntroSettings
+  guestInfo?: GuestInfo | null
 }
 
 // 방명록 메시지 타입
@@ -2796,7 +2797,7 @@ interface GuestbookMessage {
 // Intro Page Component - Screen-based transitions like original template
 type IntroScreen = 'cover' | 'invitation'
 
-function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors, onNavigate, onScreenChange, introSettings }: PageProps) {
+function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors, onNavigate, onScreenChange, introSettings, guestInfo }: PageProps) {
   const [showDirections, setShowDirections] = useState(false)
 
   // 첫 번째 가능한 탭으로 초기화
@@ -4254,6 +4255,7 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
                       onNavigate={setCurrentPage}
                       onScreenChange={setIntroScreen}
                       introSettings={invitation.intro as IntroSettings}
+                      guestInfo={guestInfo}
                     />
                   ) : (
                     <MainPage

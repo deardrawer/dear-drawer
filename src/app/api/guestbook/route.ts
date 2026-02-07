@@ -5,6 +5,7 @@ import {
   deleteGuestbookMessage,
   getInvitationById,
 } from "@/lib/db";
+import { verifyToken, getAuthCookieName } from "@/lib/auth";
 
 // GET: 방명록 메시지 목록 조회
 export async function GET(request: NextRequest) {
@@ -69,8 +70,18 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// DELETE: 방명록 메시지 삭제
+// DELETE: 방명록 메시지 삭제 (소유자만 가능)
 export async function DELETE(request: NextRequest) {
+  const cookieName = getAuthCookieName();
+  const token = request.cookies.get(cookieName)?.value;
+  if (!token) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const payload = await verifyToken(token);
+  if (!payload) {
+    return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+  }
+
   const { searchParams } = new URL(request.url);
   const messageId = searchParams.get("messageId");
   const invitationId = searchParams.get("invitationId");
@@ -83,6 +94,11 @@ export async function DELETE(request: NextRequest) {
   }
 
   try {
+    const invitation = await getInvitationById(invitationId);
+    if (!invitation || invitation.user_id !== payload.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const deleted = await deleteGuestbookMessage(messageId, invitationId);
     if (!deleted) {
       return NextResponse.json(

@@ -1,8 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getGuestbookMessages } from "@/lib/db";
+import { getGuestbookMessages, getInvitationById } from "@/lib/db";
+import { verifyToken, getAuthCookieName } from "@/lib/auth";
 
-// GET: 방명록 CSV 내보내기
+// GET: 방명록 CSV 내보내기 (소유자만 가능)
 export async function GET(request: NextRequest) {
+  const cookieName = getAuthCookieName();
+  const token = request.cookies.get(cookieName)?.value;
+  if (!token) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const payload = await verifyToken(token);
+  if (!payload) {
+    return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+  }
+
   const { searchParams } = new URL(request.url);
   const invitationId = searchParams.get("invitationId");
 
@@ -14,6 +25,11 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    const invitation = await getInvitationById(invitationId);
+    if (!invitation || invitation.user_id !== payload.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const messages = await getGuestbookMessages(invitationId);
 
     // CSV 헤더

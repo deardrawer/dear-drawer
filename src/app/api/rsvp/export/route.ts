@@ -1,8 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getRSVPsByInvitationId } from "@/lib/db";
+import { getRSVPsByInvitationId, getInvitationById } from "@/lib/db";
+import { verifyToken, getAuthCookieName } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
   try {
+    const cookieName = getAuthCookieName();
+    const token = request.cookies.get(cookieName)?.value;
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const payload = await verifyToken(token);
+    if (!payload) {
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const invitationId = searchParams.get("invitationId");
 
@@ -11,6 +22,11 @@ export async function GET(request: NextRequest) {
         { error: "청첩장 ID가 필요합니다." },
         { status: 400 }
       );
+    }
+
+    const invitation = await getInvitationById(invitationId);
+    if (!invitation || invitation.user_id !== payload.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const data = await getRSVPsByInvitationId(invitationId);

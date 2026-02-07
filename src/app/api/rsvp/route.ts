@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createRSVP, getRSVPsByInvitationId, getRSVPSummary, deleteRSVP } from "@/lib/db";
+import { createRSVP, getRSVPsByInvitationId, getRSVPSummary, deleteRSVP, getInvitationById } from "@/lib/db";
+import { verifyToken, getAuthCookieName } from "@/lib/auth";
 
 export type RSVPSubmission = {
   invitationId: string;
@@ -69,6 +70,16 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    const cookieName = getAuthCookieName();
+    const token = request.cookies.get(cookieName)?.value;
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const payload = await verifyToken(token);
+    if (!payload) {
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const invitationId = searchParams.get("invitationId");
 
@@ -77,6 +88,11 @@ export async function GET(request: NextRequest) {
         { error: "청첩장 ID가 필요합니다." },
         { status: 400 }
       );
+    }
+
+    const invitation = await getInvitationById(invitationId);
+    if (!invitation || invitation.user_id !== payload.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const data = await getRSVPsByInvitationId(invitationId);
@@ -94,6 +110,16 @@ export async function GET(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const cookieName = getAuthCookieName();
+    const token = request.cookies.get(cookieName)?.value;
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const payload = await verifyToken(token);
+    if (!payload) {
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
     const invitationId = searchParams.get("invitationId");
@@ -103,6 +129,11 @@ export async function DELETE(request: NextRequest) {
         { error: "ID와 청첩장 ID가 필요합니다." },
         { status: 400 }
       );
+    }
+
+    const invitation = await getInvitationById(invitationId);
+    if (!invitation || invitation.user_id !== payload.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const deleted = await deleteRSVP(id, invitationId);

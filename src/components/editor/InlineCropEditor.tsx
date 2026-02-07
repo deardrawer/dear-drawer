@@ -64,13 +64,15 @@ export default function InlineCropEditor({
           let cW, cH, cX, cY
 
           if (imgAspect > aspectRatio) {
+            // 이미지가 더 넓음 → 높이 기준, 너비는 비율 계산
             cH = maxInitSize
-            cW = Math.min(maxInitSize, (aspectRatio * img.naturalHeight) / img.naturalWidth)
+            cW = Math.min(maxInitSize, cH * aspectRatio / imgAspect)
             cX = (1 - cW) / 2
             cY = (1 - cH) / 2
           } else {
+            // 이미지가 더 높음 → 너비 기준, 높이는 비율 계산
             cW = maxInitSize
-            cH = Math.min(maxInitSize, img.naturalWidth / (aspectRatio * img.naturalHeight))
+            cH = Math.min(maxInitSize, cW * imgAspect / aspectRatio)
             cX = (1 - cW) / 2
             cY = (1 - cH) / 2
           }
@@ -256,13 +258,15 @@ export default function InlineCropEditor({
     let cW, cH, cX, cY
 
     if (imgAspect > aspectRatio) {
+      // 이미지가 더 넓음 → 높이 기준, 너비는 비율 계산
       cH = maxResetSize
-      cW = Math.min(maxResetSize, (aspectRatio * imageSize.height) / imageSize.width)
+      cW = Math.min(maxResetSize, cH * aspectRatio / imgAspect)
       cX = (1 - cW) / 2
       cY = (1 - cH) / 2
     } else {
+      // 이미지가 더 높음 → 너비 기준, 높이는 비율 계산
       cW = maxResetSize
-      cH = Math.min(maxResetSize, imageSize.width / (aspectRatio * imageSize.height))
+      cH = Math.min(maxResetSize, cW * imgAspect / aspectRatio)
       cX = (1 - cW) / 2
       cY = (1 - cH) / 2
     }

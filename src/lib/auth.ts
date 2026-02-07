@@ -14,11 +14,20 @@ interface CloudflareEnv {
 async function getJwtSecret(): Promise<Uint8Array> {
   try {
     const { env } = await getCloudflareContext() as { env: CloudflareEnv };
-    const secret = env.JWT_SECRET || process.env.JWT_SECRET || "your-super-secret-jwt-key-min-32-chars";
+    const secret = env.JWT_SECRET || process.env.JWT_SECRET;
+    if (!secret) {
+      throw new Error("JWT_SECRET environment variable is not configured");
+    }
     return new TextEncoder().encode(secret);
-  } catch {
+  } catch (e) {
+    // Re-throw if it's our own error
+    if (e instanceof Error && e.message.includes("JWT_SECRET")) throw e;
     // Fallback for build time or non-Cloudflare environment
-    return new TextEncoder().encode(process.env.JWT_SECRET || "your-super-secret-jwt-key-min-32-chars");
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      throw new Error("JWT_SECRET environment variable is not configured");
+    }
+    return new TextEncoder().encode(secret);
   }
 }
 

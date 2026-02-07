@@ -7,10 +7,14 @@ import {
 } from "@/lib/db";
 
 // 간단한 관리자 비밀번호 (환경변수로 관리)
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin1234";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+if (!ADMIN_PASSWORD) {
+  console.error("ADMIN_PASSWORD environment variable is not configured");
+}
 
 // 관리자 인증 확인
 function verifyAdmin(request: NextRequest): boolean {
+  if (!ADMIN_PASSWORD) return false;
   const authHeader = request.headers.get("x-admin-password");
   return authHeader === ADMIN_PASSWORD;
 }

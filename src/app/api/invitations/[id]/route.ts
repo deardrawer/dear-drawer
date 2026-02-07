@@ -64,7 +64,37 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
-    const body: InvitationInput = await request.json();
+    const rawBody = await request.text();
+
+    // Content 크기 제한 (5MB)
+    if (rawBody.length > 5 * 1024 * 1024) {
+      return NextResponse.json(
+        { error: "요청 데이터가 너무 큽니다." },
+        { status: 413 }
+      );
+    }
+
+    let body: InvitationInput;
+    try {
+      body = JSON.parse(rawBody);
+    } catch {
+      return NextResponse.json(
+        { error: "잘못된 요청 형식입니다." },
+        { status: 400 }
+      );
+    }
+
+    // 기본 필드 검증
+    if (body.groom_name && body.groom_name.length > 50) {
+      return NextResponse.json({ error: "신랑 이름이 너무 깁니다." }, { status: 400 });
+    }
+    if (body.bride_name && body.bride_name.length > 50) {
+      return NextResponse.json({ error: "신부 이름이 너무 깁니다." }, { status: 400 });
+    }
+    if (body.slug && body.slug.length > 100) {
+      return NextResponse.json({ error: "슬러그가 너무 깁니다." }, { status: 400 });
+    }
+
     const invitation = await updateInvitation(id, payload.user.id, body);
 
     if (!invitation) {

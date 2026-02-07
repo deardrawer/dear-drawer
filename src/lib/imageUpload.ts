@@ -205,7 +205,7 @@ export async function uploadImage(
  */
 export async function deleteImage(
   imageId: string,
-  invitationId?: string
+  invitationId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const response = await fetch('/api/upload', {

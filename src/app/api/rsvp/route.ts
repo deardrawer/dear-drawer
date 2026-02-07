@@ -2,6 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { createRSVP, findExistingRSVP, updateRSVP, getRSVPsByInvitationId, getRSVPSummary, deleteRSVP, getInvitationById } from "@/lib/db";
 import { verifyToken, getAuthCookieName } from "@/lib/auth";
 
+// RSVP POST Rate Limiter (IP별 분당 10회)
+const rsvpRateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RSVP_RATE_LIMIT = 10;
+const RSVP_RATE_WINDOW_MS = 60_000;
+
+function checkRsvpRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const entry = rsvpRateLimitMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    rsvpRateLimitMap.set(ip, { count: 1, resetAt: now + RSVP_RATE_WINDOW_MS });
+    return true;
+  }
+  entry.count++;
+  return entry.count <= RSVP_RATE_LIMIT;
+}
+
 export type RSVPSubmission = {
   invitationId: string;
   guestName: string;
@@ -14,6 +30,15 @@ export type RSVPSubmission = {
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate Limiting
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    if (!checkRsvpRateLimit(ip)) {
+      return NextResponse.json(
+        { error: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요." },
+        { status: 429 }
+      );
+    }
+
     const body: RSVPSubmission = await request.json();
 
     // Validate required fields

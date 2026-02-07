@@ -200,19 +200,17 @@ export async function DELETE(request: NextRequest) {
 
     const { imageId, invitationId }: { imageId?: string; invitationId?: string } = await request.json();
 
-    if (!imageId) {
+    if (!imageId || !invitationId) {
       return NextResponse.json(
-        { error: "이미지 ID가 필요합니다." },
+        { error: "이미지 ID와 청첩장 ID가 필요합니다." },
         { status: 400 }
       );
     }
 
     // 청첩장 소유자 검증
-    if (invitationId) {
-      const invitation = await getInvitationById(invitationId);
-      if (!invitation || invitation.user_id !== payload.user.id) {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-      }
+    const invitation = await getInvitationById(invitationId);
+    if (!invitation || invitation.user_id !== payload.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     if (isCloudflare) {
@@ -220,7 +218,7 @@ export async function DELETE(request: NextRequest) {
       const { getCloudflareContext } = await import("@opennextjs/cloudflare");
       const { env } = (await getCloudflareContext()) as unknown as { env: CloudflareEnv };
 
-      const baseKey = `invitation/${invitationId || "temp"}/${imageId}`;
+      const baseKey = `invitation/${invitationId}/${imageId}`;
       const webKey = `${baseKey}_web.webp`;
       const thumbKey = `${baseKey}_thumb.webp`;
 
@@ -230,7 +228,7 @@ export async function DELETE(request: NextRequest) {
       ]);
     } else {
       // ===== 로컬 개발 환경 =====
-      const subDir = `invitation/${invitationId || "temp"}`;
+      const subDir = `invitation/${invitationId}`;
       const webPath = path.join(LOCAL_UPLOAD_DIR, subDir, `${imageId}_web.webp`);
       const thumbPath = path.join(LOCAL_UPLOAD_DIR, subDir, `${imageId}_thumb.webp`);
 

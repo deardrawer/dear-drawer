@@ -248,11 +248,16 @@ const familySampleContent = {
 
 export async function POST(request: Request) {
   try {
-    // 인증 체크 (간단한 시크릿 키)
+    // 인증 체크 (환경변수 시크릿)
+    const SEED_SECRET = process.env.SEED_SECRET;
+    if (!SEED_SECRET) {
+      return NextResponse.json({ error: 'Seed endpoint is disabled' }, { status: 403 })
+    }
+
     const { searchParams } = new URL(request.url)
     const secret = searchParams.get('secret')
 
-    if (secret !== 'seed-samples-2025') {
+    if (secret !== SEED_SECRET) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -327,12 +332,12 @@ export async function POST(request: Request) {
     })
   } catch (error) {
     console.error('Seed error:', error)
-    return NextResponse.json({ error: 'Failed to seed samples', details: String(error) }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to seed samples' }, { status: 500 })
   }
 }
 
 export async function GET() {
   return NextResponse.json({
-    message: 'POST to this endpoint with ?secret=seed-samples-2025 to create sample invitations'
+    message: 'POST to this endpoint with ?secret=<SEED_SECRET> to create sample invitations'
   })
 }

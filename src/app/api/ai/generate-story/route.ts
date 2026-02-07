@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { aiQuestions, familyWhyWeChoseQuestions } from '@/lib/ai-questions'
+import { verifyToken, getAuthCookieName } from '@/lib/auth'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -23,6 +24,17 @@ export type FamilyWhyWeChoseStory = {
 
 export async function POST(request: NextRequest) {
   try {
+    // 인증 확인
+    const cookieName = getAuthCookieName()
+    const token = request.cookies.get(cookieName)?.value
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const payload = await verifyToken(token)
+    if (!payload) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+    }
+
     const { answers, templateType } = await request.json() as {
       answers: Record<string, string>
       templateType?: 'default' | 'family-why-we-chose'

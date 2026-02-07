@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import type { AllFormData, GeneratedContent } from '@/types/ai-generator'
 import { generateRegeneratePrompt } from '@/lib/ai-prompts'
+import { verifyToken, getAuthCookieName } from '@/lib/auth'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -95,6 +96,17 @@ JSON 형식으로만 출력:
 
 export async function POST(request: NextRequest) {
   try {
+    // 인증 확인
+    const cookieName = getAuthCookieName()
+    const token = request.cookies.get(cookieName)?.value
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const authPayload = await verifyToken(token)
+    if (!authPayload) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+    }
+
     // API 키 확인
     if (!process.env.ANTHROPIC_API_KEY) {
       return NextResponse.json(

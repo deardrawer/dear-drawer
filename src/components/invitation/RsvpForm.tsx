@@ -23,6 +23,7 @@ export default function RsvpForm({
 }: RsvpFormProps) {
   const [guestName, setGuestName] = useState('')
   const [guestPhone, setGuestPhone] = useState('')
+  const [side, setSide] = useState<'groom' | 'bride' | null>(null)
   const [attendance, setAttendance] = useState<Attendance | null>(null)
   const [guestCount, setGuestCount] = useState(1)
   const [message, setMessage] = useState('')
@@ -57,6 +58,7 @@ export default function RsvpForm({
           attendance,
           guestCount: attendance === 'attending' ? guestCount : 0,
           message: message.trim() || undefined,
+          side: side || undefined,
         }),
       })
 
@@ -141,6 +143,35 @@ export default function RsvpForm({
           onChange={(e) => setGuestPhone(e.target.value)}
           placeholder="010-1234-5678"
         />
+      </div>
+
+      {/* 소속 (신랑측/신부측) */}
+      <div className="space-y-2">
+        <Label>소속</Label>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setSide(side === 'groom' ? null : 'groom')}
+            className={`py-3 px-4 rounded-lg border-2 text-sm font-medium transition-all ${
+              side === 'groom'
+                ? 'bg-blue-500 text-white border-blue-500'
+                : 'border-gray-200 text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            신랑측
+          </button>
+          <button
+            type="button"
+            onClick={() => setSide(side === 'bride' ? null : 'bride')}
+            className={`py-3 px-4 rounded-lg border-2 text-sm font-medium transition-all ${
+              side === 'bride'
+                ? 'bg-pink-500 text-white border-pink-500'
+                : 'border-gray-200 text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            신부측
+          </button>
+        </div>
       </div>
 
       {/* 참석 여부 */}

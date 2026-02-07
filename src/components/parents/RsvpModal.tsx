@@ -23,6 +23,7 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId }:
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
+    side: null as 'groom' | 'bride' | null,
     attendance: 'yes' as 'yes' | 'no' | 'maybe',
     guestCount: 1,
     message: '',
@@ -109,6 +110,7 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId }:
           attendance: attendanceMap[formData.attendance],
           guestCount: formData.attendance === 'yes' ? formData.guestCount : 0,
           message: formData.message.trim() || undefined,
+          side: formData.side || undefined,
         }),
       })
 
@@ -185,6 +187,38 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId }:
           }}
           onBlur={(e) => { e.currentTarget.style.borderColor = '#E8E4DC' }}
         />
+      </div>
+
+      <div>
+        <label className="block text-xs mb-2" style={{ color: '#999' }}>
+          소속
+        </label>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setFormData(prev => ({ ...prev, side: prev.side === 'groom' ? null : 'groom' }))}
+            className="py-3 rounded-lg border text-sm transition-all"
+            style={{
+              borderColor: formData.side === 'groom' ? '#3B82F6' : '#E8E4DC',
+              backgroundColor: formData.side === 'groom' ? '#3B82F610' : '#FFFFFF',
+              color: formData.side === 'groom' ? '#3B82F6' : '#666',
+            }}
+          >
+            신랑측
+          </button>
+          <button
+            type="button"
+            onClick={() => setFormData(prev => ({ ...prev, side: prev.side === 'bride' ? null : 'bride' }))}
+            className="py-3 rounded-lg border text-sm transition-all"
+            style={{
+              borderColor: formData.side === 'bride' ? '#EC4899' : '#E8E4DC',
+              backgroundColor: formData.side === 'bride' ? '#EC489910' : '#FFFFFF',
+              color: formData.side === 'bride' ? '#EC4899' : '#666',
+            }}
+          >
+            신부측
+          </button>
+        </div>
       </div>
 
       <div>

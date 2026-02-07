@@ -336,6 +336,7 @@ export interface RSVPResponse {
   attendance: "attending" | "not_attending" | "pending";
   guest_count: number;
   message: string | null;
+  side: "groom" | "bride" | null;
   created_at: string;
 }
 
@@ -346,6 +347,7 @@ export interface RSVPInput {
   attendance: "attending" | "not_attending" | "pending";
   guest_count: number;
   message?: string;
+  side?: "groom" | "bride";
 }
 
 // RSVP 생성
@@ -357,8 +359,8 @@ export async function createRSVP(input: RSVPInput): Promise<RSVPResponse> {
   const result = await db
     .prepare(
       `INSERT INTO rsvp_responses (
-        id, invitation_id, guest_name, guest_phone, attendance, guest_count, message, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        id, invitation_id, guest_name, guest_phone, attendance, guest_count, message, side, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       RETURNING *`
     )
     .bind(
@@ -369,6 +371,7 @@ export async function createRSVP(input: RSVPInput): Promise<RSVPResponse> {
       input.attendance,
       input.guest_count,
       input.message || null,
+      input.side || null,
       now
     )
     .first<RSVPResponse>();
@@ -398,16 +401,27 @@ export async function getRSVPSummary(invitationId: string): Promise<{
   notAttending: number;
   pending: number;
   totalGuests: number;
+  groomSide: number;
+  brideSide: number;
+  groomSideGuests: number;
+  brideSideGuests: number;
 }> {
   const responses = await getRSVPsByInvitationId(invitationId);
+  const attending = responses.filter((r) => r.attendance === "attending");
 
   return {
     total: responses.length,
-    attending: responses.filter((r) => r.attendance === "attending").length,
+    attending: attending.length,
     notAttending: responses.filter((r) => r.attendance === "not_attending").length,
     pending: responses.filter((r) => r.attendance === "pending").length,
-    totalGuests: responses
-      .filter((r) => r.attendance === "attending")
+    totalGuests: attending.reduce((sum, r) => sum + (r.guest_count || 1), 0),
+    groomSide: attending.filter((r) => r.side === "groom").length,
+    brideSide: attending.filter((r) => r.side === "bride").length,
+    groomSideGuests: attending
+      .filter((r) => r.side === "groom")
+      .reduce((sum, r) => sum + (r.guest_count || 1), 0),
+    brideSideGuests: attending
+      .filter((r) => r.side === "bride")
       .reduce((sum, r) => sum + (r.guest_count || 1), 0),
   };
 }

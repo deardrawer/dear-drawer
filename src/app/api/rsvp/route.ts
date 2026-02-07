@@ -8,6 +8,7 @@ export type RSVPSubmission = {
   attendance: "attending" | "not_attending" | "pending";
   guestCount: number;
   message?: string;
+  side?: "groom" | "bride";
 };
 
 export async function POST(request: NextRequest) {
@@ -33,6 +34,14 @@ export async function POST(request: NextRequest) {
     // Validate guest count
     const guestCount = body.attendance === "attending" ? (body.guestCount || 1) : 0;
 
+    // Validate side value if provided
+    if (body.side && !["groom", "bride"].includes(body.side)) {
+      return NextResponse.json(
+        { error: "유효하지 않은 소속 값입니다." },
+        { status: 400 }
+      );
+    }
+
     // Insert RSVP response
     const data = await createRSVP({
       invitation_id: body.invitationId,
@@ -41,6 +50,7 @@ export async function POST(request: NextRequest) {
       attendance: body.attendance,
       guest_count: guestCount,
       message: body.message,
+      side: body.side,
     });
 
     return NextResponse.json({

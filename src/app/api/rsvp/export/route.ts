@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     const data = await getRSVPsByInvitationId(invitationId);
 
     // Create CSV content
-    const headers = ["이름", "연락처", "참석여부", "동반인원", "메시지", "응답일시"];
+    const headers = ["이름", "연락처", "소속", "참석여부", "동반인원", "메시지", "응답일시"];
 
     const getAttendanceLabel = (attendance: string) => {
       switch (attendance) {
@@ -31,9 +31,21 @@ export async function GET(request: NextRequest) {
       }
     };
 
+    const getSideLabel = (side: string | null) => {
+      switch (side) {
+        case "groom":
+          return "신랑측";
+        case "bride":
+          return "신부측";
+        default:
+          return "";
+      }
+    };
+
     const rows = data.map((r) => [
       r.guest_name,
       r.guest_phone || "",
+      getSideLabel(r.side),
       getAttendanceLabel(r.attendance),
       r.attendance === "attending" ? r.guest_count.toString() : "",
       (r.message || "").replace(/"/g, '""'),

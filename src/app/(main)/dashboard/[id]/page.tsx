@@ -17,6 +17,7 @@ type RSVPData = {
   attendance: 'attending' | 'not_attending' | 'pending'
   guest_count: number
   message: string | null
+  side: 'groom' | 'bride' | null
   created_at: string
 }
 
@@ -26,6 +27,10 @@ type Summary = {
   notAttending: number
   pending: number
   totalGuests: number
+  groomSide: number
+  brideSide: number
+  groomSideGuests: number
+  brideSideGuests: number
 }
 
 type GuestbookMessage = {
@@ -59,10 +64,15 @@ export default function DashboardPage() {
     notAttending: 0,
     pending: 0,
     totalGuests: 0,
+    groomSide: 0,
+    brideSide: 0,
+    groomSideGuests: 0,
+    brideSideGuests: 0,
   })
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [filterStatus, setFilterStatus] = useState<string>('all')
+  const [filterSide, setFilterSide] = useState<string>('all')
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
 
@@ -120,6 +130,10 @@ export default function DashboardPage() {
         notAttending: 0,
         pending: 0,
         totalGuests: 0,
+        groomSide: 0,
+        brideSide: 0,
+        groomSideGuests: 0,
+        brideSideGuests: 0,
       })
     } catch (error) {
       console.error('Failed to fetch RSVP data:', error)
@@ -137,6 +151,10 @@ export default function DashboardPage() {
   const filteredResponses = responses
     .filter((r) => {
       if (filterStatus !== 'all' && r.attendance !== filterStatus) return false
+      if (filterSide !== 'all') {
+        if (filterSide === 'none' && r.side !== null) return false
+        if (filterSide !== 'none' && r.side !== filterSide) return false
+      }
       if (searchQuery && !r.guest_name.toLowerCase().includes(searchQuery.toLowerCase())) return false
       return true
     })
@@ -382,6 +400,28 @@ export default function DashboardPage() {
         </Card>
       </div>
 
+      {/* Side Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-blue-600">신랑측 참석 인원</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-blue-600">{summary.groomSideGuests}<span className="text-lg font-normal text-gray-400 ml-1">명</span></div>
+            <p className="text-xs text-gray-400 mt-1">응답 {summary.groomSide}건</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-pink-600">신부측 참석 인원</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-pink-600">{summary.brideSideGuests}<span className="text-lg font-normal text-gray-400 ml-1">명</span></div>
+            <p className="text-xs text-gray-400 mt-1">응답 {summary.brideSide}건</p>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Slug Settings */}
       <div className="mb-8">
         <SlugSettings invitationId={invitationId} />
@@ -506,6 +546,19 @@ export default function DashboardPage() {
                   className="w-40"
                 />
                 <select
+                  value={filterSide}
+                  onChange={(e) => {
+                    setFilterSide(e.target.value)
+                    setCurrentPage(1)
+                  }}
+                  className="px-3 py-2 border rounded-md text-sm"
+                >
+                  <option value="all">전체 소속</option>
+                  <option value="groom">신랑측</option>
+                  <option value="bride">신부측</option>
+                  <option value="none">미지정</option>
+                </select>
+                <select
                   value={filterStatus}
                   onChange={(e) => {
                     setFilterStatus(e.target.value)
@@ -530,6 +583,7 @@ export default function DashboardPage() {
                       <tr className="border-b">
                         <th className="text-left py-3 px-2 font-medium">이름</th>
                         <th className="text-left py-3 px-2 font-medium">연락처</th>
+                        <th className="text-left py-3 px-2 font-medium">소속</th>
                         <th className="text-left py-3 px-2 font-medium">참석</th>
                         <th className="text-left py-3 px-2 font-medium">인원</th>
                         <th className="text-left py-3 px-2 font-medium">메시지</th>
@@ -541,6 +595,15 @@ export default function DashboardPage() {
                         <tr key={r.id} className="border-b hover:bg-gray-50">
                           <td className="py-3 px-2 font-medium">{r.guest_name}</td>
                           <td className="py-3 px-2 text-gray-500">{r.guest_phone || '-'}</td>
+                          <td className="py-3 px-2">
+                            {r.side === 'groom' ? (
+                              <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-700">신랑측</span>
+                            ) : r.side === 'bride' ? (
+                              <span className="px-2 py-1 rounded-full text-xs bg-pink-100 text-pink-700">신부측</span>
+                            ) : (
+                              <span className="text-gray-400">-</span>
+                            )}
+                          </td>
                           <td className="py-3 px-2">
                             <span className={`px-2 py-1 rounded-full text-xs ${getAttendanceColor(r.attendance)}`}>
                               {getAttendanceLabel(r.attendance)}

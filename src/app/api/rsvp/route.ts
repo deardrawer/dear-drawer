@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 기존 RSVP 확인 (같은 이름+전화번호 → 업데이트)
-    const existing = await findExistingRSVP(body.invitationId, body.guestName, body.guestPhone);
+    const existing = await findExistingRSVP(body.invitationId, body.guestName);
 
     let data;
     if (existing) {

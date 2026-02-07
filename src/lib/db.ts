@@ -383,22 +383,16 @@ export async function createRSVP(input: RSVPInput): Promise<RSVPResponse> {
   return result;
 }
 
-// RSVP 기존 응답 조회 (같은 청첩장 + 이름 + 전화번호)
+// RSVP 기존 응답 조회 (같은 청첩장 + 이름)
 export async function findExistingRSVP(
   invitationId: string,
   guestName: string,
-  guestPhone?: string | null
 ): Promise<RSVPResponse | null> {
   const db = await getDB();
-  const result = guestPhone
-    ? await db
-        .prepare("SELECT * FROM rsvp_responses WHERE invitation_id = ? AND guest_name = ? AND guest_phone = ?")
-        .bind(invitationId, guestName, guestPhone)
-        .first<RSVPResponse>()
-    : await db
-        .prepare("SELECT * FROM rsvp_responses WHERE invitation_id = ? AND guest_name = ? AND guest_phone IS NULL")
-        .bind(invitationId, guestName)
-        .first<RSVPResponse>();
+  const result = await db
+    .prepare("SELECT * FROM rsvp_responses WHERE invitation_id = ? AND guest_name = ? ORDER BY created_at DESC LIMIT 1")
+    .bind(invitationId, guestName)
+    .first<RSVPResponse>();
   return result || null;
 }
 

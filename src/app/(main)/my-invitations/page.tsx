@@ -610,7 +610,7 @@ export default function MyInvitationsPage() {
   // 스켈레톤 카드 컴포넌트
   const SkeletonCard = () => (
     <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 animate-pulse">
-      <div className="aspect-[3/4] bg-gray-200" />
+      <div className="aspect-[9/16] bg-gray-200" />
       <div className="p-4 space-y-3">
         <div className="h-4 bg-gray-200 rounded w-3/4" />
         <div className="h-3 bg-gray-100 rounded w-1/2" />
@@ -783,7 +783,7 @@ export default function MyInvitationsPage() {
             return (
               <Card key={invitation.id} className="overflow-hidden group hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                 <div
-                  className="aspect-[3/4] relative cursor-pointer hover:opacity-90 transition-opacity overflow-hidden"
+                  className="aspect-[9/16] relative cursor-pointer hover:opacity-90 transition-opacity overflow-hidden"
                   onClick={() => setPreviewInvitation(invitation)}
                 >
                   {/* 혼주용 템플릿: 항상 봉투 스타일 미리보기 */}

@@ -284,23 +284,39 @@ export default function MyInvitationsPage() {
     }
   }
 
-  // 청첩장 복제
+  // 청첩장 복제 (최신 버전 기준)
   const handleDuplicate = async (invitation: InvitationSummary) => {
     if (duplicatingId) return
 
     setDuplicatingId(invitation.id)
     try {
-      // 기존 청첩장의 content 파싱
-      const content = invitation.content ? JSON.parse(invitation.content) : {}
+      // 최신 데이터를 API에서 직접 조회
+      const latestRes = await fetch(`/api/invitations/${invitation.id}`)
+      if (!latestRes.ok) {
+        alert('청첩장 정보를 불러올 수 없습니다.')
+        return
+      }
+      const latestData = await latestRes.json() as { invitation?: Record<string, unknown> }
+      const latest = latestData.invitation
 
-      // 새 청첩장 생성
+      if (!latest) {
+        alert('청첩장을 찾을 수 없습니다.')
+        return
+      }
+
+      // 최신 content 사용
+      const content = latest.content
+        ? (typeof latest.content === 'string' ? JSON.parse(latest.content) : latest.content)
+        : {}
+
+      // slug, is_published 등은 복제하지 않음 (새 청첩장으로 시작)
       const payload = {
-        template_id: invitation.template_id,
-        groom_name: invitation.groom_name,
-        bride_name: invitation.bride_name,
-        wedding_date: invitation.wedding_date,
-        wedding_time: invitation.wedding_time,
-        venue_name: invitation.venue_name,
+        template_id: latest.template_id || invitation.template_id,
+        groom_name: latest.groom_name || invitation.groom_name,
+        bride_name: latest.bride_name || invitation.bride_name,
+        wedding_date: latest.wedding_date || invitation.wedding_date,
+        wedding_time: latest.wedding_time || invitation.wedding_time,
+        venue_name: latest.venue_name || invitation.venue_name,
         content: JSON.stringify(content),
       }
 

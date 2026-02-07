@@ -47,18 +47,37 @@ const PARENTS_COLOR_MAP: Record<string, string> = {
   slateBlue: '#6B7B8C',
 }
 
+// 이미지 URL 추출 헬퍼 (객체/문자열 모두 대응)
+function extractImageUrl(value: unknown): string {
+  if (!value) return ''
+  if (typeof value === 'string') return value
+  if (typeof value === 'object' && value !== null && 'url' in value) {
+    return (value as { url: string }).url || ''
+  }
+  return ''
+}
+
 // content JSON에서 커버 이미지와 인트로 정보 추출
 function parseInvitationContent(content?: string) {
-  if (!content) return { coverImage: '', introTitle: '', introSubTitle: '', senderSide: '', envelopeTheme: '' }
+  if (!content) return { coverImage: '', kakaoThumbnail: '', introTitle: '', introSubTitle: '', senderSide: '', envelopeTheme: '' }
   try {
     const parsed = JSON.parse(content)
-    // OUR/FAMILY: media.coverImage, PARENTS: mainImage 또는 gallery.images[0]
-    const rawCoverImage = parsed.media?.coverImage ||
-                       parsed.mainImage ||
-                       (parsed.gallery?.images?.[0]?.url || parsed.gallery?.images?.[0]) ||
-                       ''
-    // 객체일 수 있으므로 문자열로 변환
-    const coverImage = typeof rawCoverImage === 'string' ? rawCoverImage : (rawCoverImage?.url || '')
+
+    // 카카오 공유용 이미지 우선순위: kakaoThumbnail > ogImage > coverImage > mainImage > gallery[0]
+    const kakaoThumbnail =
+      extractImageUrl(parsed.meta?.kakaoThumbnail) ||
+      extractImageUrl(parsed.meta?.ogImage) ||
+      extractImageUrl(parsed.media?.coverImage) ||
+      extractImageUrl(parsed.mainImage) ||
+      extractImageUrl(parsed.gallery?.images?.[0]) ||
+      ''
+
+    // 카드 미리보기용 커버 이미지 (media.coverImage > mainImage > gallery[0])
+    const coverImage =
+      extractImageUrl(parsed.media?.coverImage) ||
+      extractImageUrl(parsed.mainImage) ||
+      extractImageUrl(parsed.gallery?.images?.[0]) ||
+      ''
 
     // PARENTS 템플릿의 colorTheme ID를 실제 hex 컬러로 변환
     const colorThemeId = parsed.colorTheme || 'burgundy'
@@ -66,13 +85,14 @@ function parseInvitationContent(content?: string) {
 
     return {
       coverImage,
+      kakaoThumbnail,
       introTitle: parsed.intro?.mainTitle || parsed.design?.coverTitle || '',
       introSubTitle: parsed.intro?.subTitle || '',
       senderSide: parsed.sender?.side || '', // groom or bride (혼주용 템플릿)
       envelopeTheme, // 혼주용 봉투 테마 컬러 (hex)
     }
   } catch {
-    return { coverImage: '', introTitle: '', introSubTitle: '', senderSide: '', envelopeTheme: '' }
+    return { coverImage: '', kakaoThumbnail: '', introTitle: '', introSubTitle: '', senderSide: '', envelopeTheme: '' }
   }
 }
 
@@ -371,7 +391,7 @@ export default function MyInvitationsPage() {
   const handleKakaoShare = () => {
     if (!shareInvitation) return
     const url = getInvitationUrl(shareInvitation)
-    const { coverImage } = parseInvitationContent(shareInvitation.content)
+    const { kakaoThumbnail } = parseInvitationContent(shareInvitation.content)
 
     const kakaoWindow = window as typeof window & {
       Kakao?: {
@@ -390,14 +410,13 @@ export default function MyInvitationsPage() {
           })
         : '날짜 미정'
 
-      // 이미지 URL 결정 (커버 이미지 > 기본 이미지)
+      // 이미지 URL 결정 (kakaoThumbnail > ogImage > coverImage > 기본 이미지)
       let imageUrl = 'https://invite.deardrawer.com/og-image.png'
-      if (coverImage) {
-        if (coverImage.startsWith('https://')) {
-          imageUrl = coverImage
-        } else if (coverImage.startsWith('/')) {
-          // 상대 경로를 절대 URL로 변환
-          imageUrl = `https://invite.deardrawer.com${coverImage}`
+      if (kakaoThumbnail) {
+        if (kakaoThumbnail.startsWith('https://')) {
+          imageUrl = kakaoThumbnail
+        } else if (kakaoThumbnail.startsWith('/')) {
+          imageUrl = `https://invite.deardrawer.com${kakaoThumbnail}`
         }
       }
 

@@ -426,6 +426,17 @@ export async function getRSVPSummary(invitationId: string): Promise<{
   };
 }
 
+// RSVP 삭제
+export async function deleteRSVP(id: string, invitationId: string): Promise<boolean> {
+  const db = await getDB();
+  const result = await db
+    .prepare("DELETE FROM rsvp_responses WHERE id = ? AND invitation_id = ?")
+    .bind(id, invitationId)
+    .run();
+
+  return result.meta.changes > 0;
+}
+
 // ==================== Slug Alias Functions ====================
 
 export interface SlugAlias {

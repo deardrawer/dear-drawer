@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createRSVP, getRSVPsByInvitationId, getRSVPSummary } from "@/lib/db";
+import { createRSVP, getRSVPsByInvitationId, getRSVPSummary, deleteRSVP } from "@/lib/db";
 
 export type RSVPSubmission = {
   invitationId: string;
@@ -85,6 +85,41 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ data, summary });
   } catch (error) {
     console.error("RSVP GET API 오류:", error);
+    return NextResponse.json(
+      { error: "서버 오류가 발생했습니다." },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+    const invitationId = searchParams.get("invitationId");
+
+    if (!id || !invitationId) {
+      return NextResponse.json(
+        { error: "ID와 청첩장 ID가 필요합니다." },
+        { status: 400 }
+      );
+    }
+
+    const deleted = await deleteRSVP(id, invitationId);
+
+    if (!deleted) {
+      return NextResponse.json(
+        { error: "해당 응답을 찾을 수 없습니다." },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "RSVP 응답이 삭제되었습니다.",
+    });
+  } catch (error) {
+    console.error("RSVP DELETE API 오류:", error);
     return NextResponse.json(
       { error: "서버 오류가 발생했습니다." },
       { status: 500 }

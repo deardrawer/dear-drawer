@@ -8,6 +8,18 @@
  */
 
 /**
+ * HTML 특수문자 이스케이프 (XSS 방지)
+ */
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
+
+/**
  * 하이라이트 마크업을 HTML로 변환
  * @param text - 변환할 텍스트
  * @returns HTML 문자열
@@ -15,8 +27,11 @@
 export function parseHighlight(text: string): string {
   if (!text) return ''
 
+  // HTML 특수문자 이스케이프 (XSS 방지)
+  let result = escapeHtml(text)
+
   // ==텍스트== → 노란색 하이라이트
-  let result = text.replace(/==([^=]+)==/g, '<span class="highlight-yellow">$1</span>')
+  result = result.replace(/==([^=]+)==/g, '<span class="highlight-yellow">$1</span>')
 
   // ~~텍스트~~ → 흰색 하이라이트
   result = result.replace(/~~([^~]+)~~/g, '<span class="highlight-white">$1</span>')

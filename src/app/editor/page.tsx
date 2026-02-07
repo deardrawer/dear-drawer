@@ -198,6 +198,7 @@ function EditorContent() {
 
   // Save invitation to database
   const handleSave = async () => {
+    if (isSaving) return // 이미 저장 중이면 중복 실행 방지
     if (!invitation || !user) {
       alert('저장하려면 로그인이 필요합니다.')
       router.push('/login')

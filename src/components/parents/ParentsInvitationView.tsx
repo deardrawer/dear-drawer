@@ -167,10 +167,13 @@ export default function ParentsInvitationView({
         className={`relative max-w-[390px] mx-auto min-h-screen ${fontStyle.className}`}
         style={{
           backgroundColor: theme.background,
-          zoom: currentFontConfig.zoom,
-          // Firefox 대응 (zoom 미지원)
-          MozTransform: currentFontConfig.zoom !== 1 ? `scale(${currentFontConfig.zoom})` : undefined,
-          MozTransformOrigin: currentFontConfig.zoom !== 1 ? 'top center' : undefined,
+          // 글자 크기(zoom)는 본문에서만 적용 (봉투는 제외)
+          ...(isEnvelopeOpen ? {
+            zoom: currentFontConfig.zoom,
+            // Firefox 대응 (zoom 미지원)
+            MozTransform: currentFontConfig.zoom !== 1 ? `scale(${currentFontConfig.zoom})` : undefined,
+            MozTransformOrigin: currentFontConfig.zoom !== 1 ? 'top center' : undefined,
+          } : {}),
         }}
       >
         {/* 봉투 화면 */}

@@ -224,9 +224,17 @@ export default function AdminDashboardPage() {
           ? content?.gallery?.[0]
           : content?.gallery?.[0]?.url || content?.gallery?.images?.[0]?.url
 
+        // 상대 경로를 절대 경로로 변환 (이미지 URL이 /api/r2/... 형태일 수 있음)
+        const toAbsUrl = (url: string | undefined | null): string => {
+          if (!url || url.trim() === '') return ''
+          if (url.startsWith('http')) return url
+          if (url.startsWith('/')) return `${window.location.origin}${url}`
+          return url
+        }
         // 유효한 이미지 URL 찾기 (우선순위: kakaoThumbnail > mainImage > gallery)
         const validThumbnail = [kakaoThumbnailUrl, mainImageUrl, galleryFirstUrl]
-          .find(url => url && url.trim() !== '' && url.startsWith('http'))
+          .map(u => toAbsUrl(u))
+          .find(url => url !== '')
 
         setInvitationInfo({
           kakaoThumbnail: validThumbnail || '',

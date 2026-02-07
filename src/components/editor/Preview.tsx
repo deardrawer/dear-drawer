@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react'
+import { useState, useRef, useEffect, useCallback, forwardRef, useImperativeHandle, useDeferredValue, memo } from 'react'
 
 // 로맨틱 폰트 크기 조정 스타일
 const romanticFontStyles = `
@@ -199,7 +199,9 @@ export interface PreviewHandle {
 }
 
 const Preview = forwardRef<PreviewHandle, object>(function Preview(_, ref) {
-  const { invitation, template, activeSection, wizardStep } = useEditorStore()
+  const { invitation: rawInvitation, template, activeSection, wizardStep } = useEditorStore()
+  // useDeferredValue: 타이핑 시 입력이 먼저 처리되고 Preview 리렌더링은 낮은 우선순위로 지연
+  const invitation = useDeferredValue(rawInvitation)
   const [currentPage, setCurrentPage] = useState<PageType>('intro')
   const previewContentRef = useRef<HTMLDivElement>(null)
 
@@ -460,7 +462,7 @@ function IntroPage({ invitation, groomName, brideName, fonts, themeColors }: Pag
   )
 }
 
-function MainPage({ invitation, groomName, brideName, fonts, themeColors }: PageProps) {
+const MainPage = memo(function MainPage({ invitation, groomName, brideName, fonts, themeColors }: PageProps) {
   const sectionVisibility = invitation.sectionVisibility || {
     coupleProfile: true, ourStory: true, interview: true, guidance: true, bankAccounts: true, guestbook: true
   }
@@ -716,10 +718,10 @@ function MainPage({ invitation, groomName, brideName, fonts, themeColors }: Page
       <div className="px-6 py-10 text-center" style={{ background: themeColors.background }}><p className="text-[10px] font-light" style={{ color: '#999' }}>소중한 시간 내어주셔서 감사합니다</p></div>
     </div>
   )
-}
+})
 
 // Family Template Main Page - 부모님이 보내는 청첩장 스타일
-function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }: PageProps) {
+const FamilyMainPage = memo(function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }: PageProps) {
   const sectionVisibility = invitation.sectionVisibility || {
     coupleProfile: true, ourStory: true, interview: true, guidance: true, bankAccounts: true, guestbook: true
   }
@@ -1075,6 +1077,6 @@ function FamilyMainPage({ invitation, groomName, brideName, fonts, themeColors }
       </div>
     </div>
   )
-}
+})
 
 export default Preview

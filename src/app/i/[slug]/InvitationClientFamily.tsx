@@ -1814,19 +1814,9 @@ function WhyWeChoseSection({
   const { ref, isVisible } = useScrollAnimation()
   const sideLabel = side === 'groom' ? '신랑' : '신부'
 
-  // 강조 텍스트 처리 (** 로 감싼 텍스트를 강조색으로)
-  const renderDescription = (text: string) => {
-    const parts = text.split(/(\*\*[^*]+\*\*)/g)
-    return parts.map((part, index) => {
-      if (part.startsWith('**') && part.endsWith('**')) {
-        return (
-          <span key={index} style={{ color: themeColors.highlight || themeColors.primary, fontWeight: 400 }}>
-            {part.slice(2, -2)}
-          </span>
-        )
-      }
-      return part
-    })
+  // 강조 텍스트 처리 (==노란하이라이트==, ~~흰색하이라이트~~, **강조색**)
+  const renderDescriptionHtml = (text: string) => {
+    return parseHighlight(text)
   }
 
   return (
@@ -1876,16 +1866,15 @@ function WhyWeChoseSection({
         {/* Content */}
         <div className="relative py-10 px-6">
           <p
-            className="typo-body whitespace-pre-line"
+            className="typo-body"
             style={{
               color: themeColors.text,
               fontFamily: fonts.body,
               lineHeight: textStyle?.lineHeight || 2.2,
               textAlign: textStyle?.textAlign || 'center',
             }}
-          >
-            {renderDescription(description)}
-          </p>
+            dangerouslySetInnerHTML={{ __html: renderDescriptionHtml(description) }}
+          />
         </div>
       </div>
 
@@ -4232,6 +4221,34 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
     <>
       <style dangerouslySetInnerHTML={{ __html: globalStyles }} />
       <div className="desktop-frame-wrapper">
+        {/* 결제 안내 배너 - 핸드폰 프레임 밖 상단 */}
+        {!isPaid && !isPreview && (
+          <div
+            className="payment-notice-banner"
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              zIndex: 10000,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '10px 16px',
+              backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            }}
+          >
+            <span
+              style={{
+                color: 'rgba(255, 255, 255, 0.95)',
+                fontSize: '13px',
+                fontWeight: 500,
+              }}
+            >
+              결제 후 워터마크가 제거됩니다
+            </span>
+          </div>
+        )}
         <div className="mobile-frame">
           <div className="mobile-frame-screen">
             <div className="mobile-frame-content">

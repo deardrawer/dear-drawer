@@ -63,11 +63,11 @@ export default function HighlightTextarea({
       clearTimeout(debounceTimerRef.current)
     }
 
-    // 300ms 후 스토어 업데이트
+    // 500ms 후 스토어 업데이트 (Preview 리렌더링 빈도 감소)
     debounceTimerRef.current = setTimeout(() => {
       onChange(newValue)
       debounceTimerRef.current = null
-    }, 300)
+    }, 500)
   }, [onChange])
 
   // blur 시 즉시 스토어 업데이트

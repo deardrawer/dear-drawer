@@ -32,8 +32,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate input lengths
+    if (body.guestName.length > 50) {
+      return NextResponse.json(
+        { error: "이름은 50자 이내로 입력해주세요." },
+        { status: 400 }
+      );
+    }
+    if (body.message && body.message.length > 500) {
+      return NextResponse.json(
+        { error: "메시지는 500자 이내로 입력해주세요." },
+        { status: 400 }
+      );
+    }
+
     // Validate guest count
-    const guestCount = body.attendance === "attending" ? (body.guestCount || 1) : 0;
+    const guestCount = body.attendance === "attending" ? Math.min(Math.max(body.guestCount || 1, 1), 100) : 0;
 
     // Validate side value if provided
     if (body.side && !["groom", "bride"].includes(body.side)) {

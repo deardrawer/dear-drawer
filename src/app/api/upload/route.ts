@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken, getAuthCookieName } from "@/lib/auth";
+import { getInvitationById } from "@/lib/db";
 import { writeFile, mkdir, unlink } from "fs/promises";
 import path from "path";
 
@@ -204,6 +205,14 @@ export async function DELETE(request: NextRequest) {
         { error: "이미지 ID가 필요합니다." },
         { status: 400 }
       );
+    }
+
+    // 청첩장 소유자 검증
+    if (invitationId) {
+      const invitation = await getInvitationById(invitationId);
+      if (!invitation || invitation.user_id !== payload.user.id) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
     }
 
     if (isCloudflare) {

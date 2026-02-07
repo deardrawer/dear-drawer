@@ -44,6 +44,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate input lengths
+    if (guestName.length > 50) {
+      return NextResponse.json(
+        { error: "이름은 50자 이내로 입력해주세요." },
+        { status: 400 }
+      );
+    }
+    if (message.length > 500) {
+      return NextResponse.json(
+        { error: "메시지는 500자 이내로 입력해주세요." },
+        { status: 400 }
+      );
+    }
+
     // 청첩장 존재 여부 확인
     const invitation = await getInvitationById(invitationId);
     if (!invitation) {

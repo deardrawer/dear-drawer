@@ -3118,8 +3118,8 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
               e.stopPropagation()
               setShowDirections(true)
             }}
-            className="px-7 py-2.5 border border-gray-300 rounded-md text-[10px] font-light"
-            style={{ color: '#666' }}
+            className="px-7 py-2.5 border rounded-md text-[10px] font-light transition-all"
+            style={{ color: themeColors.primary, borderColor: `${themeColors.primary}50`, backgroundColor: `${themeColors.primary}08` }}
           >
             오시는 길
           </button>

@@ -18,7 +18,7 @@ interface Step6PublishProps {
   onSave?: () => Promise<void>
   onOpenShareModal?: () => void
   isPaid?: boolean
-  onSlugChange?: (newSlug: string) => void
+  onSlugChange?: (newSlug: string) => void | Promise<void>
 }
 
 export default function Step6Publish({
@@ -112,7 +112,7 @@ export default function Step6Publish({
   }, [customSlug, isEditingSlug, slug])
 
   // 슬러그 변경 확정
-  const handleSlugSave = () => {
+  const handleSlugSave = async () => {
     const error = validateSlug(customSlug)
     if (error) {
       setSlugError(error)
@@ -123,7 +123,7 @@ export default function Step6Publish({
     }
 
     if (onSlugChange && customSlug !== slug) {
-      onSlugChange(customSlug)
+      await onSlugChange(customSlug)
     }
     setIsEditingSlug(false)
   }

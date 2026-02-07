@@ -623,12 +623,26 @@ function EditorContent() {
                     slug={savedSlug || urlSlug || invitationId}
                     onSave={handleSave}
                     isSaving={isSaving}
-                    onSlugChange={(newSlug) => {
-                      setSavedSlug(newSlug)
-                      // URL 파라미터 업데이트
-                      const url = new URL(window.location.href)
-                      url.searchParams.set('slug', newSlug)
-                      window.history.replaceState({}, '', url.toString())
+                    onSlugChange={async (newSlug) => {
+                      if (!invitationId) return
+                      try {
+                        const response = await fetch(`/api/invitations/${invitationId}/slug`, {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ slug: newSlug }),
+                        })
+                        if (!response.ok) {
+                          const result = await response.json() as { error?: string }
+                          alert(result.error || '주소 변경에 실패했습니다.')
+                          return
+                        }
+                        setSavedSlug(newSlug)
+                        const url = new URL(window.location.href)
+                        url.searchParams.set('slug', newSlug)
+                        window.history.replaceState({}, '', url.toString())
+                      } catch {
+                        alert('주소 변경에 실패했습니다.')
+                      }
                     }}
                   />
                 </div>

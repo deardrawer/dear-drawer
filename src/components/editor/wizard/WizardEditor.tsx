@@ -31,7 +31,7 @@ interface WizardEditorProps {
   slug?: string | null
   onSave?: () => Promise<void>
   isSaving?: boolean
-  onSlugChange?: (newSlug: string) => void
+  onSlugChange?: (newSlug: string) => void | Promise<void>
 }
 
 export default function WizardEditor({

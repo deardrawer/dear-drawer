@@ -1,9 +1,46 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isSlugAvailable, getAliasBySlug } from "@/lib/db";
 import { validateSlug, generateSlugSuggestions, normalizeSlug } from "@/lib/slug";
+import { verifyToken, getAuthCookieName } from "@/lib/auth";
+
+// 간단한 인메모리 Rate Limiter (IP별 분당 20회)
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT = 20;
+const RATE_WINDOW_MS = 60_000;
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS });
+    return true;
+  }
+  entry.count++;
+  return entry.count <= RATE_LIMIT;
+}
 
 export async function GET(request: NextRequest) {
   try {
+    // 인증 확인
+    const cookieName = getAuthCookieName();
+    const token = request.cookies.get(cookieName)?.value;
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const payload = await verifyToken(token);
+    if (!payload) {
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+    }
+
+    // Rate Limiting
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    if (!checkRateLimit(ip)) {
+      return NextResponse.json(
+        { error: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요." },
+        { status: 429 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const slug = searchParams.get("slug");
     const excludeId = searchParams.get("excludeId"); // 본인 청첩장 제외 (수정 시)

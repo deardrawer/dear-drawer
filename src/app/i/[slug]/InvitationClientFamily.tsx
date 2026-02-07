@@ -3193,12 +3193,11 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
                 <button
                   key={tab.key}
                   onClick={() => setDirectionsTab(tab.key)}
-                  className={`px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
-                    directionsTab === tab.key
-                      ? 'text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                  style={directionsTab === tab.key ? { background: themeColors.primary } : {}}
+                  className="px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all"
+                  style={directionsTab === tab.key
+                    ? { background: themeColors.primary, color: '#fff' }
+                    : { background: `${themeColors.primary}15`, color: themeColors.text, border: `1px solid ${themeColors.primary}30` }
+                  }
                 >
                   {tab.label}
                 </button>

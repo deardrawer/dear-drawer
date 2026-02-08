@@ -948,6 +948,7 @@ export default function MyInvitationsPage() {
       {/* 미리보기 모달 */}
       <Dialog open={!!previewInvitation} onOpenChange={() => setPreviewInvitation(null)}>
         <DialogContent className="max-w-[430px] p-0 overflow-hidden max-h-[95vh]">
+          <DialogTitle className="sr-only">청첩장 미리보기</DialogTitle>
           <div className="flex flex-col">
             {previewInvitation && !previewInvitation.is_paid && (
               <div className="bg-rose-50 px-4 py-3 text-center border-b">

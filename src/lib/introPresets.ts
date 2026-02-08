@@ -128,7 +128,7 @@ export const introPresets: IntroPreset[] = [
     defaults: {
       mainTitle: 'Welcome to our wedding',
       subTitle: '',
-      dateText: 'May 24, 2025',
+      dateText: '',
       venueText: '',
       titleFontSize: 16,
       titleLetterSpacing: 3,
@@ -154,8 +154,8 @@ export const introPresets: IntroPreset[] = [
     defaults: {
       mainTitle: '소중한 분들을 초대합니다',
       subTitle: 'WELCOME TO OUR WEDDING',
-      dateText: '2025. 05. 24 토요일 오후 2시',
-      venueText: '더채플앳청담',
+      dateText: '',
+      venueText: '',
       titleFontSize: 20,
       titleLetterSpacing: 0,
       titleColor: '#ffffff',
@@ -175,7 +175,7 @@ export const introPresets: IntroPreset[] = [
     defaults: {
       mainTitle: '우리 결혼합니다',
       subTitle: 'SAVE THE DATE',
-      dateText: '2025년 5월 24일 토요일',
+      dateText: '',
       venueText: '',
       titleFontSize: 20,
       titleLetterSpacing: 0,
@@ -196,7 +196,7 @@ export const introPresets: IntroPreset[] = [
     defaults: {
       mainTitle: '새로운 시작을 함께해주세요',
       subTitle: 'OUR WEDDING DAY',
-      dateText: '2025년 5월 24일 토요일',
+      dateText: '',
       venueText: '',
       titleFontSize: 18,
       titleLetterSpacing: 2,
@@ -217,7 +217,7 @@ export const introPresets: IntroPreset[] = [
     defaults: {
       mainTitle: '행복한 날에 초대합니다',
       subTitle: 'THE WEDDING OF',
-      dateText: '2025. 05. 24 Saturday',
+      dateText: '',
       venueText: '',
       titleFontSize: 20,
       titleLetterSpacing: 1,
@@ -238,8 +238,8 @@ export const introPresets: IntroPreset[] = [
     defaults: {
       mainTitle: '우리 결혼합니다',
       subTitle: 'WEDDING INVITATION',
-      dateText: '2025. 05. 24',
-      venueText: '더채플앳청담',
+      dateText: '',
+      venueText: '',
       titleFontSize: 24,
       titleLetterSpacing: 0,
       titleColor: '#4a4a4a',
@@ -260,7 +260,7 @@ export const introPresets: IntroPreset[] = [
       mainTitle: '꽃잎처럼 아름다운 날',
       subTitle: 'SPRING WEDDING',
       dateText: '봄날의 아름다운 약속',
-      venueText: '2025. 05. 24',
+      venueText: '',
       titleFontSize: 20,
       titleLetterSpacing: 0,
       titleColor: '#374151',
@@ -343,8 +343,8 @@ export const introPresets: IntroPreset[] = [
     defaults: {
       mainTitle: '소중한 날에 초대합니다',
       subTitle: 'WEDDING INVITATION',
-      dateText: '2025.05.24 (Sat)',
-      venueText: '더채플앳청담',
+      dateText: '',
+      venueText: '',
       titleFontSize: 20,
       titleLetterSpacing: 0,
       titleColor: '#fef3c7',

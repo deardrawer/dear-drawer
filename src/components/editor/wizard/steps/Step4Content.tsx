@@ -559,9 +559,9 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                 <Label className="text-xs">소개글</Label>
                 <TextStyleControls
                   lineHeight={invitation.profileTextStyle?.lineHeight}
-                  textAlign={invitation.profileTextStyle?.textAlign}
+                  textAlign={invitation.groom.profile.textStyle?.textAlign}
                   onLineHeightChange={(v) => updateNestedField('profileTextStyle', { ...invitation.profileTextStyle, lineHeight: v })}
-                  onTextAlignChange={(v) => updateNestedField('profileTextStyle', { ...invitation.profileTextStyle, textAlign: v })}
+                  onTextAlignChange={(v) => updateNestedField('groom.profile.textStyle', { ...invitation.groom.profile.textStyle, textAlign: v })}
                 />
                 <HighlightTextarea
                   value={invitation.groom.profile.intro}
@@ -662,9 +662,9 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                 <Label className="text-xs">소개글</Label>
                 <TextStyleControls
                   lineHeight={invitation.profileTextStyle?.lineHeight}
-                  textAlign={invitation.profileTextStyle?.textAlign}
+                  textAlign={invitation.bride.profile.textStyle?.textAlign}
                   onLineHeightChange={(v) => updateNestedField('profileTextStyle', { ...invitation.profileTextStyle, lineHeight: v })}
-                  onTextAlignChange={(v) => updateNestedField('profileTextStyle', { ...invitation.profileTextStyle, textAlign: v })}
+                  onTextAlignChange={(v) => updateNestedField('bride.profile.textStyle', { ...invitation.bride.profile.textStyle, textAlign: v })}
                 />
                 <HighlightTextarea
                   value={invitation.bride.profile.intro}
@@ -1199,9 +1199,9 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                       <Label className="text-xs">본문 <span className="text-pink-500 text-[10px] ml-1">✦ 초안 작성 가능</span></Label>
                       <TextStyleControls
                         lineHeight={invitation.whyWeChoseTextStyle?.lineHeight}
-                        textAlign={invitation.whyWeChoseTextStyle?.textAlign}
+                        textAlign={whyWeChose.groom?.textAlign ?? invitation.whyWeChoseTextStyle?.textAlign}
                         onLineHeightChange={(v) => updateNestedField('whyWeChoseTextStyle', { ...invitation.whyWeChoseTextStyle, lineHeight: v })}
-                        onTextAlignChange={(v) => updateNestedField('whyWeChoseTextStyle', { ...invitation.whyWeChoseTextStyle, textAlign: v })}
+                        onTextAlignChange={(v) => updateNestedField('whyWeChose.groom.textAlign', v)}
                       />
                       <HighlightTextarea
                         value={whyWeChose.groom?.description || ''}
@@ -1282,9 +1282,9 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                       <Label className="text-xs">본문 <span className="text-pink-500 text-[10px] ml-1">✦ 초안 작성 가능</span></Label>
                       <TextStyleControls
                         lineHeight={invitation.whyWeChoseTextStyle?.lineHeight}
-                        textAlign={invitation.whyWeChoseTextStyle?.textAlign}
+                        textAlign={whyWeChose.bride?.textAlign ?? invitation.whyWeChoseTextStyle?.textAlign}
                         onLineHeightChange={(v) => updateNestedField('whyWeChoseTextStyle', { ...invitation.whyWeChoseTextStyle, lineHeight: v })}
-                        onTextAlignChange={(v) => updateNestedField('whyWeChoseTextStyle', { ...invitation.whyWeChoseTextStyle, textAlign: v })}
+                        onTextAlignChange={(v) => updateNestedField('whyWeChose.bride.textAlign', v)}
                       />
                       <HighlightTextarea
                         value={whyWeChose.bride?.description || ''}
@@ -1517,9 +1517,9 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                   <Label className="text-xs">답변</Label>
                   <TextStyleControls
                     lineHeight={invitation.interviewTextStyle?.lineHeight}
-                    textAlign={invitation.interviewTextStyle?.textAlign}
+                    textAlign={interview.textStyle?.textAlign}
                     onLineHeightChange={(v) => updateNestedField('interviewTextStyle', { ...invitation.interviewTextStyle, lineHeight: v })}
-                    onTextAlignChange={(v) => updateNestedField('interviewTextStyle', { ...invitation.interviewTextStyle, textAlign: v })}
+                    onTextAlignChange={(v) => updateNestedField(`content.interviews.${index}.textStyle`, { ...interview.textStyle, textAlign: v })}
                   />
                   <HighlightTextarea
                     value={interview.answer}

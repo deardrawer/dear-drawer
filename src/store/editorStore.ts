@@ -289,6 +289,7 @@ export interface WhyWeChoseItem {
   imageSettings?: { scale: number; positionX: number; positionY: number }[]
   description: string      // 본문 (** 로 강조)
   quote: string            // 하단 인용문
+  textAlign?: 'left' | 'center' | 'right'  // 개별 정렬
 }
 
 export interface WhyWeChose {
@@ -372,6 +373,7 @@ export interface InvitationContent {
   colorTheme: 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-green' | 'luxury-navy' | 'sunset-coral'
   accentTextColor?: string  // 강조 텍스트 색상 (사용자 커스텀, 없으면 테마 기본값 사용)
   bodyTextColor?: string    // 본문 텍스트 색상 (사용자 커스텀, 없으면 테마 기본값 사용)
+  highlightColor?: string   // 하이라이트 색상 (사용자 커스텀, 없으면 테마 기본값 사용)
 
   // ===== RSVP =====
   rsvpEnabled: boolean

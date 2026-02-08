@@ -357,7 +357,7 @@ const Preview = forwardRef<PreviewHandle, object>(function Preview(_, ref) {
       <div className="flex-1 overflow-hidden flex justify-center px-6 pb-6">
         <div className="relative">
           <div className="w-[360px] shadow-2xl bg-white flex flex-col relative border border-gray-200" style={{ height: '710px' }}>
-            <div ref={previewContentRef} className={`flex-1 overflow-y-auto min-h-0 relative theme-${invitation.colorTheme || 'classic-rose'} ${isRomantic ? 'font-romantic' : ''}`} id="preview-content" style={{ fontFamily: fonts.body, color: customBodyTextColor, letterSpacing: '-0.3px', ...(customAccentTextColor ? { '--text-accent': customAccentTextColor } as React.CSSProperties : {}) }}>
+            <div ref={previewContentRef} className={`flex-1 overflow-y-auto min-h-0 relative theme-${invitation.colorTheme || 'classic-rose'} ${isRomantic ? 'font-romantic' : ''}`} id="preview-content" style={{ fontFamily: fonts.body, color: customBodyTextColor, letterSpacing: '-0.3px', ...(customAccentTextColor ? { '--text-accent': customAccentTextColor } as React.CSSProperties : {}), ...(invitation.highlightColor ? { '--highlight-white': invitation.highlightColor } as React.CSSProperties : {}) }}>
               {currentPage === 'intro'
                 ? <IntroPage invitation={invitation} groomName={groomName} brideName={brideName} fonts={fonts} themeColors={themeColors} />
                 : invitation.templateId === 'narrative-family'
@@ -498,7 +498,7 @@ const MainPage = memo(function MainPage({ invitation, groomName, brideName, font
             </div>
             <div
               className={`text-xs font-light ${isEmpty(invitation.profileOrder === 'bride-first' ? invitation.bride.profile.intro : invitation.groom.profile.intro) ? 'opacity-50' : ''}`}
-              style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: invitation.profileTextStyle?.lineHeight || 2.2, textAlign: invitation.profileTextStyle?.textAlign || 'left' }}
+              style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: invitation.profileTextStyle?.lineHeight || 2.2, textAlign: (invitation.profileOrder === 'bride-first' ? invitation.bride.profile.textStyle?.textAlign : invitation.groom.profile.textStyle?.textAlign) || 'left' }}
               dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.profileOrder === 'bride-first' ? (invitation.bride.profile.intro || SAMPLE_PROFILES.bride.intro) : (invitation.groom.profile.intro || SAMPLE_PROFILES.groom.intro)) }}
             />
             {((invitation.profileOrder === 'bride-first' ? invitation.bride.profile.tag : invitation.groom.profile.tag) || isEmpty(invitation.profileOrder === 'bride-first' ? invitation.bride.profile.intro : invitation.groom.profile.intro)) &&
@@ -524,7 +524,7 @@ const MainPage = memo(function MainPage({ invitation, groomName, brideName, font
             </div>
             <div
               className={`text-xs font-light ${isEmpty(invitation.profileOrder === 'bride-first' ? invitation.groom.profile.intro : invitation.bride.profile.intro) ? 'opacity-50' : ''}`}
-              style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: invitation.profileTextStyle?.lineHeight || 2.2, textAlign: invitation.profileTextStyle?.textAlign || 'left' }}
+              style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: invitation.profileTextStyle?.lineHeight || 2.2, textAlign: (invitation.profileOrder === 'bride-first' ? invitation.groom.profile.textStyle?.textAlign : invitation.bride.profile.textStyle?.textAlign) || 'left' }}
               dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.profileOrder === 'bride-first' ? (invitation.groom.profile.intro || SAMPLE_PROFILES.groom.intro) : (invitation.bride.profile.intro || SAMPLE_PROFILES.bride.intro)) }}
             />
             {((invitation.profileOrder === 'bride-first' ? invitation.groom.profile.tag : invitation.bride.profile.tag) || isEmpty(invitation.profileOrder === 'bride-first' ? invitation.groom.profile.intro : invitation.bride.profile.intro)) &&
@@ -617,7 +617,7 @@ const MainPage = memo(function MainPage({ invitation, groomName, brideName, font
           <section key={index} className={`px-7 py-14 ${!hasRealInterviews ? 'opacity-50' : ''}`} style={{ background: interview.bgClass === 'pink-bg' ? themeColors.sectionBg : themeColors.cardBg }}>
             {interview.images && interview.images.length > 0 ? <ProfileImageSlider images={interview.images.slice(0, 2)} imageSettings={interview.imageSettings?.slice(0, 2)} className="mb-8" /> : <div className="w-full aspect-[4/5] rounded-xl mb-8 bg-gray-100 flex items-center justify-center"><span className="text-gray-400 text-sm">Interview Image</span></div>}
             {interview.question && <p className="text-sm mb-5 text-center"><span className="anim-underline revealed" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400, display: 'inline-block' }}>{interview.question}</span></p>}
-            {interview.answer && <p className="text-[11px] font-light" style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: invitation.interviewTextStyle?.lineHeight ?? 2.0, textAlign: invitation.interviewTextStyle?.textAlign ?? 'left' }} dangerouslySetInnerHTML={{ __html: parseHighlight(interview.answer) }} />}
+            {interview.answer && <p className="text-[11px] font-light" style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: invitation.interviewTextStyle?.lineHeight ?? 2.0, textAlign: (interview as any).textStyle?.textAlign ?? 'left' }} dangerouslySetInnerHTML={{ __html: parseHighlight(interview.answer) }} />}
           </section>
         ) : null)
       })()}
@@ -866,7 +866,7 @@ const FamilyMainPage = memo(function FamilyMainPage({ invitation, groomName, bri
           />
           {/* Description Card */}
           <div className={`relative p-6 mb-10 ${isEmpty(whyWeChose?.groom?.description) ? 'opacity-50' : ''}`} style={{ background: themeColors.cardBg, border: `1px solid ${themeColors.text}20` }}>
-            <p className="text-xs" style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: invitation.whyWeChoseTextStyle?.lineHeight || 2.2, textAlign: invitation.whyWeChoseTextStyle?.textAlign || 'left' }} dangerouslySetInnerHTML={{ __html: parseHighlight(whyWeChose?.groom?.description || SAMPLE_FAMILY.whyWeChose.groom.description) }} />
+            <p className="text-xs" style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: invitation.whyWeChoseTextStyle?.lineHeight || 2.2, textAlign: whyWeChose?.groom?.textAlign ?? invitation.whyWeChoseTextStyle?.textAlign ?? 'left' }} dangerouslySetInnerHTML={{ __html: parseHighlight(whyWeChose?.groom?.description || SAMPLE_FAMILY.whyWeChose.groom.description) }} />
           </div>
           {/* Quote */}
           <div className={`text-right ${isEmpty(whyWeChose?.groom?.quote) ? 'opacity-50' : ''}`}>
@@ -888,7 +888,7 @@ const FamilyMainPage = memo(function FamilyMainPage({ invitation, groomName, bri
           />
           {/* Description Card */}
           <div className={`relative p-6 mb-10 ${isEmpty(whyWeChose?.bride?.description) ? 'opacity-50' : ''}`} style={{ background: themeColors.cardBg, border: `1px solid ${themeColors.text}20` }}>
-            <p className="text-xs" style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: invitation.whyWeChoseTextStyle?.lineHeight || 2.2, textAlign: invitation.whyWeChoseTextStyle?.textAlign || 'left' }} dangerouslySetInnerHTML={{ __html: parseHighlight(whyWeChose?.bride?.description || SAMPLE_FAMILY.whyWeChose.bride.description) }} />
+            <p className="text-xs" style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: invitation.whyWeChoseTextStyle?.lineHeight || 2.2, textAlign: whyWeChose?.bride?.textAlign ?? invitation.whyWeChoseTextStyle?.textAlign ?? 'left' }} dangerouslySetInnerHTML={{ __html: parseHighlight(whyWeChose?.bride?.description || SAMPLE_FAMILY.whyWeChose.bride.description) }} />
           </div>
           {/* Quote */}
           <div className={`text-left ${isEmpty(whyWeChose?.bride?.quote) ? 'opacity-50' : ''}`}>
@@ -954,7 +954,7 @@ const FamilyMainPage = memo(function FamilyMainPage({ invitation, groomName, bri
               </p>
             )}
             {interview.answer && (
-              <p className="text-[11px] font-light" style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: invitation.interviewTextStyle?.lineHeight ?? 2.0, textAlign: invitation.interviewTextStyle?.textAlign ?? 'left' }} dangerouslySetInnerHTML={{ __html: parseHighlight(interview.answer) }} />
+              <p className="text-[11px] font-light" style={{ fontFamily: fonts.displayKr, color: themeColors.text, lineHeight: invitation.interviewTextStyle?.lineHeight ?? 2.0, textAlign: (interview as any).textStyle?.textAlign ?? 'left' }} dangerouslySetInnerHTML={{ __html: parseHighlight(interview.answer) }} />
             )}
           </section>
         ) : null)

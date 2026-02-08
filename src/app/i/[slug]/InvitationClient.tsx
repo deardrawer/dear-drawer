@@ -2053,6 +2053,7 @@ const mockInvitation = {
   fontStyle: 'romantic' as FontStyle,
   accentTextColor: undefined as string | undefined,
   bodyTextColor: undefined as string | undefined,
+  highlightColor: undefined as string | undefined,
   whyWeChoseTextStyle: undefined as { lineHeight?: number; textAlign?: 'left' | 'center' | 'right' } | undefined,
 
   groom: {
@@ -3189,7 +3190,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
           fonts={fonts}
           themeColors={themeColors}
           bgColor={themeColors.sectionBg}
-          textStyle={invitation.profileTextStyle}
+          textStyle={{ lineHeight: invitation.profileTextStyle?.lineHeight, textAlign: (invitation.bride.profile as any).textStyle?.textAlign ?? invitation.profileTextStyle?.textAlign }}
         />
       )}
 
@@ -3200,7 +3201,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
           fonts={fonts}
           themeColors={themeColors}
           bgColor={themeColors.sectionBg}
-          textStyle={invitation.profileTextStyle}
+          textStyle={{ lineHeight: invitation.profileTextStyle?.lineHeight, textAlign: (invitation.groom.profile as any).textStyle?.textAlign ?? invitation.profileTextStyle?.textAlign }}
         />
       )}
 
@@ -3278,7 +3279,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
           fonts={fonts}
           themeColors={themeColors}
           bgColor={index % 2 === 0 ? themeColors.sectionBg : themeColors.cardBg}
-          textStyle={invitation.interviewTextStyle}
+          textStyle={{ lineHeight: invitation.interviewTextStyle?.lineHeight, textAlign: (interview as any).textStyle?.textAlign ?? invitation.interviewTextStyle?.textAlign }}
         />
       ) : null)}
 
@@ -3983,6 +3984,7 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
                     fontFamily: fonts.body,
                     color: invitation.bodyTextColor || themeColors.text,
                     ...(invitation.accentTextColor ? { '--text-accent': invitation.accentTextColor } as React.CSSProperties : {}),
+                    ...(invitation.highlightColor ? { '--highlight-white': invitation.highlightColor } as React.CSSProperties : {}),
                   }}
                 >
                   {/* Page Content */}

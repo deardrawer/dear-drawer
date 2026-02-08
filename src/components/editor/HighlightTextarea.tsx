@@ -4,6 +4,7 @@ import { useRef, useCallback, useState, useEffect } from 'react'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Type } from 'lucide-react'
+import { useEditorStore } from '@/store/editorStore'
 
 interface HighlightTextareaProps {
   value: string
@@ -20,7 +21,7 @@ interface HighlightTextareaProps {
  * 사용법:
  * - 텍스트 선택 후 버튼 클릭
  * - ==텍스트== : 노란색 하이라이트
- * - ~~텍스트~~ : 흰색 하이라이트
+ * - ~~텍스트~~ : 커스텀 색상 하이라이트 (색상 선택 가능)
  * - **텍스트** : 강조 색상 (테마별 메인 컬러)
  */
 export default function HighlightTextarea({
@@ -32,6 +33,11 @@ export default function HighlightTextarea({
   className = ''
 }: HighlightTextareaProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const colorInputRef = useRef<HTMLInputElement>(null)
+
+  // 스토어에서 하이라이트 색상 읽기
+  const highlightColor = useEditorStore((s) => s.invitation?.highlightColor)
+  const updateField = useEditorStore((s) => s.updateField)
 
   // 로컬 상태로 입력값 관리 (깜빡임 방지)
   const [localValue, setLocalValue] = useState(value)
@@ -159,11 +165,20 @@ export default function HighlightTextarea({
           size="sm"
           className="h-6 px-2 text-[10px] gap-1"
           onClick={() => applyHighlight('white')}
-          title="텍스트를 드래그한 후 클릭하면 흰색 하이라이트가 적용됩니다"
+          title="텍스트를 드래그한 후 클릭하면 커스텀 색상 하이라이트가 적용됩니다"
         >
-          <span className="w-3 h-3 rounded-sm border border-gray-300" style={{ background: 'linear-gradient(transparent 50%, rgba(255,255,255,0.9) 50%)', boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.05)' }} />
-          흰색
+          <span className="w-3 h-3 rounded-sm border border-gray-300" style={{ background: `linear-gradient(transparent 50%, ${highlightColor || 'rgba(255,255,255,0.9)'} 50%)` }} />
+          커스텀
         </Button>
+        <input
+          ref={colorInputRef}
+          type="color"
+          value={highlightColor || '#FFFFFF'}
+          onChange={(e) => updateField('highlightColor', e.target.value)}
+          className="w-5 h-5 rounded cursor-pointer border border-gray-300 -ml-0.5"
+          style={{ padding: 0 }}
+          title="하이라이트 색상 선택"
+        />
         <Button
           type="button"
           variant="outline"

@@ -2412,6 +2412,7 @@ const mockInvitation = {
   fontStyle: 'romantic' as FontStyle,
   accentTextColor: undefined as string | undefined,
   bodyTextColor: undefined as string | undefined,
+  highlightColor: undefined as string | undefined,
   whyWeChoseTextStyle: undefined as { lineHeight?: number; textAlign?: 'left' | 'center' | 'right' } | undefined,
 
   groom: {
@@ -3490,7 +3491,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
               side="groom"
               fonts={fonts}
               themeColors={themeColors}
-              textStyle={(invitation as any).whyWeChoseTextStyle}
+              textStyle={{ lineHeight: (invitation as any).whyWeChoseTextStyle?.lineHeight, textAlign: (invitation as any).whyWeChose?.groom?.textAlign ?? (invitation as any).whyWeChoseTextStyle?.textAlign }}
             />
           )}
 
@@ -3509,7 +3510,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
               side="bride"
               fonts={fonts}
               themeColors={themeColors}
-              textStyle={(invitation as any).whyWeChoseTextStyle}
+              textStyle={{ lineHeight: (invitation as any).whyWeChoseTextStyle?.lineHeight, textAlign: (invitation as any).whyWeChose?.bride?.textAlign ?? (invitation as any).whyWeChoseTextStyle?.textAlign }}
             />
           )}
         </>
@@ -3555,7 +3556,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
           fonts={fonts}
           themeColors={themeColors}
           bgColor="#ffffff"
-          textStyle={invitation.interviewTextStyle}
+          textStyle={{ lineHeight: invitation.interviewTextStyle?.lineHeight, textAlign: (interview as any).textStyle?.textAlign ?? invitation.interviewTextStyle?.textAlign }}
         />
       ) : null)}
 
@@ -4260,6 +4261,7 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
                     fontFamily: fonts.body,
                     color: invitation.bodyTextColor || themeColors.text,
                     ...(invitation.accentTextColor ? { '--text-accent': invitation.accentTextColor } as React.CSSProperties : {}),
+                    ...(invitation.highlightColor ? { '--highlight-white': invitation.highlightColor } as React.CSSProperties : {}),
                   }}
                 >
                   {/* Page Content */}

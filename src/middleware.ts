@@ -39,7 +39,7 @@ export function middleware(request: NextRequest) {
     "img-src 'self' data: blob: https://*.supabase.co https://*.r2.cloudflarestorage.com https://invite.deardrawer.com https://*.kakaocdn.net https://images.unsplash.com",
     "connect-src 'self' https://*.supabase.co https://kapi.kakao.com",
     "frame-src 'self' https://accounts.kakao.com",
-    "frame-ancestors 'none'",
+    "frame-ancestors 'self'",
   ].join("; ");
 
   response.headers.set("Content-Security-Policy", csp);

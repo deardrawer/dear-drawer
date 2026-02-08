@@ -108,7 +108,7 @@ function getImageCropStyle(img: string, s: { scale?: number; positionX?: number;
 
     return {
       backgroundImage: `url(${img})`,
-      backgroundSize: `${100 / cw}% ${100 / ch}%`,
+      backgroundSize: `${Math.max(100 / cw, 100 / ch)}%`,
       backgroundPosition: `${posX}% ${posY}%`,
       backgroundRepeat: 'no-repeat' as const,
     }
@@ -641,7 +641,7 @@ const MainPage = memo(function MainPage({ invitation, groomName, brideName, font
                     const posY = ch >= 1 ? 0 : (cy / (1 - ch)) * 100
                     return {
                       backgroundImage: `url(${invitation.guidance.image})`,
-                      backgroundSize: `${100 / cw}% ${100 / ch}%`,
+                      backgroundSize: `${Math.max(100 / cw, 100 / ch)}%`,
                       backgroundPosition: `${posX}% ${posY}%`,
                       backgroundRepeat: 'no-repeat' as const,
                     }
@@ -979,7 +979,7 @@ const FamilyMainPage = memo(function FamilyMainPage({ invitation, groomName, bri
                     const posY = ch >= 1 ? 0 : (cy / (1 - ch)) * 100
                     return {
                       backgroundImage: `url(${invitation.guidance.image})`,
-                      backgroundSize: `${100 / cw}% ${100 / ch}%`,
+                      backgroundSize: `${Math.max(100 / cw, 100 / ch)}%`,
                       backgroundPosition: `${posX}% ${posY}%`,
                       backgroundRepeat: 'no-repeat' as const,
                     }

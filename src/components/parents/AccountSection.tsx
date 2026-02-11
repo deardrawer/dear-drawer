@@ -25,26 +25,58 @@ export default function AccountSection({
   const { ref, isActive, hasAppeared } = useSectionHighlight('account')
   const theme = useTheme()
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
+  const [showAccountModal, setShowAccountModal] = useState<{ name: string; bank: string; account: string } | null>(null)
 
-  const handleCopy = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text)
-      alert('계좌번호가 복사되었습니다.')
-    } catch (err) {
-      // Fallback for older browsers
-      const textArea = document.createElement('textarea')
-      textArea.value = text
-      textArea.style.position = 'fixed'
-      textArea.style.left = '-999999px'
-      document.body.appendChild(textArea)
-      textArea.select()
+  const handleCopy = async (item: Account, index: number) => {
+    const accountNumber = item.account.replace(/[^0-9]/g, '')
+    let copied = false
+
+    // 1차: navigator.clipboard (HTTPS 필요)
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
       try {
-        document.execCommand('copy')
-        alert('계좌번호가 복사되었습니다.')
-      } catch (e) {
-        alert('복사에 실패했습니다. 직접 복사해주세요.')
+        await navigator.clipboard.writeText(accountNumber)
+        copied = true
+      } catch {
+        // clipboard API 실패 → fallback으로
       }
-      document.body.removeChild(textArea)
+    }
+
+    // 2차: execCommand fallback (iOS 대응 포함)
+    if (!copied) {
+      try {
+        const textArea = document.createElement('textarea')
+        textArea.value = accountNumber
+        textArea.setAttribute('readonly', '')
+        textArea.style.position = 'fixed'
+        textArea.style.left = '-9999px'
+        textArea.style.top = '-9999px'
+        textArea.style.opacity = '0'
+        document.body.appendChild(textArea)
+
+        // iOS Safari 대응
+        const range = document.createRange()
+        const selection = window.getSelection()
+        textArea.contentEditable = 'true'
+        textArea.readOnly = false
+        range.selectNodeContents(textArea)
+        selection?.removeAllRanges()
+        selection?.addRange(range)
+        textArea.setSelectionRange(0, accountNumber.length)
+
+        copied = document.execCommand('copy')
+        document.body.removeChild(textArea)
+      } catch {
+        copied = false
+      }
+    }
+
+    if (copied) {
+      setCopiedIndex(index)
+      setTimeout(() => setCopiedIndex(null), 2000)
+    } else {
+      // 복사 실패 시 모달로 계좌번호 표시 (사용자가 직접 복사)
+      setShowAccountModal({ name: item.name, bank: item.bank, account: accountNumber })
     }
   }
 
@@ -69,8 +101,8 @@ export default function AccountSection({
       <div className="space-y-3 w-full max-w-[320px]">
         {accounts.map((item, index) => (
           <button
-            key={item.name}
-            onClick={() => handleCopy(item.account.replace(/[^0-9]/g, ''))}
+            key={`${item.name}-${index}`}
+            onClick={() => handleCopy(item, index)}
             onMouseEnter={() => setHoveredIndex(index)}
             onMouseLeave={() => setHoveredIndex(null)}
             className="w-full p-4 rounded-lg border text-left transition-all duration-500"
@@ -99,13 +131,54 @@ export default function AccountSection({
                   {item.bank} {item.account}
                 </p>
               </div>
-              <span className="text-xs transition-colors duration-500" style={{ color: isActive ? theme.accent : `${theme.accent}80` }}>
-                복사
+              <span
+                className="text-xs transition-colors duration-500"
+                style={{ color: copiedIndex === index ? '#22c55e' : (isActive ? theme.accent : `${theme.accent}80`) }}
+              >
+                {copiedIndex === index ? '복사됨' : '복사'}
               </span>
             </div>
           </button>
         ))}
       </div>
+
+      {/* 복사 실패 시 계좌번호 직접 표시 모달 */}
+      {showAccountModal && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50"
+          onClick={() => setShowAccountModal(null)}
+        >
+          <div
+            className="bg-white rounded-2xl p-6 max-w-[320px] w-full mx-4 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="text-sm font-medium text-center mb-1" style={{ color: theme.text }}>
+              {showAccountModal.name}
+            </p>
+            <p className="text-xs text-center mb-4" style={{ color: '#999' }}>
+              {showAccountModal.bank}
+            </p>
+            <div className="bg-gray-50 rounded-lg p-3 mb-4">
+              <p
+                className="text-center text-base font-mono tracking-wider select-all"
+                style={{ color: theme.text, userSelect: 'all', WebkitUserSelect: 'all' }}
+              >
+                {showAccountModal.account}
+              </p>
+            </div>
+            <p className="text-xs text-center mb-4" style={{ color: '#999' }}>
+              계좌번호를 길게 눌러 복사해주세요
+            </p>
+            <button
+              onClick={() => setShowAccountModal(null)}
+              className="w-full py-2.5 rounded-lg text-sm font-medium"
+              style={{ backgroundColor: theme.primary, color: 'white' }}
+            >
+              닫기
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   )
 }

@@ -294,6 +294,13 @@ export interface ParentsInvitationContent {
     url: string
   }
 
+  // 배경음악
+  bgm?: {
+    enabled: boolean
+    url: string
+    autoplay: boolean
+  }
+
   // RSVP
   rsvpEnabled?: boolean
 

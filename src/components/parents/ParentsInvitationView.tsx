@@ -75,6 +75,15 @@ export default function ParentsInvitationView({
     }
   }, [isPreview, isEnvelopeOpen])
 
+  // 봉투 열리면 BGM 자동재생 (autoplay 설정 시)
+  useEffect(() => {
+    if (isEnvelopeOpen && data.bgm?.enabled && data.bgm?.autoplay && data.bgm?.url && audioRef.current && !isPlaying) {
+      audioRef.current.play()
+        .then(() => setIsPlaying(true))
+        .catch(() => { /* 브라우저 정책으로 자동재생 차단 가능 */ })
+    }
+  }, [isEnvelopeOpen]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // 글자 크기 변경
   const cycleFontSize = () => {
     const currentIndex = FONT_SIZE_ORDER.indexOf(fontSize)
@@ -267,32 +276,36 @@ export default function ParentsInvitationView({
                 )}
 
                 {/* 음악 재생 버튼 - 우측 상단 */}
-                <audio ref={audioRef} loop preload="auto">
-                  <source src="/samples/parents/wedding-bgm.mp3" type="audio/mpeg" />
-                </audio>
-                <button
-                  onClick={toggleMusic}
-                  className="w-10 h-10 rounded-full flex items-center justify-center transition-all"
-                  style={{
-                    position: 'absolute',
-                    top: '20px',
-                    right: '20px',
-                    zIndex: 100,
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
-                  }}
-                >
-                  {isPlaying ? (
-                    <svg className="w-5 h-5" fill={theme.primary} viewBox="0 0 24 24">
-                      <rect x="6" y="4" width="4" height="16" rx="1" />
-                      <rect x="14" y="4" width="4" height="16" rx="1" />
-                    </svg>
-                  ) : (
-                    <svg className="w-5 h-5" fill={theme.primary} viewBox="0 0 24 24">
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                  )}
-                </button>
+                {data.bgm?.enabled && data.bgm.url && (
+                  <>
+                    <audio ref={audioRef} loop preload="auto">
+                      <source src={data.bgm.url} type="audio/mpeg" />
+                    </audio>
+                    <button
+                      onClick={toggleMusic}
+                      className="w-10 h-10 rounded-full flex items-center justify-center transition-all"
+                      style={{
+                        position: 'absolute',
+                        top: '20px',
+                        right: '20px',
+                        zIndex: 100,
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+                      }}
+                    >
+                      {isPlaying ? (
+                        <svg className="w-5 h-5" fill={theme.primary} viewBox="0 0 24 24">
+                          <rect x="6" y="4" width="4" height="16" rx="1" />
+                          <rect x="14" y="4" width="4" height="16" rx="1" />
+                        </svg>
+                      ) : (
+                        <svg className="w-5 h-5" fill={theme.primary} viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      )}
+                    </button>
+                  </>
+                )}
               </>
             )}
             <div id="preview-greeting">

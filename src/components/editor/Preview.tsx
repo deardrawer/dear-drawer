@@ -602,6 +602,24 @@ const MainPage = memo(function MainPage({ invitation, groomName, brideName, font
         <div className="grid grid-cols-2 gap-2">{invitation.gallery.images && invitation.gallery.images.length > 0 ? invitation.gallery.images.map((img, i) => { const s = invitation.gallery.imageSettings?.[i] || { scale: 1, positionX: 0, positionY: 0 }; return <div key={i} className="aspect-square rounded overflow-hidden"><div className="w-full h-full transition-transform duration-300" style={getImageCropStyle(img, s)} /></div> }) : [1, 2, 3, 4, 5, 6].map(i => <div key={i} className="aspect-square rounded bg-gray-100 flex items-center justify-center"><svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg></div>)}</div>
       </section>
 
+      {/* YouTube Section - OUR */}
+      {invitation.youtube?.enabled && invitation.youtube?.url && (() => {
+        const url = invitation.youtube.url
+        const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/)
+        const videoId = match?.[1]
+        if (!videoId) return null
+        return (
+          <section id="preview-youtube" className="px-5 py-12" style={{ background: themeColors.cardBg }}>
+            {invitation.youtube.title && (
+              <p className="text-[10px] font-light text-center mb-6" style={{ color: themeColors.gray, letterSpacing: '4px' }}>{invitation.youtube.title.toUpperCase()}</p>
+            )}
+            <div className="aspect-video rounded-lg overflow-hidden">
+              <iframe src={`https://www.youtube.com/embed/${videoId}`} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+            </div>
+          </section>
+        )
+      })()}
+
       {/* Interview Section - with visibility toggle and sample fallback */}
       {sectionVisibility.interview && (
         <section id="preview-interview" className="py-16 px-7 text-center" style={{ background: themeColors.cardBg }}>
@@ -904,6 +922,24 @@ const FamilyMainPage = memo(function FamilyMainPage({ invitation, groomName, bri
       <section id="preview-gallery" className="px-5 py-10" style={{ background: themeColors.sectionBg }}>
         <div className="grid grid-cols-2 gap-2">{invitation.gallery.images && invitation.gallery.images.length > 0 ? invitation.gallery.images.map((img, i) => { const s = invitation.gallery.imageSettings?.[i] || { scale: 1, positionX: 0, positionY: 0 }; return <div key={i} className="aspect-square overflow-hidden"><div className="w-full h-full transition-transform duration-300" style={getImageCropStyle(img, s)} /></div> }) : [1, 2, 3, 4, 5, 6].map(i => <div key={i} className="aspect-square bg-gray-100 flex items-center justify-center"><svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg></div>)}</div>
       </section>
+
+      {/* YouTube Section - FAMILY */}
+      {invitation.youtube?.enabled && invitation.youtube?.url && (() => {
+        const url = invitation.youtube.url
+        const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/)
+        const videoId = match?.[1]
+        if (!videoId) return null
+        return (
+          <section id="preview-youtube" className="px-5 py-12" style={{ background: themeColors.sectionBg }}>
+            {invitation.youtube.title && (
+              <p className="text-[10px] font-light text-center mb-6" style={{ color: themeColors.gray, letterSpacing: '4px' }}>{invitation.youtube.title.toUpperCase()}</p>
+            )}
+            <div className="aspect-video rounded-lg overflow-hidden">
+              <iframe src={`https://www.youtube.com/embed/${videoId}`} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+            </div>
+          </section>
+        )
+      })()}
 
       {/* Interview Title Divider (Divider 2) - 갤러리 섹션 하단 */}
       {sectionVisibility.interview && (

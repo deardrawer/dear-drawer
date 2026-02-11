@@ -4,7 +4,7 @@ import { useEditorStore } from '@/store/editorStore'
 import { useState, useRef } from 'react'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { Play, Pause } from 'lucide-react'
+import { Play, Pause, Upload, X, Loader2 } from 'lucide-react'
 import { bgmPresets } from '@/lib/bgmPresets'
 
 // 색상 테마 옵션
@@ -50,11 +50,13 @@ const FONT_STYLES = [
 
 interface Step2StyleProps {
   templateId?: string
+  invitationId?: string | null
 }
 
-export default function Step2Style({ templateId }: Step2StyleProps) {
+export default function Step2Style({ templateId, invitationId }: Step2StyleProps) {
   const { invitation, updateField, updateNestedField } = useEditorStore()
   const [playingBgm, setPlayingBgm] = useState<string | null>(null)
+  const [isUploadingAudio, setIsUploadingAudio] = useState(false)
   const audioRef = useRef<HTMLAudioElement>(null)
 
   if (!invitation) return null
@@ -94,6 +96,39 @@ export default function Step2Style({ templateId }: Step2StyleProps) {
   const selectBgm = (url: string) => {
     updateNestedField('bgm.url', url)
     updateNestedField('bgm.enabled', true)
+  }
+
+  // 커스텀 BGM인지 확인
+  const isCustomBgm = bgm?.url && !bgmPresets.some(p => p.url === bgm?.url)
+
+  // MP3 업로드 핸들러
+  const handleAudioUpload = async (file: File) => {
+    if (file.type !== 'audio/mpeg' && !file.name.endsWith('.mp3')) {
+      alert('MP3 파일만 업로드 가능합니다.')
+      return
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      alert('파일 크기는 10MB 이하여야 합니다.')
+      return
+    }
+    setIsUploadingAudio(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('invitationId', invitationId || 'temp')
+      const res = await fetch('/api/upload-audio', { method: 'POST', body: formData })
+      const result = await res.json() as { success?: boolean; url?: string; error?: string }
+      if (result.success && result.url) {
+        updateNestedField('bgm.url', result.url)
+        updateNestedField('bgm.enabled', true)
+      } else {
+        alert(result.error || '업로드에 실패했습니다.')
+      }
+    } catch {
+      alert('업로드 중 오류가 발생했습니다.')
+    } finally {
+      setIsUploadingAudio(false)
+    }
   }
 
   return (
@@ -316,6 +351,72 @@ export default function Step2Style({ templateId }: Step2StyleProps) {
                   )
                 })}
               </div>
+
+              {/* 직접추가 옵션 */}
+              <div
+                className={`relative flex items-center gap-2 p-3 rounded-xl border-2 transition-all cursor-pointer col-span-2 ${
+                  isCustomBgm
+                    ? 'border-gray-900 bg-gray-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+                onClick={() => {
+                  const input = document.getElementById('our-bgm-file-input') as HTMLInputElement
+                  input?.click()
+                }}
+              >
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isCustomBgm ? 'bg-gray-900 text-white' : 'bg-gray-200 text-gray-600'}`}>
+                  {isUploadingAudio ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <Upload className="w-3 h-3" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="text-xs text-gray-700 block">직접 추가</span>
+                  <span className="text-[10px] text-gray-400 block truncate">
+                    {isCustomBgm ? '업로드된 음악 사용 중' : 'MP3 파일 업로드'}
+                  </span>
+                </div>
+                {isCustomBgm && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      updateNestedField('bgm.url', '')
+                    }}
+                    className="p-1 rounded hover:bg-red-100 text-red-400 shrink-0"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+                {isCustomBgm && !isUploadingAudio && (
+                  <div className="w-4 h-4 bg-black rounded-full flex items-center justify-center shrink-0">
+                    <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                )}
+              </div>
+              <input
+                id="our-bgm-file-input"
+                type="file"
+                accept=".mp3,audio/mpeg"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) handleAudioUpload(file)
+                  e.target.value = ''
+                }}
+              />
+            </div>
+
+            {/* 저작권 안내 */}
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-xs text-red-700">
+                <strong>저작권 안내</strong><br />
+                저작권이 있는 음악을 업로드할 경우 발생하는 모든 법적 책임은 사용자에게 있습니다.
+                저작권에 위배되지 않는 MP3 파일만 업로드해주세요.
+              </p>
             </div>
 
             {/* 자동재생 설정 */}

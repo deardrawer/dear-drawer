@@ -287,6 +287,13 @@ export interface ParentsInvitationContent {
     }[]
   }
 
+  // 유튜브 영상
+  youtube?: {
+    enabled: boolean
+    title: string
+    url: string
+  }
+
   // RSVP
   rsvpEnabled?: boolean
 

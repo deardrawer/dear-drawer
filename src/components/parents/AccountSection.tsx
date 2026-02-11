@@ -5,6 +5,7 @@ import { useSectionHighlight } from './SectionHighlightContext'
 import { useTheme } from './ThemeContext'
 
 interface Account {
+  label?: string
   name: string
   bank: string
   account: string
@@ -16,9 +17,9 @@ interface AccountSectionProps {
 
 export default function AccountSection({
   accounts = [
-    { name: '아버지 이○○', bank: '국민은행', account: '123-45-6789012' },
-    { name: '어머니 김○○', bank: '신한은행', account: '110-456-789012' },
-    { name: '신부 이서연', bank: '토스뱅크', account: '1000-1234-5678' },
+    { label: '아버지', name: '이○○', bank: '국민은행', account: '123-45-6789012' },
+    { label: '어머니', name: '김○○', bank: '신한은행', account: '110-456-789012' },
+    { label: '신부', name: '이서연', bank: '토스뱅크', account: '1000-1234-5678' },
   ],
 }: AccountSectionProps) {
   const { ref, isActive, hasAppeared } = useSectionHighlight('account')
@@ -80,6 +81,14 @@ export default function AccountSection({
           >
             <div className="flex justify-between items-center">
               <div>
+                {item.label && (
+                  <p
+                    className="text-[10px] font-medium mb-0.5 tracking-wide transition-colors duration-500"
+                    style={{ color: isActive ? theme.accent : '#bbb' }}
+                  >
+                    {item.label}
+                  </p>
+                )}
                 <p
                   className="font-serif text-sm mb-1 transition-colors duration-500"
                   style={{ color: isActive ? theme.text : '#999' }}

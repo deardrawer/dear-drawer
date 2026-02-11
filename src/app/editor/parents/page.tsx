@@ -190,6 +190,13 @@ export interface ParentsInvitationData {
     }[]
   }
 
+  // 유튜브 영상
+  youtube?: {
+    enabled: boolean
+    title: string
+    url: string
+  }
+
   // 배경음악
   bgm: {
     enabled: boolean
@@ -389,6 +396,7 @@ function ParentsEditorContent() {
   const wizardStepRef = useRef<number>(1) // 스텝 상태 보존용
   const [selectedGuest, setSelectedGuest] = useState<{ name: string; honorific: string; relation?: string; custom_message?: string } | null>(null)
   const [isMobile, setIsMobile] = useState(false)
+  const [mobileView, setMobileView] = useState<'editor' | 'preview'>('editor')
   const [activeSection, setActiveSection] = useState<string | null>(null)
   const [isExitModalOpen, setIsExitModalOpen] = useState(false)
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
@@ -691,95 +699,152 @@ function ParentsEditorContent() {
       <div id="parents-editor-scroll-container" className="flex-1 overflow-y-scroll bg-white">
         <div className="w-full max-w-7xl mx-auto">
           <div className="bg-white flex">
-            {/* Preview - 왼쪽 sticky 고정, 세로 중앙 */}
-            <div className="w-[450px] min-w-[450px] sticky top-0 h-[calc(100vh-56px)] overflow-hidden bg-gray-50 flex flex-col justify-center items-center p-6">
-              {/* 탭 버튼 - 봉투(2), 본문(3) 단계에서는 숨김 */}
-              {(() => {
-                const currentTheme = COLOR_THEMES[data.colorTheme || 'burgundy']
-                const showTabs = currentWizardStep !== 2 && currentWizardStep !== 3
-                return (
-                  <>
-                    {showTabs && (
-                      <div className="flex mb-4 bg-white rounded-lg shadow-sm overflow-hidden">
-                        <button
-                          onClick={() => setPreviewTab('intro')}
-                          className="px-6 py-2.5 text-sm font-medium transition-colors"
-                          style={{
-                            backgroundColor: previewTab === 'intro' ? currentTheme.primary : 'transparent',
-                            color: previewTab === 'intro' ? 'white' : '#4B5563',
-                          }}
-                        >
-                          인트로 (봉투)
-                        </button>
-                        <button
-                          onClick={() => setPreviewTab('main')}
-                          className="px-6 py-2.5 text-sm font-medium transition-colors"
-                          style={{
-                            backgroundColor: previewTab === 'main' ? currentTheme.primary : 'transparent',
-                            color: previewTab === 'main' ? 'white' : '#4B5563',
-                          }}
-                        >
-                          본문
-                        </button>
-                      </div>
-                    )}
+            {/* Preview - 왼쪽 sticky 고정, 세로 중앙 (데스크탑) */}
+            {!isMobile && (
+              <div className="w-[450px] min-w-[450px] sticky top-0 h-[calc(100vh-56px)] overflow-hidden bg-gray-50 flex flex-col justify-center items-center p-6">
+                {/* 탭 버튼 - 봉투(2), 본문(3) 단계에서는 숨김 */}
+                {(() => {
+                  const currentTheme = COLOR_THEMES[data.colorTheme || 'burgundy']
+                  const showTabs = currentWizardStep !== 2 && currentWizardStep !== 3
+                  return (
+                    <>
+                      {showTabs && (
+                        <div className="flex mb-4 bg-white rounded-lg shadow-sm overflow-hidden">
+                          <button
+                            onClick={() => setPreviewTab('intro')}
+                            className="px-6 py-2.5 text-sm font-medium transition-colors"
+                            style={{
+                              backgroundColor: previewTab === 'intro' ? currentTheme.primary : 'transparent',
+                              color: previewTab === 'intro' ? 'white' : '#4B5563',
+                            }}
+                          >
+                            인트로 (봉투)
+                          </button>
+                          <button
+                            onClick={() => setPreviewTab('main')}
+                            className="px-6 py-2.5 text-sm font-medium transition-colors"
+                            style={{
+                              backgroundColor: previewTab === 'main' ? currentTheme.primary : 'transparent',
+                              color: previewTab === 'main' ? 'white' : '#4B5563',
+                            }}
+                          >
+                            본문
+                          </button>
+                        </div>
+                      )}
 
-                    {/* 미리보기 영역 - 390px 기준 콘텐츠를 0.8 스케일로 축소 (312px/390px) */}
-                    <div
-                      className="relative w-full max-w-[320px] aspect-[9/19] rounded-[40px] overflow-hidden shadow-2xl transition-colors duration-300"
-                      style={{ backgroundColor: currentTheme.primary }}
-                    >
+                      {/* 미리보기 영역 - 390px 기준 콘텐츠를 0.8 스케일로 축소 (312px/390px) */}
                       <div
-                        className="absolute overflow-hidden rounded-[32px] bg-white"
-                        style={{
-                          top: '4px',
-                          left: '4px',
-                          width: '390px',
-                          height: '834px', // 390 * 19/9 ≈ 823, 여유분 포함
-                          transform: 'scale(0.8)',
-                          transformOrigin: 'top left',
-                        }}
+                        className="relative w-full max-w-[320px] aspect-[9/19] rounded-[40px] overflow-hidden shadow-2xl transition-colors duration-300"
+                        style={{ backgroundColor: currentTheme.primary }}
                       >
-                        <ParentsPreview data={data} activeTab={previewTab} onTabChange={setPreviewTab} selectedGuest={selectedGuest} activeSection={activeSection} />
+                        <div
+                          className="absolute overflow-hidden rounded-[32px] bg-white"
+                          style={{
+                            top: '4px',
+                            left: '4px',
+                            width: '390px',
+                            height: '834px', // 390 * 19/9 ≈ 823, 여유분 포함
+                            transform: 'scale(0.8)',
+                            transformOrigin: 'top left',
+                          }}
+                        >
+                          <ParentsPreview data={data} activeTab={previewTab} onTabChange={setPreviewTab} selectedGuest={selectedGuest} activeSection={activeSection} />
+                        </div>
                       </div>
+                    </>
+                  )
+                })()}
+              </div>
+            )}
+
+            {/* 구분선 - 부드러운 그라데이션 그림자 (데스크탑) */}
+            {!isMobile && (
+              <div className="w-8 mx-1 relative">
+                <div className="absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-gray-100/80 to-transparent" />
+                <div className="absolute inset-y-0 right-0 w-4 bg-gradient-to-l from-gray-100/80 to-transparent" />
+              </div>
+            )}
+
+            {/* 모바일: 미리보기 모드 */}
+            {isMobile && mobileView === 'preview' && (() => {
+              const currentTheme = COLOR_THEMES[data.colorTheme || 'burgundy']
+              return (
+                <div className="w-full flex flex-col items-center py-4" style={{ minHeight: 'calc(100vh - 104px)' }}>
+                  {/* 탭 버튼 */}
+                  <div className="flex mb-4 bg-white rounded-lg shadow-sm overflow-hidden">
+                    <button
+                      onClick={() => setPreviewTab('intro')}
+                      className="px-6 py-2.5 text-sm font-medium transition-colors"
+                      style={{
+                        backgroundColor: previewTab === 'intro' ? currentTheme.primary : 'transparent',
+                        color: previewTab === 'intro' ? 'white' : '#4B5563',
+                      }}
+                    >
+                      인트로 (봉투)
+                    </button>
+                    <button
+                      onClick={() => setPreviewTab('main')}
+                      className="px-6 py-2.5 text-sm font-medium transition-colors"
+                      style={{
+                        backgroundColor: previewTab === 'main' ? currentTheme.primary : 'transparent',
+                        color: previewTab === 'main' ? 'white' : '#4B5563',
+                      }}
+                    >
+                      본문
+                    </button>
+                  </div>
+                  {/* 미리보기 영역 */}
+                  <div
+                    className="relative w-full max-w-[320px] aspect-[9/19] rounded-[40px] overflow-hidden shadow-2xl transition-colors duration-300"
+                    style={{ backgroundColor: currentTheme.primary }}
+                  >
+                    <div
+                      className="absolute overflow-hidden rounded-[32px] bg-white"
+                      style={{
+                        top: '4px',
+                        left: '4px',
+                        width: '390px',
+                        height: '834px',
+                        transform: 'scale(0.8)',
+                        transformOrigin: 'top left',
+                      }}
+                    >
+                      <ParentsPreview data={data} activeTab={previewTab} onTabChange={setPreviewTab} selectedGuest={selectedGuest} activeSection={activeSection} />
                     </div>
-                  </>
-                )
-              })()}
-            </div>
+                  </div>
+                </div>
+              )
+            })()}
 
-            {/* 구분선 - 부드러운 그라데이션 그림자 */}
-            <div className="w-8 mx-1 relative">
-              <div className="absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-gray-100/80 to-transparent" />
-              <div className="absolute inset-y-0 right-0 w-4 bg-gradient-to-l from-gray-100/80 to-transparent" />
-            </div>
-
-            {/* Edit Panel - 오른쪽, 자연스러운 스크롤 */}
-            <div className="flex-1 min-h-[calc(100vh-56px)]">
-              <ParentsWizardEditor
-                data={data}
-                updateData={updateData}
-                updateNestedData={updateNestedData}
-                invitationId={invitationId}
-                selectedGuest={selectedGuest}
-                onSelectGuest={setSelectedGuest}
-                setActiveSection={setActiveSection}
-                slug={savedSlug || urlSlug || (invitationId ? invitationId : null)}
-                onSave={() => handleSave(true)}
-                onSlugChange={handleSlugChange}
-                initialStep={wizardStepRef.current as 1 | 2 | 3 | 4 | 5}
-                onStepChange={(step) => {
-                  setCurrentWizardStep(step)
-                  wizardStepRef.current = step // ref에도 저장하여 리마운트 시 복원
-                  // 봉투(2) → 인트로, 본문(3) → 본문
-                  if (step === 2) {
-                    setPreviewTab('intro')
-                  } else if (step === 3) {
-                    setPreviewTab('main')
-                  }
-                }}
-              />
-            </div>
+            {/* Edit Panel - 오른쪽 (데스크탑) / 전체 (모바일 편집 모드) */}
+            {(!isMobile || mobileView === 'editor') && (
+              <div className={`${isMobile ? 'w-full' : 'flex-1'} min-h-[calc(100vh-56px)]`} style={isMobile ? { paddingBottom: '56px' } : undefined}>
+                <ParentsWizardEditor
+                  data={data}
+                  updateData={updateData}
+                  updateNestedData={updateNestedData}
+                  invitationId={invitationId}
+                  selectedGuest={selectedGuest}
+                  onSelectGuest={setSelectedGuest}
+                  setActiveSection={setActiveSection}
+                  slug={savedSlug || urlSlug || (invitationId ? invitationId : null)}
+                  onSave={() => handleSave(true)}
+                  onSlugChange={handleSlugChange}
+                  initialStep={wizardStepRef.current as 1 | 2 | 3 | 4 | 5}
+                  onStepChange={(step) => {
+                    setCurrentWizardStep(step)
+                    wizardStepRef.current = step // ref에도 저장하여 리마운트 시 복원
+                    // 봉투(2) → 인트로, 본문(3) → 본문
+                    if (step === 2) {
+                      setPreviewTab('intro')
+                    } else if (step === 3) {
+                      setPreviewTab('main')
+                    }
+                  }}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -832,6 +897,32 @@ function ParentsEditorContent() {
           shareDescription={data.meta.description}
           templateType="parents"
         />
+      )}
+
+      {/* 모바일 하단 탭 바 */}
+      {isMobile && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 flex safe-area-bottom">
+          <button
+            onClick={() => setMobileView('editor')}
+            className={`flex-1 py-3.5 text-sm font-medium flex items-center justify-center gap-1.5 transition-colors ${mobileView === 'editor' ? 'text-black' : 'text-gray-400'}`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            편집
+          </button>
+          <div className="w-px bg-gray-200 my-2" />
+          <button
+            onClick={() => setMobileView('preview')}
+            className={`flex-1 py-3.5 text-sm font-medium flex items-center justify-center gap-1.5 transition-colors ${mobileView === 'preview' ? 'text-black' : 'text-gray-400'}`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            미리보기
+          </button>
+        </div>
       )}
 
       {/* 나가기 확인 모달 */}

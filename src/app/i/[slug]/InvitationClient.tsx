@@ -3262,6 +3262,24 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
         </div>
       </AnimatedSection>
 
+      {/* YouTube Section - OUR */}
+      {(invitation as any).youtube?.enabled && (invitation as any).youtube?.url && (() => {
+        const url = (invitation as any).youtube.url as string
+        const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/)
+        const videoId = match?.[1]
+        if (!videoId) return null
+        return (
+          <AnimatedSection className="px-5 py-12" style={{ background: themeColors.cardBg }}>
+            {(invitation as any).youtube.title && (
+              <p className="text-[10px] font-light text-center mb-6" style={{ color: themeColors.gray, letterSpacing: '4px' }}>{((invitation as any).youtube.title as string).toUpperCase()}</p>
+            )}
+            <div className="aspect-video rounded-lg overflow-hidden">
+              <iframe src={`https://www.youtube.com/embed/${videoId}`} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+            </div>
+          </AnimatedSection>
+        )
+      })()}
+
       {/* Interview Title Section - OUR 템플릿: DividerSection 사용 */}
       {invitation.sectionVisibility?.interview !== false && invitation.content.interviews.some(i => i.question || i.answer) && (
         <DividerSection

@@ -132,13 +132,18 @@ export default function ParentsInvitationView({
       ]
 
   // 계좌 정보
-  const accounts = data.accounts?.list?.filter(acc => acc.name || acc.bank || acc.accountNumber).map(acc => ({
-    name: acc.name || '예금주',
-    bank: acc.bank || '은행',
-    account: acc.accountNumber || '계좌번호',
-  })) || [
-    { name: `아버지 ${data.sender.fatherName || '○○○'}`, bank: '국민은행', account: '123-45-6789012' },
-    { name: `어머니 ${data.sender.motherName || '○○○'}`, bank: '신한은행', account: '110-456-789012' },
+  const sideLabel = data.sender.side === 'bride' ? '신부' : '신랑'
+  const slotLabels = [sideLabel, '아버지', '어머니']
+  const accounts = data.accounts?.list
+    ?.map((acc, index) => ({
+      label: slotLabels[index] || '',
+      name: acc.name || '예금주',
+      bank: acc.bank || '은행',
+      account: acc.accountNumber || '계좌번호',
+    }))
+    .filter(acc => acc.name !== '예금주' || acc.bank !== '은행' || acc.account !== '계좌번호') || [
+    { label: '아버지', name: data.sender.fatherName || '○○○', bank: '국민은행', account: '123-45-6789012' },
+    { label: '어머니', name: data.sender.motherName || '○○○', bank: '신한은행', account: '110-456-789012' },
   ]
 
   // 음악 재생/일시정지
@@ -315,6 +320,36 @@ export default function ParentsInvitationView({
                 brideParents={`${data.bride.fatherName || '○○○'} · ${data.bride.motherName || '○○○'}의 딸`}
               />
             </div>
+            {/* 유튜브 영상 */}
+            {data.youtube?.enabled && data.youtube?.url && (() => {
+              const url = data.youtube.url
+              const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/)
+              const videoId = match?.[1]
+              if (!videoId) return null
+              return (
+                <div id="preview-youtube">
+                  <SectionDivider />
+                  <section className="px-8 py-16 flex flex-col items-center" style={{ backgroundColor: theme.background }}>
+                    {data.youtube.title && (
+                      <h2
+                        className="font-serif text-lg font-semibold text-center mb-8 tracking-wider"
+                        style={{ color: theme.text }}
+                      >
+                        {data.youtube.title}
+                      </h2>
+                    )}
+                    <div className="w-full max-w-[400px] aspect-video rounded-lg overflow-hidden shadow-md">
+                      <iframe
+                        src={`https://www.youtube.com/embed/${videoId}`}
+                        className="w-full h-full"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                  </section>
+                </div>
+              )
+            })()}
             <div id="preview-wedding">
               <SectionDivider />
               <DateSection

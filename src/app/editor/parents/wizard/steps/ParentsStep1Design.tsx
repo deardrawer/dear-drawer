@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { Palette, Type, Music, Play, Pause } from 'lucide-react'
+import { Palette, Type, Music, Play, Pause, Upload, X, Loader2 } from 'lucide-react'
 import { COLOR_THEMES, type ColorThemeId } from '@/components/parents/types'
 import { bgmPresets } from '@/lib/bgmPresets'
 import type { ParentsInvitationData } from '../../page'
@@ -29,9 +29,46 @@ export default function ParentsStep1Design({
   data,
   updateData,
   updateNestedData,
+  invitationId,
 }: ParentsStep1DesignProps) {
   const [previewingBgmId, setPreviewingBgmId] = useState<string | null>(null)
+  const [isUploadingAudio, setIsUploadingAudio] = useState(false)
   const bgmAudioRef = useRef<HTMLAudioElement>(null)
+
+  // 커스텀 BGM인지 확인 (프리셋 URL이 아닌 경우)
+  const isCustomBgm = data.bgm?.url && !bgmPresets.some(p => p.url === data.bgm?.url)
+
+  // MP3 업로드 핸들러
+  const handleAudioUpload = async (file: File) => {
+    if (file.type !== 'audio/mpeg' && !file.name.endsWith('.mp3')) {
+      alert('MP3 파일만 업로드 가능합니다.')
+      return
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      alert('파일 크기는 10MB 이하여야 합니다.')
+      return
+    }
+
+    setIsUploadingAudio(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('invitationId', invitationId || 'temp')
+
+      const res = await fetch('/api/upload-audio', { method: 'POST', body: formData })
+      const result = await res.json() as { success?: boolean; url?: string; error?: string }
+
+      if (result.success && result.url) {
+        updateNestedData('bgm.url', result.url)
+      } else {
+        alert(result.error || '업로드에 실패했습니다.')
+      }
+    } catch {
+      alert('업로드 중 오류가 발생했습니다.')
+    } finally {
+      setIsUploadingAudio(false)
+    }
+  }
 
   // BGM 미리듣기
   const handleBgmPreview = (preset: typeof bgmPresets[number]) => {
@@ -217,6 +254,69 @@ export default function ParentsStep1Design({
                   </div>
                 )
               })}
+            </div>
+
+            {/* 직접추가 옵션 */}
+            <div
+              className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-all cursor-pointer ${
+                isCustomBgm
+                  ? 'border-gray-800 bg-gray-50'
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+              onClick={() => {
+                // 직접추가 클릭 시 파일 선택 트리거
+                const input = document.getElementById('bgm-file-input') as HTMLInputElement
+                input?.click()
+              }}
+            >
+              <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                {isUploadingAudio ? (
+                  <Loader2 className="w-4 h-4 text-gray-600 animate-spin" />
+                ) : (
+                  <Upload className="w-4 h-4 text-gray-600" />
+                )}
+              </div>
+              <div className="flex-1">
+                <div className="font-medium text-sm">직접 추가</div>
+                <div className="text-xs text-gray-500">
+                  {isCustomBgm ? '업로드된 음악 사용 중' : 'MP3 파일 업로드'}
+                </div>
+              </div>
+              {isCustomBgm && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    updateNestedData('bgm.url', '')
+                  }}
+                  className="p-1 rounded hover:bg-red-100 text-red-400"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+              {isCustomBgm && !isUploadingAudio && (
+                <div className="w-2 h-2 rounded-full bg-green-500" />
+              )}
+            </div>
+            <input
+              id="bgm-file-input"
+              type="file"
+              accept=".mp3,audio/mpeg"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) handleAudioUpload(file)
+                e.target.value = ''
+              }}
+            />
+
+            {/* 저작권 안내 */}
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-xs text-red-700">
+                <strong>저작권 안내</strong><br />
+                저작권이 있는 음악을 업로드할 경우 발생하는 모든 법적 책임은 사용자에게 있습니다.
+                저작권에 위배되지 않는 MP3 파일만 업로드해주세요.
+              </p>
             </div>
           </div>
 

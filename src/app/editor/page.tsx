@@ -42,6 +42,7 @@ function EditorContent() {
   const [isLoading, setIsLoading] = useState(!!editId)
   const [loadAttempted, setLoadAttempted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [mobileView, setMobileView] = useState<'editor' | 'preview'>('editor')
   const [isExitModalOpen, setIsExitModalOpen] = useState(false)
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
   const previewRef = useRef<{ scrollToTop: () => void } | null>(null)
@@ -591,14 +592,14 @@ function EditorContent() {
               </>
             ) : (
               <>
-                {/* Preview - 왼쪽 sticky 고정, 세로 중앙 */}
+                {/* Preview - 왼쪽 sticky 고정, 세로 중앙 (데스크탑) */}
                 {!isMobile && (
                   <div className="w-[450px] min-w-[450px] sticky top-0 h-[calc(100vh-120px)] overflow-hidden bg-white flex justify-center items-center" style={{ contain: 'layout style', willChange: 'transform' }}>
                     <Preview ref={previewRef} />
                   </div>
                 )}
 
-                {/* 구분선 - 부드러운 그라데이션 그림자 */}
+                {/* 구분선 - 부드러운 그라데이션 그림자 (데스크탑) */}
                 {!isMobile && (
                   <div className="w-8 mx-1 relative">
                     <div className="absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-gray-100/80 to-transparent" />
@@ -606,49 +607,50 @@ function EditorContent() {
                   </div>
                 )}
 
-                {/* Edit Panel - 오른쪽, 자연스러운 스크롤 */}
-                <div className={`${isMobile ? 'w-full' : 'flex-1'} min-h-[calc(100vh-120px)]`}>
-                  {/* 모바일 안내 메시지 */}
-                  {isMobile && (
-                    <div className="bg-amber-50 border-b border-amber-200 px-4 py-3 text-center">
-                      <p className="text-sm text-amber-800">
-                        더 나은 편집 환경을 위해 데스크탑에서 작성해주세요
-                      </p>
-                    </div>
-                  )}
-                  <WizardEditor
-                    onOpenIntroSelector={() => setIsIntroSelectorOpen(true)}
-                    onOpenAIStoryGenerator={() => setIsAIStoryGeneratorOpen(true)}
-                    onOpenShareModal={() => setIsShareModalOpen(true)}
-                    onScrollPreviewToTop={() => previewRef.current?.scrollToTop()}
-                    invitationId={invitationId}
-                    templateId={template?.id || templateId}
-                    slug={savedSlug || urlSlug || invitationId}
-                    onSave={handleSave}
-                    isSaving={isSaving}
-                    onSlugChange={async (newSlug) => {
-                      if (!invitationId) return
-                      try {
-                        const response = await fetch(`/api/invitations/${invitationId}/slug`, {
-                          method: 'PUT',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ slug: newSlug }),
-                        })
-                        if (!response.ok) {
-                          const result = await response.json() as { error?: string }
-                          alert(result.error || '주소 변경에 실패했습니다.')
-                          return
+                {/* 모바일: 미리보기 모드 */}
+                {isMobile && mobileView === 'preview' && (
+                  <div className="w-full flex flex-col items-center" style={{ minHeight: 'calc(100vh - 104px)' }}>
+                    <Preview ref={previewRef} />
+                  </div>
+                )}
+
+                {/* Edit Panel - 오른쪽 (데스크탑) / 전체 (모바일 편집 모드) */}
+                {(!isMobile || mobileView === 'editor') && (
+                  <div className={`${isMobile ? 'w-full' : 'flex-1'} min-h-[calc(100vh-120px)]`} style={isMobile ? { paddingBottom: '56px' } : undefined}>
+                    <WizardEditor
+                      onOpenIntroSelector={() => setIsIntroSelectorOpen(true)}
+                      onOpenAIStoryGenerator={() => setIsAIStoryGeneratorOpen(true)}
+                      onOpenShareModal={() => setIsShareModalOpen(true)}
+                      onScrollPreviewToTop={() => previewRef.current?.scrollToTop()}
+                      invitationId={invitationId}
+                      templateId={template?.id || templateId}
+                      slug={savedSlug || urlSlug || invitationId}
+                      onSave={handleSave}
+                      isSaving={isSaving}
+                      onSlugChange={async (newSlug) => {
+                        if (!invitationId) return
+                        try {
+                          const response = await fetch(`/api/invitations/${invitationId}/slug`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ slug: newSlug }),
+                          })
+                          if (!response.ok) {
+                            const result = await response.json() as { error?: string }
+                            alert(result.error || '주소 변경에 실패했습니다.')
+                            return
+                          }
+                          setSavedSlug(newSlug)
+                          const url = new URL(window.location.href)
+                          url.searchParams.set('slug', newSlug)
+                          window.history.replaceState({}, '', url.toString())
+                        } catch {
+                          alert('주소 변경에 실패했습니다.')
                         }
-                        setSavedSlug(newSlug)
-                        const url = new URL(window.location.href)
-                        url.searchParams.set('slug', newSlug)
-                        window.history.replaceState({}, '', url.toString())
-                      } catch {
-                        alert('주소 변경에 실패했습니다.')
-                      }
-                    }}
-                  />
-                </div>
+                      }}
+                    />
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -798,6 +800,32 @@ function EditorContent() {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* 모바일 하단 탭 바 */}
+      {isMobile && !isIntroSelectorOpen && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 flex safe-area-bottom">
+          <button
+            onClick={() => setMobileView('editor')}
+            className={`flex-1 py-3.5 text-sm font-medium flex items-center justify-center gap-1.5 transition-colors ${mobileView === 'editor' ? 'text-black' : 'text-gray-400'}`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            편집
+          </button>
+          <div className="w-px bg-gray-200 my-2" />
+          <button
+            onClick={() => setMobileView('preview')}
+            className={`flex-1 py-3.5 text-sm font-medium flex items-center justify-center gap-1.5 transition-colors ${mobileView === 'preview' ? 'text-black' : 'text-gray-400'}`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            미리보기
+          </button>
         </div>
       )}
 

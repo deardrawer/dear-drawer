@@ -68,7 +68,13 @@ export default function ParentsStep2Envelope({
           </div>
           보내는 사람
         </h3>
-        <p className="text-sm text-blue-600">💙 누구의 청첩장인지 선택하고 부모님 정보를 입력해주세요.</p>
+        <p className="text-sm text-blue-600">
+          {data.sender.side === 'groom'
+            ? '💙 신랑측 부모님으로 청첩장을 보냅니다'
+            : data.sender.side === 'bride'
+            ? '💙 신부측 부모님으로 청첩장을 보냅니다'
+            : '💙 누구의 청첩장인지 선택하고 부모님 정보를 입력해주세요.'}
+        </p>
 
         {/* 혼주 선택 */}
         <div className="space-y-2">
@@ -100,7 +106,7 @@ export default function ParentsStep2Envelope({
         {/* 부모님 이름 */}
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label className="text-xs">아버지 성함</Label>
+            <Label className="text-xs">{data.sender.side === 'bride' ? '신부측 아버지 성함' : '신랑측 아버지 성함'}</Label>
             <Input
               value={data.sender.fatherName}
               onChange={(e) => updateNestedData('sender.fatherName', e.target.value)}
@@ -108,7 +114,7 @@ export default function ParentsStep2Envelope({
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs">어머니 성함</Label>
+            <Label className="text-xs">{data.sender.side === 'bride' ? '신부측 어머니 성함' : '신랑측 어머니 성함'}</Label>
             <Input
               value={data.sender.motherName}
               onChange={(e) => updateNestedData('sender.motherName', e.target.value)}
@@ -176,18 +182,24 @@ export default function ParentsStep2Envelope({
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <Input
-              value={data.groom.fatherName}
-              onChange={(e) => updateNestedData('groom.fatherName', e.target.value)}
-              placeholder="신랑 아버지"
-              className="text-sm"
-            />
-            <Input
-              value={data.groom.motherName}
-              onChange={(e) => updateNestedData('groom.motherName', e.target.value)}
-              placeholder="신랑 어머니"
-              className="text-sm"
-            />
+            <div className="space-y-1">
+              <Label className="text-[10px] text-gray-500">아버지 성함</Label>
+              <Input
+                value={data.groom.fatherName}
+                onChange={(e) => updateNestedData('groom.fatherName', e.target.value)}
+                placeholder="홍길동"
+                className="text-sm"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-[10px] text-gray-500">어머니 성함</Label>
+              <Input
+                value={data.groom.motherName}
+                onChange={(e) => updateNestedData('groom.motherName', e.target.value)}
+                placeholder="김영희"
+                className="text-sm"
+              />
+            </div>
           </div>
         </div>
 
@@ -215,18 +227,24 @@ export default function ParentsStep2Envelope({
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <Input
-              value={data.bride.fatherName}
-              onChange={(e) => updateNestedData('bride.fatherName', e.target.value)}
-              placeholder="신부 아버지"
-              className="text-sm"
-            />
-            <Input
-              value={data.bride.motherName}
-              onChange={(e) => updateNestedData('bride.motherName', e.target.value)}
-              placeholder="신부 어머니"
-              className="text-sm"
-            />
+            <div className="space-y-1">
+              <Label className="text-[10px] text-gray-500">아버지 성함</Label>
+              <Input
+                value={data.bride.fatherName}
+                onChange={(e) => updateNestedData('bride.fatherName', e.target.value)}
+                placeholder="홍길동"
+                className="text-sm"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-[10px] text-gray-500">어머니 성함</Label>
+              <Input
+                value={data.bride.motherName}
+                onChange={(e) => updateNestedData('bride.motherName', e.target.value)}
+                placeholder="김영희"
+                className="text-sm"
+              />
+            </div>
           </div>
         </div>
       </section>

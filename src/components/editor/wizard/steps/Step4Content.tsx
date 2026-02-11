@@ -1425,6 +1425,59 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
         )}
       </section>
 
+      {/* 유튜브 영상 */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+            🎬 영상
+          </h3>
+          <Switch
+            checked={invitation.youtube?.enabled || false}
+            onCheckedChange={(checked) => updateNestedField('youtube.enabled', checked)}
+          />
+        </div>
+        <p className="text-sm text-blue-600">💙 유튜브 영상을 추가하세요. 갤러리 아래에 표시됩니다.</p>
+
+        {invitation.youtube?.enabled && (
+          <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">영상 제목</Label>
+              <Input
+                value={invitation.youtube?.title || ''}
+                onChange={(e) => updateNestedField('youtube.title', e.target.value)}
+                placeholder="우리의 웨딩 영상"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">유튜브 URL</Label>
+              <Input
+                value={invitation.youtube?.url || ''}
+                onChange={(e) => updateNestedField('youtube.url', e.target.value)}
+                placeholder="https://www.youtube.com/watch?v=... 또는 https://youtu.be/..."
+              />
+            </div>
+            {invitation.youtube?.url && (() => {
+              const url = invitation.youtube.url
+              const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/)
+              const videoId = match?.[1]
+              if (!videoId) return (
+                <p className="text-xs text-red-500">올바른 유튜브 URL을 입력해주세요.</p>
+              )
+              return (
+                <div className="aspect-video rounded-lg overflow-hidden bg-black">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${videoId}`}
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              )
+            })()}
+          </div>
+        )}
+      </section>
+
       {/* 인터뷰 */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
-import { Heart, Clock, ImagePlus, MapPin, Bus, CreditCard, Plus, X, MessageSquare, GripVertical } from 'lucide-react'
+import { Heart, Clock, ImagePlus, MapPin, Bus, CreditCard, Plus, X, MessageSquare, GripVertical, Film } from 'lucide-react'
 import { SortableList, SortableItem } from '@/components/ui/sortable-list'
 import ImageCropEditor from '@/components/parents/ImageCropEditor'
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core'
@@ -276,7 +276,7 @@ export default function ParentsStep3Content({
           갤러리
           <span className="text-xs text-gray-400 font-normal">({data.gallery?.images?.length || 0}장)</span>
         </h3>
-        <p className="text-sm text-blue-600">💙 신랑신부 사진을 추가하세요. (최대 10장)</p>
+        <p className="text-sm text-blue-600">💙 신랑신부 사진을 추가하세요. (최대 30장)</p>
         <p className="text-xs text-gray-500">사진이 2장 이상이면 드래그하여 순서를 변경할 수 있습니다.</p>
 
         {(() => {
@@ -349,7 +349,7 @@ export default function ParentsStep3Content({
           )
         })()}
 
-        {(data.gallery?.images?.length || 0) < 10 && (
+        {(data.gallery?.images?.length || 0) < 30 && (
           <Button
             variant="outline"
             size="sm"
@@ -362,6 +362,65 @@ export default function ParentsStep3Content({
             <Plus className="w-4 h-4 mr-2" />
             이미지 추가
           </Button>
+        )}
+      </section>
+
+      {/* 유튜브 영상 */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+            <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center">
+              <Film className="w-3 h-3 text-red-500" />
+            </div>
+            영상
+          </h3>
+          <Switch
+            checked={data.youtube?.enabled ?? false}
+            onCheckedChange={(checked) => updateNestedData('youtube.enabled', checked)}
+          />
+        </div>
+        <p className="text-sm text-blue-600">💙 유튜브 영상을 추가하세요. 갤러리 아래에 표시됩니다.</p>
+
+        {data.youtube?.enabled && (
+          <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
+            <div className="space-y-1.5">
+              <Label className="text-xs">영상 제목</Label>
+              <Input
+                value={data.youtube?.title || ''}
+                onChange={(e) => updateNestedData('youtube.title', e.target.value)}
+                placeholder="우리의 웨딩 영상"
+                className="text-sm"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">유튜브 URL</Label>
+              <Input
+                value={data.youtube?.url || ''}
+                onChange={(e) => updateNestedData('youtube.url', e.target.value)}
+                placeholder="https://www.youtube.com/watch?v=... 또는 https://youtu.be/..."
+                className="text-sm"
+              />
+            </div>
+            {/* 미리보기 */}
+            {data.youtube?.url && (() => {
+              const url = data.youtube.url
+              const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/)
+              const videoId = match?.[1]
+              if (!videoId) return (
+                <p className="text-xs text-red-500">올바른 유튜브 URL을 입력해주세요.</p>
+              )
+              return (
+                <div className="aspect-video rounded-lg overflow-hidden bg-black">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${videoId}`}
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              )
+            })()}
+          </div>
         )}
       </section>
 
@@ -937,7 +996,11 @@ export default function ParentsStep3Content({
           </div>
           계좌 안내
         </h3>
-        <p className="text-sm text-blue-600">💙 마음 전달을 위한 계좌 정보를 입력하세요.</p>
+        <p className="text-sm text-blue-600">
+          {data.sender.side === 'bride'
+            ? '💙 신부측 계좌 정보를 입력하세요.'
+            : '💙 신랑측 계좌 정보를 입력하세요.'}
+        </p>
 
         {/* ON/OFF 토글 */}
         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -952,88 +1015,64 @@ export default function ParentsStep3Content({
         </div>
 
         {data.accounts?.enabled !== false && (
-          <>
-            {data.accounts?.list?.map((account, index) => (
-              <div key={index} className="border rounded-lg p-3 space-y-3 bg-white">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-gray-600">계좌 {index + 1}</span>
-                  <button
-                    onClick={() => {
-                      const newList = data.accounts?.list?.filter((_, i) => i !== index) || []
-                      updateNestedData('accounts.list', newList)
-                    }}
-                    className="p-1 rounded hover:bg-red-100 text-red-400"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
+          <div className={`p-4 rounded-lg space-y-4 ${data.sender.side === 'bride' ? 'bg-pink-50/50' : 'bg-blue-50/50'}`}>
+            <p className={`text-sm font-semibold ${data.sender.side === 'bride' ? 'text-pink-800' : 'text-blue-800'}`}>
+              {data.sender.side === 'bride' ? '신부측' : '신랑측'}
+            </p>
 
-                <div className="space-y-2">
-                  <div className="space-y-1">
-                    <Label className="text-[10px]">예금주</Label>
-                    <Input
-                      value={account.name}
-                      onChange={(e) => {
-                        const newList = [...(data.accounts?.list || [])]
-                        newList[index] = { ...newList[index], name: e.target.value }
-                        updateNestedData('accounts.list', newList)
-                      }}
-                      onFocus={() => setActiveSection?.('accounts')}
-                      placeholder="예금주명"
-                      className="text-sm"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="space-y-1">
-                      <Label className="text-[10px]">은행</Label>
-                      <Input
-                        value={account.bank}
-                        onChange={(e) => {
-                          const newList = [...(data.accounts?.list || [])]
-                          newList[index] = { ...newList[index], bank: e.target.value }
-                          updateNestedData('accounts.list', newList)
-                        }}
-                        onFocus={() => setActiveSection?.('accounts')}
-                        placeholder="은행명"
-                        className="text-sm"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-[10px]">계좌번호</Label>
-                      <Input
-                        value={account.accountNumber}
-                        onChange={(e) => {
-                          const newList = [...(data.accounts?.list || [])]
-                          newList[index] = { ...newList[index], accountNumber: e.target.value }
-                          updateNestedData('accounts.list', newList)
-                        }}
-                        onFocus={() => setActiveSection?.('accounts')}
-                        placeholder="123-456-789012"
-                        className="text-sm"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+            {/* 슬롯 0: 본인 (신랑 or 신부) */}
+            {(() => {
+              const list = data.accounts?.list || []
+              const slot0 = list[0] || { name: '', bank: '', accountNumber: '' }
+              const slot1 = list[1] || { name: '', bank: '', accountNumber: '' }
+              const slot2 = list[2] || { name: '', bank: '', accountNumber: '' }
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                const newList = [...(data.accounts?.list || []), {
-                  name: '',
-                  bank: '',
-                  accountNumber: ''
-                }]
+              const updateSlot = (slotIndex: number, field: string, value: string) => {
+                const newList = [...list]
+                while (newList.length <= slotIndex) {
+                  newList.push({ name: '', bank: '', accountNumber: '' })
+                }
+                newList[slotIndex] = { ...newList[slotIndex], [field]: value }
                 updateNestedData('accounts.list', newList)
-              }}
-              className="w-full"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              계좌 추가
-            </Button>
-          </>
+              }
+
+              const sideLabel = data.sender.side === 'bride' ? '신부' : '신랑'
+
+              return (
+                <div className="space-y-4">
+                  {/* 본인 계좌 */}
+                  <div className="space-y-2">
+                    <span className="text-xs font-medium text-gray-700">{sideLabel} 계좌</span>
+                    <div className="grid grid-cols-3 gap-2">
+                      <Input value={slot0.bank} onChange={(e) => updateSlot(0, 'bank', e.target.value)} onFocus={() => setActiveSection?.('accounts')} placeholder="은행" className="text-sm" />
+                      <Input value={slot0.accountNumber} onChange={(e) => updateSlot(0, 'accountNumber', e.target.value)} onFocus={() => setActiveSection?.('accounts')} placeholder="계좌번호" className="text-sm" />
+                      <Input value={slot0.name} onChange={(e) => updateSlot(0, 'name', e.target.value)} onFocus={() => setActiveSection?.('accounts')} placeholder="예금주" className="text-sm" />
+                    </div>
+                  </div>
+
+                  {/* 아버지 계좌 */}
+                  <div className="space-y-2">
+                    <span className="text-xs font-medium text-gray-700">아버지 계좌</span>
+                    <div className="grid grid-cols-3 gap-2">
+                      <Input value={slot1.bank} onChange={(e) => updateSlot(1, 'bank', e.target.value)} onFocus={() => setActiveSection?.('accounts')} placeholder="은행" className="text-sm" />
+                      <Input value={slot1.accountNumber} onChange={(e) => updateSlot(1, 'accountNumber', e.target.value)} onFocus={() => setActiveSection?.('accounts')} placeholder="계좌번호" className="text-sm" />
+                      <Input value={slot1.name} onChange={(e) => updateSlot(1, 'name', e.target.value)} onFocus={() => setActiveSection?.('accounts')} placeholder="예금주" className="text-sm" />
+                    </div>
+                  </div>
+
+                  {/* 어머니 계좌 */}
+                  <div className="space-y-2">
+                    <span className="text-xs font-medium text-gray-700">어머니 계좌</span>
+                    <div className="grid grid-cols-3 gap-2">
+                      <Input value={slot2.bank} onChange={(e) => updateSlot(2, 'bank', e.target.value)} onFocus={() => setActiveSection?.('accounts')} placeholder="은행" className="text-sm" />
+                      <Input value={slot2.accountNumber} onChange={(e) => updateSlot(2, 'accountNumber', e.target.value)} onFocus={() => setActiveSection?.('accounts')} placeholder="계좌번호" className="text-sm" />
+                      <Input value={slot2.name} onChange={(e) => updateSlot(2, 'name', e.target.value)} onFocus={() => setActiveSection?.('accounts')} placeholder="예금주" className="text-sm" />
+                    </div>
+                  </div>
+                </div>
+              )
+            })()}
+          </div>
         )}
       </section>
     </div>

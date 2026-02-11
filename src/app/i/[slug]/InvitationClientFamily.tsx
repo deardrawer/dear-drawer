@@ -3541,6 +3541,24 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
         </div>
       </AnimatedSection>
 
+      {/* YouTube Section - FAMILY */}
+      {(invitation as any).youtube?.enabled && (invitation as any).youtube?.url && (() => {
+        const url = (invitation as any).youtube.url as string
+        const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/)
+        const videoId = match?.[1]
+        if (!videoId) return null
+        return (
+          <AnimatedSection className="px-5 py-12" style={{ background: themeColors.sectionBg }}>
+            {(invitation as any).youtube.title && (
+              <p className="text-[10px] font-light text-center mb-6" style={{ color: themeColors.gray, letterSpacing: '4px' }}>{((invitation as any).youtube.title as string).toUpperCase()}</p>
+            )}
+            <div className="aspect-video rounded-lg overflow-hidden">
+              <iframe src={`https://www.youtube.com/embed/${videoId}`} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+            </div>
+          </AnimatedSection>
+        )
+      })()}
+
       {/* 세 번째 디바이더 - 갤러리 섹션 하단 (갤러리에 이미지가 있으면 표시) */}
       {invitation.gallery.images && invitation.gallery.images.length > 0 && (
         <FullHeightDividerSection

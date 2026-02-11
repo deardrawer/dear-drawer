@@ -416,6 +416,13 @@ export interface InvitationContent {
   // ===== 서로를 선택한 이유 섹션 (FAMILY 템플릿용) =====
   whyWeChose?: WhyWeChose
 
+  // ===== 유튜브 영상 =====
+  youtube?: {
+    enabled: boolean
+    title: string
+    url: string
+  }
+
   // ===== 레거시 필드 (AI 스토리용) =====
   ourStory: string
   decision: string

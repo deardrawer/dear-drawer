@@ -605,7 +605,7 @@ const MainPage = memo(function MainPage({ invitation, groomName, brideName, font
       {/* YouTube Section - OUR */}
       {invitation.youtube?.enabled && invitation.youtube?.url && (() => {
         const url = invitation.youtube.url
-        const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/)
+        const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/|youtube\.com\/live\/)([a-zA-Z0-9_-]+)/)
         const videoId = match?.[1]
         if (!videoId) return null
         return (
@@ -926,7 +926,7 @@ const FamilyMainPage = memo(function FamilyMainPage({ invitation, groomName, bri
       {/* YouTube Section - FAMILY */}
       {invitation.youtube?.enabled && invitation.youtube?.url && (() => {
         const url = invitation.youtube.url
-        const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/)
+        const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/|youtube\.com\/live\/)([a-zA-Z0-9_-]+)/)
         const videoId = match?.[1]
         if (!videoId) return null
         return (

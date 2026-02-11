@@ -336,7 +336,7 @@ export default function ParentsInvitationView({
             {/* 유튜브 영상 */}
             {data.youtube?.enabled && data.youtube?.url && (() => {
               const url = data.youtube.url
-              const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/)
+              const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/|youtube\.com\/live\/)([a-zA-Z0-9_-]+)/)
               const videoId = match?.[1]
               if (!videoId) return null
               return (
@@ -393,11 +393,13 @@ export default function ParentsInvitationView({
                     route: data.wedding.directions.expressBus.route || '',
                     stop: data.wedding.directions.expressBus.stop || '',
                     note: data.wedding.directions.expressBus.note || '',
+                    stops: data.wedding.directions.expressBus.stops,
                   } : undefined,
                   train: data.wedding.directions?.train?.enabled ? {
                     line: data.wedding.directions.train.line || '',
                     station: data.wedding.directions.train.station || '',
                     note: data.wedding.directions.train.note || '',
+                    stations: data.wedding.directions.train.stations,
                   } : undefined,
                   parking: data.wedding.directions?.parking?.enabled ? {
                     capacity: data.wedding.directions.parking.capacity || '',

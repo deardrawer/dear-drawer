@@ -2324,6 +2324,7 @@ function transformToDisplayData(dbInvitation: Invitation, content: InvitationCon
     bgm: content.bgm || mockInvitation.bgm,
     guidance: content.guidance || mockInvitation.guidance,
     intro: content.intro || mockInvitation.intro,
+    youtube: content.youtube,
   } as unknown as DisplayInvitation
 }
 
@@ -3265,7 +3266,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
       {/* YouTube Section - OUR */}
       {(invitation as any).youtube?.enabled && (invitation as any).youtube?.url && (() => {
         const url = (invitation as any).youtube.url as string
-        const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/)
+        const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/|youtube\.com\/live\/)([a-zA-Z0-9_-]+)/)
         const videoId = match?.[1]
         if (!videoId) return null
         return (

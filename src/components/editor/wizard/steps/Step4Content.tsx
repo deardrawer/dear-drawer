@@ -1458,7 +1458,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
             </div>
             {invitation.youtube?.url && (() => {
               const url = invitation.youtube.url
-              const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/)
+              const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/|youtube\.com\/live\/)([a-zA-Z0-9_-]+)/)
               const videoId = match?.[1]
               if (!videoId) return (
                 <p className="text-xs text-red-500">올바른 유튜브 URL을 입력해주세요.</p>

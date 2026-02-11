@@ -10,6 +10,16 @@ interface SubwayLine {
   exit: string
 }
 
+interface ExpressBusItem {
+  stop: string
+  note: string
+}
+
+interface TrainItem {
+  station: string
+  note: string
+}
+
 interface VenueSectionProps {
   venue?: {
     name: string
@@ -25,8 +35,8 @@ interface VenueSectionProps {
       walk?: string
       lines?: SubwayLine[]  // 다중 노선
     }
-    expressBus?: { route?: string; stop?: string; note?: string }
-    train?: { line?: string; station?: string; note?: string }
+    expressBus?: { route?: string; stop?: string; note?: string; stops?: ExpressBusItem[] }
+    train?: { line?: string; station?: string; note?: string; stations?: TrainItem[] }
     parking?: { capacity: string; free: string; note: string }
     extraInfoEnabled?: boolean
     extraInfoText?: string
@@ -265,39 +275,51 @@ export default function VenueSection({
                 </div>
               )}
 
-              {directions?.expressBus && directions.expressBus.route && (
+              {directions?.expressBus && (directions.expressBus.stop || directions.expressBus.route || (directions.expressBus.stops && directions.expressBus.stops.length > 0)) && (
                 <div className="mb-4">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-base">🚐</span>
                     <h4 className="font-medium text-xs" style={{ color: '#1A1A1A' }}>고속버스</h4>
                   </div>
-                  <div className="text-xs leading-relaxed pl-6" style={{ color: '#666' }}>
-                    <p className="mb-0.5">{directions.expressBus.route}</p>
-                    {directions.expressBus.stop && (
-                      <p className="mb-0.5">{directions.expressBus.stop}</p>
-                    )}
-                    {directions.expressBus.note && (
-                      <p className="text-[10px] mt-1" style={{ color: '#999' }}>{directions.expressBus.note}</p>
+                  <div className="text-xs leading-relaxed pl-6 space-y-1" style={{ color: '#666' }}>
+                    {directions.expressBus.stops && directions.expressBus.stops.length > 0 ? (
+                      directions.expressBus.stops.map((item, idx) => (
+                        <div key={idx}>
+                          {item.stop && <p className="mb-0.5"><span style={{ color: theme.accent }}>{item.stop}</span></p>}
+                          {item.note && <p className="text-[10px] mt-0.5" style={{ color: '#999' }}>{item.note}</p>}
+                        </div>
+                      ))
+                    ) : (
+                      <>
+                        {directions.expressBus.route && <p className="mb-0.5">{directions.expressBus.route}</p>}
+                        {directions.expressBus.stop && <p className="mb-0.5"><span style={{ color: theme.accent }}>{directions.expressBus.stop}</span></p>}
+                        {directions.expressBus.note && <p className="text-[10px] mt-1" style={{ color: '#999' }}>{directions.expressBus.note}</p>}
+                      </>
                     )}
                   </div>
                 </div>
               )}
 
-              {directions?.train && (directions.train.line || directions.train.station) && (
+              {directions?.train && (directions.train.station || directions.train.line || (directions.train.stations && directions.train.stations.length > 0)) && (
                 <div className="mb-4">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-base">🚆</span>
                     <h4 className="font-medium text-xs" style={{ color: '#1A1A1A' }}>기차 (KTX/SRT)</h4>
                   </div>
-                  <div className="text-xs leading-relaxed pl-6" style={{ color: '#666' }}>
-                    {directions.train.line && <p className="mb-0.5">{directions.train.line}</p>}
-                    {directions.train.station && (
-                      <p className="mb-0.5">
-                        <span style={{ color: theme.accent }}>{directions.train.station}</span>
-                      </p>
-                    )}
-                    {directions.train.note && (
-                      <p className="text-[10px] mt-1" style={{ color: '#999' }}>{directions.train.note}</p>
+                  <div className="text-xs leading-relaxed pl-6 space-y-1" style={{ color: '#666' }}>
+                    {directions.train.stations && directions.train.stations.length > 0 ? (
+                      directions.train.stations.map((item, idx) => (
+                        <div key={idx}>
+                          {item.station && <p className="mb-0.5"><span style={{ color: theme.accent }}>{item.station}</span></p>}
+                          {item.note && <p className="text-[10px] mt-0.5" style={{ color: '#999' }}>{item.note}</p>}
+                        </div>
+                      ))
+                    ) : (
+                      <>
+                        {directions.train.line && <p className="mb-0.5">{directions.train.line}</p>}
+                        {directions.train.station && <p className="mb-0.5"><span style={{ color: theme.accent }}>{directions.train.station}</span></p>}
+                        {directions.train.note && <p className="text-[10px] mt-1" style={{ color: '#999' }}>{directions.train.note}</p>}
+                      </>
                     )}
                   </div>
                 </div>

@@ -404,7 +404,7 @@ export default function ParentsStep3Content({
             {/* 미리보기 */}
             {data.youtube?.url && (() => {
               const url = data.youtube.url
-              const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/)
+              const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/|youtube\.com\/live\/)([a-zA-Z0-9_-]+)/)
               const videoId = match?.[1]
               if (!videoId) return (
                 <p className="text-xs text-red-500">올바른 유튜브 URL을 입력해주세요.</p>
@@ -661,24 +661,94 @@ export default function ParentsStep3Content({
             </div>
             {data.wedding.directions?.expressBus?.enabled && (
               <div className="space-y-2">
-                <Input
-                  value={data.wedding.directions?.expressBus?.route || ''}
-                  onChange={(e) => updateNestedData('wedding.directions.expressBus.route', e.target.value)}
-                  placeholder="동서울 → 원주 (약 1시간 30분)"
-                  className="text-sm"
-                />
-                <Input
-                  value={data.wedding.directions?.expressBus?.stop || ''}
-                  onChange={(e) => updateNestedData('wedding.directions.expressBus.stop', e.target.value)}
-                  placeholder="원주시외버스터미널 하차"
-                  className="text-sm"
-                />
-                <Input
-                  value={data.wedding.directions?.expressBus?.note || ''}
-                  onChange={(e) => updateNestedData('wedding.directions.expressBus.note', e.target.value)}
-                  placeholder="터미널에서 택시 약 10분"
-                  className="text-sm"
-                />
+                {(data.wedding.directions?.expressBus?.stops && data.wedding.directions.expressBus.stops.length > 0) ? (
+                  <>
+                    {data.wedding.directions.expressBus.stops.map((item, idx) => (
+                      <div key={idx} className="space-y-1.5 p-2 bg-gray-50 rounded">
+                        <div className="flex items-center gap-1">
+                          <span className="text-[10px] text-gray-400 w-4 shrink-0">{idx + 1}</span>
+                          <Input
+                            value={item.stop || ''}
+                            onChange={(e) => {
+                              const newStops = [...(data.wedding.directions?.expressBus?.stops || [])]
+                              newStops[idx] = { ...newStops[idx], stop: e.target.value }
+                              updateNestedData('wedding.directions.expressBus.stops', newStops)
+                            }}
+                            placeholder="원주시외버스터미널 하차"
+                            className="text-sm flex-1"
+                          />
+                        </div>
+                        <div className="flex gap-1 pl-5">
+                          <Input
+                            value={item.note || ''}
+                            onChange={(e) => {
+                              const newStops = [...(data.wedding.directions?.expressBus?.stops || [])]
+                              newStops[idx] = { ...newStops[idx], note: e.target.value }
+                              updateNestedData('wedding.directions.expressBus.stops', newStops)
+                            }}
+                            placeholder="터미널에서 택시 약 10분"
+                            className="text-sm flex-1"
+                          />
+                          {(data.wedding.directions?.expressBus?.stops?.length || 0) > 1 && (
+                            <button
+                              onClick={() => {
+                                const newStops = data.wedding.directions?.expressBus?.stops?.filter((_, i) => i !== idx) || []
+                                updateNestedData('wedding.directions.expressBus.stops', newStops)
+                              }}
+                              className="p-1.5 rounded hover:bg-red-100 text-red-400 shrink-0"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const newStops = [...(data.wedding.directions?.expressBus?.stops || []), { stop: '', note: '' }]
+                        updateNestedData('wedding.directions.expressBus.stops', newStops)
+                      }}
+                      className="w-full text-xs"
+                    >
+                      <Plus className="w-3 h-3 mr-1" />
+                      고속버스 노선 추가
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Input
+                      value={data.wedding.directions?.expressBus?.stop || ''}
+                      onChange={(e) => updateNestedData('wedding.directions.expressBus.stop', e.target.value)}
+                      placeholder="원주시외버스터미널 하차"
+                      className="text-sm"
+                    />
+                    <Input
+                      value={data.wedding.directions?.expressBus?.note || ''}
+                      onChange={(e) => updateNestedData('wedding.directions.expressBus.note', e.target.value)}
+                      placeholder="터미널에서 택시 약 10분"
+                      className="text-sm"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const currentStop = data.wedding.directions?.expressBus?.stop || ''
+                        const currentNote = data.wedding.directions?.expressBus?.note || ''
+                        const hasData = currentStop || currentNote
+                        const newStops = hasData
+                          ? [{ stop: currentStop, note: currentNote }, { stop: '', note: '' }]
+                          : [{ stop: '', note: '' }]
+                        updateNestedData('wedding.directions.expressBus.stops', newStops)
+                      }}
+                      className="w-full text-xs"
+                    >
+                      <Plus className="w-3 h-3 mr-1" />
+                      고속버스 노선 추가
+                    </Button>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -694,24 +764,94 @@ export default function ParentsStep3Content({
             </div>
             {data.wedding.directions?.train?.enabled && (
               <div className="space-y-2">
-                <Input
-                  value={data.wedding.directions?.train?.line || ''}
-                  onChange={(e) => updateNestedData('wedding.directions.train.line', e.target.value)}
-                  placeholder="KTX 서울 → 동대구 (약 1시간 40분)"
-                  className="text-sm"
-                />
-                <Input
-                  value={data.wedding.directions?.train?.station || ''}
-                  onChange={(e) => updateNestedData('wedding.directions.train.station', e.target.value)}
-                  placeholder="동대구역 하차"
-                  className="text-sm"
-                />
-                <Input
-                  value={data.wedding.directions?.train?.note || ''}
-                  onChange={(e) => updateNestedData('wedding.directions.train.note', e.target.value)}
-                  placeholder="역에서 택시 약 15분"
-                  className="text-sm"
-                />
+                {(data.wedding.directions?.train?.stations && data.wedding.directions.train.stations.length > 0) ? (
+                  <>
+                    {data.wedding.directions.train.stations.map((item, idx) => (
+                      <div key={idx} className="space-y-1.5 p-2 bg-gray-50 rounded">
+                        <div className="flex items-center gap-1">
+                          <span className="text-[10px] text-gray-400 w-4 shrink-0">{idx + 1}</span>
+                          <Input
+                            value={item.station || ''}
+                            onChange={(e) => {
+                              const newStations = [...(data.wedding.directions?.train?.stations || [])]
+                              newStations[idx] = { ...newStations[idx], station: e.target.value }
+                              updateNestedData('wedding.directions.train.stations', newStations)
+                            }}
+                            placeholder="동대구역 하차"
+                            className="text-sm flex-1"
+                          />
+                        </div>
+                        <div className="flex gap-1 pl-5">
+                          <Input
+                            value={item.note || ''}
+                            onChange={(e) => {
+                              const newStations = [...(data.wedding.directions?.train?.stations || [])]
+                              newStations[idx] = { ...newStations[idx], note: e.target.value }
+                              updateNestedData('wedding.directions.train.stations', newStations)
+                            }}
+                            placeholder="역에서 택시 약 15분"
+                            className="text-sm flex-1"
+                          />
+                          {(data.wedding.directions?.train?.stations?.length || 0) > 1 && (
+                            <button
+                              onClick={() => {
+                                const newStations = data.wedding.directions?.train?.stations?.filter((_, i) => i !== idx) || []
+                                updateNestedData('wedding.directions.train.stations', newStations)
+                              }}
+                              className="p-1.5 rounded hover:bg-red-100 text-red-400 shrink-0"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const newStations = [...(data.wedding.directions?.train?.stations || []), { station: '', note: '' }]
+                        updateNestedData('wedding.directions.train.stations', newStations)
+                      }}
+                      className="w-full text-xs"
+                    >
+                      <Plus className="w-3 h-3 mr-1" />
+                      기차역 추가
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Input
+                      value={data.wedding.directions?.train?.station || ''}
+                      onChange={(e) => updateNestedData('wedding.directions.train.station', e.target.value)}
+                      placeholder="동대구역 하차"
+                      className="text-sm"
+                    />
+                    <Input
+                      value={data.wedding.directions?.train?.note || ''}
+                      onChange={(e) => updateNestedData('wedding.directions.train.note', e.target.value)}
+                      placeholder="역에서 택시 약 15분"
+                      className="text-sm"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const currentStation = data.wedding.directions?.train?.station || ''
+                        const currentNote = data.wedding.directions?.train?.note || ''
+                        const hasData = currentStation || currentNote
+                        const newStations = hasData
+                          ? [{ station: currentStation, note: currentNote }, { station: '', note: '' }]
+                          : [{ station: '', note: '' }]
+                        updateNestedData('wedding.directions.train.stations', newStations)
+                      }}
+                      className="w-full text-xs"
+                    >
+                      <Plus className="w-3 h-3 mr-1" />
+                      기차역 추가
+                    </Button>
+                  </>
+                )}
               </div>
             )}
           </div>

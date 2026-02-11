@@ -190,6 +190,18 @@ export interface SubwayLine {
   exit: string
 }
 
+// 고속버스 항목
+export interface ExpressBusItem {
+  stop: string
+  note: string
+}
+
+// 기차 항목
+export interface TrainItem {
+  station: string
+  note: string
+}
+
 // 셔틀버스 정보
 export interface ShuttleInfo {
   enabled?: boolean
@@ -237,8 +249,8 @@ export interface ParentsInvitationContent {
     directions?: {
       bus?: { enabled?: boolean; lines?: string; stop?: string }
       subway?: { enabled?: boolean; line?: string; station?: string; exit?: string; walk?: string; lines?: SubwayLine[] }
-      expressBus?: { enabled?: boolean; route?: string; stop?: string; note?: string }
-      train?: { enabled?: boolean; line?: string; station?: string; note?: string }
+      expressBus?: { enabled?: boolean; route?: string; stop?: string; note?: string; stops?: ExpressBusItem[] }
+      train?: { enabled?: boolean; line?: string; station?: string; note?: string; stations?: TrainItem[] }
       parking?: { enabled?: boolean; capacity?: string; free?: string; note?: string }
       extraInfoEnabled?: boolean
       extraInfoText?: string

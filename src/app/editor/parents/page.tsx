@@ -108,12 +108,14 @@ export interface ParentsInvitationData {
         route: string
         stop: string
         note: string
+        stops?: { stop: string; note: string }[]
       }
       train: {
         enabled: boolean
         line: string
         station: string
         note: string
+        stations?: { station: string; note: string }[]
       }
       parking: {
         enabled: boolean

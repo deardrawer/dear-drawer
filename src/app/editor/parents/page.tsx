@@ -103,6 +103,18 @@ export interface ParentsInvitationData {
         walk: string
         lines?: SubwayLine[]
       }
+      expressBus: {
+        enabled: boolean
+        route: string
+        stop: string
+        note: string
+      }
+      train: {
+        enabled: boolean
+        line: string
+        station: string
+        note: string
+      }
       parking: {
         enabled: boolean
         capacity: string
@@ -269,6 +281,18 @@ const defaultData: ParentsInvitationData = {
         station: '',
         exit: '',
         walk: '',
+      },
+      expressBus: {
+        enabled: false,
+        route: '',
+        stop: '',
+        note: '',
+      },
+      train: {
+        enabled: false,
+        line: '',
+        station: '',
+        note: '',
       },
       parking: {
         enabled: false,

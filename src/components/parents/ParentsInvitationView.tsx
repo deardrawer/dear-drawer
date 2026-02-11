@@ -389,6 +389,16 @@ export default function ParentsInvitationView({
                     walk: data.wedding.directions.subway.walk || '',
                     lines: data.wedding.directions.subway.lines,
                   } : undefined,
+                  expressBus: data.wedding.directions?.expressBus?.enabled ? {
+                    route: data.wedding.directions.expressBus.route || '',
+                    stop: data.wedding.directions.expressBus.stop || '',
+                    note: data.wedding.directions.expressBus.note || '',
+                  } : undefined,
+                  train: data.wedding.directions?.train?.enabled ? {
+                    line: data.wedding.directions.train.line || '',
+                    station: data.wedding.directions.train.station || '',
+                    note: data.wedding.directions.train.note || '',
+                  } : undefined,
                   parking: data.wedding.directions?.parking?.enabled ? {
                     capacity: data.wedding.directions.parking.capacity || '',
                     free: data.wedding.directions.parking.free || '',
@@ -407,7 +417,8 @@ export default function ParentsInvitationView({
               data.weddingInfo?.flowerChild?.enabled ||
               data.weddingInfo?.reception?.enabled ||
               data.weddingInfo?.photoBooth?.enabled ||
-              data.weddingInfo?.shuttle?.enabled
+              data.weddingInfo?.shuttle?.enabled ||
+              data.weddingInfo?.customItems?.some(item => item.enabled && item.title)
             ) && (
               <div id="preview-weddingInfo">
                 <SectionDivider />

@@ -650,6 +650,72 @@ export default function ParentsStep3Content({
             )}
           </div>
 
+          {/* 고속버스 */}
+          <div className="border rounded-lg p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-medium">🚐 고속버스</Label>
+              <Switch
+                checked={data.wedding.directions?.expressBus?.enabled ?? false}
+                onCheckedChange={(checked) => updateNestedData('wedding.directions.expressBus.enabled', checked)}
+              />
+            </div>
+            {data.wedding.directions?.expressBus?.enabled && (
+              <div className="space-y-2">
+                <Input
+                  value={data.wedding.directions?.expressBus?.route || ''}
+                  onChange={(e) => updateNestedData('wedding.directions.expressBus.route', e.target.value)}
+                  placeholder="동서울 → 원주 (약 1시간 30분)"
+                  className="text-sm"
+                />
+                <Input
+                  value={data.wedding.directions?.expressBus?.stop || ''}
+                  onChange={(e) => updateNestedData('wedding.directions.expressBus.stop', e.target.value)}
+                  placeholder="원주시외버스터미널 하차"
+                  className="text-sm"
+                />
+                <Input
+                  value={data.wedding.directions?.expressBus?.note || ''}
+                  onChange={(e) => updateNestedData('wedding.directions.expressBus.note', e.target.value)}
+                  placeholder="터미널에서 택시 약 10분"
+                  className="text-sm"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* 기차 */}
+          <div className="border rounded-lg p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-medium">🚆 기차 (KTX/SRT)</Label>
+              <Switch
+                checked={data.wedding.directions?.train?.enabled ?? false}
+                onCheckedChange={(checked) => updateNestedData('wedding.directions.train.enabled', checked)}
+              />
+            </div>
+            {data.wedding.directions?.train?.enabled && (
+              <div className="space-y-2">
+                <Input
+                  value={data.wedding.directions?.train?.line || ''}
+                  onChange={(e) => updateNestedData('wedding.directions.train.line', e.target.value)}
+                  placeholder="KTX 서울 → 동대구 (약 1시간 40분)"
+                  className="text-sm"
+                />
+                <Input
+                  value={data.wedding.directions?.train?.station || ''}
+                  onChange={(e) => updateNestedData('wedding.directions.train.station', e.target.value)}
+                  placeholder="동대구역 하차"
+                  className="text-sm"
+                />
+                <Input
+                  value={data.wedding.directions?.train?.note || ''}
+                  onChange={(e) => updateNestedData('wedding.directions.train.note', e.target.value)}
+                  placeholder="역에서 택시 약 15분"
+                  className="text-sm"
+                />
+              </div>
+            )}
+          </div>
+
           {/* 주차 */}
           <div className="border rounded-lg p-3 space-y-2">
             <div className="flex items-center justify-between">

@@ -270,7 +270,7 @@ export default function MainPhotoSection({
             <button
               onClick={() => setGridExpanded(!gridExpanded)}
               className="w-full flex items-center justify-center gap-1.5 py-3.5 mt-[2px] text-[13px] font-medium transition-all"
-              style={{ backgroundColor: theme.cardBg || '#f5f5f5', color: theme.text }}
+              style={{ backgroundColor: '#f5f5f5', color: theme.text }}
             >
               {gridExpanded ? (
                 <>

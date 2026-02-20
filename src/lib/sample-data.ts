@@ -408,7 +408,7 @@ export const recordSampleContent = {
       sign: '민준 & 서연 올림',
     },
   },
-  guidance: { ...ourSampleContent.guidance, imageSettings: { scale: 1, positionX: 0, positionY: -8 } },
+  guidance: { ...ourSampleContent.guidance, imageSettings: { scale: 1, positionX: 0, positionY: 20 } },
   design: {
     ...ourSampleContent.design,
     coverTitle: 'WE ARE GETTING MARRIED',

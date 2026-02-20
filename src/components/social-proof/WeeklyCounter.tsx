@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 
 export default function WeeklyCounter() {
-  const [weeklyCount, setWeeklyCount] = useState(3)
+  const [weeklyCount, setWeeklyCount] = useState(5)
 
   useEffect(() => {
     fetch('/api/stats')

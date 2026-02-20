@@ -550,7 +550,7 @@ export function createSampleInvitation(type: 'our' | 'family' | 'magazine' | 'fi
       bgClass: 'pink-bg',
     },
   ]
-  const magazineGuidance = { ...content.guidance, imageSettings: { scale: 1, positionX: 0, positionY: 0 } }
+  const magazineGuidance = { ...content.guidance, imageSettings: { scale: 1, positionX: 0, positionY: -8 } }
   const finalContent = type === 'magazine' ? { ...content, colorTheme: 'modern-black', fontStyle: 'modern', interviews: magazineInterviews, guidance: magazineGuidance } : content
 
   return {

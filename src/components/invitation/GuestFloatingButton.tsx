@@ -149,7 +149,7 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
     }
     setIsSubmitting(true)
     try {
-      const attendanceMap: Record<string, string> = { yes: 'attending', no: 'not_attending' }
+      const attendanceMap: Record<string, string> = { yes: 'attending', no: 'not_attending', maybe: 'pending' }
       const res = await fetch('/api/rsvp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -167,7 +167,8 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
         closeModal()
         setRsvpForm({ name: '', side: '', attendance: '', guestCount: 1, message: '' })
       } else {
-        alert('전송에 실패했습니다. 다시 시도해주세요.')
+        const data = (await res.json().catch(() => ({}))) as { error?: string }
+        alert(data.error || '전송에 실패했습니다. 다시 시도해주세요.')
       }
     } catch {
       alert('전송에 실패했습니다. 다시 시도해주세요.')

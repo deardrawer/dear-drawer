@@ -616,28 +616,21 @@ function ParentsEditorContent() {
   // Slug 변경 핸들러
   const handleSlugChange = async (newSlug: string) => {
     if (!invitationId) {
-      alert('슬러그를 변경하려면 먼저 저장해주세요.')
-      return
+      throw new Error('저장 후 주소를 변경할 수 있습니다.')
     }
 
-    try {
-      const response = await fetch(`/api/invitations/${invitationId}/slug`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug: newSlug }),
-      })
+    const response = await fetch(`/api/invitations/${invitationId}/slug`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slug: newSlug }),
+    })
 
-      if (!response.ok) {
-        const result = await response.json() as { error?: string }
-        throw new Error(result.error || '슬러그 변경에 실패했습니다.')
-      }
-
-      setSavedSlug(newSlug)
-      alert('주소가 변경되었습니다!')
-    } catch (error) {
-      console.error('Slug update error:', error)
-      alert(error instanceof Error ? error.message : '주소 변경에 실패했습니다.')
+    if (!response.ok) {
+      const result = await response.json() as { error?: string }
+      throw new Error(result.error || '슬러그 변경에 실패했습니다.')
     }
+
+    setSavedSlug(newSlug)
   }
 
   if ((editId && isLoading) || status === 'loading') {

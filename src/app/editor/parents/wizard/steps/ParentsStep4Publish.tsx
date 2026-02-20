@@ -87,10 +87,13 @@ export default function ParentsStep4Publish({
 
     debounceRef.current = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/invitations/check-slug?slug=${customSlug}`)
+        const checkUrl = invitationId
+          ? `/api/invitations/check-slug?slug=${customSlug}&excludeId=${invitationId}`
+          : `/api/invitations/check-slug?slug=${customSlug}`
+        const res = await fetch(checkUrl)
         if (!res.ok) {
-          setSlugStatus('available')
-          setSlugError('')
+          setSlugStatus('idle')
+          setSlugError('주소 확인에 실패했습니다. 다시 시도해주세요.')
           return
         }
 
@@ -113,7 +116,7 @@ export default function ParentsStep4Publish({
   }, [customSlug, isEditingSlug, slug])
 
   // 슬러그 변경 확정
-  const handleSlugSave = () => {
+  const handleSlugSave = async () => {
     const error = validateSlug(customSlug)
     if (error) {
       setSlugError(error)
@@ -124,9 +127,15 @@ export default function ParentsStep4Publish({
     }
 
     if (onSlugChange && customSlug !== slug) {
-      onSlugChange(customSlug)
+      try {
+        await onSlugChange(customSlug)
+        setIsEditingSlug(false)
+      } catch (e) {
+        setSlugError(e instanceof Error ? e.message : '주소 변경에 실패했습니다. 다시 시도해주세요.')
+      }
+    } else {
+      setIsEditingSlug(false)
     }
-    setIsEditingSlug(false)
   }
 
   // 슬러그 변경 취소

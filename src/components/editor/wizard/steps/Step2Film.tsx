@@ -76,6 +76,15 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
               className={validationError?.tab === 'names' && !invitation.groom.name?.trim() ? 'border-red-500 ring-2 ring-red-200' : ''}
             />
           </div>
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">영문 이름</Label>
+            <Input
+              value={invitation.groom.nameEn || ''}
+              onChange={(e) => updateNestedField('groom.nameEn', e.target.value)}
+              placeholder="MINJU"
+            />
+            <p className="text-xs text-gray-400">인트로 화면에 표시됩니다. 비워두면 한글 이름이 사용됩니다.</p>
+          </div>
         </div>
 
         <div className="space-y-3 p-4 bg-pink-50 rounded-lg">
@@ -88,6 +97,15 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
               placeholder="이서연"
               className={validationError?.tab === 'names' && !invitation.bride.name?.trim() ? 'border-red-500 ring-2 ring-red-200' : ''}
             />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">영문 이름</Label>
+            <Input
+              value={invitation.bride.nameEn || ''}
+              onChange={(e) => updateNestedField('bride.nameEn', e.target.value)}
+              placeholder="SEOYEON"
+            />
+            <p className="text-xs text-gray-400">인트로 화면에 표시됩니다. 비워두면 한글 이름이 사용됩니다.</p>
           </div>
         </div>
       </section>

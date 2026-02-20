@@ -167,7 +167,7 @@ export const ourSampleContent = {
     },
   },
   bgm: { enabled: true, url: '/samples/parents/wedding-bgm.mp3', autoplay: true },
-  guidance: { enabled: true, title: '행복한 시간을 위한 안내', content: '따뜻한 마음으로 함께해주세요', image: '/sample/info.png', imageSettings: { scale: 1, positionX: 0, positionY: 0 } },
+  guidance: { enabled: true, title: '행복한 시간을 위한 안내', content: '따뜻한 마음으로 함께해주세요', image: '/sample/info.png', imageSettings: { scale: 1, positionX: 0, positionY: -25 } },
   intro: {
     presetId: 'cinematic' as const,
     mainTitle: 'Welcome to our wedding',
@@ -266,12 +266,14 @@ export const filmSampleContent = {
   groom: {
     ...ourSampleContent.groom,
     name: '김민준',
+    nameEn: 'MINJU',
     lastName: '김',
     firstName: '민준',
   },
   bride: {
     ...ourSampleContent.bride,
     name: '이서연',
+    nameEn: 'SEOYEON',
     lastName: '이',
     firstName: '서연',
   },

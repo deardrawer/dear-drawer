@@ -438,6 +438,7 @@ function createDefaultContent(invitation: Invitation): InvitationContent {
   return {
     groom: {
       name: invitation.groom_name || '',
+      nameEn: '',
       lastName: groomNameParts.lastName,
       firstName: groomNameParts.firstName,
       phone: '',
@@ -448,6 +449,7 @@ function createDefaultContent(invitation: Invitation): InvitationContent {
     },
     bride: {
       name: invitation.bride_name || '',
+      nameEn: '',
       lastName: brideNameParts.lastName,
       firstName: brideNameParts.firstName,
       phone: '',

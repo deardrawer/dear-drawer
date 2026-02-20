@@ -204,8 +204,8 @@ function FilmPosterCover({ invitation, fonts, tc, onEnter }: {
   const dateFormatted = `${weddingDate.getFullYear()}.${String(weddingDate.getMonth() + 1).padStart(2,'0')}.${String(weddingDate.getDate()).padStart(2,'0')}`
   const dayNames = ['일', '월', '화', '수', '목', '금', '토']
   const dayOfWeek = dayNames[weddingDate.getDay()]
-  const groomName = invitation.groom?.name || ''
-  const brideName = invitation.bride?.name || ''
+  const groomName = invitation.groom?.nameEn || invitation.groom?.name || ''
+  const brideName = invitation.bride?.nameEn || invitation.bride?.name || ''
   const venueName = invitation.wedding?.venue?.name || ''
 
   useEffect(() => {

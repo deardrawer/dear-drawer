@@ -51,6 +51,7 @@ export interface ProfileInfo {
 // 커플 개인 정보
 export interface PersonInfo {
   name: string
+  nameEn: string      // 영문 이름 (film 템플릿 인트로용)
   lastName: string    // 성 (family 템플릿용)
   firstName: string   // 이름 (family 템플릿용)
   phone: string
@@ -511,6 +512,7 @@ const createDefaultBankInfo = (): BankInfo => ({
 
 const createDefaultPerson = (isGroom: boolean): PersonInfo => ({
   name: '',
+  nameEn: '',
   lastName: '',
   firstName: '',
   phone: '',

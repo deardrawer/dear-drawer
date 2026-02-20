@@ -622,6 +622,16 @@ export default function FeedStep4Stories({
             />
           </div>
           <div className="space-y-1.5">
+            <label className={labelClass}>게시글 캡션</label>
+            <input
+              className={inputClass}
+              value={data.content.thankYou.caption ?? ''}
+              onChange={(e) => updateNestedData('content.thankYou.caption', e.target.value)}
+              placeholder="축하해주셔서 감사합니다"
+            />
+            <p className="text-xs text-gray-400">포스트 하단에 표시되는 짧은 문구입니다. 비워두면 &quot;축하해주셔서 감사합니다&quot;로 표시됩니다.</p>
+          </div>
+          <div className="space-y-1.5">
             <label className={labelClass}>서명</label>
             <input
               className={inputClass}

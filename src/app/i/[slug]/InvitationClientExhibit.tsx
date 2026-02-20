@@ -53,6 +53,11 @@ function extractImageUrl(img: unknown): string {
   return ''
 }
 
+function getAvatarCropStyle(settings: { scale?: number; positionX?: number; positionY?: number } | null | undefined): React.CSSProperties | undefined {
+  if (!settings) return undefined
+  return { transform: `scale(${settings.scale || 1}) translate(${settings.positionX || 0}%, ${settings.positionY || 0}%)` }
+}
+
 function timeAgo(dateStr: string): string {
   const now = new Date()
   const d = new Date(dateStr)
@@ -294,6 +299,8 @@ function InlineBgmEqualizer({
 // === 2. Cover Section (Instagram Story Style — tap to navigate) ===
 function CoverSection({ content, invitation, displayId, audioRef, bgmEnabled }: { content: any; invitation: any; displayId: string; audioRef: React.RefObject<HTMLAudioElement | null>; bgmEnabled: boolean }) {
   const coverImage = extractImageUrl(content?.media?.coverImage) || '/sample/cover.png'
+  const miniAvatarImage = extractImageUrl(content?.media?.profileAvatar) || coverImage
+  const miniAvatarSettings = content?.media?.profileAvatarSettings || null
   const groomName = content?.groom?.name || invitation?.groom_name || ''
   const brideName = content?.bride?.name || invitation?.bride_name || ''
   const date = content?.wedding?.date || invitation?.wedding_date || ''
@@ -448,7 +455,7 @@ function CoverSection({ content, invitation, displayId, audioRef, bgmEnabled }: 
       <div className="absolute top-8 left-3 z-20 flex items-center gap-2">
         <div className="ig-rainbow-border">
           <div className="w-8 h-8 rounded-full overflow-hidden bg-white">
-            <img src={coverImage} alt="" className="w-full h-full object-cover" />
+            <img src={miniAvatarImage} alt="" className="w-full h-full object-cover" style={getAvatarCropStyle(miniAvatarSettings)} />
           </div>
         </div>
         <span className="text-[13px] text-white font-medium" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
@@ -532,6 +539,8 @@ function ProfileSection({
 }) {
   const { ref, isRevealed } = useScrollReveal(0.1)
   const coverImage = extractImageUrl(content?.media?.coverImage) || '/sample/cover.png'
+  const avatarImage = extractImageUrl(content?.media?.profileAvatar) || coverImage
+  const avatarSettings = content?.media?.profileAvatarSettings || null
   const groomName = content?.groom?.name || invitation?.groom_name || ''
   const brideName = content?.bride?.name || invitation?.bride_name || ''
   const greeting = content?.content?.greeting || invitation?.greeting_message || ''
@@ -576,7 +585,7 @@ function ProfileSection({
         {/* Profile pic */}
         <div className="ig-rainbow-border flex-shrink-0">
           <div className="w-[80px] h-[80px] rounded-full overflow-hidden bg-white p-[2px]">
-            <img src={coverImage} alt="" className="w-full h-full rounded-full object-cover" />
+            <img src={avatarImage} alt="" className="w-full h-full rounded-full object-cover" style={getAvatarCropStyle(avatarSettings)} />
           </div>
         </div>
 
@@ -949,6 +958,7 @@ function PeopleTab({ content, profileImage, username }: { content: any; profileI
 
 // === 5-2. Love Story Tab (러브스토리) ===
 function LoveStoryTab({ content, profileImage, username }: { content: any; profileImage: string; username: string }) {
+  const avatarSettings = content?.media?.profileAvatarSettings || null
   const stories = content?.content?.stories || []
 
   return (
@@ -959,6 +969,7 @@ function LoveStoryTab({ content, profileImage, username }: { content: any; profi
             key={i}
             username={username}
             profileImage={profileImage}
+            profileImageSettings={avatarSettings}
             caption={
               <div className="pb-3">
                 <p className="text-[13px] leading-[1.7] whitespace-pre-line" style={{ color: '#262626' }}>
@@ -1163,12 +1174,14 @@ function PhotoGridRows({
 function InstagramPost({
   username,
   profileImage,
+  profileImageSettings,
   children,
   likes,
   caption,
 }: {
   username: string
   profileImage: string
+  profileImageSettings?: { scale?: number; positionX?: number; positionY?: number } | null
   children: React.ReactNode
   likes?: number
   caption?: React.ReactNode
@@ -1180,7 +1193,7 @@ function InstagramPost({
       {/* Post header */}
       <div className="flex items-center gap-3 px-3 py-2.5">
         <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
-          <img src={profileImage} alt="" className="w-full h-full object-cover" />
+          <img src={profileImage} alt="" className="w-full h-full object-cover" style={getAvatarCropStyle(profileImageSettings)} />
         </div>
         <span className="text-[13px] font-semibold" style={{ color: '#262626' }}>{username}</span>
       </div>
@@ -1280,12 +1293,14 @@ function WeddingInfoPost({
 
   const totalSlides = 2
   const hasDirections = !!(directions?.car || directions?.publicTransport || directions?.train || directions?.expressBus)
+  const avatarSettings = content?.media?.profileAvatarSettings || null
 
   return (
     <div ref={ref} style={{ opacity: isRevealed ? 1 : 0, transition: 'opacity 0.6s ease-out' }}>
       <InstagramPost
         username={username}
         profileImage={profileImage}
+        profileImageSettings={avatarSettings}
         likes={128}
         caption={
           <div className="pb-3">
@@ -1552,11 +1567,13 @@ function GuidancePost({
 
   const pastelBgs = ['#F0F7FF', '#FFF5F5', '#F5FFF0', '#FFF8E1', '#F3F0FF', '#FFF0F7', '#F0FFFA', '#FFFBF0']
   const [activeSlide, setActiveSlide] = useState(0)
+  const avatarSettings = content?.media?.profileAvatarSettings || null
 
   return (
     <InstagramPost
       username={username}
       profileImage={profileImage}
+      profileImageSettings={avatarSettings}
       caption={
         <div className="pb-3">
           <p className="text-[13px]" style={{ color: '#262626' }}>
@@ -1835,13 +1852,14 @@ function VideoPost({
   const match = youtube.url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/|youtube\.com\/live\/)([a-zA-Z0-9_-]+)/)
   const videoId = match?.[1]
   if (!videoId) return null
+  const avatarSettings = content?.media?.profileAvatarSettings || null
 
   return (
     <div className="border-b" style={{ borderColor: '#EFEFEF', background: '#FFFFFF' }}>
       {/* Post header */}
       <div className="flex items-center gap-3 px-3 py-2.5">
         <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
-          <img src={profileImage} alt="" className="w-full h-full object-cover" />
+          <img src={profileImage} alt="" className="w-full h-full object-cover" style={getAvatarCropStyle(avatarSettings)} />
         </div>
         <span className="text-[13px] font-semibold" style={{ color: '#262626' }}>{username}</span>
       </div>
@@ -1956,10 +1974,13 @@ function AccountPost({
     </div>
   )
 
+  const avatarSettings = content?.media?.profileAvatarSettings || null
+
   return (
     <InstagramPost
       username={username}
       profileImage={profileImage}
+      profileImageSettings={avatarSettings}
       caption={
         <div className="pb-3">
           <p className="text-[13px]" style={{ color: '#262626' }}>
@@ -2412,16 +2433,18 @@ function ThankYouPost({
 }) {
   const thankYou = content?.content?.thankYou
   if (!thankYou) return null
+  const avatarSettings = content?.media?.profileAvatarSettings || null
 
   return (
     <InstagramPost
       username={username}
       profileImage={profileImage}
+      profileImageSettings={avatarSettings}
       caption={
         <div className="pb-3">
           <p className="text-[13px]" style={{ color: '#262626' }}>
             <span className="font-semibold">{username}</span>{' '}
-            {thankYou.message || '함께해 주셔서 감사합니다'}
+            {thankYou.caption || '축하해주셔서 감사합니다'}
           </p>
           {thankYou.sign && (
             <p className="text-[12px] mt-1" style={{ color: '#8E8E8E' }}>{thankYou.sign}</p>
@@ -2636,6 +2659,9 @@ function InvitationClientExhibitContent({
 
   // Profile data
   const coverImage = extractImageUrl(content?.media?.coverImage) || '/sample/cover.png'
+  const profileAvatar = extractImageUrl(content?.media?.profileAvatar) || ''
+  const profileAvatarSettings = content?.media?.profileAvatarSettings || null
+  const profileImage = profileAvatar || coverImage
   const groomName = content?.groom?.name || invitation?.groom_name || ''
   const brideName = content?.bride?.name || invitation?.bride_name || ''
   const displayId = content?.displayId || `${groomName}_${brideName}`
@@ -2718,16 +2744,16 @@ function InvitationClientExhibitContent({
                 />
               )}
               {contentTab === 'people' && (
-                <PeopleTab content={content} profileImage={coverImage} username={username} />
+                <PeopleTab content={content} profileImage={profileImage} username={username} />
               )}
               {contentTab === 'story' && (
-                <LoveStoryTab content={content} profileImage={coverImage} username={username} />
+                <LoveStoryTab content={content} profileImage={profileImage} username={username} />
               )}
 
               {/* 6. Video Post (영상) - 오시는길 상단 */}
               <VideoPost
                 content={content}
-                profileImage={coverImage}
+                profileImage={profileImage}
                 username={username}
               />
 
@@ -2735,7 +2761,7 @@ function InvitationClientExhibitContent({
               <WeddingInfoPost
                 content={content}
                 invitation={invitation}
-                profileImage={coverImage}
+                profileImage={profileImage}
                 username={username}
               />
 
@@ -2743,7 +2769,7 @@ function InvitationClientExhibitContent({
               {showGuidance && (
                 <GuidancePost
                   content={content}
-                  profileImage={coverImage}
+                  profileImage={profileImage}
                   username={username}
                 />
               )}
@@ -2751,14 +2777,14 @@ function InvitationClientExhibitContent({
               {/* 8. Account Post (계좌번호 안내) */}
               <AccountPost
                 content={content}
-                profileImage={coverImage}
+                profileImage={profileImage}
                 username={username}
               />
 
               {/* 9. Thank You Post */}
               <ThankYouPost
                 content={content}
-                profileImage={coverImage}
+                profileImage={profileImage}
                 username={username}
               />
 
@@ -2811,7 +2837,7 @@ function InvitationClientExhibitContent({
           isOpen={rsvpDmOpen}
           onClose={() => setRsvpDmOpen(false)}
           username={username}
-          profileImage={coverImage}
+          profileImage={profileImage}
           invitationId={invitation?.id || ''}
           allowGuestCount={content?.rsvpAllowGuestCount}
           isSample={!!isSample}

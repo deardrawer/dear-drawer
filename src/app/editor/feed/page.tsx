@@ -80,6 +80,8 @@ export interface FeedInvitationData {
     coverImages: string[]
     coverImageSettings?: ImageSettings
     coverImageSettingsArray?: ImageSettings[]
+    profileAvatar?: string
+    profileAvatarSettings?: ImageSettings
   }
 
   // Greeting (Bio)
@@ -100,6 +102,7 @@ export interface FeedInvitationData {
     thankYou: {
       title: string
       message: string
+      caption: string
       sign: string
     }
     guestbookQuestions: string[]
@@ -191,7 +194,7 @@ const defaultData: FeedInvitationData = {
       reception: { title: '피로연 안내', content: '먼 걸음이 어려우신 분들을 모시고자\n피로연 자리를 마련하였습니다.\n\n참석하시어 두 사람의 앞날을\n따뜻한 축복으로 함께해 주시면\n감사하겠습니다.', enabled: false },
       customItems: [],
     },
-    thankYou: { title: 'THANK YOU', message: '소중한 자리에 함께해 주셔서\n진심으로 감사합니다.\n\n여러분의 축하와 응원이\n가장 큰 선물입니다.', sign: '' },
+    thankYou: { title: 'THANK YOU', message: '소중한 자리에 함께해 주셔서\n진심으로 감사합니다.\n\n여러분의 축하와 응원이\n가장 큰 선물입니다.', caption: '축하해주셔서 감사합니다', sign: '' },
     guestbookQuestions: ['두 사람에게 축하 메시지를 남겨주세요'],
   },
   rooms: [

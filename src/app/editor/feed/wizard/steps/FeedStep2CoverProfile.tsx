@@ -1,10 +1,13 @@
 'use client'
 
+import { useState } from 'react'
+import { X, Plus } from 'lucide-react'
 import ImageUploader, { MultiImageUploader } from '@/components/editor/ImageUploader'
 import InlineCropEditor from '@/components/editor/InlineCropEditor'
 import ImageCropEditor from '@/components/parents/ImageCropEditor'
 import type { CropData } from '@/components/parents/ImageCropEditor'
 import type { ImageSettings } from '@/store/editorStore'
+import { uploadImage } from '@/lib/imageUpload'
 import type { FeedInvitationData } from '../../page'
 
 interface StepProps {
@@ -31,6 +34,23 @@ export default function FeedStep2CoverProfile({
   updateNestedData,
   invitationId,
 }: StepProps) {
+  const [uploadingImages, setUploadingImages] = useState<Set<string>>(new Set())
+
+  const handleImageUpload = async (file: File, key: string, onSuccess: (url: string) => void) => {
+    setUploadingImages(prev => new Set(prev).add(key))
+    try {
+      const result = await uploadImage(file, { invitationId: invitationId || undefined })
+      if (result.success && result.webUrl) {
+        onSuccess(result.webUrl)
+      } else {
+        alert(result.error || '이미지 업로드에 실패했습니다.')
+      }
+    } catch {
+      alert('이미지 업로드에 실패했습니다.')
+    }
+    setUploadingImages(prev => { const s = new Set(prev); s.delete(key); return s })
+  }
+
   return (
     <div className="p-6 space-y-8">
       {/* 안내 */}
@@ -60,6 +80,79 @@ export default function FeedStep2CoverProfile({
           aspectRatio="aspect-[9/16]"
           sortable
         />
+      </section>
+
+      {/* 프로필 아바타 */}
+      <section className="space-y-4">
+        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+          🧑‍🤝‍🧑 프로필 아바타
+        </h3>
+        <p className="text-sm text-blue-600">인스타그램 프로필 영역에 표시되는 원형 사진입니다.</p>
+
+        <div className="flex items-start gap-4">
+          {data.media.profileAvatar ? (
+            <div className="relative flex-shrink-0">
+              <div className="w-[72px] h-[72px] rounded-full overflow-hidden border-2 border-gray-200">
+                <img src={data.media.profileAvatar} alt="프로필 아바타" className="w-full h-full object-cover" />
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  updateNestedData('media.profileAvatar', '')
+                  updateNestedData('media.profileAvatarSettings', undefined)
+                }}
+                className="absolute -top-1 -right-1 w-5 h-5 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          ) : (
+            <label className="flex-shrink-0 cursor-pointer">
+              <div className="w-[72px] h-[72px] rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-gray-400 transition-colors">
+                {uploadingImages.has('profile-avatar') ? (
+                  <div className="animate-spin w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full" />
+                ) : (
+                  <Plus className="w-5 h-5 text-gray-400" />
+                )}
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                disabled={uploadingImages.has('profile-avatar')}
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) {
+                    handleImageUpload(file, 'profile-avatar', (url) => {
+                      updateNestedData('media.profileAvatar', url)
+                    })
+                    e.target.value = ''
+                  }
+                }}
+              />
+            </label>
+          )}
+          <div className="flex-1 text-xs text-gray-500 pt-2">
+            <p>정사각형(1:1) 이미지를 권장합니다.</p>
+            <p className="mt-1">비워두면 커버 이미지가 사용됩니다.</p>
+          </div>
+        </div>
+
+        {data.media.profileAvatar && (
+          <div className="p-3 bg-gray-50 rounded-lg space-y-2">
+            <p className="text-[10px] font-medium text-gray-600">아바타 크롭 조정</p>
+            <InlineCropEditor
+              imageUrl={data.media.profileAvatar}
+              settings={data.media.profileAvatarSettings || { scale: 1.0, positionX: 0, positionY: 0 }}
+              onUpdate={(s: Partial<ImageSettings>) => {
+                const current = data.media.profileAvatarSettings || { scale: 1.0, positionX: 0, positionY: 0 }
+                updateNestedData('media.profileAvatarSettings', { ...current, ...s })
+              }}
+              aspectRatio={1}
+              containerWidth={140}
+            />
+          </div>
+        )}
       </section>
 
       {/* 신랑신부 이름 */}

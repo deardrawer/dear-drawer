@@ -1358,7 +1358,8 @@ function GiftSection({ invitation, fonts, tc }: { invitation: any; fonts: FontCo
       <div key={i} className="flex items-center justify-between py-3" style={{ borderBottom: `1px solid ${tc.divider}` }}>
         <div>
           <span style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.gray }}>{acc.role}</span>
-          <span style={{ fontFamily: fonts.body, fontSize: '12px', color: tc.cardText || tc.text, marginLeft: '8px' }}>{acc.account}</span>
+          <span style={{ fontFamily: fonts.body, fontSize: '12px', color: tc.cardText || tc.text, marginLeft: '8px' }}>{acc.bank} {acc.account}</span>
+          {(acc.holder || acc.name) && <span style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.gray, marginLeft: '6px' }}>{acc.holder || acc.name}</span>}
         </div>
         <button onClick={() => { navigator.clipboard.writeText(acc.account); alert('계좌번호가 복사되었습니다.') }}
           style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '1px', color: tc.accent, background: 'none', border: `1px solid ${tc.accent}50`, padding: '4px 12px', cursor: 'pointer' }}>
@@ -1503,6 +1504,7 @@ function TicketRsvp({ invitation, invitationId, fonts, tc }: {
   const [attendance, setAttendance] = useState<'yes' | 'no'>('yes')
   const [guestCount, setGuestCount] = useState(1)
   const [rsvpMessage, setRsvpMessage] = useState('')
+  const [side, setSide] = useState<'groom' | 'bride' | null>(null)
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
@@ -1512,8 +1514,9 @@ function TicketRsvp({ invitation, invitationId, fonts, tc }: {
     if (!name.trim()) return
     setSubmitting(true)
     try {
+      const attendanceMap: Record<string, string> = { yes: 'attending', no: 'not_attending' }
       const res = await fetch('/api/rsvp', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ invitationId, guestName: name, attendance, guestCount: attendance === 'yes' ? guestCount : 0, message: rsvpMessage, mealType: 'none' }) })
+        body: JSON.stringify({ invitationId, guestName: name, attendance: attendanceMap[attendance] || attendance, guestCount: attendance === 'yes' ? guestCount : 0, message: rsvpMessage, side: side || undefined }) })
       if (res.ok) setSubmitted(true)
     } catch {} setSubmitting(false)
   }
@@ -1562,6 +1565,19 @@ function TicketRsvp({ invitation, invitationId, fonts, tc }: {
         <div style={{ padding: '16px 20px 20px' }}>
           <div className="space-y-3">
             <input value={name} onChange={e => setName(e.target.value)} placeholder="성함" style={inputStyle} />
+            <div className="grid grid-cols-2 gap-2">
+              {([{ value: 'groom' as const, label: '신랑측' }, { value: 'bride' as const, label: '신부측' }]).map(opt => (
+                <button key={opt.value} onClick={() => setSide(side === opt.value ? null : opt.value)}
+                  style={{
+                    fontFamily: fonts.display, fontSize: '10px', letterSpacing: '2px', padding: '11px',
+                    border: `1px solid ${side === opt.value ? tc.accent : cdiv}`,
+                    background: side === opt.value ? tc.accent : 'transparent',
+                    color: side === opt.value ? '#FFFFFF' : (tc.cardText || tc.text), cursor: 'pointer', transition: 'all 0.3s',
+                  }}>
+                  {opt.label}
+                </button>
+              ))}
+            </div>
             <div className="grid grid-cols-2 gap-2">
               {(['yes', 'no'] as const).map(opt => (
                 <button key={opt} onClick={() => setAttendance(opt)}

@@ -1064,7 +1064,8 @@ function ContactsSection({ invitation, fonts, themeColors }: { invitation: any; 
       <div key={i} className="flex items-center justify-between py-3" style={{ borderBottom: `0.5px solid ${themeColors.divider}` }}>
         <div>
           <span style={{ fontFamily: fonts.body, fontSize: '11px', color: themeColors.gray }}>{acc.role}</span>
-          <span style={{ fontFamily: fonts.body, fontSize: '12px', color: themeColors.text, marginLeft: '8px' }}>{acc.account}</span>
+          <span style={{ fontFamily: fonts.body, fontSize: '12px', color: themeColors.text, marginLeft: '8px' }}>{acc.bank} {acc.account}</span>
+          {(acc.holder || acc.name) && <span style={{ fontFamily: fonts.body, fontSize: '11px', color: themeColors.gray, marginLeft: '6px' }}>{acc.holder || acc.name}</span>}
         </div>
         <button
           onClick={() => {
@@ -1342,6 +1343,7 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors }: {
   const [attendance, setAttendance] = useState<'yes' | 'no'>('yes')
   const [guestCount, setGuestCount] = useState(1)
   const [rsvpMessage, setRsvpMessage] = useState('')
+  const [side, setSide] = useState<'groom' | 'bride' | null>(null)
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
@@ -1357,10 +1359,10 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors }: {
         body: JSON.stringify({
           invitationId,
           guestName: name,
-          attendance,
+          attendance: ({ yes: 'attending', no: 'not_attending' } as Record<string, string>)[attendance] || attendance,
           guestCount: attendance === 'yes' ? guestCount : 0,
           message: rsvpMessage,
-          mealType: 'none',
+          side: side || undefined,
         }),
       })
       if (res.ok) setSubmitted(true)
@@ -1399,6 +1401,28 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors }: {
           placeholder="성함"
           style={{ fontFamily: fonts.body, fontSize: '13px', padding: '10px 12px', border: `0.5px solid ${themeColors.divider}`, background: themeColors.cardBg, outline: 'none', width: '100%', color: themeColors.text }}
         />
+
+        <div className="grid grid-cols-2 gap-2">
+          {([{ value: 'groom' as const, label: '신랑측' }, { value: 'bride' as const, label: '신부측' }]).map(opt => (
+            <button
+              key={opt.value}
+              onClick={() => setSide(side === opt.value ? null : opt.value)}
+              style={{
+                fontFamily: fonts.display,
+                fontSize: '11px',
+                letterSpacing: '2px',
+                padding: '12px',
+                border: `0.5px solid ${side === opt.value ? themeColors.primary : themeColors.divider}`,
+                background: side === opt.value ? themeColors.primary : themeColors.cardBg,
+                color: side === opt.value ? '#FFFFFF' : themeColors.text,
+                cursor: 'pointer',
+                transition: 'all 0.3s',
+              }}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
 
         <div className="grid grid-cols-2 gap-2">
           {(['yes', 'no'] as const).map(opt => (

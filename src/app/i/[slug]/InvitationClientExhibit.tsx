@@ -1440,7 +1440,7 @@ function WeddingInfoPost({
                   {venueAddress && (
                     <div className="flex gap-2 mt-4 px-4">
                       <a
-                        href={`https://map.kakao.com/?q=${encodeURIComponent(venueName || venueAddress)}`}
+                        href={`https://map.kakao.com/?q=${encodeURIComponent(venueAddress || venueName)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex-1 py-2 rounded-lg text-[11px] font-semibold text-center flex items-center justify-center gap-1"
@@ -1451,7 +1451,7 @@ function WeddingInfoPost({
                         카카오맵
                       </a>
                       <a
-                        href={`https://map.naver.com/v5/search/${encodeURIComponent(venueName || venueAddress)}`}
+                        href={`https://map.naver.com/v5/search/${encodeURIComponent(venueAddress || venueName)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex-1 py-2 rounded-lg text-[11px] font-semibold text-center flex items-center justify-center gap-1"
@@ -1462,7 +1462,7 @@ function WeddingInfoPost({
                         네이버맵
                       </a>
                       <a
-                        href={`https://tmap.life/search?query=${encodeURIComponent(venueName || venueAddress)}`}
+                        href={`https://tmap.life/search?query=${encodeURIComponent(venueAddress || venueName)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex-1 py-2 rounded-lg text-[11px] font-semibold text-center flex items-center justify-center gap-1"
@@ -1932,12 +1932,15 @@ function AccountPost({
             style={{ background: '#FFFFFF', border: '1px solid #EFEFEF' }}
           >
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] px-2 py-0.5 rounded-full font-medium"
-                  style={{ background: side === 'groom' ? '#E8F4FD' : '#FFF0F5', color: side === 'groom' ? '#0095F6' : '#E91E63' }}>
-                  {acc.role}
-                </span>
-                <p className="text-[14px] font-medium tracking-wide" style={{ color: '#262626' }}>{acc.account}</p>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-[11px] px-2 py-0.5 rounded-full font-medium"
+                    style={{ background: side === 'groom' ? '#E8F4FD' : '#FFF0F5', color: side === 'groom' ? '#0095F6' : '#E91E63' }}>
+                    {acc.role}
+                  </span>
+                  {(acc.holder || acc.name) && <span className="text-[12px]" style={{ color: '#8E8E8E' }}>{acc.holder || acc.name}</span>}
+                </div>
+                <p className="text-[13px] font-medium tracking-wide" style={{ color: '#262626' }}>{acc.bank} {acc.account}</p>
               </div>
               <button
                 onClick={() => copyToClipboard(acc.account)}
@@ -2187,12 +2190,14 @@ function RsvpDmModal({
 
               {/* Phone */}
               <div>
-                <label className="text-[11px] font-medium mb-1.5 block" style={{ color: '#8E8E8E' }}>연락처</label>
+                <label className="text-[11px] font-medium mb-1.5 block" style={{ color: '#8E8E8E' }}>연락처 뒷자리</label>
                 <input
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="010-1234-5678"
+                  placeholder="뒷자리 4자리"
+                  maxLength={4}
+                  inputMode="numeric"
                   className="w-full text-[14px] py-2.5 px-4 rounded-2xl outline-none"
                   style={{ background: '#FAFAFA', border: '1px solid #DBDBDB', color: '#262626' }}
                 />
@@ -2664,6 +2669,11 @@ function InvitationClientExhibitContent({
     <>
       <style dangerouslySetInnerHTML={{ __html: globalStyles }} />
       <div className="ig-container">
+        {!isPaid && !isPreview && (
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px 16px', backgroundColor: 'rgba(0,0,0,0.9)' }}>
+            <span style={{ color: 'rgba(255,255,255,0.95)', fontSize: '13px', fontWeight: 500 }}>결제 후 워터마크가 제거됩니다</span>
+          </div>
+        )}
         <WatermarkOverlay isPaid={isPaid || !!isPreview}>
           <div className="flex justify-center min-h-screen" style={{ background: '#FAFAFA' }}>
             <div

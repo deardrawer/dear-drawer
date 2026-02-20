@@ -634,25 +634,20 @@ function EditorContent() {
                       onSave={handleSave}
                       isSaving={isSaving}
                       onSlugChange={async (newSlug) => {
-                        if (!invitationId) return
-                        try {
-                          const response = await fetch(`/api/invitations/${invitationId}/slug`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ slug: newSlug }),
-                          })
-                          if (!response.ok) {
-                            const result = await response.json() as { error?: string }
-                            alert(result.error || '주소 변경에 실패했습니다.')
-                            return
-                          }
-                          setSavedSlug(newSlug)
-                          const url = new URL(window.location.href)
-                          url.searchParams.set('slug', newSlug)
-                          window.history.replaceState({}, '', url.toString())
-                        } catch {
-                          alert('주소 변경에 실패했습니다.')
+                        if (!invitationId) throw new Error('저장 후 주소를 변경할 수 있습니다.')
+                        const response = await fetch(`/api/invitations/${invitationId}/slug`, {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ slug: newSlug }),
+                        })
+                        if (!response.ok) {
+                          const result = await response.json() as { error?: string }
+                          throw new Error(result.error || '주소 변경에 실패했습니다.')
                         }
+                        setSavedSlug(newSlug)
+                        const url = new URL(window.location.href)
+                        url.searchParams.set('slug', newSlug)
+                        window.history.replaceState({}, '', url.toString())
                       }}
                     />
                   </div>

@@ -1414,10 +1414,19 @@ function GiftSection({ invitation, fonts, tc }: { invitation: any; fonts: FontCo
 }
 
 // ===== Fan Mail (Guestbook) =====
+const sampleFanMailMessages = [
+  { id: 'sample-1', guest_name: '김지은', message: '두 분의 결혼을 진심으로 축하드려요! 항상 행복하세요', question: '두 사람에게 하고 싶은 말을 남겨주세요', created_at: '2025-05-20T10:30:00Z' },
+  { id: 'sample-2', guest_name: '이준호', message: '결혼 축하해! 행복하게 잘 살아~', question: '두 사람에게 하고 싶은 말을 남겨주세요', created_at: '2025-05-19T14:20:00Z' },
+  { id: 'sample-3', guest_name: '박서윤', message: '예쁜 커플 결혼 축하드립니다. 오래오래 사랑하세요!', question: '두 사람에게 하고 싶은 말을 남겨주세요', created_at: '2025-05-18T09:15:00Z' },
+  { id: 'sample-4', guest_name: '최민수', message: '서로 배려하고 존중하는 마음이 가장 중요한 것 같아요', question: '결혼생활에서 가장 중요한 건?', created_at: '2025-05-17T16:45:00Z' },
+  { id: 'sample-5', guest_name: '정하나', message: '처음 봤을 때 정말 잘 어울린다고 생각했어요!', question: '두 사람의 첫인상은 어땠나요?', created_at: '2025-05-16T11:30:00Z' },
+  { id: 'sample-6', guest_name: '한소희', message: '두 분의 앞날에 항상 좋은 일만 가득하길 바랍니다!', question: '두 사람에게 하고 싶은 말을 남겨주세요', created_at: '2025-05-15T13:00:00Z' },
+]
+
 function FanMailSection({ invitation, invitationId, fonts, tc, isSample }: {
   invitation: any; invitationId: string; fonts: FontConfig; tc: ColorConfig; isSample?: boolean
 }) {
-  const [messages, setMessages] = useState<any[]>([])
+  const [messages, setMessages] = useState<any[]>(isSample ? sampleFanMailMessages : [])
   const [name, setName] = useState('')
   const [message, setMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)

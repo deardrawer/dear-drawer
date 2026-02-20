@@ -531,6 +531,21 @@ function InterviewCard({ item, index, fonts, themeColors }: { item: any; index: 
         <div style={{ height: '0.5px', flex: 1, background: themeColors.divider }} />
       </div>
 
+      {/* Images above question: 1장=가로형, 2장=2열 그리드 */}
+      {images.length === 1 && (
+        <div className="w-full mb-6 overflow-hidden" style={{ aspectRatio: '16/9' }}>
+          <div className="w-full h-full" style={getImageCropStyle(images[0], item.imageSettings?.[0] || {})} />
+        </div>
+      )}
+      {images.length === 2 && (
+        <div className="mb-6 grid grid-cols-2 gap-1">
+          {images.map((img: string, imgIdx: number) => (
+            <div key={imgIdx} className="overflow-hidden" style={{ aspectRatio: '4/5' }}>
+              <div className="w-full h-full" style={getImageCropStyle(img, item.imageSettings?.[imgIdx] || {})} />
+            </div>
+          ))}
+        </div>
+      )}
       {/* Question - Magazine headline style */}
       <h3
         style={{
@@ -545,13 +560,6 @@ function InterviewCard({ item, index, fonts, themeColors }: { item: any; index: 
       >
         Q. {item.question}
       </h3>
-
-      {/* Main image - full width portrait */}
-      {images.length > 0 && (
-        <div className="w-full mb-6 overflow-hidden" style={{ aspectRatio: '4/5' }}>
-          <div className="w-full h-full" style={getImageCropStyle(images[0], item.imageSettings?.[0] || {})} />
-        </div>
-      )}
 
       {/* Answer - Editorial body style */}
       <div style={{ position: 'relative', paddingLeft: '16px', borderLeft: `2px solid ${themeColors.primary}` }}>
@@ -571,22 +579,6 @@ function InterviewCard({ item, index, fonts, themeColors }: { item: any; index: 
         ))}
       </div>
 
-      {/* Sub image - single */}
-      {images.length === 2 && (
-        <div className="mt-6 overflow-hidden" style={{ aspectRatio: '4/5' }}>
-          <div className="w-full h-full" style={getImageCropStyle(images[1], item.imageSettings?.[1] || {})} />
-        </div>
-      )}
-      {/* Sub images - 2 photos side by side */}
-      {images.length >= 3 && (
-        <div className="mt-6 grid grid-cols-2 gap-1">
-          {images.slice(1, 3).map((img: string, imgIdx: number) => (
-            <div key={imgIdx} className="overflow-hidden" style={{ aspectRatio: '4/5' }}>
-              <div className="w-full h-full" style={getImageCropStyle(img, item.imageSettings?.[imgIdx + 1] || {})} />
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   )
 }

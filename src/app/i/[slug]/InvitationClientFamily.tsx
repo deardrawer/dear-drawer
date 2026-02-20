@@ -26,7 +26,7 @@ function getImageCropStyle(img: string, s: { scale?: number; positionX?: number;
 
     return {
       backgroundImage: `url(${img})`,
-      backgroundSize: `${Math.max(100 / cw, 100 / ch)}%`,
+      backgroundSize: `${100 / cw}% ${100 / ch}%`,
       backgroundPosition: `${posX}% ${posY}%`,
       backgroundRepeat: 'no-repeat' as const,
     }
@@ -2588,6 +2588,7 @@ const mockInvitation = {
     guidance: true,
     bankAccounts: true,
     guestbook: true,
+    parentNames: true,
   },
 
   // Design settings
@@ -3074,6 +3075,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
         </div>
 
         {/* Parents Info */}
+        {invitation.sectionVisibility?.parentNames !== false && (
         <div className="parents-section mb-9 text-center" style={{ fontFamily: fonts.displayKr }}>
           {(invitation.groom.father.name || invitation.groom.mother.name) && (
           <div className="mb-3">
@@ -3096,6 +3098,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
           </div>
           )}
         </div>
+        )}
 
         {/* Wedding Info Card */}
         <div className="wedding-info-card rounded-2xl px-6 py-7 mb-9" style={{ background: themeColors.cardBg, boxShadow: '0 0 0 1px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.04), 0 4px 8px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.06)' }}>
@@ -3610,7 +3613,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
                     const posY = ch >= 1 ? 0 : (cy / (1 - ch)) * 100
                     return {
                       backgroundImage: `url(${invitation.guidance.image})`,
-                      backgroundSize: `${Math.max(100 / cw, 100 / ch)}%`,
+                      backgroundSize: `${100 / cw}% ${100 / ch}%`,
                       backgroundPosition: `${posX}% ${posY}%`,
                       backgroundRepeat: 'no-repeat' as const,
                     }
@@ -4179,6 +4182,11 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
   // If skipIntro is true, start directly on main page
   const [currentPage, setCurrentPage] = useState<PageType>(skipIntro ? 'main' : 'intro')
   const [introScreen, setIntroScreen] = useState<'cover' | 'invitation'>('cover')
+
+  // skipIntro prop 변경 시 페이지 전환 (에디터 미리보기용)
+  useEffect(() => {
+    setCurrentPage(skipIntro ? 'main' : 'intro')
+  }, [skipIntro])
   const audioRef = useRef<HTMLAudioElement>(null)
   const [openModalType, setOpenModalType] = useState<'none' | 'rsvp'>('none')
   const [lightboxOpen, setLightboxOpen] = useState(false)
@@ -4222,12 +4230,12 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
 
   // Prepare contacts for FloatingButton
   const contacts = [
-    invitation.groom.phone && { name: invitation.groom.name, phone: invitation.groom.phone, role: '신랑', side: 'groom' as const },
-    invitation.groom.father.phone && { name: invitation.groom.father.name, phone: invitation.groom.father.phone, role: '아버지', side: 'groom' as const },
-    invitation.groom.mother.phone && { name: invitation.groom.mother.name, phone: invitation.groom.mother.phone, role: '어머니', side: 'groom' as const },
-    invitation.bride.phone && { name: invitation.bride.name, phone: invitation.bride.phone, role: '신부', side: 'bride' as const },
-    invitation.bride.father.phone && { name: invitation.bride.father.name, phone: invitation.bride.father.phone, role: '아버지', side: 'bride' as const },
-    invitation.bride.mother.phone && { name: invitation.bride.mother.name, phone: invitation.bride.mother.phone, role: '어머니', side: 'bride' as const },
+    invitation.groom.phone && (invitation.groom as any)?.phoneEnabled !== false && { name: invitation.groom.name, phone: invitation.groom.phone, role: '신랑', side: 'groom' as const },
+    invitation.groom.father.phone && (invitation.groom.father as any)?.phoneEnabled !== false && { name: invitation.groom.father.name, phone: invitation.groom.father.phone, role: '아버지', side: 'groom' as const },
+    invitation.groom.mother.phone && (invitation.groom.mother as any)?.phoneEnabled !== false && { name: invitation.groom.mother.name, phone: invitation.groom.mother.phone, role: '어머니', side: 'groom' as const },
+    invitation.bride.phone && (invitation.bride as any)?.phoneEnabled !== false && { name: invitation.bride.name, phone: invitation.bride.phone, role: '신부', side: 'bride' as const },
+    invitation.bride.father.phone && (invitation.bride.father as any)?.phoneEnabled !== false && { name: invitation.bride.father.name, phone: invitation.bride.father.phone, role: '아버지', side: 'bride' as const },
+    invitation.bride.mother.phone && (invitation.bride.mother as any)?.phoneEnabled !== false && { name: invitation.bride.mother.name, phone: invitation.bride.mother.phone, role: '어머니', side: 'bride' as const },
   ].filter(Boolean) as { name: string; phone: string; role: string; side: 'groom' | 'bride' }[]
 
   // Prepare accounts for FloatingButton

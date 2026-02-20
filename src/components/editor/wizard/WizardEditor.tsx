@@ -12,6 +12,18 @@ const Step3Content = lazy(() => import('./steps/Step4Content'))
 const Step4MenuSettings = lazy(() => import('./steps/Step5MenuSettings'))
 const Step5Publish = lazy(() => import('./steps/Step6Publish'))
 
+// 매거진 전용 Step 컴포넌트들
+const Step2Magazine = lazy(() => import('./steps/Step3Magazine'))
+const Step3MagazineContent = lazy(() => import('./steps/Step4Magazine'))
+
+// Movie 전용 Step 컴포넌트들
+const Step2Film = lazy(() => import('./steps/Step2Film'))
+const Step3FilmContent = lazy(() => import('./steps/Step3Film'))
+
+// Record 전용 Step 컴포넌트들
+const Step2Record = lazy(() => import('./steps/Step2Record'))
+const Step3RecordContent = lazy(() => import('./steps/Step3Record'))
+
 // 로딩 스피너
 function StepLoading() {
   return (
@@ -46,7 +58,10 @@ export default function WizardEditor({
   isSaving,
   onSlugChange,
 }: WizardEditorProps) {
-  const { wizardStep } = useEditorStore()
+  const { wizardStep, invitation } = useEditorStore()
+  const isMagazine = templateId === 'narrative-magazine' || invitation?.templateId === 'narrative-magazine'
+  const isFilm = templateId === 'narrative-film' || invitation?.templateId === 'narrative-film'
+  const isRecord = templateId === 'narrative-record' || invitation?.templateId === 'narrative-record'
 
   // 현재 Step에 해당하는 컴포넌트 렌더링
   const renderStep = () => {
@@ -62,8 +77,14 @@ export default function WizardEditor({
       case 1:
         return <Step1Style {...props} />
       case 2:
+        if (isMagazine) return <Step2Magazine {...props} />
+        if (isFilm) return <Step2Film {...props} />
+        if (isRecord) return <Step2Record {...props} />
         return <Step2Invitation {...props} />
       case 3:
+        if (isMagazine) return <Step3MagazineContent />
+        if (isFilm) return <Step3FilmContent {...props} />
+        if (isRecord) return <Step3RecordContent {...props} />
         return <Step3Content {...props} />
       case 4:
         return <Step4MenuSettings />

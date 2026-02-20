@@ -111,6 +111,18 @@ function getTemplateDisplayName(templateId: string, senderSide?: string) {
     case 'narrative-family':
     case 'family':
       return 'FAMILY'
+    case 'narrative-magazine':
+    case 'magazine':
+      return 'MAGAZINE'
+    case 'narrative-film':
+    case 'film':
+      return 'MOVIE'
+    case 'narrative-record':
+    case 'record':
+      return 'RECORD'
+    case 'narrative-exhibit':
+    case 'exhibit':
+      return 'FEED'
     default:
       return templateId || '기본'
   }
@@ -128,6 +140,18 @@ function getTemplateBadgeColor(templateId: string, senderSide?: string) {
   }
   if (templateId === 'narrative-family' || templateId === 'family') {
     return 'bg-amber-100 text-amber-700'
+  }
+  if (templateId === 'narrative-magazine' || templateId === 'magazine') {
+    return 'bg-slate-100 text-slate-700'
+  }
+  if (templateId === 'narrative-film' || templateId === 'film') {
+    return 'bg-gray-800 text-gray-100'
+  }
+  if (templateId === 'narrative-record' || templateId === 'record') {
+    return 'bg-orange-100 text-orange-700'
+  }
+  if (templateId === 'narrative-exhibit' || templateId === 'exhibit') {
+    return 'bg-violet-100 text-violet-700'
   }
   return 'bg-gray-100 text-gray-600'
 }
@@ -885,7 +909,13 @@ export default function MyInvitationsPage() {
 
                   {/* 상단: 주요 액션 (에디터 편집, 워터마크 제거) */}
                   <div className={`grid gap-2 mb-2 ${invitation.is_paid ? 'grid-cols-1' : 'grid-cols-2'}`}>
-                    <Link href={invitation.template_id === 'narrative-parents' || invitation.template_id === 'parents' ? `/editor/parents?id=${invitation.id}` : `/editor?id=${invitation.id}`} className={invitation.is_paid ? 'col-span-1' : ''}>
+                    <Link href={
+                      invitation.template_id === 'narrative-parents' || invitation.template_id === 'parents'
+                        ? `/editor/parents?id=${invitation.id}`
+                        : invitation.template_id === 'narrative-exhibit' || invitation.template_id === 'exhibit'
+                        ? `/editor/feed?id=${invitation.id}`
+                        : `/editor?id=${invitation.id}`
+                    } className={invitation.is_paid ? 'col-span-1' : ''}>
                       <Button size="sm" className="w-full bg-gray-900 hover:bg-gray-800 text-white">에디터 편집하기</Button>
                     </Link>
                     {!invitation.is_paid && (

@@ -36,6 +36,7 @@ export default function MainPhotoSection({
     { id: 3, url: '/samples/parents/3.png' },
     { id: 4, url: '/samples/parents/4.png' },
     { id: 5, url: '/samples/parents/5.png' },
+    { id: 6, url: '/samples/parents/6.png' },
   ],
   mainImage,
   groomName = '김도윤',
@@ -48,6 +49,8 @@ export default function MainPhotoSection({
   const [currentIndex, setCurrentIndex] = useState(0)
   const [touchStart, setTouchStart] = useState(0)
   const [touchEnd, setTouchEnd] = useState(0)
+  const [gridExpanded, setGridExpanded] = useState(false)
+  const [lightboxPhoto, setLightboxPhoto] = useState<PhotoWithCrop | null>(null)
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStart(e.targetTouches[0].clientX)
@@ -77,7 +80,7 @@ export default function MainPhotoSection({
   return (
     <section
       ref={ref as React.RefObject<HTMLDivElement>}
-      className="py-20 transition-all duration-500 min-h-screen flex flex-col items-center justify-center"
+      className="py-20 transition-all duration-500 min-h-screen flex flex-col items-center justify-center overflow-hidden"
       style={{
         backgroundColor: theme.background,
         opacity: hasAppeared ? (isActive ? 1 : 0.3) : 0,
@@ -232,6 +235,85 @@ export default function MainPhotoSection({
           </p>
         </div>
       </div>
+
+      {/* 바둑판식 그리드 갤러리 */}
+      {photos.length > 0 && (
+        <div className="w-full px-1 mt-14">
+          <div className="grid grid-cols-3 gap-[2px]">
+            {(gridExpanded ? photos : photos.slice(0, 3)).map((photo) => {
+              const cw = photo.cropWidth || 1
+              const ch = photo.cropHeight || 1
+              const cx = photo.cropX || 0
+              const cy = photo.cropY || 0
+              const posX = cw >= 1 ? 0 : (cx / (1 - cw)) * 100
+              const posY = ch >= 1 ? 0 : (cy / (1 - ch)) * 100
+              return (
+                <div
+                  key={`grid-${photo.id}`}
+                  className="aspect-[3/4] overflow-hidden cursor-pointer active:opacity-80 transition-opacity"
+                  onClick={() => setLightboxPhoto(photo)}
+                >
+                  <div
+                    className="w-full h-full"
+                    style={{
+                      backgroundImage: `url(${photo.url})`,
+                      backgroundSize: `${100 / cw}% ${100 / ch}%`,
+                      backgroundPosition: `${posX}% ${posY}%`,
+                      backgroundRepeat: 'no-repeat',
+                    }}
+                  />
+                </div>
+              )
+            })}
+          </div>
+          {photos.length > 3 && (
+            <button
+              onClick={() => setGridExpanded(!gridExpanded)}
+              className="w-full flex items-center justify-center gap-1.5 py-3.5 mt-[2px] text-[13px] font-medium transition-all"
+              style={{ backgroundColor: theme.cardBg || '#f5f5f5', color: theme.text }}
+            >
+              {gridExpanded ? (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                  </svg>
+                  접기
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                  사진 더보기 ({photos.length - 3})
+                </>
+              )}
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* 사진 확대 라이트박스 */}
+      {lightboxPhoto && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center"
+          onClick={() => setLightboxPhoto(null)}
+        >
+          <button
+            onClick={() => setLightboxPhoto(null)}
+            className="absolute top-5 right-5 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+          >
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          <img
+            src={lightboxPhoto.url}
+            alt="갤러리 사진"
+            className="max-w-[90vw] max-h-[85vh] object-contain rounded-lg"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </section>
   )
 }

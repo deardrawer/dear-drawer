@@ -4,6 +4,9 @@ import { headers } from "next/headers";
 import { isUUID } from "@/lib/slug";
 import InvitationClient from "@/app/i/[slug]/InvitationClient";
 import InvitationClientFamily from "@/app/i/[slug]/InvitationClientFamily";
+import InvitationClientFilm from "@/app/i/[slug]/InvitationClientFilm";
+import InvitationClientMagazine from "@/app/i/[slug]/InvitationClientMagazine";
+import InvitationClientRecord from "@/app/i/[slug]/InvitationClientRecord";
 import type { Invitation } from "@/types/invitation";
 
 interface PageProps {
@@ -125,10 +128,17 @@ export default async function InvitationPage({ params, searchParams }: PageProps
   }
 
   const isPaid = invitation.is_paid === 1;
-  const isFamily = invitation.template_id === 'narrative-family';
 
   // 템플릿에 따라 적절한 컴포넌트 렌더링
-  const ClientComponent = isFamily ? InvitationClientFamily : InvitationClient;
+  const ClientComponent = (() => {
+    switch (invitation.template_id) {
+      case 'narrative-family': return InvitationClientFamily;
+      case 'narrative-film': return InvitationClientFilm;
+      case 'narrative-magazine': return InvitationClientMagazine;
+      case 'narrative-record': return InvitationClientRecord;
+      default: return InvitationClient;
+    }
+  })();
 
   return (
     <ClientComponent

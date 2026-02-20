@@ -1,4 +1,4 @@
-export type NarrativeType = 'our' | 'family' | 'parents'
+export type NarrativeType = 'our' | 'family' | 'parents' | 'magazine' | 'film' | 'record' | 'exhibit'
 
 export type TemplateSection = {
   id: string
@@ -126,6 +126,124 @@ export const templates: Template[] = [
       { id: 'rsvp', title: '참석 의사', aiGenerated: false },
     ],
   },
+  {
+    id: 'narrative-magazine',
+    name: 'MAGAZINE',
+    description: '매거진 인터뷰로 전하는 우리의 이야기',
+    thumbnail: '/templates/narrative-magazine.jpg',
+    defaultCoverImage: '/images/our-cover.png',
+    narrativeType: 'magazine',
+    emoji: '📰',
+    colors: {
+      primary: '#1A1A1A',
+      secondary: '#F2F2F2',
+      accent: '#C8102E',
+      background: '#FFFFFF',
+      text: '#1A1A1A',
+    },
+    fonts: {
+      heading: 'Montserrat',
+      body: 'Pretendard',
+    },
+    features: ['매거진 레이아웃', '인터뷰 형식', '트렌디한 타이포', '에디토리얼 감성'],
+    sections: [
+      { id: 'cover', title: '매거진 커버', aiGenerated: false },
+      { id: 'editors-note', title: '에디터스 노트', aiGenerated: false },
+      { id: 'feature-interview', title: '피처 인터뷰', aiGenerated: true },
+      { id: 'photo-spread', title: '포토 스프레드', aiGenerated: false },
+      { id: 'the-details', title: '웨딩 디테일', aiGenerated: false },
+      { id: 'closing', title: '클로징', aiGenerated: false },
+    ],
+  },
+  {
+    id: 'narrative-film',
+    name: 'MOVIE',
+    description: '한 편의 영화처럼 펼쳐지는 시네마틱 청첩장',
+    thumbnail: '/templates/narrative-film.jpg',
+    defaultCoverImage: '',
+    narrativeType: 'film',
+    emoji: '🎬',
+    colors: {
+      primary: '#E8E4DF',
+      secondary: '#2C2C2E',
+      accent: '#B8977E',
+      background: '#1C1C1E',
+      text: '#E8E4DF',
+    },
+    fonts: {
+      heading: 'Playfair Display',
+      body: 'Pretendard',
+    },
+    features: ['시네마틱 연출', '챕터별 스토리텔링', '다크 테마', '크레딧 엔딩'],
+    sections: [
+      { id: 'poster', title: '포스터 커버', aiGenerated: false },
+      { id: 'chapter-1', title: '첫 만남', aiGenerated: true },
+      { id: 'chapter-2', title: '우리의 이야기', aiGenerated: true },
+      { id: 'chapter-3', title: '약속', aiGenerated: false },
+      { id: 'premiere', title: '예식 정보', aiGenerated: false },
+      { id: 'credits', title: '크레딧', aiGenerated: false },
+    ],
+  },
+  {
+    id: 'narrative-record',
+    name: 'RECORD',
+    description: '비닐 레코드처럼 펼쳐지는 음악 앨범 청첩장',
+    thumbnail: '/templates/narrative-record.jpg',
+    defaultCoverImage: '/images/our-cover.png',
+    narrativeType: 'record',
+    emoji: '🎵',
+    colors: {
+      primary: '#E89B8F',
+      secondary: '#F5F1ED',
+      accent: '#D4766A',
+      background: '#FAF7F4',
+      text: '#3D3D3D',
+    },
+    fonts: {
+      heading: 'Montserrat',
+      body: 'Pretendard',
+    },
+    features: ['비닐 레코드 애니메이션', '트랙 카드 시스템', '코랄 핑크 테마', '앨범 재킷 갤러리'],
+    sections: [
+      { id: 'vinyl-cover', title: '레코드 커버', aiGenerated: false },
+      { id: 'track-01', title: 'The Beginning', aiGenerated: false },
+      { id: 'track-02', title: 'The Couple', aiGenerated: false },
+      { id: 'track-03', title: 'Our Journey', aiGenerated: true },
+      { id: 'track-04', title: 'Gallery', aiGenerated: false },
+      { id: 'track-05', title: 'The Wedding Day', aiGenerated: false },
+      { id: 'bonus-track', title: 'Liner Notes', aiGenerated: false },
+    ],
+  },
+  {
+    id: 'narrative-exhibit',
+    name: 'FEED',
+    description: '미니스토리형 포토 청첩장 · 리허설 촬영을 여러 번 한 커플에게 추천',
+    thumbnail: '/templates/narrative-exhibit.jpg',
+    defaultCoverImage: '/images/our-cover.png',
+    narrativeType: 'exhibit',
+    emoji: '🖼️',
+    colors: {
+      primary: '#1D1D1F',
+      secondary: '#F5F5F7',
+      accent: '#86868B',
+      background: '#FFFFFF',
+      text: '#1D1D1F',
+    },
+    fonts: {
+      heading: 'Pretendard',
+      body: 'Pretendard',
+    },
+    features: ['인스타그램 UI', '3열 포토 그리드', '촬영 컨셉별 하이라이트', '러브스토리 게시글'],
+    sections: [
+      { id: 'cover', title: '커버', aiGenerated: false },
+      { id: 'room-01', title: 'Room 01', aiGenerated: false },
+      { id: 'room-02', title: 'Room 02', aiGenerated: false },
+      { id: 'room-03', title: 'Room 03', aiGenerated: false },
+      { id: 'room-04', title: 'Room 04', aiGenerated: false },
+      { id: 'greeting', title: '인사말', aiGenerated: false },
+      { id: 'details', title: '예식 정보', aiGenerated: false },
+    ],
+  },
 ]
 
 export function getTemplateById(id: string): Template | undefined {
@@ -146,4 +264,20 @@ export function getFamilyTemplate(): Template {
 
 export function getParentsTemplate(): Template {
   return templates.find((template) => template.narrativeType === 'parents')!
+}
+
+export function getMagazineTemplate(): Template {
+  return templates.find((template) => template.narrativeType === 'magazine')!
+}
+
+export function getFilmTemplate(): Template {
+  return templates.find((template) => template.narrativeType === 'film')!
+}
+
+export function getRecordTemplate(): Template {
+  return templates.find((template) => template.narrativeType === 'record')!
+}
+
+export function getExhibitTemplate(): Template {
+  return templates.find((template) => template.narrativeType === 'exhibit')!
 }

@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { templates } from '@/lib/templates'
+import SocialProofCounter from '@/components/social-proof/SocialProofCounter'
+import WeeklyCounter from '@/components/social-proof/WeeklyCounter'
 
 // ============================================
 // 🖼️ 배경 이미지 설정 (여기서 쉽게 변경 가능)
@@ -14,19 +14,7 @@ const BACKGROUND_IMAGES = {
   features: '/sample/couple3.jpg',     // 섹션 4: 왜 dear drawer인가요?
 }
 
-// 랜덤 슬러그 생성
-const generateRandomSlug = () => {
-  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
-  const randomPart = Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
-  return `invitation-${randomPart}`
-}
-
-// 템플릿 분류
-const coupleTemplates = templates.filter(t => t.narrativeType === 'our' || t.narrativeType === 'family')
-const parentsTemplate = templates.find(t => t.narrativeType === 'parents')!
-
 export default function GalleryPage() {
-  const router = useRouter()
   const [currentSection, setCurrentSection] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
   const isScrolling = useRef(false)
@@ -120,17 +108,6 @@ export default function GalleryPage() {
       window.removeEventListener('keydown', handleKeyDown)
     }
   }, [currentSection])
-
-  // 템플릿 선택 시 자동 URL 생성 후 바로 에디터 이동
-  const handleTemplateSelect = (templateId: string) => {
-    const autoSlug = generateRandomSlug()
-
-    if (templateId === 'narrative-parents') {
-      router.push(`/editor/parents?slug=${autoSlug}`)
-    } else {
-      router.push(`/editor?template=${templateId}&slug=${autoSlug}`)
-    }
-  }
 
   return (
     <div
@@ -237,97 +214,41 @@ export default function GalleryPage() {
           </div>
         </section>
 
-        {/* ===== 섹션 3: 템플릿 선택 ===== */}
-        <section className="h-screen flex flex-col items-center justify-center px-3 sm:px-6 py-4 sm:py-10 overflow-hidden bg-gradient-to-br from-rose-50 via-white to-blue-50">
-          <div className="w-full max-w-4xl overflow-y-auto overflow-x-hidden max-h-full">
-            <div className="text-center mb-3 sm:mb-12">
-              <h2 className="text-base sm:text-2xl md:text-3xl font-bold text-gray-900 mb-1 sm:mb-3">
-                어떤 이야기를 담을까요?
+        {/* ===== 섹션 3: 템플릿 쇼케이스 ===== */}
+        <section className="h-screen flex flex-col items-center justify-center px-4 sm:px-6 py-4 sm:py-10 overflow-hidden bg-gradient-to-br from-rose-50 via-white to-blue-50">
+          <div className="w-full max-w-4xl">
+
+            <div className="text-center mb-4 sm:mb-10">
+              <p className="text-[9px] sm:text-xs tracking-widest text-gray-400 uppercase mb-2 sm:mb-3">7 Templates</p>
+              <h2 className="text-base sm:text-2xl md:text-3xl font-bold text-gray-900 mb-1.5 sm:mb-3">
+                다양한 스타일, 하나의 이야기
               </h2>
-              <p className="text-[10px] sm:text-base text-gray-600">두 분에게 맞는 템플릿을 선택하세요</p>
+              <p className="text-[10px] sm:text-sm text-gray-500">우리에게 맞는 청첩장을 골라보세요</p>
             </div>
 
-            {/* 템플릿 카드 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-6 mb-3 sm:mb-8">
-              {/* OUR 카드 */}
-              <div className="group relative p-3 sm:p-8 rounded-xl sm:rounded-3xl border border-gray-100 bg-white/90 backdrop-blur-sm shadow-md hover:border-rose-400 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
-                <div className="text-2xl sm:text-5xl mb-1 sm:mb-4">💕</div>
-                <h3 className="text-sm sm:text-2xl font-semibold text-gray-900 mb-0.5 sm:mb-2">OUR</h3>
-                <p className="text-[10px] sm:text-base text-gray-600 mb-2 sm:mb-6">커플의 서사가 중심이 되는 청첩장</p>
-                <div className="space-y-0.5 sm:space-y-2 mb-2 sm:mb-8 text-[9px] sm:text-sm text-gray-500">
-                  <p className="flex items-center gap-1 sm:gap-2"><span className="text-rose-400">♥</span> 장기연애를 해온 커플</p>
-                  <p className="flex items-center gap-1 sm:gap-2"><span className="text-rose-400">♥</span> 특별한 스토리가 있는 커플</p>
-                  <p className="flex items-center gap-1 sm:gap-2"><span className="text-rose-400">♥</span> 우리만의 이야기를 담고 싶은 커플</p>
-                </div>
-                <div className="flex items-center justify-between">
-                  <button
-                    onClick={() => handleTemplateSelect('narrative-our')}
-                    className="text-[10px] sm:text-sm text-rose-500 font-medium hover:underline"
-                  >
-                    시작하기 →
-                  </button>
-                  <a
-                    href="/i/sample-our"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[10px] sm:text-xs text-gray-400 hover:text-gray-600 underline"
-                  >
-                    샘플 보기
-                  </a>
-                </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5 max-w-2xl mx-auto mb-4 sm:mb-8">
+              <div className="text-center p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-white/80 backdrop-blur-sm border border-gray-100 shadow-sm">
+                <div className="text-2xl sm:text-4xl mb-1.5 sm:mb-3">📖</div>
+                <h3 className="text-sm sm:text-lg font-semibold text-gray-900 mb-0.5 sm:mb-1">스토리형</h3>
+                <p className="text-[10px] sm:text-sm text-gray-500 leading-relaxed">우리의 이야기를 깊이 있게</p>
+                <p className="text-[9px] sm:text-xs text-gray-400 mt-1">OUR · FAMILY</p>
               </div>
-
-              {/* FAMILY 카드 */}
-              <div className="group relative p-3 sm:p-8 rounded-xl sm:rounded-3xl border border-gray-100 bg-white/90 backdrop-blur-sm shadow-md hover:border-blue-400 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
-                <div className="text-2xl sm:text-5xl mb-1 sm:mb-4">👨‍👩‍👧‍👦</div>
-                <h3 className="text-sm sm:text-2xl font-semibold text-gray-900 mb-0.5 sm:mb-2">FAMILY</h3>
-                <p className="text-[10px] sm:text-base text-gray-600 mb-2 sm:mb-6">두 가족의 축복으로 완성되는 청첩장</p>
-                <div className="space-y-0.5 sm:space-y-2 mb-2 sm:mb-8 text-[9px] sm:text-sm text-gray-500">
-                  <p className="flex items-center gap-1 sm:gap-2"><span className="text-blue-400">♥</span> 양가 부모님의 축하 인사말</p>
-                  <p className="flex items-center gap-1 sm:gap-2"><span className="text-blue-400">♥</span> 서로가 선택한 이유 (신랑/신부 소개)</p>
-                  <p className="flex items-center gap-1 sm:gap-2"><span className="text-blue-400">♥</span> 커플 인터뷰 & 풀스크린 포토</p>
-                </div>
-                <div className="flex items-center justify-between">
-                  <button
-                    onClick={() => handleTemplateSelect('narrative-family')}
-                    className="text-[10px] sm:text-sm text-blue-500 font-medium hover:underline"
-                  >
-                    시작하기 →
-                  </button>
-                  <a
-                    href="/i/sample-family"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[10px] sm:text-xs text-gray-400 hover:text-gray-600 underline"
-                  >
-                    샘플 보기
-                  </a>
-                </div>
+              <div className="text-center p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-white/80 backdrop-blur-sm border border-gray-100 shadow-sm">
+                <div className="text-2xl sm:text-4xl mb-1.5 sm:mb-3">✨</div>
+                <h3 className="text-sm sm:text-lg font-semibold text-gray-900 mb-0.5 sm:mb-1">미니 스토리형</h3>
+                <p className="text-[10px] sm:text-sm text-gray-500 leading-relaxed">감각적 디자인에 간결하게</p>
+                <p className="text-[9px] sm:text-xs text-gray-400 mt-1">MAGAZINE · MOVIE · RECORD · FEED</p>
+              </div>
+              <div className="text-center p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-white/80 backdrop-blur-sm border border-gray-100 shadow-sm">
+                <div className="text-2xl sm:text-4xl mb-1.5 sm:mb-3">🎎</div>
+                <h3 className="text-sm sm:text-lg font-semibold text-gray-900 mb-0.5 sm:mb-1">혼주용</h3>
+                <p className="text-[10px] sm:text-sm text-gray-500 leading-relaxed">부모님이 보내는 격식 있는</p>
+                <p className="text-[9px] sm:text-xs text-gray-400 mt-1">PARENTS</p>
               </div>
             </div>
 
-            {/* PARENTS 서브 */}
-            <div className="text-center">
-              <p className="text-[9px] sm:text-xs text-gray-400 mb-1.5 sm:mb-3">부모님용 청첩장도 준비되어 있어요</p>
-              <div className="inline-flex items-center gap-1.5 sm:gap-3 px-3 sm:px-6 py-1.5 sm:py-3 rounded-full border border-gray-200 hover:border-amber-400 hover:bg-amber-50 transition-all text-[10px] sm:text-sm">
-                <span className="text-base sm:text-xl">🎎</span>
-                <button
-                  onClick={() => handleTemplateSelect('narrative-parents')}
-                  className="text-gray-700 hover:text-amber-600 transition-colors"
-                >
-                  PARENTS - 혼주용
-                </button>
-                <span className="text-gray-300">|</span>
-                <a
-                  href="/sample/parents"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-400 hover:text-amber-600 transition-colors"
-                >
-                  샘플보기
-                </a>
-              </div>
-            </div>
+            <SocialProofCounter />
+
           </div>
         </section>
 
@@ -401,10 +322,10 @@ export default function GalleryPage() {
             >
               청첩장 만들기
             </Link>
+            <WeeklyCounter />
           </div>
         </section>
       </div>
-
     </div>
   )
 }

@@ -9,12 +9,12 @@ import { bgmPresets } from '@/lib/bgmPresets'
 
 // 색상 테마 옵션
 const COLOR_THEMES = [
-  { id: 'classic-rose', name: '클래식 로즈', primary: '#E91E63', preview: 'bg-gradient-to-br from-rose-100 to-rose-300' },
-  { id: 'modern-black', name: '모던 블랙', primary: '#1A1A1A', preview: 'bg-gradient-to-br from-gray-200 to-gray-400' },
-  { id: 'romantic-blush', name: '로맨틱 블러시', primary: '#D4A5A5', preview: 'bg-gradient-to-br from-pink-100 to-pink-200' },
-  { id: 'nature-green', name: '네이처 그린', primary: '#6B8E6B', preview: 'bg-gradient-to-br from-green-100 to-green-300' },
-  { id: 'luxury-navy', name: '럭셔리 네이비', primary: '#1E3A5F', preview: 'bg-gradient-to-br from-blue-200 to-indigo-300' },
-  { id: 'sunset-coral', name: '선셋 코럴', primary: '#E8846B', preview: 'bg-gradient-to-br from-orange-100 to-orange-300' },
+  { id: 'classic-rose', name: '클래식 로즈', primary: '#E91E63', preview: 'bg-gradient-to-br from-rose-100 to-rose-300', recommended: false },
+  { id: 'modern-black', name: '모던 블랙', primary: '#1A1A1A', preview: 'bg-gradient-to-br from-gray-200 to-gray-400', recommended: true },
+  { id: 'romantic-blush', name: '로맨틱 블러시', primary: '#D4A5A5', preview: 'bg-gradient-to-br from-pink-100 to-pink-200', recommended: false },
+  { id: 'nature-green', name: '네이처 그린', primary: '#6B8E6B', preview: 'bg-gradient-to-br from-green-100 to-green-300', recommended: false },
+  { id: 'luxury-navy', name: '럭셔리 네이비', primary: '#1E3A5F', preview: 'bg-gradient-to-br from-blue-200 to-indigo-300', recommended: false },
+  { id: 'sunset-coral', name: '선셋 코럴', primary: '#E8846B', preview: 'bg-gradient-to-br from-orange-100 to-orange-300', recommended: false },
 ] as const
 
 // 테마별 기본 강조 텍스트 색상
@@ -39,14 +39,23 @@ const DEFAULT_BODY_TEXT_COLORS: Record<string, string> = {
 
 // 폰트 스타일 옵션
 const FONT_STYLES = [
-  { id: 'classic', name: '클래식', sample: '우리 결혼합니다', fontFamily: "'Ridibatang', serif", desc: '정갈한 바탕체' },
-  { id: 'modern', name: '모던', sample: '우리 결혼합니다', fontFamily: "'Pretendard', sans-serif", desc: '세련된 산세리프체' },
-  { id: 'romantic', name: '손글씨', sample: '우리 결혼합니다', fontFamily: "'Okticon', serif", desc: 'okticon' },
-  { id: 'contemporary', name: '컨템포러리', sample: '우리 결혼합니다', fontFamily: "'JeonnamEducationBarun', sans-serif", desc: '깔끔한 바른체' },
-  { id: 'luxury', name: '포멀', sample: '우리 결혼합니다', fontFamily: "'ELandChoice', serif", desc: '고급스러운 명조체' },
+  { id: 'classic', name: '클래식', sample: '우리 결혼합니다', fontFamily: "'Ridibatang', serif", desc: '정갈한 바탕체', recommended: false },
+  { id: 'modern', name: '모던', sample: '우리 결혼합니다', fontFamily: "'Pretendard', sans-serif", desc: '세련된 산세리프체', recommended: true },
+  { id: 'romantic', name: '손글씨', sample: '우리 결혼합니다', fontFamily: "'Okticon', serif", desc: 'okticon', recommended: false },
+  { id: 'contemporary', name: '컨템포러리', sample: '우리 결혼합니다', fontFamily: "'JeonnamEducationBarun', sans-serif", desc: '깔끔한 바른체', recommended: false },
+  { id: 'luxury', name: '포멀', sample: '우리 결혼합니다', fontFamily: "'ELandChoice', serif", desc: '고급스러운 명조체', recommended: false },
 ] as const
 
 // BGM 프리셋은 @/lib/bgmPresets에서 import
+
+const ACCENT_PRESETS = [
+  { color: '#D4838F', label: '로즈핑크' },
+  { color: '#B8977E', label: '골드' },
+  { color: '#9B8EC4', label: '라벤더' },
+  { color: '#6BA89E', label: '민트' },
+  { color: '#D4836A', label: '코랄' },
+  { color: '#6A9FD4', label: '스카이블루' },
+]
 
 interface Step2StyleProps {
   templateId?: string
@@ -61,7 +70,18 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
 
   if (!invitation) return null
 
+  const isFilm = templateId === 'narrative-film' || invitation.templateId === 'narrative-film'
+  const isRecord = templateId === 'narrative-record' || invitation.templateId === 'narrative-record'
+  const isMagazine = templateId === 'narrative-magazine' || invitation.templateId === 'narrative-magazine'
   const { colorTheme, fontStyle, bgm, accentTextColor, bodyTextColor } = invitation
+
+  // Movie 전용 상태
+  const currentFilmTheme = colorTheme || 'film-dark'
+  const currentAccent = invitation.customAccentColor || '#D4838F'
+
+  // Record 전용 상태
+  const currentRecordTheme = colorTheme || 'record-coral'
+  const currentRecordAccent = invitation.customAccentColor || '#D4766A'
 
   // 현재 테마의 기본 색상들
   const defaultAccentColor = DEFAULT_ACCENT_TEXT_COLORS[colorTheme] || '#C41050'
@@ -170,7 +190,10 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
                     </div>
                   )}
                   <div className="text-left">
-                    <span className="text-sm font-medium text-gray-700 block">{font.name}</span>
+                    <span className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                      {font.name}
+                      {font.recommended && <span className="text-[10px] text-white bg-black px-1.5 py-0.5 rounded-full font-normal">추천</span>}
+                    </span>
                     <span className="text-xs text-gray-400">{font.desc}</span>
                   </div>
                 </div>
@@ -186,7 +209,184 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
         </div>
       </section>
 
-      {/* 색상 테마 */}
+      {/* 색상 테마 - Film/Record/기본 분기 */}
+      {isRecord ? (
+        <>
+          {/* Record 테마 선택 (6종) */}
+          <section className="space-y-4">
+            <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+              💿 테마 선택
+            </h3>
+            <p className="text-sm text-blue-600">레코드 앨범에 어울리는 테마를 선택하세요</p>
+
+            <div className="grid grid-cols-3 gap-3">
+              {([
+                { id: 'record-coral', name: '코랄', bg: '#FAF7F4', accent: '#D4766A', text: '#3D3D3D', default: true },
+                { id: 'record-rose', name: '로제', bg: '#FFF5F7', accent: '#E07088', text: '#3D3D3D' },
+                { id: 'record-peach', name: '피치', bg: '#FFF7F0', accent: '#E8885A', text: '#3D3D3D' },
+                { id: 'record-bw', name: '모노', bg: '#FFFFFF', accent: '#1A1A1A', text: '#1A1A1A' },
+                { id: 'record-lilac', name: '라일락', bg: '#FAF8FC', accent: '#BDB0D0', text: '#3D3D3D' },
+                { id: 'record-mint', name: '포레스트', bg: '#F8FAF5', accent: '#9CAF88', text: '#3D3D3D' },
+              ] as const).map((theme) => {
+                const isSelected = currentRecordTheme === theme.id
+                return (
+                  <button
+                    key={theme.id}
+                    onClick={() => updateField('colorTheme', theme.id as any)}
+                    className={`relative rounded-xl border-2 overflow-hidden transition-all ${
+                      isSelected ? 'border-gray-900 ring-2 ring-gray-900/20' : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    {isSelected && (
+                      <div className="absolute top-2 right-2 z-10 w-5 h-5 bg-black rounded-full flex items-center justify-center">
+                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                      </div>
+                    )}
+                    <div className="aspect-[3/4] flex flex-col items-center justify-center p-3 gap-1.5" style={{ backgroundColor: theme.bg }}>
+                      {/* Mini vinyl disc */}
+                      <div className="w-10 h-10 rounded-full border-2 flex items-center justify-center" style={{ borderColor: theme.accent }}>
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: theme.accent }} />
+                      </div>
+                      <div className="w-8 h-0.5 mt-1" style={{ backgroundColor: theme.accent }} />
+                      <div className="text-[8px] font-medium tracking-wider" style={{ color: theme.text }}>GROOM & BRIDE</div>
+                    </div>
+                    <p className="text-xs text-gray-700 font-medium py-2 text-center">
+                      {theme.name}
+                      {'default' in theme && theme.default && <span className="ml-1 text-[9px] text-white bg-black px-1.5 py-0.5 rounded-full">기본</span>}
+                    </p>
+                  </button>
+                )
+              })}
+            </div>
+          </section>
+        </>
+      ) : isFilm ? (
+        <>
+          {/* Movie 테마 선택 (다크/라이트) */}
+          <section className="space-y-4">
+            <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+              🎬 테마 선택
+            </h3>
+            <p className="text-sm text-blue-600">영화 분위기에 맞는 테마를 선택하세요</p>
+
+            <div className="grid grid-cols-2 gap-3">
+              {/* 다크 */}
+              <button
+                onClick={() => updateField('colorTheme', 'film-dark')}
+                className={`relative rounded-xl border-2 overflow-hidden transition-all ${
+                  currentFilmTheme === 'film-dark' ? 'border-gray-900 ring-2 ring-gray-900/20' : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                {currentFilmTheme === 'film-dark' && (
+                  <div className="absolute top-2 right-2 z-10 w-5 h-5 bg-white rounded-full flex items-center justify-center">
+                    <svg className="w-3 h-3 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                  </div>
+                )}
+                <div className="aspect-[3/4] bg-[#111111] flex flex-col items-center justify-center p-3 gap-2">
+                  <div className="w-8 h-0.5 bg-[#D4838F]" />
+                  <div className="text-[8px] text-[#D4838F] tracking-[3px] uppercase">A Wedding Movie</div>
+                  <div className="text-[11px] text-[#E8E4DF] font-semibold tracking-wider">GROOM & BRIDE</div>
+                  <div className="w-full h-[40%] bg-[#1A1A1A] rounded mt-1 flex items-center justify-center">
+                    <div className="w-6 h-6 border border-[#E8E4DF]/30 rounded-full flex items-center justify-center">
+                      <div className="w-0 h-0 border-l-[5px] border-l-[#E8E4DF]/60 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent ml-0.5" />
+                    </div>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-700 font-medium py-2 text-center">다크</p>
+              </button>
+              {/* 라이트 */}
+              <button
+                onClick={() => updateField('colorTheme', 'film-light')}
+                className={`relative rounded-xl border-2 overflow-hidden transition-all ${
+                  currentFilmTheme === 'film-light' ? 'border-gray-900 ring-2 ring-gray-900/20' : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                {currentFilmTheme === 'film-light' && (
+                  <div className="absolute top-2 right-2 z-10 w-5 h-5 bg-black rounded-full flex items-center justify-center">
+                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                  </div>
+                )}
+                <div className="aspect-[3/4] bg-white flex flex-col items-center justify-center p-3 gap-2">
+                  <div className="w-8 h-0.5 bg-[#B8977E]" />
+                  <div className="text-[8px] text-[#B8977E] tracking-[3px] uppercase">A Wedding Movie</div>
+                  <div className="text-[11px] text-[#1A1A1A] font-semibold tracking-wider">GROOM & BRIDE</div>
+                  <div className="w-full h-[40%] bg-[#F8F6F3] rounded mt-1 flex items-center justify-center">
+                    <div className="w-6 h-6 border border-[#1A1A1A]/20 rounded-full flex items-center justify-center">
+                      <div className="w-0 h-0 border-l-[5px] border-l-[#1A1A1A]/40 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent ml-0.5" />
+                    </div>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-700 font-medium py-2 text-center">라이트</p>
+              </button>
+            </div>
+          </section>
+
+          {/* Movie 포인트 컬러 */}
+          <section className="space-y-4">
+            <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+              🎨 포인트 컬러
+            </h3>
+            <p className="text-sm text-blue-600">인트로 바, 챕터 라벨 등에 사용될 포인트 색상을 선택하세요</p>
+
+            <div className="flex flex-wrap gap-3 items-center">
+              {ACCENT_PRESETS.map((preset) => (
+                <button
+                  key={preset.color}
+                  onClick={() => updateField('customAccentColor', preset.color)}
+                  className="relative group flex flex-col items-center gap-1"
+                  title={preset.label}
+                >
+                  <div
+                    className={`w-10 h-10 rounded-full border-2 transition-all ${
+                      currentAccent === preset.color
+                        ? 'border-gray-900 ring-2 ring-gray-900/20 scale-110'
+                        : 'border-gray-200 hover:border-gray-400 hover:scale-105'
+                    }`}
+                    style={{ backgroundColor: preset.color }}
+                  />
+                  <span className="text-[10px] text-gray-500">{preset.label}</span>
+                </button>
+              ))}
+              {/* 커스텀 컬러 */}
+              <div className="flex flex-col items-center gap-1">
+                <label className="relative cursor-pointer">
+                  <div
+                    className={`w-10 h-10 rounded-full border-2 transition-all overflow-hidden ${
+                      !ACCENT_PRESETS.some(p => p.color === currentAccent)
+                        ? 'border-gray-900 ring-2 ring-gray-900/20 scale-110'
+                        : 'border-gray-200 hover:border-gray-400 hover:scale-105'
+                    }`}
+                    style={{
+                      background: !ACCENT_PRESETS.some(p => p.color === currentAccent)
+                        ? currentAccent
+                        : 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)',
+                    }}
+                  />
+                  <input
+                    type="color"
+                    value={currentAccent}
+                    onChange={(e) => updateField('customAccentColor', e.target.value)}
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                  />
+                </label>
+                <span className="text-[10px] text-gray-500">커스텀</span>
+              </div>
+            </div>
+
+            {/* 미리보기 */}
+            <div className="p-4 rounded-lg border border-gray-200" style={{ backgroundColor: currentFilmTheme === 'film-dark' ? '#111111' : '#FFFFFF' }}>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-0.5" style={{ backgroundColor: currentAccent }} />
+                <span className="text-[10px] tracking-[4px] uppercase" style={{ color: currentAccent }}>Preview</span>
+                <div className="w-12 h-0.5" style={{ backgroundColor: currentAccent }} />
+              </div>
+              <p className="text-center text-xs mt-2" style={{ color: currentFilmTheme === 'film-dark' ? '#E8E4DF' : '#1A1A1A' }}>
+                선택한 컬러가 이렇게 적용됩니다
+              </p>
+            </div>
+          </section>
+        </>
+      ) : (
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
           🎨 색상 테마
@@ -215,12 +415,14 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
                 )}
                 <div className={`w-full h-12 rounded-lg mb-2 ${theme.preview}`} />
                 <p className="text-xs text-gray-700 font-medium">{theme.name}</p>
+                {theme.recommended && <span className="text-[9px] text-white bg-black px-1.5 py-0.5 rounded-full">추천</span>}
               </button>
             )
           })}
         </div>
 
-        {/* 텍스트 색상 커스텀 */}
+        {/* 텍스트 색상 커스텀 (매거진 제외 - 매거진은 테마 색상으로 자동 적용) */}
+        {!isMagazine && (
         <div className="mt-4 p-4 bg-gray-50 rounded-xl space-y-4">
           <h4 className="text-sm font-medium text-gray-800">텍스트 색상 설정</h4>
           <p className="text-[11px] text-gray-400 leading-relaxed">
@@ -286,7 +488,9 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
             </button>
           )}
         </div>
+        )}
       </section>
+      )}
 
       {/* 배경음악 */}
       <section className="space-y-4">

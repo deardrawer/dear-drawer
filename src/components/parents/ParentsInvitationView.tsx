@@ -138,6 +138,7 @@ export default function ParentsInvitationView({
         { id: 3, url: '/samples/parents/3.png' },
         { id: 4, url: '/samples/parents/4.png' },
         { id: 5, url: '/samples/parents/5.png' },
+        { id: 6, url: '/samples/parents/6.png' },
       ]
 
   // 계좌 정보
@@ -178,7 +179,7 @@ export default function ParentsInvitationView({
   return (
     <ThemeProvider themeId={data.colorTheme || 'burgundy'}>
       <div
-        className={`relative max-w-[390px] mx-auto min-h-screen ${fontStyle.className}`}
+        className={`relative max-w-[390px] mx-auto min-h-screen overflow-hidden ${fontStyle.className}`}
         style={{
           backgroundColor: theme.background,
           // 글자 크기(zoom)는 본문에서만 적용 (봉투는 제외)

@@ -92,6 +92,7 @@ const sampleData: ParentsInvitationContent = {
       { url: '/samples/parents/3.png', cropX: 0, cropY: 0, cropWidth: 1, cropHeight: 1 },
       { url: '/samples/parents/4.png', cropX: 0, cropY: 0, cropWidth: 1, cropHeight: 1 },
       { url: '/samples/parents/5.png', cropX: 0, cropY: 0, cropWidth: 1, cropHeight: 1 },
+      { url: '/samples/parents/6.png', cropX: 0, cropY: 0, cropWidth: 1, cropHeight: 1 },
     ],
   },
   weddingInfo: {

@@ -94,6 +94,16 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
   const [directionsTab, setDirectionsTab] = useState<DirectionsTab>('car')
   const [rsvpForm, setRsvpForm] = useState({ name: '', attendance: '', guestCount: 1, message: '' })
 
+  // Bottom sheet/modal always use light colors (since they have white backgrounds)
+  const isDarkTheme = themeColors.background === '#111111' || themeColors.sectionBg === '#111111'
+  const sheetColors = {
+    sectionBg: isDarkTheme ? '#F5F5F5' : themeColors.sectionBg,
+    text: isDarkTheme ? '#2A2A2A' : themeColors.text,
+    gray: isDarkTheme ? '#888888' : themeColors.gray,
+    primary: isDarkTheme ? '#2A2A2A' : themeColors.primary,
+    closeBg: isDarkTheme ? '#F5F5F5' : themeColors.background,
+  }
+
   const openModal = (modal: ModalType) => {
     setIsBottomSheetOpen(false)
     setTimeout(() => setActiveModal(modal), 200)
@@ -133,27 +143,27 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
     hasContacts && {
       key: 'contact',
       label: '축하 전하기',
-      icon: <svg className="w-5 h-5" fill="none" stroke={themeColors.primary} strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>
+      icon: <svg className="w-5 h-5" fill="none" stroke={sheetColors.primary} strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>
     },
     hasRsvp && {
       key: 'rsvp',
       label: '참석 여부',
-      icon: <svg className="w-5 h-5" fill="none" stroke={themeColors.primary} strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+      icon: <svg className="w-5 h-5" fill="none" stroke={sheetColors.primary} strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
     },
     {
       key: 'location',
       label: '오시는 길',
-      icon: <svg className="w-5 h-5" fill="none" stroke={themeColors.primary} strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
+      icon: <svg className="w-5 h-5" fill="none" stroke={sheetColors.primary} strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
     },
     hasAccounts && {
       key: 'account',
       label: '마음 전하기',
-      icon: <svg className="w-5 h-5" fill="none" stroke={themeColors.primary} strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" /></svg>
+      icon: <svg className="w-5 h-5" fill="none" stroke={sheetColors.primary} strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" /></svg>
     },
     {
       key: 'share',
       label: '공유하기',
-      icon: <svg className="w-5 h-5" fill="none" stroke={themeColors.primary} strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" /></svg>
+      icon: <svg className="w-5 h-5" fill="none" stroke={sheetColors.primary} strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" /></svg>
     },
   ].filter(Boolean) as { key: string; label: string; icon: React.ReactElement }[]
 
@@ -226,23 +236,23 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
           <div className="absolute inset-0 bg-black/50 z-50" onClick={() => setIsBottomSheetOpen(false)} />
           <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 p-6 pb-8" style={{ maxHeight: '70%', boxShadow: '0 -4px 20px rgba(0,0,0,0.15)' }}>
             <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-6" />
-            <h3 className="text-center text-sm mb-6" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 500 }}>결혼식 정보</h3>
+            <h3 className="text-center text-sm mb-6" style={{ fontFamily: fonts.displayKr, color: sheetColors.text, fontWeight: 500 }}>결혼식 정보</h3>
             <div className={`grid gap-3 ${menuItems.length <= 2 ? 'grid-cols-' + menuItems.length : 'grid-cols-2'}`}>
               {menuItems.map((item) => (
                 <button
                   key={item.key}
                   className="flex flex-col items-center justify-center p-5 rounded-2xl"
-                  style={{ background: themeColors.sectionBg }}
+                  style={{ background: sheetColors.sectionBg }}
                   onClick={() => openModal(item.key as ModalType)}
                 >
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3" style={{ background: themeColors.cardBg }}>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3" style={{ background: '#FFFFFF' }}>
                     {item.icon}
                   </div>
-                  <span className="text-[11px]" style={{ color: themeColors.text }}>{item.label}</span>
+                  <span className="text-[11px]" style={{ color: sheetColors.text }}>{item.label}</span>
                 </button>
               ))}
             </div>
-            <button onClick={() => setIsBottomSheetOpen(false)} className="w-full mt-6 py-3 rounded-xl text-xs font-light" style={{ background: themeColors.background, color: themeColors.gray }}>닫기</button>
+            <button onClick={() => setIsBottomSheetOpen(false)} className="w-full mt-6 py-3 rounded-xl text-xs font-light" style={{ background: sheetColors.closeBg, color: sheetColors.gray }}>닫기</button>
           </div>
         </>
       )}
@@ -260,14 +270,14 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
                   onClick={() => setActiveModal(item.key as ModalType)}
                   className="flex-1 py-3 text-[11px] font-medium transition-all relative"
                   style={{
-                    color: activeModal === item.key ? themeColors.primary : themeColors.gray,
+                    color: activeModal === item.key ? sheetColors.primary : sheetColors.gray,
                   }}
                 >
                   {item.label}
                   {activeModal === item.key && (
                     <span
                       className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full"
-                      style={{ background: themeColors.primary }}
+                      style={{ background: sheetColors.primary }}
                     />
                   )}
                 </button>
@@ -434,34 +444,34 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
                     value={rsvpForm.name}
                     onChange={(e) => setRsvpForm({ ...rsvpForm, name: e.target.value })}
                     className="w-full p-3 rounded-xl mb-3 text-sm outline-none"
-                    style={{ background: themeColors.sectionBg, color: themeColors.text }}
+                    style={{ background: sheetColors.sectionBg, color: sheetColors.text }}
                   />
                   <div className="flex gap-2 mb-3">
                     <button
                       onClick={() => setRsvpForm({ ...rsvpForm, attendance: 'yes' })}
                       className="flex-1 py-3 rounded-xl text-sm transition-all"
-                      style={{ background: rsvpForm.attendance === 'yes' ? themeColors.primary : themeColors.sectionBg, color: rsvpForm.attendance === 'yes' ? 'white' : themeColors.text }}
+                      style={{ background: rsvpForm.attendance === 'yes' ? sheetColors.primary : sheetColors.sectionBg, color: rsvpForm.attendance === 'yes' ? 'white' : sheetColors.text }}
                     >참석</button>
                     <button
                       onClick={() => setRsvpForm({ ...rsvpForm, attendance: 'no' })}
                       className="flex-1 py-3 rounded-xl text-sm transition-all"
-                      style={{ background: rsvpForm.attendance === 'no' ? themeColors.primary : themeColors.sectionBg, color: rsvpForm.attendance === 'no' ? 'white' : themeColors.text }}
+                      style={{ background: rsvpForm.attendance === 'no' ? sheetColors.primary : sheetColors.sectionBg, color: rsvpForm.attendance === 'no' ? 'white' : sheetColors.text }}
                     >불참</button>
                   </div>
                   {invitation?.rsvpAllowGuestCount !== false && rsvpForm.attendance === 'yes' && (
                     <div className="flex items-center gap-2 mb-3">
-                      <span className="text-sm" style={{ color: themeColors.text }}>참석 인원</span>
+                      <span className="text-sm" style={{ color: sheetColors.text }}>참석 인원</span>
                       <div className="flex items-center gap-2 ml-auto">
                         <button
                           onClick={() => setRsvpForm({ ...rsvpForm, guestCount: Math.max(1, rsvpForm.guestCount - 1) })}
                           className="w-8 h-8 rounded-full flex items-center justify-center"
-                          style={{ background: themeColors.sectionBg }}
+                          style={{ background: sheetColors.sectionBg }}
                         >-</button>
-                        <span className="w-8 text-center text-sm" style={{ color: themeColors.text }}>{rsvpForm.guestCount}</span>
+                        <span className="w-8 text-center text-sm" style={{ color: sheetColors.text }}>{rsvpForm.guestCount}</span>
                         <button
                           onClick={() => setRsvpForm({ ...rsvpForm, guestCount: rsvpForm.guestCount + 1 })}
                           className="w-8 h-8 rounded-full flex items-center justify-center"
-                          style={{ background: themeColors.sectionBg }}
+                          style={{ background: sheetColors.sectionBg }}
                         >+</button>
                       </div>
                     </div>
@@ -471,12 +481,12 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
                     value={rsvpForm.message}
                     onChange={(e) => setRsvpForm({ ...rsvpForm, message: e.target.value })}
                     className="w-full p-3 rounded-xl mb-4 text-sm outline-none resize-none h-16"
-                    style={{ background: themeColors.sectionBg, color: themeColors.text }}
+                    style={{ background: sheetColors.sectionBg, color: sheetColors.text }}
                   />
                   <button
                     onClick={closeModal}
                     className="w-full py-3 rounded-xl text-sm text-white transition-opacity"
-                    style={{ background: themeColors.primary, opacity: (!rsvpForm.name.trim() || !rsvpForm.attendance) ? 0.4 : 1 }}
+                    style={{ background: sheetColors.primary, opacity: (!rsvpForm.name.trim() || !rsvpForm.attendance) ? 0.4 : 1 }}
                     disabled={!rsvpForm.name.trim() || !rsvpForm.attendance}
                   >제출하기</button>
                 </>
@@ -486,29 +496,29 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
               {activeModal === 'location' && (
                 <>
                   <div className="text-center mb-4">
-                    <p className="text-sm font-medium mb-1" style={{ color: themeColors.text }}>{invitation?.venue_name || '예식장'}</p>
-                    <p className="text-xs" style={{ color: themeColors.gray }}>{invitation?.venue_address || '주소를 입력해주세요'}</p>
+                    <p className="text-sm font-medium mb-1" style={{ color: sheetColors.text }}>{invitation?.venue_name || '예식장'}</p>
+                    <p className="text-xs" style={{ color: sheetColors.gray }}>{invitation?.venue_address || '주소를 입력해주세요'}</p>
                   </div>
 
                   {/* 지도 앱 버튼 */}
                   <div className="grid grid-cols-3 gap-2 mb-4">
-                    <button className="flex flex-col items-center p-3 rounded-xl" style={{ background: themeColors.sectionBg }}>
+                    <button className="flex flex-col items-center p-3 rounded-xl" style={{ background: sheetColors.sectionBg }}>
                       <div className="w-8 h-8 rounded-full flex items-center justify-center mb-1" style={{ background: '#03C75A' }}>
                         <span className="text-white text-xs font-bold">N</span>
                       </div>
-                      <span className="text-[10px]" style={{ color: themeColors.text }}>네이버지도</span>
+                      <span className="text-[10px]" style={{ color: sheetColors.text }}>네이버지도</span>
                     </button>
-                    <button className="flex flex-col items-center p-3 rounded-xl" style={{ background: themeColors.sectionBg }}>
+                    <button className="flex flex-col items-center p-3 rounded-xl" style={{ background: sheetColors.sectionBg }}>
                       <div className="w-8 h-8 rounded-full flex items-center justify-center mb-1" style={{ background: '#FEE500' }}>
                         <span className="text-black text-xs font-bold">K</span>
                       </div>
-                      <span className="text-[10px]" style={{ color: themeColors.text }}>카카오맵</span>
+                      <span className="text-[10px]" style={{ color: sheetColors.text }}>카카오맵</span>
                     </button>
-                    <button className="flex flex-col items-center p-3 rounded-xl" style={{ background: themeColors.sectionBg }}>
+                    <button className="flex flex-col items-center p-3 rounded-xl" style={{ background: sheetColors.sectionBg }}>
                       <div className="w-8 h-8 rounded-full flex items-center justify-center mb-1" style={{ background: '#4285F4' }}>
                         <span className="text-white text-xs font-bold">T</span>
                       </div>
-                      <span className="text-[10px]" style={{ color: themeColors.text }}>티맵</span>
+                      <span className="text-[10px]" style={{ color: sheetColors.text }}>티맵</span>
                     </button>
                   </div>
 
@@ -522,15 +532,15 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
                     ].filter(tab => tab.show)
 
                     return tabs.length > 1 ? (
-                      <div className="flex rounded-xl overflow-hidden mb-3" style={{ background: themeColors.sectionBg }}>
+                      <div className="flex rounded-xl overflow-hidden mb-3" style={{ background: sheetColors.sectionBg }}>
                         {tabs.map((tab) => (
                           <button
                             key={tab.key}
                             onClick={() => setDirectionsTab(tab.key)}
                             className="flex-1 py-2.5 text-[10px] transition-all"
                             style={{
-                              background: directionsTab === tab.key ? themeColors.primary : 'transparent',
-                              color: directionsTab === tab.key ? 'white' : themeColors.gray,
+                              background: directionsTab === tab.key ? sheetColors.primary : 'transparent',
+                              color: directionsTab === tab.key ? 'white' : sheetColors.gray,
                             }}
                           >
                             {tab.label}
@@ -541,33 +551,33 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
                   })()}
 
                   {/* 교통수단별 정보 */}
-                  <div className="rounded-xl p-4 mb-3" style={{ background: themeColors.sectionBg, minHeight: '80px' }}>
+                  <div className="rounded-xl p-4 mb-3" style={{ background: sheetColors.sectionBg, minHeight: '80px' }}>
                     {directionsTab === 'car' && (
                       invitation?.directions?.car ? (
-                        <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: themeColors.text }}>
+                        <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: sheetColors.text }}>
                           {invitation.directions.car}
                         </p>
                       ) : (
-                        <p className="text-xs text-center py-4" style={{ color: themeColors.gray }}>
+                        <p className="text-xs text-center py-4" style={{ color: sheetColors.gray }}>
                           자가용 정보가 없습니다
                         </p>
                       )
                     )}
 
                     {directionsTab === 'publicTransport' && invitation?.directions?.publicTransport && (
-                      <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: themeColors.text }}>
+                      <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: sheetColors.text }}>
                         {invitation.directions.publicTransport}
                       </p>
                     )}
 
                     {directionsTab === 'train' && invitation?.directions?.train && (
-                      <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: themeColors.text }}>
+                      <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: sheetColors.text }}>
                         {invitation.directions.train}
                       </p>
                     )}
 
                     {directionsTab === 'expressBus' && invitation?.directions?.expressBus && (
-                      <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: themeColors.text }}>
+                      <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: sheetColors.text }}>
                         {invitation.directions.expressBus}
                       </p>
                     )}
@@ -575,8 +585,8 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
 
                   {/* 추가 안내사항 */}
                   {invitation?.directions?.extraInfoEnabled && invitation?.directions?.extraInfoText && (
-                    <div className="mt-4 p-3 rounded-xl border" style={{ background: `${themeColors.primary}10`, borderColor: `${themeColors.primary}30` }}>
-                      <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: themeColors.text }}>
+                    <div className="mt-4 p-3 rounded-xl border" style={{ background: `${sheetColors.primary}10`, borderColor: `${sheetColors.primary}30` }}>
+                      <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: sheetColors.text }}>
                         {invitation.directions.extraInfoText}
                       </p>
                     </div>
@@ -585,7 +595,7 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
                   <button
                     onClick={() => copyToClipboard(invitation?.venue_address || '')}
                     className="w-full mt-4 py-2 rounded-xl text-xs"
-                    style={{ background: themeColors.sectionBg, color: themeColors.text }}
+                    style={{ background: sheetColors.sectionBg, color: sheetColors.text }}
                   >주소 복사</button>
                 </>
               )}
@@ -705,7 +715,7 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
               {/* Share Content - 공유하기 */}
               {activeModal === 'share' && (
                 <>
-                  <p className="text-center text-sm mb-4" style={{ color: themeColors.text }}>
+                  <p className="text-center text-sm mb-4" style={{ color: sheetColors.text }}>
                     청첩장을 공유해보세요
                   </p>
                   <div className="grid grid-cols-2 gap-3">
@@ -725,17 +735,17 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
                         alert('링크가 복사되었습니다!')
                       }}
                       className="flex flex-col items-center justify-center p-4 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
-                      style={{ background: themeColors.sectionBg }}
+                      style={{ background: sheetColors.sectionBg }}
                     >
-                      <svg className="w-8 h-8 mb-2" fill="none" stroke={themeColors.primary} strokeWidth={1.5} viewBox="0 0 24 24">
+                      <svg className="w-8 h-8 mb-2" fill="none" stroke={sheetColors.primary} strokeWidth={1.5} viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
                       </svg>
-                      <span className="text-xs font-medium" style={{ color: themeColors.text }}>링크 복사</span>
+                      <span className="text-xs font-medium" style={{ color: sheetColors.text }}>링크 복사</span>
                     </button>
                   </div>
 
-                  <div className="mt-4 p-3 rounded-xl" style={{ background: themeColors.sectionBg }}>
-                    <p className="text-[10px] text-center" style={{ color: themeColors.gray }}>
+                  <div className="mt-4 p-3 rounded-xl" style={{ background: sheetColors.sectionBg }}>
+                    <p className="text-[10px] text-center" style={{ color: sheetColors.gray }}>
                       카카오톡으로 친구들에게 청첩장을 공유하거나<br />
                       링크를 복사하여 원하는 곳에 붙여넣기 하세요
                     </p>
@@ -746,7 +756,7 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
 
             {/* Close Button */}
             <div className="p-4 pt-0 flex-shrink-0">
-              <button onClick={closeModal} className="w-full py-3 rounded-xl text-sm" style={{ background: themeColors.background, color: themeColors.gray }}>닫기</button>
+              <button onClick={closeModal} className="w-full py-3 rounded-xl text-sm" style={{ background: sheetColors.closeBg, color: sheetColors.gray }}>닫기</button>
             </div>
           </div>
         </>

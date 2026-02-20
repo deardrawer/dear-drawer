@@ -59,14 +59,14 @@ export const SAMPLE_INTERVIEWS = [
   {
     question: '두 분은 어떻게 만나셨나요?',
     answer: '회사 동료로 처음 만났어요. 같은 프로젝트 팀이 되면서 자연스럽게 가까워졌습니다.',
-    images: [] as string[],
+    images: ['/sample/couple1.jpg', '/sample/story1.jpg', '/sample/story2.jpg'],
     imageSettings: [],
     bgClass: 'pink-bg' as const,
   },
   {
     question: '결혼을 결심하게 된 계기는?',
     answer: '함께 있을 때 가장 편안하고 행복하다는 것을 깨달았어요. 평생 이 사람과 함께하고 싶다는 확신이 들었습니다.',
-    images: [] as string[],
+    images: ['/sample/gallery1.png'],
     imageSettings: [],
     bgClass: 'white-bg' as const,
   },
@@ -88,11 +88,56 @@ export const SAMPLE_VENUE = {
 export const SAMPLE_DIRECTIONS = {
   car: '네비게이션: "더채플앳청담" 검색\n주차: 건물 지하 주차장 이용 (2시간 무료)',
   publicTransport: '지하철: 2호선 강남역 3번 출구에서 도보 5분\n버스: 146, 341번 강남역 하차',
+  train: '서울역 하차 → 4호선 → 사당역 환승 → 2호선 → 강남역 3번 출구',
+  expressBus: '서울고속버스터미널 하차 → 3호선 → 교대역 환승 → 2호선 → 강남역 3번 출구',
 }
 
 export const SAMPLE_THANK_YOU = {
   message: '저희의 새로운 시작을 축하해 주셔서 감사합니다.\n오시는 모든 분들께 감사의 마음을 전합니다.',
   sign: '신랑 ○○ & 신부 ○○ 드림',
+}
+
+// MOVIE 템플릿 전용 샘플
+export const SAMPLE_FILM_GREETING = `솔직히 말하면,
+처음엔 그냥 밥 한번 먹자는 거였는데
+어쩌다 보니 평생 같이 먹게 됐습니다.
+
+이 예상 밖의 전개에
+여러분을 초대합니다.`
+
+export const SAMPLE_FILM_QUOTE = {
+  text: 'I came here tonight because when you realize you want to spend the rest of your life with somebody, you want the rest of your life to start as soon as possible.',
+  author: 'When Harry Met Sally',
+}
+
+export const SAMPLE_FILM_INTERVIEWS = [
+  {
+    question: '첫 만남',
+    answer: '"첫인상이 어땠냐고? 솔직히 별 생각 없었어."\n"나도. 근데 두 번째 만났을 때 좀 설렜어. 아주 조금."',
+    images: [] as string[],
+    imageSettings: [],
+    bgClass: 'pink-bg' as const,
+  },
+  {
+    question: '우리의 시간',
+    answer: '"이 사람 장점? 제가 하는 말에 잘 웃어줘요."\n"아니 진짜 웃긴 걸 어떡해. 근데 본인은 모름."',
+    images: [] as string[],
+    imageSettings: [],
+    bgClass: 'white-bg' as const,
+  },
+  {
+    question: '프로포즈',
+    answer: '"프로포즈를 엄청 준비했는데 긴장해서 다 까먹었어."\n"그래서 그냥 울었잖아. 그게 더 감동이었어 사실."',
+    images: [] as string[],
+    imageSettings: [],
+    bgClass: 'pink-bg' as const,
+  },
+]
+
+export const SAMPLE_FILM_THANK_YOU = {
+  title: 'SPECIAL THANKS',
+  message: '바쁘신 와중에도 저희의 결혼을\n축하해 주셔서 진심으로 감사드립니다.\n\n여러분의 축복을 마음에 새기며\n서로 아끼고 사랑하며 살겠습니다.',
+  sign: '민준 & 서연 올림',
 }
 
 // FAMILY 템플릿 전용 샘플

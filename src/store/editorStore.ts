@@ -15,6 +15,7 @@ export interface BankInfo {
 export interface ParentInfo {
   name: string
   phone: string
+  phoneEnabled?: boolean  // 연락처 개별 표시 (기본 true)
   deceased: boolean
   bank: BankInfo
 }
@@ -53,6 +54,7 @@ export interface PersonInfo {
   lastName: string    // 성 (family 템플릿용)
   firstName: string   // 이름 (family 템플릿용)
   phone: string
+  phoneEnabled?: boolean  // 연락처 개별 표시 (기본 true)
   father: ParentInfo
   mother: ParentInfo
   bank: BankInfo
@@ -75,6 +77,7 @@ export interface DirectionsInfo {
   expressBus?: string      // 고속버스 (선택)
   shuttle?: string         // 셔틀버스 (선택)
   extraInfoEnabled?: boolean  // 추가 안내사항 사용 여부
+  extraInfoTitle?: string     // 추가 안내사항 제목 (기본: 추가 안내사항)
   extraInfoText?: string      // 추가 안내사항 텍스트
 }
 
@@ -181,12 +184,15 @@ export interface SectionVisibility {
   contacts: boolean         // 연락처
   bankAccounts: boolean     // 축의금
   guestbook: boolean        // 방명록
+  rsvp?: boolean            // RSVP (Record 등)
+  parentNames?: boolean     // 부모님 성함 본문 표시
 }
 
 // 미리보기 섹션 타입 (EditPanel과 Preview 연동용)
 export type PreviewSectionId =
   | 'intro-cover'       // 인트로 커버
   | 'invitation'        // 초대 글귀
+  | 'greeting'          // 인사말
   | 'venue-info'        // 예식 정보
   | 'couple-profile'    // 커플 프로필
   | 'our-story'         // 우리의 이야기
@@ -334,6 +340,7 @@ export interface InvitationContent {
     guestbookQuestions: string[]
     parentsGreeting: string   // 부모님 인사말 (FAMILY 템플릿)
     parentsSign: string       // 부모님 서명 (FAMILY 템플릿)
+    filmTitle?: string        // Movie 템플릿 타이틀 (기본: THE WEDDING)
   }
 
   // ===== 갤러리 =====
@@ -370,7 +377,8 @@ export interface InvitationContent {
   backgroundColor: string
   textColor: string
   fontStyle: 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury'
-  colorTheme: 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-green' | 'luxury-navy' | 'sunset-coral'
+  colorTheme: 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-green' | 'luxury-navy' | 'sunset-coral' | 'film-dark' | 'film-light' | 'record-coral' | 'record-rose' | 'record-peach' | 'record-bw' | 'record-lilac' | 'record-mint'
+  customAccentColor?: string  // Movie 템플릿 accent 컬러 커스텀
   accentTextColor?: string  // 강조 텍스트 색상 (사용자 커스텀, 없으면 테마 기본값 사용)
   bodyTextColor?: string    // 본문 텍스트 색상 (사용자 커스텀, 없으면 테마 기본값 사용)
   highlightColor?: string   // 하이라이트 색상 (사용자 커스텀, 없으면 테마 기본값 사용)
@@ -422,6 +430,9 @@ export interface InvitationContent {
     title: string
     url: string
   }
+
+  // ===== 매거진 인트로 스타일 =====
+  magazineIntroStyle?: 'cover' | 'clean' | 'editorial'
 
   // ===== 레거시 필드 (AI 스토리용) =====
   ourStory: string
@@ -518,19 +529,55 @@ const createDefaultPerson = (isGroom: boolean): PersonInfo => ({
 
 const createDefaultInvitation = (template: Template): InvitationContent => ({
   // 커플 정보
-  groom: createDefaultPerson(true),
-  bride: createDefaultPerson(false),
+  groom: {
+    ...createDefaultPerson(true),
+    ...(template.id === 'narrative-film' ? {
+      name: '신랑',
+      lastName: '',
+      firstName: '신랑',
+      profile: { ...createDefaultPerson(true).profile, tag: '세상에서 가장 따뜻한 사람' },
+    } : template.id === 'narrative-record' ? {
+      name: '신랑',
+      lastName: '',
+      firstName: '신랑',
+      profile: { ...createDefaultPerson(true).profile, tag: '' },
+    } : template.id === 'narrative-magazine' ? {
+      name: '신랑',
+      lastName: '',
+      firstName: '신랑',
+      profile: { ...createDefaultPerson(true).profile, tag: '세상에서 가장 따뜻한 사람' },
+    } : {}),
+  },
+  bride: {
+    ...createDefaultPerson(false),
+    ...(template.id === 'narrative-film' ? {
+      name: '신부',
+      lastName: '',
+      firstName: '신부',
+      profile: { ...createDefaultPerson(false).profile, tag: '매일 웃게 해주는 사람' },
+    } : template.id === 'narrative-record' ? {
+      name: '신부',
+      lastName: '',
+      firstName: '신부',
+      profile: { ...createDefaultPerson(false).profile, tag: '' },
+    } : template.id === 'narrative-magazine' ? {
+      name: '신부',
+      lastName: '',
+      firstName: '신부',
+      profile: { ...createDefaultPerson(false).profile, tag: '매일 웃게 해주는 사람' },
+    } : {}),
+  },
 
   // 결혼식 정보
   wedding: {
-    date: '',
-    time: '',
-    timeDisplay: '',
+    date: template.id === 'narrative-film' ? '2026-05-23' : template.id === 'narrative-record' ? '2026-06-20' : template.id === 'narrative-magazine' ? '2026-05-30' : '',
+    time: template.id === 'narrative-film' ? '13:30' : template.id === 'narrative-record' ? '14:00' : template.id === 'narrative-magazine' ? '12:00' : '',
+    timeDisplay: template.id === 'narrative-film' ? '오후 1시 30분' : template.id === 'narrative-record' ? '오후 2시' : template.id === 'narrative-magazine' ? '낮 12시' : '',
     dayOfWeek: '',
     title: 'OUR WEDDING',
     venue: {
-      name: '',
-      hall: '',
+      name: template.id === 'narrative-film' ? '더채플앳청담' : template.id === 'narrative-record' ? '그랜드힐 컨벤션' : template.id === 'narrative-magazine' ? '포시즌스 호텔' : '',
+      hall: template.id === 'narrative-film' ? '그랜드홀' : template.id === 'narrative-record' ? '크리스탈홀' : template.id === 'narrative-magazine' ? '그랜드볼룸' : '',
       address: '',
     },
     directions: {
@@ -557,9 +604,27 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
 
   // 콘텐츠
   content: {
-    greeting: '',
-    quote: { text: '', author: '' },
-    thankYou: { title: 'THANK YOU', message: '', sign: '' },
+    greeting: template.id === 'narrative-film'
+      ? '솔직히 말하면,\n처음엔 그냥 밥 한번 먹자는 거였는데\n어쩌다 보니 평생 같이 먹게 됐습니다.\n\n이 예상 밖의 전개에\n여러분을 초대합니다.'
+      : template.id === 'narrative-record'
+      ? '두 사람의 하모니가\n하나의 멜로디가 되어\n평생을 함께 연주합니다.\n\n이 특별한 무대에\n여러분을 초대합니다.'
+      : template.id === 'narrative-magazine'
+      ? '서로 다른 두 사람이\n같은 방향을 바라보며\n하나의 길을 걸어가려 합니다.\n\n소중한 분들을 초대합니다.'
+      : '',
+    quote: template.id === 'narrative-film'
+      ? { text: 'I came here tonight because when you realize you want to spend the rest of your life with somebody, you want the rest of your life to start as soon as possible.', author: 'When Harry Met Sally' }
+      : template.id === 'narrative-record'
+      ? { text: 'Every love story is beautiful,\nbut ours is my favorite.', author: '' }
+      : template.id === 'narrative-magazine'
+      ? { text: 'Whatever our souls are made of,\nhis and mine are the same.', author: 'Emily Brontë' }
+      : { text: '', author: '' },
+    thankYou: template.id === 'narrative-film'
+      ? { title: 'SPECIAL THANKS', message: '바쁘신 와중에도 저희의 결혼을\n축하해 주셔서 진심으로 감사드립니다.\n\n여러분의 축복을 마음에 새기며\n서로 아끼고 사랑하며 살겠습니다.', sign: '민준 & 서연 올림' }
+      : template.id === 'narrative-record'
+      ? { title: 'LINER NOTES', message: '저희의 첫 앨범 발매에\n함께해 주셔서 감사합니다.\n\n여러분의 축하와 응원이\n가장 아름다운 반주가 되어줄 거예요.', sign: '길동 & 민지 올림' }
+      : template.id === 'narrative-magazine'
+      ? { title: 'THANK YOU', message: '바쁘신 가운데\n저희의 새로운 시작을\n축하해 주셔서 감사합니다.\n\n여러분의 따뜻한 마음을 담아\n행복하게 살겠습니다.', sign: '민준 & 서연 올림' }
+      : { title: 'THANK YOU', message: '', sign: '' },
     info: {
       dressCode: { title: '드레스코드 안내', content: '결혼식에 맞는 옷차림을 고민하지 않으셔도 괜찮아요.\n여러분이 가장 좋아하는 옷,\n가장 여러분다운 모습으로 오셔서\n함께 웃고 즐겨주신다면 그걸로 충분합니다.', enabled: false },
       photoShare: {
@@ -578,13 +643,34 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
       customItems: [],
       itemOrder: ['dressCode', 'photoBooth', 'photoShare', 'flowerGift', 'flowerChild', 'wreath', 'shuttle', 'reception'],
     },
-    interviews: [
-      { question: '', answer: '', images: [], imageSettings: [], bgClass: 'pink-bg' },
-      { question: '', answer: '', images: [], imageSettings: [], bgClass: 'white-bg' },
-      { question: '', answer: '', images: [], imageSettings: [], bgClass: 'pink-bg' },
-    ],
+    filmTitle: template.id === 'narrative-film' ? 'THE WEDDING' : undefined,
+    interviews: template.id === 'narrative-film'
+      ? [
+          { question: '첫 만남', answer: '"첫인상이 어땠냐고? 솔직히 별 생각 없었어."\n"나도. 근데 두 번째 만났을 때 좀 설렜어. 아주 조금."', images: [], imageSettings: [], bgClass: '' },
+          { question: '우리의 시간', answer: '"이 사람 장점? 제가 하는 말에 잘 웃어줘요."\n"아니 진짜 웃긴 걸 어떡해. 근데 본인은 모름."', images: [], imageSettings: [], bgClass: '' },
+          { question: '프로포즈', answer: '"프로포즈를 엄청 준비했는데 긴장해서 다 까먹었어."\n"그래서 그냥 울었잖아. 그게 더 감동이었어 사실."', images: [], imageSettings: [], bgClass: '' },
+        ]
+      : template.id === 'narrative-record'
+      ? [
+          { question: '첫 만남', answer: '친구 소개로 만난 우리,\n첫눈에 반했다고 하면 거짓말이지만\n두 번째 만남부터는 확실했어요.', images: [], imageSettings: [], bgClass: '' },
+          { question: '사랑에 빠진 순간', answer: '같은 노래를 좋아한다는 걸 알았을 때,\n이 사람이다 싶었어요.', images: [], imageSettings: [], bgClass: '' },
+          { question: '프로포즈', answer: '특별한 건 없었어요.\n평범한 일상 속에서\n"평생 같이 있자"라는 한마디.', images: [], imageSettings: [], bgClass: '' },
+        ]
+      : template.id === 'narrative-magazine'
+      ? [
+          { question: '두 사람의 첫 만남은 어땠나요?', answer: '서로 다른 일상을 살던 두 사람이\n우연히 같은 자리에서 마주쳤습니다.\n\n특별할 것 없는 평범한 하루였지만,\n그날의 대화가 오래도록 마음에 남았어요.', images: [], imageSettings: [], bgClass: '' },
+          { question: '함께한 시간 중 가장 기억에 남는 순간은?', answer: '비 오는 날 우산 하나로 걸었던 골목길,\n아무 말 없이도 편안했던 그 순간이요.\n\n"이 사람이면 괜찮겠다" 싶었어요.', images: [], imageSettings: [], bgClass: '' },
+          { question: '결혼을 결심한 이유가 있다면?', answer: '거창한 이유는 없었어요.\n매일의 소소한 순간들이 쌓여\n자연스럽게 "평생 함께하고 싶다"는\n마음이 되었습니다.', images: [], imageSettings: [], bgClass: '' },
+        ]
+      : [
+          { question: '', answer: '', images: [], imageSettings: [], bgClass: 'pink-bg' },
+          { question: '', answer: '', images: [], imageSettings: [], bgClass: 'white-bg' },
+          { question: '', answer: '', images: [], imageSettings: [], bgClass: 'pink-bg' },
+        ],
     interviewIntro: '',
-    guestbookQuestions: [
+    guestbookQuestions: template.id === 'narrative-record'
+      ? ['두 사람에게 축하 메시지를 남겨주세요', '결혼생활에서 가장 중요한 건?']
+      : [
       '두 사람에게 해주고 싶은 말은?',
       '결혼생활에서 가장 중요한 건?',
       '두 사람의 첫인상은 어땠나요?',
@@ -600,7 +686,7 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
   media: { coverImage: template.defaultCoverImage || '', infoImage: '', bgm: '' },
 
   // 메타
-  meta: { title: '', description: '', ogImage: '', ogImageSettings: { scale: 1, positionX: 0, positionY: 0, cropX: 0, cropY: 0, cropWidth: 1, cropHeight: 1 }, kakaoThumbnail: '', kakaoThumbnailSettings: { scale: 1, positionX: 0, positionY: 0, cropX: 0, cropY: 0, cropWidth: 1, cropHeight: 1 }, kakaoTitle: '', kakaoDescription: '' },
+  meta: { title: '', description: '', ogImage: '', ogImageSettings: { scale: 1, positionX: 0, positionY: 0 }, kakaoThumbnail: '', kakaoThumbnailSettings: { scale: 1, positionX: 0, positionY: 0 }, kakaoTitle: '', kakaoDescription: '' },
 
   // 테마
   templateId: template.id,
@@ -609,8 +695,12 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
   accentColor: template.colors.accent,
   backgroundColor: template.colors.background,
   textColor: template.colors.text,
-  fontStyle: 'classic',
-  colorTheme: 'classic-rose',
+  fontStyle: template.id === 'narrative-magazine' ? 'modern'
+    : template.id === 'narrative-film' ? 'contemporary'
+    : template.id === 'narrative-record' ? 'modern' : 'classic',
+  colorTheme: template.id === 'narrative-magazine' ? 'modern-black'
+    : template.id === 'narrative-film' ? 'film-dark'
+    : template.id === 'narrative-record' ? 'record-coral' : 'classic-rose',
 
   // RSVP
   rsvpEnabled: true,
@@ -630,6 +720,7 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
     contacts: true,
     bankAccounts: true,
     guestbook: true,
+    parentNames: true,
   },
 
   // 프로필 순서
@@ -638,7 +729,9 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
   // 디자인 설정
   design: {
     introAnimation: 'fade-in',
-    coverTitle: 'OUR WEDDING',
+    coverTitle: template.id === 'narrative-magazine' ? 'WEDDING'
+      : template.id === 'narrative-film' ? 'THE WEDDING'
+      : template.id === 'narrative-record' ? 'WE ARE GETTING MARRIED' : 'OUR WEDDING',
     sectionDividers: {
       invitation: 'INVITATION',
       ourStory: 'OUR STORY',

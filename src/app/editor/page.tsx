@@ -141,6 +141,12 @@ function EditorContent() {
               router.push(`/editor/parents?id=${editId}`)
               return
             }
+            // FEED 템플릿이면 feed 에디터로 리다이렉트
+            if (inv.template_id === 'narrative-exhibit' || inv.template_id === 'exhibit') {
+              router.push(`/editor/feed?id=${editId}`)
+              return
+            }
+            // RECORD 템플릿은 공유 에디터 사용 (리다이렉트 불필요)
             // content 필드에서 전체 데이터 파싱
             if (inv.content) {
               try {
@@ -463,15 +469,15 @@ function EditorContent() {
             />
           </button>
           {/* 템플릿 타입 배지 - URL 또는 invitation에서 확인 */}
-          {(templateId === 'narrative-family' || invitation?.templateId === 'narrative-family') ? (
-            <span className="px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700 rounded-full">
-              family
-            </span>
-          ) : (
-            <span className="px-2 py-0.5 text-xs font-medium bg-rose-100 text-rose-700 rounded-full">
-              our
-            </span>
-          )}
+          {(() => {
+            const tid = templateId || invitation?.templateId || ''
+            if (tid === 'narrative-family') return <span className="px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700 rounded-full">family</span>
+            if (tid === 'narrative-magazine') return <span className="px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-700 rounded-full">magazine</span>
+            if (tid === 'narrative-film') return <span className="px-2 py-0.5 text-xs font-medium bg-gray-800 text-gray-100 rounded-full">movie</span>
+            if (tid === 'narrative-record') return <span className="px-2 py-0.5 text-xs font-medium bg-orange-100 text-orange-700 rounded-full">record</span>
+            if (tid === 'narrative-exhibit') return <span className="px-2 py-0.5 text-xs font-medium bg-violet-100 text-violet-700 rounded-full">feed</span>
+            return <span className="px-2 py-0.5 text-xs font-medium bg-rose-100 text-rose-700 rounded-full">our</span>
+          })()}
           <div className="hidden sm:block h-4 w-px bg-gray-200" />
           <span className="hidden sm:inline text-sm text-gray-400 font-light tracking-wide">
             {activeTemplate?.name || 'Loading...'}
@@ -680,7 +686,7 @@ function EditorContent() {
           }
           shareTitle={invitation.meta.title}
           shareDescription={invitation.meta.description}
-          templateType={template?.id === 'narrative-family' ? 'family' : 'our'}
+          templateType={template?.id === 'narrative-family' ? 'family' : template?.id === 'narrative-magazine' ? 'magazine' : 'our'}
         />
       )}
 

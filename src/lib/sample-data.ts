@@ -10,7 +10,7 @@ export const ourSampleContent = {
       images: ['/sample/groom1.png', '/sample/groom2.png'],
       imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],
       aboutLabel: 'ABOUT GROOM',
-      subtitle: '신부가 소개하는 신랑',
+      subtitle: '신랑을 소개합니다 🤵',
       intro: '처음 만났을 때부터 따뜻한 미소가 인상적이었던 사람.\n항상 제 이야기에 귀 기울여주고, 힘들 때 묵묵히 곁에 있어주는 든든한 사람입니다.\n\n요리를 좋아하고, 주말마다 새로운 레시피에 도전하는 모습이 참 사랑스러워요.',
       tag: '세상에서 가장 따뜻한 사람',
     },
@@ -25,13 +25,13 @@ export const ourSampleContent = {
       images: ['/sample/bride1.png', '/sample/bride2.png'],
       imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],
       aboutLabel: 'ABOUT BRIDE',
-      subtitle: '신랑이 소개하는 신부',
+      subtitle: '신부를 소개합니다 👰',
       intro: '밝은 웃음소리가 참 예쁜 사람.\n제가 지칠 때마다 힘이 되어주고, 작은 것에도 감사할 줄 아는 따뜻한 마음의 소유자입니다.\n\n그림 그리기를 좋아하고, 가끔 저를 위해 그려주는 그림들이 우리 집의 보물이에요.',
       tag: '매일 웃게 해주는 사람',
     },
   },
   wedding: {
-    date: '2025-05-24',
+    date: '2026-12-26',
     time: '14:00',
     timeDisplay: '오후 2시',
     dayOfWeek: '토요일',
@@ -95,22 +95,22 @@ export const ourSampleContent = {
       {
         question: '상대방의 첫인상은 어땠나요?',
         answer: '처음 본 순간, 이 사람이다 싶었어요. 말로 설명하기 어려운 느낌이었는데, 대화를 나눌수록 확신이 들었습니다. 서로의 눈을 바라보며 웃던 그 순간을 잊을 수 없어요.',
-        images: ['/sample/interview1-1.png', '/sample/interview1-2.png'],
-        imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],
+        images: ['/sample/story1-1.png', '/sample/interview1-2.png', '/sample/interview1-3.jpeg'],
+        imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],
         bgClass: 'pink-bg',
       },
       {
         question: '결혼을 결심하게 된 계기는?',
         answer: '함께 있을 때 가장 나다울 수 있었어요. 아무리 힘든 일이 있어도 이 사람 곁에 있으면 괜찮아지더라구요. 평생 이 사람과 함께라면 어떤 일이든 해낼 수 있을 것 같았습니다.',
-        images: ['/sample/interview2-1.png', '/sample/interview2-2.png'],
-        imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],
+        images: ['/sample/story2-1.png', '/sample/interview2-2.png', '/sample/interview2-3.png'],
+        imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],
         bgClass: 'white-bg',
       },
       {
         question: '앞으로의 결혼생활 계획은?',
         answer: '서로를 존중하고 배려하며 살고 싶어요. 작은 일상에서도 감사함을 잊지 않고, 함께 웃으며 나이 들어가고 싶습니다. 무엇보다 서로의 꿈을 응원하는 부부가 되고 싶어요.',
-        images: ['/sample/interview3-1.png', '/sample/interview3-2.png'],
-        imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],
+        images: ['/sample/story3-1.jpeg', '/sample/interview3-2.png', '/sample/interview3-3.png'],
+        imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],
         bgClass: 'pink-bg',
       },
     ],
@@ -257,15 +257,280 @@ export const familySampleContent = {
   },
 }
 
+// MOVIE 템플릿 샘플 데이터
+export const filmSampleContent = {
+  ...ourSampleContent,
+  templateId: 'film',
+  colorTheme: 'film-dark' as const,
+  fontStyle: 'contemporary' as const,
+  groom: {
+    ...ourSampleContent.groom,
+    name: '신랑',
+    lastName: '',
+    firstName: '신랑',
+  },
+  bride: {
+    ...ourSampleContent.bride,
+    name: '신부',
+    lastName: '',
+    firstName: '신부',
+  },
+  wedding: {
+    ...ourSampleContent.wedding,
+    date: '2026-05-23',
+    time: '13:30',
+    timeDisplay: '오후 1시 30분',
+    venue: {
+      name: '더채플앳청담',
+      hall: '그랜드홀',
+      address: '서울특별시 강남구 청담동 123-45',
+    },
+  },
+  content: {
+    ...ourSampleContent.content,
+    filmTitle: 'THE WEDDING',
+    greeting: '솔직히 말하면,\n처음엔 그냥 밥 한번 먹자는 거였는데\n어쩌다 보니 평생 같이 먹게 됐습니다.\n\n이 예상 밖의 전개에\n여러분을 초대합니다.',
+    quote: {
+      text: 'I came here tonight because when you realize you want to spend the rest of your life with somebody, you want the rest of your life to start as soon as possible.',
+      author: 'When Harry Met Sally',
+    },
+    interviews: [
+      {
+        question: '첫 만남',
+        answer: '"첫인상이 어땠냐고? 솔직히 별 생각 없었어."\n"나도. 근데 두 번째 만났을 때 좀 설렜어. 아주 조금."',
+        images: ['/sample/story1-1.png', '/sample/story1-2.png'],
+        imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],
+        bgClass: 'pink-bg',
+      },
+      {
+        question: '우리의 시간',
+        answer: '"이 사람 장점? 제가 하는 말에 잘 웃어줘요."\n"아니 진짜 웃긴 걸 어떡해. 근데 본인은 모름."',
+        images: ['/sample/story2-1.png', '/sample/story2-2.png'],
+        imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],
+        bgClass: 'white-bg',
+      },
+      {
+        question: '프로포즈',
+        answer: '"프로포즈를 엄청 준비했는데 긴장해서 다 까먹었어."\n"그래서 그냥 울었잖아. 그게 더 감동이었어 사실."',
+        images: ['/sample/story3-1.jpeg', '/sample/story3-2.png'],
+        imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],
+        bgClass: 'pink-bg',
+      },
+    ],
+    thankYou: {
+      title: 'SPECIAL THANKS',
+      message: '바쁘신 와중에도 저희의 결혼을\n축하해 주셔서 진심으로 감사드립니다.\n\n여러분의 축복을 마음에 새기며\n서로 아끼고 사랑하며 살겠습니다.',
+      sign: '신랑 & 신부 올림',
+    },
+  },
+  design: {
+    ...ourSampleContent.design,
+    coverTitle: 'A MOVIE BY US',
+    sectionDividers: {
+      ...ourSampleContent.design.sectionDividers,
+      invitation: 'CHAPTER 1',
+      ourStory: 'CHAPTER 2',
+      aboutUs: 'CHAPTER 2',
+      interview: 'CHAPTER 2',
+      gallery: 'CHAPTER 3',
+      location: 'THE PREMIERE',
+      rsvp: 'RESERVATION',
+      thankYou: 'SPECIAL THANKS',
+      guestbook: 'AUDIENCE REVIEWS',
+    },
+  },
+}
+
+// RECORD 템플릿 샘플 데이터
+export const recordSampleContent = {
+  ...ourSampleContent,
+  templateId: 'record',
+  colorTheme: 'record-coral' as const,
+  fontStyle: 'modern' as const,
+  groom: {
+    ...ourSampleContent.groom,
+    name: '신랑',
+    lastName: '',
+    firstName: '신랑',
+  },
+  bride: {
+    ...ourSampleContent.bride,
+    name: '신부',
+    lastName: '',
+    firstName: '신부',
+  },
+  wedding: {
+    ...ourSampleContent.wedding,
+    date: '2026-06-20',
+    time: '14:00',
+    timeDisplay: '오후 2시',
+    venue: {
+      name: '그랜드힐 컨벤션',
+      hall: '크리스탈홀',
+      address: '서울특별시 강남구 청담동 123-45',
+    },
+  },
+  content: {
+    ...ourSampleContent.content,
+    greeting: '두 사람의 하모니가 하나의 멜로디가 되어\n평생의 노래를 함께 부르려 합니다.\n\n저희의 첫 번째 합주에\n귀 기울여 주시겠어요?',
+    quote: {
+      text: 'Every love story is a beautiful song, but ours is my favorite.',
+      author: '',
+    },
+    interviews: [
+      {
+        question: '첫 만남의 멜로디',
+        answer: '우연히 같은 카페에서 흘러나온 노래에\n동시에 흥얼거리기 시작했어요.\n서로를 바라보며 웃었던 그 순간,\n우리만의 첫 번째 곡이 시작되었습니다.',
+        images: ['/sample/story1-1.png', '/sample/story1-2.png'],
+        imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],
+        bgClass: 'pink-bg',
+      },
+      {
+        question: '함께 만든 하모니',
+        answer: '서로 다른 음색이 만나\n더 아름다운 화음이 되었어요.\n때로는 불협화음도 있었지만\n그마저도 우리만의 음악이 되었습니다.',
+        images: ['/sample/story2-1.png', '/sample/story2-2.png'],
+        imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],
+        bgClass: 'white-bg',
+      },
+      {
+        question: '영원한 듀엣',
+        answer: '"평생 너와 듀엣을 하고 싶어."\n떨리는 목소리로 건넨 프로포즈에\n그녀는 눈물을 글썽이며 고개를 끄덕였습니다.\n우리의 가장 아름다운 곡이 시작되는 순간이었어요.',
+        images: ['/sample/story3-1.jpeg', '/sample/story3-2.png'],
+        imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],
+        bgClass: 'pink-bg',
+      },
+    ],
+    thankYou: {
+      title: 'LINER NOTES',
+      message: '이 앨범이 완성되기까지\n함께해주신 모든 분들께 감사드립니다.\n\n여러분의 축복이 담긴 이 노래를\n평생 함께 부르며 살겠습니다.',
+      sign: '신랑 & 신부 올림',
+    },
+  },
+  design: {
+    ...ourSampleContent.design,
+    coverTitle: 'WE ARE GETTING MARRIED',
+    sectionDividers: {
+      ...ourSampleContent.design.sectionDividers,
+      invitation: 'TRACK 01',
+      ourStory: 'TRACK 03',
+      aboutUs: 'TRACK 02',
+      interview: 'TRACK 03',
+      gallery: 'TRACK 04',
+      location: 'TRACK 05',
+      rsvp: 'RSVP',
+      thankYou: 'BONUS TRACK',
+      guestbook: 'FAN MAIL',
+    },
+  },
+}
+
+// FEED 템플릿 샘플 데이터
+export const exhibitSampleContent = {
+  ...ourSampleContent,
+  templateId: 'exhibit',
+  colorTheme: 'exhibit-white' as const,
+  fontStyle: 'modern' as const,
+  displayId: 'mj♥sy',
+  wedding: {
+    ...ourSampleContent.wedding,
+    directions: {
+      car: '네비게이션에 "더채플앳청담" 검색\n강남역 방면에서 청담사거리 방향으로 직진 후 우회전\n주차: 건물 지하주차장 이용 가능 (3시간 무료)',
+      publicTransport: '지하철: 압구정로데오역 5번 출구 도보 10분, 청담역 9번 출구 도보 15분\n버스: 146, 301, 401, 3422, 4412',
+      train: '서울역 하차 → 4호선 → 사당역 환승 → 2호선 → 압구정로데오역 5번 출구',
+      expressBus: '서울고속버스터미널 하차 → 3호선 → 압구정역 → 택시 10분',
+    },
+  },
+  media: {
+    ...ourSampleContent.media,
+    coverImage: '/sample/feed-cover1.png',
+    coverImages: ['/sample/feed-cover1.png', '/sample/feed-cover2.png', '/sample/feed-cover3.png'],
+  },
+  rooms: [
+    {
+      title: 'Outdoor',
+      subtitle: '야외 로케이션',
+      images: ['/sample/feed-room1-1.jpeg', '/sample/feed-room1-2.jpeg', '/sample/feed-room1-3.jpeg', '/sample/feed-room1-4.jpeg', '/sample/feed-room1-5.jpeg', '/sample/feed-room1-6.jpeg', '/sample/feed-room1-7.jpeg', '/sample/feed-room1-8.jpeg', '/sample/feed-room1-9.jpeg'],
+      imageSettings: Array(9).fill({ scale: 1, positionX: 0, positionY: 0 }),
+    },
+    {
+      title: 'Studio',
+      subtitle: '스튜디오 촬영',
+      images: ['/sample/feed-room2-1.png', '/sample/feed-room2-2.png', '/sample/feed-room2-3.png', '/sample/feed-room2-4.png', '/sample/feed-room2-5.png', '/sample/feed-room2-6.png'],
+      imageSettings: Array(6).fill({ scale: 1, positionX: 0, positionY: 0 }),
+    },
+    {
+      title: 'Traditional',
+      subtitle: '한복 촬영',
+      images: ['/sample/feed-room3-1.png', '/sample/feed-room3-2.png', '/sample/feed-room3-3.png', '/sample/feed-room3-4.png', '/sample/feed-room3-5.png', '/sample/feed-room3-6.png'],
+      imageSettings: Array(6).fill({ scale: 1, positionX: 0, positionY: 0 }),
+    },
+  ],
+  bgm: { enabled: true, url: '/api/r2/audio/wedding-bgm.mp3', autoplay: true },
+  rsvpEnabled: true,
+  rsvpDeadline: '2025-05-17',
+  rsvpAllowGuestCount: true,
+  sectionVisibility: {
+    guestbook: true,
+    guidance: true,
+  },
+  content: {
+    ...ourSampleContent.content,
+    greeting: '소중한 분들을 초대합니다.\n\n저희 두 사람이 함께하는\n새로운 시작의 자리에\n함께해 주세요.',
+    stories: [
+      {
+        image: '/sample/story1-1.png',
+        caption: '첫 만남 그 날 ☕ 세 시간이 어떻게 갔는지 모르겠어',
+      },
+      {
+        image: '/sample/story2-1.png',
+        caption: '같이 있으면 뭘 해도 재밌는 사람 🤍',
+      },
+      {
+        image: '/sample/story3-1.jpeg',
+        caption: '평생 같이 있자 💍 YES라고 해줘서 고마워',
+      },
+    ],
+    guestbookQuestions: ['두 사람에게 축하 메시지를 남겨주세요', '결혼생활에서 가장 중요한 건?', '두 사람의 첫인상은 어땠나요?'],
+    sampleGuestbook: [
+      { id: 'g1', guest_name: '박지영', message: '두 분의 결혼을 진심으로 축하해요! 항상 행복하세요 💕', created_at: '2026-02-19T10:30:00Z' },
+      { id: 'g2', guest_name: '최현우', message: '민준아 결혼 축하한다! 서연님과 행복한 가정 꾸려라 🎉', created_at: '2026-02-19T09:15:00Z' },
+      { id: 'g3', guest_name: '정소희', message: '세상에서 가장 예쁜 커플! 결혼 너무너무 축하드려요 🤍', created_at: '2026-02-18T22:00:00Z' },
+      { id: 'g4', guest_name: '김태호', message: '축하축하! 결혼식 날 꼭 갈게요. 행복하게 잘 살아 😊', created_at: '2026-02-18T18:30:00Z' },
+      { id: 'g5', guest_name: '이수진', message: '서연아 결혼 축하해!! 민준님이랑 오래오래 행복해 💐', created_at: '2026-02-18T15:00:00Z' },
+      { id: 'g6', guest_name: '한도윤', message: '두 분 정말 잘 어울려요! 결혼 진심으로 축하합니다 🥂', created_at: '2026-02-17T20:00:00Z' },
+    ],
+    info: {
+      dressCode: { title: '드레스코드', content: '편안한 복장으로 오셔도 좋습니다.\n여러분 다운 모습으로 와주세요.', enabled: true },
+      photoShare: { title: '사진 공유', content: '결혼식에서 찍은 사진들을 공유해주세요!\n소중한 추억으로 간직하겠습니다.', buttonText: '사진 공유하기', url: 'https://photos.google.com', enabled: true },
+      photoBooth: { title: '포토부스', content: '', enabled: false },
+      flowerChild: { title: '화동 안내', content: '', enabled: false },
+      customItems: [],
+    },
+    thankYou: {
+      title: 'THANK YOU',
+      message: '바쁘신 와중에도 저희의 결혼을\n축하해 주셔서 진심으로 감사드립니다.\n\n여러분의 축복을 마음에 새기며\n서로 아끼고 사랑하며 살겠습니다.',
+      sign: '민준 & 서연 올림',
+    },
+  },
+  design: {
+    ...ourSampleContent.design,
+    coverTitle: '',
+  },
+}
+
 // 샘플 청첩장 객체 생성 함수
-export function createSampleInvitation(type: 'our' | 'family') {
-  const content = type === 'our' ? ourSampleContent : familySampleContent
+export function createSampleInvitation(type: 'our' | 'family' | 'magazine' | 'film' | 'record' | 'exhibit') {
+  const content = type === 'family' ? familySampleContent : type === 'film' ? filmSampleContent : type === 'record' ? recordSampleContent : type === 'exhibit' ? exhibitSampleContent : ourSampleContent
+  const templateIdMap = { our: 'narrative-our', family: 'narrative-family', magazine: 'narrative-magazine', film: 'narrative-film', record: 'narrative-record', exhibit: 'narrative-exhibit' } as const
   const now = new Date().toISOString()
+
+  // magazine uses OUR content with modern-black theme override
+  const finalContent = type === 'magazine' ? { ...content, colorTheme: 'modern-black', fontStyle: 'modern' } : content
 
   return {
     id: `sample-${type}-id`,
     user_id: 'sample-user-id',
-    template_id: type === 'our' ? 'narrative-our' : 'narrative-family',
+    template_id: templateIdMap[type],
     groom_name: content.groom.name,
     bride_name: content.bride.name,
     wedding_date: content.wedding.date,
@@ -280,7 +545,7 @@ export function createSampleInvitation(type: 'our' | 'family') {
     contact_groom: content.groom.phone,
     contact_bride: content.bride.phone,
     account_info: JSON.stringify([]),
-    content: JSON.stringify(content),
+    content: JSON.stringify(finalContent),
     is_paid: 1,
     is_published: 1,
     slug: `sample-${type}`,

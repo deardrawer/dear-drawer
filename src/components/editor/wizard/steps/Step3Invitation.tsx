@@ -105,7 +105,7 @@ type GreetingAnswers = {
 }
 
 export default function Step3Invitation({ onOpenIntroSelector, templateId, onScrollPreviewToTop, invitationId }: Step3InvitationProps) {
-  const { invitation, updateField, updateNestedField, setActiveSection, validationError } = useEditorStore()
+  const { invitation, updateField, updateNestedField, setActiveSection, validationError, toggleSectionVisibility } = useEditorStore()
 
   // 공유설명 자동 업데이트 함수
   const updateKakaoDescriptionIfAuto = useCallback((newDate?: string, newTime?: string, newVenueName?: string) => {
@@ -143,6 +143,7 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
   const { intro, media } = invitation
   const currentPreset = getPresetById(intro.presetId)
   const isFamily = templateId === 'narrative-family' || invitation.templateId === 'narrative-family'
+  const isMagazine = templateId === 'narrative-magazine' || invitation.templateId === 'narrative-magazine'
 
   // 샘플 인사말 적용
   const applySampleGreeting = () => {
@@ -227,13 +228,16 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
     <div className="p-6 space-y-8">
       {/* 안내 */}
       <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-        <p className="text-base text-purple-800 font-medium mb-1">인트로를 꾸며보세요</p>
+        <p className="text-base text-purple-800 font-medium mb-1">{isMagazine ? '매거진 커버를 꾸며보세요' : '인트로를 꾸며보세요'}</p>
         <p className="text-sm text-purple-700">
-          기본 정보를 입력하고 첫인상을 결정하는 인트로를 디자인해주세요.
+          {isMagazine
+            ? '커버 이미지와 기본 정보를 입력하고 매거진 첫 페이지를 완성하세요.'
+            : '기본 정보를 입력하고 첫인상을 결정하는 인트로를 디자인해주세요.'}
         </p>
       </div>
 
-      {/* 1. 인트로 스타일 편집 */}
+      {/* 1. 인트로 스타일 편집 (매거진에서는 숨김) */}
+      {!isMagazine && (
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
           ✨ 인트로 스타일
@@ -266,6 +270,31 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
           {media.coverImage ? '인트로 스타일 편집하기' : '커버 이미지 추가 & 스타일 편집'}
         </button>
       </section>
+      )}
+
+      {/* 매거진: 커버 이미지 업로드 (간단) */}
+      {isMagazine && (
+      <section className="space-y-4">
+        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+          📷 커버 이미지
+        </h3>
+        <p className="text-sm text-blue-600">💙 매거진 표지에 사용할 사진을 선택하세요</p>
+        <button
+          onClick={handleOpenIntroSelector}
+          className="w-full py-3 px-4 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          {media.coverImage ? '커버 이미지 변경하기' : '커버 이미지 추가하기'}
+        </button>
+        {media.coverImage && (
+          <div className="relative w-full max-w-[200px] aspect-[3/4] mx-auto rounded-lg overflow-hidden shadow-md">
+            <div className="absolute inset-0" style={getImageCropStyle(media.coverImage, media.coverImageSettings || {})} />
+          </div>
+        )}
+      </section>
+      )}
 
       {/* 2. 신랑신부 기본정보 */}
       <section className="space-y-4">
@@ -384,7 +413,8 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
         </div>
       </section>
 
-      {/* 3. 명언/슬로건 */}
+      {/* 3. 명언/슬로건 (매거진에서는 스토리 탭으로 이동) */}
+      {!isMagazine && (
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
@@ -448,8 +478,10 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
           </div>
         </div>
       </section>
+      )}
 
-      {/* 4. 인트로 인사말 */}
+      {/* 4. 인트로 인사말 (매거진에서는 스토리 탭으로 이동) */}
+      {!isMagazine && (
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
@@ -513,13 +545,24 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
           className={`resize-none ${!hasGreeting ? 'text-gray-400 italic' : ''}`}
         />
       </section>
+      )}
 
-      {/* 5. 부모님 정보 */}
+      {/* 5. 부모님 정보 (매거진에서는 숨김) */}
+      {!isMagazine && (
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
           👨‍👩‍👧‍👦 부모님 정보
         </h3>
         <p className="text-sm text-blue-600">💙 인트로에 표시될 부모님 성함을 입력해주세요.</p>
+
+        {/* 청첩장 본문 표시 토글 */}
+        <div className="flex items-center justify-between p-3 bg-amber-50 rounded-lg">
+          <span className="text-xs text-amber-800">청첩장에 표시</span>
+          <Switch
+            checked={invitation.sectionVisibility?.parentNames !== false}
+            onCheckedChange={() => toggleSectionVisibility('parentNames')}
+          />
+        </div>
 
         {/* 신랑측 */}
         <div className="space-y-3 p-4 bg-blue-50 rounded-lg">
@@ -642,6 +685,7 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
           </div>
         </div>
       </section>
+      )}
 
       {/* 6. 결혼식 정보 */}
       <section className="space-y-4">

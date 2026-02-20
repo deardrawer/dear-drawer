@@ -1133,6 +1133,26 @@ export async function createDefaultGreetingTemplates(invitationId: string): Prom
   return results;
 }
 
+// ==================== Public Stats (소셜 프루프용) ====================
+
+export async function getPublicStats() {
+  const db = await getDB();
+  const BASE_COUNT = 47;
+
+  const countResult = await db
+    .prepare("SELECT COUNT(*) as count FROM invitations")
+    .first<{ count: number }>();
+
+  const weeklyResult = await db
+    .prepare("SELECT COUNT(*) as count FROM invitations WHERE created_at >= datetime('now', '-7 days')")
+    .first<{ count: number }>();
+
+  return {
+    totalCount: BASE_COUNT + (countResult?.count || 0),
+    weeklyCount: weeklyResult?.count || 0,
+  };
+}
+
 // ==================== Admin Functions (운영자 관리) ====================
 
 export interface InvitationWithDeletionInfo extends Invitation {

@@ -139,6 +139,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
   if (!invitation) return null
 
   const isFamily = templateId === 'narrative-family' || invitation.templateId === 'narrative-family'
+  const isMagazine = templateId === 'narrative-magazine' || invitation.templateId === 'narrative-magazine'
 
   // 이미지 업로드 핸들러
   const handleImageUpload = async (
@@ -401,13 +402,48 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
     <div className="p-6 space-y-8">
       {/* 안내 */}
       <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-        <p className="text-base text-purple-800 font-medium mb-1">본문 콘텐츠 작성</p>
+        <p className="text-base text-purple-800 font-medium mb-1">{isMagazine ? '매거진 콘텐츠 작성' : '본문 콘텐츠 작성'}</p>
         <p className="text-sm text-purple-700">
-          청첩장 본문에 들어갈 내용을 작성해주세요. 질문에 답하면 초안을 작성해드려요.
+          {isMagazine
+            ? "Editor's Note와 인터뷰 등 매거진 본문을 작성해주세요."
+            : '청첩장 본문에 들어갈 내용을 작성해주세요. 질문에 답하면 초안을 작성해드려요.'}
         </p>
       </div>
 
-      {/* 초안 작성 버튼 */}
+      {/* 매거진: Editor's Note (인사말 + 명언) */}
+      {isMagazine && (
+        <section className="space-y-4">
+          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+            📝 Editor&apos;s Note
+          </h3>
+          <p className="text-sm text-blue-600">💙 매거진 본문 상단에 표시되는 인사말과 명언을 작성해주세요.</p>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium">인사말</Label>
+            <Textarea
+              value={invitation.content.greeting || ''}
+              onChange={(e) => updateNestedField('content.greeting', e.target.value)}
+              onFocus={() => setActiveSection('greeting')}
+              placeholder="서로의 가장 좋은 친구이자&#10;든든한 지지자였던 두 사람이&#10;이제 평생의 동반자가 되려 합니다."
+              rows={4}
+              className="resize-none"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium">명언/슬로건</Label>
+            <Textarea
+              value={invitation.content.quote?.text || ''}
+              onChange={(e) => updateNestedField('content.quote.text', e.target.value)}
+              placeholder="사랑은 서로를 바라보는 것이 아니라&#10;함께 같은 방향을 바라보는 것이다."
+              rows={2}
+              className="resize-none"
+            />
+          </div>
+        </section>
+      )}
+
+      {/* 초안 작성 버튼 (매거진 제외) */}
+      {!isMagazine && (
       <section className="space-y-4">
         <button
           onClick={onOpenAIStoryGenerator}
@@ -422,9 +458,10 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
           </div>
         </button>
       </section>
+      )}
 
       {/* 커플 소개 - OUR 템플릿에서만 표시 (연인의 시선으로 소개) */}
-      {!isFamily && (
+      {!isFamily && !isMagazine && (
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
@@ -693,8 +730,8 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
         </section>
       )}
 
-      {/* OUR 템플릿: 러브스토리 / FAMILY 템플릿: 부모님 인사말 */}
-      {!isFamily ? (
+      {/* OUR 템플릿: 러브스토리 / FAMILY 템플릿: 부모님 인사말 (MAGAZINE은 숨김) */}
+      {isMagazine ? null : !isFamily ? (
         /* OUR 템플릿: 러브스토리 */
         <section className="space-y-4">
           <div className="flex items-center justify-between">
@@ -1316,7 +1353,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
       )}
 
       {/* 처음 만난 날 - OUR 템플릿 전용, D-DAY 계산용 */}
-      {!isFamily && (
+      {!isFamily && !isMagazine && (
         <section className="space-y-4">
           <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
             💑 처음 만난 날
@@ -1584,11 +1621,11 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                 </div>
                 {/* 인터뷰 이미지 */}
                 <div className="space-y-1">
-                  <Label className="text-xs">사진 (슬라이드 형식, 최대 2장)</Label>
+                  <Label className="text-xs">사진 ({isMagazine ? '메인 1장 + 서브 2장, 최대 3장' : '슬라이드 형식, 최대 2장'})</Label>
                   <MultiImageUploader
                     images={interview.images || []}
                     onChange={(images) => updateNestedField(`content.interviews.${index}.images`, images)}
-                    maxImages={2}
+                    maxImages={isMagazine ? 3 : 2}
                     placeholder="사진 추가"
                     aspectRatio="aspect-[4/5]"
                   />
@@ -1797,7 +1834,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                 {/* 커스텀 안내 항목들 */}
                 {invitation.content.info.customItems?.map((item, index) => (
                   <div key={item.id} className="p-4 bg-gray-50 rounded-lg space-y-2">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
                       <Input
                         value={item.title}
                         onChange={(e) => {
@@ -1805,8 +1842,8 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                           newItems[index] = { ...newItems[index], title: e.target.value }
                           updateNestedField('content.info.customItems', newItems)
                         }}
-                        placeholder="항목 제목"
-                        className="text-sm font-medium bg-transparent border-none p-0 h-auto focus-visible:ring-0 w-auto flex-1"
+                        placeholder="항목 제목을 입력하세요"
+                        className="text-sm font-medium flex-1 h-8 px-2.5 bg-white border border-gray-300 rounded-md focus:border-black focus:ring-1 focus:ring-black"
                       />
                       <div className="flex items-center gap-2">
                         <Switch

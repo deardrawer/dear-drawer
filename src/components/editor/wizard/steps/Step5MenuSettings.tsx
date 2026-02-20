@@ -25,6 +25,10 @@ export default function Step5MenuSettings() {
 
   if (!invitation) return null
 
+  const isMagazine = invitation.templateId === 'narrative-magazine'
+  const isFilm = invitation.templateId === 'narrative-film'
+  const isRecord = invitation.templateId === 'narrative-record'
+
   // RSVP 마감일 기본값 (결혼식 7일 전)
   const getDefaultRsvpDeadline = () => {
     if (invitation.wedding.date) {
@@ -49,6 +53,8 @@ export default function Step5MenuSettings() {
   const applySampleDirections = () => {
     updateNestedField('wedding.directions.car', SAMPLE_DIRECTIONS.car)
     updateNestedField('wedding.directions.publicTransport', SAMPLE_DIRECTIONS.publicTransport)
+    updateNestedField('wedding.directions.train', SAMPLE_DIRECTIONS.train)
+    updateNestedField('wedding.directions.expressBus', SAMPLE_DIRECTIONS.expressBus)
   }
 
   return (
@@ -70,7 +76,7 @@ export default function Step5MenuSettings() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-sm text-blue-600">💙 교통 안내 정보를 입력해주세요.</p>
-            {!invitation.wedding.directions.car && !invitation.wedding.directions.publicTransport && (
+            {!invitation.wedding.directions.car && !invitation.wedding.directions.publicTransport && !invitation.wedding.directions.train && !invitation.wedding.directions.expressBus && (
               <button onClick={applySampleDirections} className="text-xs text-blue-600 hover:underline">
                 샘플 적용
               </button>
@@ -128,13 +134,20 @@ export default function Step5MenuSettings() {
                 />
               </div>
               {invitation.wedding.directions.extraInfoEnabled && (
-                <Textarea
-                  value={invitation.wedding.directions.extraInfoText || ''}
-                  onChange={(e) => updateNestedField('wedding.directions.extraInfoText', e.target.value)}
-                  placeholder="예: 주차권은 안내데스크에서 수령 / 혼잡 시간대는 대중교통 추천 / 예식장 입구는 ○○문입니다"
-                  rows={3}
-                  className="resize-none"
-                />
+                <div className="space-y-2">
+                  <Input
+                    value={invitation.wedding.directions.extraInfoTitle || ''}
+                    onChange={(e) => updateNestedField('wedding.directions.extraInfoTitle', e.target.value)}
+                    placeholder="제목 (기본: 추가 안내사항)"
+                  />
+                  <Textarea
+                    value={invitation.wedding.directions.extraInfoText || ''}
+                    onChange={(e) => updateNestedField('wedding.directions.extraInfoText', e.target.value)}
+                    placeholder="예: 주차권은 안내데스크에서 수령 / 혼잡 시간대는 대중교통 추천 / 예식장 입구는 ○○문입니다"
+                    rows={3}
+                    className="resize-none"
+                  />
+                </div>
               )}
             </div>
           </div>
@@ -153,66 +166,115 @@ export default function Step5MenuSettings() {
           />
         </div>
         <p className="text-sm text-blue-600">💙 하객분들이 축하 전화를 드릴 수 있는 연락처를 입력해주세요. 입력된 연락처만 표시됩니다.</p>
+        <p className="text-xs text-gray-500">부모님 성함은 이전 단계(스토리)에서 입력한 이름이 자동 연동됩니다.</p>
 
         <div className="space-y-4">
           {/* 신랑측 연락처 */}
-          <div className="p-4 bg-blue-50 rounded-lg space-y-3">
+          <div className="p-4 bg-blue-50 rounded-lg space-y-4">
             <p className="font-semibold text-blue-800">신랑측</p>
-            <div className="space-y-2">
-              <div className="grid grid-cols-2 gap-3 items-center">
-                <Label className="text-sm">신랑</Label>
-                <Input
-                  value={invitation.groom.phone}
-                  onChange={(e) => handlePhoneChange('groom.phone', e.target.value)}
-                  placeholder="010-0000-0000"
-                />
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={(invitation.groom as any).phoneEnabled !== false}
+                    onCheckedChange={(checked) => updateNestedField('groom.phoneEnabled', checked)}
+                  />
+                  <span className="text-sm font-medium text-gray-700">신랑{invitation.groom.name ? ` (${invitation.groom.name})` : ''}</span>
+                </div>
+                {(invitation.groom as any).phoneEnabled !== false && (
+                  <Input
+                    value={invitation.groom.phone}
+                    onChange={(e) => handlePhoneChange('groom.phone', e.target.value)}
+                    placeholder="010-0000-0000"
+                  />
+                )}
               </div>
-              <div className="grid grid-cols-2 gap-3 items-center">
-                <Label className="text-sm">아버지</Label>
-                <Input
-                  value={invitation.groom.father.phone}
-                  onChange={(e) => handlePhoneChange('groom.father.phone', e.target.value)}
-                  placeholder="010-0000-0000"
-                />
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={(invitation.groom.father as any).phoneEnabled !== false}
+                    onCheckedChange={(checked) => updateNestedField('groom.father.phoneEnabled', checked)}
+                  />
+                  <span className="text-sm font-medium text-gray-700">아버지{invitation.groom.father.name ? ` (${invitation.groom.father.name})` : ''}</span>
+                </div>
+                {(invitation.groom.father as any).phoneEnabled !== false && (
+                  <Input
+                    value={invitation.groom.father.phone}
+                    onChange={(e) => handlePhoneChange('groom.father.phone', e.target.value)}
+                    placeholder="010-0000-0000"
+                  />
+                )}
               </div>
-              <div className="grid grid-cols-2 gap-3 items-center">
-                <Label className="text-sm">어머니</Label>
-                <Input
-                  value={invitation.groom.mother.phone}
-                  onChange={(e) => handlePhoneChange('groom.mother.phone', e.target.value)}
-                  placeholder="010-0000-0000"
-                />
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={(invitation.groom.mother as any).phoneEnabled !== false}
+                    onCheckedChange={(checked) => updateNestedField('groom.mother.phoneEnabled', checked)}
+                  />
+                  <span className="text-sm font-medium text-gray-700">어머니{invitation.groom.mother.name ? ` (${invitation.groom.mother.name})` : ''}</span>
+                </div>
+                {(invitation.groom.mother as any).phoneEnabled !== false && (
+                  <Input
+                    value={invitation.groom.mother.phone}
+                    onChange={(e) => handlePhoneChange('groom.mother.phone', e.target.value)}
+                    placeholder="010-0000-0000"
+                  />
+                )}
               </div>
             </div>
           </div>
 
           {/* 신부측 연락처 */}
-          <div className="p-4 bg-pink-50 rounded-lg space-y-3">
+          <div className="p-4 bg-pink-50 rounded-lg space-y-4">
             <p className="font-semibold text-pink-800">신부측</p>
-            <div className="space-y-2">
-              <div className="grid grid-cols-2 gap-3 items-center">
-                <Label className="text-sm">신부</Label>
-                <Input
-                  value={invitation.bride.phone}
-                  onChange={(e) => handlePhoneChange('bride.phone', e.target.value)}
-                  placeholder="010-0000-0000"
-                />
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={(invitation.bride as any).phoneEnabled !== false}
+                    onCheckedChange={(checked) => updateNestedField('bride.phoneEnabled', checked)}
+                  />
+                  <span className="text-sm font-medium text-gray-700">신부{invitation.bride.name ? ` (${invitation.bride.name})` : ''}</span>
+                </div>
+                {(invitation.bride as any).phoneEnabled !== false && (
+                  <Input
+                    value={invitation.bride.phone}
+                    onChange={(e) => handlePhoneChange('bride.phone', e.target.value)}
+                    placeholder="010-0000-0000"
+                  />
+                )}
               </div>
-              <div className="grid grid-cols-2 gap-3 items-center">
-                <Label className="text-sm">아버지</Label>
-                <Input
-                  value={invitation.bride.father.phone}
-                  onChange={(e) => handlePhoneChange('bride.father.phone', e.target.value)}
-                  placeholder="010-0000-0000"
-                />
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={(invitation.bride.father as any).phoneEnabled !== false}
+                    onCheckedChange={(checked) => updateNestedField('bride.father.phoneEnabled', checked)}
+                  />
+                  <span className="text-sm font-medium text-gray-700">아버지{invitation.bride.father.name ? ` (${invitation.bride.father.name})` : ''}</span>
+                </div>
+                {(invitation.bride.father as any).phoneEnabled !== false && (
+                  <Input
+                    value={invitation.bride.father.phone}
+                    onChange={(e) => handlePhoneChange('bride.father.phone', e.target.value)}
+                    placeholder="010-0000-0000"
+                  />
+                )}
               </div>
-              <div className="grid grid-cols-2 gap-3 items-center">
-                <Label className="text-sm">어머니</Label>
-                <Input
-                  value={invitation.bride.mother.phone}
-                  onChange={(e) => handlePhoneChange('bride.mother.phone', e.target.value)}
-                  placeholder="010-0000-0000"
-                />
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={(invitation.bride.mother as any).phoneEnabled !== false}
+                    onCheckedChange={(checked) => updateNestedField('bride.mother.phoneEnabled', checked)}
+                  />
+                  <span className="text-sm font-medium text-gray-700">어머니{invitation.bride.mother.name ? ` (${invitation.bride.mother.name})` : ''}</span>
+                </div>
+                {(invitation.bride.mother as any).phoneEnabled !== false && (
+                  <Input
+                    value={invitation.bride.mother.phone}
+                    onChange={(e) => handlePhoneChange('bride.mother.phone', e.target.value)}
+                    placeholder="010-0000-0000"
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -230,6 +292,32 @@ export default function Step5MenuSettings() {
             onCheckedChange={(checked) => updateField('rsvpEnabled', checked)}
           />
         </div>
+
+        {invitation.rsvpEnabled && (isMagazine || isFilm) && (
+          <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div>
+              <p className="text-sm font-medium text-gray-800">청첩장 본문에 표시</p>
+              <p className="text-xs text-gray-500">{(invitation as any).magazineLayout?.rsvpInMain !== false ? 'ON: 스크롤 본문에 노출' : 'OFF: 우측 상단 ☰ 메뉴에서만 접근'}</p>
+            </div>
+            <Switch
+              checked={(invitation as any).magazineLayout?.rsvpInMain !== false}
+              onCheckedChange={(checked) => updateNestedField('magazineLayout.rsvpInMain', checked)}
+            />
+          </div>
+        )}
+
+        {invitation.rsvpEnabled && isRecord && (
+          <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div>
+              <p className="text-sm font-medium text-gray-800">청첩장 본문에 표시</p>
+              <p className="text-xs text-gray-500">{invitation.sectionVisibility.rsvp !== false ? 'ON: 본문에 노출' : 'OFF: 본문에서 숨김'}</p>
+            </div>
+            <Switch
+              checked={invitation.sectionVisibility.rsvp !== false}
+              onCheckedChange={() => toggleSectionVisibility('rsvp')}
+            />
+          </div>
+        )}
 
         {invitation.rsvpEnabled && (
           <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
@@ -266,8 +354,28 @@ export default function Step5MenuSettings() {
           />
         </div>
 
+        {invitation.sectionVisibility.bankAccounts && (isMagazine || isFilm) && (
+          <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div>
+              <p className="text-sm font-medium text-gray-800">청첩장 본문에 표시</p>
+              <p className="text-xs text-gray-500">{(invitation as any).magazineLayout?.bankAccountsInMain !== false ? 'ON: 스크롤 본문에 노출' : 'OFF: 우측 상단 ☰ 메뉴에서만 접근'}</p>
+            </div>
+            <Switch
+              checked={(invitation as any).magazineLayout?.bankAccountsInMain !== false}
+              onCheckedChange={(checked) => updateNestedField('magazineLayout.bankAccountsInMain', checked)}
+            />
+          </div>
+        )}
+
+        {invitation.sectionVisibility.bankAccounts && isRecord && (
+          <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <p className="text-xs text-blue-700">ON/OFF로 청첩장 본문에서 마음 전하실 곳 섹션을 표시하거나 숨길 수 있습니다.</p>
+          </div>
+        )}
+
         {invitation.sectionVisibility.bankAccounts && (
           <div className="space-y-4">
+            <p className="text-xs text-gray-500">부모님 성함은 이전 단계(스토리)에서 입력한 이름이 자동 연동됩니다.</p>
             {/* 신랑측 계좌 */}
             <div className="p-4 bg-blue-50 rounded-lg space-y-4">
               <p className="font-semibold text-blue-800">신랑측</p>
@@ -279,7 +387,7 @@ export default function Step5MenuSettings() {
                     checked={invitation.groom.bank.enabled}
                     onCheckedChange={(checked) => updateNestedField('groom.bank.enabled', checked)}
                   />
-                  <span className="text-sm font-medium text-gray-700">신랑 계좌</span>
+                  <span className="text-sm font-medium text-gray-700">신랑 계좌{invitation.groom.name ? ` (${invitation.groom.name})` : ''}</span>
                 </div>
                 {invitation.groom.bank.enabled && (
                   <div className="grid grid-cols-3 gap-2">
@@ -309,7 +417,7 @@ export default function Step5MenuSettings() {
                     checked={invitation.groom.father.bank.enabled}
                     onCheckedChange={(checked) => updateNestedField('groom.father.bank.enabled', checked)}
                   />
-                  <span className="text-sm font-medium text-gray-700">아버지 계좌</span>
+                  <span className="text-sm font-medium text-gray-700">아버지 계좌{invitation.groom.father.name ? ` (${invitation.groom.father.name})` : ''}</span>
                 </div>
                 {invitation.groom.father.bank.enabled && (
                   <div className="grid grid-cols-3 gap-2">
@@ -339,7 +447,7 @@ export default function Step5MenuSettings() {
                     checked={invitation.groom.mother.bank.enabled}
                     onCheckedChange={(checked) => updateNestedField('groom.mother.bank.enabled', checked)}
                   />
-                  <span className="text-sm font-medium text-gray-700">어머니 계좌</span>
+                  <span className="text-sm font-medium text-gray-700">어머니 계좌{invitation.groom.mother.name ? ` (${invitation.groom.mother.name})` : ''}</span>
                 </div>
                 {invitation.groom.mother.bank.enabled && (
                   <div className="grid grid-cols-3 gap-2">
@@ -374,7 +482,7 @@ export default function Step5MenuSettings() {
                     checked={invitation.bride.bank.enabled}
                     onCheckedChange={(checked) => updateNestedField('bride.bank.enabled', checked)}
                   />
-                  <span className="text-sm font-medium text-gray-700">신부 계좌</span>
+                  <span className="text-sm font-medium text-gray-700">신부 계좌{invitation.bride.name ? ` (${invitation.bride.name})` : ''}</span>
                 </div>
                 {invitation.bride.bank.enabled && (
                   <div className="grid grid-cols-3 gap-2">
@@ -404,7 +512,7 @@ export default function Step5MenuSettings() {
                     checked={invitation.bride.father.bank.enabled}
                     onCheckedChange={(checked) => updateNestedField('bride.father.bank.enabled', checked)}
                   />
-                  <span className="text-sm font-medium text-gray-700">아버지 계좌</span>
+                  <span className="text-sm font-medium text-gray-700">아버지 계좌{invitation.bride.father.name ? ` (${invitation.bride.father.name})` : ''}</span>
                 </div>
                 {invitation.bride.father.bank.enabled && (
                   <div className="grid grid-cols-3 gap-2">
@@ -434,7 +542,7 @@ export default function Step5MenuSettings() {
                     checked={invitation.bride.mother.bank.enabled}
                     onCheckedChange={(checked) => updateNestedField('bride.mother.bank.enabled', checked)}
                   />
-                  <span className="text-sm font-medium text-gray-700">어머니 계좌</span>
+                  <span className="text-sm font-medium text-gray-700">어머니 계좌{invitation.bride.mother.name ? ` (${invitation.bride.mother.name})` : ''}</span>
                 </div>
                 {invitation.bride.mother.bank.enabled && (
                   <div className="grid grid-cols-3 gap-2">

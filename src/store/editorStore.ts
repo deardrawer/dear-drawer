@@ -532,38 +532,20 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
   groom: {
     ...createDefaultPerson(true),
     ...(template.id === 'narrative-film' ? {
-      name: '신랑',
-      lastName: '',
-      firstName: '신랑',
       profile: { ...createDefaultPerson(true).profile, tag: '세상에서 가장 따뜻한 사람' },
     } : template.id === 'narrative-record' ? {
-      name: '신랑',
-      lastName: '',
-      firstName: '신랑',
       profile: { ...createDefaultPerson(true).profile, tag: '' },
     } : template.id === 'narrative-magazine' ? {
-      name: '신랑',
-      lastName: '',
-      firstName: '신랑',
       profile: { ...createDefaultPerson(true).profile, tag: '세상에서 가장 따뜻한 사람' },
     } : {}),
   },
   bride: {
     ...createDefaultPerson(false),
     ...(template.id === 'narrative-film' ? {
-      name: '신부',
-      lastName: '',
-      firstName: '신부',
       profile: { ...createDefaultPerson(false).profile, tag: '매일 웃게 해주는 사람' },
     } : template.id === 'narrative-record' ? {
-      name: '신부',
-      lastName: '',
-      firstName: '신부',
       profile: { ...createDefaultPerson(false).profile, tag: '' },
     } : template.id === 'narrative-magazine' ? {
-      name: '신부',
-      lastName: '',
-      firstName: '신부',
       profile: { ...createDefaultPerson(false).profile, tag: '매일 웃게 해주는 사람' },
     } : {}),
   },

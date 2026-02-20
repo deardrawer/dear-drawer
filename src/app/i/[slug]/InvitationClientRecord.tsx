@@ -1430,6 +1430,7 @@ function FanMailSection({ invitation, invitationId, fonts, tc, isSample }: {
   const [name, setName] = useState('')
   const [message, setMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [expanded, setExpanded] = useState(false)
   const [qIdx, setQIdx] = useState(0)
   const questions: string[] = invitation.content?.guestbookQuestions || []
   const currentQ = questions[qIdx] || '두 사람에게 하고 싶은 말을 남겨주세요'
@@ -1488,7 +1489,7 @@ function FanMailSection({ invitation, invitationId, fonts, tc, isSample }: {
           <p className="text-center" style={{ fontFamily: fonts.body, fontSize: '12px', color: tc.gray, padding: '16px 0' }}>첫 번째로 메시지를 남겨보세요!</p>
         ) : (
           <div className="space-y-3">
-            {messages.slice(0, 6).map((msg: any, i: number) => (
+            {(expanded ? messages : messages.slice(0, 4)).map((msg: any, i: number) => (
               <div key={msg.id || i} style={{ padding: '14px', borderRadius: '10px', border: `1px solid ${tc.divider}60`, background: tc.cardBg }}>
                 {msg.question && <p style={{ fontFamily: fonts.body, fontSize: '10px', color: tc.gray, marginBottom: '6px', opacity: 0.6 }}>Q. {msg.question}</p>}
                 <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.text, marginBottom: '8px' }}>{msg.message}</p>
@@ -1498,6 +1499,12 @@ function FanMailSection({ invitation, invitationId, fonts, tc, isSample }: {
                 </div>
               </div>
             ))}
+            {!expanded && messages.length > 4 && (
+              <button onClick={() => setExpanded(true)}
+                style={{ width: '100%', fontFamily: fonts.display, fontSize: '10px', letterSpacing: '2px', padding: '10px', background: 'none', border: `1px solid ${tc.divider}`, borderRadius: '8px', color: tc.gray, cursor: 'pointer' }}>
+                +{messages.length - 4} MORE MESSAGES
+              </button>
+            )}
           </div>
         )}
       </div>

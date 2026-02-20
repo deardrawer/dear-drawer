@@ -526,8 +526,31 @@ export function createSampleInvitation(type: 'our' | 'family' | 'magazine' | 'fi
   const templateIdMap = { our: 'narrative-our', family: 'narrative-family', magazine: 'narrative-magazine', film: 'narrative-film', record: 'narrative-record', exhibit: 'narrative-exhibit' } as const
   const now = new Date().toISOString()
 
-  // magazine uses OUR content with modern-black theme override
-  const finalContent = type === 'magazine' ? { ...content, colorTheme: 'modern-black', fontStyle: 'modern' } : content
+  // magazine uses OUR content with modern-black theme override + interview images adjusted (1장/2장/2장)
+  const magazineInterviews = [
+    {
+      question: '상대방의 첫인상은 어땠나요?',
+      answer: '처음 본 순간, 이 사람이다 싶었어요. 말로 설명하기 어려운 느낌이었는데, 대화를 나눌수록 확신이 들었습니다. 서로의 눈을 바라보며 웃던 그 순간을 잊을 수 없어요.',
+      images: ['/sample/story1-1.png'],
+      imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }],
+      bgClass: 'pink-bg',
+    },
+    {
+      question: '결혼을 결심하게 된 계기는?',
+      answer: '함께 있을 때 가장 나다울 수 있었어요. 아무리 힘든 일이 있어도 이 사람 곁에 있으면 괜찮아지더라구요. 평생 이 사람과 함께라면 어떤 일이든 해낼 수 있을 것 같았습니다.',
+      images: ['/sample/interview2-1.png', '/sample/interview2-2.png'],
+      imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],
+      bgClass: 'white-bg',
+    },
+    {
+      question: '앞으로의 결혼생활 계획은?',
+      answer: '서로를 존중하고 배려하며 살고 싶어요. 작은 일상에서도 감사함을 잊지 않고, 함께 웃으며 나이 들어가고 싶습니다. 무엇보다 서로의 꿈을 응원하는 부부가 되고 싶어요.',
+      images: ['/sample/interview3-1.png', '/sample/interview3-2.png'],
+      imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],
+      bgClass: 'pink-bg',
+    },
+  ]
+  const finalContent = type === 'magazine' ? { ...content, colorTheme: 'modern-black', fontStyle: 'modern', interviews: magazineInterviews } : content
 
   return {
     id: `sample-${type}-id`,

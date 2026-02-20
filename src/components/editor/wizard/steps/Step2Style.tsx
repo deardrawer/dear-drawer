@@ -222,10 +222,10 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
             <div className="grid grid-cols-3 gap-3">
               {([
                 { id: 'record-coral', name: '코랄', bg: '#FAF7F4', accent: '#D4766A', text: '#3D3D3D', default: true },
-                { id: 'record-rose', name: '로제', bg: '#FFF5F7', accent: '#E07088', text: '#3D3D3D' },
-                { id: 'record-peach', name: '피치', bg: '#FFF7F0', accent: '#E8885A', text: '#3D3D3D' },
+                { id: 'record-rose', name: '솜사탕', bg: '#FDEFEC', accent: '#D4848C', text: '#3D3D3D' },
+                { id: 'record-peach', name: '스카이', bg: '#ECF4F7', accent: '#8BAEBF', text: '#3D3D3D' },
                 { id: 'record-bw', name: '모노', bg: '#FFFFFF', accent: '#1A1A1A', text: '#1A1A1A' },
-                { id: 'record-lilac', name: '라일락', bg: '#FAF8FC', accent: '#BDB0D0', text: '#3D3D3D' },
+                { id: 'record-lilac', name: '진주', bg: '#F0ECED', accent: '#B8B0B8', text: '#3D3D3D' },
                 { id: 'record-mint', name: '포레스트', bg: '#F8FAF5', accent: '#9CAF88', text: '#3D3D3D' },
               ] as const).map((theme) => {
                 const isSelected = currentRecordTheme === theme.id

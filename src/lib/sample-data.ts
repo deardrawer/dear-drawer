@@ -347,7 +347,7 @@ export const filmSampleContent = {
 export const recordSampleContent = {
   ...ourSampleContent,
   templateId: 'record',
-  colorTheme: 'record-coral' as const,
+  colorTheme: 'record-rose' as const,
   fontStyle: 'modern' as const,
   groom: {
     ...ourSampleContent.groom,

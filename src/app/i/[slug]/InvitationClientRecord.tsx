@@ -35,24 +35,24 @@ const colorThemes: Record<ColorTheme, ColorConfig> = {
     gray: '#888888',
   },
   'record-rose': {
-    primary: '#E07088',
-    secondary: '#FFF0F3',
-    accent: '#D45C78',
-    background: '#FFF5F7',
-    sectionBg: '#FFF0F3',
+    primary: '#D4848C',
+    secondary: '#FBF2F3',
+    accent: '#C4707A',
+    background: '#FFFFFF',
+    sectionBg: '#FBF2F3',
     cardBg: '#FFFFFF',
-    divider: '#F5C8D5',
+    divider: '#EDD5D8',
     text: '#3D3D3D',
     gray: '#888888',
   },
   'record-peach': {
-    primary: '#E8885A',
-    secondary: '#FFF2EA',
-    accent: '#DD7548',
-    background: '#FFF7F0',
-    sectionBg: '#FFF2EA',
+    primary: '#8BAEBF',
+    secondary: '#F0F6F8',
+    accent: '#7A9DAE',
+    background: '#FFFFFF',
+    sectionBg: '#F0F6F8',
     cardBg: '#FFFFFF',
-    divider: '#F5D5C0',
+    divider: '#D5E4EA',
     text: '#3D3D3D',
     gray: '#888888',
   },
@@ -68,13 +68,13 @@ const colorThemes: Record<ColorTheme, ColorConfig> = {
     gray: '#999999',
   },
   'record-lilac': {
-    primary: '#BDB0D0',
-    secondary: '#F3F0F7',
-    accent: '#A89BBF',
-    background: '#FAF8FC',
-    sectionBg: '#F3F0F7',
+    primary: '#B8B0B8',
+    secondary: '#F0ECED',
+    accent: '#A8A0A8',
+    background: '#FFFFFF',
+    sectionBg: '#F0ECED',
     cardBg: '#FFFFFF',
-    divider: '#D8D2E2',
+    divider: '#DCD6DA',
     text: '#3D3D3D',
     gray: '#888888',
   },
@@ -269,11 +269,13 @@ function MusicToggle({ audioRef, isVisible, shouldAutoPlay, tc }: { audioRef: Re
 }
 
 // ===== Vinyl Record Cover =====
-function VinylRecordCover({ invitation, fonts, tc, onEnter }: {
-  invitation: any; fonts: FontConfig; tc: ColorConfig; onEnter: () => void
+function VinylRecordCover({ invitation, fonts, tc, onEnter, colorTheme }: {
+  invitation: any; fonts: FontConfig; tc: ColorConfig; onEnter: () => void; colorTheme?: string
 }) {
   const [phase, setPhase] = useState(0)
   const [isSpinning, setIsSpinning] = useState(true)
+  const isLightCover = colorTheme === 'record-rose' || colorTheme === 'record-peach' || colorTheme === 'record-lilac'
+  const coverBaseBg = colorTheme === 'record-rose' ? '#FDEFEC' : colorTheme === 'record-peach' ? '#ECF4F7' : colorTheme === 'record-lilac' ? '#F0ECED' : ''
   const coverImage = extractImageUrl(invitation.media?.coverImage) || '/images/our-cover.png'
   const coverSettings = invitation.media?.coverImageSettings || {}
 
@@ -294,20 +296,25 @@ function VinylRecordCover({ invitation, fonts, tc, onEnter }: {
 
   return (
     <div className="relative w-full min-h-screen flex flex-col items-center justify-center overflow-hidden"
-      style={{ background: `linear-gradient(180deg, ${tc.primary} 0%, ${tc.accent} 100%)` }}>
+      style={{ background: isLightCover
+        ? `radial-gradient(ellipse 140% 70% at 50% 40%, ${tc.primary}30 0%, ${tc.primary}12 35%, transparent 65%), ${coverBaseBg}`
+        : `linear-gradient(180deg, ${tc.primary} 0%, ${tc.accent} 100%)`
+      }}>
 
       {/* Subtle texture overlay */}
+      {!isLightCover && (
       <div className="absolute inset-0 opacity-[0.03]" style={{
         backgroundImage: `radial-gradient(circle at 50% 50%, rgba(0,0,0,0.1) 1px, transparent 1px)`,
         backgroundSize: '20px 20px',
       }} />
+      )}
 
       {/* Top area - label style */}
       <div className="relative z-10 text-center mb-8" style={{
         opacity: phase >= 2 ? 1 : 0, transform: phase >= 2 ? 'translateY(0)' : 'translateY(-10px)',
         transition: 'all 0.8s ease',
       }}>
-        <div style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '5px', color: 'rgba(255,255,255,0.5)' }}>
+        <div style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '5px', color: isLightCover ? `${tc.primary}90` : 'rgba(255,255,255,0.5)' }}>
           A LOVE RECORD
         </div>
       </div>
@@ -324,7 +331,7 @@ function VinylRecordCover({ invitation, fonts, tc, onEnter }: {
               <div className="w-full h-full" style={getImageCropStyle(coverImage, coverSettings)} />
             </div>
             <div className="vinyl-grooves" />
-            <div className="vinyl-label" style={{ background: `linear-gradient(135deg, ${tc.primary}, ${tc.accent})` }} />
+            <div className="vinyl-label" style={{ background: isLightCover ? coverBaseBg : `linear-gradient(135deg, ${tc.primary}, ${tc.accent})` }} />
           </div>
           <div className="vinyl-play-hint" style={{
             opacity: phase >= 3 ? 1 : 0, transition: 'opacity 0.5s ease',
@@ -344,19 +351,19 @@ function VinylRecordCover({ invitation, fonts, tc, onEnter }: {
       }}>
         <h1 style={{
           fontFamily: fonts.display, fontSize: '18px', fontWeight: 300, letterSpacing: '5px',
-          color: '#FFFFFF', marginBottom: '12px', lineHeight: 1.6,
+          color: isLightCover ? tc.text : '#FFFFFF', marginBottom: '12px', lineHeight: 1.6,
         }}>
           {invitation.design?.coverTitle || 'Our Love, Our Song'}
         </h1>
-        <div style={{ width: '30px', height: '1px', background: 'rgba(255,255,255,0.3)', margin: '0 auto 12px' }} />
-        <p style={{ fontFamily: fonts.display, fontSize: '12px', letterSpacing: '2px', color: 'rgba(255,255,255,0.7)' }}>
+        <div style={{ width: '30px', height: '1px', background: isLightCover ? `${tc.primary}50` : 'rgba(255,255,255,0.3)', margin: '0 auto 12px' }} />
+        <p style={{ fontFamily: fonts.display, fontSize: '12px', letterSpacing: '2px', color: isLightCover ? `${tc.text}B0` : 'rgba(255,255,255,0.7)' }}>
           {groomName} & {brideName}
         </p>
-        <p style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '2px', color: 'rgba(255,255,255,0.5)', marginTop: '6px' }}>
+        <p style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '2px', color: isLightCover ? `${tc.text}80` : 'rgba(255,255,255,0.5)', marginTop: '6px' }}>
           {dateStr}
         </p>
         {invitation.wedding?.venue?.name && (
-          <p style={{ fontFamily: fonts.body, fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginTop: '4px' }}>
+          <p style={{ fontFamily: fonts.body, fontSize: '10px', color: isLightCover ? `${tc.text}60` : 'rgba(255,255,255,0.4)', marginTop: '4px' }}>
             {invitation.wedding.venue.name}
           </p>
         )}
@@ -369,8 +376,10 @@ function VinylRecordCover({ invitation, fonts, tc, onEnter }: {
         <button onClick={onEnter} className="transition-all duration-300 hover:scale-105 active:scale-95"
           style={{
             fontFamily: fonts.display, fontSize: '10px', letterSpacing: '5px',
-            color: '#FFFFFF', background: 'transparent',
-            border: '1px solid rgba(255,255,255,0.3)', padding: '12px 40px', cursor: 'pointer',
+            color: isLightCover ? '#FFFFFF' : '#FFFFFF',
+            background: isLightCover ? tc.primary : 'transparent',
+            border: isLightCover ? 'none' : '1px solid rgba(255,255,255,0.3)',
+            padding: '12px 40px', cursor: 'pointer',
             borderRadius: '30px',
           }}>
           PLAY ALBUM
@@ -969,7 +978,7 @@ function RecordVideoSection({ invitation, fonts, tc }: { invitation: any; fonts:
   if (!videoId) return null
 
   return (
-    <div className="py-8 px-5" style={{ backgroundColor: tc.background }}>
+    <div className="py-8 px-5" style={{ backgroundColor: 'transparent' }}>
       {youtube.title && (
         <p className="text-center mb-3" style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '3px', color: tc.gray }}>{youtube.title.toUpperCase()}</p>
       )}
@@ -1219,7 +1228,7 @@ function GuidanceSection({ invitation, fonts, tc, trackRef }: {
   if (enabledItems.length === 0 && !invitation.guidance?.enabled) return null
 
   return (
-    <div ref={(el) => { (ref as any).current = el; trackRef(el) }} className="py-10 px-5" style={{ backgroundColor: tc.background }}>
+    <div ref={(el) => { (ref as any).current = el; trackRef(el) }} className="py-10 px-5" style={{ backgroundColor: 'transparent' }}>
       <div className="transition-all duration-700" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(40px)' }}>
         <div className="text-center mb-6">
           <h3 style={{ fontFamily: fonts.display, fontSize: '13px', fontWeight: 500, letterSpacing: '5px', color: tc.text }}>INFORMATION</h3>
@@ -1388,7 +1397,7 @@ function GiftSection({ invitation, fonts, tc }: { invitation: any; fonts: FontCo
   }
 
   return (
-    <div className="px-5 py-10" style={{ backgroundColor: tc.background }}>
+    <div className="px-5 py-10" style={{ backgroundColor: 'transparent' }}>
       <div className="text-center mb-6">
         <span style={{ fontFamily: fonts.display, fontSize: '7px', letterSpacing: '3px', color: tc.gray, opacity: 0.4, display: 'block', marginBottom: '6px' }}>
           &#9834; A-SIDE
@@ -1462,7 +1471,7 @@ function FanMailSection({ invitation, invitationId, fonts, tc, isSample }: {
   const inputStyle: React.CSSProperties = { fontFamily: fonts.body, fontSize: '13px', padding: '10px 12px', border: `1px solid ${tc.divider}`, borderRadius: '8px', background: tc.cardBg, outline: 'none', color: tc.text, width: '100%' }
 
   return (
-    <div ref={ref} className="px-5 py-10" style={{ backgroundColor: tc.background }}>
+    <div ref={ref} className="px-5 py-10" style={{ backgroundColor: 'transparent' }}>
       <div className="transition-all duration-700" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(40px)' }}>
         <div className="text-center mb-6">
           <span style={{ fontFamily: fonts.display, fontSize: '7px', letterSpacing: '3px', color: tc.gray, opacity: 0.4, display: 'block', marginBottom: '6px' }}>
@@ -1546,7 +1555,7 @@ function RsvpSection({ invitation, invitationId, fonts, tc }: {
 
   if (submitted) {
     return (
-      <div className="px-5 py-14 text-center" style={{ backgroundColor: tc.background }}>
+      <div className="px-5 py-14 text-center" style={{ backgroundColor: 'transparent' }}>
         <div style={{ fontFamily: fonts.display, fontSize: '13px', letterSpacing: '5px', color: tc.text, marginBottom: '8px' }}>CONFIRMED</div>
         <p style={{ fontFamily: fonts.body, fontSize: '13px', color: tc.gray }}>참석 여부가 전달되었습니다.</p>
       </div>
@@ -1557,7 +1566,7 @@ function RsvpSection({ invitation, invitationId, fonts, tc }: {
   const date = w.date ? new Date(w.date) : null
 
   return (
-    <div ref={ref} className="px-5 py-10" style={{ backgroundColor: tc.background }}>
+    <div ref={ref} className="px-5 py-10" style={{ backgroundColor: 'transparent' }}>
       <div className="transition-all duration-700" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(40px)' }}>
         <div className="text-center mb-6">
           <span style={{ fontFamily: fonts.display, fontSize: '7px', letterSpacing: '3px', color: tc.gray, opacity: 0.4, display: 'block', marginBottom: '6px' }}>
@@ -1701,7 +1710,7 @@ function MiniPlayerBar({ currentTrack, progress, isAudioPlaying, fonts, tc }: {
 // ===== Record Footer =====
 function RecordFooter({ invitation, fonts, tc }: { invitation: any; fonts: FontConfig; tc: ColorConfig }) {
   return (
-    <div className="px-6 text-center" style={{ backgroundColor: tc.background, borderTop: `1px solid ${tc.divider}40`, paddingTop: '56px', paddingBottom: '90px' }}>
+    <div className="px-6 text-center" style={{ backgroundColor: 'transparent', borderTop: `1px solid ${tc.divider}40`, paddingTop: '56px', paddingBottom: '90px' }}>
       {/* Mini vinyl icon */}
       <div className="flex justify-center mb-4">
         <div style={{
@@ -1970,9 +1979,12 @@ function InvitationClientRecordContent({
           <div className="mobile-frame-screen">
             <div className="mobile-frame-content" ref={scrollContainerRef}>
               <WatermarkOverlay isPaid={isPaid || !!isPreview} className="relative w-full min-h-screen">
-                <div className="relative w-full min-h-screen overflow-x-hidden" style={{ backgroundColor: tc.background, fontFamily: fonts.body, color: tc.text }}>
+                <div className="relative w-full min-h-screen overflow-x-hidden" style={{
+                  backgroundColor: tc.background,
+                  fontFamily: fonts.body, color: tc.text
+                }}>
                   {currentPage === 'cover' ? (
-                    <VinylRecordCover invitation={invitation} fonts={fonts} tc={tc} onEnter={() => setCurrentPage('main')} />
+                    <VinylRecordCover invitation={invitation} fonts={fonts} tc={tc} onEnter={() => setCurrentPage('main')} colorTheme={effectiveColorTheme} />
                   ) : (
                     <>
                       <RecordHeader invitation={invitation} fonts={fonts} tc={tc} currentTrack={currentTrack} progress={progress} />

@@ -1227,8 +1227,8 @@ function GuidanceSection({ invitation, fonts, tc, trackRef }: {
         </div>
 
         {invitation.guidance?.image && (
-          <div className="mb-6">
-            <div className="w-full overflow-hidden rounded-lg" style={{ aspectRatio: '16/9' }}>
+          <div className="mb-4">
+            <div className="w-full overflow-hidden" style={{ aspectRatio: '4/5', borderRadius: '8px' }}>
               <div className="w-full h-full" style={getImageCropStyle(invitation.guidance.image, invitation.guidance?.imageSettings || {})} />
             </div>
           </div>

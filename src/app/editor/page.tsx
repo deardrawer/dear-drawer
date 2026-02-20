@@ -470,7 +470,7 @@ function EditorContent() {
           </button>
           {/* 템플릿 타입 배지 - URL 또는 invitation에서 확인 */}
           {(() => {
-            const tid = templateId || invitation?.templateId || ''
+            const tid = activeTemplate?.id || templateId || ''
             if (tid === 'narrative-family') return <span className="px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700 rounded-full">family</span>
             if (tid === 'narrative-magazine') return <span className="px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-700 rounded-full">magazine</span>
             if (tid === 'narrative-film') return <span className="px-2 py-0.5 text-xs font-medium bg-gray-800 text-gray-100 rounded-full">movie</span>

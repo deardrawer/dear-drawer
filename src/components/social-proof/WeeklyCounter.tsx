@@ -3,13 +3,14 @@
 import { useState, useEffect } from 'react'
 
 export default function WeeklyCounter() {
-  const [weeklyCount, setWeeklyCount] = useState(7)
+  const BASE_COUNT = 7
+  const [weeklyCount, setWeeklyCount] = useState(BASE_COUNT)
 
   useEffect(() => {
     fetch('/api/stats')
       .then(res => res.json())
       .then((data: any) => {
-        if (data.weeklyCount && data.weeklyCount > 7) setWeeklyCount(data.weeklyCount)
+        if (data.weeklyCount && data.weeklyCount > 0) setWeeklyCount(BASE_COUNT + data.weeklyCount)
       })
       .catch(() => {})
   }, [])

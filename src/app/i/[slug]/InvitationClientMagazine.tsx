@@ -1064,11 +1064,11 @@ function ContactsSection({ invitation, fonts, themeColors }: { invitation: any; 
       <div key={i} className="flex items-center justify-between py-3" style={{ borderBottom: `0.5px solid ${themeColors.divider}` }}>
         <div>
           <span style={{ fontFamily: fonts.body, fontSize: '11px', color: themeColors.gray }}>{acc.role}</span>
-          <span style={{ fontFamily: fonts.body, fontSize: '12px', color: themeColors.text, marginLeft: '8px' }}>{acc.holder || acc.name}</span>
+          <span style={{ fontFamily: fonts.body, fontSize: '12px', color: themeColors.text, marginLeft: '8px' }}>{acc.account}</span>
         </div>
         <button
           onClick={() => {
-            navigator.clipboard.writeText(`${acc.bank} ${acc.account}`)
+            navigator.clipboard.writeText(acc.account)
             alert('계좌번호가 복사되었습니다.')
           }}
           style={{

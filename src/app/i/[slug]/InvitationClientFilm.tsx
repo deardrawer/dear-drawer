@@ -1027,15 +1027,15 @@ function ThePremiere({ invitation, fonts, tc }: { invitation: any; fonts: FontCo
             {date && (
               <>
                 <div className="flex items-center justify-center mb-3">
-                  <div style={{ fontFamily: fonts.body, fontSize: '16px', fontWeight: 400, color: ct, letterSpacing: '1px' }}>
+                  <div style={{ fontFamily: fonts.body, fontSize: '13px', fontWeight: 400, color: ct, letterSpacing: '1px', whiteSpace: 'nowrap' }}>
                     {date.getFullYear()}. {String(date.getMonth() + 1).padStart(2, '0')}. {String(date.getDate()).padStart(2, '0')}
                   </div>
-                  <div style={{ width: '1px', height: '14px', background: tc.cardText ? getAccentTint(tc.accent, 0.70) : tc.divider, margin: '0 14px' }} />
-                  <div style={{ fontFamily: fonts.body, fontSize: '16px', color: ct }}>
+                  <div style={{ width: '1px', height: '12px', background: tc.cardText ? getAccentTint(tc.accent, 0.70) : tc.divider, margin: '0 10px' }} />
+                  <div style={{ fontFamily: fonts.body, fontSize: '13px', color: ct, whiteSpace: 'nowrap' }}>
                     {dayNamesKr[date.getDay()]}
                   </div>
-                  <div style={{ width: '1px', height: '14px', background: tc.cardText ? getAccentTint(tc.accent, 0.70) : tc.divider, margin: '0 14px' }} />
-                  <div style={{ fontFamily: fonts.body, fontSize: '16px', color: ct }}>
+                  <div style={{ width: '1px', height: '12px', background: tc.cardText ? getAccentTint(tc.accent, 0.70) : tc.divider, margin: '0 10px' }} />
+                  <div style={{ fontFamily: fonts.body, fontSize: '13px', color: ct, whiteSpace: 'nowrap' }}>
                     {w.timeDisplay || w.time || ''}
                   </div>
                 </div>
@@ -1358,9 +1358,9 @@ function GiftSection({ invitation, fonts, tc }: { invitation: any; fonts: FontCo
       <div key={i} className="flex items-center justify-between py-3" style={{ borderBottom: `1px solid ${tc.divider}` }}>
         <div>
           <span style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.gray }}>{acc.role}</span>
-          <span style={{ fontFamily: fonts.body, fontSize: '12px', color: tc.cardText || tc.text, marginLeft: '8px' }}>{acc.holder || acc.name}</span>
+          <span style={{ fontFamily: fonts.body, fontSize: '12px', color: tc.cardText || tc.text, marginLeft: '8px' }}>{acc.account}</span>
         </div>
-        <button onClick={() => { navigator.clipboard.writeText(`${acc.bank} ${acc.account}`); alert('계좌번호가 복사되었습니다.') }}
+        <button onClick={() => { navigator.clipboard.writeText(acc.account); alert('계좌번호가 복사되었습니다.') }}
           style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '1px', color: tc.accent, background: 'none', border: `1px solid ${tc.accent}50`, padding: '4px 12px', cursor: 'pointer' }}>
           COPY
         </button>
@@ -1709,10 +1709,10 @@ const globalStyles = `
     transition: none;
   }
   .credits-animate {
-    animation: creditsScroll 12s linear forwards;
+    animation: creditsScroll 18s linear infinite;
   }
   @keyframes creditsScroll {
-    0% { transform: translateY(60%); }
+    0% { transform: translateY(100%); }
     100% { transform: translateY(-100%); }
   }
 

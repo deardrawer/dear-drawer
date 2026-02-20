@@ -1372,9 +1372,9 @@ function GiftSection({ invitation, fonts, tc }: { invitation: any; fonts: FontCo
       <div key={i} className="flex items-center justify-between py-3" style={{ borderBottom: `1px solid ${tc.divider}` }}>
         <div>
           <span style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.gray }}>{acc.role}</span>
-          <span style={{ fontFamily: fonts.body, fontSize: '12px', color: tc.text, marginLeft: '8px' }}>{acc.holder || acc.name}</span>
+          <span style={{ fontFamily: fonts.body, fontSize: '12px', color: tc.text, marginLeft: '8px' }}>{acc.account}</span>
         </div>
-        <button onClick={() => { navigator.clipboard.writeText(`${acc.bank} ${acc.account}`); alert('계좌번호가 복사되었습니다.') }}
+        <button onClick={() => { navigator.clipboard.writeText(acc.account); alert('계좌번호가 복사되었습니다.') }}
           style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '1px', color: tc.primary, background: 'none', border: `1px solid ${tc.primary}50`, padding: '4px 12px', cursor: 'pointer', borderRadius: '4px' }}>
           COPY
         </button>

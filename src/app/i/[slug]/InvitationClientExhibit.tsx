@@ -1931,18 +1931,12 @@ function AccountPost({
             className="rounded-xl p-3.5"
             style={{ background: '#FFFFFF', border: '1px solid #EFEFEF' }}
           >
-            <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-[11px] px-2 py-0.5 rounded-full font-medium"
                   style={{ background: side === 'groom' ? '#E8F4FD' : '#FFF0F5', color: side === 'groom' ? '#0095F6' : '#E91E63' }}>
                   {acc.role}
                 </span>
-                <span className="text-[13px] font-medium" style={{ color: '#262626' }}>{acc.name}</span>
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[11px] mb-0.5" style={{ color: '#8E8E8E' }}>{acc.bank}</p>
                 <p className="text-[14px] font-medium tracking-wide" style={{ color: '#262626' }}>{acc.account}</p>
               </div>
               <button

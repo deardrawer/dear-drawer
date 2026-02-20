@@ -16,7 +16,7 @@ export default function WeeklyCounter() {
 
   return (
     <p className="text-[10px] sm:text-sm text-gray-400 mt-4 sm:mt-6">
-      이번 주 <span className="text-white font-medium">{weeklyCount}쌍</span>의 커플이 청첩장을 만들고 있어요
+      지금 <span className="text-white font-medium">{weeklyCount}쌍</span>의 커플이 청첩장을 만들고 있어요
     </p>
   )
 }

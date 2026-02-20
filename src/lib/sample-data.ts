@@ -349,15 +349,15 @@ export const recordSampleContent = {
   fontStyle: 'modern' as const,
   groom: {
     ...ourSampleContent.groom,
-    name: '신랑',
-    lastName: '',
-    firstName: '신랑',
+    name: '김민준',
+    lastName: '김',
+    firstName: '민준',
   },
   bride: {
     ...ourSampleContent.bride,
-    name: '신부',
-    lastName: '',
-    firstName: '신부',
+    name: '이서연',
+    lastName: '이',
+    firstName: '서연',
   },
   wedding: {
     ...ourSampleContent.wedding,
@@ -403,7 +403,7 @@ export const recordSampleContent = {
     thankYou: {
       title: 'LINER NOTES',
       message: '이 앨범이 완성되기까지\n함께해주신 모든 분들께 감사드립니다.\n\n여러분의 축복이 담긴 이 노래를\n평생 함께 부르며 살겠습니다.',
-      sign: '신랑 & 신부 올림',
+      sign: '민준 & 서연 올림',
     },
   },
   design: {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import SocialProofCounter from '@/components/social-proof/SocialProofCounter'
@@ -14,7 +14,7 @@ const generateRandomSlug = () => {
 
 type TemplateCategory = null | 'story' | 'mini' | 'parents'
 
-export default function TemplatesPage() {
+function TemplatesContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const initialCategory = searchParams.get('category') as TemplateCategory
@@ -416,5 +416,13 @@ export default function TemplatesPage() {
         </div>
       </main>
     </div>
+  )
+}
+
+export default function TemplatesPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen" />}>
+      <TemplatesContent />
+    </Suspense>
   )
 }

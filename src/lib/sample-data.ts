@@ -269,6 +269,11 @@ export const filmSampleContent = {
     nameEn: 'MINJU',
     lastName: '김',
     firstName: '민준',
+    profile: {
+      ...ourSampleContent.groom.profile,
+      images: ['/sample/movie-groom.png'],
+      imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }],
+    },
   },
   bride: {
     ...ourSampleContent.bride,
@@ -276,6 +281,11 @@ export const filmSampleContent = {
     nameEn: 'SEOYEON',
     lastName: '이',
     firstName: '서연',
+    profile: {
+      ...ourSampleContent.bride.profile,
+      images: ['/sample/movie-bride.png'],
+      imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }],
+    },
   },
   wedding: {
     ...ourSampleContent.wedding,
@@ -314,7 +324,7 @@ export const filmSampleContent = {
       {
         question: '프로포즈',
         answer: '"프로포즈를 엄청 준비했는데 긴장해서 다 까먹었어."\n"그래서 그냥 울었잖아. 그게 더 감동이었어 사실."',
-        images: ['/sample/story3-1.jpeg', '/sample/story3-2.png'],
+        images: ['/sample/movie-story3-1.png', '/sample/movie-story3-2.png'],
         imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],
         bgClass: 'pink-bg',
       },
@@ -325,6 +335,16 @@ export const filmSampleContent = {
       sign: '민준 & 서연 올림',
     },
   },
+  gallery: {
+    images: ['/sample/movie-gallery1.png', '/sample/movie-gallery2.png', '/sample/movie-gallery3.png', '/sample/movie-gallery4.png', '/sample/movie-gallery5.png', '/sample/movie-gallery6.png'],
+    imageSettings: Array(6).fill({ scale: 1, positionX: 0, positionY: 0 }),
+  },
+  media: {
+    coverImage: '/sample/cover.png',
+    infoImage: '/sample/movie-information1.png',
+    bgm: '',
+  },
+  guidance: { ...ourSampleContent.guidance, image: '/sample/movie-information1.png', imageSettings: { scale: 1, positionX: 0, positionY: 0 } },
   design: {
     ...ourSampleContent.design,
     coverTitle: 'A MOVIE BY US',
@@ -347,7 +367,7 @@ export const filmSampleContent = {
 export const recordSampleContent = {
   ...ourSampleContent,
   templateId: 'record',
-  colorTheme: 'record-rose' as const,
+  colorTheme: 'record-coral' as const,
   fontStyle: 'modern' as const,
   groom: {
     ...ourSampleContent.groom,

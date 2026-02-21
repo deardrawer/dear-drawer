@@ -252,7 +252,6 @@ export default function Step3Magazine({ templateId, invitationId }: Step3Magazin
           <div className="space-y-1.5">
             <Label className="text-sm font-medium">이름 <span className="text-red-500">*</span></Label>
             <Input
-              autoFocus
               value={invitation.groom.name}
               onChange={(e) => updateNestedField('groom.name', e.target.value)}
               placeholder="김민준"

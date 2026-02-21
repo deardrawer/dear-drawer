@@ -158,8 +158,8 @@ function getImageCropStyle(img: string, s: { scale?: number; positionX?: number;
 }
 
 // ===== Magazine Cover Section =====
-function MagazineCover({ invitation, fonts, themeColors, onEnter }: {
-  invitation: any; fonts: FontConfig; themeColors: ColorConfig; onEnter: () => void
+function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
+  invitation: any; fonts: FontConfig; themeColors: ColorConfig; onEnter: () => void; isPreview?: boolean
 }) {
   const [loaded, setLoaded] = useState(false)
   const coverImage = extractImageUrl(invitation.media?.coverImage) || '/images/our-cover.png'
@@ -218,39 +218,44 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter }: {
   // Style: editorial (에디토리얼 - 사진 위 타이포그래피 오버레이)
   if (introStyle === 'editorial') {
     return (
-      <div className="relative w-full min-h-screen" style={{ backgroundColor: '#000' }}>
+      <div className="relative w-full flex flex-col" style={{ backgroundColor: '#000', height: isPreview ? '660px' : '100vh' }}>
         {/* Full bleed cover */}
-        <div className="absolute inset-0">
+        <div className="absolute inset-0 overflow-hidden">
           <div className="w-full h-full" style={{ ...getImageCropStyle(coverImage, invitation.media?.coverImageSettings || {}), opacity: loaded ? 1 : 0, transition: 'opacity 2s ease' }} />
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.05) 40%, rgba(0,0,0,0.5) 100%)' }} />
         </div>
+        {/* Gradient overlay */}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, transparent 25%, transparent 55%, rgba(0,0,0,0.6) 100%)' }} />
         {/* Top bar */}
         <div
-          className="relative z-10 px-6 pt-10 flex items-center justify-between transition-all duration-[1200ms]"
+          className="relative z-10 px-7 pt-12 flex items-center justify-between transition-all duration-[1200ms]"
           style={{ opacity: loaded ? 1 : 0, transform: loaded ? 'translateY(0)' : 'translateY(-10px)' }}
         >
           <span style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '3px', color: 'rgba(255,255,255,0.9)' }}>WEDDING</span>
           <span style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '2px', color: 'rgba(255,255,255,0.7)' }}>{dateStr}</span>
         </div>
-        {/* Bottom overlay text */}
+        {/* Spacer */}
+        <div className="flex-1" />
+        {/* Bottom overlay */}
         <div
-          className="absolute bottom-0 left-0 right-0 z-10 px-6 pb-16 transition-all duration-[1500ms] delay-300"
-          style={{ opacity: loaded ? 1 : 0, transform: loaded ? 'translateY(0)' : 'translateY(30px)' }}
+          className="relative z-10 text-center pb-14 transition-all duration-[1500ms] delay-300"
+          style={{ opacity: loaded ? 1 : 0, transform: loaded ? 'translateY(0)' : 'translateY(20px)' }}
         >
-          <div style={{ fontFamily: fonts.display, fontSize: '34px', fontWeight: 300, letterSpacing: '10px', color: '#ffffff', lineHeight: 1.3 }}>
-            {groomName}
+          {/* Names */}
+          <div className="flex items-center justify-center gap-4">
+            <span style={{ fontFamily: fonts.displayKr || fonts.display, fontSize: '22px', fontWeight: 300, letterSpacing: '4px', color: '#ffffff' }}>
+              {groomName}
+            </span>
+            <span style={{ fontFamily: fonts.display, fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>&amp;</span>
+            <span style={{ fontFamily: fonts.displayKr || fonts.display, fontSize: '22px', fontWeight: 300, letterSpacing: '4px', color: '#ffffff' }}>
+              {brideName}
+            </span>
           </div>
-          <div className="flex items-center gap-3 my-2">
-            <div style={{ height: '0.5px', width: '24px', background: 'rgba(255,255,255,0.5)' }} />
-            <span style={{ fontFamily: fonts.display, fontSize: '11px', letterSpacing: '5px', color: 'rgba(255,255,255,0.7)' }}>&amp;</span>
-          </div>
-          <div style={{ fontFamily: fonts.display, fontSize: '34px', fontWeight: 300, letterSpacing: '10px', color: '#ffffff', lineHeight: 1.3 }}>
-            {brideName}
-          </div>
+          {/* Divider + OPEN */}
+          <div style={{ width: '1px', height: '32px', background: 'rgba(255,255,255,0.3)', margin: '20px auto 0' }} />
           <button
             onClick={onEnter}
-            className="mt-8 transition-all duration-300 hover:scale-105 active:scale-95"
-            style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '5px', color: '#ffffff', background: 'transparent', border: '1px solid rgba(255,255,255,0.5)', padding: '12px 36px', cursor: 'pointer' }}
+            className="mt-4 transition-all duration-300 hover:opacity-70 active:scale-95"
+            style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '5px', color: 'rgba(255,255,255,0.8)', background: 'transparent', border: 'none', padding: '0', cursor: 'pointer' }}
           >
             OPEN
           </button>
@@ -1709,6 +1714,7 @@ function InvitationClientMagazineContent({
                       fonts={fonts}
                       themeColors={themeColors}
                       onEnter={() => setCurrentPage('main')}
+                      isPreview={isPreview}
                     />
                   ) : (
                     <>

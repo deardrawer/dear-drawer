@@ -1614,6 +1614,7 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     accentTextColor: (content as any).colors?.accent,
     bodyTextColor: (content as any).colors?.text,
     deceasedDisplayStyle: content.deceasedDisplayStyle || 'flower',
+    magazineIntroStyle: (content as any).magazineIntroStyle || 'cover',
   }
 }
 

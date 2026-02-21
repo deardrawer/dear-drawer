@@ -822,6 +822,75 @@ function TrackOurJourney({ invitation, fonts, tc, trackRef }: {
   )
 }
 
+// ===== CD Booklet Grid (with expand for 5+ images) =====
+function CdBookletGrid({ images, invitation, fonts, tc, onOpenLightbox }: {
+  images: string[]; invitation: any; fonts: FontConfig; tc: ColorConfig; onOpenLightbox: (idx: number) => void
+}) {
+  const [expanded, setExpanded] = useState(false)
+  const showExpand = images.length > 5
+  // Show first photo full + 4 grid (=5 total) when collapsed, all when expanded
+  const gridImages = showExpand && !expanded ? images.slice(1, 5) : images.slice(1)
+  const remainCount = images.length - 5
+
+  return (
+    <div className="mt-10">
+      {/* SIDE B divider */}
+      <div className="flex items-center justify-center gap-4 mb-6">
+        <div style={{ flex: 1, maxWidth: '60px', height: '1px', background: tc.divider }} />
+        <span style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '4px', color: tc.gray, opacity: 0.6 }}>
+          CD BOOKLET
+        </span>
+        <div style={{ flex: 1, maxWidth: '60px', height: '1px', background: tc.divider }} />
+      </div>
+
+      {/* First photo full width */}
+      <div onClick={() => onOpenLightbox(0)} style={{
+        width: '100%', aspectRatio: '16/10', borderRadius: '10px', overflow: 'hidden',
+        cursor: 'pointer', marginBottom: '6px',
+        border: `1px solid ${tc.divider}30`,
+      }}>
+        <div className="w-full h-full" style={getImageCropStyle(images[0], invitation.gallery?.imageSettings?.[0] || {})} />
+      </div>
+
+      {/* Grid */}
+      <div className="grid grid-cols-2 gap-[6px]" style={{ position: 'relative' }}>
+        {gridImages.map((img: string, i: number) => {
+          const actualIdx = i + 1
+          const isLast = showExpand && !expanded && i === gridImages.length - 1
+          return (
+            <div key={i} onClick={() => isLast ? setExpanded(true) : onOpenLightbox(actualIdx)} style={{
+              aspectRatio: '1/1', borderRadius: '10px', overflow: 'hidden',
+              cursor: 'pointer',
+              border: `1px solid ${tc.divider}30`,
+              position: 'relative',
+            }}>
+              <div className="w-full h-full" style={getImageCropStyle(img, invitation.gallery?.imageSettings?.[actualIdx] || {})} />
+              {isLast && remainCount > 0 && (
+                <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.4)' }}>
+                  <span style={{ fontFamily: fonts.display, fontSize: '14px', color: '#fff', letterSpacing: '1px' }}>+{remainCount}</span>
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Expand button when collapsed */}
+      {showExpand && !expanded && (
+        <button onClick={() => setExpanded(true)} style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+          width: '100%', marginTop: '12px', padding: '10px',
+          background: 'none', border: `1px solid ${tc.divider}`,
+          borderRadius: '8px', cursor: 'pointer',
+        }}>
+          <span style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '3px', color: tc.gray }}>VIEW ALL</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill={tc.gray}><path d="M7 10l5 5 5-5z" /></svg>
+        </button>
+      )}
+    </div>
+  )
+}
+
 // ===== TRACK 04: Gallery (Music Player Style) =====
 function TrackGallery({ invitation, fonts, tc, onOpenLightbox, trackRef }: {
   invitation: any; fonts: FontConfig; tc: ColorConfig; onOpenLightbox: (idx: number) => void; trackRef: (el: HTMLDivElement | null) => void
@@ -928,40 +997,7 @@ function TrackGallery({ invitation, fonts, tc, onOpenLightbox, trackRef }: {
 
         {/* CD BOOKLET grid - separate section */}
         {images.length > 1 && (
-          <div className="mt-10">
-            {/* SIDE B divider */}
-            <div className="flex items-center justify-center gap-4 mb-6">
-              <div style={{ flex: 1, maxWidth: '60px', height: '1px', background: tc.divider }} />
-              <span style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '4px', color: tc.gray, opacity: 0.6 }}>
-                CD BOOKLET
-              </span>
-              <div style={{ flex: 1, maxWidth: '60px', height: '1px', background: tc.divider }} />
-            </div>
-
-            {/* First photo full width */}
-            <div onClick={() => onOpenLightbox(0)} style={{
-              width: '100%', aspectRatio: '16/10', borderRadius: '10px', overflow: 'hidden',
-              cursor: 'pointer', marginBottom: '6px',
-              border: `1px solid ${tc.divider}30`,
-            }}>
-              <div className="w-full h-full" style={getImageCropStyle(images[0], invitation.gallery?.imageSettings?.[0] || {})} />
-            </div>
-
-            {/* Rest in 2-col grid */}
-            {images.length > 1 && (
-              <div className="grid grid-cols-2 gap-[6px]">
-                {images.slice(1).map((img: string, i: number) => (
-                  <div key={i} onClick={() => onOpenLightbox(i + 1)} style={{
-                    aspectRatio: '1/1', borderRadius: '10px', overflow: 'hidden',
-                    cursor: 'pointer',
-                    border: `1px solid ${tc.divider}30`,
-                  }}>
-                    <div className="w-full h-full" style={getImageCropStyle(img, invitation.gallery?.imageSettings?.[i + 1] || {})} />
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <CdBookletGrid images={images} invitation={invitation} fonts={fonts} tc={tc} onOpenLightbox={onOpenLightbox} />
         )}
       </div>
     </div>

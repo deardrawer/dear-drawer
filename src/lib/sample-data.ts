@@ -552,27 +552,32 @@ export function createSampleInvitation(type: 'our' | 'family' | 'magazine' | 'fi
     {
       question: '상대방의 첫인상은 어땠나요?',
       answer: '처음 본 순간, 이 사람이다 싶었어요. 말로 설명하기 어려운 느낌이었는데, 대화를 나눌수록 확신이 들었습니다. 서로의 눈을 바라보며 웃던 그 순간을 잊을 수 없어요.',
-      images: ['/sample/story1-1.png'],
+      images: ['/sample/magazine-interview1-1.png'],
       imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }],
       bgClass: 'pink-bg',
     },
     {
       question: '결혼을 결심하게 된 계기는?',
       answer: '함께 있을 때 가장 나다울 수 있었어요. 아무리 힘든 일이 있어도 이 사람 곁에 있으면 괜찮아지더라구요. 평생 이 사람과 함께라면 어떤 일이든 해낼 수 있을 것 같았습니다.',
-      images: ['/sample/interview2-1.png', '/sample/interview2-2.png'],
+      images: ['/sample/magazine-interview2-1.png', '/sample/magazine-interview2-2.png'],
       imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],
       bgClass: 'white-bg',
     },
     {
       question: '앞으로의 결혼생활 계획은?',
       answer: '서로를 존중하고 배려하며 살고 싶어요. 작은 일상에서도 감사함을 잊지 않고, 함께 웃으며 나이 들어가고 싶습니다. 무엇보다 서로의 꿈을 응원하는 부부가 되고 싶어요.',
-      images: ['/sample/interview3-1.png', '/sample/interview3-2.png'],
+      images: ['/sample/magazine-interview3-1.png', '/sample/magazine-interview3-2.png'],
       imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],
       bgClass: 'pink-bg',
     },
   ]
-  const magazineGuidance = { ...content.guidance, imageSettings: { scale: 1, positionX: 0, positionY: -8 } }
-  const finalContent = type === 'magazine' ? { ...content, colorTheme: 'modern-black', fontStyle: 'modern', interviews: magazineInterviews, guidance: magazineGuidance } : content
+  const magazineGuidance = { ...content.guidance, image: '/sample/magazine-information.png', imageSettings: { scale: 1, positionX: 0, positionY: 30 } }
+  const magazineGallery = {
+    images: ['/sample/magazine-galley1.png', '/sample/magazine-galley2.png', '/sample/magazine-galley3.png', '/sample/magazine-galley4.jpeg', '/sample/magazine-galley5.png', '/sample/magazine-galley6.png'],
+    imageSettings: Array(6).fill({ scale: 1, positionX: 0, positionY: 0 }),
+  }
+  const magazineMedia = { ...content.media, coverImage: '/sample/magazine-cover.png' }
+  const finalContent = type === 'magazine' ? { ...content, colorTheme: 'modern-black', fontStyle: 'modern', interviews: magazineInterviews, guidance: magazineGuidance, gallery: magazineGallery, media: magazineMedia } : content
 
   return {
     id: `sample-${type}-id`,
@@ -586,8 +591,8 @@ export function createSampleInvitation(type: 'our' | 'family' | 'magazine' | 'fi
     venue_address: content.wedding.venue.address,
     venue_detail: null,
     venue_map_url: null,
-    main_image: content.media.coverImage,
-    gallery_images: JSON.stringify(content.gallery.images),
+    main_image: type === 'magazine' ? magazineMedia.coverImage : content.media.coverImage,
+    gallery_images: type === 'magazine' ? JSON.stringify(magazineGallery.images) : JSON.stringify(content.gallery.images),
     greeting_message: content.content.greeting,
     contact_groom: content.groom.phone,
     contact_bride: content.bride.phone,

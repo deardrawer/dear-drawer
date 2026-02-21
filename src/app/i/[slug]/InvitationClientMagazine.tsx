@@ -536,9 +536,9 @@ function InterviewCard({ item, index, fonts, themeColors }: { item: any; index: 
         <div style={{ height: '0.5px', flex: 1, background: themeColors.divider }} />
       </div>
 
-      {/* Images above question: 1장=가로형, 2장=2열 그리드 */}
+      {/* Images above question: 1장=3:4 세로형, 2장=2열 그리드 */}
       {images.length === 1 && (
-        <div className="w-full mb-6 overflow-hidden" style={{ aspectRatio: '16/9' }}>
+        <div className="w-full mb-6 overflow-hidden" style={{ aspectRatio: '3/4' }}>
           <div className="w-full h-full" style={getImageCropStyle(images[0], item.imageSettings?.[0] || {})} />
         </div>
       )}

@@ -269,7 +269,7 @@ export default function WhyWeChoseEditor() {
     <AccordionItem value="why-we-chose">
       <div className="flex items-center justify-between">
         <AccordionTrigger className="text-base font-medium flex-1">
-          <span>💕 서로를 선택한 이유</span>
+          <span><svg className="w-4 h-4 text-gray-900 flex-shrink-0 inline -mt-0.5 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7z" /></svg>서로를 선택한 이유</span>
         </AccordionTrigger>
         <Switch
           checked={whyWeChose.enabled}

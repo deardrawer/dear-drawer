@@ -77,7 +77,8 @@ export default function Step3Film({}: Step3FilmProps) {
       {/* Chapter 1: 인사말 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          📝 Chapter 1: 인사말
+          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
+          Chapter 1: 인사말
         </h3>
         <p className="text-sm text-blue-600">영화의 오프닝 내레이션처럼, 두 사람의 이야기를 시작해보세요</p>
 
@@ -108,7 +109,8 @@ export default function Step3Film({}: Step3FilmProps) {
       {/* 영화 명대사 (Quote) */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          🎬 영화 명대사
+          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M2 10h20" /><path d="M6 4l3 6" /><path d="M12 4l3 6" /></svg>
+          영화 명대사
         </h3>
         <p className="text-sm text-blue-600">좋아하는 영화 대사나 인용구를 추가해보세요</p>
 
@@ -160,7 +162,8 @@ export default function Step3Film({}: Step3FilmProps) {
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            👫 Chapter 2: 프로필
+            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+            Chapter 2: 프로필
           </h3>
           {!invitation.groom.profile.tag?.trim() && !invitation.bride.profile.tag?.trim() && (
             <button
@@ -320,7 +323,8 @@ export default function Step3Film({}: Step3FilmProps) {
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            🎞 Scenes
+            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M2 10h20" /><path d="M6 4l3 6" /><path d="M12 4l3 6" /></svg>
+            Scenes
           </h3>
           <Switch
             checked={invitation.sectionVisibility.interview}
@@ -464,7 +468,8 @@ export default function Step3Film({}: Step3FilmProps) {
       {/* Chapter 3: 갤러리 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          📸 Chapter 3: 갤러리 <span className="text-xs font-normal text-gray-500">(최대 10장)</span>
+          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>
+          Chapter 3: 갤러리 <span className="text-xs font-normal text-gray-500">(최대 10장)</span>
         </h3>
         <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
           <p className="text-sm text-blue-800">필름 스트립처럼 사진들이 가로로 표시됩니다.</p>
@@ -522,7 +527,8 @@ export default function Step3Film({}: Step3FilmProps) {
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            🎬 영상
+            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M2 10h20" /><path d="M6 4l3 6" /><path d="M12 4l3 6" /></svg>
+            영상
           </h3>
           <Switch
             checked={invitation.youtube?.enabled || false}
@@ -579,7 +585,10 @@ export default function Step3Film({}: Step3FilmProps) {
           className="w-full flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
         >
           <div className="text-left">
-            <h3 className="text-base font-semibold text-gray-900">👨‍👩‍👧‍👦 부모님 성함</h3>
+            <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+              <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+              부모님 성함
+            </h3>
             <p className="text-xs text-gray-500 mt-0.5">선택사항 - THE WEDDING 섹션에 표시됩니다</p>
           </div>
           <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${showParents ? 'rotate-180' : ''}`} />
@@ -734,7 +743,8 @@ export default function Step3Film({}: Step3FilmProps) {
       {/* 안내사항 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          ℹ️ 안내사항
+          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
+          안내사항
         </h3>
 
         <div className="space-y-4">
@@ -959,7 +969,8 @@ export default function Step3Film({}: Step3FilmProps) {
       {/* Credits (감사인사) */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          💝 Credits
+          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+          Credits
         </h3>
 
         <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
@@ -999,7 +1010,8 @@ export default function Step3Film({}: Step3FilmProps) {
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            📖 방명록
+            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>
+            방명록
           </h3>
           <Switch
             checked={invitation.sectionVisibility.guestbook}

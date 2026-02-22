@@ -250,7 +250,13 @@ export default function Step6Publish({
     <div className="p-6 space-y-8">
       {/* 안내 */}
       <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-        <p className="text-base text-purple-800 font-medium mb-1">🎉 거의 다 왔어요!</p>
+        <p className="text-base text-purple-800 font-medium mb-1 flex items-center gap-2">
+          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m3 11 18-5v12L3 13v-2z" />
+            <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" />
+          </svg>
+          거의 다 왔어요!
+        </p>
         <p className="text-sm text-purple-700">
           청첩장을 발행하면 바로 공유할 수 있어요.
         </p>
@@ -260,7 +266,11 @@ export default function Step6Publish({
       {invitationUrl && (
         <section className="space-y-4">
           <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            🔗 청첩장 주소
+            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+            </svg>
+            청첩장 주소
           </h3>
 
           <div className="p-4 bg-gray-50 rounded-lg space-y-3">
@@ -291,10 +301,21 @@ export default function Step6Publish({
                     </p>
                   )}
                   {slugStatus === 'available' && !slugError && customSlug && (
-                    <p className="text-xs text-green-600 mt-1">✓ 사용할 수 있는 주소입니다</p>
+                    <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                      <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                      사용할 수 있는 주소입니다
+                    </p>
                   )}
                   {slugStatus === 'unavailable' && (
-                    <p className="text-xs text-red-500 mt-1">✗ 이미 사용 중인 주소입니다</p>
+                    <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                      <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                      이미 사용 중인 주소입니다
+                    </p>
                   )}
                   {slugError && (
                     <p className="text-xs text-red-500 mt-1">{slugError}</p>
@@ -354,7 +375,12 @@ export default function Step6Publish({
       {/* 공개 설정 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          🌐 공개 설정
+          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M2 12h20" />
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+          </svg>
+          공개 설정
         </h3>
 
         <div className="space-y-3">
@@ -402,9 +428,19 @@ export default function Step6Publish({
             <span>발행 중...</span>
           </div>
         ) : isPublished ? (
-          '✓ 발행 완료'
+          <span className="flex items-center gap-2">
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            발행 완료
+          </span>
         ) : (
-          '✨ 청첩장 발행하기'
+          <span className="flex items-center gap-2">
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 2L11 13" /><path d="M22 2l-7 20-4-9-9-4z" />
+            </svg>
+            청첩장 발행하기
+          </span>
         )}
       </Button>
 
@@ -423,7 +459,12 @@ export default function Step6Publish({
           <DialogTitle className="sr-only">발행 완료</DialogTitle>
           {/* 축하 헤더 */}
           <div className="text-center pt-2 pb-4">
-            <div className="text-5xl mb-3 animate-bounce">🎊</div>
+            <div className="mb-3 animate-bounce flex justify-center">
+              <svg className="w-16 h-16 text-gray-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m3 11 18-5v12L3 13v-2z" />
+                <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" />
+              </svg>
+            </div>
             <h2 className="text-xl font-bold text-gray-900 mb-1">축하합니다!</h2>
             <p className="text-sm text-gray-600">청첩장이 발행되었습니다</p>
           </div>
@@ -431,7 +472,13 @@ export default function Step6Publish({
           {/* 공유 링크 */}
           {invitationUrl && (
             <div className="space-y-2">
-              <p className="text-sm font-medium text-gray-700">🔗 공유 링크</p>
+              <p className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                <svg className="w-3.5 h-3.5 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                </svg>
+                공유 링크
+              </p>
               <div className="flex items-center gap-2">
                 <Input
                   value={invitationUrl}
@@ -457,7 +504,10 @@ export default function Step6Publish({
               onClick={() => invitationUrl && window.open(invitationUrl, '_blank')}
               className="flex flex-col items-center gap-2 p-4 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors"
             >
-              <span className="text-2xl">📱</span>
+              <svg className="w-8 h-8 text-gray-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="5" y="2" width="14" height="20" rx="2" />
+                <path d="M12 18h.01" />
+              </svg>
               <span className="text-sm font-medium text-gray-700">미리보기</span>
             </button>
 
@@ -477,7 +527,10 @@ export default function Step6Publish({
           {!isPaid && (
             <div className="mt-4 p-4 bg-rose-50 border border-rose-200 rounded-xl">
               <div className="flex items-start gap-3">
-                <span className="text-xl">💎</span>
+                <svg className="w-6 h-6 text-gray-900 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 3h12l4 6-10 13L2 9z" />
+                  <path d="M2 9h20" />
+                </svg>
                 <div className="flex-1">
                   <p className="text-sm font-medium text-rose-800 mb-1">워터마크 제거</p>
                   <p className="text-xs text-rose-600 mb-3">

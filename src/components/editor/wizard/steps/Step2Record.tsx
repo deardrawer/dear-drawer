@@ -86,7 +86,11 @@ export default function Step2Record({ invitationId }: Step2RecordProps) {
       {/* 앨범 커버 이미지 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          💿 앨범 커버 이미지
+          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+          앨범 커버 이미지
         </h3>
         <p className="text-sm text-blue-600">바이닐 레코드 커버에 사용될 정사각형 이미지를 업로드하세요.</p>
 
@@ -149,7 +153,7 @@ export default function Step2Record({ invitationId }: Step2RecordProps) {
       {/* 커버 타이틀 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          ✏️ 커버 타이틀
+          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg> 커버 타이틀
         </h3>
         <div className="space-y-1.5">
           <Label className="text-sm font-medium">인트로 텍스트</Label>
@@ -164,7 +168,13 @@ export default function Step2Record({ invitationId }: Step2RecordProps) {
       {/* 신랑신부 이름 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          👫 신랑신부 이름
+          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+          신랑신부 이름
         </h3>
 
         <div className="space-y-3 p-4 bg-blue-50 rounded-lg">
@@ -198,7 +208,17 @@ export default function Step2Record({ invitationId }: Step2RecordProps) {
       {/* 결혼식 정보 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          💒 결혼식 정보
+          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="4" y="2" width="16" height="20" rx="2" />
+            <path d="M9 22V12h6v10" />
+            <path d="M8 6h.01" />
+            <path d="M16 6h.01" />
+            <path d="M12 6h.01" />
+            <path d="M12 10h.01" />
+            <path d="M8 10h.01" />
+            <path d="M16 10h.01" />
+          </svg>
+          결혼식 정보
         </h3>
 
         <div className="space-y-4 p-4 bg-gray-50 rounded-lg">

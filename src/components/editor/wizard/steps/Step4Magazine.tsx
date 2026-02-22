@@ -75,9 +75,10 @@ export default function Step4Magazine() {
       {/* Editor's Note (인사말 + 명언) */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          📝 Editor&apos;s Note
+          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
+          Editor&apos;s Note
         </h3>
-        <p className="text-sm text-blue-600">💙 매거진 본문 상단에 표시되는 인사말과 명언을 작성해주세요.</p>
+        <p className="text-sm text-blue-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>매거진 본문 상단에 표시되는 인사말과 명언을 작성해주세요.</p>
 
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
@@ -149,7 +150,8 @@ export default function Step4Magazine() {
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            👫 신랑신부 소개
+            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+            신랑신부 소개
           </h3>
           {!invitation.groom.profile.tag?.trim() && !invitation.bride.profile.tag?.trim() && (
             <button
@@ -165,7 +167,7 @@ export default function Step4Magazine() {
           )}
         </div>
         <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-sm text-blue-800">💙 프로필 사진과 한줄 소개를 입력하면 MEET THE COUPLE 섹션에 표시됩니다.</p>
+          <p className="text-sm text-blue-800"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>프로필 사진과 한줄 소개를 입력하면 MEET THE COUPLE 섹션에 표시됩니다.</p>
         </div>
 
         {/* 신랑 프로필 */}
@@ -309,7 +311,8 @@ export default function Step4Magazine() {
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            🎤 인터뷰
+            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><line x1="12" y1="19" x2="12" y2="22" /><line x1="8" y1="22" x2="16" y2="22" /></svg>
+            인터뷰
           </h3>
           <Switch
             checked={invitation.sectionVisibility.interview}
@@ -321,7 +324,7 @@ export default function Step4Magazine() {
           <div className="space-y-4">
             {/* TIP 섹션 */}
             <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <p className="text-sm text-blue-800 mb-2">💙 결혼을 앞둔 두 분의 생각과 이야기를, 질문에 답하듯 솔직하게 들려주세요.</p>
+              <p className="text-sm text-blue-800 mb-2"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>결혼을 앞둔 두 분의 생각과 이야기를, 질문에 답하듯 솔직하게 들려주세요.</p>
               <details className="text-xs text-blue-700">
                 <summary className="cursor-pointer font-medium hover:text-blue-900">가이드 보기</summary>
                 <div className="mt-3 space-y-3 pl-2 border-l-2 border-blue-300">
@@ -463,10 +466,11 @@ export default function Step4Magazine() {
       {/* 갤러리 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          📸 갤러리 <span className="text-xs font-normal text-gray-500">(최대 10장)</span>
+          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>
+          갤러리 <span className="text-xs font-normal text-gray-500">(최대 10장)</span>
         </h3>
         <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-sm text-blue-800 mb-2">💙 두 사람의 사진을 업로드해 주세요. 매거진의 갤러리 섹션에 표시됩니다.</p>
+          <p className="text-sm text-blue-800 mb-2"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>두 사람의 사진을 업로드해 주세요. 매거진의 갤러리 섹션에 표시됩니다.</p>
         </div>
 
         <MultiImageUploader
@@ -521,14 +525,15 @@ export default function Step4Magazine() {
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            🎬 영상
+            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M2 10h20" /><path d="M6 4l3 6" /><path d="M12 4l3 6" /></svg>
+            영상
           </h3>
           <Switch
             checked={invitation.youtube?.enabled || false}
             onCheckedChange={(checked) => updateNestedField('youtube.enabled', checked)}
           />
         </div>
-        <p className="text-sm text-blue-600">💙 유튜브 영상을 추가하세요. 갤러리 아래에 표시됩니다.</p>
+        <p className="text-sm text-blue-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>유튜브 영상을 추가하세요. 갤러리 아래에 표시됩니다.</p>
 
         {invitation.youtube?.enabled && (
           <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
@@ -578,7 +583,10 @@ export default function Step4Magazine() {
           className="w-full flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
         >
           <div className="text-left">
-            <h3 className="text-base font-semibold text-gray-900">👨‍👩‍👧‍👦 부모님 성함</h3>
+            <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+              <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+              부모님 성함
+            </h3>
             <p className="text-xs text-gray-500 mt-0.5">선택사항 - THE WEDDING 섹션에 표시됩니다</p>
           </div>
           <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${showParents ? 'rotate-180' : ''}`} />
@@ -733,11 +741,12 @@ export default function Step4Magazine() {
       {/* 안내사항 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          ℹ️ 안내사항
+          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
+          안내사항
         </h3>
 
         <div className="space-y-4">
-          <p className="text-sm text-blue-600">💙 하객분들께 전달할 안내사항을 작성해주세요. 필요한 항목만 켜서 사용하세요.</p>
+          <p className="text-sm text-blue-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>하객분들께 전달할 안내사항을 작성해주세요. 필요한 항목만 켜서 사용하세요.</p>
 
           {/* 웨딩사진 */}
           <div className="p-4 bg-gradient-to-br from-rose-50 to-pink-50 rounded-lg space-y-3">
@@ -966,11 +975,12 @@ export default function Step4Magazine() {
       {/* 감사 인사 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          💝 감사 인사
+          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+          감사 인사
         </h3>
 
         <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-sm text-blue-800">💙 두 분의 진심이 담긴 감사 인사로, 매거진을 마무리해 주세요.</p>
+          <p className="text-sm text-blue-800"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>두 분의 진심이 담긴 감사 인사로, 매거진을 마무리해 주세요.</p>
         </div>
 
         <div className="p-4 bg-gray-50 rounded-lg space-y-3">
@@ -998,18 +1008,19 @@ export default function Step4Magazine() {
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            📖 방명록
+            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>
+            방명록
           </h3>
           <Switch
             checked={invitation.sectionVisibility.guestbook}
             onCheckedChange={() => toggleSectionVisibility('guestbook')}
           />
         </div>
-        <p className="text-sm text-blue-600">💙 하객분들이 축하 메시지를 남길 수 있는 방명록이 표시됩니다.</p>
+        <p className="text-sm text-blue-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>하객분들이 축하 메시지를 남길 수 있는 방명록이 표시됩니다.</p>
 
         <details>
           <summary className="text-xs text-blue-600 cursor-pointer hover:text-blue-700 select-none">
-            질문 예시 ) 펼쳐보기 💙
+            질문 예시 ) 펼쳐보기 <svg className="w-3 h-3 text-gray-900 inline -mt-0.5 ml-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
           </summary>
           <div className="mt-2 space-y-2 text-xs text-blue-600">
             <div>
@@ -1040,7 +1051,10 @@ export default function Step4Magazine() {
           <div className="space-y-4">
             <div className="p-4 bg-amber-50 rounded-lg space-y-3">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-amber-800">💬 질문 설정 (최대 10개)</p>
+                <p className="text-sm font-medium text-amber-800">
+                  <svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+                  질문 설정 (최대 10개)
+                </p>
                 <span className="text-xs text-amber-600">{invitation.content.guestbookQuestions?.length || 0}/10</span>
               </div>
               <p className="text-xs text-amber-700">하객분들에게 보여질 질문을 설정하세요. 질문이 랜덤으로 표시됩니다.</p>

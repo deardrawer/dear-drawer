@@ -164,9 +164,13 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
       {/* 폰트 스타일 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          ✒️ 폰트 스타일
+          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+          </svg>
+          폰트 스타일
         </h3>
-        <p className="text-sm text-blue-600">💙 텍스트의 글꼴을 선택해주세요.</p>
+        <p className="text-sm text-blue-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> 텍스트의 글꼴을 선택해주세요.</p>
 
         <div className="grid grid-cols-1 gap-2">
           {FONT_STYLES.map((font) => {
@@ -215,7 +219,11 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
           {/* Record 테마 선택 (6종) */}
           <section className="space-y-4">
             <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-              💿 테마 선택
+              <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              테마 선택
             </h3>
             <p className="text-sm text-blue-600">레코드 앨범에 어울리는 테마를 선택하세요</p>
 
@@ -265,7 +273,13 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
           {/* Movie 테마 선택 (다크/라이트) */}
           <section className="space-y-4">
             <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-              🎬 테마 선택
+              <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="4" width="20" height="16" rx="2" />
+                <path d="M2 10h20" />
+                <path d="M6 4l3 6" />
+                <path d="M12 4l3 6" />
+              </svg>
+              테마 선택
             </h3>
             <p className="text-sm text-blue-600">영화 분위기에 맞는 테마를 선택하세요</p>
 
@@ -324,7 +338,14 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
           {/* Movie 포인트 컬러 */}
           <section className="space-y-4">
             <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-              🎨 포인트 컬러
+              <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
+                <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
+                <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
+                <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
+                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" />
+              </svg>
+              포인트 컬러
             </h3>
             <p className="text-sm text-blue-600">인트로 바, 챕터 라벨 등에 사용될 포인트 색상을 선택하세요</p>
 
@@ -389,9 +410,16 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
       ) : (
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          🎨 색상 테마
+          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
+            <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
+            <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
+            <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
+            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" />
+          </svg>
+          색상 테마
         </h3>
-        <p className="text-sm text-blue-600">💙 청첩장의 전체적인 색상 분위기를 선택해주세요.</p>
+        <p className="text-sm text-blue-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> 청첩장의 전체적인 색상 분위기를 선택해주세요.</p>
 
         <div className="grid grid-cols-3 gap-3">
           {COLOR_THEMES.map((theme) => {
@@ -496,7 +524,12 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            🎵 배경음악
+            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 18V5l12-2v13" />
+              <circle cx="6" cy="18" r="3" />
+              <circle cx="18" cy="16" r="3" />
+            </svg>
+            배경음악
           </h3>
           <Switch
             checked={bgm?.enabled || false}
@@ -504,8 +537,8 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
           />
         </div>
         <p className="text-sm text-blue-600">
-          💙 스토리에 어울리는 배경음악을 선택해주세요.<br />
-          <span className="text-amber-600">⚠️ 브라우저 정책에 따라 자동재생 기능이 동작하지 않을 수 있습니다.</span>
+          <svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> 스토리에 어울리는 배경음악을 선택해주세요.<br />
+          <span className="text-amber-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> 브라우저 정책에 따라 자동재생 기능이 동작하지 않을 수 있습니다.</span>
         </p>
 
         {(bgm?.enabled || bgm?.url) && (

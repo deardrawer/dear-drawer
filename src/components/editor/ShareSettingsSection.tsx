@@ -41,16 +41,16 @@ export default function ShareSettingsSection({ invitationId }: ShareSettingsSect
       {/* 카카오톡 공유 설정 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          📲 카카오톡 공유 설정
+          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" /><path d="M12 18h.01" /></svg> 카카오톡 공유 설정
         </h3>
         <p className="text-sm text-blue-600">
-          💙 카카오톡으로 공유할 때 표시되는 정보를 설정해주세요.
+          <svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>카카오톡으로 공유할 때 표시되는 정보를 설정해주세요.
         </p>
 
         {/* 경고 문구 */}
         <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
           <p className="text-xs text-amber-700 mb-2">
-            ⚠️ <strong>중요:</strong> 카카오톡 공유 정보는 한번 공유된 후 변경하면 캐시로 인해
+            <svg className="w-3 h-3 text-amber-600 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg> <strong>중요:</strong> 카카오톡 공유 정보는 한번 공유된 후 변경하면 캐시로 인해
             반영되기까지 시간이 오래 걸릴 수 있습니다.
           </p>
           <details className="text-xs text-amber-700">
@@ -147,11 +147,11 @@ export default function ShareSettingsSection({ invitationId }: ShareSettingsSect
       {/* OG 이미지 설정 (문자, SNS 공유용) */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          🖼️ 공유 미리보기 이미지 (OG 이미지)
+          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg> 공유 미리보기 이미지 (OG 이미지)
         </h3>
         <div className="p-3 bg-blue-50 rounded-lg">
           <p className="text-xs text-blue-700">
-            💙 <strong>권장 크기:</strong> 1200 x 630 픽셀 (가로형)<br />
+            <svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> <strong>권장 크기:</strong> 1200 x 630 픽셀 (가로형)<br />
             카카오톡 이외의 플랫폼(문자, 인스타그램, 페이스북 등)에서 공유할 때 표시되는 이미지입니다.
           </p>
         </div>
@@ -184,7 +184,7 @@ export default function ShareSettingsSection({ invitationId }: ShareSettingsSect
           {!invitation.meta.ogImage && invitation.meta.kakaoThumbnail && (
             <div className="p-3 bg-amber-50 rounded-lg">
               <p className="text-xs text-amber-700">
-                ⚠️ OG 이미지를 설정하지 않으면 카카오톡 썸네일이 기본으로 사용됩니다.
+                <svg className="w-3 h-3 text-amber-600 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg> OG 이미지를 설정하지 않으면 카카오톡 썸네일이 기본으로 사용됩니다.
               </p>
             </div>
           )}

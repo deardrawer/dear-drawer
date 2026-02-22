@@ -235,7 +235,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
     return (
       <div className="p-4 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl space-y-4 mb-4">
         <p className="text-sm font-semibold text-white flex items-center gap-2">
-          🎬 {label}
+          <svg className="w-4 h-4 text-gray-300 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M2 10h20" /><path d="M6 4l3 6" /><path d="M12 4l3 6" /></svg> {label}
         </p>
         <p className="text-xs text-gray-300">흑백 웨딩사진 배경으로 섹션을 구분해요</p>
 
@@ -414,9 +414,9 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
       {isMagazine && (
         <section className="space-y-4">
           <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            📝 Editor&apos;s Note
+            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg> Editor&apos;s Note
           </h3>
-          <p className="text-sm text-blue-600">💙 매거진 본문 상단에 표시되는 인사말과 명언을 작성해주세요.</p>
+          <p className="text-sm text-blue-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> 매거진 본문 상단에 표시되는 인사말과 명언을 작성해주세요.</p>
 
           <div className="space-y-1.5">
             <Label className="text-xs font-medium">인사말</Label>
@@ -450,7 +450,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
           className="w-full p-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-xl transition-all shadow-lg hover:shadow-xl"
         >
           <div className="flex items-center justify-center gap-3">
-            <span className="text-2xl">✨</span>
+            <svg className="w-6 h-6 text-white/90" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" fill="rgba(255,255,255,0.2)" /><path d="M20 3v4" /><path d="M22 5h-4" /></svg>
             <div className="text-left">
               <p className="font-semibold text-lg">초안 작성해드려요</p>
               <p className="text-sm text-white/80">질문에 답하면 맞춤 콘텐츠를 작성해드려요</p>
@@ -465,7 +465,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-              👤 연인의 시선으로 소개
+              <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="5" /><path d="M20 21a8 8 0 0 0-16 0" /></svg> 연인의 시선으로 소개
             </h3>
             <Switch
               checked={invitation.sectionVisibility.coupleProfile}
@@ -474,11 +474,11 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
           </div>
           {/* TIP 섹션 */}
           <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-sm text-blue-800 mb-2">💙 내가 사랑하는 사람을 소개해 주세요. 함께 지내며 느낀 그 사람의 모습이면 충분합니다.</p>
+            <p className="text-sm text-blue-800 mb-2"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> 내가 사랑하는 사람을 소개해 주세요. 함께 지내며 느낀 그 사람의 모습이면 충분합니다.</p>
             <details className="text-xs text-blue-700">
               <summary className="cursor-pointer font-medium hover:text-blue-900">가이드 보기</summary>
               <div className="mt-3 space-y-3 pl-2 border-l-2 border-blue-300">
-                <p className="font-medium">✍️ 이렇게 작성해 보세요</p>
+                <p className="font-medium"><svg className="w-3 h-3 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg> 이렇게 작성해 보세요</p>
                 <ul className="space-y-1 list-disc list-inside">
                   <li>'나'가 아닌 그 사람의 이름으로 시작해요</li>
                   <li>성격 나열보다 장면 하나를 떠올려 보세요</li>
@@ -487,7 +487,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                 <div className="p-2 bg-white/50 rounded text-gray-600 italic">
                   예시) "다해는 세상을 조금 다르게 바라보는 사람입니다.<br/>익숙한 것에도 늘 질문을 던지고,<br/>그 덕분에 제 하루는 자주 새로워집니다."
                 </div>
-                <p className="text-blue-600">🤍 이 글은 소개문이 아니라, 사랑하는 사람이 바라본 한 사람의 기록입니다.</p>
+                <p className="text-blue-600"><svg className="w-3 h-3 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg> 이 글은 소개문이 아니라, 사랑하는 사람이 바라본 한 사람의 기록입니다.</p>
               </div>
             </details>
           </div>
@@ -736,7 +736,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-              💕 러브스토리
+              <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg> 러브스토리
             </h3>
             <Switch
               checked={invitation.sectionVisibility.ourStory}
@@ -746,7 +746,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
 
           {/* TIP 섹션 */}
           <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-sm text-blue-800 mb-2">💙 첫 만남부터 결혼을 결심하기까지, 그때의 이야기와 사진을 함께 담아주세요.</p>
+            <p className="text-sm text-blue-800 mb-2"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> 첫 만남부터 결혼을 결심하기까지, 그때의 이야기와 사진을 함께 담아주세요.</p>
             <details className="text-xs text-blue-700">
               <summary className="cursor-pointer font-medium hover:text-blue-900">가이드 보기</summary>
               <div className="mt-3 space-y-4 pl-2 border-l-2 border-blue-300">
@@ -770,7 +770,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                   <div className="p-2 bg-white/50 rounded text-gray-600 italic">예시) "10주년을 기념한 여행에서, 서로의 평생이 되기로 약속했습니다."</div>
                 </div>
 
-                <p className="text-blue-600">🤍 사진은 기록을 더 선명하게 만들고, 글은 그 순간에 의미를 더합니다. 잘 나온 사진보다 그때의 감정이 느껴지는 사진이 좋아요.</p>
+                <p className="text-blue-600"><svg className="w-3 h-3 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg> 사진은 기록을 더 선명하게 만들고, 글은 그 순간에 의미를 더합니다. 잘 나온 사진보다 그때의 감정이 느껴지는 사진이 좋아요.</p>
               </div>
             </details>
           </div>
@@ -878,7 +878,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-              👨‍👩‍👧 부모님 소개
+              <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg> 부모님 소개
             </h3>
             <Switch
               checked={invitation.sectionVisibility.parentsGreeting ?? true}
@@ -890,7 +890,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
             <div className="space-y-4">
               {/* TIP 섹션 */}
               <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <p className="text-sm text-blue-800 mb-2">💙 부모님의 시선으로 자녀를 소개하고, 함께 축하 인사를 전해보세요.</p>
+                <p className="text-sm text-blue-800 mb-2"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> 부모님의 시선으로 자녀를 소개하고, 함께 축하 인사를 전해보세요.</p>
                 <details className="text-xs text-blue-700">
                   <summary className="cursor-pointer font-medium hover:text-blue-900">가이드 보기</summary>
                   <div className="mt-3 space-y-3 pl-2 border-l-2 border-blue-300">
@@ -1121,7 +1121,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-              💕 서로를 선택한 이유
+              <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg> 서로를 선택한 이유
             </h3>
             <Switch
               checked={whyWeChose.enabled !== false}
@@ -1133,7 +1133,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
             <div className="space-y-4">
               {/* TIP 섹션 */}
               <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <p className="text-sm text-blue-800 mb-2">💙 상대에게 느낀 특별함을, 두 분의 말로 직접 전해 보세요.</p>
+                <p className="text-sm text-blue-800 mb-2"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> 상대에게 느낀 특별함을, 두 분의 말로 직접 전해 보세요.</p>
                 <details className="text-xs text-blue-700">
                   <summary className="cursor-pointer font-medium hover:text-blue-900">가이드 보기</summary>
                   <div className="mt-3 space-y-3 pl-2 border-l-2 border-blue-300">
@@ -1356,7 +1356,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
       {!isFamily && !isMagazine && (
         <section className="space-y-4">
           <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            💑 처음 만난 날
+            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg> 처음 만난 날
           </h3>
           <div className="p-4 bg-rose-50 rounded-lg space-y-3">
             <p className="text-sm text-rose-700">두 분이 처음 만난 날짜를 입력해주세요. 청첩장에 함께한 시간이 표시됩니다.</p>
@@ -1373,13 +1373,13 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
       {/* 갤러리 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          📸 갤러리 <span className="text-xs font-normal text-gray-500">(최대 10장)</span>
+          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg> 갤러리 <span className="text-xs font-normal text-gray-500">(최대 10장)</span>
         </h3>
         {/* 가이드 섹션 */}
         <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-sm text-blue-800 mb-2">💙 두 사람의 사진을 업로드해 주세요. 스토리에서 쓰지 않은 사진들이 잘 어울립니다.</p>
+          <p className="text-sm text-blue-800 mb-2"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> 두 사람의 사진을 업로드해 주세요. 스토리에서 쓰지 않은 사진들이 잘 어울립니다.</p>
           <details className="text-xs text-blue-700">
-            <summary className="cursor-pointer font-medium hover:text-blue-900">📖 가이드 보기</summary>
+            <summary className="cursor-pointer font-medium hover:text-blue-900"><svg className="w-3 h-3 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg> 가이드 보기</summary>
             <div className="mt-3 space-y-3 pl-2 border-l-2 border-blue-300">
               <p>
                 디어드로어 청첩장은<br/>
@@ -1395,20 +1395,20 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                 사진의 컨셉이 겹치지 않게 선택하는걸 추천드려요.
               </p>
               <div className="p-2 bg-white/50 rounded">
-                <p className="font-medium mb-1">✍️ 이렇게 구성해 보세요</p>
+                <p className="font-medium mb-1"><svg className="w-3 h-3 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg> 이렇게 구성해 보세요</p>
                 <ul className="list-disc list-inside space-y-0.5">
                   <li>스토리에서 이미 사용한 사진은 피해주세요</li>
                   <li>비슷한 구도·표정의 사진은 줄이고, 다른 느낌의 사진을 골라보세요</li>
                 </ul>
               </div>
               <div className="p-2 bg-white/50 rounded">
-                <p className="font-medium mb-1">📷 추천 사진 예시</p>
+                <p className="font-medium mb-1"><svg className="w-3 h-3 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg> 추천 사진 예시</p>
                 <ul className="list-disc list-inside space-y-0.5">
                   <li>가장 마음에 드는 웨딩 촬영 컷</li>
                   <li>두 사람의 분위기가 잘 드러나는 장면</li>
                 </ul>
               </div>
-              <p className="text-blue-600">🤍 갤러리는 이야기를 반복하는 공간이 아니라, 이야기를 더 풍성하게 만드는 여백입니다.</p>
+              <p className="text-blue-600"><svg className="w-3 h-3 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg> 갤러리는 이야기를 반복하는 공간이 아니라, 이야기를 더 풍성하게 만드는 여백입니다.</p>
             </div>
           </details>
         </div>
@@ -1466,14 +1466,14 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            🎬 영상
+            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M2 10h20" /><path d="M6 4l3 6" /><path d="M12 4l3 6" /></svg> 영상
           </h3>
           <Switch
             checked={invitation.youtube?.enabled || false}
             onCheckedChange={(checked) => updateNestedField('youtube.enabled', checked)}
           />
         </div>
-        <p className="text-sm text-blue-600">💙 유튜브 영상을 추가하세요. 갤러리 아래에 표시됩니다.</p>
+        <p className="text-sm text-blue-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> 유튜브 영상을 추가하세요. 갤러리 아래에 표시됩니다.</p>
 
         {invitation.youtube?.enabled && (
           <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
@@ -1519,7 +1519,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            🎤 인터뷰 <span className="text-[10px] font-normal text-green-600 bg-green-50 px-1.5 py-0.5 rounded">초안작성가능</span>
+            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><line x1="12" y1="19" x2="12" y2="22" /><line x1="8" y1="22" x2="16" y2="22" /></svg> 인터뷰 <span className="text-[10px] font-normal text-green-600 bg-green-50 px-1.5 py-0.5 rounded">초안작성가능</span>
           </h3>
           <Switch
             checked={invitation.sectionVisibility.interview}
@@ -1532,7 +1532,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
 
             {/* TIP 섹션 */}
             <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <p className="text-sm text-blue-800 mb-2">💙 결혼을 앞둔 두 분의 생각과 이야기를, 질문에 답하듯 솔직하게 들려주세요.</p>
+              <p className="text-sm text-blue-800 mb-2"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> 결혼을 앞둔 두 분의 생각과 이야기를, 질문에 답하듯 솔직하게 들려주세요.</p>
               <details className="text-xs text-blue-700">
                 <summary className="cursor-pointer font-medium hover:text-blue-900">가이드 보기</summary>
                 <div className="mt-3 space-y-3 pl-2 border-l-2 border-blue-300">
@@ -1668,11 +1668,11 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
       {/* 안내사항 - 모든 템플릿에서 스토리 탭에 표시 (항상 펼쳐짐) */}
       <section className="space-y-4">
           <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            ℹ️ 안내사항
+            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> 안내사항
           </h3>
 
           <div className="space-y-4">
-            <p className="text-sm text-blue-600">💙 하객분들께 전달할 안내사항을 작성해주세요. 필요한 항목만 켜서 사용하세요.</p>
+            <p className="text-sm text-blue-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> 하객분들께 전달할 안내사항을 작성해주세요. 필요한 항목만 켜서 사용하세요.</p>
 
               {/* 웨딩사진 */}
               <div className="p-4 bg-gradient-to-br from-rose-50 to-pink-50 rounded-lg space-y-3">
@@ -1904,12 +1904,12 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
       {/* 감사 인사 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          💝 감사 인사 <span className="text-[10px] font-normal text-green-600 bg-green-50 px-1.5 py-0.5 rounded">초안작성가능</span>
+          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /><path d="M12 5.67l3.5 3.5" /></svg> 감사 인사 <span className="text-[10px] font-normal text-green-600 bg-green-50 px-1.5 py-0.5 rounded">초안작성가능</span>
         </h3>
 
         {/* TIP 섹션 */}
         <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-sm text-blue-800 mb-2">💙 두 분의 진심이 담긴 감사 인사로, 청첩장을 마무리해 주세요.</p>
+          <p className="text-sm text-blue-800 mb-2"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> 두 분의 진심이 담긴 감사 인사로, 청첩장을 마무리해 주세요.</p>
           <details className="text-xs text-blue-700">
             <summary className="cursor-pointer font-medium hover:text-blue-900">가이드 보기</summary>
             <div className="mt-3 space-y-3 pl-2 border-l-2 border-blue-300">
@@ -1950,18 +1950,18 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            📖 방명록
+            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg> 방명록
           </h3>
           <Switch
             checked={invitation.sectionVisibility.guestbook}
             onCheckedChange={() => toggleSectionVisibility('guestbook')}
           />
         </div>
-        <p className="text-sm text-blue-600">💙 하객분들이 축하 메시지를 남길 수 있는 방명록이 표시됩니다.</p>
+        <p className="text-sm text-blue-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> 하객분들이 축하 메시지를 남길 수 있는 방명록이 표시됩니다.</p>
 
         <details>
           <summary className="text-xs text-blue-600 cursor-pointer hover:text-blue-700 select-none">
-            질문 예시 ) 펼쳐보기 💙
+            질문 예시 ) 펼쳐보기 <svg className="w-3 h-3 text-gray-900 inline -mt-0.5 ml-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
           </summary>
           <div className="mt-2 space-y-2 text-xs text-blue-600">
             <div>
@@ -2003,7 +2003,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
               <p className="font-semibold">⑤ 가벼운 위트형</p>
               <ul className="ml-3 space-y-0.5 list-disc list-inside">
                 <li>신랑·신부에게 각각 한마디씩 남긴다면?</li>
-                <li>신혼집에 꼭 있어야 할 물건 하나 추천한다면? 😆</li>
+                <li>신혼집에 꼭 있어야 할 물건 하나 추천한다면?</li>
                 <li>이 부부에게 붙여주고 싶은 별명은?</li>
                 <li>10년 후 두 사람의 모습, 한 줄로 상상해본다면?</li>
                 <li>오늘 축하 점수! (100점 만점 중 몇 점?)</li>
@@ -2017,7 +2017,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
             {/* 방명록 질문 설정 */}
             <div className="p-4 bg-amber-50 rounded-lg space-y-3">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-amber-800">💬 질문 설정 (최대 10개)</p>
+                <p className="text-sm font-medium text-amber-800"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg> 질문 설정 (최대 10개)</p>
                 <span className="text-xs text-amber-600">{invitation.content.guestbookQuestions?.length || 0}/10</span>
               </div>
               <p className="text-xs text-amber-700">하객분들에게 보여질 질문을 설정하세요. 질문이 랜덤으로 표시됩니다.</p>

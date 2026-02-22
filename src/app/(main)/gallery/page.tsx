@@ -170,13 +170,26 @@ export default function GalleryPage() {
             </p>
             <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-4 text-[9px] sm:text-sm text-white">
               <span className="flex items-center gap-0.5 sm:gap-2 px-2 sm:px-5 py-1 sm:py-2.5 bg-white/20 backdrop-blur-sm rounded-full">
-                <span className="text-[10px] sm:text-base">💌</span> 읽고 싶어지는 청첩장
+                <span className="inline-flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 bg-rose-400/20 rounded-full">
+                  <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-rose-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="4" width="20" height="16" rx="2" />
+                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                  </svg>
+                </span> 읽고 싶어지는 청첩장
               </span>
               <span className="flex items-center gap-0.5 sm:gap-2 px-2 sm:px-5 py-1 sm:py-2.5 bg-white/20 backdrop-blur-sm rounded-full">
-                <span className="text-[10px] sm:text-base">💕</span> 하객이 감동받는 이야기
+                <span className="inline-flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 bg-pink-400/20 rounded-full">
+                  <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-pink-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                  </svg>
+                </span> 하객이 감동받는 이야기
               </span>
               <span className="flex items-center gap-0.5 sm:gap-2 px-2 sm:px-5 py-1 sm:py-2.5 bg-white/20 backdrop-blur-sm rounded-full">
-                <span className="text-[10px] sm:text-base">✨</span> 우리를 더 알게 되는 순간
+                <span className="inline-flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 bg-violet-400/20 rounded-full">
+                  <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-violet-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2l1.8 6.2L20 12l-6.2 1.8L12 20l-1.8-6.2L4 12l6.2-1.8z" />
+                  </svg>
+                </span> 우리를 더 알게 되는 순간
               </span>
             </div>
           </div>
@@ -228,19 +241,47 @@ export default function GalleryPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5 max-w-2xl mx-auto mb-4 sm:mb-8">
               <div className="text-center p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-white/80 backdrop-blur-sm border border-gray-100 shadow-sm">
-                <div className="text-2xl sm:text-4xl mb-1.5 sm:mb-3">📖</div>
+                <div className="relative w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-1.5 sm:mb-3">
+                  <div className="absolute -inset-1 bg-rose-200 rounded-full opacity-[0.12] blur-[10px]" />
+                  <div className="relative w-full h-full bg-rose-50/80 border border-rose-100/60 rounded-full flex items-center justify-center">
+                    <svg className="w-5.5 h-5.5 sm:w-7 sm:h-7 text-rose-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" fill="rgba(253,164,175,0.15)" />
+                      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                    </svg>
+                  </div>
+                </div>
                 <h3 className="text-sm sm:text-lg font-semibold text-gray-900 mb-0.5 sm:mb-1">스토리형</h3>
                 <p className="text-[10px] sm:text-sm text-gray-500 leading-relaxed">우리의 이야기를 깊이 있게</p>
                 <p className="text-[9px] sm:text-xs text-gray-400 mt-1">OUR · FAMILY</p>
               </div>
               <div className="text-center p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-white/80 backdrop-blur-sm border border-gray-100 shadow-sm">
-                <div className="text-2xl sm:text-4xl mb-1.5 sm:mb-3">✨</div>
+                <div className="relative w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-1.5 sm:mb-3">
+                  <div className="absolute -inset-1 bg-violet-200 rounded-full opacity-[0.12] blur-[10px]" />
+                  <div className="relative w-full h-full bg-violet-50/80 border border-violet-100/60 rounded-full flex items-center justify-center">
+                    <svg className="w-5.5 h-5.5 sm:w-7 sm:h-7 text-violet-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="7" height="9" rx="1.5" fill="rgba(196,181,253,0.15)" />
+                      <rect x="14" y="3" width="7" height="5" rx="1.5" />
+                      <rect x="3" y="15" width="7" height="6" rx="1.5" />
+                      <rect x="14" y="11" width="7" height="10" rx="1.5" fill="rgba(196,181,253,0.1)" />
+                    </svg>
+                  </div>
+                </div>
                 <h3 className="text-sm sm:text-lg font-semibold text-gray-900 mb-0.5 sm:mb-1">미니 스토리형</h3>
                 <p className="text-[10px] sm:text-sm text-gray-500 leading-relaxed">감각적 디자인에 간결하게</p>
                 <p className="text-[9px] sm:text-xs text-gray-400 mt-1">MAGAZINE · MOVIE · RECORD · FEED</p>
               </div>
               <div className="text-center p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-white/80 backdrop-blur-sm border border-gray-100 shadow-sm">
-                <div className="text-2xl sm:text-4xl mb-1.5 sm:mb-3">🎎</div>
+                <div className="relative w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-1.5 sm:mb-3">
+                  <div className="absolute -inset-1 bg-sky-200 rounded-full opacity-[0.12] blur-[10px]" />
+                  <div className="relative w-full h-full bg-sky-50/80 border border-sky-100/60 rounded-full flex items-center justify-center">
+                    <svg className="w-5.5 h-5.5 sm:w-7 sm:h-7 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="9" cy="7" r="4" />
+                      <path d="M2 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2" fill="rgba(125,211,252,0.15)" />
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                      <path d="M21 21v-2a4 4 0 0 0-3-3.87" />
+                    </svg>
+                  </div>
+                </div>
                 <h3 className="text-sm sm:text-lg font-semibold text-gray-900 mb-0.5 sm:mb-1">혼주용</h3>
                 <p className="text-[10px] sm:text-sm text-gray-500 leading-relaxed">부모님이 보내는 격식 있는</p>
                 <p className="text-[9px] sm:text-xs text-gray-400 mt-1">PARENTS</p>
@@ -270,8 +311,14 @@ export default function GalleryPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-8">
               <div className="text-center p-3 sm:p-8 bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-3xl hover:bg-white/20 hover:scale-105 hover:shadow-2xl transition-all duration-300 cursor-pointer">
-                <div className="w-10 h-10 sm:w-20 sm:h-20 bg-white/20 rounded-xl sm:rounded-3xl flex items-center justify-center mx-auto mb-2 sm:mb-6 group-hover:bg-white/30 transition-colors">
-                  <span className="text-lg sm:text-4xl">🪄</span>
+                <div className="relative w-10 h-10 sm:w-20 sm:h-20 mx-auto mb-2 sm:mb-6">
+                  <div className="absolute -inset-1 bg-rose-400 rounded-full opacity-[0.1] blur-[8px]" />
+                  <div className="relative w-full h-full bg-white/10 border border-rose-300/15 rounded-full flex items-center justify-center">
+                    <svg className="w-4 h-4 sm:w-8 sm:h-8 text-rose-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" fill="rgba(253,164,175,0.08)" />
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                  </div>
                 </div>
                 <h3 className="text-xs sm:text-lg font-bold text-white mb-1 sm:mb-3">스토리 초안 작성</h3>
                 <p className="text-[9px] sm:text-base text-white/80 leading-relaxed">
@@ -281,8 +328,15 @@ export default function GalleryPage() {
                 </p>
               </div>
               <div className="text-center p-3 sm:p-8 bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-3xl hover:bg-white/20 hover:scale-105 hover:shadow-2xl transition-all duration-300 cursor-pointer">
-                <div className="w-10 h-10 sm:w-20 sm:h-20 bg-white/20 rounded-xl sm:rounded-3xl flex items-center justify-center mx-auto mb-2 sm:mb-6 group-hover:bg-white/30 transition-colors">
-                  <span className="text-lg sm:text-4xl">📖</span>
+                <div className="relative w-10 h-10 sm:w-20 sm:h-20 mx-auto mb-2 sm:mb-6">
+                  <div className="absolute -inset-1 bg-violet-400 rounded-full opacity-[0.1] blur-[8px]" />
+                  <div className="relative w-full h-full bg-white/10 border border-violet-300/15 rounded-full flex items-center justify-center">
+                    <svg className="w-4 h-4 sm:w-8 sm:h-8 text-violet-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="12 2 2 7 12 12 22 7" fill="rgba(196,181,253,0.08)" />
+                      <polyline points="2 17 12 22 22 17" />
+                      <polyline points="2 12 12 17 22 12" />
+                    </svg>
+                  </div>
                 </div>
                 <h3 className="text-xs sm:text-lg font-bold text-white mb-1 sm:mb-3">인터랙티브 스토리</h3>
                 <p className="text-[9px] sm:text-base text-white/80 leading-relaxed">
@@ -292,8 +346,14 @@ export default function GalleryPage() {
                 </p>
               </div>
               <div className="text-center p-3 sm:p-8 bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-3xl hover:bg-white/20 hover:scale-105 hover:shadow-2xl transition-all duration-300 cursor-pointer">
-                <div className="w-10 h-10 sm:w-20 sm:h-20 bg-white/20 rounded-xl sm:rounded-3xl flex items-center justify-center mx-auto mb-2 sm:mb-6 group-hover:bg-white/30 transition-colors">
-                  <span className="text-lg sm:text-4xl">✉️</span>
+                <div className="relative w-10 h-10 sm:w-20 sm:h-20 mx-auto mb-2 sm:mb-6">
+                  <div className="absolute -inset-1 bg-sky-400 rounded-full opacity-[0.1] blur-[8px]" />
+                  <div className="relative w-full h-full bg-white/10 border border-sky-300/15 rounded-full flex items-center justify-center">
+                    <svg className="w-4 h-4 sm:w-8 sm:h-8 text-sky-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="4" width="20" height="16" rx="2" fill="rgba(125,211,252,0.08)" />
+                      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                    </svg>
+                  </div>
                 </div>
                 <h3 className="text-xs sm:text-lg font-bold text-white mb-1 sm:mb-3">하객 맞춤 개인화</h3>
                 <p className="text-[9px] sm:text-base text-white/80 leading-relaxed">

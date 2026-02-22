@@ -70,12 +70,23 @@ export default function Step5MenuSettings() {
       {/* 오시는 길 안내 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          🚗 오시는 길
+          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+          오시는 길
         </h3>
 
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-blue-600">💙 교통 안내 정보를 입력해주세요.</p>
+            <p className="text-sm text-blue-600">
+              <svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 16v-4" />
+                <path d="M12 8h.01" />
+              </svg>
+              교통 안내 정보를 입력해주세요.
+            </p>
             {!invitation.wedding.directions.car && !invitation.wedding.directions.publicTransport && !invitation.wedding.directions.train && !invitation.wedding.directions.expressBus && (
               <button onClick={applySampleDirections} className="text-xs text-blue-600 hover:underline">
                 샘플 적용
@@ -158,14 +169,24 @@ export default function Step5MenuSettings() {
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            📞 축하전하기
+            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+            </svg>
+            축하전하기
           </h3>
           <Switch
             checked={invitation.sectionVisibility.contacts}
             onCheckedChange={() => toggleSectionVisibility('contacts')}
           />
         </div>
-        <p className="text-sm text-blue-600">💙 하객분들이 축하 전화를 드릴 수 있는 연락처를 입력해주세요. 입력된 연락처만 표시됩니다.</p>
+        <p className="text-sm text-blue-600">
+          <svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 16v-4" />
+            <path d="M12 8h.01" />
+          </svg>
+          하객분들이 축하 전화를 드릴 수 있는 연락처를 입력해주세요. 입력된 연락처만 표시됩니다.
+        </p>
         <p className="text-xs text-gray-500">부모님 성함은 이전 단계(스토리)에서 입력한 이름이 자동 연동됩니다.</p>
 
         <div className="space-y-4">
@@ -285,7 +306,11 @@ export default function Step5MenuSettings() {
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            📝 RSVP (참석 여부)
+            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+              <path d="m15 5 4 4" />
+            </svg>
+            RSVP (참석 여부)
           </h3>
           <Switch
             checked={invitation.rsvpEnabled}
@@ -346,7 +371,11 @@ export default function Step5MenuSettings() {
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            💳 마음 전하실 곳
+            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="1" y="4" width="22" height="16" rx="2" />
+              <path d="M1 10h22" />
+            </svg>
+            마음 전하실 곳
           </h3>
           <Switch
             checked={invitation.sectionVisibility.bankAccounts}

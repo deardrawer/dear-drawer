@@ -36,7 +36,7 @@ export default function DividerSectionEditor({
 
   return (
     <AccordionItem value="design-dividers">
-      <AccordionTrigger className="text-base font-medium">🎬 섹션 디바이더</AccordionTrigger>
+      <AccordionTrigger className="text-base font-medium"><svg className="w-4 h-4 text-gray-900 flex-shrink-0 inline -mt-0.5 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" /><line x1="7" y1="2" x2="7" y2="22" /><line x1="17" y1="2" x2="17" y2="22" /><line x1="2" y1="12" x2="22" y2="12" /><line x1="2" y1="7" x2="7" y2="7" /><line x1="2" y1="17" x2="7" y2="17" /><line x1="17" y1="7" x2="22" y2="7" /><line x1="17" y1="17" x2="22" y2="17" /></svg>섹션 디바이더</AccordionTrigger>
       <AccordionContent className="space-y-4 pb-4">
         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
           <div>

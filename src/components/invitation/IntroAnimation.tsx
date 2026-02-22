@@ -17,20 +17,20 @@ interface IntroAnimationProps {
 }
 
 // 보케(빛 입자) 컴포넌트
-function BokehParticles({ count = 20, color = 'warm' }: { count?: number; color?: 'warm' | 'gold' | 'white' }) {
+function BokehParticles({ count = 12, color = 'white' }: { count?: number; color?: 'warm' | 'gold' | 'white' }) {
   const colors = {
-    warm: 'rgba(255, 215, 180, 0.4)',
-    gold: 'rgba(255, 215, 0, 0.5)',
-    white: 'rgba(255, 255, 255, 0.4)',
+    warm: 'rgba(255, 215, 180, 0.25)',
+    gold: 'rgba(255, 215, 0, 0.3)',
+    white: 'rgba(255, 255, 255, 0.3)',
   }
   const particles = Array.from({ length: count }, (_, i) => ({
     id: i,
-    size: Math.random() * 30 + 10,
+    size: Math.random() * 25 + 8,
     left: Math.random() * 100,
     top: Math.random() * 100,
     delay: Math.random() * 5,
-    duration: Math.random() * 10 + 10,
-    opacity: Math.random() * 0.5 + 0.1,
+    duration: Math.random() * 10 + 12,
+    opacity: Math.random() * 0.25 + 0.05,
   }))
 
   return (
@@ -56,13 +56,13 @@ function BokehParticles({ count = 20, color = 'warm' }: { count?: number; color?
 }
 
 // 꽃잎 컴포넌트
-function FallingPetals({ count = 20 }: { count?: number }) {
+function FallingPetals({ count = 8 }: { count?: number }) {
   const petals = Array.from({ length: count }, (_, i) => ({
     id: i,
-    left: Math.random() * 100,
-    delay: Math.random() * 5,
-    duration: Math.random() * 5 + 8,
-    size: Math.random() * 15 + 10,
+    left: 10 + (i * 80) / count + Math.random() * 10,
+    delay: Math.random() * 3,
+    duration: Math.random() * 5 + 12,
+    size: Math.random() * 10 + 18,
     rotation: Math.random() * 360,
   }))
 
@@ -87,51 +87,13 @@ function FallingPetals({ count = 20 }: { count?: number }) {
   )
 }
 
-// 골드 파티클 컴포넌트
-function GoldParticles({ count = 50 }: { count?: number }) {
-  const goldColors = ['#C9A24D', '#E6C87A', '#B08D3A']
-  const particles = Array.from({ length: count }, (_, i) => ({
-    id: i,
-    size: Math.random() * 4 + 2,
-    left: 5 + Math.random() * 90,
-    top: 5 + Math.random() * 90,
-    delay: Math.random() * 2,
-    targetX: (Math.random() - 0.5) * 50,
-    targetY: (Math.random() - 0.5) * 50,
-    opacity: 0.2 + Math.random() * 0.6,
-    color: goldColors[Math.floor(Math.random() * 3)],
-  }))
-
-  return (
-    <div className="absolute inset-0 pointer-events-none">
-      {particles.map((p) => (
-        <div
-          key={p.id}
-          className="absolute rounded-full intro-gold-particle"
-          style={{
-            width: p.size,
-            height: p.size,
-            left: `${p.left}%`,
-            top: `${p.top}%`,
-            animationDelay: `${p.delay}s`,
-            '--target-x': `${p.targetX}px`,
-            '--target-y': `${p.targetY}px`,
-            '--particle-opacity': p.opacity,
-            background: `radial-gradient(circle at 30% 30%, ${p.color}, ${p.color}88)`,
-          } as React.CSSProperties}
-        />
-      ))}
-    </div>
-  )
-}
-
 // 빛 광선 컴포넌트
-function LightRays({ count = 8 }: { count?: number }) {
+function LightRays({ count = 6 }: { count?: number }) {
   const rays = Array.from({ length: count }, (_, i) => ({
     id: i,
     rotation: (360 / count) * i,
-    delay: i * 0.1,
-    width: 2 + Math.random() * 3,
+    delay: i * 0.15,
+    width: 1 + Math.random() * 1,
   }))
 
   return (
@@ -155,7 +117,7 @@ function LightRays({ count = 8 }: { count?: number }) {
 // 스크롤 인디케이터 컴포넌트
 function ScrollIndicator({ color = 'white' }: { color?: 'white' | 'amber' | 'pink' | 'sky' | 'gray' }) {
   const colors = {
-    white: { text: 'text-white/50', line: 'from-white/50', dot: 'bg-white/60', bar: 'bg-white/30' },
+    white: { text: 'text-white/50', line: 'from-white/50', dot: 'bg-[#F8F6F3]/60', bar: 'bg-[#F8F6F3]/30' },
     amber: { text: 'text-amber-200/50', line: 'from-amber-200/50', dot: 'bg-amber-200/60', bar: 'bg-amber-200/30' },
     pink: { text: 'text-pink-300/50', line: 'from-pink-300/50', dot: 'bg-pink-300/60', bar: 'bg-pink-300/30' },
     sky: { text: 'text-sky-200/50', line: 'from-sky-200/50', dot: 'bg-sky-200/60', bar: 'bg-sky-200/30' },
@@ -241,14 +203,14 @@ export default function IntroAnimation({
       }
 
   const overlayStyle = {
-    backgroundColor: `rgba(0, 0, 0, ${(settings.overlayOpacity || 30) / 100})`,
+    backgroundColor: `rgba(0, 0, 0, ${(settings.overlayOpacity ?? 30) / 100})`,
   }
 
   const titleStyle = {
     fontSize: `${settings.titleFontSize || 24}px`,
     letterSpacing: `${settings.titleLetterSpacing || 3}px`,
     color: settings.titleColor || '#ffffff',
-    fontFamily: settings.titleFontFamily || "'Noto Serif KR', serif",
+    fontFamily: settings.titleFontFamily || "'Gowun Batang', serif",
   }
 
   const subTitleStyle = {
@@ -274,8 +236,6 @@ export default function IntroAnimation({
         return <BlurIntro {...commonProps} />
       case 'zoom':
         return <ZoomIntro {...commonProps} />
-      case 'bokeh':
-        return <BokehIntro {...commonProps} />
       case 'letter':
         return <LetterIntro {...commonProps} />
       case 'petal':
@@ -286,10 +246,8 @@ export default function IntroAnimation({
         return <LightrayIntro {...commonProps} />
       case 'film':
         return <FilmIntro {...commonProps} />
-      case 'gold':
-        return <GoldIntro {...commonProps} />
-      case 'focus':
-        return <FocusIntro {...commonProps} />
+      case 'filmstrip':
+        return <FilmstripIntro {...commonProps} />
       default:
         return <CinematicIntro {...commonProps} />
     }
@@ -380,14 +338,6 @@ export default function IntroAnimation({
         }
         .intro-float { animation: introFloat 3s ease-in-out infinite; }
 
-        /* 글로우 효과 */
-        @keyframes introGlowIn {
-          0% { opacity: 0; text-shadow: 0 0 0 transparent; }
-          50% { text-shadow: 0 0 30px currentColor; }
-          100% { opacity: 1; text-shadow: 0 0 10px currentColor; }
-        }
-        .intro-glow-in { animation: introGlowIn 1.5s ease-out forwards; opacity: 0; }
-        .intro-glow-in-delay { animation: introGlowIn 1.5s ease-out 0.5s forwards; opacity: 0; }
 
         /* 스플릿 reveal */
         @keyframes introSplitReveal {
@@ -418,22 +368,6 @@ export default function IntroAnimation({
         .intro-scale-up { animation: introScaleUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; opacity: 0; }
         .intro-scale-up-delay { animation: introScaleUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s forwards; opacity: 0; }
 
-        /* 회전하며 나타남 */
-        @keyframes introRotateIn {
-          0% { opacity: 0; transform: rotate(-10deg) scale(0.9); }
-          100% { opacity: 1; transform: rotate(0) scale(1); }
-        }
-        .intro-rotate-in { animation: introRotateIn 0.8s ease-out forwards; }
-        .intro-rotate-in-delay { animation: introRotateIn 0.8s ease-out 0.5s forwards; opacity: 0; }
-
-        /* 물결 텍스트 */
-        @keyframes introWaveText {
-          0% { opacity: 0; transform: translateY(20px) rotate(3deg); }
-          50% { transform: translateY(-5px) rotate(-1deg); }
-          100% { opacity: 1; transform: translateY(0) rotate(0); }
-        }
-        .intro-wave-text { animation: introWaveText 1s ease-out forwards; }
-        .intro-wave-text-delay { animation: introWaveText 1s ease-out 0.5s forwards; opacity: 0; }
 
         /* ========== 보케 파티클 ========== */
         @keyframes introBokehFloat {
@@ -443,12 +377,12 @@ export default function IntroAnimation({
           90% { opacity: 0.4; }
         }
         @keyframes introBokehPulse {
-          0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(255, 215, 180, 0.3); }
-          50% { transform: scale(1.2); box-shadow: 0 0 40px rgba(255, 215, 180, 0.5); }
+          0%, 100% { transform: scale(1); box-shadow: none; }
+          50% { transform: scale(1.1); box-shadow: none; }
         }
         .intro-bokeh-particle {
-          filter: blur(2px);
-          animation: introBokehFloat 15s ease-in-out infinite, introBokehPulse 4s ease-in-out infinite;
+          filter: blur(4px);
+          animation: introBokehFloat 18s ease-in-out infinite, introBokehPulse 5s ease-in-out infinite;
           will-change: transform, opacity;
           backface-visibility: hidden;
         }
@@ -466,57 +400,28 @@ export default function IntroAnimation({
           }
         }
         .intro-petal {
-          background: linear-gradient(135deg, #ffe4e9 0%, #ffc0cb 50%, #ffe4e9 100%);
+          background: rgba(180, 160, 150, 0.12);
           border-radius: 50% 0 50% 50%;
           animation: introPetalFall linear infinite;
-          opacity: 0.7;
+          opacity: 0.2;
           will-change: transform;
           backface-visibility: hidden;
         }
 
-        /* ========== 골드 파티클 ========== */
-        @keyframes introGoldGather {
-          0% {
-            transform: translate(var(--target-x), var(--target-y)) scale(0);
-            opacity: 0;
-          }
-          50% { opacity: 1; }
-          100% {
-            transform: translate(0, 0) scale(1);
-            opacity: 1;
-          }
-        }
-        @keyframes introGoldShimmer {
-          0%, 100% {
-            box-shadow: 0 0 5px rgba(255, 215, 0, 0.8);
-            transform: scale(1);
-          }
-          50% {
-            box-shadow: 0 0 15px rgba(255, 215, 0, 1);
-            transform: scale(1.2);
-          }
-        }
-        .intro-gold-particle {
-          opacity: var(--particle-opacity, 0.6);
-          animation: introGoldGather 2s ease-out forwards, introGoldShimmer 3s ease-in-out infinite 2s;
-          will-change: transform, opacity;
-          backface-visibility: hidden;
-          box-shadow: 0 0 4px currentColor;
-        }
 
         /* ========== 빛 광선 ========== */
         @keyframes introRayExpand {
           0% { opacity: 0; transform: rotate(var(--rotation)) scaleY(0); }
-          30% { opacity: 0.3; }
-          70% { opacity: 0.6; }
-          100% { opacity: 0.4; transform: rotate(var(--rotation)) scaleY(1); }
+          30% { opacity: 0.1; }
+          70% { opacity: 0.2; }
+          100% { opacity: 0.15; transform: rotate(var(--rotation)) scaleY(1); }
         }
         @keyframes introRayPulse {
-          0%, 100% { opacity: 0.2; }
-          50% { opacity: 0.6; }
+          0%, 100% { opacity: 0.1; }
+          50% { opacity: 0.2; }
         }
         .intro-light-ray {
-          background: linear-gradient(to bottom, transparent, rgba(255, 248, 220, 0.6), transparent);
+          background: linear-gradient(to bottom, transparent, rgba(255, 248, 220, 0.3), transparent);
           transform-origin: center center;
           animation: introRayExpand 3s ease-out forwards, introRayPulse 4s ease-in-out infinite 3s;
           will-change: transform, opacity;
@@ -553,7 +458,7 @@ export default function IntroAnimation({
         }
         @keyframes introWatercolorBlob {
           0%, 100% { transform: scale(1) translateZ(0); }
-          50% { transform: scale(1.02) translateZ(0); }
+          50% { transform: scale(1.01) translateZ(0); }
         }
         @keyframes introTextSpread {
           0% { opacity: 0; filter: blur(10px); transform: scale(1.1) translateZ(0); }
@@ -651,6 +556,52 @@ export default function IntroAnimation({
           100% { transform: scale(1.15); }
         }
         .intro-slow-zoom { animation: introSlowZoom 8s ease-out forwards; }
+
+        /* ========== 폴라로이드 드롭 ========== */
+        @keyframes introPolaroidDrop {
+          0% { opacity: 0; transform: rotate(3deg) translateY(-60px) scale(0.92); }
+          60% { opacity: 1; transform: rotate(-3deg) translateY(8px) scale(1.01); }
+          80% { transform: rotate(-1.5deg) translateY(-3px) scale(1); }
+          100% { opacity: 1; transform: rotate(-2deg) translateY(0) scale(1); }
+        }
+        .intro-polaroid-drop { animation: introPolaroidDrop 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards; opacity: 0; }
+
+        /* ========== 필름 슬라이드 인 ========== */
+        @keyframes introFilmSlideIn {
+          0% { opacity: 0; transform: translateX(-100%); }
+          60% { opacity: 1; transform: translateX(4%); }
+          100% { opacity: 1; transform: translateX(0); }
+        }
+        .intro-film-slide-in { animation: introFilmSlideIn 1s cubic-bezier(0.22, 1, 0.36, 1) forwards; opacity: 0; }
+
+        /* ========== 시네마 리빌 (좌→우 클립) ========== */
+        @keyframes introCinemaReveal {
+          0% { clip-path: inset(0 100% 0 0); opacity: 0; }
+          15% { opacity: 1; }
+          100% { clip-path: inset(0 0 0 0); opacity: 1; }
+        }
+        .intro-cinema-reveal { animation: introCinemaReveal 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; opacity: 0; }
+
+        /* ========== 줌 어프로치 (사진이 다가오는 느낌) ========== */
+        @keyframes introZoomApproach {
+          0% { transform: scale(1); }
+          100% { transform: scale(1.15); }
+        }
+        .intro-zoom-approach { animation: introZoomApproach 4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+
+        /* ========== 물결 흘러가기 ========== */
+        @keyframes introWaveDrift {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .intro-wave-drift { animation: introWaveDrift 6s linear infinite; }
+
+        /* ========== 대각선 리빌 ========== */
+        @keyframes introDiagonalReveal {
+          0% { clip-path: polygon(0 0, 0 0, 0 0, 0 0); opacity: 0; }
+          100% { clip-path: polygon(0 0, 100% 0, 100% 50%, 0 68%); opacity: 1; }
+        }
+        .intro-diagonal-reveal { animation: introDiagonalReveal 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; opacity: 0; }
       `}</style>
 
       {renderIntro()}
@@ -693,7 +644,7 @@ function CinematicIntro({ settings, backgroundStyle, overlayStyle, titleStyle, s
       <div className="absolute inset-0 intro-fade-in intro-zoom-out" style={{ ...backgroundStyle, filter: `${backgroundStyle.filter} grayscale(100%)` }} />
       <div className="absolute inset-0" style={overlayStyle} />
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
-        <div className="intro-line-expand h-px bg-white/50 mb-5" />
+        <div className="intro-line-expand h-px bg-[#F8F6F3]/50 mb-5" />
         <p className="intro-letter-spread uppercase text-center break-words max-w-full" style={titleStyle}>
           {settings.mainTitle}
         </p>
@@ -708,7 +659,7 @@ function CinematicIntro({ settings, backgroundStyle, overlayStyle, titleStyle, s
   )
 }
 
-// 타이핑 인트로
+// 타이핑 인트로 (상하 분할 레이아웃)
 function TypingIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
   const [displayText, setDisplayText] = useState('')
   const [completed, setCompleted] = useState(false)
@@ -736,33 +687,61 @@ function TypingIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subT
     return () => clearTimeout(startTimer)
   }, [fullText])
 
+  // 밝은 배경용 텍스트 색상 보정
+  const adjustedTitleStyle = {
+    ...titleStyle,
+    color: titleStyle.color === '#ffffff' ? '#2c2c2c' : titleStyle.color,
+  }
+  const adjustedSubColor = (() => {
+    const c = subTitleStyle.color as string
+    if (c && c.startsWith('rgba(255,255,255,')) return 'rgba(0,0,0,0.35)'
+    if (c === 'rgba(255,255,255,0.8)') return 'rgba(0,0,0,0.35)'
+    return c
+  })()
+
   return (
-    <div className="relative h-full">
-      <div className="absolute inset-0 intro-fade-in" style={backgroundStyle} />
-      <div className="absolute inset-0" style={overlayStyle} />
-      <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
+    <div className="relative h-full flex flex-col">
+      {/* 상단: 사진 영역 55% */}
+      <div className="relative" style={{ height: '55%' }}>
+        <div className="absolute inset-0 intro-fade-in" style={backgroundStyle} />
+        <div className="absolute inset-0" style={overlayStyle} />
+        {/* 물결 경계 (2레이어) */}
+        <div className="absolute bottom-[8px] left-0 right-0 z-10">
+          <svg className="w-[200%] intro-wave-drift" viewBox="0 0 1440 40" preserveAspectRatio="none" style={{ height: 22, display: 'block', animationDuration: '8s' }}>
+            <path d="M0,20 C240,40 480,0 720,20 C960,40 1200,0 1440,20 L1440,40 L0,40 Z" fill="rgba(250,248,245,0.45)" />
+          </svg>
+        </div>
+        <div className="absolute bottom-[-1px] left-0 right-0 z-10">
+          <svg className="w-[200%] intro-wave-drift" viewBox="0 0 1440 40" preserveAspectRatio="none" style={{ height: 28, display: 'block' }}>
+            <path d="M0,20 C240,40 480,0 720,20 C960,40 1200,0 1440,20 L1440,40 L0,40 Z" fill="#FAF8F5" />
+          </svg>
+        </div>
+      </div>
+
+      {/* 하단: 텍스트 영역 45% */}
+      <div className="relative flex-1 bg-[#FAF8F5] flex flex-col items-center justify-center text-center px-6">
         {settings.subTitle && (
-          <p className="text-xs tracking-[3px] sm:tracking-[6px] mb-6 intro-slide-up" style={subTitleStyle}>
+          <p className="text-[10px] tracking-[4px] mb-5 intro-slide-up" style={{ color: adjustedSubColor }}>
             {settings.subTitle}
           </p>
         )}
-        <p className="text-xl mb-2" style={titleStyle}>
+        <p className="mb-2" style={adjustedTitleStyle}>
           {displayText}
           {!completed && <span className="intro-typing-cursor">|</span>}
         </p>
-        <div className="w-20 h-px bg-white/50 my-6 intro-split-reveal" style={{ animationDelay: '2.8s' }} />
+        <div className="w-16 h-px bg-gray-300/40 my-5 intro-split-reveal" style={{ animationDelay: '2.8s' }} />
         {settings.dateText && (
-          <p className="text-sm intro-fade-in-up" style={{ ...subTitleStyle, animationDelay: '3.2s', opacity: 0 }}>
+          <p className="text-xs intro-fade-in-up" style={{ color: adjustedSubColor, animationDelay: '3.2s', opacity: 0 }}>
             {settings.dateText}
           </p>
         )}
         {settings.venueText && (
-          <p className="text-xs text-white/50 mt-2 intro-fade-in-up" style={{ animationDelay: '3.5s', opacity: 0 }}>
+          <p className="text-[11px] mt-1.5 intro-fade-in-up" style={{ color: 'rgba(0,0,0,0.3)', animationDelay: '3.5s', opacity: 0 }}>
             {settings.venueText}
           </p>
         )}
+        <ScrollIndicator color="gray" />
       </div>
-      <ScrollIndicator />
     </div>
   )
 }
@@ -770,9 +749,10 @@ function TypingIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subT
 // 블러 인트로
 function BlurIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
   return (
-    <div className="relative h-full">
+    <div className="relative h-full overflow-hidden">
       <div className="absolute inset-0 intro-blur-to-sharp" style={backgroundStyle} />
       <div className="absolute inset-0" style={overlayStyle} />
+      <BokehParticles count={10} color="white" />
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
         {settings.subTitle && (
           <p className="text-xs tracking-[4px] sm:tracking-[8px] mb-4 intro-fade-in-up" style={{ ...subTitleStyle, animationDelay: '1.5s', animationDuration: '1.5s', opacity: 0 }}>
@@ -782,7 +762,7 @@ function BlurIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTit
         <p className="intro-fade-in-up" style={{ ...titleStyle, animationDelay: '2s', animationDuration: '1.5s', opacity: 0 }}>
           {settings.mainTitle}
         </p>
-        <div className="w-16 h-px bg-white/50 my-6 intro-split-reveal" style={{ animationDelay: '2.5s' }} />
+        <div className="w-16 h-px bg-[#F8F6F3]/50 my-6 intro-split-reveal" style={{ animationDelay: '2.5s' }} />
         {settings.dateText && (
           <p className="text-sm intro-fade-in-up" style={{ ...subTitleStyle, animationDelay: '2.8s', animationDuration: '1.5s', opacity: 0 }}>
             {settings.dateText}
@@ -794,60 +774,60 @@ function BlurIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTit
   )
 }
 
-// 줌 인트로
+// 줌 인트로 (중앙 확대 레이아웃)
 function ZoomIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
-  return (
-    <div className="relative h-full overflow-hidden">
-      <div className="absolute inset-0 intro-slow-zoom" style={backgroundStyle} />
-      {/* 어두웠다가 밝아지는 오버레이 */}
-      <div className="absolute inset-0 bg-black intro-dark-to-light" />
-      <div className="absolute inset-0" style={overlayStyle} />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-      <div className="relative z-10 h-full flex flex-col items-center justify-end pb-36 text-white px-4">
-        {settings.subTitle && (
-          <p className="text-xs tracking-[4px] mb-4 intro-fade-in-up" style={{ ...subTitleStyle, animationDelay: '1s', animationDuration: '1.2s', opacity: 0 }}>
-            {settings.subTitle}
-          </p>
-        )}
-        <p className="intro-fade-in-up" style={{ ...titleStyle, animationDelay: '1.3s', animationDuration: '1.2s', opacity: 0 }}>
-          {settings.mainTitle}
-        </p>
-        <div className="w-16 h-px bg-white/50 my-6 intro-split-reveal" style={{ animationDelay: '1.6s' }} />
-        {settings.dateText && (
-          <p className="text-sm intro-fade-in-up" style={{ ...subTitleStyle, animationDelay: '1.9s', animationDuration: '1.2s', opacity: 0 }}>
-            {settings.dateText}
-          </p>
-        )}
-      </div>
-      <ScrollIndicator />
-    </div>
-  )
-}
+  // 밝은 배경용 텍스트 색상 보정
+  const adjustedTitleStyle = {
+    ...titleStyle,
+    color: titleStyle.color === '#ffffff' ? '#2c2c2c' : titleStyle.color,
+  }
+  const adjustedSubColor = (() => {
+    const c = subTitleStyle.color as string
+    if (c && c.startsWith('rgba(255,255,255,')) return 'rgba(0,0,0,0.35)'
+    if (c === 'rgba(255,255,255,0.8)') return 'rgba(0,0,0,0.35)'
+    return c
+  })()
 
-// 보케 인트로
-function BokehIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
   return (
-    <div className="relative h-full overflow-hidden">
-      <div className="absolute inset-0 intro-fade-in" style={backgroundStyle} />
-      <div className="absolute inset-0" style={overlayStyle} />
-      <BokehParticles count={35} color="warm" />
-      <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
-        {settings.subTitle && (
-          <p className="text-xs tracking-[3px] sm:tracking-[6px] mb-4" style={{ ...subTitleStyle, animation: 'introLetterSpread 2s ease-out forwards', animationDuration: '2s' }}>
-            {settings.subTitle}
-          </p>
-        )}
-        <p className="text-xl font-serif intro-glow-in" style={{ ...titleStyle, animationDelay: '1s', animationDuration: '2s' }}>
-          {settings.mainTitle}
+    <div className="relative h-full flex flex-col items-center justify-center overflow-hidden bg-[#F7F5F2]">
+      {/* 서브타이틀 (사진 위) */}
+      {settings.subTitle && (
+        <p className="text-[10px] tracking-[4px] mb-6 intro-fade-in-up relative z-10" style={{ color: adjustedSubColor, opacity: 0, animationDelay: '0.5s' }}>
+          {settings.subTitle}
         </p>
-        <div className="w-16 h-px bg-amber-400/50 mx-auto my-6 intro-split-reveal" style={{ animationDelay: '1.8s' }} />
-        {settings.dateText && (
-          <p className="text-sm intro-glow-in" style={{ ...subTitleStyle, animationDelay: '2.2s', animationDuration: '2s' }}>
-            {settings.dateText}
-          </p>
-        )}
+      )}
+
+      {/* 중앙 사진 프레임 (고정) - 안의 사진이 다가옴 */}
+      <div
+        className="relative overflow-hidden intro-fade-in z-10"
+        style={{
+          width: '70%',
+          maxWidth: 280,
+          aspectRatio: '3 / 4',
+          borderRadius: 4,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04)',
+        }}
+      >
+        <div className="absolute inset-0 intro-zoom-approach" style={backgroundStyle} />
+        <div className="absolute inset-0" style={overlayStyle} />
       </div>
-      <ScrollIndicator color="amber" />
+
+      {/* 메인타이틀 (사진 아래) */}
+      <p className="mt-6 intro-fade-in-up relative z-10" style={{ ...adjustedTitleStyle, opacity: 0, animationDelay: '1.5s' }}>
+        {settings.mainTitle}
+      </p>
+      <div className="w-16 h-px bg-gray-300/40 my-4 intro-split-reveal relative z-10" style={{ animationDelay: '2s', opacity: 0 }} />
+      {settings.dateText && (
+        <p className="text-xs intro-fade-in-up relative z-10" style={{ color: adjustedSubColor, opacity: 0, animationDelay: '2.3s' }}>
+          {settings.dateText}
+        </p>
+      )}
+      {settings.venueText && (
+        <p className="text-[11px] mt-1.5 intro-fade-in-up relative z-10" style={{ color: 'rgba(0,0,0,0.25)', opacity: 0, animationDelay: '2.6s' }}>
+          {settings.venueText}
+        </p>
+      )}
+      <ScrollIndicator color="gray" />
     </div>
   )
 }
@@ -859,7 +839,7 @@ function LetterIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: I
   return (
     <div className="relative h-full flex items-center justify-center overflow-hidden">
       {/* 흑백 웨딩사진 배경 */}
-      <div className="absolute inset-0" style={{ ...backgroundStyle, filter: 'grayscale(100%) brightness(0.4)' }} />
+      <div className="absolute inset-0" style={{ ...backgroundStyle, filter: `${backgroundStyle.filter} grayscale(100%)` }} />
 
       {/* 화이트 꽃잎 날림 효과 */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -894,7 +874,7 @@ function LetterIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: I
 
           {/* 카드 */}
           <div
-            className="absolute left-[15px] right-[15px] h-[180px] bg-white rounded-md shadow-xl flex flex-col items-center justify-center p-4 text-center"
+            className="absolute left-[15px] right-[15px] h-[180px] bg-[#F8F6F3] rounded-md shadow-xl flex flex-col items-center justify-center p-4 text-center"
             style={{
               zIndex: 2,
               top: '80px',
@@ -950,7 +930,7 @@ function LetterIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: I
 
       {/* 최종 카드 (봉투 사라진 후) */}
       <div
-        className="absolute w-[280px] h-[360px] bg-white rounded-lg shadow-2xl flex flex-col items-center justify-center p-6 text-center"
+        className="absolute w-[280px] h-[360px] bg-[#F8F6F3] rounded-lg shadow-2xl flex flex-col items-center justify-center p-6 text-center"
         style={{
           opacity: 0,
           zIndex: 10,
@@ -970,264 +950,322 @@ function LetterIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: I
   )
 }
 
-// 꽃잎 인트로
+// 꽃잎 인트로 (원형 윈도우 레이아웃)
 function PetalIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
   // 밝은 배경이므로 흰색 텍스트면 어두운 색으로 변환
   const adjustedTitleColor = titleStyle.color === '#ffffff' ? '#374151' : titleStyle.color
-  const adjustedSubColor = subTitleStyle.color === 'rgba(255,255,255,0.8)' ? '#f472b6' : subTitleStyle.color
+  const adjustedSubColor = subTitleStyle.color === 'rgba(255,255,255,0.8)' ? '#9ca3af' : subTitleStyle.color
   return (
-    <div className="relative h-full overflow-hidden">
-      <div className="absolute inset-0 intro-fade-in" style={backgroundStyle} />
-      <div className="absolute inset-0 bg-gradient-to-b from-[#fff5f5]/70 to-[#ffe4e6]/80" />
-      <FallingPetals count={25} />
-      <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
-        {settings.subTitle && (
-          <p className="text-xs tracking-[3px] sm:tracking-[6px] mb-4 intro-wave-text" style={{ color: adjustedSubColor, opacity: 0 }}>
-            {settings.subTitle}
-          </p>
-        )}
-        <p className="intro-rotate-in" style={{ ...titleStyle, color: adjustedTitleColor, opacity: 0 }}>
-          {settings.mainTitle}
+    <div className="relative h-full flex flex-col items-center justify-center overflow-hidden bg-[#FDF6F4]">
+      {/* 꽃잎: 전체 영역에 걸쳐 떨어짐 */}
+      <FallingPetals count={10} />
+
+      {/* 서브타이틀 (원 위) */}
+      {settings.subTitle && (
+        <p className="text-[10px] tracking-[4px] mb-6 intro-fade-in-up relative z-10" style={{ color: adjustedSubColor, opacity: 0, animationDelay: '0.3s' }}>
+          {settings.subTitle}
         </p>
-        <div className="w-20 h-px bg-pink-300 mx-auto my-6 intro-split-reveal" style={{ animationDelay: '0.8s', opacity: 0 }} />
-        {settings.dateText && (
-          <p className="text-xs intro-rotate-in-delay" style={{ color: adjustedSubColor, opacity: 0, animationDelay: '1.2s' }}>
-            {settings.dateText}
-          </p>
-        )}
+      )}
+
+      {/* 원형 사진 윈도우 */}
+      <div className="relative w-[190px] h-[190px] rounded-full overflow-hidden intro-scale-up z-10" style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04)' }}>
+        <div className="absolute inset-0" style={backgroundStyle} />
+        <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${(settings.overlayOpacity ?? 10) / 100})` }} />
       </div>
-      <ScrollIndicator color="pink" />
+
+      {/* 메인타이틀 (원 아래) */}
+      <p className="mt-6 intro-fade-in-up relative z-10" style={{ ...titleStyle, color: adjustedTitleColor, opacity: 0, animationDelay: '0.6s' }}>
+        {settings.mainTitle}
+      </p>
+      <div className="w-16 h-px bg-gray-300/40 my-4 intro-split-reveal relative z-10" style={{ animationDelay: '1s', opacity: 0 }} />
+      {settings.dateText && (
+        <p className="text-xs intro-fade-in-up relative z-10" style={{ color: adjustedSubColor, opacity: 0, animationDelay: '1.3s' }}>
+          {settings.dateText}
+        </p>
+      )}
+      {settings.venueText && (
+        <p className="text-[11px] mt-1.5 intro-fade-in-up relative z-10" style={{ color: 'rgba(0,0,0,0.3)', opacity: 0, animationDelay: '1.6s' }}>
+          {settings.venueText}
+        </p>
+      )}
+      <ScrollIndicator color="gray" />
     </div>
   )
 }
 
-// 수채화 인트로
+// 수채화 인트로 (아치 윈도우 레이아웃)
 function WatercolorIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
   // 밝은 배경이므로 흰색 텍스트면 어두운 색으로 변환
   const adjustedTitleColor = titleStyle.color === '#ffffff' ? '#374151' : titleStyle.color
-  const adjustedSubColor = subTitleStyle.color === 'rgba(255,255,255,0.8)' ? 'rgba(8,145,178,0.7)' : subTitleStyle.color
+  const adjustedSubColor = subTitleStyle.color === 'rgba(255,255,255,0.8)' ? 'rgba(120,113,108,0.7)' : subTitleStyle.color
   return (
-    <div className="relative h-full overflow-hidden">
-      <div className="absolute inset-0 intro-fade-in" style={backgroundStyle} />
-      <div className="absolute inset-0 bg-white/60" />
-      {/* 수채화 배경 */}
+    <div className="relative h-full flex flex-col items-center justify-center overflow-hidden bg-[#F8F6F3]">
+      {/* 수채화 블롭 배경 (은은하게) */}
       <div className="intro-watercolor-spread absolute inset-0">
         <div
-          className="intro-watercolor-blob absolute inset-[-20%] opacity-30"
-          style={{ background: 'radial-gradient(ellipse at 30% 30%, #e0f2fe, #bae6fd, #7dd3fc, transparent 70%)' }}
-        />
-        <div
-          className="intro-watercolor-blob absolute inset-[-10%] opacity-40"
-          style={{ background: 'radial-gradient(ellipse at 70% 60%, #fce7f3, #fbcfe8, #f9a8d4, transparent 60%)', animationDelay: '1s' }}
-        />
-        <div
-          className="intro-watercolor-blob absolute inset-[-15%] opacity-30"
-          style={{ background: 'radial-gradient(ellipse at 50% 80%, #fef3c7, #fde68a, transparent 50%)', animationDelay: '2s' }}
+          className="intro-watercolor-blob absolute inset-[-20%] opacity-[0.12]"
+          style={{ background: 'radial-gradient(ellipse at 30% 70%, #e0f2fe, #dbeafe, transparent 70%)' }}
         />
       </div>
 
-      <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4 gap-3">
-        {settings.subTitle && (
-          <p
-            className="text-xs tracking-[3px] sm:tracking-[6px] intro-text-spread"
-            style={{ color: adjustedSubColor, opacity: 0, animationDelay: '1.5s' }}
-          >
-            {settings.subTitle}
-          </p>
-        )}
-        <div
-          className="intro-text-spread"
-          style={{ opacity: 0, animationDelay: '2s' }}
-        >
-          <p style={{ ...titleStyle, color: adjustedTitleColor }}>{settings.mainTitle}</p>
-        </div>
-        <div
-          className="w-16 h-px bg-cyan-400/50 intro-text-spread"
-          style={{ opacity: 0, animationDelay: '2.4s' }}
-        />
-        {settings.dateText && (
-          <p
-            className="text-sm intro-text-spread"
-            style={{ color: adjustedSubColor, opacity: 0, animationDelay: '2.7s' }}
-          >
-            {settings.dateText}
-          </p>
-        )}
-      </div>
-      <ScrollIndicator color="sky" />
-    </div>
-  )
-}
-
-// 빛의 커튼 인트로
-function LightrayIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
-  return (
-    <div className="relative h-full overflow-hidden">
-      <div className="absolute inset-0 intro-fade-in" style={backgroundStyle} />
-      <BokehParticles count={20} color="gold" />
-      <LightRays count={12} />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/20" />
-      <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
-        {settings.subTitle && (
-          <p
-            className="text-xs tracking-[3px] sm:tracking-[6px] mb-4 intro-slide-in-left"
-            style={{ ...subTitleStyle, opacity: 0, animationDelay: '0.5s' }}
-          >
-            {settings.subTitle}
-          </p>
-        )}
-        <p
-          className="intro-glow-in"
-          style={{ ...titleStyle, opacity: 0, animationDelay: '1s' }}
-        >
-          {settings.mainTitle}
-        </p>
-        <div
-          className="w-20 h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent mx-auto my-6 intro-split-reveal"
-          style={{ opacity: 0, animationDelay: '1.8s' }}
-        />
-        {settings.dateText && (
-          <p
-            className="text-sm intro-slide-in-right"
-            style={{ ...subTitleStyle, opacity: 0, animationDelay: '2.2s' }}
-          >
-            {settings.dateText}
-          </p>
-        )}
-      </div>
-      <ScrollIndicator color="amber" />
-    </div>
-  )
-}
-
-// 필름 인트로
-function FilmIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
-  return (
-    <div className="relative h-full overflow-hidden">
-      {/* 배경 이미지 - 세피아 + 그레인 */}
+      {/* 아치 윈도우 */}
       <div
-        className="absolute inset-0 bg-cover bg-center intro-sepia-filter intro-film-grain"
-        style={backgroundStyle}
-      />
-
-      {/* 필름 효과 오버레이 */}
-      <div className="absolute inset-0 intro-film-overlay opacity-50" />
-      <div className="absolute inset-0 intro-film-vignette" />
-      <div className="absolute inset-0 intro-film-flicker bg-black/10" />
-
-      {/* 필름 스크래치 */}
-      <div className="absolute inset-0 opacity-20" style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cline x1='0' y1='0' x2='200' y2='200' stroke='white' stroke-width='0.5'/%3E%3C/svg%3E")`,
-        backgroundSize: '100px 100px',
-      }} />
-
-      <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
-        {settings.subTitle && (
-          <p
-            className="text-xs tracking-[3px] sm:tracking-[6px] mb-4 intro-blur-to-sharp"
-            style={subTitleStyle}
-          >
-            {settings.subTitle}
-          </p>
-        )}
-        <p
-          className="intro-blur-to-sharp"
-          style={{ ...titleStyle, animationDelay: '1s' }}
-        >
-          {settings.mainTitle}
-        </p>
-        <div className="w-16 h-px bg-amber-200/50 mx-auto my-6 intro-split-reveal" style={{ animationDelay: '2s' }} />
-        {settings.dateText && (
-          <p
-            className="text-sm intro-blur-to-sharp"
-            style={{ ...subTitleStyle, animationDelay: '2.5s' }}
-          >
-            {settings.dateText}
-          </p>
-        )}
+        className="relative overflow-hidden intro-fade-in z-10"
+        style={{
+          width: 210,
+          height: 280,
+          borderRadius: '105px 105px 4px 4px',
+          boxShadow: '0 10px 40px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04)',
+        }}
+      >
+        <div className="absolute inset-0" style={backgroundStyle} />
+        <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${(settings.overlayOpacity ?? 10) / 100})` }} />
       </div>
-      <ScrollIndicator color="amber" />
+
+      {/* 텍스트 영역 (아치 아래) */}
+      <div
+        className="intro-text-spread mt-7 relative z-10"
+        style={{ opacity: 0, animationDelay: '1.2s' }}
+      >
+        <p className="text-center" style={{ ...titleStyle, color: adjustedTitleColor }}>{settings.mainTitle}</p>
+      </div>
+      <div
+        className="w-14 h-px bg-gray-300/40 my-4 intro-text-spread relative z-10"
+        style={{ opacity: 0, animationDelay: '1.6s' }}
+      />
+      {settings.subTitle && (
+        <p
+          className="text-[10px] tracking-[4px] intro-text-spread relative z-10"
+          style={{ color: adjustedSubColor, opacity: 0, animationDelay: '2s' }}
+        >
+          {settings.subTitle}
+        </p>
+      )}
+      {settings.dateText && (
+        <p
+          className="text-xs mt-4 intro-text-spread relative z-10"
+          style={{ color: adjustedSubColor, opacity: 0, animationDelay: '2.3s' }}
+        >
+          {settings.dateText}
+        </p>
+      )}
+      {settings.venueText && (
+        <p
+          className="text-[11px] mt-1.5 intro-text-spread relative z-10"
+          style={{ color: 'rgba(0,0,0,0.3)', opacity: 0, animationDelay: '2.6s' }}
+        >
+          {settings.venueText}
+        </p>
+      )}
+      <ScrollIndicator color="gray" />
     </div>
   )
 }
 
-// 골드 인트로
-function GoldIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
+// 빛의 커튼 인트로 (대각 분할 레이아웃)
+function LightrayIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
+  // 밝은 배경용 텍스트 색상 보정
+  const adjustedTitleColor = titleStyle.color === '#ffffff' ? '#374151' : titleStyle.color
+  const adjustedSubColor = (() => {
+    const c = subTitleStyle.color as string
+    if (c && c.startsWith('rgba(255,255,255,')) return 'rgba(212,165,116,0.8)'
+    if (c === 'rgba(255,255,255,0.8)') return 'rgba(212,165,116,0.8)'
+    if (c && c.startsWith('rgba(253,230,138')) return c
+    return c
+  })()
+
   return (
-    <div className="relative h-full overflow-hidden">
-      <div className="absolute inset-0 intro-fade-in" style={backgroundStyle} />
-      <div className="absolute inset-0 bg-black/60" />
-      <GoldParticles count={60} />
-      <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
+    <div className="relative h-full overflow-hidden bg-[#F8F6F3]">
+      {/* 대각선으로 잘린 사진 영역 */}
+      <div
+        className="absolute inset-0 intro-diagonal-reveal"
+        style={{ clipPath: 'polygon(0 0, 100% 0, 100% 50%, 0 68%)' }}
+      >
+        <div className="absolute inset-0 intro-slow-zoom" style={backgroundStyle} />
+        <div className="absolute inset-0" style={overlayStyle} />
+      </div>
+
+      {/* 하단 텍스트 영역 (좌측 정렬) */}
+      <div className="absolute bottom-0 left-0 right-0 flex flex-col items-start px-8 pb-16 z-20">
         {settings.subTitle && (
-          <p
-            className="text-xs tracking-[3px] sm:tracking-[6px] mb-4 intro-scale-up"
-            style={{ ...subTitleStyle, opacity: 0, animationDelay: '1.5s' }}
-          >
+          <p className="text-[10px] tracking-[4px] mb-4 intro-slide-in-left" style={{ color: adjustedSubColor, opacity: 0, animationDelay: '0.8s' }}>
             {settings.subTitle}
           </p>
         )}
-        <p
-          className="intro-glow-in"
-          style={{ ...titleStyle, opacity: 0, animationDelay: '2s' }}
-        >
+        <p className="intro-fade-in-up" style={{ ...titleStyle, color: adjustedTitleColor, opacity: 0, animationDelay: '1.2s' }}>
           {settings.mainTitle}
         </p>
-        <div
-          className="w-20 h-px bg-gradient-to-r from-transparent via-amber-400 to-transparent mx-auto my-6 intro-split-reveal"
-          style={{ opacity: 0, animationDelay: '2.5s' }}
-        />
+        <div className="w-16 h-px bg-[#d4a574]/30 my-4 intro-line-expand" style={{ animationDelay: '1.8s' }} />
         {settings.dateText && (
-          <p
-            className="text-sm intro-scale-up"
-            style={{ ...subTitleStyle, opacity: 0, animationDelay: '2.9s' }}
-          >
+          <p className="text-xs intro-fade-in-up" style={{ color: adjustedSubColor, opacity: 0, animationDelay: '2.2s' }}>
             {settings.dateText}
           </p>
         )}
         {settings.venueText && (
-          <p
-            className="text-xs mt-2 intro-scale-up"
-            style={{ ...subTitleStyle, opacity: 0, animationDelay: '3.2s' }}
-          >
+          <p className="text-[11px] mt-1.5 intro-fade-in-up" style={{ color: 'rgba(0,0,0,0.25)', opacity: 0, animationDelay: '2.5s' }}>
             {settings.venueText}
           </p>
         )}
       </div>
-      <ScrollIndicator color="amber" />
+      <ScrollIndicator color="gray" />
     </div>
   )
 }
 
-// 포커스 인트로
-function FocusIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
+// 필름 인트로 (폴라로이드 레이아웃)
+function FilmIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
+  // 밝은 배경이므로 밝은 텍스트면 어두운 색으로 변환
+  const adjustedTitleColor = (() => {
+    const c = titleStyle.color as string
+    if (c === '#ffffff' || c === '#fef3c7') return '#4a4a4a'
+    return c
+  })()
+  const adjustedSubColor = (() => {
+    const c = subTitleStyle.color as string
+    if (c && (c.startsWith('rgba(254,243,199') || c.startsWith('rgba(255,255,255'))) return '#9ca3af'
+    if (c === 'rgba(255,255,255,0.8)') return '#9ca3af'
+    return c
+  })()
+
   return (
-    <div className="relative h-full overflow-hidden">
-      {/* 배경 (아웃포커스) */}
-      <div className="absolute inset-0" style={{ ...backgroundStyle, filter: 'blur(15px)' }} />
+    <div className="relative h-full flex flex-col items-center justify-center overflow-hidden bg-[#F5F3F0]">
+      {/* 미세한 노이즈 텍스처 */}
+      <div className="absolute inset-0 opacity-[0.03]" style={{
+        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+      }} />
 
-      {/* 전경 (인포커스) */}
-      <div className="absolute inset-0 intro-focus-pull" style={backgroundStyle} />
-
-      <div className="absolute inset-0" style={overlayStyle} />
-
-      <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
+      {/* 폴라로이드 카드 */}
+      <div
+        className="relative bg-[#F8F6F3] p-[10px] pb-[42px] intro-polaroid-drop z-10"
+        style={{
+          width: 230,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.06)',
+        }}
+      >
+        {/* 사진 영역 */}
+        <div className="relative w-full overflow-hidden" style={{ aspectRatio: '1 / 1' }}>
+          <div className="absolute inset-0 intro-slow-zoom" style={backgroundStyle} />
+          <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${(settings.overlayOpacity ?? 5) / 100})` }} />
+        </div>
+        {/* 폴라로이드 하단 캡션 */}
         {settings.subTitle && (
-          <p className="text-xs tracking-[3px] sm:tracking-[6px] mb-4 intro-letter-spread" style={{ ...subTitleStyle, opacity: 0, animationDelay: '1.2s' }}>
+          <p
+            className="text-center mt-3 intro-fade-in-delay-2"
+            style={{
+              fontFamily: "'Gowun Batang', serif",
+              fontSize: '11px',
+              color: adjustedSubColor,
+              letterSpacing: '1px',
+            }}
+          >
             {settings.subTitle}
           </p>
         )}
-        <p className="intro-depth-shift" style={{ ...titleStyle, opacity: 0, animationDelay: '0.5s' }}>
-          {settings.mainTitle}
-        </p>
-        <div className="w-16 h-px bg-white/50 my-6 intro-split-reveal" style={{ opacity: 0, animationDelay: '1.6s' }} />
-        {settings.dateText && (
-          <p className="text-sm intro-slide-in-right-delay" style={{ ...subTitleStyle, opacity: 0, animationDelay: '2s' }}>
-            {settings.dateText}
-          </p>
-        )}
       </div>
+
+      {/* 텍스트 영역 (폴라로이드 아래) */}
+      <p
+        className="mt-7 intro-fade-in-up relative z-10 text-center"
+        style={{ ...titleStyle, color: adjustedTitleColor, opacity: 0, animationDelay: '1.2s' }}
+      >
+        {settings.mainTitle}
+      </p>
+      <div className="w-14 h-px bg-gray-300/40 my-4 intro-split-reveal relative z-10" style={{ animationDelay: '1.5s', opacity: 0 }} />
+      {settings.dateText && (
+        <p
+          className="text-xs intro-fade-in-up relative z-10"
+          style={{ color: adjustedSubColor, opacity: 0, animationDelay: '1.8s' }}
+        >
+          {settings.dateText}
+        </p>
+      )}
+      {settings.venueText && (
+        <p
+          className="text-[11px] mt-1.5 intro-fade-in-up relative z-10"
+          style={{ color: 'rgba(0,0,0,0.3)', opacity: 0, animationDelay: '2.1s' }}
+        >
+          {settings.venueText}
+        </p>
+      )}
+      <ScrollIndicator color="gray" />
+    </div>
+  )
+}
+
+// 필름 스트립 인트로
+function FilmstripIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
+  const sprocketCount = 12
+  const sprockets = Array.from({ length: sprocketCount }, (_, i) => i)
+
+  return (
+    <div className="relative h-full flex flex-col items-center justify-center overflow-hidden bg-[#1a1a1a]">
+      {/* 필름 스트립 프레임 */}
+      <div
+        className="relative intro-film-slide-in z-10"
+        style={{ width: 280 }}
+      >
+        {/* 필름 상단 바 + 스프로킷 홀 */}
+        <div className="relative bg-[#111] h-[22px] flex items-center justify-between px-2">
+          {sprockets.map((i) => (
+            <div key={`t${i}`} className="w-[10px] h-[7px] rounded-[1.5px] bg-[#1a1a1a]" style={{ boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.06)' }} />
+          ))}
+        </div>
+
+        {/* 사진 영역 */}
+        <div className="relative bg-[#111] px-[6px]">
+          <div className="relative w-full overflow-hidden" style={{ aspectRatio: '3 / 2' }}>
+            <div className="absolute inset-0 intro-slow-zoom" style={backgroundStyle} />
+            <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${(settings.overlayOpacity ?? 5) / 100})` }} />
+          </div>
+        </div>
+
+        {/* 필름 하단 바 + 스프로킷 홀 */}
+        <div className="relative bg-[#111] h-[22px] flex items-center justify-between px-2">
+          {sprockets.map((i) => (
+            <div key={`b${i}`} className="w-[10px] h-[7px] rounded-[1.5px] bg-[#1a1a1a]" style={{ boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.06)' }} />
+          ))}
+        </div>
+
+        {/* 필름 프레임 번호 */}
+        <div className="absolute bottom-[26px] right-[14px] text-[8px] text-amber-200/30 font-mono intro-fade-in-delay-2">
+          15A
+        </div>
+      </div>
+
+      {/* 텍스트 영역 */}
+      <p
+        className="mt-7 intro-cinema-reveal relative z-10 text-center"
+        style={{ ...titleStyle, opacity: 0, animationDelay: '1s' }}
+      >
+        {settings.mainTitle}
+      </p>
+      <div className="w-14 h-px bg-[#F8F6F3]/15 my-4 intro-line-expand relative z-10" style={{ animationDelay: '1.8s', opacity: 0 }} />
+      {settings.subTitle && (
+        <p
+          className="text-[10px] tracking-[4px] intro-slide-in-right relative z-10"
+          style={{ ...subTitleStyle, opacity: 0, animationDelay: '2.1s' }}
+        >
+          {settings.subTitle}
+        </p>
+      )}
+      {settings.dateText && (
+        <p
+          className="text-xs mt-3 intro-fade-in-up relative z-10"
+          style={{ ...subTitleStyle, opacity: 0, animationDelay: '2.4s' }}
+        >
+          {settings.dateText}
+        </p>
+      )}
+      {settings.venueText && (
+        <p
+          className="text-[11px] mt-1.5 intro-fade-in-up relative z-10"
+          style={{ color: 'rgba(255,255,255,0.2)', opacity: 0, animationDelay: '2.7s' }}
+        >
+          {settings.venueText}
+        </p>
+      )}
       <ScrollIndicator />
     </div>
   )
 }
+

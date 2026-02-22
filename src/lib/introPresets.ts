@@ -5,14 +5,12 @@ export type IntroPresetId =
   | 'typing'
   | 'blur'
   | 'zoom'
-  | 'bokeh'
   | 'letter'
   | 'petal'
   | 'watercolor'
   | 'lightray'
   | 'film'
-  | 'gold'
-  | 'focus'
+  | 'filmstrip'
 
 // 편집 가능한 필드 타입
 export interface EditableTextField {
@@ -80,6 +78,7 @@ export const availableFonts = [
   { value: "'Gowun Batang', serif", label: '고운바탕' },
   { value: "'Cormorant Garamond', serif", label: 'Cormorant' },
   { value: "'Playfair Display', serif", label: 'Playfair' },
+  { value: "'NostalgicPoliceFairness', cursive", label: '손글씨(폴페어니스)' },
 ]
 
 // 프리셋 정의
@@ -123,8 +122,8 @@ const commonBackgroundFields: EditableField[] = [
 export const introPresets: IntroPreset[] = [
   {
     id: 'cinematic',
-    name: '영화처럼',
-    description: '영화 오프닝처럼 우아하게 시작하는 시네마틱 인트로',
+    name: '01 시네마틱',
+    description: '영화 오프닝처럼 우아한 시네마틱 인트로',
     defaults: {
       mainTitle: 'Welcome to our wedding',
       subTitle: '',
@@ -132,6 +131,7 @@ export const introPresets: IntroPreset[] = [
       venueText: '',
       titleFontSize: 16,
       titleLetterSpacing: 3,
+      titleFontFamily: "'Playfair Display', serif",
       titleColor: '#ffffff',
       subTitleColor: 'rgba(255,255,255,0.6)',
       backgroundScale: 110,
@@ -149,8 +149,8 @@ export const introPresets: IntroPreset[] = [
   },
   {
     id: 'typing',
-    name: '첫 설렘',
-    description: '한 글자씩 타이핑되며 설렘을 전하는 인트로',
+    name: '02 타이핑',
+    description: '한 글자씩 타이핑되는 물결 인트로',
     defaults: {
       mainTitle: '소중한 분들을 초대합니다',
       subTitle: 'WELCOME TO OUR WEDDING',
@@ -158,20 +158,21 @@ export const introPresets: IntroPreset[] = [
       venueText: '',
       titleFontSize: 20,
       titleLetterSpacing: 0,
-      titleColor: '#ffffff',
-      subTitleColor: 'rgba(255,255,255,0.7)',
+      titleFontFamily: "'Nanum Myeongjo', serif",
+      titleColor: '#2c2c2c',
+      subTitleColor: 'rgba(0,0,0,0.35)',
       backgroundScale: 100,
       backgroundPositionX: 50,
-      backgroundPositionY: 0,
+      backgroundPositionY: 30,
       backgroundBrightness: 100,
-      overlayOpacity: 50,
+      overlayOpacity: 0,
     },
     editableFields: [...commonTextFields, ...commonStyleFields, ...commonBackgroundFields],
   },
   {
     id: 'blur',
-    name: '꿈에서 현실로',
-    description: '흐릿한 꿈에서 선명한 현실로, 두 사람의 만남',
+    name: '03 포커스',
+    description: '흐릿함에서 선명하게, 포커스 인트로',
     defaults: {
       mainTitle: '우리 결혼합니다',
       subTitle: 'SAVE THE DATE',
@@ -179,6 +180,7 @@ export const introPresets: IntroPreset[] = [
       venueText: '',
       titleFontSize: 20,
       titleLetterSpacing: 0,
+      titleFontFamily: "'Gowun Batang', serif",
       titleColor: '#ffffff',
       subTitleColor: 'rgba(255,255,255,0.7)',
       backgroundScale: 100,
@@ -191,8 +193,8 @@ export const introPresets: IntroPreset[] = [
   },
   {
     id: 'zoom',
-    name: '다가오는 순간',
-    description: '천천히 다가오는 특별한 순간을 표현',
+    name: '04 프레임',
+    description: '중앙 프레임 안에서 다가오는 줌 인트로',
     defaults: {
       mainTitle: '새로운 시작을 함께해주세요',
       subTitle: 'OUR WEDDING DAY',
@@ -200,41 +202,21 @@ export const introPresets: IntroPreset[] = [
       venueText: '',
       titleFontSize: 18,
       titleLetterSpacing: 2,
-      titleColor: '#ffffff',
-      subTitleColor: 'rgba(255,255,255,0.6)',
-      backgroundScale: 120,
+      titleFontFamily: "'Noto Serif KR', serif",
+      titleColor: '#2c2c2c',
+      subTitleColor: 'rgba(0,0,0,0.35)',
+      backgroundScale: 110,
       backgroundPositionX: 50,
-      backgroundPositionY: 0,
+      backgroundPositionY: 50,
       backgroundBrightness: 100,
-      overlayOpacity: 30,
-    },
-    editableFields: [...commonTextFields, ...commonStyleFields, ...commonBackgroundFields],
-  },
-  {
-    id: 'bokeh',
-    name: '빛나는 약속',
-    description: '반짝이는 빛 속에서 전하는 약속',
-    defaults: {
-      mainTitle: '행복한 날에 초대합니다',
-      subTitle: 'THE WEDDING OF',
-      dateText: '',
-      venueText: '',
-      titleFontSize: 20,
-      titleLetterSpacing: 1,
-      titleColor: '#ffffff',
-      subTitleColor: 'rgba(255,215,180,0.8)',
-      backgroundScale: 100,
-      backgroundPositionX: 50,
-      backgroundPositionY: 0,
-      backgroundBrightness: 100,
-      overlayOpacity: 50,
+      overlayOpacity: 10,
     },
     editableFields: [...commonTextFields, ...commonStyleFields, ...commonBackgroundFields],
   },
   {
     id: 'letter',
-    name: '사랑의 편지',
-    description: '봉투에서 꺼내는 소중한 초대장',
+    name: '05 레터',
+    description: '봉투에서 꺼내는 초대장 인트로',
     defaults: {
       mainTitle: '우리 결혼합니다',
       subTitle: 'WEDDING INVITATION',
@@ -242,6 +224,7 @@ export const introPresets: IntroPreset[] = [
       venueText: '',
       titleFontSize: 24,
       titleLetterSpacing: 0,
+      titleFontFamily: "'NostalgicPoliceFairness', cursive",
       titleColor: '#4a4a4a',
       subTitleColor: '#9ca3af',
       backgroundScale: 100,
@@ -254,8 +237,8 @@ export const introPresets: IntroPreset[] = [
   },
   {
     id: 'petal',
-    name: '봄날의 축복',
-    description: '흩날리는 꽃잎처럼 아름다운 시작',
+    name: '06 써클',
+    description: '원형 윈도우와 꽃잎 인트로',
     defaults: {
       mainTitle: '꽃잎처럼 아름다운 날',
       subTitle: 'SPRING WEDDING',
@@ -263,20 +246,21 @@ export const introPresets: IntroPreset[] = [
       venueText: '',
       titleFontSize: 20,
       titleLetterSpacing: 0,
+      titleFontFamily: "'Gowun Batang', serif",
       titleColor: '#374151',
-      subTitleColor: '#f472b6',
+      subTitleColor: '#d4a0a0',
       backgroundScale: 100,
       backgroundPositionX: 50,
-      backgroundPositionY: 0,
+      backgroundPositionY: 50,
       backgroundBrightness: 100,
-      overlayOpacity: 70,
+      overlayOpacity: 10,
     },
     editableFields: [...commonTextFields, ...commonStyleFields, ...commonBackgroundFields],
   },
   {
     id: 'watercolor',
-    name: '물드는 사랑',
-    description: '수채화처럼 번지는 따뜻한 감성',
+    name: '07 아치',
+    description: '아치 윈도우 프레임 인트로',
     defaults: {
       mainTitle: 'A New Chapter Begins',
       subTitle: 'WELCOME TO OUR WEDDING',
@@ -284,20 +268,21 @@ export const introPresets: IntroPreset[] = [
       venueText: '우리의 새로운 이야기가 시작됩니다.',
       titleFontSize: 16,
       titleLetterSpacing: 0,
+      titleFontFamily: "'Cormorant Garamond', serif",
       titleColor: '#374151',
       subTitleColor: '#0891b2',
       backgroundScale: 100,
       backgroundPositionX: 50,
       backgroundPositionY: 50,
       backgroundBrightness: 100,
-      overlayOpacity: 60,
+      overlayOpacity: 10,
     },
     editableFields: [...commonTextFields, ...commonStyleFields, ...commonBackgroundFields],
   },
   {
     id: 'lightray',
-    name: '영원한 빛',
-    description: '축복의 빛이 비추는 거룩한 순간',
+    name: '08 대각선',
+    description: '대각선 분할 레이아웃 인트로',
     defaults: {
       mainTitle: '영원을 약속하는 날',
       subTitle: 'BLESSED UNION',
@@ -305,20 +290,21 @@ export const introPresets: IntroPreset[] = [
       venueText: '',
       titleFontSize: 20,
       titleLetterSpacing: 0,
-      titleColor: '#ffffff',
-      subTitleColor: 'rgba(253,230,138,0.6)',
+      titleFontFamily: "'Nanum Myeongjo', serif",
+      titleColor: '#374151',
+      subTitleColor: 'rgba(212,165,116,0.8)',
       backgroundScale: 100,
       backgroundPositionX: 50,
-      backgroundPositionY: 50,
+      backgroundPositionY: 30,
       backgroundBrightness: 100,
-      overlayOpacity: 30,
+      overlayOpacity: 15,
     },
     editableFields: [...commonTextFields, ...commonStyleFields, ...commonBackgroundFields],
   },
   {
     id: 'film',
-    name: '추억의 순간',
-    description: '빈티지 필름처럼 따뜻한 추억',
+    name: '09 폴라로이드',
+    description: '폴라로이드 프레임 인트로',
     defaults: {
       mainTitle: '우리의 순간에 초대합니다',
       subTitle: 'TIMELESS LOVE',
@@ -326,55 +312,36 @@ export const introPresets: IntroPreset[] = [
       venueText: '',
       titleFontSize: 18,
       titleLetterSpacing: 0,
-      titleColor: '#fef3c7',
-      subTitleColor: 'rgba(254,243,199,0.8)',
+      titleFontFamily: "'Nanum Myeongjo', serif",
+      titleColor: '#4a4a4a',
+      subTitleColor: '#9ca3af',
       backgroundScale: 100,
       backgroundPositionX: 50,
-      backgroundPositionY: 0,
+      backgroundPositionY: 50,
       backgroundBrightness: 100,
-      overlayOpacity: 0,
+      overlayOpacity: 5,
     },
     editableFields: [...commonTextFields, ...commonStyleFields, ...commonBackgroundFields],
   },
   {
-    id: 'gold',
-    name: '황금빛 축복',
-    description: '황금빛 파티클이 내리는 럭셔리한 인트로',
+    id: 'filmstrip',
+    name: '10 필름',
+    description: '35mm 필름 프레임 인트로',
     defaults: {
-      mainTitle: '소중한 날에 초대합니다',
-      subTitle: 'WEDDING INVITATION',
+      mainTitle: '우리의 한 장면',
+      subTitle: 'OUR MOMENT',
       dateText: '',
       venueText: '',
-      titleFontSize: 20,
-      titleLetterSpacing: 0,
-      titleColor: '#fef3c7',
-      subTitleColor: 'rgba(251,191,36,0.6)',
+      titleFontSize: 18,
+      titleLetterSpacing: 1,
+      titleFontFamily: "Pretendard",
+      titleColor: '#e8e0d4',
+      subTitleColor: 'rgba(232,224,212,0.5)',
       backgroundScale: 100,
       backgroundPositionX: 50,
-      backgroundPositionY: 0,
+      backgroundPositionY: 50,
       backgroundBrightness: 100,
-      overlayOpacity: 60,
-    },
-    editableFields: [...commonTextFields, ...commonStyleFields, ...commonBackgroundFields],
-  },
-  {
-    id: 'focus',
-    name: '오직 우리 둘',
-    description: '오직 두 사람에게 집중되는 순간',
-    defaults: {
-      mainTitle: '두 사람의 이야기',
-      subTitle: 'FOCUS ON US',
-      dateText: '저희의 시작에 함께해 주세요',
-      venueText: '',
-      titleFontSize: 20,
-      titleLetterSpacing: 0,
-      titleColor: '#ffffff',
-      subTitleColor: 'rgba(255,255,255,0.6)',
-      backgroundScale: 100,
-      backgroundPositionX: 50,
-      backgroundPositionY: 0,
-      backgroundBrightness: 100,
-      overlayOpacity: 30,
+      overlayOpacity: 5,
     },
     editableFields: [...commonTextFields, ...commonStyleFields, ...commonBackgroundFields],
   },
@@ -391,16 +358,16 @@ export function getDefaultIntroSettings(presetId: IntroPresetId = 'cinematic'): 
     subTitle: defaults.subTitle || '',
     dateText: defaults.dateText || '',
     venueText: defaults.venueText || '',
-    titleFontSize: defaults.titleFontSize || 20,
-    titleLetterSpacing: defaults.titleLetterSpacing || 0,
-    titleFontFamily: defaults.titleFontFamily || "'Noto Serif KR', serif",
+    titleFontSize: defaults.titleFontSize ?? 20,
+    titleLetterSpacing: defaults.titleLetterSpacing ?? 0,
+    titleFontFamily: defaults.titleFontFamily || "'Gowun Batang', serif",
     titleColor: defaults.titleColor || '#ffffff',
     subTitleColor: defaults.subTitleColor || 'rgba(255,255,255,0.7)',
-    backgroundScale: defaults.backgroundScale || 100,
-    backgroundPositionX: defaults.backgroundPositionX || 50,
+    backgroundScale: defaults.backgroundScale ?? 100,
+    backgroundPositionX: defaults.backgroundPositionX ?? 50,
     backgroundPositionY: defaults.backgroundPositionY ?? 50,
-    backgroundBrightness: defaults.backgroundBrightness || 100,
-    overlayOpacity: defaults.overlayOpacity || 50,
+    backgroundBrightness: defaults.backgroundBrightness ?? 100,
+    overlayOpacity: defaults.overlayOpacity ?? 50,
   }
 }
 
@@ -434,6 +401,10 @@ export function mergeIntroSettings(
     venueText: currentSettings.venueText !== oldDefaults.venueText
       ? currentSettings.venueText
       : newDefaults.venueText,
+    // 폰트는 사용자가 변경했으면 유지 (프리셋 전환해도 초기화하지 않음)
+    titleFontFamily: currentSettings.titleFontFamily !== (oldDefaults.titleFontFamily || "'Gowun Batang', serif")
+      ? currentSettings.titleFontFamily
+      : newDefaults.titleFontFamily,
     // 배경 설정은 새 프리셋 기본값 사용 (프리셋별로 다르므로)
   }
 }

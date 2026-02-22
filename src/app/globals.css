@@ -941,6 +941,14 @@
   font-family: 'Ridibatang', serif !important;
 }
 
+/* 그리운 폴페어니스 손글씨 */
+@font-face {
+  font-family: 'NostalgicPoliceFairness';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/Griun_PolFairness-Rg.woff2') format('woff2');
+  font-weight: normal;
+  font-display: swap;
+}
+
 /* =====================
    Gallery Page - 모바일 헤더 숨김
    ===================== */

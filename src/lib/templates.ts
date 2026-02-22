@@ -36,7 +36,7 @@ export const templates: Template[] = [
     name: 'OUR',
     description: '두 사람의 사랑을 한 편의 이야기로',
     thumbnail: '/templates/narrative-our.jpg',
-    defaultCoverImage: '/images/our-cover.png',  // OUR 템플릿 기본 커버 이미지
+    defaultCoverImage: '/sample/cover3.png',  // OUR 템플릿 기본 커버 이미지
     narrativeType: 'our',
     emoji: '💕',
     colors: {

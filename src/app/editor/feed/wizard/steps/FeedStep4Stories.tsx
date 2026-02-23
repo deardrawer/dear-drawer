@@ -194,7 +194,7 @@ export default function FeedStep4Stories({
               className={inputClass}
               value={data.groom.profile.subtitle}
               onChange={(e) => updateNestedData('groom.profile.subtitle', e.target.value)}
-              placeholder="신랑을 소개합니다 🤵 (비워두면 자동 생성)"
+              placeholder="신부가 소개하는 신랑 🤵 (비워두면 자동 생성)"
             />
           </div>
           <div className="space-y-1.5">
@@ -231,7 +231,7 @@ export default function FeedStep4Stories({
               className={inputClass}
               value={data.bride.profile.subtitle}
               onChange={(e) => updateNestedData('bride.profile.subtitle', e.target.value)}
-              placeholder="신부를 소개합니다 👰 (비워두면 자동 생성)"
+              placeholder="신랑이 소개하는 신부 👰 (비워두면 자동 생성)"
             />
           </div>
           <div className="space-y-1.5">

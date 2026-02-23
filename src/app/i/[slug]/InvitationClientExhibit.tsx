@@ -944,7 +944,7 @@ function PeopleTab({ content, profileImage, username }: { content: any; profileI
               </svg>
             </div>
             <p className="text-[13px] leading-[1.7] whitespace-pre-line" style={{ color: '#262626' }}>
-              <span className="font-semibold">{person.subtitle || (person.role === '신랑' ? '신랑을 소개합니다 🤵' : '신부를 소개합니다 👰')}</span>{' '}
+              <span className="font-semibold">{person.subtitle || (person.role === '신랑' ? '신부가 소개하는 신랑 🤵' : '신랑이 소개하는 신부 👰')}</span>{' '}
               {person.intro || (person.role === '신랑'
                 ? '처음 만났을 때부터 따뜻한 미소가 인상적이었던 사람. 항상 제 이야기에 귀 기울여주고, 힘들 때 묵묵히 곁에 있어주는 든든한 사람입니다.'
                 : '밝은 웃음소리가 참 예쁜 사람. 제가 지칠 때마다 힘이 되어주고, 작은 것에도 감사할 줄 아는 따뜻한 마음의 소유자입니다.')}

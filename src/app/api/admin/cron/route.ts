@@ -1,18 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import { deleteExpiredInvitations } from "@/lib/db";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 // Cloudflare Workers Cron 또는 외부 스케줄러에서 호출
 // 매일 자정에 실행 권장
+// 호출 방법: POST /api/admin/cron (Authorization: Bearer <CRON_SECRET>)
 
-// CRON_SECRET 환경변수로 보안
-const CRON_SECRET = process.env.CRON_SECRET || "cron-secret-key";
+interface CloudflareEnv {
+  CRON_SECRET?: string;
+}
 
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const secret = searchParams.get("secret");
+async function getCronSecret(): Promise<string> {
+  try {
+    const { env } = await getCloudflareContext() as { env: CloudflareEnv };
+    return env.CRON_SECRET || process.env.CRON_SECRET || "";
+  } catch {
+    return process.env.CRON_SECRET || "";
+  }
+}
 
-  // 보안 검증
-  if (secret !== CRON_SECRET) {
+export async function POST(request: NextRequest) {
+  // Authorization 헤더에서 Bearer token 추출
+  const authHeader = request.headers.get("authorization");
+  const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+
+  const cronSecret = await getCronSecret();
+
+  if (!cronSecret || token !== cronSecret) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -34,9 +48,4 @@ export async function GET(request: NextRequest) {
     console.error("[CRON] Error:", error);
     return NextResponse.json({ error: "Failed to run cleanup" }, { status: 500 });
   }
-}
-
-// POST도 지원 (Cloudflare Workers Cron에서 사용)
-export async function POST(request: NextRequest) {
-  return GET(request);
 }

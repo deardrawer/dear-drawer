@@ -29,6 +29,9 @@ export function middleware(request: NextRequest) {
   // ===== 1. Security Headers =====
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  response.headers.set("X-Frame-Options", "DENY");
+  response.headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
 
   // Content-Security-Policy
   const csp = [
@@ -67,17 +70,16 @@ export function middleware(request: NextRequest) {
       ? allowedOrigins.some((allowed) => referer.startsWith(allowed))
       : false;
 
-    // Origin도 Referer도 없으면 서버 간 호출 가능성 → 허용
-    if (!origin && !referer) {
+    // Origin이나 Referer 중 하나라도 유효하면 통과
+    if (isValidOrigin || isValidReferer) {
       return response;
     }
 
-    if (!isValidOrigin && !isValidReferer) {
-      return NextResponse.json(
-        { error: "CSRF validation failed" },
-        { status: 403 }
-      );
-    }
+    // Origin과 Referer 모두 없거나, 있는데 유효하지 않으면 차단
+    return NextResponse.json(
+      { error: "CSRF validation failed" },
+      { status: 403 }
+    );
   }
 
   return response;

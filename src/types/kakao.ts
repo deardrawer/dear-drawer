@@ -3,6 +3,7 @@
 // Kakao Maps Types
 declare global {
   interface Window {
+    dataLayer: Record<string, unknown>[];
     kakao: {
       maps: {
         load: (callback: () => void) => void;

@@ -178,6 +178,14 @@ function TemplatesContent() {
   }, [])
 
   const handleTemplateSelect = (templateId: string) => {
+    // GTM 이벤트: 템플릿 제작 시작
+    if (typeof window !== 'undefined' && window.dataLayer) {
+      window.dataLayer.push({
+        event: 'template_start',
+        template_id: templateId,
+      })
+    }
+
     const autoSlug = generateRandomSlug()
     if (templateId === 'narrative-parents') {
       router.push(`/editor/parents?slug=${autoSlug}`)

@@ -36,11 +36,11 @@ export function middleware(request: NextRequest) {
   // Content-Security-Policy
   const csp = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://t1.kakaocdn.net https://developers.kakao.com",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://t1.kakaocdn.net https://developers.kakao.com https://www.googletagmanager.com https://www.google-analytics.com https://googletagmanager.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net",
     "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net data:",
-    "img-src 'self' data: blob: https://*.supabase.co https://*.r2.cloudflarestorage.com https://invite.deardrawer.com https://*.kakaocdn.net https://images.unsplash.com",
-    "connect-src 'self' https://*.supabase.co https://kapi.kakao.com",
+    "img-src 'self' data: blob: https://*.supabase.co https://*.r2.cloudflarestorage.com https://invite.deardrawer.com https://*.kakaocdn.net https://images.unsplash.com https://www.googletagmanager.com https://www.google-analytics.com",
+    "connect-src 'self' https://*.supabase.co https://kapi.kakao.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com",
     "frame-src 'self' https://accounts.kakao.com https://www.youtube.com https://youtube.com",
     "frame-ancestors 'self'",
   ].join("; ");

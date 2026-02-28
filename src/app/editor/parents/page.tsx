@@ -633,7 +633,14 @@ function ParentsEditorContent() {
     setSavedSlug(newSlug)
   }
 
-  if ((editId && isLoading) || status === 'loading') {
+  // 비로그인 시 로그인 페이지로 리다이렉트
+  if (status === 'unauthenticated') {
+    const currentUrl = window.location.pathname + window.location.search
+    router.replace(`/login?redirect=${encodeURIComponent(currentUrl)}`)
+    return null
+  }
+
+  if (status === 'loading' || (editId && isLoading)) {
     return (
       <div className="h-screen flex items-center justify-center theme-neu">
         <div className="animate-spin rounded-full h-6 w-6 border border-[#A37E69]/30 border-t-[#A37E69]" />

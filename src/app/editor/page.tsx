@@ -424,8 +424,15 @@ function EditorContent() {
     setIsAIStoryGeneratorOpen(false)
   }
 
+  // 비로그인 시 로그인 페이지로 리다이렉트
+  if (status === 'unauthenticated') {
+    const currentUrl = window.location.pathname + window.location.search
+    router.replace(`/login?redirect=${encodeURIComponent(currentUrl)}`)
+    return null
+  }
+
   // 인증 상태 확인 중이거나 기존 청첩장 로딩 중이면 스피너 표시
-  if ((editId && isLoading) || (editId && status === 'loading')) {
+  if (status === 'loading' || (editId && isLoading)) {
     return (
       <div className="h-screen flex items-center justify-center bg-white">
         <div className="animate-spin rounded-full h-6 w-6 border border-gray-300 border-t-gray-900" />

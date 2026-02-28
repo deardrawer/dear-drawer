@@ -1,19 +1,26 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [isDevLoginLoading, setIsDevLoginLoading] = useState(false)
+
+  // redirect 파라미터에서 안전한 내부 경로만 허용
+  const redirectParam = searchParams.get('redirect')
+  const safeRedirect = redirectParam && redirectParam.startsWith('/') && !redirectParam.startsWith('//')
+    ? redirectParam
+    : '/my-invitations'
 
   const handleDevLogin = async () => {
     setIsDevLoginLoading(true)
     try {
       const res = await fetch('/api/auth/dev-login', { method: 'POST' })
       if (res.ok) {
-        router.replace('/my-invitations')
+        router.replace(safeRedirect)
       } else {
         alert('테스트 로그인 실패')
       }
@@ -38,6 +45,7 @@ export default function LoginPage() {
       redirect_uri: redirectUri,
       response_type: 'code',
       scope: 'profile_nickname profile_image',
+      state: safeRedirect,
     })
 
     window.location.href = `https://kauth.kakao.com/oauth/authorize?${params.toString()}`
@@ -48,13 +56,13 @@ export default function LoginPage() {
     fetch('/api/auth/me')
       .then((res) => {
         if (res.ok) {
-          router.replace('/my-invitations')
+          router.replace(safeRedirect)
         }
       })
       .catch(() => {
         // Not logged in, stay on login page
       })
-  }, [router])
+  }, [router, safeRedirect])
 
   return (
     <div className="w-full max-w-md">
@@ -111,5 +119,19 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="w-full max-w-md">
+        <div className="bg-white border border-gray-200 p-10 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-6 w-6 border border-gray-300 border-t-gray-900" />
+        </div>
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   )
 }

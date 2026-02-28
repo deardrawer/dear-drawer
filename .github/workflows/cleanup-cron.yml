@@ -1,0 +1,34 @@
+name: Cleanup Expired Invitations
+
+on:
+  schedule:
+    # 매일 자정 UTC (한국시간 09:00)
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+    # 수동 실행 가능
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Call cleanup API
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          API_URL: ${{ secrets.API_URL }}
+        run: |
+          echo "Starting cleanup at $(date)"
+
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "${API_URL}/api/admin/cron" -H "Authorization: Bearer ${CRON_SECRET}")
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          echo "Response: $BODY"
+          echo "HTTP Code: $HTTP_CODE"
+
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "Error: API returned status $HTTP_CODE"
+            exit 1
+          fi
+
+          echo "Cleanup completed successfully"

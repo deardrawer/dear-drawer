@@ -1,6 +1,8 @@
-import { redirect } from 'next/navigation'
+'use client'
 
-// (main) 레이아웃 그룹의 기본 페이지는 /gallery로 리다이렉트
+// / 경로에서 /gallery와 동일한 페이지를 보여줌 (리다이렉트 없이)
+import GalleryPage from './gallery/page'
+
 export default function MainHomePage() {
-  redirect('/gallery')
+  return <GalleryPage />
 }

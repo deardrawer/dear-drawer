@@ -7,9 +7,10 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 interface WizardNavigationProps {
   onSave?: () => void
   isSaving?: boolean
+  isOurTemplate?: boolean
 }
 
-export default function WizardNavigation({ onSave, isSaving }: WizardNavigationProps) {
+export default function WizardNavigation({ onSave, isSaving, isOurTemplate }: WizardNavigationProps) {
   const { wizardStep, nextWizardStep, prevWizardStep, validationError } = useEditorStore()
 
   const isFirstStep = wizardStep === 1
@@ -19,6 +20,13 @@ export default function WizardNavigation({ onSave, isSaving }: WizardNavigationP
   const scrollEditorToTop = () => {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
+        // 패널 내부 스크롤 영역 우선 (데스크탑)
+        const wizardScroll = document.getElementById('wizard-scroll-area')
+        if (wizardScroll && wizardScroll.scrollHeight > wizardScroll.clientHeight) {
+          wizardScroll.scrollTop = 0
+          return
+        }
+        // 폴백: 페이지 스크롤 (모바일)
         const scrollContainer = document.getElementById('editor-scroll-container')
         if (scrollContainer) {
           scrollContainer.scrollTop = 0
@@ -40,11 +48,11 @@ export default function WizardNavigation({ onSave, isSaving }: WizardNavigationP
   // 마지막 단계는 Step6Publish에서 자체 버튼 사용
   if (isLastStep) {
     return (
-      <div className="border-t border-gray-100 bg-white px-6 py-4">
+      <div className={`px-6 py-4 ${isOurTemplate ? 'px-9 py-5 border-t border-black/[0.04]' : 'border-t border-gray-100 bg-white'}`}>
         <Button
           variant="outline"
           onClick={handlePrev}
-          className="w-full border-gray-200 text-gray-600 hover:bg-gray-50 h-11 text-sm"
+          className={`w-full btn-cta-outline ${isOurTemplate ? 'neu-btn text-[#8A8580]' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
         >
           <ChevronLeft className="w-5 h-5 mr-1" />
           이전 단계로
@@ -54,7 +62,7 @@ export default function WizardNavigation({ onSave, isSaving }: WizardNavigationP
   }
 
   return (
-    <div className="border-t border-gray-100 bg-white px-6 py-4">
+    <div className={`px-6 py-4 ${isOurTemplate ? 'px-9 py-5 border-t border-black/[0.04]' : 'border-t border-gray-100 bg-white'}`}>
       {/* 에러 메시지 */}
       {validationError?.tab === 'wizard' && (
         <div className="mb-4 p-4 bg-red-50 border border-red-100 rounded-lg">
@@ -63,13 +71,13 @@ export default function WizardNavigation({ onSave, isSaving }: WizardNavigationP
       )}
 
       {/* 버튼 영역 */}
-      <div className="flex items-center justify-between gap-4">
+      <div className={`flex items-center justify-between ${isOurTemplate ? 'gap-3' : 'gap-4'}`}>
         {/* 이전 버튼 */}
         <Button
           variant="outline"
           onClick={handlePrev}
           disabled={isFirstStep}
-          className="flex-1 border-gray-200 text-gray-600 hover:bg-gray-50 h-11 text-sm"
+          className={`flex-1 btn-cta-outline ${isOurTemplate ? 'neu-btn text-[#8A8580]' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
         >
           <ChevronLeft className="w-5 h-5 mr-1" />
           이전
@@ -78,7 +86,7 @@ export default function WizardNavigation({ onSave, isSaving }: WizardNavigationP
         {/* 다음 버튼 */}
         <Button
           onClick={handleNext}
-          className="flex-[2] bg-black text-white hover:bg-gray-800 h-11 text-sm"
+          className={`flex-[2] btn-cta tracking-wide ${isOurTemplate ? 'neu-btn-primary' : 'bg-black text-white hover:bg-gray-800'}`}
         >
           다음 단계
           <ChevronRight className="w-5 h-5 ml-1" />

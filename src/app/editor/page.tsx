@@ -456,10 +456,13 @@ function EditorContent() {
     )
   }
 
+  // 뉴모피즘 테마: 모든 템플릿에 적용 (테스트 후 분기 정리 예정)
+  const isOurTemplate = true
+
   return (
-    <div className="h-screen flex flex-col bg-white">
+    <div className={`h-screen flex flex-col ${isOurTemplate ? 'theme-neu' : 'bg-white'}`}>
       {/* Action Bar */}
-      <header className="h-12 sm:h-14 border-b border-gray-100 bg-white flex items-center justify-between px-3 sm:px-6 shrink-0">
+      <header className={`h-12 sm:h-14 flex items-center justify-between px-3 sm:px-6 shrink-0 ${isOurTemplate ? 'editor-header' : 'border-b border-gray-100 bg-white'}`}>
         <div className="flex items-center gap-2 sm:gap-4">
           <button onClick={() => handleNavigate('/')} className="cursor-pointer">
             <img
@@ -490,7 +493,7 @@ function EditorContent() {
             variant="outline"
             size="sm"
             onClick={handlePreview}
-            className="border-gray-200 text-gray-600 hover:bg-gray-50 rounded-none text-xs tracking-wide"
+            className={`text-xs tracking-wide ${isOurTemplate ? 'neu-btn text-gray-600' : 'border-gray-200 text-gray-600 hover:bg-gray-50 rounded-none'}`}
           >
             <svg
               className="w-4 h-4 sm:mr-2"
@@ -518,7 +521,7 @@ function EditorContent() {
             variant="outline"
             size="sm"
             onClick={handleShare}
-            className="hidden sm:flex border-gray-200 text-gray-600 hover:bg-gray-50 rounded-none text-xs tracking-wide"
+            className={`hidden sm:flex text-xs tracking-wide ${isOurTemplate ? 'neu-btn text-gray-600' : 'border-gray-200 text-gray-600 hover:bg-gray-50 rounded-none'}`}
           >
             <svg
               className="w-4 h-4 mr-2"
@@ -539,7 +542,7 @@ function EditorContent() {
             size="sm"
             disabled={isSaving}
             onClick={handleSave}
-            className="bg-black text-white hover:bg-gray-800 rounded-none text-xs tracking-wide"
+            className={`text-xs tracking-wide ${isOurTemplate ? 'neu-btn-primary rounded-xl' : 'bg-black text-white hover:bg-gray-800 rounded-none'}`}
           >
             {isSaving ? (
               <>
@@ -569,9 +572,9 @@ function EditorContent() {
       </header>
 
       {/* Main Editor Area - 페이지 레벨 스크롤 */}
-      <div id="editor-scroll-container" className="flex-1 overflow-y-scroll bg-white" style={{ overflowAnchor: 'none' }}>
-        <div className="w-full max-w-7xl mx-auto">
-          <div className="bg-white flex">
+      <div id="editor-scroll-container" className={`flex-1 overflow-y-scroll ${isOurTemplate ? 'editor-scroll-area' : 'bg-white'}`} style={{ overflowAnchor: 'none' }}>
+        <div className={`w-full ${isOurTemplate ? 'max-w-[1400px]' : 'max-w-7xl'} mx-auto`}>
+          <div className={`${isOurTemplate ? '' : 'bg-white'} flex`}>
             {isIntroSelectorOpen ? (
               <>
                 {/* 인트로 미리보기 - 왼쪽 sticky */}
@@ -600,13 +603,13 @@ function EditorContent() {
               <>
                 {/* Preview - 왼쪽 sticky 고정, 세로 중앙 (데스크탑) */}
                 {!isMobile && (
-                  <div className="w-[450px] min-w-[450px] sticky top-0 h-[calc(100vh-120px)] overflow-hidden bg-white flex justify-center items-center" style={{ contain: 'layout style', willChange: 'transform' }}>
+                  <div className={`w-[450px] min-w-[450px] sticky top-0 overflow-hidden flex justify-center items-center ${isOurTemplate ? 'editor-panel m-4 mr-0 w-[440px] min-w-[440px]' : 'bg-white h-[calc(100vh-56px)]'}`} style={isOurTemplate ? { height: 'calc(100vh - 88px)', contain: 'layout style', willChange: 'transform' } : { contain: 'layout style', willChange: 'transform' }}>
                     <Preview ref={previewRef} />
                   </div>
                 )}
 
-                {/* 구분선 - 부드러운 그라데이션 그림자 (데스크탑) */}
-                {!isMobile && (
+                {/* 구분선 - 테마에 따라 다르게 표시 */}
+                {!isMobile && !isOurTemplate && (
                   <div className="w-8 mx-1 relative">
                     <div className="absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-gray-100/80 to-transparent" />
                     <div className="absolute inset-y-0 right-0 w-4 bg-gradient-to-l from-gray-100/80 to-transparent" />
@@ -622,7 +625,7 @@ function EditorContent() {
 
                 {/* Edit Panel - 오른쪽 (데스크탑) / 전체 (모바일 편집 모드) */}
                 {(!isMobile || mobileView === 'editor') && (
-                  <div className={`${isMobile ? 'w-full' : 'flex-1'} min-h-[calc(100vh-120px)]`} style={isMobile ? { paddingBottom: '56px' } : undefined}>
+                  <div className={`${isMobile ? 'w-full' : 'flex-1 flex flex-col overflow-hidden'} ${isOurTemplate && !isMobile ? 'editor-panel m-4 ml-3.5' : ''}`} style={isMobile ? { paddingBottom: '56px' } : { height: isOurTemplate ? 'calc(100vh - 88px)' : 'calc(100vh - 56px)' }}>
                     <WizardEditor
                       onOpenIntroSelector={() => setIsIntroSelectorOpen(true)}
                       onOpenAIStoryGenerator={() => setIsAIStoryGeneratorOpen(true)}
@@ -806,7 +809,7 @@ function EditorContent() {
 
       {/* 모바일 하단 탭 바 */}
       {isMobile && !isIntroSelectorOpen && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 flex safe-area-bottom">
+        <div className={`fixed bottom-0 left-0 right-0 z-40 flex safe-area-bottom ${isOurTemplate ? 'mobile-tab-bar' : 'bg-white border-t border-gray-200'}`}>
           <button
             onClick={() => setMobileView('editor')}
             className={`flex-1 py-3.5 text-sm font-medium flex items-center justify-center gap-1.5 transition-colors ${mobileView === 'editor' ? 'text-black' : 'text-gray-400'}`}

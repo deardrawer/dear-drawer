@@ -635,16 +635,16 @@ function ParentsEditorContent() {
 
   if ((editId && isLoading) || status === 'loading') {
     return (
-      <div className="h-screen flex items-center justify-center bg-white">
-        <div className="animate-spin rounded-full h-6 w-6 border border-gray-300 border-t-gray-900" />
+      <div className="h-screen flex items-center justify-center theme-neu">
+        <div className="animate-spin rounded-full h-6 w-6 border border-[#A37E69]/30 border-t-[#A37E69]" />
       </div>
     )
   }
 
   return (
-    <div className="h-screen flex flex-col bg-white">
+    <div className="h-screen flex flex-col theme-neu">
       {/* Header */}
-      <header className="h-12 sm:h-14 border-b border-gray-100 bg-white flex items-center justify-between px-3 sm:px-6 shrink-0">
+      <header className="h-12 sm:h-14 editor-header flex items-center justify-between px-3 sm:px-6 shrink-0">
         <div className="flex items-center gap-2 sm:gap-4">
           <Link href="/">
             <img src="/logo.png" alt="Dear Drawer" className="h-5 sm:h-6 w-auto" />
@@ -661,7 +661,7 @@ function ParentsEditorContent() {
             variant="outline"
             size="sm"
             onClick={() => { setFullscreenTab('intro'); setIsPreviewOpen(true); }}
-            className="border-gray-200 text-gray-600 hover:bg-gray-50 rounded-none text-xs tracking-wide"
+            className="border-gray-200 text-gray-600 hover:bg-gray-50 rounded-xl text-xs tracking-wide"
           >
             <svg className="w-4 h-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -674,7 +674,7 @@ function ParentsEditorContent() {
             variant="outline"
             size="sm"
             onClick={handleShare}
-            className="hidden sm:flex border-gray-200 text-gray-600 hover:bg-gray-50 rounded-none text-xs tracking-wide"
+            className="hidden sm:flex border-gray-200 text-gray-600 hover:bg-gray-50 rounded-xl text-xs tracking-wide"
           >
             <svg
               className="w-4 h-4 mr-2"
@@ -695,7 +695,7 @@ function ParentsEditorContent() {
             size="sm"
             disabled={isSaving}
             onClick={() => handleSave()}
-            className="bg-black text-white hover:bg-gray-800 rounded-none text-xs tracking-wide"
+            className="bg-black text-white hover:bg-gray-800 rounded-xl text-xs tracking-wide"
           >
             {isSaving ? (
               <>
@@ -715,12 +715,12 @@ function ParentsEditorContent() {
       </header>
 
       {/* Main Editor Area - 페이지 레벨 스크롤 */}
-      <div id="parents-editor-scroll-container" className="flex-1 overflow-y-scroll bg-white">
+      <div id="parents-editor-scroll-container" className="flex-1 overflow-y-scroll editor-scroll-area">
         <div className="w-full max-w-7xl mx-auto">
-          <div className="bg-white flex">
+          <div className="flex">
             {/* Preview - 왼쪽 sticky 고정, 세로 중앙 (데스크탑) */}
             {!isMobile && (
-              <div className="w-[450px] min-w-[450px] sticky top-0 h-[calc(100vh-56px)] overflow-hidden bg-gray-50 flex flex-col justify-center items-center p-6">
+              <div className="w-[440px] min-w-[440px] sticky top-0 overflow-hidden editor-panel m-4 mr-0 flex flex-col justify-center items-center p-6" style={{ height: 'calc(100vh - 88px)' }}>
                 {/* 탭 버튼 - 봉투(2), 본문(3) 단계에서는 숨김 */}
                 {(() => {
                   const currentTheme = COLOR_THEMES[data.colorTheme || 'burgundy']
@@ -777,12 +777,9 @@ function ParentsEditorContent() {
               </div>
             )}
 
-            {/* 구분선 - 부드러운 그라데이션 그림자 (데스크탑) */}
+            {/* 구분선 - 뉴모피즘에서는 패널 그림자가 구분 역할 */}
             {!isMobile && (
-              <div className="w-8 mx-1 relative">
-                <div className="absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-gray-100/80 to-transparent" />
-                <div className="absolute inset-y-0 right-0 w-4 bg-gradient-to-l from-gray-100/80 to-transparent" />
-              </div>
+              <div className="w-8 mx-1 neu-divider" />
             )}
 
             {/* 모바일: 미리보기 모드 */}
@@ -838,7 +835,7 @@ function ParentsEditorContent() {
 
             {/* Edit Panel - 오른쪽 (데스크탑) / 전체 (모바일 편집 모드) */}
             {(!isMobile || mobileView === 'editor') && (
-              <div className={`${isMobile ? 'w-full' : 'flex-1'} min-h-[calc(100vh-56px)]`} style={isMobile ? { paddingBottom: '56px' } : undefined}>
+              <div className={`${isMobile ? 'w-full' : 'flex-1 flex flex-col overflow-hidden editor-panel m-4 ml-3.5'}`} style={isMobile ? { paddingBottom: '56px' } : { height: 'calc(100vh - 88px)' }}>
                 <ParentsWizardEditor
                   data={data}
                   updateData={updateData}
@@ -920,7 +917,7 @@ function ParentsEditorContent() {
 
       {/* 모바일 하단 탭 바 */}
       {isMobile && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 flex safe-area-bottom">
+        <div className="fixed bottom-0 left-0 right-0 z-40 mobile-tab-bar flex safe-area-bottom">
           <button
             onClick={() => setMobileView('editor')}
             className={`flex-1 py-3.5 text-sm font-medium flex items-center justify-center gap-1.5 transition-colors ${mobileView === 'editor' ? 'text-black' : 'text-gray-400'}`}

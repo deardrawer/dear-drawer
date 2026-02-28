@@ -960,3 +960,173 @@
     transition: transform 0.3s ease, opacity 0.3s ease;
   }
 }
+
+/* =====================
+   Shared Button Design Tokens
+   ===================== */
+:root {
+  --btn-cta-height: 56px;
+  --btn-cta-radius: 14px;
+  --btn-cta-font-size: 14px;
+  --btn-cta-line-height: 1.4;
+  --btn-cta-font-weight: 500;
+  --btn-cta-px: 24px;
+}
+
+.btn-cta,
+.btn-cta-outline {
+  height: var(--btn-cta-height) !important;
+  min-height: var(--btn-cta-height) !important;
+  border-radius: var(--btn-cta-radius) !important;
+  font-size: var(--btn-cta-font-size) !important;
+  line-height: var(--btn-cta-line-height) !important;
+  font-weight: var(--btn-cta-font-weight) !important;
+  padding-left: var(--btn-cta-px) !important;
+  padding-right: var(--btn-cta-px) !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  letter-spacing: 0.01em;
+  transition: opacity 0.15s ease;
+}
+
+/* =====================
+   Neumorphism Theme for Editor (OUR template)
+   ===================== */
+/* ========== Apple+Magazine Mix Theme (추천) ========== */
+@layer components {
+  .theme-neu {
+    background: linear-gradient(160deg, #F5F0ED 0%, #EDE8EC 30%, #E9ECF2 65%, #F0F1F3 100%) !important;
+    color: #2C2824;
+  }
+
+  .theme-neu .editor-header {
+    background: rgba(245,240,237,0.95) !important;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-bottom: 1px solid rgba(0,0,0,0.06) !important;
+  }
+
+  .theme-neu .editor-scroll-area {
+    background: transparent !important;
+  }
+
+  .theme-neu .editor-panel {
+    background: rgba(255,255,255,0.45);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 24px;
+    border: 1px solid rgba(255,255,255,0.6) !important;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.03);
+  }
+
+  .theme-neu .neu-card {
+    background: rgba(255,255,255,0.5);
+    backdrop-filter: blur(8px);
+    border: 1.5px solid rgba(0,0,0,0.03) !important;
+    border-radius: 14px;
+    transition: all 0.25s;
+  }
+
+  .theme-neu .neu-card:hover {
+    background: rgba(255,255,255,0.75);
+    border-color: rgba(0,0,0,0.05) !important;
+  }
+
+  .theme-neu .neu-card-selected {
+    border-color: rgba(163,126,105,0.4) !important;
+    background: rgba(163,126,105,0.05) !important;
+    box-shadow: 0 2px 10px rgba(163,126,105,0.08);
+  }
+
+  .theme-neu .neu-btn {
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(8px);
+    border: none !important;
+    border-radius: 99px;
+    color: #6B6560;
+    transition: all 0.2s;
+  }
+
+  .theme-neu .neu-btn:hover {
+    background: rgba(255,255,255,0.9);
+    color: #3A3530;
+  }
+
+  .theme-neu .neu-btn-primary {
+    background: #3A3530 !important;
+    color: #F5F0ED !important;
+    box-shadow: 0 2px 8px rgba(58,53,48,0.2);
+    border: none !important;
+    border-radius: 14px;
+  }
+
+  .theme-neu .neu-btn-primary:hover {
+    background: #4A453F !important;
+    box-shadow: 0 4px 14px rgba(58,53,48,0.25);
+    transform: translateY(-1px);
+  }
+
+  .theme-neu .neu-tab {
+    background: transparent;
+    border: none !important;
+    border-radius: 0;
+    border-bottom: 2px solid transparent !important;
+    color: #C0BBB6;
+    letter-spacing: 1px;
+    font-size: 12px;
+    transition: all 0.25s;
+  }
+
+  .theme-neu .neu-tab:hover {
+    color: #8A8580;
+  }
+
+  .theme-neu .neu-tab-active {
+    color: #3A3530 !important;
+    border-bottom: 2px solid #A37E69 !important;
+    background: transparent !important;
+    font-weight: 600;
+  }
+
+  .theme-neu .neu-progress-bar {
+    background: rgba(0,0,0,0.06);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .theme-neu .neu-progress-fill {
+    background: linear-gradient(135deg, #A37E69, #C9977F);
+  }
+
+  .theme-neu .neu-divider {
+    display: none;
+  }
+
+  .theme-neu .wizard-sticky-header {
+    background: rgba(245,240,237,0.92) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(0,0,0,0.04) !important;
+  }
+
+  .theme-neu .wizard-sticky-footer {
+    background: rgba(245,240,237,0.92) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(0,0,0,0.04) !important;
+  }
+
+  .theme-neu .wizard-content {
+    background: transparent !important;
+  }
+
+  .theme-neu .mobile-tab-bar {
+    background: rgba(255,255,255,0.7) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(0,0,0,0.04) !important;
+  }
+}

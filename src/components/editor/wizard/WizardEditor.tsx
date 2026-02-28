@@ -1,8 +1,9 @@
 'use client'
 
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { useEditorStore } from '@/store/editorStore'
-import WizardProgress from './WizardProgress'
+import { Monitor, X } from 'lucide-react'
+import WizardProgress, { WizardStepHeader } from './WizardProgress'
 import WizardNavigation from './WizardNavigation'
 
 // Step 컴포넌트들 (동적 로드) - 템플릿 선택은 /templates 페이지에서 처리
@@ -59,9 +60,12 @@ export default function WizardEditor({
   onSlugChange,
 }: WizardEditorProps) {
   const { wizardStep, invitation } = useEditorStore()
+  const [showDesktopBanner, setShowDesktopBanner] = useState(true)
   const isMagazine = templateId === 'narrative-magazine' || invitation?.templateId === 'narrative-magazine'
   const isFilm = templateId === 'narrative-film' || invitation?.templateId === 'narrative-film'
   const isRecord = templateId === 'narrative-record' || invitation?.templateId === 'narrative-record'
+  // 뉴모피즘 테마: 모든 템플릿에 적용 (테스트 후 분기 정리 예정)
+  const isOurTemplate = true
 
   // 현재 Step에 해당하는 컴포넌트 렌더링
   const renderStep = () => {
@@ -96,24 +100,45 @@ export default function WizardEditor({
   }
 
   return (
-    <div className="flex flex-col bg-white">
-      {/* 진행률 바 - sticky 상단 고정 */}
-      <div className="sticky top-0 z-10 bg-white">
-        <WizardProgress />
+    <div className={`flex flex-col h-full ${isOurTemplate ? 'wizard-content' : 'bg-white'}`}>
+      {/* 진행률 바 - 상단 고정 (shrink-0) */}
+      <div className={`shrink-0 ${isOurTemplate ? 'wizard-sticky-header' : 'bg-white'}`}>
+        <WizardProgress isOurTemplate={isOurTemplate} />
       </div>
 
-      {/* Step 콘텐츠 - 자연스러운 페이지 스크롤 */}
-      <div className="flex-1">
+      {/* 스크롤 가능 영역 */}
+      <div className="flex-1 overflow-y-auto" id="wizard-scroll-area">
+        {/* 모바일 데스크탑 안내 배너 */}
+        {showDesktopBanner && (
+          <div className="md:hidden mx-4 mt-3 mb-1 px-4 py-3 bg-amber-50/80 border border-amber-200/60 rounded-xl flex items-start gap-3">
+            <Monitor className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+            <p className="text-[12px] leading-relaxed text-amber-800 flex-1">
+              PC에서 작성하시면 미리보기를 함께 보며 더 편리하게 편집할 수 있어요.
+            </p>
+            <button
+              onClick={() => setShowDesktopBanner(false)}
+              className="shrink-0 text-amber-400 hover:text-amber-600 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
+        {/* 큰 숫자 헤더 */}
+        <WizardStepHeader isOurTemplate={isOurTemplate} />
+
+        {/* Step 콘텐츠 */}
         <Suspense fallback={<StepLoading />}>
           {renderStep()}
         </Suspense>
       </div>
 
-      {/* 네비게이션 버튼 - sticky 하단 고정 */}
-      <div className="sticky bottom-0 z-10 bg-white">
+      {/* 네비게이션 버튼 - 하단 고정 (shrink-0) */}
+      <div className={`shrink-0 ${isOurTemplate ? 'wizard-sticky-footer' : 'border-t border-gray-100 bg-white'}`}>
         <WizardNavigation
           onSave={onSave}
           isSaving={isSaving}
+          isOurTemplate={isOurTemplate}
         />
       </div>
     </div>

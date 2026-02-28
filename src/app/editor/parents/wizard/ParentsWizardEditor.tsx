@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect, lazy, Suspense } from 'react'
-import ParentsWizardProgress, { ParentsWizardStep } from './ParentsWizardProgress'
+import ParentsWizardProgress, { ParentsWizardStep, ParentsWizardStepHeader } from './ParentsWizardProgress'
 import ParentsWizardNavigation from './ParentsWizardNavigation'
 import type { ParentsInvitationData, ImageCropData } from '../page'
 
@@ -71,6 +71,13 @@ export default function ParentsWizardEditor({
   const scrollToTop = useCallback(() => {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
+        // 내부 위자드 스크롤 영역 먼저 시도
+        const wizardScroll = document.getElementById('parents-wizard-scroll-area')
+        if (wizardScroll && wizardScroll.scrollHeight > wizardScroll.clientHeight) {
+          wizardScroll.scrollTop = 0
+          return
+        }
+        // 모바일: 페이지 레벨 스크롤
         const scrollContainer = document.getElementById('parents-editor-scroll-container')
         if (scrollContainer) {
           scrollContainer.scrollTop = 0
@@ -142,9 +149,9 @@ export default function ParentsWizardEditor({
   }
 
   return (
-    <div className="flex flex-col bg-white">
-      {/* 진행률 표시 - sticky 상단 고정 */}
-      <div className="sticky top-0 z-10 bg-white">
+    <div className="flex flex-col h-full wizard-content">
+      {/* 진행률 바 - 상단 고정 (shrink-0) */}
+      <div className="shrink-0 wizard-sticky-header">
         <ParentsWizardProgress
           currentStep={currentStep}
           onStepClick={handleStepClick}
@@ -153,12 +160,16 @@ export default function ParentsWizardEditor({
         />
       </div>
 
-      {/* 스텝 콘텐츠 - 자연스러운 페이지 스크롤 */}
-      <div className="flex-1">
+      {/* 스크롤 가능 영역 */}
+      <div className="flex-1 overflow-y-auto" id="parents-wizard-scroll-area">
+        {/* 큰 숫자 헤더 */}
+        <ParentsWizardStepHeader currentStep={currentStep} />
+
+        {/* 스텝 콘텐츠 */}
         <Suspense
           fallback={
             <div className="flex items-center justify-center h-64">
-              <div className="w-8 h-8 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+              <div className="w-8 h-8 border-2 border-[#A37E69]/30 border-t-[#A37E69] rounded-full animate-spin" />
             </div>
           }
         >
@@ -166,8 +177,8 @@ export default function ParentsWizardEditor({
         </Suspense>
       </div>
 
-      {/* 네비게이션 - sticky 하단 고정 */}
-      <div className="sticky bottom-0 z-10 bg-white">
+      {/* 네비게이션 버튼 - 하단 고정 (shrink-0) */}
+      <div className="shrink-0 wizard-sticky-footer">
         <ParentsWizardNavigation
           currentStep={currentStep}
           onNext={handleNext}

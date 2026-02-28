@@ -64,6 +64,8 @@ interface Step2StyleProps {
 
 export default function Step2Style({ templateId, invitationId }: Step2StyleProps) {
   const { invitation, updateField, updateNestedField } = useEditorStore()
+  // 뉴모피즘 테마: 모든 템플릿에 적용 (테스트 후 분기 정리 예정)
+  const isOurTemplate = true
   const [playingBgm, setPlayingBgm] = useState<string | null>(null)
   const [isUploadingAudio, setIsUploadingAudio] = useState(false)
   const audioRef = useRef<HTMLAudioElement>(null)
@@ -172,17 +174,17 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
         </h3>
         <p className="text-sm text-blue-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> 텍스트의 글꼴을 선택해주세요.</p>
 
-        <div className="grid grid-cols-1 gap-2">
+        <div className={`grid grid-cols-1 ${isOurTemplate ? 'gap-3' : 'gap-2'}`}>
           {FONT_STYLES.map((font) => {
             const isSelected = fontStyle === font.id
             return (
               <button
                 key={font.id}
                 onClick={() => updateField('fontStyle', font.id as typeof fontStyle)}
-                className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all ${
-                  isSelected
-                    ? 'border-gray-900 bg-gray-50'
-                    : 'border-gray-200 hover:border-gray-300'
+                className={`flex items-center justify-between p-4 transition-all ${
+                  isOurTemplate
+                    ? `neu-card ${isSelected ? 'neu-card-selected' : ''}`
+                    : `rounded-xl border-2 ${isSelected ? 'border-gray-900 bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -428,10 +430,10 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
               <button
                 key={theme.id}
                 onClick={() => handleThemeChange(theme.id)}
-                className={`relative p-3 rounded-xl border-2 transition-all ${
-                  isSelected
-                    ? 'border-gray-900 ring-2 ring-gray-900/20'
-                    : 'border-gray-200 hover:border-gray-300'
+                className={`relative p-3 transition-all ${
+                  isOurTemplate
+                    ? `neu-card ${isSelected ? 'neu-card-selected' : ''}`
+                    : `rounded-xl border-2 ${isSelected ? 'border-gray-900 ring-2 ring-gray-900/20' : 'border-gray-200 hover:border-gray-300'}`
                 }`}
               >
                 {isSelected && (
@@ -554,10 +556,10 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
                   return (
                     <div
                       key={preset.id}
-                      className={`relative flex items-center gap-2 p-3 rounded-xl border-2 transition-all cursor-pointer ${
-                        isSelected
-                          ? 'border-gray-900 bg-gray-50'
-                          : 'border-gray-200 hover:border-gray-300'
+                      className={`relative flex items-center gap-2 p-3 transition-all cursor-pointer ${
+                        isOurTemplate
+                          ? `neu-card ${isSelected ? 'neu-card-selected' : ''}`
+                          : `rounded-xl border-2 ${isSelected ? 'border-gray-900 bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`
                       }`}
                       onClick={() => selectBgm(preset.url)}
                     >
@@ -591,10 +593,10 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
 
               {/* 직접추가 옵션 */}
               <div
-                className={`relative flex items-center gap-2 p-3 rounded-xl border-2 transition-all cursor-pointer col-span-2 ${
-                  isCustomBgm
-                    ? 'border-gray-900 bg-gray-50'
-                    : 'border-gray-200 hover:border-gray-300'
+                className={`relative flex items-center gap-2 p-3 transition-all cursor-pointer col-span-2 ${
+                  isOurTemplate
+                    ? `neu-card ${isCustomBgm ? 'neu-card-selected' : ''}`
+                    : `rounded-xl border-2 ${isCustomBgm ? 'border-gray-900 bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`
                 }`}
                 onClick={() => {
                   const input = document.getElementById('our-bgm-file-input') as HTMLInputElement

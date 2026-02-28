@@ -394,6 +394,16 @@ function FeedEditorContent() {
       }
 
       setIsDirty(false)
+
+      // GTM 이벤트: 저장 성공
+      if (typeof window !== 'undefined' && window.dataLayer) {
+        window.dataLayer.push({
+          event: 'invitation_save',
+          template_id: 'narrative-exhibit',
+          is_new: !invitationId,
+        })
+      }
+
       if (!silent) alert('저장되었습니다!')
     } catch (error) {
       console.error('Save error:', error)
@@ -410,6 +420,15 @@ function FeedEditorContent() {
       alert('공유하려면 먼저 저장해주세요.')
       return
     }
+
+    // GTM 이벤트: 공유 클릭
+    if (typeof window !== 'undefined' && window.dataLayer) {
+      window.dataLayer.push({
+        event: 'share_click',
+        template_id: 'narrative-exhibit',
+      })
+    }
+
     setIsShareModalOpen(true)
   }
 

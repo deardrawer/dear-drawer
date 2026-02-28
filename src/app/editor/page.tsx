@@ -289,6 +289,16 @@ function EditorContent() {
 
       resetDirty()
       markStepsSaved()  // 현재까지 방문한 스텝을 저장됨으로 표시
+
+      // GTM 이벤트: 저장 성공
+      if (typeof window !== 'undefined' && window.dataLayer) {
+        window.dataLayer.push({
+          event: 'invitation_save',
+          template_id: template?.id || templateId,
+          is_new: !invitationId,
+        })
+      }
+
       alert('저장되었습니다!')
     } catch (error) {
       console.error('Save error:', error)
@@ -313,6 +323,15 @@ function EditorContent() {
       alert('공유하려면 먼저 저장해주세요.')
       return
     }
+
+    // GTM 이벤트: 공유 클릭
+    if (typeof window !== 'undefined' && window.dataLayer) {
+      window.dataLayer.push({
+        event: 'share_click',
+        template_id: template?.id || templateId,
+      })
+    }
+
     setIsShareModalOpen(true)
   }
 

@@ -919,7 +919,7 @@ export default function MyInvitationsPage() {
                       <Button size="sm" className="w-full bg-gray-900 hover:bg-gray-800 text-white">에디터 편집하기</Button>
                     </Link>
                     {!invitation.is_paid && (
-                      <Link href={`/dashboard/payment?invitationId=${invitation.id}`}>
+                      <Link href={`/dashboard/payment?invitationId=${invitation.id}&templateId=${invitation.template_id}`}>
                         <Button size="sm" className="w-full bg-rose-500 hover:bg-rose-600 text-white">워터마크 제거하기</Button>
                       </Link>
                     )}

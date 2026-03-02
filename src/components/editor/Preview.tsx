@@ -148,6 +148,7 @@ function InvitationPreviewWrapper({ invitation, skipIntro }: { invitation: Invit
     parentIntro: (invitation as any).parentIntro,
     whyWeChose: (invitation as any).whyWeChose,
     parentIntroTextStyle: (invitation as any).parentIntroTextStyle,
+    whyWeChoseTextStyle: (invitation as any).whyWeChoseTextStyle,
   }), [invitation])
 
   const invitationData = useMemo(() => ({

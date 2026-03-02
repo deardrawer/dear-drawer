@@ -12,6 +12,16 @@ function PaymentForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const invitationId = searchParams.get('invitationId')
+  const templateId = searchParams.get('templateId') || ''
+
+  // 미니스토리형 템플릿 목록
+  const MINI_STORY_TEMPLATES = [
+    'narrative-magazine', 'narrative-film', 'narrative-record', 'narrative-exhibit', 'narrative-essay',
+    'magazine', 'film', 'record', 'exhibit', 'essay',
+  ]
+  const isMiniStory = MINI_STORY_TEMPLATES.includes(templateId)
+  const paymentIdx = isMiniStory ? 14 : 8
+  const productName = isMiniStory ? '미니스토리형' : '스토리형'
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
@@ -103,7 +113,7 @@ function PaymentForm() {
           </p>
 
           <a
-            href="https://www.deardrawer.com/invitation/?idx=8"
+            href={`https://www.deardrawer.com/invitation/?idx=${paymentIdx}`}
             target="_blank"
             rel="noopener noreferrer"
             className="block w-full mb-6"
@@ -112,7 +122,7 @@ function PaymentForm() {
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
               </svg>
-              디어드로어에서 결제하기
+              {productName} 결제하기
             </Button>
           </a>
 

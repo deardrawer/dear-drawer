@@ -236,31 +236,6 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
         </p>
       </div>
 
-      {/* 매거진: 커버 이미지 업로드 (간단) */}
-      {isMagazine && (
-      <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>
-          커버 이미지
-        </h3>
-        <p className="text-sm text-blue-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>매거진 표지에 사용할 사진을 선택하세요</p>
-        <button
-          onClick={handleOpenIntroSelector}
-          className="w-full py-3 px-4 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          {media.coverImage ? '커버 이미지 변경하기' : '커버 이미지 추가하기'}
-        </button>
-        {media.coverImage && (
-          <div className="relative w-full max-w-[200px] aspect-[3/4] mx-auto rounded-lg overflow-hidden shadow-md">
-            <div className="absolute inset-0" style={getImageCropStyle(media.coverImage, media.coverImageSettings || {})} />
-          </div>
-        )}
-      </section>
-      )}
-
       {/* 2. 신랑신부 기본정보 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
@@ -378,6 +353,162 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
           )}
         </div>
       </section>
+
+      {/* 결혼식 정보 */}
+      <section className="space-y-4">
+        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" /><path d="M9 22V12h6v10" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M12 6h.01" /><path d="M12 10h.01" /><path d="M8 10h.01" /><path d="M16 10h.01" /></svg>
+          결혼식 정보
+        </h3>
+        <p className="text-sm text-blue-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>인트로 페이지, 오시는 길 안내, 카카오톡 공유 설정시 사용됩니다.</p>
+
+        <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+          {/* 날짜/시간 */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">날짜 <span className="text-red-500">*</span></Label>
+              <Input
+                type="date"
+                value={invitation.wedding.date}
+                onChange={(e) => {
+                  const newDate = e.target.value
+                  updateNestedField('wedding.date', newDate)
+                  updateKakaoDescriptionIfAuto(newDate, undefined, undefined)
+                }}
+                onFocus={() => setActiveSection('venue-info')}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">시간</Label>
+              <Input
+                type="time"
+                value={invitation.wedding.time}
+                onChange={(e) => {
+                  const newTime = e.target.value
+                  updateNestedField('wedding.time', newTime)
+                  updateKakaoDescriptionIfAuto(undefined, newTime, undefined)
+                }}
+                onFocus={() => setActiveSection('venue-info')}
+              />
+            </div>
+          </div>
+
+          {/* 예식장 정보 */}
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">예식장 이름 <span className="text-red-500">*</span></Label>
+            <Input
+              value={invitation.wedding.venue.name}
+              onChange={(e) => {
+                const newVenueName = e.target.value
+                updateNestedField('wedding.venue.name', newVenueName)
+                updateKakaoDescriptionIfAuto(undefined, undefined, newVenueName)
+              }}
+              onFocus={() => setActiveSection('venue-info')}
+              placeholder="더채플앳청담"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-medium">예식 홀</Label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <span className="text-xs text-gray-500">표시안함</span>
+                <button
+                  type="button"
+                  onClick={() => updateNestedField('wedding.venue.hideHall', !invitation.wedding.venue.hideHall)}
+                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                    invitation.wedding.venue.hideHall ? 'bg-gray-400' : 'bg-gray-200'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                      invitation.wedding.venue.hideHall ? 'translate-x-4' : 'translate-x-0.5'
+                    }`}
+                  />
+                </button>
+              </label>
+            </div>
+            <Input
+              value={invitation.wedding.venue.hall}
+              onChange={(e) => updateNestedField('wedding.venue.hall', e.target.value)}
+              onFocus={() => setActiveSection('venue-info')}
+              placeholder="그랜드볼룸 3층"
+              disabled={invitation.wedding.venue.hideHall}
+              className={invitation.wedding.venue.hideHall ? 'bg-gray-100 text-gray-400' : ''}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">주소 <span className="text-red-500">*</span></Label>
+            <Input
+              value={invitation.wedding.venue.address}
+              onChange={(e) => updateNestedField('wedding.venue.address', e.target.value)}
+              onFocus={() => setActiveSection('venue-info')}
+              placeholder="서울특별시 강남구 삼성로 614"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* 인트로 스타일 편집 (매거진에서는 숨김) */}
+      {!isMagazine && (
+      <section className="space-y-4">
+        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" /><path d="M20 3v4" /><path d="M22 5h-4" /></svg>
+          인트로 스타일
+        </h3>
+        <p className="text-sm text-blue-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>커버 이미지, 애니메이션 효과, 텍스트를 한 곳에서 설정하세요</p>
+
+        {/* 미리보기 썸네일 */}
+        {media.coverImage && (
+          <div className="relative w-full max-w-[160px] aspect-[9/16] mx-auto rounded-lg overflow-hidden shadow-md">
+            <div
+              className="absolute inset-0"
+              style={getImageCropStyle(media.coverImage, media.coverImageSettings || {})}
+            />
+            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+              <span className="text-white text-xs font-medium px-2 py-1 bg-black/50 rounded">
+                {currentPreset?.name || '시네마틱'}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* 스타일 편집 버튼 */}
+        <button
+          onClick={handleOpenIntroSelector}
+          className="w-full py-3 px-4 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+          </svg>
+          {media.coverImage ? '인트로 스타일 편집하기' : '커버 이미지 추가 & 스타일 편집'}
+        </button>
+      </section>
+      )}
+
+      {/* 매거진: 커버 이미지 업로드 (간단) */}
+      {isMagazine && (
+      <section className="space-y-4">
+        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>
+          커버 이미지
+        </h3>
+        <p className="text-sm text-blue-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>매거진 표지에 사용할 사진을 선택하세요</p>
+        <button
+          onClick={handleOpenIntroSelector}
+          className="w-full py-3 px-4 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          {media.coverImage ? '커버 이미지 변경하기' : '커버 이미지 추가하기'}
+        </button>
+        {media.coverImage && (
+          <div className="relative w-full max-w-[200px] aspect-[3/4] mx-auto rounded-lg overflow-hidden shadow-md">
+            <div className="absolute inset-0" style={getImageCropStyle(media.coverImage, media.coverImageSettings || {})} />
+          </div>
+        )}
+      </section>
+      )}
 
       {/* 3. 명언/슬로건 (매거진에서는 스토리 탭으로 이동) */}
       {!isMagazine && (
@@ -653,137 +784,6 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
             </button>
           </div>
         </div>
-      </section>
-      )}
-
-      {/* 6. 결혼식 정보 */}
-      <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" /><path d="M9 22V12h6v10" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M12 6h.01" /><path d="M12 10h.01" /><path d="M8 10h.01" /><path d="M16 10h.01" /></svg>
-          결혼식 정보
-        </h3>
-        <p className="text-sm text-blue-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>인트로 페이지, 오시는 길 안내, 카카오톡 공유 설정시 사용됩니다.</p>
-
-        <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
-          {/* 날짜/시간 */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-sm font-medium">날짜 <span className="text-red-500">*</span></Label>
-              <Input
-                type="date"
-                value={invitation.wedding.date}
-                onChange={(e) => {
-                  const newDate = e.target.value
-                  updateNestedField('wedding.date', newDate)
-                  updateKakaoDescriptionIfAuto(newDate, undefined, undefined)
-                }}
-                onFocus={() => setActiveSection('venue-info')}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-sm font-medium">시간</Label>
-              <Input
-                type="time"
-                value={invitation.wedding.time}
-                onChange={(e) => {
-                  const newTime = e.target.value
-                  updateNestedField('wedding.time', newTime)
-                  updateKakaoDescriptionIfAuto(undefined, newTime, undefined)
-                }}
-                onFocus={() => setActiveSection('venue-info')}
-              />
-            </div>
-          </div>
-
-          {/* 예식장 정보 */}
-          <div className="space-y-1.5">
-            <Label className="text-sm font-medium">예식장 이름 <span className="text-red-500">*</span></Label>
-            <Input
-              value={invitation.wedding.venue.name}
-              onChange={(e) => {
-                const newVenueName = e.target.value
-                updateNestedField('wedding.venue.name', newVenueName)
-                updateKakaoDescriptionIfAuto(undefined, undefined, newVenueName)
-              }}
-              onFocus={() => setActiveSection('venue-info')}
-              placeholder="더채플앳청담"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium">예식 홀</Label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <span className="text-xs text-gray-500">표시안함</span>
-                <button
-                  type="button"
-                  onClick={() => updateNestedField('wedding.venue.hideHall', !invitation.wedding.venue.hideHall)}
-                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                    invitation.wedding.venue.hideHall ? 'bg-gray-400' : 'bg-gray-200'
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
-                      invitation.wedding.venue.hideHall ? 'translate-x-4' : 'translate-x-0.5'
-                    }`}
-                  />
-                </button>
-              </label>
-            </div>
-            <Input
-              value={invitation.wedding.venue.hall}
-              onChange={(e) => updateNestedField('wedding.venue.hall', e.target.value)}
-              onFocus={() => setActiveSection('venue-info')}
-              placeholder="그랜드볼룸 3층"
-              disabled={invitation.wedding.venue.hideHall}
-              className={invitation.wedding.venue.hideHall ? 'bg-gray-100 text-gray-400' : ''}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-sm font-medium">주소 <span className="text-red-500">*</span></Label>
-            <Input
-              value={invitation.wedding.venue.address}
-              onChange={(e) => updateNestedField('wedding.venue.address', e.target.value)}
-              onFocus={() => setActiveSection('venue-info')}
-              placeholder="서울특별시 강남구 삼성로 614"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* 인트로 스타일 편집 (매거진에서는 숨김) */}
-      {!isMagazine && (
-      <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" /><path d="M20 3v4" /><path d="M22 5h-4" /></svg>
-          인트로 스타일
-        </h3>
-        <p className="text-sm text-blue-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>커버 이미지, 애니메이션 효과, 텍스트를 한 곳에서 설정하세요</p>
-
-        {/* 미리보기 썸네일 */}
-        {media.coverImage && (
-          <div className="relative w-full max-w-[160px] aspect-[9/16] mx-auto rounded-lg overflow-hidden shadow-md">
-            <div
-              className="absolute inset-0"
-              style={getImageCropStyle(media.coverImage, media.coverImageSettings || {})}
-            />
-            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-              <span className="text-white text-xs font-medium px-2 py-1 bg-black/50 rounded">
-                {currentPreset?.name || '시네마틱'}
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* 스타일 편집 버튼 */}
-        <button
-          onClick={handleOpenIntroSelector}
-          className="w-full py-3 px-4 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-          </svg>
-          {media.coverImage ? '인트로 스타일 편집하기' : '커버 이미지 추가 & 스타일 편집'}
-        </button>
       </section>
       )}
 

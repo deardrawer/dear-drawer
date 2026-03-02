@@ -2692,6 +2692,7 @@ function transformToDisplayData(dbInvitation: Invitation, content: InvitationCon
     whyWeChose: content.whyWeChose,
     youtube: content.youtube,
     deceasedDisplayStyle: content.deceasedDisplayStyle || mockInvitation.deceasedDisplayStyle,
+    whyWeChoseTextStyle: content.whyWeChoseTextStyle,
   } as unknown as DisplayInvitation
 }
 

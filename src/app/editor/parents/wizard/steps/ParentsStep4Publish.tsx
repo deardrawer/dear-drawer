@@ -177,6 +177,16 @@ export default function ParentsStep4Publish({
       if (onSave) {
         await onSave()
       }
+
+      // is_published를 true로 설정 (R2 이미지 공개 접근 허용)
+      if (invitationId) {
+        await fetch(`/api/invitations/${invitationId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ is_published: true }),
+        })
+      }
+
       setIsPublished(true)
       setShowSuccessModal(true)
     } catch (error) {
@@ -250,7 +260,7 @@ export default function ParentsStep4Publish({
   // 워터마크 제거 (결제 페이지로 - 새 창)
   const handleRemoveWatermark = () => {
     if (invitationId) {
-      window.open(`/dashboard/payment?invitationId=${invitationId}`, '_blank')
+      window.open(`/dashboard/payment?invitationId=${invitationId}&templateId=narrative-parents`, '_blank')
     }
   }
 

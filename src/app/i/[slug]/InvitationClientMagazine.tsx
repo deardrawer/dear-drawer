@@ -483,7 +483,9 @@ function MeetTheCouple({ invitation, fonts, themeColors }: { invitation: any; fo
 
 // ===== Feature Interview Section =====
 function FeatureInterview({ invitation, fonts, themeColors }: { invitation: any; fonts: FontConfig; themeColors: ColorConfig }) {
-  const interviews = invitation.interviews || invitation.content?.interviews || []
+  const interviews = invitation.interviews?.length ? invitation.interviews : invitation.content?.interviews || []
+
+  if (interviews.length === 0) return null
 
   return (
     <div style={{ backgroundColor: themeColors.sectionBg }}>
@@ -1613,7 +1615,7 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     design: content.design || {},
     bgm: content.bgm || {},
     guidance: content.guidance || {},
-    interviews: (content as any).interviews || [],
+    interviews: (content as any).interviews?.length ? (content as any).interviews : (content as any).content?.interviews || [],
     intro: content.intro,
     youtube: content.youtube,
     accentTextColor: (content as any).colors?.accent,

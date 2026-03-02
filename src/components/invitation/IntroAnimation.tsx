@@ -236,7 +236,7 @@ export default function IntroAnimation({
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 z-[100] bg-black"
+      className="fixed inset-0 z-[100] bg-black flex items-center justify-center"
       style={{
         opacity: isComplete ? 0 : 1,
         transition: 'opacity 0.5s ease',
@@ -584,7 +584,16 @@ export default function IntroAnimation({
         .intro-diagonal-reveal { animation: introDiagonalReveal 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; opacity: 0; }
       `}</style>
 
-      {renderIntro()}
+      {/* 9:16 고정 비율 컨테이너 — 모든 기기에서 동일한 사진 비율 유지 */}
+      <div
+        className="relative overflow-hidden"
+        style={{
+          width: 'min(100%, calc(100vh * 9 / 16))',
+          height: 'min(100%, calc(100vw * 16 / 9))',
+        }}
+      >
+        {renderIntro()}
+      </div>
 
       {/* 스킵 버튼 */}
       <button

@@ -141,7 +141,7 @@ const ChrysanthemumIcon = () => (
 
 // 한자 故 표시 (고인 표시 - 한자 스타일)
 const HanjaDeceasedIcon = () => (
-  <span className="inline-block mr-0.5 text-[10px] opacity-70">故</span>
+  <span className="inline-block mr-0.5 opacity-70" style={{ fontSize: 'inherit' }}>故</span>
 );
 
 // 부모님 이름 표시 (고인 시 선택된 스타일로 표시)
@@ -2691,6 +2691,7 @@ function transformToDisplayData(dbInvitation: Invitation, content: InvitationCon
     parentIntro: content.parentIntro,
     whyWeChose: content.whyWeChose,
     youtube: content.youtube,
+    deceasedDisplayStyle: content.deceasedDisplayStyle || mockInvitation.deceasedDisplayStyle,
   } as unknown as DisplayInvitation
 }
 

@@ -236,43 +236,6 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
         </p>
       </div>
 
-      {/* 1. 인트로 스타일 편집 (매거진에서는 숨김) */}
-      {!isMagazine && (
-      <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" /><path d="M20 3v4" /><path d="M22 5h-4" /></svg>
-          인트로 스타일
-        </h3>
-        <p className="text-sm text-blue-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>커버 이미지, 애니메이션 효과, 텍스트를 한 곳에서 설정하세요</p>
-
-        {/* 미리보기 썸네일 - media.coverImageSettings 기준 (Preview.tsx와 동일) */}
-        {media.coverImage && (
-          <div className="relative w-full max-w-[160px] aspect-[9/16] mx-auto rounded-lg overflow-hidden shadow-md">
-            <div
-              className="absolute inset-0"
-              style={getImageCropStyle(media.coverImage, media.coverImageSettings || {})}
-            />
-            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-              <span className="text-white text-xs font-medium px-2 py-1 bg-black/50 rounded">
-                {currentPreset?.name || '시네마틱'}
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* 스타일 편집 버튼 */}
-        <button
-          onClick={handleOpenIntroSelector}
-          className="w-full py-3 px-4 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-          </svg>
-          {media.coverImage ? '인트로 스타일 편집하기' : '커버 이미지 추가 & 스타일 편집'}
-        </button>
-      </section>
-      )}
-
       {/* 매거진: 커버 이미지 업로드 (간단) */}
       {isMagazine && (
       <section className="space-y-4">
@@ -786,6 +749,43 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
           </div>
         </div>
       </section>
+
+      {/* 인트로 스타일 편집 (매거진에서는 숨김) */}
+      {!isMagazine && (
+      <section className="space-y-4">
+        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" /><path d="M20 3v4" /><path d="M22 5h-4" /></svg>
+          인트로 스타일
+        </h3>
+        <p className="text-sm text-blue-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>커버 이미지, 애니메이션 효과, 텍스트를 한 곳에서 설정하세요</p>
+
+        {/* 미리보기 썸네일 */}
+        {media.coverImage && (
+          <div className="relative w-full max-w-[160px] aspect-[9/16] mx-auto rounded-lg overflow-hidden shadow-md">
+            <div
+              className="absolute inset-0"
+              style={getImageCropStyle(media.coverImage, media.coverImageSettings || {})}
+            />
+            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+              <span className="text-white text-xs font-medium px-2 py-1 bg-black/50 rounded">
+                {currentPreset?.name || '시네마틱'}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* 스타일 편집 버튼 */}
+        <button
+          onClick={handleOpenIntroSelector}
+          className="w-full py-3 px-4 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+          </svg>
+          {media.coverImage ? '인트로 스타일 편집하기' : '커버 이미지 추가 & 스타일 편집'}
+        </button>
+      </section>
+      )}
 
       {/* 카카오톡 공유 설정 */}
       <section className="space-y-4">

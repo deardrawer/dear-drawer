@@ -138,6 +138,7 @@ function InvitationPreviewWrapper({ invitation, skipIntro }: { invitation: Invit
     accentTextColor: invitation.accentTextColor,
     bodyTextColor: invitation.bodyTextColor,
     highlightColor: invitation.highlightColor,
+    profileOrder: (invitation as any).profileOrder,
     profileTextStyle: (invitation as any).profileTextStyle,
     interviewTextStyle: (invitation as any).interviewTextStyle,
     intro: (invitation as any).intro,

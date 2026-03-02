@@ -1117,8 +1117,8 @@ function TrackWeddingDay({ invitation, fonts, tc, trackRef }: {
                 {invitation.sectionVisibility?.parentNames !== false && (
                 <>
                 <p style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.gray, lineHeight: 1.8 }}>
-                  {groom.father?.name && <>{(groom.father as any)?.deceased ? '故 ' : ''}{groom.father.name} &middot; </>}
-                  {groom.mother?.name && <>{(groom.mother as any)?.deceased ? '故 ' : ''}{groom.mother.name}</>}
+                  {groom.father?.name && <>{(groom.father as any)?.deceased ? (invitation.deceasedDisplayStyle === 'hanja' ? '故 ' : <><img src="/icons/chrysanthemum.svg" alt="고인" className="inline w-3 h-3 mr-0.5 opacity-70 align-middle" style={{ verticalAlign: 'middle', marginTop: '-2px' }} />{' '}</>) : ''}{groom.father.name} &middot; </>}
+                  {groom.mother?.name && <>{(groom.mother as any)?.deceased ? (invitation.deceasedDisplayStyle === 'hanja' ? '故 ' : <><img src="/icons/chrysanthemum.svg" alt="고인" className="inline w-3 h-3 mr-0.5 opacity-70 align-middle" style={{ verticalAlign: 'middle', marginTop: '-2px' }} />{' '}</>) : ''}{groom.mother.name}</>}
                 </p>
                 {(groom.father?.name || groom.mother?.name) && (
                   <p style={{ fontFamily: fonts.body, fontSize: '10px', color: tc.gray, marginTop: '2px' }}>의 {groom.familyRole || '아들'}</p>
@@ -1138,8 +1138,8 @@ function TrackWeddingDay({ invitation, fonts, tc, trackRef }: {
                 {invitation.sectionVisibility?.parentNames !== false && (
                 <>
                 <p style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.gray, lineHeight: 1.8 }}>
-                  {bride.father?.name && <>{(bride.father as any)?.deceased ? '故 ' : ''}{bride.father.name} &middot; </>}
-                  {bride.mother?.name && <>{(bride.mother as any)?.deceased ? '故 ' : ''}{bride.mother.name}</>}
+                  {bride.father?.name && <>{(bride.father as any)?.deceased ? (invitation.deceasedDisplayStyle === 'hanja' ? '故 ' : <><img src="/icons/chrysanthemum.svg" alt="고인" className="inline w-3 h-3 mr-0.5 opacity-70 align-middle" style={{ verticalAlign: 'middle', marginTop: '-2px' }} />{' '}</>) : ''}{bride.father.name} &middot; </>}
+                  {bride.mother?.name && <>{(bride.mother as any)?.deceased ? (invitation.deceasedDisplayStyle === 'hanja' ? '故 ' : <><img src="/icons/chrysanthemum.svg" alt="고인" className="inline w-3 h-3 mr-0.5 opacity-70 align-middle" style={{ verticalAlign: 'middle', marginTop: '-2px' }} />{' '}</>) : ''}{bride.mother.name}</>}
                 </p>
                 {(bride.father?.name || bride.mother?.name) && (
                   <p style={{ fontFamily: fonts.body, fontSize: '10px', color: tc.gray, marginTop: '2px' }}>의 {bride.familyRole || '딸'}</p>

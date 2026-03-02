@@ -653,7 +653,7 @@ function WeddingInfoSection({ data, theme }: { data: any; theme: ThemeConfig }) 
                   <div key={side}>
                     <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '9px', letterSpacing: '3px', color: theme.gray, marginBottom: '10px' }}>{side.toUpperCase()}</div>
                     <p className="es-f12" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '12px', color: theme.gray, lineHeight: 1.8 }}>
-                      {p.father?.name && <>{p.father.deceased ? '故 ' : ''}{p.father.name} · </>}{p.mother?.name && <>{p.mother.deceased ? '故 ' : ''}{p.mother.name}</>}
+                      {p.father?.name && <>{p.father.deceased ? (data.deceasedDisplayStyle === 'hanja' ? '故 ' : <><img src="/icons/chrysanthemum.svg" alt="고인" className="inline w-3 h-3 mr-0.5 opacity-70 align-middle" style={{ verticalAlign: 'middle', marginTop: '-2px' }} />{' '}</>) : ''}{p.father.name} · </>}{p.mother?.name && <>{p.mother.deceased ? (data.deceasedDisplayStyle === 'hanja' ? '故 ' : <><img src="/icons/chrysanthemum.svg" alt="고인" className="inline w-3 h-3 mr-0.5 opacity-70 align-middle" style={{ verticalAlign: 'middle', marginTop: '-2px' }} />{' '}</>) : ''}{p.mother.name}</>}
                     </p>
                     <p className="es-f11" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '11px', color: theme.gray, marginTop: '2px' }}>의 {side === 'groom' ? '아들' : '딸'}</p>
                     <p className="es-f15" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '15px', fontWeight: 500, color: theme.heading, marginTop: '4px' }}>{p.name || ''}</p>
@@ -1206,7 +1206,7 @@ function PaperInvitationInfo({ data }: { data: any }) {
                 return (
                   <div key={side}>
                     <p className="es-f12" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '12px', color: paperColors.muted, lineHeight: 1.8 }}>
-                      {p.father?.name && <>{p.father.deceased ? '故 ' : ''}{p.father.name} · </>}{p.mother?.name && <>{p.mother.deceased ? '故 ' : ''}{p.mother.name}</>}
+                      {p.father?.name && <>{p.father.deceased ? (data.deceasedDisplayStyle === 'hanja' ? '故 ' : <><img src="/icons/chrysanthemum.svg" alt="고인" className="inline w-3 h-3 mr-0.5 opacity-70 align-middle" style={{ verticalAlign: 'middle', marginTop: '-2px' }} />{' '}</>) : ''}{p.father.name} · </>}{p.mother?.name && <>{p.mother.deceased ? (data.deceasedDisplayStyle === 'hanja' ? '故 ' : <><img src="/icons/chrysanthemum.svg" alt="고인" className="inline w-3 h-3 mr-0.5 opacity-70 align-middle" style={{ verticalAlign: 'middle', marginTop: '-2px' }} />{' '}</>) : ''}{p.mother.name}</>}
                     </p>
                     <p className="es-f11" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '11px', color: paperColors.muted, marginTop: '2px' }}>의 {side === 'groom' ? '아들' : '딸'}</p>
                     <p className="es-f15" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '15px', fontWeight: 500, color: paperColors.charcoal, marginTop: '4px' }}>{p.name || ''}</p>

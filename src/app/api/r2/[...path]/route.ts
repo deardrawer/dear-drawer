@@ -33,30 +33,46 @@ export async function GET(
       return NextResponse.json({ error: "잘못된 파일 경로입니다." }, { status: 400 });
     }
 
-    // 3. 청첩장 존재 및 발행 상태 확인
-    const invitation = await getInvitationById(invitationId);
-    if (!invitation) {
-      return NextResponse.json({ error: "파일을 찾을 수 없습니다." }, { status: 404 });
-    }
+    // 3. 접근 권한 확인
+    let isPublished = false;
 
-    const isPublished = !!invitation.is_published;
-
-    // 4. 미발행 청첩장 → 소유자만 접근 가능
-    if (!isPublished) {
+    if (invitationId === "temp") {
+      // temp 업로드 → 로그인된 사용자에게 허용
       const cookieName = getAuthCookieName();
       const token = request.cookies.get(cookieName)?.value;
-
       if (!token) {
         return NextResponse.json({ error: "인증이 필요합니다." }, { status: 401 });
       }
-
       const payload = await verifyToken(token);
-      if (!payload || payload.user.id !== invitation.user_id) {
+      if (!payload) {
         return NextResponse.json({ error: "접근 권한이 없습니다." }, { status: 403 });
+      }
+    } else {
+      // 청첩장 존재 및 발행 상태 확인
+      const invitation = await getInvitationById(invitationId);
+      if (!invitation) {
+        return NextResponse.json({ error: "파일을 찾을 수 없습니다." }, { status: 404 });
+      }
+
+      isPublished = !!invitation.is_published;
+
+      // 미발행 청첩장 → 소유자만 접근 가능
+      if (!isPublished) {
+        const cookieName = getAuthCookieName();
+        const token = request.cookies.get(cookieName)?.value;
+
+        if (!token) {
+          return NextResponse.json({ error: "인증이 필요합니다." }, { status: 401 });
+        }
+
+        const payload = await verifyToken(token);
+        if (!payload || payload.user.id !== invitation.user_id) {
+          return NextResponse.json({ error: "접근 권한이 없습니다." }, { status: 403 });
+        }
       }
     }
 
-    // 5. R2에서 파일 가져오기
+    // 4. R2에서 파일 가져오기
     const { env } = (await getCloudflareContext()) as unknown as { env: CloudflareEnv };
     const object = await env.R2.get(key);
 
@@ -64,7 +80,7 @@ export async function GET(
       return NextResponse.json({ error: "파일을 찾을 수 없습니다." }, { status: 404 });
     }
 
-    // 6. 캐시 정책: published vs unpublished 분리
+    // 5. 캐시 정책: published vs unpublished 분리
     const headers = new Headers();
     headers.set("Content-Type", object.httpMetadata?.contentType || "application/octet-stream");
     headers.set("ETag", object.httpEtag);

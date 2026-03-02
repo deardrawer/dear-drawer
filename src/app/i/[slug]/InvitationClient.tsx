@@ -221,7 +221,7 @@ const ChrysanthemumIcon = () => (
 
 // 한자 故 표시 (고인 표시 - 한자 스타일)
 const HanjaDeceasedIcon = () => (
-  <span className="inline-block mr-0.5 text-[10px] opacity-70">故</span>
+  <span className="inline-block mr-0.5 opacity-70" style={{ fontSize: 'inherit' }}>故</span>
 );
 
 // 부모님 이름 표시 (고인 시 선택된 스타일로 표시)
@@ -2326,6 +2326,8 @@ function transformToDisplayData(dbInvitation: Invitation, content: InvitationCon
     guidance: content.guidance || mockInvitation.guidance,
     intro: content.intro || mockInvitation.intro,
     youtube: content.youtube,
+    deceasedDisplayStyle: content.deceasedDisplayStyle || mockInvitation.deceasedDisplayStyle,
+    profileOrder: (content as any).profileOrder || 'groom-first',
   } as unknown as DisplayInvitation
 }
 
@@ -3163,7 +3165,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
       </div>
 
       {/* Wave Divider - transitions to section background */}
-      {invitation.sectionVisibility?.coupleProfile !== false && invitation.bride.profile.intro && (
+      {invitation.sectionVisibility?.coupleProfile !== false && (invitation.bride.profile.intro || invitation.groom.profile.intro) && (
         <div className="relative w-full h-[60px] overflow-hidden" style={{ background: themeColors.cardBg }}>
           <svg
             viewBox="0 0 2880 120"
@@ -3190,27 +3192,32 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
         </div>
       )}
 
-      {/* Bride Profile Section - with visibility toggle */}
-      {invitation.sectionVisibility?.coupleProfile !== false && invitation.bride.profile.intro && (
-        <ProfileSection
-          profile={invitation.bride.profile}
-          fonts={fonts}
-          themeColors={themeColors}
-          bgColor={themeColors.sectionBg}
-          textStyle={{ lineHeight: invitation.profileTextStyle?.lineHeight, textAlign: (invitation.bride.profile as any).textStyle?.textAlign ?? invitation.profileTextStyle?.textAlign }}
-        />
-      )}
-
-      {/* Groom Profile Section - with visibility toggle */}
-      {invitation.sectionVisibility?.coupleProfile !== false && invitation.groom.profile.intro && (
-        <ProfileSection
-          profile={invitation.groom.profile}
-          fonts={fonts}
-          themeColors={themeColors}
-          bgColor={themeColors.sectionBg}
-          textStyle={{ lineHeight: invitation.profileTextStyle?.lineHeight, textAlign: (invitation.groom.profile as any).textStyle?.textAlign ?? invitation.profileTextStyle?.textAlign }}
-        />
-      )}
+      {/* Profile Sections - order based on profileOrder setting */}
+      {invitation.sectionVisibility?.coupleProfile !== false && (() => {
+        const groomProfile = invitation.groom.profile.intro ? (
+          <ProfileSection
+            key="groom"
+            profile={invitation.groom.profile}
+            fonts={fonts}
+            themeColors={themeColors}
+            bgColor={themeColors.sectionBg}
+            textStyle={{ lineHeight: invitation.profileTextStyle?.lineHeight, textAlign: (invitation.groom.profile as any).textStyle?.textAlign ?? invitation.profileTextStyle?.textAlign }}
+          />
+        ) : null
+        const brideProfile = invitation.bride.profile.intro ? (
+          <ProfileSection
+            key="bride"
+            profile={invitation.bride.profile}
+            fonts={fonts}
+            themeColors={themeColors}
+            bgColor={themeColors.sectionBg}
+            textStyle={{ lineHeight: invitation.profileTextStyle?.lineHeight, textAlign: (invitation.bride.profile as any).textStyle?.textAlign ?? invitation.profileTextStyle?.textAlign }}
+          />
+        ) : null
+        return (invitation as any).profileOrder === 'bride-first'
+          ? <>{brideProfile}{groomProfile}</>
+          : <>{groomProfile}{brideProfile}</>
+      })()}
 
       {/* Our Story Title Section - OUR 템플릿: DividerSection 사용 */}
       {invitation.sectionVisibility?.ourStory !== false && invitation.relationship.stories.some(s => s.title || s.desc) && (

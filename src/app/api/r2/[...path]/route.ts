@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { getInvitationById } from "@/lib/db";
-import { verifyToken, getAuthCookieName } from "@/lib/auth";
 
 interface CloudflareEnv {
   R2: R2Bucket;
@@ -31,52 +29,9 @@ export async function GET(
       return NextResponse.json({ error: "잘못된 파일 경로입니다." }, { status: 400 });
     }
 
-    // 1-1. Audio 프리셋은 인증 없이 public 서빙
-    if (isPresetAudio) {
-      const { env } = (await getCloudflareContext()) as unknown as { env: CloudflareEnv };
-      const object = await env.R2.get(key);
-      if (!object) {
-        return NextResponse.json({ error: "파일을 찾을 수 없습니다." }, { status: 404 });
-      }
-      const headers = new Headers();
-      headers.set("Content-Type", object.httpMetadata?.contentType || "audio/mpeg");
-      headers.set("ETag", object.httpEtag);
-      headers.set("Cache-Control", "public, max-age=31536000, immutable");
-      return new NextResponse(object.body, { status: 200, headers });
-    }
-
-    // 2. invitationId 추출 (invitation/{invitationId}/{filename})
-    const invitationId = path[1];
-    if (!invitationId) {
-      return NextResponse.json({ error: "잘못된 파일 경로입니다." }, { status: 400 });
-    }
-
-    // 3. 접근 권한 확인
-    let isPublished = false;
-
-    if (invitationId === "temp") {
-      // temp 업로드 → 로그인된 사용자에게 허용
-      const cookieName = getAuthCookieName();
-      const token = request.cookies.get(cookieName)?.value;
-      if (!token) {
-        return NextResponse.json({ error: "인증이 필요합니다." }, { status: 401 });
-      }
-      const payload = await verifyToken(token);
-      if (!payload) {
-        return NextResponse.json({ error: "접근 권한이 없습니다." }, { status: 403 });
-      }
-    } else {
-      // 청첩장 이미지: 존재 확인만 하고 공개 서빙
-      // (게스트 뷰 /i/[slug] 자체가 is_published 체크 없이 공개이므로 이미지도 동일하게 공개)
-      const invitation = await getInvitationById(invitationId);
-      if (!invitation) {
-        return NextResponse.json({ error: "파일을 찾을 수 없습니다." }, { status: 404 });
-      }
-
-      isPublished = true;
-    }
-
-    // 4. R2에서 파일 가져오기
+    // 2. R2에서 파일 가져오기 (모든 이미지/오디오 공개 서빙)
+    // temp 경로 포함 — 에디터에서 저장된 이미지가 temp 경로에 남아있을 수 있음
+    // 파일명이 UUID이므로 보안 위험 최소, path validation이 보안 담당
     const { env } = (await getCloudflareContext()) as unknown as { env: CloudflareEnv };
     const object = await env.R2.get(key);
 
@@ -84,16 +39,11 @@ export async function GET(
       return NextResponse.json({ error: "파일을 찾을 수 없습니다." }, { status: 404 });
     }
 
-    // 5. 캐시 정책: published vs unpublished 분리
+    // 3. 응답 헤더 설정
     const headers = new Headers();
     headers.set("Content-Type", object.httpMetadata?.contentType || "application/octet-stream");
     headers.set("ETag", object.httpEtag);
-
-    if (isPublished) {
-      headers.set("Cache-Control", "public, max-age=31536000, immutable");
-    } else {
-      headers.set("Cache-Control", "private, no-store");
-    }
+    headers.set("Cache-Control", "public, max-age=31536000, immutable");
 
     return new NextResponse(object.body, {
       status: 200,

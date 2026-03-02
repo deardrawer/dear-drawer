@@ -9,11 +9,13 @@ export function ThemeProvider({
   themeId,
   customPrimary,
   customAccent,
+  customBackground,
   children,
 }: {
   themeId: ColorThemeId
   customPrimary?: string
   customAccent?: string
+  customBackground?: string
   children: React.ReactNode
 }) {
   const baseTheme = COLOR_THEMES[themeId] || COLOR_THEMES.burgundy
@@ -21,6 +23,7 @@ export function ThemeProvider({
     ...baseTheme,
     ...(customPrimary && { primary: customPrimary }),
     ...(customAccent && { accent: customAccent }),
+    ...(customBackground && { background: customBackground }),
   }
   return <ThemeContext.Provider value={theme}>{children}</ThemeContext.Provider>
 }

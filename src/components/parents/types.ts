@@ -323,6 +323,7 @@ export interface ParentsInvitationContent {
   fontStyle?: FontStyleId
   customPrimaryColor?: string
   customAccentColor?: string
+  customBackgroundColor?: string
 
   // 공유 메타 정보
   meta?: {

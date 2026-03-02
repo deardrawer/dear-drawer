@@ -243,6 +243,7 @@ export interface ParentsInvitationData {
   fontStyle: 'elegant' | 'soft' | 'classic' | 'brush' | 'modern' | 'friendly' | 'ridibatang' | 'gangwon' | 'okticon'
   customPrimaryColor?: string
   customAccentColor?: string
+  customBackgroundColor?: string
 }
 
 const defaultData: ParentsInvitationData = {

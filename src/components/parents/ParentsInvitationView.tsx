@@ -107,6 +107,7 @@ export default function ParentsInvitationView({
     ...baseTheme,
     ...(data.customPrimaryColor && { primary: data.customPrimaryColor }),
     ...(data.customAccentColor && { accent: data.customAccentColor }),
+    ...(data.customBackgroundColor && { background: data.customBackgroundColor }),
   }
 
   // 폰트 스타일
@@ -182,7 +183,7 @@ export default function ParentsInvitationView({
   const currentFontConfig = FONT_SIZE_CONFIG[fontSize]
 
   return (
-    <ThemeProvider themeId={data.colorTheme || 'burgundy'} customPrimary={data.customPrimaryColor} customAccent={data.customAccentColor}>
+    <ThemeProvider themeId={data.colorTheme || 'burgundy'} customPrimary={data.customPrimaryColor} customAccent={data.customAccentColor} customBackground={data.customBackgroundColor}>
       <div
         className={`relative max-w-[390px] mx-auto min-h-screen overflow-hidden ${fontStyle.className}`}
         style={{

@@ -119,7 +119,7 @@ export default function ParentsStep1Design({
             return (
               <button
                 key={themeId}
-                onClick={() => updateData({ colorTheme: themeId, customPrimaryColor: undefined, customAccentColor: undefined })}
+                onClick={() => updateData({ colorTheme: themeId, customPrimaryColor: undefined, customAccentColor: undefined, customBackgroundColor: undefined })}
                 className={`p-3 rounded-lg border-2 transition-all text-left ${
                   isSelected
                     ? 'border-gray-800 bg-gray-50'
@@ -146,53 +146,66 @@ export default function ParentsStep1Design({
         <div className="mt-4 p-4 bg-gray-50 rounded-lg space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium text-gray-700">색상 커스텀</p>
-            {(data.customPrimaryColor || data.customAccentColor) && (
+            {(data.customPrimaryColor || data.customAccentColor || data.customBackgroundColor) && (
               <button
                 type="button"
-                onClick={() => updateData({ customPrimaryColor: undefined, customAccentColor: undefined })}
+                onClick={() => updateData({ customPrimaryColor: undefined, customAccentColor: undefined, customBackgroundColor: undefined })}
                 className="text-xs text-gray-500 hover:text-gray-700 underline"
               >
                 테마 기본 색상으로 복원
               </button>
             )}
           </div>
-          <p className="text-xs text-gray-500">선택한 테마의 메인/포인트 컬러를 원하는 색상으로 변경할 수 있어요.</p>
+          <p className="text-xs text-gray-500">선택한 테마의 색상을 원하는 색상으로 변경할 수 있어요.</p>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-3">
             {/* 메인 컬러 */}
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <label className="text-xs font-medium text-gray-600">메인 컬러</label>
-              <p className="text-[10px] text-gray-400">봉투 배경, 테두리, 이름 강조</p>
-              <div className="flex items-center gap-2">
-                <div className="relative">
-                  <input
-                    type="color"
-                    value={data.customPrimaryColor || COLOR_THEMES[data.colorTheme || 'burgundy'].primary}
-                    onChange={(e) => updateData({ customPrimaryColor: e.target.value })}
-                    className="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer p-0.5"
-                  />
-                </div>
-                <span className="text-xs text-gray-500 font-mono">
+              <p className="text-[10px] text-gray-400 leading-tight">봉투, 테두리</p>
+              <div className="flex flex-col items-center gap-1">
+                <input
+                  type="color"
+                  value={data.customPrimaryColor || COLOR_THEMES[data.colorTheme || 'burgundy'].primary}
+                  onChange={(e) => updateData({ customPrimaryColor: e.target.value })}
+                  className="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer p-0.5"
+                />
+                <span className="text-[10px] text-gray-500 font-mono">
                   {(data.customPrimaryColor || COLOR_THEMES[data.colorTheme || 'burgundy'].primary).toUpperCase()}
                 </span>
               </div>
             </div>
 
             {/* 포인트 컬러 */}
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <label className="text-xs font-medium text-gray-600">포인트 컬러</label>
-              <p className="text-[10px] text-gray-400">날짜, 장소 강조, 장식</p>
-              <div className="flex items-center gap-2">
-                <div className="relative">
-                  <input
-                    type="color"
-                    value={data.customAccentColor || COLOR_THEMES[data.colorTheme || 'burgundy'].accent}
-                    onChange={(e) => updateData({ customAccentColor: e.target.value })}
-                    className="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer p-0.5"
-                  />
-                </div>
-                <span className="text-xs text-gray-500 font-mono">
+              <p className="text-[10px] text-gray-400 leading-tight">날짜, 장식</p>
+              <div className="flex flex-col items-center gap-1">
+                <input
+                  type="color"
+                  value={data.customAccentColor || COLOR_THEMES[data.colorTheme || 'burgundy'].accent}
+                  onChange={(e) => updateData({ customAccentColor: e.target.value })}
+                  className="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer p-0.5"
+                />
+                <span className="text-[10px] text-gray-500 font-mono">
                   {(data.customAccentColor || COLOR_THEMES[data.colorTheme || 'burgundy'].accent).toUpperCase()}
+                </span>
+              </div>
+            </div>
+
+            {/* 배경 컬러 */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-gray-600">배경 컬러</label>
+              <p className="text-[10px] text-gray-400 leading-tight">본문 배경</p>
+              <div className="flex flex-col items-center gap-1">
+                <input
+                  type="color"
+                  value={data.customBackgroundColor || COLOR_THEMES[data.colorTheme || 'burgundy'].background}
+                  onChange={(e) => updateData({ customBackgroundColor: e.target.value })}
+                  className="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer p-0.5"
+                />
+                <span className="text-[10px] text-gray-500 font-mono">
+                  {(data.customBackgroundColor || COLOR_THEMES[data.colorTheme || 'burgundy'].background).toUpperCase()}
                 </span>
               </div>
             </div>
@@ -210,8 +223,12 @@ export default function ParentsStep1Design({
                 className="w-6 h-6 rounded-full border-2 border-white shadow-sm -ml-2"
                 style={{ backgroundColor: data.customAccentColor || COLOR_THEMES[data.colorTheme || 'burgundy'].accent }}
               />
+              <div
+                className="w-6 h-6 rounded-full border-2 border-white shadow-sm -ml-2"
+                style={{ backgroundColor: data.customBackgroundColor || COLOR_THEMES[data.colorTheme || 'burgundy'].background }}
+              />
             </div>
-            {(data.customPrimaryColor || data.customAccentColor) && (
+            {(data.customPrimaryColor || data.customAccentColor || data.customBackgroundColor) && (
               <span className="text-[10px] text-blue-500 font-medium">커스텀 적용됨</span>
             )}
           </div>

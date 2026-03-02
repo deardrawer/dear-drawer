@@ -114,26 +114,6 @@ function LightRays({ count = 6 }: { count?: number }) {
   )
 }
 
-// 스크롤 인디케이터 컴포넌트
-function ScrollIndicator({ color = 'white' }: { color?: 'white' | 'amber' | 'pink' | 'sky' | 'gray' }) {
-  const colors = {
-    white: { text: 'text-white/50', line: 'from-white/50', dot: 'bg-[#F8F6F3]/60', bar: 'bg-[#F8F6F3]/30' },
-    amber: { text: 'text-amber-200/50', line: 'from-amber-200/50', dot: 'bg-amber-200/60', bar: 'bg-amber-200/30' },
-    pink: { text: 'text-pink-300/50', line: 'from-pink-300/50', dot: 'bg-pink-300/60', bar: 'bg-pink-300/30' },
-    sky: { text: 'text-sky-200/50', line: 'from-sky-200/50', dot: 'bg-sky-200/60', bar: 'bg-sky-200/30' },
-    gray: { text: 'text-gray-400/50', line: 'from-gray-400/50', dot: 'bg-gray-400/60', bar: 'bg-gray-400/30' },
-  }
-  const c = colors[color]
-
-  return (
-    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center intro-fade-in-delay-3">
-      <span className={`text-[10px] ${c.text} mb-2`}>Scroll</span>
-      <div className={`w-px h-6 bg-gradient-to-b ${c.line} to-transparent`} />
-      <div className={`w-1.5 h-1.5 ${c.dot} rounded-full mt-1 intro-float`} />
-      <div className={`w-8 h-px ${c.bar} mt-3`} />
-    </div>
-  )
-}
 
 export default function IntroAnimation({
   settings,
@@ -654,7 +634,6 @@ function CinematicIntro({ settings, backgroundStyle, overlayStyle, titleStyle, s
           </p>
         )}
       </div>
-      <ScrollIndicator />
     </div>
   )
 }
@@ -740,7 +719,6 @@ function TypingIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subT
             {settings.venueText}
           </p>
         )}
-        <ScrollIndicator color="gray" />
       </div>
     </div>
   )
@@ -769,7 +747,6 @@ function BlurIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTit
           </p>
         )}
       </div>
-      <ScrollIndicator />
     </div>
   )
 }
@@ -827,7 +804,6 @@ function ZoomIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTit
           {settings.venueText}
         </p>
       )}
-      <ScrollIndicator color="gray" />
     </div>
   )
 }
@@ -945,7 +921,6 @@ function LetterIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: I
         <p className="text-lg text-gray-600">{settings.dateText}</p>
         {settings.venueText && <p className="text-xs text-gray-400 mt-4">{settings.venueText}</p>}
       </div>
-      <ScrollIndicator color="gray" />
     </div>
   )
 }
@@ -988,7 +963,6 @@ function PetalIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: In
           {settings.venueText}
         </p>
       )}
-      <ScrollIndicator color="gray" />
     </div>
   )
 }
@@ -1057,7 +1031,6 @@ function WatercolorIntro({ settings, backgroundStyle, titleStyle, subTitleStyle 
           {settings.venueText}
         </p>
       )}
-      <ScrollIndicator color="gray" />
     </div>
   )
 }
@@ -1107,7 +1080,6 @@ function LightrayIntro({ settings, backgroundStyle, overlayStyle, titleStyle, su
           </p>
         )}
       </div>
-      <ScrollIndicator color="gray" />
     </div>
   )
 }
@@ -1187,7 +1159,6 @@ function FilmIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: Int
           {settings.venueText}
         </p>
       )}
-      <ScrollIndicator color="gray" />
     </div>
   )
 }
@@ -1264,7 +1235,6 @@ function FilmstripIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }
           {settings.venueText}
         </p>
       )}
-      <ScrollIndicator />
     </div>
   )
 }

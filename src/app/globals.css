@@ -417,7 +417,7 @@
 }
 
 .highlight-white {
-  background: linear-gradient(transparent 60%, var(--highlight-white) 60%);
+  background: linear-gradient(transparent 60%, var(--custom-highlight-color, var(--highlight-white)) 60%);
   padding: 0 2px;
 }
 
@@ -468,6 +468,38 @@
   --highlight-yellow: #FFCC80;
   --highlight-white: #FFFFFF;
   --text-accent: #B85040;
+}
+
+/* Essay 테마별 하이라이트 색상 */
+.theme-essay-ivory {
+  --highlight-yellow: #F5E6B8;
+  --highlight-white: #FFFFFF;
+  --text-accent: #8B7355;
+}
+.theme-essay-blush {
+  --highlight-yellow: #F5C6CB;
+  --highlight-white: #FFFFFF;
+  --text-accent: #C4818E;
+}
+.theme-essay-sage {
+  --highlight-yellow: #C8E6C9;
+  --highlight-white: #FFFFFF;
+  --text-accent: #6B8A5E;
+}
+.theme-essay-mono {
+  --highlight-yellow: #E0E0E0;
+  --highlight-white: #F5F5F5;
+  --text-accent: #555555;
+}
+.theme-essay-sky {
+  --highlight-yellow: #B3D4F0;
+  --highlight-white: #FFFFFF;
+  --text-accent: #5B8CB5;
+}
+.theme-essay-coral {
+  --highlight-yellow: #F5C4B0;
+  --highlight-white: #FFFFFF;
+  --text-accent: #D4836B;
 }
 
 /* 하이라이트 애니메이션 (그려지듯 등장) */

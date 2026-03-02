@@ -2,27 +2,19 @@
 
 import { Check } from 'lucide-react'
 
-export type FeedWizardStep = 1 | 2 | 3 | 4 | 5 | 6
+export type EssayWizardStep = 1 | 2 | 3 | 4 | 5
 
-const STEP_INFO: { step: FeedWizardStep; label: string; shortLabel: string; optional?: boolean }[] = [
-  { step: 1, label: '디자인을 설정해주세요', shortLabel: '디자인' },
-  { step: 2, label: '기본 정보를 입력해주세요', shortLabel: '인트로' },
-  { step: 3, label: '포토 룸을 꾸며보세요', shortLabel: '포토룸' },
-  { step: 4, label: '콘텐츠를 작성해주세요', shortLabel: '스토리', optional: true },
-  { step: 5, label: '추가 기능을 설정해주세요', shortLabel: '추가기능', optional: true },
-  { step: 6, label: '청첩장을 발행해요', shortLabel: '발행' },
+const STEP_INFO: { step: EssayWizardStep; label: string; shortLabel: string; optional?: boolean }[] = [
+  { step: 1, label: '디자인을 선택해주세요', shortLabel: '디자인' },
+  { step: 2, label: '기본 정보를 입력해주세요', shortLabel: '기본정보' },
+  { step: 3, label: '이야기를 작성해주세요', shortLabel: '이야기' },
+  { step: 4, label: '부가 기능을 설정해주세요', shortLabel: '부가기능', optional: true },
+  { step: 5, label: '청첩장을 발행해요', shortLabel: '발행' },
 ]
 
 export { STEP_INFO }
 
-interface FeedWizardProgressProps {
-  currentStep: FeedWizardStep
-  onStepClick: (step: FeedWizardStep) => void
-  completedSteps: FeedWizardStep[]
-  visitedSteps: FeedWizardStep[]
-}
-
-export function FeedWizardStepHeader({ currentStep }: { currentStep: FeedWizardStep }) {
+export function EssayWizardStepHeader({ currentStep }: { currentStep: EssayWizardStep }) {
   return (
     <div className="px-8 pt-7 pb-0">
       <div
@@ -52,16 +44,15 @@ export function FeedWizardStepHeader({ currentStep }: { currentStep: FeedWizardS
   )
 }
 
-export default function FeedWizardProgress({
-  currentStep,
-  onStepClick,
-  completedSteps,
-  visitedSteps,
-}: FeedWizardProgressProps) {
-  const progressPercent = Math.round((currentStep / 6) * 100)
+interface Props {
+  currentStep: EssayWizardStep
+  onStepClick: (step: EssayWizardStep) => void
+  completedSteps: EssayWizardStep[]
+  visitedSteps: EssayWizardStep[]
+}
 
-  const isStepCompleted = (step: FeedWizardStep) => completedSteps.includes(step)
-  const isStepVisited = (step: FeedWizardStep) => visitedSteps.includes(step)
+export default function EssayWizardProgress({ currentStep, onStepClick, completedSteps, visitedSteps }: Props) {
+  const progressPercent = Math.round((currentStep / 5) * 100)
 
   return (
     <div className="bg-transparent">
@@ -77,10 +68,9 @@ export default function FeedWizardProgress({
       <div className="px-4 sm:px-8 py-3">
         <div className="flex items-center gap-2 sm:gap-5">
           {STEP_INFO.map(({ step, shortLabel }) => {
-            const isCompleted = isStepCompleted(step)
+            const isCompleted = completedSteps.includes(step)
             const isCurrent = step === currentStep
-            const isVisited = isStepVisited(step)
-
+            const isVisited = visitedSteps.includes(step)
             return (
               <button
                 key={step}

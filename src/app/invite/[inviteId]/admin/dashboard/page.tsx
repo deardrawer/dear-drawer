@@ -116,11 +116,12 @@ export default function AdminDashboardPage() {
   // 게스트 추가/수정 모달
   const [showGuestModal, setShowGuestModal] = useState(false)
   const [editingGuest, setEditingGuest] = useState<Guest | null>(null)
+  const [guestType, setGuestType] = useState<'individual' | 'group'>('individual')
   const [guestForm, setGuestForm] = useState({
     name: '',
     relation: '',
     honorific: '님께',
-    intro_greeting: '',
+    intro_greeting: '초대합니다.',
     greeting_template_id: '',
     custom_message: '',
   })
@@ -280,11 +281,12 @@ export default function AdminDashboardPage() {
   // 게스트 모달 열기 (추가)
   const openAddGuestModal = () => {
     setEditingGuest(null)
+    setGuestType('individual')
     setGuestForm({
       name: '',
       relation: '',
       honorific: '님께',
-      intro_greeting: '',
+      intro_greeting: '초대합니다.',
       greeting_template_id: '',
       custom_message: '',
     })
@@ -683,6 +685,7 @@ export default function AdminDashboardPage() {
     { value: '께', label: '께' },
     { value: '님', label: '님' },
     { value: '에게', label: '에게' },
+    { value: '', label: '사용안함' },
   ]
 
   // 템플릿 옵션
@@ -1235,36 +1238,91 @@ export default function AdminDashboardPage() {
         position="bottom"
       >
         <ModalBody className="space-y-4">
-          <Input
-            label="이름 *"
-            value={guestForm.name}
-            onChange={(e) => setGuestForm({ ...guestForm, name: e.target.value })}
-            placeholder="홍길동"
-            error={formErrors.name}
-          />
+          {/* 개인/단체 탭 - 추가 모드에서만 표시 */}
+          {!editingGuest && (
+            <div className="flex rounded-lg overflow-hidden border" style={{ borderColor: '#E8E4DD' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setGuestType('individual')
+                  setGuestForm({ ...guestForm, name: '', relation: '', honorific: '님께' })
+                }}
+                className="flex-1 py-2.5 text-sm font-medium transition-colors"
+                style={{
+                  backgroundColor: guestType === 'individual' ? '#2C2C2C' : '#FFF',
+                  color: guestType === 'individual' ? '#FFF' : '#888',
+                }}
+              >
+                개인
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setGuestType('group')
+                  setGuestForm({ ...guestForm, name: '', relation: '', honorific: '' })
+                }}
+                className="flex-1 py-2.5 text-sm font-medium transition-colors"
+                style={{
+                  backgroundColor: guestType === 'group' ? '#2C2C2C' : '#FFF',
+                  color: guestType === 'group' ? '#FFF' : '#888',
+                }}
+              >
+                단체
+              </button>
+            </div>
+          )}
 
-          <div className="grid grid-cols-2 gap-3">
-            <Input
-              label="관계 (선택)"
-              value={guestForm.relation}
-              onChange={(e) => setGuestForm({ ...guestForm, relation: e.target.value })}
-              placeholder="이모"
-              helperText="예) 이모, 고모네 가족분들"
-            />
-            <Select
-              label="호칭"
-              value={guestForm.honorific}
-              options={honorificOptions}
-              onChange={(value) => setGuestForm({ ...guestForm, honorific: value })}
-            />
-          </div>
+          {guestType === 'individual' ? (
+            <>
+              <Input
+                label="이름 *"
+                value={guestForm.name}
+                onChange={(e) => setGuestForm({ ...guestForm, name: e.target.value })}
+                placeholder="홍길동"
+                error={formErrors.name}
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <Input
+                  label="관계 (선택)"
+                  value={guestForm.relation}
+                  onChange={(e) => setGuestForm({ ...guestForm, relation: e.target.value })}
+                  placeholder="이모"
+                  helperText="예) 이모, 삼촌, 직장 상사"
+                />
+                <Select
+                  label="호칭"
+                  value={guestForm.honorific}
+                  options={honorificOptions}
+                  onChange={(value) => setGuestForm({ ...guestForm, honorific: value })}
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              <Input
+                label="단체명 *"
+                value={guestForm.name}
+                onChange={(e) => setGuestForm({ ...guestForm, name: e.target.value })}
+                placeholder="○○회사 사우분들"
+                error={formErrors.name}
+                helperText="예) ○○회사 사우분들, ○○고 동창회 친구들"
+              />
+              <Input
+                label="관계 (선택)"
+                value={guestForm.relation}
+                onChange={(e) => setGuestForm({ ...guestForm, relation: e.target.value })}
+                placeholder="직장"
+                helperText="예) 직장, 동창, 동호회"
+              />
+            </>
+          )}
 
           <Input
             label="모시는 글 (첫문장)"
             value={guestForm.intro_greeting}
             onChange={(e) => setGuestForm({ ...guestForm, intro_greeting: e.target.value })}
-            placeholder="소중한 분께"
-            helperText="예) 소중한 분께, ○○님께, 초대합니다"
+            placeholder="초대합니다."
+            helperText="예) 초대합니다, 소중한 분을 초대합니다"
           />
 
           {templates.length > 0 && (
@@ -1278,7 +1336,7 @@ export default function AdminDashboardPage() {
 
           {!guestForm.greeting_template_id && (
             <Textarea
-              label="맞춤 메시지"
+              label="맞춤 메시지 (선택)"
               value={guestForm.custom_message}
               onChange={(e) => setGuestForm({ ...guestForm, custom_message: e.target.value })}
               placeholder="이 게스트에게만 보여줄 특별한 메시지"
@@ -1317,7 +1375,7 @@ export default function AdminDashboardPage() {
                     className="text-xl"
                     style={{ color: '#2C2C2C', fontFamily: "'Noto Serif KR', Georgia, serif" }}
                   >
-                    {guestForm.name} {guestForm.honorific}
+                    {guestForm.name}{guestForm.honorific ? ` ${guestForm.honorific}` : ''}
                   </p>
                   <div className="h-px w-[60px] mx-auto mt-4" style={{ backgroundColor: invitationInfo?.accentColor || '#C9A962' }} />
                 </div>
@@ -1327,23 +1385,21 @@ export default function AdminDashboardPage() {
 
           {/* 편지지 미리보기 (Parents 템플릿 스타일) */}
           {guestForm.name && (guestForm.greeting_template_id || guestForm.custom_message) && (() => {
-            // 인사말 내용 결정
             let greetingContent = ''
             if (guestForm.greeting_template_id) {
               const selectedTemplate = templates.find(t => t.id === guestForm.greeting_template_id)
               if (selectedTemplate) {
                 greetingContent = selectedTemplate.content
-                  .replace(/\{이름\}/g, guestForm.name || '홍길동')
-                  .replace(/\{관계\}/g, guestForm.relation || '지인')
               }
             } else {
               greetingContent = guestForm.custom_message
             }
 
             // 표시명 생성
+            const honorificSuffix = guestForm.honorific ? ` ${guestForm.honorific}` : ''
             const displayGreetingTo = guestForm.intro_greeting || (guestForm.relation
-              ? `${guestForm.name} ${guestForm.relation} ${guestForm.honorific}`
-              : `${guestForm.name} ${guestForm.honorific}`)
+              ? `${guestForm.name} ${guestForm.relation}${honorificSuffix}`
+              : `${guestForm.name}${honorificSuffix}`)
 
             return (
               <div className="rounded-xl overflow-hidden">

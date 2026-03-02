@@ -7,12 +7,21 @@ const ThemeContext = createContext<ColorTheme>(COLOR_THEMES.burgundy)
 
 export function ThemeProvider({
   themeId,
+  customPrimary,
+  customAccent,
   children,
 }: {
   themeId: ColorThemeId
+  customPrimary?: string
+  customAccent?: string
   children: React.ReactNode
 }) {
-  const theme = COLOR_THEMES[themeId] || COLOR_THEMES.burgundy
+  const baseTheme = COLOR_THEMES[themeId] || COLOR_THEMES.burgundy
+  const theme = {
+    ...baseTheme,
+    ...(customPrimary && { primary: customPrimary }),
+    ...(customAccent && { accent: customAccent }),
+  }
   return <ThemeContext.Provider value={theme}>{children}</ThemeContext.Provider>
 }
 

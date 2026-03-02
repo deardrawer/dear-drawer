@@ -251,7 +251,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                   const current = item.imageSettings || { grayscale: 100, opacity: 100 }
                   updateNestedField(`fullHeightDividers.items.${dividerIndex}.imageSettings`, { ...current, ...settings })
                 }}
-                aspectRatio={3/4}
+                aspectRatio={9/18}
                 containerWidth={160}
                 colorClass="gray"
               />

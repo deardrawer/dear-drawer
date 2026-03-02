@@ -95,21 +95,21 @@ export const ourSampleContent = {
       {
         question: '상대방의 첫인상은 어땠나요?',
         answer: '처음 본 순간, 이 사람이다 싶었어요. 말로 설명하기 어려운 느낌이었는데, 대화를 나눌수록 확신이 들었습니다. 서로의 눈을 바라보며 웃던 그 순간을 잊을 수 없어요.',
-        images: ['/sample/story1-1.png', '/sample/interview1-2.png', '/sample/interview1-3.jpeg'],
+        images: ['/sample/interview1-1.png', '/sample/interview1-2.png', '/sample/interview1-3.jpeg'],
         imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],
         bgClass: 'pink-bg',
       },
       {
         question: '결혼을 결심하게 된 계기는?',
         answer: '함께 있을 때 가장 나다울 수 있었어요. 아무리 힘든 일이 있어도 이 사람 곁에 있으면 괜찮아지더라구요. 평생 이 사람과 함께라면 어떤 일이든 해낼 수 있을 것 같았습니다.',
-        images: ['/sample/story2-1.png', '/sample/interview2-2.png', '/sample/interview2-3.png'],
+        images: ['/sample/interview2-1.png', '/sample/interview2-2.png', '/sample/interview2-3.png'],
         imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],
         bgClass: 'white-bg',
       },
       {
         question: '앞으로의 결혼생활 계획은?',
         answer: '서로를 존중하고 배려하며 살고 싶어요. 작은 일상에서도 감사함을 잊지 않고, 함께 웃으며 나이 들어가고 싶습니다. 무엇보다 서로의 꿈을 응원하는 부부가 되고 싶어요.',
-        images: ['/sample/story3-1.jpeg', '/sample/interview3-2.png', '/sample/interview3-3.png'],
+        images: ['/sample/interview3-1.png', '/sample/interview3-2.png', '/sample/interview3-3.png'],
         imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],
         bgClass: 'pink-bg',
       },
@@ -541,8 +541,159 @@ export const exhibitSampleContent = {
   },
 }
 
+// ESSAY 템플릿 샘플 데이터 (러브스토리 모드)
+export const essayStorySampleContent = {
+  contentMode: 'story' as const,
+  colorTheme: 'essay-ivory' as const,
+  fontStyle: 'modern' as const,
+  bgm: { enabled: true, url: '/api/r2/audio/marigold.mp3', autoplay: true },
+  groom: {
+    name: '김민준',
+    lastName: '김',
+    firstName: '민준',
+    phone: '010-1234-5678',
+    phoneEnabled: true,
+    father: { name: '김철수', phone: '010-1111-2222', phoneEnabled: true, deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
+    mother: { name: '박영희', phone: '010-3333-4444', phoneEnabled: true, deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
+    bank: { bank: '신한은행', account: '110-123-456789', holder: '김민준', enabled: true },
+  },
+  bride: {
+    name: '이서연',
+    lastName: '이',
+    firstName: '서연',
+    phone: '010-5678-1234',
+    phoneEnabled: true,
+    father: { name: '이정호', phone: '010-5555-6666', phoneEnabled: true, deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
+    mother: { name: '최미경', phone: '010-7777-8888', phoneEnabled: true, deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
+    bank: { bank: '국민은행', account: '123-45-678901', holder: '이서연', enabled: true },
+  },
+  wedding: {
+    date: '2026-05-23',
+    time: '14:00',
+    timeDisplay: '오후 2시',
+    dayOfWeek: '토요일',
+    venue: {
+      name: '더채플앳청담',
+      hall: '그랜드볼룸 5층',
+      address: '서울특별시 강남구 청담동 123-45',
+      hideHall: false,
+    },
+    directions: {
+      car: '네비게이션에 "더채플앳청담" 검색\n강남역 방면에서 청담사거리 방향으로 직진 후 우회전',
+      publicTransport: '지하철: 압구정로데오역 5번 출구 도보 10분\n버스: 146, 301, 401, 3422',
+    },
+  },
+  greeting: '서로 다른 길을 걸어온 두 사람이\n같은 산 위에서 멈춰 섰습니다.\n\n오래 기다려온 이 순간,\n당신과 함께하고 싶습니다.\n\n귀한 걸음으로 축복해 주세요.',
+  chapters: [
+    {
+      title: '시작',
+      subtitle: 'The Beginning',
+      body: '2020년 가을, 북한산 둘레길에서\n처음 만났습니다.\n\n같은 방향으로 걷고 있던 두 사람.\n길을 물어보는 척 건넨 인사에\n돌아온 건 해맑은 웃음이었습니다.\n\n정상까지 함께 오르며 나눈 대화가\n어찌나 편하던지.\n\n산을 내려오는 길이\n아쉬웠던 건 처음이었습니다.',
+    },
+    {
+      title: '우리의 시간',
+      subtitle: 'Our Days Together',
+      body: '그 뒤로 매주 함께 산에 올랐습니다.\n\n봄에는 진달래가 핀 능선을 걸었고,\n여름에는 계곡에 발을 담갔습니다.\n가을 단풍 아래에서 도시락을 나눠 먹고,\n겨울 설산에서는 서로의 손을 꼭 잡았습니다.\n\n>>"이번 주말 어디 갈까?"가 "이번 주말 어느 산 갈까?"로<<\n\n바뀐 것은 아주 자연스러운 일이었습니다.',
+    },
+    {
+      title: '약속',
+      subtitle: 'The Promise',
+      body: '프로포즈는 북한산 정상에서\n하려고 했습니다.\n\n그런데 반지를 배낭 맨 아래에 넣어둔 걸\n깜빡하고 말았습니다.\n\n정상에서 허겁지겁 짐을 뒤지는 저를 보며\n그녀가 물었습니다.\n>>"혹시 반지 찾는 거야?"<<\n\n들켰지만, 어쨌든 무릎을 꿇었고\n그녀는 웃으면서 울었습니다.\n\n완벽하진 않았지만\n우리다운 약속이었습니다.',
+    },
+  ],
+  interviews: [
+    { question: '상대방의 첫인상은 어땠나요?', answer: '산에서 만나서 그런지, 꾸밈없는 모습이 좋았어요. 등산화 신고 환하게 웃는 얼굴이 아직도 선명합니다.', answerer: 'groom' as const },
+    { question: '결혼을 결심하게 된 계기는?', answer: '비가 쏟아지는 산속에서 길을 잃었을 때, 겁먹은 저를 안심시키며 묵묵히 길을 찾아준 사람이에요. 이 사람이면 어디든 괜찮겠다 싶었습니다.', answerer: 'bride' as const },
+    { question: '서로에게 하고 싶은 말은?', answer: '매일 "고마워"라고 말하지만, 진짜 고마운 건 네가 내 옆에서 같은 방향을 바라봐 주는 것 자체야. 앞으로도 잘 부탁해.', answerer: 'both' as const },
+    { question: '결혼 후 가장 하고 싶은 것은?', answer: '1년간 세계 여행을 떠날 거예요. 히말라야 트레킹부터 파타고니아까지, 세상의 모든 길을 함께 걸어보고 싶습니다.', answerer: 'groom' as const },
+  ],
+  quote: {
+    text: '인생에서 가장 아름다운 여행은\n사랑하는 사람과 같은 길을 걷는 것이다.',
+    author: '파울로 코엘료',
+  },
+  thankYou: {
+    title: '감사 인사',
+    message: '바쁘신 와중에도\n저희의 결혼을 축하해 주셔서\n진심으로 감사드립니다.\n\n여러분의 축복을 마음에 새기며\n서로 아끼고 사랑하며 살겠습니다.',
+    sign: '민준 & 서연 올림',
+  },
+  sectionVisibility: {
+    contacts: true,
+    bankAccounts: true,
+    guestbook: true,
+    rsvp: true,
+    parentNames: true,
+  },
+  rsvpEnabled: true,
+  rsvpDeadline: '2026-05-16',
+  info: {
+    dressCode: { title: '드레스코드', content: '', enabled: false },
+    photoShare: { title: '사진 공유', content: '식장에서 찍으신 사진을\n공유 앨범에 올려주세요.\n소중한 순간을 함께 나눠요.', buttonText: '사진 올리기', url: '', enabled: false },
+    photoBooth: { title: '포토부스', content: '로비에 포토부스가 준비되어 있습니다.\n자유롭게 촬영하시고 추억을 남겨주세요.', enabled: true },
+    flowerGift: { title: '꽃 답례품', content: '', enabled: false },
+    flowerChild: { title: '화동 안내', content: '', enabled: false },
+    wreath: { title: '화환 안내', content: '', enabled: false },
+    shuttle: { title: '셔틀버스', content: '강남역 10번 출구에서\n12시 30분, 1시에 셔틀이 운행됩니다.', enabled: true },
+    reception: { title: '식사 안내', content: '예식 후 5층 연회장에서\n식사가 준비되어 있습니다.\n편안하게 즐겨주세요.', enabled: true },
+    customItems: [],
+  },
+  meta: {
+    kakaoThumbnail: '',
+    kakaoTitle: '',
+    kakaoDescription: '',
+  },
+  content: {
+    guestbookQuestions: ['두 사람에게 축하 메시지를 남겨주세요'],
+    sampleGuestbook: [
+      { id: 'g1', guest_name: '박지영', message: '사진 없는 청첩장인데 오히려 더 감동이에요. 진심이 느껴지는 글이 최고입니다 💕', created_at: '2026-02-19T10:30:00Z' },
+      { id: 'g2', guest_name: '최현우', message: '민준아 드디어! 축하한다 형! 행복해라 🎉', created_at: '2026-02-19T09:15:00Z' },
+      { id: 'g3', guest_name: '정소희', message: '두 분의 이야기가 정말 아름다워요. 결혼 축하드립니다 🤍', created_at: '2026-02-18T22:00:00Z' },
+    ],
+  },
+}
+
+// ESSAY 인터뷰 모드 샘플
+export const essayInterviewSampleContent = {
+  ...essayStorySampleContent,
+  contentMode: 'interview' as const,
+  colorTheme: 'essay-blush' as const,
+}
+
 // 샘플 청첩장 객체 생성 함수
-export function createSampleInvitation(type: 'our' | 'family' | 'magazine' | 'film' | 'record' | 'exhibit') {
+export function createSampleInvitation(type: 'our' | 'family' | 'magazine' | 'film' | 'record' | 'exhibit' | 'essay', essayConcept?: string) {
+  // essay 타입은 별도 처리
+  if (type === 'essay') {
+    const now = new Date().toISOString()
+    const essayContent = {
+      ...essayStorySampleContent,
+      ...(essayConcept && { designConcept: essayConcept }),
+    }
+    return {
+      id: essayConcept ? `sample-essay-${essayConcept}-id` : 'sample-essay-id',
+      user_id: 'sample-user-id',
+      template_id: 'narrative-essay' as const,
+      groom_name: essayStorySampleContent.groom.name,
+      bride_name: essayStorySampleContent.bride.name,
+      wedding_date: essayStorySampleContent.wedding.date,
+      wedding_time: essayStorySampleContent.wedding.timeDisplay,
+      venue_name: essayStorySampleContent.wedding.venue.name,
+      venue_address: essayStorySampleContent.wedding.venue.address,
+      venue_detail: null,
+      venue_map_url: null,
+      main_image: '',
+      gallery_images: '[]',
+      greeting_message: essayStorySampleContent.greeting,
+      contact_groom: essayStorySampleContent.groom.phone,
+      contact_bride: essayStorySampleContent.bride.phone,
+      account_info: JSON.stringify([]),
+      content: JSON.stringify(essayContent),
+      is_paid: 1,
+      is_published: 1,
+      slug: essayConcept ? `sample-essay-${essayConcept}` : 'sample-essay',
+      created_at: now,
+      updated_at: now,
+    }
+  }
+
   const content = type === 'family' ? familySampleContent : type === 'film' ? filmSampleContent : type === 'record' ? recordSampleContent : type === 'exhibit' ? exhibitSampleContent : ourSampleContent
   const templateIdMap = { our: 'narrative-our', family: 'narrative-family', magazine: 'narrative-magazine', film: 'narrative-film', record: 'narrative-record', exhibit: 'narrative-exhibit' } as const
   const now = new Date().toISOString()

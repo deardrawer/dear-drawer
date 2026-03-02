@@ -89,20 +89,6 @@ export default function TemplateSection({
     }
   }
 
-  // 변수 삽입
-  const insertVariable = (variable: string) => {
-    setForm((prev) => ({
-      ...prev,
-      content: prev.content + variable,
-    }))
-  }
-
-  // 미리보기 (변수 치환)
-  const getPreviewContent = (content: string) => {
-    return content
-      .replace(/{이름}/g, '준현')
-      .replace(/{관계}/g, '이모')
-  }
 
   return (
     <>
@@ -293,32 +279,6 @@ export default function TemplateSection({
                 />
               </div>
 
-              {/* 변수 버튼 */}
-              <div>
-                <label className="text-sm font-medium block mb-2" style={{ color: '#555' }}>
-                  변수 삽입
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {['{이름}', '{관계}'].map((variable) => (
-                    <button
-                      key={variable}
-                      onClick={() => insertVariable(variable)}
-                      className="px-3 py-1.5 rounded-full text-xs font-medium"
-                      style={{
-                        backgroundColor: '#F5F3EE',
-                        color: '#666',
-                        border: '1px solid #E8E4DD',
-                      }}
-                    >
-                      {variable}
-                    </button>
-                  ))}
-                </div>
-                <p className="text-xs mt-2" style={{ color: '#999' }}>
-                  변수는 게스트 정보로 자동 치환됩니다
-                </p>
-              </div>
-
               {/* 템플릿 내용 */}
               <div>
                 <label className="text-sm font-medium block mb-1" style={{ color: '#555' }}>
@@ -341,14 +301,11 @@ export default function TemplateSection({
                     미리보기
                   </label>
                   <div
-                    className="p-4 rounded-lg text-sm leading-relaxed"
+                    className="p-4 rounded-lg text-sm leading-relaxed whitespace-pre-line"
                     style={{ backgroundColor: '#F5F3EE', color: '#2C2C2C' }}
                   >
-                    {getPreviewContent(form.content)}
+                    {form.content}
                   </div>
-                  <p className="text-xs mt-1" style={{ color: '#999' }}>
-                    * 변수가 예시값으로 치환된 모습입니다
-                  </p>
                 </div>
               )}
             </div>

@@ -25,8 +25,13 @@ export default function ParentsPreview({
   const previewContentRef = useRef<HTMLDivElement>(null)
   const prevActiveSectionRef = useRef<string | null>(null)
 
-  // 테마 가져오기
-  const theme = COLOR_THEMES[data.colorTheme || 'burgundy']
+  // 테마 가져오기 (커스텀 색상 오버라이드)
+  const baseTheme = COLOR_THEMES[data.colorTheme || 'burgundy']
+  const theme = {
+    ...baseTheme,
+    ...(data.customPrimaryColor && { primary: data.customPrimaryColor }),
+    ...(data.customAccentColor && { accent: data.customAccentColor }),
+  }
 
   // 폰트 스타일 가져오기
   const fontStyle = FONT_STYLES[data.fontStyle || 'elegant']

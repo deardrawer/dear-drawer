@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect, lazy, Suspense } from 'react'
-import FeedWizardProgress, { FeedWizardStep } from './FeedWizardProgress'
+import FeedWizardProgress, { FeedWizardStep, FeedWizardStepHeader } from './FeedWizardProgress'
 import FeedWizardNavigation from './FeedWizardNavigation'
 import type { FeedInvitationData } from '../page'
 
@@ -57,6 +57,11 @@ export default function FeedWizardEditor({
   const scrollToTop = useCallback(() => {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
+        const wizardScroll = document.getElementById('feed-wizard-scroll-area')
+        if (wizardScroll && wizardScroll.scrollHeight > wizardScroll.clientHeight) {
+          wizardScroll.scrollTop = 0
+          return
+        }
         const scrollContainer = document.getElementById('feed-editor-scroll-container')
         if (scrollContainer) {
           scrollContainer.scrollTop = 0
@@ -131,9 +136,9 @@ export default function FeedWizardEditor({
   }
 
   return (
-    <div className="flex flex-col bg-white">
-      {/* 진행률 표시 - sticky 상단 고정 */}
-      <div className="sticky top-0 z-10 bg-white">
+    <div className="flex flex-col h-full wizard-content">
+      {/* 진행률 표시 - 상단 고정 */}
+      <div className="shrink-0 wizard-sticky-header">
         <FeedWizardProgress
           currentStep={currentStep}
           onStepClick={handleStepClick}
@@ -142,8 +147,12 @@ export default function FeedWizardEditor({
         />
       </div>
 
-      {/* 스텝 콘텐츠 - 자연스러운 페이지 스크롤 */}
-      <div className="flex-1">
+      {/* 스크롤 가능 영역 */}
+      <div className="flex-1 overflow-y-auto" id="feed-wizard-scroll-area">
+        {/* 큰 숫자 헤더 */}
+        <FeedWizardStepHeader currentStep={currentStep} />
+
+        {/* 스텝 콘텐츠 */}
         <Suspense
           fallback={
             <div className="flex items-center justify-center h-64">
@@ -155,8 +164,8 @@ export default function FeedWizardEditor({
         </Suspense>
       </div>
 
-      {/* 네비게이션 - sticky 하단 고정 */}
-      <div className="sticky bottom-0 z-10 bg-white">
+      {/* 네비게이션 - 하단 고정 */}
+      <div className="shrink-0 wizard-sticky-footer">
         <FeedWizardNavigation
           currentStep={currentStep}
           onNext={handleNext}

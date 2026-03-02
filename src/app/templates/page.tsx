@@ -124,6 +124,22 @@ const QUIZ_RESULTS: Record<string, {
     ],
     sampleUrl: '/i/sample-feed',
   },
+  'narrative-essay': {
+    templateId: 'narrative-essay',
+    templateName: 'ESSAY',
+    category: 'mini',
+    categoryLabel: '미니 스토리형',
+    tagline: '사진 없이도 빛나는, 에세이 같은 청첩장',
+    color: 'text-amber-700',
+    colorBg: 'bg-amber-700',
+    colorBorder: 'border-amber-200',
+    points: [
+      '사진 없이 타이포그래피만으로 완성',
+      '러브스토리 또는 인터뷰 형식 선택 가능',
+      '책 넘기기 인터랙션으로 프리미엄 경험',
+    ],
+    sampleUrl: '/i/sample-essay-book',
+  },
 }
 
 function TemplatesContent() {
@@ -191,6 +207,8 @@ function TemplatesContent() {
       router.push(`/editor/parents?slug=${autoSlug}`)
     } else if (templateId === 'narrative-exhibit') {
       router.push(`/editor/feed?slug=${autoSlug}`)
+    } else if (templateId === 'narrative-essay') {
+      router.push(`/editor/essay?slug=${autoSlug}`)
     } else {
       router.push(`/editor?template=${templateId}&slug=${autoSlug}`)
     }
@@ -917,6 +935,45 @@ function TemplatesContent() {
                           시작하기
                         </button>
                         <a href="/i/sample-feed" target="_blank" rel="noopener noreferrer" className="px-4 py-2.5 border border-gray-200 hover:border-gray-300 text-gray-500 text-sm rounded-xl transition-colors">
+                          샘플 보기
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ESSAY */}
+                <div className="group bg-white rounded-2xl border shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden" style={{ borderColor: '#E8DFD0' }}>
+                  <div className="flex flex-col sm:flex-row">
+                    <div className="sm:w-40 flex-shrink-0 flex flex-col items-center justify-center p-5 sm:p-6 border-b sm:border-b-0 sm:border-r" style={{ background: '#FAF7F2', borderColor: '#E8DFD0' }}>
+                      <div className="relative w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-2">
+                        <div className="absolute -inset-1 bg-amber-300 rounded-full opacity-[0.1] blur-[10px]" />
+                        <div className="relative w-full h-full bg-amber-50/80 border border-amber-100/60 rounded-full flex items-center justify-center">
+                          <svg className="w-5 h-5 sm:w-7 sm:h-7 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                          </svg>
+                        </div>
+                      </div>
+                      <h2 className="text-lg font-bold text-gray-900">ESSAY</h2>
+                      <p className="text-[10px] text-gray-400 mt-0.5">사진 없는 에세이</p>
+                    </div>
+                    <div className="flex-1 p-5 sm:p-6">
+                      <span className="inline-block px-2.5 py-1 text-[11px] font-medium text-white rounded-full mb-3" style={{ background: '#92400E' }}>사진 없이도 빛나는 청첩장</span>
+                      <div className="flex flex-wrap gap-1.5 mb-3">
+                        <span className="text-[11px] text-gray-400">#타이포그래피</span>
+                        <span className="text-[11px] text-gray-400">#책넘기기</span>
+                        <span className="text-[11px] text-gray-400">#프리미엄</span>
+                      </div>
+                      <div className="space-y-1.5 mb-4 text-[13px] text-gray-600">
+                        <p className="flex items-start gap-2"><span style={{ color: '#92400E' }} className="mt-0.5 text-xs">&#10003;</span> 사진 없이도 완성되는 프리미엄 디자인</p>
+                        <p className="flex items-start gap-2"><span style={{ color: '#92400E' }} className="mt-0.5 text-xs">&#10003;</span> 러브스토리 or 인터뷰 형식 선택</p>
+                        <p className="flex items-start gap-2"><span style={{ color: '#92400E' }} className="mt-0.5 text-xs">&#10003;</span> 책 넘기기 인터랙션으로 특별한 경험</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button onClick={() => handleTemplateSelect('narrative-essay')} className="px-5 py-2.5 text-white text-sm font-medium rounded-xl transition-colors" style={{ background: '#92400E' }}>
+                          시작하기
+                        </button>
+                        <a href="/i/sample-essay-book" target="_blank" rel="noopener noreferrer" className="px-4 py-2.5 border border-gray-200 hover:border-gray-300 text-gray-500 text-sm rounded-xl transition-colors">
                           샘플 보기
                         </a>
                       </div>

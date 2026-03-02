@@ -3,7 +3,7 @@
 import { useRef, useCallback, useState, useEffect } from 'react'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
-import { Type } from 'lucide-react'
+import { Type, X } from 'lucide-react'
 import { useEditorStore } from '@/store/editorStore'
 
 interface HighlightTextareaProps {
@@ -13,6 +13,12 @@ interface HighlightTextareaProps {
   placeholder?: string
   rows?: number
   className?: string
+  /** 외부에서 하이라이트 색상 직접 전달 (스토어 대신) */
+  externalHighlightColor?: string
+  /** 외부에서 하이라이트 색상 변경 콜백 */
+  onHighlightColorChange?: (color: string) => void
+  /** >>텍스트<< 강조 문구 버튼 표시 */
+  showHeroButton?: boolean
 }
 
 /**
@@ -30,14 +36,19 @@ export default function HighlightTextarea({
   onFocus,
   placeholder,
   rows = 4,
-  className = ''
+  className = '',
+  externalHighlightColor,
+  onHighlightColorChange,
+  showHeroButton,
 }: HighlightTextareaProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const colorInputRef = useRef<HTMLInputElement>(null)
 
-  // 스토어에서 하이라이트 색상 읽기
-  const highlightColor = useEditorStore((s) => s.invitation?.highlightColor)
-  const updateField = useEditorStore((s) => s.updateField)
+  // 외부 prop이 있으면 사용, 없으면 스토어에서 읽기
+  const storeHighlightColor = useEditorStore((s) => s.invitation?.highlightColor)
+  const storeUpdateField = useEditorStore((s) => s.updateField)
+  const highlightColor = externalHighlightColor ?? storeHighlightColor
+  const updateHighlightColor = onHighlightColorChange ?? ((c: string) => storeUpdateField('highlightColor', c))
 
   // 로컬 상태로 입력값 관리 (깜빡임 방지)
   const [localValue, setLocalValue] = useState(value)
@@ -87,7 +98,7 @@ export default function HighlightTextarea({
     }
   }, [localValue, value, onChange])
 
-  const applyHighlight = useCallback((type: 'yellow' | 'white' | 'accent') => {
+  const applyHighlight = useCallback((type: 'yellow' | 'white' | 'accent' | 'hero') => {
     const textarea = textareaRef.current
     if (!textarea) return
 
@@ -100,7 +111,7 @@ export default function HighlightTextarea({
       return
     }
 
-    const wrapper = type === 'yellow' ? ['==', '=='] : type === 'white' ? ['~~', '~~'] : ['**', '**']
+    const wrapper = type === 'yellow' ? ['==', '=='] : type === 'white' ? ['~~', '~~'] : type === 'hero' ? ['>>', '<<'] : ['**', '**']
 
     // 이미 하이라이트가 적용되어 있는지 확인
     const beforeText = localValue.substring(0, start)
@@ -127,6 +138,27 @@ export default function HighlightTextarea({
       return
     }
 
+    // hero 타입은 반드시 독립된 줄에 배치 (>>텍스트<< 전체 줄 매칭 필요)
+    if (type === 'hero') {
+      const needNewlineBefore = beforeText.length > 0 && !beforeText.endsWith('\n')
+      const needNewlineAfter = afterText.length > 0 && !afterText.startsWith('\n')
+      const prefix = needNewlineBefore ? '\n' : ''
+      const suffix = needNewlineAfter ? '\n' : ''
+      const newValue =
+        beforeText + prefix +
+        wrapper[0] + selectedText + wrapper[1] +
+        suffix + afterText
+      setLocalValue(newValue)
+      onChange(newValue)
+      const newStart = start + prefix.length + wrapper[0].length
+      setTimeout(() => {
+        textarea.selectionStart = newStart
+        textarea.selectionEnd = newStart + selectedText.length
+        textarea.focus()
+      }, 0)
+      return
+    }
+
     // 하이라이트 적용
     const newValue =
       beforeText +
@@ -141,6 +173,56 @@ export default function HighlightTextarea({
       textarea.selectionEnd = end + wrapper[0].length
       textarea.focus()
     }, 0)
+  }, [localValue, onChange])
+
+  // 선택된 텍스트에서 모든 하이라이트 마크업 제거
+  const removeHighlight = useCallback(() => {
+    const textarea = textareaRef.current
+    if (!textarea) return
+
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+    const selectedText = localValue.substring(start, end)
+    if (!selectedText) return
+
+    const beforeText = localValue.substring(0, start)
+    const afterText = localValue.substring(end)
+
+    // 선택 영역 바로 바깥에 마크업이 있는지 확인 (==, ~~, **, >><<)
+    const markers: [string, string][] = [['==', '=='], ['~~', '~~'], ['**', '**'], ['>>', '<<']]
+    for (const [open, close] of markers) {
+      if (beforeText.endsWith(open) && afterText.startsWith(close)) {
+        const newValue =
+          beforeText.slice(0, -open.length) +
+          selectedText +
+          afterText.slice(close.length)
+        setLocalValue(newValue)
+        onChange(newValue)
+        setTimeout(() => {
+          textarea.selectionStart = start - open.length
+          textarea.selectionEnd = end - open.length
+          textarea.focus()
+        }, 0)
+        return
+      }
+    }
+
+    // 선택 영역 안에 포함된 마크업도 모두 제거
+    let cleaned = selectedText
+      .replace(/==([^=]+)==/g, '$1')
+      .replace(/~~([^~]+)~~/g, '$1')
+      .replace(/\*\*([^*]+)\*\*/g, '$1')
+      .replace(/^>>(.+)<<$/gm, '$1')
+    if (cleaned !== selectedText) {
+      const newValue = beforeText + cleaned + afterText
+      setLocalValue(newValue)
+      onChange(newValue)
+      setTimeout(() => {
+        textarea.selectionStart = start
+        textarea.selectionEnd = start + cleaned.length
+        textarea.focus()
+      }, 0)
+    }
   }, [localValue, onChange])
 
   return (
@@ -174,21 +256,47 @@ export default function HighlightTextarea({
           ref={colorInputRef}
           type="color"
           value={highlightColor || '#FFFFFF'}
-          onChange={(e) => updateField('highlightColor', e.target.value)}
+          onChange={(e) => updateHighlightColor(e.target.value)}
           className="w-5 h-5 rounded cursor-pointer border border-gray-300 -ml-0.5"
           style={{ padding: 0 }}
           title="하이라이트 색상 선택"
         />
+        {!showHeroButton && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-6 px-2 text-[10px] gap-1"
+            onClick={() => applyHighlight('accent')}
+            title="텍스트를 드래그한 후 클릭하면 테마 강조색이 적용됩니다"
+          >
+            <Type className="w-3 h-3 text-rose-500" />
+            강조색
+          </Button>
+        )}
+        {showHeroButton && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-6 px-2 text-[10px] gap-1"
+            onClick={() => applyHighlight('hero')}
+            title="텍스트를 드래그한 후 클릭하면 큰 이탤릭 강조 문구가 됩니다"
+          >
+            <span className="w-3 h-3 italic font-serif font-bold text-[10px] leading-3">A</span>
+            큰 이탤릭
+          </Button>
+        )}
         <Button
           type="button"
           variant="outline"
           size="sm"
-          className="h-6 px-2 text-[10px] gap-1"
-          onClick={() => applyHighlight('accent')}
-          title="텍스트를 드래그한 후 클릭하면 테마 강조색이 적용됩니다"
+          className="h-6 px-2 text-[10px] gap-1 text-gray-400 hover:text-red-500"
+          onClick={removeHighlight}
+          title="텍스트를 드래그한 후 클릭하면 하이라이트 효과가 제거됩니다"
         >
-          <Type className="w-3 h-3 text-rose-500" />
-          강조색
+          <X className="w-3 h-3" />
+          지우기
         </Button>
       </div>
 

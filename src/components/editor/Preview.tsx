@@ -143,6 +143,10 @@ function InvitationPreviewWrapper({ invitation, skipIntro }: { invitation: Invit
     intro: (invitation as any).intro,
     youtube: (invitation as any).youtube,
     magazineIntroStyle: (invitation as any).magazineIntroStyle,
+    fullHeightDividers: (invitation as any).fullHeightDividers,
+    parentIntro: (invitation as any).parentIntro,
+    whyWeChose: (invitation as any).whyWeChose,
+    parentIntroTextStyle: (invitation as any).parentIntroTextStyle,
   }), [invitation])
 
   const invitationData = useMemo(() => ({
@@ -342,7 +346,11 @@ const Preview = forwardRef<PreviewHandle, object>(function Preview(_, ref) {
       </div>
       <div className="flex-1 overflow-hidden flex justify-center px-6 pb-6">
         <div className="relative">
-          <div className="w-[360px] shadow-2xl bg-white flex flex-col relative border border-gray-200" style={{ height: '710px' }}>
+          <div className="w-[360px] shadow-2xl bg-white flex flex-col relative border border-gray-200" style={{ height: '710px', containerType: 'size' as any }}>
+            <style>{`
+              #preview-content .full-height-divider,
+              #preview-content .divider-section { min-height: 100cqh !important; }
+            `}</style>
             <div ref={previewContentRef} className={`flex-1 overflow-y-auto min-h-0 relative theme-${invitation.colorTheme || 'classic-rose'} ${isRomantic ? 'font-romantic' : ''}`} id="preview-content" style={{ fontFamily: fonts.body, color: customBodyTextColor, letterSpacing: '-0.3px', ...(customAccentTextColor ? { '--text-accent': customAccentTextColor } as React.CSSProperties : {}), ...(invitation.highlightColor ? { '--highlight-white': invitation.highlightColor } as React.CSSProperties : {}) }}>
               {invitation.templateId === 'narrative-record'
                 ? <RecordPreviewWrapper invitation={invitation} skipIntro={currentPage !== 'intro'} />

@@ -7,6 +7,7 @@ import InvitationClientMagazine from "./InvitationClientMagazine";
 import InvitationClientFilm from "./InvitationClientFilm";
 import InvitationClientRecord from "./InvitationClientRecord";
 import InvitationClientExhibit from "./InvitationClientExhibit";
+import InvitationClientEssay from "./InvitationClientEssay";
 import type { Invitation } from "@/types/invitation";
 import type { Viewport } from "next";
 import { isUUID } from "@/lib/slug";
@@ -34,10 +35,19 @@ export default async function InvitationPage({ params, searchParams }: PageProps
   let invitation = null;
   let isSampleInvitation = false;
 
-  // 샘플 청첩장 처리 (sample-our, sample-family, sample-magazine, sample-film, sample-record)
-  if (slug === 'sample-our' || slug === 'sample-family' || slug === 'sample-magazine' || slug === 'sample-film' || slug === 'sample-record' || slug === 'sample-exhibit' || slug === 'sample-feed') {
-    const sampleType = (slug === 'sample-exhibit' || slug === 'sample-feed') ? 'exhibit' : slug === 'sample-record' ? 'record' : slug === 'sample-film' ? 'film' : slug === 'sample-magazine' ? 'magazine' : slug === 'sample-our' ? 'our' : 'family';
-    invitation = createSampleInvitation(sampleType);
+  // 샘플 청첩장 처리
+  const sampleSlugs = ['sample-our', 'sample-family', 'sample-magazine', 'sample-film', 'sample-record', 'sample-exhibit', 'sample-feed', 'sample-essay', 'sample-essay-paper', 'sample-essay-book'];
+  if (sampleSlugs.includes(slug)) {
+    let sampleType: 'our' | 'family' | 'magazine' | 'film' | 'record' | 'exhibit' | 'essay' = 'our';
+    if (slug === 'sample-essay' || slug === 'sample-essay-paper' || slug === 'sample-essay-book') sampleType = 'essay';
+    else if (slug === 'sample-exhibit' || slug === 'sample-feed') sampleType = 'exhibit';
+    else if (slug === 'sample-record') sampleType = 'record';
+    else if (slug === 'sample-film') sampleType = 'film';
+    else if (slug === 'sample-magazine') sampleType = 'magazine';
+    else if (slug === 'sample-family') sampleType = 'family';
+
+    const essayConcept = slug === 'sample-essay-paper' ? 'paper' : slug === 'sample-essay-book' ? 'book' : undefined;
+    invitation = createSampleInvitation(sampleType, essayConcept);
     isSampleInvitation = true;
   }
 
@@ -137,9 +147,10 @@ export default async function InvitationPage({ params, searchParams }: PageProps
   const isFilm = invitation.template_id === 'narrative-film';
   const isRecord = invitation.template_id === 'narrative-record';
   const isExhibit = invitation.template_id === 'narrative-exhibit';
+  const isEssay = invitation.template_id === 'narrative-essay';
 
   // 템플릿에 따라 적절한 컴포넌트 렌더링
-  const ClientComponent = isExhibit ? InvitationClientExhibit : isRecord ? InvitationClientRecord : isFilm ? InvitationClientFilm : isMagazine ? InvitationClientMagazine : isFamily ? InvitationClientFamily : InvitationClient;
+  const ClientComponent = isEssay ? InvitationClientEssay : isExhibit ? InvitationClientExhibit : isRecord ? InvitationClientRecord : isFilm ? InvitationClientFilm : isMagazine ? InvitationClientMagazine : isFamily ? InvitationClientFamily : InvitationClient;
 
   return (
     <ClientComponent
@@ -176,8 +187,9 @@ export async function generateMetadata({ params }: PageProps) {
   const baseUrl = "https://invite.deardrawer.com";
 
   // 샘플 청첩장 메타데이터 처리
-  if (slug === 'sample-our' || slug === 'sample-family' || slug === 'sample-film' || slug === 'sample-record' || slug === 'sample-exhibit' || slug === 'sample-feed') {
-    const sampleType = (slug === 'sample-exhibit' || slug === 'sample-feed') ? 'exhibit' : slug === 'sample-record' ? 'record' : slug === 'sample-film' ? 'film' : slug === 'sample-our' ? 'our' : 'family';
+  const metaSampleSlugs = ['sample-our', 'sample-family', 'sample-film', 'sample-record', 'sample-exhibit', 'sample-feed', 'sample-essay', 'sample-essay-paper', 'sample-essay-book'];
+  if (metaSampleSlugs.includes(slug)) {
+    const sampleType = (slug === 'sample-essay' || slug === 'sample-essay-paper' || slug === 'sample-essay-book') ? 'essay' : (slug === 'sample-exhibit' || slug === 'sample-feed') ? 'exhibit' : slug === 'sample-record' ? 'record' : slug === 'sample-film' ? 'film' : slug === 'sample-our' ? 'our' : 'family';
     const content = sampleType === 'our' ? ourSampleContent : familySampleContent;
     const title = `${content.groom.name} ♥ ${content.bride.name} 결혼합니다`;
     const description = content.content.greeting;

@@ -1,4 +1,4 @@
-export type NarrativeType = 'our' | 'family' | 'parents' | 'magazine' | 'film' | 'record' | 'exhibit'
+export type NarrativeType = 'our' | 'family' | 'parents' | 'magazine' | 'film' | 'record' | 'exhibit' | 'essay'
 
 export type TemplateSection = {
   id: string
@@ -244,6 +244,35 @@ export const templates: Template[] = [
       { id: 'details', title: '예식 정보', aiGenerated: false },
     ],
   },
+  {
+    id: 'narrative-essay',
+    name: 'ESSAY',
+    description: '사진 없이도 빛나는, 에세이 같은 청첩장',
+    thumbnail: '/templates/narrative-essay.jpg',
+    defaultCoverImage: '',
+    narrativeType: 'essay',
+    emoji: '✍️',
+    colors: {
+      primary: '#5C4A3A',
+      secondary: '#F5F0E8',
+      accent: '#8B7355',
+      background: '#FAF8F3',
+      text: '#3D3028',
+    },
+    fonts: {
+      heading: 'Playfair Display',
+      body: 'Pretendard',
+    },
+    features: ['사진 없이 완성', '타이포그래피 중심', '스크롤 애니메이션', '러브스토리/인터뷰 선택'],
+    sections: [
+      { id: 'cover', title: '커버', aiGenerated: false },
+      { id: 'greeting', title: '초대 글귀', aiGenerated: false },
+      { id: 'story', title: '이야기', aiGenerated: false },
+      { id: 'quote', title: '인용문', aiGenerated: false },
+      { id: 'details', title: '예식 정보', aiGenerated: false },
+      { id: 'closing', title: '감사 인사', aiGenerated: false },
+    ],
+  },
 ]
 
 export function getTemplateById(id: string): Template | undefined {
@@ -280,4 +309,8 @@ export function getRecordTemplate(): Template {
 
 export function getExhibitTemplate(): Template {
   return templates.find((template) => template.narrativeType === 'exhibit')!
+}
+
+export function getEssayTemplate(): Template {
+  return templates.find((template) => template.narrativeType === 'essay')!
 }

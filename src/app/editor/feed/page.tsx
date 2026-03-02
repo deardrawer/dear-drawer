@@ -468,9 +468,9 @@ function FeedEditorContent() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-white">
+    <div className="h-screen flex flex-col theme-neu">
       {/* Header */}
-      <header className="h-12 sm:h-14 border-b border-gray-100 bg-white flex items-center justify-between px-3 sm:px-6 shrink-0">
+      <header className="h-12 sm:h-14 editor-header flex items-center justify-between px-3 sm:px-6 shrink-0">
         <div className="flex items-center gap-2 sm:gap-4">
           <Link href="/">
             <img src="/logo.png" alt="Dear Drawer" className="h-5 sm:h-6 w-auto" />
@@ -487,7 +487,7 @@ function FeedEditorContent() {
             variant="outline"
             size="sm"
             onClick={() => setIsPreviewOpen(true)}
-            className="border-gray-200 text-gray-600 hover:bg-gray-50 rounded-none text-xs tracking-wide"
+            className="neu-btn text-gray-600 text-xs tracking-wide"
           >
             <svg className="w-4 h-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -500,7 +500,7 @@ function FeedEditorContent() {
             variant="outline"
             size="sm"
             onClick={handleShare}
-            className="hidden sm:flex border-gray-200 text-gray-600 hover:bg-gray-50 rounded-none text-xs tracking-wide"
+            className="hidden sm:flex neu-btn text-gray-600 text-xs tracking-wide"
           >
             <svg
               className="w-4 h-4 mr-2"
@@ -521,7 +521,7 @@ function FeedEditorContent() {
             size="sm"
             disabled={isSaving}
             onClick={() => handleSave()}
-            className="bg-black text-white hover:bg-gray-800 rounded-none text-xs tracking-wide"
+            className="neu-btn-primary rounded-xl text-xs tracking-wide"
           >
             {isSaving ? (
               <>
@@ -541,34 +541,34 @@ function FeedEditorContent() {
       </header>
 
       {/* Main Editor Area - 페이지 레벨 스크롤 */}
-      <div id="feed-editor-scroll-container" className="flex-1 overflow-y-scroll bg-white">
-        <div className="w-full max-w-7xl mx-auto">
-          <div className="bg-white flex">
-            {/* Preview - 왼쪽 sticky 고정 (데스크탑) */}
+      <div id="feed-editor-scroll-container" className="flex-1 overflow-y-scroll editor-scroll-area">
+        <div className="w-full max-w-[1400px] mx-auto">
+          <div className="flex">
+            {/* Preview - 왼쪽 sticky 고정, 카드형 디바이스 프리뷰 (데스크탑) */}
             {!isMobile && (
-              <div className="w-[450px] min-w-[450px] sticky top-0 h-[calc(100vh-56px)] overflow-hidden bg-white flex justify-center items-center" style={{ contain: 'layout style', willChange: 'transform' }}>
-                <FeedPreview data={data} />
-              </div>
-            )}
-
-            {/* 구분선 - 부드러운 그라데이션 그림자 (데스크탑) */}
-            {!isMobile && (
-              <div className="w-8 mx-1 relative">
-                <div className="absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-gray-100/80 to-transparent" />
-                <div className="absolute inset-y-0 right-0 w-4 bg-gradient-to-l from-gray-100/80 to-transparent" />
+              <div className="w-[440px] min-w-[440px] sticky top-0 overflow-hidden editor-panel m-4 mr-0 flex justify-center items-center" style={{ height: 'calc(100vh - 88px)' }}>
+                <div className="w-[360px] shadow-2xl bg-white overflow-hidden border border-gray-200" style={{ height: '710px' }}>
+                  <div className="h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+                    <FeedPreview data={data} />
+                  </div>
+                </div>
               </div>
             )}
 
             {/* 모바일: 미리보기 모드 */}
             {isMobile && mobileView === 'preview' && (
-              <div className="w-full flex flex-col items-center" style={{ minHeight: 'calc(100vh - 104px)' }}>
-                <FeedPreview data={data} />
+              <div className="w-full flex justify-center items-center py-8" style={{ minHeight: 'calc(100vh - 104px)' }}>
+                <div className="w-[320px] shadow-2xl bg-white overflow-hidden border border-gray-200" style={{ height: '630px' }}>
+                  <div className="h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+                    <FeedPreview data={data} />
+                  </div>
+                </div>
               </div>
             )}
 
             {/* Edit Panel - 오른쪽 (데스크탑) / 전체 (모바일 편집 모드) */}
             {(!isMobile || mobileView === 'editor') && (
-              <div className={`${isMobile ? 'w-full' : 'flex-1'} min-h-[calc(100vh-56px)]`} style={isMobile ? { paddingBottom: '56px' } : undefined}>
+              <div className={`${isMobile ? 'w-full' : 'flex-1 flex flex-col overflow-hidden editor-panel m-4 ml-3.5'}`} style={isMobile ? { paddingBottom: '56px' } : { height: 'calc(100vh - 88px)' }}>
                 <FeedWizardEditor
                   data={data}
                   updateData={updateData}
@@ -630,7 +630,7 @@ function FeedEditorContent() {
 
       {/* 모바일 하단 탭 바 */}
       {isMobile && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 flex safe-area-bottom">
+        <div className="fixed bottom-0 left-0 right-0 z-40 mobile-tab-bar flex safe-area-bottom">
           <button
             onClick={() => setMobileView('editor')}
             className={`flex-1 py-3.5 text-sm font-medium flex items-center justify-center gap-1.5 transition-colors ${mobileView === 'editor' ? 'text-black' : 'text-gray-400'}`}

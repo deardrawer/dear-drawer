@@ -101,8 +101,13 @@ export default function ParentsInvitationView({
     setTimeout(() => setShowFontSizeToast(false), 1500)
   }
 
-  // 컬러 테마
-  const theme = COLOR_THEMES[data.colorTheme || 'burgundy']
+  // 컬러 테마 (커스텀 색상 오버라이드)
+  const baseTheme = COLOR_THEMES[data.colorTheme || 'burgundy']
+  const theme = {
+    ...baseTheme,
+    ...(data.customPrimaryColor && { primary: data.customPrimaryColor }),
+    ...(data.customAccentColor && { accent: data.customAccentColor }),
+  }
 
   // 폰트 스타일
   const fontStyle = FONT_STYLES[data.fontStyle || 'elegant']
@@ -177,7 +182,7 @@ export default function ParentsInvitationView({
   const currentFontConfig = FONT_SIZE_CONFIG[fontSize]
 
   return (
-    <ThemeProvider themeId={data.colorTheme || 'burgundy'}>
+    <ThemeProvider themeId={data.colorTheme || 'burgundy'} customPrimary={data.customPrimaryColor} customAccent={data.customAccentColor}>
       <div
         className={`relative max-w-[390px] mx-auto min-h-screen overflow-hidden ${fontStyle.className}`}
         style={{

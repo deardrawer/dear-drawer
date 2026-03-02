@@ -55,9 +55,10 @@ export default function EnvelopeScreen({
   }, [recipientName, recipientRelation, isPreview])
 
   // 관계가 있으면 "이름 관계 호칭" 형식, 없으면 "이름 호칭" 형식
+  const titleSuffix = recipientTitle ? ` ${recipientTitle}` : ''
   const displayGreetingTo = greetingTo || (recipientRelation
-    ? `${recipientName} ${recipientRelation} ${recipientTitle}`
-    : `${recipientName} ${recipientTitle}`)
+    ? `${recipientName} ${recipientRelation}${titleSuffix}`
+    : `${recipientName}${titleSuffix}`)
 
   const handleClick = useCallback(() => {
     if (stage === 0) {
@@ -329,7 +330,7 @@ export default function EnvelopeScreen({
               </p>
             )}
             <p className="text-[22px]" style={{ color: '#2C2C2C' }}>
-              {recipientName} {recipientTitle}
+              {recipientName}{recipientTitle ? ` ${recipientTitle}` : ''}
             </p>
             <div className="h-px w-[60px] my-4" style={{ backgroundColor: accentColor }} />
           </div>

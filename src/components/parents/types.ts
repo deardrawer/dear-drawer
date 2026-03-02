@@ -321,6 +321,8 @@ export interface ParentsInvitationContent {
   // 디자인
   colorTheme: ColorThemeId
   fontStyle?: FontStyleId
+  customPrimaryColor?: string
+  customAccentColor?: string
 
   // 공유 메타 정보
   meta?: {

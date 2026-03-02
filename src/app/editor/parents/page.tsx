@@ -241,6 +241,8 @@ export interface ParentsInvitationData {
   // 디자인
   colorTheme: ColorThemeId
   fontStyle: 'elegant' | 'soft' | 'classic' | 'brush' | 'modern' | 'friendly' | 'ridibatang' | 'gangwon' | 'okticon'
+  customPrimaryColor?: string
+  customAccentColor?: string
 }
 
 const defaultData: ParentsInvitationData = {
@@ -687,7 +689,7 @@ function ParentsEditorContent() {
             variant="outline"
             size="sm"
             onClick={() => { setFullscreenTab('intro'); setIsPreviewOpen(true); }}
-            className="border-gray-200 text-gray-600 hover:bg-gray-50 rounded-xl text-xs tracking-wide"
+            className="neu-btn text-gray-600 text-xs tracking-wide"
           >
             <svg className="w-4 h-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -700,7 +702,7 @@ function ParentsEditorContent() {
             variant="outline"
             size="sm"
             onClick={handleShare}
-            className="hidden sm:flex border-gray-200 text-gray-600 hover:bg-gray-50 rounded-xl text-xs tracking-wide"
+            className="hidden sm:flex neu-btn text-gray-600 text-xs tracking-wide"
           >
             <svg
               className="w-4 h-4 mr-2"
@@ -721,7 +723,7 @@ function ParentsEditorContent() {
             size="sm"
             disabled={isSaving}
             onClick={() => handleSave()}
-            className="bg-black text-white hover:bg-gray-800 rounded-xl text-xs tracking-wide"
+            className="neu-btn-primary rounded-xl text-xs tracking-wide"
           >
             {isSaving ? (
               <>
@@ -742,19 +744,18 @@ function ParentsEditorContent() {
 
       {/* Main Editor Area - 페이지 레벨 스크롤 */}
       <div id="parents-editor-scroll-container" className="flex-1 overflow-y-scroll editor-scroll-area">
-        <div className="w-full max-w-7xl mx-auto">
+        <div className="w-full max-w-[1400px] mx-auto">
           <div className="flex">
-            {/* Preview - 왼쪽 sticky 고정, 세로 중앙 (데스크탑) */}
+            {/* Preview - 왼쪽 sticky 고정, 카드형 디바이스 프리뷰 (데스크탑) */}
             {!isMobile && (
-              <div className="w-[440px] min-w-[440px] sticky top-0 overflow-hidden editor-panel m-4 mr-0 flex flex-col justify-center items-center p-6" style={{ height: 'calc(100vh - 88px)' }}>
-                {/* 탭 버튼 - 봉투(2), 본문(3) 단계에서는 숨김 */}
+              <div className="w-[440px] min-w-[440px] sticky top-0 overflow-hidden editor-panel m-4 mr-0 flex flex-col justify-center items-center" style={{ height: 'calc(100vh - 88px)' }}>
                 {(() => {
                   const currentTheme = COLOR_THEMES[data.colorTheme || 'burgundy']
                   const showTabs = currentWizardStep !== 2 && currentWizardStep !== 3
                   return (
                     <>
                       {showTabs && (
-                        <div className="flex mb-4 bg-white rounded-lg shadow-sm overflow-hidden">
+                        <div className="flex mb-3 bg-white rounded-lg shadow-sm overflow-hidden shrink-0">
                           <button
                             onClick={() => setPreviewTab('intro')}
                             className="px-6 py-2.5 text-sm font-medium transition-colors"
@@ -777,23 +778,8 @@ function ParentsEditorContent() {
                           </button>
                         </div>
                       )}
-
-                      {/* 미리보기 영역 - 390px 기준 콘텐츠를 0.8 스케일로 축소 (312px/390px) */}
-                      <div
-                        className="relative w-full max-w-[320px] aspect-[9/19] rounded-[40px] overflow-hidden shadow-2xl transition-colors duration-300"
-                        style={{ backgroundColor: currentTheme.primary }}
-                      >
-                        <div
-                          className="absolute overflow-hidden rounded-[32px] bg-white"
-                          style={{
-                            top: '4px',
-                            left: '4px',
-                            width: '390px',
-                            height: '834px', // 390 * 19/9 ≈ 823, 여유분 포함
-                            transform: 'scale(0.8)',
-                            transformOrigin: 'top left',
-                          }}
-                        >
+                      <div className="w-[360px] shadow-2xl bg-white overflow-hidden border border-gray-200" style={{ height: '710px' }}>
+                        <div className="h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                           <ParentsPreview data={data} activeTab={previewTab} onTabChange={setPreviewTab} selectedGuest={selectedGuest} activeSection={activeSection} />
                         </div>
                       </div>
@@ -803,18 +789,12 @@ function ParentsEditorContent() {
               </div>
             )}
 
-            {/* 구분선 - 뉴모피즘에서는 패널 그림자가 구분 역할 */}
-            {!isMobile && (
-              <div className="w-8 mx-1 neu-divider" />
-            )}
-
             {/* 모바일: 미리보기 모드 */}
             {isMobile && mobileView === 'preview' && (() => {
               const currentTheme = COLOR_THEMES[data.colorTheme || 'burgundy']
               return (
-                <div className="w-full flex flex-col items-center py-4" style={{ minHeight: 'calc(100vh - 104px)' }}>
-                  {/* 탭 버튼 */}
-                  <div className="flex mb-4 bg-white rounded-lg shadow-sm overflow-hidden">
+                <div className="w-full flex flex-col justify-center items-center py-8" style={{ minHeight: 'calc(100vh - 104px)' }}>
+                  <div className="flex mb-3 bg-white rounded-lg shadow-sm overflow-hidden">
                     <button
                       onClick={() => setPreviewTab('intro')}
                       className="px-6 py-2.5 text-sm font-medium transition-colors"
@@ -836,22 +816,8 @@ function ParentsEditorContent() {
                       본문
                     </button>
                   </div>
-                  {/* 미리보기 영역 */}
-                  <div
-                    className="relative w-full max-w-[320px] aspect-[9/19] rounded-[40px] overflow-hidden shadow-2xl transition-colors duration-300"
-                    style={{ backgroundColor: currentTheme.primary }}
-                  >
-                    <div
-                      className="absolute overflow-hidden rounded-[32px] bg-white"
-                      style={{
-                        top: '4px',
-                        left: '4px',
-                        width: '390px',
-                        height: '834px',
-                        transform: 'scale(0.8)',
-                        transformOrigin: 'top left',
-                      }}
-                    >
+                  <div className="w-[320px] shadow-2xl bg-white overflow-hidden border border-gray-200" style={{ height: '630px' }}>
+                    <div className="h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                       <ParentsPreview data={data} activeTab={previewTab} onTabChange={setPreviewTab} selectedGuest={selectedGuest} activeSection={activeSection} />
                     </div>
                   </div>
@@ -861,7 +827,7 @@ function ParentsEditorContent() {
 
             {/* Edit Panel - 오른쪽 (데스크탑) / 전체 (모바일 편집 모드) */}
             {(!isMobile || mobileView === 'editor') && (
-              <div className={`${isMobile ? 'w-full' : 'flex-1 flex flex-col overflow-hidden editor-panel m-4 ml-3.5'}`} style={isMobile ? { paddingBottom: '56px' } : { height: 'calc(100vh - 88px)' }}>
+              <div className={`${isMobile ? 'w-full' : 'flex-1 flex flex-col overflow-hidden editor-panel m-4'}`} style={isMobile ? { paddingBottom: '56px' } : { height: 'calc(100vh - 88px)' }}>
                 <ParentsWizardEditor
                   data={data}
                   updateData={updateData}

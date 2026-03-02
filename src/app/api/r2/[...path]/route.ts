@@ -66,28 +66,14 @@ export async function GET(
         return NextResponse.json({ error: "접근 권한이 없습니다." }, { status: 403 });
       }
     } else {
-      // 청첩장 존재 및 발행 상태 확인
+      // 청첩장 이미지: 존재 확인만 하고 공개 서빙
+      // (게스트 뷰 /i/[slug] 자체가 is_published 체크 없이 공개이므로 이미지도 동일하게 공개)
       const invitation = await getInvitationById(invitationId);
       if (!invitation) {
         return NextResponse.json({ error: "파일을 찾을 수 없습니다." }, { status: 404 });
       }
 
-      isPublished = !!invitation.is_published;
-
-      // 미발행 청첩장 → 소유자만 접근 가능
-      if (!isPublished) {
-        const cookieName = getAuthCookieName();
-        const token = request.cookies.get(cookieName)?.value;
-
-        if (!token) {
-          return NextResponse.json({ error: "인증이 필요합니다." }, { status: 401 });
-        }
-
-        const payload = await verifyToken(token);
-        if (!payload || payload.user.id !== invitation.user_id) {
-          return NextResponse.json({ error: "접근 권한이 없습니다." }, { status: 403 });
-        }
-      }
+      isPublished = true;
     }
 
     // 4. R2에서 파일 가져오기

@@ -24,6 +24,16 @@ function isCsrfProtected(pathname: string, method: string): boolean {
 }
 
 export function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+
+  // ===== 0. Naver 사이트 소유확인 파일 =====
+  if (pathname === "/naver6427d8ed4d5dec7651ad035741e6cb37.html") {
+    return new NextResponse(
+      "naver-site-verification: naver6427d8ed4d5dec7651ad035741e6cb37.html",
+      { headers: { "Content-Type": "text/html" } }
+    );
+  }
+
   const response = NextResponse.next();
 
   // ===== 1. Security Headers =====
@@ -48,7 +58,6 @@ export function middleware(request: NextRequest) {
   response.headers.set("Content-Security-Policy", csp);
 
   // ===== 2. CSRF Protection (관리자용 API만) =====
-  const pathname = request.nextUrl.pathname;
   const method = request.method;
 
   if (isCsrfProtected(pathname, method)) {

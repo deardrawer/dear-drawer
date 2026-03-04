@@ -133,9 +133,9 @@ const hahmlet = Hahmlet({
 });
 
 export const metadata: Metadata = {
-  title: "dear drawer - 세상에 하나뿐인 우리의 이야기를 담은 청첩장",
-  description: "우리만의 특별한 이야기를 담은 모바일 청첩장. 디어드로어가 여러분의 스토리 초안 작성을 도와드려요.",
-  keywords: ["청첩장", "모바일청첩장", "웨딩", "결혼식", "스토리청첩장", "dear drawer"],
+  title: "디어드로어 | 스토리형 감성 모바일 청첩장",
+  description: "우리의 이야기를 담는 스토리형 감성 모바일 청첩장. 사진과 러브스토리를 함께 담는 디어드로어 모바일 청첩장 제작 서비스.",
+  keywords: ["모바일 청첩장", "감성 청첩장", "스토리형 청첩장", "모바일 청첩장 제작", "청첩장", "웨딩", "결혼식", "디어드로어", "dear drawer"],
   icons: {
     icon: "/favicon.png",
     apple: "/favicon.png",

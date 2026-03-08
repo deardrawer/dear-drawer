@@ -108,7 +108,7 @@ export default function VenueSection({
 
     const script = document.createElement('script')
     const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY || '0890847927f3189d845391481ead8ecc'
-    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoKey}&libraries=services&autoload=false`
+    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoKey}&libraries=services&autoload=false`
     script.async = true
     script.onload = () => {
       window.kakao.maps.load(initMapWithGeocoding)

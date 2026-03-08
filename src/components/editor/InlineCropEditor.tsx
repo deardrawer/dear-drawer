@@ -57,7 +57,7 @@ export default function InlineCropEditor({
         setImageSize({ width: img.naturalWidth, height: img.naturalHeight })
         setContainerSize({ width: displayWidth, height: displayHeight })
 
-        // 처음 크롭 데이터가 없으면 초기화
+        // 처음 크롭 데이터가 없으면 표시용 로컬 크롭만 설정 (저장하지 않음)
         if (settings.cropWidth === undefined || settings.cropHeight === undefined) {
           const imgAspect = img.naturalWidth / img.naturalHeight
           const maxInitSize = 0.98 // 최대 크기 제한 (항상 이동 여유 확보)
@@ -77,7 +77,8 @@ export default function InlineCropEditor({
             cY = (1 - cH) / 2
           }
 
-          onUpdate({
+          // 시각적 표시만 - onUpdate 호출하지 않아 미리보기에 영향 없음
+          setLocalCrop({
             cropX: cX,
             cropY: cY,
             cropWidth: cW,

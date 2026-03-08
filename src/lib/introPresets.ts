@@ -47,6 +47,20 @@ export interface EditableColorField {
 
 export type EditableField = EditableTextField | EditableSelectField | EditableRangeField | EditableColorField
 
+// 인트로 이미지 설정 타입
+export interface IntroImageSettings {
+  scale: number
+  positionX: number
+  positionY: number
+  cropX?: number
+  cropY?: number
+  cropWidth?: number
+  cropHeight?: number
+}
+
+// 인트로 배경 모드
+export type IntroImageMode = 'photo' | 'solid' | 'gradient'
+
 // 인트로 설정 값 타입
 export interface IntroSettings {
   presetId: IntroPresetId
@@ -67,6 +81,23 @@ export interface IntroSettings {
   backgroundPositionY: number
   backgroundBrightness: number
   overlayOpacity: number
+  // 인트로 전용 이미지
+  introImage?: string
+  introImageSettings?: IntroImageSettings
+  // 배경 모드 (사진/단색/그라데이션)
+  imageMode?: IntroImageMode
+  solidColor?: string
+  gradientFrom?: string
+  gradientTo?: string
+  gradientAngle?: number
+  // 포인트 컬러
+  accentColor?: string
+  // 프리셋별 커스텀 컬러
+  overlayColor?: string      // 오버레이 색상 (cinematic, blur, letter)
+  bodyTextColor?: string     // 본문 텍스트 색상 (typing, zoom, petal, watercolor, lightray, film)
+  bgColor?: string           // 배경색 (petal, film, filmstrip)
+  waveColor?: string         // 웨이브 색상 (typing)
+  envelopeColor?: string     // 봉투 색상 (letter)
 }
 
 // 사용 가능한 폰트 목록
@@ -118,6 +149,47 @@ const commonBackgroundFields: EditableField[] = [
   { type: 'range', key: 'overlayOpacity', label: '오버레이 농도', min: 0, max: 80, step: 5, unit: '%' },
 ]
 
+const accentColorField: EditableField = {
+  type: 'color',
+  key: 'accentColor',
+  label: '포인트 색상',
+  presets: ['#d4a574', '#c9a86c', '#d4a0a0', '#0891b2', '#8b7355', '#374151', '#9ca3af', '#e8a0b0', '#1a1a1a']
+}
+
+// 프리셋별 기본 커스텀 컬러 맵
+export const presetCustomColors: Record<IntroPresetId, {
+  overlayColor?: string
+  bodyTextColor?: string
+  bgColor?: string
+  waveColor?: string
+  envelopeColor?: string
+}> = {
+  cinematic: { overlayColor: '#000000' },
+  typing: { bodyTextColor: '#2c2c2c', waveColor: '#FAF8F5' },
+  blur: { overlayColor: '#000000' },
+  zoom: { bodyTextColor: '#2c2c2c' },
+  letter: { envelopeColor: '#f5f0e8', overlayColor: '#000000' },
+  petal: { bgColor: '#FDF6F4', bodyTextColor: '#374151' },
+  watercolor: { bodyTextColor: '#374151' },
+  lightray: { bodyTextColor: '#374151' },
+  film: { bgColor: '#F5F3F0', bodyTextColor: '#4a4a4a' },
+  filmstrip: { bgColor: '#1a1a1a' },
+}
+
+// 프리셋별 기본 accentColor 맵
+export const presetAccentColors: Record<IntroPresetId, string> = {
+  cinematic: '#F8F6F3',    // 구분선 색상
+  typing: '#e0d5c8',       // 구분선/물결 색상
+  blur: '#F8F6F3',         // 구분선 색상
+  zoom: '#d1d5db',         // 구분선 색상
+  letter: '#d4a574',       // 봉투 씰/구분선 색상
+  petal: '#d4a0a0',        // 꽃잎 테마 색상
+  watercolor: '#0891b2',   // 수채화 포인트 색상
+  lightray: '#d4a574',     // 빛 커튼 구분선 색상
+  film: '#d1d5db',         // 폴라로이드 구분선 색상
+  filmstrip: '#F8F6F3',    // 필름 구분선 색상
+}
+
 // 인트로 프리셋 목록
 export const introPresets: IntroPreset[] = [
   {
@@ -139,11 +211,14 @@ export const introPresets: IntroPreset[] = [
       backgroundPositionY: 0,
       backgroundBrightness: 50,
       overlayOpacity: 50,
+      accentColor: presetAccentColors.cinematic,
+      overlayColor: '#000000',
     },
     editableFields: [
       { type: 'text', key: 'mainTitle', label: '환영 문구', placeholder: 'Welcome to our wedding', maxLength: 40 },
       { type: 'text', key: 'dateText', label: '날짜 (영문)', placeholder: 'May 24, 2025', maxLength: 20 },
       ...commonStyleFields,
+      accentColorField,
       ...commonBackgroundFields,
     ],
   },
@@ -166,8 +241,11 @@ export const introPresets: IntroPreset[] = [
       backgroundPositionY: 30,
       backgroundBrightness: 100,
       overlayOpacity: 0,
+      accentColor: presetAccentColors.typing,
+      bodyTextColor: '#2c2c2c',
+      waveColor: '#FAF8F5',
     },
-    editableFields: [...commonTextFields, ...commonStyleFields, ...commonBackgroundFields],
+    editableFields: [...commonTextFields, ...commonStyleFields, accentColorField, ...commonBackgroundFields],
   },
   {
     id: 'blur',
@@ -188,8 +266,10 @@ export const introPresets: IntroPreset[] = [
       backgroundPositionY: 0,
       backgroundBrightness: 100,
       overlayOpacity: 40,
+      accentColor: presetAccentColors.blur,
+      overlayColor: '#000000',
     },
-    editableFields: [...commonTextFields, ...commonStyleFields, ...commonBackgroundFields],
+    editableFields: [...commonTextFields, ...commonStyleFields, accentColorField, ...commonBackgroundFields],
   },
   {
     id: 'zoom',
@@ -210,8 +290,10 @@ export const introPresets: IntroPreset[] = [
       backgroundPositionY: 50,
       backgroundBrightness: 100,
       overlayOpacity: 10,
+      accentColor: presetAccentColors.zoom,
+      bodyTextColor: '#2c2c2c',
     },
-    editableFields: [...commonTextFields, ...commonStyleFields, ...commonBackgroundFields],
+    editableFields: [...commonTextFields, ...commonStyleFields, accentColorField, ...commonBackgroundFields],
   },
   {
     id: 'letter',
@@ -230,10 +312,13 @@ export const introPresets: IntroPreset[] = [
       backgroundScale: 100,
       backgroundPositionX: 50,
       backgroundPositionY: 0,
-      backgroundBrightness: 40,
-      overlayOpacity: 0,
+      backgroundBrightness: 60,
+      overlayOpacity: 50,
+      accentColor: presetAccentColors.letter,
+      envelopeColor: '#f5f0e8',
+      overlayColor: '#000000',
     },
-    editableFields: [...commonTextFields, ...commonStyleFields, ...commonBackgroundFields],
+    editableFields: [...commonTextFields, ...commonStyleFields, accentColorField, ...commonBackgroundFields],
   },
   {
     id: 'petal',
@@ -254,8 +339,11 @@ export const introPresets: IntroPreset[] = [
       backgroundPositionY: 50,
       backgroundBrightness: 100,
       overlayOpacity: 10,
+      accentColor: presetAccentColors.petal,
+      bgColor: '#FDF6F4',
+      bodyTextColor: '#374151',
     },
-    editableFields: [...commonTextFields, ...commonStyleFields, ...commonBackgroundFields],
+    editableFields: [...commonTextFields, ...commonStyleFields, accentColorField, ...commonBackgroundFields],
   },
   {
     id: 'watercolor',
@@ -276,8 +364,10 @@ export const introPresets: IntroPreset[] = [
       backgroundPositionY: 50,
       backgroundBrightness: 100,
       overlayOpacity: 10,
+      accentColor: presetAccentColors.watercolor,
+      bodyTextColor: '#374151',
     },
-    editableFields: [...commonTextFields, ...commonStyleFields, ...commonBackgroundFields],
+    editableFields: [...commonTextFields, ...commonStyleFields, accentColorField, ...commonBackgroundFields],
   },
   {
     id: 'lightray',
@@ -298,8 +388,10 @@ export const introPresets: IntroPreset[] = [
       backgroundPositionY: 30,
       backgroundBrightness: 100,
       overlayOpacity: 15,
+      accentColor: presetAccentColors.lightray,
+      bodyTextColor: '#374151',
     },
-    editableFields: [...commonTextFields, ...commonStyleFields, ...commonBackgroundFields],
+    editableFields: [...commonTextFields, ...commonStyleFields, accentColorField, ...commonBackgroundFields],
   },
   {
     id: 'film',
@@ -320,8 +412,11 @@ export const introPresets: IntroPreset[] = [
       backgroundPositionY: 50,
       backgroundBrightness: 100,
       overlayOpacity: 5,
+      accentColor: presetAccentColors.film,
+      bgColor: '#F5F3F0',
+      bodyTextColor: '#4a4a4a',
     },
-    editableFields: [...commonTextFields, ...commonStyleFields, ...commonBackgroundFields],
+    editableFields: [...commonTextFields, ...commonStyleFields, accentColorField, ...commonBackgroundFields],
   },
   {
     id: 'filmstrip',
@@ -342,8 +437,10 @@ export const introPresets: IntroPreset[] = [
       backgroundPositionY: 50,
       backgroundBrightness: 100,
       overlayOpacity: 5,
+      accentColor: presetAccentColors.filmstrip,
+      bgColor: '#1a1a1a',
     },
-    editableFields: [...commonTextFields, ...commonStyleFields, ...commonBackgroundFields],
+    editableFields: [...commonTextFields, ...commonStyleFields, accentColorField, ...commonBackgroundFields],
   },
 ]
 
@@ -368,6 +465,23 @@ export function getDefaultIntroSettings(presetId: IntroPresetId = 'cinematic'): 
     backgroundPositionY: defaults.backgroundPositionY ?? 50,
     backgroundBrightness: defaults.backgroundBrightness ?? 100,
     overlayOpacity: defaults.overlayOpacity ?? 50,
+    // 인트로 전용 이미지 (기본값 없음 → coverImage 폴백)
+    introImage: defaults.introImage,
+    introImageSettings: defaults.introImageSettings,
+    // 배경 모드 (기본: photo)
+    imageMode: defaults.imageMode ?? 'photo',
+    solidColor: defaults.solidColor ?? '#F8F6F3',
+    gradientFrom: defaults.gradientFrom ?? '#F8F6F3',
+    gradientTo: defaults.gradientTo ?? '#e8e0d4',
+    gradientAngle: defaults.gradientAngle ?? 135,
+    // 포인트 컬러
+    accentColor: defaults.accentColor ?? presetAccentColors[presetId],
+    // 프리셋별 커스텀 컬러
+    overlayColor: defaults.overlayColor ?? presetCustomColors[presetId]?.overlayColor,
+    bodyTextColor: defaults.bodyTextColor ?? presetCustomColors[presetId]?.bodyTextColor,
+    bgColor: defaults.bgColor ?? presetCustomColors[presetId]?.bgColor,
+    waveColor: defaults.waveColor ?? presetCustomColors[presetId]?.waveColor,
+    envelopeColor: defaults.envelopeColor ?? presetCustomColors[presetId]?.envelopeColor,
   }
 }
 
@@ -405,7 +519,19 @@ export function mergeIntroSettings(
     titleFontFamily: currentSettings.titleFontFamily !== (oldDefaults.titleFontFamily || "'Gowun Batang', serif")
       ? currentSettings.titleFontFamily
       : newDefaults.titleFontFamily,
-    // 배경 설정은 새 프리셋 기본값 사용 (프리셋별로 다르므로)
+    // 인트로 전용 이미지는 유지 (프리셋 전환해도 사진은 보존)
+    introImage: currentSettings.introImage,
+    introImageSettings: currentSettings.introImageSettings,
+    // 배경 모드: 사용자가 설정했으면 유지
+    imageMode: currentSettings.imageMode !== (oldDefaults.imageMode ?? 'photo')
+      ? currentSettings.imageMode
+      : newDefaults.imageMode,
+    solidColor: currentSettings.solidColor,
+    gradientFrom: currentSettings.gradientFrom,
+    gradientTo: currentSettings.gradientTo,
+    gradientAngle: currentSettings.gradientAngle,
+    // accentColor는 새 프리셋 기본값 사용 (프리셋별로 다르므로)
+    // 프리셋별 커스텀 컬러도 새 프리셋 기본값 사용
   }
 }
 

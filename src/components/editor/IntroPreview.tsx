@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { IntroSettings } from '@/lib/introPresets'
+import { IntroSettings, IntroImageSettings, presetAccentColors, presetCustomColors } from '@/lib/introPresets'
 import { ImageSettings } from '@/store/editorStore'
 import { X } from 'lucide-react'
 
@@ -9,6 +9,8 @@ interface IntroPreviewProps {
   settings: IntroSettings
   coverImage?: string
   coverImageSettings?: Partial<ImageSettings>
+  introImage?: string
+  introImageSettings?: Partial<IntroImageSettings>
   onSkip?: () => void
   autoPlay?: boolean
   // 청첩장 정보 연동 (날짜, 장소만)
@@ -126,10 +128,20 @@ function formatDate(dateString: string): string {
   return `${month} ${day}, ${year}`
 }
 
+// hex to rgba 변환 함수
+function hexToRgba(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}
+
 export default function IntroPreview({
   settings,
   coverImage,
   coverImageSettings,
+  introImage,
+  introImageSettings,
   onSkip,
   autoPlay = true,
   weddingDate,
@@ -162,11 +174,20 @@ export default function IntroPreview({
     }
   }, [settings.presetId, autoPlay])
 
+  // 인트로 전용 이미지 결정: prop > settings.introImage > coverImage 폴백
+  const resolvedIntroImage = introImage || settings.introImage
+  const resolvedIntroImageSettings = introImage ? introImageSettings : settings.introImageSettings
+  const effectiveImage = resolvedIntroImage || coverImage
+  const effectiveImageSettings = resolvedIntroImage ? resolvedIntroImageSettings : coverImageSettings
+
+  // imageMode에 따른 배경 분기
+  const imageMode = settings.imageMode ?? 'photo'
+
   // 크롭 설정을 반영한 배경 스타일 계산
-  const cropX = coverImageSettings?.cropX ?? 0
-  const cropY = coverImageSettings?.cropY ?? 0
-  const cropWidth = coverImageSettings?.cropWidth ?? 1
-  const cropHeight = coverImageSettings?.cropHeight ?? 1
+  const cropX = effectiveImageSettings?.cropX ?? 0
+  const cropY = effectiveImageSettings?.cropY ?? 0
+  const cropWidth = effectiveImageSettings?.cropWidth ?? 1
+  const cropHeight = effectiveImageSettings?.cropHeight ?? 1
   const hasCrop = cropWidth < 1 || cropHeight < 1
 
   // 크롭 영역을 container에 맞게 확대 (비율 유지를 위해 단일 스케일 사용)
@@ -183,13 +204,32 @@ export default function IntroPreview({
   const positionX = hasCrop ? (cropX / (1 - cropWidth)) * 100 : (settings.backgroundPositionX ?? 50)
   const positionY = hasCrop ? (cropY / (1 - cropHeight)) * 100 : (settings.backgroundPositionY ?? 50)
 
-  const backgroundStyle = {
-    backgroundImage: coverImage ? `url(${coverImage})` : 'linear-gradient(135deg, #333 0%, #111 100%)',
-    backgroundSize: hasCrop ? `${finalScale}%` : (userScale > 100 ? `${userScale}%` : 'cover'),
-    backgroundPosition: `${Math.min(Math.max(positionX, 0), 100)}% ${Math.min(Math.max(positionY, 0), 100)}%`,
-    backgroundRepeat: 'no-repeat',
-    filter: `brightness(${(settings.backgroundBrightness || 100) / 100})`,
+  // 배경 스타일 계산 (imageMode에 따라 분기)
+  const computeBackgroundStyle = (): React.CSSProperties => {
+    if (imageMode === 'solid') {
+      return {
+        background: settings.solidColor || '#F8F6F3',
+        filter: `brightness(${(settings.backgroundBrightness || 100) / 100})`,
+      }
+    }
+    if (imageMode === 'gradient') {
+      const angle = settings.gradientAngle ?? 135
+      return {
+        background: `linear-gradient(${angle}deg, ${settings.gradientFrom || '#F8F6F3'} 0%, ${settings.gradientTo || '#e8e0d4'} 100%)`,
+        filter: `brightness(${(settings.backgroundBrightness || 100) / 100})`,
+      }
+    }
+    // imageMode === 'photo'
+    return {
+      backgroundImage: effectiveImage ? `url(${effectiveImage})` : 'linear-gradient(135deg, #333 0%, #111 100%)',
+      backgroundSize: hasCrop ? `${finalScale}%` : (userScale > 100 ? `${userScale}%` : 'cover'),
+      backgroundPosition: `${Math.min(Math.max(positionX, 0), 100)}% ${Math.min(Math.max(positionY, 0), 100)}%`,
+      backgroundRepeat: 'no-repeat' as const,
+      filter: `brightness(${(settings.backgroundBrightness || 100) / 100})`,
+    }
   }
+
+  const backgroundStyle = computeBackgroundStyle()
 
   const overlayStyle = {
     backgroundColor: `rgba(0, 0, 0, ${(settings.overlayOpacity ?? 30) / 100})`,
@@ -206,9 +246,17 @@ export default function IntroPreview({
     color: settings.subTitleColor || 'rgba(255,255,255,0.8)',
   }
 
+  // accentColor: 사용자 설정 우선, 없으면 프리셋 기본값
+  const accentColor = settings.accentColor || presetAccentColors[settings.presetId] || '#d4a574'
+  const overlayColor = settings.overlayColor || presetCustomColors[settings.presetId]?.overlayColor || '#000000'
+  const bodyTextColor = settings.bodyTextColor || presetCustomColors[settings.presetId]?.bodyTextColor || '#2c2c2c'
+  const bgColor = settings.bgColor || presetCustomColors[settings.presetId]?.bgColor || '#F8F6F3'
+  const waveColor = settings.waveColor || presetCustomColors[settings.presetId]?.waveColor || '#FAF8F5'
+  const envelopeColor = settings.envelopeColor || presetCustomColors[settings.presetId]?.envelopeColor || '#f5f0e8'
+
   // 프리셋별 렌더링
   const renderIntro = () => {
-    const commonProps = { key, settings: effectiveSettings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle }
+    const commonProps = { key, settings: effectiveSettings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle, accentColor, overlayColor, bodyTextColor, bgColor, waveColor, envelopeColor }
 
     switch (settings.presetId) {
       case 'cinematic':
@@ -564,6 +612,7 @@ export default function IntroPreview({
           건너뛰기
         </button>
       )}
+
     </div>
   )
 }
@@ -575,21 +624,34 @@ interface IntroComponentProps {
   overlayStyle: React.CSSProperties
   titleStyle: React.CSSProperties
   subTitleStyle: React.CSSProperties
+  accentColor: string
+  overlayColor: string
+  bodyTextColor: string
+  bgColor: string
+  waveColor: string
+  envelopeColor: string
 }
 
 // 시네마틱 인트로
-function CinematicIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
+function CinematicIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle, accentColor, overlayColor }: IntroComponentProps) {
+  const overlayOpacity = (settings.overlayOpacity ?? 30) / 100
+  const customOverlayStyle = {
+    backgroundColor: hexToRgba(overlayColor, overlayOpacity),
+  }
+  // 서브텍스트 색상을 accentColor에서 파생 (80% 불투명도)
+  const cinematicSubStyle = { ...subTitleStyle, color: hexToRgba(accentColor, 0.8) }
+
   return (
     <div className="relative h-full">
-      <div className="absolute inset-0 intro-fade-in intro-zoom-out" style={{ ...backgroundStyle, filter: `${backgroundStyle.filter} grayscale(100%)` }} />
-      <div className="absolute inset-0" style={overlayStyle} />
+      <div className="absolute inset-0 intro-fade-in intro-zoom-out" style={backgroundStyle} />
+      <div className="absolute inset-0" style={customOverlayStyle} />
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
-        <div className="intro-line-expand h-px bg-[#F8F6F3]/50 mb-5" />
+        <div className="intro-line-expand h-px mb-5" style={{ backgroundColor: `${accentColor}80` }} />
         <p className="intro-letter-spread uppercase whitespace-nowrap" style={titleStyle}>
           {settings.mainTitle || 'Welcome to our wedding'}
         </p>
         {settings.dateText && (
-          <p className="text-[12px] mt-3.5 intro-fade-in-delay" style={{ ...subTitleStyle, letterSpacing: '2px' }}>
+          <p className="text-[12px] mt-3.5 intro-fade-in-delay" style={{ ...cinematicSubStyle, letterSpacing: '2px' }}>
             {settings.dateText}
           </p>
         )}
@@ -599,7 +661,7 @@ function CinematicIntro({ settings, backgroundStyle, overlayStyle, titleStyle, s
 }
 
 // 타이핑 인트로 (상하 분할 레이아웃)
-function TypingIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
+function TypingIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle, accentColor, bodyTextColor, waveColor }: IntroComponentProps) {
   const [displayText, setDisplayText] = useState('')
   const [completed, setCompleted] = useState(false)
   const fullText = settings.mainTitle || '소중한 분들을 초대합니다'
@@ -626,17 +688,11 @@ function TypingIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subT
     return () => clearTimeout(startTimer)
   }, [fullText])
 
-  // 밝은 배경용 텍스트 색상 보정
+  // 밝은 배경용 타이틀 색상 보정 (bodyTextColor 유지)
   const adjustedTitleStyle = {
     ...titleStyle,
-    color: titleStyle.color === '#ffffff' ? '#2c2c2c' : titleStyle.color,
+    color: titleStyle.color === '#ffffff' ? bodyTextColor : titleStyle.color,
   }
-  const adjustedSubColor = (() => {
-    const c = subTitleStyle.color as string
-    if (c && c.startsWith('rgba(255,255,255,')) return 'rgba(0,0,0,0.35)'
-    if (c === 'rgba(255,255,255,0.8)') return 'rgba(0,0,0,0.35)'
-    return c
-  })()
 
   return (
     <div className="relative h-full flex flex-col">
@@ -647,20 +703,20 @@ function TypingIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subT
         {/* 물결 경계 (2레이어) */}
         <div className="absolute bottom-[8px] left-0 right-0 z-10">
           <svg className="w-[200%] intro-wave-drift" viewBox="0 0 1440 40" preserveAspectRatio="none" style={{ height: 22, display: 'block', animationDuration: '8s' }}>
-            <path d="M0,20 C240,40 480,0 720,20 C960,40 1200,0 1440,20 L1440,40 L0,40 Z" fill="rgba(250,248,245,0.45)" />
+            <path d="M0,20 C240,40 480,0 720,20 C960,40 1200,0 1440,20 L1440,40 L0,40 Z" fill={hexToRgba(waveColor, 0.45)} />
           </svg>
         </div>
         <div className="absolute bottom-[-1px] left-0 right-0 z-10">
           <svg className="w-[200%] intro-wave-drift" viewBox="0 0 1440 40" preserveAspectRatio="none" style={{ height: 28, display: 'block' }}>
-            <path d="M0,20 C240,40 480,0 720,20 C960,40 1200,0 1440,20 L1440,40 L0,40 Z" fill="#FAF8F5" />
+            <path d="M0,20 C240,40 480,0 720,20 C960,40 1200,0 1440,20 L1440,40 L0,40 Z" fill={waveColor} />
           </svg>
         </div>
       </div>
 
       {/* 하단: 텍스트 영역 45% */}
-      <div className="relative flex-1 bg-[#FAF8F5] flex flex-col items-center justify-center text-center px-6">
+      <div className="relative flex-1 flex flex-col items-center justify-center text-center px-6" style={{ backgroundColor: waveColor }}>
         {settings.subTitle && (
-          <p className="text-[10px] tracking-[4px] mb-5 intro-slide-up" style={{ color: adjustedSubColor }}>
+          <p className="text-[10px] tracking-[4px] mb-5 intro-slide-up" style={{ color: hexToRgba(accentColor, 0.6) }}>
             {settings.subTitle}
           </p>
         )}
@@ -668,14 +724,14 @@ function TypingIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subT
           {displayText}
           {!completed && <span className="intro-typing-cursor">|</span>}
         </p>
-        <div className="w-16 h-px bg-gray-300/40 my-5 intro-split-reveal" style={{ animationDelay: '2.8s' }} />
+        <div className="w-16 h-px my-5 intro-split-reveal" style={{ backgroundColor: `${accentColor}66`, animationDelay: '2.8s' }} />
         {settings.dateText && (
-          <p className="text-xs intro-fade-in-up" style={{ color: adjustedSubColor, animationDelay: '3.2s', opacity: 0 }}>
+          <p className="text-xs intro-fade-in-up" style={{ color: hexToRgba(accentColor, 0.5), animationDelay: '3.2s', opacity: 0 }}>
             {settings.dateText}
           </p>
         )}
         {settings.venueText && (
-          <p className="text-[11px] mt-1.5 intro-fade-in-up" style={{ color: 'rgba(0,0,0,0.3)', animationDelay: '3.5s', opacity: 0 }}>
+          <p className="text-[11px] mt-1.5 intro-fade-in-up" style={{ color: hexToRgba(accentColor, 0.4), animationDelay: '3.5s', opacity: 0 }}>
             {settings.venueText}
           </p>
         )}
@@ -685,24 +741,29 @@ function TypingIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subT
 }
 
 // 블러 인트로
-function BlurIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
+function BlurIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle, accentColor, overlayColor }: IntroComponentProps) {
+  const overlayOpacity = (settings.overlayOpacity ?? 30) / 100
+  const customOverlayStyle = {
+    backgroundColor: hexToRgba(overlayColor, overlayOpacity),
+  }
+
   return (
     <div className="relative h-full overflow-hidden">
       <div className="absolute inset-0 intro-blur-to-sharp" style={backgroundStyle} />
-      <div className="absolute inset-0" style={overlayStyle} />
+      <div className="absolute inset-0" style={customOverlayStyle} />
       <BokehParticles count={10} color="white" />
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
         {settings.subTitle && (
-          <p className="text-xs tracking-[4px] mb-4 intro-fade-in-up" style={{ ...subTitleStyle, animationDelay: '1.5s', opacity: 0 }}>
+          <p className="text-xs tracking-[4px] mb-4 intro-fade-in-up" style={{ color: hexToRgba(accentColor, 0.7), animationDelay: '1.5s', opacity: 0 }}>
             {settings.subTitle}
           </p>
         )}
         <p className="intro-fade-in-up" style={{ ...titleStyle, animationDelay: '2s', opacity: 0 }}>
           {settings.mainTitle || '우리 결혼합니다'}
         </p>
-        <div className="w-16 h-px bg-[#F8F6F3]/50 my-6 intro-split-reveal" style={{ animationDelay: '2.5s' }} />
+        <div className="w-16 h-px my-6 intro-split-reveal" style={{ backgroundColor: `${accentColor}80`, animationDelay: '2.5s' }} />
         {settings.dateText && (
-          <p className="text-sm intro-fade-in-up" style={{ ...subTitleStyle, animationDelay: '2.8s', opacity: 0 }}>
+          <p className="text-sm intro-fade-in-up" style={{ color: hexToRgba(accentColor, 0.7), animationDelay: '2.8s', opacity: 0 }}>
             {settings.dateText}
           </p>
         )}
@@ -712,24 +773,18 @@ function BlurIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTit
 }
 
 // 줌 인트로 (중앙 확대 레이아웃)
-function ZoomIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
-  // 밝은 배경용 텍스트 색상 보정
+function ZoomIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle, accentColor, bodyTextColor }: IntroComponentProps) {
+  // 밝은 배경용 타이틀 색상 보정 (bodyTextColor 유지)
   const adjustedTitleStyle = {
     ...titleStyle,
-    color: titleStyle.color === '#ffffff' ? '#2c2c2c' : titleStyle.color,
+    color: titleStyle.color === '#ffffff' ? bodyTextColor : titleStyle.color,
   }
-  const adjustedSubColor = (() => {
-    const c = subTitleStyle.color as string
-    if (c && c.startsWith('rgba(255,255,255,')) return 'rgba(0,0,0,0.35)'
-    if (c === 'rgba(255,255,255,0.8)') return 'rgba(0,0,0,0.35)'
-    return c
-  })()
 
   return (
     <div className="relative h-full flex flex-col items-center justify-center overflow-hidden bg-[#F7F5F2]">
       {/* 서브타이틀 (사진 위) */}
       {settings.subTitle && (
-        <p className="text-[10px] tracking-[4px] mb-6 intro-fade-in-up relative z-10" style={{ color: adjustedSubColor, opacity: 0, animationDelay: '0.5s' }}>
+        <p className="text-[10px] tracking-[4px] mb-6 intro-fade-in-up relative z-10" style={{ color: hexToRgba(accentColor, 0.6), opacity: 0, animationDelay: '0.5s' }}>
           {settings.subTitle}
         </p>
       )}
@@ -753,14 +808,14 @@ function ZoomIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTit
       <p className="mt-6 intro-fade-in-up relative z-10" style={{ ...adjustedTitleStyle, opacity: 0, animationDelay: '1.5s' }}>
         {settings.mainTitle || '새로운 시작을 함께해주세요'}
       </p>
-      <div className="w-16 h-px bg-gray-300/40 my-4 intro-split-reveal relative z-10" style={{ animationDelay: '2s', opacity: 0 }} />
+      <div className="w-16 h-px my-4 intro-split-reveal relative z-10" style={{ backgroundColor: `${accentColor}66`, animationDelay: '2s', opacity: 0 }} />
       {settings.dateText && (
-        <p className="text-xs intro-fade-in-up relative z-10" style={{ color: adjustedSubColor, opacity: 0, animationDelay: '2.3s' }}>
+        <p className="text-xs intro-fade-in-up relative z-10" style={{ color: hexToRgba(accentColor, 0.5), opacity: 0, animationDelay: '2.3s' }}>
           {settings.dateText}
         </p>
       )}
       {settings.venueText && (
-        <p className="text-[11px] mt-1.5 intro-fade-in-up relative z-10" style={{ color: 'rgba(0,0,0,0.25)', opacity: 0, animationDelay: '2.6s' }}>
+        <p className="text-[11px] mt-1.5 intro-fade-in-up relative z-10" style={{ color: hexToRgba(accentColor, 0.4), opacity: 0, animationDelay: '2.6s' }}>
           {settings.venueText}
         </p>
       )}
@@ -769,12 +824,29 @@ function ZoomIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTit
 }
 
 // 편지 인트로 (봉투 열림 애니메이션)
-function LetterIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
+function LetterIntro({ settings, backgroundStyle, titleStyle, subTitleStyle, accentColor, overlayColor, envelopeColor }: IntroComponentProps) {
   // 편지 카드 내부는 밝은 배경이므로 흰색 텍스트면 어두운 색으로 변환
   const cardTitleColor = titleStyle.color === '#ffffff' ? '#4a4a4a' : titleStyle.color
+
+  // envelopeColor에서 더 어두운 색 파생
+  const darkerEnvelopeColor = (() => {
+    const r = parseInt(envelopeColor.slice(1, 3), 16)
+    const g = parseInt(envelopeColor.slice(3, 5), 16)
+    const b = parseInt(envelopeColor.slice(5, 7), 16)
+    return `rgb(${Math.max(0, r - 15)}, ${Math.max(0, g - 15)}, ${Math.max(0, b - 15)})`
+  })()
+
+  const overlayOpacity = (settings.overlayOpacity ?? 30) / 100
+  const customOverlayStyle = {
+    backgroundColor: hexToRgba(overlayColor, overlayOpacity),
+  }
+
   return (
     <div className="relative h-full flex items-center justify-center overflow-hidden">
-      <div className="absolute inset-0" style={{ ...backgroundStyle, filter: `${backgroundStyle.filter} grayscale(100%)` }} />
+      {/* Background image */}
+      <div className="absolute inset-0" style={backgroundStyle} />
+      {/* Overlay with overlayColor */}
+      <div className="absolute inset-0" style={customOverlayStyle} />
 
       {/* 화이트 꽃잎 */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -799,28 +871,28 @@ function LetterIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: I
       {/* 봉투 */}
       <div className="relative mt-[50px]" style={{ animation: 'introEnvelopeDown 0.8s ease-in 3.5s forwards' }}>
         <div className="relative w-[280px] h-[260px]">
-          <div className="absolute inset-0 bg-[#f5f0e8] shadow-lg" style={{ zIndex: 1 }} />
+          <div className="absolute inset-0 shadow-lg" style={{ backgroundColor: envelopeColor, zIndex: 1 }} />
           <div
             className="absolute left-[15px] right-[15px] h-[180px] bg-[#F8F6F3] rounded-md shadow-xl flex flex-col items-center justify-center p-4 text-center"
             style={{ zIndex: 2, top: '80px', animation: 'introCardSlideOut 1.2s ease-out 1.5s forwards' }}
           >
-            <p className="text-[8px] tracking-[2px] mb-0.5" style={{ color: subTitleStyle.color === 'rgba(255,255,255,0.8)' ? '#9ca3af' : subTitleStyle.color }}>{settings.subTitle || 'WEDDING INVITATION'}</p>
+            <p className="text-[8px] tracking-[2px] mb-0.5" style={{ color: hexToRgba(accentColor, 0.7) }}>{settings.subTitle || 'WEDDING INVITATION'}</p>
             <p className="mb-3" style={{ ...titleStyle, color: cardTitleColor, fontSize: `${Math.min(parseInt(titleStyle.fontSize as string) || 24, 20)}px` }}>
               {settings.mainTitle || '우리 결혼합니다'}
             </p>
-            <div className="w-8 h-px bg-[#d4a574] mb-3" />
+            <div className="w-8 h-px mb-3" style={{ backgroundColor: accentColor }} />
             <p className="text-sm text-gray-600">{settings.dateText}</p>
           </div>
-          <div className="absolute inset-x-0 top-0 bottom-0 bg-[#f5f0e8] shadow-sm" style={{ zIndex: 3, clipPath: 'polygon(0 0, 50% 40%, 100% 0, 100% 100%, 0 100%)' }} />
+          <div className="absolute inset-x-0 top-0 bottom-0 shadow-sm" style={{ backgroundColor: envelopeColor, zIndex: 3, clipPath: 'polygon(0 0, 50% 40%, 100% 0, 100% 100%, 0 100%)' }} />
           <div
-            className="absolute top-0 left-0 right-0 h-[104px] bg-[#f5f0e8] shadow-sm origin-top"
-            style={{ zIndex: 4, clipPath: 'polygon(0 0, 50% 100%, 100% 0)', transformStyle: 'preserve-3d', animation: 'introFlapOpen 1s ease-in-out 0.6s forwards' }}
+            className="absolute top-0 left-0 right-0 h-[104px] shadow-sm origin-top"
+            style={{ backgroundColor: envelopeColor, zIndex: 4, clipPath: 'polygon(0 0, 50% 100%, 100% 0)', transformStyle: 'preserve-3d', animation: 'introFlapOpen 1s ease-in-out 0.6s forwards' }}
           >
-            <div className="absolute inset-0 bg-[#ebe6de]" style={{ clipPath: 'polygon(5% 5%, 50% 90%, 95% 5%)' }} />
+            <div className="absolute inset-0" style={{ backgroundColor: darkerEnvelopeColor, clipPath: 'polygon(5% 5%, 50% 90%, 95% 5%)' }} />
           </div>
           <div
-            className="absolute top-[60px] left-1/2 -translate-x-1/2 w-11 h-11 bg-black rounded-full flex items-center justify-center shadow-md"
-            style={{ zIndex: 5, animation: 'introSealBreak 0.5s ease-out 0.2s forwards' }}
+            className="absolute top-[60px] left-1/2 -translate-x-1/2 w-11 h-11 rounded-full flex items-center justify-center shadow-md"
+            style={{ backgroundColor: accentColor, zIndex: 5, animation: 'introSealBreak 0.5s ease-out 0.2s forwards' }}
           >
             <span className="text-white text-lg">♥</span>
           </div>
@@ -832,11 +904,11 @@ function LetterIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: I
         className="absolute w-[280px] h-[360px] bg-[#F8F6F3] rounded-lg shadow-2xl flex flex-col items-center justify-center p-6 text-center"
         style={{ opacity: 0, zIndex: 10, animation: 'introCardExpand 1s ease-out 4s forwards' }}
       >
-        <p className="text-[11px] tracking-[4px] mb-1" style={{ color: subTitleStyle.color === 'rgba(255,255,255,0.8)' ? '#9ca3af' : subTitleStyle.color }}>{settings.subTitle || 'WEDDING INVITATION'}</p>
+        <p className="text-[11px] tracking-[4px] mb-1" style={{ color: hexToRgba(accentColor, 0.7) }}>{settings.subTitle || 'WEDDING INVITATION'}</p>
         <p className="mb-4" style={{ ...titleStyle, color: cardTitleColor }}>
           {settings.mainTitle || '우리 결혼합니다'}
         </p>
-        <div className="w-12 h-px bg-[#d4a574] mb-4" />
+        <div className="w-12 h-px mb-4" style={{ backgroundColor: accentColor }} />
         <p className="text-lg text-gray-600">{settings.dateText}</p>
         {settings.venueText && <p className="text-xs text-gray-400 mt-4">{settings.venueText}</p>}
       </div>
@@ -845,18 +917,18 @@ function LetterIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: I
 }
 
 // 꽃잎 인트로 (원형 윈도우 레이아웃)
-function PetalIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
-  // 밝은 배경이므로 흰색 텍스트면 어두운 색으로 변환
-  const adjustedTitleColor = titleStyle.color === '#ffffff' ? '#374151' : titleStyle.color
-  const adjustedSubColor = subTitleStyle.color === 'rgba(255,255,255,0.8)' ? '#9ca3af' : subTitleStyle.color
+function PetalIntro({ settings, backgroundStyle, titleStyle, subTitleStyle, accentColor, bodyTextColor, bgColor }: IntroComponentProps) {
+  // 밝은 배경이므로 흰색 텍스트면 어두운 색으로 변환 (titleStyle은 bodyTextColor 유지)
+  const adjustedTitleColor = titleStyle.color === '#ffffff' ? bodyTextColor : titleStyle.color
+
   return (
-    <div className="relative h-full flex flex-col items-center justify-center overflow-hidden bg-[#FDF6F4]">
+    <div className="relative h-full flex flex-col items-center justify-center overflow-hidden" style={{ backgroundColor: bgColor }}>
       {/* 꽃잎: 전체 영역에 걸쳐 떨어짐 */}
       <FallingPetals count={10} />
 
       {/* 서브타이틀 (원 위) */}
       {settings.subTitle && (
-        <p className="text-[10px] tracking-[4px] mb-6 intro-fade-in-up relative z-10" style={{ color: adjustedSubColor, opacity: 0, animationDelay: '0.3s' }}>
+        <p className="text-[10px] tracking-[4px] mb-6 intro-fade-in-up relative z-10" style={{ color: hexToRgba(accentColor, 0.8), opacity: 0, animationDelay: '0.3s' }}>
           {settings.subTitle}
         </p>
       )}
@@ -871,14 +943,14 @@ function PetalIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: In
       <p className="mt-6 intro-fade-in-up relative z-10" style={{ ...titleStyle, color: adjustedTitleColor, opacity: 0, animationDelay: '0.6s' }}>
         {settings.mainTitle || '꽃잎처럼 아름다운 날'}
       </p>
-      <div className="w-16 h-px bg-gray-300/40 my-4 intro-split-reveal relative z-10" style={{ animationDelay: '1s', opacity: 0 }} />
+      <div className="w-16 h-px my-4 intro-split-reveal relative z-10" style={{ backgroundColor: `${accentColor}66`, animationDelay: '1s', opacity: 0 }} />
       {settings.dateText && (
-        <p className="text-xs intro-fade-in-up relative z-10" style={{ color: adjustedSubColor, opacity: 0, animationDelay: '1.3s' }}>
+        <p className="text-xs intro-fade-in-up relative z-10" style={{ color: hexToRgba(accentColor, 0.7), opacity: 0, animationDelay: '1.3s' }}>
           {settings.dateText}
         </p>
       )}
       {settings.venueText && (
-        <p className="text-[11px] mt-1.5 intro-fade-in-up relative z-10" style={{ color: 'rgba(0,0,0,0.3)', opacity: 0, animationDelay: '1.6s' }}>
+        <p className="text-[11px] mt-1.5 intro-fade-in-up relative z-10" style={{ color: hexToRgba(accentColor, 0.6), opacity: 0, animationDelay: '1.6s' }}>
           {settings.venueText}
         </p>
       )}
@@ -887,10 +959,10 @@ function PetalIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: In
 }
 
 // 수채화 인트로 (아치 윈도우 레이아웃)
-function WatercolorIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
-  // 밝은 배경이므로 흰색 텍스트면 어두운 색으로 변환
-  const adjustedTitleColor = titleStyle.color === '#ffffff' ? '#374151' : titleStyle.color
-  const adjustedSubColor = subTitleStyle.color === 'rgba(255,255,255,0.8)' ? 'rgba(120,113,108,0.7)' : subTitleStyle.color
+function WatercolorIntro({ settings, backgroundStyle, titleStyle, subTitleStyle, accentColor, bodyTextColor }: IntroComponentProps) {
+  // 밝은 배경이므로 흰색 텍스트면 어두운 색으로 변환 (titleStyle은 bodyTextColor 유지)
+  const adjustedTitleColor = titleStyle.color === '#ffffff' ? bodyTextColor : titleStyle.color
+
   return (
     <div className="relative h-full flex flex-col items-center justify-center overflow-hidden bg-[#F8F6F3]">
       {/* 수채화 블롭 배경 (은은하게) */}
@@ -923,13 +995,13 @@ function WatercolorIntro({ settings, backgroundStyle, titleStyle, subTitleStyle 
         <p className="text-center" style={{ ...titleStyle, color: adjustedTitleColor }}>{settings.mainTitle || 'A New Chapter Begins'}</p>
       </div>
       <div
-        className="w-14 h-px bg-gray-300/40 my-4 intro-text-spread relative z-10"
-        style={{ opacity: 0, animationDelay: '1.6s' }}
+        className="w-14 h-px my-4 intro-text-spread relative z-10"
+        style={{ backgroundColor: `${accentColor}66`, opacity: 0, animationDelay: '1.6s' }}
       />
       {settings.subTitle && (
         <p
           className="text-[10px] tracking-[4px] intro-text-spread relative z-10"
-          style={{ color: adjustedSubColor, opacity: 0, animationDelay: '2s' }}
+          style={{ color: hexToRgba(accentColor, 0.7), opacity: 0, animationDelay: '2s' }}
         >
           {settings.subTitle}
         </p>
@@ -937,7 +1009,7 @@ function WatercolorIntro({ settings, backgroundStyle, titleStyle, subTitleStyle 
       {settings.dateText && (
         <p
           className="text-xs mt-4 intro-text-spread relative z-10"
-          style={{ color: adjustedSubColor, opacity: 0, animationDelay: '2.3s' }}
+          style={{ color: hexToRgba(accentColor, 0.7), opacity: 0, animationDelay: '2.3s' }}
         >
           {settings.dateText}
         </p>
@@ -945,7 +1017,7 @@ function WatercolorIntro({ settings, backgroundStyle, titleStyle, subTitleStyle 
       {settings.venueText && (
         <p
           className="text-[11px] mt-1.5 intro-text-spread relative z-10"
-          style={{ color: 'rgba(0,0,0,0.3)', opacity: 0, animationDelay: '2.6s' }}
+          style={{ color: hexToRgba(accentColor, 0.6), opacity: 0, animationDelay: '2.6s' }}
         >
           {settings.venueText}
         </p>
@@ -955,16 +1027,9 @@ function WatercolorIntro({ settings, backgroundStyle, titleStyle, subTitleStyle 
 }
 
 // 빛의 커튼 인트로 (대각 분할 레이아웃)
-function LightrayIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
-  // 밝은 배경용 텍스트 색상 보정
-  const adjustedTitleColor = titleStyle.color === '#ffffff' ? '#374151' : titleStyle.color
-  const adjustedSubColor = (() => {
-    const c = subTitleStyle.color as string
-    if (c && c.startsWith('rgba(255,255,255,')) return 'rgba(212,165,116,0.8)'
-    if (c === 'rgba(255,255,255,0.8)') return 'rgba(212,165,116,0.8)'
-    if (c && c.startsWith('rgba(253,230,138')) return c
-    return c
-  })()
+function LightrayIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle, accentColor, bodyTextColor }: IntroComponentProps) {
+  // 밝은 배경용 타이틀 색상 보정 (bodyTextColor 유지)
+  const adjustedTitleColor = titleStyle.color === '#ffffff' ? bodyTextColor : titleStyle.color
 
   return (
     <div className="relative h-full overflow-hidden bg-[#F8F6F3]">
@@ -980,21 +1045,21 @@ function LightrayIntro({ settings, backgroundStyle, overlayStyle, titleStyle, su
       {/* 하단 텍스트 영역 (좌측 정렬) */}
       <div className="absolute bottom-0 left-0 right-0 flex flex-col items-start px-8 pb-16 z-20">
         {settings.subTitle && (
-          <p className="text-[10px] tracking-[4px] mb-4 intro-slide-in-left" style={{ color: adjustedSubColor, opacity: 0, animationDelay: '0.8s' }}>
+          <p className="text-[10px] tracking-[4px] mb-4 intro-slide-in-left" style={{ color: hexToRgba(accentColor, 0.8), opacity: 0, animationDelay: '0.8s' }}>
             {settings.subTitle}
           </p>
         )}
         <p className="intro-fade-in-up" style={{ ...titleStyle, color: adjustedTitleColor, opacity: 0, animationDelay: '1.2s' }}>
           {settings.mainTitle || '영원을 약속하는 날'}
         </p>
-        <div className="w-16 h-px bg-[#d4a574]/30 my-4 intro-line-expand" style={{ animationDelay: '1.8s' }} />
+        <div className="w-16 h-px my-4 intro-line-expand" style={{ backgroundColor: `${accentColor}4D`, animationDelay: '1.8s' }} />
         {settings.dateText && (
-          <p className="text-xs intro-fade-in-up" style={{ color: adjustedSubColor, opacity: 0, animationDelay: '2.2s' }}>
+          <p className="text-xs intro-fade-in-up" style={{ color: hexToRgba(accentColor, 0.7), opacity: 0, animationDelay: '2.2s' }}>
             {settings.dateText}
           </p>
         )}
         {settings.venueText && (
-          <p className="text-[11px] mt-1.5 intro-fade-in-up" style={{ color: 'rgba(0,0,0,0.25)', opacity: 0, animationDelay: '2.5s' }}>
+          <p className="text-[11px] mt-1.5 intro-fade-in-up" style={{ color: hexToRgba(accentColor, 0.6), opacity: 0, animationDelay: '2.5s' }}>
             {settings.venueText}
           </p>
         )}
@@ -1004,22 +1069,16 @@ function LightrayIntro({ settings, backgroundStyle, overlayStyle, titleStyle, su
 }
 
 // 필름 인트로 (폴라로이드 레이아웃)
-function FilmIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
-  // 밝은 배경이므로 밝은 텍스트면 어두운 색으로 변환
+function FilmIntro({ settings, backgroundStyle, titleStyle, subTitleStyle, accentColor, bodyTextColor, bgColor }: IntroComponentProps) {
+  // 밝은 배경이므로 밝은 텍스트면 어두운 색으로 변환 (titleStyle은 bodyTextColor 유지)
   const adjustedTitleColor = (() => {
     const c = titleStyle.color as string
-    if (c === '#ffffff' || c === '#fef3c7') return '#4a4a4a'
-    return c
-  })()
-  const adjustedSubColor = (() => {
-    const c = subTitleStyle.color as string
-    if (c && (c.startsWith('rgba(254,243,199') || c.startsWith('rgba(255,255,255'))) return '#9ca3af'
-    if (c === 'rgba(255,255,255,0.8)') return '#9ca3af'
+    if (c === '#ffffff' || c === '#fef3c7') return bodyTextColor
     return c
   })()
 
   return (
-    <div className="relative h-full flex flex-col items-center justify-center overflow-hidden bg-[#F5F3F0]">
+    <div className="relative h-full flex flex-col items-center justify-center overflow-hidden" style={{ backgroundColor: bgColor }}>
       {/* 미세한 노이즈 텍스처 */}
       <div className="absolute inset-0 opacity-[0.03]" style={{
         backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
@@ -1045,7 +1104,7 @@ function FilmIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: Int
             style={{
               fontFamily: "'Gowun Batang', serif",
               fontSize: '11px',
-              color: adjustedSubColor,
+              color: hexToRgba(accentColor, 0.7),
               letterSpacing: '1px',
             }}
           >
@@ -1061,11 +1120,11 @@ function FilmIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: Int
       >
         {settings.mainTitle || '우리의 순간에 초대합니다'}
       </p>
-      <div className="w-14 h-px bg-gray-300/40 my-4 intro-split-reveal relative z-10" style={{ animationDelay: '1.5s', opacity: 0 }} />
+      <div className="w-14 h-px my-4 intro-split-reveal relative z-10" style={{ backgroundColor: `${accentColor}66`, animationDelay: '1.5s', opacity: 0 }} />
       {settings.dateText && (
         <p
           className="text-xs intro-fade-in-up relative z-10"
-          style={{ color: adjustedSubColor, opacity: 0, animationDelay: '1.8s' }}
+          style={{ color: hexToRgba(accentColor, 0.6), opacity: 0, animationDelay: '1.8s' }}
         >
           {settings.dateText}
         </p>
@@ -1073,7 +1132,7 @@ function FilmIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: Int
       {settings.venueText && (
         <p
           className="text-[11px] mt-1.5 intro-fade-in-up relative z-10"
-          style={{ color: 'rgba(0,0,0,0.3)', opacity: 0, animationDelay: '2.1s' }}
+          style={{ color: hexToRgba(accentColor, 0.5), opacity: 0, animationDelay: '2.1s' }}
         >
           {settings.venueText}
         </p>
@@ -1083,26 +1142,34 @@ function FilmIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: Int
 }
 
 // 필름 스트립 인트로
-function FilmstripIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }: IntroComponentProps) {
+function FilmstripIntro({ settings, backgroundStyle, titleStyle, subTitleStyle, accentColor, bgColor }: IntroComponentProps) {
   const sprocketCount = 12
   const sprockets = Array.from({ length: sprocketCount }, (_, i) => i)
 
+  // bgColor에서 더 어두운 색 파생
+  const darkerBgColor = (() => {
+    const r = parseInt(bgColor.slice(1, 3), 16)
+    const g = parseInt(bgColor.slice(3, 5), 16)
+    const b = parseInt(bgColor.slice(5, 7), 16)
+    return `rgb(${Math.max(0, r - 15)}, ${Math.max(0, g - 15)}, ${Math.max(0, b - 15)})`
+  })()
+
   return (
-    <div className="relative h-full flex flex-col items-center justify-center overflow-hidden bg-[#1a1a1a]">
+    <div className="relative h-full flex flex-col items-center justify-center overflow-hidden" style={{ backgroundColor: bgColor }}>
       {/* 필름 스트립 프레임 */}
       <div
         className="relative intro-film-slide-in z-10"
         style={{ width: 280 }}
       >
         {/* 필름 상단 바 + 스프로킷 홀 */}
-        <div className="relative bg-[#111] h-[22px] flex items-center justify-between px-2">
+        <div className="relative h-[22px] flex items-center justify-between px-2" style={{ backgroundColor: darkerBgColor }}>
           {sprockets.map((i) => (
-            <div key={`t${i}`} className="w-[10px] h-[7px] rounded-[1.5px] bg-[#1a1a1a]" style={{ boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.06)' }} />
+            <div key={`t${i}`} className="w-[10px] h-[7px] rounded-[1.5px]" style={{ backgroundColor: bgColor, boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.06)' }} />
           ))}
         </div>
 
         {/* 사진 영역 */}
-        <div className="relative bg-[#111] px-[6px]">
+        <div className="relative px-[6px]" style={{ backgroundColor: darkerBgColor }}>
           <div className="relative w-full overflow-hidden" style={{ aspectRatio: '3 / 2' }}>
             <div className="absolute inset-0 intro-slow-zoom" style={backgroundStyle} />
             <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${(settings.overlayOpacity ?? 5) / 100})` }} />
@@ -1110,9 +1177,9 @@ function FilmstripIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }
         </div>
 
         {/* 필름 하단 바 + 스프로킷 홀 */}
-        <div className="relative bg-[#111] h-[22px] flex items-center justify-between px-2">
+        <div className="relative h-[22px] flex items-center justify-between px-2" style={{ backgroundColor: darkerBgColor }}>
           {sprockets.map((i) => (
-            <div key={`b${i}`} className="w-[10px] h-[7px] rounded-[1.5px] bg-[#1a1a1a]" style={{ boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.06)' }} />
+            <div key={`b${i}`} className="w-[10px] h-[7px] rounded-[1.5px]" style={{ backgroundColor: bgColor, boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.06)' }} />
           ))}
         </div>
 
@@ -1129,11 +1196,11 @@ function FilmstripIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }
       >
         {settings.mainTitle || '우리의 한 장면'}
       </p>
-      <div className="w-14 h-px bg-[#F8F6F3]/15 my-4 intro-line-expand relative z-10" style={{ animationDelay: '1.8s', opacity: 0 }} />
+      <div className="w-14 h-px my-4 intro-line-expand relative z-10" style={{ backgroundColor: `${accentColor}26`, animationDelay: '1.8s', opacity: 0 }} />
       {settings.subTitle && (
         <p
           className="text-[10px] tracking-[4px] intro-slide-in-right relative z-10"
-          style={{ ...subTitleStyle, opacity: 0, animationDelay: '2.1s' }}
+          style={{ color: hexToRgba(accentColor, 0.5), opacity: 0, animationDelay: '2.1s' }}
         >
           {settings.subTitle}
         </p>
@@ -1141,7 +1208,7 @@ function FilmstripIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }
       {settings.dateText && (
         <p
           className="text-xs mt-3 intro-fade-in-up relative z-10"
-          style={{ ...subTitleStyle, opacity: 0, animationDelay: '2.4s' }}
+          style={{ color: hexToRgba(accentColor, 0.5), opacity: 0, animationDelay: '2.4s' }}
         >
           {settings.dateText}
         </p>
@@ -1149,7 +1216,7 @@ function FilmstripIntro({ settings, backgroundStyle, titleStyle, subTitleStyle }
       {settings.venueText && (
         <p
           className="text-[11px] mt-1.5 intro-fade-in-up relative z-10"
-          style={{ color: 'rgba(255,255,255,0.2)', opacity: 0, animationDelay: '2.7s' }}
+          style={{ color: hexToRgba(accentColor, 0.4), opacity: 0, animationDelay: '2.7s' }}
         >
           {settings.venueText}
         </p>

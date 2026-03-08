@@ -38,6 +38,7 @@ function EditorContent() {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [isIntroSelectorOpen, setIsIntroSelectorOpen] = useState(false)
+  const [introReplayKey, setIntroReplayKey] = useState(0)
   const [isAIStoryGeneratorOpen, setIsAIStoryGeneratorOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(!!editId)
   const [loadAttempted, setLoadAttempted] = useState(false)
@@ -610,9 +611,10 @@ function EditorContent() {
               <>
                 {/* 인트로 미리보기 - 왼쪽 sticky */}
                 {!isMobile && (
-                  <div className="w-[480px] min-w-[480px] sticky top-0 h-[calc(100vh-120px)] flex items-center justify-center p-6 bg-white border-r border-gray-100">
+                  <div className="w-[480px] min-w-[480px] sticky top-0 h-[calc(100vh-120px)] flex flex-col items-center justify-center p-6 bg-white border-r border-gray-100">
                     <div className="relative w-full max-w-[360px] aspect-[9/16] overflow-hidden shadow-lg border border-gray-100 rounded-2xl">
                       <IntroPreview
+                        key={introReplayKey}
                         settings={invitation.intro}
                         coverImage={invitation.media.coverImage}
                         coverImageSettings={invitation.media.coverImageSettings}
@@ -622,6 +624,13 @@ function EditorContent() {
                         venueName={invitation.wedding.venue.name}
                       />
                     </div>
+                    <button
+                      onClick={() => setIntroReplayKey(k => k + 1)}
+                      className="mt-4 flex items-center gap-1.5 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-lg transition-colors"
+                    >
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                      다시 보기
+                    </button>
                   </div>
                 )}
 

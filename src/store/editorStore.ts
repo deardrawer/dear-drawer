@@ -775,7 +775,7 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
   },
 
   // 인트로 애니메이션 설정
-  intro: getDefaultIntroSettings('cinematic'),
+  intro: { ...getDefaultIntroSettings('cinematic'), introImage: template.defaultCoverImage || '' },
 
   // 풀하이트 디바이더 섹션
   fullHeightDividers: {

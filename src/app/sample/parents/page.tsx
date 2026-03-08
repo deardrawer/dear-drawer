@@ -119,7 +119,7 @@ const sampleData: ParentsInvitationContent = {
     },
   },
   colorTheme: 'dustyRose',
-  fontStyle: 'soft',
+  fontStyle: 'ridibatang',
 }
 
 // 유효한 컬러 테마 ID 목록

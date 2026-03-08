@@ -142,9 +142,10 @@ function getImageCropStyle(img: string, s: { scale?: number; positionX?: number;
     const cy = s.cropY || 0
     const posX = cw >= 1 ? 0 : (cx / (1 - cw)) * 100
     const posY = ch >= 1 ? 0 : (cy / (1 - ch)) * 100
+    const scale = Math.max(100 / cw, 100 / ch)
     return {
       backgroundImage: `url(${img})`,
-      backgroundSize: `${100 / cw}% ${100 / ch}%`,
+      backgroundSize: `${scale}%`,
       backgroundPosition: `${posX}% ${posY}%`,
       backgroundRepeat: 'no-repeat' as const,
     }

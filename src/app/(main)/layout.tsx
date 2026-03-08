@@ -14,6 +14,7 @@ export default function MainLayout({
 }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [showBanner, setShowBanner] = useState(true)
   const pathname = usePathname()
 
   useEffect(() => {
@@ -22,6 +23,17 @@ export default function MainLayout({
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
+
+  useEffect(() => {
+    if (sessionStorage.getItem('event-banner-closed')) {
+      setShowBanner(false)
+    }
+  }, [])
+
+  const closeBanner = () => {
+    setShowBanner(false)
+    sessionStorage.setItem('event-banner-closed', 'true')
+  }
 
   const isActive = (path: string) => {
     if (path === '/gallery') {
@@ -32,6 +44,24 @@ export default function MainLayout({
 
   return (
     <div className="min-h-screen bg-white">
+      {showBanner && (
+        <div className="bg-[#F4A7B0] text-center py-2.5 sm:py-3 px-4 sm:px-10 relative">
+          <p className="text-xs sm:text-sm font-semibold text-gray-900 tracking-wide">
+            [EVENT 🎉] 후기 남기면, 혼주용 모바일 청첩장 무료!
+          </p>
+          <p className="text-[10px] sm:text-xs text-gray-800/80 mt-0.5">
+            선착순 10쌍 한정 · 3월 이벤트
+          </p>
+          <button
+            onClick={closeBanner}
+            className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 flex items-center gap-1.5 p-1"
+            aria-label="배너 닫기"
+          >
+            <span className="hidden sm:inline text-xs text-gray-700/70 hover:text-gray-900 transition-colors">닫기</span>
+            <X className="w-3.5 h-3.5 text-gray-700/60 hover:text-gray-900 transition-colors" />
+          </button>
+        </div>
+      )}
       <header className="border-b border-gray-100 bg-white/90 backdrop-blur-md sticky top-0 z-50">
         <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between">
           {/* Logo */}

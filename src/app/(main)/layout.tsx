@@ -50,6 +50,14 @@ export default function MainLayout({
           {!isMobile && (
             <nav className="flex items-center gap-6">
               <a
+                href="https://www.deardrawer.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm transition-colors tracking-wide text-gray-500 hover:text-black"
+              >
+                디어드로어
+              </a>
+              <a
                 href="https://pf.kakao.com/_bEpxen/chat"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -58,16 +66,16 @@ export default function MainLayout({
                 문의하기
               </a>
               <Link
-                href="/templates"
+                href="/my-invitations"
                 className="text-sm transition-colors tracking-wide text-gray-500 hover:text-black"
               >
-                모바일 청첩장
+                제작내역
               </Link>
               <Link
-                href="/my-invitations"
+                href="/templates"
                 className="text-sm font-medium px-4 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
               >
-                제작내역
+                무료로 시작하기
               </Link>
               <HeaderAuth />
             </nav>
@@ -94,6 +102,15 @@ export default function MainLayout({
           <div className="border-t border-gray-100 bg-white">
             <nav className="container mx-auto px-4 py-4 flex flex-col gap-1">
               <a
+                href="https://www.deardrawer.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-3 text-sm rounded-lg transition-colors text-gray-500 hover:bg-gray-50"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                디어드로어
+              </a>
+              <a
                 href="https://pf.kakao.com/_bEpxen/chat"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -103,19 +120,19 @@ export default function MainLayout({
                 문의하기
               </a>
               <Link
-                href="/templates"
+                href="/my-invitations"
                 className="px-4 py-3 text-sm rounded-lg transition-colors text-gray-500 hover:bg-gray-50"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                모바일 청첩장
+                제작내역
               </Link>
               <div className="px-4 my-2">
                 <Link
-                  href="/my-invitations"
+                  href="/templates"
                   className="block w-full py-3 text-sm font-medium text-center bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  제작내역
+                  무료로 시작하기
                 </Link>
               </div>
               <div className="px-4 py-3 border-t border-gray-100 mt-2">

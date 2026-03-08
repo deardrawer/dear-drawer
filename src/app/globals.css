@@ -1029,6 +1029,20 @@
    ===================== */
 /* ========== Apple+Magazine Mix Theme (추천) ========== */
 @layer components {
+  /* 샘플 쇼케이스 이미지 스크롤 애니메이션 */
+  .animate-scroll-preview {
+    animation: scroll-preview 4s ease-in-out infinite alternate;
+  }
+
+  @keyframes scroll-preview {
+    0% {
+      object-position: center top;
+    }
+    100% {
+      object-position: center bottom;
+    }
+  }
+
   .theme-neu {
     background: linear-gradient(160deg, #F5F0ED 0%, #EDE8EC 30%, #E9ECF2 65%, #F0F1F3 100%) !important;
     color: #2C2824;

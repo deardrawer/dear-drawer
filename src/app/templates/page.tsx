@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect, useCallback, Suspense } from 'react'
+import { useState, useEffect, useCallback, useMemo, Suspense } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import SocialProofCounter from '@/components/social-proof/SocialProofCounter'
 
@@ -14,6 +15,7 @@ const generateRandomSlug = () => {
 
 type TemplateCategory = null | 'story' | 'mini' | 'parents'
 type QuizStep = 'q1' | 'q2a' | 'q2b' | 'q3a' | 'q3b' | 'result' | null
+type ShowcaseFilter = 'all' | 'story' | 'mini' | 'parents'
 
 // 퀴즈 결과 데이터
 const QUIZ_RESULTS: Record<string, {
@@ -142,6 +144,126 @@ const QUIZ_RESULTS: Record<string, {
   },
 }
 
+// 샘플 쇼케이스 데이터
+const SHOWCASE_ITEMS: {
+  id: string
+  templateId: string
+  name: string
+  tagline: string
+  category: 'story' | 'mini' | 'parents'
+  categoryLabel: string
+  thumbnail: string
+  sampleUrl: string
+  badgeColor: string
+  badgeBg: string
+  btnClass: string
+}[] = [
+  {
+    id: 'our',
+    templateId: 'narrative-our',
+    name: 'OUR',
+    tagline: '우리만의 페이지를 천천히 넘기고 싶다면',
+    category: 'story',
+    categoryLabel: '스토리형',
+    thumbnail: '/sample/preview-our.png',
+    sampleUrl: '/i/sample-our',
+    badgeColor: 'text-rose-600',
+    badgeBg: 'bg-rose-50',
+    btnClass: 'bg-rose-500 hover:bg-rose-600',
+  },
+  {
+    id: 'family',
+    templateId: 'narrative-family',
+    name: 'FAMILY',
+    tagline: '두 가족의 축복으로 완성되는 이야기',
+    category: 'story',
+    categoryLabel: '스토리형',
+    thumbnail: '/sample/preview-family.png',
+    sampleUrl: '/i/sample-family',
+    badgeColor: 'text-rose-600',
+    badgeBg: 'bg-rose-50',
+    btnClass: 'bg-rose-500 hover:bg-rose-600',
+  },
+  {
+    id: 'magazine',
+    templateId: 'narrative-magazine',
+    name: 'MAGAZINE',
+    tagline: '덜어낼수록 더 세련되게',
+    category: 'mini',
+    categoryLabel: '미니스토리형',
+    thumbnail: '/sample/preview-magazine.png',
+    sampleUrl: '/i/sample-magazine',
+    badgeColor: 'text-violet-600',
+    badgeBg: 'bg-violet-50',
+    btnClass: 'bg-violet-500 hover:bg-violet-600',
+  },
+  {
+    id: 'movie',
+    templateId: 'narrative-film',
+    name: 'MOVIE',
+    tagline: '한 편의 영화처럼, 장면으로 기억되길',
+    category: 'mini',
+    categoryLabel: '미니스토리형',
+    thumbnail: '/sample/preview-movie.png',
+    sampleUrl: '/i/sample-film',
+    badgeColor: 'text-violet-600',
+    badgeBg: 'bg-violet-50',
+    btnClass: 'bg-violet-500 hover:bg-violet-600',
+  },
+  {
+    id: 'record',
+    templateId: 'narrative-record',
+    name: 'RECORD',
+    tagline: '우리의 감정을 플레이리스트처럼 담아내는',
+    category: 'mini',
+    categoryLabel: '미니스토리형',
+    thumbnail: '/sample/preview-record.png',
+    sampleUrl: '/i/sample-record',
+    badgeColor: 'text-violet-600',
+    badgeBg: 'bg-violet-50',
+    btnClass: 'bg-violet-500 hover:bg-violet-600',
+  },
+  {
+    id: 'feed',
+    templateId: 'narrative-exhibit',
+    name: 'FEED',
+    tagline: '우리의 순간을 피드처럼 펼쳐보는',
+    category: 'mini',
+    categoryLabel: '미니스토리형',
+    thumbnail: '/sample/preview-feed.png',
+    sampleUrl: '/i/sample-feed',
+    badgeColor: 'text-violet-600',
+    badgeBg: 'bg-violet-50',
+    btnClass: 'bg-violet-500 hover:bg-violet-600',
+  },
+  {
+    id: 'essay',
+    templateId: 'narrative-essay',
+    name: 'ESSAY',
+    tagline: '사진 없이도 빛나는, 에세이 같은 청첩장',
+    category: 'mini',
+    categoryLabel: '미니스토리형',
+    thumbnail: '/sample/preview-essay.png',
+    sampleUrl: '/i/sample-essay-book',
+    badgeColor: 'text-violet-600',
+    badgeBg: 'bg-violet-50',
+    btnClass: 'bg-violet-500 hover:bg-violet-600',
+  },
+  {
+    id: 'parents',
+    templateId: 'narrative-parents',
+    name: 'PARENTS',
+    tagline: '부모님이 지인분들께 보내는 격식 있는',
+    category: 'parents',
+    categoryLabel: '혼주용',
+    thumbnail: '/sample/preview-parents.png',
+    sampleUrl: '/sample/parents',
+    badgeColor: 'text-sky-600',
+    badgeBg: 'bg-sky-50',
+    btnClass: 'bg-sky-500 hover:bg-sky-600',
+  },
+]
+
 function TemplatesContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -149,6 +271,12 @@ function TemplatesContent() {
   const [selectedCategory, setSelectedCategory] = useState<TemplateCategory>(initialCategory)
   const [quizStep, setQuizStep] = useState<QuizStep>(null)
   const [quizResult, setQuizResult] = useState<string | null>(null)
+  const [showcaseFilter, setShowcaseFilter] = useState<ShowcaseFilter>('all')
+
+  const filteredShowcase = useMemo(() => {
+    if (showcaseFilter === 'all') return SHOWCASE_ITEMS
+    return SHOWCASE_ITEMS.filter(item => item.category === showcaseFilter)
+  }, [showcaseFilter])
 
   // 퀴즈 스텝 전환 (히스토리 관리)
   const goQuizStep = useCallback((step: QuizStep) => {
@@ -521,7 +649,7 @@ function TemplatesContent() {
       </header>
 
       {/* 메인 콘텐츠 */}
-      <main className="pt-24 pb-16 px-4">
+      <main className="pt-24 pb-16 px-2 sm:px-4">
         <div className="max-w-4xl mx-auto">
 
           <SocialProofCounter />
@@ -541,13 +669,98 @@ function TemplatesContent() {
           {/* Step 1: 카테고리 직접 선택 (퀴즈 스킵 시) */}
           {quizStep === null && !selectedCategory && (
             <div>
-              <div className="text-center mb-8 sm:mb-12">
-                <h1 className="text-xl sm:text-3xl font-bold text-gray-900 mb-2 sm:mb-3">
-                  어떤 청첩장을 원하세요?
-                </h1>
-                <p className="text-xs sm:text-base text-gray-500">
-                  스타일을 선택하면 맞춤 템플릿을 추천해 드려요
-                </p>
+              {/* 샘플 쇼케이스 섹션 */}
+              <div className="max-w-4xl mx-auto mb-10 sm:mb-14">
+                <div className="text-center mb-6 sm:mb-8">
+                  <p className="text-[10px] sm:text-xs tracking-widest text-gray-400 uppercase mb-2">Sample Gallery</p>
+                  <h2 className="text-lg sm:text-2xl font-bold text-gray-900 mb-2">모든 샘플 미리보기</h2>
+                  <p className="text-xs sm:text-sm text-gray-500">완성된 청첩장을 먼저 확인해 보세요</p>
+                </div>
+
+                {/* 카테고리 필터 탭 */}
+                <div className="flex items-center justify-center gap-2 mb-6 sm:mb-8">
+                  {([
+                    { key: 'all' as ShowcaseFilter, label: '전체', count: SHOWCASE_ITEMS.length, activeClass: 'bg-gray-900 text-white' },
+                    { key: 'story' as ShowcaseFilter, label: '스토리형', count: SHOWCASE_ITEMS.filter(i => i.category === 'story').length, activeClass: 'bg-rose-500 text-white' },
+                    { key: 'mini' as ShowcaseFilter, label: '미니스토리형', count: SHOWCASE_ITEMS.filter(i => i.category === 'mini').length, activeClass: 'bg-violet-500 text-white' },
+                    { key: 'parents' as ShowcaseFilter, label: '혼주용', count: SHOWCASE_ITEMS.filter(i => i.category === 'parents').length, activeClass: 'bg-sky-500 text-white' },
+                  ]).map(tab => (
+                    <button
+                      key={tab.key}
+                      onClick={() => setShowcaseFilter(tab.key)}
+                      className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full transition-colors ${
+                        showcaseFilter === tab.key
+                          ? tab.activeClass
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      {tab.label}
+                      <span className={`ml-1 ${showcaseFilter === tab.key ? 'text-gray-300' : 'text-gray-400'}`}>
+                        {tab.count}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* 카드 그리드 */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
+                  {filteredShowcase.map(item => (
+                    <div
+                      key={item.id}
+                      className="group flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-gray-200 transition-all duration-300 overflow-hidden"
+                    >
+                      {/* 폰 프레임 썸네일 */}
+                      <a href={item.sampleUrl} target="_blank" rel="noopener noreferrer" className="relative bg-gray-50 px-4 pt-5 pb-4 sm:px-5 sm:pt-6 sm:pb-5 flex items-center justify-center cursor-pointer">
+                        <div className="relative w-full aspect-[9/16] rounded-[18px] sm:rounded-[22px] overflow-hidden border-[3px] sm:border-4 border-gray-800 bg-white shadow-lg">
+                          {/* 노치 */}
+                          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 sm:w-18 h-3.5 sm:h-4.5 bg-gray-800 rounded-b-lg z-10" />
+                          <Image
+                            src={item.thumbnail}
+                            alt={`${item.name} 샘플`}
+                            fill
+                            className="object-cover object-top group-hover:animate-scroll-preview"
+                            sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 25vw"
+                          />
+                        </div>
+                      </a>
+
+                      {/* 카드 정보 */}
+                      <div className="p-3 sm:p-4 flex flex-col flex-1">
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                          <span className={`px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-medium rounded-full ${item.badgeBg} ${item.badgeColor}`}>
+                            {item.categoryLabel}
+                          </span>
+                        </div>
+                        <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-0.5">{item.name}</h3>
+                        <p className="text-[10px] sm:text-xs text-gray-400 mb-3 line-clamp-2 flex-1">{item.tagline}</p>
+
+                        <div className="flex flex-col gap-1.5 mt-auto">
+                          <a
+                            href={item.sampleUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full h-9 sm:h-10 flex items-center justify-center text-xs sm:text-sm font-medium border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors"
+                          >
+                            미리보기
+                          </a>
+                          <button
+                            onClick={() => handleTemplateSelect(item.templateId)}
+                            className={`w-full h-9 sm:h-10 flex items-center justify-center text-xs sm:text-sm font-medium text-white rounded-lg transition-colors ${item.btnClass}`}
+                          >
+                            이 스타일로 시작
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 스타일 선택 헤딩 */}
+              <div className="border-t border-gray-200 mt-10 sm:mt-14 mb-4 sm:mb-6" />
+              <div className="text-center mb-4 sm:mb-6">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">어떤 청첩장을 원하세요?</h2>
+                <p className="text-xs sm:text-sm text-gray-400 mt-1.5">스타일을 선택하면 맞춤 템플릿을 추천해 드려요</p>
               </div>
 
               {/* 취향 퀴즈 배너 */}
@@ -565,7 +778,7 @@ function TemplatesContent() {
                       </svg>
                     </span>
                     <div className="text-left">
-                      <p className="text-sm sm:text-base font-semibold text-gray-800">어떤 템플릿이 나에게 맞을까?</p>
+                      <p className="text-sm sm:text-base font-semibold text-gray-800">어떤 스타일이 맞을지 모르겠다면?</p>
                       <p className="text-[11px] sm:text-xs text-gray-400">2~3개 질문으로 맞춤 템플릿 추천받기</p>
                     </div>
                     <svg className="w-4 h-4 text-gray-300 group-hover:text-violet-400 transition-colors ml-auto flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -673,6 +886,7 @@ function TemplatesContent() {
                   </div>
                 </button>
               </div>
+
 
             </div>
           )}

@@ -452,6 +452,7 @@ interface EditorStore {
   template: Template | null
   isDirty: boolean
   isSaving: boolean
+  isLoaded: boolean  // 초기 데이터 로드 완료 여부 (auto-save 안전장치)
   activeSection: PreviewSectionId  // 현재 편집 중인 섹션
   editorActiveTab: string  // 에디터 탭 제어
   validationError: { tab: string; message: string } | null
@@ -476,6 +477,7 @@ interface EditorStore {
   applyFamilyAIStory: (story: FamilyWhyWeChoseStory & { groomQuote: string; brideQuote: string }, applyInterview?: GeneratedStory) => void
   setTemplate: (template: Template) => void
   setSaving: (saving: boolean) => void
+  setLoaded: (loaded: boolean) => void
   resetDirty: () => void
   addStory: () => void
   removeStory: (index: number) => void
@@ -594,7 +596,11 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
   // 우리의 이야기
   relationship: {
     startDate: '',
-    stories: [
+    stories: template.id === 'narrative-our' ? [
+      { date: '20XX. XX', title: '운명처럼 다가온 만남', desc: '친구의 소개로 처음 만났던 그 날,\n어색한 인사를 나누며 시작된 우리의 이야기.\n카페에서 나눈 세 시간의 대화가\n우리 사랑의 첫 페이지가 되었습니다.', images: [], imageSettings: [] },
+      { date: '20XX. XX', title: '함께한 소중한 시간', desc: '함께 떠난 여행에서 서로를 더 깊이 알게 되었고,\n어떤 상황에서도 함께라면\n즐거울 수 있다는 걸 깨달았습니다.', images: [], imageSettings: [] },
+      { date: '20XX. XX', title: '프러포즈', desc: '떨리는 마음으로 건넨 반지와 함께\n평생을 약속했습니다.\n세상에서 가장 행복한 순간이었어요.', images: [], imageSettings: [] },
+    ] : [
       { date: '', title: '', desc: '', images: [], imageSettings: [] },
       { date: '', title: '', desc: '', images: [], imageSettings: [] },
       { date: '', title: '', desc: '', images: [], imageSettings: [] },
@@ -886,6 +892,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   template: null,
   isDirty: false,
   isSaving: false,
+  isLoaded: false,
   activeSection: null,
   editorActiveTab: 'design',
   validationError: null,
@@ -1098,6 +1105,8 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
     })),
 
   setSaving: (saving) => set({ isSaving: saving }),
+
+  setLoaded: (loaded) => set({ isLoaded: loaded }),
 
   resetDirty: () => set({ isDirty: false }),
 

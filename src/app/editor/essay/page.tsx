@@ -322,8 +322,12 @@ function EssayEditorContent() {
   // 저장
   const handleSave = async (silent = false) => {
     if (!user) {
-      if (!silent) alert('저장하려면 로그인이 필요합니다.')
-      router.push('/login')
+      // 게스트 모드: sessionStorage에 드래프트 저장 후 로그인 이동
+      try {
+        sessionStorage.setItem('editor_draft_essay', JSON.stringify(data))
+      } catch { /* 무시 */ }
+      const currentUrl = window.location.pathname + window.location.search
+      router.push(`/login?redirect=${encodeURIComponent(currentUrl)}`)
       throw new Error('로그인이 필요합니다.')
     }
     const groomName = data.groom.name.trim()
@@ -384,7 +388,8 @@ function EssayEditorContent() {
     setSavedSlug(newSlug)
   }
 
-  if (status === 'unauthenticated') {
+  // 기존 청첩장 편집 시에만 로그인 필수 (새 청첩장은 게스트 모드 허용)
+  if (status === 'unauthenticated' && editId) {
     const currentUrl = window.location.pathname + window.location.search
     router.replace(`/login?redirect=${encodeURIComponent(currentUrl)}`)
     return null

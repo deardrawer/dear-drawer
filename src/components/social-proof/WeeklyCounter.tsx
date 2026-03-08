@@ -17,8 +17,9 @@ export default function WeeklyCounter() {
   if (weeklyCount <= 0) return null
 
   return (
-    <p className="text-[10px] sm:text-sm text-gray-400 mt-4 sm:mt-6">
-      최근 7일간 <span className="text-white font-medium">{weeklyCount}쌍</span>의 커플이 청첩장을 만들었어요
+    <p className="text-[10px] sm:text-sm text-gray-400 mt-4 sm:mt-6 leading-relaxed">
+      이번 주에도 <span className="text-white font-medium">{weeklyCount}쌍</span>의 새로운 커플들이<br />
+      디어드로어로 청첩장을 만들고 있어요
     </p>
   )
 }

@@ -555,8 +555,8 @@ export const essayStorySampleContent = {
     firstName: '민준',
     phone: '010-1234-5678',
     phoneEnabled: true,
-    father: { name: '김철수', phone: '010-1111-2222', phoneEnabled: true, deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
-    mother: { name: '박영희', phone: '010-3333-4444', phoneEnabled: true, deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
+    father: { name: '김철수', phone: '010-1111-2222', phoneEnabled: true, deceased: false, bank: { bank: '우리은행', account: '1002-123-456789', holder: '김철수', enabled: true } },
+    mother: { name: '박영희', phone: '010-3333-4444', phoneEnabled: true, deceased: false, bank: { bank: '하나은행', account: '267-910123-45678', holder: '박영희', enabled: true } },
     bank: { bank: '신한은행', account: '110-123-456789', holder: '김민준', enabled: true },
   },
   bride: {
@@ -565,8 +565,8 @@ export const essayStorySampleContent = {
     firstName: '서연',
     phone: '010-5678-1234',
     phoneEnabled: true,
-    father: { name: '이정호', phone: '010-5555-6666', phoneEnabled: true, deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
-    mother: { name: '최미경', phone: '010-7777-8888', phoneEnabled: true, deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
+    father: { name: '이정호', phone: '010-5555-6666', phoneEnabled: true, deceased: false, bank: { bank: 'NH농협', account: '302-1234-5678-91', holder: '이정호', enabled: true } },
+    mother: { name: '최미경', phone: '010-7777-8888', phoneEnabled: true, deceased: false, bank: { bank: '카카오뱅크', account: '3333-12-3456789', holder: '최미경', enabled: true } },
     bank: { bank: '국민은행', account: '123-45-678901', holder: '이서연', enabled: true },
   },
   wedding: {
@@ -595,7 +595,7 @@ export const essayStorySampleContent = {
     {
       title: '우리의 시간',
       subtitle: 'Our Days Together',
-      body: '그 뒤로 매주 함께 산에 올랐습니다.\n\n봄에는 진달래가 핀 능선을 걸었고,\n여름에는 계곡에 발을 담갔습니다.\n가을 단풍 아래에서 도시락을 나눠 먹고,\n겨울 설산에서는 서로의 손을 꼭 잡았습니다.\n\n>>"이번 주말 어디 갈까?"가 "이번 주말 어느 산 갈까?"로<<\n\n바뀐 것은 아주 자연스러운 일이었습니다.',
+      body: '그 뒤로 매주 함께 산에 올랐습니다.\n\n봄에는 진달래가 핀 능선을 걸었고,\n여름에는 계곡에 발을 담갔습니다.\n가을 단풍 아래에서 도시락을 나눠 먹고,\n겨울 설산에서는 서로의 손을 꼭 잡았습니다.\n\n>>"이번 주말 어디 갈까?"가\n"이번 주말 어느 산 갈까?"로<<\n\n바뀐 것은 아주 자연스러운 일이었습니다.',
     },
     {
       title: '약속',

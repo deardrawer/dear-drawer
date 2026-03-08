@@ -27,7 +27,7 @@ function EditorContent() {
   const urlSlug = searchParams.get('slug') // 템플릿 시작 시 설정한 커스텀 URL
   const urlTemplate = getTemplateById(templateId)
 
-  const { invitation, template, initInvitation, updateMultipleFields, updateNestedField, toggleSectionVisibility, isDirty, isSaving, setSaving, resetDirty, markStepsSaved, setWizardStep } = useEditorStore()
+  const { invitation, template, initInvitation, updateMultipleFields, updateNestedField, toggleSectionVisibility, isDirty, isSaving, isLoaded, setSaving, setLoaded, resetDirty, markStepsSaved, setWizardStep } = useEditorStore()
   const initialStep = searchParams.get('step') // URL에서 시작 스텝 파라미터
 
   // editId가 있으면 store의 template 사용, 없으면 URL의 template 사용
@@ -46,6 +46,8 @@ function EditorContent() {
   const [mobileView, setMobileView] = useState<'editor' | 'preview'>('editor')
   const [isExitModalOpen, setIsExitModalOpen] = useState(false)
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saved' | 'saving' | 'error'>('idle')
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const previewRef = useRef<{ scrollToTop: () => void } | null>(null)
 
   // 모바일 감지
@@ -188,7 +190,7 @@ function EditorContent() {
           }
         })
         .catch(err => console.error('Failed to load invitation:', err))
-        .finally(() => setIsLoading(false))
+        .finally(() => { setIsLoading(false); setLoaded(true) })
     }
   }, [editId, status, loadAttempted])
 
@@ -199,6 +201,7 @@ function EditorContent() {
     // 새 청첩장인 경우 항상 초기화 (이전 데이터 무시)
     if (urlTemplate && isNewInvitation) {
       initInvitation(urlTemplate)
+      setLoaded(true)
       // URL에 step 파라미터가 있으면 해당 스텝으로 이동
       if (initialStep) {
         const step = parseInt(initialStep, 10)
@@ -209,12 +212,108 @@ function EditorContent() {
     }
   }, [urlTemplate, isNewInvitation, initInvitation, initialStep, setWizardStep])
 
+  // 로그인 후 복귀 시 sessionStorage에서 드래프트 복구
+  useEffect(() => {
+    if (user && isNewInvitation && !editId) {
+      try {
+        const draft = sessionStorage.getItem('editor_draft')
+        if (draft) {
+          const parsed = JSON.parse(draft)
+          updateMultipleFields(parsed)
+          sessionStorage.removeItem('editor_draft')
+          sessionStorage.removeItem('editor_template')
+          sessionStorage.removeItem('editor_slug')
+        }
+      } catch { /* 파싱 실패 무시 */ }
+    }
+  }, [user, isNewInvitation, editId])
+
+  // Auto-save: 로그인 + 기존 저장된 청첩장 + 로드 완료 시에만 동작
+  useEffect(() => {
+    if (!isDirty || !user || !invitationId || !isLoaded || isSaving) return
+
+    // 이전 타이머 클리어
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current)
+    }
+
+    autoSaveTimerRef.current = setTimeout(async () => {
+      if (!invitation || !user || !invitationId) return
+
+      setAutoSaveStatus('saving')
+      setSaving(true)
+
+      try {
+        const cleanInvitation = JSON.parse(JSON.stringify(invitation))
+        const cleanImages = (obj: Record<string, unknown>) => {
+          for (const key in obj) {
+            if (typeof obj[key] === 'string' && (obj[key] as string).startsWith('data:')) {
+              obj[key] = ''
+            } else if (Array.isArray(obj[key])) {
+              obj[key] = (obj[key] as unknown[]).map(item => {
+                if (typeof item === 'string' && item.startsWith('data:')) return ''
+                if (typeof item === 'object' && item !== null) cleanImages(item as Record<string, unknown>)
+                return item
+              })
+            } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+              cleanImages(obj[key] as Record<string, unknown>)
+            }
+          }
+        }
+        cleanImages(cleanInvitation)
+
+        const payload = {
+          template_id: template?.id || templateId,
+          groom_name: invitation.groom.name,
+          bride_name: invitation.bride.name,
+          wedding_date: invitation.wedding.date,
+          wedding_time: invitation.wedding.timeDisplay,
+          venue_name: invitation.wedding.venue.name,
+          venue_address: invitation.wedding.venue.address,
+          venue_hall: invitation.wedding.venue.hall,
+          content: JSON.stringify(cleanInvitation),
+        }
+
+        const response = await fetch(`/api/invitations/${invitationId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+
+        if (!response.ok) throw new Error('Auto-save failed')
+
+        resetDirty()
+        markStepsSaved()
+        setAutoSaveStatus('saved')
+        // 3초 후 상태 리셋
+        setTimeout(() => setAutoSaveStatus('idle'), 3000)
+      } catch {
+        setAutoSaveStatus('error')
+      } finally {
+        setSaving(false)
+      }
+    }, 3000) // 3초 디바운스
+
+    return () => {
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current)
+      }
+    }
+  }, [isDirty, user, invitationId, isLoaded, isSaving])
+
   // Save invitation to database
   const handleSave = async () => {
     if (isSaving) return // 이미 저장 중이면 중복 실행 방지
-    if (!invitation || !user) {
-      alert('저장하려면 로그인이 필요합니다.')
-      router.push('/login')
+    if (!invitation) return
+    if (!user) {
+      // 게스트 모드: 현재 편집 상태를 sessionStorage에 저장 후 로그인으로 이동
+      try {
+        sessionStorage.setItem('editor_draft', JSON.stringify(invitation))
+        sessionStorage.setItem('editor_template', templateId)
+        sessionStorage.setItem('editor_slug', urlSlug || '')
+      } catch { /* sessionStorage 사용 불가한 환경 무시 */ }
+      const currentUrl = window.location.pathname + window.location.search
+      router.push(`/login?redirect=${encodeURIComponent(currentUrl)}`)
       return
     }
 
@@ -295,6 +394,8 @@ function EditorContent() {
 
       resetDirty()
       markStepsSaved()  // 현재까지 방문한 스텝을 저장됨으로 표시
+      setAutoSaveStatus('saved')
+      setTimeout(() => setAutoSaveStatus('idle'), 3000)
 
       // GTM 이벤트: 저장 성공
       if (typeof window !== 'undefined' && window.dataLayer) {
@@ -449,8 +550,8 @@ function EditorContent() {
     setIsAIStoryGeneratorOpen(false)
   }
 
-  // 비로그인 시 로그인 페이지로 리다이렉트
-  if (status === 'unauthenticated') {
+  // 기존 청첩장 편집 시에만 로그인 필수 (새 청첩장은 게스트 모드 허용)
+  if (status === 'unauthenticated' && editId) {
     const currentUrl = window.location.pathname + window.location.search
     router.replace(`/login?redirect=${encodeURIComponent(currentUrl)}`)
     return null
@@ -516,7 +617,25 @@ function EditorContent() {
           <div className="hidden sm:block h-4 w-px bg-gray-200" />
           <span className="hidden sm:inline text-sm text-gray-400 font-light tracking-wide">
             {activeTemplate?.name || 'Loading...'}
-            {isDirty && <span className="ml-2 text-gray-600">• 미저장</span>}
+            {autoSaveStatus === 'saving' && (
+              <span className="ml-2 text-gray-500 inline-flex items-center gap-1">
+                <span className="animate-spin h-3 w-3 border border-gray-400 border-t-transparent rounded-full" />
+                저장 중...
+              </span>
+            )}
+            {autoSaveStatus === 'saved' && (
+              <span className="ml-2 text-green-600 inline-flex items-center gap-1">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                자동 저장됨
+              </span>
+            )}
+            {autoSaveStatus === 'error' && (
+              <span className="ml-2 text-red-500 inline-flex items-center gap-1">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01" /></svg>
+                저장 실패
+              </span>
+            )}
+            {autoSaveStatus === 'idle' && isDirty && <span className="ml-2 text-gray-600">• 미저장</span>}
           </span>
         </div>
         <div className="flex items-center gap-2 sm:gap-3">

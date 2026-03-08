@@ -13,7 +13,7 @@ type EssayFontStyle = 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxu
 interface EssayFontConfig { display: string; displayKr: string; body: string }
 
 const essayFontStyles: Record<EssayFontStyle, EssayFontConfig> = {
-  classic: { display: "'Playfair Display', serif", displayKr: "'Ridibatang', serif", body: "'Ridibatang', serif" },
+  classic: { display: "'BonmyeongjoSourceHanSerif', serif", displayKr: "'Ridibatang', serif", body: "'Ridibatang', serif" },
   modern: { display: "'Montserrat', sans-serif", displayKr: "'Pretendard', sans-serif", body: "'Pretendard', sans-serif" },
   romantic: { display: "'Lora', serif", displayKr: "'Okticon', serif", body: "'Okticon', serif" },
   contemporary: { display: "'Cinzel', serif", displayKr: "'JeonnamEducationBarun', sans-serif", body: "'JeonnamEducationBarun', sans-serif" },
@@ -187,7 +187,7 @@ function CoverSection({ data, theme }: { data: any; theme: ThemeConfig }) {
 
         {/* 상단 타이틀 */}
         <div className="absolute top-0 left-0 right-0 pt-14 text-center transition-all duration-1000 delay-300" style={{ opacity: loaded ? 1 : 0, transform: loaded ? 'translateY(0)' : 'translateY(-12px)' }}>
-          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '12px', letterSpacing: '6px', color: 'rgba(255,255,255,0.9)', textShadow: '0 1px 8px rgba(0,0,0,0.4)' }}>{coverTitle}</div>
+          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '12px', letterSpacing: '6px', color: 'rgba(255,255,255,0.9)', textShadow: '0 1px 8px rgba(0,0,0,0.4)' }}>{coverTitle}</div>
         </div>
 
         {/* 하단 텍스트 */}
@@ -203,7 +203,7 @@ function CoverSection({ data, theme }: { data: any; theme: ThemeConfig }) {
           </div>
           <div className="mt-8 transition-all duration-[1200ms] delay-[1100ms]" style={{ opacity: loaded ? 1 : 0 }}>
             <div style={{ width: '24px', height: '1px', background: 'rgba(255,255,255,0.4)', margin: '0 auto 12px' }} />
-            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '11px', letterSpacing: '4px', color: 'rgba(255,255,255,0.8)' }}>
+            <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '11px', letterSpacing: '4px', color: 'rgba(255,255,255,0.8)' }}>
               {typedText}<span className="animate-pulse" style={{ color: 'rgba(255,255,255,0.3)' }}>|</span>
             </div>
             <div className="mt-2 transition-all duration-500 delay-[2000ms]" style={{ opacity: loaded ? 1 : 0 }}>
@@ -225,7 +225,7 @@ function CoverSection({ data, theme }: { data: any; theme: ThemeConfig }) {
 
         {/* 타이틀 */}
         <div className="transition-all duration-1000 delay-200" style={{ opacity: loaded ? 1 : 0, transform: loaded ? 'translateY(0)' : 'translateY(-12px)' }}>
-          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '11px', letterSpacing: '6px', color: theme.gray, marginBottom: '32px', textAlign: 'center' }}>{coverTitle}</div>
+          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '11px', letterSpacing: '6px', color: theme.gray, marginBottom: '32px', textAlign: 'center' }}>{coverTitle}</div>
         </div>
 
         {/* 원형 이미지 */}
@@ -252,7 +252,7 @@ function CoverSection({ data, theme }: { data: any; theme: ThemeConfig }) {
         <div className="mt-10 transition-all duration-[1200ms] delay-[1200ms]" style={{ opacity: loaded ? 1 : 0 }}>
           <div style={{ width: '32px', height: '1px', background: theme.divider, margin: '0 auto 12px' }} />
           <div className="text-center">
-            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '12px', letterSpacing: '4px', color: theme.accent }}>
+            <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '12px', letterSpacing: '4px', color: theme.accent }}>
               {typedText}<span className="animate-pulse" style={{ color: theme.divider }}>|</span>
             </div>
             <div className="mt-2 transition-all duration-500 delay-[2000ms]" style={{ opacity: loaded ? 1 : 0 }}>
@@ -274,7 +274,7 @@ function CoverSection({ data, theme }: { data: any; theme: ThemeConfig }) {
 
         {/* 큰 타이틀 */}
         <div className="text-center transition-all duration-1000 delay-200" style={{ opacity: loaded ? 1 : 0, transform: loaded ? 'translateY(0)' : 'translateY(-16px)' }}>
-          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '32px', fontWeight: 300, letterSpacing: '8px', lineHeight: 1.3, color: theme.heading }}>
+          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '32px', fontWeight: 300, letterSpacing: '8px', lineHeight: 1.3, color: theme.heading }}>
             {coverTitle.split(' ').map((word: string, i: number) => (
               <div key={i}>{word}</div>
             ))}
@@ -297,7 +297,7 @@ function CoverSection({ data, theme }: { data: any; theme: ThemeConfig }) {
         <div className="mt-12 transition-all duration-[1200ms] delay-[900ms]" style={{ opacity: loaded ? 1 : 0 }}>
           <div style={{ width: '32px', height: '1px', background: theme.divider, margin: '0 auto 12px' }} />
           <div className="text-center">
-            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '12px', letterSpacing: '4px', color: theme.accent }}>
+            <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '12px', letterSpacing: '4px', color: theme.accent }}>
               {typedText}<span className="animate-pulse" style={{ color: theme.divider }}>|</span>
             </div>
             <div className="mt-2 transition-all duration-500 delay-[2000ms]" style={{ opacity: loaded ? 1 : 0 }}>
@@ -318,7 +318,7 @@ function CoverSection({ data, theme }: { data: any; theme: ThemeConfig }) {
 
       {/* Top label */}
       <div className="transition-all duration-1000 delay-200" style={{ opacity: loaded ? 1 : 0, transform: loaded ? 'translateY(0)' : 'translateY(-20px)' }}>
-        <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '11px', letterSpacing: '6px', color: theme.gray, marginBottom: '48px', textAlign: 'center' }}>{coverTitle}</div>
+        <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '11px', letterSpacing: '6px', color: theme.gray, marginBottom: '48px', textAlign: 'center' }}>{coverTitle}</div>
       </div>
 
       {/* Names - full names in elegant layout */}
@@ -345,7 +345,7 @@ function CoverSection({ data, theme }: { data: any; theme: ThemeConfig }) {
 
       {/* Date + Day */}
       <div className="text-center transition-all duration-[1200ms] delay-[1100ms]" style={{ opacity: loaded ? 1 : 0, transform: loaded ? 'translateY(0)' : 'translateY(10px)' }}>
-        <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '12px', letterSpacing: '4px', color: theme.accent }}>
+        <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '12px', letterSpacing: '4px', color: theme.accent }}>
           {typedText}<span className="animate-pulse" style={{ color: theme.divider }}>|</span>
         </div>
         <div className="mt-2 transition-all duration-500 delay-[2000ms]" style={{ opacity: loaded ? 1 : 0 }}>
@@ -370,14 +370,14 @@ function GreetingSection({ data, theme }: { data: any; theme: ThemeConfig }) {
       <div className="max-w-sm mx-auto">
         {/* Label */}
         <div className="text-center mb-12 transition-all duration-500" style={{ opacity: isVisible ? 1 : 0 }}>
-          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '9px', letterSpacing: '5px', color: theme.accent }}>INVITATION</div>
+          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '9px', letterSpacing: '5px', color: theme.accent }}>INVITATION</div>
         </div>
 
         {/* Drop cap - 첫 글자만 크게 */}
         {lines.length > 0 && (
           <div className="relative">
             <span className="transition-all duration-700" style={{
-              fontFamily: "'Playfair Display', serif",
+              fontFamily: "'BonmyeongjoSourceHanSerif', serif",
               fontSize: '52px', fontWeight: 300, lineHeight: 1,
               color: theme.accent, float: 'left',
               marginRight: '8px', marginTop: '4px',
@@ -417,7 +417,7 @@ function ChapterSection({ chapter, index, theme }: { chapter: any; index: number
     <div ref={ref} className="py-20 relative" style={{ background: index % 2 === 0 ? theme.background : theme.sectionBg }}>
       {/* Background chapter number watermark */}
       <div className="absolute top-4 right-4 pointer-events-none transition-all duration-1000 ease-out" style={{
-        fontFamily: "'Playfair Display', serif", fontSize: '120px', fontWeight: 700,
+        fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '120px', fontWeight: 700,
         color: theme.heading, opacity: isVisible ? 0.04 : 0, lineHeight: 1,
         transform: isVisible ? 'translateX(0)' : 'translateX(60px)',
       }}>
@@ -444,7 +444,7 @@ function ChapterSection({ chapter, index, theme }: { chapter: any; index: number
               {/* English subtitle */}
               {chapter.subtitle && (
                 <div className="transition-all duration-700 ease-out" style={{
-                  fontFamily: "'Playfair Display', serif", fontSize: '11px', fontStyle: 'italic',
+                  fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '11px', fontStyle: 'italic',
                   color: theme.gray, letterSpacing: '3px', marginBottom: '8px',
                   transform: isVisible ? 'translateX(0)' : 'translateX(30px)',
                   opacity: isVisible ? 1 : 0,
@@ -468,8 +468,8 @@ function ChapterSection({ chapter, index, theme }: { chapter: any; index: number
                   const heroText = line.trim().replace(/^>>/, '').replace(/<<$/, '')
                   return (
                     <p key={j} className="transition-all duration-600 ease-out" style={{
-                      fontFamily: "'Playfair Display', serif", fontSize: '18px', fontWeight: 400, fontStyle: 'italic',
-                      lineHeight: 1.8, color: theme.heading, textAlign: 'center', margin: '16px 0',
+                      fontFamily: "'Ridibatang', serif", fontSize: '17px', fontWeight: 400, fontStyle: 'normal',
+                      lineHeight: 2, color: theme.heading, textAlign: 'center', margin: '16px 0', letterSpacing: '-0.3px',
                       opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(12px)',
                       transitionDelay: `${300 + j * 60}ms`,
                     }}>{heroText}</p>
@@ -515,11 +515,11 @@ function QuoteSection({ data, theme }: { data: any; theme: ThemeConfig }) {
         opacity: isVisible ? 1 : 0,
       }}>
         {/* Large quotation mark */}
-        <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '72px', color: theme.divider, lineHeight: 0.5 }}>&ldquo;</div>
+        <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '72px', color: theme.divider, lineHeight: 0.5 }}>&ldquo;</div>
         <div className="mt-4">
           {quote.text.split('\n').map((line: string, i: number) => (
             <p key={i} className="es-f18" style={{
-              fontFamily: "'Playfair Display', serif",
+              fontFamily: "'BonmyeongjoSourceHanSerif', serif",
               fontSize: '18px', fontWeight: 300, fontStyle: 'italic',
               lineHeight: 2.2, color: theme.heading,
             }}>{line || '\u00A0'}</p>
@@ -559,7 +559,7 @@ function InterviewItem({ qa, index, theme }: { qa: any; index: number; theme: Th
       <div className="px-8 max-w-sm mx-auto">
         {/* Question number */}
         <div className="transition-all duration-700" style={{
-          fontFamily: "'Playfair Display', serif", fontSize: '10px',
+          fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px',
           letterSpacing: '4px', color: theme.accent, marginBottom: '12px',
           opacity: isVisible ? 1 : 0,
         }}>
@@ -604,7 +604,7 @@ function InterviewItem({ qa, index, theme }: { qa: any; index: number; theme: Th
         {/* Answerer tag */}
         {qa.answerer && qa.answerer !== 'both' && (
           <div className="mt-4 text-right transition-all duration-500" style={{
-            fontFamily: "'Playfair Display', serif", fontSize: '10px', fontStyle: 'italic',
+            fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', fontStyle: 'italic',
             color: theme.gray, letterSpacing: '2px',
             opacity: isVisible ? 1 : 0, transitionDelay: '600ms',
           }}>
@@ -628,7 +628,7 @@ function WeddingInfoSection({ data, theme }: { data: any; theme: ThemeConfig }) 
       <div className="px-8 py-16" style={{ backgroundColor: theme.background }}>
         <div className="max-w-sm mx-auto">
           <div className="text-center mb-10">
-            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '10px', letterSpacing: '5px', color: theme.accent, marginBottom: '12px' }}>WEDDING DAY</div>
+            <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '5px', color: theme.accent, marginBottom: '12px' }}>WEDDING DAY</div>
             <div className="flex items-center justify-center gap-3 py-2">
               <div style={{ width: '40px', height: '0.5px', background: theme.divider }} />
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 0L7.5 4.5L12 6L7.5 7.5L6 12L4.5 7.5L0 6L4.5 4.5Z" fill={theme.divider} /></svg>
@@ -636,7 +636,7 @@ function WeddingInfoSection({ data, theme }: { data: any; theme: ThemeConfig }) 
             </div>
           </div>
           <div className="text-center mb-8">
-            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '48px', fontWeight: 300, color: theme.heading, lineHeight: 1 }}>{weddingDate.getDate()}</div>
+            <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '48px', fontWeight: 300, color: theme.heading, lineHeight: 1 }}>{weddingDate.getDate()}</div>
             <div className="es-f13" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '13px', color: theme.gray, marginTop: '8px' }}>{weddingDate.getFullYear()}년 {weddingDate.getMonth() + 1}월 {dayNames[weddingDate.getDay()]}요일</div>
             <div className="es-f13" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '13px', color: theme.text, marginTop: '4px' }}>{w.timeDisplay || ''}</div>
           </div>
@@ -651,7 +651,7 @@ function WeddingInfoSection({ data, theme }: { data: any; theme: ThemeConfig }) 
                 const p = side === 'groom' ? groom : bride
                 return (
                   <div key={side}>
-                    <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '9px', letterSpacing: '3px', color: theme.gray, marginBottom: '10px' }}>{side.toUpperCase()}</div>
+                    <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '9px', letterSpacing: '3px', color: theme.gray, marginBottom: '10px' }}>{side.toUpperCase()}</div>
                     <p className="es-f12" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '12px', color: theme.gray, lineHeight: 1.8 }}>
                       {p.father?.name && <>{p.father.deceased ? (data.deceasedDisplayStyle === 'hanja' ? '故 ' : <><img src="/icons/chrysanthemum.svg" alt="고인" className="inline w-3 h-3 mr-0.5 opacity-70 align-middle" style={{ verticalAlign: 'middle', marginTop: '-2px' }} />{' '}</>) : ''}{p.father.name} · </>}{p.mother?.name && <>{p.mother.deceased ? (data.deceasedDisplayStyle === 'hanja' ? '故 ' : <><img src="/icons/chrysanthemum.svg" alt="고인" className="inline w-3 h-3 mr-0.5 opacity-70 align-middle" style={{ verticalAlign: 'middle', marginTop: '-2px' }} />{' '}</>) : ''}{p.mother.name}</>}
                     </p>
@@ -664,7 +664,7 @@ function WeddingInfoSection({ data, theme }: { data: any; theme: ThemeConfig }) 
           )}
           {w.venue?.address && (
             <div className="mt-10">
-              <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '10px', letterSpacing: '4px', color: theme.gray, marginBottom: '12px', textAlign: 'center' }}>MAP</div>
+              <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '4px', color: theme.gray, marginBottom: '12px', textAlign: 'center' }}>MAP</div>
               <div className="grid grid-cols-3 gap-2">
                 {[
                   { href: `https://map.naver.com/v5/search/${encodeURIComponent(w.venue.address)}`, bg: '#03C75A', label: 'N', name: 'NAVER' },
@@ -673,7 +673,7 @@ function WeddingInfoSection({ data, theme }: { data: any; theme: ThemeConfig }) 
                 ].map(m => (
                   <a key={m.name} href={m.href} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center p-3" style={{ border: `0.5px solid ${theme.divider}` }}>
                     <div className="w-8 h-8 rounded-full flex items-center justify-center mb-2" style={{ background: m.bg }}><span className={`text-xs font-bold ${m.dark ? 'text-black' : 'text-white'}`}>{m.label}</span></div>
-                    <span style={{ fontFamily: "'Playfair Display', serif", fontSize: '9px', letterSpacing: '1px', color: theme.gray }}>{m.name}</span>
+                    <span style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '9px', letterSpacing: '1px', color: theme.gray }}>{m.name}</span>
                   </a>
                 ))}
               </div>
@@ -728,7 +728,7 @@ function ContactsSection({ data, theme }: { data: any; theme: ThemeConfig }) {
       <div className="px-8 py-12" style={{ backgroundColor: theme.sectionBg }}>
         <div className="max-w-sm mx-auto">
           <div className="text-center mb-8">
-            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '10px', letterSpacing: '5px', color: theme.gray, marginBottom: '8px' }}>CONTACT</div>
+            <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '5px', color: theme.gray, marginBottom: '8px' }}>CONTACT</div>
             <h3 style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '15px', color: theme.heading }}>연락하기</h3>
           </div>
           {contacts.length > 0 ? (
@@ -751,7 +751,7 @@ function BankAccountsSection({ data, theme }: { data: any; theme: ThemeConfig })
     return [person.bank?.enabled && { name: person.name, ...person.bank, role: side === 'groom' ? '신랑' : '신부' }, person.father?.bank?.enabled && { name: person.father.name, ...person.father.bank, role: '아버지' }, person.mother?.bank?.enabled && { name: person.mother.name, ...person.mother.bank, role: '어머니' }].filter(Boolean).map((acc: any, i: number) => (
       <div key={i} className="flex items-center justify-between py-3" style={{ borderBottom: `0.5px solid ${theme.divider}` }}>
         <div><span style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '11px', color: theme.gray }}>{acc.role}</span><span style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '12px', color: theme.text, marginLeft: '8px' }}>{acc.bank} {acc.account}</span></div>
-        <button onClick={() => { navigator.clipboard.writeText(acc.account); alert('계좌번호가 복사되었습니다.') }} style={{ fontFamily: "'Playfair Display', serif", fontSize: '10px', letterSpacing: '1px', color: theme.accent, background: 'none', border: `0.5px solid ${theme.accent}`, padding: '4px 12px', cursor: 'pointer' }}>COPY</button>
+        <button onClick={() => { navigator.clipboard.writeText(acc.account); alert('계좌번호가 복사되었습니다.') }} style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '10px', letterSpacing: '1px', color: theme.accent, background: 'none', border: `0.5px solid ${theme.accent}`, padding: '4px 12px', cursor: 'pointer' }}>COPY</button>
       </div>
     ))
   }
@@ -760,14 +760,14 @@ function BankAccountsSection({ data, theme }: { data: any; theme: ThemeConfig })
       <div className="px-8 py-12" style={{ backgroundColor: theme.sectionBg }}>
         <div className="max-w-sm mx-auto">
           <div className="text-center mb-8">
-            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '10px', letterSpacing: '5px', color: theme.gray, marginBottom: '8px' }}>GIFT</div>
+            <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '5px', color: theme.gray, marginBottom: '8px' }}>GIFT</div>
             <h3 style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '15px', color: theme.heading }}>마음 전하실 곳</h3>
           </div>
           {hasAccounts ? (
             <>
               <div className="grid grid-cols-2 gap-3 mb-4">
                 {(['groom', 'bride'] as const).map(side => (
-                  <button key={side} onClick={() => setExpandedSide(expandedSide === side ? null : side)} style={{ fontFamily: "'Playfair Display', serif", fontSize: '11px', letterSpacing: '2px', padding: '12px', border: `0.5px solid ${expandedSide === side ? theme.accent : theme.divider}`, background: expandedSide === side ? theme.accent : theme.cardBg, color: expandedSide === side ? '#FFF' : theme.text, cursor: 'pointer', transition: 'all 0.3s' }}>{side.toUpperCase()}</button>
+                  <button key={side} onClick={() => setExpandedSide(expandedSide === side ? null : side)} style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '13px', letterSpacing: '1px', padding: '12px', border: `0.5px solid ${expandedSide === side ? theme.accent : theme.divider}`, background: expandedSide === side ? theme.accent : theme.cardBg, color: expandedSide === side ? '#FFF' : theme.text, cursor: 'pointer', transition: 'all 0.3s' }}>{side === 'groom' ? '신랑측' : '신부측'}</button>
                 ))}
               </div>
               {expandedSide && <div style={{ padding: '12px 16px', background: theme.cardBg }}>{renderAccounts(expandedSide)}</div>}
@@ -802,7 +802,7 @@ function GuestbookSection({ data, invitationId, theme, isSample }: { data: any; 
       <div className="px-8 py-12" style={{ backgroundColor: theme.background }}>
         <div className="max-w-sm mx-auto">
           <div className="text-center mb-8">
-            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '10px', letterSpacing: '5px', color: theme.gray, marginBottom: '8px' }}>MESSAGES</div>
+            <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '5px', color: theme.gray, marginBottom: '8px' }}>MESSAGES</div>
             <h3 style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '15px', color: theme.heading }}>방명록</h3>
           </div>
           <p className="text-center mb-6" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '14px', fontWeight: 500, color: theme.heading }}>{questions[currentQ]}</p>
@@ -836,7 +836,7 @@ function RsvpSection({ data, invitationId, theme }: { data: any; invitationId: s
       <div className="px-8 py-12" style={{ backgroundColor: theme.sectionBg }}>
         <div className="max-w-sm mx-auto">
           <div className="text-center mb-8">
-            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '10px', letterSpacing: '5px', color: theme.gray, marginBottom: '8px' }}>RSVP</div>
+            <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '5px', color: theme.gray, marginBottom: '8px' }}>RSVP</div>
             <h3 style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '15px', color: theme.heading }}>참석 여부</h3>
             {data.rsvpDeadline && <p style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '12px', color: theme.gray, marginTop: '8px' }}>{new Date(data.rsvpDeadline).toLocaleDateString('ko-KR')}까지 알려주세요</p>}
           </div>
@@ -853,7 +853,7 @@ function ThankYouSection({ data, theme }: { data: any; theme: ThemeConfig }) {
     <ScrollSection>
       <div className="px-8 py-20" style={{ backgroundColor: theme.background }}>
         <div className="max-w-sm mx-auto text-center">
-          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '10px', letterSpacing: '5px', color: theme.accent, marginBottom: '20px' }}>THANK YOU</div>
+          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '5px', color: theme.accent, marginBottom: '20px' }}>THANK YOU</div>
           <div className="mt-8">{ty.message.split('\n').map((line: string, i: number) => <p key={i} style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '14px', lineHeight: 2.2, color: theme.text }}>{line || '\u00A0'}</p>)}</div>
           {ty.sign && <div style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '13px', color: theme.gray, marginTop: '24px' }}>{ty.sign}</div>}
         </div>
@@ -866,7 +866,7 @@ function EssayFooter({ theme }: { theme: ThemeConfig }) {
   return (
     <div className="py-8 text-center" style={{ backgroundColor: theme.background }}>
       <div style={{ width: '1px', height: '30px', background: theme.divider, margin: '0 auto 16px' }} />
-      <p style={{ fontFamily: "'Playfair Display', serif", fontSize: '9px', letterSpacing: '3px', color: theme.gray }}>DEAR DRAWER</p>
+      <p style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '9px', letterSpacing: '3px', color: theme.gray }}>DEAR DRAWER</p>
     </div>
   )
 }
@@ -976,14 +976,14 @@ function PaperCover({ data, onOpen }: { data: any; onOpen: () => void }) {
           우리의 에세이
         </div>
         <div style={{
-          fontFamily: "'Playfair Display', serif",
+          fontFamily: "'BonmyeongjoSourceHanSerif', serif",
           fontSize: '22px', fontWeight: 400, color: paperColors.text,
           lineHeight: 1.8, letterSpacing: '2px',
         }}>
           {groomName} & {brideName}
         </div>
         <div style={{
-          fontFamily: "'Playfair Display', serif",
+          fontFamily: "'BonmyeongjoSourceHanSerif', serif",
           fontSize: '13px', color: paperColors.muted,
           marginTop: '8px', letterSpacing: '3px',
         }}>
@@ -1015,7 +1015,7 @@ function PaperEssayPage({ chapter, index }: { chapter: any; index: number }) {
       <div style={{ width: '100%', maxWidth: '640px', margin: '0 auto', padding: '80px 32px' }}>
         <PaperReveal>
           <div style={{
-            fontFamily: "'Playfair Display', serif",
+            fontFamily: "'BonmyeongjoSourceHanSerif', serif",
             fontSize: '10px', letterSpacing: '5px', color: paperColors.muted,
             marginBottom: '24px',
           }}>
@@ -1036,7 +1036,7 @@ function PaperEssayPage({ chapter, index }: { chapter: any; index: number }) {
         {chapter.subtitle && (
           <PaperReveal delay={150}>
             <div style={{
-              fontFamily: "'Playfair Display', serif",
+              fontFamily: "'BonmyeongjoSourceHanSerif', serif",
               fontSize: '12px', fontStyle: 'italic', color: paperColors.muted,
               letterSpacing: '2px', marginBottom: '24px',
             }}>
@@ -1059,8 +1059,8 @@ function PaperEssayPage({ chapter, index }: { chapter: any; index: number }) {
             return (
               <PaperReveal key={j} delay={250 + j * 40}>
                 <p style={{
-                  fontFamily: "'Playfair Display', serif", fontSize: '20px', fontWeight: 400, fontStyle: 'italic',
-                  lineHeight: 1.8, color: paperColors.text, textAlign: 'center', margin: '16px 0',
+                  fontFamily: "'Ridibatang', serif", fontSize: '18px', fontWeight: 400, fontStyle: 'normal',
+                  lineHeight: 2, color: paperColors.text, textAlign: 'center', margin: '16px 0', letterSpacing: '-0.3px',
                 }}>{heroText}</p>
               </PaperReveal>
             )
@@ -1127,7 +1127,7 @@ function PaperQuote({ quote }: { quote: any }) {
         {quote.text.split('\n').map((line: string, i: number) => (
           <PaperReveal key={i} delay={100 + i * 60}>
             <p className="es-f17" style={{
-              fontFamily: "'Playfair Display', serif",
+              fontFamily: "'BonmyeongjoSourceHanSerif', serif",
               fontSize: '17px', fontStyle: 'italic', fontWeight: 300,
               lineHeight: 2, color: paperColors.charcoal,
             }}>
@@ -1172,7 +1172,7 @@ function PaperInvitationInfo({ data }: { data: any }) {
 
         <PaperReveal delay={100}>
           <div style={{
-            fontFamily: "'Playfair Display', serif",
+            fontFamily: "'BonmyeongjoSourceHanSerif', serif",
             fontSize: '11px', letterSpacing: '4px', color: paperColors.muted,
             marginBottom: '24px',
           }}>
@@ -1704,6 +1704,18 @@ function getBookInfoColors(theme?: string) {
 
 // -- Book: 애니메이션 CSS --
 const bookAnimCSS = `
+@font-face {
+  font-family: 'Ridibatang';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.0/RIDIBatang.woff') format('woff');
+  font-weight: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'BonmyeongjoSourceHanSerif';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_two@1.0/NotoSerifKR.woff') format('woff');
+  font-weight: normal;
+  font-display: swap;
+}
 @keyframes bkFadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes bkFadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes bkScaleIn { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
@@ -1951,7 +1963,7 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
         <>
           <div
             className="fixed left-0 z-30"
-            style={{ top: '44px', bottom: '36px', width: '35%' }}
+            style={{ top: '44px', bottom: '36px', width: '28px' }}
             onClick={(e) => { e.stopPropagation(); prevPage() }}
             onTouchEnd={(e) => {
               const touch = e.changedTouches[0]
@@ -1963,7 +1975,7 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
           />
           <div
             className="fixed right-0 z-30"
-            style={{ top: '44px', bottom: '36px', width: '35%' }}
+            style={{ top: '44px', bottom: '36px', width: '28px' }}
             onClick={(e) => { e.stopPropagation(); nextPage() }}
             onTouchEnd={(e) => {
               const touch = e.changedTouches[0]
@@ -2046,7 +2058,7 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
       {currentPage > 0 && (
         <div className="fixed bottom-0 left-0 right-0 z-40" style={{ height: '36px', background: 'transparent', transition: 'background 0.4s ease' }}>
           <div className="flex items-center h-full px-5 gap-3">
-            <span style={{ fontSize: '9px', fontFamily: "'Playfair Display', serif", color: activeColors.muted, flexShrink: 0, opacity: 0.6 }}>{Math.round(progress)}%</span>
+            <span style={{ fontSize: '9px', fontFamily: "'BonmyeongjoSourceHanSerif', serif", color: activeColors.muted, flexShrink: 0, opacity: 0.6 }}>{Math.round(progress)}%</span>
             <div className="flex-1 relative" style={{ height: '2px', background: activeColors.progressBg, borderRadius: '1px', opacity: 0.5 }}>
               <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${progress}%`, background: activeColors.progressFill, borderRadius: '1px', transition: 'width 0.3s ease' }} />
             </div>
@@ -2096,17 +2108,17 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
             <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.3)' }} />
             <div className="absolute top-0 left-0 bottom-0 overflow-y-auto" style={{ width: '280px', background: bookColors.pageBg, boxShadow: '4px 0 20px rgba(0,0,0,0.1)' }} onClick={e => e.stopPropagation()}>
               <div className="p-6">
-                <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '11px', letterSpacing: '4px', color: bookColors.muted, marginBottom: '24px' }}>CONTENTS</div>
+                <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '11px', letterSpacing: '4px', color: bookColors.muted, marginBottom: '24px' }}>CONTENTS</div>
                 {tocItems.map((item, i) => (
                   <div key={i}>
                     {item.section && (
                       <div style={{ paddingTop: i === 0 ? '0' : '16px', paddingBottom: '8px' }}>
-                        <span style={{ fontFamily: "'Playfair Display', serif", fontSize: '9px', letterSpacing: '3px', color: bookColors.muted }}>{item.section}</span>
+                        <span style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '9px', letterSpacing: '3px', color: bookColors.muted }}>{item.section}</span>
                       </div>
                     )}
                     <button onClick={() => { setShowToc(false); goToPage(item.pageIndex) }} className="w-full text-left py-3 flex items-center justify-between" style={{ background: 'none', border: 'none', cursor: 'pointer', borderBottom: `0.5px solid ${bookColors.divider}`, opacity: item.active ? 1 : 0.6 }}>
                       <span style={{ fontSize: '13px', color: item.active ? bookColors.accent : bookColors.text, fontWeight: item.active ? 600 : 400 }}>{item.label}</span>
-                      <span style={{ fontSize: '10px', fontFamily: "'Playfair Display', serif", color: bookColors.muted }}>{item.pageIndex + 1}</span>
+                      <span style={{ fontSize: '10px', fontFamily: "'BonmyeongjoSourceHanSerif', serif", color: bookColors.muted }}>{item.pageIndex + 1}</span>
                     </button>
                   </div>
                 ))}
@@ -2141,7 +2153,7 @@ function BookCover({ data, onNext }: { data: any; onNext: () => void }) {
         background: (coverDesign === 'full' || coverDesign === 'typo') && coverImage ? 'rgba(255,255,255,0.15)' : `${bookColors.accent}10`,
         border: `1.5px solid ${(coverDesign === 'full' || coverDesign === 'typo') && coverImage ? 'rgba(255,255,255,0.6)' : bookColors.accent}`,
         padding: '12px 32px',
-        cursor: 'pointer', fontFamily: "'Playfair Display', serif", fontSize: '11px',
+        cursor: 'pointer', fontFamily: "'Pretendard', sans-serif", fontSize: '11px',
         letterSpacing: '4px',
         color: (coverDesign === 'full' || coverDesign === 'typo') && coverImage ? '#fff' : bookColors.heading,
         fontWeight: 500,
@@ -2167,7 +2179,7 @@ function BookCover({ data, onNext }: { data: any; onNext: () => void }) {
 
         {/* 상단 타이틀 */}
         <div className="absolute top-0 left-0 right-0 pt-14 text-center" style={{ opacity: loaded ? 1 : 0, transition: 'opacity 0.8s 0.3s' }}>
-          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '12px', letterSpacing: '5px', color: 'rgba(255,255,255,0.9)', textShadow: '0 1px 8px rgba(0,0,0,0.4)' }}>{coverTitle}</div>
+          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '12px', letterSpacing: '5px', color: 'rgba(255,255,255,0.9)', textShadow: '0 1px 8px rgba(0,0,0,0.4)' }}>{coverTitle}</div>
         </div>
 
         {/* 하단 텍스트 */}
@@ -2180,7 +2192,7 @@ function BookCover({ data, onNext }: { data: any; onNext: () => void }) {
           </div>
           <div className="mt-4">
             <div style={{ width: '30px', height: '0.5px', background: 'rgba(255,255,255,0.4)', margin: '0 auto 12px' }} />
-            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '12px', letterSpacing: '4px', color: 'rgba(255,255,255,0.7)' }}>{dateStr}</div>
+            <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '12px', letterSpacing: '4px', color: 'rgba(255,255,255,0.7)' }}>{dateStr}</div>
           </div>
           {openButton}
         </div>
@@ -2208,7 +2220,7 @@ function BookCover({ data, onNext }: { data: any; onNext: () => void }) {
         }}>
           {/* 큰 타이틀 */}
           <div className="text-center" style={{ marginBottom: '24px' }}>
-            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '24px', fontWeight: 300, letterSpacing: '6px', lineHeight: 1.4, color: '#1a1a1a' }}>
+            <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '24px', fontWeight: 300, letterSpacing: '6px', lineHeight: 1.4, color: '#1a1a1a' }}>
               {coverTitle.split(' ').map((word: string, i: number) => (
                 <div key={i}>{word}</div>
               ))}
@@ -2228,7 +2240,7 @@ function BookCover({ data, onNext }: { data: any; onNext: () => void }) {
           {/* 하단 연도 */}
           <div className="text-center">
             <div style={{ width: '40px', height: '0.5px', background: '#ccc', margin: '0 auto 12px' }} />
-            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '12px', letterSpacing: '4px', color: '#999' }}>{dateStr}</div>
+            <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '12px', letterSpacing: '4px', color: '#999' }}>{dateStr}</div>
           </div>
         </div>
         {openButton}
@@ -2277,7 +2289,7 @@ function BookCover({ data, onNext }: { data: any; onNext: () => void }) {
         {/* 하단 연도 */}
         <div className="text-center" style={{ marginTop: '36px' }}>
           <div style={{ width: '40px', height: '0.5px', background: bookColors.accent, margin: '0 auto 16px' }} />
-          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '12px', letterSpacing: '4px', color: bookColors.muted }}>{dateStr}</div>
+          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '12px', letterSpacing: '4px', color: bookColors.muted }}>{dateStr}</div>
         </div>
       </div>
       {openButton}
@@ -2293,7 +2305,7 @@ function BookToc({ pages, currentPage, onGoTo, colorTheme }: { pages: BookPage[]
     <div className="bk-page flex items-center" style={{ background: bookColors.pageBg }}>
       <div className="w-full px-10 py-16 max-w-md mx-auto">
         <div className="text-center mb-12">
-          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '10px', letterSpacing: '6px', color: bookColors.muted }}>CONTENTS</div>
+          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '6px', color: bookColors.muted }}>CONTENTS</div>
           <div className="mt-4" style={{ width: '24px', height: '0.5px', background: bookColors.accent, margin: '0 auto' }} />
         </div>
         <div className="space-y-0">
@@ -2301,11 +2313,11 @@ function BookToc({ pages, currentPage, onGoTo, colorTheme }: { pages: BookPage[]
             const pageIndex = pages.findIndex(pp => pp.id === p.id)
             return (
               <button key={p.id} onClick={(e) => { e.stopPropagation(); onGoTo(pageIndex) }} className="w-full flex items-baseline gap-3 py-3" style={{ background: 'none', border: 'none', cursor: 'pointer', borderBottom: `0.5px solid ${bookColors.divider}` }}>
-                <span style={{ fontFamily: "'Playfair Display', serif", fontSize: '10px', color: bookColors.muted, flexShrink: 0, width: '24px', textAlign: 'right' }}>
+                <span style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', color: bookColors.muted, flexShrink: 0, width: '24px', textAlign: 'right' }}>
                   {String(i + 1).padStart(2, '0')}
                 </span>
                 <span className="flex-1 text-left" style={{ fontSize: '14px', color: bookColors.text, letterSpacing: '0.5px' }}>{p.title}</span>
-                <span style={{ fontFamily: "'Playfair Display', serif", fontSize: '10px', color: bookColors.muted, flexShrink: 0 }}>{pageIndex + 1}</span>
+                <span style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', color: bookColors.muted, flexShrink: 0 }}>{pageIndex + 1}</span>
               </button>
             )
           })}
@@ -2327,7 +2339,7 @@ function BookIntro({ data }: { data: any }) {
     <div className="bk-page flex items-center justify-center" style={{ background: bookColors.pageBg }}>
       <div className="w-full px-12 py-16 max-w-md mx-auto text-center">
         <BA d={0} type="fade" className="mb-8">
-          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '10px', letterSpacing: '4px', color: bookColors.muted }}>BEFORE WE BEGIN</div>
+          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '4px', color: bookColors.muted }}>BEFORE WE BEGIN</div>
           <div className="mt-3"><BLine width="20px" color={bookColors.accent} d={300} center /></div>
         </BA>
         <BA d={200} className="mb-10">
@@ -2355,7 +2367,7 @@ function BookGreeting({ data }: { data: any }) {
     <div className="bk-page flex items-center" style={{ background: bookColors.pageBg }}>
       <div className="w-full px-10 py-16 max-w-md mx-auto">
         <BA d={0} type="fade" className="mb-10">
-          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '10px', letterSpacing: '4px', color: bookColors.muted }}>PROLOGUE</div>
+          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '4px', color: bookColors.muted }}>PROLOGUE</div>
           <div className="mt-3"><BLine width="20px" color={bookColors.accent} d={300} /></div>
         </BA>
         <div>
@@ -2381,8 +2393,11 @@ function BookChapter({ chapter, index, ed = false, colorTheme }: { chapter: any;
   const alignments: ('left' | 'right' | 'center')[] = ['left', 'right', 'left']
   const textAlign = ed ? alignments[index % 3] : 'left' as 'left' | 'right' | 'center'
 
-  // 본문에서 >>텍스트<< 강조 문구 감지 (에디토리얼 아닐 때도 적용)
-  const heroLineIdx = lines.findIndex((l: string) => /^>>.*<<$/.test(l.trim()))
+  // 본문에서 >>텍스트<< 강조 문구 감지 (여러 줄 지원)
+  const heroStartIdx = lines.findIndex((l: string) => /^>>/.test(l.trim()))
+  const heroEndIdx = lines.findIndex((l: string) => /<<$/.test(l.trim()))
+  const heroLineIdx = (heroStartIdx >= 0 && heroEndIdx >= heroStartIdx) ? heroStartIdx : -1
+  const heroEndLine = (heroStartIdx >= 0 && heroEndIdx >= heroStartIdx) ? heroEndIdx : -1
 
   return (
     <div className="bk-page flex items-center" style={{ background: bookColors.pageBg, position: 'relative', overflow: 'hidden' }}>
@@ -2392,7 +2407,7 @@ function BookChapter({ chapter, index, ed = false, colorTheme }: { chapter: any;
           position: 'absolute',
           top: textAlign === 'right' ? '60px' : '80px',
           [textAlign === 'right' ? 'left' : 'right']: '-10px',
-          fontFamily: "'Playfair Display', serif",
+          fontFamily: "'BonmyeongjoSourceHanSerif', serif",
           fontSize: '180px', fontWeight: 300, lineHeight: 1,
           color: bookColors.accent, opacity: 0.06,
           pointerEvents: 'none', userSelect: 'none',
@@ -2404,7 +2419,7 @@ function BookChapter({ chapter, index, ed = false, colorTheme }: { chapter: any;
       <div className="w-full px-10 py-16 max-w-md mx-auto" style={{ textAlign: ed ? textAlign : 'left' }}>
         {/* 챕터 번호 */}
         <BA d={0} type="fade" className="mb-2">
-          <span style={{ fontFamily: "'Playfair Display', serif", fontSize: ed ? '11px' : '10px', letterSpacing: '4px', color: bookColors.muted }}>
+          <span style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: ed ? '11px' : '10px', letterSpacing: '4px', color: bookColors.muted }}>
             {ed ? chapterNum : `CHAPTER ${chapterNum}`}
           </span>
         </BA>
@@ -2419,7 +2434,7 @@ function BookChapter({ chapter, index, ed = false, colorTheme }: { chapter: any;
         {/* 영문 부제 */}
         {chapter.subtitle && (
           <BA d={250} type="fade">
-            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '11px', fontStyle: 'italic', color: bookColors.muted, letterSpacing: '2px', marginBottom: '20px' }}>
+            <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '11px', fontStyle: 'italic', color: bookColors.muted, letterSpacing: '2px', marginBottom: '20px' }}>
               {chapter.subtitle}
             </div>
           </BA>
@@ -2433,17 +2448,20 @@ function BookChapter({ chapter, index, ed = false, colorTheme }: { chapter: any;
           {lines.map((line: string, j: number) => {
             const isDropCap = j === firstTextIdx && line.trim().length > 0
 
-            // >>텍스트<< 강조 문구 (큰 이탤릭)
-            if (j === heroLineIdx) {
-              const heroText = line.trim().replace(/^>>/, '').replace(/<<$/, '')
+            // >>텍스트<< 강조 문구 (리디바탕체, 여러 줄 지원)
+            if (j >= heroLineIdx && j <= heroEndLine && heroLineIdx >= 0) {
+              if (j > heroLineIdx) return null // 첫 줄에서 모두 렌더링
+              const heroLines = lines.slice(heroStartIdx, heroEndLine + 1)
+              const heroText = heroLines.map((l: string) => l.trim().replace(/^>>/, '').replace(/<<$/, '')).join('\n')
               return (
                 <BA key={j} d={450 + j * 60}>
                   <p style={{
-                    fontFamily: "'Playfair Display', serif",
-                    fontSize: '22px', fontWeight: 400, fontStyle: 'italic',
-                    lineHeight: 1.8, color: bookColors.heading,
-                    margin: '20px 0', textAlign: 'center',
-                    padding: '0 4px',
+                    fontFamily: "'Ridibatang', serif",
+                    fontSize: '20px', fontWeight: 400, fontStyle: 'normal',
+                    lineHeight: 2, color: bookColors.heading,
+                    margin: '24px 0', textAlign: 'center',
+                    padding: '0 4px', letterSpacing: '-0.3px',
+                    whiteSpace: 'pre-line',
                   }}>{heroText}</p>
                 </BA>
               )
@@ -2471,7 +2489,7 @@ function BookChapter({ chapter, index, ed = false, colorTheme }: { chapter: any;
                 <BA key={j} d={450 + j * 60}>
                   <p className="es-f15" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '15px', lineHeight: 2.2, color: bookColors.text }}>
                     <span style={{
-                      fontFamily: "'Playfair Display', serif",
+                      fontFamily: "'BonmyeongjoSourceHanSerif', serif",
                       fontSize: ed ? '64px' : '48px', fontWeight: 300, lineHeight: 0.8,
                       float: 'left', marginRight: ed ? '10px' : '8px', marginTop: ed ? '8px' : '6px',
                       color: bookColors.accent,
@@ -2515,7 +2533,7 @@ function BookInterview({ qa, index, ed = false, colorTheme }: { qa: any; index: 
       {ed && (
         <div style={{
           position: 'absolute', top: '50px', right: '-20px',
-          fontFamily: "'Playfair Display', serif",
+          fontFamily: "'BonmyeongjoSourceHanSerif', serif",
           fontSize: '200px', fontWeight: 300, lineHeight: 1,
           color: bookColors.accent, opacity: 0.04,
           pointerEvents: 'none', userSelect: 'none',
@@ -2526,7 +2544,7 @@ function BookInterview({ qa, index, ed = false, colorTheme }: { qa: any; index: 
 
       <div className="w-full px-10 py-16 max-w-md mx-auto">
         <BA d={0} type="fade" className="mb-8">
-          <span style={{ fontFamily: "'Playfair Display', serif", fontSize: ed ? '11px' : '10px', letterSpacing: '4px', color: bookColors.muted }}>
+          <span style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: ed ? '11px' : '10px', letterSpacing: '4px', color: bookColors.muted }}>
             Q.{qNum}
           </span>
         </BA>
@@ -2560,7 +2578,7 @@ function BookInterview({ qa, index, ed = false, colorTheme }: { qa: any; index: 
         {qa.answerer && qa.answerer !== 'both' && (
           <BA d={700} type="fade">
             <div className="mt-8 text-right">
-              <span style={{ fontFamily: "'Playfair Display', serif", fontSize: '11px', fontStyle: 'italic', color: bookColors.muted }}>
+              <span style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '11px', fontStyle: 'italic', color: bookColors.muted }}>
                 — {qa.answerer === 'groom' ? '신랑' : '신부'}
               </span>
             </div>
@@ -2593,11 +2611,11 @@ function BookQuote({ data, ed = false }: { data: any; ed?: boolean }) {
     <div className="bk-page flex items-center" style={{ background: bg, transition: 'background 0.4s ease' }}>
       <div className="w-full px-10 py-16 max-w-md mx-auto text-center">
         <BA d={0} type="scale">
-          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: ed ? '96px' : '72px', color: quoteMarkColor, lineHeight: 0.5, marginBottom: ed ? '36px' : '28px' }}>&ldquo;</div>
+          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: ed ? '96px' : '72px', color: quoteMarkColor, lineHeight: 0.5, marginBottom: ed ? '36px' : '28px' }}>&ldquo;</div>
         </BA>
         {quoteLines.map((line: string, i: number) => (
           <BA key={i} d={300 + i * 120}>
-            <p className={ed ? 'es-f20' : 'es-f18'} style={{ fontFamily: "'Playfair Display', serif", fontSize: ed ? '20px' : '18px', fontWeight: ed ? 300 : 400, fontStyle: 'italic', lineHeight: 2.4, color: textColor, letterSpacing: ed ? '0.5px' : '0' }}>{line || '\u00A0'}</p>
+            <p className={ed ? 'es-f20' : 'es-f18'} style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: ed ? '20px' : '18px', fontWeight: ed ? 300 : 400, fontStyle: 'italic', lineHeight: 2.4, color: textColor, letterSpacing: ed ? '0.5px' : '0' }}>{line || '\u00A0'}</p>
           </BA>
         ))}
         {quote.author && (
@@ -2708,7 +2726,7 @@ function BookWeddingVenue({ data }: { data: any }) {
     <div className="bk-page flex items-center" style={{ background: bookInfoColors.pageBg }}>
       <div className="w-full px-8 py-16 max-w-md mx-auto">
         <BA d={0} type="fade" className="mb-2">
-          <span style={{ fontFamily: "'Playfair Display', serif", fontSize: '10px', letterSpacing: '4px', color: bookInfoColors.muted }}>THE PLACE</span>
+          <span style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '4px', color: bookInfoColors.muted }}>THE PLACE</span>
         </BA>
         <BA d={150}>
           <h2 style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '20px', fontWeight: 600, color: bookInfoColors.heading, marginBottom: '6px' }}>{data.wedding?.venueEssayTitle || '초대합니다'}</h2>
@@ -2800,12 +2818,15 @@ function BookGuidance({ data }: { data: any }) {
   return (
     <div className="bk-page flex items-center" style={{ background: bookInfoColors.pageBg }}>
       <div className="w-full px-8 py-16 max-w-md mx-auto">
-        {/* 타이틀 */}
-        <div className="text-center mb-10">
-          <BA d={0} type="fade"><div style={{ fontFamily: "'Playfair Display', serif", fontSize: '9px', letterSpacing: '4px', color: bookInfoColors.muted }}>INFORMATION</div></BA>
-          <BA d={150}><BLine width="20px" color={bookInfoColors.accent} d={0} center /></BA>
-          <BA d={300}><p className="mt-4" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '15px', fontWeight: 500, color: bookInfoColors.heading }}>행복한 시간을 위한 안내</p></BA>
-        </div>
+        {/* 타이틀 - THE PLACE 구조와 동일 */}
+        <BA d={0} type="fade" className="mb-2">
+          <span style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '4px', color: bookInfoColors.muted }}>INFORMATION</span>
+        </BA>
+        <BA d={150}>
+          <h2 style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '20px', fontWeight: 600, color: bookInfoColors.heading, marginBottom: '6px' }}>행복한 시간을 위한 안내</h2>
+        </BA>
+        <BA d={350}><BLine width="24px" color={bookInfoColors.accent} d={0} /></BA>
+        <div style={{ marginBottom: '24px' }} />
 
         {/* 안내 항목 리스트 */}
         <div className="space-y-4">
@@ -2850,51 +2871,101 @@ function BookContacts({ data }: { data: any }) {
   const bookInfoColors = getBookInfoColors(data.colorTheme)
   const groom = data.groom || {}; const bride = data.bride || {}
   const contactsEssay = data.content?.contactsEssay || `축하의 마음을 전하고 싶으시다면,\n편하게 연락해 주세요.\n\n한 통의 전화, 짧은 문자 하나에도\n저희는 크게 웃을 수 있답니다.`
-  const contacts = [
+  const [expandedSide, setExpandedSide] = useState<'groom' | 'bride' | null>(null)
+
+  const groomContacts = [
     groom.phoneEnabled !== false && groom.phone && { label: `신랑 ${groom.name || ''}`, phone: groom.phone },
-    groom.father?.phoneEnabled && groom.father?.phone && { label: `신랑측 아버지 ${groom.father.name || ''}`, phone: groom.father.phone },
-    groom.mother?.phoneEnabled && groom.mother?.phone && { label: `신랑측 어머니 ${groom.mother.name || ''}`, phone: groom.mother.phone },
-    bride.phoneEnabled !== false && bride.phone && { label: `신부 ${bride.name || ''}`, phone: bride.phone },
-    bride.father?.phoneEnabled && bride.father?.phone && { label: `신부측 아버지 ${bride.father.name || ''}`, phone: bride.father.phone },
-    bride.mother?.phoneEnabled && bride.mother?.phone && { label: `신부측 어머니 ${bride.mother.name || ''}`, phone: bride.mother.phone },
+    groom.father?.phoneEnabled && groom.father?.phone && { label: `아버지 ${groom.father.name || ''}`, phone: groom.father.phone },
+    groom.mother?.phoneEnabled && groom.mother?.phone && { label: `어머니 ${groom.mother.name || ''}`, phone: groom.mother.phone },
   ].filter(Boolean)
+
+  const brideContacts = [
+    bride.phoneEnabled !== false && bride.phone && { label: `신부 ${bride.name || ''}`, phone: bride.phone },
+    bride.father?.phoneEnabled && bride.father?.phone && { label: `아버지 ${bride.father.name || ''}`, phone: bride.father.phone },
+    bride.mother?.phoneEnabled && bride.mother?.phone && { label: `어머니 ${bride.mother.name || ''}`, phone: bride.mother.phone },
+  ].filter(Boolean)
+
+  const hasContacts = groomContacts.length > 0 || brideContacts.length > 0
+
+  const renderContactList = (contacts: any[]) => (
+    <div style={{ background: bookInfoColors.cardBg, border: `0.5px solid ${bookInfoColors.divider}`, padding: '4px 16px', marginTop: '12px' }}>
+      {contacts.map((c: any, i: number) => (
+        <div key={i} className="flex items-center justify-between py-3" style={{ borderBottom: i < contacts.length - 1 ? `0.5px solid ${bookInfoColors.divider}` : 'none' }}>
+          <span style={{ fontSize: '13px', color: bookInfoColors.text }}>{c.label}</span>
+          <div className="flex items-center gap-2">
+            <a href={`tel:${c.phone}`} onClick={e => e.stopPropagation()} className="flex items-center justify-center w-8 h-8 rounded-full" style={{ border: `0.5px solid ${bookInfoColors.accent}` }}>
+              <svg className="w-4 h-4" fill="none" stroke={bookInfoColors.accent} viewBox="0 0 24 24" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" /></svg>
+            </a>
+            <a href={`sms:${c.phone}`} onClick={e => e.stopPropagation()} className="flex items-center justify-center w-8 h-8 rounded-full" style={{ border: `0.5px solid ${bookInfoColors.accent}` }}>
+              <svg className="w-4 h-4" fill="none" stroke={bookInfoColors.accent} viewBox="0 0 24 24" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 011.037-.443 48.282 48.282 0 005.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg>
+            </a>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
 
   return (
     <div className="bk-page flex items-center" style={{ background: bookInfoColors.pageBg }}>
       <div className="w-full px-8 py-16 max-w-md mx-auto">
-        <BA d={0} type="fade" className="text-center mb-6">
-          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '10px', letterSpacing: '4px', color: bookInfoColors.muted }}>CONTACT</div>
-          <div className="mt-3"><BLine width="20px" color={bookInfoColors.accent} d={200} center /></div>
+        {/* 타이틀 - THE PLACE 구조와 동일 */}
+        <BA d={0} type="fade" className="mb-2">
+          <span style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '4px', color: bookInfoColors.muted }}>CONTACT</span>
         </BA>
-        <BA d={300} className="text-center mb-8">
+        <BA d={150}>
+          <h2 style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '20px', fontWeight: 600, color: bookInfoColors.heading, marginBottom: '6px' }}>연락처</h2>
+        </BA>
+        <BA d={350}><BLine width="24px" color={bookInfoColors.accent} d={0} /></BA>
+        <div style={{ marginBottom: '24px' }} />
+
+        {/* 에세이 */}
+        <BA d={500} className="mb-8">
           {contactsEssay.split('\n').map((line: string, i: number) => (
-            <p key={i} style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '13px', lineHeight: 2, color: bookInfoColors.text, opacity: 0.85 }}>{line || '\u00A0'}</p>
+            <p key={i} className="es-f15" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '15px', lineHeight: 2.2, color: bookInfoColors.text }}>{line || '\u00A0'}</p>
           ))}
         </BA>
-        {contacts.length > 0 ? (
-        <>
-        {/* 연락처 카드 */}
-        <BA d={600} type="fade">
-        <div style={{ background: bookInfoColors.cardBg, border: `0.5px solid ${bookInfoColors.divider}`, padding: '4px 16px' }}>
-          {contacts.map((c: any, i: number) => (
-            <div key={i} className="flex items-center justify-between py-3" style={{ borderBottom: i < contacts.length - 1 ? `0.5px solid ${bookInfoColors.divider}` : 'none' }}>
-              <span style={{ fontSize: '13px', color: bookInfoColors.text }}>{c.label}</span>
-              <div className="flex items-center gap-2">
-                <a href={`tel:${c.phone}`} onClick={e => e.stopPropagation()} className="flex items-center justify-center w-8 h-8 rounded-full" style={{ border: `0.5px solid ${bookInfoColors.accent}` }}>
-                  <svg className="w-4 h-4" fill="none" stroke={bookInfoColors.accent} viewBox="0 0 24 24" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" /></svg>
-                </a>
-                <a href={`sms:${c.phone}`} onClick={e => e.stopPropagation()} className="flex items-center justify-center w-8 h-8 rounded-full" style={{ border: `0.5px solid ${bookInfoColors.accent}` }}>
-                  <svg className="w-4 h-4" fill="none" stroke={bookInfoColors.accent} viewBox="0 0 24 24" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 011.037-.443 48.282 48.282 0 005.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg>
-                </a>
-              </div>
+
+        {hasContacts ? (
+          <BA d={700} type="fade">
+            {/* 신랑측 / 신부측 탭 */}
+            <div className="grid grid-cols-2 gap-3">
+              {groomContacts.length > 0 && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); setExpandedSide(expandedSide === 'groom' ? null : 'groom') }}
+                  style={{
+                    fontFamily: "'Pretendard', sans-serif", fontSize: '13px', letterSpacing: '1px',
+                    padding: '12px', border: `0.5px solid ${expandedSide === 'groom' ? bookInfoColors.accent : bookInfoColors.divider}`,
+                    background: expandedSide === 'groom' ? bookInfoColors.accent : bookInfoColors.cardBg,
+                    color: expandedSide === 'groom' ? '#FFF' : bookInfoColors.text,
+                    cursor: 'pointer', transition: 'all 0.3s',
+                  }}
+                >
+                  신랑측
+                </button>
+              )}
+              {brideContacts.length > 0 && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); setExpandedSide(expandedSide === 'bride' ? null : 'bride') }}
+                  style={{
+                    fontFamily: "'Pretendard', sans-serif", fontSize: '13px', letterSpacing: '1px',
+                    padding: '12px', border: `0.5px solid ${expandedSide === 'bride' ? bookInfoColors.accent : bookInfoColors.divider}`,
+                    background: expandedSide === 'bride' ? bookInfoColors.accent : bookInfoColors.cardBg,
+                    color: expandedSide === 'bride' ? '#FFF' : bookInfoColors.text,
+                    cursor: 'pointer', transition: 'all 0.3s',
+                  }}
+                >
+                  신부측
+                </button>
+              )}
             </div>
-          ))}
-        </div>
-        </BA>
-        </>
+
+            {/* 펼쳐진 연락처 */}
+            {expandedSide === 'groom' && groomContacts.length > 0 && renderContactList(groomContacts)}
+            {expandedSide === 'bride' && brideContacts.length > 0 && renderContactList(brideContacts)}
+          </BA>
         ) : (
           <BA d={600} type="fade">
-            <p className="text-center" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '13px', color: bookInfoColors.muted }}>연락처 정보가 등록되면 이곳에 표시됩니다.</p>
+            <p style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '13px', color: bookInfoColors.muted }}>연락처 정보가 등록되면 이곳에 표시됩니다.</p>
           </BA>
         )}
       </div>
@@ -2917,12 +2988,15 @@ function BookBank({ data }: { data: any }) {
     return (
       <div style={{ background: bookInfoColors.cardBg, border: `0.5px solid ${bookInfoColors.divider}`, padding: '4px 16px' }}>
         {accs.map((acc: any, i: number) => (
-          <div key={i} className="flex items-center justify-between py-3" style={{ borderBottom: i < accs.length - 1 ? `0.5px solid ${bookInfoColors.divider}` : 'none' }}>
-            <div>
-              <span style={{ fontSize: '11px', color: bookInfoColors.muted }}>{acc.role}</span>
-              <span style={{ fontSize: '12px', color: bookInfoColors.text, marginLeft: '8px' }}>{acc.bank} {acc.account}</span>
+          <div key={i} className="py-3" style={{ borderBottom: i < accs.length - 1 ? `0.5px solid ${bookInfoColors.divider}` : 'none' }}>
+            <div className="flex items-center justify-between">
+              <div>
+                <span style={{ fontSize: '11px', color: bookInfoColors.muted }}>{acc.role}</span>
+                <span style={{ fontSize: '13px', color: bookInfoColors.text, marginLeft: '8px', fontWeight: 500 }}>{acc.holder || acc.name}</span>
+              </div>
+              <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(acc.account); alert('복사되었습니다.') }} style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '10px', letterSpacing: '1px', color: bookInfoColors.accent, background: 'none', border: `0.5px solid ${bookInfoColors.accent}`, padding: '4px 10px', cursor: 'pointer' }}>COPY</button>
             </div>
-            <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(acc.account); alert('복사되었습니다.') }} style={{ fontSize: '10px', letterSpacing: '1px', color: bookInfoColors.accent, background: 'none', border: `0.5px solid ${bookInfoColors.accent}`, padding: '4px 10px', cursor: 'pointer' }}>COPY</button>
+            <div style={{ fontSize: '12px', color: bookInfoColors.muted, marginTop: '4px' }}>{acc.bank} {acc.account}</div>
           </div>
         ))}
       </div>
@@ -2932,32 +3006,38 @@ function BookBank({ data }: { data: any }) {
   return (
     <div className="bk-page flex items-center" style={{ background: bookInfoColors.pageBg }}>
       <div className="w-full px-8 py-16 max-w-md mx-auto">
-        <BA d={0} type="fade" className="text-center mb-6">
-          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '10px', letterSpacing: '4px', color: bookInfoColors.muted }}>GIFT</div>
-          <div className="mt-3"><BLine width="20px" color={bookInfoColors.accent} d={200} center /></div>
+        {/* 타이틀 - THE PLACE 구조와 동일 */}
+        <BA d={0} type="fade" className="mb-2">
+          <span style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '4px', color: bookInfoColors.muted }}>ACCOUNT</span>
         </BA>
+        <BA d={150}>
+          <h2 style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '20px', fontWeight: 600, color: bookInfoColors.heading, marginBottom: '6px' }}>마음 전하실 곳</h2>
+        </BA>
+        <BA d={350}><BLine width="24px" color={bookInfoColors.accent} d={0} /></BA>
+        <div style={{ marginBottom: '24px' }} />
+
         {/* Essay */}
-        <BA d={300} className="text-center mb-8">
+        <BA d={500} className="mb-8">
           {bankEssay.split('\n').map((line: string, i: number) => (
-            <p key={i} style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '13px', lineHeight: 2, color: bookInfoColors.text, opacity: 0.85 }}>{line || '\u00A0'}</p>
+            <p key={i} className="es-f15" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '15px', lineHeight: 2.2, color: bookInfoColors.text }}>{line || '\u00A0'}</p>
           ))}
         </BA>
         {hasAccounts ? (
-          <>
-            <BA d={600} className="grid grid-cols-2 gap-3 mb-6">
+          <BA d={700} type="fade">
+            <div className="grid grid-cols-2 gap-3">
               {(['groom', 'bride'] as const).map(side => (
                 <button key={side} onClick={(e) => { e.stopPropagation(); setExpandedSide(expandedSide === side ? null : side) }} style={{
-                  fontFamily: "'Playfair Display', serif", fontSize: '11px', letterSpacing: '2px', padding: '12px',
+                  fontFamily: "'Pretendard', sans-serif", fontSize: '13px', letterSpacing: '1px', padding: '12px',
                   border: `0.5px solid ${expandedSide === side ? bookInfoColors.accent : bookInfoColors.divider}`,
-                  background: expandedSide === side ? bookInfoColors.accent : 'transparent',
+                  background: expandedSide === side ? bookInfoColors.accent : bookInfoColors.cardBg,
                   color: expandedSide === side ? '#FFF' : bookInfoColors.text, cursor: 'pointer', transition: 'all 0.3s',
-                }}>{side.toUpperCase()}</button>
+                }}>{side === 'groom' ? '신랑측' : '신부측'}</button>
               ))}
-            </BA>
-            {expandedSide && renderAccounts(expandedSide)}
-          </>
+            </div>
+            {expandedSide && <div style={{ marginTop: '12px' }}>{renderAccounts(expandedSide)}</div>}
+          </BA>
         ) : (
-          <BA d={600} className="text-center">
+          <BA d={600} type="fade">
             <p style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '13px', color: bookInfoColors.muted }}>계좌 정보가 등록되면 이곳에 표시됩니다.</p>
           </BA>
         )}
@@ -2977,7 +3057,7 @@ function BookThankYou({ data }: { data: any }) {
   return (
     <div className="bk-page flex items-center" style={{ background: bookInfoColors.pageBg }}>
       <div className="w-full px-8 py-16 max-w-md mx-auto text-center">
-        <BA d={0} type="fade"><div style={{ fontFamily: "'Playfair Display', serif", fontSize: '10px', letterSpacing: '4px', color: bookInfoColors.muted, marginBottom: '24px' }}>EPILOGUE</div></BA>
+        <BA d={0} type="fade"><div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '4px', color: bookInfoColors.muted, marginBottom: '24px' }}>EPILOGUE</div></BA>
         <BA d={200}><BLine width="20px" color={bookInfoColors.accent} d={0} center /></BA>
         <div style={{ marginBottom: '24px' }} />
         {/* Essay */}
@@ -3015,7 +3095,7 @@ function BookGuestbook({ data, invitationId, isSample }: { data: any; invitation
     <div className="bk-page flex items-center" style={{ background: bookInfoColors.pageBg }}>
       <div className="w-full px-8 py-16 max-w-md mx-auto">
         <BA d={0} type="fade" className="text-center mb-6">
-          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '10px', letterSpacing: '4px', color: bookInfoColors.muted }}>GUEST NOTE</div>
+          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '4px', color: bookInfoColors.muted }}>GUEST NOTE</div>
           <div className="mt-3"><BLine width="20px" color={bookInfoColors.accent} d={200} center /></div>
         </BA>
         {/* Essay */}
@@ -3055,7 +3135,7 @@ function BookRsvp({ data, invitationId }: { data: any; invitationId: string }) {
     <div className="bk-page flex items-center" style={{ background: bookInfoColors.pageBg }}>
       <div className="w-full px-8 py-16 max-w-md mx-auto">
         <BA d={0} type="fade" className="text-center mb-8">
-          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '10px', letterSpacing: '4px', color: bookInfoColors.muted }}>RSVP</div>
+          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '4px', color: bookInfoColors.muted }}>RSVP</div>
           <div className="mt-3"><BLine width="20px" color={bookInfoColors.accent} d={200} center /></div>
           {data.rsvpDeadline && <p className="mt-4" style={{ fontSize: '12px', color: bookInfoColors.muted }}>{new Date(data.rsvpDeadline).toLocaleDateString('ko-KR')}까지 알려주세요</p>}
         </BA>
@@ -3077,17 +3157,17 @@ function BookEnd({ data, onRestart, onShowBonus, showBonus }: { data: any; onRes
   return (
     <div className="bk-page flex flex-col items-center justify-center" style={{ background: bookColors.bg }}>
       <div className="text-center">
-        <BA d={0} type="fade"><div style={{ fontFamily: "'Playfair Display', serif", fontSize: '10px', letterSpacing: '6px', color: bookColors.muted, marginBottom: '24px' }}>THE END</div></BA>
+        <BA d={0} type="fade"><div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '6px', color: bookColors.muted, marginBottom: '24px' }}>THE END</div></BA>
         <BA d={300}><BLine width="32px" color={bookColors.accent} d={0} center /></BA>
         <div style={{ marginBottom: '24px' }} />
         <BA d={500}><p style={{ fontSize: '14px', color: bookColors.text, lineHeight: 2 }}>이 이야기를 함께 읽어주셔서<br />감사합니다.</p></BA>
-        <BA d={700} type="fade"><p className="mt-4" style={{ fontFamily: "'Playfair Display', serif", fontSize: '13px', fontStyle: 'italic', color: bookColors.muted }}>
+        <BA d={700} type="fade"><p className="mt-4" style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '13px', fontStyle: 'italic', color: bookColors.muted }}>
           {groomName} & {brideName}
         </p></BA>
         <BA d={900} type="scale"><div className="flex flex-col items-center gap-3 mt-8">
           <button onClick={(e) => { e.stopPropagation(); onRestart() }} style={{
             background: 'none', border: `1px solid ${bookColors.divider}`, padding: '10px 24px',
-            cursor: 'pointer', fontFamily: "'Playfair Display', serif", fontSize: '10px',
+            cursor: 'pointer', fontFamily: "'Pretendard', sans-serif", fontSize: '10px',
             letterSpacing: '3px', color: bookColors.muted, width: '200px',
           }}>
             READ AGAIN
@@ -3104,7 +3184,7 @@ function BookEnd({ data, onRestart, onShowBonus, showBonus }: { data: any; onRes
         </div></BA>
       </div>
       <BA d={1100} type="fade"><div className="mt-16">
-        <p style={{ fontFamily: "'Playfair Display', serif", fontSize: '9px', letterSpacing: '3px', color: bookColors.muted }}>DEAR DRAWER</p>
+        <p style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '9px', letterSpacing: '3px', color: bookColors.muted }}>DEAR DRAWER</p>
       </div></BA>
     </div>
   )
@@ -3119,7 +3199,7 @@ function BookBonusIntro({ data }: { data: any }) {
     <div className="bk-page flex items-center justify-center" style={{ background: bookColors.pageBg }}>
       <div className="w-full px-12 py-16 max-w-md mx-auto text-center">
         <div className="mb-8">
-          <BA d={0} type="fade"><div style={{ fontFamily: "'Playfair Display', serif", fontSize: '10px', letterSpacing: '4px', color: bookColors.muted }}>BONUS CHAPTER</div></BA>
+          <BA d={0} type="fade"><div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '4px', color: bookColors.muted }}>BONUS CHAPTER</div></BA>
           <BA d={200}><BLine width="20px" color={bookColors.accent} d={0} center /></BA>
         </div>
         <div className="mb-8">
@@ -3146,7 +3226,7 @@ function BookBonusInterview({ interview, index, total, colorTheme }: { interview
     <div className="bk-page flex items-center" style={{ background: bookColors.pageBg }}>
       <div className="w-full px-10 py-16 max-w-md mx-auto">
         <div className="text-center mb-8">
-          <BA d={0} type="fade"><div style={{ fontFamily: "'Playfair Display', serif", fontSize: '9px', letterSpacing: '3px', color: bookColors.muted }}>Q{index + 1} OF {total}</div></BA>
+          <BA d={0} type="fade"><div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '9px', letterSpacing: '3px', color: bookColors.muted }}>Q{index + 1} OF {total}</div></BA>
           <BA d={150}><BLine width="20px" color={bookColors.accent} d={0} center /></BA>
         </div>
         {/* Question */}
@@ -3174,23 +3254,23 @@ function BookBonusEnd({ data, onRestart }: { data: any; onRestart: () => void })
   return (
     <div className="bk-page flex flex-col items-center justify-center" style={{ background: bookColors.bg }}>
       <div className="text-center">
-        <BA d={0} type="fade"><div style={{ fontFamily: "'Playfair Display', serif", fontSize: '10px', letterSpacing: '6px', color: bookColors.muted, marginBottom: '24px' }}>FIN</div></BA>
+        <BA d={0} type="fade"><div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '6px', color: bookColors.muted, marginBottom: '24px' }}>FIN</div></BA>
         <BA d={200}><BLine width="32px" color={bookColors.accent} d={0} center /></BA>
         <BA d={400}><p style={{ fontSize: '14px', color: bookColors.text, lineHeight: 2 }}>저희의 이야기에<br />귀 기울여 주셔서 감사합니다.</p></BA>
         <BA d={550}><p className="mt-2" style={{ fontSize: '13px', color: bookColors.text, lineHeight: 2, opacity: 0.7 }}>여러분의 축복이 가장 큰 선물입니다.</p></BA>
-        <BA d={700} type="fade"><p className="mt-4" style={{ fontFamily: "'Playfair Display', serif", fontSize: '13px', fontStyle: 'italic', color: bookColors.muted }}>
+        <BA d={700} type="fade"><p className="mt-4" style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '13px', fontStyle: 'italic', color: bookColors.muted }}>
           {groomName} & {brideName}
         </p></BA>
         <BA d={900} type="scale"><button onClick={(e) => { e.stopPropagation(); onRestart() }} className="mt-8" style={{
           background: 'none', border: `1px solid ${bookColors.divider}`, padding: '10px 24px',
-          cursor: 'pointer', fontFamily: "'Playfair Display', serif", fontSize: '10px',
+          cursor: 'pointer', fontFamily: "'Pretendard', sans-serif", fontSize: '10px',
           letterSpacing: '3px', color: bookColors.muted, width: '200px',
         }}>
           READ AGAIN
         </button></BA>
       </div>
       <BA d={1100} type="fade"><div className="mt-16">
-        <p style={{ fontFamily: "'Playfair Display', serif", fontSize: '9px', letterSpacing: '3px', color: bookColors.muted }}>DEAR DRAWER</p>
+        <p style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '9px', letterSpacing: '3px', color: bookColors.muted }}>DEAR DRAWER</p>
       </div></BA>
     </div>
   )
@@ -3228,7 +3308,7 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
   // Generate font override CSS for non-default font styles
   const fontOverrideCSS = fontStyleKey !== 'modern' ? `
     .essay-font-container [style*="Pretendard"] { font-family: ${fonts.body} !important; }
-    .essay-font-container [style*="Playfair Display"]:not(.essay-ampersand) { font-family: ${fonts.display} !important; }
+    .essay-font-container [style*="BonmyeongjoSourceHanSerif"]:not(.essay-ampersand) { font-family: ${fonts.display} !important; }
   ` : ''
 
   // Font size level CSS (body text scaling)
@@ -3255,6 +3335,30 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
     return (
       <>
         {allCSS && <style>{allCSS}</style>}
+        <style>{`
+          @media (min-width: 640px) {
+            .essay-book-desktop-wrapper {
+              display: flex; justify-content: center; min-height: 100vh; background: #E8E4DF;
+            }
+            .essay-book-desktop-wrapper > .essay-font-container {
+              width: 100%; max-width: 430px; position: relative; box-shadow: 0 0 40px rgba(0,0,0,0.15);
+            }
+            .essay-book-desktop-wrapper .fixed.inset-0 {
+              left: calc(50% - 215px) !important; right: calc(50% - 215px) !important;
+              width: 430px !important;
+            }
+            .essay-book-desktop-wrapper .fixed.left-0:not(.inset-0) {
+              left: calc(50% - 215px) !important;
+            }
+            .essay-book-desktop-wrapper .fixed.right-0:not(.inset-0) {
+              right: calc(50% - 215px) !important; left: auto !important;
+            }
+            .essay-book-desktop-wrapper > button.fixed {
+              right: calc(50% - 215px + 16px) !important; left: auto !important;
+            }
+          }
+        `}</style>
+        <div className="essay-book-desktop-wrapper">
         {!isPaid && !isPreview && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px 16px', backgroundColor: 'rgba(0,0,0,0.9)' }}>
             <span style={{ color: 'rgba(255,255,255,0.95)', fontSize: '13px', fontWeight: 500 }}>결제 후 워터마크가 제거됩니다</span>
@@ -3265,6 +3369,7 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
         </div>
         {hasBgm && <audio ref={audioRef} loop preload="auto"><source src={bgm.url} type="audio/mpeg" /></audio>}
         {hasBgm && <EssayMusicToggle audioRef={audioRef} theme={theme} />}
+        </div>
       </>
     )
   }

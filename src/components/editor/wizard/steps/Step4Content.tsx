@@ -542,10 +542,11 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                   aspectRatio="aspect-square"
                 />
                 {/* 이미지 크롭 조정 */}
-                {(invitation.groom.profile.images?.length || 0) > 0 && (
+                {(invitation.groom.profile.images?.filter(img => img)?.length || 0) > 0 && (
                   <div className="mt-2 p-3 bg-white/70 rounded-lg space-y-3">
                     <p className="text-[10px] font-medium text-blue-700">이미지 크롭 조정</p>
                     {invitation.groom.profile.images?.map((imageUrl, imgIndex) => {
+                      if (!imageUrl) return null
                       const settings = invitation.groom.profile.imageSettings?.[imgIndex] || { scale: 1.0, positionX: 0, positionY: 0 }
                       return (
                         <div key={imgIndex} className="space-y-2 pb-3 border-b border-blue-100 last:border-0 last:pb-0">
@@ -645,10 +646,11 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                   aspectRatio="aspect-square"
                 />
                 {/* 이미지 크롭 조정 */}
-                {(invitation.bride.profile.images?.length || 0) > 0 && (
+                {(invitation.bride.profile.images?.filter(img => img)?.length || 0) > 0 && (
                   <div className="mt-2 p-3 bg-white/70 rounded-lg space-y-3">
                     <p className="text-[10px] font-medium text-pink-700">이미지 크롭 조정</p>
                     {invitation.bride.profile.images?.map((imageUrl, imgIndex) => {
+                      if (!imageUrl) return null
                       const settings = invitation.bride.profile.imageSettings?.[imgIndex] || { scale: 1.0, positionX: 0, positionY: 0 }
                       return (
                         <div key={imgIndex} className="space-y-2 pb-3 border-b border-pink-100 last:border-0 last:pb-0">
@@ -839,10 +841,11 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                       aspectRatio="aspect-square"
                     />
                     {/* 이미지 크롭 조정 */}
-                    {(story.images?.length || 0) > 0 && (
+                    {(story.images?.filter(img => img)?.length || 0) > 0 && (
                       <div className="mt-2 p-3 bg-white/70 rounded-lg space-y-3">
                         <p className="text-[10px] font-medium text-rose-700">이미지 크롭 조정</p>
                         {story.images?.map((imageUrl, imgIndex) => {
+                          if (!imageUrl) return null
                           const settings = story.imageSettings?.[imgIndex] || { scale: 1.0, positionX: 0, positionY: 0 }
                           return (
                             <div key={imgIndex} className="space-y-2 pb-3 border-b border-rose-100 last:border-0 last:pb-0">
@@ -968,10 +971,11 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                       />
                       <p className="text-[10px] text-gray-400">2장 등록 시 자동 슬라이드됩니다</p>
                       {/* 이미지 크롭 조정 */}
-                      {(parentIntro.groom?.images?.length || 0) > 0 && (
+                      {(parentIntro.groom?.images?.filter((img: string) => img)?.length || 0) > 0 && (
                         <div className="mt-2 p-3 bg-blue-50 rounded-lg space-y-3">
                           <p className="text-[10px] font-medium text-blue-700">이미지 크롭 조정</p>
                           {parentIntro.groom?.images?.map((imageUrl: string, imgIndex: number) => {
+                            if (!imageUrl) return null
                             const settings = parentIntro.groom?.imageSettings?.[imgIndex] || {}
                             return (
                               <div key={imgIndex} className="space-y-2 pb-3 border-b border-blue-100 last:border-0 last:pb-0">
@@ -1067,10 +1071,11 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                       />
                       <p className="text-[10px] text-gray-400">2장 등록 시 자동 슬라이드됩니다</p>
                       {/* 이미지 크롭 조정 */}
-                      {(parentIntro.bride?.images?.length || 0) > 0 && (
+                      {(parentIntro.bride?.images?.filter((img: string) => img)?.length || 0) > 0 && (
                         <div className="mt-2 p-3 bg-pink-50 rounded-lg space-y-3">
                           <p className="text-[10px] font-medium text-pink-700">이미지 크롭 조정</p>
                           {parentIntro.bride?.images?.map((imageUrl: string, imgIndex: number) => {
+                            if (!imageUrl) return null
                             const settings = parentIntro.bride?.imageSettings?.[imgIndex] || {}
                             return (
                               <div key={imgIndex} className="space-y-2 pb-3 border-b border-pink-100 last:border-0 last:pb-0">
@@ -1208,10 +1213,11 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                         aspectRatio="aspect-[4/5]"
                       />
                       {/* 이미지 크롭 조정 */}
-                      {(whyWeChose.groom?.images?.length || 0) > 0 && (
+                      {(whyWeChose.groom?.images?.filter((img: string) => img)?.length || 0) > 0 && (
                         <div className="mt-2 p-3 bg-blue-100/50 rounded-lg space-y-3">
                           <p className="text-[10px] font-medium text-blue-700">이미지 크롭 조정</p>
                           {whyWeChose.groom?.images?.map((imageUrl: string, imgIndex: number) => {
+                            if (!imageUrl) return null
                             const settings = whyWeChose.groom?.imageSettings?.[imgIndex] || {}
                             return (
                               <div key={imgIndex} className="space-y-2 pb-3 border-b border-blue-200 last:border-0 last:pb-0">
@@ -1291,10 +1297,11 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                         aspectRatio="aspect-[4/5]"
                       />
                       {/* 이미지 크롭 조정 */}
-                      {(whyWeChose.bride?.images?.length || 0) > 0 && (
+                      {(whyWeChose.bride?.images?.filter((img: string) => img)?.length || 0) > 0 && (
                         <div className="mt-2 p-3 bg-pink-100/50 rounded-lg space-y-3">
                           <p className="text-[10px] font-medium text-pink-700">이미지 크롭 조정</p>
                           {whyWeChose.bride?.images?.map((imageUrl: string, imgIndex: number) => {
+                            if (!imageUrl) return null
                             const settings = whyWeChose.bride?.imageSettings?.[imgIndex] || {}
                             return (
                               <div key={imgIndex} className="space-y-2 pb-3 border-b border-pink-200 last:border-0 last:pb-0">
@@ -1630,10 +1637,11 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                     aspectRatio="aspect-[4/5]"
                   />
                   {/* 이미지 크롭 조정 */}
-                  {(interview.images?.length || 0) > 0 && (
+                  {(interview.images?.filter(img => img)?.length || 0) > 0 && (
                     <div className="mt-2 p-3 bg-white/70 rounded-lg space-y-3">
                       <p className="text-[10px] font-medium text-amber-700">이미지 크롭 조정</p>
                       {interview.images?.map((imageUrl, imgIndex) => {
+                        if (!imageUrl) return null
                         const settings = interview.imageSettings?.[imgIndex] || { scale: 1.0, positionX: 0, positionY: 0 }
                         return (
                           <div key={imgIndex} className="space-y-2 pb-3 border-b border-amber-100 last:border-0 last:pb-0">

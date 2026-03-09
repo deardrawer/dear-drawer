@@ -133,10 +133,9 @@ function getImageCropStyle(imgUrl: string, s: { scale?: number; positionX?: numb
     const cy = s.cropY || 0
     const posX = cw >= 1 ? 0 : (cx / (1 - cw)) * 100
     const posY = ch >= 1 ? 0 : (cy / (1 - ch)) * 100
-    const scale = Math.max(100 / cw, 100 / ch)
     return {
       backgroundImage: `url(${imgUrl})`,
-      backgroundSize: `${scale}%`,
+      backgroundSize: `${100 / cw}% ${100 / ch}%`,
       backgroundPosition: `${posX}% ${posY}%`,
       backgroundRepeat: 'no-repeat',
     }
@@ -2055,9 +2054,10 @@ function InvitationClientRecordContent({
               </WatermarkOverlay>
             </div>
             <div className="mobile-frame-fixed-ui">
-              {currentPage === 'main' && (
+              {currentPage === 'main' && !isPreview && (
                 <>
                   <GuestFloatingButton themeColors={tc} fonts={fonts} openModal="none" onModalClose={() => {}} showTooltip={false} scrollContainerRef={scrollContainerRef}
+                    navStyle={content?.navStyle || 'hamburger'}
                     invitation={{ venue_name: invitation.wedding?.venue?.name || '', venue_address: invitation.wedding?.venue?.address || '', contacts, accounts,
                       directions: invitation.wedding?.directions, rsvpEnabled: invitation.rsvpEnabled, rsvpAllowGuestCount: invitation.rsvpAllowGuestCount,
                       invitationId: dbInvitation.id, groomName: invitation.groom?.name || '', brideName: invitation.bride?.name || '',

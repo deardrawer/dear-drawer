@@ -85,6 +85,7 @@ function RecordPreviewWrapper({ invitation, skipIntro }: { invitation: Invitatio
     deceasedDisplayStyle: invitation.deceasedDisplayStyle,
     meta: invitation.meta,
     youtube: (invitation as any).youtube,
+    navStyle: invitation.navStyle,
   }), [invitation])
 
   const invitationData = useMemo(() => ({
@@ -113,7 +114,7 @@ function RecordPreviewWrapper({ invitation, skipIntro }: { invitation: Invitatio
 }
 
 // Generic Preview Wrapper - Zustand data → InvitationClient props (OUR, Family, Film, Magazine)
-function InvitationPreviewWrapper({ invitation, skipIntro }: { invitation: InvitationContent; skipIntro: boolean }) {
+function InvitationPreviewWrapper({ invitation, skipIntro, onIntroScreenChange }: { invitation: InvitationContent; skipIntro: boolean; onIntroScreenChange?: (screen: 'cover' | 'invitation') => void }) {
   const content = useMemo(() => ({
     templateId: invitation.templateId,
     colorTheme: invitation.colorTheme || 'classic-rose',
@@ -149,6 +150,7 @@ function InvitationPreviewWrapper({ invitation, skipIntro }: { invitation: Invit
     whyWeChose: (invitation as any).whyWeChose,
     parentIntroTextStyle: (invitation as any).parentIntroTextStyle,
     whyWeChoseTextStyle: (invitation as any).whyWeChoseTextStyle,
+    navStyle: invitation.navStyle,
   }), [invitation])
 
   const invitationData = useMemo(() => ({
@@ -181,6 +183,7 @@ function InvitationPreviewWrapper({ invitation, skipIntro }: { invitation: Invit
       isPaid={true}
       isPreview={true}
       skipIntro={skipIntro}
+      onIntroScreenChange={onIntroScreenChange}
     />
   )
 }
@@ -196,6 +199,7 @@ const Preview = forwardRef<PreviewHandle, object>(function Preview(_, ref) {
   // useDeferredValue: 타이핑 시 입력이 먼저 처리되고 Preview 리렌더링은 낮은 우선순위로 지연
   const invitation = useDeferredValue(rawInvitation)
   const [currentPage, setCurrentPage] = useState<PageType>('intro')
+  const [introScreen, setIntroScreen] = useState<'cover' | 'invitation'>('cover')
   const previewContentRef = useRef<HTMLDivElement>(null)
 
   // 탭 전환 안정화를 위한 refs
@@ -238,6 +242,8 @@ const Preview = forwardRef<PreviewHandle, object>(function Preview(_, ref) {
 
     // 페이지 전환 (스크롤 없음)
     setCurrentPage(page)
+    // 인트로 탭으로 돌아올 때 introScreen 리셋
+    if (page === 'intro') setIntroScreen('cover')
 
     // 500ms 후 플래그 해제 (연속 클릭 보호)
     userTabClickTimeoutRef.current = setTimeout(() => {
@@ -356,12 +362,18 @@ const Preview = forwardRef<PreviewHandle, object>(function Preview(_, ref) {
             <div ref={previewContentRef} className={`flex-1 overflow-y-auto min-h-0 relative theme-${invitation.colorTheme || 'classic-rose'} ${isRomantic ? 'font-romantic' : ''}`} id="preview-content" style={{ fontFamily: fonts.body, color: customBodyTextColor, letterSpacing: '-0.3px', ...(customAccentTextColor ? { '--text-accent': customAccentTextColor } as React.CSSProperties : {}), ...(invitation.highlightColor ? { '--highlight-white': invitation.highlightColor } as React.CSSProperties : {}) }}>
               {invitation.templateId === 'narrative-record'
                 ? <RecordPreviewWrapper invitation={invitation} skipIntro={currentPage !== 'intro'} />
-                : <InvitationPreviewWrapper invitation={invitation} skipIntro={currentPage !== 'intro'} />
+                : <InvitationPreviewWrapper invitation={invitation} skipIntro={currentPage !== 'intro'} onIntroScreenChange={setIntroScreen} />
               }
             </div>
-            {/* Floating Button - 항상 표시, Step 4(추가기능)에서는 툴팁 표시 */}
-            {/* Movie 템플릿: 햄버거 시트에 accent 컬러 틴트 적용 */}
-            <FloatingButton themeColors={(() => {
+            {/* Floating Button - OUR/FAMILY 인트로 커버에서는 숨김, invitation 화면에서는 bottom-nav */}
+            {!((() => {
+              const isOurOrFamily = invitation.templateId === 'narrative-our' || invitation.templateId === 'narrative-family'
+              return isOurOrFamily && currentPage === 'intro' && introScreen === 'cover'
+            })()) && <FloatingButton navStyle={(() => {
+              const isOurOrFamily = invitation.templateId === 'narrative-our' || invitation.templateId === 'narrative-family'
+              if (isOurOrFamily && currentPage === 'intro') return 'bottom-nav'
+              return invitation.navStyle || 'hamburger'
+            })()} themeColors={(() => {
               if (invitation.templateId === 'narrative-film') {
                 const filmAccent = invitation.customAccentColor || themeColors.accent
                 return {
@@ -376,7 +388,7 @@ const Preview = forwardRef<PreviewHandle, object>(function Preview(_, ref) {
                 }
               }
               return themeColors
-            })()} fonts={fonts} showTooltip={wizardStep === 4} invitation={{
+            })()} fonts={fonts} showTooltip={false} invitation={{
                 venue_name: invitation.wedding.venue.name,
                 venue_address: invitation.wedding.venue.address,
                 groom_name: invitation.groom.name,
@@ -400,7 +412,7 @@ const Preview = forwardRef<PreviewHandle, object>(function Preview(_, ref) {
                 directions: invitation.wedding.directions,
                 rsvpEnabled: invitation.rsvpEnabled,
                 rsvpAllowGuestCount: invitation.rsvpAllowGuestCount,
-              }} />
+              }} />}
           </div>
         </div>
       </div>

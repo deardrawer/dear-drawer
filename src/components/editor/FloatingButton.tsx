@@ -44,6 +44,8 @@ interface DirectionsInfo {
   extraInfoText?: string
 }
 
+type NavStyle = 'hamburger' | 'bottom-nav' | 'bottom-mini'
+
 interface FloatingButtonProps {
   themeColors: {
     primary: string
@@ -57,6 +59,7 @@ interface FloatingButtonProps {
     displayKr: string
   }
   showTooltip?: boolean
+  navStyle?: NavStyle
   invitation?: {
     venue_name?: string
     venue_address?: string
@@ -88,7 +91,7 @@ interface FloatingButtonProps {
   }
 }
 
-export default function FloatingButton({ themeColors, fonts, invitation, showTooltip = false }: FloatingButtonProps) {
+export default function FloatingButton({ themeColors, fonts, invitation, showTooltip = false, navStyle = 'hamburger' }: FloatingButtonProps) {
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false)
   const [activeModal, setActiveModal] = useState<ModalType>('none')
   const [directionsTab, setDirectionsTab] = useState<DirectionsTab>('car')
@@ -167,12 +170,86 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
     },
   ].filter(Boolean) as { key: string; label: string; icon: React.ReactElement }[]
 
+  // 네비 아이콘용 (currentColor 사용)
+  const navIcons = [
+    hasContacts && { key: 'contact', shortLabel: '연락하기', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg> },
+    hasRsvp && { key: 'rsvp', shortLabel: '참석여부', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
+    { key: 'location', shortLabel: '오시는길', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg> },
+    hasAccounts && { key: 'account', shortLabel: '마음전하기', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" /></svg> },
+    { key: 'share', shortLabel: '공유하기', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" /></svg> },
+  ].filter(Boolean) as { key: string; shortLabel: string; icon: React.ReactElement }[]
+
   return (
     <>
       {/* 애니메이션 스타일 */}
       <style dangerouslySetInnerHTML={{ __html: tooltipAnimationStyles }} />
 
-      {/* Floating Button with Tooltip */}
+      {/* === 하단 네비바 (아이콘+텍스트) === */}
+      {navStyle === 'bottom-nav' && (
+        <div className="absolute bottom-0 left-0 right-0 z-[60] border-t" style={{ background: themeColors.cardBg, borderColor: `${themeColors.gray}20` }}>
+          <div className="flex items-center justify-around py-2 px-1">
+            {navIcons.map((item) => {
+              const isActive = activeModal === item.key
+              return (
+                <button
+                  key={item.key}
+                  onClick={() => setActiveModal(isActive ? 'none' : item.key as ModalType)}
+                  className="flex flex-col items-center gap-1 py-1 px-1 transition-all active:scale-95"
+                  style={{ minWidth: 0, color: isActive ? themeColors.primary : themeColors.gray }}
+                >
+                  <div className="w-6 h-6 flex items-center justify-center">
+                    {item.icon}
+                  </div>
+                  <span className="text-[10px] leading-tight font-medium transition-colors" style={{ color: isActive ? themeColors.primary : themeColors.text }}>{item.shortLabel}</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* === 하단 미니바 (아이콘만, 반투명 blur, 풀너비) === */}
+      {navStyle === 'bottom-mini' && (
+        <div
+          className="absolute bottom-0 left-0 right-0 z-[60]"
+          style={{
+            background: `${themeColors.cardBg}ee`,
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            borderTop: `1px solid ${themeColors.gray}20`,
+          }}
+        >
+          <div className="flex items-center justify-around py-1.5 px-2">
+            {navIcons.map((item) => {
+              const isActive = activeModal === item.key
+              return (
+                <button
+                  key={item.key}
+                  onClick={() => setActiveModal(isActive ? 'none' : item.key as ModalType)}
+                  className="flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-all active:scale-90"
+                  style={{ color: isActive ? themeColors.primary : themeColors.gray }}
+                >
+                  <div
+                    className="w-7 h-7 rounded-full flex items-center justify-center transition-colors"
+                    style={{ background: isActive ? `${themeColors.primary}15` : 'transparent' }}
+                  >
+                    {item.icon}
+                  </div>
+                  {isActive ? (
+                    <span className="w-1 h-1 rounded-full" style={{ background: themeColors.primary }} />
+                  ) : (
+                    <span className="w-1 h-1" />
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* === 햄버거 모드 === */}
+      {navStyle === 'hamburger' && (
+      <>
       <div className="absolute bottom-12 right-4 z-40 flex items-center gap-2">
         {/* 안내 툴팁 (말풍선) - 프리미엄 그라데이션 + 글로우 + 애니메이션 */}
         {showTooltip && !isBottomSheetOpen && activeModal === 'none' && (
@@ -230,7 +307,7 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
         </button>
       </div>
 
-      {/* Bottom Sheet */}
+      {/* Bottom Sheet (햄버거 모드 전용) */}
       {isBottomSheetOpen && (
         <>
           <div className="absolute inset-0 bg-black/50 z-50" onClick={() => setIsBottomSheetOpen(false)} />
@@ -256,12 +333,23 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
           </div>
         </>
       )}
+      </>
+      )}
 
       {/* Unified Modal with Tab Navigation */}
       {activeModal !== 'none' && (
         <>
           <div className="absolute inset-0 bg-black/50 z-50" onClick={closeModal} />
-          <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 bg-white rounded-2xl z-50 max-h-[80%] overflow-hidden flex flex-col" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
+          <div
+            className={navStyle === 'hamburger'
+              ? "absolute inset-x-4 top-1/2 -translate-y-1/2 bg-white rounded-2xl z-[55] max-h-[80%] overflow-hidden flex flex-col"
+              : "absolute left-0 right-0 z-[55] bg-white rounded-t-2xl max-h-[75%] overflow-hidden flex flex-col"
+            }
+            style={{
+              boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+              ...(navStyle === 'bottom-nav' ? { bottom: '56px' } : navStyle === 'bottom-mini' ? { bottom: '52px' } : {}),
+            }}
+          >
             {/* Tab Navigation */}
             <div className="flex border-b border-gray-100 flex-shrink-0">
               {menuItems.map((item) => (

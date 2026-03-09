@@ -21,14 +21,12 @@ function getImageCropStyle(img: string, s: { scale?: number; positionX?: number;
     const ch = s.cropHeight || 1
     const cx = s.cropX || 0
     const cy = s.cropY || 0
-    // 단일 스케일로 비율 유지 (cover 효과)
-    const scale = Math.max(100 / cw, 100 / ch)
     const posX = cw >= 1 ? 0 : (cx / (1 - cw)) * 100
     const posY = ch >= 1 ? 0 : (cy / (1 - ch)) * 100
 
     return {
       backgroundImage: `url(${img})`,
-      backgroundSize: `${scale}%`,
+      backgroundSize: `${100 / cw}% ${100 / ch}%`,
       backgroundPosition: `${posX}% ${posY}%`,
       backgroundRepeat: 'no-repeat' as const,
     }
@@ -2291,6 +2289,7 @@ interface InvitationClientProps {
   skipIntro?: boolean
   guestInfo?: GuestInfo | null
   isSample?: boolean
+  onIntroScreenChange?: (screen: 'cover' | 'invitation') => void
 }
 
 // Type for display invitation data
@@ -2409,6 +2408,7 @@ interface PageProps {
   themeColors: ColorConfig
   onNavigate: (page: PageType) => void
   onScreenChange?: (screen: 'cover' | 'invitation') => void
+  onNextStoryVisible?: () => void
   onOpenRsvp?: () => void
   onOpenLightbox?: (index: number) => void
   onOpenGuestbookModal?: (index: number, messages: GuestbookMessage[]) => void
@@ -2431,8 +2431,9 @@ interface GuestbookMessage {
 // Intro Page Component - Screen-based transitions like original template
 type IntroScreen = 'cover' | 'invitation'
 
-function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors, onNavigate, onScreenChange, guestGreeting, guestCustomMessage, introSettings }: PageProps) {
+function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors, onNavigate, onScreenChange, onNextStoryVisible, guestGreeting, guestCustomMessage, introSettings }: PageProps) {
   const [showDirections, setShowDirections] = useState(false)
+  const nextStoryRef = useRef<HTMLDivElement>(null)
 
   // 첫 번째 가능한 탭으로 초기화
   const directions = invitation.wedding.directions
@@ -2456,6 +2457,13 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
   const [screenFadeOut, setScreenFadeOut] = useState(false)
   const [invitationAnimated, setInvitationAnimated] = useState(false)
   const [showTooltip, setShowTooltip] = useState(false)
+
+  // invitation 화면 진입 후 일정 시간 뒤 네비바 표시
+  useEffect(() => {
+    if (currentScreen !== 'invitation' || !onNextStoryVisible) return
+    const timer = setTimeout(() => onNextStoryVisible(), 2000)
+    return () => clearTimeout(timer)
+  }, [currentScreen, onNextStoryVisible])
 
   // Touch handling for swipe
   const touchStartY = useRef(0)
@@ -2804,7 +2812,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
         </div>
 
         {/* Next Story Navigation */}
-        <div className="next-story-section flex flex-col items-center">
+        <div ref={nextStoryRef} className="next-story-section flex flex-col items-center">
           <button
             onClick={(e) => {
               e.stopPropagation()
@@ -2834,6 +2842,8 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
             />
           </div>
         </div>
+        {/* 하단 네비바 여백 */}
+        <div className="h-16" />
       </section>
       )}
 
@@ -3886,7 +3896,7 @@ function InvitationErrorFallback({ resetError }: { resetError: () => void }) {
   )
 }
 
-function InvitationClientContent({ invitation: dbInvitation, content, isPaid, isPreview = false, overrideColorTheme, overrideFontStyle, skipIntro = false, guestInfo, isSample = false }: InvitationClientProps) {
+function InvitationClientContent({ invitation: dbInvitation, content, isPaid, isPreview = false, overrideColorTheme, overrideFontStyle, skipIntro = false, guestInfo, isSample = false, onIntroScreenChange }: InvitationClientProps) {
   // Transform DB data to display format
   const invitation = transformToDisplayData(dbInvitation, content)
 
@@ -3913,12 +3923,18 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
   const [currentPage, setCurrentPage] = useState<PageType>(skipIntro ? 'main' : 'intro')
   const [introScreen, setIntroScreen] = useState<'cover' | 'invitation'>('cover')
 
+  // 에디터 프리뷰에 intro screen 상태 전달
+  useEffect(() => {
+    onIntroScreenChange?.(introScreen)
+  }, [introScreen, onIntroScreenChange])
+
   // skipIntro prop 변경 시 페이지 전환 (에디터 미리보기용)
   useEffect(() => {
     setCurrentPage(skipIntro ? 'main' : 'intro')
   }, [skipIntro])
   const audioRef = useRef<HTMLAudioElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const [introNavHidden, setIntroNavHidden] = useState(true)
   const [openModalType, setOpenModalType] = useState<'none' | 'rsvp'>('none')
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
@@ -3938,6 +3954,20 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
       setTooltipReady(false)
     }
   }, [currentPage, introScreen])
+
+  // 인트로 페이지 → 메인이 아닌 경우 navHidden 초기화
+  useEffect(() => {
+    if (currentPage !== 'intro' || isPreview) {
+      setIntroNavHidden(false)
+    } else {
+      setIntroNavHidden(true)
+    }
+  }, [currentPage, isPreview])
+
+  // IntroPage에서 "다음 이야기" 보이면 콜백으로 네비바 표시
+  const handleNextStoryVisible = useCallback(() => {
+    setIntroNavHidden(false)
+  }, [])
 
   // 커스텀 텍스트 색상을 테마에 오버라이드 (사용자 설정이 있으면 적용)
   const baseThemeColors = colorThemes[effectiveColorTheme]
@@ -4035,6 +4065,7 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
                       themeColors={themeColors}
                       onNavigate={setCurrentPage}
                       onScreenChange={setIntroScreen}
+                      onNextStoryVisible={handleNextStoryVisible}
                       guestGreeting={guestGreeting}
                       guestCustomMessage={guestInfo?.customMessage}
                       introSettings={invitation.intro as IntroSettings}
@@ -4075,14 +4106,16 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
             {/* Fixed UI elements - outside scroll container */}
             <div className="mobile-frame-fixed-ui">
               {/* Floating Button */}
-              {showFloatingButton && (
+              {showFloatingButton && !isPreview && (
                 <GuestFloatingButton
                   themeColors={themeColors}
                   fonts={fonts}
                   openModal={openModalType}
                   onModalClose={() => setOpenModalType('none')}
-                  showTooltip={currentPage === 'intro' && introScreen === 'invitation' && tooltipReady}
+                  showTooltip={false}
                   scrollContainerRef={scrollContainerRef}
+                  navStyle={currentPage === 'intro' ? 'bottom-nav' : (content?.navStyle || 'hamburger')}
+                  navHidden={currentPage === 'intro' && introNavHidden}
                   invitation={{
                     venue_name: invitation.wedding.venue.name,
                     venue_address: invitation.wedding.venue.address,

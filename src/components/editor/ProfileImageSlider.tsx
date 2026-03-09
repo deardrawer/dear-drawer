@@ -50,12 +50,17 @@ interface ProfileImageSliderProps {
 }
 
 function ProfileImageSliderComponent({
-  images,
-  imageSettings = [],
+  images: rawImages,
+  imageSettings: rawImageSettings = [],
   className = '',
   autoPlay = true,
   autoPlayInterval = 4000
 }: ProfileImageSliderProps) {
+  // 빈 문자열 이미지 필터링 (기본값 ['', '']에서 실제 이미지만 사용)
+  const validIndices = rawImages.map((img, i) => img ? i : -1).filter(i => i !== -1)
+  const images = validIndices.map(i => rawImages[i])
+  const imageSettings = validIndices.map(i => rawImageSettings[i]).filter(Boolean)
+
   const [currentIndex, setCurrentIndex] = useState(1) // 클론 때문에 1부터 시작
   const [touchStart, setTouchStart] = useState<number | null>(null)
   const [touchEnd, setTouchEnd] = useState<number | null>(null)

@@ -432,6 +432,9 @@ export interface InvitationContent {
     url: string
   }
 
+  // ===== 네비게이션 스타일 =====
+  navStyle?: 'hamburger' | 'bottom-nav' | 'bottom-mini'
+
   // ===== 매거진 인트로 스타일 =====
   magazineIntroStyle?: 'cover' | 'clean' | 'editorial'
 
@@ -543,6 +546,14 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
         intro: '처음 만났을 때부터 따뜻한 미소가 인상적이었던 사람.\n항상 제 이야기에 귀 기울여주고, 힘들 때 묵묵히 곁에 있어주는 든든한 사람입니다.\n\n요리를 좋아하고, 주말마다 새로운 레시피에 도전하는 모습이 참 사랑스러워요.',
         tag: '함께 있으면 편안한 사람',
       },
+    } : template.id === 'narrative-family' ? {
+      profile: {
+        ...createDefaultPerson(true).profile,
+        images: ['', ''],
+        imageSettings: [createDefaultImageSettings(), createDefaultImageSettings()],
+        intro: '처음 만났을 때부터 따뜻한 미소가 인상적이었던 사람.\n항상 제 이야기에 귀 기울여주고, 힘들 때 묵묵히 곁에 있어주는 든든한 사람입니다.\n\n요리를 좋아하고, 주말마다 새로운 레시피에 도전하는 모습이 참 사랑스러워요.',
+        tag: '세상에서 가장 따뜻한 사람',
+      },
     } : template.id === 'narrative-film' ? {
       profile: { ...createDefaultPerson(true).profile, tag: '세상에서 가장 따뜻한 사람' },
     } : template.id === 'narrative-record' ? {
@@ -561,6 +572,14 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
         intro: '밝은 웃음소리가 참 예쁜 사람.\n제가 지칠 때마다 힘이 되어주고, 작은 것에도 감사할 줄 아는 따뜻한 마음의 소유자입니다.\n\n그림 그리기를 좋아하고, 가끔 저를 위해 그려주는 그림들이 우리 집의 보물이에요.',
         tag: '늘 웃음을 주는 사람',
       },
+    } : template.id === 'narrative-family' ? {
+      profile: {
+        ...createDefaultPerson(false).profile,
+        images: ['', ''],
+        imageSettings: [createDefaultImageSettings(), createDefaultImageSettings()],
+        intro: '밝은 웃음소리가 참 예쁜 사람.\n제가 지칠 때마다 힘이 되어주고, 작은 것에도 감사할 줄 아는 따뜻한 마음의 소유자입니다.\n\n그림 그리기를 좋아하고, 가끔 저를 위해 그려주는 그림들이 우리 집의 보물이에요.',
+        tag: '매일 웃게 해주는 사람',
+      },
     } : template.id === 'narrative-film' ? {
       profile: { ...createDefaultPerson(false).profile, tag: '매일 웃게 해주는 사람' },
     } : template.id === 'narrative-record' ? {
@@ -572,14 +591,14 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
 
   // 결혼식 정보
   wedding: {
-    date: template.id === 'narrative-our' ? '2026-10-10' : template.id === 'narrative-film' ? '2026-05-23' : template.id === 'narrative-record' ? '2026-06-20' : template.id === 'narrative-magazine' ? '2026-05-30' : '',
-    time: template.id === 'narrative-our' ? '14:00' : template.id === 'narrative-film' ? '13:30' : template.id === 'narrative-record' ? '14:00' : template.id === 'narrative-magazine' ? '12:00' : '',
-    timeDisplay: template.id === 'narrative-our' ? '오후 2시' : template.id === 'narrative-film' ? '오후 1시 30분' : template.id === 'narrative-record' ? '오후 2시' : template.id === 'narrative-magazine' ? '낮 12시' : '',
+    date: template.id === 'narrative-our' ? '2026-10-10' : template.id === 'narrative-family' ? '2026-11-14' : template.id === 'narrative-film' ? '2026-05-23' : template.id === 'narrative-record' ? '2026-06-20' : template.id === 'narrative-magazine' ? '2026-05-30' : '',
+    time: template.id === 'narrative-our' ? '14:00' : template.id === 'narrative-family' ? '12:00' : template.id === 'narrative-film' ? '13:30' : template.id === 'narrative-record' ? '14:00' : template.id === 'narrative-magazine' ? '12:00' : '',
+    timeDisplay: template.id === 'narrative-our' ? '오후 2시' : template.id === 'narrative-family' ? '낮 12시' : template.id === 'narrative-film' ? '오후 1시 30분' : template.id === 'narrative-record' ? '오후 2시' : template.id === 'narrative-magazine' ? '낮 12시' : '',
     dayOfWeek: '',
-    title: 'OUR WEDDING',
+    title: template.id === 'narrative-family' ? 'WEDDING INVITATION' : 'OUR WEDDING',
     venue: {
-      name: template.id === 'narrative-our' ? '아펠가모 강남' : template.id === 'narrative-film' ? '더채플앳청담' : template.id === 'narrative-record' ? '그랜드힐 컨벤션' : template.id === 'narrative-magazine' ? '포시즌스 호텔' : '',
-      hall: template.id === 'narrative-our' ? '그랜드홀' : template.id === 'narrative-film' ? '그랜드홀' : template.id === 'narrative-record' ? '크리스탈홀' : template.id === 'narrative-magazine' ? '그랜드볼룸' : '',
+      name: template.id === 'narrative-our' ? '아펠가모 강남' : template.id === 'narrative-family' ? '라비돌웨딩홀' : template.id === 'narrative-film' ? '더채플앳청담' : template.id === 'narrative-record' ? '그랜드힐 컨벤션' : template.id === 'narrative-magazine' ? '포시즌스 호텔' : '',
+      hall: template.id === 'narrative-our' ? '그랜드홀' : template.id === 'narrative-family' ? '로즈홀 3층' : template.id === 'narrative-film' ? '그랜드홀' : template.id === 'narrative-record' ? '크리스탈홀' : template.id === 'narrative-magazine' ? '그랜드볼룸' : '',
       address: '',
     },
     directions: {
@@ -600,6 +619,10 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
       { date: '20XX. XX', title: '운명처럼 다가온 만남', desc: '친구의 소개로 처음 만났던 그 날,\n어색한 인사를 나누며 시작된 우리의 이야기.\n카페에서 나눈 세 시간의 대화가\n우리 사랑의 첫 페이지가 되었습니다.', images: [], imageSettings: [] },
       { date: '20XX. XX', title: '함께한 소중한 시간', desc: '함께 떠난 여행에서 서로를 더 깊이 알게 되었고,\n어떤 상황에서도 함께라면\n즐거울 수 있다는 걸 깨달았습니다.', images: [], imageSettings: [] },
       { date: '20XX. XX', title: '프러포즈', desc: '떨리는 마음으로 건넨 반지와 함께\n평생을 약속했습니다.\n세상에서 가장 행복한 순간이었어요.', images: [], imageSettings: [] },
+    ] : template.id === 'narrative-family' ? [
+      { date: '20XX. XX', title: '운명처럼 다가온 만남', desc: '친구의 소개로 처음 만났던 그 날,\n어색한 인사를 나누며 시작된 우리의 이야기.\n카페에서 나눈 세 시간의 대화가\n우리 사랑의 첫 페이지가 되었습니다.', images: [], imageSettings: [] },
+      { date: '20XX. XX', title: '함께한 소중한 시간', desc: '함께 떠난 여행에서 서로를 더 깊이 알게 되었고,\n어떤 상황에서도 함께라면\n즐거울 수 있다는 걸 깨달았습니다.', images: [], imageSettings: [] },
+      { date: '20XX. XX', title: '프러포즈', desc: '떨리는 마음으로 건넨 반지와 함께\n평생을 약속했습니다.\n세상에서 가장 행복한 순간이었어요.', images: [], imageSettings: [] },
     ] : [
       { date: '', title: '', desc: '', images: [], imageSettings: [] },
       { date: '', title: '', desc: '', images: [], imageSettings: [] },
@@ -612,6 +635,8 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
   content: {
     greeting: template.id === 'narrative-our'
       ? '서로의 손을 잡고\n같은 곳을 바라보며\n함께 걸어가기로 했습니다.\n\n저희의 새로운 시작을\n축하해 주시면 감사하겠습니다.'
+      : template.id === 'narrative-family'
+      ? '누군가와 나누고 싶은 순간들이 있죠.\n이 날이 바로 그런 날입니다.\n우리의 결혼식에 초대합니다.'
       : template.id === 'narrative-film'
       ? '솔직히 말하면,\n처음엔 그냥 밥 한번 먹자는 거였는데\n어쩌다 보니 평생 같이 먹게 됐습니다.\n\n이 예상 밖의 전개에\n여러분을 초대합니다.'
       : template.id === 'narrative-record'
@@ -621,6 +646,8 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
       : '',
     quote: template.id === 'narrative-our'
       ? { text: 'The best thing to hold onto in life\nis each other.', author: 'Audrey Hepburn' }
+      : template.id === 'narrative-family'
+      ? { text: 'We warmly invite you to our wedding.', author: '' }
       : template.id === 'narrative-film'
       ? { text: 'I came here tonight because when you realize you want to spend the rest of your life with somebody, you want the rest of your life to start as soon as possible.', author: 'When Harry Met Sally' }
       : template.id === 'narrative-record'
@@ -630,6 +657,8 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
       : { text: '', author: '' },
     thankYou: template.id === 'narrative-our'
       ? { title: 'THANK YOU', message: '바쁘신 와중에도\n저희의 결혼을 축하해 주셔서\n진심으로 감사드립니다.\n\n여러분의 축복 속에서\n서로 아끼고 사랑하며 살겠습니다.', sign: '' }
+      : template.id === 'narrative-family'
+      ? { title: 'THANK YOU', message: '바쁘신 와중에도 저희의 결혼을\n축하해 주셔서 진심으로 감사드립니다.\n\n여러분의 축복을 마음에 새기며\n서로 아끼고 사랑하며 살겠습니다.', sign: '민준 & 서연 올림' }
       : template.id === 'narrative-film'
       ? { title: 'SPECIAL THANKS', message: '바쁘신 와중에도 저희의 결혼을\n축하해 주셔서 진심으로 감사드립니다.\n\n여러분의 축복을 마음에 새기며\n서로 아끼고 사랑하며 살겠습니다.', sign: '민준 & 서연 올림' }
       : template.id === 'narrative-record'
@@ -674,11 +703,11 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
           { question: '함께한 시간 중 가장 기억에 남는 순간은?', answer: '비 오는 날 우산 하나로 걸었던 골목길,\n아무 말 없이도 편안했던 그 순간이요.\n\n"이 사람이면 괜찮겠다" 싶었어요.', images: [], imageSettings: [], bgClass: '' },
           { question: '결혼을 결심한 이유가 있다면?', answer: '거창한 이유는 없었어요.\n매일의 소소한 순간들이 쌓여\n자연스럽게 "평생 함께하고 싶다"는\n마음이 되었습니다.', images: [], imageSettings: [], bgClass: '' },
         ]
-      : template.id === 'narrative-our'
+      : (template.id === 'narrative-our' || template.id === 'narrative-family')
       ? [
-          { question: '첫 만남이 어땠나요?', answer: '공통 친구의 모임에서 처음 만났어요.\n어색한 자리였는데 유독 대화가 잘 통했죠.\n\n돌아가는 길에 연락처를 교환했습니다.', images: [], imageSettings: [], bgClass: 'pink-bg' },
-          { question: '연인이 된 계기는?', answer: '매일 나누는 일상 대화가\n어느새 하루의 가장 큰 기대가 되었어요.\n\n"우리 사귀는 거 맞지?" 하고 물었을 때\n서로 웃으며 고개를 끄덕였습니다.', images: [], imageSettings: [], bgClass: 'white-bg' },
-          { question: '결혼을 결심한 순간은?', answer: '특별한 순간이 있었다기보다\n매일의 평범한 하루가 소중해지는 걸 느꼈어요.\n\n이 사람과 함께라면\n평생도 괜찮겠다 싶었습니다.', images: [], imageSettings: [], bgClass: 'pink-bg' },
+          { question: '상대방의 첫인상은 어땠나요?', answer: '처음 본 순간, 이 사람이다 싶었어요.\n말로 설명하기 어려운 느낌이었는데,\n대화를 나눌수록 확신이 들었습니다.\n서로의 눈을 바라보며 웃던\n그 순간을 잊을 수 없어요.', images: [], imageSettings: [], bgClass: 'pink-bg' },
+          { question: '결혼을 결심하게 된 계기는?', answer: '함께 있을 때 가장 나다울 수 있었어요.\n아무리 힘든 일이 있어도\n이 사람 곁에 있으면 괜찮아지더라구요.\n평생 이 사람과 함께라면\n어떤 일이든 해낼 수 있을 것 같았습니다.', images: [], imageSettings: [], bgClass: 'white-bg' },
+          { question: '앞으로의 결혼생활 계획은?', answer: '서로를 존중하고 배려하며 살고 싶어요.\n작은 일상에서도 감사함을 잊지 않고,\n함께 웃으며 나이 들어가고 싶습니다.\n무엇보다 서로의 꿈을 응원하는\n부부가 되고 싶어요.', images: [], imageSettings: [], bgClass: 'pink-bg' },
         ]
       : [
           { question: '', answer: '', images: [], imageSettings: [], bgClass: 'pink-bg' },
@@ -748,6 +777,7 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
   design: {
     introAnimation: 'fade-in',
     coverTitle: template.id === 'narrative-magazine' ? 'WEDDING'
+      : template.id === 'narrative-family' ? 'WEDDING INVITATION'
       : template.id === 'narrative-film' ? 'THE WEDDING'
       : template.id === 'narrative-record' ? 'WE ARE GETTING MARRIED' : 'OUR WEDDING',
     sectionDividers: {

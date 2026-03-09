@@ -54,10 +54,9 @@ function getImageCropStyle(img: string, s: { scale?: number; positionX?: number;
     const cy = s.cropY || 0
     const posX = cw >= 1 ? 0 : (cx / (1 - cw)) * 100
     const posY = ch >= 1 ? 0 : (cy / (1 - ch)) * 100
-    const scale = Math.max(100 / cw, 100 / ch)
     return {
       backgroundImage: `url(${img})`,
-      backgroundSize: `${scale}%`,
+      backgroundSize: `${100 / cw}% ${100 / ch}%`,
       backgroundPosition: `${posX}% ${posY}%`,
       backgroundRepeat: 'no-repeat' as const,
     }
@@ -1874,8 +1873,9 @@ function InvitationClientFilmContent({
               </WatermarkOverlay>
             </div>
             <div className="mobile-frame-fixed-ui">
-              {currentPage === 'main' && (
+              {currentPage === 'main' && !isPreview && (
                 <GuestFloatingButton themeColors={{...tc, primary: tc.cardText ? tc.accent : tc.primary, sectionBg: getAccentTint(tc.accent, 0.85), text: tc.cardText || tc.text, gray: tc.cardGray || tc.gray, background: getAccentTint(tc.accent, 0.82)}} fonts={fonts} openModal="none" onModalClose={() => {}} showTooltip={false} scrollContainerRef={scrollContainerRef}
+                  navStyle={content?.navStyle || 'hamburger'}
                   invitation={{ venue_name: invitation.wedding?.venue?.name || '', venue_address: invitation.wedding?.venue?.address || '', contacts, accounts,
                     directions: invitation.wedding?.directions, rsvpEnabled: invitation.rsvpEnabled, rsvpAllowGuestCount: invitation.rsvpAllowGuestCount,
                     invitationId: dbInvitation.id, groomName: invitation.groom?.name || '', brideName: invitation.bride?.name || '',

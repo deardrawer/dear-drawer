@@ -995,8 +995,8 @@ export default function MyInvitationsPage() {
                     previewInvitation.template_id === 'narrative-parents' ||
                     previewInvitation.template_id === 'parents' ||
                     previewInvitation.template_id === 'parents-formal'
-                      ? `/invite/${previewInvitation.id}?preview=true`
-                      : `/i/${previewInvitation.id}?preview=true`
+                      ? `/invite/${previewInvitation.id}`
+                      : `/i/${previewInvitation.id}`
                   }
                   className="w-full h-full border-0"
                   title="청첩장 미리보기"

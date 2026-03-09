@@ -35,6 +35,8 @@ interface AccountInfo {
   side: 'groom' | 'bride'
 }
 
+type NavStyle = 'hamburger' | 'bottom-nav' | 'bottom-mini'
+
 interface GuestFloatingButtonProps {
   themeColors: {
     primary: string
@@ -49,6 +51,8 @@ interface GuestFloatingButtonProps {
   onModalClose?: () => void
   showTooltip?: boolean
   scrollContainerRef?: React.RefObject<HTMLDivElement | null>
+  navStyle?: NavStyle
+  navHidden?: boolean
   invitation: {
     venue_name?: string
     venue_address?: string
@@ -68,13 +72,14 @@ interface GuestFloatingButtonProps {
   }
 }
 
-export default function GuestFloatingButton({ themeColors, fonts, invitation, openModal: externalOpenModal, onModalClose, showTooltip = false, scrollContainerRef }: GuestFloatingButtonProps) {
+export default function GuestFloatingButton({ themeColors, fonts, invitation, openModal: externalOpenModal, onModalClose, showTooltip = false, scrollContainerRef, navStyle = 'hamburger', navHidden = false }: GuestFloatingButtonProps) {
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false)
   const [activeModal, setActiveModal] = useState<ModalType>('none')
   const [directionsTab, setDirectionsTab] = useState<DirectionsTab>('car')
   const [rsvpForm, setRsvpForm] = useState({ name: '', side: '' as '' | 'groom' | 'bride', attendance: '', guestCount: 1, message: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const scrollPositionRef = useRef(0)
+  const navVisible = !navHidden
 
   // 외부에서 모달 열기
   useEffect(() => {
@@ -275,11 +280,11 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
   }
 
   const menuItems = [
-    hasContacts && { key: 'contact', label: '축하 전하기', icon: <svg className="w-5 h-5" fill="none" stroke={themeColors.primary} strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg> },
-    hasRsvp && { key: 'rsvp', label: '참석 여부', icon: <svg className="w-5 h-5" fill="none" stroke={themeColors.primary} strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
-    { key: 'location', label: '오시는 길', icon: <svg className="w-5 h-5" fill="none" stroke={themeColors.primary} strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg> },
-    hasAccounts && { key: 'account', label: '마음 전하기', icon: <svg className="w-5 h-5" fill="none" stroke={themeColors.primary} strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" /></svg> },
-    { key: 'share', label: '공유하기', icon: <svg className="w-5 h-5" fill="none" stroke={themeColors.primary} strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" /></svg> },
+    hasContacts && { key: 'contact', label: '축하 전하기', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg> },
+    hasRsvp && { key: 'rsvp', label: '참석 여부', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
+    { key: 'location', label: '오시는 길', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg> },
+    hasAccounts && { key: 'account', label: '마음 전하기', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" /></svg> },
+    { key: 'share', label: '공유하기', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" /></svg> },
   ].filter(Boolean) as { key: string; label: string; icon: React.ReactElement }[]
 
   const groomContacts = invitation.contacts.filter(c => c.side === 'groom')
@@ -287,61 +292,154 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
   const groomAccounts = invitation.accounts.filter(a => a.side === 'groom' && a.bank.enabled)
   const brideAccounts = invitation.accounts.filter(a => a.side === 'bride' && a.bank.enabled)
 
+  // 아이콘만 추출 (bottom-nav, bottom-mini용)
+  const navMenuIcons = menuItems.map((item) => ({
+    ...item,
+    shortLabel: item.key === 'contact' ? '연락하기' : item.key === 'rsvp' ? '참석여부' : item.key === 'location' ? '오시는길' : item.key === 'account' ? '마음전하기' : '공유하기',
+  }))
+
   return (
     <>
-      {/* Floating Button - 햄버거 메뉴 */}
-      <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2">
-        {/* Speech Bubble Tooltip */}
-        <div
-          className="transition-all duration-300"
-          style={{
-            opacity: showTooltip ? 1 : 0,
-            visibility: showTooltip ? 'visible' : 'hidden',
-            transform: showTooltip ? 'translateY(0)' : 'translateY(10px)'
-          }}
-        >
+      {/* === 햄버거 모드 === */}
+      {navStyle === 'hamburger' && (
+        <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2">
+          {/* Speech Bubble Tooltip */}
           <div
-            className="relative px-4 py-2.5 rounded-2xl text-xs text-gray-700 whitespace-nowrap"
+            className="transition-all duration-300"
             style={{
-              background: '#fff',
-              boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
-              fontFamily: "'Noto Sans KR', sans-serif",
+              opacity: showTooltip ? 1 : 0,
+              visibility: showTooltip ? 'visible' : 'hidden',
+              transform: showTooltip ? 'translateY(0)' : 'translateY(10px)'
             }}
           >
-            결혼식 정보 확인하기
-            {/* Speech bubble tail */}
             <div
-              className="absolute"
+              className="relative px-4 py-2.5 rounded-2xl text-xs text-gray-700 whitespace-nowrap"
               style={{
-                bottom: '-8px',
-                right: '16px',
-                width: '0',
-                height: '0',
-                borderLeft: '8px solid transparent',
-                borderRight: '8px solid transparent',
-                borderTop: '10px solid #fff',
-                filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.1))'
+                background: '#fff',
+                boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
+                fontFamily: "'Noto Sans KR', sans-serif",
               }}
-            />
+            >
+              결혼식 정보 확인하기
+              {/* Speech bubble tail */}
+              <div
+                className="absolute"
+                style={{
+                  bottom: '-8px',
+                  right: '16px',
+                  width: '0',
+                  height: '0',
+                  borderLeft: '8px solid transparent',
+                  borderRight: '8px solid transparent',
+                  borderTop: '10px solid #fff',
+                  filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.1))'
+                }}
+              />
+            </div>
           </div>
+
+          {/* 햄버거 메뉴 버튼 */}
+          <button
+            onClick={handleOpenBottomSheet}
+            className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-105 active:scale-95"
+            style={{ background: themeColors.cardBg, boxShadow: '0 4px 12px rgba(0,0,0,0.12)' }}
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke={themeColors.text} strokeWidth={2}>
+              <line x1="4" y1="6" x2="20" y2="6" strokeLinecap="round" />
+              <line x1="4" y1="12" x2="20" y2="12" strokeLinecap="round" />
+              <line x1="4" y1="18" x2="14" y2="18" strokeLinecap="round" />
+            </svg>
+          </button>
         </div>
+      )}
 
-        {/* 햄버거 메뉴 버튼 */}
-        <button
-          onClick={handleOpenBottomSheet}
-          className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-105 active:scale-95"
-          style={{ background: themeColors.cardBg, boxShadow: '0 4px 12px rgba(0,0,0,0.12)' }}
+      {/* === 하단 네비바 (아이콘+텍스트) === */}
+      {navStyle === 'bottom-nav' && (
+        <div
+          className="fixed bottom-0 left-0 right-0 z-[60] transition-all duration-500 ease-out border-t"
+          style={{
+            transform: navVisible ? 'translateY(0)' : 'translateY(100%)',
+            opacity: navVisible ? 1 : 0,
+            background: themeColors.cardBg,
+            borderColor: `${themeColors.gray}20`,
+          }}
         >
-          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke={themeColors.text} strokeWidth={2}>
-            <line x1="4" y1="6" x2="20" y2="6" strokeLinecap="round" />
-            <line x1="4" y1="12" x2="20" y2="12" strokeLinecap="round" />
-            <line x1="4" y1="18" x2="14" y2="18" strokeLinecap="round" />
-          </svg>
-        </button>
-      </div>
+          <div className="flex items-center justify-around py-2 px-1">
+            {navMenuIcons.map((item) => {
+              const isActive = activeModal === item.key
+              return (
+                <button
+                  key={item.key}
+                  onClick={() => {
+                    saveScrollPosition()
+                    setActiveModal(isActive ? 'none' : item.key as ModalType)
+                    requestAnimationFrame(restoreScrollPosition)
+                    setTimeout(restoreScrollPosition, 50)
+                  }}
+                  className="flex flex-col items-center gap-1 py-1 px-1 transition-all active:scale-95"
+                  style={{ minWidth: 0, color: isActive ? themeColors.primary : themeColors.gray }}
+                >
+                  <div className="w-6 h-6 flex items-center justify-center">
+                    {item.icon}
+                  </div>
+                  <span className="text-[10px] leading-tight font-medium transition-colors" style={{ color: isActive ? themeColors.primary : themeColors.text }}>{item.shortLabel}</span>
+                </button>
+              )
+            })}
+          </div>
+          <div className="h-[env(safe-area-inset-bottom)]" style={{ background: themeColors.cardBg }} />
+        </div>
+      )}
 
-      {/* Bottom Sheet */}
-      {isBottomSheetOpen && (
+      {/* === 하단 미니바 (아이콘만, 반투명 blur, 풀너비) === */}
+      {navStyle === 'bottom-mini' && (
+        <div
+          className="fixed bottom-0 left-0 right-0 z-[60] transition-all duration-500 ease-out"
+          style={{
+            transform: navVisible ? 'translateY(0)' : 'translateY(100%)',
+            opacity: navVisible ? 1 : 0,
+            background: `${themeColors.cardBg}ee`,
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            borderTop: `1px solid ${themeColors.gray}20`,
+          }}
+        >
+          <div className="flex items-center justify-around py-1.5 px-2">
+            {navMenuIcons.map((item) => {
+              const isActive = activeModal === item.key
+              return (
+                <button
+                  key={item.key}
+                  onClick={() => {
+                    saveScrollPosition()
+                    setActiveModal(isActive ? 'none' : item.key as ModalType)
+                    requestAnimationFrame(restoreScrollPosition)
+                    setTimeout(restoreScrollPosition, 50)
+                  }}
+                  className="flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-all active:scale-90"
+                  style={{ color: isActive ? themeColors.primary : themeColors.gray }}
+                >
+                  <div
+                    className="w-7 h-7 rounded-full flex items-center justify-center transition-colors"
+                    style={{ background: isActive ? `${themeColors.primary}15` : 'transparent' }}
+                  >
+                    {item.icon}
+                  </div>
+                  {isActive ? (
+                    <span className="w-1 h-1 rounded-full" style={{ background: themeColors.primary }} />
+                  ) : (
+                    <span className="w-1 h-1" />
+                  )}
+                </button>
+              )
+            })}
+          </div>
+          <div className="h-[env(safe-area-inset-bottom)]" style={{ background: `${themeColors.cardBg}ee` }} />
+        </div>
+      )}
+
+      {/* Bottom Sheet (햄버거 모드 전용) */}
+      {navStyle === 'hamburger' && isBottomSheetOpen && (
         <>
           <div className="fixed inset-0 bg-black/50 z-50" onClick={handleCloseBottomSheet} />
           <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 p-6 pb-8" style={{ maxHeight: '70%' }}>
@@ -349,7 +447,7 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
             <h3 className="text-center text-sm mb-6" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 500 }}>결혼식 정보</h3>
             <div className={`grid gap-3 ${menuItems.length <= 2 ? 'grid-cols-' + menuItems.length : 'grid-cols-2'}`}>
               {menuItems.map((item) => (
-                <button key={item.key} className="flex flex-col items-center justify-center p-5 rounded-2xl" style={{ background: themeColors.sectionBg }} onClick={() => openModal(item.key as ModalType)}>
+                <button key={item.key} className="flex flex-col items-center justify-center p-5 rounded-2xl" style={{ background: themeColors.sectionBg, color: themeColors.primary }} onClick={() => openModal(item.key as ModalType)}>
                   <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3" style={{ background: themeColors.cardBg }}>{item.icon}</div>
                   <span className="text-[11px]" style={{ color: themeColors.text }}>{item.label}</span>
                 </button>
@@ -360,13 +458,23 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
         </>
       )}
 
-      {/* Unified Modal with Tab Navigation */}
+      {/* Unified Modal - Bottom Sheet Style */}
       {activeModal !== 'none' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={closeModal}>
-          <div className="absolute inset-0 bg-black/50" />
-          <div className="relative bg-white rounded-2xl max-h-[80%] w-full max-w-md overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <>
+          <div className="fixed inset-0 bg-black/50 z-50" onClick={closeModal} />
+          <div
+            className="fixed left-0 right-0 z-[55] bg-white rounded-t-2xl max-h-[75vh] overflow-hidden flex flex-col"
+            style={{
+              bottom: navStyle === 'bottom-nav' ? '56px' : navStyle === 'bottom-mini' ? '52px' : '0',
+              animation: 'slideUpModal 0.3s ease-out',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Drag handle */}
+            <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mt-3 mb-1 flex-shrink-0" />
+
             {/* Tab Navigation */}
-            <div className="flex border-b border-gray-100 flex-shrink-0">
+            <div className="flex border-b border-gray-100 flex-shrink-0 px-1">
               {menuItems.map((item) => (
                 <button
                   key={item.key}
@@ -602,11 +710,19 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
             </div>
 
             {/* Close Button */}
-            <div className="p-4 pt-0 flex-shrink-0">
+            <div className="p-4 pt-2 pb-6 flex-shrink-0">
               <button onClick={closeModal} className="w-full py-3 rounded-xl text-sm" style={{ background: themeColors.background, color: themeColors.gray }}>닫기</button>
             </div>
           </div>
-        </div>
+
+          {/* Slide-up animation */}
+          <style>{`
+            @keyframes slideUpModal {
+              from { transform: translateY(100%); }
+              to { transform: translateY(0); }
+            }
+          `}</style>
+        </>
       )}
     </>
   )

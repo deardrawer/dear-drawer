@@ -809,7 +809,7 @@ function ProfileCarousel({ images, imageSettings }: { images: string[]; imageSet
       const cy = s.cropY || 0
       const posX = cw >= 1 ? 0 : (cx / (1 - cw)) * 100
       const posY = ch >= 1 ? 0 : (cy / (1 - ch)) * 100
-      const scale = Math.max(100 / cw, 100 / ch); return { backgroundImage: `url(${img})`, backgroundSize: `${scale}%`, backgroundPosition: `${posX}% ${posY}%`, backgroundRepeat: 'no-repeat' as const }
+      return { backgroundImage: `url(${img})`, backgroundSize: `${100 / cw}% ${100 / ch}%`, backgroundPosition: `${posX}% ${posY}%`, backgroundRepeat: 'no-repeat' as const }
     }
     return { backgroundImage: `url(${img})`, backgroundSize: 'cover' as const, backgroundPosition: 'center' as const, transform: `scale(${s.scale || 1}) translate(${s.positionX || 0}%, ${s.positionY || 0}%)` }
   }
@@ -882,7 +882,7 @@ function PeopleTab({ content, profileImage, username }: { content: any; profileI
       const cy = s.cropY || 0
       const posX = cw >= 1 ? 0 : (cx / (1 - cw)) * 100
       const posY = ch >= 1 ? 0 : (cy / (1 - ch)) * 100
-      const scale = Math.max(100 / cw, 100 / ch); return { backgroundImage: `url(${img})`, backgroundSize: `${scale}%`, backgroundPosition: `${posX}% ${posY}%`, backgroundRepeat: 'no-repeat' as const }
+      return { backgroundImage: `url(${img})`, backgroundSize: `${100 / cw}% ${100 / ch}%`, backgroundPosition: `${posX}% ${posY}%`, backgroundRepeat: 'no-repeat' as const }
     }
     return { backgroundImage: `url(${img})`, backgroundSize: 'cover' as const, backgroundPosition: 'center' as const, transform: `scale(${s.scale || 1}) translate(${s.positionX || 0}%, ${s.positionY || 0}%)` }
   }

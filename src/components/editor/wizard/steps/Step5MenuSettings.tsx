@@ -57,6 +57,52 @@ export default function Step5MenuSettings() {
     updateNestedField('wedding.directions.expressBus', SAMPLE_DIRECTIONS.expressBus)
   }
 
+  const isOurOrFamily = invitation.templateId === 'narrative-our' || invitation.templateId === 'narrative-family'
+
+  const navStyleOptions: { value: 'hamburger' | 'bottom-nav' | 'bottom-mini'; label: string; desc: string; icon: React.ReactNode }[] = [
+    {
+      value: 'hamburger',
+      label: '햄버거 버튼',
+      desc: '우측 하단 원형 메뉴',
+      icon: (
+        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+          <svg className="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+            <line x1="4" y1="6" x2="20" y2="6" strokeLinecap="round" />
+            <line x1="4" y1="12" x2="20" y2="12" strokeLinecap="round" />
+            <line x1="4" y1="18" x2="14" y2="18" strokeLinecap="round" />
+          </svg>
+        </div>
+      ),
+    },
+    ...(!isOurOrFamily ? [{
+      value: 'bottom-nav' as const,
+      label: '하단 네비바',
+      desc: '아이콘+텍스트 고정 바',
+      icon: (
+        <div className="w-full h-10 rounded-lg bg-gray-200 flex items-center justify-center gap-3 px-2">
+          {['축하', '참석', '길'].map((t) => (
+            <div key={t} className="flex flex-col items-center">
+              <div className="w-3 h-3 rounded-full bg-gray-400" />
+              <span className="text-[8px] text-gray-500 mt-0.5">{t}</span>
+            </div>
+          ))}
+        </div>
+      ),
+    }] : []),
+    {
+      value: 'bottom-mini',
+      label: '미니 네비바',
+      desc: '아이콘만, 반투명',
+      icon: (
+        <div className="w-full h-8 rounded-full bg-gray-200/70 backdrop-blur flex items-center justify-center gap-4 px-2">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="w-3.5 h-3.5 rounded-full bg-gray-400" />
+          ))}
+        </div>
+      ),
+    },
+  ]
+
   return (
     <div className="p-6 space-y-8">
       {/* 안내 */}
@@ -66,6 +112,37 @@ export default function Step5MenuSettings() {
           오시는 길, 연락처, RSVP, 마음 전하실 곳 등을 설정해주세요.
         </p>
       </div>
+
+      {/* 메뉴 버튼 스타일 */}
+      <section className="space-y-4">
+        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <path d="M3 15h18" />
+          </svg>
+          메뉴 버튼 스타일
+        </h3>
+        {isOurOrFamily && (
+          <p className="text-xs text-gray-500">인트로 페이지에서는 항상 하단 네비바가 표시됩니다. 메인 페이지의 스타일을 선택해주세요.</p>
+        )}
+        <div className={`grid gap-3 ${navStyleOptions.length === 3 ? 'grid-cols-3' : 'grid-cols-2'}`}>
+          {navStyleOptions.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => updateField('navStyle', opt.value)}
+              className={`flex flex-col items-center p-3 rounded-xl border-2 transition-all ${
+                (invitation.navStyle || 'hamburger') === opt.value
+                  ? 'border-purple-500 bg-purple-50'
+                  : 'border-gray-200 bg-white hover:border-gray-300'
+              }`}
+            >
+              <div className="w-full flex justify-center mb-2">{opt.icon}</div>
+              <p className={`text-xs font-medium ${(invitation.navStyle || 'hamburger') === opt.value ? 'text-purple-700' : 'text-gray-700'}`}>{opt.label}</p>
+              <p className="text-[10px] text-gray-500 mt-0.5">{opt.desc}</p>
+            </button>
+          ))}
+        </div>
+      </section>
 
       {/* 오시는 길 안내 */}
       <section className="space-y-4">

@@ -469,10 +469,11 @@ export default function Step3Film({}: Step3FilmProps) {
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
           <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>
-          Chapter 3: 갤러리 <span className="text-xs font-normal text-gray-500">(최대 10장)</span>
+          Chapter 3: 갤러리 <span className="text-xs font-normal text-gray-500">(최대 30장)</span>
         </h3>
         <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
           <p className="text-sm text-blue-800">필름 스트립처럼 사진들이 가로로 표시됩니다.</p>
+          <p className="text-xs text-amber-600 mt-1.5">미리보기에 사진이 안 보일 경우, 미리보기 상단의 INTRO 버튼을 누른 후 MAIN 버튼을 다시 눌러주세요.</p>
         </div>
 
         <MultiImageUploader
@@ -489,7 +490,7 @@ export default function Step3Film({}: Step3FilmProps) {
             updateNestedField('gallery.imageSettings', newSettings)
           }}
           sortable={true}
-          maxImages={10}
+          maxImages={30}
           placeholder="사진 추가"
           aspectRatio="aspect-[2/3]"
         />
@@ -742,12 +743,18 @@ export default function Step3Film({}: Step3FilmProps) {
 
       {/* 안내사항 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
-          안내사항
-        </h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
+            안내사항
+          </h3>
+          <Switch
+            checked={invitation.sectionVisibility.guidance}
+            onCheckedChange={() => toggleSectionVisibility('guidance')}
+          />
+        </div>
 
-        <div className="space-y-4">
+        {invitation.sectionVisibility.guidance && (<div className="space-y-4">
           <p className="text-sm text-blue-600">하객분들께 전달할 안내사항을 작성해주세요.</p>
 
           {/* 웨딩사진 */}
@@ -964,6 +971,7 @@ export default function Step3Film({}: Step3FilmProps) {
             </button>
           </div>
         </div>
+        )}
       </section>
 
       {/* Credits (감사인사) */}

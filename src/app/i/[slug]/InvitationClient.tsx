@@ -3328,6 +3328,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
       ) : null)}
 
       {/* Info Section - matching original template */}
+      {invitation.sectionVisibility?.guidance !== false && (
       <section
         className="px-6 py-14"
         style={{ background: `linear-gradient(180deg, ${themeColors.sectionBg} 0%, ${themeColors.background} 100%)` }}
@@ -3476,6 +3477,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
           />
         ))}
       </section>
+      )}
 
       {/* Thank You Section */}
       <AnimatedSection className="min-h-[300px] flex flex-col justify-center items-center text-center px-7 py-20" style={{ background: themeColors.sectionBg }}>

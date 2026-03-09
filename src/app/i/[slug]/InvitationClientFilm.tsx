@@ -1242,6 +1242,7 @@ function GuidanceSection({ invitation, fonts, tc }: { invitation: any; fonts: Fo
     ...(info.customItems || []).filter((item: any) => item.enabled && item.content).map((_: any, i: number) => `custom-${i}`),
   ] : []
 
+  if (invitation.sectionVisibility?.guidance === false) return null
   if (enabledItems.length === 0 && !invitation.guidance?.enabled) return null
 
   return (

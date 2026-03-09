@@ -3600,6 +3600,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
       ) : null)}
 
       {/* Info Section - matching original template */}
+      {invitation.sectionVisibility?.guidance !== false && (
       <section
         className="px-6 py-6"
         style={{ background: themeColors.sectionBg }}
@@ -3748,6 +3749,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
           />
         ))}
       </section>
+      )}
 
       {/* Thank You Section */}
       <AnimatedSection className="min-h-[300px] flex flex-col justify-center items-center text-center px-7 py-12" style={{ background: themeColors.sectionBg }}>

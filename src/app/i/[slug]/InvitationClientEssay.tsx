@@ -1799,7 +1799,7 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
     ...infoItemOrder.filter((key: string) => infoObj[key]?.enabled && infoObj[key]?.content),
     ...(infoObj.customItems || []).filter((item: any) => item.enabled && item.content).map((_: any, i: number) => `custom-${i}`),
   ]
-  if (enabledInfoItems.length > 0) pages.push({ id: 'guidance', type: 'guidance' as any, title: '안내' })
+  if (enabledInfoItems.length > 0 && data.sectionVisibility?.guidance !== false) pages.push({ id: 'guidance', type: 'guidance' as any, title: '안내' })
   if (data.sectionVisibility?.contacts !== false) pages.push({ id: 'contacts', type: 'contacts', title: '연락처' })
   if (data.sectionVisibility?.bankAccounts !== false) pages.push({ id: 'bank', type: 'bank', title: '마음 전하기' })
   if (data.thankYou?.message) pages.push({ id: 'thankyou', type: 'thankyou', title: '감사 인사' })

@@ -946,6 +946,8 @@ function GuidanceInfoSection({ invitation, fonts, themeColors }: { invitation: a
     ...(info.customItems || []).filter((item: any) => item.enabled && item.content).map((_: any, i: number) => `custom-${i}`),
   ] : []
 
+  // sectionVisibility.guidance가 false면 렌더링하지 않음
+  if (invitation.sectionVisibility?.guidance === false) return null
   // guidance가 없고 info 항목도 없으면 렌더링하지 않음
   if (!guidance?.enabled && enabledItems.length === 0) return null
 

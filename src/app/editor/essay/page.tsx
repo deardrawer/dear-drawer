@@ -45,7 +45,8 @@ export interface EssayInvitationData {
   // Design (커버)
   design: {
     coverTitle: string
-    coverDesign: 'full' | 'center' | 'typo'
+    coverDesign: 'full' | 'center' | 'typo' | 'emboss'
+    embossColor?: string
   }
 
   // Wedding info
@@ -151,7 +152,7 @@ const defaultData: EssayInvitationData = {
   highlightColor: '#FFD700',
   bgm: { enabled: false, url: '', autoplay: true },
   media: { coverImage: '' },
-  design: { coverTitle: 'OUR WEDDING ESSAY', coverDesign: 'full' },
+  design: { coverTitle: 'OUR WEDDING ESSAY', coverDesign: 'emboss', embossColor: 'teal' },
   groom: {
     name: '', lastName: '', firstName: '',
     phone: '', phoneEnabled: true,
@@ -450,8 +451,8 @@ function EssayEditorContent() {
           <div className="flex">
             {/* Preview - 왼쪽 sticky 고정, 카드형 디바이스 프리뷰 (데스크탑) */}
             {!isMobile && (
-              <div className="w-[440px] min-w-[440px] sticky top-0 overflow-hidden editor-panel m-4 mr-0 flex justify-center items-center" style={{ height: 'calc(100vh - 88px)' }}>
-                <div className="w-[360px] shadow-2xl bg-white overflow-hidden border border-gray-200" style={{ height: '710px' }}>
+              <div className="w-[460px] min-w-[460px] sticky top-0 overflow-hidden editor-panel m-4 mr-0 flex justify-center items-center" style={{ height: 'calc(100vh - 88px)' }}>
+                <div className="w-[390px] shadow-2xl bg-white overflow-hidden border border-gray-200" style={{ height: '710px' }}>
                   <div className="h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                     <EssayPreview data={data} />
                   </div>

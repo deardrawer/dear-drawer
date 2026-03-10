@@ -149,6 +149,7 @@ function CoverSection({ data, theme }: { data: any; theme: ThemeConfig }) {
   const dateStr = `${weddingDate.getFullYear()}.${String(weddingDate.getMonth() + 1).padStart(2, '0')}.${String(weddingDate.getDate()).padStart(2, '0')}`
   const dayNames = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일']
   const dayOfWeek = dayNames[weddingDate.getDay()]
+  const venueName = data.wedding?.venue?.name || ''
 
   useEffect(() => { setTimeout(() => setLoaded(true), 100) }, [])
 
@@ -193,15 +194,11 @@ function CoverSection({ data, theme }: { data: any; theme: ThemeConfig }) {
         {/* 하단 텍스트 */}
         <div className="relative z-10 pb-16 text-center w-full px-8">
           <div className="transition-all duration-[1200ms] delay-500" style={{ opacity: loaded ? 1 : 0, transform: loaded ? 'translateY(0)' : 'translateY(20px)' }}>
-            <div style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '26px', fontWeight: 200, letterSpacing: '10px', lineHeight: 1.2, color: '#fff' }}>{groomName}</div>
+            <div style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '20px', fontWeight: 200, letterSpacing: '8px', color: '#fff' }}>
+              {groomName} <span className="essay-ampersand" style={{ fontFamily: "'Cinzel', serif", fontSize: '16px', fontStyle: 'italic', color: 'rgba(255,255,255,0.7)' }}>&</span> {brideName}
+            </div>
           </div>
-          <div className="my-4 transition-all duration-[1500ms] delay-700" style={{ opacity: loaded ? 1 : 0 }}>
-            <div className="essay-ampersand" style={{ fontFamily: "'Cinzel', serif", fontSize: '18px', fontStyle: 'italic', color: 'rgba(255,255,255,0.7)', lineHeight: 1 }}>&</div>
-          </div>
-          <div className="transition-all duration-[1200ms] delay-900" style={{ opacity: loaded ? 1 : 0, transform: loaded ? 'translateY(0)' : 'translateY(20px)' }}>
-            <div style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '26px', fontWeight: 200, letterSpacing: '10px', lineHeight: 1.2, color: '#fff' }}>{brideName}</div>
-          </div>
-          <div className="mt-8 transition-all duration-[1200ms] delay-[1100ms]" style={{ opacity: loaded ? 1 : 0 }}>
+          <div className="mt-6 transition-all duration-[1200ms] delay-[900ms]" style={{ opacity: loaded ? 1 : 0 }}>
             <div style={{ width: '24px', height: '1px', background: 'rgba(255,255,255,0.4)', margin: '0 auto 12px' }} />
             <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '11px', letterSpacing: '4px', color: 'rgba(255,255,255,0.8)' }}>
               {typedText}<span className="animate-pulse" style={{ color: 'rgba(255,255,255,0.3)' }}>|</span>
@@ -209,6 +206,9 @@ function CoverSection({ data, theme }: { data: any; theme: ThemeConfig }) {
             <div className="mt-2 transition-all duration-500 delay-[2000ms]" style={{ opacity: loaded ? 1 : 0 }}>
               <div style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '10px', letterSpacing: '3px', color: 'rgba(255,255,255,0.6)' }}>{dayOfWeek}</div>
             </div>
+            {venueName && (
+              <div className="mt-3" style={{ fontFamily: "'Okticon', serif", fontSize: '12px', fontStyle: 'italic', color: 'rgba(255,255,255,0.6)' }}>{venueName}</div>
+            )}
           </div>
         </div>
         {scrollHint}
@@ -216,50 +216,53 @@ function CoverSection({ data, theme }: { data: any; theme: ThemeConfig }) {
     )
   }
 
-  // ── 센터 (center): 원형 프레임 중앙, 위아래 텍스트 ──
+  // ── 센터 (center): 스크랩북 스타일 ──
   if (coverDesign === 'center' && coverImage) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden" style={{ background: theme.background }}>
-        {/* 상단 장식선 */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 transition-all duration-[2000ms]" style={{ width: '1px', height: loaded ? '60px' : '0px', background: theme.divider }} />
-
-        {/* 타이틀 */}
-        <div className="transition-all duration-1000 delay-200" style={{ opacity: loaded ? 1 : 0, transform: loaded ? 'translateY(0)' : 'translateY(-12px)' }}>
-          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '11px', letterSpacing: '6px', color: theme.gray, marginBottom: '32px', textAlign: 'center' }}>{coverTitle}</div>
+      <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden px-6" style={{ background: '#EDEBE6' }}>
+        {/* 스크립트 타이틀 */}
+        <div className="transition-all duration-1000 delay-200" style={{ opacity: loaded ? 1 : 0, transform: loaded ? 'translateY(0)' : 'translateY(-16px)' }}>
+          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '28px', fontWeight: 300, letterSpacing: '6px', lineHeight: 1.4, color: '#3D3028', marginBottom: '32px', textAlign: 'center' }}>
+            {(coverTitle || 'save the date').split(' ').map((word: string, i: number) => (
+              <div key={i}>{word}</div>
+            ))}
+          </div>
         </div>
 
-        {/* 원형 이미지 */}
-        <div className="transition-all duration-[1200ms] delay-400" style={{ opacity: loaded ? 1 : 0, transform: loaded ? 'scale(1)' : 'scale(0.9)' }}>
-          <div style={{ width: '180px', height: '180px', borderRadius: '50%', overflow: 'hidden', border: `1px solid ${theme.divider}`, boxShadow: '0 8px 32px rgba(0,0,0,0.08)' }}>
+        {/* 테이프 장식 사진 - 상단 중앙 */}
+        <div className="relative transition-all duration-[1200ms] delay-400" style={{ opacity: loaded ? 1 : 0, transform: loaded ? 'translateY(0)' : 'translateY(16px)' }}>
+          <div style={{ position: 'absolute', top: '-10px', left: '50%', zIndex: 2, width: '60px', height: '18px', background: 'linear-gradient(135deg, rgba(220,210,190,0.85), rgba(200,190,170,0.65))', transform: 'translateX(-50%) rotate(-2deg)', borderRadius: '1px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }} />
+          <div style={{ width: '220px', height: '270px', overflow: 'hidden', boxShadow: '0 4px 24px rgba(0,0,0,0.1)' }}>
             <img src={coverImage} alt="" className="w-full h-full object-cover" style={cropStyle} />
           </div>
         </div>
 
-        {/* 이름 */}
-        <div className="text-center mt-10 relative z-10">
-          <div className="transition-all duration-[1200ms] delay-600" style={{ opacity: loaded ? 1 : 0, transform: loaded ? 'translateY(0)' : 'translateY(16px)' }}>
-            <div style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '24px', fontWeight: 200, letterSpacing: '10px', lineHeight: 1.2, color: theme.heading }}>{groomName}</div>
-          </div>
-          <div className="my-4 transition-all duration-[1500ms] delay-800" style={{ opacity: loaded ? 1 : 0 }}>
-            <div className="essay-ampersand" style={{ fontFamily: "'Cinzel', serif", fontSize: '18px', fontStyle: 'italic', color: theme.accent, lineHeight: 1 }}>&</div>
-          </div>
-          <div className="transition-all duration-[1200ms] delay-[1000ms]" style={{ opacity: loaded ? 1 : 0, transform: loaded ? 'translateY(0)' : 'translateY(16px)' }}>
-            <div style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '24px', fontWeight: 200, letterSpacing: '10px', lineHeight: 1.2, color: theme.heading }}>{brideName}</div>
+        {/* 날짜 */}
+        <div className="mt-10 transition-all duration-[1200ms] delay-700" style={{ opacity: loaded ? 1 : 0 }}>
+          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '22px', fontWeight: 400, fontStyle: 'italic', letterSpacing: '2px', color: '#3D3028', textAlign: 'center' }}>
+            {typedText}<span className="animate-pulse" style={{ color: 'rgba(0,0,0,0.12)' }}>|</span>
           </div>
         </div>
 
-        {/* 날짜 */}
-        <div className="mt-10 transition-all duration-[1200ms] delay-[1200ms]" style={{ opacity: loaded ? 1 : 0 }}>
-          <div style={{ width: '32px', height: '1px', background: theme.divider, margin: '0 auto 12px' }} />
-          <div className="text-center">
-            <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '12px', letterSpacing: '4px', color: theme.accent }}>
-              {typedText}<span className="animate-pulse" style={{ color: theme.divider }}>|</span>
-            </div>
-            <div className="mt-2 transition-all duration-500 delay-[2000ms]" style={{ opacity: loaded ? 1 : 0 }}>
-              <div style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '10px', letterSpacing: '3px', color: theme.gray }}>{dayOfWeek}</div>
-            </div>
+        {/* 이름 나란히 */}
+        <div className="mt-4 transition-all duration-[1200ms] delay-900" style={{ opacity: loaded ? 1 : 0 }}>
+          <div className="text-center" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '11px', fontWeight: 400, letterSpacing: '5px', color: '#3D3028', textTransform: 'uppercase' as const }}>
+            {groomName} & {brideName}
+          </div>
+          <div className="text-center mt-1" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '9px', fontWeight: 300, letterSpacing: '4px', color: '#8B7A68' }}>
+            ARE GETTING MARRIED
           </div>
         </div>
+
+        {/* 장소 */}
+        {venueName && (
+          <div className="mt-10 transition-all duration-[1200ms] delay-[1100ms]" style={{ opacity: loaded ? 1 : 0 }}>
+            <div style={{ fontFamily: "'Okticon', serif", fontSize: '16px', fontStyle: 'italic', color: '#5C5040', textAlign: 'center' }}>
+              {venueName}
+            </div>
+          </div>
+        )}
+
         {scrollHint}
       </div>
     )
@@ -281,19 +284,19 @@ function CoverSection({ data, theme }: { data: any; theme: ThemeConfig }) {
           </div>
         </div>
 
-        {/* 작은 이미지 + 이름 */}
+        {/* 작은 이미지 + 이름 나란히 */}
         <div className="flex items-end gap-5 mt-10 transition-all duration-[1200ms] delay-500" style={{ opacity: loaded ? 1 : 0, transform: loaded ? 'translateY(0)' : 'translateY(20px)' }}>
           <div style={{ width: '100px', height: '130px', borderRadius: '4px', overflow: 'hidden', border: `1px solid ${theme.divider}`, flexShrink: 0 }}>
             <img src={coverImage} alt="" className="w-full h-full object-cover" style={cropStyle} />
           </div>
           <div className="text-left pb-1">
-            <div style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '16px', fontWeight: 300, letterSpacing: '4px', color: theme.heading, lineHeight: 1.8 }}>{groomName}</div>
-            <div className="essay-ampersand" style={{ fontFamily: "'Cinzel', serif", fontSize: '14px', fontStyle: 'italic', color: theme.accent, lineHeight: 1, margin: '4px 0' }}>&</div>
-            <div style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '16px', fontWeight: 300, letterSpacing: '4px', color: theme.heading, lineHeight: 1.8 }}>{brideName}</div>
+            <div style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '16px', fontWeight: 300, letterSpacing: '4px', color: theme.heading, lineHeight: 1.8 }}>
+              {groomName} <span className="essay-ampersand" style={{ fontFamily: "'Cinzel', serif", fontSize: '14px', fontStyle: 'italic', color: theme.accent }}>&</span> {brideName}
+            </div>
           </div>
         </div>
 
-        {/* 날짜 */}
+        {/* 날짜 + 장소 */}
         <div className="mt-12 transition-all duration-[1200ms] delay-[900ms]" style={{ opacity: loaded ? 1 : 0 }}>
           <div style={{ width: '32px', height: '1px', background: theme.divider, margin: '0 auto 12px' }} />
           <div className="text-center">
@@ -303,6 +306,69 @@ function CoverSection({ data, theme }: { data: any; theme: ThemeConfig }) {
             <div className="mt-2 transition-all duration-500 delay-[2000ms]" style={{ opacity: loaded ? 1 : 0 }}>
               <div style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '10px', letterSpacing: '3px', color: theme.gray }}>{dayOfWeek}</div>
             </div>
+            {venueName && (
+              <div className="mt-3" style={{ fontFamily: "'Okticon', serif", fontSize: '12px', fontStyle: 'italic', color: theme.gray }}>{venueName}</div>
+            )}
+          </div>
+        </div>
+        {scrollHint}
+      </div>
+    )
+  }
+
+  // ── 엠보싱 (emboss): 단색 배경 + 양각 텍스트 (이미지 없을 때 기본) ──
+  if (coverDesign === 'emboss' || !coverImage) {
+    const embossColors: Record<string, { bg: string; text: string; highlight: string; shadow: string; line: string }> = {
+      'dusty-blue': { bg: '#8E9EAB', text: 'rgba(255,255,255,0.5)', highlight: 'rgba(255,255,255,0.35)', shadow: 'rgba(0,0,0,0.12)', line: 'rgba(255,255,255,0.25)' },
+      'beige':      { bg: '#C2B9A7', text: 'rgba(255,255,255,0.5)', highlight: 'rgba(255,255,255,0.4)', shadow: 'rgba(0,0,0,0.1)', line: 'rgba(255,255,255,0.22)' },
+      'teal':       { bg: '#7A8B8B', text: 'rgba(255,255,255,0.55)', highlight: 'rgba(255,255,255,0.45)', shadow: 'rgba(0,0,0,0.22)', line: 'rgba(255,255,255,0.2)' },
+      'gray':       { bg: '#9BA3A6', text: 'rgba(255,255,255,0.5)', highlight: 'rgba(255,255,255,0.35)', shadow: 'rgba(0,0,0,0.15)', line: 'rgba(255,255,255,0.22)' },
+      'dark':       { bg: '#4A4A48', text: 'rgba(212,185,150,0.55)', highlight: 'rgba(255,235,200,0.35)', shadow: 'rgba(0,0,0,0.3)', line: 'rgba(212,185,150,0.25)' },
+    }
+    const ec = embossColors[data.design?.embossColor || 'teal'] || embossColors['teal']
+    const embossStyle = (size: 'sm' | 'md' | 'lg') => ({
+      color: ec.text,
+      textShadow: size === 'lg'
+        ? `0 2px 3px ${ec.highlight}, 0 -1px 2px ${ec.shadow}`
+        : size === 'md'
+        ? `0 1px 2px ${ec.highlight}, 0 -1px 1px ${ec.shadow}`
+        : `0 1px 1px ${ec.highlight}, 0 -1px 1px ${ec.shadow}`,
+    })
+
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden" style={{ background: ec.bg }}>
+        {/* Decorative top line */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 transition-all duration-[2000ms]" style={{ width: '1px', height: loaded ? '80px' : '0px', background: ec.line }} />
+
+        {/* 큰 타이틀 */}
+        <div className="transition-all duration-1000 delay-200" style={{ opacity: loaded ? 1 : 0, transform: loaded ? 'translateY(0)' : 'translateY(-20px)' }}>
+          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '28px', fontWeight: 300, letterSpacing: '6px', lineHeight: 1.4, marginBottom: '40px', textAlign: 'center', ...embossStyle('lg') }}>
+            {coverTitle.split(' ').map((word: string, i: number) => (
+              <div key={i}>{word}</div>
+            ))}
+          </div>
+        </div>
+
+        {/* 이름 나란히 */}
+        <div className="text-center relative z-10 transition-all duration-[1200ms] delay-500" style={{ opacity: loaded ? 1 : 0, transform: loaded ? 'translateY(0)' : 'translateY(20px)' }}>
+          <div style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '15px', fontWeight: 200, letterSpacing: '6px', ...embossStyle('md') }}>
+            {groomName} <span className="essay-ampersand" style={{ fontFamily: "'Cinzel', serif", fontSize: '14px', fontStyle: 'italic' }}>&</span> {brideName}
+          </div>
+        </div>
+
+        {/* 날짜 + 장소 */}
+        <div className="mt-12 transition-all duration-[1200ms] delay-[900ms]" style={{ opacity: loaded ? 1 : 0 }}>
+          <div style={{ width: '32px', height: '1px', background: ec.line, margin: '0 auto 14px' }} />
+          <div className="text-center">
+            <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '12px', letterSpacing: '4px', ...embossStyle('md') }}>
+              {typedText}<span className="animate-pulse" style={{ color: ec.line }}>|</span>
+            </div>
+            <div className="mt-2 transition-all duration-500 delay-[2000ms]" style={{ opacity: loaded ? 1 : 0 }}>
+              <div style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '10px', letterSpacing: '3px', ...embossStyle('sm') }}>{dayOfWeek}</div>
+            </div>
+            {venueName && (
+              <div className="mt-3" style={{ fontFamily: "'Okticon', serif", fontSize: '11px', fontStyle: 'italic', ...embossStyle('sm') }}>{venueName}</div>
+            )}
           </div>
         </div>
         {scrollHint}
@@ -2027,7 +2093,7 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
         <>
           {currentPage > 0 && (
             <button
-              className="fixed z-40"
+              className="fixed z-40 bk-arrow-left"
               onClick={(e) => { e.stopPropagation(); prevPage() }}
               style={{ left: '6px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', padding: '12px 4px', opacity: 0.3, transition: 'opacity 0.2s' }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.6' }}
@@ -2040,7 +2106,7 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
           )}
           {currentPage < totalPages - 1 && (
             <button
-              className="fixed z-40"
+              className="fixed z-40 bk-arrow-right"
               onClick={(e) => { e.stopPropagation(); nextPage() }}
               style={{ right: '6px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', padding: '12px 4px', opacity: 0.3, transition: 'opacity 0.2s' }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.6' }}
@@ -2141,7 +2207,8 @@ function BookCover({ data, onNext }: { data: any; onNext: () => void }) {
   const coverDesign = data.design?.coverDesign || 'full'
   const coverImage = data.media?.coverImage || ''
   const weddingDate = data.wedding?.date ? new Date(data.wedding.date) : new Date()
-  const dateStr = `${weddingDate.getFullYear()}`
+  const dateStr = `${weddingDate.getFullYear()}.${String(weddingDate.getMonth() + 1).padStart(2, '0')}.${String(weddingDate.getDate()).padStart(2, '0')}`
+  const venueName = data.wedding?.venue?.name || ''
 
   useEffect(() => { setTimeout(() => setLoaded(true), 200) }, [])
 
@@ -2184,15 +2251,15 @@ function BookCover({ data, onNext }: { data: any; onNext: () => void }) {
 
         {/* 하단 텍스트 */}
         <div className="relative z-10 pb-8 text-center" style={{ opacity: loaded ? 1 : 0, transform: loaded ? 'translateY(0)' : 'translateY(16px)', transition: 'all 0.8s 0.4s cubic-bezier(0.22, 1, 0.36, 1)' }}>
-          <div style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '22px', fontWeight: 300, letterSpacing: '6px', color: '#fff', lineHeight: 1.8 }}>
-            {groomName}
-          </div>
-          <div style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '22px', fontWeight: 300, letterSpacing: '6px', color: '#fff', lineHeight: 1.8 }}>
-            {brideName}
+          <div style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '18px', fontWeight: 300, letterSpacing: '6px', color: '#fff' }}>
+            {groomName} <span className="essay-ampersand" style={{ fontFamily: "'Cinzel', serif", fontSize: '14px', fontStyle: 'italic', color: 'rgba(255,255,255,0.7)' }}>&</span> {brideName}
           </div>
           <div className="mt-4">
             <div style={{ width: '30px', height: '0.5px', background: 'rgba(255,255,255,0.4)', margin: '0 auto 12px' }} />
             <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '12px', letterSpacing: '4px', color: 'rgba(255,255,255,0.7)' }}>{dateStr}</div>
+            {venueName && (
+              <div className="mt-2" style={{ fontFamily: "'Okticon', serif", fontSize: '11px', fontStyle: 'italic', color: 'rgba(255,255,255,0.5)' }}>{venueName}</div>
+            )}
           </div>
           {openButton}
         </div>
@@ -2230,17 +2297,20 @@ function BookCover({ data, onNext }: { data: any; onNext: () => void }) {
           {/* 구분선 */}
           <div style={{ width: '40px', height: '0.5px', background: '#ccc', margin: '0 auto 24px' }} />
 
-          {/* 이름 */}
+          {/* 이름 나란히 */}
           <div className="text-center" style={{ marginBottom: '24px' }}>
-            <div style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '15px', fontWeight: 300, letterSpacing: '4px', color: '#1a1a1a', lineHeight: 2 }}>{groomName}</div>
-            <div className="essay-ampersand" style={{ fontFamily: "'Cinzel', serif", fontSize: '12px', fontStyle: 'italic', color: '#999', lineHeight: 1, margin: '2px 0' }}>&</div>
-            <div style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '15px', fontWeight: 300, letterSpacing: '4px', color: '#1a1a1a', lineHeight: 2 }}>{brideName}</div>
+            <div style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '14px', fontWeight: 300, letterSpacing: '4px', color: '#1a1a1a' }}>
+              {groomName} <span className="essay-ampersand" style={{ fontFamily: "'Cinzel', serif", fontSize: '12px', fontStyle: 'italic', color: '#999' }}>&</span> {brideName}
+            </div>
           </div>
 
-          {/* 하단 연도 */}
+          {/* 날짜 + 장소 */}
           <div className="text-center">
             <div style={{ width: '40px', height: '0.5px', background: '#ccc', margin: '0 auto 12px' }} />
             <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '12px', letterSpacing: '4px', color: '#999' }}>{dateStr}</div>
+            {venueName && (
+              <div className="mt-2" style={{ fontFamily: "'Okticon', serif", fontSize: '11px', fontStyle: 'italic', color: '#999' }}>{venueName}</div>
+            )}
           </div>
         </div>
         {openButton}
@@ -2248,51 +2318,113 @@ function BookCover({ data, onNext }: { data: any; onNext: () => void }) {
     )
   }
 
-  // ── 센터 (center) 또는 기본: 원형 프레임 중앙 ──
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center relative" style={{ background: bookColors.bg }}>
-      <div className="relative" style={{
-        width: '260px', padding: coverImage ? '32px 32px 48px' : '48px 32px',
-        border: `1px solid ${bookColors.divider}`,
-        background: '#FFFFFF',
-        opacity: loaded ? 1 : 0,
-        transform: loaded ? 'translateY(0)' : 'translateY(16px)',
-        transition: 'all 0.8s cubic-bezier(0.22, 1, 0.36, 1)',
-      }}>
-        {/* 상단 장식 라인 */}
-        <div className="text-center" style={{ marginBottom: coverImage ? '20px' : '36px' }}>
-          <div style={{ width: '40px', height: '0.5px', background: bookColors.accent, margin: '0 auto' }} />
+  // ── 센터 (center): 스크랩북 스타일 ──
+  if (coverDesign === 'center' && coverImage) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden" style={{ background: '#EDEBE6' }}>
+        {/* 스크립트 타이틀 */}
+        <div style={{ opacity: loaded ? 1 : 0, transition: 'opacity 0.8s 0.3s' }}>
+          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '24px', fontWeight: 300, letterSpacing: '6px', lineHeight: 1.4, color: '#3D3028', marginBottom: '28px', textAlign: 'center' }}>
+            {(coverTitle || 'save the date').split(' ').map((word: string, i: number) => (
+              <div key={i}>{word}</div>
+            ))}
+          </div>
         </div>
 
-        {/* 커버 이미지 (원형) */}
-        {coverImage && (
-          <div className="flex justify-center" style={{ marginBottom: '20px' }}>
-            <div style={{ width: '120px', height: '120px', borderRadius: '50%', overflow: 'hidden', border: `1px solid ${bookColors.divider}` }}>
-              <img src={coverImage} alt="" className="w-full h-full object-cover" style={bookCropStyle} />
-            </div>
+        {/* 테이프 장식 사진 - 상단 중앙 */}
+        <div className="relative" style={{ opacity: loaded ? 1 : 0, transition: 'all 0.8s 0.5s', transform: loaded ? 'translateY(0)' : 'translateY(16px)' }}>
+          <div style={{ position: 'absolute', top: '-8px', left: '50%', zIndex: 2, width: '52px', height: '16px', background: 'linear-gradient(135deg, rgba(220,210,190,0.85), rgba(200,190,170,0.65))', transform: 'translateX(-50%) rotate(-2deg)', borderRadius: '1px' }} />
+          <div style={{ width: '180px', height: '220px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+            <img src={coverImage} alt="" className="w-full h-full object-cover" style={bookCropStyle} />
+          </div>
+        </div>
+
+        {/* 날짜 - 크고 이탤릭 */}
+        <div className="mt-8 text-center" style={{ opacity: loaded ? 1 : 0, transition: 'opacity 0.8s 0.7s' }}>
+          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '20px', fontWeight: 400, fontStyle: 'italic', letterSpacing: '2px', color: '#3D3028' }}>{dateStr}</div>
+        </div>
+
+        {/* 이름 나란히 + ARE GETTING MARRIED */}
+        <div className="mt-3 text-center" style={{ opacity: loaded ? 1 : 0, transition: 'opacity 0.8s 0.8s' }}>
+          <div style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '11px', fontWeight: 400, letterSpacing: '5px', color: '#3D3028', textTransform: 'uppercase' as const }}>{groomName} & {brideName}</div>
+          <div className="mt-1" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '9px', fontWeight: 300, letterSpacing: '4px', color: '#8B7A68' }}>ARE GETTING MARRIED</div>
+        </div>
+
+        {/* 장소 */}
+        {venueName && (
+          <div className="mt-8" style={{ opacity: loaded ? 1 : 0, transition: 'opacity 0.8s 1s' }}>
+            <div style={{ fontFamily: "'Okticon', serif", fontSize: '14px', fontStyle: 'italic', color: '#5C5040', textAlign: 'center' }}>{venueName}</div>
           </div>
         )}
 
-        {/* 이름 */}
-        <div className="text-center">
-          <div style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '22px', fontWeight: 300, letterSpacing: '6px', color: bookColors.heading, lineHeight: 1.8 }}>
-            {groomName}
-          </div>
-          <div style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '22px', fontWeight: 300, letterSpacing: '6px', color: bookColors.heading, lineHeight: 1.8 }}>
-            {brideName}
-          </div>
-          <div style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '11px', color: bookColors.muted, marginTop: '16px', letterSpacing: '1px' }}>
-            {coverTitle}
-          </div>
-        </div>
+        <button onClick={(e) => { e.stopPropagation(); onNext() }} className="mt-8" style={{
+          background: 'transparent', border: '1.5px solid #3D3028',
+          padding: '12px 32px', cursor: 'pointer',
+          fontFamily: "'Pretendard', sans-serif", fontSize: '11px', letterSpacing: '4px',
+          color: '#3D3028', fontWeight: 500,
+          opacity: loaded ? 1 : 0, transition: 'opacity 0.6s 1.1s',
+        }}>
+          OPEN BOOK
+        </button>
+      </div>
+    )
+  }
 
-        {/* 하단 연도 */}
-        <div className="text-center" style={{ marginTop: '36px' }}>
-          <div style={{ width: '40px', height: '0.5px', background: bookColors.accent, margin: '0 auto 16px' }} />
-          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '12px', letterSpacing: '4px', color: bookColors.muted }}>{dateStr}</div>
+  // ── 엠보싱 (emboss) / 이미지 없음 / 기본 폴백 ──
+  const bkEmbossColors: Record<string, { bg: string; text: string; highlight: string; shadow: string; line: string }> = {
+    'dusty-blue': { bg: '#8E9EAB', text: 'rgba(255,255,255,0.5)', highlight: 'rgba(255,255,255,0.35)', shadow: 'rgba(0,0,0,0.12)', line: 'rgba(255,255,255,0.25)' },
+    'beige':      { bg: '#C2B9A7', text: 'rgba(255,255,255,0.5)', highlight: 'rgba(255,255,255,0.4)', shadow: 'rgba(0,0,0,0.1)', line: 'rgba(255,255,255,0.22)' },
+    'teal':       { bg: '#7A8B8B', text: 'rgba(255,255,255,0.55)', highlight: 'rgba(255,255,255,0.45)', shadow: 'rgba(0,0,0,0.22)', line: 'rgba(255,255,255,0.2)' },
+    'gray':       { bg: '#9BA3A6', text: 'rgba(255,255,255,0.5)', highlight: 'rgba(255,255,255,0.35)', shadow: 'rgba(0,0,0,0.15)', line: 'rgba(255,255,255,0.22)' },
+    'dark':       { bg: '#4A4A48', text: 'rgba(212,185,150,0.55)', highlight: 'rgba(255,235,200,0.35)', shadow: 'rgba(0,0,0,0.3)', line: 'rgba(212,185,150,0.25)' },
+  }
+  const bkEc = bkEmbossColors[data.design?.embossColor || 'teal'] || bkEmbossColors['teal']
+  const bkEmbossStyle = (size: 'sm' | 'md' | 'lg') => ({
+    color: bkEc.text,
+    textShadow: size === 'lg'
+      ? `0 2px 3px ${bkEc.highlight}, 0 -1px 2px ${bkEc.shadow}`
+      : size === 'md'
+      ? `0 1px 2px ${bkEc.highlight}, 0 -1px 1px ${bkEc.shadow}`
+      : `0 1px 1px ${bkEc.highlight}, 0 -1px 1px ${bkEc.shadow}`,
+  })
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden" style={{ background: bkEc.bg }}>
+      {/* 상단 장식선 */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 transition-all duration-[2000ms]" style={{ width: '1px', height: loaded ? '60px' : '0px', background: bkEc.line }} />
+
+      {/* 큰 타이틀 */}
+      <div style={{ opacity: loaded ? 1 : 0, transition: 'opacity 0.8s 0.3s' }}>
+        <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '28px', fontWeight: 300, letterSpacing: '6px', lineHeight: 1.4, marginBottom: '36px', textAlign: 'center', ...bkEmbossStyle('lg') }}>
+          {coverTitle.split(' ').map((word: string, i: number) => (
+            <div key={i}>{word}</div>
+          ))}
         </div>
       </div>
-      {openButton}
+
+      {/* 이름 나란히 */}
+      <div className="text-center" style={{ opacity: loaded ? 1 : 0, transition: 'all 0.8s 0.5s', transform: loaded ? 'translateY(0)' : 'translateY(16px)' }}>
+        <div style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '15px', fontWeight: 200, letterSpacing: '6px', ...bkEmbossStyle('md') }}>
+          {groomName} <span className="essay-ampersand" style={{ fontFamily: "'Cinzel', serif", fontSize: '14px', fontStyle: 'italic' }}>&</span> {brideName}
+        </div>
+        <div className="mt-6">
+          <div style={{ width: '30px', height: '0.5px', background: bkEc.line, margin: '0 auto 12px' }} />
+          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '12px', letterSpacing: '4px', ...bkEmbossStyle('sm') }}>{dateStr}</div>
+          {venueName && (
+            <div className="mt-2" style={{ fontFamily: "'Okticon', serif", fontSize: '11px', fontStyle: 'italic', ...bkEmbossStyle('sm') }}>{venueName}</div>
+          )}
+        </div>
+      </div>
+
+      <button onClick={(e) => { e.stopPropagation(); onNext() }} className="mt-10" style={{
+        background: 'transparent', border: `1.5px solid ${bkEc.line}`,
+        padding: '12px 32px', cursor: 'pointer',
+        fontFamily: "'Pretendard', sans-serif", fontSize: '11px', letterSpacing: '4px',
+        fontWeight: 500, opacity: loaded ? 1 : 0, transition: 'opacity 0.6s 0.8s',
+        ...bkEmbossStyle('sm'),
+      }}>
+        OPEN BOOK
+      </button>
     </div>
   )
 }
@@ -3347,14 +3479,24 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
               left: calc(50% - 215px) !important; right: calc(50% - 215px) !important;
               width: 430px !important;
             }
-            .essay-book-desktop-wrapper .fixed.left-0:not(.inset-0) {
+            .essay-book-desktop-wrapper .fixed.left-0:not(.inset-0):not(.bottom-0) {
               left: calc(50% - 215px) !important;
             }
-            .essay-book-desktop-wrapper .fixed.right-0:not(.inset-0) {
+            .essay-book-desktop-wrapper .fixed.right-0:not(.inset-0):not(.bottom-0) {
               right: calc(50% - 215px) !important; left: auto !important;
+            }
+            .essay-book-desktop-wrapper .fixed.bottom-0.left-0.right-0 {
+              left: calc(50% - 215px) !important;
+              right: calc(50% - 215px) !important;
             }
             .essay-book-desktop-wrapper > button.fixed {
               right: calc(50% - 215px + 16px) !important; left: auto !important;
+            }
+            .essay-book-desktop-wrapper .bk-arrow-left {
+              left: calc(50% - 215px + 6px) !important;
+            }
+            .essay-book-desktop-wrapper .bk-arrow-right {
+              right: calc(50% - 215px + 6px) !important;
             }
           }
         `}</style>
@@ -3365,7 +3507,7 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
           </div>
         )}
         <div className={`essay-font-container theme-${themeKey}`} style={customHighlightStyle}>
-          <BookConcept data={data} invitationId={invitationId} isSample={isSample} skipIntro={isPreview} />
+          <BookConcept data={data} invitationId={invitationId} isSample={isSample} />
         </div>
         {hasBgm && <audio ref={audioRef} loop preload="auto"><source src={bgm.url} type="audio/mpeg" /></audio>}
         {hasBgm && <EssayMusicToggle audioRef={audioRef} theme={theme} />}
@@ -3374,11 +3516,29 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
     )
   }
 
+  // Desktop wrapper CSS for scroll/paper concepts (same pattern as book)
+  const desktopWrapperCSS = `
+    @media (min-width: 640px) {
+      .essay-desktop-wrapper {
+        display: flex; justify-content: center; min-height: 100vh; background: ${theme.background};
+      }
+      .essay-desktop-wrapper > .essay-font-container {
+        width: 100%; max-width: 430px; position: relative; box-shadow: 0 0 40px rgba(0,0,0,0.15);
+      }
+      .essay-desktop-wrapper > button.fixed {
+        right: calc(50% - 215px + 16px) !important; left: auto !important;
+        top: 16px !important;
+      }
+    }
+  `
+
   // Paper concept - completely different layout
   if (concept === 'paper') {
     return (
       <>
         {allCSS && <style>{allCSS}</style>}
+        <style>{desktopWrapperCSS}</style>
+        <div className="essay-desktop-wrapper">
         {!isPaid && !isPreview && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px 16px', backgroundColor: 'rgba(0,0,0,0.9)' }}>
             <span style={{ color: 'rgba(255,255,255,0.95)', fontSize: '13px', fontWeight: 500 }}>결제 후 워터마크가 제거됩니다</span>
@@ -3389,6 +3549,7 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
         </div>
         {hasBgm && <audio ref={audioRef} loop preload="auto"><source src={bgm.url} type="audio/mpeg" /></audio>}
         {hasBgm && <EssayMusicToggle audioRef={audioRef} theme={theme} />}
+        </div>
       </>
     )
   }
@@ -3397,6 +3558,8 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
   return (
     <>
       {allCSS && <style>{allCSS}</style>}
+      <style>{desktopWrapperCSS}</style>
+      <div className="essay-desktop-wrapper">
       {!isPaid && !isPreview && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px 16px', backgroundColor: 'rgba(0,0,0,0.9)' }}>
           <span style={{ color: 'rgba(255,255,255,0.95)', fontSize: '13px', fontWeight: 500 }}>결제 후 워터마크가 제거됩니다</span>
@@ -3423,6 +3586,7 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
       </div>
       {hasBgm && <audio ref={audioRef} loop preload="auto"><source src={bgm.url} type="audio/mpeg" /></audio>}
       {hasBgm && <EssayMusicToggle audioRef={audioRef} theme={theme} />}
+      </div>
     </>
   )
 }

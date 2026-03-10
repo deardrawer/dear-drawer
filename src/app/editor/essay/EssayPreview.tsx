@@ -58,25 +58,98 @@ export default function EssayPreview({ data, fullscreen }: EssayPreviewProps) {
 
   return (
     <div
-      className={`h-full ${isBook && !fullscreen ? 'essay-preview-book-container' : 'overflow-y-auto'}`}
+      className={`h-full ${!fullscreen ? (isBook ? 'essay-preview-book-container' : 'essay-preview-scroll-container') : 'overflow-y-auto'}`}
       style={{ WebkitOverflowScrolling: 'touch' }}
     >
-      {/* Book 컨셉: fixed→absolute 변환으로 사이드 패널 안에 가둠 */}
-      {isBook && !fullscreen && (
+      {/* Preview: fixed→absolute 변환 + min-h-screen→container 높이 변환 + 데스크탑 wrapper 위치 보정 */}
+      {!fullscreen && (
         <style>{`
-          .essay-preview-book-container {
-            overflow: hidden;
+          .essay-preview-book-container,
+          .essay-preview-scroll-container {
             position: relative;
             container-type: size;
           }
-          .essay-preview-book-container .fixed {
+          .essay-preview-book-container {
+            overflow: hidden;
+          }
+          .essay-preview-scroll-container {
+            overflow-y: auto;
+          }
+          .essay-preview-book-container .fixed,
+          .essay-preview-scroll-container .fixed {
             position: absolute !important;
           }
-          .essay-preview-book-container .min-h-screen {
+          .essay-preview-book-container .min-h-screen,
+          .essay-preview-scroll-container .min-h-screen {
             min-height: 100cqh !important;
           }
           .essay-preview-book-container .bk-page {
             min-height: calc(100cqh - 80px) !important;
+          }
+          /* 데스크탑 wrapper의 viewport 기준 위치 계산을 컨테이너 기준으로 리셋 */
+          .essay-preview-book-container .essay-book-desktop-wrapper {
+            display: block !important;
+            height: 100% !important;
+            min-height: 100% !important;
+            background: transparent !important;
+          }
+          .essay-preview-book-container .essay-book-desktop-wrapper > .essay-font-container {
+            width: 100% !important;
+            max-width: 100% !important;
+            height: 100% !important;
+            position: relative !important;
+            box-shadow: none !important;
+          }
+          .essay-preview-book-container.essay-preview-book-container .essay-book-desktop-wrapper .fixed.inset-0 {
+            left: 0 !important;
+            right: 0 !important;
+            top: 0 !important;
+            bottom: 0 !important;
+            width: auto !important;
+          }
+          .essay-preview-book-container.essay-preview-book-container .essay-book-desktop-wrapper .fixed.left-0:not(.inset-0) {
+            left: 0 !important;
+          }
+          .essay-preview-book-container.essay-preview-book-container .essay-book-desktop-wrapper .fixed.right-0:not(.inset-0) {
+            right: 0 !important;
+            left: auto !important;
+          }
+          .essay-preview-book-container.essay-preview-book-container .essay-book-desktop-wrapper .fixed.top-0:not(.inset-0) {
+            top: 0 !important;
+          }
+          .essay-preview-book-container.essay-preview-book-container .essay-book-desktop-wrapper .fixed.bottom-0:not(.inset-0) {
+            bottom: 0 !important;
+          }
+          .essay-preview-book-container.essay-preview-book-container .essay-book-desktop-wrapper > button.fixed {
+            right: 16px !important;
+            left: auto !important;
+          }
+          .essay-preview-book-container.essay-preview-book-container .essay-book-desktop-wrapper .bk-arrow-left {
+            left: 6px !important;
+          }
+          .essay-preview-book-container.essay-preview-book-container .essay-book-desktop-wrapper .bk-arrow-right {
+            right: 6px !important;
+            left: auto !important;
+          }
+          .essay-preview-book-container.essay-preview-book-container .essay-book-desktop-wrapper .fixed.bottom-0.left-0.right-0 {
+            left: 0 !important;
+            right: 0 !important;
+          }
+          /* scroll/paper 컨셉의 데스크탑 wrapper도 프리뷰에서는 리셋 */
+          .essay-preview-scroll-container .essay-desktop-wrapper {
+            display: block !important;
+            min-height: 100% !important;
+            background: transparent !important;
+          }
+          .essay-preview-scroll-container .essay-desktop-wrapper > .essay-font-container {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-shadow: none !important;
+          }
+          .essay-preview-scroll-container .essay-desktop-wrapper > button.fixed {
+            right: 16px !important;
+            left: auto !important;
+            top: 16px !important;
           }
         `}</style>
       )}
@@ -85,7 +158,6 @@ export default function EssayPreview({ data, fullscreen }: EssayPreviewProps) {
         content={content}
         isPaid={true}
         isPreview={true}
-        skipIntro={true}
       />
     </div>
   )

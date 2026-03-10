@@ -208,9 +208,9 @@ export default function EssayStepDesign({ data, updateData, updateNestedData, in
           </svg>
           표지 디자인
         </h3>
-        <p className="text-sm text-gray-500">커버 이미지가 표지에 어떻게 보일지 선택하세요.</p>
+        <p className="text-sm text-gray-500">표지에 적용할 디자인을 선택하세요.</p>
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           {/* 전면 이미지 */}
           <button
             onClick={() => updateNestedData('design.coverDesign', 'full')}
@@ -236,21 +236,24 @@ export default function EssayStepDesign({ data, updateData, updateNestedData, in
             )}
           </button>
 
-          {/* 센터 프레임 */}
+          {/* 스크랩북 */}
           <button
             onClick={() => updateNestedData('design.coverDesign', 'center')}
             className={`relative border rounded-xl overflow-hidden transition-all ${
               data.design.coverDesign === 'center' ? 'border-black ring-2 ring-black/20' : 'border-gray-200 hover:border-gray-300'
             }`}
           >
-            <div className="aspect-[3/4] bg-gray-50 flex flex-col items-center justify-center gap-1.5 p-3">
-              <div className="text-[5px] text-gray-400 tracking-widest">WEDDING</div>
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 border border-gray-200" />
-              <div className="text-[5px] text-gray-500">Min &amp; Seo</div>
+            <div className="aspect-[3/4] flex flex-col items-center justify-center gap-1.5 p-3" style={{ background: '#EDEBE6' }}>
+              <div className="text-[6px] italic" style={{ fontFamily: "'Georgia', serif", color: '#3D3028' }}>save the date</div>
+              <div className="relative">
+                <div style={{ position: 'absolute', top: '-3px', right: '2px', width: '14px', height: '5px', background: 'rgba(210,200,180,0.7)', transform: 'rotate(8deg)', zIndex: 2 }} />
+                <div className="w-10 h-12 bg-gradient-to-br from-gray-300 to-gray-400 border border-gray-200" />
+              </div>
+              <div className="text-[5px]" style={{ color: '#3D3028', letterSpacing: '2px' }}>Min &amp; Seo</div>
             </div>
             <div className="p-2 bg-white text-center">
-              <p className="text-[11px] font-semibold text-gray-900">센터</p>
-              <p className="text-[9px] text-gray-500 leading-tight mt-0.5">원형 프레임 중앙 배치</p>
+              <p className="text-[11px] font-semibold text-gray-900">스크랩북</p>
+              <p className="text-[9px] text-gray-500 leading-tight mt-0.5">테이프 장식 + 사진</p>
             </div>
             {data.design.coverDesign === 'center' && (
               <div className="absolute top-1.5 right-1.5 w-5 h-5 bg-black rounded-full flex items-center justify-center">
@@ -283,7 +286,62 @@ export default function EssayStepDesign({ data, updateData, updateNestedData, in
               </div>
             )}
           </button>
+
+          {/* 엠보싱 */}
+          <button
+            onClick={() => updateNestedData('design.coverDesign', 'emboss')}
+            className={`relative border rounded-xl overflow-hidden transition-all ${
+              data.design.coverDesign === 'emboss' ? 'border-black ring-2 ring-black/20' : 'border-gray-200 hover:border-gray-300'
+            }`}
+          >
+            <div className="aspect-[3/4] flex flex-col items-center justify-center gap-1.5 p-3" style={{ background: '#7A8B8B' }}>
+              <div className="text-[5px] tracking-widest" style={{ color: 'rgba(255,255,255,0.5)', textShadow: '0 1px 2px rgba(255,255,255,0.4), 0 -1px 1px rgba(0,0,0,0.2)' }}>WEDDING</div>
+              <div className="text-[10px] font-light" style={{ color: 'rgba(255,255,255,0.55)', textShadow: '0 2px 3px rgba(255,255,255,0.45), 0 -1px 2px rgba(0,0,0,0.22)' }}>Min & Seo</div>
+              <div className="w-4 h-px" style={{ background: 'rgba(255,255,255,0.2)' }} />
+              <div className="text-[5px]" style={{ color: 'rgba(255,255,255,0.5)', textShadow: '0 1px 2px rgba(255,255,255,0.35), 0 -1px 1px rgba(0,0,0,0.15)' }}>2026.05.23</div>
+            </div>
+            <div className="p-2 bg-white text-center">
+              <p className="text-[11px] font-semibold text-gray-900">엠보싱</p>
+              <p className="text-[9px] text-gray-500 leading-tight mt-0.5">단색 배경에 양각 효과</p>
+              <p className="text-[8px] text-amber-600 leading-tight mt-0.5">* 사진 없는 표지</p>
+            </div>
+            {data.design.coverDesign === 'emboss' && (
+              <div className="absolute top-1.5 right-1.5 w-5 h-5 bg-black rounded-full flex items-center justify-center">
+                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+              </div>
+            )}
+          </button>
         </div>
+
+        {/* 엠보싱 색상 선택 */}
+        {data.design.coverDesign === 'emboss' && (
+          <div className="space-y-2 mt-3">
+            <p className="text-sm font-medium text-gray-700">엠보싱 배경 색상</p>
+            <div className="flex gap-2">
+              {[
+                { id: 'dusty-blue', color: '#8E9EAB', label: 'Dusty Blue' },
+                { id: 'beige', color: '#C2B9A7', label: 'Beige' },
+                { id: 'teal', color: '#7A8B8B', label: 'Teal' },
+                { id: 'gray', color: '#9BA3A6', label: 'Gray' },
+                { id: 'dark', color: '#4A4A48', label: 'Dark' },
+              ].map((opt) => (
+                <button
+                  key={opt.id}
+                  onClick={() => updateNestedData('design.embossColor', opt.id)}
+                  className={`relative w-10 h-10 rounded-full border-2 transition-all ${
+                    (data.design.embossColor || 'teal') === opt.id ? 'border-black ring-2 ring-black/20 scale-110' : 'border-gray-200 hover:border-gray-400'
+                  }`}
+                  style={{ background: opt.color }}
+                  title={opt.label}
+                >
+                  {(data.design.embossColor || 'teal') === opt.id && (
+                    <svg className="w-4 h-4 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
 
       {/* 커버 타이틀 */}

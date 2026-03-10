@@ -546,7 +546,7 @@ export const exhibitSampleContent = {
 // ESSAY 템플릿 샘플 데이터 (러브스토리 모드)
 export const essayStorySampleContent = {
   contentMode: 'story' as const,
-  colorTheme: 'essay-ivory' as const,
+  colorTheme: 'essay-mono' as const,
   fontStyle: 'modern' as const,
   bgm: { enabled: true, url: '/api/r2/audio/marigold.mp3', autoplay: true },
   groom: {

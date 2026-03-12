@@ -1835,6 +1835,15 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
   const touchStartX = useRef(0)
   const touchStartY = useRef(0)
   const containerRef = useRef<HTMLDivElement>(null)
+
+  // 슬라이드 네비게이션 상태
+  const [dragOffset, setDragOffset] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
+  const [isSnapping, setIsSnapping] = useState(false)
+  const dragDirectionRef = useRef<'none' | 'horizontal' | 'vertical'>('none')
+  const containerWidthRef = useRef(0)
+  const dragStartTimeRef = useRef(0)
+  const scrollableRef = useRef<HTMLDivElement>(null)
   const contentMode = data.contentMode || 'story'
   const isEditorial = true
 
@@ -1917,63 +1926,152 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
     }
   }, [showBonus, pendingBonusNav, currentPage, goToPage])
 
-  // 인터랙티브 요소 판별
-  const isInteractiveTarget = useCallback((target: EventTarget | null) => {
-    if (!target || !(target instanceof HTMLElement)) return false
-    return !!target.closest('a, button, input, textarea, select, [role="button"]')
-  }, [])
-
   // 탭 오버레이 비활성화 페이지 (텍스트 입력이 있는 폼)
   const isFormPage = useCallback(() => {
     const p = pages[currentPage]
     return p?.type === 'guestbook' || p?.type === 'rsvp'
   }, [currentPage, pages])
 
-  // 탭/스와이프 통합 처리 (터치)
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX
-    touchStartY.current = e.touches[0].clientY
-  }, [])
+  // 슬라이드 페이지 전환 (스냅 애니메이션)
+  const slideTo = useCallback((direction: 'next' | 'prev' | 'back') => {
+    const w = containerWidthRef.current || window.innerWidth
+    setIsSnapping(true)
+    if (direction === 'back') {
+      setDragOffset(0)
+      setTimeout(() => {
+        setIsSnapping(false)
+        setIsDragging(false)
+      }, 300)
+    } else {
+      setDragOffset(direction === 'next' ? -w : w)
+      setTimeout(() => {
+        setIsSnapping(false)
+        setIsDragging(false)
+        setDragOffset(0)
+        setCurrentPage(prev => direction === 'next' ? Math.min(prev + 1, totalPages - 1) : Math.max(prev - 1, 0))
+      }, 300)
+    }
+  }, [totalPages])
 
-  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-    if (isFormPage()) return
-    if (isInteractiveTarget(e.target)) return
+  // 네이티브 터치 이벤트 리스너 등록 (passive: false 필요)
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
 
-    const endX = e.changedTouches[0].clientX
-    const endY = e.changedTouches[0].clientY
-    const dx = endX - touchStartX.current
-    const dy = endY - touchStartY.current
+    let startX = 0
+    let startY = 0
+    let startTime = 0
+    let locked: 'none' | 'horizontal' | 'vertical' = 'none'
+    let dragging = false
 
-    // 스와이프: 가로 이동 > 50px
-    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
-      if (dx < 0) nextPage()
-      else prevPage()
-      return
+    const onTouchStart = (e: TouchEvent) => {
+      if (isSnapping) return
+      // 폼 페이지면 터치 핸들러 스킵
+      const p = pages[currentPage]
+      if (p?.type === 'guestbook' || p?.type === 'rsvp') return
+      // 인터랙티브 요소 클릭은 스킵
+      if (e.target instanceof HTMLElement && e.target.closest('a, button, input, textarea, select, [role="button"]')) return
+
+      startX = e.touches[0].clientX
+      startY = e.touches[0].clientY
+      startTime = Date.now()
+      locked = 'none'
+      dragging = false
+      containerWidthRef.current = el.getBoundingClientRect().width
+      touchStartX.current = startX
+      touchStartY.current = startY
+      dragStartTimeRef.current = startTime
+      dragDirectionRef.current = 'none'
     }
 
-    // 탭: 거의 이동 없음 (< 10px)
-    if (Math.abs(dx) < 10 && Math.abs(dy) < 10) {
-      const rect = containerRef.current?.getBoundingClientRect()
-      if (!rect) return
-      const x = touchStartX.current - rect.left
-      const w = rect.width
-      if (x < w * 0.35) prevPage()
-      else if (x > w * 0.65) nextPage()
-      // 가운데는 무시 (스크롤 등 자연스러운 동작 허용)
-    }
-  }, [nextPage, prevPage, isFormPage, isInteractiveTarget])
+    const onTouchMove = (e: TouchEvent) => {
+      if (isSnapping) return
+      const p = pages[currentPage]
+      if (p?.type === 'guestbook' || p?.type === 'rsvp') return
 
-  // 마우스 클릭 (데스크톱)
-  const handleTap = useCallback((e: React.MouseEvent) => {
-    if (isFormPage()) return
-    if (isInteractiveTarget(e.target)) return
-    const rect = containerRef.current?.getBoundingClientRect()
-    if (!rect) return
-    const x = e.clientX - rect.left
-    const w = rect.width
-    if (x < w * 0.35) prevPage()
-    else if (x > w * 0.65) nextPage()
-  }, [nextPage, prevPage, isFormPage, isInteractiveTarget])
+      const cx = e.touches[0].clientX
+      const cy = e.touches[0].clientY
+      const dx = cx - startX
+      const dy = cy - startY
+
+      // 방향 잠금 결정 (10px 이상 이동 후)
+      if (locked === 'none') {
+        if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+          locked = Math.abs(dx) > Math.abs(dy) ? 'horizontal' : 'vertical'
+          dragDirectionRef.current = locked
+        } else {
+          return
+        }
+      }
+
+      if (locked === 'vertical') return // 세로 스크롤 허용
+
+      // 수평 드래그 - 기본 스크롤 방지
+      e.preventDefault()
+
+      if (!dragging) {
+        dragging = true
+        setIsDragging(true)
+      }
+
+      // 첫/마지막 페이지 고무줄 효과
+      let offset = dx
+      if ((currentPage === 0 && dx > 0) || (currentPage >= totalPages - 1 && dx < 0)) {
+        offset = dx * 0.3
+      }
+
+      setDragOffset(offset)
+    }
+
+    const onTouchEnd = (e: TouchEvent) => {
+      const p = pages[currentPage]
+      if (p?.type === 'guestbook' || p?.type === 'rsvp') return
+
+      const endX = e.changedTouches[0].clientX
+      const endY = e.changedTouches[0].clientY
+      const dx = endX - startX
+      const dy = endY - startY
+      const elapsed = Date.now() - startTime
+      const velocity = Math.abs(dx) / (elapsed || 1) // px/ms
+
+      if (locked === 'horizontal' && dragging) {
+        const w = containerWidthRef.current || window.innerWidth
+        const threshold = w * 0.2
+
+        if ((Math.abs(dx) > threshold || velocity > 0.3) && !(currentPage === 0 && dx > 0) && !(currentPage >= totalPages - 1 && dx < 0)) {
+          slideTo(dx < 0 ? 'next' : 'prev')
+        } else {
+          slideTo('back')
+        }
+      } else if (!dragging) {
+        // 탭: 거의 이동 없음 (< 10px)
+        if (Math.abs(dx) < 10 && Math.abs(dy) < 10) {
+          if (e.target instanceof HTMLElement && e.target.closest('a, button, input, textarea, select, [role="button"]')) return
+          const rect = el.getBoundingClientRect()
+          const x = startX - rect.left
+          const w = rect.width
+          if (x < w * 0.35) prevPage()
+          else if (x > w * 0.65) nextPage()
+        }
+        setIsDragging(false)
+        setDragOffset(0)
+      }
+
+      locked = 'none'
+      dragging = false
+      dragDirectionRef.current = 'none'
+    }
+
+    el.addEventListener('touchstart', onTouchStart, { passive: true })
+    el.addEventListener('touchmove', onTouchMove, { passive: false })
+    el.addEventListener('touchend', onTouchEnd, { passive: true })
+
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart)
+      el.removeEventListener('touchmove', onTouchMove)
+      el.removeEventListener('touchend', onTouchEnd)
+    }
+  }, [currentPage, totalPages, isSnapping, pages, nextPage, prevPage, slideTo])
 
   // 키보드
   useEffect(() => {
@@ -2002,6 +2100,36 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
   }
   const activeColors = isQuoteDark ? bookQuoteDarkColors : isInfoPage ? bookInfoColors : bookColors
 
+  // 페이지 콘텐츠 렌더 헬퍼 (현재+인접 페이지에서 재사용)
+  const renderPageContent = useCallback((p: BookPage | undefined) => {
+    if (!p) return null
+    switch (p.type) {
+      case 'cover': return <BookCover data={data} onNext={nextPage} />
+      case 'intro': return <BookIntro data={data} />
+      case 'toc': return <BookToc pages={pages} currentPage={currentPage} onGoTo={(i) => { setShowToc(false); goToPage(i) }} colorTheme={data.colorTheme} />
+      case 'greeting': return <BookGreeting data={data} />
+      case 'chapter':
+        if (p.data?.chapter) return <BookChapter chapter={p.data.chapter} index={p.data.index} ed={isEditorial} colorTheme={data.colorTheme} />
+        if (p.data?.interview) return <BookInterview qa={p.data.interview} index={p.data.index} ed={isEditorial} colorTheme={data.colorTheme} />
+        return null
+      case 'quote': return <BookQuote data={data} ed={isEditorial} />
+      case 'info-intro': return <BookInfoIntro data={data} />
+      case 'wedding-date': return <BookWeddingDate data={data} />
+      case 'wedding-venue': return <BookWeddingVenue data={data} />
+      case 'guidance': return <BookGuidance data={data} />
+      case 'contacts': return <BookContacts data={data} />
+      case 'bank': return <BookBank data={data} />
+      case 'thankyou': return <BookThankYou data={data} />
+      case 'guestbook': return <BookGuestbook data={data} invitationId={invitationId} isSample={isSample} />
+      case 'rsvp': return <BookRsvp data={data} invitationId={invitationId} />
+      case 'end': return <BookEnd data={data} onRestart={() => goToPage(0)} showBonus={showBonus} onShowBonus={hasBonusContent ? () => { setShowBonus(true); setPendingBonusNav(true) } : undefined} />
+      case 'bonus-intro': return <BookBonusIntro data={data} />
+      case 'bonus-interview': return p.data?.bonusInterview ? <BookBonusInterview interview={p.data.bonusInterview} index={p.data.index} total={p.data.total} colorTheme={data.colorTheme} /> : null
+      case 'bonus-end': return <BookBonusEnd data={data} onRestart={() => goToPage(0)} />
+      default: return null
+    }
+  }, [data, invitationId, isSample, currentPage, pages, nextPage, goToPage, showBonus, hasBonusContent, isEditorial])
+
   return (
     <div
       ref={containerRef}
@@ -2029,78 +2157,80 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
         <>
           <div
             className="fixed left-0 z-30"
-            style={{ top: '44px', bottom: '36px', width: '28px' }}
+            style={{ top: '44px', bottom: '36px', width: '44px' }}
             onClick={(e) => { e.stopPropagation(); prevPage() }}
-            onTouchEnd={(e) => {
-              const touch = e.changedTouches[0]
-              const dx = Math.abs(touch.clientX - touchStartX.current)
-              const dy = Math.abs(touch.clientY - touchStartY.current)
-              if (dx < 15 && dy < 15) { e.stopPropagation(); prevPage() }
-            }}
-            onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; touchStartY.current = e.touches[0].clientY }}
           />
           <div
             className="fixed right-0 z-30"
-            style={{ top: '44px', bottom: '36px', width: '28px' }}
+            style={{ top: '44px', bottom: '36px', width: '44px' }}
             onClick={(e) => { e.stopPropagation(); nextPage() }}
-            onTouchEnd={(e) => {
-              const touch = e.changedTouches[0]
-              const dx = Math.abs(touch.clientX - touchStartX.current)
-              const dy = Math.abs(touch.clientY - touchStartY.current)
-              if (dx < 15 && dy < 15) { e.stopPropagation(); nextPage() }
-            }}
-            onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; touchStartY.current = e.touches[0].clientY }}
           />
         </>
       )}
 
-      {/* 메인 콘텐츠 영역 */}
-      <div className="fixed inset-0 overflow-y-auto" style={{
+      {/* 메인 콘텐츠 영역 - 슬라이드 방식 */}
+      <div className="fixed inset-0 overflow-hidden" style={{
         paddingTop: currentPage > 0 ? '44px' : '0',
         paddingBottom: currentPage > 0 ? '36px' : '0',
       }}>
-        <div key={currentPage} className="book-page-content" style={{
-          opacity: pageTransition !== 'none' ? 0 : 1,
-          transform: pageTransition === 'next' ? 'translateX(-16px) scale(0.98)' : pageTransition === 'prev' ? 'translateX(16px) scale(0.98)' : 'translateX(0) scale(1)',
-          transition: 'opacity 0.25s ease, transform 0.25s ease',
-          minHeight: '100%',
-        }}>
-          {page?.type === 'cover' && <BookCover data={data} onNext={nextPage} />}
-          {page?.type === 'intro' && <BookIntro data={data} />}
-          {page?.type === 'toc' && <BookToc pages={pages} currentPage={currentPage} onGoTo={(i) => { setShowToc(false); goToPage(i) }} colorTheme={data.colorTheme} />}
-          {page?.type === 'greeting' && <BookGreeting data={data} />}
-          {page?.type === 'chapter' && page.data?.chapter && <BookChapter chapter={page.data.chapter} index={page.data.index} ed={isEditorial} colorTheme={data.colorTheme} />}
-          {page?.type === 'chapter' && page.data?.interview && <BookInterview qa={page.data.interview} index={page.data.index} ed={isEditorial} colorTheme={data.colorTheme} />}
-          {page?.type === 'quote' && <BookQuote data={data} ed={isEditorial} />}
-          {page?.type === 'info-intro' && <BookInfoIntro data={data} />}
-          {page?.type === 'wedding-date' && <BookWeddingDate data={data} />}
-          {page?.type === 'wedding-venue' && <BookWeddingVenue data={data} />}
-          {page?.type === 'guidance' && <BookGuidance data={data} />}
-          {page?.type === 'contacts' && <BookContacts data={data} />}
-          {page?.type === 'bank' && <BookBank data={data} />}
-          {page?.type === 'thankyou' && <BookThankYou data={data} />}
-          {page?.type === 'guestbook' && <BookGuestbook data={data} invitationId={invitationId} isSample={isSample} />}
-          {page?.type === 'rsvp' && <BookRsvp data={data} invitationId={invitationId} />}
-          {page?.type === 'end' && <BookEnd data={data} onRestart={() => goToPage(0)} showBonus={showBonus} onShowBonus={hasBonusContent ? () => { setShowBonus(true); setPendingBonusNav(true) } : undefined} />}
-          {page?.type === 'bonus-intro' && <BookBonusIntro data={data} />}
-          {page?.type === 'bonus-interview' && page.data?.bonusInterview && <BookBonusInterview interview={page.data.bonusInterview} index={page.data.index} total={page.data.total} colorTheme={data.colorTheme} />}
-          {page?.type === 'bonus-end' && <BookBonusEnd data={data} onRestart={() => goToPage(0)} />}
+        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+          {/* 이전 페이지 (드래그 중에만 렌더) */}
+          {isDragging && currentPage > 0 && (
+            <div style={{
+              position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', overflowY: 'auto',
+              transform: `translateX(${-((containerWidthRef.current || window.innerWidth)) + dragOffset}px)`,
+              transition: isSnapping ? 'transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)' : 'none',
+              willChange: 'transform',
+            }}>
+              <div className="book-page-content" style={{ minHeight: '100%' }}>
+                {renderPageContent(pages[currentPage - 1])}
+              </div>
+            </div>
+          )}
+
+          {/* 현재 페이지 */}
+          <div ref={scrollableRef} style={{
+            position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+            overflowY: (isDragging || isSnapping) ? 'hidden' : 'auto',
+            transform: (isDragging || isSnapping) ? `translateX(${dragOffset}px)` : (pageTransition !== 'none' ? (pageTransition === 'next' ? 'translateX(-16px) scale(0.98)' : 'translateX(16px) scale(0.98)') : 'none'),
+            opacity: pageTransition !== 'none' ? 0 : 1,
+            transition: isSnapping ? 'transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)' : (pageTransition !== 'none' ? 'opacity 0.25s ease, transform 0.25s ease' : 'none'),
+            willChange: (isDragging || isSnapping) ? 'transform' : 'auto',
+          }}>
+            <div key={currentPage} className="book-page-content" style={{ minHeight: '100%' }}>
+              {renderPageContent(page)}
+            </div>
+          </div>
+
+          {/* 다음 페이지 (드래그 중에만 렌더) */}
+          {isDragging && currentPage < totalPages - 1 && (
+            <div style={{
+              position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', overflowY: 'auto',
+              transform: `translateX(${(containerWidthRef.current || window.innerWidth) + dragOffset}px)`,
+              transition: isSnapping ? 'transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)' : 'none',
+              willChange: 'transform',
+            }}>
+              <div className="book-page-content" style={{ minHeight: '100%' }}>
+                {renderPageContent(pages[currentPage + 1])}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
       {/* 좌우 네비게이션 버튼 (전자책 스타일 - 화면 중앙 양옆) */}
-      {currentPage > 0 && (
+      {currentPage > 0 && !isDragging && (
         <>
           {currentPage > 0 && (
             <button
               className="fixed z-40 bk-arrow-left"
               onClick={(e) => { e.stopPropagation(); prevPage() }}
-              style={{ left: '6px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', padding: '12px 4px', opacity: 0.3, transition: 'opacity 0.2s' }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.6' }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.3' }}
+              style={{ left: '4px', top: '50%', transform: 'translateY(-50%)', background: `${activeColors.pageBg}99`, backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', border: 'none', borderRadius: '8px', cursor: 'pointer', padding: '20px 10px', opacity: 0.5, transition: 'opacity 0.2s' }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.8' }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.5' }}
             >
-              <svg width="10" height="20" viewBox="0 0 10 20" fill="none" stroke={activeColors.toolbarText} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="8,1 2,10 8,19" />
+              <svg width="14" height="24" viewBox="0 0 14 24" fill="none" stroke={activeColors.toolbarText} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="11,2 3,12 11,22" />
               </svg>
             </button>
           )}
@@ -2108,12 +2238,12 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
             <button
               className="fixed z-40 bk-arrow-right"
               onClick={(e) => { e.stopPropagation(); nextPage() }}
-              style={{ right: '6px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', padding: '12px 4px', opacity: 0.3, transition: 'opacity 0.2s' }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.6' }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.3' }}
+              style={{ right: '4px', top: '50%', transform: 'translateY(-50%)', background: `${activeColors.pageBg}99`, backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', border: 'none', borderRadius: '8px', cursor: 'pointer', padding: '20px 10px', opacity: 0.5, transition: 'opacity 0.2s' }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.8' }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.5' }}
             >
-              <svg width="10" height="20" viewBox="0 0 10 20" fill="none" stroke={activeColors.toolbarText} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="2,1 8,10 2,19" />
+              <svg width="14" height="24" viewBox="0 0 14 24" fill="none" stroke={activeColors.toolbarText} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="3,2 11,12 3,22" />
               </svg>
             </button>
           )}

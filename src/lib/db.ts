@@ -1207,10 +1207,10 @@ export async function getAllInvitationsForAdmin(): Promise<InvitationWithDeletio
   });
 }
 
-// 삭제 예정인 청첩장 조회
+// 삭제 예정인 청첩장 조회 (결제완료 청첩장은 제외)
 export async function getInvitationsScheduledForDeletion(): Promise<InvitationWithDeletionInfo[]> {
   const all = await getAllInvitationsForAdmin();
-  return all.filter((inv) => inv.days_until_deletion <= 0);
+  return all.filter((inv) => inv.days_until_deletion <= 0 && !inv.is_paid);
 }
 
 // 청첩장 강제 삭제 (관련 데이터 포함)
@@ -1260,6 +1260,7 @@ export interface AdminStats {
   total_invitations: number;
   published_invitations: number;
   unpublished_invitations: number;
+  paid_invitations: number;
   expiring_soon: number;
   total_users: number;
 }
@@ -1267,9 +1268,10 @@ export interface AdminStats {
 export async function getAdminStats(): Promise<AdminStats> {
   const db = await getDB();
 
-  const [totalResult, publishedResult] = await Promise.all([
+  const [totalResult, publishedResult, paidResult] = await Promise.all([
     db.prepare("SELECT COUNT(*) as count FROM invitations").first<{ count: number }>(),
     db.prepare("SELECT COUNT(*) as count FROM invitations WHERE is_published = 1").first<{ count: number }>(),
+    db.prepare("SELECT COUNT(*) as count FROM invitations WHERE is_paid = 1").first<{ count: number }>(),
   ]);
 
   // users 테이블이 없을 수 있으므로 별도 처리
@@ -1282,12 +1284,14 @@ export async function getAdminStats(): Promise<AdminStats> {
   }
 
   const allInvitations = await getAllInvitationsForAdmin();
-  const expiringSoon = allInvitations.filter((inv) => inv.days_until_deletion <= 7 && inv.days_until_deletion > 0).length;
+  // 결제완료 청첩장은 삭제 임박 카운트에서 제외
+  const expiringSoon = allInvitations.filter((inv) => inv.days_until_deletion <= 7 && inv.days_until_deletion > 0 && !inv.is_paid).length;
 
   return {
     total_invitations: totalResult?.count || 0,
     published_invitations: publishedResult?.count || 0,
     unpublished_invitations: (totalResult?.count || 0) - (publishedResult?.count || 0),
+    paid_invitations: paidResult?.count || 0,
     expiring_soon: expiringSoon,
     total_users: usersCount,
   };

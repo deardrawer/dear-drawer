@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
-import { uploadImage, UploadResult, isBase64, isUrl } from '@/lib/imageUpload'
+import { useState, useRef, useCallback, useMemo } from 'react'
+import { uploadImage, uploadImages, UploadResult, isBase64, isUrl } from '@/lib/imageUpload'
 import { Button } from '@/components/ui/button'
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, useSortable, rectSortingStrategy, arrayMove } from '@dnd-kit/sortable'
@@ -243,7 +243,86 @@ function SortableImageItem({
 }
 
 /**
- * 다중 이미지 업로더
+ * 업로드 큐 아이템
+ */
+interface UploadQueueItem {
+  localPreviewUrl: string
+  status: 'uploading' | 'complete' | 'error'
+  progress: number
+  resultUrl?: string
+  error?: string
+  file: File
+}
+
+/**
+ * 업로드 중인 이미지의 프리뷰 + 진행률 오버레이
+ */
+function UploadingImageItem({
+  item,
+  aspectRatio,
+  itemClassName,
+  onRetry,
+}: {
+  item: UploadQueueItem
+  aspectRatio: string
+  itemClassName: string
+  onRetry: () => void
+}) {
+  return (
+    <div className={`relative ${itemClassName}`}>
+      <div className={`relative overflow-hidden rounded-lg border-2 border-dashed border-gray-200 ${aspectRatio}`}>
+        <img
+          src={item.localPreviewUrl}
+          alt="Uploading"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        {/* 업로드 중 오버레이 */}
+        {item.status === 'uploading' && (
+          <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center">
+            <div className="relative w-10 h-10">
+              <svg className="w-10 h-10 -rotate-90" viewBox="0 0 36 36">
+                <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="3" />
+                <circle
+                  cx="18" cy="18" r="15" fill="none" stroke="white" strokeWidth="3"
+                  strokeDasharray={`${item.progress * 0.94} 100`}
+                  strokeLinecap="round"
+                />
+              </svg>
+              <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white">
+                {item.progress}%
+              </span>
+            </div>
+          </div>
+        )}
+        {/* 완료 오버레이 */}
+        {item.status === 'complete' && (
+          <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+          </div>
+        )}
+        {/* 에러 오버레이 */}
+        {item.status === 'error' && (
+          <div
+            className="absolute inset-0 bg-red-500/60 flex flex-col items-center justify-center cursor-pointer"
+            onClick={onRetry}
+          >
+            <svg className="w-6 h-6 text-white mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span className="text-[10px] text-white font-medium">재시도</span>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/**
+ * 다중 이미지 업로더 (배치 업로드 지원)
  */
 interface MultiImageUploaderProps {
   images: string[]
@@ -272,17 +351,22 @@ export function MultiImageUploader({
   disabled = false,
   sortable = false,
 }: MultiImageUploaderProps) {
+  const [uploadQueue, setUploadQueue] = useState<UploadQueueItem[]>([])
+  const [overLimitMsg, setOverLimitMsg] = useState<string | null>(null)
+  const batchInputRef = useRef<HTMLInputElement>(null)
+  // 최신 images를 콜백에서 참조하기 위한 ref
+  const imagesRef = useRef(images)
+  imagesRef.current = images
+  // 완료된 URL을 누적하기 위한 ref
+  const completedUrlsRef = useRef<string[]>([])
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 8 },
     })
   )
 
-  const handleAdd = (url: string) => {
-    if (images.length < maxImages) {
-      onChange([...images, url])
-    }
-  }
+  const isUploading = uploadQueue.some(item => item.status === 'uploading')
 
   const handleChange = (index: number, url: string) => {
     const newImages = [...images]
@@ -312,8 +396,186 @@ export function MultiImageUploader({
     }
   }
 
-  const canAdd = images.length < maxImages
-  const sortableIds = images.map((img, i) => `${img}-${i}`)
+  // 배치 파일 선택 핸들러
+  const handleBatchSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileList = e.target.files
+    if (!fileList || fileList.length === 0) return
+
+    // FileList는 live DOM 객체이므로 input 초기화 전에 Array로 변환해야 함
+    let files = Array.from(fileList)
+
+    // input 초기화 (같은 파일 재선택 가능하도록)
+    if (batchInputRef.current) {
+      batchInputRef.current.value = ''
+    }
+
+    const available = maxImages - imagesRef.current.length
+    if (available <= 0) return
+
+    // maxImages 초과 시 잘라냄
+    if (files.length > available) {
+      setOverLimitMsg(`최대 ${maxImages}장까지 가능합니다. ${files.length}장 중 ${available}장만 업로드합니다.`)
+      setTimeout(() => setOverLimitMsg(null), 4000)
+      files = files.slice(0, available)
+    }
+
+    // 완료된 URL 초기화
+    completedUrlsRef.current = []
+
+    // 큐 아이템 초기화
+    const queueItems: UploadQueueItem[] = files.map(file => ({
+      localPreviewUrl: '',
+      status: 'uploading' as const,
+      progress: 0,
+      file,
+    }))
+    setUploadQueue(queueItems)
+
+    await uploadImages(files, {
+      invitationId,
+      maxConcurrent: 3,
+      onFileStart: (index, previewUrl) => {
+        setUploadQueue(prev => {
+          const next = [...prev]
+          if (next[index]) {
+            next[index] = { ...next[index], localPreviewUrl: previewUrl }
+          }
+          return next
+        })
+      },
+      onFileProgress: (index, progress) => {
+        setUploadQueue(prev => {
+          const next = [...prev]
+          if (next[index]) {
+            next[index] = { ...next[index], progress }
+          }
+          return next
+        })
+      },
+      onFileComplete: (index, result) => {
+        setUploadQueue(prev => {
+          const next = [...prev]
+          if (next[index]) {
+            next[index] = { ...next[index], status: 'complete', progress: 100, resultUrl: result.webUrl }
+          }
+          return next
+        })
+        // 완료된 URL 누적
+        if (result.webUrl) {
+          completedUrlsRef.current.push(result.webUrl)
+        }
+      },
+      onFileError: (index, error) => {
+        setUploadQueue(prev => {
+          const next = [...prev]
+          if (next[index]) {
+            next[index] = { ...next[index], status: 'error', error }
+          }
+          return next
+        })
+      },
+    })
+
+    // 모든 업로드 완료 → images에 반영
+    const successUrls = completedUrlsRef.current
+    if (successUrls.length > 0) {
+      onChange([...imagesRef.current, ...successUrls])
+    }
+
+    // 에러가 있는 아이템만 남기고 큐 정리
+    setUploadQueue(prev => prev.filter(item => item.status === 'error'))
+  }, [invitationId, maxImages, onChange])
+
+  // 실패한 아이템 재시도
+  const handleRetry = useCallback(async (queueIndex: number) => {
+    const item = uploadQueue[queueIndex]
+    if (!item || item.status !== 'error') return
+
+    setUploadQueue(prev => {
+      const next = [...prev]
+      next[queueIndex] = { ...next[queueIndex], status: 'uploading', progress: 0, error: undefined }
+      return next
+    })
+
+    const result = await uploadImage(item.file, {
+      invitationId,
+      onProgress: (progress) => {
+        setUploadQueue(prev => {
+          const next = [...prev]
+          if (next[queueIndex]) {
+            next[queueIndex] = { ...next[queueIndex], progress }
+          }
+          return next
+        })
+      },
+    })
+
+    if (result.success && result.webUrl) {
+      setUploadQueue(prev => prev.filter((_, i) => i !== queueIndex))
+      onChange([...imagesRef.current, result.webUrl])
+    } else {
+      setUploadQueue(prev => {
+        const next = [...prev]
+        if (next[queueIndex]) {
+          next[queueIndex] = { ...next[queueIndex], status: 'error', error: result.error || '업로드 실패' }
+        }
+        return next
+      })
+    }
+  }, [uploadQueue, invitationId, onChange])
+
+  const canAdd = images.length < maxImages && !isUploading
+  const sortableIds = useMemo(() => images.map((img, i) => `${img}-${i}`), [images])
+
+  // 배치 추가 버튼
+  const addButton = canAdd ? (
+    <div className={`relative ${itemClassName}`}>
+      <input
+        ref={batchInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        multiple
+        onChange={handleBatchSelect}
+        className="hidden"
+        disabled={disabled || isUploading}
+      />
+      <div
+        onClick={() => !disabled && !isUploading && batchInputRef.current?.click()}
+        className={`
+          relative overflow-hidden rounded-lg border-2 border-dashed
+          transition-all cursor-pointer border-gray-300 hover:border-gray-400
+          ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+          ${aspectRatio}
+        `}
+      >
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
+          <svg className="w-7 h-7 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+          </svg>
+          <span className="text-[11px] text-center px-1 font-medium">{placeholder}</span>
+          <span className="text-[9px] text-gray-300 mt-0.5">여러 장 선택 가능</span>
+        </div>
+      </div>
+    </div>
+  ) : null
+
+  // 업로드 중인 아이템 렌더링
+  const uploadingItems = uploadQueue.map((item, idx) => (
+    <UploadingImageItem
+      key={`uploading-${idx}`}
+      item={item}
+      aspectRatio={aspectRatio}
+      itemClassName={itemClassName}
+      onRetry={() => handleRetry(idx)}
+    />
+  ))
+
+  // 초과 알림
+  const limitNotice = overLimitMsg ? (
+    <div className="col-span-3 text-center py-1.5 px-2 bg-amber-50 border border-amber-200 rounded-md">
+      <span className="text-[11px] text-amber-700">{overLimitMsg}</span>
+    </div>
+  ) : null
 
   if (sortable && images.length > 1) {
     return (
@@ -334,17 +596,9 @@ export function MultiImageUploader({
                 disabled={disabled}
               />
             ))}
-            {canAdd && (
-              <ImageUploader
-                value=""
-                onChange={handleAdd}
-                invitationId={invitationId}
-                placeholder={placeholder}
-                aspectRatio={aspectRatio}
-                className={itemClassName}
-                disabled={disabled}
-              />
-            )}
+            {uploadingItems}
+            {addButton}
+            {limitNotice}
           </div>
         </SortableContext>
       </DndContext>
@@ -365,17 +619,9 @@ export function MultiImageUploader({
           disabled={disabled}
         />
       ))}
-      {canAdd && (
-        <ImageUploader
-          value=""
-          onChange={handleAdd}
-          invitationId={invitationId}
-          placeholder={placeholder}
-          aspectRatio={aspectRatio}
-          className={itemClassName}
-          disabled={disabled}
-        />
-      )}
+      {uploadingItems}
+      {addButton}
+      {limitNotice}
     </div>
   )
 }

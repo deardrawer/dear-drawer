@@ -11,6 +11,7 @@ interface Invitation {
   groom_name: string | null
   bride_name: string | null
   wedding_date: string | null
+  is_paid: number
   is_published: number
   created_at: string
   deletion_date: string
@@ -22,6 +23,7 @@ interface Stats {
   total_invitations: number
   published_invitations: number
   unpublished_invitations: number
+  paid_invitations: number
   expiring_soon: number
   total_users: number
 }
@@ -53,7 +55,7 @@ export default function AdminPage() {
   // Invitations state
   const [invitations, setInvitations] = useState<Invitation[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
-  const [filter, setFilter] = useState<'all' | 'incomplete' | 'expiring'>('all')
+  const [filter, setFilter] = useState<'all' | 'incomplete' | 'expiring' | 'paid'>('all')
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
 
   // Payments state
@@ -259,7 +261,8 @@ export default function AdminPage() {
   // ===== Computed =====
   const filteredInvitations = invitations.filter((inv) => {
     if (filter === 'incomplete') return !inv.is_published
-    if (filter === 'expiring') return inv.days_until_deletion <= 7
+    if (filter === 'expiring') return inv.days_until_deletion <= 7 && !inv.is_paid
+    if (filter === 'paid') return inv.is_paid === 1
     return true
   })
 
@@ -393,9 +396,10 @@ export default function AdminPage() {
           <>
             {/* Stats Cards */}
             {stats && (
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+              <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
                 {[
                   { label: '전체 청첩장', value: stats.total_invitations, color: '#2C2C2C' },
+                  { label: '결제완료', value: stats.paid_invitations, color: '#2563EB' },
                   { label: '완성', value: stats.published_invitations, color: '#4CAF50' },
                   { label: '미완성', value: stats.unpublished_invitations, color: '#FF9800' },
                   { label: '7일내 삭제', value: stats.expiring_soon, color: '#DC2626' },
@@ -421,6 +425,7 @@ export default function AdminPage() {
               <div className="flex gap-2">
                 {[
                   { key: 'all', label: '전체' },
+                  { key: 'paid', label: '결제완료' },
                   { key: 'incomplete', label: '미완성' },
                   { key: 'expiring', label: '삭제 임박' },
                 ].map((f) => (
@@ -478,7 +483,9 @@ export default function AdminPage() {
                         className="border-t"
                         style={{
                           borderColor: '#E8E4DD',
-                          backgroundColor: inv.days_until_deletion <= 0 ? '#FEF2F2' : inv.days_until_deletion <= 7 ? '#FFFBEB' : '#FFF',
+                          backgroundColor: inv.is_paid === 1
+                            ? '#FFF'
+                            : inv.days_until_deletion <= 0 ? '#FEF2F2' : inv.days_until_deletion <= 7 ? '#FFFBEB' : '#FFF',
                         }}
                       >
                         <td className="px-4 py-3">
@@ -505,29 +512,79 @@ export default function AdminPage() {
                           {inv.wedding_date ? formatDate(inv.wedding_date) : '-'}
                         </td>
                         <td className="px-4 py-3">
-                          <span
-                            className="text-xs px-2 py-1 rounded-full font-medium"
-                            style={{
-                              backgroundColor: inv.is_published ? '#DCFCE7' : '#FEF3C7',
-                              color: inv.is_published ? '#166534' : '#92400E',
-                            }}
-                          >
-                            {inv.is_published ? '완성' : '미완성'}
-                          </span>
+                          <div className="flex flex-col gap-1">
+                            {inv.is_paid === 1 && (
+                              <span
+                                className="text-xs px-2 py-1 rounded-full font-medium inline-block w-fit"
+                                style={{ backgroundColor: '#DBEAFE', color: '#1D4ED8' }}
+                              >
+                                결제완료
+                              </span>
+                            )}
+                            <span
+                              className="text-xs px-2 py-1 rounded-full font-medium inline-block w-fit"
+                              style={{
+                                backgroundColor: inv.is_published ? '#DCFCE7' : '#FEF3C7',
+                                color: inv.is_published ? '#166534' : '#92400E',
+                              }}
+                            >
+                              {inv.is_published ? '완성' : '미완성'}
+                            </span>
+                          </div>
                         </td>
                         <td className="px-4 py-3">
-                          <div className="text-sm" style={{ color: inv.days_until_deletion <= 0 ? '#DC2626' : inv.days_until_deletion <= 7 ? '#D97706' : '#666' }}>
-                            {inv.days_until_deletion <= 0 ? (
-                              <span className="font-medium">만료됨</span>
-                            ) : (
-                              <>
-                                {inv.days_until_deletion}일 후
-                                <div className="text-xs" style={{ color: '#888' }}>
-                                  {inv.deletion_reason === 'incomplete' ? '(미완성)' : '(결혼식 후)'}
-                                </div>
-                              </>
-                            )}
-                          </div>
+                          {inv.is_paid === 1 ? (
+                            <div className="text-sm">
+                              {inv.wedding_date ? (
+                                (() => {
+                                  const weddingDate = new Date(inv.wedding_date)
+                                  const deleteAlertDate = new Date(weddingDate)
+                                  deleteAlertDate.setDate(deleteAlertDate.getDate() + 30)
+                                  const now = new Date()
+                                  const daysUntilAlert = Math.ceil((deleteAlertDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+
+                                  if (daysUntilAlert <= 0) {
+                                    return (
+                                      <div>
+                                        <span className="text-xs px-2 py-1 rounded-full font-medium" style={{ backgroundColor: '#FEF3C7', color: '#92400E' }}>
+                                          삭제예정 알림
+                                        </span>
+                                        <div className="text-xs mt-1" style={{ color: '#D97706' }}>
+                                          결혼식+30일 경과
+                                        </div>
+                                        <div className="text-[10px]" style={{ color: '#AAA' }}>
+                                          (자동삭제 안함)
+                                        </div>
+                                      </div>
+                                    )
+                                  }
+                                  return (
+                                    <div>
+                                      <span style={{ color: '#666' }}>{daysUntilAlert}일 후 알림</span>
+                                      <div className="text-xs" style={{ color: '#AAA' }}>
+                                        (결혼식+30일 / 자동삭제 안함)
+                                      </div>
+                                    </div>
+                                  )
+                                })()
+                              ) : (
+                                <span className="text-xs" style={{ color: '#AAA' }}>결혼일 미설정</span>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="text-sm" style={{ color: inv.days_until_deletion <= 0 ? '#DC2626' : inv.days_until_deletion <= 7 ? '#D97706' : '#666' }}>
+                              {inv.days_until_deletion <= 0 ? (
+                                <span className="font-medium">만료됨</span>
+                              ) : (
+                                <>
+                                  {inv.days_until_deletion}일 후
+                                  <div className="text-xs" style={{ color: '#888' }}>
+                                    {inv.deletion_reason === 'incomplete' ? '(미완성)' : '(결혼식 후)'}
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          )}
                         </td>
                         <td className="px-4 py-3 text-sm" style={{ color: '#888' }}>
                           {formatDate(inv.created_at)}

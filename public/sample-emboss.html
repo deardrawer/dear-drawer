@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Essay Cover - Emboss Effect Sample</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@300;400&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@200;300;400&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Noto Serif KR', serif;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    padding: 32px;
+    background: #f5f5f5;
+    justify-content: center;
+  }
+
+  .label {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    font-family: sans-serif;
+    font-size: 11px;
+    background: rgba(0,0,0,0.3);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 4px;
+    z-index: 10;
+  }
+
+  .cover {
+    width: 320px;
+    height: 568px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  }
+
+  .top-line {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1px;
+    height: 60px;
+  }
+
+  .cover-title {
+    font-family: 'Cinzel', serif;
+    letter-spacing: 6px;
+    font-size: 11px;
+    margin-bottom: 48px;
+    text-align: center;
+  }
+
+  .name {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 26px;
+    font-weight: 200;
+    letter-spacing: 12px;
+    line-height: 1.2;
+    text-align: center;
+  }
+
+  .ampersand {
+    font-family: 'Cinzel', serif;
+    font-size: 18px;
+    font-style: italic;
+    line-height: 1;
+    margin: 20px 0;
+    text-align: center;
+  }
+
+  .date-area {
+    margin-top: 40px;
+    text-align: center;
+  }
+
+  .date-line {
+    width: 32px;
+    height: 1px;
+    margin: 0 auto 14px;
+  }
+
+  .date-text {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    letter-spacing: 4px;
+  }
+
+  .day-text {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    margin-top: 6px;
+  }
+
+  /* ============================================ */
+  /* Style A: White + Emboss (참고 이미지와 동일)   */
+  /* ============================================ */
+  .cover-a {
+    background: #8E9EAB;
+  }
+  .cover-a .top-line { background: rgba(255,255,255,0.2); }
+  .cover-a .cover-title {
+    color: rgba(255,255,255,0.45);
+    text-shadow:
+      1px 1px 1px rgba(255,255,255,0.3),
+      -1px -1px 1px rgba(0,0,0,0.12);
+  }
+  .cover-a .name {
+    color: rgba(255,255,255,0.5);
+    text-shadow:
+      1px 1px 2px rgba(255,255,255,0.35),
+      -1px -1px 1px rgba(0,0,0,0.12);
+  }
+  .cover-a .ampersand {
+    color: rgba(255,255,255,0.4);
+    text-shadow:
+      1px 1px 1px rgba(255,255,255,0.3),
+      -1px -1px 1px rgba(0,0,0,0.1);
+  }
+  .cover-a .date-line { background: rgba(255,255,255,0.25); }
+  .cover-a .date-text {
+    color: rgba(255,255,255,0.45);
+    text-shadow:
+      1px 1px 1px rgba(255,255,255,0.3),
+      -1px -1px 1px rgba(0,0,0,0.1);
+  }
+  .cover-a .day-text {
+    color: rgba(255,255,255,0.4);
+    text-shadow:
+      1px 1px 1px rgba(255,255,255,0.25),
+      -1px -1px 1px rgba(0,0,0,0.08);
+  }
+
+  /* ============================================ */
+  /* Style B: Warm Emboss (따뜻한 베이지 톤)       */
+  /* ============================================ */
+  .cover-b {
+    background: #C2B9A7;
+  }
+  .cover-b .top-line { background: rgba(255,255,255,0.22); }
+  .cover-b .cover-title {
+    color: rgba(255,255,255,0.45);
+    text-shadow:
+      1px 1px 1px rgba(255,255,255,0.35),
+      -1px -1px 1px rgba(0,0,0,0.1);
+  }
+  .cover-b .name {
+    color: rgba(255,255,255,0.5);
+    text-shadow:
+      1px 1px 2px rgba(255,255,255,0.4),
+      -1px -1px 1px rgba(0,0,0,0.1);
+  }
+  .cover-b .ampersand {
+    color: rgba(255,255,255,0.4);
+    text-shadow:
+      1px 1px 1px rgba(255,255,255,0.35),
+      -1px -1px 1px rgba(0,0,0,0.08);
+  }
+  .cover-b .date-line { background: rgba(255,255,255,0.22); }
+  .cover-b .date-text {
+    color: rgba(255,255,255,0.45);
+    text-shadow:
+      1px 1px 1px rgba(255,255,255,0.32),
+      -1px -1px 1px rgba(0,0,0,0.08);
+  }
+  .cover-b .day-text {
+    color: rgba(255,255,255,0.4);
+    text-shadow:
+      1px 1px 1px rgba(255,255,255,0.28),
+      -1px -1px 1px rgba(0,0,0,0.06);
+  }
+
+  /* ============================================ */
+  /* Style C: Deep Emboss (좀 더 뚜렷한 효과)     */
+  /* ============================================ */
+  .cover-c {
+    background: #7A8B8B;
+  }
+  .cover-c .top-line { background: rgba(255,255,255,0.22); }
+  .cover-c .cover-title {
+    color: rgba(255,255,255,0.5);
+    text-shadow:
+      0 1px 2px rgba(255,255,255,0.4),
+      0 -1px 1px rgba(0,0,0,0.2);
+  }
+  .cover-c .name {
+    color: rgba(255,255,255,0.55);
+    text-shadow:
+      0 2px 3px rgba(255,255,255,0.45),
+      0 -1px 2px rgba(0,0,0,0.22);
+  }
+  .cover-c .ampersand {
+    color: rgba(255,255,255,0.45);
+    text-shadow:
+      0 1px 2px rgba(255,255,255,0.38),
+      0 -1px 1px rgba(0,0,0,0.15);
+  }
+  .cover-c .date-line { background: rgba(255,255,255,0.2); }
+  .cover-c .date-text {
+    color: rgba(255,255,255,0.5);
+    text-shadow:
+      0 1px 2px rgba(255,255,255,0.35),
+      0 -1px 1px rgba(0,0,0,0.15);
+  }
+  .cover-c .day-text {
+    color: rgba(255,255,255,0.45);
+    text-shadow:
+      0 1px 1px rgba(255,255,255,0.3),
+      0 -1px 1px rgba(0,0,0,0.12);
+  }
+
+  /* ============================================ */
+  /* Style D: Deboss (오목한 효과 - 반대방향)      */
+  /* ============================================ */
+  .cover-d {
+    background: #9BA3A6;
+  }
+  .cover-d .top-line { background: rgba(255,255,255,0.18); }
+  .cover-d .cover-title {
+    color: rgba(255,255,255,0.15);
+    text-shadow:
+      -1px -1px 1px rgba(255,255,255,0.3),
+      1px 1px 2px rgba(0,0,0,0.22);
+  }
+  .cover-d .name {
+    color: rgba(255,255,255,0.18);
+    text-shadow:
+      -1px -1px 1px rgba(255,255,255,0.35),
+      1px 1px 2px rgba(0,0,0,0.25);
+  }
+  .cover-d .ampersand {
+    color: rgba(255,255,255,0.12);
+    text-shadow:
+      -1px -1px 1px rgba(255,255,255,0.3),
+      1px 1px 2px rgba(0,0,0,0.2);
+  }
+  .cover-d .date-line { background: rgba(255,255,255,0.1); }
+  .cover-d .date-text {
+    color: rgba(255,255,255,0.15);
+    text-shadow:
+      -1px -1px 1px rgba(255,255,255,0.28),
+      1px 1px 2px rgba(0,0,0,0.2);
+  }
+  .cover-d .day-text {
+    color: rgba(255,255,255,0.12);
+    text-shadow:
+      -1px -1px 1px rgba(255,255,255,0.25),
+      1px 1px 1px rgba(0,0,0,0.18);
+  }
+
+  /* ============================================ */
+  /* Style E: Gold Foil Emboss (골드 박 느낌)      */
+  /* ============================================ */
+  .cover-e {
+    background: #4A4A48;
+  }
+  .cover-e .top-line { background: rgba(212,185,150,0.3); }
+  .cover-e .cover-title {
+    color: rgba(212,185,150,0.5);
+    text-shadow:
+      1px 1px 1px rgba(255,235,200,0.3),
+      -1px -1px 1px rgba(0,0,0,0.3);
+  }
+  .cover-e .name {
+    color: rgba(212,185,150,0.55);
+    text-shadow:
+      1px 1px 2px rgba(255,235,200,0.35),
+      -1px -1px 2px rgba(0,0,0,0.3);
+  }
+  .cover-e .ampersand {
+    color: rgba(212,185,150,0.45);
+    text-shadow:
+      1px 1px 1px rgba(255,235,200,0.3),
+      -1px -1px 1px rgba(0,0,0,0.25);
+  }
+  .cover-e .date-line { background: rgba(212,185,150,0.25); }
+  .cover-e .date-text {
+    color: rgba(212,185,150,0.5);
+    text-shadow:
+      1px 1px 1px rgba(255,235,200,0.28),
+      -1px -1px 1px rgba(0,0,0,0.25);
+  }
+  .cover-e .day-text {
+    color: rgba(212,185,150,0.45);
+    text-shadow:
+      1px 1px 1px rgba(255,235,200,0.25),
+      -1px -1px 1px rgba(0,0,0,0.2);
+  }
+
+  /* ============================================ */
+  /* Style F: White Emboss on Light (밝은 배경)    */
+  /* ============================================ */
+  .cover-f {
+    background: #E8E4DF;
+  }
+  .cover-f .top-line { background: rgba(0,0,0,0.06); }
+  .cover-f .cover-title {
+    color: rgba(255,255,255,0.55);
+    text-shadow:
+      1px 1px 1px rgba(255,255,255,0.9),
+      -1px -1px 1px rgba(0,0,0,0.08);
+  }
+  .cover-f .name {
+    color: rgba(255,255,255,0.6);
+    text-shadow:
+      1px 1px 2px rgba(255,255,255,1),
+      -1px -1px 1px rgba(0,0,0,0.1);
+  }
+  .cover-f .ampersand {
+    color: rgba(255,255,255,0.5);
+    text-shadow:
+      1px 1px 1px rgba(255,255,255,0.9),
+      -1px -1px 1px rgba(0,0,0,0.06);
+  }
+  .cover-f .date-line { background: rgba(255,255,255,0.4); }
+  .cover-f .date-text {
+    color: rgba(255,255,255,0.55);
+    text-shadow:
+      1px 1px 1px rgba(255,255,255,0.9),
+      -1px -1px 1px rgba(0,0,0,0.06);
+  }
+  .cover-f .day-text {
+    color: rgba(255,255,255,0.5);
+    text-shadow:
+      1px 1px 1px rgba(255,255,255,0.8),
+      -1px -1px 1px rgba(0,0,0,0.05);
+  }
+</style>
+</head>
+<body>
+
+<!-- Style A: Subtle Emboss (Dusty Blue) -->
+<div class="cover cover-a">
+  <span class="label">A. Subtle Emboss (Dusty Blue)</span>
+  <div class="top-line"></div>
+  <div class="cover-title">OUR WEDDING ESSAY</div>
+  <div class="name">민준</div>
+  <div class="ampersand">&</div>
+  <div class="name">서연</div>
+  <div class="date-area">
+    <div class="date-line"></div>
+    <div class="date-text">2026.05.23</div>
+    <div class="day-text">토요일</div>
+  </div>
+</div>
+
+<!-- Style B: Warm Emboss (Beige) -->
+<div class="cover cover-b">
+  <span class="label">B. Warm Emboss (Beige)</span>
+  <div class="top-line"></div>
+  <div class="cover-title">OUR WEDDING ESSAY</div>
+  <div class="name">민준</div>
+  <div class="ampersand">&</div>
+  <div class="name">서연</div>
+  <div class="date-area">
+    <div class="date-line"></div>
+    <div class="date-text">2026.05.23</div>
+    <div class="day-text">토요일</div>
+  </div>
+</div>
+
+<!-- Style C: Deep Emboss (Teal) -->
+<div class="cover cover-c">
+  <span class="label">C. Deep Emboss (Teal)</span>
+  <div class="top-line"></div>
+  <div class="cover-title">OUR WEDDING ESSAY</div>
+  <div class="name">민준</div>
+  <div class="ampersand">&</div>
+  <div class="name">서연</div>
+  <div class="date-area">
+    <div class="date-line"></div>
+    <div class="date-text">2026.05.23</div>
+    <div class="day-text">토요일</div>
+  </div>
+</div>
+
+<!-- Style D: Deboss (Inset) -->
+<div class="cover cover-d">
+  <span class="label">D. Deboss (오목한 효과)</span>
+  <div class="top-line"></div>
+  <div class="cover-title">OUR WEDDING ESSAY</div>
+  <div class="name">민준</div>
+  <div class="ampersand">&</div>
+  <div class="name">서연</div>
+  <div class="date-area">
+    <div class="date-line"></div>
+    <div class="date-text">2026.05.23</div>
+    <div class="day-text">토요일</div>
+  </div>
+</div>
+
+<!-- Style E: Gold Foil Emboss -->
+<div class="cover cover-e">
+  <span class="label">E. Gold Foil Emboss (다크)</span>
+  <div class="top-line"></div>
+  <div class="cover-title">OUR WEDDING ESSAY</div>
+  <div class="name">민준</div>
+  <div class="ampersand">&</div>
+  <div class="name">서연</div>
+  <div class="date-area">
+    <div class="date-line"></div>
+    <div class="date-text">2026.05.23</div>
+    <div class="day-text">토요일</div>
+  </div>
+</div>
+
+<!-- Style F: White Emboss on Light -->
+<div class="cover cover-f">
+  <span class="label">F. Light Emboss (밝은 배경)</span>
+  <div class="top-line"></div>
+  <div class="cover-title">OUR WEDDING ESSAY</div>
+  <div class="name">민준</div>
+  <div class="ampersand">&</div>
+  <div class="name">서연</div>
+  <div class="date-area">
+    <div class="date-line"></div>
+    <div class="date-text">2026.05.23</div>
+    <div class="day-text">토요일</div>
+  </div>
+</div>
+
+</body>
+</html>

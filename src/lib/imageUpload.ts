@@ -236,6 +236,80 @@ export async function deleteImage(
 }
 
 /**
+ * 배치 업로드 옵션
+ */
+export interface BatchUploadOptions {
+  invitationId?: string;
+  maxConcurrent?: number;  // 기본 3
+  onFileStart?: (index: number, localPreviewUrl: string) => void;
+  onFileProgress?: (index: number, progress: number) => void;
+  onFileComplete?: (index: number, result: UploadResult) => void;
+  onFileError?: (index: number, error: string) => void;
+}
+
+/**
+ * 여러 이미지를 동시에 업로드 (concurrency 제한)
+ * - 각 파일마다 로컬 프리뷰 URL 즉시 생성 → onFileStart 콜백
+ * - maxConcurrent 개씩 병렬 업로드
+ * - 내부적으로 기존 uploadImage() 재사용
+ */
+export async function uploadImages(
+  files: File[],
+  options: BatchUploadOptions = {}
+): Promise<void> {
+  const { maxConcurrent = 3, invitationId, onFileStart, onFileProgress, onFileComplete, onFileError } = options;
+
+  // 즉시 모든 파일의 로컬 프리뷰 생성
+  for (let i = 0; i < files.length; i++) {
+    const previewUrl = URL.createObjectURL(files[i]);
+    onFileStart?.(i, previewUrl);
+  }
+
+  // 간단한 concurrency 큐 구현
+  let running = 0;
+  let nextIndex = 0;
+
+  await new Promise<void>((resolveAll) => {
+    function startNext() {
+      while (running < maxConcurrent && nextIndex < files.length) {
+        const idx = nextIndex++;
+        running++;
+
+        uploadImage(files[idx], {
+          invitationId,
+          onProgress: (progress) => onFileProgress?.(idx, progress),
+        })
+          .then((result) => {
+            if (result.success) {
+              onFileComplete?.(idx, result);
+            } else {
+              onFileError?.(idx, result.error || '업로드 실패');
+            }
+          })
+          .catch((err) => {
+            onFileError?.(idx, err instanceof Error ? err.message : '업로드 중 오류');
+          })
+          .finally(() => {
+            running--;
+            if (nextIndex >= files.length && running === 0) {
+              resolveAll();
+            } else {
+              startNext();
+            }
+          });
+      }
+
+      // 파일이 0개인 경우
+      if (files.length === 0) {
+        resolveAll();
+      }
+    }
+
+    startNext();
+  });
+}
+
+/**
  * base64 문자열인지 확인
  */
 export function isBase64(str: string): boolean {

@@ -436,7 +436,17 @@ export default function Step3Record({}: Step3RecordProps) {
 
         <MultiImageUploader
           images={invitation.gallery.images}
-          onChange={(images) => updateNestedField('gallery.images', images)}
+          onChange={(images) => {
+            updateNestedField('gallery.images', images)
+            const currentSettings = invitation.gallery.imageSettings || []
+            if (images.length > currentSettings.length) {
+              const padded = [...currentSettings]
+              while (padded.length < images.length) {
+                padded.push({ scale: 1.0, positionX: 0, positionY: 0 })
+              }
+              updateNestedField('gallery.imageSettings', padded)
+            }
+          }}
           onReorder={(newImages) => {
             const oldImages = invitation.gallery.images
             const currentSettings = invitation.gallery.imageSettings || []

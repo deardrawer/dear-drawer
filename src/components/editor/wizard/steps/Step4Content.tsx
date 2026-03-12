@@ -1422,7 +1422,18 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
 
         <MultiImageUploader
           images={invitation.gallery.images}
-          onChange={(images) => updateNestedField('gallery.images', images)}
+          onChange={(images) => {
+            updateNestedField('gallery.images', images)
+            // 새로 추가된 이미지 수만큼 기본 settings 보충
+            const currentSettings = invitation.gallery.imageSettings || []
+            if (images.length > currentSettings.length) {
+              const padded = [...currentSettings]
+              while (padded.length < images.length) {
+                padded.push({ scale: 1.0, positionX: 0, positionY: 0 })
+              }
+              updateNestedField('gallery.imageSettings', padded)
+            }
+          }}
           onReorder={(newImages) => {
             const oldImages = invitation.gallery.images
             const currentSettings = invitation.gallery.imageSettings || []

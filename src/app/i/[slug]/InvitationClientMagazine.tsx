@@ -180,7 +180,7 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
   // Style: clean (텍스트 중심 미니멀)
   if (introStyle === 'clean') {
     return (
-      <div className="relative w-full min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: themeColors.background }}>
+      <div className="relative w-full flex flex-col items-center justify-center" style={{ backgroundColor: themeColors.background, minHeight: isPreview ? '660px' : '100vh' }}>
         <div
           className="text-center transition-all duration-[1500ms]"
           style={{ opacity: loaded ? 1 : 0, transform: loaded ? 'translateY(0)' : 'translateY(30px)' }}
@@ -197,7 +197,7 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
             {brideName}
           </div>
           <div style={{ width: '1px', height: '50px', background: themeColors.divider, margin: '40px auto' }} />
-          <div style={{ fontFamily: fonts.display, fontSize: '12px', letterSpacing: '3px', color: themeColors.gray, lineHeight: 2.4 }}>
+          <div style={{ fontFamily: fonts.display, fontSize: '12px', letterSpacing: '3px', color: themeColors.primary, lineHeight: 2.4 }}>
             <span style={{ display: 'block' }}>{dateStr} {dayOfWeek}</span>
             {invitation.wedding?.venue?.name && (
               <span style={{ display: 'block', fontSize: '11px', letterSpacing: '2px' }}>{invitation.wedding.venue.name}</span>
@@ -266,7 +266,7 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
 
   // Style: cover (기존 - 사진 중심 매거진 커버)
   return (
-    <div className="relative w-full min-h-screen flex flex-col" style={{ backgroundColor: themeColors.background }}>
+    <div className="relative w-full flex flex-col" style={{ backgroundColor: themeColors.background, minHeight: isPreview ? '660px' : '100vh' }}>
       <div
         className="relative z-10 px-6 pt-10 pb-4 transition-all duration-[1200ms]"
         style={{ opacity: loaded ? 1 : 0, transform: loaded ? 'translateY(0)' : 'translateY(-10px)' }}
@@ -276,7 +276,7 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
             WEDDING
           </span>
           <div style={{ height: '0.5px', flex: 1, background: themeColors.divider }} />
-          <span style={{ fontFamily: fonts.display, fontSize: '11px', letterSpacing: '2px', color: themeColors.gray }}>
+          <span style={{ fontFamily: fonts.display, fontSize: '11px', letterSpacing: '2px', color: themeColors.primary }}>
             {dateStr}
           </span>
         </div>

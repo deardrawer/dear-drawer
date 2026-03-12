@@ -187,10 +187,10 @@ export async function generateMetadata({ params }: PageProps) {
   const baseUrl = "https://invite.deardrawer.com";
 
   // 샘플 청첩장 메타데이터 처리
-  const metaSampleSlugs = ['sample-our', 'sample-family', 'sample-film', 'sample-record', 'sample-exhibit', 'sample-feed', 'sample-essay', 'sample-essay-paper', 'sample-essay-book'];
+  const metaSampleSlugs = ['sample-our', 'sample-family', 'sample-magazine', 'sample-film', 'sample-record', 'sample-exhibit', 'sample-feed', 'sample-essay', 'sample-essay-paper', 'sample-essay-book'];
   if (metaSampleSlugs.includes(slug)) {
-    const sampleType = (slug === 'sample-essay' || slug === 'sample-essay-paper' || slug === 'sample-essay-book') ? 'essay' : (slug === 'sample-exhibit' || slug === 'sample-feed') ? 'exhibit' : slug === 'sample-record' ? 'record' : slug === 'sample-film' ? 'film' : slug === 'sample-our' ? 'our' : 'family';
-    const content = sampleType === 'our' ? ourSampleContent : familySampleContent;
+    const sampleType = (slug === 'sample-essay' || slug === 'sample-essay-paper' || slug === 'sample-essay-book') ? 'essay' : (slug === 'sample-exhibit' || slug === 'sample-feed') ? 'exhibit' : slug === 'sample-record' ? 'record' : slug === 'sample-film' ? 'film' : slug === 'sample-magazine' ? 'magazine' : slug === 'sample-our' ? 'our' : 'family';
+    const content = sampleType === 'family' ? familySampleContent : ourSampleContent;
     const title = `${content.groom.name} ♥ ${content.bride.name} 결혼합니다`;
     const description = content.content.greeting;
     const thumbnailImage = toAbsoluteImageUrl(content.media.coverImage, baseUrl);

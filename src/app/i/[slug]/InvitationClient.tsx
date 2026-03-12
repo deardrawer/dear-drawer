@@ -3029,6 +3029,7 @@ const sampleGuestbookMessages: GuestbookMessage[] = [
 // Main Page Component - matching template exactly
 function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, onOpenRsvp, onOpenLightbox, onOpenGuestbookModal, isSample = false, audioRef }: PageProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
+  const [showAllGallery, setShowAllGallery] = useState(false)
 
   // Section Highlight 상태
   const [activeSection, setActiveSection] = useState('invitation')
@@ -3265,24 +3266,56 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
 
       {/* Gallery Section */}
       <AnimatedSection className="px-5 py-10" style={{ background: themeColors.cardBg }}>
-        <div className="grid grid-cols-2 gap-2">
-          {invitation.gallery.images && invitation.gallery.images.length > 0 ? invitation.gallery.images.map((img, i) => {
-            const imgSettings = (invitation.gallery as any).imageSettings?.[i] || { scale: 1, positionX: 0, positionY: 0 }
-            return (
-              <div
-                key={i}
-                className="aspect-square rounded overflow-hidden cursor-pointer transition-transform hover:scale-[1.02]"
-                onClick={() => onOpenLightbox?.(i)}
-              >
-                <div className="w-full h-full bg-gray-100" style={img ? getImageCropStyle(img, imgSettings) : undefined} />
+        {invitation.gallery.images && invitation.gallery.images.length > 0 ? (() => {
+          const allImages = invitation.gallery.images
+          const hasMore = allImages.length > 6 && !showAllGallery
+          const visibleImages = hasMore ? allImages.slice(0, 6) : allImages
+          return (
+            <>
+              <div className="grid grid-cols-2 gap-2">
+                {visibleImages.map((img, i) => {
+                  const imgSettings = (invitation.gallery as any).imageSettings?.[i] || { scale: 1, positionX: 0, positionY: 0 }
+                  return (
+                    <div
+                      key={i}
+                      className="relative aspect-square rounded overflow-hidden cursor-pointer transition-transform hover:scale-[1.02]"
+                      onClick={() => onOpenLightbox?.(i)}
+                    >
+                      <div className="w-full h-full bg-gray-100" style={img ? getImageCropStyle(img, imgSettings) : undefined} />
+                      {hasMore && i === 5 && (
+                        <div
+                          className="absolute inset-0 bg-black/40 flex items-center justify-center cursor-pointer"
+                          onClick={(e) => { e.stopPropagation(); setShowAllGallery(true) }}
+                        >
+                          <span className="text-white text-lg font-light">+{allImages.length - 6}</span>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
-            )
-          }) : [1, 2, 3, 4, 5, 6].map(i => (
-            <div key={i} className="aspect-square rounded bg-gray-100 flex items-center justify-center">
-              <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-            </div>
-          ))}
-        </div>
+              {hasMore && (
+                <button
+                  onClick={() => setShowAllGallery(true)}
+                  className="w-full mt-3 py-3 text-center transition-colors hover:opacity-80 rounded"
+                  style={{ border: `1px solid ${themeColors.divider}`, background: themeColors.cardBg }}
+                >
+                  <span style={{ fontSize: '13px', color: themeColors.text }}>
+                    +{allImages.length - 6}장 더 보기
+                  </span>
+                </button>
+              )}
+            </>
+          )
+        })() : (
+          <div className="grid grid-cols-2 gap-2">
+            {[1, 2, 3, 4, 5, 6].map(i => (
+              <div key={i} className="aspect-square rounded bg-gray-100 flex items-center justify-center">
+                <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+              </div>
+            ))}
+          </div>
+        )}
       </AnimatedSection>
 
       {/* YouTube Section - OUR */}

@@ -1961,6 +1961,7 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
     let startX = 0
     let startY = 0
     let startTime = 0
+    let lastTouchY = 0
     let locked: 'none' | 'horizontal' | 'vertical' = 'none'
     let dragging = false
 
@@ -1974,6 +1975,7 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
 
       startX = e.touches[0].clientX
       startY = e.touches[0].clientY
+      lastTouchY = startY
       startTime = Date.now()
       locked = 'none'
       dragging = false
@@ -2000,14 +2002,25 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
           locked = Math.abs(dx) > Math.abs(dy) ? 'horizontal' : 'vertical'
           dragDirectionRef.current = locked
         } else {
+          if (e.cancelable) e.preventDefault()
           return
         }
       }
 
-      if (locked === 'vertical') return // 세로 스크롤 허용
+      if (locked === 'vertical') {
+        // 수직 스크롤을 JS로 직접 처리
+        const scrollEl = scrollableRef.current
+        if (scrollEl) {
+          const deltaY = lastTouchY - cy
+          scrollEl.scrollTop += deltaY
+        }
+        lastTouchY = cy
+        if (e.cancelable) e.preventDefault()
+        return
+      }
 
       // 수평 드래그 - 기본 스크롤 방지
-      e.preventDefault()
+      if (e.cancelable) e.preventDefault()
 
       if (!dragging) {
         dragging = true
@@ -2062,14 +2075,110 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
       dragDirectionRef.current = 'none'
     }
 
-    el.addEventListener('touchstart', onTouchStart, { passive: true })
+    // --- 마우스 드래그 (데스크톱) ---
+    let mouseDown = false
+
+    const onMouseDown = (e: MouseEvent) => {
+      if (isSnapping) return
+      const p = pages[currentPage]
+      if (p?.type === 'guestbook' || p?.type === 'rsvp') return
+      if (e.target instanceof HTMLElement && e.target.closest('a, button, input, textarea, select, [role="button"]')) return
+
+      mouseDown = true
+      startX = e.clientX
+      startY = e.clientY
+      startTime = Date.now()
+      locked = 'none'
+      dragging = false
+      containerWidthRef.current = el.getBoundingClientRect().width
+      touchStartX.current = startX
+      touchStartY.current = startY
+      dragStartTimeRef.current = startTime
+      dragDirectionRef.current = 'none'
+    }
+
+    const onMouseMove = (e: MouseEvent) => {
+      if (!mouseDown || isSnapping) return
+      const p = pages[currentPage]
+      if (p?.type === 'guestbook' || p?.type === 'rsvp') return
+
+      const cx = e.clientX
+      const cy = e.clientY
+      const dx = cx - startX
+      const dy = cy - startY
+
+      if (locked === 'none') {
+        if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+          locked = Math.abs(dx) > Math.abs(dy) ? 'horizontal' : 'vertical'
+          dragDirectionRef.current = locked
+        } else {
+          return
+        }
+      }
+
+      if (locked === 'vertical') return
+
+      e.preventDefault()
+
+      if (!dragging) {
+        dragging = true
+        setIsDragging(true)
+      }
+
+      let offset = dx
+      if ((currentPage === 0 && dx > 0) || (currentPage >= totalPages - 1 && dx < 0)) {
+        offset = dx * 0.3
+      }
+
+      setDragOffset(offset)
+    }
+
+    const onMouseUp = (e: MouseEvent) => {
+      if (!mouseDown) return
+      mouseDown = false
+
+      const p = pages[currentPage]
+      if (p?.type === 'guestbook' || p?.type === 'rsvp') return
+
+      const dx = e.clientX - startX
+      const elapsed = Date.now() - startTime
+      const velocity = Math.abs(dx) / (elapsed || 1)
+
+      if (locked === 'horizontal' && dragging) {
+        const w = containerWidthRef.current || window.innerWidth
+        const threshold = w * 0.2
+
+        if ((Math.abs(dx) > threshold || velocity > 0.3) && !(currentPage === 0 && dx > 0) && !(currentPage >= totalPages - 1 && dx < 0)) {
+          slideTo(dx < 0 ? 'next' : 'prev')
+        } else {
+          slideTo('back')
+        }
+      } else {
+        setIsDragging(false)
+        setDragOffset(0)
+      }
+
+      locked = 'none'
+      dragging = false
+      dragDirectionRef.current = 'none'
+    }
+
+    el.addEventListener('touchstart', onTouchStart, { passive: false })
     el.addEventListener('touchmove', onTouchMove, { passive: false })
     el.addEventListener('touchend', onTouchEnd, { passive: true })
+    el.addEventListener('mousedown', onMouseDown)
+    el.addEventListener('mousemove', onMouseMove)
+    el.addEventListener('mouseup', onMouseUp)
+    el.addEventListener('mouseleave', onMouseUp)
 
     return () => {
       el.removeEventListener('touchstart', onTouchStart)
       el.removeEventListener('touchmove', onTouchMove)
       el.removeEventListener('touchend', onTouchEnd)
+      el.removeEventListener('mousedown', onMouseDown)
+      el.removeEventListener('mousemove', onMouseMove)
+      el.removeEventListener('mouseup', onMouseUp)
+      el.removeEventListener('mouseleave', onMouseUp)
     }
   }, [currentPage, totalPages, isSnapping, pages, nextPage, prevPage, slideTo])
 
@@ -2134,7 +2243,7 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
     <div
       ref={containerRef}
       className="fixed inset-0 select-none"
-      style={{ background: activeColors.bg, fontFamily: "'Pretendard', sans-serif", transition: 'background 0.4s ease' }}
+      style={{ background: activeColors.bg, fontFamily: "'Pretendard', sans-serif", transition: 'background 0.4s ease', touchAction: 'none' }}
     >
       {/* 애니메이션 키프레임 */}
       <style dangerouslySetInnerHTML={{ __html: bookAnimCSS }} />
@@ -2172,12 +2281,13 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
       <div className="fixed inset-0 overflow-hidden" style={{
         paddingTop: currentPage > 0 ? '44px' : '0',
         paddingBottom: currentPage > 0 ? '36px' : '0',
+        touchAction: 'none',
       }}>
         <div style={{ position: 'relative', width: '100%', height: '100%' }}>
           {/* 이전 페이지 (드래그 중에만 렌더) */}
           {isDragging && currentPage > 0 && (
             <div style={{
-              position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', overflowY: 'auto',
+              position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', overflowY: 'auto', touchAction: 'none',
               transform: `translateX(${-((containerWidthRef.current || window.innerWidth)) + dragOffset}px)`,
               transition: isSnapping ? 'transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)' : 'none',
               willChange: 'transform',
@@ -2192,6 +2302,7 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
           <div ref={scrollableRef} style={{
             position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
             overflowY: (isDragging || isSnapping) ? 'hidden' : 'auto',
+            touchAction: isFormPage() ? 'auto' : 'none',
             transform: (isDragging || isSnapping) ? `translateX(${dragOffset}px)` : (pageTransition !== 'none' ? (pageTransition === 'next' ? 'translateX(-16px) scale(0.98)' : 'translateX(16px) scale(0.98)') : 'none'),
             opacity: pageTransition !== 'none' ? 0 : 1,
             transition: isSnapping ? 'transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)' : (pageTransition !== 'none' ? 'opacity 0.25s ease, transform 0.25s ease' : 'none'),
@@ -2205,7 +2316,7 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
           {/* 다음 페이지 (드래그 중에만 렌더) */}
           {isDragging && currentPage < totalPages - 1 && (
             <div style={{
-              position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', overflowY: 'auto',
+              position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', overflowY: 'auto', touchAction: 'none',
               transform: `translateX(${(containerWidthRef.current || window.innerWidth) + dragOffset}px)`,
               transition: isSnapping ? 'transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)' : 'none',
               willChange: 'transform',

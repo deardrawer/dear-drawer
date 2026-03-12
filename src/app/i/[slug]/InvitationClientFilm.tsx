@@ -795,6 +795,7 @@ function ChapterThree({ invitation, fonts, tc, onOpenLightbox }: {
 }) {
   const { ref, isVisible } = useScrollReveal()
   const images = (invitation.gallery?.images || []).map(extractImageUrl).filter(Boolean)
+  const [showAllGrid, setShowAllGrid] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const isLight = tc.background === '#FFFFFF'
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -910,22 +911,45 @@ function ChapterThree({ invitation, fonts, tc, onOpenLightbox }: {
           </span>
         </div>
 
-        {/* Gallery grid - all photos */}
-        {images.length > 0 && (
-          <div className="px-5 mt-8">
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '3px' }}>
-              {images.map((img: string, i: number) => {
-                const imgSettings = (invitation.gallery as any)?.imageSettings?.[i] || {}
-                return (
-                <div key={i} className="relative overflow-hidden" style={{ aspectRatio: '3/4', cursor: 'pointer' }}
-                  onClick={() => onOpenLightbox(i)}>
-                  <div className="w-full h-full" style={getImageCropStyle(img, imgSettings)} />
-                </div>
-                )
-              })}
+        {/* Gallery grid - with show more for 6+ photos */}
+        {images.length > 0 && (() => {
+          const hasMoreGrid = images.length > 6 && !showAllGrid
+          const visibleGridImages = hasMoreGrid ? images.slice(0, 6) : images
+          return (
+            <div className="px-5 mt-8">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '3px' }}>
+                {visibleGridImages.map((img: string, i: number) => {
+                  const imgSettings = (invitation.gallery as any)?.imageSettings?.[i] || {}
+                  return (
+                    <div key={i} className="relative overflow-hidden" style={{ aspectRatio: '3/4', cursor: 'pointer' }}
+                      onClick={() => onOpenLightbox(i)}>
+                      <div className="w-full h-full" style={getImageCropStyle(img, imgSettings)} />
+                      {hasMoreGrid && i === 5 && (
+                        <div
+                          className="absolute inset-0 bg-black/40 flex items-center justify-center cursor-pointer"
+                          onClick={(e) => { e.stopPropagation(); setShowAllGrid(true) }}
+                        >
+                          <span className="text-white text-lg font-light">+{images.length - 6}</span>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+              {hasMoreGrid && (
+                <button
+                  onClick={() => setShowAllGrid(true)}
+                  className="w-full mt-3 py-3 text-center transition-colors hover:opacity-80"
+                  style={{ border: `1px solid ${tc.divider}`, background: tc.background }}
+                >
+                  <span style={{ fontFamily: fonts.display, fontSize: '13px', color: tc.text }}>
+                    +{images.length - 6}장 더 보기
+                  </span>
+                </button>
+              )}
             </div>
-          </div>
-        )}
+          )
+        })()}
       </div>
     </div>
   )

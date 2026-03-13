@@ -650,6 +650,11 @@ export const essayStorySampleContent = {
       { id: 'g2', guest_name: '최현우', message: '민준아 드디어! 축하한다 형! 행복해라 🎉', created_at: '2026-02-19T09:15:00Z' },
       { id: 'g3', guest_name: '정소희', message: '두 분의 이야기가 정말 아름다워요. 결혼 축하드립니다 🤍', created_at: '2026-02-18T22:00:00Z' },
     ],
+    bonusInterviews: [
+      { question: '우리에게 결혼의 의미', answer: '결혼은 저희에게 "함께 늙어가자"는 약속입니다.\n\n연애할 때는 설렘이 전부인 줄 알았는데,\n시간이 지나며 알게 되었습니다.\n\n진짜 사랑은 일상을 함께 견디는 것,\n그리고 그 일상이 충분히 아름다울 수 있다는\n믿음이라는 것을요.', answerer: 'both' as const },
+      { question: '1년 해외여행을 신혼여행으로 선택한 이유', answer: '산에서 만난 우리니까,\n세상의 더 많은 길을 함께 걷고 싶었습니다.\n\n히말라야 트레킹, 산티아고 순례길,\n파타고니아의 끝없는 초원까지.\n\n"1년이면 충분할까?"\n"부족하면 더 가면 되지."\n\n그 대화로 결정되었습니다.', answerer: 'both' as const },
+      { question: '결혼을 준비하며 든 생각', answer: '결혼 준비는 생각보다 복잡했지만,\n하나 확실히 알게 된 게 있습니다.\n\n이 사람이 아니면 안 된다는 것.\n\n의견이 다를 때도, 지칠 때도,\n결국 마주 보고 웃게 되는 사람.\n그런 사람을 만난 건 정말 행운입니다.', answerer: 'both' as const },
+    ],
   },
 }
 

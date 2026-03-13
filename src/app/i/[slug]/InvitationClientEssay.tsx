@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import RsvpForm from '@/components/invitation/RsvpForm'
+import GuestFloatingButton from '@/components/invitation/GuestFloatingButton'
 import { parseHighlight } from '@/lib/textUtils'
 import type { Invitation } from '@/types/invitation'
 
@@ -1789,6 +1790,7 @@ const bookAnimCSS = `
 @keyframes bkSlideRight { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; transform: translateX(0); } }
 @keyframes bkHighlight { from { background-size: 0% 100%; } to { background-size: 100% 100%; } }
 .book-page-content .bk-page { min-height: calc(100vh - 80px); }
+.book-page-content .bk-page > .w-full { padding-left: 52px; padding-right: 52px; }
 `
 
 // -- Book: 애니메이션 헬퍼 --
@@ -1846,6 +1848,28 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
   const scrollableRef = useRef<HTMLDivElement>(null)
   const contentMode = data.contentMode || 'story'
   const isEditorial = true
+
+  // GuestFloatingButton 모달 상태
+  const [openModalType, setOpenModalType] = useState<'none' | 'contact' | 'rsvp' | 'location' | 'account' | 'share'>('none')
+
+  // GuestFloatingButton용 데이터 매핑
+  const gfbContacts = [
+    data.groom?.phone && data.groom?.phoneEnabled !== false && { name: data.groom.name, phone: data.groom.phone, role: '신랑', side: 'groom' as const },
+    data.groom?.father?.phone && data.groom?.father?.phoneEnabled !== false && { name: data.groom.father.name, phone: data.groom.father.phone, role: '아버지', side: 'groom' as const },
+    data.groom?.mother?.phone && data.groom?.mother?.phoneEnabled !== false && { name: data.groom.mother.name, phone: data.groom.mother.phone, role: '어머니', side: 'groom' as const },
+    data.bride?.phone && data.bride?.phoneEnabled !== false && { name: data.bride.name, phone: data.bride.phone, role: '신부', side: 'bride' as const },
+    data.bride?.father?.phone && data.bride?.father?.phoneEnabled !== false && { name: data.bride.father.name, phone: data.bride.father.phone, role: '아버지', side: 'bride' as const },
+    data.bride?.mother?.phone && data.bride?.mother?.phoneEnabled !== false && { name: data.bride.mother.name, phone: data.bride.mother.phone, role: '어머니', side: 'bride' as const },
+  ].filter(Boolean) as { name: string; phone: string; role: string; side: 'groom' | 'bride' }[]
+
+  const gfbAccounts = [
+    data.groom?.bank?.enabled && { name: data.groom.name, bank: data.groom.bank, role: '신랑', side: 'groom' as const },
+    data.groom?.father?.bank?.enabled && { name: data.groom.father.name, bank: data.groom.father.bank, role: '아버지', side: 'groom' as const },
+    data.groom?.mother?.bank?.enabled && { name: data.groom.mother.name, bank: data.groom.mother.bank, role: '어머니', side: 'groom' as const },
+    data.bride?.bank?.enabled && { name: data.bride.name, bank: data.bride.bank, role: '신부', side: 'bride' as const },
+    data.bride?.father?.bank?.enabled && { name: data.bride.father.name, bank: data.bride.father.bank, role: '아버지', side: 'bride' as const },
+    data.bride?.mother?.bank?.enabled && { name: data.bride.mother.name, bank: data.bride.mother.bank, role: '어머니', side: 'bride' as const },
+  ].filter(Boolean) as { name: string; bank: { bank: string; account: string; holder: string; enabled: boolean }; role: string; side: 'groom' | 'bride' }[]
 
   // 페이지 목록 생성 (목차는 사이드바로만 접근)
   const pages: BookPage[] = []
@@ -2019,21 +2043,9 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
         return
       }
 
-      // 수평 드래그 - 기본 스크롤 방지
+      // 수평 드래그 비활성화 - 기본 동작만 방지
       if (e.cancelable) e.preventDefault()
-
-      if (!dragging) {
-        dragging = true
-        setIsDragging(true)
-      }
-
-      // 첫/마지막 페이지 고무줄 효과
-      let offset = dx
-      if ((currentPage === 0 && dx > 0) || (currentPage >= totalPages - 1 && dx < 0)) {
-        offset = dx * 0.3
-      }
-
-      setDragOffset(offset)
+      return
     }
 
     const onTouchEnd = (e: TouchEvent) => {
@@ -2118,19 +2130,9 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
 
       if (locked === 'vertical') return
 
+      // 수평 드래그 비활성화
       e.preventDefault()
-
-      if (!dragging) {
-        dragging = true
-        setIsDragging(true)
-      }
-
-      let offset = dx
-      if ((currentPage === 0 && dx > 0) || (currentPage >= totalPages - 1 && dx < 0)) {
-        offset = dx * 0.3
-      }
-
-      setDragOffset(offset)
+      return
     }
 
     const onMouseUp = (e: MouseEvent) => {
@@ -2214,7 +2216,7 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
     if (!p) return null
     switch (p.type) {
       case 'cover': return <BookCover data={data} onNext={nextPage} />
-      case 'intro': return <BookIntro data={data} />
+      case 'intro': return <BookIntro data={data} onOpenModal={setOpenModalType} />
       case 'toc': return <BookToc pages={pages} currentPage={currentPage} onGoTo={(i) => { setShowToc(false); goToPage(i) }} colorTheme={data.colorTheme} />
       case 'greeting': return <BookGreeting data={data} />
       case 'chapter':
@@ -2434,6 +2436,279 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
           </div>
         )
       })()}
+
+      {/* 풀스크린 모달 */}
+      {openModalType !== 'none' && (
+        <BookFullscreenModal
+          type={openModalType}
+          onChangeType={setOpenModalType}
+          onClose={() => setOpenModalType('none')}
+          data={data}
+          invitationId={invitationId}
+          contacts={gfbContacts}
+          accounts={gfbAccounts}
+          bookColors={bookColors}
+        />
+      )}
+    </div>
+  )
+}
+
+// -- Book: Fullscreen Modal (연락처/참석여부/오시는길/마음전하기) --
+type ModalTab = 'contact' | 'rsvp' | 'location' | 'account' | 'share'
+
+function BookFullscreenModal({ type, onChangeType, onClose, data, invitationId, contacts, accounts, bookColors }: {
+  type: ModalTab
+  onChangeType: (t: ModalTab) => void
+  onClose: () => void
+  data: any
+  invitationId: string
+  contacts: { name: string; phone: string; role: string; side: 'groom' | 'bride' }[]
+  accounts: { name: string; bank: { bank: string; account: string; holder: string; enabled: boolean }; role: string; side: 'groom' | 'bride' }[]
+  bookColors: BookColorConfig
+}) {
+  const [rsvpForm, setRsvpForm] = useState({ name: '', side: '' as '' | 'groom' | 'bride', attendance: '', guestCount: 1, message: '' })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const accent = bookColors.accent
+
+  const tabs: { key: ModalTab; label: string }[] = [
+    contacts.length > 0 ? { key: 'contact', label: '연락하기' } : null,
+    data.rsvpEnabled ? { key: 'rsvp', label: '참석여부' } : null,
+    { key: 'location', label: '오시는길' },
+    accounts.length > 0 ? { key: 'account', label: '마음전하기' } : null,
+    { key: 'share', label: '공유하기' },
+  ].filter(Boolean) as { key: ModalTab; label: string }[]
+
+  const copyToClipboard = (text: string) => { navigator.clipboard.writeText(text); alert('복사되었습니다') }
+
+  const handleRsvpSubmit = async () => {
+    if (!rsvpForm.name || !rsvpForm.attendance) { alert('이름과 참석 여부를 입력해주세요.'); return }
+    setIsSubmitting(true)
+    try {
+      const attendanceMap: Record<string, string> = { yes: 'attending', no: 'not_attending', maybe: 'pending' }
+      const res = await fetch('/api/rsvp', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ invitationId, guestName: rsvpForm.name, attendance: attendanceMap[rsvpForm.attendance] || rsvpForm.attendance, guestCount: rsvpForm.attendance === 'yes' ? rsvpForm.guestCount : 0, message: rsvpForm.message, side: rsvpForm.side || undefined }),
+      })
+      if (res.ok) { alert('참석 여부가 전달되었습니다. 감사합니다!'); onClose(); setRsvpForm({ name: '', side: '', attendance: '', guestCount: 1, message: '' }) }
+      else { const d = (await res.json().catch(() => ({}))) as { error?: string }; alert(d.error || '전송에 실패했습니다.') }
+    } catch { alert('전송에 실패했습니다.') } finally { setIsSubmitting(false) }
+  }
+
+  const handleKakaoShare = () => {
+    const w = window as any; const url = window.location.href
+    if (w.Kakao?.Share && w.Kakao.isInitialized?.()) {
+      w.Kakao.Share.sendDefault({ objectType: 'feed', content: { title: `${data.groom?.name || '신랑'} ❤️ ${data.bride?.name || '신부'}의 결혼식`, description: `${data.wedding?.date || ''}\n${data.wedding?.venue?.name || ''}`, imageUrl: data.media?.coverImage || 'https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png', link: { mobileWebUrl: url, webUrl: url } }, buttons: [{ title: '청첩장 보기', link: { mobileWebUrl: url, webUrl: url } }] })
+      onClose()
+    } else { navigator.clipboard.writeText(url); alert('링크가 복사되었습니다!') }
+  }
+
+  const groomContacts = contacts.filter(c => c.side === 'groom')
+  const brideContacts = contacts.filter(c => c.side === 'bride')
+  const groomAccounts = accounts.filter(a => a.side === 'groom')
+  const brideAccounts = accounts.filter(a => a.side === 'bride')
+  const venue = data.wedding?.venue || {}
+  const directions = data.wedding?.directions
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center" onClick={onClose}>
+      {/* 배경 오버레이 */}
+      <div className="absolute inset-0 bg-black/60" style={{ backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }} />
+
+      {/* 모달 카드 */}
+      <div
+        className="relative z-10 flex flex-col overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: 'calc(100% - 32px)', height: 'calc(100% - 80px)', maxWidth: '420px',
+          background: bookColors.pageBg, borderRadius: '16px',
+          animation: 'bkFadeUp 0.3s ease-out both',
+        }}
+      >
+        {/* 헤더: 닫기 버튼 */}
+        <div className="flex items-center justify-end flex-shrink-0 px-3 pt-3 pb-1">
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full" style={{ background: `${bookColors.muted}15` }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={bookColors.muted} strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+          </button>
+        </div>
+
+        {/* 탭 */}
+        <div className="flex border-b flex-shrink-0" style={{ borderColor: bookColors.divider }}>
+          {tabs.map(tab => (
+            <button key={tab.key} onClick={() => onChangeType(tab.key)} className="flex-1 py-3 text-[11px] font-medium relative transition-colors" style={{ color: type === tab.key ? accent : bookColors.muted }}>
+              {tab.label}
+              {type === tab.key && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-[2px] rounded-full" style={{ background: accent }} />}
+            </button>
+          ))}
+        </div>
+
+        {/* 콘텐츠 */}
+        <div className="flex-1 overflow-y-auto p-5" style={{ touchAction: 'auto' }}>
+
+          {/* 연락하기 */}
+          {type === 'contact' && (
+            <div>
+              {groomContacts.length > 0 && (
+                <div className="mb-5">
+                  <div className="flex items-center gap-2 mb-2"><span className="w-1.5 h-1.5 rounded-full" style={{ background: '#60A5FA' }} /><p className="text-xs font-medium" style={{ color: accent }}>신랑측</p></div>
+                  {groomContacts.map((c, i) => (
+                    <div key={i} className="flex items-center justify-between py-3" style={{ borderBottom: i < groomContacts.length - 1 ? `0.5px solid ${bookColors.divider}` : 'none' }}>
+                      <div><span className="text-xs font-medium" style={{ color: bookColors.heading }}>{c.role}</span><p className="text-[11px]" style={{ color: bookColors.muted }}>{c.name}</p></div>
+                      <div className="flex gap-2">
+                        <a href={`tel:${c.phone}`} onClick={e => e.stopPropagation()} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ border: `0.5px solid ${accent}` }}>
+                          <svg className="w-4 h-4" fill="none" stroke={accent} viewBox="0 0 24 24" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" /></svg>
+                        </a>
+                        <a href={`sms:${c.phone}`} onClick={e => e.stopPropagation()} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ border: `0.5px solid ${accent}` }}>
+                          <svg className="w-4 h-4" fill="none" stroke={accent} viewBox="0 0 24 24" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 011.037-.443 48.282 48.282 0 005.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg>
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {brideContacts.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-2"><span className="w-1.5 h-1.5 rounded-full" style={{ background: '#F472B6' }} /><p className="text-xs font-medium" style={{ color: accent }}>신부측</p></div>
+                  {brideContacts.map((c, i) => (
+                    <div key={i} className="flex items-center justify-between py-3" style={{ borderBottom: i < brideContacts.length - 1 ? `0.5px solid ${bookColors.divider}` : 'none' }}>
+                      <div><span className="text-xs font-medium" style={{ color: bookColors.heading }}>{c.role}</span><p className="text-[11px]" style={{ color: bookColors.muted }}>{c.name}</p></div>
+                      <div className="flex gap-2">
+                        <a href={`tel:${c.phone}`} onClick={e => e.stopPropagation()} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ border: `0.5px solid ${accent}` }}>
+                          <svg className="w-4 h-4" fill="none" stroke={accent} viewBox="0 0 24 24" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" /></svg>
+                        </a>
+                        <a href={`sms:${c.phone}`} onClick={e => e.stopPropagation()} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ border: `0.5px solid ${accent}` }}>
+                          <svg className="w-4 h-4" fill="none" stroke={accent} viewBox="0 0 24 24" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 011.037-.443 48.282 48.282 0 005.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg>
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 참석여부 */}
+          {type === 'rsvp' && (
+            <div>
+              <input type="text" placeholder="이름" value={rsvpForm.name} onChange={(e) => setRsvpForm({ ...rsvpForm, name: e.target.value })} className="w-full p-3 rounded-xl mb-3 text-sm outline-none" style={{ background: `${accent}08`, color: bookColors.text }} />
+              <div className="grid grid-cols-2 gap-2 mb-3">
+                <button onClick={() => setRsvpForm({ ...rsvpForm, side: rsvpForm.side === 'groom' ? '' : 'groom' })} className="py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.side === 'groom' ? accent : `${accent}08`, color: rsvpForm.side === 'groom' ? '#fff' : bookColors.text }}>신랑측</button>
+                <button onClick={() => setRsvpForm({ ...rsvpForm, side: rsvpForm.side === 'bride' ? '' : 'bride' })} className="py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.side === 'bride' ? accent : `${accent}08`, color: rsvpForm.side === 'bride' ? '#fff' : bookColors.text }}>신부측</button>
+              </div>
+              <div className="flex gap-2 mb-3">
+                <button onClick={() => setRsvpForm({ ...rsvpForm, attendance: 'yes' })} className="flex-1 py-3 rounded-xl text-sm" style={{ background: rsvpForm.attendance === 'yes' ? accent : `${accent}08`, color: rsvpForm.attendance === 'yes' ? '#fff' : bookColors.text }}>참석</button>
+                <button onClick={() => setRsvpForm({ ...rsvpForm, attendance: 'no' })} className="flex-1 py-3 rounded-xl text-sm" style={{ background: rsvpForm.attendance === 'no' ? accent : `${accent}08`, color: rsvpForm.attendance === 'no' ? '#fff' : bookColors.text }}>불참</button>
+              </div>
+              {rsvpForm.attendance === 'yes' && (
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-sm" style={{ color: bookColors.text }}>참석 인원</span>
+                  <div className="flex items-center gap-2 ml-auto">
+                    <button onClick={() => setRsvpForm({ ...rsvpForm, guestCount: Math.max(1, rsvpForm.guestCount - 1) })} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: `${accent}08` }}>-</button>
+                    <span className="w-8 text-center text-sm" style={{ color: bookColors.text }}>{rsvpForm.guestCount}</span>
+                    <button onClick={() => setRsvpForm({ ...rsvpForm, guestCount: rsvpForm.guestCount + 1 })} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: `${accent}08` }}>+</button>
+                  </div>
+                </div>
+              )}
+              <textarea placeholder="메시지 (선택)" value={rsvpForm.message} onChange={(e) => setRsvpForm({ ...rsvpForm, message: e.target.value })} className="w-full p-3 rounded-xl mb-4 text-sm outline-none resize-none h-20" style={{ background: `${accent}08`, color: bookColors.text }} />
+              <button onClick={handleRsvpSubmit} disabled={isSubmitting || !rsvpForm.name.trim() || !rsvpForm.attendance} className="w-full py-3 rounded-xl text-sm text-white" style={{ background: accent, opacity: (!rsvpForm.name.trim() || !rsvpForm.attendance) ? 0.4 : 1 }}>{isSubmitting ? '전송중...' : '제출하기'}</button>
+            </div>
+          )}
+
+          {/* 오시는길 */}
+          {type === 'location' && (
+            <div>
+              <div className="text-center mb-5">
+                <p className="text-sm font-medium mb-1" style={{ color: bookColors.heading }}>{venue.name || '예식장'}</p>
+                <p className="text-xs" style={{ color: bookColors.muted }}>{venue.address || ''}</p>
+              </div>
+              <div className="grid grid-cols-3 gap-2 mb-5">
+                <a href={`https://map.naver.com/v5/search/${encodeURIComponent(venue.address || '')}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center p-3 rounded-xl" style={{ background: `${accent}08` }}>
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center mb-1" style={{ background: '#03C75A' }}><span className="text-white text-xs font-bold">N</span></div>
+                  <span className="text-[10px]" style={{ color: bookColors.text }}>네이버지도</span>
+                </a>
+                <a href={`https://map.kakao.com/link/search/${encodeURIComponent(venue.address || '')}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center p-3 rounded-xl" style={{ background: `${accent}08` }}>
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center mb-1" style={{ background: '#FEE500' }}><span className="text-black text-xs font-bold">K</span></div>
+                  <span className="text-[10px]" style={{ color: bookColors.text }}>카카오맵</span>
+                </a>
+                <a href={`tmap://search?name=${encodeURIComponent(venue.name || '')}`} className="flex flex-col items-center p-3 rounded-xl" style={{ background: `${accent}08` }}>
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center mb-1" style={{ background: '#4285F4' }}><span className="text-white text-xs font-bold">T</span></div>
+                  <span className="text-[10px]" style={{ color: bookColors.text }}>티맵</span>
+                </a>
+              </div>
+              {directions?.car && (
+                <div className="mb-4">
+                  <p className="text-[10px] font-medium mb-1.5" style={{ color: accent }}>자가용</p>
+                  <div className="rounded-xl p-3" style={{ background: `${accent}08` }}>
+                    <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: bookColors.text }}>{directions.car}</p>
+                  </div>
+                </div>
+              )}
+              {directions?.publicTransport && (
+                <div className="mb-4">
+                  <p className="text-[10px] font-medium mb-1.5" style={{ color: accent }}>대중교통</p>
+                  <div className="rounded-xl p-3" style={{ background: `${accent}08` }}>
+                    <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: bookColors.text }}>{directions.publicTransport}</p>
+                  </div>
+                </div>
+              )}
+              <button onClick={() => copyToClipboard(venue.address || '')} className="w-full py-2.5 rounded-xl text-xs" style={{ background: `${accent}08`, color: bookColors.text }}>주소 복사</button>
+            </div>
+          )}
+
+          {/* 마음전하기 */}
+          {type === 'account' && (
+            <div>
+              {groomAccounts.length > 0 && (
+                <div className="mb-5">
+                  <div className="flex items-center gap-2 mb-2"><span className="w-1.5 h-1.5 rounded-full" style={{ background: '#60A5FA' }} /><p className="text-xs font-medium" style={{ color: accent }}>신랑측</p></div>
+                  {groomAccounts.map((a, i) => (
+                    <div key={i} className="p-3 rounded-xl mb-2" style={{ background: `${accent}08` }}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-medium" style={{ color: bookColors.heading }}>{a.role} {a.name}</span>
+                        <button onClick={() => copyToClipboard(a.bank.account.replace(/[^0-9]/g, ''))} className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: `${accent}15`, color: accent }}>복사</button>
+                      </div>
+                      <p className="text-[10px]" style={{ color: bookColors.muted }}>{a.bank.holder}</p>
+                      <p className="text-xs" style={{ color: bookColors.text }}>{a.bank.bank} {a.bank.account}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {brideAccounts.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-2"><span className="w-1.5 h-1.5 rounded-full" style={{ background: '#F472B6' }} /><p className="text-xs font-medium" style={{ color: accent }}>신부측</p></div>
+                  {brideAccounts.map((a, i) => (
+                    <div key={i} className="p-3 rounded-xl mb-2" style={{ background: `${accent}08` }}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-medium" style={{ color: bookColors.heading }}>{a.role} {a.name}</span>
+                        <button onClick={() => copyToClipboard(a.bank.account.replace(/[^0-9]/g, ''))} className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: `${accent}15`, color: accent }}>복사</button>
+                      </div>
+                      <p className="text-[10px]" style={{ color: bookColors.muted }}>{a.bank.holder}</p>
+                      <p className="text-xs" style={{ color: bookColors.text }}>{a.bank.bank} {a.bank.account}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 공유하기 */}
+          {type === 'share' && (
+            <div>
+              <p className="text-center text-sm mb-5" style={{ color: bookColors.text }}>청첩장을 공유해보세요</p>
+              <div className="grid grid-cols-2 gap-3">
+                <button onClick={handleKakaoShare} className="flex flex-col items-center justify-center p-5 rounded-xl active:scale-[0.98]" style={{ background: '#FEE500' }}>
+                  <svg className="w-8 h-8 mb-2" viewBox="0 0 24 24" fill="#3C1E1E"><path d="M12 3C6.477 3 2 6.463 2 10.691c0 2.643 1.765 4.966 4.412 6.286l-.893 3.27a.3.3 0 00.455.334l3.862-2.552c.67.097 1.357.148 2.055.148 5.523 0 10-3.463 10-7.777C22 6.463 17.523 3 12 3z" /></svg>
+                  <span className="text-xs font-medium" style={{ color: '#3C1E1E' }}>카카오톡 공유</span>
+                </button>
+                <button onClick={() => { navigator.clipboard.writeText(window.location.href); alert('링크가 복사되었습니다!') }} className="flex flex-col items-center justify-center p-5 rounded-xl active:scale-[0.98]" style={{ background: `${accent}08` }}>
+                  <svg className="w-8 h-8 mb-2" fill="none" stroke={accent} strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" /></svg>
+                  <span className="text-xs font-medium" style={{ color: bookColors.text }}>링크 복사</span>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
@@ -2479,7 +2754,7 @@ function BookCover({ data, onNext }: { data: any; onNext: () => void }) {
   // ── 전면 (full): 이미지가 화면 전체를 채움, 텍스트 오버레이 ──
   if (coverDesign === 'full' && coverImage) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-end relative overflow-hidden" style={{ background: '#000' }}>
+      <div className="min-h-screen flex flex-col items-center justify-end relative overflow-hidden" onClick={onNext} style={{ background: '#000', cursor: 'pointer' }}>
         <div className="absolute inset-0">
           <img src={coverImage} alt="" className="w-full h-full object-cover" style={{ opacity: loaded ? 1 : 0, transition: 'opacity 1.2s ease-out', ...bookCropStyle }} />
           <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.6) 100%)' }} />
@@ -2499,7 +2774,7 @@ function BookCover({ data, onNext }: { data: any; onNext: () => void }) {
             <div style={{ width: '30px', height: '0.5px', background: 'rgba(255,255,255,0.4)', margin: '0 auto 12px' }} />
             <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '12px', letterSpacing: '4px', color: 'rgba(255,255,255,0.7)' }}>{dateStr}</div>
             {venueName && (
-              <div className="mt-2" style={{ fontFamily: "'Okticon', serif", fontSize: '11px', fontStyle: 'italic', color: 'rgba(255,255,255,0.5)' }}>{venueName}</div>
+              <div className="mt-2" style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '11px', letterSpacing: '2px', color: 'rgba(255,255,255,0.5)' }}>{venueName}</div>
             )}
           </div>
           {openButton}
@@ -2511,7 +2786,7 @@ function BookCover({ data, onNext }: { data: any; onNext: () => void }) {
   // ── 타이포 (typo): 전면 이미지 배경 + 중앙 화이트 카드 ──
   if (coverDesign === 'typo' && coverImage) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden" style={{ background: '#000' }}>
+      <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden" onClick={onNext} style={{ background: '#000', cursor: 'pointer' }}>
         {/* 전면 배경 이미지 */}
         <div className="absolute inset-0">
           <img src={coverImage} alt="" className="w-full h-full object-cover" style={{ opacity: loaded ? 1 : 0, transition: 'opacity 1.2s ease-out', ...bookCropStyle }} />
@@ -2550,7 +2825,7 @@ function BookCover({ data, onNext }: { data: any; onNext: () => void }) {
             <div style={{ width: '40px', height: '0.5px', background: '#ccc', margin: '0 auto 12px' }} />
             <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '12px', letterSpacing: '4px', color: '#999' }}>{dateStr}</div>
             {venueName && (
-              <div className="mt-2" style={{ fontFamily: "'Okticon', serif", fontSize: '11px', fontStyle: 'italic', color: '#999' }}>{venueName}</div>
+              <div className="mt-2" style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '11px', letterSpacing: '2px', color: '#999' }}>{venueName}</div>
             )}
           </div>
         </div>
@@ -2562,7 +2837,7 @@ function BookCover({ data, onNext }: { data: any; onNext: () => void }) {
   // ── 센터 (center): 스크랩북 스타일 ──
   if (coverDesign === 'center' && coverImage) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden" style={{ background: '#EDEBE6' }}>
+      <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden" onClick={onNext} style={{ background: '#EDEBE6', cursor: 'pointer' }}>
         {/* 스크립트 타이틀 */}
         <div style={{ opacity: loaded ? 1 : 0, transition: 'opacity 0.8s 0.3s' }}>
           <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '24px', fontWeight: 300, letterSpacing: '6px', lineHeight: 1.4, color: '#3D3028', marginBottom: '28px', textAlign: 'center' }}>
@@ -2594,7 +2869,7 @@ function BookCover({ data, onNext }: { data: any; onNext: () => void }) {
         {/* 장소 */}
         {venueName && (
           <div className="mt-8" style={{ opacity: loaded ? 1 : 0, transition: 'opacity 0.8s 1s' }}>
-            <div style={{ fontFamily: "'Okticon', serif", fontSize: '14px', fontStyle: 'italic', color: '#5C5040', textAlign: 'center' }}>{venueName}</div>
+            <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '13px', letterSpacing: '2px', color: '#5C5040', textAlign: 'center' }}>{venueName}</div>
           </div>
         )}
 
@@ -2630,7 +2905,7 @@ function BookCover({ data, onNext }: { data: any; onNext: () => void }) {
   })
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden" style={{ background: bkEc.bg }}>
+    <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden" onClick={onNext} style={{ background: bkEc.bg, cursor: 'pointer' }}>
       {/* 상단 장식선 */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 transition-all duration-[2000ms]" style={{ width: '1px', height: loaded ? '60px' : '0px', background: bkEc.line }} />
 
@@ -2652,7 +2927,7 @@ function BookCover({ data, onNext }: { data: any; onNext: () => void }) {
           <div style={{ width: '30px', height: '0.5px', background: bkEc.line, margin: '0 auto 12px' }} />
           <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '12px', letterSpacing: '4px', ...bkEmbossStyle('sm') }}>{dateStr}</div>
           {venueName && (
-            <div className="mt-2" style={{ fontFamily: "'Okticon', serif", fontSize: '11px', fontStyle: 'italic', ...bkEmbossStyle('sm') }}>{venueName}</div>
+            <div className="mt-2" style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '11px', letterSpacing: '2px', ...bkEmbossStyle('sm') }}>{venueName}</div>
           )}
         </div>
       </div>
@@ -2701,32 +2976,64 @@ function BookToc({ pages, currentPage, onGoTo, colorTheme }: { pages: BookPage[]
 }
 
 // -- Book: Intro (사진 없는 이유) --
-function BookIntro({ data }: { data: any }) {
+function BookIntro({ data, onOpenModal }: { data: any; onOpenModal?: (modal: 'contact' | 'rsvp' | 'location' | 'account') => void }) {
   const bookColors = getBookColors(data?.colorTheme)
   const intro = data?.intro
   const title = intro?.title || '우리만의 에세이'
   const subtitle = intro?.subtitle || '— 사진 없는 청첩장 —'
   const bodyText = intro?.body || '사진이 없는 이유는 단순합니다.\n우리의 이야기가 더 잘 보이길 바라서입니다.\n\n수많은 이미지 속에서\n스쳐 지나가는 대신,\n한 문장이라도 천천히 읽히고 싶었습니다.\n\n이곳은 우리의 기록이고,\n작은 에세이입니다.'
   const lines = bodyText.split('\n')
+
+  // 하단 네비게이션 아이템 (팝업 모달로 연결)
+  const navItems = [
+    { modal: 'contact' as const, label: '연락하기', icon: <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" /></svg> },
+    { modal: 'rsvp' as const, label: '참석여부', icon: <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
+    { modal: 'location' as const, label: '오시는길', icon: <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg> },
+    { modal: 'account' as const, label: '마음전하기', icon: <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg> },
+  ]
+
   return (
-    <div className="bk-page flex items-center justify-center" style={{ background: bookColors.pageBg }}>
-      <div className="w-full px-12 py-16 max-w-md mx-auto text-center">
+    <div className="bk-page flex flex-col items-center justify-center" style={{ background: bookColors.accent }}>
+      <div className="w-full px-12 py-16 max-w-md mx-auto text-center flex-1 flex flex-col justify-center">
         <BA d={0} type="fade" className="mb-8">
-          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '4px', color: bookColors.muted }}>BEFORE WE BEGIN</div>
-          <div className="mt-3"><BLine width="20px" color={bookColors.accent} d={300} center /></div>
+          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '4px', color: 'rgba(255,255,255,0.6)' }}>BEFORE WE BEGIN</div>
+          <div className="mt-3"><BLine width="20px" color="rgba(255,255,255,0.4)" d={300} center /></div>
         </BA>
         <BA d={200} className="mb-10">
-          <p className="es-f18" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '18px', fontWeight: 600, lineHeight: 1.6, color: bookColors.heading }}>{title}</p>
-          <p className="es-f12" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '12px', letterSpacing: '2px', color: bookColors.muted, marginTop: '6px' }}>{subtitle}</p>
+          <p className="es-f18" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '18px', fontWeight: 600, lineHeight: 1.6, color: '#fff' }}>{title}</p>
+          <p className="es-f12" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '12px', letterSpacing: '2px', color: 'rgba(255,255,255,0.6)', marginTop: '6px' }}>{subtitle}</p>
         </BA>
         <div>
           {lines.map((line: string, i: number) => (
             <BA key={i} d={400 + i * 80}>
-              <p className="es-f14" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '14px', lineHeight: 2.4, color: bookColors.text }}>{line || '\u00A0'}</p>
+              <p className="es-f14" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '14px', lineHeight: 2.4, color: 'rgba(255,255,255,0.9)' }}>{line || '\u00A0'}</p>
             </BA>
           ))}
         </div>
       </div>
+
+      {/* 하단 퀵 네비게이션 (팝업 모달) */}
+      {onOpenModal && (
+        <BA d={800} type="fade">
+          <div className="w-full pb-6 pt-2">
+            <div className="flex items-center justify-center gap-6 px-8">
+              {navItems.map((item) => (
+                <button
+                  key={item.modal}
+                  onClick={(e) => { e.stopPropagation(); onOpenModal(item.modal) }}
+                  className="flex flex-col items-center gap-1.5 transition-opacity active:opacity-60"
+                  style={{ color: 'rgba(255,255,255,0.7)' }}
+                >
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(4px)' }}>
+                    {item.icon}
+                  </div>
+                  <span style={{ fontSize: '9px', letterSpacing: '0.5px', color: 'rgba(255,255,255,0.5)' }}>{item.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </BA>
+      )}
     </div>
   )
 }
@@ -3011,15 +3318,15 @@ function BookInfoIntro({ data }: { data: any }) {
   const dateStr = `${weddingDate.getFullYear()}. ${String(weddingDate.getMonth() + 1).padStart(2, '0')}. ${String(weddingDate.getDate()).padStart(2, '0')}`
   const venueName = data.wedding?.venue?.name || ''
   return (
-    <div className="bk-page flex items-center justify-center" style={{ background: bookInfoColors.pageBg }}>
+    <div className="bk-page flex items-center justify-center" style={{ background: bookInfoColors.accent }}>
       <div className="w-full px-12 py-16 max-w-md mx-auto text-center">
-        <BA d={0}><BLine width="40px" color={bookInfoColors.divider} d={0} center /></BA>
-        <BA d={200} type="fade"><p style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '11px', letterSpacing: '4px', color: bookInfoColors.muted, marginBottom: '24px', marginTop: '32px' }}>INFORMATION</p></BA>
-        <BA d={400}><p style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '22px', fontWeight: 300, color: bookInfoColors.heading, lineHeight: 1.8 }}>예식 안내</p></BA>
-        <BA d={600} type="scale"><div style={{ width: '1px', height: '40px', background: bookInfoColors.divider, margin: '24px auto' }} /></BA>
-        <BA d={800} type="fade"><p style={{ fontSize: '14px', color: bookInfoColors.text, letterSpacing: '1px', lineHeight: 2 }}>{dateStr}</p></BA>
-        {venueName && <BA d={900} type="fade"><p style={{ fontSize: '13px', color: bookInfoColors.muted, marginTop: '4px' }}>{venueName}</p></BA>}
-        <BA d={1000}><BLine width="40px" color={bookInfoColors.divider} d={0} center /></BA>
+        <BA d={0}><BLine width="40px" color="rgba(255,255,255,0.3)" d={0} center /></BA>
+        <BA d={200} type="fade"><p style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '11px', letterSpacing: '4px', color: 'rgba(255,255,255,0.6)', marginBottom: '24px', marginTop: '32px' }}>INFORMATION</p></BA>
+        <BA d={400}><p style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '22px', fontWeight: 300, color: '#fff', lineHeight: 1.8 }}>예식 안내</p></BA>
+        <BA d={600} type="scale"><div style={{ width: '1px', height: '40px', background: 'rgba(255,255,255,0.3)', margin: '24px auto' }} /></BA>
+        <BA d={800} type="fade"><p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.9)', letterSpacing: '1px', lineHeight: 2 }}>{dateStr}</p></BA>
+        {venueName && <BA d={900} type="fade"><p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', marginTop: '4px' }}>{venueName}</p></BA>}
+        <BA d={1000}><BLine width="40px" color="rgba(255,255,255,0.3)" d={0} center /></BA>
       </div>
     </div>
   )

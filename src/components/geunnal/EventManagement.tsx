@@ -219,12 +219,17 @@ export default function EventManagement({
     }
   }, [eventsWithGuests])
 
-  const popupEvents = useMemo(() => {
-    if (!popupDate) return []
+  const popupInitialIndex = useMemo(() => {
+    if (!popupDate) return 0
+    const idx = sortedEvents.findIndex(e => e.date.split('T')[0] === popupDate)
+    return idx >= 0 ? idx : 0
+  }, [sortedEvents, popupDate])
+
+  const allEventsWithGuests = useMemo(() => {
     return eventsWithGuests
-      .filter(ewg => ewg.event.date.split('T')[0] === popupDate)
-      .sort((a, b) => a.event.time.localeCompare(b.event.time))
-  }, [eventsWithGuests, popupDate])
+      .filter(ewg => ewg.event.date !== 'TBD' && ewg.event.date !== '')
+      .sort((a, b) => a.event.date.localeCompare(b.event.date) || a.event.time.localeCompare(b.event.time))
+  }, [eventsWithGuests])
 
   function handleDateClick(dateStr: string) {
     const dateEvents = sortedEvents.filter(e => e.date.split('T')[0] === dateStr)
@@ -560,8 +565,9 @@ export default function EventManagement({
       <EventPopup
         open={popupDate !== null}
         onClose={() => setPopupDate(null)}
-        events={popupEvents.map(ewg => ewg.event)}
-        eventsWithGuests={popupEvents}
+        events={sortedEvents}
+        eventsWithGuests={allEventsWithGuests}
+        initialIndex={popupInitialIndex}
         onEventClick={(id) => { setPopupDate(null); onEventClick(id) }}
       />
     </div>

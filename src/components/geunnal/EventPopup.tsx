@@ -1,5 +1,5 @@
 'use client'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { X, ChevronLeft, ChevronRight, Clock, MapPin, Users } from 'lucide-react'
 import { GeunnalEvent, EventGuest } from '@/types/geunnal'
 import GeunnalBadge from './Badge'
@@ -15,6 +15,7 @@ interface EventPopupProps {
   events: GeunnalEvent[]
   eventsWithGuests?: EventWithGuests[]
   onEventClick: (eventId: string) => void
+  initialIndex?: number
 }
 
 const SIDE_LABELS: Record<string, string> = {
@@ -44,8 +45,13 @@ function formatTime(timeStr: string): string {
   return m > 0 ? `${period} ${hour}시 ${m}분` : `${period} ${hour}시`
 }
 
-export default function EventPopup({ open, onClose, events, eventsWithGuests, onEventClick }: EventPopupProps) {
-  const [currentIndex, setCurrentIndex] = useState(0)
+export default function EventPopup({ open, onClose, events, eventsWithGuests, onEventClick, initialIndex = 0 }: EventPopupProps) {
+  const [currentIndex, setCurrentIndex] = useState(initialIndex)
+
+  // Reset index when popup opens with new initialIndex
+  useEffect(() => {
+    if (open) setCurrentIndex(initialIndex)
+  }, [open, initialIndex])
 
   const handlePrev = useCallback(() => {
     setCurrentIndex(i => (i > 0 ? i - 1 : events.length - 1))

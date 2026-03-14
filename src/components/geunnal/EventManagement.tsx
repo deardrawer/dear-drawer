@@ -373,6 +373,7 @@ export default function EventManagement({
               <div key={ewg.event.id}>
                 <TBDEventCard
                   ewg={ewg}
+                  onClick={() => onEventClick(ewg.event.id)}
                   onContactToggle={handleContactToggle}
                 />
               </div>
@@ -559,8 +560,9 @@ function EventCard({ ewg, onClick, onCostClick, isCompleted }: {
 }
 
 /* ─── TBD Event Card ─── */
-function TBDEventCard({ ewg, onContactToggle }: {
+function TBDEventCard({ ewg, onClick, onContactToggle }: {
   ewg: EventWithGuests
+  onClick: () => void
   onContactToggle: (eventId: string, guestId: string, contacted: boolean) => void
 }) {
   const { event, guests } = ewg
@@ -568,7 +570,7 @@ function TBDEventCard({ ewg, onContactToggle }: {
   const totalGuests = guests.length
 
   return (
-    <GeunnalCard>
+    <GeunnalCard className="cursor-pointer active:scale-[0.98] transition-transform" onClick={onClick}>
       <div className="flex flex-col gap-2.5">
         {/* Row 1: Side badge + Name */}
         <div className="flex items-center gap-2">
@@ -619,7 +621,7 @@ function TBDEventCard({ ewg, onContactToggle }: {
               <button
                 key={g.id}
                 type="button"
-                onClick={() => onContactToggle(event.id, g.id, g.contacted !== 1)}
+                onClick={(e) => { e.stopPropagation(); onContactToggle(event.id, g.id, g.contacted !== 1) }}
                 className={`inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-xl transition-colors ${
                   g.contacted === 1
                     ? 'bg-[#EDE9FA] text-[#8B75D0]'

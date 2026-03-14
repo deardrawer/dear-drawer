@@ -32,7 +32,7 @@ interface EventDetailProps {
 
 // Utility function to format date
 const formatDate = (dateStr: string) => {
-  if (dateStr === 'TBD') return '미정'
+  if (!dateStr || dateStr === 'TBD') return '미정'
   const date = new Date(dateStr)
   return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`
 }
@@ -294,10 +294,14 @@ export default function EventDetail({
               <MapPin className="w-5 h-5 text-[#9B8CC4] mt-0.5" />
               <div>
                 <p className="text-sm text-[#5A5270]">장소</p>
-                <p className="font-medium text-[#2A2240]">
-                  {event.restaurant}
-                </p>
-                <p className="text-sm text-[#9B8CC4]">{event.area}</p>
+                {event.restaurant ? (
+                  <p className="font-medium text-[#2A2240]">{event.restaurant}</p>
+                ) : (
+                  <p className="font-medium text-[#9B8CC4]">미정</p>
+                )}
+                {event.area ? (
+                  <p className="text-sm text-[#9B8CC4]">{event.area}</p>
+                ) : null}
               </div>
             </div>
 

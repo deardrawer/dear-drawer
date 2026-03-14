@@ -11,26 +11,32 @@ interface UseKakaoMapOptions {
 }
 
 export default function useKakaoMap({ venues, onMarkerClick }: UseKakaoMapOptions) {
-  const containerRef = useRef<HTMLDivElement>(null)
+  const [container, setContainer] = useState<HTMLDivElement | null>(null)
   const mapRef = useRef<KakaoMap | null>(null)
   const markersRef = useRef<Map<string, KakaoMarker>>(new Map())
   const [ready, setReady] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [selectedVenueId, setSelectedVenueId] = useState<string | null>(null)
 
-  // Initialize map
+  // Callback ref: triggers state update when the DOM node appears
+  const containerRef = useCallback((node: HTMLDivElement | null) => {
+    setContainer(node)
+  }, [])
+
+  // Initialize map when container becomes available
   useEffect(() => {
-    if (!containerRef.current) return
+    if (!container || mapRef.current) return
 
     let cancelled = false
 
     loadKakaoMapSDK()
       .then(() => {
-        if (cancelled || !containerRef.current) return
+        if (cancelled || !container) return
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const kakaoMaps = (window as any).kakao.maps
         const center = new kakaoMaps.LatLng(37.5050, 127.0200)
-        const map = new kakaoMaps.Map(containerRef.current, {
+        const map = new kakaoMaps.Map(container, {
           center,
           level: 8,
         })
@@ -38,13 +44,13 @@ export default function useKakaoMap({ venues, onMarkerClick }: UseKakaoMapOption
         setReady(true)
       })
       .catch((err: Error) => {
-        console.warn('Kakao Map load failed:', err.message)
+        if (!cancelled) setError(err.message)
       })
 
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [container])
 
   // Sync markers with venues
   useEffect(() => {
@@ -88,5 +94,5 @@ export default function useKakaoMap({ venues, onMarkerClick }: UseKakaoMapOption
     setSelectedVenueId(venueId)
   }, [])
 
-  return { containerRef, ready, selectedVenueId, focusVenue }
+  return { containerRef, ready, error, selectedVenueId, focusVenue }
 }

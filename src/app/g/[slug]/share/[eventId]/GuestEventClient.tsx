@@ -60,10 +60,10 @@ export default function GuestEventClient({
 }: GuestEventClientProps) {
   const [step, setStep] = useState<Step>('album')
   const [guestName, setGuestName] = useState('')
-  const [isAnonymous, setIsAnonymous] = useState(false)
   const [selectedAvatar, setSelectedAvatar] = useState<number>(0)
   const [message, setMessage] = useState('')
-  const [photo, setPhoto] = useState<{ file: File; preview: string } | null>(null)
+  const [photo, setPhoto] = useState<{ file: File; preview: string; cropped?: string } | null>(null)
+  const [showCropModal, setShowCropModal] = useState(false)
   const [isCompressing, setIsCompressing] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submissions, setSubmissions] = useState<GeunnalSubmission[]>([])
@@ -92,9 +92,11 @@ export default function GuestEventClient({
       })
       const preview = URL.createObjectURL(compressed)
       setPhoto({ file: compressed, preview })
+      setShowCropModal(true)
     } catch {
       const preview = URL.createObjectURL(file)
       setPhoto({ file, preview })
+      setShowCropModal(true)
     } finally {
       setIsCompressing(false)
     }
@@ -118,11 +120,22 @@ export default function GuestEventClient({
     try {
       let photoUrl: string | undefined
 
-      // Upload photo if exists
+      // Upload photo if exists (use cropped version if available)
       if (photo) {
-        const pageId = slug // use slug as identifier for upload path
+        const pageId = slug
         const formData = new FormData()
-        formData.append('file', photo.file)
+        if (photo.cropped) {
+          // Convert cropped data URL to Blob (without fetch, to avoid CSP issues)
+          const [header, base64] = photo.cropped.split(',')
+          const mime = header.match(/:(.*?);/)?.[1] || 'image/jpeg'
+          const binary = atob(base64)
+          const arr = new Uint8Array(binary.length)
+          for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i)
+          const blob = new Blob([arr], { type: mime })
+          formData.append('file', new File([blob], 'photo.jpg', { type: mime }))
+        } else {
+          formData.append('file', photo.file)
+        }
         formData.append('pageId', pageId)
         formData.append('eventId', eventId)
 
@@ -139,8 +152,8 @@ export default function GuestEventClient({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           event_id: eventId,
-          guest_name: isAnonymous ? '익명' : guestName,
-          is_anonymous: isAnonymous ? 1 : 0,
+          guest_name: guestName,
+          is_anonymous: 0,
           avatar_id: selectedAvatar,
           message: message.trim() || undefined,
           photo_url: photoUrl,
@@ -157,11 +170,10 @@ export default function GuestEventClient({
     } finally {
       setIsSubmitting(false)
     }
-  }, [eventId, guestName, isAnonymous, selectedAvatar, message, photo, slug])
+  }, [eventId, guestName, selectedAvatar, message, photo, slug])
 
   const resetForm = useCallback(() => {
     setGuestName('')
-    setIsAnonymous(false)
     setSelectedAvatar(Math.floor(Math.random() * avatarPresets.length))
     setMessage('')
     removePhoto()
@@ -190,7 +202,6 @@ export default function GuestEventClient({
         {step === 'name' && (
           <StepName
             guestName={guestName} setGuestName={setGuestName}
-            isAnonymous={isAnonymous} setIsAnonymous={setIsAnonymous}
             selectedAvatar={selectedAvatar} setSelectedAvatar={setSelectedAvatar}
             onBack={() => setStep('album')} onNext={() => setStep('upload')}
           />
@@ -202,7 +213,9 @@ export default function GuestEventClient({
             cameraRef={cameraRef} galleryRef={galleryRef}
             onFileChange={handleFileChange} onRemovePhoto={removePhoto}
             onBack={() => setStep('name')} onSubmit={handleSubmit}
-            guestName={guestName} isAnonymous={isAnonymous} selectedAvatar={selectedAvatar}
+            guestName={guestName} selectedAvatar={selectedAvatar}
+            showCropModal={showCropModal} setShowCropModal={setShowCropModal}
+            setPhoto={setPhoto}
           />
         )}
         {step === 'done' && (
@@ -335,15 +348,14 @@ function StepAlbum({
 
 /* Step 2: Name + Avatar */
 function StepName({
-  guestName, setGuestName, isAnonymous, setIsAnonymous,
+  guestName, setGuestName,
   selectedAvatar, setSelectedAvatar, onBack, onNext,
 }: {
   guestName: string; setGuestName: (v: string) => void
-  isAnonymous: boolean; setIsAnonymous: (v: boolean) => void
   selectedAvatar: number; setSelectedAvatar: (v: number) => void
   onBack: () => void; onNext: () => void
 }) {
-  const canProceed = isAnonymous || guestName.trim().length > 0
+  const canProceed = guestName.trim().length > 0
 
   return (
     <div className="flex flex-col min-h-dvh">
@@ -360,26 +372,13 @@ function StepName({
 
         <AvatarPicker selectedAvatar={selectedAvatar} setSelectedAvatar={setSelectedAvatar} />
 
-        {/* Anonymous toggle */}
-        <label className="flex items-center gap-2 mb-4 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={isAnonymous}
-            onChange={e => setIsAnonymous(e.target.checked)}
-            className="w-4 h-4 rounded accent-[#8B75D0]"
-          />
-          <span className="text-[13px] text-[#5A5270]">익명으로 남기기</span>
-        </label>
-
         {/* Name input */}
-        {!isAnonymous && (
-          <input
-            placeholder="이름을 입력하세요"
-            value={guestName}
-            onChange={e => setGuestName(e.target.value)}
-            className="w-full h-11 px-3.5 rounded-xl bg-white border border-[#E8E4F0] text-[15px] text-[#2A2240] placeholder:text-[#C5BAE8] focus:outline-none focus:border-[#8B75D0] focus:ring-1 focus:ring-[#8B75D0]/30 transition-colors"
-          />
-        )}
+        <input
+          placeholder="이름을 입력하세요"
+          value={guestName}
+          onChange={e => setGuestName(e.target.value)}
+          className="w-full h-11 px-3.5 rounded-xl bg-white border border-[#E8E4F0] text-[15px] text-[#2A2240] placeholder:text-[#C5BAE8] focus:outline-none focus:border-[#8B75D0] focus:ring-1 focus:ring-[#8B75D0]/30 transition-colors"
+        />
       </div>
 
       <div className="px-5 pb-6" style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>
@@ -400,20 +399,23 @@ function StepName({
 function StepUpload({
   photo, isCompressing, isSubmitting, message, setMessage,
   cameraRef, galleryRef, onFileChange, onRemovePhoto,
-  onBack, onSubmit, guestName, isAnonymous, selectedAvatar,
+  onBack, onSubmit, guestName, selectedAvatar,
+  showCropModal, setShowCropModal, setPhoto,
 }: {
-  photo: { file: File; preview: string } | null
+  photo: { file: File; preview: string; cropped?: string } | null
   isCompressing: boolean; isSubmitting: boolean
   message: string; setMessage: (v: string) => void
   cameraRef: React.RefObject<HTMLInputElement | null>
   galleryRef: React.RefObject<HTMLInputElement | null>
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   onRemovePhoto: () => void; onBack: () => void; onSubmit: () => void
-  guestName: string; isAnonymous: boolean; selectedAvatar: number
+  guestName: string; selectedAvatar: number
+  showCropModal: boolean; setShowCropModal: (v: boolean) => void
+  setPhoto: React.Dispatch<React.SetStateAction<{ file: File; preview: string; cropped?: string } | null>>
 }) {
   const maxChars = 150
   const canSubmit = (message.trim().length > 0 || photo !== null) && !isCompressing && !isSubmitting
-  const displayName = isAnonymous ? '익명' : guestName
+  const displayName = guestName
 
   return (
     <div className="flex flex-col min-h-dvh">
@@ -438,10 +440,16 @@ function StepUpload({
 
         {photo ? (
           <div className="relative mb-6">
-            <img src={photo.preview} alt="Preview" className="w-full aspect-[4/3] object-cover rounded-2xl" />
+            <img
+              src={photo.cropped || photo.preview}
+              alt="Preview"
+              className="w-full aspect-[4/3] object-cover rounded-2xl cursor-pointer"
+              onClick={() => setShowCropModal(true)}
+            />
             <button onClick={onRemovePhoto} className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 flex items-center justify-center">
               <X size={16} strokeWidth={1.5} className="text-white" />
             </button>
+            <p className="text-[11px] text-[#9B8CC4] text-center mt-2">사진을 탭하면 위치/크기를 조정할 수 있어요</p>
           </div>
         ) : (
           <div className="mb-6">
@@ -464,6 +472,18 @@ function StepUpload({
             {isCompressing && <p className="text-[12px] text-[#8B75D0] text-center mt-3 animate-pulse">사진을 처리하고 있어요...</p>}
             <p className="text-[11px] text-[#9B8CC4] text-center mt-3">사진 없이 메시지만 남길 수도 있어요</p>
           </div>
+        )}
+
+        {/* Crop Modal */}
+        {showCropModal && photo && (
+          <CropModal
+            imageSrc={photo.preview}
+            onConfirm={(croppedDataUrl) => {
+              setPhoto(prev => prev ? { ...prev, cropped: croppedDataUrl } : prev)
+              setShowCropModal(false)
+            }}
+            onCancel={() => setShowCropModal(false)}
+          />
         )}
 
         <div className="relative">
@@ -582,6 +602,159 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
           i + 1 <= current ? 'w-6' : 'w-2 bg-[#E8E4F0]'
         }`} style={i + 1 <= current ? { background: 'linear-gradient(135deg, #8B75D0, #B87AAB, #D4899A)' } : {}} />
       ))}
+    </div>
+  )
+}
+
+/* Crop Modal - pan & pinch-zoom, then export 4:3 crop */
+function CropModal({
+  imageSrc,
+  onConfirm,
+  onCancel,
+}: {
+  imageSrc: string
+  onConfirm: (croppedDataUrl: string) => void
+  onCancel: () => void
+}) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const imgRef = useRef<HTMLImageElement>(null)
+  const [scale, setScale] = useState(1)
+  const [offsetX, setOffsetX] = useState(0)
+  const [offsetY, setOffsetY] = useState(0)
+  const dragState = useRef<{ startX: number; startY: number; ox: number; oy: number } | null>(null)
+  const pinchState = useRef<{ dist: number; scale: number } | null>(null)
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX
+      const dy = e.touches[0].clientY - e.touches[1].clientY
+      pinchState.current = { dist: Math.hypot(dx, dy), scale }
+      dragState.current = null
+    } else if (e.touches.length === 1) {
+      dragState.current = { startX: e.touches[0].clientX, startY: e.touches[0].clientY, ox: offsetX, oy: offsetY }
+    }
+  }, [scale, offsetX, offsetY])
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    e.preventDefault()
+    if (e.touches.length === 2 && pinchState.current) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX
+      const dy = e.touches[0].clientY - e.touches[1].clientY
+      const dist = Math.hypot(dx, dy)
+      const newScale = Math.max(0.5, Math.min(4, pinchState.current.scale * (dist / pinchState.current.dist)))
+      setScale(newScale)
+    } else if (e.touches.length === 1 && dragState.current) {
+      setOffsetX(dragState.current.ox + (e.touches[0].clientX - dragState.current.startX))
+      setOffsetY(dragState.current.oy + (e.touches[0].clientY - dragState.current.startY))
+    }
+  }, [])
+
+  const handleTouchEnd = useCallback(() => {
+    dragState.current = null
+    pinchState.current = null
+  }, [])
+
+  // Mouse drag for desktop
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    dragState.current = { startX: e.clientX, startY: e.clientY, ox: offsetX, oy: offsetY }
+  }, [offsetX, offsetY])
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!dragState.current) return
+    setOffsetX(dragState.current.ox + (e.clientX - dragState.current.startX))
+    setOffsetY(dragState.current.oy + (e.clientY - dragState.current.startY))
+  }, [])
+
+  const handleMouseUp = useCallback(() => {
+    dragState.current = null
+  }, [])
+
+  // Wheel zoom for desktop
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    e.preventDefault()
+    setScale(prev => Math.max(0.5, Math.min(4, prev - e.deltaY * 0.002)))
+  }, [])
+
+  const handleConfirm = useCallback(() => {
+    if (!containerRef.current || !imgRef.current) return
+    const container = containerRef.current.getBoundingClientRect()
+    const canvas = document.createElement('canvas')
+    const outputW = 1200
+    const outputH = 900 // 4:3
+    canvas.width = outputW
+    canvas.height = outputH
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const img = imgRef.current
+    // Calculate where the image is rendered relative to the crop area
+    const imgDisplayW = container.width * scale
+    const imgDisplayH = (img.naturalHeight / img.naturalWidth) * imgDisplayW
+    const imgLeft = (container.width - imgDisplayW) / 2 + offsetX
+    const imgTop = (container.height - imgDisplayH) / 2 + offsetY
+
+    // Source coordinates in natural image space
+    const sx = (-imgLeft / imgDisplayW) * img.naturalWidth
+    const sy = (-imgTop / imgDisplayH) * img.naturalHeight
+    const sw = (container.width / imgDisplayW) * img.naturalWidth
+    const sh = (container.height / imgDisplayH) * img.naturalHeight
+
+    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, outputW, outputH)
+    onConfirm(canvas.toDataURL('image/jpeg', 0.9))
+  }, [scale, offsetX, offsetY, onConfirm])
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/80 flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3">
+        <button onClick={onCancel} className="text-white text-[14px]">취소</button>
+        <p className="text-white text-[14px] font-medium">사진 조정</p>
+        <button onClick={handleConfirm} className="text-[#B87AAB] text-[14px] font-medium">완료</button>
+      </div>
+
+      {/* Crop area */}
+      <div className="flex-1 flex items-center justify-center px-4">
+        <div
+          ref={containerRef}
+          className="relative w-full overflow-hidden rounded-2xl touch-none select-none"
+          style={{ aspectRatio: '4/3', cursor: 'grab' }}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          onWheel={handleWheel}
+        >
+          <img
+            ref={imgRef}
+            src={imageSrc}
+            alt="Crop"
+            className="absolute top-1/2 left-1/2 max-w-none pointer-events-none"
+            style={{
+              transform: `translate(-50%, -50%) translate(${offsetX}px, ${offsetY}px) scale(${scale})`,
+              width: '100%',
+            }}
+            draggable={false}
+          />
+        </div>
+      </div>
+
+      {/* Zoom slider */}
+      <div className="flex items-center justify-center gap-3 px-8 py-4">
+        <span className="text-white/60 text-[12px]">-</span>
+        <input
+          type="range"
+          min="0.5"
+          max="4"
+          step="0.1"
+          value={scale}
+          onChange={e => setScale(parseFloat(e.target.value))}
+          className="flex-1 h-1 accent-[#B87AAB]"
+        />
+        <span className="text-white/60 text-[12px]">+</span>
+      </div>
     </div>
   )
 }

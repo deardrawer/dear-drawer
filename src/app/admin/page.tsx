@@ -920,7 +920,7 @@ export default function AdminPage() {
   }
 
   async function handleDeleteGeunnalPage(pageId: string) {
-    if (!confirm('이 그날 페이지를 삭제하시겠습니까? 관련 이벤트와 데이터가 모두 삭제됩니다.')) return
+    if (!confirm('이 그날 페이지를 삭제하시겠습니까? 관련 모임과 데이터가 모두 삭제됩니다.')) return
 
     try {
       const res = await fetch(`/api/geunnal/pages/${pageId}`, {

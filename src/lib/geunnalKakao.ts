@@ -25,7 +25,7 @@ let initialized = false
 
 export function initKakao() {
   if (initialized) return
-  const key = process.env.NEXT_PUBLIC_KAKAO_JS_KEY
+  const key = process.env.NEXT_PUBLIC_KAKAO_JS_KEY || '0890847927f3189d845391481ead8ecc'
   if (!key || typeof window === 'undefined' || !window.Kakao) return
 
   if (!window.Kakao.isInitialized()) {

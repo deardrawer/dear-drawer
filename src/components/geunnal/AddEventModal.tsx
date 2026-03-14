@@ -232,7 +232,7 @@ export default function AddEventModal({
     e.preventDefault()
 
     if (!name.trim()) {
-      alert('이벤트명을 입력해주세요.')
+      alert('모임명을 입력해주세요.')
       return
     }
 
@@ -270,7 +270,7 @@ export default function AddEventModal({
         })
 
         if (!response.ok) {
-          throw new Error('이벤트 수정에 실패했습니다.')
+          throw new Error('모임 수정에 실패했습니다.')
         }
       } else {
         // Create new event
@@ -284,7 +284,7 @@ export default function AddEventModal({
         })
 
         if (!response.ok) {
-          throw new Error('이벤트 생성에 실패했습니다.')
+          throw new Error('모임 생성에 실패했습니다.')
         }
 
         const result = (await response.json()) as { event: { id: string } }
@@ -328,7 +328,7 @@ export default function AddEventModal({
       onClose()
     } catch (error) {
       console.error('Event save error:', error)
-      alert(error instanceof Error ? error.message : '이벤트 저장 중 오류가 발생했습니다.')
+      alert(error instanceof Error ? error.message : '모임 저장 중 오류가 발생했습니다.')
     } finally {
       setLoading(false)
     }
@@ -337,7 +337,7 @@ export default function AddEventModal({
   const handleDelete = async () => {
     if (!editEvent) return
 
-    if (!confirm('이벤트를 삭제하시겠습니까? 모든 게스트와 제출물도 함께 삭제됩니다.')) {
+    if (!confirm('모임을 삭제하시겠습니까? 모든 게스트와 제출물도 함께 삭제됩니다.')) {
       return
     }
 
@@ -352,26 +352,26 @@ export default function AddEventModal({
       })
 
       if (!response.ok) {
-        throw new Error('이벤트 삭제에 실패했습니다.')
+        throw new Error('모임 삭제에 실패했습니다.')
       }
 
       onSave()
       onClose()
     } catch (error) {
       console.error('Event delete error:', error)
-      alert(error instanceof Error ? error.message : '이벤트 삭제 중 오류가 발생했습니다.')
+      alert(error instanceof Error ? error.message : '모임 삭제 중 오류가 발생했습니다.')
     } finally {
       setDeleting(false)
     }
   }
 
   return (
-    <BottomSheet open={open} onClose={onClose} title={editEvent ? '이벤트 수정' : '새 이벤트 추가'}>
+    <BottomSheet open={open} onClose={onClose} title={editEvent ? '모임 수정' : '새 모임 추가'}>
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Event Name */}
         <div>
           <label className="block text-sm font-medium text-[#2A2240] mb-2">
-            이벤트명 <span className="text-[#D4899A]">*</span>
+            모임명 <span className="text-[#D4899A]">*</span>
           </label>
           <input
             type="text"

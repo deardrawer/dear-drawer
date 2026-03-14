@@ -50,7 +50,7 @@ export default function VenuePage({ pageId, token }: VenuePageProps) {
   const [detailOpen, setDetailOpen] = useState(false)
   const [highlightedVenueId, setHighlightedVenueId] = useState<string | null>(null)
 
-  const { containerRef: mapRef, focusVenue } = useKakaoMap({
+  const { containerRef: mapRef, error: mapError, focusVenue } = useKakaoMap({
     venues,
     onMarkerClick: (venueId) => {
       setHighlightedVenueId(venueId)
@@ -253,10 +253,21 @@ export default function VenuePage({ pageId, token }: VenuePageProps) {
 
       {/* Kakao Map */}
       <div className="px-5">
-        <div
-          ref={mapRef}
-          className="w-full h-[200px] rounded-2xl border border-[#E8E4F0] bg-[#F9F7FD] overflow-hidden"
-        />
+        <div className="relative">
+          <div
+            ref={mapRef}
+            className="w-full h-[200px] rounded-2xl border border-[#E8E4F0] bg-[#F9F7FD] overflow-hidden"
+          />
+          {mapError && (
+            <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-[#F9F7FD]/90">
+              <div className="text-center px-4">
+                <MapPin size={24} className="mx-auto text-[#C5BAE8] mb-2" />
+                <p className="text-[13px] text-[#9B8CC4]">지도를 불러올 수 없습니다</p>
+                <p className="text-[11px] text-[#C5BAE8] mt-1">{mapError}</p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Venue list */}
@@ -406,7 +417,9 @@ function AddVenueSheet({ open, onClose, onSave, pageId, token, locationTabs, edi
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const win = window as any
         placesRef.current = new win.kakao.maps.services.Places()
-      }).catch(() => {})
+      }).catch((err: Error) => {
+        console.warn('Failed to initialize Kakao Places service:', err.message)
+      })
     })
   }, [open])
 

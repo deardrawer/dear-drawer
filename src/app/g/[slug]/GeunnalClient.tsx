@@ -20,6 +20,7 @@ interface GeunnalClientProps {
   venueName: string | null
   venueAddress: string | null
   hasPassword: boolean
+  ogImage?: string
 }
 
 type ActiveView =
@@ -36,6 +37,7 @@ export default function GeunnalClient({
   brideName,
   weddingDate,
   hasPassword: initialHasPassword,
+  ogImage,
 }: GeunnalClientProps) {
   const [token, setToken] = useState<string | null>(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -178,6 +180,7 @@ export default function GeunnalClient({
             token={token || ''}
             onBack={handleBackToHome}
             slug={slug}
+            ogImage={ogImage}
           />
         )}
 

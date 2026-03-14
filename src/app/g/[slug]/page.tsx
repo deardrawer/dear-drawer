@@ -1,4 +1,5 @@
 import { getPageBySlug } from "@/lib/geunnalDb";
+import { getInvitationById } from "@/lib/db";
 import { notFound } from "next/navigation";
 import GeunnalClient from "./GeunnalClient";
 import type { Viewport } from "next";
@@ -22,6 +23,19 @@ export default async function GeunnalPage({ params }: PageProps) {
     notFound();
   }
 
+  // Get invitation OG image
+  let ogImage = 'https://invite.deardrawer.com/og-image.png'
+  if (page.invitation_id) {
+    try {
+      const invitation = await getInvitationById(page.invitation_id)
+      if (invitation?.main_image) {
+        ogImage = invitation.main_image.startsWith('https://')
+          ? invitation.main_image
+          : `https://invite.deardrawer.com${invitation.main_image}`
+      }
+    } catch { /* fallback to default */ }
+  }
+
   return (
     <GeunnalClient
       pageId={page.id}
@@ -33,6 +47,7 @@ export default async function GeunnalPage({ params }: PageProps) {
       venueName={page.venue_name}
       venueAddress={page.venue_address}
       hasPassword={!!page.password_hash}
+      ogImage={ogImage}
     />
   );
 }

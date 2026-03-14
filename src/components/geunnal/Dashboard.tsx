@@ -79,12 +79,26 @@ export default function Dashboard({ pageId, token }: DashboardProps) {
     fetchData()
   }, [pageId, token])
 
-  const totalGuests = events.reduce((sum, e) => sum + (e.expected_guests || 0), 0)
-  const totalPhotos = submissions.filter(s => s.photo_url).length
-  const totalMessages = submissions.filter(s => s.message).length
+  // Only show completed events (cost entered)
+  const completedEvents = useMemo(() =>
+    events.filter(e => e.total_cost && e.total_cost > 0),
+    [events]
+  )
+  const completedEventIds = useMemo(() =>
+    new Set(completedEvents.map(e => e.id)),
+    [completedEvents]
+  )
+  const completedSubmissions = useMemo(() =>
+    submissions.filter(s => completedEventIds.has(s.event_id)),
+    [submissions, completedEventIds]
+  )
+
+  const totalGuests = completedEvents.reduce((sum, e) => sum + (e.expected_guests || 0), 0)
+  const totalPhotos = completedSubmissions.filter(s => s.photo_url).length
+  const totalMessages = completedSubmissions.filter(s => s.message).length
 
   const stats = [
-    { label: '모임', value: events.length, bg: 'bg-[#EDE9FA]' },
+    { label: '모임', value: completedEvents.length, bg: 'bg-[#EDE9FA]' },
     { label: '참석자', value: totalGuests, bg: 'bg-[#FAE9F0]' },
     { label: '사진', value: totalPhotos, bg: 'bg-[#EDE9FA]' },
     { label: '메시지', value: totalMessages, bg: 'bg-[#FAE9F0]' },
@@ -144,15 +158,24 @@ export default function Dashboard({ pageId, token }: DashboardProps) {
       </div>
 
       {/* Tab Content */}
-      {activeTab === 'events' && <EventsTab events={events} submissions={submissions} />}
-      {activeTab === 'photos' && <PhotosTab events={events} submissions={submissions} />}
-      {activeTab === 'messages' && <MessagesTab events={events} submissions={submissions} />}
+      {activeTab === 'events' && <EventsTab events={completedEvents} submissions={completedSubmissions} />}
+      {activeTab === 'photos' && <PhotosTab events={completedEvents} submissions={completedSubmissions} />}
+      {activeTab === 'messages' && <MessagesTab events={completedEvents} submissions={completedSubmissions} />}
     </div>
   )
 }
 
 /* ─── Events Tab ─── */
 function EventsTab({ events, submissions }: { events: GeunnalEvent[]; submissions: GeunnalSubmission[] }) {
+  if (events.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-[14px] text-[#9B8CC4]">완료된 모임이 없습니다</p>
+        <p className="text-[12px] text-[#C5BAE8] mt-1">모임 비용을 입력하면 기록에 표시됩니다</p>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col gap-3">
       {events.map(event => {

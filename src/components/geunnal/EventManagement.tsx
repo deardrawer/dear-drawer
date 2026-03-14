@@ -85,7 +85,7 @@ export default function EventManagement({
   const [costModalOpen, setCostModalOpen] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<GeunnalEvent | null>(null)
   const [editEvent, setEditEvent] = useState<GeunnalEvent | null>(null)
-  const [showCompleted, setShowCompleted] = useState(false)
+  const [showCompleted, setShowCompleted] = useState(true)
   const [showAllUpcoming, setShowAllUpcoming] = useState(false)
   const [showCost, setShowCost] = useState(false)
   const [popupEventId, setPopupEventId] = useState<string | null>(null)
@@ -105,7 +105,7 @@ export default function EventManagement({
       const eventsRes = await fetch(`/api/geunnal/events?pageId=${pageId}`, {
         headers: { 'Authorization': `Bearer ${token}` },
       })
-      if (!eventsRes.ok) throw new Error('이벤트 불러오기 실패')
+      if (!eventsRes.ok) throw new Error('모임 불러오기 실패')
       const eventsData = (await eventsRes.json()) as { events: GeunnalEvent[] }
       const events = eventsData.events
 
@@ -455,8 +455,8 @@ export default function EventManagement({
       {/* Empty State */}
       {eventsWithGuests.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-[#9B8CC4] mb-4">아직 이벤트가 없습니다</p>
-          <p className="text-sm text-[#C5BAE8]">+ 버튼을 눌러 첫 이벤트를 추가해보세요</p>
+          <p className="text-[#9B8CC4] mb-4">아직 모임이 없습니다</p>
+          <p className="text-sm text-[#C5BAE8]">+ 버튼을 눌러 첫 모임을 추가해보세요</p>
         </div>
       )}
 

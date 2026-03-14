@@ -3,6 +3,7 @@ import { useRef, useState, useCallback, useEffect, forwardRef, useMemo } from 'r
 import { ArrowLeft, ArrowRight, Download, Share2, BookmarkPlus, Plus, Check, X, RotateCcw, ImagePlus, CalendarDays } from 'lucide-react'
 import { GeunnalEvent, EventSide } from '@/types/geunnal'
 import BottomSheet from './BottomSheet'
+import html2canvas from 'html2canvas'
 
 interface PhotoBoothProps {
   pageId: string
@@ -37,6 +38,8 @@ export default function PhotoBooth({ pageId, token, groomName, brideName }: Phot
   )
   const [activeSlot, setActiveSlot] = useState<number>(0)
   const [adjustSlot, setAdjustSlot] = useState<number | null>(null)
+  const [dragFrom, setDragFrom] = useState<number | null>(null)
+  const [dragOver, setDragOver] = useState<number | null>(null)
 
   const [title, setTitle] = useState(`${groomName} & ${brideName} 결혼합니다`)
   const [dateText, setDateText] = useState('')
@@ -75,29 +78,159 @@ export default function PhotoBooth({ pageId, token, groomName, brideName }: Phot
   }, [photos])
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const url = URL.createObjectURL(file)
-    setPhotos(prev => {
-      const next = [...prev]
-      if (next[activeSlot]) URL.revokeObjectURL(next[activeSlot]!)
-      next[activeSlot] = url
-      return next
-    })
-    setTransforms(prev => {
-      const next = [...prev]
-      next[activeSlot] = { ...DEFAULT_TRANSFORM }
-      return next
-    })
-    setAdjustSlot(activeSlot)
+    const files = Array.from(e.target.files || [])
+    if (files.length === 0) return
     e.target.value = ''
-  }, [activeSlot])
+
+    if (files.length === 1) {
+      const url = URL.createObjectURL(files[0])
+      setPhotos(prev => {
+        const next = [...prev]
+        if (next[activeSlot]) URL.revokeObjectURL(next[activeSlot]!)
+        next[activeSlot] = url
+        return next
+      })
+      setTransforms(prev => {
+        const next = [...prev]
+        next[activeSlot] = { ...DEFAULT_TRANSFORM }
+        return next
+      })
+      setAdjustSlot(activeSlot)
+    } else {
+      // Multiple files: create blob URLs
+      const urls = files.map(f => URL.createObjectURL(f))
+      setPhotos(prev => {
+        const next = [...prev]
+        const emptySlots: number[] = []
+        for (let i = activeSlot; i < next.length; i++) {
+          if (!next[i]) emptySlots.push(i)
+        }
+        for (let i = 0; i < activeSlot; i++) {
+          if (!next[i]) emptySlots.push(i)
+        }
+        if (emptySlots.length === 0) {
+          for (let i = activeSlot; i < next.length; i++) emptySlots.push(i)
+        }
+        const slotsToFill = emptySlots.slice(0, urls.length)
+        slotsToFill.forEach((slotIdx, fileIdx) => {
+          if (next[slotIdx]) URL.revokeObjectURL(next[slotIdx]!)
+          next[slotIdx] = urls[fileIdx]
+        })
+        return next
+      })
+      setTransforms(prev => {
+        const next = [...prev]
+        const emptySlots: number[] = []
+        for (let i = activeSlot; i < next.length; i++) {
+          if (!photos[i]) emptySlots.push(i)
+        }
+        for (let i = 0; i < activeSlot; i++) {
+          if (!photos[i]) emptySlots.push(i)
+        }
+        if (emptySlots.length === 0) {
+          for (let i = activeSlot; i < next.length; i++) emptySlots.push(i)
+        }
+        emptySlots.slice(0, urls.length).forEach(slotIdx => {
+          next[slotIdx] = { ...DEFAULT_TRANSFORM }
+        })
+        return next
+      })
+    }
+  }, [activeSlot, photos])
 
   const handleAdjustConfirm = useCallback((transform: PhotoTransform) => {
     if (adjustSlot === null) return
     setTransforms(prev => { const next = [...prev]; next[adjustSlot] = transform; return next })
     setAdjustSlot(null)
   }, [adjustSlot])
+
+  // Drag & drop handlers for reordering photos
+  const handleDragStart = useCallback((index: number) => {
+    if (!photos[index]) return
+    setDragFrom(index)
+  }, [photos])
+
+  const handleDragOverSlot = useCallback((e: React.DragEvent, index: number) => {
+    e.preventDefault()
+    if (dragFrom === null || dragFrom === index) return
+    setDragOver(index)
+  }, [dragFrom])
+
+  const handleDragLeaveSlot = useCallback(() => {
+    setDragOver(null)
+  }, [])
+
+  const handleDrop = useCallback((index: number) => {
+    if (dragFrom === null || dragFrom === index) {
+      setDragFrom(null)
+      setDragOver(null)
+      return
+    }
+    // Swap photos and transforms
+    setPhotos(prev => {
+      const next = [...prev]
+      const temp = next[dragFrom]
+      next[dragFrom] = next[index]
+      next[index] = temp
+      return next
+    })
+    setTransforms(prev => {
+      const next = [...prev]
+      const temp = next[dragFrom]
+      next[dragFrom] = next[index]
+      next[index] = temp
+      return next
+    })
+    setDragFrom(null)
+    setDragOver(null)
+  }, [dragFrom])
+
+  const handleDragEnd = useCallback(() => {
+    setDragFrom(null)
+    setDragOver(null)
+  }, [])
+
+  // Touch-based reorder (long press + drag)
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const touchDragState = useRef<{ fromIdx: number; startY: number; startX: number } | null>(null)
+
+  const handleTouchStartSlot = useCallback((index: number, e: React.TouchEvent) => {
+    if (!photos[index]) return
+    const touch = e.touches[0]
+    longPressTimer.current = setTimeout(() => {
+      touchDragState.current = { fromIdx: index, startY: touch.clientY, startX: touch.clientX }
+      setDragFrom(index)
+    }, 400)
+  }, [photos])
+
+  const handleTouchMoveSlot = useCallback((e: React.TouchEvent) => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current)
+      longPressTimer.current = null
+    }
+    if (!touchDragState.current) return
+    e.preventDefault()
+    const touch = e.touches[0]
+    const elements = document.elementsFromPoint(touch.clientX, touch.clientY)
+    const slotEl = elements.find(el => el.hasAttribute('data-slot-index'))
+    if (slotEl) {
+      const idx = parseInt(slotEl.getAttribute('data-slot-index')!, 10)
+      if (!isNaN(idx)) setDragOver(idx)
+    }
+  }, [])
+
+  const handleTouchEndSlot = useCallback(() => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current)
+      longPressTimer.current = null
+    }
+    if (touchDragState.current && dragOver !== null) {
+      handleDrop(dragOver)
+    }
+    touchDragState.current = null
+    setDragFrom(null)
+    setDragOver(null)
+  }, [dragOver, handleDrop])
 
   const handleReplacePhoto = useCallback(() => {
     if (adjustSlot === null) return
@@ -111,18 +244,74 @@ export default function PhotoBooth({ pageId, token, groomName, brideName }: Phot
     if (event.date && event.date !== 'TBD') setDateText(event.date.replace(/-/g, '.'))
   }, [])
 
+  // Shared html2canvas options - strip unsupported lab()/oklch() colors from cloned DOM
+  const canvasOptions = {
+    scale: 2,
+    useCORS: true,
+    backgroundColor: null as string | null,
+    onclone: (doc: Document) => {
+      // 1. Replace lab()/oklch() in <style> tag textContent
+      doc.querySelectorAll('style').forEach(styleEl => {
+        const text = styleEl.textContent
+        if (text && /lab\(|oklch\(/.test(text)) {
+          styleEl.textContent = text
+            .replace(/oklch\([^)]*\)/g, 'transparent')
+            .replace(/lab\([^)]*\)/g, 'transparent')
+        }
+      })
+      // 2. Patch CSSOM rules (Turbopack dev mode injects styles via JS)
+      try {
+        for (const sheet of Array.from(doc.styleSheets)) {
+          try {
+            for (let i = sheet.cssRules.length - 1; i >= 0; i--) {
+              const rule = sheet.cssRules[i]
+              if (/lab\(|oklch\(/.test(rule.cssText)) {
+                const fixed = rule.cssText
+                  .replace(/oklch\([^)]*\)/g, 'transparent')
+                  .replace(/lab\([^)]*\)/g, 'transparent')
+                sheet.deleteRule(i)
+                sheet.insertRule(fixed, i)
+              }
+            }
+          } catch { /* cross-origin sheet */ }
+        }
+      } catch {}
+      // 3. Override computed styles on all elements as final safety net
+      const win = doc.defaultView
+      if (win) {
+        doc.querySelectorAll('*').forEach(node => {
+          try {
+            const el = node as HTMLElement
+            const cs = win.getComputedStyle(el)
+            if (/lab\(|oklch\(/.test(cs.backgroundColor)) {
+              el.style.backgroundColor = 'transparent'
+            }
+            if (/lab\(|oklch\(/.test(cs.color)) {
+              el.style.color = '#000'
+            }
+            if (/lab\(|oklch\(/.test(cs.borderColor)) {
+              el.style.borderColor = 'transparent'
+            }
+          } catch {}
+        })
+      }
+    },
+  }
+
   const handleDownload = useCallback(async () => {
     if (!frameRef.current) return
     setSaving(true)
     try {
-      const { default: html2canvas } = await import('html2canvas')
-      const canvas = await html2canvas(frameRef.current, { scale: 2, useCORS: true, backgroundColor: null })
+      const canvas = await html2canvas(frameRef.current, canvasOptions)
       const link = document.createElement('a')
       link.download = 'geunnal-photobooth.png'
       link.href = canvas.toDataURL('image/png')
       link.click()
       showToastMsg('이미지가 저장되었습니다')
-    } catch { showToastMsg('저장에 실패했습니다') }
+    } catch (err) {
+      console.error('Download error:', err)
+      showToastMsg('저장에 실패했습니다')
+    }
     finally { setSaving(false) }
   }, [])
 
@@ -131,8 +320,7 @@ export default function PhotoBooth({ pageId, token, groomName, brideName }: Phot
     if (!navigator.share) { showToastMsg('이 브라우저에서는 공유를 지원하지 않습니다'); return }
     setSaving(true)
     try {
-      const { default: html2canvas } = await import('html2canvas')
-      const canvas = await html2canvas(frameRef.current, { scale: 2, useCORS: true, backgroundColor: null })
+      const canvas = await html2canvas(frameRef.current, canvasOptions)
       const blob = await new Promise<Blob | null>(r => canvas.toBlob(r, 'image/png'))
       if (!blob) throw new Error('Blob 생성 실패')
       const file = new File([blob], 'geunnal-photobooth.png', { type: 'image/png' })
@@ -156,8 +344,7 @@ export default function PhotoBooth({ pageId, token, groomName, brideName }: Phot
     if (!frameRef.current) return
     setSaving(true)
     try {
-      const { default: html2canvas } = await import('html2canvas')
-      const canvas = await html2canvas(frameRef.current, { scale: 2, useCORS: true, backgroundColor: null })
+      const canvas = await html2canvas(frameRef.current, canvasOptions)
       // Convert canvas to Blob for FormData upload
       const blob = await new Promise<Blob | null>(r => canvas.toBlob(r, 'image/png'))
       if (!blob) throw new Error('이미지 생성 실패')
@@ -258,6 +445,16 @@ export default function PhotoBooth({ pageId, token, groomName, brideName }: Phot
           comment={comment}
           attendees={attendees}
           onPhotoSlotClick={step === 1 ? handlePhotoSlotClick : undefined}
+          dragFrom={step === 1 ? dragFrom : null}
+          dragOver={step === 1 ? dragOver : null}
+          onDragStart={step === 1 ? handleDragStart : undefined}
+          onDragOver={step === 1 ? handleDragOverSlot : undefined}
+          onDragLeave={step === 1 ? handleDragLeaveSlot : undefined}
+          onDrop={step === 1 ? handleDrop : undefined}
+          onDragEnd={step === 1 ? handleDragEnd : undefined}
+          onTouchStartSlot={step === 1 ? handleTouchStartSlot : undefined}
+          onTouchMoveSlot={step === 1 ? handleTouchMoveSlot : undefined}
+          onTouchEndSlot={step === 1 ? handleTouchEndSlot : undefined}
         />
       </div>
 
@@ -266,7 +463,7 @@ export default function PhotoBooth({ pageId, token, groomName, brideName }: Phot
         {step === 1 && (
           <>
             <FrameSettings layout={layout} onLayoutChange={handleLayoutChange} frameColor={frameColor} onColorChange={setFrameColor} />
-            <p className="text-[13px] text-[#9B8CC4] mt-4">프레임의 빈 슬롯을 탭하여 사진을 추가하세요</p>
+            <p className="text-[13px] text-[#9B8CC4] mt-4">빈 슬롯을 탭하여 사진 추가 · 여러 장 선택 가능 · 드래그로 위치 변경</p>
           </>
         )}
         {step === 2 && (
@@ -314,7 +511,7 @@ export default function PhotoBooth({ pageId, token, groomName, brideName }: Phot
       </div>
 
       {/* Hidden file input */}
-      <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+      <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange} />
 
       {/* Photo adjust modal */}
       {adjustSlot !== null && photos[adjustSlot] && (
@@ -381,7 +578,17 @@ const PhotoFrame = forwardRef<HTMLDivElement, {
   comment: string
   attendees: string
   onPhotoSlotClick?: (index: number) => void
-}>(({ photos, transforms, layout, frameColor, title, dateText, comment, attendees, onPhotoSlotClick }, ref) => {
+  dragFrom?: number | null
+  dragOver?: number | null
+  onDragStart?: (index: number) => void
+  onDragOver?: (e: React.DragEvent, index: number) => void
+  onDragLeave?: () => void
+  onDrop?: (index: number) => void
+  onDragEnd?: () => void
+  onTouchStartSlot?: (index: number, e: React.TouchEvent) => void
+  onTouchMoveSlot?: (e: React.TouchEvent) => void
+  onTouchEndSlot?: () => void
+}>(({ photos, transforms, layout, frameColor, title, dateText, comment, attendees, onPhotoSlotClick, dragFrom, dragOver, onDragStart, onDragOver, onDragLeave, onDrop, onDragEnd, onTouchStartSlot, onTouchMoveSlot, onTouchEndSlot }, ref) => {
   const colors = FRAME_COLORS[frameColor] || FRAME_COLORS.black
   const slots = Array.from({ length: layout }, (_, i) => photos[i] ?? null)
 
@@ -390,13 +597,29 @@ const PhotoFrame = forwardRef<HTMLDivElement, {
       <div ref={ref} style={{ backgroundColor: colors.bg, color: colors.text, width: '300px', padding: '12px 10px 10px', borderRadius: '4px', fontFamily: '"DM Sans", sans-serif' }}>
         <div className="grid grid-cols-2 gap-x-[8px] gap-y-[6px]">
           {slots.map((photo, index) => (
-            <div key={index}>
+            <div key={index}
+              data-slot-index={index}
+              draggable={!!photo && !!onDragStart}
+              onDragStart={() => onDragStart?.(index)}
+              onDragOver={(e) => onDragOver?.(e, index)}
+              onDragLeave={() => onDragLeave?.()}
+              onDrop={() => onDrop?.(index)}
+              onDragEnd={() => onDragEnd?.()}
+              onTouchStart={(e) => onTouchStartSlot?.(index, e)}
+              onTouchMove={(e) => onTouchMoveSlot?.(e)}
+              onTouchEnd={() => onTouchEndSlot?.()}
+            >
               <div onClick={() => onPhotoSlotClick?.(index)}
-                className={`overflow-hidden relative ${onPhotoSlotClick ? 'cursor-pointer active:opacity-80' : ''}`}
-                style={{ aspectRatio: '3/4', borderRadius: '3px', backgroundColor: photo ? undefined : 'rgba(255,255,255,0.95)' }}>
+                className={`overflow-hidden relative ${onPhotoSlotClick ? 'cursor-pointer active:opacity-80' : ''} transition-all duration-150`}
+                style={{
+                  aspectRatio: '3/4', borderRadius: '3px',
+                  backgroundColor: photo ? undefined : 'rgba(255,255,255,0.95)',
+                  opacity: dragFrom === index ? 0.4 : 1,
+                  outline: dragOver === index ? '2px solid #8B75D0' : 'none',
+                  outlineOffset: '-2px',
+                }}>
                 {photo ? (
-                  <img src={photo} alt={`Photo ${index + 1}`} className="absolute object-cover" crossOrigin="anonymous"
-                    style={transforms?.[index] ? { width: `${transforms[index].scale * 100}%`, height: `${transforms[index].scale * 100}%`, left: `${50 + transforms[index].offsetX - (transforms[index].scale * 50)}%`, top: `${50 + transforms[index].offsetY - (transforms[index].scale * 50)}%` } : { width: '100%', height: '100%' }} />
+                  <img src={photo} alt={`Photo ${index + 1}`} className="absolute object-cover"                    style={transforms?.[index] ? { width: `${transforms[index].scale * 100}%`, height: `${transforms[index].scale * 100}%`, left: `${50 + transforms[index].offsetX - (transforms[index].scale * 50)}%`, top: `${50 + transforms[index].offsetY - (transforms[index].scale * 50)}%` } : { width: '100%', height: '100%' }} />
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center gap-1 bg-white">
                     <Plus size={16} style={{ opacity: 0.2, color: '#333' }} />
@@ -421,17 +644,32 @@ const PhotoFrame = forwardRef<HTMLDivElement, {
     <div ref={ref} className="relative inline-block" style={{ backgroundColor: colors.bg, color: colors.text, width: '280px', padding: '12px 28px 20px 16px', borderRadius: '4px', fontFamily: '"DM Sans", sans-serif' }}>
       <div className="flex flex-col gap-2 ml-2" style={{ marginRight: '8px' }}>
         {slots.map((photo, index) => (
-          <div key={index} className="relative">
+          <div key={index} className="relative"
+            data-slot-index={index}
+            draggable={!!photo && !!onDragStart}
+            onDragStart={() => onDragStart?.(index)}
+            onDragOver={(e) => onDragOver?.(e, index)}
+            onDragLeave={() => onDragLeave?.()}
+            onDrop={() => onDrop?.(index)}
+            onDragEnd={() => onDragEnd?.()}
+            onTouchStart={(e) => onTouchStartSlot?.(index, e)}
+            onTouchMove={(e) => onTouchMoveSlot?.(e)}
+            onTouchEnd={() => onTouchEndSlot?.()}
+          >
             <div className="flex items-center gap-1 mb-0.5" style={{ opacity: 0.45, fontSize: '7px' }}>
               <span style={{ fontSize: '6px' }}>&#9660;</span>
               <span>{FILM_NUMBERS[index] || '30'}</span>
             </div>
             <div onClick={() => onPhotoSlotClick?.(index)}
-              className={`relative overflow-hidden bg-white/10 ${onPhotoSlotClick ? 'cursor-pointer active:opacity-80' : ''}`}
-              style={{ aspectRatio: '4/3', borderRadius: '2px', width: '100%' }}>
+              className={`relative overflow-hidden bg-white/10 ${onPhotoSlotClick ? 'cursor-pointer active:opacity-80' : ''} transition-all duration-150`}
+              style={{
+                aspectRatio: '4/3', borderRadius: '2px', width: '100%',
+                opacity: dragFrom === index ? 0.4 : 1,
+                outline: dragOver === index ? '2px solid #8B75D0' : 'none',
+                outlineOffset: '-2px',
+              }}>
               {photo ? (
-                <img src={photo} alt={`Photo ${index + 1}`} className="absolute object-cover" crossOrigin="anonymous"
-                  style={transforms?.[index] ? { width: `${transforms[index].scale * 100}%`, height: `${transforms[index].scale * 100}%`, left: `${50 + transforms[index].offsetX - (transforms[index].scale * 50)}%`, top: `${50 + transforms[index].offsetY - (transforms[index].scale * 50)}%` } : { width: '100%', height: '100%' }} />
+                <img src={photo} alt={`Photo ${index + 1}`} className="absolute object-cover"                  style={transforms?.[index] ? { width: `${transforms[index].scale * 100}%`, height: `${transforms[index].scale * 100}%`, left: `${50 + transforms[index].offsetX - (transforms[index].scale * 50)}%`, top: `${50 + transforms[index].offsetY - (transforms[index].scale * 50)}%` } : { width: '100%', height: '100%' }} />
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center gap-1" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
                   <Plus size={20} style={{ opacity: 0.4 }} />

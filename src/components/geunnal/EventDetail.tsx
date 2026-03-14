@@ -38,6 +38,7 @@ interface EventDetailProps {
   token: string
   onBack: () => void
   slug: string
+  ogImage?: string
 }
 
 const formatDate = (dateStr: string) => {
@@ -71,6 +72,7 @@ export default function EventDetail({
   token,
   onBack,
   slug,
+  ogImage,
 }: EventDetailProps) {
   const [event, setEvent] = useState<GeunnalEvent | null>(null)
   const [guests, setGuests] = useState<EventGuest[]>([])
@@ -102,7 +104,7 @@ export default function EventDetail({
         fetch(`/api/geunnal/submissions?eventId=${eventId}`, { headers }),
       ])
 
-      if (!eventRes.ok) throw new Error('이벤트 불러오기 실패')
+      if (!eventRes.ok) throw new Error('모임 불러오기 실패')
 
       const eventData = (await eventRes.json()) as { event: GeunnalEvent }
       setEvent(eventData.event)
@@ -128,7 +130,7 @@ export default function EventDetail({
       } catch { /* ignore */ }
     } catch (error) {
       console.error('Fetch event data error:', error)
-      alert('이벤트를 불러올 수 없습니다.')
+      alert('모임을 불러올 수 없습니다.')
       onBack()
     } finally {
       setLoading(false)
@@ -204,6 +206,19 @@ export default function EventDetail({
     } catch { showToast('비용 수정에 실패했습니다') }
   }
 
+  const resetCost = async () => {
+    if (!confirm('비용을 초기화하시겠습니까?\n완료된 모임에서 미정 모임으로 이동합니다.')) return
+    try {
+      await fetch(`/api/geunnal/events/${eventId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ total_cost: null }),
+      })
+      fetchEventData()
+      showToast('비용이 초기화되었습니다')
+    } catch { showToast('비용 초기화에 실패했습니다') }
+  }
+
   // --- Delete ---
   const handleDelete = async () => {
     if (!confirm(`'${event?.name}' 모임을 삭제하시겠습니까?`)) return
@@ -256,7 +271,7 @@ export default function EventDetail({
         content: {
           title: `${event!.name}에 초대합니다`,
           description: `${formatDate(event!.date)} ${formatTime(event!.time)} | ${locationText}`,
-          imageUrl: '',
+          imageUrl: ogImage || 'https://invite.deardrawer.com/og-image.png',
           link: { mobileWebUrl: shareUrl, webUrl: shareUrl },
         },
         buttons: [
@@ -392,13 +407,24 @@ export default function EventDetail({
                   </button>
                 </div>
               ) : (
-                <button
-                  onClick={startCostEdit}
-                  className="text-[14px] text-[#5A5270] hover:text-[#8B75D0] transition-colors flex items-center gap-1"
-                >
-                  {event.total_cost ? `${event.total_cost.toLocaleString()}원` : '비용 입력'}
-                  <Pencil size={12} className="text-[#9B8CC4]" />
-                </button>
+                <>
+                  <button
+                    onClick={startCostEdit}
+                    className="text-[14px] text-[#5A5270] hover:text-[#8B75D0] transition-colors flex items-center gap-1"
+                  >
+                    {event.total_cost ? `${event.total_cost.toLocaleString()}원` : '비용 입력'}
+                    <Pencil size={12} className="text-[#9B8CC4]" />
+                  </button>
+                  {event.total_cost && event.total_cost > 0 && (
+                    <button
+                      onClick={resetCost}
+                      className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-red-50 transition-colors ml-1"
+                      title="비용 초기화"
+                    >
+                      <X size={13} strokeWidth={1.5} className="text-red-400" />
+                    </button>
+                  )}
+                </>
               )}
             </div>
             <div className="flex gap-2 mt-1">

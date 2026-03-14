@@ -39,7 +39,7 @@ export default function EventPopup({ open, onClose, events, onEventClick }: Even
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-[#2A2240]">
-            이벤트 목록
+            모임 목록
           </h3>
           <button
             onClick={onClose}
@@ -53,7 +53,7 @@ export default function EventPopup({ open, onClose, events, onEventClick }: Even
         <div className="space-y-3">
           {events.length === 0 ? (
             <p className="text-center text-[#9B8CC4] py-8">
-              이 날짜에 예정된 이벤트가 없습니다.
+              이 날짜에 예정된 모임이 없습니다.
             </p>
           ) : (
             events.map((event) => (

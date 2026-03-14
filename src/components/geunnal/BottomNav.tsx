@@ -8,9 +8,9 @@ interface BottomNavProps {
 
 const tabs = [
   { id: 'home', label: '홈', icon: Home },
-  { id: 'photobooth', label: '포토부스', icon: Camera },
-  { id: 'dashboard', label: '그날', icon: LayoutDashboard },
   { id: 'venues', label: '모임장소', icon: MapPinned },
+  { id: 'dashboard', label: '그날', icon: LayoutDashboard },
+  { id: 'photobooth', label: '포토부스', icon: Camera },
 ]
 
 export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {

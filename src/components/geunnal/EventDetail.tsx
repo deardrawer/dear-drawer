@@ -17,6 +17,7 @@ import {
   UserCheck,
   UserX,
   Eye,
+  Download,
   Link,
   Send,
   ExternalLink,
@@ -81,6 +82,7 @@ export default function EventDetail({
   const [editingCost, setEditingCost] = useState(false)
   const [costInput, setCostInput] = useState('')
   const [toastMsg, setToastMsg] = useState('')
+  const [viewingPhoto, setViewingPhoto] = useState<GeunnalSubmission | null>(null)
   const shareUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/g/${slug}/share/${eventId}`
 
   const showToast = useCallback((msg: string) => {
@@ -564,7 +566,11 @@ export default function EventDetail({
             </div>
             <div className="grid grid-cols-3 gap-1.5">
               {photos.map(s => (
-                <div key={s.id} className="relative aspect-square rounded-lg overflow-hidden">
+                <div
+                  key={s.id}
+                  className="relative aspect-square rounded-lg overflow-hidden cursor-pointer active:scale-[0.97] transition-transform"
+                  onClick={() => setViewingPhoto(s)}
+                >
                   <img src={s.photo_url!} alt="" className="w-full h-full object-cover" />
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/50 to-transparent p-2 pt-6">
                     <p className="text-white text-[10px] font-medium truncate">
@@ -597,7 +603,11 @@ export default function EventDetail({
                       </div>
                       <p className="text-[14px] text-[#5A5270] mt-1">{msg.message}</p>
                       {msg.photo_url && (
-                        <img src={msg.photo_url} alt="" className="mt-2 w-20 h-20 rounded-lg object-cover" />
+                        <img
+                          src={msg.photo_url} alt=""
+                          className="mt-2 w-20 h-20 rounded-lg object-cover cursor-pointer active:scale-[0.97] transition-transform"
+                          onClick={() => setViewingPhoto(msg)}
+                        />
                       )}
                     </div>
                   </div>
@@ -607,6 +617,41 @@ export default function EventDetail({
           </section>
         )}
       </div>
+
+      {/* Photo Viewer */}
+      {viewingPhoto?.photo_url && (
+        <div className="fixed inset-0 z-50 bg-black/90 flex flex-col" onClick={() => setViewingPhoto(null)}>
+          <div className="flex items-center justify-between px-4 py-3 shrink-0" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setViewingPhoto(null)} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10">
+              <X size={22} strokeWidth={1.5} className="text-white" />
+            </button>
+            <p className="text-white text-[14px] font-medium">
+              {viewingPhoto.is_anonymous ? '익명' : viewingPhoto.guest_name}
+            </p>
+            <button
+              onClick={() => {
+                const a = document.createElement('a')
+                a.href = viewingPhoto.photo_url!
+                a.download = `photo-${viewingPhoto.guest_name || 'guest'}.jpg`
+                a.target = '_blank'
+                a.rel = 'noopener noreferrer'
+                a.click()
+              }}
+              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10"
+            >
+              <Download size={20} strokeWidth={1.5} className="text-white" />
+            </button>
+          </div>
+          <div className="flex-1 flex items-center justify-center px-4 overflow-hidden" onClick={e => e.stopPropagation()}>
+            <img src={viewingPhoto.photo_url!} alt="" className="max-w-full max-h-full object-contain rounded-lg" />
+          </div>
+          {viewingPhoto.message && (
+            <div className="px-6 py-4 shrink-0" onClick={e => e.stopPropagation()}>
+              <p className="text-white/90 text-[14px] text-center leading-[1.6]">{viewingPhoto.message}</p>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Edit Modal */}
       <AddEventModal

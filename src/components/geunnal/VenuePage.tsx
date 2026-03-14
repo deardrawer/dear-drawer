@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Plus, X, Settings2, MapPin, Phone, ThumbsUp, Minus, ThumbsDown, Search, Navigation, Pencil, Trash2 } from 'lucide-react'
 import { GeunnalVenue, VenueRating, ReservationStatus } from '@/types/geunnal'
 import GeunnalBadge from './Badge'
@@ -386,8 +386,24 @@ function AddVenueSheet({ open, onClose, onSave, pageId, token, locationTabs, edi
   const [phone, setPhone] = useState('')
   const [saving, setSaving] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<Array<{ id: string; place_name: string; address_name: string; road_address_name: string; phone: string; x: string; y: string }>>([])
+  const [showResults, setShowResults] = useState(false)
+  const placesRef = useRef<{ keywordSearch: (keyword: string, callback: (results: Array<{ id: string; place_name: string; address_name: string; road_address_name: string; phone: string; x: string; y: string }>, status: string) => void) => void } | null>(null)
 
   const isEdit = !!editVenue
+
+  // Initialize Kakao Places service
+  useEffect(() => {
+    if (!open) return
+    import('@/lib/geunnalKakaoMap').then(({ loadKakaoMapSDK }) => {
+      loadKakaoMapSDK().then(() => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const win = window as any
+        placesRef.current = new win.kakao.maps.services.Places()
+      }).catch(() => {})
+    })
+  }, [open])
 
   useEffect(() => {
     if (editVenue && open) {
@@ -411,6 +427,34 @@ function AddVenueSheet({ open, onClose, onSave, pageId, token, locationTabs, edi
     setRating('hold'); setReservationStatus('unknown')
     setPriceRange(''); setMenuNotes(''); setPhone('')
     setErrors({}); setSaving(false)
+    setSearchQuery(''); setSearchResults([]); setShowResults(false)
+  }
+
+  function handleSearch() {
+    const q = searchQuery.trim()
+    if (!q || !placesRef.current) return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const win = window as any
+    placesRef.current.keywordSearch(q, (results, status) => {
+      if (status === win.kakao.maps.services.Status.OK) {
+        setSearchResults(results.slice(0, 5))
+        setShowResults(true)
+      } else {
+        setSearchResults([])
+        setShowResults(true)
+      }
+    })
+  }
+
+  function selectPlace(place: typeof searchResults[0]) {
+    setName(place.place_name)
+    setAddress(place.road_address_name || place.address_name)
+    setLat(parseFloat(place.y))
+    setLng(parseFloat(place.x))
+    if (place.phone) setPhone(place.phone)
+    setShowResults(false)
+    setSearchQuery('')
+    setErrors(p => ({ ...p, name: '', address: '' }))
   }
 
   function handleClose() {
@@ -467,6 +511,44 @@ function AddVenueSheet({ open, onClose, onSave, pageId, token, locationTabs, edi
   return (
     <BottomSheet open={open} onClose={handleClose} title={isEdit ? '장소 수정' : '장소 추가'}>
       <div className="flex flex-col gap-4 mt-2">
+        {/* Kakao Place Search */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[11px] font-medium tracking-[1.5px] uppercase text-[#9B8CC4]">장소 검색</label>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <input
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleSearch() } }}
+                placeholder="식당이름 또는 주소 검색"
+                className={inputClass}
+              />
+              <button type="button" onClick={handleSearch}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-[#9B8CC4] hover:text-[#8B75D0] transition-colors"
+              >
+                <Search size={18} strokeWidth={1.5} />
+              </button>
+            </div>
+          </div>
+          {showResults && (
+            <div className="border border-[#E8E4F0] rounded-[10px] bg-white overflow-hidden">
+              {searchResults.length === 0 ? (
+                <div className="px-3.5 py-3 text-[13px] text-[#9B8CC4]">검색 결과가 없습니다</div>
+              ) : (
+                searchResults.map(place => (
+                  <button key={place.id} type="button" onClick={() => selectPlace(place)}
+                    className="w-full text-left px-3.5 py-2.5 hover:bg-[#EDE9FA]/40 transition-colors border-b border-[#E8E4F0] last:border-b-0"
+                  >
+                    <div className="text-[14px] font-medium text-[#2A2240]">{place.place_name}</div>
+                    <div className="text-[12px] text-[#9B8CC4] mt-0.5">{place.road_address_name || place.address_name}</div>
+                    {place.phone && <div className="text-[11px] text-[#C5BAE8] mt-0.5">{place.phone}</div>}
+                  </button>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+
         <div className="flex flex-col gap-1.5">
           <label className="text-[11px] font-medium tracking-[1.5px] uppercase text-[#9B8CC4]">식당 이름</label>
           <input value={name} onChange={e => { setName(e.target.value); setErrors(p => ({ ...p, name: '' })) }} placeholder="예: 모던한정식" className={inputClass} />

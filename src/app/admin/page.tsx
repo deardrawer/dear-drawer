@@ -844,29 +844,13 @@ export default function AdminPage() {
             ) : (
               <div className="flex flex-col gap-3">
                 {geunnalPages.map(page => (
-                  <div key={page.id} className="rounded-xl p-4" style={{ backgroundColor: '#FFF', border: '1px solid #E8E4DD' }}>
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <span className="text-sm font-medium" style={{ color: '#2C2C2C' }}>
-                          {page.groom_name} & {page.bride_name}
-                        </span>
-                        <span className="ml-2 text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: '#EDE9FA', color: '#8B75D0' }}>
-                          /g/{page.slug}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => handleDeleteGeunnalPage(page.id)}
-                        className="text-xs px-3 py-1 rounded-lg text-red-500 hover:bg-red-50"
-                      >
-                        삭제
-                      </button>
-                    </div>
-                    <div className="flex gap-4 text-xs" style={{ color: '#888' }}>
-                      <span>예식일: {page.wedding_date || '미정'}</span>
-                      <span>생성: {new Date(page.created_at).toLocaleDateString('ko-KR')}</span>
-                      {page.invitation_id && <span>청첩장 연결됨</span>}
-                    </div>
-                  </div>
+                  <GeunnalPageCard
+                    key={page.id}
+                    page={page}
+                    password={password}
+                    onDelete={() => handleDeleteGeunnalPage(page.id)}
+                    onUpdated={() => fetchGeunnalPages()}
+                  />
                 ))}
               </div>
             )}
@@ -950,4 +934,137 @@ export default function AdminPage() {
       console.error(err)
     }
   }
+}
+
+// ===== Geunnal Page Card with inline editing =====
+function GeunnalPageCard({ page, password, onDelete, onUpdated }: {
+  page: GeunnalPageItem
+  password: string
+  onDelete: () => void
+  onUpdated: () => void
+}) {
+  const [editing, setEditing] = useState(false)
+  const [form, setForm] = useState({
+    groom_name: page.groom_name,
+    bride_name: page.bride_name,
+    wedding_date: page.wedding_date || '',
+  })
+  const [saving, setSaving] = useState(false)
+
+  async function handleSave() {
+    setSaving(true)
+    try {
+      const res = await fetch(`/api/geunnal/pages/${page.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+        body: JSON.stringify({
+          groom_name: form.groom_name.trim(),
+          bride_name: form.bride_name.trim(),
+          wedding_date: form.wedding_date || null,
+        }),
+      })
+      if (res.ok) {
+        setEditing(false)
+        onUpdated()
+      } else {
+        alert('수정 실패')
+      }
+    } catch {
+      alert('수정 실패')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const pageUrl = `/g/${page.slug}`
+
+  if (editing) {
+    return (
+      <div className="rounded-xl p-4" style={{ backgroundColor: '#FFF', border: '2px solid #8B75D0' }}>
+        <div className="grid grid-cols-2 gap-3 mb-3">
+          <input
+            placeholder="신랑 이름"
+            value={form.groom_name}
+            onChange={e => setForm(f => ({ ...f, groom_name: e.target.value }))}
+            className="px-3 py-2 rounded-lg text-sm border"
+            style={{ borderColor: '#E8E4DD' }}
+          />
+          <input
+            placeholder="신부 이름"
+            value={form.bride_name}
+            onChange={e => setForm(f => ({ ...f, bride_name: e.target.value }))}
+            className="px-3 py-2 rounded-lg text-sm border"
+            style={{ borderColor: '#E8E4DD' }}
+          />
+        </div>
+        <div className="mb-3">
+          <input
+            type="date"
+            value={form.wedding_date}
+            onChange={e => setForm(f => ({ ...f, wedding_date: e.target.value }))}
+            className="w-full px-3 py-2 rounded-lg text-sm border"
+            style={{ borderColor: '#E8E4DD' }}
+          />
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex-1 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-50"
+            style={{ backgroundColor: '#8B75D0' }}
+          >
+            {saving ? '저장 중...' : '저장'}
+          </button>
+          <button
+            onClick={() => setEditing(false)}
+            className="flex-1 py-2 rounded-lg text-sm font-medium border"
+            style={{ borderColor: '#E8E4DD', color: '#666' }}
+          >
+            취소
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="rounded-xl p-4" style={{ backgroundColor: '#FFF', border: '1px solid #E8E4DD' }}>
+      <div className="flex items-center justify-between mb-2">
+        <div>
+          <span className="text-sm font-medium" style={{ color: '#2C2C2C' }}>
+            {page.groom_name} & {page.bride_name}
+          </span>
+          <a
+            href={pageUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ml-2 text-xs px-2 py-0.5 rounded-full hover:opacity-80"
+            style={{ backgroundColor: '#EDE9FA', color: '#8B75D0' }}
+          >
+            /g/{page.slug} ↗
+          </a>
+        </div>
+        <div className="flex gap-1">
+          <button
+            onClick={() => setEditing(true)}
+            className="text-xs px-3 py-1 rounded-lg hover:bg-purple-50"
+            style={{ color: '#8B75D0' }}
+          >
+            수정
+          </button>
+          <button
+            onClick={onDelete}
+            className="text-xs px-3 py-1 rounded-lg text-red-500 hover:bg-red-50"
+          >
+            삭제
+          </button>
+        </div>
+      </div>
+      <div className="flex gap-4 text-xs" style={{ color: '#888' }}>
+        <span>예식일: {page.wedding_date || '미정'}</span>
+        <span>생성: {new Date(page.created_at).toLocaleDateString('ko-KR')}</span>
+        {page.invitation_id && <span>청첩장 연결됨</span>}
+      </div>
+    </div>
+  )
 }

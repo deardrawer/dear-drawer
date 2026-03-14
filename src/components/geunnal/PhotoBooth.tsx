@@ -244,14 +244,51 @@ export default function PhotoBooth({ pageId, token, groomName, brideName }: Phot
     if (event.date && event.date !== 'TBD') setDateText(event.date.replace(/-/g, '.'))
   }, [])
 
-  // Shared html2canvas options - strip unsupported lab()/oklch() colors from cloned DOM
+  // Shared html2canvas options - fix aspect-ratio/object-cover + strip unsupported colors
   const canvasOptions = {
     scale: 4,
     useCORS: true,
     backgroundColor: null as string | null,
     imageTimeout: 0,
-    onclone: (doc: Document) => {
-      // 1. Replace lab()/oklch() in <style> tag textContent
+    onclone: (doc: Document, clonedFrame: HTMLElement) => {
+      // A. Fix aspect-ratio & object-cover: html2canvas doesn't render these correctly
+      if (frameRef.current) {
+        const origSlots = frameRef.current.querySelectorAll<HTMLElement>('[style*="aspect-ratio"]')
+        const cloneSlots = clonedFrame.querySelectorAll<HTMLElement>('[style*="aspect-ratio"]')
+        origSlots.forEach((origSlot, idx) => {
+          const cloneSlot = cloneSlots[idx]
+          if (!cloneSlot) return
+          // Replace aspect-ratio with explicit pixel dimensions
+          const sr = origSlot.getBoundingClientRect()
+          cloneSlot.style.aspectRatio = 'unset'
+          cloneSlot.style.width = sr.width + 'px'
+          cloneSlot.style.height = sr.height + 'px'
+          // Pre-render img with object-cover baked in
+          const oImg = origSlot.querySelector('img') as HTMLImageElement | null
+          const cImg = cloneSlot.querySelector('img') as HTMLImageElement | null
+          if (oImg && cImg && oImg.complete && oImg.naturalWidth > 0) {
+            const ir = oImg.getBoundingClientRect()
+            const nw = oImg.naturalWidth, nh = oImg.naturalHeight
+            const ew = ir.width, eh = ir.height
+            const nr = nw / nh, er = ew / eh
+            // Calculate object-cover source crop
+            let sx: number, sy: number, sw: number, sh: number
+            if (nr > er) { sh = nh; sw = nh * er; sx = (nw - sw) / 2; sy = 0 }
+            else { sw = nw; sh = nw / er; sx = 0; sy = (nh - sh) / 2 }
+            try {
+              const tc = document.createElement('canvas')
+              tc.width = Math.round(sw); tc.height = Math.round(sh)
+              const tctx = tc.getContext('2d')!
+              tctx.drawImage(oImg, sx, sy, sw, sh, 0, 0, tc.width, tc.height)
+              cImg.src = tc.toDataURL('image/jpeg', 0.95)
+              cImg.style.objectFit = 'fill'
+              cImg.className = cImg.className.replace(/\bobject-cover\b/g, '')
+            } catch { /* CORS or canvas error - keep original */ }
+          }
+        })
+      }
+      // B. Strip unsupported lab()/oklch() color functions
+      // 1. Replace in <style> tag textContent
       doc.querySelectorAll('style').forEach(styleEl => {
         const text = styleEl.textContent
         if (text && /lab\(|oklch\(/.test(text)) {

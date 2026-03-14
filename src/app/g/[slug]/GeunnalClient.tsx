@@ -28,7 +28,7 @@ type ActiveView =
   | { type: 'photobooth' }
   | { type: 'dashboard' }
   | { type: 'venues' }
-  | { type: 'event-detail'; eventId: string }
+  | { type: 'event-detail'; eventId: string; returnTo: 'home' | 'dashboard' }
 
 export default function GeunnalClient({
   pageId,
@@ -114,14 +114,16 @@ export default function GeunnalClient({
     else if (tab === 'venues') setActiveView({ type: 'venues' })
   }, [])
 
-  const handleEventClick = useCallback((eventId: string) => {
+  const handleEventClick = useCallback((eventId: string, returnTo: 'home' | 'dashboard' = 'home') => {
     scrollPositionRef.current = window.scrollY
-    setActiveView({ type: 'event-detail', eventId })
+    setActiveView({ type: 'event-detail', eventId, returnTo })
     window.scrollTo(0, 0)
   }, [])
 
-  const handleBackToHome = useCallback(() => {
-    setActiveView({ type: 'home' })
+  const handleBackFromDetail = useCallback(() => {
+    setActiveView(prev =>
+      prev.type === 'event-detail' ? { type: prev.returnTo } : { type: 'home' }
+    )
     requestAnimationFrame(() => {
       window.scrollTo(0, scrollPositionRef.current)
     })
@@ -155,7 +157,7 @@ export default function GeunnalClient({
   }
 
   const currentTab =
-    activeView.type === 'event-detail' ? 'home' : activeView.type === 'home' ? 'home' : activeView.type
+    activeView.type === 'event-detail' ? activeView.returnTo : activeView.type
 
   return (
     <div className="geunnal-page">
@@ -178,7 +180,7 @@ export default function GeunnalClient({
             eventId={activeView.eventId}
             pageId={pageId}
             token={token || ''}
-            onBack={handleBackToHome}
+            onBack={handleBackFromDetail}
             slug={slug}
             ogImage={ogImage}
           />
@@ -197,7 +199,7 @@ export default function GeunnalClient({
           <Dashboard
             pageId={pageId}
             token={token || ''}
-            onEventClick={handleEventClick}
+            onEventClick={(eventId) => handleEventClick(eventId, 'dashboard')}
           />
         )}
 

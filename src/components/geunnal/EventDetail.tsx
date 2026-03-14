@@ -1,26 +1,36 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import {
   ArrowLeft,
-  Edit,
+  CalendarDays,
   MapPin,
-  Calendar,
-  Clock,
   Users,
-  Share2,
-  MessageSquare,
+  Clock,
+  Wallet,
   Image as ImageIcon,
+  MessageCircle,
+  Pencil,
+  Trash2,
   Check,
   X,
-  Copy,
+  Plus,
+  UserCheck,
+  UserX,
+  Eye,
   QrCode,
+  Download,
+  Link,
+  Send,
+  ExternalLink,
+  Navigation,
+  Phone,
 } from 'lucide-react'
-import { GeunnalEvent, EventGuest, GeunnalSubmission } from '@/types/geunnal'
+import QRCodeLib from 'qrcode'
+import { GeunnalEvent, EventGuest, GeunnalSubmission, GeunnalVenue } from '@/types/geunnal'
 import GeunnalCard from './Card'
 import GeunnalBadge from './Badge'
 import { BlobAvatarById } from './BlobAvatar'
 import AddEventModal from './AddEventModal'
-import BottomSheet from './BottomSheet'
 
 interface EventDetailProps {
   eventId: string
@@ -30,17 +40,29 @@ interface EventDetailProps {
   slug: string
 }
 
-// Utility function to format date
 const formatDate = (dateStr: string) => {
-  if (!dateStr || dateStr === 'TBD') return '미정'
+  if (!dateStr || dateStr === 'TBD') return '날짜 미정'
   const date = new Date(dateStr)
   return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`
 }
 
-// Utility function to format time
 const formatTime = (timeStr: string) => {
   if (!timeStr) return ''
   return timeStr.slice(0, 5)
+}
+
+const formatRelativeTime = (dateStr: string) => {
+  const now = new Date()
+  const date = new Date(dateStr)
+  const diffMs = now.getTime() - date.getTime()
+  const diffMin = Math.floor(diffMs / 60000)
+  if (diffMin < 1) return '방금 전'
+  if (diffMin < 60) return `${diffMin}분 전`
+  const diffHour = Math.floor(diffMin / 60)
+  if (diffHour < 24) return `${diffHour}시간 전`
+  const diffDay = Math.floor(diffHour / 24)
+  if (diffDay < 30) return `${diffDay}일 전`
+  return `${Math.floor(diffDay / 30)}달 전`
 }
 
 export default function EventDetail({
@@ -53,55 +75,57 @@ export default function EventDetail({
   const [event, setEvent] = useState<GeunnalEvent | null>(null)
   const [guests, setGuests] = useState<EventGuest[]>([])
   const [submissions, setSubmissions] = useState<GeunnalSubmission[]>([])
+  const [venue, setVenue] = useState<GeunnalVenue | null>(null)
   const [loading, setLoading] = useState(true)
   const [editModalOpen, setEditModalOpen] = useState(false)
-  const [shareModalOpen, setShareModalOpen] = useState(false)
   const [newGuestName, setNewGuestName] = useState('')
-  const [qrCodeUrl, setQrCodeUrl] = useState('')
+  const [editingCost, setEditingCost] = useState(false)
+  const [costInput, setCostInput] = useState('')
+  const [toastMsg, setToastMsg] = useState('')
+  const qrCanvasRef = useRef<HTMLCanvasElement>(null)
 
   const shareUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/g/${slug}/share/${eventId}`
+
+  const showToast = useCallback((msg: string) => {
+    setToastMsg(msg)
+    setTimeout(() => setToastMsg(''), 2000)
+  }, [])
 
   const fetchEventData = async () => {
     try {
       setLoading(true)
+      const headers = { 'Authorization': `Bearer ${token}` }
 
-      // Fetch event
-      const eventRes = await fetch(`/api/geunnal/events/${eventId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      })
+      const [eventRes, guestsRes, submissionsRes] = await Promise.all([
+        fetch(`/api/geunnal/events/${eventId}`, { headers }),
+        fetch(`/api/geunnal/events/${eventId}/guests`, { headers }),
+        fetch(`/api/geunnal/submissions?eventId=${eventId}`, { headers }),
+      ])
 
-      if (!eventRes.ok) {
-        throw new Error('이벤트 불러오기 실패')
-      }
+      if (!eventRes.ok) throw new Error('이벤트 불러오기 실패')
 
-      const eventResponse = (await eventRes.json()) as { event: GeunnalEvent }
-      setEvent(eventResponse.event)
-
-      // Fetch guests
-      const guestsRes = await fetch(`/api/geunnal/events/${eventId}/guests`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      })
+      const eventData = (await eventRes.json()) as { event: GeunnalEvent }
+      setEvent(eventData.event)
 
       if (guestsRes.ok) {
-        const guestsResponse = (await guestsRes.json()) as { guests: EventGuest[] }
-        setGuests(guestsResponse.guests)
+        const guestsData = (await guestsRes.json()) as { guests: EventGuest[] }
+        setGuests(guestsData.guests)
       }
-
-      // Fetch submissions
-      const submissionsRes = await fetch(`/api/geunnal/submissions?eventId=${eventId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      })
 
       if (submissionsRes.ok) {
-        const submissionsResponse = (await submissionsRes.json()) as { submissions: GeunnalSubmission[] }
-        setSubmissions(submissionsResponse.submissions)
+        const subData = (await submissionsRes.json()) as { submissions: GeunnalSubmission[] }
+        setSubmissions(subData.submissions)
       }
+
+      // Fetch venue linked to this event
+      try {
+        const venuesRes = await fetch(`/api/geunnal/venues?pageId=${pageId}`, { headers })
+        if (venuesRes.ok) {
+          const venuesData = (await venuesRes.json()) as { venues: GeunnalVenue[] }
+          const linked = venuesData.venues.find(v => v.event_id === eventId)
+          setVenue(linked || null)
+        }
+      } catch { /* ignore */ }
     } catch (error) {
       console.error('Fetch event data error:', error)
       alert('이벤트를 불러올 수 없습니다.')
@@ -111,406 +135,517 @@ export default function EventDetail({
     }
   }
 
-  useEffect(() => {
-    fetchEventData()
-  }, [eventId, token])
+  useEffect(() => { fetchEventData() }, [eventId, token])
 
+  // Generate QR code
   useEffect(() => {
-    // Generate QR code URL
-    if (shareUrl) {
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(shareUrl)}`
-      setQrCodeUrl(qrUrl)
-    }
-  }, [shareUrl])
+    if (!qrCanvasRef.current || !event) return
+    QRCodeLib.toCanvas(qrCanvasRef.current, shareUrl, {
+      width: 200,
+      margin: 2,
+      color: { dark: '#2A2240', light: '#FFFFFF' },
+    }).catch(() => {})
+  }, [event, shareUrl])
 
+  // --- Guest management ---
   const handleAddGuest = async () => {
     const trimmed = newGuestName.trim()
     if (!trimmed) return
-
     try {
-      const response = await fetch(`/api/geunnal/events/${eventId}/guests`, {
+      await fetch(`/api/geunnal/events/${eventId}/guests`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ name: trimmed }),
       })
-
-      if (!response.ok) {
-        throw new Error('게스트 추가 실패')
-      }
-
       setNewGuestName('')
       fetchEventData()
-    } catch (error) {
-      console.error('Add guest error:', error)
-      alert('게스트 추가에 실패했습니다.')
-    }
+      showToast(`${trimmed}님이 추가되었습니다`)
+    } catch { showToast('게스트 추가에 실패했습니다') }
   }
 
   const handleRemoveGuest = async (guestId: string) => {
-    if (!confirm('이 게스트를 삭제하시겠습니까?')) return
-
     try {
-      const response = await fetch(`/api/geunnal/events/${eventId}/guests/${guestId}`, {
+      await fetch(`/api/geunnal/events/${eventId}/guests/${guestId}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        headers: { 'Authorization': `Bearer ${token}` },
       })
-
-      if (!response.ok) {
-        throw new Error('게스트 삭제 실패')
-      }
-
       fetchEventData()
-    } catch (error) {
-      console.error('Remove guest error:', error)
-      alert('게스트 삭제에 실패했습니다.')
-    }
+    } catch { showToast('게스트 삭제에 실패했습니다') }
   }
 
   const handleToggleContacted = async (guest: EventGuest) => {
     try {
-      const response = await fetch(`/api/geunnal/events/${eventId}/guests/${guest.id}`, {
+      await fetch(`/api/geunnal/events/${eventId}/guests/${guest.id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ contacted: guest.contacted ? 0 : 1 }),
       })
-
-      if (!response.ok) {
-        throw new Error('상태 변경 실패')
-      }
-
       fetchEventData()
-    } catch (error) {
-      console.error('Toggle contacted error:', error)
-      alert('상태 변경에 실패했습니다.')
-    }
+    } catch { showToast('상태 변경에 실패했습니다') }
   }
 
-  const handleCopyUrl = () => {
-    navigator.clipboard.writeText(shareUrl)
-    alert('링크가 복사되었습니다!')
+  // --- Cost editing ---
+  const startCostEdit = () => {
+    setCostInput(event?.total_cost ? String(event.total_cost) : '')
+    setEditingCost(true)
+  }
+
+  const saveCost = async () => {
+    const val = parseInt(costInput.replace(/[^0-9]/g, ''), 10)
+    try {
+      await fetch(`/api/geunnal/events/${eventId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ total_cost: isNaN(val) || val === 0 ? null : val }),
+      })
+      setEditingCost(false)
+      fetchEventData()
+      showToast('비용이 수정되었습니다')
+    } catch { showToast('비용 수정에 실패했습니다') }
+  }
+
+  // --- Delete ---
+  const handleDelete = async () => {
+    if (!confirm(`'${event?.name}' 모임을 삭제하시겠습니까?`)) return
+    try {
+      await fetch(`/api/geunnal/events/${eventId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
+      })
+      showToast('모임이 삭제되었습니다')
+      onBack()
+    } catch { showToast('삭제에 실패했습니다') }
+  }
+
+  // --- Share ---
+  const handleDownloadQR = async () => {
+    const canvas = document.createElement('canvas')
+    canvas.width = 640
+    canvas.height = 640
+    try {
+      await QRCodeLib.toCanvas(canvas, shareUrl, {
+        width: 640, margin: 3,
+        color: { dark: '#2A2240', light: '#FFFFFF' },
+      })
+      const link = document.createElement('a')
+      link.download = `qr-${event!.name}.png`
+      link.href = canvas.toDataURL('image/png')
+      link.click()
+      showToast('QR 코드가 저장되었습니다')
+    } catch { showToast('QR 코드 저장에 실패했습니다') }
+  }
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      showToast('링크가 복사되었습니다')
+    } catch { showToast('링크 복사에 실패했습니다') }
+  }
+
+  const handleKakaoShare = () => {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const win = window as any
+      if (!win.Kakao?.Share) {
+        showToast('카카오톡 공유를 사용할 수 없습니다')
+        return
+      }
+      const locationText = event?.restaurant || event?.area || '장소 미정'
+      win.Kakao.Share.sendDefault({
+        objectType: 'feed',
+        content: {
+          title: `${event!.name}에 초대합니다`,
+          description: `${formatDate(event!.date)} ${formatTime(event!.time)} | ${locationText}`,
+          imageUrl: '',
+          link: { mobileWebUrl: shareUrl, webUrl: shareUrl },
+        },
+        buttons: [
+          { title: '참여하기', link: { mobileWebUrl: shareUrl, webUrl: shareUrl } },
+        ],
+      })
+    } catch { showToast('카카오톡 공유에 실패했습니다') }
+  }
+
+  const openKakaoMap = () => {
+    if (venue) {
+      window.open(`https://map.kakao.com/link/map/${encodeURIComponent(venue.name)},${venue.lat},${venue.lng}`, '_blank')
+    } else {
+      const locationText = [event?.area, event?.restaurant].filter(Boolean).join(' ')
+      if (locationText) {
+        window.open(`https://map.kakao.com/link/search/${encodeURIComponent(locationText)}`, '_blank')
+      }
+    }
   }
 
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F9F7FD] flex items-center justify-center">
-        <div className="text-[#9B8CC4]">로딩 중...</div>
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-[#8B75D0] border-t-transparent rounded-full animate-spin" />
+          <p className="text-[14px] text-[#9B8CC4]">로딩 중...</p>
+        </div>
       </div>
     )
   }
 
-  if (!event) {
-    return null
-  }
+  if (!event) return null
 
-  const photoSubmissions = submissions.filter((s) => s.photo_url)
-  const messageSubmissions = submissions.filter((s) => s.message)
+  const contactedCount = guests.filter(g => g.contacted).length
+  const locationText = [event.area, event.restaurant].filter(Boolean).join(' ')
+  const photos = submissions.filter(s => s.photo_url)
+  const messages = submissions.filter(s => s.message)
 
   return (
     <div className="min-h-screen bg-[#F9F7FD] pb-20">
       {/* Header */}
-      <div className="bg-white border-b border-[#E8E4F0] px-5 py-4">
-        <div className="flex items-center justify-between mb-3">
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#E8E4F0] px-5 py-4">
+        <div className="flex items-center gap-3">
           <button
             onClick={onBack}
-            className="p-2 -ml-2 hover:bg-[#F9F7FD] rounded-lg transition-colors"
+            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-[#F9F7FD] transition-colors shrink-0"
           >
-            <ArrowLeft className="w-5 h-5 text-[#5A5270]" />
+            <ArrowLeft size={20} strokeWidth={1.5} className="text-[#5A5270]" />
           </button>
-
-          <div className="flex gap-2">
-            <button
-              onClick={() => setShareModalOpen(true)}
-              className="p-2 hover:bg-[#F9F7FD] rounded-lg transition-colors"
-            >
-              <Share2 className="w-5 h-5 text-[#8B75D0]" />
-            </button>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <GeunnalBadge
+                variant={event.side === 'groom' ? 'lavender' : event.side === 'bride' ? 'blush' : 'soft'}
+              >
+                {event.side === 'groom' ? '신랑측' : event.side === 'bride' ? '신부측' : '공동'}
+              </GeunnalBadge>
+              {event.meal_type && (
+                <GeunnalBadge variant="soft">
+                  {event.meal_type === 'lunch' ? '점심' : event.meal_type === 'dinner' ? '저녁' : '기타'}
+                </GeunnalBadge>
+              )}
+            </div>
+            <h1 className="text-xl font-bold text-[#2A2240] mt-1 truncate">{event.name}</h1>
+          </div>
+          <div className="flex items-center gap-1 shrink-0">
             <button
               onClick={() => setEditModalOpen(true)}
-              className="p-2 hover:bg-[#F9F7FD] rounded-lg transition-colors"
+              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-[#F9F7FD] transition-colors"
             >
-              <Edit className="w-5 h-5 text-[#8B75D0]" />
+              <Pencil size={18} strokeWidth={1.5} className="text-[#9B8CC4]" />
+            </button>
+            <button
+              onClick={handleDelete}
+              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-red-50 transition-colors"
+            >
+              <Trash2 size={18} strokeWidth={1.5} className="text-red-400" />
             </button>
           </div>
         </div>
+      </header>
 
-        <div className="flex items-center gap-2 mb-2">
-          <GeunnalBadge
-            variant={
-              event.side === 'groom'
-                ? 'lavender'
-                : event.side === 'bride'
-                ? 'blush'
-                : 'soft'
-            }
-          >
-            {event.side === 'groom' ? '신랑' : event.side === 'bride' ? '신부' : '공동'}
-          </GeunnalBadge>
-          <GeunnalBadge variant="soft">
-            {event.meal_type === 'lunch' ? '점심' : event.meal_type === 'dinner' ? '저녁' : '기타'}
-          </GeunnalBadge>
-        </div>
-
-        <h1 className="text-2xl font-bold text-[#2A2240]">
-          {event.name}
-        </h1>
-      </div>
-
-      <div className="px-5 py-5 space-y-6">
-        {/* Event Info */}
+      <div className="px-5 py-5 flex flex-col gap-5">
+        {/* Event Info Card */}
         <GeunnalCard>
-          <h3 className="font-semibold text-[#2A2240] mb-4">이벤트 정보</h3>
-          <div className="space-y-3">
-            <div className="flex items-start gap-3">
-              <Calendar className="w-5 h-5 text-[#9B8CC4] mt-0.5" />
-              <div>
-                <p className="text-sm text-[#5A5270]">날짜</p>
-                <p className="font-medium text-[#2A2240]">
-                  {formatDate(event.date)}
-                </p>
-              </div>
+          <div className="flex flex-col gap-2.5">
+            <div className="flex items-center gap-2">
+              <CalendarDays size={16} strokeWidth={1.5} className="text-[#8B75D0] shrink-0" />
+              <span className="text-[14px] text-[#5A5270]">
+                {event.date ? `${formatDate(event.date)} ${formatTime(event.time)}` : '날짜 미정'}
+              </span>
             </div>
-
-            {event.time && (
-              <div className="flex items-start gap-3">
-                <Clock className="w-5 h-5 text-[#9B8CC4] mt-0.5" />
-                <div>
-                  <p className="text-sm text-[#5A5270]">시간</p>
-                  <p className="font-medium text-[#2A2240]">
-                    {formatTime(event.time)}
-                  </p>
+            <div className="flex items-center gap-2">
+              <MapPin size={16} strokeWidth={1.5} className="text-[#8B75D0] shrink-0" />
+              <span className="text-[14px] text-[#5A5270] flex-1">{locationText || '장소 미정'}</span>
+              {locationText && (
+                <button onClick={openKakaoMap} className="text-[#8B75D0]">
+                  <ExternalLink size={14} />
+                </button>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock size={16} strokeWidth={1.5} className="text-[#8B75D0] shrink-0" />
+              <span className="text-[14px] text-[#5A5270]">
+                {event.meal_type === 'lunch' ? '점심' : event.meal_type === 'dinner' ? '저녁' : '기타'}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Users size={16} strokeWidth={1.5} className="text-[#8B75D0] shrink-0" />
+              <span className="text-[14px] text-[#5A5270]">
+                참석 예정 {event.expected_guests || guests.length}명 · 연락완료 {contactedCount}/{guests.length}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Wallet size={16} strokeWidth={1.5} className="text-[#8B75D0] shrink-0" />
+              {editingCost ? (
+                <div className="flex items-center gap-2 flex-1">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={costInput}
+                    onChange={e => setCostInput(e.target.value.replace(/[^0-9]/g, ''))}
+                    onKeyDown={e => { if (e.key === 'Enter') saveCost() }}
+                    placeholder="비용 입력"
+                    className="flex-1 h-8 px-2.5 rounded-lg border border-[#E8E4F0] text-[14px] text-[#2A2240] focus:outline-none focus:border-[#8B75D0]"
+                    autoFocus
+                  />
+                  <span className="text-[13px] text-[#9B8CC4] shrink-0">원</span>
+                  <button onClick={saveCost} className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-[#EDE9FA]">
+                    <Check size={14} className="text-[#8B75D0]" />
+                  </button>
+                  <button onClick={() => setEditingCost(false)} className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-[#F9F7FD]">
+                    <X size={14} className="text-[#9B8CC4]" />
+                  </button>
                 </div>
-              </div>
-            )}
-
-            <div className="flex items-start gap-3">
-              <MapPin className="w-5 h-5 text-[#9B8CC4] mt-0.5" />
-              <div>
-                <p className="text-sm text-[#5A5270]">장소</p>
-                {event.restaurant ? (
-                  <p className="font-medium text-[#2A2240]">{event.restaurant}</p>
-                ) : (
-                  <p className="font-medium text-[#9B8CC4]">미정</p>
-                )}
-                {event.area ? (
-                  <p className="text-sm text-[#9B8CC4]">{event.area}</p>
-                ) : null}
-              </div>
+              ) : (
+                <button
+                  onClick={startCostEdit}
+                  className="text-[14px] text-[#5A5270] hover:text-[#8B75D0] transition-colors flex items-center gap-1"
+                >
+                  {event.total_cost ? `${event.total_cost.toLocaleString()}원` : '비용 입력'}
+                  <Pencil size={12} className="text-[#9B8CC4]" />
+                </button>
+              )}
             </div>
-
-            <div className="flex items-start gap-3">
-              <Users className="w-5 h-5 text-[#9B8CC4] mt-0.5" />
-              <div>
-                <p className="text-sm text-[#5A5270]">예상 인원</p>
-                <p className="font-medium text-[#2A2240]">{guests.length}명</p>
-              </div>
+            <div className="flex gap-2 mt-1">
+              <GeunnalBadge variant="lavender">
+                <span className="flex items-center gap-1">
+                  <ImageIcon size={12} strokeWidth={1.5} /> 사진 {photos.length}
+                </span>
+              </GeunnalBadge>
+              <GeunnalBadge variant="blush">
+                <span className="flex items-center gap-1">
+                  <MessageCircle size={12} strokeWidth={1.5} /> 메시지 {messages.length}
+                </span>
+              </GeunnalBadge>
             </div>
           </div>
         </GeunnalCard>
 
-        {/* Guest Management */}
-        <GeunnalCard>
-          <h3 className="font-semibold text-[#2A2240] mb-4">
-            게스트 관리 ({guests.length}명)
-          </h3>
+        {/* Location Map Card */}
+        {(venue || locationText) && (
+          <GeunnalCard noPadding>
+            <div className="flex items-center gap-2 px-4 pt-4 pb-2">
+              <Navigation size={16} strokeWidth={1.5} className="text-[#8B75D0]" />
+              <p className="text-[15px] font-medium text-[#2A2240]">장소</p>
+            </div>
+            {venue ? (
+              <>
+                <div className="px-4 py-3">
+                  <p className="text-[14px] font-medium text-[#2A2240]">{venue.name}</p>
+                  <p className="text-[12px] text-[#9B8CC4] mt-0.5">{venue.address}</p>
+                  {venue.phone && (
+                    <a
+                      href={`tel:${venue.phone}`}
+                      className="flex items-center gap-1 text-[13px] text-[#8B75D0] mt-1.5"
+                    >
+                      <Phone size={12} /> {venue.phone}
+                    </a>
+                  )}
+                  {venue.menu_notes && (
+                    <p className="text-[12px] text-[#9B8CC4] mt-1.5 bg-[#F9F7FD] rounded-lg px-3 py-2">
+                      {venue.menu_notes}
+                    </p>
+                  )}
+                  <button
+                    onClick={openKakaoMap}
+                    className="w-full mt-3 h-9 rounded-full border border-[#E8E4F0] text-[13px] text-[#5A5270] font-medium flex items-center justify-center gap-1.5 hover:bg-[#EDE9FA]/20 transition-colors"
+                  >
+                    <ExternalLink size={14} /> 카카오맵에서 보기
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="px-4 pb-4">
+                <p className="text-[14px] text-[#5A5270]">{locationText}</p>
+                <button
+                  onClick={openKakaoMap}
+                  className="w-full mt-2 h-9 rounded-full border border-[#E8E4F0] text-[13px] text-[#5A5270] font-medium flex items-center justify-center gap-1.5 hover:bg-[#EDE9FA]/20 transition-colors"
+                >
+                  <ExternalLink size={14} /> 카카오맵에서 검색
+                </button>
+              </div>
+            )}
+          </GeunnalCard>
+        )}
 
-          {/* Add Guest */}
-          <div className="flex gap-2 mb-4">
+        {/* Guest List */}
+        <GeunnalCard>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[15px] font-medium text-[#2A2240]">
+              참석자 ({guests.length}명)
+            </p>
+            {guests.length > 0 && (
+              <GeunnalBadge variant="soft">
+                연락 {contactedCount}/{guests.length}
+              </GeunnalBadge>
+            )}
+          </div>
+
+          {/* Add guest input */}
+          <div className="flex gap-2 mb-3">
             <input
-              type="text"
               value={newGuestName}
-              onChange={(e) => setNewGuestName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleAddGuest()
-                }
-              }}
-              placeholder="게스트 이름 입력"
-              className="flex-1 px-4 py-2.5 bg-[#F9F7FD] border border-[#E8E4F0] rounded-xl text-[#2A2240] placeholder:text-[#C5BAE8] focus:outline-none focus:border-[#8B75D0] focus:ring-2 focus:ring-[#8B75D0]/20 text-sm"
+              onChange={e => setNewGuestName(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddGuest() } }}
+              placeholder="참석자 이름 입력"
+              className="flex-1 h-10 px-3 rounded-xl border border-[#E8E4F0] text-[13px] text-[#2A2240] placeholder:text-[#C5BAE8] focus:outline-none focus:border-[#8B75D0] transition-colors"
             />
             <button
               onClick={handleAddGuest}
-              className="px-4 py-2.5 bg-[#8B75D0] text-white rounded-xl font-medium hover:bg-[#7A64BF] transition-colors text-sm"
+              className="h-10 px-3 rounded-xl border border-[#E8E4F0] text-[13px] font-medium text-[#5A5270] hover:bg-[#EDE9FA]/40 transition-colors flex items-center gap-1"
             >
+              <Plus size={14} strokeWidth={1.5} />
               추가
             </button>
           </div>
 
-          {/* Guest List */}
-          <div className="space-y-2">
-            {guests.length === 0 ? (
-              <p className="text-center text-[#9B8CC4] py-4 text-sm">
-                아직 게스트가 없습니다
-              </p>
-            ) : (
-              guests.map((guest) => (
+          {guests.length > 0 && (
+            <div className="flex flex-col gap-1">
+              {guests.map(guest => (
                 <div
                   key={guest.id}
-                  className="flex items-center justify-between p-3 bg-[#F9F7FD] rounded-xl"
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
+                    guest.contacted ? 'bg-[#EDE9FA]/20' : 'hover:bg-[#F9F7FD]'
+                  }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => handleToggleContacted(guest)}
-                      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                        guest.contacted
-                          ? 'bg-[#8B75D0] border-[#8B75D0]'
-                          : 'border-[#E8E4F0]'
-                      }`}
-                    >
-                      {guest.contacted && (
-                        <Check className="w-4 h-4 text-white" />
-                      )}
-                    </button>
-                    <span
-                      className={`font-medium ${
-                        guest.contacted ? 'text-[#9B8CC4] line-through' : 'text-[#2A2240]'
-                      }`}
-                    >
+                  <button
+                    onClick={() => handleToggleContacted(guest)}
+                    className="flex items-center gap-3 flex-1 min-w-0 text-left"
+                  >
+                    <BlobAvatarById id={guest.name.charCodeAt(0) % 24} size={32} showBorder={false} />
+                    <span className={`flex-1 text-[14px] truncate ${guest.contacted ? 'text-[#2A2240] font-medium' : 'text-[#5A5270]'}`}>
                       {guest.name}
                     </span>
-                  </div>
-
+                    {guest.contacted ? (
+                      <UserCheck size={16} className="text-[#8B75D0] shrink-0" />
+                    ) : (
+                      <UserX size={16} className="text-[#9B8CC4] shrink-0" />
+                    )}
+                  </button>
                   <button
                     onClick={() => handleRemoveGuest(guest.id)}
-                    className="p-1 hover:bg-white rounded-lg transition-colors"
+                    className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-red-50 transition-colors shrink-0"
                   >
-                    <X className="w-4 h-4 text-[#D4899A]" />
+                    <X size={14} strokeWidth={1.5} className="text-red-400" />
                   </button>
                 </div>
-              ))
-            )}
-          </div>
-
-          <div className="mt-3 p-3 bg-[#EDE9FA] rounded-xl">
-            <p className="text-xs text-[#5A5270]">
-              ✅ 연락 완료: {guests.filter((g) => g.contacted).length}명 / 전체: {guests.length}명
-            </p>
-          </div>
-        </GeunnalCard>
-
-        {/* Submissions */}
-        <GeunnalCard>
-          <h3 className="font-semibold text-[#2A2240] mb-4">
-            받은 응답 ({submissions.length})
-          </h3>
-
-          {submissions.length === 0 ? (
-            <p className="text-center text-[#9B8CC4] py-8 text-sm">
-              아직 받은 응답이 없습니다
-            </p>
-          ) : (
-            <div className="space-y-4">
-              {/* Photos */}
-              {photoSubmissions.length > 0 && (
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <ImageIcon className="w-4 h-4 text-[#9B8CC4]" />
-                    <h4 className="font-medium text-[#2A2240] text-sm">
-                      사진 ({photoSubmissions.length})
-                    </h4>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    {photoSubmissions.map((submission) => (
-                      <div
-                        key={submission.id}
-                        className="aspect-square rounded-lg overflow-hidden bg-[#F9F7FD]"
-                      >
-                        <img
-                          src={submission.photo_url!}
-                          alt="Submission"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Messages */}
-              {messageSubmissions.length > 0 && (
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <MessageSquare className="w-4 h-4 text-[#9B8CC4]" />
-                    <h4 className="font-medium text-[#2A2240] text-sm">
-                      메시지 ({messageSubmissions.length})
-                    </h4>
-                  </div>
-                  <div className="space-y-3">
-                    {messageSubmissions.map((submission) => (
-                      <div
-                        key={submission.id}
-                        className="p-3 bg-[#F9F7FD] rounded-xl"
-                      >
-                        <div className="flex items-center gap-2 mb-2">
-                          <BlobAvatarById id={submission.avatar_id} size={32} showBorder={false} />
-                          <span className="font-medium text-[#2A2240] text-sm">
-                            {submission.is_anonymous ? '익명' : submission.guest_name}
-                          </span>
-                        </div>
-                        <p className="text-sm text-[#5A5270]">{submission.message}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              ))}
             </div>
           )}
         </GeunnalCard>
+
+        {/* Guest Page Preview */}
+        <button
+          onClick={() => window.open(shareUrl, '_blank')}
+          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border border-[#8B75D0]/30 bg-[#EDE9FA]/20 text-[#8B75D0] text-[14px] font-medium hover:bg-[#EDE9FA]/40 active:scale-[0.98] transition-all"
+        >
+          <Eye size={18} strokeWidth={1.5} />
+          하객 공유 페이지 미리보기
+        </button>
+
+        {/* QR Code & Sharing */}
+        <GeunnalCard>
+          <div className="flex items-center gap-2 mb-4">
+            <QrCode size={18} strokeWidth={1.5} className="text-[#8B75D0]" />
+            <p className="text-[15px] font-medium text-[#2A2240]">QR 코드 공유</p>
+          </div>
+          <div className="flex flex-col items-center gap-4">
+            <div className="bg-white p-3 rounded-2xl border border-[#E8E4F0]">
+              <canvas ref={qrCanvasRef} />
+            </div>
+            <p className="text-[12px] text-[#9B8CC4] text-center break-all px-4">
+              {shareUrl}
+            </p>
+            <div className="flex gap-3 w-full">
+              <button
+                onClick={handleDownloadQR}
+                className="flex-1 h-10 rounded-xl border border-[#E8E4F0] text-[13px] font-medium text-[#5A5270] flex items-center justify-center gap-1.5 hover:bg-[#F9F7FD] transition-colors"
+              >
+                <Download size={16} strokeWidth={1.5} />
+                PNG 다운로드
+              </button>
+              <button
+                onClick={handleCopyLink}
+                className="flex-1 h-10 rounded-xl border border-[#E8E4F0] text-[13px] font-medium text-[#5A5270] flex items-center justify-center gap-1.5 hover:bg-[#F9F7FD] transition-colors"
+              >
+                <Link size={16} strokeWidth={1.5} />
+                링크 복사
+              </button>
+            </div>
+            <button
+              onClick={handleKakaoShare}
+              className="w-full h-11 rounded-full font-medium text-[15px] inline-flex items-center justify-center gap-2 bg-[#FEE500] text-[#191919] active:bg-[#FDD835] transition-colors"
+            >
+              <Send size={16} strokeWidth={1.5} />
+              카카오톡 공유
+            </button>
+          </div>
+        </GeunnalCard>
+
+        {/* Photos Section */}
+        {photos.length > 0 && (
+          <section>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[15px] font-medium text-[#2A2240]">사진 ({photos.length})</p>
+            </div>
+            <div className="grid grid-cols-3 gap-1.5">
+              {photos.map(s => (
+                <div key={s.id} className="relative aspect-square rounded-lg overflow-hidden">
+                  <img src={s.photo_url!} alt="" className="w-full h-full object-cover" />
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/50 to-transparent p-2 pt-6">
+                    <p className="text-white text-[10px] font-medium truncate">
+                      {s.is_anonymous ? '익명' : s.guest_name}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Messages Section */}
+        {messages.length > 0 && (
+          <section>
+            <p className="text-[15px] font-medium text-[#2A2240] mb-3">메시지 ({messages.length})</p>
+            <div className="flex flex-col gap-2">
+              {messages.map(msg => (
+                <GeunnalCard key={msg.id}>
+                  <div className="flex gap-3">
+                    <BlobAvatarById id={msg.avatar_id ?? 0} size={36} showBorder={false} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-baseline justify-between gap-2">
+                        <p className="text-[13px] font-medium text-[#2A2240] truncate">
+                          {msg.is_anonymous ? '익명' : msg.guest_name}
+                        </p>
+                        <span className="text-[11px] text-[#9B8CC4] shrink-0">
+                          {formatRelativeTime(msg.created_at)}
+                        </span>
+                      </div>
+                      <p className="text-[14px] text-[#5A5270] mt-1">{msg.message}</p>
+                      {msg.photo_url && (
+                        <img src={msg.photo_url} alt="" className="mt-2 w-20 h-20 rounded-lg object-cover" />
+                      )}
+                    </div>
+                  </div>
+                </GeunnalCard>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
 
       {/* Edit Modal */}
       <AddEventModal
         open={editModalOpen}
         onClose={() => setEditModalOpen(false)}
-        onSave={() => {
-          fetchEventData()
-          setEditModalOpen(false)
-        }}
+        onSave={() => { fetchEventData(); setEditModalOpen(false) }}
         pageId={pageId}
         token={token}
         editEvent={event}
         guests={guests}
       />
 
-      {/* Share Modal */}
-      <BottomSheet
-        open={shareModalOpen}
-        onClose={() => setShareModalOpen(false)}
-        title="이벤트 공유"
-      >
-        <div className="space-y-5">
-          <div className="text-center">
-            <p className="text-sm text-[#5A5270] mb-4">
-              게스트들이 사진과 메시지를 남길 수 있는 링크입니다
-            </p>
-
-            {qrCodeUrl && (
-              <div className="flex justify-center mb-4">
-                <img src={qrCodeUrl} alt="QR Code" className="w-48 h-48" />
-              </div>
-            )}
-
-            <div className="p-3 bg-[#F9F7FD] rounded-xl border border-[#E8E4F0] mb-3">
-              <p className="text-sm text-[#2A2240] break-all">{shareUrl}</p>
-            </div>
-
-            <button
-              onClick={handleCopyUrl}
-              className="w-full py-3 bg-[#8B75D0] text-white rounded-xl font-medium hover:bg-[#7A64BF] transition-colors flex items-center justify-center gap-2"
-            >
-              <Copy className="w-4 h-4" />
-              링크 복사
-            </button>
-          </div>
+      {/* Toast */}
+      {toastMsg && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 bg-[#2A2240] text-white text-[13px] rounded-full shadow-lg animate-fade-in">
+          {toastMsg}
         </div>
-      </BottomSheet>
+      )}
     </div>
   )
 }

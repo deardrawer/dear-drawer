@@ -172,9 +172,14 @@ export default function VenuePage({ pageId, token }: VenuePageProps) {
         <h1 className="text-xl font-medium text-[#2A2240]">모임 장소</h1>
         <button
           onClick={() => setEditingTabs(!editingTabs)}
-          className={`p-2 rounded-full transition-colors ${editingTabs ? 'bg-[#EDE9FA] text-[#8B75D0]' : 'text-[#9B8CC4] hover:text-[#8B75D0]'}`}
+          className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-[13px] font-medium transition-colors border ${
+            editingTabs
+              ? 'border-[#8B75D0] bg-[#EDE9FA] text-[#8B75D0]'
+              : 'border-[#E8E4F0] text-[#9B8CC4] hover:text-[#8B75D0] hover:border-[#8B75D0]'
+          }`}
         >
-          <Settings2 size={18} strokeWidth={1.5} />
+          <Plus size={14} strokeWidth={2} />
+          위치추가
         </button>
       </header>
 

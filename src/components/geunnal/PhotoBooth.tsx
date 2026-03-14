@@ -246,9 +246,10 @@ export default function PhotoBooth({ pageId, token, groomName, brideName }: Phot
 
   // Shared html2canvas options - strip unsupported lab()/oklch() colors from cloned DOM
   const canvasOptions = {
-    scale: 2,
+    scale: 4,
     useCORS: true,
     backgroundColor: null as string | null,
+    imageTimeout: 0,
     onclone: (doc: Document) => {
       // 1. Replace lab()/oklch() in <style> tag textContent
       doc.querySelectorAll('style').forEach(styleEl => {

@@ -75,7 +75,7 @@ export default function GuestEventClient({
   // Fetch submissions (public endpoint)
   useEffect(() => {
     fetch(`/api/geunnal/submissions?eventId=${eventId}`)
-      .then(res => res.json())
+      .then(res => res.json() as Promise<{ submissions?: GeunnalSubmission[] }>)
       .then(data => setSubmissions(data.submissions || []))
       .catch(() => {})
       .finally(() => setLoading(false))

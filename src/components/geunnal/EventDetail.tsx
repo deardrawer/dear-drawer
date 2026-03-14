@@ -219,6 +219,24 @@ export default function EventDetail({
     } catch { showToast('삭제에 실패했습니다') }
   }
 
+  // --- Delete Submission ---
+  const handleDeleteSubmission = async (submissionId: string) => {
+    if (!confirm('이 사진/메시지를 삭제하시겠습니까?')) return
+    try {
+      const res = await fetch(`/api/geunnal/submissions/${submissionId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
+      })
+      if (res.ok) {
+        setSubmissions(prev => prev.filter(s => s.id !== submissionId))
+        if (viewingPhoto?.id === submissionId) setViewingPhoto(null)
+        showToast('삭제되었습니다')
+      } else {
+        showToast('삭제에 실패했습니다')
+      }
+    } catch { showToast('삭제에 실패했습니다') }
+  }
+
   // --- Share ---
   const handleCopyLink = async () => {
     try {
@@ -593,13 +611,21 @@ export default function EventDetail({
                   <div className="flex gap-3">
                     <BlobAvatarById id={msg.avatar_id ?? 0} size={36} showBorder={false} />
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-baseline justify-between gap-2">
+                      <div className="flex items-center justify-between gap-2">
                         <p className="text-[13px] font-medium text-[#2A2240] truncate">
                           {msg.is_anonymous ? '익명' : msg.guest_name}
                         </p>
-                        <span className="text-[11px] text-[#9B8CC4] shrink-0">
-                          {formatRelativeTime(msg.created_at)}
-                        </span>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <span className="text-[11px] text-[#9B8CC4]">
+                            {formatRelativeTime(msg.created_at)}
+                          </span>
+                          <button
+                            onClick={() => handleDeleteSubmission(msg.id)}
+                            className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-red-50 transition-colors"
+                          >
+                            <Trash2 size={12} strokeWidth={1.5} className="text-red-300 hover:text-red-400" />
+                          </button>
+                        </div>
                       </div>
                       <p className="text-[14px] text-[#5A5270] mt-1">{msg.message}</p>
                       {msg.photo_url && (
@@ -628,19 +654,27 @@ export default function EventDetail({
             <p className="text-white text-[14px] font-medium">
               {viewingPhoto.is_anonymous ? '익명' : viewingPhoto.guest_name}
             </p>
-            <button
-              onClick={() => {
-                const a = document.createElement('a')
-                a.href = viewingPhoto.photo_url!
-                a.download = `photo-${viewingPhoto.guest_name || 'guest'}.jpg`
-                a.target = '_blank'
-                a.rel = 'noopener noreferrer'
-                a.click()
-              }}
-              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10"
-            >
-              <Download size={20} strokeWidth={1.5} className="text-white" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => handleDeleteSubmission(viewingPhoto.id)}
+                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10"
+              >
+                <Trash2 size={18} strokeWidth={1.5} className="text-red-400" />
+              </button>
+              <button
+                onClick={() => {
+                  const a = document.createElement('a')
+                  a.href = viewingPhoto.photo_url!
+                  a.download = `photo-${viewingPhoto.guest_name || 'guest'}.jpg`
+                  a.target = '_blank'
+                  a.rel = 'noopener noreferrer'
+                  a.click()
+                }}
+                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10"
+              >
+                <Download size={20} strokeWidth={1.5} className="text-white" />
+              </button>
+            </div>
           </div>
           <div className="flex-1 flex items-center justify-center px-4 overflow-hidden" onClick={e => e.stopPropagation()}>
             <img src={viewingPhoto.photo_url!} alt="" className="max-w-full max-h-full object-contain rounded-lg" />

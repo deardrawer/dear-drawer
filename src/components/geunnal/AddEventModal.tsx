@@ -455,23 +455,23 @@ export default function AddEventModal({
           </div>
 
           {!dateTbd ? (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-[3fr_2fr] gap-2">
               <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9B8CC4]" />
+                <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9B8CC4]" />
                 <input
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-[#F9F7FD] border border-[#E8E4F0] rounded-xl text-[#2A2240] focus:outline-none focus:border-[#8B75D0] focus:ring-2 focus:ring-[#8B75D0]/20"
+                  className="w-full pl-8 pr-2 py-3 bg-[#F9F7FD] border border-[#E8E4F0] rounded-xl text-[14px] text-[#2A2240] focus:outline-none focus:border-[#8B75D0] focus:ring-2 focus:ring-[#8B75D0]/20"
                 />
               </div>
               <div className="relative">
-                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9B8CC4]" />
+                <Clock className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9B8CC4]" />
                 <input
                   type="time"
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-[#F9F7FD] border border-[#E8E4F0] rounded-xl text-[#2A2240] focus:outline-none focus:border-[#8B75D0] focus:ring-2 focus:ring-[#8B75D0]/20"
+                  className="w-full pl-8 pr-2 py-3 bg-[#F9F7FD] border border-[#E8E4F0] rounded-xl text-[14px] text-[#2A2240] focus:outline-none focus:border-[#8B75D0] focus:ring-2 focus:ring-[#8B75D0]/20"
                 />
               </div>
             </div>

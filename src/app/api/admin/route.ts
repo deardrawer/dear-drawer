@@ -6,17 +6,12 @@ import {
   deleteExpiredInvitations,
 } from "@/lib/db";
 
-// 간단한 관리자 비밀번호 (환경변수로 관리)
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
-if (!ADMIN_PASSWORD) {
-  console.error("ADMIN_PASSWORD environment variable is not configured");
-}
-
-// 관리자 인증 확인
+// 관리자 인증 확인 (Cloudflare에서는 요청 핸들러 내부에서 env 읽어야 함)
 function verifyAdmin(request: NextRequest): boolean {
-  if (!ADMIN_PASSWORD) return false;
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  if (!adminPassword) return false;
   const authHeader = request.headers.get("x-admin-password");
-  return authHeader === ADMIN_PASSWORD;
+  return authHeader === adminPassword;
 }
 
 // GET: 청첩장 목록 및 통계 조회

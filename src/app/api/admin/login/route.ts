@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
-if (!ADMIN_PASSWORD) {
-  console.error("ADMIN_PASSWORD environment variable is not configured");
-}
-
 export async function POST(request: NextRequest) {
   try {
     const { password } = await request.json() as { password: string };
@@ -16,7 +11,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!ADMIN_PASSWORD || password !== ADMIN_PASSWORD) {
+    // Cloudflare에서는 요청 핸들러 내부에서 env 읽어야 함
+    const adminPassword = process.env.ADMIN_PASSWORD;
+    if (!adminPassword || password !== adminPassword) {
       return NextResponse.json(
         { success: false, error: "비밀번호가 올바르지 않습니다." },
         { status: 401 }

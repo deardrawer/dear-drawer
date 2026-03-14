@@ -1,7 +1,7 @@
 'use client'
-import { useState, useEffect } from 'react'
-import { Plus, MapPin, Users, DollarSign } from 'lucide-react'
-import { GeunnalEvent, EventGuest } from '@/types/geunnal'
+import { useState, useEffect, useMemo, useRef } from 'react'
+import { Plus, Clock, MapPin, Users, ChevronDown, ChevronUp, Wallet, Pencil, CalendarOff, Check, Phone } from 'lucide-react'
+import { GeunnalEvent, EventGuest, EventSide, MealType } from '@/types/geunnal'
 import GeunnalCard from './Card'
 import GeunnalBadge from './Badge'
 import MonthCalendar from './MonthCalendar'
@@ -23,30 +23,50 @@ interface EventWithGuests {
   guests: EventGuest[]
 }
 
-type CostTab = 'groom' | 'bride' | 'both'
+const SIDE_LABELS: Record<EventSide, string> = {
+  groom: '신랑측',
+  bride: '신부측',
+  both: '공동',
+}
 
-// Utility function to calculate D-day
+const SIDE_BADGE_VARIANT: Record<EventSide, 'lavender' | 'blush' | 'soft'> = {
+  groom: 'lavender',
+  bride: 'blush',
+  both: 'soft',
+}
+
+const MEAL_LABELS: Record<MealType, string> = {
+  lunch: '점심',
+  dinner: '저녁',
+  other: '기타',
+}
+
+const MEAL_BADGE_VARIANT: Record<MealType, 'lavender' | 'blush' | 'soft'> = {
+  lunch: 'blush',
+  dinner: 'lavender',
+  other: 'soft',
+}
+
+// Utility functions
 const getDday = (targetDate: string | null): number | null => {
   if (!targetDate) return null
   const target = new Date(targetDate)
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   target.setHours(0, 0, 0, 0)
-  const diff = Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-  return diff
+  return Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
 }
 
-// Utility function to format date
 const formatDate = (dateStr: string) => {
-  if (dateStr === 'TBD') return '미정'
+  if (!dateStr || dateStr === 'TBD') return '미정'
   const date = new Date(dateStr)
-  return `${date.getMonth() + 1}월 ${date.getDate()}일`
+  const dayNames = ['일', '월', '화', '수', '목', '금', '토']
+  return `${date.getMonth() + 1}월 ${date.getDate()}일 (${dayNames[date.getDay()]})`
 }
 
-// Utility function to format time
 const formatTime = (timeStr: string) => {
   if (!timeStr) return ''
-  return timeStr.slice(0, 5) // HH:MM
+  return timeStr.slice(0, 5)
 }
 
 export default function EventManagement({
@@ -62,53 +82,45 @@ export default function EventManagement({
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [costModalOpen, setCostModalOpen] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<GeunnalEvent | null>(null)
-  const [costTab, setCostTab] = useState<CostTab>('both')
-  const [eventPopupOpen, setEventPopupOpen] = useState(false)
-  const [selectedDateEvents, setSelectedDateEvents] = useState<GeunnalEvent[]>([])
+  const [editEvent, setEditEvent] = useState<GeunnalEvent | null>(null)
+  const [showCompleted, setShowCompleted] = useState(false)
+  const [showAllUpcoming, setShowAllUpcoming] = useState(false)
+  const [showCost, setShowCost] = useState(false)
+  const [popupEventId, setPopupEventId] = useState<string | null>(null)
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({})
 
   const dday = getDday(weddingDate)
+  const ddayText = dday === null ? '' : dday === 0 ? 'D-DAY' : dday > 0 ? `D-${dday}` : `D+${Math.abs(dday)}`
+
+  const todayStr = useMemo(() => {
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  }, [])
 
   const fetchEvents = async () => {
     try {
       setLoading(true)
-
-      // Fetch events
       const eventsRes = await fetch(`/api/geunnal/events?pageId=${pageId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        headers: { 'Authorization': `Bearer ${token}` },
       })
-
-      if (!eventsRes.ok) {
-        throw new Error('이벤트 불러오기 실패')
-      }
-
+      if (!eventsRes.ok) throw new Error('이벤트 불러오기 실패')
       const eventsData = (await eventsRes.json()) as { events: GeunnalEvent[] }
       const events = eventsData.events
 
-      // Fetch guests for each event
       const eventsWithGuestsData = await Promise.all(
         events.map(async (event) => {
           try {
             const guestsRes = await fetch(`/api/geunnal/events/${event.id}/guests`, {
-              headers: {
-                'Authorization': `Bearer ${token}`,
-              },
+              headers: { 'Authorization': `Bearer ${token}` },
             })
-
-            if (!guestsRes.ok) {
-              return { event, guests: [] }
-            }
-
+            if (!guestsRes.ok) return { event, guests: [] }
             const guestsData = (await guestsRes.json()) as { guests: EventGuest[] }
             return { event, guests: guestsData.guests }
-          } catch (error) {
-            console.error(`Failed to fetch guests for event ${event.id}:`, error)
-            return { event, guests: [] }
+          } catch {
+            return { event, guests: [] as EventGuest[] }
           }
         })
       )
-
       setEventsWithGuests(eventsWithGuestsData)
     } catch (error) {
       console.error('Fetch events error:', error)
@@ -117,146 +129,105 @@ export default function EventManagement({
     }
   }
 
-  useEffect(() => {
-    fetchEvents()
-  }, [pageId, token])
+  useEffect(() => { fetchEvents() }, [pageId, token])
 
-  const handleRefresh = () => {
-    fetchEvents()
-  }
+  const handleRefresh = () => { fetchEvents() }
 
   const handleCostClick = (event: GeunnalEvent) => {
     setSelectedEvent(event)
     setCostModalOpen(true)
   }
 
-  const handleDateClick = (date: Date) => {
-    const dateKey = date.toISOString().split('T')[0]
-    const eventsOnDate = eventsWithGuests
-      .filter((ewg) => ewg.event.date.split('T')[0] === dateKey)
-      .map((ewg) => ewg.event)
+  // Categorize events
+  const { todayEvents, upcomingEvents, tbdEvents, completedEvents } = useMemo(() => {
+    const today: EventWithGuests[] = []
+    const upcoming: EventWithGuests[] = []
+    const tbd: EventWithGuests[] = []
+    const completed: EventWithGuests[] = []
 
-    if (eventsOnDate.length > 0) {
-      setSelectedDateEvents(eventsOnDate)
-      setEventPopupOpen(true)
+    for (const ewg of eventsWithGuests) {
+      const dateStr = ewg.event.date.split('T')[0]
+      if (ewg.event.date === 'TBD' || ewg.event.date === '') {
+        tbd.push(ewg)
+      } else if (dateStr === todayStr) {
+        today.push(ewg)
+      } else if (dateStr > todayStr) {
+        upcoming.push(ewg)
+      } else {
+        completed.push(ewg)
+      }
+    }
+
+    upcoming.sort((a, b) => a.event.date.localeCompare(b.event.date) || a.event.time.localeCompare(b.event.time))
+    completed.sort((a, b) => b.event.date.localeCompare(a.event.date) || b.event.time.localeCompare(a.event.time))
+
+    return { todayEvents: today, upcomingEvents: upcoming, tbdEvents: tbd, completedEvents: completed }
+  }, [eventsWithGuests, todayStr])
+
+  // All events sorted by date for popup navigation (exclude TBD)
+  const sortedEvents = useMemo(() => {
+    return eventsWithGuests
+      .filter(ewg => ewg.event.date !== 'TBD' && ewg.event.date !== '')
+      .map(ewg => ewg.event)
+      .sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time))
+  }, [eventsWithGuests])
+
+  // Cost summary
+  const costSummary = useMemo(() => {
+    const summary = { groom: 0, bride: 0, both: 0 }
+    let totalGuests = 0
+    const costEvents: { name: string; side: EventSide; cost: number; guests: number; perPerson: number }[] = []
+
+    for (const ewg of eventsWithGuests) {
+      if (ewg.event.total_cost) {
+        summary[ewg.event.side] += ewg.event.total_cost
+        const guestCount = ewg.guests.length || ewg.event.expected_guests || 0
+        totalGuests += guestCount
+        costEvents.push({
+          name: ewg.event.name,
+          side: ewg.event.side,
+          cost: ewg.event.total_cost,
+          guests: guestCount,
+          perPerson: guestCount > 0 ? Math.round(ewg.event.total_cost / guestCount) : 0,
+        })
+      }
+    }
+
+    const total = summary.groom + summary.bride + summary.both
+    return {
+      ...summary,
+      total,
+      totalGuests,
+      perPerson: totalGuests > 0 ? Math.round(total / totalGuests) : 0,
+      costEvents,
+    }
+  }, [eventsWithGuests])
+
+  function handleDateClick(dateStr: string) {
+    const dateEvents = sortedEvents.filter(e => e.date.split('T')[0] === dateStr)
+    if (dateEvents.length > 0) {
+      setPopupEventId(dateEvents[0].id)
     }
   }
 
-  // Categorize events
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-
-  const todayEvents = eventsWithGuests.filter((ewg) => {
-    if (ewg.event.date === 'TBD') return false
-    const eventDate = new Date(ewg.event.date)
-    eventDate.setHours(0, 0, 0, 0)
-    return eventDate.getTime() === today.getTime()
-  })
-
-  const upcomingEvents = eventsWithGuests.filter((ewg) => {
-    if (ewg.event.date === 'TBD') return false
-    const eventDate = new Date(ewg.event.date)
-    eventDate.setHours(0, 0, 0, 0)
-    return eventDate.getTime() > today.getTime()
-  })
-
-  const tbdEvents = eventsWithGuests.filter((ewg) => ewg.event.date === 'TBD')
-
-  const completedEvents = eventsWithGuests.filter((ewg) => {
-    if (ewg.event.date === 'TBD') return false
-    const eventDate = new Date(ewg.event.date)
-    eventDate.setHours(0, 0, 0, 0)
-    return eventDate.getTime() < today.getTime()
-  })
-
-  // Calculate costs by side
-  const calculateCosts = (side: CostTab) => {
-    const filtered =
-      side === 'both'
-        ? eventsWithGuests
-        : eventsWithGuests.filter((ewg) => ewg.event.side === side || ewg.event.side === 'both')
-
-    const totalCost = filtered.reduce((sum, ewg) => sum + (ewg.event.total_cost || 0), 0)
-    const totalGuests = filtered.reduce((sum, ewg) => sum + ewg.guests.length, 0)
-
-    return { totalCost, totalGuests }
+  function handleContactToggle(eventId: string, guestId: string, contacted: boolean) {
+    // Update guest contacted status via API
+    fetch(`/api/geunnal/events/${eventId}/guests/${guestId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ contacted: contacted ? 1 : 0 }),
+    }).then(() => fetchEvents())
   }
 
-  const { totalCost, totalGuests } = calculateCosts(costTab)
-
-  // Event card component
-  const EventCard = ({ ewg }: { ewg: EventWithGuests }) => {
-    const { event, guests } = ewg
-
-    return (
-      <GeunnalCard
-        className="cursor-pointer hover:shadow-md transition-shadow"
-        onClick={() => onEventClick(event.id)}
-      >
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <GeunnalBadge
-              variant={
-                event.side === 'groom'
-                  ? 'lavender'
-                  : event.side === 'bride'
-                  ? 'blush'
-                  : 'soft'
-              }
-            >
-              {event.side === 'groom' ? '신랑' : event.side === 'bride' ? '신부' : '공통'}
-            </GeunnalBadge>
-            <GeunnalBadge variant="soft">
-              {event.meal_type === 'lunch' ? '점심' : event.meal_type === 'dinner' ? '저녁' : '기타'}
-            </GeunnalBadge>
-          </div>
-        </div>
-
-        <h4 className="font-semibold text-[#2A2240] mb-2 text-lg">
-          {event.name}
-        </h4>
-
-        <div className="space-y-2 text-sm text-[#5A5270]">
-          <div className="flex items-center gap-2">
-            <span className="text-base">📅</span>
-            <span>
-              {formatDate(event.date)}
-              {event.time && ` ${formatTime(event.time)}`}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-[#9B8CC4]" />
-            <span>
-              {event.area} - {event.restaurant}
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between pt-2 border-t border-[#E8E4F0]">
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-[#9B8CC4]" />
-              <span>{guests.length}명</span>
-            </div>
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                handleCostClick(event)
-              }}
-              className="flex items-center gap-2 text-[#8B75D0] hover:text-[#7A64BF] transition-colors"
-            >
-              <DollarSign className="w-4 h-4" />
-              <span className="font-medium">
-                {event.total_cost
-                  ? `${event.total_cost.toLocaleString('ko-KR')}원`
-                  : '비용 입력'}
-              </span>
-            </button>
-          </div>
-        </div>
-      </GeunnalCard>
-    )
-  }
+  const calendarEvents = useMemo(() =>
+    eventsWithGuests
+      .filter(ewg => ewg.event.date !== 'TBD' && ewg.event.date !== '')
+      .map(ewg => ewg.event),
+    [eventsWithGuests]
+  )
 
   if (loading) {
     return (
@@ -267,152 +238,191 @@ export default function EventManagement({
   }
 
   return (
-    <div className="min-h-screen bg-[#F9F7FD] pb-20">
+    <div className="px-5 pb-24 flex flex-col gap-5">
       {/* Header */}
-      <div className="bg-white border-b border-[#E8E4F0] px-5 py-4">
-        <div className="flex items-center justify-between mb-3">
-          <div>
-            <h1 className="text-xl font-bold text-[#2A2240]">
-              {groomName} ♥ {brideName}
-            </h1>
-            {weddingDate && (
-              <p className="text-sm text-[#5A5270] mt-1">
-                {new Date(weddingDate).toLocaleDateString('ko-KR', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
-              </p>
-            )}
-          </div>
-
-          {dday !== null && (
-            <GeunnalBadge variant="blush" className="text-base px-4 py-2">
-              {dday === 0 ? 'D-Day' : dday > 0 ? `D-${dday}` : `D+${Math.abs(dday)}`}
-            </GeunnalBadge>
+      <header className="flex items-start justify-between pt-5 pb-5 -mx-5 px-5 border-b border-[#E8E4F0]">
+        <div>
+          <p className="text-[11px] font-medium tracking-[1.5px] uppercase text-[#9B8CC4] mb-1">dear drawer</p>
+          <h1 className="text-xl font-medium text-[#2A2240]">
+            {groomName} & {brideName}
+          </h1>
+          {weddingDate && (
+            <p className="text-[13px] text-[#9B8CC4] mt-0.5">
+              {formatDate(weddingDate)}
+            </p>
           )}
         </div>
-      </div>
+        {ddayText && <GeunnalBadge variant="lavender">{ddayText}</GeunnalBadge>}
+      </header>
 
-      <div className="px-5 py-5 space-y-6">
-        {/* Calendar */}
-        <MonthCalendar
-          events={eventsWithGuests.map((ewg) => ewg.event)}
-          onDateClick={handleDateClick}
-        />
+      {/* Calendar */}
+      <MonthCalendar events={calendarEvents} onDateClick={handleDateClick} />
 
-        {/* Cost Summary */}
-        <GeunnalCard>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-[#2A2240]">비용 요약</h3>
-            <div className="flex gap-2">
-              {[
-                { value: 'groom', label: '신랑' },
-                { value: 'bride', label: '신부' },
-                { value: 'both', label: '전체' },
-              ].map((tab) => (
-                <button
-                  key={tab.value}
-                  onClick={() => setCostTab(tab.value as CostTab)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                    costTab === tab.value
-                      ? 'bg-[#8B75D0] text-white'
-                      : 'bg-[#F9F7FD] text-[#5A5270]'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
+      {/* Cost Summary */}
+      {costSummary.total > 0 && (
+        <GeunnalCard className="p-4">
+          <button
+            onClick={() => setShowCost(v => !v)}
+            className="flex items-center justify-between w-full"
+          >
+            <div className="flex items-center gap-2">
+              <Wallet size={16} strokeWidth={1.5} className="text-[#8B75D0]" />
+              <span className="text-[14px] font-medium text-[#2A2240]">비용 관리</span>
             </div>
-          </div>
+            <span className="text-[#9B8CC4]">
+              {showCost ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </span>
+          </button>
+          {showCost && (
+            <div className="flex flex-col gap-3 mt-3">
+              <div className="flex flex-col gap-1.5">
+                <div className="flex justify-between text-[13px]">
+                  <span className="text-[#9B8CC4]">신랑측</span>
+                  <span className="text-[#5A5270] font-medium">{costSummary.groom.toLocaleString()}원</span>
+                </div>
+                <div className="flex justify-between text-[13px]">
+                  <span className="text-[#9B8CC4]">신부측</span>
+                  <span className="text-[#5A5270] font-medium">{costSummary.bride.toLocaleString()}원</span>
+                </div>
+                <div className="flex justify-between text-[13px]">
+                  <span className="text-[#9B8CC4]">공동</span>
+                  <span className="text-[#5A5270] font-medium">{costSummary.both.toLocaleString()}원</span>
+                </div>
+                <div className="border-t border-[#E8E4F0] my-1" />
+                <div className="flex justify-between text-[14px]">
+                  <span className="font-medium text-[#2A2240]">합계</span>
+                  <span className="font-semibold text-[#8B75D0]">{costSummary.total.toLocaleString()}원</span>
+                </div>
+                <div className="flex justify-between text-[13px]">
+                  <span className="text-[#9B8CC4]">총 참석자</span>
+                  <span className="text-[#5A5270] font-medium">{costSummary.totalGuests}명</span>
+                </div>
+                {costSummary.perPerson > 0 && (
+                  <div className="flex justify-between text-[13px]">
+                    <span className="text-[#9B8CC4]">전체 1인당 평균</span>
+                    <span className="text-[#8B75D0] font-medium">≈ {costSummary.perPerson.toLocaleString()}원</span>
+                  </div>
+                )}
+              </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-3 bg-[#F9F7FD] rounded-xl">
-              <p className="text-xs text-[#9B8CC4] mb-1">총 비용</p>
-              <p className="text-lg font-bold text-[#2A2240]">
-                {totalCost.toLocaleString('ko-KR')}원
-              </p>
+              {costSummary.costEvents.length > 0 && (
+                <CostBreakdown costEvents={costSummary.costEvents} />
+              )}
             </div>
-            <div className="p-3 bg-[#F9F7FD] rounded-xl">
-              <p className="text-xs text-[#9B8CC4] mb-1">총 인원</p>
-              <p className="text-lg font-bold text-[#2A2240]">
-                {totalGuests}명
-              </p>
-            </div>
-          </div>
+          )}
         </GeunnalCard>
+      )}
 
-        {/* Today Events */}
-        {todayEvents.length > 0 && (
-          <div>
-            <h3 className="font-semibold text-[#2A2240] mb-3 px-1">
-              오늘 일정 🎯
-            </h3>
-            <div className="space-y-3">
-              {todayEvents.map((ewg) => (
-                <EventCard key={ewg.event.id} ewg={ewg} />
+      {/* Today's events */}
+      {todayEvents.length > 0 && (
+        <section>
+          <SectionHeader title="오늘의 모임" count={todayEvents.length} />
+          <div className="flex flex-col gap-3">
+            {todayEvents.map(ewg => (
+              <div key={ewg.event.id} ref={el => { sectionRefs.current[ewg.event.date] = el }}>
+                <EventCard
+                  ewg={ewg}
+                  onClick={() => onEventClick(ewg.event.id)}
+                  onCostClick={() => handleCostClick(ewg.event)}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Upcoming events */}
+      {upcomingEvents.length > 0 && (
+        <section>
+          <SectionHeader title="예정된 모임" count={upcomingEvents.length} />
+          <div className="flex flex-col gap-3">
+            {(upcomingEvents.length >= 5 && !showAllUpcoming
+              ? upcomingEvents.slice(0, 4)
+              : upcomingEvents
+            ).map(ewg => (
+              <div key={ewg.event.id} ref={el => { sectionRefs.current[ewg.event.date] = el }}>
+                <EventCard
+                  ewg={ewg}
+                  onClick={() => onEventClick(ewg.event.id)}
+                  onCostClick={() => handleCostClick(ewg.event)}
+                />
+              </div>
+            ))}
+            {upcomingEvents.length >= 5 && (
+              <button
+                onClick={() => setShowAllUpcoming(v => !v)}
+                className="flex items-center justify-center gap-1 py-2 text-[13px] font-medium text-[#9B8CC4] hover:text-[#8B75D0] transition-colors"
+              >
+                {showAllUpcoming ? (
+                  <>접기 <ChevronUp size={16} /></>
+                ) : (
+                  <>나머지 {upcomingEvents.length - 4}개 더보기 <ChevronDown size={16} /></>
+                )}
+              </button>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* TBD events */}
+      {tbdEvents.length > 0 && (
+        <section>
+          <SectionHeader title="미정 모임" count={tbdEvents.length} icon={<CalendarOff size={16} strokeWidth={1.5} className="text-[#9B8CC4]" />} />
+          <div className="flex flex-col gap-3">
+            {tbdEvents.map(ewg => (
+              <div key={ewg.event.id}>
+                <TBDEventCard
+                  ewg={ewg}
+                  onContactToggle={handleContactToggle}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Completed events */}
+      {completedEvents.length > 0 && (
+        <section>
+          <button
+            onClick={() => setShowCompleted(v => !v)}
+            className="flex items-center gap-2 mb-3 w-full"
+          >
+            <SectionHeader title="완료된 모임" count={completedEvents.length} />
+            <span className="text-[#9B8CC4] ml-auto">
+              {showCompleted ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+            </span>
+          </button>
+          {showCompleted && (
+            <div className="flex flex-col gap-3">
+              {completedEvents.map(ewg => (
+                <div key={ewg.event.id}>
+                  <EventCard
+                    ewg={ewg}
+                    onClick={() => onEventClick(ewg.event.id)}
+                    onCostClick={() => handleCostClick(ewg.event)}
+                    isCompleted
+                  />
+                </div>
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </section>
+      )}
 
-        {/* Upcoming Events */}
-        {upcomingEvents.length > 0 && (
-          <div>
-            <h3 className="font-semibold text-[#2A2240] mb-3 px-1">
-              예정된 일정 📅
-            </h3>
-            <div className="space-y-3">
-              {upcomingEvents.map((ewg) => (
-                <EventCard key={ewg.event.id} ewg={ewg} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* TBD Events */}
-        {tbdEvents.length > 0 && (
-          <div>
-            <h3 className="font-semibold text-[#2A2240] mb-3 px-1">
-              날짜 미정 📝
-            </h3>
-            <div className="space-y-3">
-              {tbdEvents.map((ewg) => (
-                <EventCard key={ewg.event.id} ewg={ewg} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Completed Events */}
-        {completedEvents.length > 0 && (
-          <div>
-            <h3 className="font-semibold text-[#2A2240] mb-3 px-1">
-              완료된 일정 ✅
-            </h3>
-            <div className="space-y-3">
-              {completedEvents.map((ewg) => (
-                <EventCard key={ewg.event.id} ewg={ewg} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Empty State */}
-        {eventsWithGuests.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-[#9B8CC4] mb-4">아직 이벤트가 없습니다</p>
-            <p className="text-sm text-[#C5BAE8]">
-              + 버튼을 눌러 첫 이벤트를 추가해보세요
-            </p>
-          </div>
-        )}
-      </div>
+      {/* Empty State */}
+      {eventsWithGuests.length === 0 && (
+        <div className="text-center py-12">
+          <p className="text-[#9B8CC4] mb-4">아직 이벤트가 없습니다</p>
+          <p className="text-sm text-[#C5BAE8]">+ 버튼을 눌러 첫 이벤트를 추가해보세요</p>
+        </div>
+      )}
 
       {/* Add Event Button */}
       <button
         onClick={() => setAddModalOpen(true)}
-        className="fixed bottom-24 right-5 w-14 h-14 bg-[#8B75D0] text-white rounded-full shadow-lg hover:bg-[#7A64BF] transition-colors flex items-center justify-center z-40"
+        className="fixed bottom-24 right-5 w-14 h-14 text-white rounded-full shadow-lg flex items-center justify-center z-40 active:scale-95 transition-transform"
+        style={{ background: 'linear-gradient(135deg, #8B75D0, #B87AAB, #D4899A)' }}
       >
         <Plus className="w-6 h-6" />
       </button>
@@ -428,14 +438,11 @@ export default function EventManagement({
 
       <CostEditModal
         open={costModalOpen}
-        onClose={() => {
-          setCostModalOpen(false)
-          setSelectedEvent(null)
-        }}
+        onClose={() => { setCostModalOpen(false); setSelectedEvent(null) }}
         event={selectedEvent}
         guestCount={
           selectedEvent
-            ? eventsWithGuests.find((ewg) => ewg.event.id === selectedEvent.id)?.guests.length || 0
+            ? eventsWithGuests.find(ewg => ewg.event.id === selectedEvent.id)?.guests.length || 0
             : 0
         }
         token={token}
@@ -443,11 +450,286 @@ export default function EventManagement({
       />
 
       <EventPopup
-        open={eventPopupOpen}
-        onClose={() => setEventPopupOpen(false)}
-        events={selectedDateEvents}
-        onEventClick={onEventClick}
+        open={popupEventId !== null}
+        onClose={() => setPopupEventId(null)}
+        events={sortedEvents}
+        onEventClick={(id) => { setPopupEventId(null); onEventClick(id) }}
       />
+    </div>
+  )
+}
+
+/* ─── Section Header ─── */
+function SectionHeader({ title, count, icon }: { title: string; count: number; icon?: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-2 mb-3">
+      {icon}
+      <h2 className="text-[15px] font-medium text-[#2A2240]">{title}</h2>
+      <span className="text-[12px] text-[#9B8CC4]">{count}</span>
+    </div>
+  )
+}
+
+/* ─── Event Card ─── */
+function EventCard({ ewg, onClick, onCostClick, isCompleted }: {
+  ewg: EventWithGuests
+  onClick: () => void
+  onCostClick: () => void
+  isCompleted?: boolean
+}) {
+  const { event, guests } = ewg
+  const guestCount = guests.length || event.expected_guests || 0
+  const costText = event.total_cost ? `${event.total_cost.toLocaleString()}원` : null
+
+  return (
+    <GeunnalCard
+      className={`cursor-pointer active:scale-[0.98] transition-transform ${isCompleted ? 'opacity-60' : ''}`}
+      onClick={onClick}
+    >
+      <div className="flex flex-col gap-2">
+        {/* Row 1: Side badge + Name + Meal badge */}
+        <div className="flex items-center gap-2">
+          <GeunnalBadge variant={SIDE_BADGE_VARIANT[event.side]} className="text-[11px] px-2 py-0.5">
+            {SIDE_LABELS[event.side]}
+          </GeunnalBadge>
+          <span className="text-[15px] font-medium text-[#2A2240] flex-1 truncate">
+            {event.name}
+          </span>
+          <GeunnalBadge variant={MEAL_BADGE_VARIANT[event.meal_type]} className="text-[11px] px-2 py-0.5">
+            {MEAL_LABELS[event.meal_type]}
+          </GeunnalBadge>
+        </div>
+
+        {/* Row 2: Date & Time */}
+        <div className="flex items-center gap-1.5">
+          <Clock size={14} strokeWidth={1.5} className="text-[#9B8CC4] shrink-0" />
+          <span className="text-[13px] text-[#9B8CC4]">
+            {formatDate(event.date)} {formatTime(event.time)}
+          </span>
+        </div>
+
+        {/* Row 3: Area & Restaurant */}
+        <div className="flex items-center gap-1.5">
+          <MapPin size={14} strokeWidth={1.5} className="text-[#9B8CC4] shrink-0" />
+          <span className="text-[13px] text-[#9B8CC4] truncate">
+            {event.area}{event.restaurant ? ` · ${event.restaurant}` : ''}
+          </span>
+        </div>
+
+        {/* Row 4: Guests & Cost */}
+        <div className="flex items-center gap-1.5">
+          <Users size={14} strokeWidth={1.5} className="text-[#9B8CC4] shrink-0" />
+          <span className="text-[13px] text-[#9B8CC4]">
+            {guestCount}명
+          </span>
+          <span className="text-[#9B8CC4] mx-0.5">·</span>
+          {costText ? (
+            <button
+              onClick={e => { e.stopPropagation(); onCostClick() }}
+              className="text-[13px] text-[#8B75D0] font-medium hover:underline"
+            >
+              {costText}
+            </button>
+          ) : (
+            <button
+              onClick={e => { e.stopPropagation(); onCostClick() }}
+              className="text-[13px] text-[#C5BAE8] hover:text-[#8B75D0] transition-colors"
+            >
+              비용 입력
+            </button>
+          )}
+        </div>
+
+        {/* Row 5: Guest names */}
+        {guests.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-0.5">
+            {guests.map(g => (
+              <span
+                key={g.id}
+                className="text-[11px] px-2 py-0.5 bg-[#F9F7FD] text-[#5A5270] rounded-xl"
+              >
+                {g.name}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+    </GeunnalCard>
+  )
+}
+
+/* ─── TBD Event Card ─── */
+function TBDEventCard({ ewg, onContactToggle }: {
+  ewg: EventWithGuests
+  onContactToggle: (eventId: string, guestId: string, contacted: boolean) => void
+}) {
+  const { event, guests } = ewg
+  const contactedCount = guests.filter(g => g.contacted === 1).length
+  const totalGuests = guests.length
+
+  return (
+    <GeunnalCard>
+      <div className="flex flex-col gap-2.5">
+        {/* Row 1: Side badge + Name */}
+        <div className="flex items-center gap-2">
+          <GeunnalBadge variant={SIDE_BADGE_VARIANT[event.side]} className="text-[11px] px-2 py-0.5">
+            {SIDE_LABELS[event.side]}
+          </GeunnalBadge>
+          <span className="text-[15px] font-medium text-[#2A2240] flex-1 truncate">
+            {event.name}
+          </span>
+        </div>
+
+        {/* Row 2: TBD date + Area */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5">
+            <CalendarOff size={14} strokeWidth={1.5} className="text-[#9B8CC4] shrink-0" />
+            <span className="text-[13px] text-[#9B8CC4]">날짜 미정</span>
+          </div>
+          {event.area && (
+            <div className="flex items-center gap-1.5">
+              <MapPin size={14} strokeWidth={1.5} className="text-[#9B8CC4] shrink-0" />
+              <span className="text-[13px] text-[#9B8CC4] truncate">
+                {event.area}{event.restaurant ? ` · ${event.restaurant}` : ''}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Row 3: Contact progress */}
+        {totalGuests > 0 && (
+          <div className="flex items-center gap-2">
+            <Phone size={13} strokeWidth={1.5} className="text-[#9B8CC4] shrink-0" />
+            <span className="text-[12px] text-[#9B8CC4]">
+              연락 {contactedCount}/{totalGuests}
+            </span>
+            <div className="flex-1 h-1.5 bg-[#F9F7FD] rounded-full overflow-hidden">
+              <div
+                className="h-full bg-[#8B75D0] rounded-full transition-all duration-300"
+                style={{ width: totalGuests > 0 ? `${(contactedCount / totalGuests) * 100}%` : '0%' }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Row 4: Guest contact checklist */}
+        {guests.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-0.5">
+            {guests.map(g => (
+              <button
+                key={g.id}
+                type="button"
+                onClick={() => onContactToggle(event.id, g.id, g.contacted !== 1)}
+                className={`inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-xl transition-colors ${
+                  g.contacted === 1
+                    ? 'bg-[#EDE9FA] text-[#8B75D0]'
+                    : 'bg-[#F9F7FD] text-[#5A5270]'
+                }`}
+              >
+                {g.contacted === 1 && <Check size={10} strokeWidth={2.5} />}
+                {g.name}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </GeunnalCard>
+  )
+}
+
+/* ─── Cost Breakdown with Side Tabs ─── */
+type CostEvent = { name: string; side: EventSide; cost: number; guests: number; perPerson: number }
+
+function CostBreakdown({ costEvents }: { costEvents: CostEvent[] }) {
+  const [tab, setTab] = useState<EventSide | 'all'>('all')
+
+  const TABS: { value: EventSide | 'all'; label: string }[] = [
+    { value: 'all', label: '전체' },
+    { value: 'groom', label: '신랑측' },
+    { value: 'bride', label: '신부측' },
+    { value: 'both', label: '공동' },
+  ]
+
+  const filtered = tab === 'all' ? costEvents : costEvents.filter(ce => ce.side === tab)
+  const subTotal = filtered.reduce((sum, ce) => sum + ce.cost, 0)
+  const subGuests = filtered.reduce((sum, ce) => sum + ce.guests, 0)
+  const subPerPerson = subGuests > 0 ? Math.round(subTotal / subGuests) : 0
+
+  return (
+    <div className="flex flex-col gap-2 bg-[#F9F7FD] rounded-lg p-3">
+      <p className="text-[12px] font-medium text-[#9B8CC4]">모임별 상세</p>
+
+      {/* Side tabs */}
+      <div className="flex gap-1 bg-white rounded-lg p-0.5">
+        {TABS.map(({ value, label }) => (
+          <button
+            key={value}
+            onClick={() => setTab(value)}
+            className={`
+              flex-1 py-1.5 text-[11px] font-medium rounded-md transition-all
+              ${tab === value
+                ? 'bg-[#EDE9FA] text-[#8B75D0] shadow-sm'
+                : 'text-[#9B8CC4] hover:text-[#5A5270]'
+              }
+            `}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* Filtered events */}
+      {filtered.length === 0 ? (
+        <p className="text-[12px] text-[#9B8CC4] py-2 text-center">해당 항목이 없습니다</p>
+      ) : (
+        <>
+          {filtered.map((ce, i) => (
+            <div key={i} className="flex flex-col gap-0.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  {tab === 'all' && (
+                    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-xl ${
+                      ce.side === 'groom' ? 'bg-[#EDE9FA] text-[#8B75D0]'
+                        : ce.side === 'bride' ? 'bg-[#FAE9F0] text-[#D4899A]'
+                        : 'bg-[#E8E4F0] text-[#9B8CC4]'
+                    }`}>
+                      {SIDE_LABELS[ce.side]}
+                    </span>
+                  )}
+                  <span className="text-[13px] text-[#2A2240] font-medium">{ce.name}</span>
+                </div>
+                <span className="text-[13px] text-[#5A5270] font-medium">{ce.cost.toLocaleString()}원</span>
+              </div>
+              <div className="flex items-center justify-between pl-0.5">
+                <span className="text-[11px] text-[#9B8CC4]">
+                  {ce.guests > 0 ? `${ce.guests}명 참석` : '참석자 미정'}
+                </span>
+                {ce.perPerson > 0 && (
+                  <span className="text-[11px] text-[#8B75D0] font-medium">
+                    1인당 ≈ {ce.perPerson.toLocaleString()}원
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
+
+          {filtered.length > 1 && (
+            <>
+              <div className="border-t border-[#E8E4F0] my-0.5" />
+              <div className="flex justify-between text-[12px]">
+                <span className="text-[#9B8CC4] font-medium">소계</span>
+                <span className="text-[#2A2240] font-semibold">{subTotal.toLocaleString()}원</span>
+              </div>
+              <div className="flex justify-between text-[11px]">
+                <span className="text-[#9B8CC4]">{subGuests}명</span>
+                {subPerPerson > 0 && (
+                  <span className="text-[#8B75D0] font-medium">1인당 ≈ {subPerPerson.toLocaleString()}원</span>
+                )}
+              </div>
+            </>
+          )}
+        </>
+      )}
     </div>
   )
 }

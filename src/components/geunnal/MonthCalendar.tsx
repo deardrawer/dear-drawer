@@ -1,196 +1,202 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { GeunnalEvent } from '@/types/geunnal'
-import GeunnalBadge from './Badge'
+import GeunnalCard from './Card'
+import type { GeunnalEvent, MealType } from '@/types/geunnal'
 
 interface MonthCalendarProps {
   events: GeunnalEvent[]
-  onDateClick?: (date: Date) => void
+  onDateClick?: (dateStr: string) => void
 }
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 
+const MEAL_SHORT: Record<MealType, string> = {
+  lunch: '점심',
+  dinner: '저녁',
+  other: '기타',
+}
+
+function toDateStr(year: number, month: number, day: number): string {
+  return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+}
+
+function getTodayStr(): string {
+  const d = new Date()
+  return toDateStr(d.getFullYear(), d.getMonth(), d.getDate())
+}
+
+function getMealColor(meal: MealType): string {
+  if (meal === 'lunch') return 'text-amber-600'
+  if (meal === 'dinner') return 'text-indigo-400'
+  return 'text-[#9B8CC4]'
+}
+
+function getInitialMonth(events: GeunnalEvent[]): { year: number; month: number } {
+  if (typeof window !== 'undefined') {
+    const saved = sessionStorage.getItem('geunnal-calendar-month')
+    if (saved) {
+      try {
+        const { year, month } = JSON.parse(saved) as { year: number; month: number }
+        if (typeof year === 'number' && typeof month === 'number') return { year, month }
+      } catch { /* ignore */ }
+    }
+  }
+  const today = new Date()
+  const todayStr = getTodayStr()
+  const futureEvents = events
+    .filter(e => e.date !== 'TBD' && e.date >= todayStr)
+    .sort((a, b) => a.date.localeCompare(b.date))
+  if (futureEvents.length > 0) {
+    const d = new Date(futureEvents[0].date)
+    return { year: d.getFullYear(), month: d.getMonth() }
+  }
+  return { year: today.getFullYear(), month: today.getMonth() }
+}
+
 export default function MonthCalendar({ events, onDateClick }: MonthCalendarProps) {
-  const [currentDate, setCurrentDate] = useState(() => {
-    // Restore from sessionStorage
-    if (typeof window !== 'undefined') {
-      const saved = sessionStorage.getItem('geunnal-calendar-month')
-      if (saved) {
-        return new Date(saved)
-      }
-    }
-    return new Date()
-  })
+  const initial = useMemo(() => getInitialMonth(events), [events])
+  const [year, setYear] = useState(initial.year)
+  const [month, setMonth] = useState(initial.month)
+  const todayStr = getTodayStr()
 
-  // Save to sessionStorage when month changes
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('geunnal-calendar-month', currentDate.toISOString())
+    sessionStorage.setItem('geunnal-calendar-month', JSON.stringify({ year, month }))
+  }, [year, month])
+
+  const eventMap = useMemo(() => {
+    const map: Record<string, GeunnalEvent[]> = {}
+    for (const evt of events) {
+      if (evt.date === 'TBD') continue
+      const dateKey = evt.date.split('T')[0]
+      if (!map[dateKey]) map[dateKey] = []
+      map[dateKey].push(evt)
     }
-  }, [currentDate])
+    return map
+  }, [events])
 
-  const year = currentDate.getFullYear()
-  const month = currentDate.getMonth()
+  const firstDay = new Date(year, month, 1).getDay()
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
 
-  // Calculate calendar grid
-  const firstDay = new Date(year, month, 1)
-  const lastDay = new Date(year, month + 1, 0)
-  const daysInMonth = lastDay.getDate()
-  const startDayOfWeek = firstDay.getDay()
+  const cells: (number | null)[] = []
+  for (let i = 0; i < firstDay; i++) cells.push(null)
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d)
+  while (cells.length % 7 !== 0) cells.push(null)
 
-  // Generate calendar days
-  const calendarDays: (number | null)[] = []
-  for (let i = 0; i < startDayOfWeek; i++) {
-    calendarDays.push(null)
-  }
-  for (let i = 1; i <= daysInMonth; i++) {
-    calendarDays.push(i)
+  function prevMonth() {
+    if (month === 0) { setYear(y => y - 1); setMonth(11) }
+    else setMonth(m => m - 1)
   }
 
-  // Group events by date
-  const eventsByDate = new Map<string, GeunnalEvent[]>()
-  events.forEach((event) => {
-    const dateKey = event.date.split('T')[0] // YYYY-MM-DD
-    if (!eventsByDate.has(dateKey)) {
-      eventsByDate.set(dateKey, [])
-    }
-    eventsByDate.get(dateKey)!.push(event)
-  })
-
-  const goToPrevMonth = () => {
-    setCurrentDate(new Date(year, month - 1, 1))
-  }
-
-  const goToNextMonth = () => {
-    setCurrentDate(new Date(year, month + 1, 1))
-  }
-
-  const handleDateClick = (day: number) => {
-    if (onDateClick) {
-      onDateClick(new Date(year, month, day))
-    }
-  }
-
-  const formatDateKey = (day: number) => {
-    const d = new Date(year, month, day)
-    return d.toISOString().split('T')[0]
+  function nextMonth() {
+    if (month === 11) { setYear(y => y + 1); setMonth(0) }
+    else setMonth(m => m + 1)
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-[#E8E4F0] p-4">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+    <GeunnalCard className="p-3">
+      {/* Month navigation */}
+      <div className="flex items-center justify-between mb-3">
         <button
-          onClick={goToPrevMonth}
-          className="p-2 hover:bg-[#F9F7FD] rounded-lg transition-colors"
+          onClick={prevMonth}
+          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#EDE9FA]/40 transition-colors"
         >
-          <ChevronLeft className="w-5 h-5 text-[#5A5270]" />
+          <ChevronLeft size={18} strokeWidth={1.5} className="text-[#5A5270]" />
         </button>
-        <h3 className="text-lg font-semibold text-[#2A2240]">
+        <span className="text-[15px] font-medium text-[#2A2240]">
           {year}년 {month + 1}월
-        </h3>
+        </span>
         <button
-          onClick={goToNextMonth}
-          className="p-2 hover:bg-[#F9F7FD] rounded-lg transition-colors"
+          onClick={nextMonth}
+          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#EDE9FA]/40 transition-colors"
         >
-          <ChevronRight className="w-5 h-5 text-[#5A5270]" />
+          <ChevronRight size={18} strokeWidth={1.5} className="text-[#5A5270]" />
         </button>
       </div>
 
       {/* Weekday headers */}
-      <div className="grid grid-cols-7 gap-1 mb-2">
-        {WEEKDAYS.map((day, idx) => (
+      <div className="grid grid-cols-7 mb-1">
+        {WEEKDAYS.map((wd, i) => (
           <div
-            key={idx}
-            className={`text-center text-xs font-medium py-2 ${
-              idx === 0 ? 'text-[#D4899A]' : idx === 6 ? 'text-[#8B75D0]' : 'text-[#5A5270]'
+            key={wd}
+            className={`text-center text-[11px] font-medium py-1 ${
+              i === 0 ? 'text-[#D4899A]' : i === 6 ? 'text-[#8B75D0]' : 'text-[#9B8CC4]'
             }`}
           >
-            {day}
+            {wd}
           </div>
         ))}
       </div>
 
-      {/* Calendar grid */}
-      <div className="grid grid-cols-7 gap-1">
-        {calendarDays.map((day, idx) => {
+      {/* Date grid */}
+      <div className="grid grid-cols-7">
+        {cells.map((day, idx) => {
           if (day === null) {
-            return <div key={`empty-${idx}`} className="aspect-square" />
+            return <div key={`empty-${idx}`} className="min-h-[72px]" />
           }
 
-          const dateKey = formatDateKey(day)
-          const dayEvents = eventsByDate.get(dateKey) || []
-          const hasEvents = dayEvents.length > 0
-          const isToday =
-            day === new Date().getDate() &&
-            month === new Date().getMonth() &&
-            year === new Date().getFullYear()
-
-          const dayOfWeek = (startDayOfWeek + day - 1) % 7
+          const dateStr = toDateStr(year, month, day)
+          const isToday = dateStr === todayStr
+          const dayEvents = eventMap[dateStr] || []
+          const dayOfWeek = (firstDay + day - 1) % 7
 
           return (
             <button
-              key={day}
-              onClick={() => handleDateClick(day)}
-              className={`aspect-square p-1 rounded-lg text-sm transition-colors ${
-                isToday
-                  ? 'bg-[#8B75D0] text-white font-bold'
-                  : hasEvents
-                  ? 'bg-[#F9F7FD] hover:bg-[#EDE9FA]'
-                  : 'hover:bg-[#F9F7FD]'
-              } ${!isToday && (dayOfWeek === 0 ? 'text-[#D4899A]' : dayOfWeek === 6 ? 'text-[#8B75D0]' : 'text-[#2A2240]')}`}
+              key={dateStr}
+              onClick={() => onDateClick?.(dateStr)}
+              className={`
+                min-h-[72px] flex flex-col items-start p-0.5
+                rounded-lg transition-colors relative text-left
+                ${isToday ? 'bg-[#EDE9FA]' : 'hover:bg-[#F9F7FD]'}
+              `}
             >
-              <div className="flex flex-col items-center justify-start h-full">
-                <span className={`${isToday ? 'font-bold' : ''}`}>{day}</span>
-                {hasEvents && (
-                  <div className="flex flex-col gap-0.5 mt-1 w-full">
-                    {dayEvents.slice(0, 2).map((event, eventIdx) => (
-                      <div
-                        key={event.id}
-                        className="text-[8px] leading-tight px-1 py-0.5 rounded truncate w-full"
-                        style={{
-                          backgroundColor:
-                            event.side === 'groom'
-                              ? '#90CAF9'
-                              : event.side === 'bride'
-                              ? '#F48FB1'
-                              : '#EDE9FA',
-                          color: '#2A2240',
-                        }}
-                        title={`${event.name} (${event.meal_type === 'lunch' ? '점심' : event.meal_type === 'dinner' ? '저녁' : '기타'})`}
-                      >
-                        {event.name.length > 4 ? event.name.slice(0, 4) + '.' : event.name}
-                      </div>
-                    ))}
-                    {dayEvents.length > 2 && (
-                      <div className="text-[8px] text-[#9B8CC4] text-center">
-                        +{dayEvents.length - 2}
-                      </div>
-                    )}
+              {/* Day number */}
+              <span
+                className={`text-[12px] leading-none ml-0.5 mb-0.5 ${
+                  isToday
+                    ? 'font-semibold text-[#8B75D0]'
+                    : dayOfWeek === 0
+                      ? 'text-[#D4899A]'
+                      : dayOfWeek === 6
+                        ? 'text-[#8B75D0]'
+                        : 'text-[#2A2240]'
+                }`}
+              >
+                {day}
+              </span>
+
+              {/* Event details */}
+              <div className="flex flex-col gap-[2px] w-full overflow-hidden">
+                {dayEvents.slice(0, 2).map(evt => (
+                  <div key={evt.id} className="flex flex-col w-full">
+                    <span className="text-[9px] leading-[1.2] font-medium text-[#2A2240] truncate w-full">
+                      {evt.name.length > 6 ? evt.name.slice(0, 5) + '...' : evt.name}
+                    </span>
+                    <div className="flex gap-0.5 flex-wrap">
+                      {evt.side === 'both' ? (
+                        <>
+                          <span className="text-[8px] leading-[1.2] text-[#8B75D0]">신랑</span>
+                          <span className="text-[8px] leading-[1.2] text-[#D4899A]">신부</span>
+                        </>
+                      ) : evt.side === 'groom' ? (
+                        <span className="text-[8px] leading-[1.2] text-[#8B75D0]">신랑</span>
+                      ) : (
+                        <span className="text-[8px] leading-[1.2] text-[#D4899A]">신부</span>
+                      )}
+                    </div>
+                    <span className={`text-[8px] leading-[1.2] ${getMealColor(evt.meal_type)}`}>
+                      {MEAL_SHORT[evt.meal_type]}
+                    </span>
                   </div>
+                ))}
+                {dayEvents.length > 2 && (
+                  <span className="text-[8px] text-[#9B8CC4]">+{dayEvents.length - 2}</span>
                 )}
               </div>
             </button>
           )
         })}
       </div>
-
-      {/* Legend */}
-      <div className="flex items-center gap-3 mt-4 pt-4 border-t border-[#E8E4F0]">
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded" style={{ backgroundColor: '#90CAF9' }} />
-          <span className="text-xs text-[#5A5270]">신랑</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded" style={{ backgroundColor: '#F48FB1' }} />
-          <span className="text-xs text-[#5A5270]">신부</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded" style={{ backgroundColor: '#EDE9FA' }} />
-          <span className="text-xs text-[#5A5270]">공통</span>
-        </div>
-      </div>
-    </div>
+    </GeunnalCard>
   )
 }

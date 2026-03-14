@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { Settings } from 'lucide-react'
 import BottomNav from '@/components/geunnal/BottomNav'
 import LoginScreen from '@/components/geunnal/LoginScreen'
+import PasswordChangeSheet from '@/components/geunnal/PasswordChangeSheet'
 import EventManagement from '@/components/geunnal/EventManagement'
 import EventDetail from '@/components/geunnal/EventDetail'
 import Dashboard from '@/components/geunnal/Dashboard'
@@ -34,12 +36,14 @@ export default function GeunnalClient({
   groomName,
   brideName,
   weddingDate,
-  hasPassword,
+  hasPassword: initialHasPassword,
 }: GeunnalClientProps) {
   const [token, setToken] = useState<string | null>(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [checkingAuth, setCheckingAuth] = useState(true)
+  const [hasPassword, setHasPassword] = useState(initialHasPassword)
   const [activeView, setActiveView] = useState<ActiveView>({ type: 'home' })
+  const [showPasswordChange, setShowPasswordChange] = useState(false)
 
   // Check saved token on mount
   useEffect(() => {
@@ -61,20 +65,22 @@ export default function GeunnalClient({
           localStorage.removeItem(`geunnal-token-${pageId}`)
         })
         .finally(() => setCheckingAuth(false))
-    } else if (!hasPassword) {
-      // No password set, no auth needed
-      setIsAuthenticated(true)
-      setCheckingAuth(false)
     } else {
+      // No saved token - show login or setup screen
       setCheckingAuth(false)
     }
-  }, [pageId, hasPassword])
+  }, [pageId])
 
   const handleLoginSuccess = useCallback((newToken: string) => {
     localStorage.setItem(`geunnal-token-${pageId}`, newToken)
     setToken(newToken)
     setIsAuthenticated(true)
+    setHasPassword(true) // After setup, password now exists
   }, [pageId])
+
+  const handlePasswordChanged = useCallback((newToken: string) => {
+    setToken(newToken)
+  }, [])
 
   const handleTabChange = useCallback((tab: string) => {
     if (tab === 'home') setActiveView({ type: 'home' })
@@ -103,14 +109,15 @@ export default function GeunnalClient({
     )
   }
 
-  // Login screen
-  if (hasPassword && !isAuthenticated) {
+  // Login or Setup screen
+  if (!isAuthenticated) {
     return (
       <div className="geunnal-page">
         <LoginScreen
           pageId={pageId}
           groomName={groomName}
           brideName={brideName}
+          mode={hasPassword ? 'login' : 'setup'}
           onLoginSuccess={handleLoginSuccess}
         />
       </div>
@@ -122,6 +129,15 @@ export default function GeunnalClient({
 
   return (
     <div className="geunnal-page">
+      {/* Settings button - fixed top-right */}
+      <button
+        onClick={() => setShowPasswordChange(true)}
+        className="fixed top-4 right-4 z-50 w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm shadow-md flex items-center justify-center hover:bg-white transition-colors"
+        aria-label="설정"
+      >
+        <Settings className="w-5 h-5 text-[#5A5270]" />
+      </button>
+
       {/* Main Content */}
       <div className="min-h-[100dvh] pb-20">
         {activeView.type === 'home' && (
@@ -173,6 +189,14 @@ export default function GeunnalClient({
       <BottomNav
         activeTab={currentTab}
         onTabChange={handleTabChange}
+      />
+
+      {/* Password Change Sheet */}
+      <PasswordChangeSheet
+        open={showPasswordChange}
+        onClose={() => setShowPasswordChange(false)}
+        pageId={pageId}
+        onPasswordChanged={handlePasswordChanged}
       />
     </div>
   )

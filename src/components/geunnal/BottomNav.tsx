@@ -15,8 +15,8 @@ const tabs = [
 
 export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E8E4F0] z-50 pb-safe">
-      <div className="flex items-center justify-around max-w-[430px] mx-auto">
+    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-white/95 backdrop-blur-md border-t border-[#E8E4F0] z-50" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+      <div className="flex items-center justify-around h-14">
         {tabs.map((tab) => {
           const Icon = tab.icon
           const isActive = activeTab === tab.id
@@ -25,21 +25,15 @@ export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className="flex flex-col items-center justify-center py-2 px-4 flex-1 transition-colors min-h-[60px]"
+              className={`
+                flex flex-col items-center justify-center gap-0.5
+                w-full h-full min-w-[44px] min-h-[44px]
+                transition-colors duration-150
+                ${isActive ? 'text-[#8B75D0]' : 'text-[#9B8CC4]'}
+              `}
             >
-              <Icon
-                className={`w-6 h-6 mb-1 transition-colors ${
-                  isActive ? 'text-[#8B75D0]' : 'text-[#9B8CC4]'
-                }`}
-                strokeWidth={isActive ? 2.5 : 2}
-              />
-              <span
-                className={`text-xs transition-colors ${
-                  isActive ? 'text-[#8B75D0] font-semibold' : 'text-[#9B8CC4] font-medium'
-                }`}
-              >
-                {tab.label}
-              </span>
+              <Icon size={20} strokeWidth={1.5} />
+              <span className="text-[10px] font-medium">{tab.label}</span>
             </button>
           )
         })}

@@ -9,12 +9,20 @@ export async function POST(
 ) {
   try {
     const { pageId } = await context.params;
-    const body = (await request.json()) as { action?: string; password?: string };
-    const { action, password } = body;
+    const body = (await request.json()) as { action?: string; password?: string; currentPassword?: string; newPassword?: string };
+    const { action, password, currentPassword, newPassword } = body;
 
-    if (!action || !password) {
+    if (!action) {
       return NextResponse.json(
-        { error: "action과 password가 필요합니다" },
+        { error: "action이 필요합니다" },
+        { status: 400 }
+      );
+    }
+
+    // change action uses currentPassword/newPassword, others use password
+    if (action !== "change" && !password) {
+      return NextResponse.json(
+        { error: "password가 필요합니다" },
         { status: 400 }
       );
     }
@@ -37,14 +45,14 @@ export async function POST(
       }
 
       // 4자리 숫자 검증
-      if (!/^\d{4}$/.test(password)) {
+      if (!/^\d{4}$/.test(password!)) {
         return NextResponse.json(
           { error: "비밀번호는 4자리 숫자여야 합니다" },
           { status: 400 }
         );
       }
 
-      const hashedPassword = await bcrypt.hash(password, 10);
+      const hashedPassword = await bcrypt.hash(password!, 10);
       await updatePage(pageId, { password_hash: hashedPassword });
 
       const token = await generateGeunnalToken(pageId);
@@ -63,7 +71,7 @@ export async function POST(
         );
       }
 
-      const isValid = await bcrypt.compare(password, page.password_hash);
+      const isValid = await bcrypt.compare(password!, page.password_hash);
       if (!isValid) {
         return NextResponse.json(
           { error: "비밀번호가 일치하지 않습니다" },
@@ -81,9 +89,52 @@ export async function POST(
         message: "로그인되었습니다",
         token,
       });
+    } else if (action === "change") {
+      // 비밀번호 변경 모드
+      if (!currentPassword || !newPassword) {
+        return NextResponse.json(
+          { error: "currentPassword와 newPassword가 필요합니다" },
+          { status: 400 }
+        );
+      }
+
+      if (!page.password_hash) {
+        return NextResponse.json(
+          { error: "비밀번호가 설정되지 않았습니다" },
+          { status: 400 }
+        );
+      }
+
+      // 현재 비밀번호 검증
+      const isCurrentValid = await bcrypt.compare(currentPassword, page.password_hash);
+      if (!isCurrentValid) {
+        return NextResponse.json(
+          { error: "현재 비밀번호가 일치하지 않습니다" },
+          { status: 401 }
+        );
+      }
+
+      // 새 비밀번호 4자리 숫자 검증
+      if (!/^\d{4}$/.test(newPassword)) {
+        return NextResponse.json(
+          { error: "새 비밀번호는 4자리 숫자여야 합니다" },
+          { status: 400 }
+        );
+      }
+
+      const newHashedPassword = await bcrypt.hash(newPassword, 10);
+      await updatePage(pageId, { password_hash: newHashedPassword });
+
+      const newToken = await generateGeunnalToken(pageId);
+
+      return NextResponse.json({
+        success: true,
+        message: "비밀번호가 변경되었습니다",
+        token: newToken,
+      });
     } else {
       return NextResponse.json(
-        { error: "유효하지 않은 action입니다 (setup 또는 login)" },
+        { error: "유효하지 않은 action입니다 (setup, login, change)" },
         { status: 400 }
       );
     }

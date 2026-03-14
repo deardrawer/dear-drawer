@@ -284,7 +284,7 @@ export default function EventManagement({
               try {
                 sendKakaoShare({
                   title: `${groomName} & ${brideName}의 그날`,
-                  description: '소중한 모임에 참여해주세요',
+                  description: '함께 모임을 관리해요',
                   url: `https://invite.deardrawer.com/g/${slug}`,
                 })
               } catch {

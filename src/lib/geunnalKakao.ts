@@ -59,7 +59,7 @@ export function sendKakaoShare(options: {
     },
     buttons: [
       {
-        title: '사진·메시지 남기기',
+        title: '모임 관리하기',
         link: {
           mobileWebUrl: options.url,
           webUrl: options.url,

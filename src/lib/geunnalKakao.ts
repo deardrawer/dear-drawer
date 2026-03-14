@@ -1,16 +1,5 @@
 // Kakao Share SDK for Geunnal
-
-declare global {
-  interface Window {
-    Kakao: {
-      init: (key: string) => void
-      isInitialized: () => boolean
-      Share: {
-        sendDefault: (options: KakaoShareOptions) => void
-      }
-    }
-  }
-}
+// Window.Kakao type is declared in src/app/invite/[inviteId]/admin/dashboard/page.tsx
 
 interface KakaoShareOptions {
   objectType: 'feed'

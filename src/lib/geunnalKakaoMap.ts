@@ -1,26 +1,6 @@
 // Kakao Maps SDK TypeScript declarations & loader for Geunnal
-
-declare global {
-  interface Window {
-    kakao: {
-      maps: {
-        load: (callback: () => void) => void
-        Map: new (container: HTMLElement, options: { center: KakaoLatLng; level: number }) => KakaoMap
-        LatLng: new (lat: number, lng: number) => KakaoLatLng
-        LatLngBounds: new () => KakaoLatLngBounds
-        Marker: new (options: { position: KakaoLatLng; map?: KakaoMap }) => KakaoMarker
-        InfoWindow: new (options: { content: string; removable?: boolean }) => KakaoInfoWindow
-        services: {
-          Places: new () => KakaoPlaces
-          Status: { OK: string; ZERO_RESULT: string; ERROR: string }
-        }
-        event: {
-          addListener: (target: unknown, type: string, handler: (...args: unknown[]) => void) => void
-        }
-      }
-    }
-  }
-}
+// Window.kakao base type is declared in src/types/kakao.ts
+// We use 'any' casts for extended properties (LatLngBounds, event, Places) not in the base type
 
 export interface KakaoLatLng {
   getLat: () => number
@@ -81,9 +61,12 @@ export function loadKakaoMapSDK(): Promise<void> {
       return
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const win = window as any
+
     // Check if already loaded
-    if (window.kakao?.maps) {
-      window.kakao.maps.load(() => {
+    if (win.kakao?.maps) {
+      win.kakao.maps.load(() => {
         sdkLoaded = true
         resolve()
       })
@@ -93,7 +76,7 @@ export function loadKakaoMapSDK(): Promise<void> {
     const script = document.createElement('script')
     script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${key}&autoload=false&libraries=services`
     script.onload = () => {
-      window.kakao.maps.load(() => {
+      win.kakao.maps.load(() => {
         sdkLoaded = true
         resolve()
       })

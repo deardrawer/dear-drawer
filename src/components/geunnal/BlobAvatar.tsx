@@ -116,6 +116,7 @@ export const avatarPresets = [
 ]
 
 interface BlobAvatarProps {
+  id?: number
   hairstyle?: number
   expression?: number
   color?: 'pink' | 'sky'
@@ -125,13 +126,19 @@ interface BlobAvatarProps {
 }
 
 export default function BlobAvatar({
-  hairstyle = 0,
-  expression = 0,
-  color = 'sky',
+  id,
+  hairstyle: hairstyleProp = 0,
+  expression: expressionProp = 0,
+  color: colorProp = 'sky',
   size = 120,
   className = '',
   showBorder = true,
 }: BlobAvatarProps) {
+  // If id is provided, use preset values
+  const preset = id != null ? avatarPresets[id % avatarPresets.length] : null
+  const hairstyle = preset ? preset.hairstyle : hairstyleProp
+  const expression = preset ? preset.expression : expressionProp
+  const color = preset ? preset.color : colorProp
   const hairColor = color === 'pink' ? '#F48FB1' : '#90CAF9'
   const skinColor = '#FDEBD3'
   const featureColor = '#2A2240'

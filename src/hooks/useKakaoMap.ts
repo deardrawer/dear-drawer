@@ -27,16 +27,17 @@ export default function useKakaoMap({ venues, onMarkerClick }: UseKakaoMapOption
       .then(() => {
         if (cancelled || !containerRef.current) return
 
-        const { kakao } = window
-        const center = new kakao.maps.LatLng(37.5050, 127.0200)
-        const map = new kakao.maps.Map(containerRef.current, {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const kakaoMaps = (window as any).kakao.maps
+        const center = new kakaoMaps.LatLng(37.5050, 127.0200)
+        const map = new kakaoMaps.Map(containerRef.current, {
           center,
           level: 8,
         })
         mapRef.current = map
         setReady(true)
       })
-      .catch((err) => {
+      .catch((err: Error) => {
         console.warn('Kakao Map load failed:', err.message)
       })
 
@@ -49,7 +50,8 @@ export default function useKakaoMap({ venues, onMarkerClick }: UseKakaoMapOption
   useEffect(() => {
     if (!ready || !mapRef.current) return
 
-    const { kakao } = window
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const kakaoMaps = (window as any).kakao.maps
     const map = mapRef.current
     const prevMarkers = markersRef.current
 
@@ -58,13 +60,13 @@ export default function useKakaoMap({ venues, onMarkerClick }: UseKakaoMapOption
 
     if (venues.length === 0) return
 
-    const bounds = new kakao.maps.LatLngBounds()
+    const bounds = new kakaoMaps.LatLngBounds()
 
     venues.forEach(venue => {
-      const position = new kakao.maps.LatLng(venue.lat, venue.lng)
-      const marker = new kakao.maps.Marker({ position, map })
+      const position = new kakaoMaps.LatLng(venue.lat, venue.lng)
+      const marker = new kakaoMaps.Marker({ position, map })
 
-      kakao.maps.event.addListener(marker, 'click', () => {
+      kakaoMaps.event.addListener(marker, 'click', () => {
         setSelectedVenueId(venue.id)
         onMarkerClick?.(venue.id)
       })

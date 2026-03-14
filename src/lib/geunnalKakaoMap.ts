@@ -55,9 +55,9 @@ export function loadKakaoMapSDK(): Promise<void> {
   if (sdkLoading) return sdkLoading
 
   sdkLoading = new Promise<void>((resolve, reject) => {
-    const key = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY
+    const key = process.env.NEXT_PUBLIC_KAKAO_JS_KEY
     if (!key) {
-      reject(new Error('NEXT_PUBLIC_KAKAO_MAP_KEY is not set'))
+      reject(new Error('NEXT_PUBLIC_KAKAO_JS_KEY is not set'))
       return
     }
 

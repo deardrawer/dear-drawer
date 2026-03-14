@@ -1,10 +1,11 @@
 'use client'
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Plus, X, Settings2, MapPin, Phone, ThumbsUp, Minus, ThumbsDown, Search, Navigation, Pencil, Trash2 } from 'lucide-react'
 import { GeunnalVenue, VenueRating, ReservationStatus } from '@/types/geunnal'
 import GeunnalBadge from './Badge'
 import GeunnalCard from './Card'
 import BottomSheet from './BottomSheet'
+import useKakaoMap from '@/hooks/useKakaoMap'
 
 interface VenuePageProps {
   pageId: string
@@ -47,8 +48,19 @@ export default function VenuePage({ pageId, token }: VenuePageProps) {
   const [editVenue, setEditVenue] = useState<GeunnalVenue | null>(null)
   const [detailVenue, setDetailVenue] = useState<GeunnalVenue | null>(null)
   const [detailOpen, setDetailOpen] = useState(false)
+  const [highlightedVenueId, setHighlightedVenueId] = useState<string | null>(null)
 
-  const mapRef = useRef<HTMLDivElement>(null)
+  const { containerRef: mapRef, focusVenue } = useKakaoMap({
+    venues,
+    onMarkerClick: (venueId) => {
+      setHighlightedVenueId(venueId)
+      const venue = venues.find(v => v.id === venueId)
+      if (venue) {
+        setDetailVenue(venue)
+        setDetailOpen(true)
+      }
+    },
+  })
 
   const fetchVenues = async () => {
     try {
@@ -234,14 +246,12 @@ export default function VenuePage({ pageId, token }: VenuePageProps) {
         </div>
       </div>
 
-      {/* Map placeholder */}
+      {/* Kakao Map */}
       <div className="px-5">
         <div
           ref={mapRef}
-          className="w-full h-[200px] rounded-2xl border border-[#E8E4F0] bg-[#F9F7FD] overflow-hidden flex items-center justify-center"
-        >
-          <span className="text-[13px] text-[#9B8CC4]">지도 영역</span>
-        </div>
+          className="w-full h-[200px] rounded-2xl border border-[#E8E4F0] bg-[#F9F7FD] overflow-hidden"
+        />
       </div>
 
       {/* Venue list */}
@@ -259,6 +269,7 @@ export default function VenuePage({ pageId, token }: VenuePageProps) {
             <VenueCard
               key={venue.id}
               venue={venue}
+              isHighlighted={highlightedVenueId === venue.id}
               onClick={() => handleCardClick(venue)}
             />
           ))
@@ -294,13 +305,14 @@ export default function VenuePage({ pageId, token }: VenuePageProps) {
         onDelete={(id) => { handleDeleteVenue(id); setDetailOpen(false) }}
         onRatingChange={handleRatingChange}
         onReservationChange={handleReservationChange}
+        onFocusMap={(venueId) => { focusVenue(venueId); setHighlightedVenueId(venueId) }}
       />
     </div>
   )
 }
 
 /* ─── Venue Card ─── */
-function VenueCard({ venue, onClick }: { venue: GeunnalVenue; onClick: () => void }) {
+function VenueCard({ venue, isHighlighted, onClick }: { venue: GeunnalVenue; isHighlighted?: boolean; onClick: () => void }) {
   const ratingCfg = RATING_CONFIG[venue.rating]
   const RatingIcon = ratingCfg.icon
   const reservCfg = RESERVATION_CONFIG[venue.reservation_status]
@@ -308,7 +320,9 @@ function VenueCard({ venue, onClick }: { venue: GeunnalVenue; onClick: () => voi
   return (
     <button
       onClick={onClick}
-      className="w-full text-left p-4 rounded-2xl border bg-white transition-all duration-150 border-[#E8E4F0]"
+      className={`w-full text-left p-4 rounded-2xl border bg-white transition-all duration-150 ${
+        isHighlighted ? 'border-[#8B75D0] ring-1 ring-[#8B75D0]/30' : 'border-[#E8E4F0]'
+      }`}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
@@ -540,7 +554,7 @@ function AddVenueSheet({ open, onClose, onSave, pageId, token, locationTabs, edi
 }
 
 /* ─── Venue Detail Sheet ─── */
-function VenueDetailSheet({ open, onClose, venue, onEdit, onDelete, onRatingChange, onReservationChange }: {
+function VenueDetailSheet({ open, onClose, venue, onEdit, onDelete, onRatingChange, onReservationChange, onFocusMap }: {
   open: boolean
   onClose: () => void
   venue: GeunnalVenue | null
@@ -548,6 +562,7 @@ function VenueDetailSheet({ open, onClose, venue, onEdit, onDelete, onRatingChan
   onDelete: (venueId: string) => void
   onRatingChange: (venueId: string, rating: VenueRating) => void
   onReservationChange: (venueId: string, status: ReservationStatus) => void
+  onFocusMap?: (venueId: string) => void
 }) {
   if (!venue) return null
 
@@ -624,19 +639,29 @@ function VenueDetailSheet({ open, onClose, venue, onEdit, onDelete, onRatingChan
           </div>
         )}
 
-        <div className="flex gap-3 mt-2">
-          <button onClick={() => { onClose(); setTimeout(() => onEdit(venue), 150) }}
-            className="flex-1 h-11 rounded-[10px] border border-[#E8E4F0] text-[14px] font-medium text-[#5A5270] hover:bg-[#F9F7FD] transition-colors flex items-center justify-center gap-1.5"
-          >
-            <Pencil size={15} strokeWidth={1.5} />
-            수정
-          </button>
-          <button onClick={() => { onClose(); setTimeout(() => onDelete(venue.id), 150) }}
-            className="flex-1 h-11 rounded-[10px] border border-[#D4899A] text-[14px] font-medium text-[#D4899A] hover:bg-[#FAE9F0]/40 transition-colors flex items-center justify-center gap-1.5"
-          >
-            <Trash2 size={15} strokeWidth={1.5} />
-            삭제
-          </button>
+        <div className="flex flex-col gap-2 mt-2">
+          {onFocusMap && (
+            <button onClick={() => { onClose(); setTimeout(() => onFocusMap(venue.id), 150) }}
+              className="w-full h-11 rounded-[10px] border border-[#E8E4F0] text-[14px] font-medium text-[#5A5270] hover:bg-[#F9F7FD] transition-colors flex items-center justify-center gap-1.5"
+            >
+              <Navigation size={16} strokeWidth={1.5} />
+              지도에서 보기
+            </button>
+          )}
+          <div className="flex gap-3">
+            <button onClick={() => { onClose(); setTimeout(() => onEdit(venue), 150) }}
+              className="flex-1 h-11 rounded-[10px] border border-[#E8E4F0] text-[14px] font-medium text-[#5A5270] hover:bg-[#F9F7FD] transition-colors flex items-center justify-center gap-1.5"
+            >
+              <Pencil size={15} strokeWidth={1.5} />
+              수정
+            </button>
+            <button onClick={() => { onClose(); setTimeout(() => onDelete(venue.id), 150) }}
+              className="flex-1 h-11 rounded-[10px] border border-[#D4899A] text-[14px] font-medium text-[#D4899A] hover:bg-[#FAE9F0]/40 transition-colors flex items-center justify-center gap-1.5"
+            >
+              <Trash2 size={15} strokeWidth={1.5} />
+              삭제
+            </button>
+          </div>
         </div>
       </div>
     </BottomSheet>

@@ -148,35 +148,43 @@ export default function PhotoBooth({ pageId, token, groomName, brideName }: Phot
     try {
       const { default: html2canvas } = await import('html2canvas')
       const canvas = await html2canvas(frameRef.current, { scale: 2, useCORS: true, backgroundColor: null })
-      const dataUrl = canvas.toDataURL('image/png')
-      // Upload and create submission
+      // Convert canvas to Blob for FormData upload
+      const blob = await new Promise<Blob | null>(r => canvas.toBlob(r, 'image/png'))
+      if (!blob) throw new Error('이미지 생성 실패')
+      const file = new File([blob], 'photobooth.png', { type: 'image/png' })
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('pageId', pageId)
+      formData.append('eventId', eventId)
       const uploadRes = await fetch('/api/geunnal/upload', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ image: dataUrl, pageId }),
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData,
       })
-      let photoUrl = dataUrl
+      let photoUrl = ''
       if (uploadRes.ok) {
         const uploadData = (await uploadRes.json()) as { url?: string }
         if (uploadData.url) photoUrl = uploadData.url
       }
-      await fetch('/api/geunnal/submissions', {
+      if (!photoUrl) throw new Error('업로드 실패')
+      const subRes = await fetch('/api/geunnal/submissions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           event_id: eventId,
-          guest_name: groomName,
+          guest_name: `${groomName} & ${brideName}`,
           is_anonymous: false,
           avatar_id: 0,
           message: comment || title,
           photo_url: photoUrl,
         }),
       })
+      if (!subRes.ok) throw new Error('제출 실패')
       setShowEventSheet(false)
       showToastMsg('모임에 저장되었습니다')
     } catch { showToastMsg('저장에 실패했습니다') }
     finally { setSaving(false) }
-  }, [comment, title, groomName, pageId, token])
+  }, [comment, title, groomName, brideName, pageId, token])
 
   const showToastMsg = (msg: string) => {
     setToast(msg)

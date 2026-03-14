@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { Camera, ImagePlus, X, ChevronLeft, MapPin, CalendarDays, Users, Download, CalendarPlus, ExternalLink } from 'lucide-react'
+import { Camera, ImagePlus, X, ChevronLeft, MapPin, CalendarDays, Users, Download, ExternalLink } from 'lucide-react'
 import GeunnalCard from '@/components/geunnal/Card'
 import BlobAvatar, { avatarPresets, GROOM_AVATAR_START, BRIDE_AVATAR_START, AVATARS_PER_SIDE } from '@/components/geunnal/BlobAvatar'
 import type { GeunnalSubmission } from '@/types/geunnal'
@@ -72,50 +72,6 @@ function isEventPast(dateStr: string, timeStr: string): boolean {
     eventDateTime.setHours(0, 0, 0, 0)
   }
   return now.getTime() >= eventDateTime.getTime()
-}
-
-function generateICS(eventName: string, dateStr: string, timeStr: string, location: string): string {
-  const pad = (n: number) => String(n).padStart(2, '0')
-  const d = new Date(dateStr)
-  let startH = 12, startM = 0
-  if (timeStr) {
-    const [h, m] = timeStr.split(':').map(Number)
-    startH = h
-    startM = m
-  }
-  const startDate = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(startH)}${pad(startM)}00`
-  const endH = startH + 1
-  const endDate = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(endH > 23 ? 23 : endH)}${pad(startM)}00`
-  const now = new Date()
-  const stamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}T${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`
-
-  return [
-    'BEGIN:VCALENDAR',
-    'VERSION:2.0',
-    'PRODID:-//DearDrawer//Geunnal//KO',
-    'CALSCALE:GREGORIAN',
-    'BEGIN:VEVENT',
-    `DTSTART:${startDate}`,
-    `DTEND:${endDate}`,
-    `DTSTAMP:${stamp}`,
-    `UID:${Date.now()}@deardrawer.com`,
-    `SUMMARY:${eventName}`,
-    `LOCATION:${location}`,
-    'STATUS:CONFIRMED',
-    'END:VEVENT',
-    'END:VCALENDAR',
-  ].join('\r\n')
-}
-
-function downloadICS(eventName: string, dateStr: string, timeStr: string, location: string) {
-  const ics = generateICS(eventName, dateStr, timeStr, location)
-  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `${eventName}.ics`
-  a.click()
-  URL.revokeObjectURL(url)
 }
 
 export default function GuestEventClient({
@@ -380,11 +336,6 @@ function StepAlbum({
 }) {
   const locationDisplay = [eventArea, eventRestaurant].filter(Boolean).join(' ') || eventLocation || ''
 
-  const handleAddToCalendar = () => {
-    if (!eventDate) return
-    downloadICS(eventName, eventDate, eventTime, locationDisplay)
-  }
-
   const openKakaoMap = () => {
     if (venueLat && venueLng && venueName) {
       window.open(`https://map.kakao.com/link/map/${encodeURIComponent(venueName)},${venueLat},${venueLng}`, '_blank')
@@ -490,18 +441,6 @@ function StepAlbum({
             </div>
           ) : null}
 
-          {/* Add to Calendar */}
-          {eventDate && (
-            <div className="px-5 pb-5">
-              <button
-                onClick={handleAddToCalendar}
-                className="w-full h-10 rounded-full text-[13px] font-medium text-[#8B75D0] border border-[#8B75D0]/30 flex items-center justify-center gap-2 hover:bg-[#EDE9FA]/30 active:scale-[0.98] transition-all"
-              >
-                <CalendarPlus size={16} strokeWidth={1.5} />
-                캘린더에 일정 추가
-              </button>
-            </div>
-          )}
         </div>
 
         <div className="w-12 h-[1px] bg-[#E8E4F0] mx-auto mt-6" />

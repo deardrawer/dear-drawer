@@ -883,7 +883,7 @@ export default function AdminPage() {
         headers: { 'x-admin-password': password },
       })
       if (res.ok) {
-        const data = await res.json()
+        const data = (await res.json()) as { pages?: GeunnalPageItem[] }
         setGeunnalPages(data.pages || [])
       }
     } catch (err) {

@@ -13,6 +13,14 @@ interface DashboardProps {
 }
 
 type Tab = 'events' | 'photos' | 'messages'
+type SideFilter = 'all' | 'groom' | 'bride' | 'both'
+
+const SIDE_TABS: { value: SideFilter; label: string }[] = [
+  { value: 'all', label: '전체' },
+  { value: 'groom', label: '신랑측' },
+  { value: 'bride', label: '신부측' },
+  { value: 'both', label: '공동' },
+]
 
 const formatDate = (dateStr: string) => {
   if (!dateStr || dateStr === 'TBD') return '미정'
@@ -40,6 +48,7 @@ const formatRelativeTime = (dateStr: string) => {
 
 export default function Dashboard({ pageId, token, onEventClick }: DashboardProps) {
   const [activeTab, setActiveTab] = useState<Tab>('events')
+  const [sideFilter, setSideFilter] = useState<SideFilter>('all')
   const [events, setEvents] = useState<GeunnalEvent[]>([])
   const [submissions, setSubmissions] = useState<GeunnalSubmission[]>([])
   const [loading, setLoading] = useState(true)
@@ -94,12 +103,33 @@ export default function Dashboard({ pageId, token, onEventClick }: DashboardProp
     [submissions, completedEventIds]
   )
 
-  const totalGuests = completedEvents.reduce((sum, e) => sum + (e.expected_guests || 0), 0)
-  const totalPhotos = completedSubmissions.filter(s => s.photo_url).length
-  const totalMessages = completedSubmissions.filter(s => s.message).length
+  const filteredEvents = useMemo(() =>
+    sideFilter === 'all' ? completedEvents : completedEvents.filter(e => e.side === sideFilter),
+    [completedEvents, sideFilter]
+  )
+  const filteredEventIds = useMemo(() =>
+    new Set(filteredEvents.map(e => e.id)),
+    [filteredEvents]
+  )
+  const filteredSubmissions = useMemo(() =>
+    completedSubmissions.filter(s => filteredEventIds.has(s.event_id)),
+    [completedSubmissions, filteredEventIds]
+  )
+
+  const totalGuests = filteredEvents.reduce((sum, e) => sum + (e.expected_guests || 0), 0)
+  const totalPhotos = filteredSubmissions.filter(s => s.photo_url).length
+  const totalMessages = filteredSubmissions.filter(s => s.message).length
+
+  // Side counts for tab badges
+  const sideCounts = useMemo(() => ({
+    all: completedEvents.length,
+    groom: completedEvents.filter(e => e.side === 'groom').length,
+    bride: completedEvents.filter(e => e.side === 'bride').length,
+    both: completedEvents.filter(e => e.side === 'both').length,
+  }), [completedEvents])
 
   const stats = [
-    { label: '모임', value: completedEvents.length, bg: 'bg-[#EDE9FA]' },
+    { label: '모임', value: filteredEvents.length, bg: 'bg-[#EDE9FA]' },
     { label: '참석자', value: totalGuests, bg: 'bg-[#FAE9F0]' },
     { label: '사진', value: totalPhotos, bg: 'bg-[#EDE9FA]' },
     { label: '메시지', value: totalMessages, bg: 'bg-[#FAE9F0]' },
@@ -130,6 +160,26 @@ export default function Dashboard({ pageId, token, onEventClick }: DashboardProp
         </div>
       </header>
 
+      {/* Side Tabs */}
+      <div className="flex gap-1 bg-[#F9F7FD] rounded-xl p-1">
+        {SIDE_TABS.map(({ value, label }) => {
+          const count = sideCounts[value]
+          return (
+            <button
+              key={value}
+              onClick={() => setSideFilter(value)}
+              className={`flex-1 py-2 text-[12px] font-medium rounded-lg transition-all ${
+                sideFilter === value
+                  ? 'bg-white text-[#8B75D0] shadow-sm'
+                  : 'text-[#9B8CC4] hover:text-[#5A5270]'
+              }`}
+            >
+              {label}{count > 0 ? ` ${count}` : ''}
+            </button>
+          )
+        })}
+      </div>
+
       {/* Stats Grid */}
       <div className="grid grid-cols-4 gap-2">
         {stats.map(stat => (
@@ -159,9 +209,9 @@ export default function Dashboard({ pageId, token, onEventClick }: DashboardProp
       </div>
 
       {/* Tab Content */}
-      {activeTab === 'events' && <EventsTab events={completedEvents} submissions={completedSubmissions} onEventClick={onEventClick} />}
-      {activeTab === 'photos' && <PhotosTab events={completedEvents} submissions={completedSubmissions} />}
-      {activeTab === 'messages' && <MessagesTab events={completedEvents} submissions={completedSubmissions} />}
+      {activeTab === 'events' && <EventsTab events={filteredEvents} submissions={filteredSubmissions} onEventClick={onEventClick} />}
+      {activeTab === 'photos' && <PhotosTab events={filteredEvents} submissions={filteredSubmissions} />}
+      {activeTab === 'messages' && <MessagesTab events={filteredEvents} submissions={filteredSubmissions} />}
     </div>
   )
 }

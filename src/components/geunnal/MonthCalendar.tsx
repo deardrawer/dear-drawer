@@ -150,20 +150,37 @@ export default function MonthCalendar({ events, onDateClick }: MonthCalendarProp
                 ${isToday ? 'bg-[#EDE9FA]' : 'hover:bg-[#F9F7FD]'}
               `}
             >
-              {/* Day number */}
-              <span
-                className={`text-[12px] leading-none ml-0.5 mb-0.5 ${
-                  isToday
-                    ? 'font-semibold text-[#8B75D0]'
-                    : dayOfWeek === 0
-                      ? 'text-[#D4899A]'
-                      : dayOfWeek === 6
-                        ? 'text-[#8B75D0]'
-                        : 'text-[#2A2240]'
-                }`}
-              >
-                {day}
-              </span>
+              {/* Day number + side icons */}
+              <div className="flex items-center gap-0.5 ml-0.5 mb-0.5">
+                <span
+                  className={`text-[12px] leading-none ${
+                    isToday
+                      ? 'font-semibold text-[#8B75D0]'
+                      : dayOfWeek === 0
+                        ? 'text-[#D4899A]'
+                        : dayOfWeek === 6
+                          ? 'text-[#8B75D0]'
+                          : 'text-[#2A2240]'
+                  }`}
+                >
+                  {day}
+                </span>
+                {dayEvents.length > 0 && (
+                  <div className="flex gap-[1px] flex-wrap">
+                    {dayEvents.slice(0, 3).map(evt => (
+                      <span key={evt.id} className="text-[9px] leading-none">
+                        {evt.side === 'groom' ? (
+                          <span className="text-[#8B75D0]">{'\u2665'}</span>
+                        ) : evt.side === 'bride' ? (
+                          <span className="text-[#D4899A]">{'\u2665'}</span>
+                        ) : (
+                          <span className="text-[#9B8CC4]">{'\u25CF'}</span>
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               {/* Event details */}
               <div className="flex flex-col gap-[2px] w-full overflow-hidden">
@@ -172,18 +189,6 @@ export default function MonthCalendar({ events, onDateClick }: MonthCalendarProp
                     <span className="text-[9px] leading-[1.2] font-medium text-[#2A2240] truncate w-full">
                       {evt.name.length > 6 ? evt.name.slice(0, 5) + '...' : evt.name}
                     </span>
-                    <div className="flex gap-0.5 flex-wrap">
-                      {evt.side === 'both' ? (
-                        <>
-                          <span className="text-[8px] leading-[1.2] text-[#8B75D0]">신랑</span>
-                          <span className="text-[8px] leading-[1.2] text-[#D4899A]">신부</span>
-                        </>
-                      ) : evt.side === 'groom' ? (
-                        <span className="text-[8px] leading-[1.2] text-[#8B75D0]">신랑</span>
-                      ) : (
-                        <span className="text-[8px] leading-[1.2] text-[#D4899A]">신부</span>
-                      )}
-                    </div>
                     <span className={`text-[8px] leading-[1.2] ${getMealColor(evt.meal_type)}`}>
                       {MEAL_SHORT[evt.meal_type]}
                     </span>

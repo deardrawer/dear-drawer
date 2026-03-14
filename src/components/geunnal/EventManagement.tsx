@@ -90,6 +90,7 @@ export default function EventManagement({
   const [editEvent, setEditEvent] = useState<GeunnalEvent | null>(null)
   const [showCompleted, setShowCompleted] = useState(true)
   const [showAllUpcoming, setShowAllUpcoming] = useState(false)
+  const [upcomingSideFilter, setUpcomingSideFilter] = useState<EventSide | 'all'>('all')
   const [showCost, setShowCost] = useState(false)
   const [popupEventId, setPopupEventId] = useState<string | null>(null)
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({})
@@ -375,37 +376,74 @@ export default function EventManagement({
       )}
 
       {/* Upcoming events */}
-      {upcomingEvents.length > 0 && (
-        <section>
-          <SectionHeader title="예정된 모임" count={upcomingEvents.length} />
-          <div className="flex flex-col gap-3">
-            {(upcomingEvents.length >= 5 && !showAllUpcoming
-              ? upcomingEvents.slice(0, 4)
-              : upcomingEvents
-            ).map(ewg => (
-              <div key={ewg.event.id} ref={el => { sectionRefs.current[ewg.event.date] = el }}>
-                <EventCard
-                  ewg={ewg}
-                  onClick={() => onEventClick(ewg.event.id)}
-                  onCostClick={() => handleCostClick(ewg.event)}
-                />
-              </div>
-            ))}
-            {upcomingEvents.length >= 5 && (
-              <button
-                onClick={() => setShowAllUpcoming(v => !v)}
-                className="flex items-center justify-center gap-1 py-2 text-[13px] font-medium text-[#9B8CC4] hover:text-[#8B75D0] transition-colors"
-              >
-                {showAllUpcoming ? (
-                  <>접기 <ChevronUp size={16} /></>
-                ) : (
-                  <>나머지 {upcomingEvents.length - 4}개 더보기 <ChevronDown size={16} /></>
-                )}
-              </button>
-            )}
-          </div>
-        </section>
-      )}
+      {upcomingEvents.length > 0 && (() => {
+        const filteredUpcoming = upcomingSideFilter === 'all'
+          ? upcomingEvents
+          : upcomingEvents.filter(ewg => ewg.event.side === upcomingSideFilter)
+        const upcomingSideCounts = {
+          all: upcomingEvents.length,
+          groom: upcomingEvents.filter(ewg => ewg.event.side === 'groom').length,
+          bride: upcomingEvents.filter(ewg => ewg.event.side === 'bride').length,
+          both: upcomingEvents.filter(ewg => ewg.event.side === 'both').length,
+        }
+        return (
+          <section>
+            <SectionHeader title="예정된 모임" count={filteredUpcoming.length} />
+            <div className="flex gap-1 bg-[#F9F7FD] rounded-xl p-1 mb-3">
+              {([
+                { value: 'all' as const, label: '전체' },
+                { value: 'groom' as const, label: '신랑측' },
+                { value: 'bride' as const, label: '신부측' },
+                { value: 'both' as const, label: '공동' },
+              ]).map(({ value, label }) => {
+                const count = upcomingSideCounts[value]
+                return (
+                  <button
+                    key={value}
+                    onClick={() => setUpcomingSideFilter(value)}
+                    className={`flex-1 py-2 text-[12px] font-medium rounded-lg transition-all ${
+                      upcomingSideFilter === value
+                        ? 'bg-white text-[#8B75D0] shadow-sm'
+                        : 'text-[#9B8CC4] hover:text-[#5A5270]'
+                    }`}
+                  >
+                    {label}{count > 0 ? ` ${count}` : ''}
+                  </button>
+                )
+              })}
+            </div>
+            <div className="flex flex-col gap-3">
+              {(filteredUpcoming.length >= 5 && !showAllUpcoming
+                ? filteredUpcoming.slice(0, 4)
+                : filteredUpcoming
+              ).map(ewg => (
+                <div key={ewg.event.id} ref={el => { sectionRefs.current[ewg.event.date] = el }}>
+                  <EventCard
+                    ewg={ewg}
+                    onClick={() => onEventClick(ewg.event.id)}
+                    onCostClick={() => handleCostClick(ewg.event)}
+                  />
+                </div>
+              ))}
+              {filteredUpcoming.length >= 5 && (
+                <button
+                  onClick={() => setShowAllUpcoming(v => !v)}
+                  className="flex items-center justify-center gap-1 py-2 text-[13px] font-medium text-[#9B8CC4] hover:text-[#8B75D0] transition-colors"
+                >
+                  {showAllUpcoming ? (
+                    <>접기 <ChevronUp size={16} /></>
+                  ) : (
+                    <>나머지 {filteredUpcoming.length - 4}개 더보기 <ChevronDown size={16} /></>
+                  )}
+                </button>
+              )}
+              {filteredUpcoming.length === 0 && (
+                <p className="text-center text-[13px] text-[#9B8CC4] py-6">해당 모임이 없습니다</p>
+              )}
+            </div>
+          </section>
+        )
+      })()}
 
       {/* TBD events */}
       {tbdEvents.length > 0 && (

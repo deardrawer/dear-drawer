@@ -76,7 +76,7 @@ export async function PUT(
       return NextResponse.json({ error: "권한이 없습니다" }, { status: 403 });
     }
 
-    const body = await request.json();
+    const body = (await request.json()) as Record<string, unknown>;
 
     const event = await updateEvent(eventId, body);
     if (!event) {

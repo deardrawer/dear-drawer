@@ -14,7 +14,16 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const body = await request.json();
+    const body = (await request.json()) as {
+      groom_name?: string;
+      bride_name?: string;
+      slug?: string;
+      wedding_date?: string;
+      wedding_time?: string;
+      venue_name?: string;
+      venue_address?: string;
+      invitation_id?: string;
+    };
     const {
       groom_name,
       bride_name,

@@ -42,8 +42,8 @@ export default function VenuePage({ pageId, token }: VenuePageProps) {
         throw new Error('장소 불러오기 실패')
       }
 
-      const data: GeunnalVenue[] = await response.json()
-      setVenues(data)
+      const venuesResponse = (await response.json()) as { venues: GeunnalVenue[] }
+      setVenues(venuesResponse.venues)
     } catch (error) {
       console.error('Fetch venues error:', error)
     } finally {

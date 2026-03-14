@@ -76,8 +76,8 @@ export default function EventDetail({
         throw new Error('이벤트 불러오기 실패')
       }
 
-      const eventData: GeunnalEvent = await eventRes.json()
-      setEvent(eventData)
+      const eventResponse = (await eventRes.json()) as { event: GeunnalEvent }
+      setEvent(eventResponse.event)
 
       // Fetch guests
       const guestsRes = await fetch(`/api/geunnal/events/${eventId}/guests`, {
@@ -87,8 +87,8 @@ export default function EventDetail({
       })
 
       if (guestsRes.ok) {
-        const guestsData: EventGuest[] = await guestsRes.json()
-        setGuests(guestsData)
+        const guestsResponse = (await guestsRes.json()) as { guests: EventGuest[] }
+        setGuests(guestsResponse.guests)
       }
 
       // Fetch submissions
@@ -99,8 +99,8 @@ export default function EventDetail({
       })
 
       if (submissionsRes.ok) {
-        const submissionsData: GeunnalSubmission[] = await submissionsRes.json()
-        setSubmissions(submissionsData)
+        const submissionsResponse = (await submissionsRes.json()) as { submissions: GeunnalSubmission[] }
+        setSubmissions(submissionsResponse.submissions)
       }
     } catch (error) {
       console.error('Fetch event data error:', error)

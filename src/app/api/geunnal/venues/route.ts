@@ -65,7 +65,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
+    const body = (await request.json()) as {
+      page_id?: string;
+      name?: string;
+      address?: string;
+      lat?: number;
+      lng?: number;
+      [key: string]: unknown;
+    };
     const { page_id, name, address, lat, lng, ...rest } = body;
 
     if (!page_id || !name || !address || lat === undefined || lng === undefined) {

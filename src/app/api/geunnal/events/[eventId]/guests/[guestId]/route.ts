@@ -44,7 +44,7 @@ export async function PUT(
       return NextResponse.json({ error: "권한이 없습니다" }, { status: 403 });
     }
 
-    const body = await request.json();
+    const body = (await request.json()) as { name?: string; contacted?: number };
     const { name, contacted } = body;
 
     const updates: { name?: string; contacted?: number } = {};

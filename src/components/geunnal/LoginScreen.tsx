@@ -58,7 +58,7 @@ export default function LoginScreen({ pageId, groomName, brideName, onLoginSucce
         body: JSON.stringify({ action: 'login', password }),
       })
 
-      const data = await response.json()
+      const data = (await response.json()) as { error?: string; token?: string }
 
       if (!response.ok) {
         throw new Error(data.error || '로그인 실패')
@@ -66,7 +66,7 @@ export default function LoginScreen({ pageId, groomName, brideName, onLoginSucce
 
       // Save token to localStorage
       if (typeof window !== 'undefined') {
-        localStorage.setItem(`geunnal-token-${pageId}`, data.token)
+        localStorage.setItem(`geunnal-token-${pageId}`, data.token || '')
       }
 
       onLoginSuccess(data.token)

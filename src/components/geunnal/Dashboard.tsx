@@ -30,7 +30,8 @@ export default function Dashboard({ pageId, token }: DashboardProps) {
       })
 
       if (eventsRes.ok) {
-        const eventsData: GeunnalEvent[] = await eventsRes.json()
+        const eventsResponse = (await eventsRes.json()) as { events: GeunnalEvent[] }
+        const eventsData = eventsResponse.events
         setEvents(eventsData)
 
         // Fetch submissions for all events
@@ -47,8 +48,8 @@ export default function Dashboard({ pageId, token }: DashboardProps) {
             )
 
             if (submissionsRes.ok) {
-              const submissionsData: GeunnalSubmission[] = await submissionsRes.json()
-              allSubmissions.push(...submissionsData)
+              const submissionsResponse = (await submissionsRes.json()) as { submissions: GeunnalSubmission[] }
+              allSubmissions.push(...submissionsResponse.submissions)
             }
           } catch (error) {
             console.error(`Failed to fetch submissions for event ${event.id}:`, error)

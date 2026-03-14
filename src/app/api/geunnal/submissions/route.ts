@@ -71,7 +71,14 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   // PUBLIC endpoint - no auth required
   try {
-    const body = await request.json();
+    const body = (await request.json()) as {
+      event_id?: string;
+      guest_name?: string;
+      is_anonymous?: boolean;
+      avatar_id?: number;
+      message?: string;
+      photo_url?: string;
+    };
     const {
       event_id,
       guest_name,
@@ -100,7 +107,7 @@ export async function POST(request: NextRequest) {
     const submission = await createSubmission({
       event_id,
       guest_name,
-      is_anonymous,
+      is_anonymous: is_anonymous ? 1 : 0,
       avatar_id,
       message,
       photo_url,

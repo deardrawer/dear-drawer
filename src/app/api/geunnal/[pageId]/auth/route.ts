@@ -9,7 +9,7 @@ export async function POST(
 ) {
   try {
     const { pageId } = await context.params;
-    const body = await request.json();
+    const body = (await request.json()) as { action?: string; password?: string };
     const { action, password } = body;
 
     if (!action || !password) {

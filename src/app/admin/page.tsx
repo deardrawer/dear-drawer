@@ -914,7 +914,7 @@ export default function AdminPage() {
 
       if (res.ok) {
         // Set password if provided
-        const data = await res.json()
+        const data = (await res.json()) as { page?: { id: string } }
         if (geunnalForm.password && data.page?.id) {
           await fetch(`/api/geunnal/${data.page.id}/auth`, {
             method: 'POST',
@@ -927,7 +927,7 @@ export default function AdminPage() {
         setGeunnalForm({ groom_name: '', bride_name: '', slug: '', wedding_date: '', password: '' })
         fetchGeunnalPages()
       } else {
-        const errData = await res.json()
+        const errData = (await res.json()) as { error?: string }
         alert(errData.error || '생성 실패')
       }
     } catch (err) {

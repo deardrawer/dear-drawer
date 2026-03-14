@@ -83,7 +83,8 @@ export default function EventManagement({
         throw new Error('이벤트 불러오기 실패')
       }
 
-      const events: GeunnalEvent[] = await eventsRes.json()
+      const eventsData = (await eventsRes.json()) as { events: GeunnalEvent[] }
+      const events = eventsData.events
 
       // Fetch guests for each event
       const eventsWithGuestsData = await Promise.all(
@@ -99,8 +100,8 @@ export default function EventManagement({
               return { event, guests: [] }
             }
 
-            const guests: EventGuest[] = await guestsRes.json()
-            return { event, guests }
+            const guestsData = (await guestsRes.json()) as { guests: EventGuest[] }
+            return { event, guests: guestsData.guests }
           } catch (error) {
             console.error(`Failed to fetch guests for event ${event.id}:`, error)
             return { event, guests: [] }

@@ -148,7 +148,7 @@ export default function GuestEventClient({
       })
 
       if (res.ok) {
-        const data = await res.json()
+        const data = (await res.json()) as { submission: GeunnalSubmission }
         setSubmissions(prev => [data.submission, ...prev])
         setStep('done')
       }

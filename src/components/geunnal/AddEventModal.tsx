@@ -150,8 +150,8 @@ export default function AddEventModal({
           throw new Error('이벤트 생성에 실패했습니다.')
         }
 
-        const result = await response.json()
-        eventId = result.id
+        const result = (await response.json()) as { event: { id: string } }
+        eventId = result.event.id
       }
 
       // Add new guests

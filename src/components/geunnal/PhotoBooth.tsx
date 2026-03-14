@@ -181,7 +181,7 @@ export default function PhotoBooth({ pageId, token, slug, groomName, brideName }
 
   const handleEventSelect = useCallback(async (event: GeunnalEvent) => {
     setSelectedEventId(event.id)
-    if (event.date && event.date !== 'TBD') setDateText(event.date.replace(/-/g, '.'))
+    if (event.date && event.date !== 'TBD') setDateText(event.date.split('T')[0].replace(/-/g, '.'))
 
     // Fetch guests for this event and auto-fill attendees
     try {
@@ -787,7 +787,7 @@ function TextEditor({ title, onTitleChange, dateText, onDateTextChange, comment,
             <option value="" disabled>모임을 선택하세요 (선택)</option>
             {filteredEvents.map(evt => {
               const sideLabel = evt.side === 'groom' ? '신랑' : evt.side === 'bride' ? '신부' : '공동'
-              return <option key={evt.id} value={evt.id}>[{sideLabel}] {evt.name} {evt.date !== 'TBD' ? `(${evt.date})` : ''}</option>
+              return <option key={evt.id} value={evt.id}>[{sideLabel}] {evt.name} {evt.date !== 'TBD' ? `(${evt.date.split('T')[0]})` : ''}</option>
             })}
           </select>
           {upcomingEvents.length > 0 && (
@@ -807,7 +807,7 @@ function TextEditor({ title, onTitleChange, dateText, onDateTextChange, comment,
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className={`text-[13px] font-medium truncate ${isSelected ? 'text-[#8B75D0]' : 'text-[#2A2240]'}`}>{evt.name}</p>
-                      <p className="text-[11px] text-[#9B8CC4]">{sideLabel} · {evt.date} {evt.time || ''}</p>
+                      <p className="text-[11px] text-[#9B8CC4]">{sideLabel} · {evt.date.split('T')[0]} {evt.time || ''}</p>
                     </div>
                     {isSelected && <span className="text-[10px] text-[#8B75D0] font-medium shrink-0">선택됨</span>}
                   </button>

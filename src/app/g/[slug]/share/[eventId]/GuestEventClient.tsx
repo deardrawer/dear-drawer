@@ -128,7 +128,7 @@ export default function GuestEventClient({
 
         const uploadRes = await fetch('/api/geunnal/upload', { method: 'POST', body: formData })
         if (uploadRes.ok) {
-          const uploadData = await uploadRes.json()
+          const uploadData = (await uploadRes.json()) as { url: string }
           photoUrl = uploadData.url
         }
       }

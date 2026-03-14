@@ -45,6 +45,29 @@ export default function GeunnalClient({
   const [showPasswordChange, setShowPasswordChange] = useState(false)
   const scrollPositionRef = useRef<number>(0)
 
+  // Mobile keyboard: scroll focused input to top of viewport
+  useEffect(() => {
+    const handleFocusIn = (e: FocusEvent) => {
+      const target = e.target as HTMLElement
+      if (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.tagName === 'SELECT'
+      ) {
+        // Skip PIN inputs (single digit) - they handle their own focus
+        if (target.getAttribute('maxLength') === '1') return
+
+        // Wait for keyboard to open
+        setTimeout(() => {
+          target.scrollIntoView({ block: 'start', behavior: 'smooth' })
+        }, 300)
+      }
+    }
+
+    document.addEventListener('focusin', handleFocusIn)
+    return () => document.removeEventListener('focusin', handleFocusIn)
+  }, [])
+
   // Check saved token on mount
   useEffect(() => {
     const savedToken = localStorage.getItem(`geunnal-token-${pageId}`)

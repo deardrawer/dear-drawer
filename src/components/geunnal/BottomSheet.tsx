@@ -1,5 +1,5 @@
 'use client'
-import { ReactNode, useEffect } from 'react'
+import { ReactNode, useEffect, useRef, useState } from 'react'
 
 interface BottomSheetProps {
   open: boolean
@@ -9,6 +9,9 @@ interface BottomSheetProps {
 }
 
 export default function BottomSheet({ open, onClose, title, children }: BottomSheetProps) {
+  const contentRef = useRef<HTMLDivElement>(null)
+  const [sheetHeight, setSheetHeight] = useState('85dvh')
+
   useEffect(() => {
     if (open) {
       document.body.style.overflow = 'hidden'
@@ -18,6 +21,43 @@ export default function BottomSheet({ open, onClose, title, children }: BottomSh
     return () => {
       document.body.style.overflow = 'unset'
     }
+  }, [open])
+
+  // Adjust sheet height when mobile keyboard opens/closes
+  useEffect(() => {
+    if (!open) return
+
+    const vv = window.visualViewport
+    if (!vv) return
+
+    const handleResize = () => {
+      // When keyboard opens, visualViewport.height shrinks
+      const viewportHeight = vv.height
+      // Use 95% of visible viewport so content has room
+      const maxHeight = Math.floor(viewportHeight * 0.92)
+      setSheetHeight(`${maxHeight}px`)
+
+      // Scroll focused input into view within the sheet
+      const active = document.activeElement as HTMLElement | null
+      if (
+        active &&
+        contentRef.current?.contains(active) &&
+        (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')
+      ) {
+        // Skip single-digit PIN inputs
+        if (active.getAttribute('maxLength') !== '1') {
+          setTimeout(() => {
+            active.scrollIntoView({ block: 'start', behavior: 'smooth' })
+          }, 100)
+        }
+      }
+    }
+
+    vv.addEventListener('resize', handleResize)
+    // Set initial height
+    handleResize()
+
+    return () => vv.removeEventListener('resize', handleResize)
   }, [open])
 
   if (!open) return null
@@ -32,10 +72,10 @@ export default function BottomSheet({ open, onClose, title, children }: BottomSh
 
       {/* Sheet */}
       <div
-        className={`relative w-full max-w-[430px] bg-white rounded-t-3xl shadow-lg transition-transform duration-300 ${
+        className={`relative w-full max-w-[430px] bg-white rounded-t-3xl shadow-lg transition-all duration-300 ${
           open ? 'translate-y-0' : 'translate-y-full'
         }`}
-        style={{ maxHeight: '85dvh' }}
+        style={{ maxHeight: sheetHeight }}
       >
         {/* Drag handle */}
         <div className="flex justify-center pt-3 pb-2">
@@ -50,7 +90,11 @@ export default function BottomSheet({ open, onClose, title, children }: BottomSh
         )}
 
         {/* Content */}
-        <div className="overflow-y-auto px-6 py-4" style={{ maxHeight: 'calc(85dvh - 80px)' }}>
+        <div
+          ref={contentRef}
+          className="overflow-y-auto px-6 py-4"
+          style={{ maxHeight: `calc(${sheetHeight} - 80px)` }}
+        >
           {children}
         </div>
       </div>

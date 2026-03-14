@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { Settings } from 'lucide-react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import BottomNav from '@/components/geunnal/BottomNav'
 import LoginScreen from '@/components/geunnal/LoginScreen'
 import PasswordChangeSheet from '@/components/geunnal/PasswordChangeSheet'
@@ -44,6 +43,7 @@ export default function GeunnalClient({
   const [hasPassword, setHasPassword] = useState(initialHasPassword)
   const [activeView, setActiveView] = useState<ActiveView>({ type: 'home' })
   const [showPasswordChange, setShowPasswordChange] = useState(false)
+  const scrollPositionRef = useRef<number>(0)
 
   // Check saved token on mount
   useEffect(() => {
@@ -90,11 +90,16 @@ export default function GeunnalClient({
   }, [])
 
   const handleEventClick = useCallback((eventId: string) => {
+    scrollPositionRef.current = window.scrollY
     setActiveView({ type: 'event-detail', eventId })
+    window.scrollTo(0, 0)
   }, [])
 
   const handleBackToHome = useCallback(() => {
     setActiveView({ type: 'home' })
+    requestAnimationFrame(() => {
+      window.scrollTo(0, scrollPositionRef.current)
+    })
   }, [])
 
   // Loading state
@@ -129,15 +134,6 @@ export default function GeunnalClient({
 
   return (
     <div className="geunnal-page">
-      {/* Settings button - fixed top-right */}
-      <button
-        onClick={() => setShowPasswordChange(true)}
-        className="fixed top-4 right-4 z-50 w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm shadow-md flex items-center justify-center hover:bg-white transition-colors"
-        aria-label="설정"
-      >
-        <Settings className="w-5 h-5 text-[#5A5270]" />
-      </button>
-
       {/* Main Content */}
       <div className="min-h-[100dvh] pb-20">
         {activeView.type === 'home' && (
@@ -148,6 +144,7 @@ export default function GeunnalClient({
             brideName={brideName}
             weddingDate={weddingDate}
             onEventClick={handleEventClick}
+            onPasswordChange={() => setShowPasswordChange(true)}
           />
         )}
 

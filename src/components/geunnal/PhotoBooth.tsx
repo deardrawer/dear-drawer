@@ -128,7 +128,7 @@ export default function PhotoBooth({ pageId, token, groomName, brideName }: Phot
 
   const handleShare = useCallback(async () => {
     if (!frameRef.current) return
-    if (!navigator.share || !navigator.canShare) { showToastMsg('이 브라우저에서는 공유를 지원하지 않습니다'); return }
+    if (!navigator.share) { showToastMsg('이 브라우저에서는 공유를 지원하지 않습니다'); return }
     setSaving(true)
     try {
       const { default: html2canvas } = await import('html2canvas')
@@ -136,8 +136,18 @@ export default function PhotoBooth({ pageId, token, groomName, brideName }: Phot
       const blob = await new Promise<Blob | null>(r => canvas.toBlob(r, 'image/png'))
       if (!blob) throw new Error('Blob 생성 실패')
       const file = new File([blob], 'geunnal-photobooth.png', { type: 'image/png' })
-      if (navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }) }
-      else { showToastMsg('파일 공유를 지원하지 않습니다') }
+      // Try file share first, then fall back to text share
+      const canShareFiles = navigator.canShare ? navigator.canShare({ files: [file] }) : false
+      if (canShareFiles) {
+        await navigator.share({ files: [file] })
+      } else {
+        // Fallback: download then prompt share
+        const link = document.createElement('a')
+        link.download = 'geunnal-photobooth.png'
+        link.href = canvas.toDataURL('image/png')
+        link.click()
+        showToastMsg('이미지가 저장되었습니다. 저장된 이미지를 공유해주세요.')
+      }
     } catch (err) { if ((err as Error).name !== 'AbortError') showToastMsg('공유에 실패했습니다') }
     finally { setSaving(false) }
   }, [])

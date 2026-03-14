@@ -16,6 +16,7 @@ interface EventManagementProps {
   brideName: string
   weddingDate: string | null
   onEventClick: (eventId: string) => void
+  onPasswordChange?: () => void
 }
 
 interface EventWithGuests {
@@ -76,6 +77,7 @@ export default function EventManagement({
   brideName,
   weddingDate,
   onEventClick,
+  onPasswordChange,
 }: EventManagementProps) {
   const [eventsWithGuests, setEventsWithGuests] = useState<EventWithGuests[]>([])
   const [loading, setLoading] = useState(true)
@@ -139,13 +141,21 @@ export default function EventManagement({
   }
 
   // Categorize events
-  const { todayEvents, upcomingEvents, tbdEvents, completedEvents } = useMemo(() => {
+  // Completed = total_cost is entered (not based on date)
+  const { todayEvents, upcomingEvents, tbdEvents, needsSettlementEvents, completedEvents } = useMemo(() => {
     const today: EventWithGuests[] = []
     const upcoming: EventWithGuests[] = []
     const tbd: EventWithGuests[] = []
+    const needsSettlement: EventWithGuests[] = []
     const completed: EventWithGuests[] = []
 
     for (const ewg of eventsWithGuests) {
+      // Completed = cost has been entered
+      if (ewg.event.total_cost && ewg.event.total_cost > 0) {
+        completed.push(ewg)
+        continue
+      }
+
       const dateStr = ewg.event.date.split('T')[0]
       if (ewg.event.date === 'TBD' || ewg.event.date === '') {
         tbd.push(ewg)
@@ -154,14 +164,16 @@ export default function EventManagement({
       } else if (dateStr > todayStr) {
         upcoming.push(ewg)
       } else {
-        completed.push(ewg)
+        // Past event without cost = needs settlement
+        needsSettlement.push(ewg)
       }
     }
 
     upcoming.sort((a, b) => a.event.date.localeCompare(b.event.date) || a.event.time.localeCompare(b.event.time))
+    needsSettlement.sort((a, b) => b.event.date.localeCompare(a.event.date) || b.event.time.localeCompare(a.event.time))
     completed.sort((a, b) => b.event.date.localeCompare(a.event.date) || b.event.time.localeCompare(a.event.time))
 
-    return { todayEvents: today, upcomingEvents: upcoming, tbdEvents: tbd, completedEvents: completed }
+    return { todayEvents: today, upcomingEvents: upcoming, tbdEvents: tbd, needsSettlementEvents: needsSettlement, completedEvents: completed }
   }, [eventsWithGuests, todayStr])
 
   // All events sorted by date for popup navigation (exclude TBD)
@@ -240,19 +252,29 @@ export default function EventManagement({
   return (
     <div className="px-5 pb-24 flex flex-col gap-5">
       {/* Header */}
-      <header className="flex items-start justify-between pt-5 pb-5 -mx-5 px-5 border-b border-[#E8E4F0]">
-        <div>
-          <p className="text-[11px] font-medium tracking-[1.5px] uppercase text-[#9B8CC4] mb-1">dear drawer</p>
-          <h1 className="text-xl font-medium text-[#2A2240]">
-            {groomName} & {brideName}
-          </h1>
-          {weddingDate && (
-            <p className="text-[13px] text-[#9B8CC4] mt-0.5">
-              {formatDate(weddingDate)}
-            </p>
-          )}
+      <header className="pt-5 pb-5 -mx-5 px-5 border-b border-[#E8E4F0]">
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-[11px] font-medium tracking-[1.5px] uppercase text-[#9B8CC4] mb-1">dear drawer</p>
+            <h1 className="text-xl font-medium text-[#2A2240]">
+              {groomName} & {brideName}
+            </h1>
+            {weddingDate && (
+              <p className="text-[13px] text-[#9B8CC4] mt-0.5">
+                {formatDate(weddingDate)}
+              </p>
+            )}
+          </div>
+          {ddayText && <GeunnalBadge variant="lavender">{ddayText}</GeunnalBadge>}
         </div>
-        {ddayText && <GeunnalBadge variant="lavender">{ddayText}</GeunnalBadge>}
+        {onPasswordChange && (
+          <button
+            onClick={onPasswordChange}
+            className="mt-3 px-3 py-1.5 text-[12px] font-medium text-[#9B8CC4] border border-[#E8E4F0] rounded-lg hover:bg-[#F9F7FD] transition-colors"
+          >
+            비밀번호 변경
+          </button>
+        )}
       </header>
 
       {/* Calendar */}
@@ -382,7 +404,26 @@ export default function EventManagement({
         </section>
       )}
 
-      {/* Completed events */}
+      {/* Needs Settlement (past events without cost) */}
+      {needsSettlementEvents.length > 0 && (
+        <section>
+          <SectionHeader title="정산 대기" count={needsSettlementEvents.length} icon={<Wallet size={16} strokeWidth={1.5} className="text-[#D4899A]" />} />
+          <div className="flex flex-col gap-3">
+            {needsSettlementEvents.map(ewg => (
+              <div key={ewg.event.id}>
+                <EventCard
+                  ewg={ewg}
+                  onClick={() => onEventClick(ewg.event.id)}
+                  onCostClick={() => handleCostClick(ewg.event)}
+                  needsSettlement
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Completed events (cost entered) */}
       {completedEvents.length > 0 && (
         <section>
           <button
@@ -472,11 +513,12 @@ function SectionHeader({ title, count, icon }: { title: string; count: number; i
 }
 
 /* ─── Event Card ─── */
-function EventCard({ ewg, onClick, onCostClick, isCompleted }: {
+function EventCard({ ewg, onClick, onCostClick, isCompleted, needsSettlement }: {
   ewg: EventWithGuests
   onClick: () => void
   onCostClick: () => void
   isCompleted?: boolean
+  needsSettlement?: boolean
 }) {
   const { event, guests } = ewg
   const guestCount = guests.length || event.expected_guests || 0
@@ -484,7 +526,7 @@ function EventCard({ ewg, onClick, onCostClick, isCompleted }: {
 
   return (
     <GeunnalCard
-      className={`cursor-pointer active:scale-[0.98] transition-transform ${isCompleted ? 'opacity-60' : ''}`}
+      className={`cursor-pointer active:scale-[0.98] transition-transform ${isCompleted ? 'opacity-60' : ''} ${needsSettlement ? 'border-[#D4899A]/40' : ''}`}
       onClick={onClick}
     >
       <div className="flex flex-col gap-2">
@@ -510,12 +552,19 @@ function EventCard({ ewg, onClick, onCostClick, isCompleted }: {
         </div>
 
         {/* Row 3: Area & Restaurant */}
-        <div className="flex items-center gap-1.5">
-          <MapPin size={14} strokeWidth={1.5} className="text-[#9B8CC4] shrink-0" />
-          <span className="text-[13px] text-[#9B8CC4] truncate">
-            {event.area}{event.restaurant ? ` · ${event.restaurant}` : ''}
-          </span>
-        </div>
+        {(event.area || event.restaurant) ? (
+          <div className="flex items-center gap-1.5">
+            <MapPin size={14} strokeWidth={1.5} className="text-[#9B8CC4] shrink-0" />
+            <span className="text-[13px] text-[#9B8CC4] truncate">
+              {event.area}{event.restaurant ? ` · ${event.restaurant}` : ''}
+            </span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5">
+            <MapPin size={14} strokeWidth={1.5} className="text-[#9B8CC4] shrink-0" />
+            <span className="text-[13px] text-[#9B8CC4]">장소 미정</span>
+          </div>
+        )}
 
         {/* Row 4: Guests & Cost */}
         <div className="flex items-center gap-1.5">
@@ -540,6 +589,17 @@ function EventCard({ ewg, onClick, onCostClick, isCompleted }: {
             </button>
           )}
         </div>
+
+        {/* Needs settlement prompt */}
+        {needsSettlement && !costText && (
+          <button
+            onClick={e => { e.stopPropagation(); onCostClick() }}
+            className="flex items-center justify-center gap-1.5 w-full py-2 bg-[#FAE9F0] text-[#D4899A] rounded-lg text-[12px] font-medium hover:bg-[#F5D4E0] transition-colors mt-1"
+          >
+            <Wallet size={13} strokeWidth={1.5} />
+            비용을 입력하면 정산이 완료됩니다
+          </button>
+        )}
 
         {/* Row 5: Guest names */}
         {guests.length > 0 && (

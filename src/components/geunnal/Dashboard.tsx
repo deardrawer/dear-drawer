@@ -9,6 +9,7 @@ import BlobAvatar from './BlobAvatar'
 interface DashboardProps {
   pageId: string
   token: string
+  onEventClick?: (eventId: string) => void
 }
 
 type Tab = 'events' | 'photos' | 'messages'
@@ -37,7 +38,7 @@ const formatRelativeTime = (dateStr: string) => {
   return formatDate(dateStr)
 }
 
-export default function Dashboard({ pageId, token }: DashboardProps) {
+export default function Dashboard({ pageId, token, onEventClick }: DashboardProps) {
   const [activeTab, setActiveTab] = useState<Tab>('events')
   const [events, setEvents] = useState<GeunnalEvent[]>([])
   const [submissions, setSubmissions] = useState<GeunnalSubmission[]>([])
@@ -158,7 +159,7 @@ export default function Dashboard({ pageId, token }: DashboardProps) {
       </div>
 
       {/* Tab Content */}
-      {activeTab === 'events' && <EventsTab events={completedEvents} submissions={completedSubmissions} />}
+      {activeTab === 'events' && <EventsTab events={completedEvents} submissions={completedSubmissions} onEventClick={onEventClick} />}
       {activeTab === 'photos' && <PhotosTab events={completedEvents} submissions={completedSubmissions} />}
       {activeTab === 'messages' && <MessagesTab events={completedEvents} submissions={completedSubmissions} />}
     </div>
@@ -166,7 +167,7 @@ export default function Dashboard({ pageId, token }: DashboardProps) {
 }
 
 /* ─── Events Tab ─── */
-function EventsTab({ events, submissions }: { events: GeunnalEvent[]; submissions: GeunnalSubmission[] }) {
+function EventsTab({ events, submissions, onEventClick }: { events: GeunnalEvent[]; submissions: GeunnalSubmission[]; onEventClick?: (eventId: string) => void }) {
   if (events.length === 0) {
     return (
       <div className="text-center py-12">
@@ -185,7 +186,11 @@ function EventsTab({ events, submissions }: { events: GeunnalEvent[]; submission
         const messageCount = eventSubs.filter(s => s.message).length
 
         return (
-          <GeunnalCard key={event.id} className="flex flex-col gap-3">
+          <GeunnalCard
+            key={event.id}
+            className={`flex flex-col gap-3 ${onEventClick ? 'cursor-pointer active:scale-[0.98] transition-transform' : ''}`}
+            onClick={() => onEventClick?.(event.id)}
+          >
             {/* Event Header */}
             <div className="flex items-start justify-between">
               <div className="flex-1">
@@ -237,6 +242,7 @@ function EventsTab({ events, submissions }: { events: GeunnalEvent[]; submission
                   </span>
                 </GeunnalBadge>
               </div>
+              {onEventClick && <ChevronRight size={18} strokeWidth={1.5} className="text-[#9B8CC4]" />}
             </div>
           </GeunnalCard>
         )

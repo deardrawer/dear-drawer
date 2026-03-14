@@ -197,6 +197,7 @@ export default function GeunnalClient({
           <Dashboard
             pageId={pageId}
             token={token || ''}
+            onEventClick={handleEventClick}
           />
         )}
 

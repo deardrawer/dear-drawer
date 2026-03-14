@@ -7,6 +7,7 @@ interface CloudflareEnv {
 
 // Path validation: 허용 패턴
 const SAFE_PATH_REGEX = /^invitation\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+\.(webp|jpg|jpeg|png)$/;
+const GEUNNAL_IMAGE_PATH_REGEX = /^geunnal\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+\.(webp|jpg|jpeg|png)$/;
 const USER_AUDIO_PATH_REGEX = /^invitation\/[a-zA-Z0-9_-]+\/audio\/[a-zA-Z0-9_-]+\.mp3$/;
 const PRESET_AUDIO_PATH_REGEX = /^audio\/[a-zA-Z0-9_-]+\.mp3$/;
 
@@ -25,7 +26,8 @@ export async function GET(
     // 1. Path validation — directory traversal 차단, 허용 패턴만 통과
     const isPresetAudio = PRESET_AUDIO_PATH_REGEX.test(key);
     const isUserAudio = USER_AUDIO_PATH_REGEX.test(key);
-    if (!SAFE_PATH_REGEX.test(key) && !isPresetAudio && !isUserAudio) {
+    const isGeunnalImage = GEUNNAL_IMAGE_PATH_REGEX.test(key);
+    if (!SAFE_PATH_REGEX.test(key) && !isGeunnalImage && !isPresetAudio && !isUserAudio) {
       return NextResponse.json({ error: "잘못된 파일 경로입니다." }, { status: 400 });
     }
 

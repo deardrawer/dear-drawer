@@ -191,6 +191,7 @@ export default function GeunnalClient({
           <PhotoBooth
             pageId={pageId}
             token={token || ''}
+            slug={slug}
             groomName={groomName}
             brideName={brideName}
           />

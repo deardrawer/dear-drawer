@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useMemo } from 'react'
-import { Image, MessageCircle, Users, CalendarDays, MapPin, ChevronRight } from 'lucide-react'
+import { Image, MessageCircle, Users, CalendarDays, MapPin, ChevronRight, X, Download } from 'lucide-react'
 import { GeunnalEvent, GeunnalSubmission } from '@/types/geunnal'
 import GeunnalBadge from './Badge'
 import GeunnalCard from './Card'
@@ -304,6 +304,7 @@ function EventsTab({ events, submissions, onEventClick }: { events: GeunnalEvent
 /* ─── Photos Tab ─── */
 function PhotosTab({ events, submissions }: { events: GeunnalEvent[]; submissions: GeunnalSubmission[] }) {
   const [filter, setFilter] = useState<string>('all')
+  const [viewingPhoto, setViewingPhoto] = useState<GeunnalSubmission | null>(null)
 
   const allPhotos = submissions.filter(s => s.photo_url)
   const filtered = filter === 'all'
@@ -342,7 +343,11 @@ function PhotosTab({ events, submissions }: { events: GeunnalEvent[]; submission
         {filtered.map(s => {
           const event = getEventById(s.event_id)
           return (
-            <div key={s.id} className="relative aspect-square rounded-lg overflow-hidden group">
+            <div
+              key={s.id}
+              className="relative aspect-square rounded-lg overflow-hidden group cursor-pointer"
+              onClick={() => setViewingPhoto(s)}
+            >
               <img src={s.photo_url!} alt="" className="w-full h-full object-cover" />
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-1.5 pt-4">
                 <p className="text-white text-[9px] font-medium truncate">
@@ -357,6 +362,64 @@ function PhotosTab({ events, submissions }: { events: GeunnalEvent[]; submission
 
       {filtered.length === 0 && (
         <p className="text-center text-[14px] text-[#9B8CC4] py-12">사진이 없습니다</p>
+      )}
+
+      {/* Image Fullscreen Viewer */}
+      {viewingPhoto && (
+        <DashboardImageViewer
+          submission={viewingPhoto}
+          eventName={getEventById(viewingPhoto.event_id)?.name}
+          onClose={() => setViewingPhoto(null)}
+        />
+      )}
+    </div>
+  )
+}
+
+/* ─── Dashboard Image Viewer ─── */
+function DashboardImageViewer({ submission, eventName, onClose }: {
+  submission: GeunnalSubmission; eventName?: string; onClose: () => void
+}) {
+  const handleDownload = () => {
+    if (!submission.photo_url) return
+    const a = document.createElement('a')
+    a.href = submission.photo_url
+    a.download = `photo-${submission.guest_name || 'guest'}.jpg`
+    a.target = '_blank'
+    a.rel = 'noopener noreferrer'
+    a.click()
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/90 flex flex-col" onClick={onClose}>
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 shrink-0" onClick={e => e.stopPropagation()}>
+        <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10">
+          <X size={22} strokeWidth={1.5} className="text-white" />
+        </button>
+        <div className="text-center">
+          <p className="text-white text-[14px] font-medium">
+            {submission.is_anonymous ? '익명' : submission.guest_name}
+          </p>
+          {eventName && <p className="text-white/60 text-[11px]">{eventName}</p>}
+        </div>
+        <button onClick={handleDownload} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10">
+          <Download size={20} strokeWidth={1.5} className="text-white" />
+        </button>
+      </div>
+
+      {/* Image */}
+      <div className="flex-1 flex items-center justify-center px-4 overflow-hidden" onClick={e => e.stopPropagation()}>
+        {submission.photo_url && (
+          <img src={submission.photo_url} alt="" className="max-w-full max-h-full object-contain rounded-lg" />
+        )}
+      </div>
+
+      {/* Message */}
+      {submission.message && (
+        <div className="px-6 py-4 shrink-0" onClick={e => e.stopPropagation()}>
+          <p className="text-white/90 text-[14px] text-center leading-[1.6]">{submission.message}</p>
+        </div>
       )}
     </div>
   )

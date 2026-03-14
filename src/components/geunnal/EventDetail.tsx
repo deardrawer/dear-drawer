@@ -251,7 +251,7 @@ export default function EventDetail({
                 : 'soft'
             }
           >
-            {event.side === 'groom' ? '신랑' : event.side === 'bride' ? '신부' : '공통'}
+            {event.side === 'groom' ? '신랑' : event.side === 'bride' ? '신부' : '공동'}
           </GeunnalBadge>
           <GeunnalBadge variant="soft">
             {event.meal_type === 'lunch' ? '점심' : event.meal_type === 'dinner' ? '저녁' : '기타'}

@@ -39,8 +39,9 @@ export default function AddEventModal({
   const [guestTags, setGuestTags] = useState<string[]>([])
   const [newGuestTag, setNewGuestTag] = useState('')
 
-  // Initialize form when editEvent changes
+  // Initialize form when modal opens or editEvent changes
   useEffect(() => {
+    if (!open) return
     if (editEvent) {
       setName(editEvent.name)
       setSide(editEvent.side)
@@ -77,7 +78,8 @@ export default function AddEventModal({
       setRestaurant('')
       setGuestTags([])
     }
-  }, [editEvent, guests])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, editEvent])
 
   const handleAddGuestTag = () => {
     const trimmed = newGuestTag.trim()
@@ -255,7 +257,7 @@ export default function AddEventModal({
             {[
               { value: 'groom', label: '신랑' },
               { value: 'bride', label: '신부' },
-              { value: 'both', label: '공통' },
+              { value: 'both', label: '공동' },
             ].map((option) => (
               <button
                 key={option.value}

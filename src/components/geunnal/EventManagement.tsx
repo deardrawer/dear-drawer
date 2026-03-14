@@ -8,10 +8,12 @@ import MonthCalendar from './MonthCalendar'
 import AddEventModal from './AddEventModal'
 import CostEditModal from './CostEditModal'
 import EventPopup from './EventPopup'
+import { sendKakaoShare } from '@/lib/geunnalKakao'
 
 interface EventManagementProps {
   pageId: string
   token: string
+  slug: string
   groomName: string
   brideName: string
   weddingDate: string | null
@@ -73,6 +75,7 @@ const formatTime = (timeStr: string) => {
 export default function EventManagement({
   pageId,
   token,
+  slug,
   groomName,
   brideName,
   weddingDate,
@@ -267,14 +270,32 @@ export default function EventManagement({
           </div>
           {ddayText && <GeunnalBadge variant="lavender">{ddayText}</GeunnalBadge>}
         </div>
-        {onPasswordChange && (
+        <div className="flex gap-2 mt-3">
+          {onPasswordChange && (
+            <button
+              onClick={onPasswordChange}
+              className="px-3 py-1.5 text-[12px] font-medium text-[#9B8CC4] border border-[#E8E4F0] rounded-lg hover:bg-[#F9F7FD] transition-colors"
+            >
+              비밀번호 변경
+            </button>
+          )}
           <button
-            onClick={onPasswordChange}
-            className="mt-3 px-3 py-1.5 text-[12px] font-medium text-[#9B8CC4] border border-[#E8E4F0] rounded-lg hover:bg-[#F9F7FD] transition-colors"
+            onClick={() => {
+              try {
+                sendKakaoShare({
+                  title: `${groomName} & ${brideName}의 그날`,
+                  description: '소중한 모임에 참여해주세요',
+                  url: `https://invite.deardrawer.com/g/${slug}`,
+                })
+              } catch {
+                // Kakao SDK not loaded fallback
+              }
+            }}
+            className="px-3 py-1.5 text-[12px] font-medium text-[#9B8CC4] border border-[#E8E4F0] rounded-lg hover:bg-[#F9F7FD] transition-colors"
           >
-            비밀번호 변경
+            카카오톡 공유
           </button>
-        )}
+        </div>
       </header>
 
       {/* Calendar */}

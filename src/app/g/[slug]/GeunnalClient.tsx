@@ -167,6 +167,7 @@ export default function GeunnalClient({
           <EventManagement
             pageId={pageId}
             token={token || ''}
+            slug={slug}
             groomName={groomName}
             brideName={brideName}
             weddingDate={weddingDate}

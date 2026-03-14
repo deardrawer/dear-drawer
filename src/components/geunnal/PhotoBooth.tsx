@@ -1,6 +1,6 @@
 'use client'
 import { useRef, useState, useCallback, useEffect, forwardRef, useMemo } from 'react'
-import { ArrowLeft, ArrowRight, Download, Share2, BookmarkPlus, Plus, Check, X, RotateCcw, ImagePlus, CalendarDays } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Download, Share2, BookmarkPlus, Plus, Check, X, RotateCcw, ImagePlus, CalendarDays, ArrowLeftRight } from 'lucide-react'
 import { GeunnalEvent, EventSide } from '@/types/geunnal'
 import BottomSheet from './BottomSheet'
 import html2canvas from 'html2canvas'
@@ -38,8 +38,7 @@ export default function PhotoBooth({ pageId, token, groomName, brideName }: Phot
   )
   const [activeSlot, setActiveSlot] = useState<number>(0)
   const [adjustSlot, setAdjustSlot] = useState<number | null>(null)
-  const [dragFrom, setDragFrom] = useState<number | null>(null)
-  const [dragOver, setDragOver] = useState<number | null>(null)
+  const [swapFrom, setSwapFrom] = useState<number | null>(null)
 
   const [title, setTitle] = useState(`${groomName} & ${brideName} 결혼합니다`)
   const [dateText, setDateText] = useState('')
@@ -144,93 +143,32 @@ export default function PhotoBooth({ pageId, token, groomName, brideName }: Phot
     setAdjustSlot(null)
   }, [adjustSlot])
 
-  // Drag & drop handlers for reordering photos
-  const handleDragStart = useCallback((index: number) => {
-    if (!photos[index]) return
-    setDragFrom(index)
-  }, [photos])
-
-  const handleDragOverSlot = useCallback((e: React.DragEvent, index: number) => {
-    e.preventDefault()
-    if (dragFrom === null || dragFrom === index) return
-    setDragOver(index)
-  }, [dragFrom])
-
-  const handleDragLeaveSlot = useCallback(() => {
-    setDragOver(null)
-  }, [])
-
-  const handleDrop = useCallback((index: number) => {
-    if (dragFrom === null || dragFrom === index) {
-      setDragFrom(null)
-      setDragOver(null)
-      return
+  // Tap-to-swap handler for reordering photos
+  const handleSwapTap = useCallback((index: number) => {
+    if (swapFrom === null) {
+      setSwapFrom(index)
+    } else if (swapFrom === index) {
+      setSwapFrom(null)
+    } else {
+      // Swap photos and transforms
+      const from = swapFrom
+      setPhotos(prev => {
+        const next = [...prev]
+        const temp = next[from]
+        next[from] = next[index]
+        next[index] = temp
+        return next
+      })
+      setTransforms(prev => {
+        const next = [...prev]
+        const temp = next[from]
+        next[from] = next[index]
+        next[index] = temp
+        return next
+      })
+      setSwapFrom(null)
     }
-    // Swap photos and transforms
-    setPhotos(prev => {
-      const next = [...prev]
-      const temp = next[dragFrom]
-      next[dragFrom] = next[index]
-      next[index] = temp
-      return next
-    })
-    setTransforms(prev => {
-      const next = [...prev]
-      const temp = next[dragFrom]
-      next[dragFrom] = next[index]
-      next[index] = temp
-      return next
-    })
-    setDragFrom(null)
-    setDragOver(null)
-  }, [dragFrom])
-
-  const handleDragEnd = useCallback(() => {
-    setDragFrom(null)
-    setDragOver(null)
-  }, [])
-
-  // Touch-based reorder (long press + drag)
-  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const touchDragState = useRef<{ fromIdx: number; startY: number; startX: number } | null>(null)
-
-  const handleTouchStartSlot = useCallback((index: number, e: React.TouchEvent) => {
-    if (!photos[index]) return
-    const touch = e.touches[0]
-    longPressTimer.current = setTimeout(() => {
-      touchDragState.current = { fromIdx: index, startY: touch.clientY, startX: touch.clientX }
-      setDragFrom(index)
-    }, 400)
-  }, [photos])
-
-  const handleTouchMoveSlot = useCallback((e: React.TouchEvent) => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current)
-      longPressTimer.current = null
-    }
-    if (!touchDragState.current) return
-    e.preventDefault()
-    const touch = e.touches[0]
-    const elements = document.elementsFromPoint(touch.clientX, touch.clientY)
-    const slotEl = elements.find(el => el.hasAttribute('data-slot-index'))
-    if (slotEl) {
-      const idx = parseInt(slotEl.getAttribute('data-slot-index')!, 10)
-      if (!isNaN(idx)) setDragOver(idx)
-    }
-  }, [])
-
-  const handleTouchEndSlot = useCallback(() => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current)
-      longPressTimer.current = null
-    }
-    if (touchDragState.current && dragOver !== null) {
-      handleDrop(dragOver)
-    }
-    touchDragState.current = null
-    setDragFrom(null)
-    setDragOver(null)
-  }, [dragOver, handleDrop])
+  }, [swapFrom])
 
   const handleReplacePhoto = useCallback(() => {
     if (adjustSlot === null) return
@@ -483,16 +421,7 @@ export default function PhotoBooth({ pageId, token, groomName, brideName }: Phot
           comment={comment}
           attendees={attendees}
           onPhotoSlotClick={step === 1 ? handlePhotoSlotClick : undefined}
-          dragFrom={step === 1 ? dragFrom : null}
-          dragOver={step === 1 ? dragOver : null}
-          onDragStart={step === 1 ? handleDragStart : undefined}
-          onDragOver={step === 1 ? handleDragOverSlot : undefined}
-          onDragLeave={step === 1 ? handleDragLeaveSlot : undefined}
-          onDrop={step === 1 ? handleDrop : undefined}
-          onDragEnd={step === 1 ? handleDragEnd : undefined}
-          onTouchStartSlot={step === 1 ? handleTouchStartSlot : undefined}
-          onTouchMoveSlot={step === 1 ? handleTouchMoveSlot : undefined}
-          onTouchEndSlot={step === 1 ? handleTouchEndSlot : undefined}
+          selectedSlot={step === 1 ? swapFrom : null}
         />
       </div>
 
@@ -501,7 +430,42 @@ export default function PhotoBooth({ pageId, token, groomName, brideName }: Phot
         {step === 1 && (
           <>
             <FrameSettings layout={layout} onLayoutChange={handleLayoutChange} frameColor={frameColor} onColorChange={setFrameColor} />
-            <p className="text-[13px] text-[#9B8CC4] mt-4">빈 슬롯을 탭하여 사진 추가 · 여러 장 선택 가능 · 드래그로 위치 변경</p>
+            {/* Swap UI: show when 2+ photos exist */}
+            {photos.filter(Boolean).length >= 2 && (
+              <div className="mt-5">
+                <h3 className="text-[11px] font-medium tracking-[1.5px] uppercase text-[#9B8CC4] mb-2 flex items-center gap-1.5">
+                  <ArrowLeftRight size={13} /> 사진 순서 변경
+                </h3>
+                <div className="flex gap-2 justify-center">
+                  {Array.from({ length: layout }, (_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => photos[i] ? handleSwapTap(i) : undefined}
+                      disabled={!photos[i]}
+                      className={`w-14 h-14 rounded-xl border-2 overflow-hidden transition-all duration-150 ${
+                        swapFrom === i
+                          ? 'border-[#8B75D0] ring-2 ring-[#8B75D0]/30 scale-105'
+                          : photos[i]
+                            ? 'border-[#E8E4F0] hover:border-[#8B75D0]/50 active:scale-95'
+                            : 'border-[#E8E4F0] opacity-30 cursor-default'
+                      }`}
+                    >
+                      {photos[i] ? (
+                        <img src={photos[i]!} alt={`슬롯 ${i + 1}`} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-[#F9F7FD] flex items-center justify-center">
+                          <span className="text-[10px] text-[#C5BAE8]">{i + 1}</span>
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[11px] text-[#9B8CC4] text-center mt-2">
+                  {swapFrom !== null ? '바꿀 두 번째 사진을 탭하세요' : '바꿀 사진 두 장을 차례로 탭하세요'}
+                </p>
+              </div>
+            )}
+            <p className="text-[13px] text-[#9B8CC4] mt-4">빈 슬롯을 탭하여 사진 추가 · 여러 장 선택 가능</p>
           </>
         )}
         {step === 2 && (
@@ -616,17 +580,8 @@ const PhotoFrame = forwardRef<HTMLDivElement, {
   comment: string
   attendees: string
   onPhotoSlotClick?: (index: number) => void
-  dragFrom?: number | null
-  dragOver?: number | null
-  onDragStart?: (index: number) => void
-  onDragOver?: (e: React.DragEvent, index: number) => void
-  onDragLeave?: () => void
-  onDrop?: (index: number) => void
-  onDragEnd?: () => void
-  onTouchStartSlot?: (index: number, e: React.TouchEvent) => void
-  onTouchMoveSlot?: (e: React.TouchEvent) => void
-  onTouchEndSlot?: () => void
-}>(({ photos, transforms, layout, frameColor, title, dateText, comment, attendees, onPhotoSlotClick, dragFrom, dragOver, onDragStart, onDragOver, onDragLeave, onDrop, onDragEnd, onTouchStartSlot, onTouchMoveSlot, onTouchEndSlot }, ref) => {
+  selectedSlot?: number | null
+}>(({ photos, transforms, layout, frameColor, title, dateText, comment, attendees, onPhotoSlotClick, selectedSlot }, ref) => {
   const colors = FRAME_COLORS[frameColor] || FRAME_COLORS.black
   const slots = Array.from({ length: layout }, (_, i) => photos[i] ?? null)
 
@@ -635,25 +590,13 @@ const PhotoFrame = forwardRef<HTMLDivElement, {
       <div ref={ref} style={{ backgroundColor: colors.bg, color: colors.text, width: '300px', padding: '12px 10px 10px', borderRadius: '4px', fontFamily: '"DM Sans", sans-serif' }}>
         <div className="grid grid-cols-2 gap-x-[8px] gap-y-[6px]">
           {slots.map((photo, index) => (
-            <div key={index}
-              data-slot-index={index}
-              draggable={!!photo && !!onDragStart}
-              onDragStart={() => onDragStart?.(index)}
-              onDragOver={(e) => onDragOver?.(e, index)}
-              onDragLeave={() => onDragLeave?.()}
-              onDrop={() => onDrop?.(index)}
-              onDragEnd={() => onDragEnd?.()}
-              onTouchStart={(e) => onTouchStartSlot?.(index, e)}
-              onTouchMove={(e) => onTouchMoveSlot?.(e)}
-              onTouchEnd={() => onTouchEndSlot?.()}
-            >
+            <div key={index}>
               <div onClick={() => onPhotoSlotClick?.(index)}
                 className={`overflow-hidden relative ${onPhotoSlotClick ? 'cursor-pointer active:opacity-80' : ''} transition-all duration-150`}
                 style={{
                   aspectRatio: '3/4', borderRadius: '3px',
                   backgroundColor: photo ? undefined : 'rgba(255,255,255,0.95)',
-                  opacity: dragFrom === index ? 0.4 : 1,
-                  outline: dragOver === index ? '2px solid #8B75D0' : 'none',
+                  outline: selectedSlot === index ? '2px solid #8B75D0' : 'none',
                   outlineOffset: '-2px',
                 }}>
                 {photo ? (
@@ -682,18 +625,7 @@ const PhotoFrame = forwardRef<HTMLDivElement, {
     <div ref={ref} className="relative inline-block" style={{ backgroundColor: colors.bg, color: colors.text, width: '280px', padding: '12px 28px 20px 16px', borderRadius: '4px', fontFamily: '"DM Sans", sans-serif' }}>
       <div className="flex flex-col gap-2 ml-2" style={{ marginRight: '8px' }}>
         {slots.map((photo, index) => (
-          <div key={index} className="relative"
-            data-slot-index={index}
-            draggable={!!photo && !!onDragStart}
-            onDragStart={() => onDragStart?.(index)}
-            onDragOver={(e) => onDragOver?.(e, index)}
-            onDragLeave={() => onDragLeave?.()}
-            onDrop={() => onDrop?.(index)}
-            onDragEnd={() => onDragEnd?.()}
-            onTouchStart={(e) => onTouchStartSlot?.(index, e)}
-            onTouchMove={(e) => onTouchMoveSlot?.(e)}
-            onTouchEnd={() => onTouchEndSlot?.()}
-          >
+          <div key={index} className="relative">
             <div className="flex items-center gap-1 mb-0.5" style={{ opacity: 0.45, fontSize: '7px' }}>
               <span style={{ fontSize: '6px' }}>&#9660;</span>
               <span>{FILM_NUMBERS[index] || '30'}</span>
@@ -702,8 +634,7 @@ const PhotoFrame = forwardRef<HTMLDivElement, {
               className={`relative overflow-hidden bg-white/10 ${onPhotoSlotClick ? 'cursor-pointer active:opacity-80' : ''} transition-all duration-150`}
               style={{
                 aspectRatio: '4/3', borderRadius: '2px', width: '100%',
-                opacity: dragFrom === index ? 0.4 : 1,
-                outline: dragOver === index ? '2px solid #8B75D0' : 'none',
+                outline: selectedSlot === index ? '2px solid #8B75D0' : 'none',
                 outlineOffset: '-2px',
               }}>
               {photo ? (

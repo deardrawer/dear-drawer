@@ -34,13 +34,7 @@
           "binding": "R2",
           "bucket_name": "dear-drawer-images"
         }
-      ],
-      "vars": {
-        "NEXT_PUBLIC_KAKAO_CLIENT_ID": "45cff9edef371e0e18394dfd5d0f29f7",
-        "NEXT_PUBLIC_KAKAO_JS_KEY": "0890847927f3189d845391481ead8ecc",
-        "NEXT_PUBLIC_KAKAO_REDIRECT_URI": "https://invite.deardrawer.com/api/auth/kakao/callback",
-        "NEXT_PUBLIC_R2_PUBLIC_URL": "https://pub-dear-drawer.r2.dev"
-      }
+      ]
     },
     "production": {
       "d1_databases": [
@@ -55,13 +49,7 @@
           "binding": "R2",
           "bucket_name": "dear-drawer-images"
         }
-      ],
-      "vars": {
-        "NEXT_PUBLIC_KAKAO_CLIENT_ID": "45cff9edef371e0e18394dfd5d0f29f7",
-        "NEXT_PUBLIC_KAKAO_JS_KEY": "0890847927f3189d845391481ead8ecc",
-        "NEXT_PUBLIC_KAKAO_REDIRECT_URI": "https://invite.deardrawer.com/api/auth/kakao/callback",
-        "NEXT_PUBLIC_R2_PUBLIC_URL": "https://pub-dear-drawer.r2.dev"
-      }
+      ]
     }
   }
 }

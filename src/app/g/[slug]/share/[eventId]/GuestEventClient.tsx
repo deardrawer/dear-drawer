@@ -4,7 +4,7 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import { Camera, ImagePlus, X, ChevronLeft, MapPin, CalendarDays, Users, Download, ExternalLink } from 'lucide-react'
 import GeunnalCard from '@/components/geunnal/Card'
 import BlobAvatar, { avatarPresets, GROOM_AVATAR_START, BRIDE_AVATAR_START, AVATARS_PER_SIDE } from '@/components/geunnal/BlobAvatar'
-import type { GeunnalSubmission } from '@/types/geunnal'
+import type { GeunnalSubmission, EventSide } from '@/types/geunnal'
 import { loadKakaoMapSDK } from '@/lib/geunnalKakaoMap'
 
 interface GuestEventClientProps {
@@ -13,6 +13,7 @@ interface GuestEventClientProps {
   eventDate: string
   eventTime: string
   eventLocation: string | null
+  eventSide: EventSide
   eventArea: string
   eventRestaurant: string
   guests: string[]
@@ -76,13 +77,13 @@ function isEventPast(dateStr: string, timeStr: string): boolean {
 
 export default function GuestEventClient({
   eventId, eventName, eventDate, eventTime, eventLocation,
-  eventArea, eventRestaurant, guests: guestNames,
+  eventSide, eventArea, eventRestaurant, guests: guestNames,
   groomName, brideName, weddingDate, slug,
   venueName, venueAddress, venueLat, venueLng,
 }: GuestEventClientProps) {
   const [step, setStep] = useState<Step>('album')
   const [guestName, setGuestName] = useState('')
-  const [selectedAvatar, setSelectedAvatar] = useState<number>(0)
+  const [selectedAvatar, setSelectedAvatar] = useState<number>(eventSide === 'bride' ? BRIDE_AVATAR_START : GROOM_AVATAR_START)
   const [message, setMessage] = useState('')
   const [photo, setPhoto] = useState<{ file: File; preview: string; cropped?: string } | null>(null)
   const [showCropModal, setShowCropModal] = useState(false)
@@ -231,6 +232,7 @@ export default function GuestEventClient({
           <StepName
             guestName={guestName} setGuestName={setGuestName}
             selectedAvatar={selectedAvatar} setSelectedAvatar={setSelectedAvatar}
+            eventSide={eventSide}
             onBack={() => setStep('album')} onNext={() => setStep('upload')}
           />
         )}
@@ -554,10 +556,11 @@ function KakaoMapEmbed({ lat, lng, name }: { lat: number; lng: number; name: str
 /* ── Step 2: Name + Avatar ── */
 function StepName({
   guestName, setGuestName,
-  selectedAvatar, setSelectedAvatar, onBack, onNext,
+  selectedAvatar, setSelectedAvatar, eventSide, onBack, onNext,
 }: {
   guestName: string; setGuestName: (v: string) => void
   selectedAvatar: number; setSelectedAvatar: (v: number) => void
+  eventSide: EventSide
   onBack: () => void; onNext: () => void
 }) {
   const canProceed = guestName.trim().length > 0
@@ -575,7 +578,7 @@ function StepName({
         <h2 className="text-xl font-medium text-[#2A2240] mb-1">나를 소개해주세요</h2>
         <p className="text-[13px] text-[#9B8CC4] mb-6">캐릭터와 이름이 메시지에 함께 표시돼요</p>
 
-        <AvatarPicker selectedAvatar={selectedAvatar} setSelectedAvatar={setSelectedAvatar} />
+        <AvatarPicker selectedAvatar={selectedAvatar} setSelectedAvatar={setSelectedAvatar} eventSide={eventSide} />
 
         <input
           placeholder="이름을 입력하세요"
@@ -737,9 +740,13 @@ function StepDone({ selectedAvatar, onViewAlbum }: { selectedAvatar: number; onV
 }
 
 /* ── Avatar Picker ── */
-function AvatarPicker({ selectedAvatar, setSelectedAvatar }: { selectedAvatar: number; setSelectedAvatar: (v: number) => void }) {
+function AvatarPicker({ selectedAvatar, setSelectedAvatar, eventSide }: {
+  selectedAvatar: number; setSelectedAvatar: (v: number) => void; eventSide: EventSide
+}) {
+  const showBothSides = eventSide === 'both'
   const isGroomSide = selectedAvatar < BRIDE_AVATAR_START
-  const [side, setSide] = useState<'groom' | 'bride'>(isGroomSide ? 'groom' : 'bride')
+  const defaultSide = eventSide === 'bride' ? 'bride' : 'groom'
+  const [side, setSide] = useState<'groom' | 'bride'>(showBothSides ? (isGroomSide ? 'groom' : 'bride') : defaultSide)
 
   const start = side === 'groom' ? GROOM_AVATAR_START : BRIDE_AVATAR_START
   const indices = Array.from({ length: AVATARS_PER_SIDE }, (_, i) => start + i)
@@ -755,28 +762,30 @@ function AvatarPicker({ selectedAvatar, setSelectedAvatar }: { selectedAvatar: n
     <div className="mb-6">
       <p className="text-[13px] font-medium text-[#2A2240] mb-3">캐릭터 선택</p>
 
-      <div className="flex gap-2 mb-4">
-        <button
-          onClick={() => handleSideChange('groom')}
-          className={`flex-1 py-2.5 rounded-xl text-[13px] font-medium transition-all ${
-            side === 'groom'
-              ? 'bg-[#90CAF9]/20 text-[#5B9BD5] ring-1 ring-[#90CAF9]'
-              : 'bg-[#F9F7FD] text-[#9B8CC4] hover:bg-[#90CAF9]/10'
-          }`}
-        >
-          신랑측 하객
-        </button>
-        <button
-          onClick={() => handleSideChange('bride')}
-          className={`flex-1 py-2.5 rounded-xl text-[13px] font-medium transition-all ${
-            side === 'bride'
-              ? 'bg-[#F48FB1]/20 text-[#E06088] ring-1 ring-[#F48FB1]'
-              : 'bg-[#F9F7FD] text-[#9B8CC4] hover:bg-[#F48FB1]/10'
-          }`}
-        >
-          신부측 하객
-        </button>
-      </div>
+      {showBothSides && (
+        <div className="flex gap-2 mb-4">
+          <button
+            onClick={() => handleSideChange('groom')}
+            className={`flex-1 py-2.5 rounded-xl text-[13px] font-medium transition-all ${
+              side === 'groom'
+                ? 'bg-[#90CAF9]/20 text-[#5B9BD5] ring-1 ring-[#90CAF9]'
+                : 'bg-[#F9F7FD] text-[#9B8CC4] hover:bg-[#90CAF9]/10'
+            }`}
+          >
+            신랑측 하객
+          </button>
+          <button
+            onClick={() => handleSideChange('bride')}
+            className={`flex-1 py-2.5 rounded-xl text-[13px] font-medium transition-all ${
+              side === 'bride'
+                ? 'bg-[#F48FB1]/20 text-[#E06088] ring-1 ring-[#F48FB1]'
+                : 'bg-[#F9F7FD] text-[#9B8CC4] hover:bg-[#F48FB1]/10'
+            }`}
+          >
+            신부측 하객
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-6 gap-2">
         {indices.map(i => (

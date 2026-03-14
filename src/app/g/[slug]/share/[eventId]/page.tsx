@@ -38,6 +38,7 @@ export default async function GuestSharePage({ params }: PageProps) {
       eventDate={event.date}
       eventTime={event.time}
       eventLocation={event.location}
+      eventSide={event.side}
       eventArea={event.area || ''}
       eventRestaurant={event.restaurant || ''}
       guests={guests.map(g => g.name)}

@@ -179,10 +179,23 @@ export default function PhotoBooth({ pageId, token, slug, groomName, brideName }
     setTimeout(() => fileInputRef.current?.click(), 100)
   }, [adjustSlot])
 
-  const handleEventSelect = useCallback((event: GeunnalEvent) => {
+  const handleEventSelect = useCallback(async (event: GeunnalEvent) => {
     setSelectedEventId(event.id)
     if (event.date && event.date !== 'TBD') setDateText(event.date.replace(/-/g, '.'))
-  }, [])
+
+    // Fetch guests for this event and auto-fill attendees
+    try {
+      const res = await fetch(`/api/geunnal/events/${event.id}/guests`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      })
+      if (res.ok) {
+        const data = (await res.json()) as { guests: { name: string }[] }
+        if (data.guests.length > 0) {
+          setAttendees(data.guests.map(g => g.name).join(', '))
+        }
+      }
+    } catch { /* ignore */ }
+  }, [token])
 
   // Shared html2canvas options - fix aspect-ratio/object-cover + strip unsupported colors
   const canvasOptions = {

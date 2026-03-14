@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   ArrowLeft,
   CalendarDays,
@@ -17,15 +17,12 @@ import {
   UserCheck,
   UserX,
   Eye,
-  QrCode,
-  Download,
   Link,
   Send,
   ExternalLink,
   Navigation,
   Phone,
 } from 'lucide-react'
-import QRCodeLib from 'qrcode'
 import { GeunnalEvent, EventGuest, GeunnalSubmission, GeunnalVenue } from '@/types/geunnal'
 import GeunnalCard from './Card'
 import GeunnalBadge from './Badge'
@@ -84,8 +81,6 @@ export default function EventDetail({
   const [editingCost, setEditingCost] = useState(false)
   const [costInput, setCostInput] = useState('')
   const [toastMsg, setToastMsg] = useState('')
-  const qrCanvasRef = useRef<HTMLCanvasElement>(null)
-
   const shareUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/g/${slug}/share/${eventId}`
 
   const showToast = useCallback((msg: string) => {
@@ -138,16 +133,6 @@ export default function EventDetail({
   }
 
   useEffect(() => { fetchEventData() }, [eventId, token])
-
-  // Generate QR code
-  useEffect(() => {
-    if (!qrCanvasRef.current || !event) return
-    QRCodeLib.toCanvas(qrCanvasRef.current, shareUrl, {
-      width: 200,
-      margin: 2,
-      color: { dark: '#2A2240', light: '#FFFFFF' },
-    }).catch(() => {})
-  }, [event, shareUrl])
 
   // --- Guest management ---
   const handleAddGuest = async () => {
@@ -233,23 +218,6 @@ export default function EventDetail({
   }
 
   // --- Share ---
-  const handleDownloadQR = async () => {
-    const canvas = document.createElement('canvas')
-    canvas.width = 640
-    canvas.height = 640
-    try {
-      await QRCodeLib.toCanvas(canvas, shareUrl, {
-        width: 640, margin: 3,
-        color: { dark: '#2A2240', light: '#FFFFFF' },
-      })
-      const link = document.createElement('a')
-      link.download = `qr-${event!.name}.png`
-      link.href = canvas.toDataURL('image/png')
-      link.click()
-      showToast('QR 코드가 저장되었습니다')
-    } catch { showToast('QR 코드 저장에 실패했습니다') }
-  }
-
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(shareUrl)
@@ -564,35 +532,20 @@ export default function EventDetail({
           하객 공유 페이지 미리보기
         </button>
 
-        {/* QR Code & Sharing */}
+        {/* Share */}
         <GeunnalCard>
-          <div className="flex items-center gap-2 mb-4">
-            <QrCode size={18} strokeWidth={1.5} className="text-[#8B75D0]" />
-            <p className="text-[15px] font-medium text-[#2A2240]">QR 코드 공유</p>
+          <div className="flex items-center gap-2 mb-3">
+            <Send size={16} strokeWidth={1.5} className="text-[#8B75D0]" />
+            <p className="text-[15px] font-medium text-[#2A2240]">공유하기</p>
           </div>
-          <div className="flex flex-col items-center gap-4">
-            <div className="bg-white p-3 rounded-2xl border border-[#E8E4F0]">
-              <canvas ref={qrCanvasRef} />
-            </div>
-            <p className="text-[12px] text-[#9B8CC4] text-center break-all px-4">
-              {shareUrl}
-            </p>
-            <div className="flex gap-3 w-full">
-              <button
-                onClick={handleDownloadQR}
-                className="flex-1 h-10 rounded-xl border border-[#E8E4F0] text-[13px] font-medium text-[#5A5270] flex items-center justify-center gap-1.5 hover:bg-[#F9F7FD] transition-colors"
-              >
-                <Download size={16} strokeWidth={1.5} />
-                PNG 다운로드
-              </button>
-              <button
-                onClick={handleCopyLink}
-                className="flex-1 h-10 rounded-xl border border-[#E8E4F0] text-[13px] font-medium text-[#5A5270] flex items-center justify-center gap-1.5 hover:bg-[#F9F7FD] transition-colors"
-              >
-                <Link size={16} strokeWidth={1.5} />
-                링크 복사
-              </button>
-            </div>
+          <div className="flex flex-col gap-2.5">
+            <button
+              onClick={handleCopyLink}
+              className="w-full h-10 rounded-xl border border-[#E8E4F0] text-[13px] font-medium text-[#5A5270] flex items-center justify-center gap-1.5 hover:bg-[#F9F7FD] transition-colors"
+            >
+              <Link size={16} strokeWidth={1.5} />
+              링크 복사
+            </button>
             <button
               onClick={handleKakaoShare}
               className="w-full h-11 rounded-full font-medium text-[15px] inline-flex items-center justify-center gap-2 bg-[#FEE500] text-[#191919] active:bg-[#FDD835] transition-colors"

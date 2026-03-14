@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { Camera, ImagePlus, X, ChevronLeft, MapPin, CalendarDays } from 'lucide-react'
+import { Camera, ImagePlus, X, ChevronLeft, MapPin, CalendarDays, Users, Download, CalendarPlus, ExternalLink } from 'lucide-react'
 import GeunnalCard from '@/components/geunnal/Card'
 import BlobAvatar, { avatarPresets, GROOM_AVATAR_START, BRIDE_AVATAR_START, AVATARS_PER_SIDE } from '@/components/geunnal/BlobAvatar'
 import type { GeunnalSubmission } from '@/types/geunnal'
+import { loadKakaoMapSDK } from '@/lib/geunnalKakaoMap'
 
 interface GuestEventClientProps {
   eventId: string
@@ -12,10 +13,17 @@ interface GuestEventClientProps {
   eventDate: string
   eventTime: string
   eventLocation: string | null
+  eventArea: string
+  eventRestaurant: string
+  guests: string[]
   groomName: string
   brideName: string
   weddingDate: string | null
   slug: string
+  venueName?: string
+  venueAddress?: string
+  venueLat?: number
+  venueLng?: number
 }
 
 type Step = 'album' | 'name' | 'upload' | 'done'
@@ -25,6 +33,13 @@ function formatDate(dateStr: string): string {
   const d = new Date(dateStr)
   const days = ['일', '월', '화', '수', '목', '금', '토']
   return `${d.getMonth() + 1}월 ${d.getDate()}일 (${days[d.getDay()]})`
+}
+
+function formatDateFull(dateStr: string): string {
+  if (!dateStr) return '날짜 미정'
+  const d = new Date(dateStr)
+  const days = ['일', '월', '화', '수', '목', '금', '토']
+  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 (${days[d.getDay()]})`
 }
 
 function formatTime(timeStr: string): string {
@@ -46,17 +61,68 @@ function formatRelativeTime(dateStr: string): string {
   return `${days}일 전`
 }
 
-function getDday(dateStr: string): number {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const target = new Date(dateStr)
-  target.setHours(0, 0, 0, 0)
-  return Math.ceil((target.getTime() - today.getTime()) / 86400000)
+function isEventPast(dateStr: string, timeStr: string): boolean {
+  if (!dateStr) return false
+  const now = new Date()
+  const eventDateTime = new Date(dateStr)
+  if (timeStr) {
+    const [h, m] = timeStr.split(':').map(Number)
+    eventDateTime.setHours(h, m, 0, 0)
+  } else {
+    eventDateTime.setHours(0, 0, 0, 0)
+  }
+  return now.getTime() >= eventDateTime.getTime()
+}
+
+function generateICS(eventName: string, dateStr: string, timeStr: string, location: string): string {
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const d = new Date(dateStr)
+  let startH = 12, startM = 0
+  if (timeStr) {
+    const [h, m] = timeStr.split(':').map(Number)
+    startH = h
+    startM = m
+  }
+  const startDate = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(startH)}${pad(startM)}00`
+  const endH = startH + 1
+  const endDate = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(endH > 23 ? 23 : endH)}${pad(startM)}00`
+  const now = new Date()
+  const stamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}T${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`
+
+  return [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//DearDrawer//Geunnal//KO',
+    'CALSCALE:GREGORIAN',
+    'BEGIN:VEVENT',
+    `DTSTART:${startDate}`,
+    `DTEND:${endDate}`,
+    `DTSTAMP:${stamp}`,
+    `UID:${Date.now()}@deardrawer.com`,
+    `SUMMARY:${eventName}`,
+    `LOCATION:${location}`,
+    'STATUS:CONFIRMED',
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ].join('\r\n')
+}
+
+function downloadICS(eventName: string, dateStr: string, timeStr: string, location: string) {
+  const ics = generateICS(eventName, dateStr, timeStr, location)
+  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${eventName}.ics`
+  a.click()
+  URL.revokeObjectURL(url)
 }
 
 export default function GuestEventClient({
   eventId, eventName, eventDate, eventTime, eventLocation,
+  eventArea, eventRestaurant, guests: guestNames,
   groomName, brideName, weddingDate, slug,
+  venueName, venueAddress, venueLat, venueLng,
 }: GuestEventClientProps) {
   const [step, setStep] = useState<Step>('album')
   const [guestName, setGuestName] = useState('')
@@ -68,9 +134,13 @@ export default function GuestEventClient({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submissions, setSubmissions] = useState<GeunnalSubmission[]>([])
   const [loading, setLoading] = useState(true)
+  const [viewingSubmission, setViewingSubmission] = useState<GeunnalSubmission | null>(null)
 
   const cameraRef = useRef<HTMLInputElement>(null)
   const galleryRef = useRef<HTMLInputElement>(null)
+
+  const locationText = [eventArea, eventRestaurant].filter(Boolean).join(' ')
+  const past = isEventPast(eventDate, eventTime)
 
   // Fetch submissions (public endpoint)
   useEffect(() => {
@@ -120,12 +190,10 @@ export default function GuestEventClient({
     try {
       let photoUrl: string | undefined
 
-      // Upload photo if exists (use cropped version if available)
       if (photo) {
         const pageId = slug
         const formData = new FormData()
         if (photo.cropped) {
-          // Convert cropped data URL to Blob (without fetch, to avoid CSP issues)
           const [header, base64] = photo.cropped.split(',')
           const mime = header.match(/:(.*?);/)?.[1] || 'image/jpeg'
           const binary = atob(base64)
@@ -146,7 +214,6 @@ export default function GuestEventClient({
         }
       }
 
-      // Create submission
       const res = await fetch('/api/geunnal/submissions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -194,9 +261,14 @@ export default function GuestEventClient({
         {step === 'album' && (
           <StepAlbum
             eventName={eventName} eventDate={eventDate} eventTime={eventTime}
-            eventLocation={eventLocation} groomName={groomName} brideName={brideName}
+            eventLocation={eventLocation} eventArea={eventArea} eventRestaurant={eventRestaurant}
+            guestNames={guestNames} groomName={groomName} brideName={brideName}
             weddingDate={weddingDate} submissions={submissions}
+            venueName={venueName} venueAddress={venueAddress}
+            venueLat={venueLat} venueLng={venueLng}
+            isPast={past}
             onNext={() => setStep('name')}
+            onViewSubmission={setViewingSubmission}
           />
         )}
         {step === 'name' && (
@@ -222,66 +294,217 @@ export default function GuestEventClient({
           <StepDone selectedAvatar={selectedAvatar} onViewAlbum={resetForm} />
         )}
       </div>
+
+      {/* Image Fullscreen Viewer */}
+      {viewingSubmission && (
+        <ImageViewer
+          submission={viewingSubmission}
+          onClose={() => setViewingSubmission(null)}
+        />
+      )}
     </div>
   )
 }
 
-/* Step 1: Album */
+/* ── Image Fullscreen Viewer ── */
+function ImageViewer({ submission, onClose }: { submission: GeunnalSubmission; onClose: () => void }) {
+  const handleDownload = () => {
+    if (!submission.photo_url) return
+    const a = document.createElement('a')
+    a.href = submission.photo_url
+    a.download = `photo-${submission.guest_name || 'guest'}.jpg`
+    a.target = '_blank'
+    a.rel = 'noopener noreferrer'
+    a.click()
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/90 flex flex-col" onClick={onClose}>
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 shrink-0" onClick={e => e.stopPropagation()}>
+        <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10">
+          <X size={22} strokeWidth={1.5} className="text-white" />
+        </button>
+        <div className="text-center">
+          <p className="text-white text-[14px] font-medium">
+            {submission.is_anonymous ? '익명' : submission.guest_name}
+          </p>
+        </div>
+        {submission.photo_url ? (
+          <button onClick={handleDownload} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10">
+            <Download size={20} strokeWidth={1.5} className="text-white" />
+          </button>
+        ) : (
+          <div className="w-10" />
+        )}
+      </div>
+
+      {/* Image */}
+      <div className="flex-1 flex items-center justify-center px-4 overflow-hidden" onClick={e => e.stopPropagation()}>
+        {submission.photo_url && (
+          <img
+            src={submission.photo_url}
+            alt=""
+            className="max-w-full max-h-full object-contain rounded-lg"
+          />
+        )}
+      </div>
+
+      {/* Message */}
+      {submission.message && (
+        <div className="px-6 py-4 shrink-0" onClick={e => e.stopPropagation()}>
+          <p className="text-white/90 text-[14px] text-center leading-[1.6]">{submission.message}</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ── Step 1: Album (Invitation Card Style) ── */
 function StepAlbum({
   eventName, eventDate, eventTime, eventLocation,
-  groomName, brideName, weddingDate, submissions, onNext,
+  eventArea, eventRestaurant, guestNames,
+  groomName, brideName, weddingDate, submissions,
+  venueName, venueAddress, venueLat, venueLng,
+  isPast, onNext, onViewSubmission,
 }: {
   eventName: string; eventDate: string; eventTime: string
-  eventLocation: string | null; groomName: string; brideName: string
+  eventLocation: string | null; eventArea: string; eventRestaurant: string
+  guestNames: string[]; groomName: string; brideName: string
   weddingDate: string | null; submissions: GeunnalSubmission[]
+  venueName?: string; venueAddress?: string
+  venueLat?: number; venueLng?: number
+  isPast: boolean
   onNext: () => void
+  onViewSubmission: (s: GeunnalSubmission) => void
 }) {
-  const dday = weddingDate ? getDday(weddingDate) : null
-  const ddayText = dday === null ? '' : dday === 0 ? 'D-DAY' : dday > 0 ? `D-${dday}` : `D+${Math.abs(dday)}`
+  const locationDisplay = [eventArea, eventRestaurant].filter(Boolean).join(' ') || eventLocation || ''
+
+  const handleAddToCalendar = () => {
+    if (!eventDate) return
+    downloadICS(eventName, eventDate, eventTime, locationDisplay)
+  }
+
+  const openKakaoMap = () => {
+    if (venueLat && venueLng && venueName) {
+      window.open(`https://map.kakao.com/link/map/${encodeURIComponent(venueName)},${venueLat},${venueLng}`, '_blank')
+    } else if (locationDisplay) {
+      window.open(`https://map.kakao.com/link/search/${encodeURIComponent(locationDisplay)}`, '_blank')
+    }
+  }
 
   return (
     <>
-      {/* Hero */}
-      <div className="bg-gradient-to-b from-[#EDE9FA]/60 to-white px-5 pt-10 pb-6 text-center">
-        <h1 className="text-xl font-medium text-[#2A2240]">
-          {groomName} & {brideName}
-        </h1>
-        <p className="text-[15px] text-[#5A5270] mt-1">결혼합니다</p>
+      {/* Invitation Card */}
+      <div className="bg-gradient-to-b from-[#EDE9FA]/60 to-white px-5 pt-10 pb-6">
+        {/* Header */}
+        <div className="text-center mb-6">
+          <h1 className="text-xl font-medium text-[#2A2240]">
+            {groomName} & {brideName}
+          </h1>
+          <p className="text-[15px] text-[#5A5270] mt-1">결혼합니다</p>
+        </div>
 
-        <div className="flex flex-col items-center gap-1.5 mt-4">
-          {eventDate && (
-            <div className="flex items-center gap-1.5 text-[#9B8CC4]">
-              <CalendarDays size={14} strokeWidth={1.5} />
-              <span className="text-[13px]">{formatDate(eventDate)} {formatTime(eventTime)}</span>
+        {/* Event Invitation Card */}
+        <div className="bg-white rounded-2xl border border-[#E8E4F0] shadow-sm overflow-hidden">
+          {/* Event Name Header */}
+          <div className="bg-gradient-to-r from-[#8B75D0]/10 to-[#D4899A]/10 px-5 py-4 text-center">
+            <p className="text-[16px] font-semibold text-[#2A2240]">{eventName}</p>
+          </div>
+
+          <div className="px-5 py-4 flex flex-col gap-3">
+            {/* Date & Time */}
+            {eventDate && (
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-[#EDE9FA] flex items-center justify-center shrink-0">
+                  <CalendarDays size={14} strokeWidth={1.5} className="text-[#8B75D0]" />
+                </div>
+                <div>
+                  <p className="text-[14px] font-medium text-[#2A2240]">{formatDateFull(eventDate)}</p>
+                  {eventTime && <p className="text-[12px] text-[#9B8CC4]">{formatTime(eventTime)}</p>}
+                </div>
+              </div>
+            )}
+
+            {/* Location */}
+            {locationDisplay && (
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-[#FAE9F0] flex items-center justify-center shrink-0">
+                  <MapPin size={14} strokeWidth={1.5} className="text-[#D4899A]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  {venueName ? (
+                    <>
+                      <p className="text-[14px] font-medium text-[#2A2240]">{venueName}</p>
+                      {venueAddress && <p className="text-[12px] text-[#9B8CC4] truncate">{venueAddress}</p>}
+                    </>
+                  ) : (
+                    <p className="text-[14px] font-medium text-[#2A2240]">{locationDisplay}</p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Guests */}
+            {guestNames.length > 0 && (
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-[#E8F5E9] flex items-center justify-center shrink-0">
+                  <Users size={14} strokeWidth={1.5} className="text-[#66BB6A]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[12px] text-[#9B8CC4] mb-1.5">참석자</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {guestNames.map((name, i) => (
+                      <span
+                        key={i}
+                        className="inline-block px-2.5 py-1 rounded-full bg-[#F9F7FD] text-[12px] text-[#5A5270]"
+                      >
+                        {name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Kakao Map */}
+          {(venueLat && venueLng) ? (
+            <div className="px-5 pb-4">
+              <KakaoMapEmbed lat={venueLat} lng={venueLng} name={venueName || locationDisplay} />
+              <button
+                onClick={openKakaoMap}
+                className="w-full mt-2 h-9 rounded-full border border-[#E8E4F0] text-[12px] text-[#5A5270] font-medium flex items-center justify-center gap-1.5 hover:bg-[#EDE9FA]/20 transition-colors"
+              >
+                <ExternalLink size={12} /> 카카오맵에서 보기
+              </button>
             </div>
-          )}
-          {eventLocation && (
-            <div className="flex items-center gap-1.5 text-[#9B8CC4]">
-              <MapPin size={14} strokeWidth={1.5} />
-              <span className="text-[13px]">{eventLocation}</span>
+          ) : locationDisplay ? (
+            <div className="px-5 pb-4">
+              <button
+                onClick={openKakaoMap}
+                className="w-full h-9 rounded-full border border-[#E8E4F0] text-[12px] text-[#5A5270] font-medium flex items-center justify-center gap-1.5 hover:bg-[#EDE9FA]/20 transition-colors"
+              >
+                <ExternalLink size={12} /> 카카오맵에서 검색
+              </button>
+            </div>
+          ) : null}
+
+          {/* Add to Calendar */}
+          {eventDate && (
+            <div className="px-5 pb-5">
+              <button
+                onClick={handleAddToCalendar}
+                className="w-full h-10 rounded-full text-[13px] font-medium text-[#8B75D0] border border-[#8B75D0]/30 flex items-center justify-center gap-2 hover:bg-[#EDE9FA]/30 active:scale-[0.98] transition-all"
+              >
+                <CalendarPlus size={16} strokeWidth={1.5} />
+                캘린더에 일정 추가
+              </button>
             </div>
           )}
         </div>
 
-        {ddayText && (
-          <span className={`inline-block mt-4 px-4 py-1.5 rounded-full text-[12px] font-semibold ${
-            dday === 0 ? 'bg-[#8B75D0]/20 text-[#8B75D0]' : (dday ?? 0) > 0 ? 'bg-white/80 text-[#8B75D0] shadow-sm' : 'bg-[#FAE9F0] text-[#D4899A]'
-          }`}>
-            {ddayText}
-          </span>
-        )}
-        <div className="w-12 h-[1px] bg-[#E8E4F0] mx-auto mt-5" />
-      </div>
-
-      {/* Event info */}
-      <div className="px-5 pt-4 pb-6 text-center flex flex-col items-center gap-1">
-        <p className="text-[14px] font-medium text-[#2A2240]">{eventName}</p>
-        {eventDate && (
-          <p className="text-[12px] text-[#9B8CC4]">{formatDate(eventDate)} {formatTime(eventTime)}</p>
-        )}
-        {eventLocation && (
-          <p className="text-[12px] text-[#9B8CC4]">{eventLocation}</p>
-        )}
+        <div className="w-12 h-[1px] bg-[#E8E4F0] mx-auto mt-6" />
       </div>
 
       {/* Submissions */}
@@ -291,8 +514,12 @@ function StepAlbum({
             <div className="w-16 h-16 rounded-full bg-[#EDE9FA] flex items-center justify-center mb-4">
               <Camera size={24} strokeWidth={1.5} className="text-[#8B75D0]" />
             </div>
-            <p className="text-[15px] text-[#5A5270]">아직 올라온 사진이 없어요</p>
-            <p className="text-[13px] text-[#9B8CC4] mt-1">첫 번째로 남겨보세요!</p>
+            <p className="text-[15px] text-[#5A5270]">
+              {isPast ? '아직 올라온 사진이 없어요' : '모임 후 사진과 메시지를 남길 수 있어요'}
+            </p>
+            <p className="text-[13px] text-[#9B8CC4] mt-1">
+              {isPast ? '첫 번째로 남겨보세요!' : '소중한 시간이 되길 바랍니다'}
+            </p>
           </div>
         ) : (
           <>
@@ -300,7 +527,10 @@ function StepAlbum({
               {submissions.map(s => (
                 <GeunnalCard key={s.id} noPadding className="overflow-hidden">
                   {s.photo_url && (
-                    <div className="aspect-square">
+                    <div
+                      className="aspect-[4/3] cursor-pointer"
+                      onClick={() => onViewSubmission(s)}
+                    >
                       <img src={s.photo_url} alt="" className="w-full h-full object-cover" />
                     </div>
                   )}
@@ -336,17 +566,53 @@ function StepAlbum({
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-white/95 backdrop-blur-md border-t border-[#E8E4F0] p-4" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
         <button
           onClick={onNext}
-          className="w-full py-3.5 rounded-xl text-[15px] font-medium text-white"
+          disabled={!isPast}
+          className="w-full py-3.5 rounded-xl text-[15px] font-medium text-white disabled:opacity-40"
           style={{ background: 'linear-gradient(135deg, #8B75D0, #B87AAB, #D4899A)' }}
         >
-          오늘의 소중한 순간을 기록해주세요
+          {isPast ? '오늘의 소중한 순간을 기록해주세요' : '소중한 분들을 초대합니다'}
         </button>
       </div>
     </>
   )
 }
 
-/* Step 2: Name + Avatar */
+/* ── Kakao Map Embed ── */
+function KakaoMapEmbed({ lat, lng, name }: { lat: number; lng: number; name: string }) {
+  const mapRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!mapRef.current) return
+    let mounted = true
+
+    loadKakaoMapSDK().then(() => {
+      if (!mounted || !mapRef.current) return
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const kakao = (window as any).kakao
+      const position = new kakao.maps.LatLng(lat, lng)
+      const map = new kakao.maps.Map(mapRef.current, {
+        center: position,
+        level: 4,
+        draggable: false,
+        scrollwheel: false,
+        disableDoubleClickZoom: true,
+      })
+      new kakao.maps.Marker({ map, position })
+    }).catch(() => {})
+
+    return () => { mounted = false }
+  }, [lat, lng])
+
+  return (
+    <div
+      ref={mapRef}
+      className="w-full rounded-xl overflow-hidden border border-[#E8E4F0]"
+      style={{ height: 160 }}
+    />
+  )
+}
+
+/* ── Step 2: Name + Avatar ── */
 function StepName({
   guestName, setGuestName,
   selectedAvatar, setSelectedAvatar, onBack, onNext,
@@ -372,7 +638,6 @@ function StepName({
 
         <AvatarPicker selectedAvatar={selectedAvatar} setSelectedAvatar={setSelectedAvatar} />
 
-        {/* Name input */}
         <input
           placeholder="이름을 입력하세요"
           value={guestName}
@@ -395,7 +660,7 @@ function StepName({
   )
 }
 
-/* Step 3: Upload */
+/* ── Step 3: Upload ── */
 function StepUpload({
   photo, isCompressing, isSubmitting, message, setMessage,
   cameraRef, galleryRef, onFileChange, onRemovePhoto,
@@ -513,7 +778,7 @@ function StepUpload({
   )
 }
 
-/* Done Screen */
+/* ── Done Screen ── */
 function StepDone({ selectedAvatar, onViewAlbum }: { selectedAvatar: number; onViewAlbum: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center min-h-dvh px-5 text-center">
@@ -532,7 +797,7 @@ function StepDone({ selectedAvatar, onViewAlbum }: { selectedAvatar: number; onV
   )
 }
 
-/* Avatar Picker */
+/* ── Avatar Picker ── */
 function AvatarPicker({ selectedAvatar, setSelectedAvatar }: { selectedAvatar: number; setSelectedAvatar: (v: number) => void }) {
   const isGroomSide = selectedAvatar < BRIDE_AVATAR_START
   const [side, setSide] = useState<'groom' | 'bride'>(isGroomSide ? 'groom' : 'bride')
@@ -593,7 +858,7 @@ function AvatarPicker({ selectedAvatar, setSelectedAvatar }: { selectedAvatar: n
   )
 }
 
-/* Step Indicator */
+/* ── Step Indicator ── */
 function StepIndicator({ current, total }: { current: number; total: number }) {
   return (
     <div className="flex items-center gap-1.5">
@@ -606,7 +871,7 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
   )
 }
 
-/* Crop Modal - pan & pinch-zoom, then export 4:3 crop */
+/* ── Crop Modal ── */
 function CropModal({
   imageSrc,
   onConfirm,
@@ -654,7 +919,6 @@ function CropModal({
     pinchState.current = null
   }, [])
 
-  // Mouse drag for desktop
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     dragState.current = { startX: e.clientX, startY: e.clientY, ox: offsetX, oy: offsetY }
   }, [offsetX, offsetY])
@@ -669,7 +933,6 @@ function CropModal({
     dragState.current = null
   }, [])
 
-  // Wheel zoom for desktop
   const handleWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault()
     setScale(prev => Math.max(0.5, Math.min(4, prev - e.deltaY * 0.002)))
@@ -687,13 +950,11 @@ function CropModal({
     if (!ctx) return
 
     const img = imgRef.current
-    // Calculate where the image is rendered relative to the crop area
     const imgDisplayW = container.width * scale
     const imgDisplayH = (img.naturalHeight / img.naturalWidth) * imgDisplayW
     const imgLeft = (container.width - imgDisplayW) / 2 + offsetX
     const imgTop = (container.height - imgDisplayH) / 2 + offsetY
 
-    // Source coordinates in natural image space
     const sx = (-imgLeft / imgDisplayW) * img.naturalWidth
     const sy = (-imgTop / imgDisplayH) * img.naturalHeight
     const sw = (container.width / imgDisplayW) * img.naturalWidth
@@ -705,14 +966,12 @@ function CropModal({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 flex flex-col">
-      {/* Header */}
       <div className="flex items-center justify-between px-4 py-3">
         <button onClick={onCancel} className="text-white text-[14px]">취소</button>
         <p className="text-white text-[14px] font-medium">사진 조정</p>
         <button onClick={handleConfirm} className="text-[#B87AAB] text-[14px] font-medium">완료</button>
       </div>
 
-      {/* Crop area */}
       <div className="flex-1 flex items-center justify-center px-4">
         <div
           ref={containerRef}
@@ -741,7 +1000,6 @@ function CropModal({
         </div>
       </div>
 
-      {/* Zoom slider */}
       <div className="flex items-center justify-center gap-3 px-8 py-4">
         <span className="text-white/60 text-[12px]">-</span>
         <input

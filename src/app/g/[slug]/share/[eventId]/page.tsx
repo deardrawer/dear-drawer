@@ -1,4 +1,4 @@
-import { getPageBySlug, getEventById } from "@/lib/geunnalDb";
+import { getPageBySlug, getEventById, getGuestsByEventId, getVenuesByPageId } from "@/lib/geunnalDb";
 import { notFound } from "next/navigation";
 import GuestEventClient from "./GuestEventClient";
 import type { Viewport } from "next";
@@ -23,6 +23,14 @@ export default async function GuestSharePage({ params }: PageProps) {
   const event = await getEventById(eventId);
   if (!event || event.page_id !== page.id) notFound();
 
+  // Fetch guests and venue in parallel
+  const [guests, venues] = await Promise.all([
+    getGuestsByEventId(eventId),
+    getVenuesByPageId(page.id),
+  ]);
+
+  const venue = venues.find(v => v.event_id === eventId) || null;
+
   return (
     <GuestEventClient
       eventId={event.id}
@@ -30,10 +38,17 @@ export default async function GuestSharePage({ params }: PageProps) {
       eventDate={event.date}
       eventTime={event.time}
       eventLocation={event.location}
+      eventArea={event.area || ''}
+      eventRestaurant={event.restaurant || ''}
+      guests={guests.map(g => g.name)}
       groomName={page.groom_name}
       brideName={page.bride_name}
       weddingDate={page.wedding_date}
       slug={slug}
+      venueName={venue?.name}
+      venueAddress={venue?.address}
+      venueLat={venue?.lat}
+      venueLng={venue?.lng}
     />
   );
 }

@@ -124,6 +124,49 @@ export async function POST(request: NextRequest) {
       // 에러가 발생해도 결제 승인은 성공으로 처리하되 로그 남김
     }
 
+    // Auto-create geunnal page for paid invitation
+    try {
+      // Find the invitation that was just paid
+      const invitationId = paymentRequest.invitation_id;
+      if (invitationId) {
+        const invitation = await db
+          .prepare("SELECT id, slug, groom_name, bride_name, wedding_date, wedding_time, venue_name, venue_address FROM invitations WHERE id = ?")
+          .bind(invitationId)
+          .first<{ id: string; slug: string | null; groom_name: string | null; bride_name: string | null; wedding_date: string | null; wedding_time: string | null; venue_name: string | null; venue_address: string | null }>();
+
+        if (invitation && invitation.groom_name && invitation.bride_name) {
+          // Check if geunnal page already exists for this invitation
+          const existingPage = await db
+            .prepare("SELECT id FROM geunnal_pages WHERE invitation_id = ?")
+            .bind(invitationId)
+            .first();
+
+          if (!existingPage) {
+            const geunnalId = crypto.randomUUID().split('-')[0];
+            const geunnalSlug = `${invitation.slug || invitationId}-g`;
+            const now = new Date().toISOString();
+
+            await db
+              .prepare(
+                `INSERT INTO geunnal_pages (id, invitation_id, slug, groom_name, bride_name, wedding_date, wedding_time, venue_name, venue_address, login_count, created_at, updated_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`
+              )
+              .bind(
+                geunnalId, invitationId, geunnalSlug,
+                invitation.groom_name, invitation.bride_name,
+                invitation.wedding_date || null, invitation.wedding_time || null,
+                invitation.venue_name || null, invitation.venue_address || null,
+                now, now
+              )
+              .run();
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Failed to auto-create geunnal page:", error);
+      // Non-blocking: payment approval still succeeds
+    }
+
     // Send Telegram notification
     try {
       if (env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHAT_ID) {

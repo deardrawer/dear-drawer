@@ -907,20 +907,24 @@ export default function MyInvitationsPage() {
                     {invitation.is_paid ? '예식일로부터 30일 후 자동 삭제됩니다' : '결제하지 않은 청첩장은 생성일로부터 7일 후 자동 삭제됩니다'}
                   </p>
 
-                  {/* 상단: 주요 액션 (에디터 편집, 워터마크 제거) */}
-                  <div className={`grid gap-2 mb-2 ${invitation.is_paid ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                  {/* 상단: 주요 액션 (에디터 편집, 워터마크 제거/모임 관리) */}
+                  <div className="grid grid-cols-2 gap-2 mb-2">
                     <Link href={
                       invitation.template_id === 'narrative-parents' || invitation.template_id === 'parents'
                         ? `/editor/parents?id=${invitation.id}`
                         : invitation.template_id === 'narrative-exhibit' || invitation.template_id === 'exhibit'
                         ? `/editor/feed?id=${invitation.id}`
                         : `/editor?id=${invitation.id}`
-                    } className={invitation.is_paid ? 'col-span-1' : ''}>
+                    }>
                       <Button size="sm" className="w-full bg-gray-900 hover:bg-gray-800 text-white">에디터 편집하기</Button>
                     </Link>
-                    {!invitation.is_paid && (
+                    {!invitation.is_paid ? (
                       <Link href={`/dashboard/payment?invitationId=${invitation.id}&templateId=${invitation.template_id}`}>
                         <Button size="sm" className="w-full bg-rose-500 hover:bg-rose-600 text-white">워터마크 제거하기</Button>
+                      </Link>
+                    ) : (
+                      <Link href={`/g/${invitation.slug || invitation.id}-g`}>
+                        <Button size="sm" className="w-full bg-violet-500 hover:bg-violet-600 text-white">모임 관리</Button>
                       </Link>
                     )}
                   </div>

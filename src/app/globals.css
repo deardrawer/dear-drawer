@@ -1176,3 +1176,46 @@
     border-top: 1px solid rgba(0,0,0,0.04) !important;
   }
 }
+
+/* ── Geunnal (그날) ── */
+@layer components {
+  .geunnal-gradient-primary {
+    background: linear-gradient(135deg, #8B75D0, #B87AAB, #D4899A);
+  }
+
+  .geunnal-gradient-text {
+    background: linear-gradient(135deg, #8B75D0, #B87AAB, #D4899A);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .geunnal-safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .geunnal-no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .geunnal-no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .geunnal-page {
+    max-width: 430px;
+    margin: 0 auto;
+    min-height: 100dvh;
+    position: relative;
+    background-color: #FFFFFF;
+    color: #2A2240;
+    font-family: 'Pretendard Variable', 'Noto Sans KR', sans-serif;
+  }
+
+  .geunnal-text-label {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+}

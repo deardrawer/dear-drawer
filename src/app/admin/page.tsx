@@ -40,7 +40,17 @@ interface PaymentRequest {
   created_at: string
 }
 
-type TabType = 'invitations' | 'payments'
+type TabType = 'invitations' | 'payments' | 'geunnal'
+
+interface GeunnalPageItem {
+  id: string
+  slug: string
+  groom_name: string
+  bride_name: string
+  wedding_date: string | null
+  invitation_id: string | null
+  created_at: string
+}
 
 export default function AdminPage() {
   const [password, setPassword] = useState('')
@@ -61,6 +71,11 @@ export default function AdminPage() {
   // Payments state
   const [paymentRequests, setPaymentRequests] = useState<PaymentRequest[]>([])
   const [processingPayment, setProcessingPayment] = useState<string | null>(null)
+
+  // Geunnal state
+  const [geunnalPages, setGeunnalPages] = useState<GeunnalPageItem[]>([])
+  const [showGeunnalForm, setShowGeunnalForm] = useState(false)
+  const [geunnalForm, setGeunnalForm] = useState({ groom_name: '', bride_name: '', slug: '', wedding_date: '', password: '' })
 
   // Check saved auth on mount
   useEffect(() => {
@@ -384,6 +399,21 @@ export default function AdminPage() {
             {pendingPayments.length > 0 && (
               <span className="ml-2 text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: '#DC2626', color: '#FFF' }}>
                 {pendingPayments.length}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => { setActiveTab('geunnal'); fetchGeunnalPages() }}
+            className="flex-1 py-2.5 rounded-lg text-sm font-medium transition-all"
+            style={{
+              backgroundColor: activeTab === 'geunnal' ? '#FFF' : 'transparent',
+              color: activeTab === 'geunnal' ? '#2C2C2C' : '#888',
+            }}
+          >
+            그날 관리
+            {geunnalPages.length > 0 && (
+              <span className="ml-2 text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: '#8B75D0', color: '#FFF' }}>
+                {geunnalPages.length}
               </span>
             )}
           </button>
@@ -736,7 +766,188 @@ export default function AdminPage() {
             )}
           </>
         )}
+
+        {/* ===== Geunnal Tab ===== */}
+        {activeTab === 'geunnal' && (
+          <>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-semibold" style={{ color: '#2C2C2C' }}>그날 페이지 목록</h2>
+              <button
+                onClick={() => setShowGeunnalForm(v => !v)}
+                className="px-4 py-2 rounded-lg text-sm font-medium text-white"
+                style={{ backgroundColor: '#8B75D0' }}
+              >
+                {showGeunnalForm ? '취소' : '+ 페이지 생성'}
+              </button>
+            </div>
+
+            {showGeunnalForm && (
+              <div className="rounded-xl p-4 mb-4" style={{ backgroundColor: '#F5F3EE' }}>
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  <input
+                    placeholder="신랑 이름"
+                    value={geunnalForm.groom_name}
+                    onChange={e => setGeunnalForm(f => ({ ...f, groom_name: e.target.value }))}
+                    className="px-3 py-2 rounded-lg text-sm border"
+                    style={{ borderColor: '#E8E4DD' }}
+                  />
+                  <input
+                    placeholder="신부 이름"
+                    value={geunnalForm.bride_name}
+                    onChange={e => setGeunnalForm(f => ({ ...f, bride_name: e.target.value }))}
+                    className="px-3 py-2 rounded-lg text-sm border"
+                    style={{ borderColor: '#E8E4DD' }}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  <input
+                    placeholder="슬러그 (URL)"
+                    value={geunnalForm.slug}
+                    onChange={e => setGeunnalForm(f => ({ ...f, slug: e.target.value }))}
+                    className="px-3 py-2 rounded-lg text-sm border"
+                    style={{ borderColor: '#E8E4DD' }}
+                  />
+                  <input
+                    type="date"
+                    placeholder="예식일"
+                    value={geunnalForm.wedding_date}
+                    onChange={e => setGeunnalForm(f => ({ ...f, wedding_date: e.target.value }))}
+                    className="px-3 py-2 rounded-lg text-sm border"
+                    style={{ borderColor: '#E8E4DD' }}
+                  />
+                </div>
+                <div className="mb-3">
+                  <input
+                    type="password"
+                    placeholder="4자리 PIN (비워두면 비밀번호 없음)"
+                    maxLength={4}
+                    value={geunnalForm.password}
+                    onChange={e => setGeunnalForm(f => ({ ...f, password: e.target.value.replace(/\D/g, '') }))}
+                    className="w-full px-3 py-2 rounded-lg text-sm border"
+                    style={{ borderColor: '#E8E4DD' }}
+                  />
+                </div>
+                <button
+                  onClick={handleCreateGeunnalPage}
+                  className="w-full py-2.5 rounded-lg text-sm font-medium text-white"
+                  style={{ backgroundColor: '#8B75D0' }}
+                >
+                  생성하기
+                </button>
+              </div>
+            )}
+
+            {geunnalPages.length === 0 ? (
+              <div className="text-center py-12 text-sm" style={{ color: '#888' }}>
+                생성된 그날 페이지가 없습니다
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {geunnalPages.map(page => (
+                  <div key={page.id} className="rounded-xl p-4" style={{ backgroundColor: '#FFF', border: '1px solid #E8E4DD' }}>
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <span className="text-sm font-medium" style={{ color: '#2C2C2C' }}>
+                          {page.groom_name} & {page.bride_name}
+                        </span>
+                        <span className="ml-2 text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: '#EDE9FA', color: '#8B75D0' }}>
+                          /g/{page.slug}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteGeunnalPage(page.id)}
+                        className="text-xs px-3 py-1 rounded-lg text-red-500 hover:bg-red-50"
+                      >
+                        삭제
+                      </button>
+                    </div>
+                    <div className="flex gap-4 text-xs" style={{ color: '#888' }}>
+                      <span>예식일: {page.wedding_date || '미정'}</span>
+                      <span>생성: {new Date(page.created_at).toLocaleDateString('ko-KR')}</span>
+                      {page.invitation_id && <span>청첩장 연결됨</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   )
+
+  // ===== Geunnal Functions =====
+  async function fetchGeunnalPages() {
+    try {
+      const res = await fetch('/api/geunnal/pages', {
+        headers: { 'x-admin-password': password },
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setGeunnalPages(data.pages || [])
+      }
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  async function handleCreateGeunnalPage() {
+    const { groom_name, bride_name, slug } = geunnalForm
+    if (!groom_name.trim() || !bride_name.trim() || !slug.trim()) {
+      alert('신랑 이름, 신부 이름, 슬러그는 필수입니다')
+      return
+    }
+
+    try {
+      const body: Record<string, string> = {
+        groom_name: groom_name.trim(),
+        bride_name: bride_name.trim(),
+        slug: slug.trim(),
+      }
+      if (geunnalForm.wedding_date) body.wedding_date = geunnalForm.wedding_date
+
+      const res = await fetch('/api/geunnal/pages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+        body: JSON.stringify(body),
+      })
+
+      if (res.ok) {
+        // Set password if provided
+        const data = await res.json()
+        if (geunnalForm.password && data.page?.id) {
+          await fetch(`/api/geunnal/${data.page.id}/auth`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'setup', password: geunnalForm.password }),
+          })
+        }
+
+        setShowGeunnalForm(false)
+        setGeunnalForm({ groom_name: '', bride_name: '', slug: '', wedding_date: '', password: '' })
+        fetchGeunnalPages()
+      } else {
+        const errData = await res.json()
+        alert(errData.error || '생성 실패')
+      }
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  async function handleDeleteGeunnalPage(pageId: string) {
+    if (!confirm('이 그날 페이지를 삭제하시겠습니까? 관련 이벤트와 데이터가 모두 삭제됩니다.')) return
+
+    try {
+      const res = await fetch(`/api/geunnal/pages/${pageId}`, {
+        method: 'DELETE',
+        headers: { 'x-admin-password': password },
+      })
+      if (res.ok) {
+        fetchGeunnalPages()
+      }
+    } catch (err) {
+      console.error(err)
+    }
+  }
 }

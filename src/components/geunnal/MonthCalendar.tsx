@@ -174,7 +174,7 @@ export default function MonthCalendar({ events, onDateClick }: MonthCalendarProp
                         ) : evt.side === 'bride' ? (
                           <span className="text-[#D4899A]">{'\u2665'}</span>
                         ) : (
-                          <span className="text-[#9B8CC4]">{'\u25CF'}</span>
+                          <span className="text-[#BDBDBD]">{'\u25CF'}</span>
                         )}
                       </span>
                     ))}

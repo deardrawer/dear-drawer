@@ -92,7 +92,7 @@ export default function EventManagement({
   const [showAllUpcoming, setShowAllUpcoming] = useState(false)
   const [upcomingSideFilter, setUpcomingSideFilter] = useState<EventSide | 'all'>('all')
   const [showCost, setShowCost] = useState(false)
-  const [popupEventId, setPopupEventId] = useState<string | null>(null)
+  const [popupDate, setPopupDate] = useState<string | null>(null)
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({})
 
   const dday = getDday(weddingDate)
@@ -219,10 +219,17 @@ export default function EventManagement({
     }
   }, [eventsWithGuests])
 
+  const popupEvents = useMemo(() => {
+    if (!popupDate) return []
+    return eventsWithGuests
+      .filter(ewg => ewg.event.date.split('T')[0] === popupDate)
+      .sort((a, b) => a.event.time.localeCompare(b.event.time))
+  }, [eventsWithGuests, popupDate])
+
   function handleDateClick(dateStr: string) {
     const dateEvents = sortedEvents.filter(e => e.date.split('T')[0] === dateStr)
     if (dateEvents.length > 0) {
-      setPopupEventId(dateEvents[0].id)
+      setPopupDate(dateStr)
     }
   }
 
@@ -551,10 +558,11 @@ export default function EventManagement({
       />
 
       <EventPopup
-        open={popupEventId !== null}
-        onClose={() => setPopupEventId(null)}
-        events={sortedEvents}
-        onEventClick={(id) => { setPopupEventId(null); onEventClick(id) }}
+        open={popupDate !== null}
+        onClose={() => setPopupDate(null)}
+        events={popupEvents.map(ewg => ewg.event)}
+        eventsWithGuests={popupEvents}
+        onEventClick={(id) => { setPopupDate(null); onEventClick(id) }}
       />
     </div>
   )

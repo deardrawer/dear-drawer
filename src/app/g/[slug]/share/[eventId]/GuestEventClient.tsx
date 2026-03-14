@@ -328,7 +328,9 @@ function StepAlbum({
   const locationDisplay = [eventArea, eventRestaurant].filter(Boolean).join(' ') || eventLocation || ''
 
   const openKakaoMap = () => {
-    if (venueLat && venueLng && venueName) {
+    if (venueAddress) {
+      window.open(`https://map.kakao.com/link/search/${encodeURIComponent(venueAddress)}`, '_blank')
+    } else if (venueLat && venueLng && venueName) {
       window.open(`https://map.kakao.com/link/map/${encodeURIComponent(venueName)},${venueLat},${venueLng}`, '_blank')
     } else if (locationDisplay) {
       window.open(`https://map.kakao.com/link/search/${encodeURIComponent(locationDisplay)}`, '_blank')

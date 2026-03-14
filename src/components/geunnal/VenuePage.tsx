@@ -169,7 +169,7 @@ export default function VenuePage({ pageId, token }: VenuePageProps) {
     <div className="max-w-[430px] mx-auto">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#E8E4F0] px-5 py-5 flex items-center justify-between">
-        <h1 className="text-xl font-medium text-[#2A2240]">모임 장소</h1>
+        <h1 className="text-xl font-medium text-[#2A2240]" style={{ fontFamily: 'Isamanru, sans-serif' }}>모임 장소</h1>
         <button
           onClick={() => setEditingTabs(!editingTabs)}
           className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-[13px] font-medium transition-colors border ${

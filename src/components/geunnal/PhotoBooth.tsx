@@ -4,7 +4,6 @@ import { ArrowLeft, ArrowRight, Download, Share2, BookmarkPlus, Plus, Check, X, 
 import { GeunnalEvent, EventSide } from '@/types/geunnal'
 import BottomSheet from './BottomSheet'
 import html2canvas from 'html2canvas'
-import { sendKakaoShare } from '@/lib/geunnalKakao'
 
 interface PhotoBoothProps {
   pageId: string
@@ -313,36 +312,24 @@ export default function PhotoBooth({ pageId, token, slug, groomName, brideName }
       const canvas = await html2canvas(frameRef.current, canvasOptions)
       const blob = await new Promise<Blob | null>(r => canvas.toBlob(r, 'image/png'))
       if (!blob) throw new Error('이미지 생성 실패')
-      const file = new File([blob], 'photobooth.png', { type: 'image/png' })
+      const file = new File([blob], 'geunnal-photobooth.png', { type: 'image/png' })
 
-      // Upload to server to get public URL for Kakao
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('pageId', pageId)
-      const uploadRes = await fetch('/api/geunnal/upload', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
-        body: formData,
-      })
-      if (!uploadRes.ok) throw new Error('이미지 업로드 실패')
-      const { url: relativeUrl } = (await uploadRes.json()) as { url: string }
-
-      // Build absolute URL for Kakao image
-      const origin = typeof window !== 'undefined' ? window.location.origin : 'https://invite.deardrawer.com'
-      const imageUrl = relativeUrl.startsWith('http') ? relativeUrl : `${origin}${relativeUrl}`
-
-      sendKakaoShare({
-        title: title || `${groomName} & ${brideName}`,
-        description: comment || '포토부스에서 만든 사진이에요',
-        url: `https://invite.deardrawer.com/g/${slug}`,
-        imageUrl,
-      })
-      showToastMsg('카카오톡으로 공유합니다')
+      // Try native share (image file) first
+      const canShareFiles = typeof navigator.share === 'function' && navigator.canShare?.({ files: [file] })
+      if (canShareFiles) {
+        await navigator.share({ files: [file] })
+      } else {
+        // Fallback: download the image
+        const link = document.createElement('a')
+        link.download = 'geunnal-photobooth.png'
+        link.href = canvas.toDataURL('image/png')
+        link.click()
+        showToastMsg('이미지가 저장되었습니다. 저장된 이미지를 공유해주세요.')
+      }
     } catch (err) {
-      console.error('Kakao share error:', err)
-      showToastMsg('공유에 실패했습니다')
+      if ((err as Error).name !== 'AbortError') showToastMsg('공유에 실패했습니다')
     } finally { setSaving(false) }
-  }, [title, comment, groomName, brideName, slug, pageId, token])
+  }, [])
 
   const handleSaveToEvent = useCallback(async (eventId: string) => {
     if (!frameRef.current) return
@@ -402,7 +389,7 @@ export default function PhotoBooth({ pageId, token, slug, groomName, brideName }
     <div className="min-h-[calc(100dvh-56px)] flex flex-col bg-white">
       {/* Header */}
       <div className="px-5 py-5 border-b border-[#E8E4F0]">
-        <h1 className="text-xl font-medium text-[#2A2240]">포토부스</h1>
+        <h1 className="text-xl font-medium text-[#2A2240]" style={{ fontFamily: 'Isamanru, sans-serif' }}>포토부스</h1>
         <p className="text-[13px] text-[#5A5270] mt-0.5">필름 스트립 포토프레임 만들기</p>
       </div>
 

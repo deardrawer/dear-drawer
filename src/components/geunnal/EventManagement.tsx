@@ -272,7 +272,7 @@ export default function EventManagement({
         <div className="flex items-start justify-between">
           <div>
             <p className="text-[11px] font-medium tracking-[1.5px] uppercase text-[#9B8CC4] mb-1">dear drawer</p>
-            <h1 className="text-xl font-medium text-[#2A2240]">
+            <h1 className="text-xl font-medium text-[#2A2240]" style={{ fontFamily: 'Isamanru, sans-serif' }}>
               {groomName} & {brideName}
             </h1>
             {weddingDate && (

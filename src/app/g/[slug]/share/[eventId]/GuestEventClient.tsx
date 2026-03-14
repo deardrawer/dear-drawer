@@ -148,20 +148,9 @@ export default function GuestEventClient({
       let photoUrl: string | undefined
 
       if (photo) {
-        const pageId = slug
         const formData = new FormData()
-        if (photo.cropped) {
-          const [header, base64] = photo.cropped.split(',')
-          const mime = header.match(/:(.*?);/)?.[1] || 'image/jpeg'
-          const binary = atob(base64)
-          const arr = new Uint8Array(binary.length)
-          for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i)
-          const blob = new Blob([arr], { type: mime })
-          formData.append('file', new File([blob], 'photo.jpg', { type: mime }))
-        } else {
-          formData.append('file', photo.file)
-        }
-        formData.append('pageId', pageId)
+        formData.append('file', photo.file)
+        formData.append('pageId', slug)
         formData.append('eventId', eventId)
 
         const uploadRes = await fetch('/api/geunnal/upload', { method: 'POST', body: formData })
@@ -469,7 +458,7 @@ function StepAlbum({
                 <GeunnalCard key={s.id} noPadding className="overflow-hidden">
                   {s.photo_url && (
                     <div
-                      className="aspect-[4/3] cursor-pointer"
+                      className="aspect-[4/3] cursor-pointer overflow-hidden"
                       onClick={() => onViewSubmission(s)}
                     >
                       <img src={s.photo_url} alt="" className="w-full h-full object-cover" />
@@ -650,7 +639,7 @@ function StepUpload({
             <img
               src={photo.cropped || photo.preview}
               alt="Preview"
-              className="w-full aspect-[4/3] object-cover rounded-2xl cursor-pointer"
+              className="w-full rounded-2xl cursor-pointer"
               onClick={() => setShowCropModal(true)}
             />
             <button onClick={onRemovePhoto} className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 flex items-center justify-center">

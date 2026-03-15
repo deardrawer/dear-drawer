@@ -416,23 +416,14 @@ function StepAlbum({
           </div>
 
           {/* Kakao Map */}
-          {(venueLat && venueLng) || venueAddress ? (
+          {((venueLat && venueLng) || venueAddress || locationDisplay) ? (
             <div className="px-5 pb-4">
-              <KakaoMapEmbed lat={venueLat} lng={venueLng} name={venueName || locationDisplay} address={venueAddress} />
+              <KakaoMapEmbed lat={venueLat} lng={venueLng} name={venueName || locationDisplay} address={venueAddress || locationDisplay} />
               <button
                 onClick={openKakaoMap}
                 className="w-full mt-2 h-9 rounded-full border border-[#E8E4F0] text-[12px] text-[#5A5270] font-medium flex items-center justify-center gap-1.5 hover:bg-[#EDE9FA]/20 transition-colors"
               >
                 <ExternalLink size={12} /> 카카오맵에서 보기
-              </button>
-            </div>
-          ) : locationDisplay ? (
-            <div className="px-5 pb-4">
-              <button
-                onClick={openKakaoMap}
-                className="w-full h-9 rounded-full border border-[#E8E4F0] text-[12px] text-[#5A5270] font-medium flex items-center justify-center gap-1.5 hover:bg-[#EDE9FA]/20 transition-colors"
-              >
-                <ExternalLink size={12} /> 카카오맵에서 검색
               </button>
             </div>
           ) : null}

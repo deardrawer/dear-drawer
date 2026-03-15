@@ -100,9 +100,9 @@ export const SAMPLE_THANK_YOU = {
 // MOVIE 템플릿 전용 샘플
 export const SAMPLE_FILM_GREETING = `솔직히 말하면,
 처음엔 그냥 밥 한번 먹자는 거였는데
-어쩌다 보니 평생 같이 먹게 됐습니다.
+어쩌다 보니 평생 같이 먹게 됐습니다.`
 
-이 예상 밖의 전개에
+export const SAMPLE_FILM_GREETING_DIALOGUE = `이 예상 밖의 전개에
 여러분을 초대합니다.`
 
 export const SAMPLE_FILM_QUOTE = {
@@ -113,21 +113,33 @@ export const SAMPLE_FILM_QUOTE = {
 export const SAMPLE_FILM_INTERVIEWS = [
   {
     question: '첫 만남',
-    answer: '"첫인상이 어땠냐고? 솔직히 별 생각 없었어."\n"나도. 근데 두 번째 만났을 때 좀 설렜어. 아주 조금."',
+    answer: '',
+    groomDialogue: '첫인상이 어땠냐고? 솔직히 별 생각 없었어.',
+    brideDialogue: '나도. 근데 두 번째 만났을 때 좀 설렜어. 아주 조금.',
+    narration: '',
+    displayOrder: ['narration', 'groom', 'bride'] as ('groom' | 'bride' | 'narration')[],
     images: [] as string[],
     imageSettings: [],
     bgClass: 'pink-bg' as const,
   },
   {
     question: '우리의 시간',
-    answer: '"이 사람 장점? 제가 하는 말에 잘 웃어줘요."\n"아니 진짜 웃긴 걸 어떡해. 근데 본인은 모름."',
+    answer: '',
+    groomDialogue: '이 사람 장점? 제가 하는 말에 잘 웃어줘요.',
+    brideDialogue: '아니 진짜 웃긴 걸 어떡해. 근데 본인은 모름.',
+    narration: '',
+    displayOrder: ['narration', 'groom', 'bride'] as ('groom' | 'bride' | 'narration')[],
     images: [] as string[],
     imageSettings: [],
     bgClass: 'white-bg' as const,
   },
   {
     question: '프로포즈',
-    answer: '"프로포즈를 엄청 준비했는데 긴장해서 다 까먹었어."\n"그래서 그냥 울었잖아. 그게 더 감동이었어 사실."',
+    answer: '',
+    groomDialogue: '프로포즈를 엄청 준비했는데 긴장해서 다 까먹었어.',
+    brideDialogue: '그래서 그냥 울었잖아. 그게 더 감동이었어 사실.',
+    narration: '',
+    displayOrder: ['narration', 'groom', 'bride'] as ('groom' | 'bride' | 'narration')[],
     images: [] as string[],
     imageSettings: [],
     bgClass: 'pink-bg' as const,
@@ -175,6 +187,6 @@ export function isStoryEmpty(stories: { title?: string; desc?: string }[]): bool
 }
 
 // Helper: 인터뷰가 비어있는지 확인
-export function isInterviewEmpty(interviews: { question?: string; answer?: string }[]): boolean {
-  return !interviews || interviews.every(i => isEmpty(i.question) && isEmpty(i.answer))
+export function isInterviewEmpty(interviews: { question?: string; answer?: string; groomDialogue?: string; brideDialogue?: string; narration?: string }[]): boolean {
+  return !interviews || interviews.every(i => isEmpty(i.question) && isEmpty(i.answer) && isEmpty(i.groomDialogue) && isEmpty(i.brideDialogue) && isEmpty(i.narration))
 }

@@ -331,29 +331,32 @@ function EditorsNote({ invitation, fonts, themeColors }: { invitation: any; font
 
         {/* Drop Cap Style Greeting */}
         <div style={{ maxWidth: '320px', margin: '0 auto' }}>
-          {greeting.split('\n').filter(Boolean).map((line: string, i: number) => (
-            <p
-              key={i}
-              style={{
-                fontFamily: i === 0 ? fonts.displayKr : fonts.body,
-                fontSize: i === 0 ? '15px' : '13px',
-                lineHeight: 2,
-                color: i === 0 ? themeColors.text : themeColors.gray,
-                fontWeight: i === 0 ? 500 : 300,
-                textAlign: 'center',
-                marginBottom: '4px',
-              }}
-            >
-              {line}
-            </p>
-          ))}
+          {greeting.split('\n').map((line: string, i: number) => {
+            if (line.trim().length === 0) return <div key={i} style={{ height: '12px' }} />
+            return (
+              <p
+                key={i}
+                style={{
+                  fontFamily: fonts.body,
+                  fontSize: '13px',
+                  lineHeight: 2,
+                  color: themeColors.gray,
+                  fontWeight: 300,
+                  textAlign: 'center',
+                  marginBottom: '4px',
+                }}
+              >
+                {line}
+              </p>
+            )
+          })}
         </div>
 
         {/* Quote */}
         {invitation.content?.quote?.text && (
           <div className="mt-12 text-center">
             <div style={{ width: '20px', height: '1px', background: themeColors.primary, margin: '0 auto 16px' }} />
-            <p style={{ fontFamily: fonts.displayKr, fontSize: '13px', fontStyle: 'italic', lineHeight: 1.8, color: themeColors.primary }}>
+            <p style={{ fontFamily: fonts.displayKr, fontSize: '13px', fontStyle: 'italic', lineHeight: 1.8, color: themeColors.primary, whiteSpace: 'pre-line' }}>
               &ldquo;{invitation.content.quote.text}&rdquo;
             </p>
             {!invitation.content.quote.hideAuthor && invitation.content.quote.author && (
@@ -429,7 +432,7 @@ function MeetTheCouple({ invitation, fonts, themeColors }: { invitation: any; fo
                 GROOM
               </div>
               {groomProfile?.tag && (
-                <p style={{ fontFamily: fonts.body, fontSize: '11px', color: themeColors.gray, marginTop: '8px', textAlign: 'center', lineHeight: 1.5 }}>
+                <p style={{ fontFamily: fonts.body, fontSize: '11px', color: themeColors.gray, marginTop: '8px', textAlign: 'center', lineHeight: 1.5, whiteSpace: 'pre-line' }}>
                   {groomProfile.tag}
                 </p>
               )}
@@ -469,7 +472,7 @@ function MeetTheCouple({ invitation, fonts, themeColors }: { invitation: any; fo
                 BRIDE
               </div>
               {brideProfile?.tag && (
-                <p style={{ fontFamily: fonts.body, fontSize: '11px', color: themeColors.gray, marginTop: '8px', textAlign: 'center', lineHeight: 1.5 }}>
+                <p style={{ fontFamily: fonts.body, fontSize: '11px', color: themeColors.gray, marginTop: '8px', textAlign: 'center', lineHeight: 1.5, whiteSpace: 'pre-line' }}>
                   {brideProfile.tag}
                 </p>
               )}
@@ -570,20 +573,17 @@ function InterviewCard({ item, index, fonts, themeColors }: { item: any; index: 
 
       {/* Answer - Editorial body style */}
       <div style={{ position: 'relative', paddingLeft: '16px', borderLeft: `2px solid ${themeColors.primary}` }}>
-        {item.answer?.split('\n').filter(Boolean).map((line: string, i: number) => (
-          <p
-            key={i}
-            style={{
-              fontFamily: fonts.body,
-              fontSize: '13px',
-              lineHeight: 1.9,
-              color: themeColors.gray,
-              marginBottom: '4px',
-            }}
-          >
-            {line}
-          </p>
-        ))}
+        <p
+          style={{
+            fontFamily: fonts.body,
+            fontSize: '13px',
+            lineHeight: 1.9,
+            color: themeColors.gray,
+            whiteSpace: 'pre-line',
+          }}
+        >
+          {item.answer}
+        </p>
       </div>
 
     </div>
@@ -922,11 +922,9 @@ function DirectionItem({ label, text, fonts, themeColors }: { label: string; tex
       <div style={{ fontFamily: fonts.displayKr, fontSize: '12px', fontWeight: 600, color: themeColors.primary, marginBottom: '6px' }}>
         {label}
       </div>
-      {text.split('\n').map((line, i) => (
-        <p key={i} style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: themeColors.gray }}>
-          {line}
-        </p>
-      ))}
+      <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: themeColors.gray, whiteSpace: 'pre-line' }}>
+        {text}
+      </p>
     </div>
   )
 }
@@ -994,9 +992,7 @@ function GuidanceInfoSection({ invitation, fonts, themeColors }: { invitation: a
                   <div style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '3px', color: themeColors.primary, marginBottom: '8px' }}>
                     {item.title?.toUpperCase()}
                   </div>
-                  {item.content.split('\n').map((line: string, j: number) => (
-                    <p key={j} style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: themeColors.gray }}>{line}</p>
-                  ))}
+                  <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: themeColors.gray, whiteSpace: 'pre-line' }}>{item.content}</p>
                 </div>
               )
             })}
@@ -1026,9 +1022,7 @@ function ThankYouSection({ invitation, fonts, themeColors }: { invitation: any; 
           {thankYou.title || 'THANK YOU'}
         </h2>
         <div style={{ width: '30px', height: '1px', background: themeColors.primary, margin: '0 auto 20px' }} />
-        {thankYou.message?.split('\n').map((line: string, i: number) => (
-          <p key={i} style={{ fontFamily: fonts.body, fontSize: '13px', lineHeight: 2, color: themeColors.gray }}>{line}</p>
-        ))}
+        <p style={{ fontFamily: fonts.body, fontSize: '13px', lineHeight: 2, color: themeColors.gray, whiteSpace: 'pre-line' }}>{thankYou.message}</p>
         {thankYou.sign && (
           <p style={{ fontFamily: fonts.displayKr, fontSize: '13px', color: themeColors.text, marginTop: '16px', fontWeight: 500 }}>
             {thankYou.sign}
@@ -1316,7 +1310,7 @@ function GuestbookSection({ invitation, invitationId, fonts, themeColors, isSamp
                   Q. {msg.question}
                 </p>
               )}
-              <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: themeColors.text, marginBottom: '8px' }}>{msg.message}</p>
+              <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: themeColors.text, marginBottom: '8px', whiteSpace: 'pre-line' }}>{msg.message}</p>
               <div className="flex items-center justify-between">
                 <span style={{ fontFamily: fonts.body, fontSize: '11px', fontWeight: 500, color: themeColors.gray }}>— {msg.guest_name}</span>
                 <span style={{ fontFamily: fonts.display, fontSize: '10px', color: themeColors.gray, opacity: 0.5 }}>

@@ -488,7 +488,7 @@ function TrackGreeting({ invitation, fonts, tc, trackRef }: {
 }) {
   const { ref, isVisible } = useScrollReveal()
   const greeting = invitation.content?.greeting || ''
-  const lines = greeting.split('\n').filter(Boolean)
+  const lines = greeting.split('\n')
 
   return (
     <div ref={(el) => { (ref as any).current = el; trackRef(el) }} className="px-5 py-10" style={{ position: 'relative' }}>
@@ -518,7 +518,9 @@ function TrackGreeting({ invitation, fonts, tc, trackRef }: {
         paddingLeft: '20px',
         textAlign: 'left',
       }}>
-        {lines.map((line: string, i: number) => (
+        {lines.map((line: string, i: number) => {
+          if (line.trim().length === 0) return <div key={i} style={{ height: '12px' }} />
+          return (
           <p key={i} className="transition-all" style={{
             fontFamily: fonts.body, fontSize: '13px', lineHeight: 2.4, color: tc.text,
             opacity: isVisible ? 1 : 0,
@@ -527,7 +529,8 @@ function TrackGreeting({ invitation, fonts, tc, trackRef }: {
           }}>
             {line}
           </p>
-        ))}
+          )
+        })}
       </div>
 
       {/* Quote */}
@@ -619,7 +622,7 @@ function TrackCouple({ invitation, fonts, tc, trackRef }: {
             {groomName}
           </p>
           {groomProfile?.tag && (
-            <p style={{ fontFamily: fonts.body, fontSize: '10px', color: tc.gray, marginTop: '4px' }}>{groomProfile.tag}</p>
+            <p style={{ fontFamily: fonts.body, fontSize: '10px', color: tc.gray, marginTop: '4px', whiteSpace: 'pre-line' }}>{groomProfile.tag}</p>
           )}
         </div>
 
@@ -654,7 +657,7 @@ function TrackCouple({ invitation, fonts, tc, trackRef }: {
             {brideName}
           </p>
           {brideProfile?.tag && (
-            <p style={{ fontFamily: fonts.body, fontSize: '10px', color: tc.gray, marginTop: '4px' }}>{brideProfile.tag}</p>
+            <p style={{ fontFamily: fonts.body, fontSize: '10px', color: tc.gray, marginTop: '4px', whiteSpace: 'pre-line' }}>{brideProfile.tag}</p>
           )}
         </div>
       </div>
@@ -716,7 +719,6 @@ function TrackOurJourney({ invitation, fonts, tc, trackRef }: {
         {interviews.map((item: any, idx: number) => {
           const images = (item.images || []).map(extractImageUrl).filter(Boolean)
           const mainImg = images[0] || ''
-          const lines = (item.answer || '').split('\n').filter(Boolean)
           const trackProgress = ((idx + 1) / interviews.length) * 100
           return (
             <div key={idx} style={{ flex: '0 0 calc(100% - 16px)', scrollSnapAlign: 'center', marginRight: idx < interviews.length - 1 ? '12px' : '0' }}>
@@ -755,9 +757,7 @@ function TrackOurJourney({ invitation, fonts, tc, trackRef }: {
                       {item.question}
                     </p>
                   </div>
-                  {lines.map((line: string, i: number) => (
-                    <p key={i} style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.9, color: tc.text }}>{line}</p>
-                  ))}
+                  <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.9, color: tc.text, whiteSpace: 'pre-line' }}>{item.answer}</p>
                 </div>
 
                 {/* Individual seekbar per card */}
@@ -1196,41 +1196,31 @@ function TrackWeddingDay({ invitation, fonts, tc, trackRef }: {
                 {w.directions.car && (
                   <div style={{ padding: '14px 16px', background: tc.sectionBg, borderRadius: '10px', borderLeft: `3px solid ${tc.primary}50` }}>
                     <div style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '3px', color: tc.primary, marginBottom: '6px' }}>자가용</div>
-                    {w.directions.car.split('\n').map((line: string, i: number) => (
-                      <p key={i} style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.gray }}>{line}</p>
-                    ))}
+                    <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.gray, whiteSpace: 'pre-line' }}>{w.directions.car}</p>
                   </div>
                 )}
                 {w.directions.publicTransport && (
                   <div style={{ padding: '14px 16px', background: tc.sectionBg, borderRadius: '10px', borderLeft: `3px solid ${tc.primary}50` }}>
                     <div style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '3px', color: tc.primary, marginBottom: '6px' }}>대중교통</div>
-                    {w.directions.publicTransport.split('\n').map((line: string, i: number) => (
-                      <p key={i} style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.gray }}>{line}</p>
-                    ))}
+                    <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.gray, whiteSpace: 'pre-line' }}>{w.directions.publicTransport}</p>
                   </div>
                 )}
                 {w.directions.train && (
                   <div style={{ padding: '14px 16px', background: tc.sectionBg, borderRadius: '10px', borderLeft: `3px solid ${tc.primary}50` }}>
                     <div style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '3px', color: tc.primary, marginBottom: '6px' }}>기차</div>
-                    {w.directions.train.split('\n').map((line: string, i: number) => (
-                      <p key={i} style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.gray }}>{line}</p>
-                    ))}
+                    <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.gray, whiteSpace: 'pre-line' }}>{w.directions.train}</p>
                   </div>
                 )}
                 {w.directions.expressBus && (
                   <div style={{ padding: '14px 16px', background: tc.sectionBg, borderRadius: '10px', borderLeft: `3px solid ${tc.primary}50` }}>
                     <div style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '3px', color: tc.primary, marginBottom: '6px' }}>고속버스</div>
-                    {w.directions.expressBus.split('\n').map((line: string, i: number) => (
-                      <p key={i} style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.gray }}>{line}</p>
-                    ))}
+                    <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.gray, whiteSpace: 'pre-line' }}>{w.directions.expressBus}</p>
                   </div>
                 )}
                 {w.directions.extraInfoEnabled && w.directions.extraInfoText && (
                   <div style={{ padding: '14px 16px', background: tc.sectionBg, borderRadius: '10px', borderLeft: `3px solid ${tc.primary}50` }}>
                     <div style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '3px', color: tc.primary, marginBottom: '6px' }}>{w.directions.extraInfoTitle || '추가 안내사항'}</div>
-                    {w.directions.extraInfoText.split('\n').map((line: string, i: number) => (
-                      <p key={i} style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.gray }}>{line}</p>
-                    ))}
+                    <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.gray, whiteSpace: 'pre-line' }}>{w.directions.extraInfoText}</p>
                   </div>
                 )}
               </div>
@@ -1302,9 +1292,7 @@ function GuidanceSection({ invitation, fonts, tc, trackRef }: {
                       {item.title?.toUpperCase()}
                     </span>
                   </div>
-                  {item.content.split('\n').map((line: string, j: number) => (
-                    <p key={j} style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.gray }}>{line}</p>
-                  ))}
+                  <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.gray, whiteSpace: 'pre-line' }}>{item.content}</p>
                 </div>
               )
             })}
@@ -1542,7 +1530,7 @@ function FanMailSection({ invitation, invitationId, fonts, tc, isSample }: {
             {(expanded ? messages : messages.slice(0, 4)).map((msg: any, i: number) => (
               <div key={msg.id || i} style={{ padding: '14px', borderRadius: '10px', border: `1px solid ${tc.divider}60`, background: tc.cardBg }}>
                 {msg.question && <p style={{ fontFamily: fonts.body, fontSize: '10px', color: tc.gray, marginBottom: '6px', opacity: 0.6 }}>Q. {msg.question}</p>}
-                <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.text, marginBottom: '8px' }}>{msg.message}</p>
+                <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.text, marginBottom: '8px', whiteSpace: 'pre-line' }}>{msg.message}</p>
                 <div className="flex items-center justify-between">
                   <span style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.gray }}>&mdash; {msg.guest_name}</span>
                   <span style={{ fontFamily: fonts.display, fontSize: '9px', color: tc.gray, opacity: 0.4 }}>{msg.created_at ? new Date(msg.created_at).toLocaleDateString() : ''}</span>

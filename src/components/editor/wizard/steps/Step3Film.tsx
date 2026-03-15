@@ -10,7 +10,7 @@ import { MultiImageUploader } from '@/components/editor/ImageUploader'
 import { DebouncedInput } from '@/components/editor/DebouncedInput'
 import InlineCropEditor from '@/components/editor/InlineCropEditor'
 import { uploadImage } from '@/lib/imageUpload'
-import { SAMPLE_INTERVIEWS, SAMPLE_THANK_YOU, SAMPLE_GREETING, SAMPLE_QUOTE, SAMPLE_PROFILES, SAMPLE_FILM_GREETING, SAMPLE_FILM_QUOTE, SAMPLE_FILM_INTERVIEWS, SAMPLE_FILM_THANK_YOU } from '@/lib/sampleData'
+import { SAMPLE_INTERVIEWS, SAMPLE_THANK_YOU, SAMPLE_GREETING, SAMPLE_QUOTE, SAMPLE_PROFILES, SAMPLE_FILM_GREETING, SAMPLE_FILM_GREETING_DIALOGUE, SAMPLE_FILM_QUOTE, SAMPLE_FILM_INTERVIEWS, SAMPLE_FILM_THANK_YOU } from '@/lib/sampleData'
 import { X, Plus, ChevronUp, ChevronDown } from 'lucide-react'
 
 interface Step3FilmProps {
@@ -59,9 +59,29 @@ export default function Step3Film({}: Step3FilmProps) {
   }
 
   const applySampleInterviews = () => {
+    // 기존 인터뷰 수에 맞춰 샘플 적용
+    const currentInterviews = invitation.content.interviews
     SAMPLE_FILM_INTERVIEWS.forEach((interview, index) => {
-      updateNestedField(`content.interviews.${index}`, { ...interview })
+      if (index < currentInterviews.length) {
+        updateNestedField(`content.interviews.${index}`, { ...currentInterviews[index], ...interview })
+      }
     })
+  }
+
+  const ORDER_LABELS: Record<string, string> = {
+    groom: '신랑',
+    bride: '신부',
+    narration: '나레이션',
+  }
+
+  const moveOrderItem = (interviewIndex: number, itemId: string, direction: 'up' | 'down') => {
+    const current = [...(invitation.content.interviews[interviewIndex].displayOrder || ['narration', 'groom', 'bride'])]
+    const idx = current.indexOf(itemId as 'groom' | 'bride' | 'narration')
+    if (idx === -1) return
+    const newIdx = direction === 'up' ? idx - 1 : idx + 1
+    if (newIdx < 0 || newIdx >= current.length) return
+    ;[current[idx], current[newIdx]] = [current[newIdx], current[idx]]
+    updateNestedField(`content.interviews.${interviewIndex}.displayOrder`, current)
   }
 
   return (
@@ -82,27 +102,44 @@ export default function Step3Film({}: Step3FilmProps) {
         </h3>
         <p className="text-sm text-blue-600">영화의 오프닝 내레이션처럼, 두 사람의 이야기를 시작해보세요</p>
 
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <Label className="text-xs font-medium">인사말</Label>
-            {!invitation.content.greeting?.trim() && (
-              <button
-                type="button"
-                className="text-xs text-blue-600 hover:underline"
-                onClick={() => updateNestedField('content.greeting', SAMPLE_FILM_GREETING)}
-              >
-                샘플 사용
-              </button>
-            )}
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-medium">나레이션</Label>
+              {!invitation.content.greeting?.trim() && !invitation.content.greetingDialogue?.trim() && (
+                <button
+                  type="button"
+                  className="text-xs text-blue-600 hover:underline"
+                  onClick={() => {
+                    updateNestedField('content.greeting', SAMPLE_FILM_GREETING)
+                    updateNestedField('content.greetingDialogue', SAMPLE_FILM_GREETING_DIALOGUE)
+                  }}
+                >
+                  샘플 사용
+                </button>
+              )}
+            </div>
+            <Textarea
+              value={invitation.content.greeting || ''}
+              onChange={(e) => updateNestedField('content.greeting', e.target.value)}
+              onFocus={() => setActiveSection('invitation')}
+              placeholder={SAMPLE_FILM_GREETING}
+              rows={4}
+              className="resize-none"
+            />
           </div>
-          <Textarea
-            value={invitation.content.greeting || ''}
-            onChange={(e) => updateNestedField('content.greeting', e.target.value)}
-            onFocus={() => setActiveSection('invitation')}
-            placeholder={SAMPLE_FILM_GREETING}
-            rows={4}
-            className="resize-none"
-          />
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium">강조</Label>
+            <Textarea
+              value={invitation.content.greetingDialogue || ''}
+              onChange={(e) => updateNestedField('content.greetingDialogue', e.target.value)}
+              onFocus={() => setActiveSection('invitation')}
+              placeholder={SAMPLE_FILM_GREETING_DIALOGUE}
+              rows={2}
+              className="resize-none"
+            />
+            <p className="text-[10px] text-gray-400">영화 대사처럼 표시됩니다 (이탤릭, 강조 색상)</p>
+          </div>
         </div>
       </section>
 
@@ -352,7 +389,7 @@ export default function Step3Film({}: Step3FilmProps) {
               </details>
             </div>
 
-            {invitation.content.interviews.every(i => !i.question && !i.answer) && (
+            {invitation.content.interviews.every(i => !i.question && !i.answer && !i.groomDialogue && !i.brideDialogue && !i.narration) && (
               <div className="flex justify-end">
                 <button onClick={applySampleInterviews} className="text-xs text-blue-600 hover:underline">
                   샘플 적용
@@ -382,16 +419,67 @@ export default function Step3Film({}: Step3FilmProps) {
                     placeholder={['첫 만남', '사랑에 빠진 순간', '프로포즈'][index] || '장면 제목을 입력해주세요'}
                   />
                 </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">내용</Label>
-                  <Textarea
-                    value={interview.answer}
-                    onChange={(e) => updateNestedField(`content.interviews.${index}.answer`, e.target.value)}
-                    onFocus={() => setActiveSection('interview')}
-                    placeholder={'이 장면의 이야기를 들려주세요...'}
-                    rows={3}
-                  />
+                {/* 표기명 */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs">신랑 표기명</Label>
+                    <DebouncedInput
+                      value={interview.groomDisplayName || ''}
+                      onChange={(value) => updateNestedField(`content.interviews.${index}.groomDisplayName`, value)}
+                      placeholder={invitation.groom?.name || '신랑 이름'}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">신부 표기명</Label>
+                    <DebouncedInput
+                      value={interview.brideDisplayName || ''}
+                      onChange={(value) => updateNestedField(`content.interviews.${index}.brideDisplayName`, value)}
+                      placeholder={invitation.bride?.name || '신부 이름'}
+                    />
+                  </div>
                 </div>
+
+                {/* 나레이션 / 신랑 대사 / 신부 대사 (displayOrder 순서대로) */}
+                {(interview.displayOrder || ['narration', 'groom', 'bride']).map((item: string, i: number, arr: string[]) => {
+                  const fieldConfig = {
+                    narration: { label: '나레이션', value: interview.narration || '', field: 'narration', placeholder: '장면의 배경 설명이나 나레이션...', colorClass: 'bg-gray-100 text-gray-600' },
+                    groom: { label: '신랑 대사', value: interview.groomDialogue || '', field: 'groomDialogue', placeholder: '신랑의 대사를 입력해주세요...', colorClass: 'bg-blue-100 text-blue-700' },
+                    bride: { label: '신부 대사', value: interview.brideDialogue || '', field: 'brideDialogue', placeholder: '신부의 대사를 입력해주세요...', colorClass: 'bg-pink-100 text-pink-700' },
+                  }[item]!
+                  return (
+                    <div key={item} className="space-y-1">
+                      <div className="flex items-center gap-1">
+                        <div className="flex flex-col">
+                          <button
+                            type="button"
+                            onClick={() => moveOrderItem(index, item, 'up')}
+                            disabled={i === 0}
+                            className="p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                          >
+                            <ChevronUp className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => moveOrderItem(index, item, 'down')}
+                            disabled={i === arr.length - 1}
+                            className="p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                          >
+                            <ChevronDown className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        <Label className={`text-xs px-1.5 py-0.5 rounded font-medium ${fieldConfig.colorClass}`}>{fieldConfig.label}</Label>
+                      </div>
+                      <Textarea
+                        value={fieldConfig.value}
+                        onChange={(e) => updateNestedField(`content.interviews.${index}.${fieldConfig.field}`, e.target.value)}
+                        onFocus={() => setActiveSection('interview')}
+                        placeholder={fieldConfig.placeholder}
+                        rows={2}
+                        className="resize-none"
+                      />
+                    </div>
+                  )
+                })}
                 <div className="space-y-1">
                   <Label className="text-xs">사진 (최대 2장)</Label>
                   <MultiImageUploader

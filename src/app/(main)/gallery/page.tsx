@@ -16,29 +16,11 @@ const BACKGROUND_IMAGES = {
 
 export default function GalleryPage() {
   const [currentSection, setCurrentSection] = useState(0)
-  const [sectionHeight, setSectionHeight] = useState('100vh')
   const containerRef = useRef<HTMLDivElement>(null)
   const isScrolling = useRef(false)
   const touchStartY = useRef(0)
 
   const totalSections = 5
-
-  // 배너+헤더 높이를 빼고 실제 사용 가능한 높이 계산
-  useEffect(() => {
-    const measure = () => {
-      if (containerRef.current) {
-        const top = containerRef.current.getBoundingClientRect().top
-        setSectionHeight(`calc(100dvh - ${top}px)`)
-      }
-    }
-    measure()
-    // 배너 닫힘 등 레이아웃 변화 감지
-    const observer = new ResizeObserver(measure)
-    if (containerRef.current?.parentElement) {
-      observer.observe(containerRef.current.parentElement)
-    }
-    return () => observer.disconnect()
-  }, [])
 
   // 섹션 이동 함수
   const scrollToSection = (index: number) => {
@@ -130,8 +112,7 @@ export default function GalleryPage() {
   return (
     <div
       ref={containerRef}
-      className="overflow-hidden bg-white"
-      style={{ height: sectionHeight, '--sh': sectionHeight } as React.CSSProperties}
+      className="h-screen overflow-hidden bg-white"
     >
       {/* 섹션 인디케이터 - 모바일에서는 작게 */}
       <div className="fixed right-4 sm:right-6 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-2 sm:gap-3">
@@ -165,11 +146,11 @@ export default function GalleryPage() {
       {/* 섹션 컨테이너 */}
       <div
         className="transition-transform duration-1000 ease-in-out"
-        style={{ transform: `translateY(-${currentSection * 100}%)` }}
+        style={{ transform: `translateY(-${currentSection * 100}vh)` }}
       >
         {/* ===== 섹션 1: 히어로 ===== */}
         <section
-          className="flex flex-col items-center justify-center [height:var(--sh)] px-4 sm:px-6 py-4 sm:py-10 relative overflow-hidden bg-cover bg-center bg-no-repeat"
+          className="h-screen flex flex-col items-center justify-center px-4 sm:px-6 pt-4 sm:pt-10 pb-[28vh] relative overflow-hidden bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${BACKGROUND_IMAGES.hero})` }}
         >
           {/* 어두운 오버레이 */}
@@ -204,7 +185,7 @@ export default function GalleryPage() {
 
         {/* ===== 섹션 2: 브랜드 철학 ===== */}
         <section
-          className="flex flex-col items-center justify-center [height:var(--sh)] px-4 sm:px-6 py-4 sm:py-10 relative overflow-hidden bg-cover bg-center bg-no-repeat"
+          className="h-screen flex flex-col items-center justify-center px-4 sm:px-6 pt-4 sm:pt-10 pb-[28vh] relative overflow-hidden bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${BACKGROUND_IMAGES.philosophy})` }}
         >
           {/* 어두운 오버레이 */}
@@ -241,7 +222,7 @@ export default function GalleryPage() {
         </section>
 
         {/* ===== 섹션 3: 템플릿 쇼케이스 ===== */}
-        <section className="flex flex-col items-center justify-center [height:var(--sh)] px-4 sm:px-6 py-4 sm:py-10 overflow-hidden bg-gradient-to-br from-rose-50 via-white to-blue-50">
+        <section className="h-screen flex flex-col items-center justify-center px-4 sm:px-6 pt-4 sm:pt-10 pb-[28vh] overflow-hidden bg-gradient-to-br from-rose-50 via-white to-blue-50">
           <div className="w-full max-w-4xl">
 
             <div className="text-center mb-4 sm:mb-10">
@@ -385,7 +366,7 @@ export default function GalleryPage() {
 
         {/* ===== 섹션 4: 왜 dear drawer? ===== */}
         <section
-          className="flex flex-col items-center justify-center [height:var(--sh)] px-3 sm:px-6 py-4 sm:py-10 relative overflow-hidden bg-cover bg-center bg-no-repeat"
+          className="h-screen flex flex-col items-center justify-center px-3 sm:px-6 pt-4 sm:pt-10 pb-[28vh] relative overflow-hidden bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${BACKGROUND_IMAGES.features})` }}
         >
           {/* 어두운 오버레이 */}
@@ -399,54 +380,73 @@ export default function GalleryPage() {
               <p className="text-[10px] sm:text-base text-white/90">우리만의 이야기를 담을 수 있는 청첩장</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-8">
-              <div className="text-center p-3 sm:p-8 bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-3xl hover:bg-white/20 hover:scale-105 hover:shadow-2xl transition-all duration-300 cursor-pointer">
-                <div className="relative w-10 h-10 sm:w-20 sm:h-20 mx-auto mb-2 sm:mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-6">
+              <div className="text-center p-3 sm:p-6 bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-3xl hover:bg-white/20 hover:scale-105 hover:shadow-2xl transition-all duration-300 cursor-pointer">
+                <div className="relative w-10 h-10 sm:w-16 sm:h-16 mx-auto mb-2 sm:mb-4">
                   <div className="absolute -inset-1 bg-rose-400 rounded-full opacity-[0.1] blur-[8px]" />
                   <div className="relative w-full h-full bg-white/10 border border-rose-300/15 rounded-full flex items-center justify-center">
-                    <svg className="w-4 h-4 sm:w-8 sm:h-8 text-rose-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <svg className="w-4 h-4 sm:w-7 sm:h-7 text-rose-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" fill="rgba(253,164,175,0.08)" />
                       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                     </svg>
                   </div>
                 </div>
-                <h3 className="text-xs sm:text-lg font-bold text-white mb-1 sm:mb-3">스토리 자동 작성</h3>
-                <p className="text-[9px] sm:text-base text-white/80 leading-relaxed">
+                <h3 className="text-xs sm:text-base font-bold text-white mb-1 sm:mb-2">스토리 자동 작성</h3>
+                <p className="text-[9px] sm:text-sm text-white/80 leading-relaxed">
                   질문에 답하면<br />
                   스토리 초안을 만들어 드려요
                 </p>
               </div>
-              <div className="text-center p-3 sm:p-8 bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-3xl hover:bg-white/20 hover:scale-105 hover:shadow-2xl transition-all duration-300 cursor-pointer">
-                <div className="relative w-10 h-10 sm:w-20 sm:h-20 mx-auto mb-2 sm:mb-6">
+              <div className="text-center p-3 sm:p-6 bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-3xl hover:bg-white/20 hover:scale-105 hover:shadow-2xl transition-all duration-300 cursor-pointer">
+                <div className="relative w-10 h-10 sm:w-16 sm:h-16 mx-auto mb-2 sm:mb-4">
                   <div className="absolute -inset-1 bg-violet-400 rounded-full opacity-[0.1] blur-[8px]" />
                   <div className="relative w-full h-full bg-white/10 border border-violet-300/15 rounded-full flex items-center justify-center">
-                    <svg className="w-4 h-4 sm:w-8 sm:h-8 text-violet-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <svg className="w-4 h-4 sm:w-7 sm:h-7 text-violet-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="2" y="4" width="20" height="16" rx="2" fill="rgba(196,181,253,0.08)" />
                       <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
                     </svg>
                   </div>
                 </div>
-                <h3 className="text-xs sm:text-lg font-bold text-white mb-1 sm:mb-3">하객 맞춤 초대</h3>
-                <p className="text-[9px] sm:text-base text-white/80 leading-relaxed">
+                <h3 className="text-xs sm:text-base font-bold text-white mb-1 sm:mb-2">하객 맞춤 초대</h3>
+                <p className="text-[9px] sm:text-sm text-white/80 leading-relaxed">
                   하객별 개인화 링크로<br />
                   특별한 환영 메시지
                 </p>
               </div>
-              <div className="text-center p-3 sm:p-8 bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-3xl hover:bg-white/20 hover:scale-105 hover:shadow-2xl transition-all duration-300 cursor-pointer">
-                <div className="relative w-10 h-10 sm:w-20 sm:h-20 mx-auto mb-2 sm:mb-6">
+              <div className="text-center p-3 sm:p-6 bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-3xl hover:bg-white/20 hover:scale-105 hover:shadow-2xl transition-all duration-300 cursor-pointer">
+                <div className="relative w-10 h-10 sm:w-16 sm:h-16 mx-auto mb-2 sm:mb-4">
                   <div className="absolute -inset-1 bg-sky-400 rounded-full opacity-[0.1] blur-[8px]" />
                   <div className="relative w-full h-full bg-white/10 border border-sky-300/15 rounded-full flex items-center justify-center">
-                    <svg className="w-4 h-4 sm:w-8 sm:h-8 text-sky-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <svg className="w-4 h-4 sm:w-7 sm:h-7 text-sky-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                       <polygon points="12 2 2 7 12 12 22 7" fill="rgba(125,211,252,0.08)" />
                       <polyline points="2 17 12 22 22 17" />
                       <polyline points="2 12 12 17 22 12" />
                     </svg>
                   </div>
                 </div>
-                <h3 className="text-xs sm:text-lg font-bold text-white mb-1 sm:mb-3">다양한 스토리 컨셉</h3>
-                <p className="text-[9px] sm:text-base text-white/80 leading-relaxed">
+                <h3 className="text-xs sm:text-base font-bold text-white mb-1 sm:mb-2">다양한 스토리 컨셉</h3>
+                <p className="text-[9px] sm:text-sm text-white/80 leading-relaxed">
                   우리의 이야기에 맞는<br />
                   다양한 청첩장 스타일
+                </p>
+              </div>
+              <div className="text-center p-3 sm:p-6 bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-3xl hover:bg-white/20 hover:scale-105 hover:shadow-2xl transition-all duration-300 cursor-pointer border border-amber-300/20">
+                <div className="relative w-10 h-10 sm:w-16 sm:h-16 mx-auto mb-2 sm:mb-4">
+                  <div className="absolute -inset-1 bg-amber-400 rounded-full opacity-[0.1] blur-[8px]" />
+                  <div className="relative w-full h-full bg-white/10 border border-amber-300/15 rounded-full flex items-center justify-center">
+                    <svg className="w-4 h-4 sm:w-7 sm:h-7 text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="4" width="18" height="18" rx="2" fill="rgba(252,211,77,0.08)" />
+                      <line x1="16" y1="2" x2="16" y2="6" />
+                      <line x1="8" y1="2" x2="8" y2="6" />
+                      <line x1="3" y1="10" x2="21" y2="10" />
+                      <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01" />
+                    </svg>
+                  </div>
+                </div>
+                <h3 className="text-xs sm:text-base font-bold text-white mb-1 sm:mb-2">디어데이</h3>
+                <p className="text-[9px] sm:text-sm text-white/80 leading-relaxed">
+                  청첩장 모임 관리<br />
+                  웹앱으로 간편하게
                 </p>
               </div>
             </div>
@@ -454,7 +454,7 @@ export default function GalleryPage() {
         </section>
 
         {/* ===== 섹션 5: CTA ===== */}
-        <section className="flex flex-col items-center justify-center [height:var(--sh)] px-4 sm:px-6 py-4 sm:py-10 overflow-hidden bg-black text-white">
+        <section className="h-screen flex flex-col items-center justify-center px-4 sm:px-6 pt-4 sm:pt-10 pb-[28vh] overflow-hidden bg-black text-white">
           <div className="text-center max-w-2xl">
             <h2 className="text-xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-6 leading-tight">
               청첩장을 넘어<br />

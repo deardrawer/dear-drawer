@@ -94,7 +94,13 @@ export interface StoryItem {
 // 인터뷰 아이템
 export interface InterviewItem {
   question: string
-  answer: string
+  answer: string               // 기존 (하위호환용)
+  groomDialogue?: string       // 신랑 대사
+  brideDialogue?: string       // 신부 대사
+  narration?: string           // 나레이션
+  displayOrder?: ('groom' | 'bride' | 'narration')[]  // 3블록 순서
+  groomDisplayName?: string    // 이 씬에서의 신랑 표기명
+  brideDisplayName?: string    // 이 씬에서의 신부 표기명
   images: string[]
   imageSettings: ImageSettings[]  // 각 이미지별 설정
   bgClass: string
@@ -333,6 +339,7 @@ export interface InvitationContent {
   // ===== 콘텐츠 =====
   content: {
     greeting: string
+    greetingDialogue?: string  // Film 인사말 대사 (나레이션과 분리)
     quote: QuoteInfo
     thankYou: ThankYouInfo
     info: InfoSettings
@@ -555,6 +562,7 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
         tag: '세상에서 가장 따뜻한 사람',
       },
     } : template.id === 'narrative-film' ? {
+      name: '민준',
       profile: { ...createDefaultPerson(true).profile, tag: '세상에서 가장 따뜻한 사람' },
     } : template.id === 'narrative-record' ? {
       profile: { ...createDefaultPerson(true).profile, tag: '' },
@@ -581,6 +589,7 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
         tag: '매일 웃게 해주는 사람',
       },
     } : template.id === 'narrative-film' ? {
+      name: '서연',
       profile: { ...createDefaultPerson(false).profile, tag: '매일 웃게 해주는 사람' },
     } : template.id === 'narrative-record' ? {
       profile: { ...createDefaultPerson(false).profile, tag: '' },
@@ -638,12 +647,15 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
       : template.id === 'narrative-family'
       ? '누군가와 나누고 싶은 순간들이 있죠.\n이 날이 바로 그런 날입니다.\n우리의 결혼식에 초대합니다.'
       : template.id === 'narrative-film'
-      ? '솔직히 말하면,\n처음엔 그냥 밥 한번 먹자는 거였는데\n어쩌다 보니 평생 같이 먹게 됐습니다.\n\n이 예상 밖의 전개에\n여러분을 초대합니다.'
+      ? '솔직히 말하면,\n처음엔 그냥 밥 한번 먹자는 거였는데\n어쩌다 보니 평생 같이 먹게 됐습니다.'
       : template.id === 'narrative-record'
       ? '두 사람의 하모니가\n하나의 멜로디가 되어\n평생을 함께 연주합니다.\n\n이 특별한 무대에\n여러분을 초대합니다.'
       : template.id === 'narrative-magazine'
       ? '서로 다른 두 사람이\n같은 방향을 바라보며\n하나의 길을 걸어가려 합니다.\n\n소중한 분들을 초대합니다.'
       : '',
+    greetingDialogue: template.id === 'narrative-film'
+      ? '이 예상 밖의 전개에\n여러분을 초대합니다.'
+      : undefined,
     quote: template.id === 'narrative-our'
       ? { text: 'The best thing to hold onto in life\nis each other.', author: 'Audrey Hepburn' }
       : template.id === 'narrative-family'
@@ -687,9 +699,9 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
     filmTitle: template.id === 'narrative-film' ? 'THE WEDDING' : undefined,
     interviews: template.id === 'narrative-film'
       ? [
-          { question: '첫 만남', answer: '"첫인상이 어땠냐고? 솔직히 별 생각 없었어."\n"나도. 근데 두 번째 만났을 때 좀 설렜어. 아주 조금."', images: [], imageSettings: [], bgClass: '' },
-          { question: '우리의 시간', answer: '"이 사람 장점? 제가 하는 말에 잘 웃어줘요."\n"아니 진짜 웃긴 걸 어떡해. 근데 본인은 모름."', images: [], imageSettings: [], bgClass: '' },
-          { question: '프로포즈', answer: '"프로포즈를 엄청 준비했는데 긴장해서 다 까먹었어."\n"그래서 그냥 울었잖아. 그게 더 감동이었어 사실."', images: [], imageSettings: [], bgClass: '' },
+          { question: '첫 만남', answer: '', groomDialogue: '첫인상이 어땠냐고? 솔직히 별 생각 없었어.', brideDialogue: '나도. 근데 두 번째 만났을 때 좀 설렜어. 아주 조금.', narration: '', displayOrder: ['narration', 'groom', 'bride'] as ('groom' | 'bride' | 'narration')[], images: [], imageSettings: [], bgClass: '' },
+          { question: '우리의 시간', answer: '', groomDialogue: '이 사람 장점? 제가 하는 말에 잘 웃어줘요.', brideDialogue: '아니 진짜 웃긴 걸 어떡해. 근데 본인은 모름.', narration: '', displayOrder: ['narration', 'groom', 'bride'] as ('groom' | 'bride' | 'narration')[], images: [], imageSettings: [], bgClass: '' },
+          { question: '프로포즈', answer: '', groomDialogue: '프로포즈를 엄청 준비했는데 긴장해서 다 까먹었어.', brideDialogue: '그래서 그냥 울었잖아. 그게 더 감동이었어 사실.', narration: '', displayOrder: ['narration', 'groom', 'bride'] as ('groom' | 'bride' | 'narration')[], images: [], imageSettings: [], bgClass: '' },
         ]
       : template.id === 'narrative-record'
       ? [

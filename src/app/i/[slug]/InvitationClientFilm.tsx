@@ -469,10 +469,23 @@ function FilmHeader({ invitation, fonts, tc }: { invitation: any; fonts: FontCon
 function ChapterOne({ invitation, fonts, tc }: { invitation: any; fonts: FontConfig; tc: ColorConfig }) {
   const { ref, isVisible } = useScrollReveal()
   const greeting = invitation.content?.greeting || ''
-  const lines = greeting.split('\n').filter(Boolean)
+  const greetingDialogue = invitation.content?.greetingDialogue || ''
 
-  // 대사(따옴표로 시작)와 나레이션 구분
-  const isDialogue = (line: string) => line.startsWith('"') || line.startsWith('"') || line.startsWith("'")
+  // 새 필드(greetingDialogue)가 있으면 분리 모드, 없으면 기존 파싱 유지
+  const hasNewFields = !!greetingDialogue.trim()
+
+  // 나레이션 줄
+  const narrationLines = greeting.split('\n')
+  // 대사 줄
+  const dialogueLines = greetingDialogue.split('\n').filter((l: string) => l.trim().length > 0)
+
+  // 하위호환: 기존 방식 (따옴표로 구분)
+  const isDialogue = (line: string) => line.startsWith('"') || line.startsWith('\u201C') || line.startsWith("'")
+  const legacyLines = greeting.split('\n')
+
+  // 총 줄 수 (애니메이션 타이밍용)
+  const totalLineCount = hasNewFields ? narrationLines.length + dialogueLines.length : legacyLines.length
+  let lineCounter = 0
 
   return (
     <div ref={ref} className="px-6 py-20" style={{ backgroundColor: tc.background }}>
@@ -497,30 +510,70 @@ function ChapterOne({ invitation, fonts, tc }: { invitation: any; fonts: FontCon
 
       {/* Greeting - split text reveal + blur to focus */}
       <div style={{ maxWidth: '300px', margin: '0 auto' }}>
-        {lines.map((line: string, i: number) => {
-          const dialogue = isDialogue(line)
-          return (
-            <div key={i} className="film-text-reveal" style={{
-              overflow: 'hidden', textAlign: 'center',
-            }}>
-              <p style={{
-                fontFamily: dialogue ? fonts.display : fonts.body,
-                fontSize: dialogue ? '15px' : '13px',
-                lineHeight: 2.2,
-                color: dialogue ? tc.accent : (i < 3 ? tc.text : tc.gray),
-                fontStyle: dialogue ? 'italic' : 'normal',
-                fontWeight: dialogue ? 400 : 400,
-                marginBottom: '2px',
-                opacity: isVisible ? 1 : 0,
-                filter: isVisible ? 'blur(0)' : 'blur(6px)',
-                transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-                transition: `all 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${0.5 + i * 0.15}s`,
-              }}>
-                {line}
-              </p>
-            </div>
-          )
-        })}
+        {hasNewFields ? (
+          <>
+            {/* 나레이션 */}
+            {narrationLines.map((line: string, i: number) => {
+              if (line.trim().length === 0) return <div key={`n-${i}`} style={{ height: '12px' }} />
+              const idx = lineCounter++
+              return (
+                <div key={`n-${i}`} className="film-text-reveal" style={{ overflow: 'hidden', textAlign: 'center' }}>
+                  <p style={{
+                    fontFamily: fonts.body, fontSize: '13px', lineHeight: 2.2,
+                    color: tc.text,
+                    fontWeight: 400, marginBottom: '2px',
+                    opacity: isVisible ? 1 : 0,
+                    filter: isVisible ? 'blur(0)' : 'blur(6px)',
+                    transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+                    transition: `all 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${0.5 + idx * 0.15}s`,
+                  }}>{line}</p>
+                </div>
+              )
+            })}
+            {/* 대사 */}
+            {dialogueLines.length > 0 && (
+              <div style={{ marginTop: '12px' }}>
+                {dialogueLines.map((line: string, i: number) => {
+                  const idx = lineCounter++
+                  return (
+                    <div key={`d-${i}`} className="film-text-reveal" style={{ overflow: 'hidden', textAlign: 'center' }}>
+                      <p style={{
+                        fontFamily: fonts.display, fontSize: '15px', lineHeight: 2.2,
+                        color: tc.accent, fontStyle: 'italic', fontWeight: 400, marginBottom: '2px',
+                        opacity: isVisible ? 1 : 0,
+                        filter: isVisible ? 'blur(0)' : 'blur(6px)',
+                        transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+                        transition: `all 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${0.5 + idx * 0.15}s`,
+                      }}>{line}</p>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </>
+        ) : (
+          /* 하위호환: 기존 따옴표 파싱 */
+          legacyLines.map((line: string, i: number) => {
+            if (line.trim().length === 0) return <div key={i} style={{ height: '12px' }} />
+            const dialogue = isDialogue(line)
+            return (
+              <div key={i} className="film-text-reveal" style={{ overflow: 'hidden', textAlign: 'center' }}>
+                <p style={{
+                  fontFamily: dialogue ? fonts.display : fonts.body,
+                  fontSize: dialogue ? '15px' : '13px',
+                  lineHeight: 2.2,
+                  color: dialogue ? tc.accent : (i < 3 ? tc.text : tc.gray),
+                  fontStyle: dialogue ? 'italic' : 'normal',
+                  fontWeight: 400, marginBottom: '2px',
+                  opacity: isVisible ? 1 : 0,
+                  filter: isVisible ? 'blur(0)' : 'blur(6px)',
+                  transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+                  transition: `all 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${0.5 + i * 0.15}s`,
+                }}>{line}</p>
+              </div>
+            )
+          })
+        )}
       </div>
 
       {/* Quote - blur to focus with author */}
@@ -529,11 +582,11 @@ function ChapterOne({ invitation, fonts, tc }: { invitation: any; fonts: FontCon
           opacity: isVisible ? 1 : 0,
           filter: isVisible ? 'blur(0)' : 'blur(4px)',
           transform: isVisible ? 'translateY(0)' : 'translateY(12px)',
-          transition: `all 1.2s ease ${0.5 + lines.length * 0.15 + 0.3}s`,
+          transition: `all 1.2s ease ${0.5 + totalLineCount * 0.15 + 0.3}s`,
         }}>
           <div style={{ width: '1px', height: '24px', background: tc.accent, margin: '0 auto 16px', opacity: 0.5 }} />
-          <p style={{ fontFamily: fonts.display, fontSize: '11px', fontStyle: 'italic', lineHeight: 2, color: tc.accent, opacity: 0.7 }}>
-            &ldquo;{invitation.content.quote.text}&rdquo;
+          <p style={{ fontFamily: fonts.display, fontSize: '11px', fontStyle: 'italic', lineHeight: 2, color: tc.accent, opacity: 0.7, whiteSpace: 'pre-line' }}>
+            {invitation.content.quote.text}
           </p>
           {invitation.content.quote.author && (
             <p style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '3px', color: tc.gray, marginTop: '8px', opacity: 0.5 }}>
@@ -612,7 +665,7 @@ function ChapterTwo({ invitation, fonts, tc }: { invitation: any; fonts: FontCon
                     {groomName}
                   </div>
                   {groomProfile?.tag && (
-                    <p style={{ fontFamily: fonts.body, fontSize: '10px', color: groomImage ? 'rgba(232,228,223,0.6)' : tc.gray, marginTop: '4px', lineHeight: 1.5 }}>
+                    <p style={{ fontFamily: fonts.body, fontSize: '10px', color: groomImage ? 'rgba(232,228,223,0.6)' : tc.gray, marginTop: '4px', lineHeight: 1.5, whiteSpace: 'pre-line' }}>
                       {groomProfile.tag}
                     </p>
                   )}
@@ -655,7 +708,7 @@ function ChapterTwo({ invitation, fonts, tc }: { invitation: any; fonts: FontCon
                     {brideName}
                   </div>
                   {brideProfile?.tag && (
-                    <p style={{ fontFamily: fonts.body, fontSize: '10px', color: brideImage ? 'rgba(232,228,223,0.6)' : tc.gray, marginTop: '4px', lineHeight: 1.5 }}>
+                    <p style={{ fontFamily: fonts.body, fontSize: '10px', color: brideImage ? 'rgba(232,228,223,0.6)' : tc.gray, marginTop: '4px', lineHeight: 1.5, whiteSpace: 'pre-line' }}>
                       {brideProfile.tag}
                     </p>
                   )}
@@ -675,10 +728,65 @@ function FilmSceneCard({ item, idx, total, groomName, brideName, fonts, tc }: {
   item: any; idx: number; total: number; groomName: string; brideName: string; fonts: FontConfig; tc: ColorConfig
 }) {
   const images = (item.images || []).map(extractImageUrl).filter(Boolean)
-  const linesParsed = (item.answer || '').split('\n').filter(Boolean)
   const { ref, isVisible } = useScrollReveal()
   const ct = tc.cardText || tc.text
   const cg = tc.cardGray || tc.gray
+
+  // 새 필드 존재 여부 확인
+  const hasNewFields = !!(item.groomDialogue?.trim() || item.brideDialogue?.trim() || item.narration?.trim())
+
+  // 하위호환용: 기존 answer 파싱
+  const linesParsed = (item.answer || '').split('\n').filter((l: string) => l.trim().length > 0)
+
+  // 새 필드의 표기명
+  const groomLabel = item.groomDisplayName || groomName
+  const brideLabel = item.brideDisplayName || brideName
+
+  // displayOrder (비어있는 블록은 필터)
+  const displayOrder: ('groom' | 'bride' | 'narration')[] = item.displayOrder || ['narration', 'groom', 'bride']
+
+  const renderBlock = (type: 'groom' | 'bride' | 'narration', key: string) => {
+    if (type === 'narration') {
+      const text = (item.narration || '').trim()
+      if (!text) return null
+      return (
+        <div key={key} style={{ marginBottom: '14px' }}>
+          {text.split('\n').map((line: string, i: number) => (
+            <p key={i} style={{ fontFamily: fonts.body, fontSize: '13px', lineHeight: 1.8, color: cg, marginBottom: '4px' }}>{line}</p>
+          ))}
+        </div>
+      )
+    }
+    if (type === 'groom') {
+      const text = (item.groomDialogue || '').trim()
+      if (!text) return null
+      return (
+        <div key={key} style={{ marginBottom: '16px' }}>
+          <div style={{ fontFamily: fonts.display, fontSize: '9px', fontWeight: 600, letterSpacing: '3px', color: tc.accent, marginBottom: '5px' }}>
+            {groomLabel}
+          </div>
+          {text.split('\n').map((line: string, i: number) => (
+            <p key={i} style={{ fontFamily: fonts.body, fontSize: '14px', lineHeight: 1.8, color: ct }}>{line}</p>
+          ))}
+        </div>
+      )
+    }
+    if (type === 'bride') {
+      const text = (item.brideDialogue || '').trim()
+      if (!text) return null
+      return (
+        <div key={key} style={{ marginBottom: '16px' }}>
+          <div style={{ fontFamily: fonts.display, fontSize: '9px', fontWeight: 600, letterSpacing: '3px', color: tc.accent, marginBottom: '5px' }}>
+            {brideLabel}
+          </div>
+          {text.split('\n').map((line: string, i: number) => (
+            <p key={i} style={{ fontFamily: fonts.body, fontSize: '14px', lineHeight: 1.8, color: ct }}>{line}</p>
+          ))}
+        </div>
+      )
+    }
+    return null
+  }
 
   return (
     <div
@@ -730,23 +838,31 @@ function FilmSceneCard({ item, idx, total, groomName, brideName, fonts, tc }: {
           </div>
         )}
 
-        {/* Dialogue */}
+        {/* Content */}
         <div style={{ padding: '20px 20px 6px 48px' }}>
-          {linesParsed.filter((line: string) => !(line.startsWith('"') || line.startsWith('\u201C') || line.startsWith("'"))).length > 0 && (
-            <div style={{ marginBottom: '14px' }}>
-              {linesParsed.filter((line: string) => !(line.startsWith('"') || line.startsWith('\u201C') || line.startsWith("'"))).map((line: string, i: number) => (
-                <p key={`action-${i}`} style={{ fontFamily: fonts.body, fontSize: '13px', lineHeight: 1.8, color: cg, marginBottom: '4px' }}>{line}</p>
+          {hasNewFields ? (
+            /* 새 필드: displayOrder 순서대로 렌더링 */
+            displayOrder.map((type, i) => renderBlock(type, `${type}-${i}`))
+          ) : (
+            /* 하위호환: 기존 answer 파싱 */
+            <>
+              {linesParsed.filter((line: string) => !(line.startsWith('"') || line.startsWith('\u201C') || line.startsWith("'"))).length > 0 && (
+                <div style={{ marginBottom: '14px' }}>
+                  {linesParsed.filter((line: string) => !(line.startsWith('"') || line.startsWith('\u201C') || line.startsWith("'"))).map((line: string, i: number) => (
+                    <p key={`action-${i}`} style={{ fontFamily: fonts.body, fontSize: '13px', lineHeight: 1.8, color: cg, marginBottom: '4px' }}>{line}</p>
+                  ))}
+                </div>
+              )}
+              {linesParsed.filter((line: string) => line.startsWith('"') || line.startsWith('\u201C') || line.startsWith("'")).map((line: string, i: number) => (
+                <div key={`dialogue-${i}`} style={{ marginBottom: '16px' }}>
+                  <div style={{ fontFamily: fonts.display, fontSize: '9px', fontWeight: 600, letterSpacing: '3px', color: tc.accent, marginBottom: '5px' }}>
+                    {i % 2 === 0 ? groomName : brideName}
+                  </div>
+                  <p style={{ fontFamily: fonts.body, fontSize: '14px', lineHeight: 1.8, color: ct }}>{line}</p>
+                </div>
               ))}
-            </div>
+            </>
           )}
-          {linesParsed.filter((line: string) => line.startsWith('"') || line.startsWith('\u201C') || line.startsWith("'")).map((line: string, i: number) => (
-            <div key={`dialogue-${i}`} style={{ marginBottom: '16px' }}>
-              <div style={{ fontFamily: fonts.display, fontSize: '9px', fontWeight: 600, letterSpacing: '3px', color: tc.accent, marginBottom: '5px' }}>
-                {i % 2 === 0 ? groomName : brideName}
-              </div>
-              <p style={{ fontFamily: fonts.body, fontSize: '14px', lineHeight: 1.8, color: ct }}>{line}</p>
-            </div>
-          ))}
         </div>
 
         {/* Page number */}
@@ -1071,7 +1187,7 @@ function ThePremiere({ invitation, fonts, tc }: { invitation: any; fonts: FontCo
                     const wDate = new Date(date)
                     wDate.setHours(0, 0, 0, 0)
                     const diff = Math.ceil((wDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-                    const label = diff > 0 ? `결혼식까지 ${diff}일` : diff === 0 ? '오늘 결혼합니다' : `결혼한 지 ${Math.abs(diff)}일`
+                    const label = diff > 0 ? `결혼식까지 ${diff}일 남았어요.` : diff === 0 ? '오늘 결혼합니다' : `결혼한 지 ${Math.abs(diff)}일`
                     return (
                       <span style={{ fontFamily: fonts.body, fontSize: '12px', color: tc.accent, letterSpacing: '1px' }}>
                         {label}
@@ -1123,41 +1239,31 @@ function ThePremiere({ invitation, fonts, tc }: { invitation: any; fonts: FontCo
             {w.directions.car && (
               <div style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
                 <div style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>BY CAR</div>
-                {w.directions.car.split('\n').map((line: string, i: number) => (
-                  <p key={i} style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: cg }}>{line}</p>
-                ))}
+                <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: cg, whiteSpace: 'pre-line' }}>{w.directions.car}</p>
               </div>
             )}
             {w.directions.publicTransport && (
               <div style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
                 <div style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>PUBLIC TRANSIT</div>
-                {w.directions.publicTransport.split('\n').map((line: string, i: number) => (
-                  <p key={i} style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: cg }}>{line}</p>
-                ))}
+                <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: cg, whiteSpace: 'pre-line' }}>{w.directions.publicTransport}</p>
               </div>
             )}
             {w.directions.train && (
               <div style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
                 <div style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>TRAIN</div>
-                {(typeof w.directions.train === 'string' ? w.directions.train : '').split('\n').map((line: string, i: number) => (
-                  <p key={i} style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: cg }}>{line}</p>
-                ))}
+                <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: cg, whiteSpace: 'pre-line' }}>{typeof w.directions.train === 'string' ? w.directions.train : ''}</p>
               </div>
             )}
             {w.directions.expressBus && (
               <div style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
                 <div style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>EXPRESS BUS</div>
-                {(typeof w.directions.expressBus === 'string' ? w.directions.expressBus : '').split('\n').map((line: string, i: number) => (
-                  <p key={i} style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: cg }}>{line}</p>
-                ))}
+                <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: cg, whiteSpace: 'pre-line' }}>{typeof w.directions.expressBus === 'string' ? w.directions.expressBus : ''}</p>
               </div>
             )}
             {w.directions.extraInfoEnabled && w.directions.extraInfoText && (
               <div style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
                 <div style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>{(w.directions.extraInfoTitle || 'INFO').toUpperCase()}</div>
-                {w.directions.extraInfoText.split('\n').map((line: string, i: number) => (
-                  <p key={i} style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: cg }}>{line}</p>
-                ))}
+                <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: cg, whiteSpace: 'pre-line' }}>{w.directions.extraInfoText}</p>
               </div>
             )}
           </div>
@@ -1296,9 +1402,7 @@ function GuidanceSection({ invitation, fonts, tc }: { invitation: any; fonts: Fo
                   <div style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '3px', color: tc.accent, marginBottom: '8px' }}>
                     {item.title?.toUpperCase()}
                   </div>
-                  {item.content.split('\n').map((line: string, j: number) => (
-                    <p key={j} style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.cardGray || tc.gray }}>{line}</p>
-                  ))}
+                  <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.cardGray || tc.gray, whiteSpace: 'pre-line' }}>{item.content}</p>
                 </div>
               )
             })}
@@ -1498,7 +1602,7 @@ function AudienceReviews({ invitation, invitationId, fonts, tc, isSample }: {
           {(showAllMessages ? messages : messages.slice(0, 5)).map((msg: any, i: number) => (
             <div key={msg.id || i} style={{ padding: '14px', border: `1px solid ${cdiv}`, background: tc.cardBg }}>
               {msg.question && <p style={{ fontFamily: fonts.body, fontSize: '10px', color: tc.cardGray || tc.gray, marginBottom: '6px', opacity: 0.6 }}>Q. {msg.question}</p>}
-              <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.cardText || tc.text, marginBottom: '8px' }}>{msg.message}</p>
+              <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.cardText || tc.text, marginBottom: '8px', whiteSpace: 'pre-line' }}>{msg.message}</p>
               <div className="flex items-center justify-between">
                 <span style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.cardGray || tc.gray }}>&mdash; {msg.guest_name}</span>
                 <span style={{ fontFamily: fonts.display, fontSize: '9px', color: tc.cardGray || tc.gray, opacity: 0.4 }}>{msg.created_at ? new Date(msg.created_at).toLocaleDateString() : ''}</span>

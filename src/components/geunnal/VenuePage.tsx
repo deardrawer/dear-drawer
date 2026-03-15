@@ -539,7 +539,7 @@ function AddVenueSheet({ open, onClose, onSave, pageId, token, locationTabs, edi
           <X size={22} strokeWidth={1.8} />
         </button>
       </div>
-      <div className="px-5 py-5">
+      <div className="px-5 py-5 pb-24">
       <div className="flex flex-col gap-4">
         {/* Kakao Place Search */}
         <div className="flex flex-col gap-1.5">

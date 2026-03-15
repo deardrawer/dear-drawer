@@ -583,7 +583,6 @@ export default function EventDetail({
                     onClick={() => handleToggleContacted(guest)}
                     className="flex items-center gap-3 flex-1 min-w-0 text-left"
                   >
-                    <BlobAvatarById id={guest.name.charCodeAt(0) % 24} size={32} showBorder={false} />
                     <span className={`flex-1 text-[14px] truncate ${guest.contacted ? 'text-[#2A2240] font-medium' : 'text-[#5A5270]'}`}>
                       {guest.name}
                     </span>

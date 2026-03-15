@@ -2,12 +2,14 @@
 import { useState, useEffect, useRef } from 'react'
 import { Check, ChevronDown, Loader2 } from 'lucide-react'
 import BottomSheet from './BottomSheet'
+import { geunnalFetch, SessionExpiredError } from '@/lib/geunnalFetch'
 
 interface NotificationSheetProps {
   open: boolean
   onClose: () => void
   pageId: string
   token: string
+  onSessionExpired?: () => void
 }
 
 const DAY_OPTIONS = [
@@ -45,6 +47,7 @@ export default function NotificationSheet({
   onClose,
   pageId,
   token,
+  onSessionExpired,
 }: NotificationSheetProps) {
   const [selectedDay, setSelectedDay] = useState<DayValue>('none')
   const [selectedTime, setSelectedTime] = useState('09:00')
@@ -69,9 +72,7 @@ export default function NotificationSheet({
     // Try loading from server first
     if (token) {
       setLoading(true)
-      fetch('/api/geunnal/push/subscribe', {
-        headers: { 'Authorization': `Bearer ${token}` },
-      })
+      geunnalFetch('/api/geunnal/push/subscribe', { token, pageId }, onSessionExpired)
         .then(res => res.ok ? res.json() as Promise<{ dayBefore?: string; notifyTime?: string }> : null)
         .then(data => {
           if (data) {
@@ -81,7 +82,7 @@ export default function NotificationSheet({
             loadFromLocalStorage()
           }
         })
-        .catch(() => loadFromLocalStorage())
+        .catch((err) => { if (!(err instanceof SessionExpiredError)) loadFromLocalStorage() })
         .finally(() => setLoading(false))
     } else {
       loadFromLocalStorage()
@@ -135,14 +136,12 @@ export default function NotificationSheet({
             endpoint = sub?.endpoint || ''
           } catch { /* no SW */ }
 
-          await fetch('/api/geunnal/push/subscribe', {
+          await geunnalFetch('/api/geunnal/push/subscribe', {
             method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
+            token, pageId,
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ endpoint }),
-          }).catch(() => {})
+          }, onSessionExpired).catch((err) => { if (err instanceof SessionExpiredError) throw err })
         }
       } else {
         // 알림 설정: SW 등록 → Push 구독 → 서버 저장
@@ -159,12 +158,10 @@ export default function NotificationSheet({
             })
 
             const subJson = subscription.toJSON()
-            await fetch('/api/geunnal/push/subscribe', {
+            await geunnalFetch('/api/geunnal/push/subscribe', {
               method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-              },
+              token, pageId,
+              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 endpoint: subJson.endpoint,
                 p256dh: subJson.keys?.p256dh || '',
@@ -172,7 +169,7 @@ export default function NotificationSheet({
                 dayBefore: selectedDay,
                 notifyTime: selectedTime,
               }),
-            })
+            }, onSessionExpired)
           } catch (err) {
             console.error('Push subscription failed:', err)
             // Still saved in localStorage as fallback

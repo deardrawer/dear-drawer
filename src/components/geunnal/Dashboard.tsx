@@ -5,11 +5,13 @@ import { GeunnalEvent, GeunnalSubmission } from '@/types/geunnal'
 import GeunnalBadge from './Badge'
 import GeunnalCard from './Card'
 import BlobAvatar from './BlobAvatar'
+import { geunnalFetch, SessionExpiredError } from '@/lib/geunnalFetch'
 
 interface DashboardProps {
   pageId: string
   token: string
   onEventClick?: (eventId: string) => void
+  onSessionExpired?: () => void
 }
 
 type Tab = 'events' | 'photos' | 'messages'
@@ -46,7 +48,7 @@ const formatRelativeTime = (dateStr: string) => {
   return formatDate(dateStr)
 }
 
-export default function Dashboard({ pageId, token, onEventClick }: DashboardProps) {
+export default function Dashboard({ pageId, token, onEventClick, onSessionExpired }: DashboardProps) {
   const [activeTab, setActiveTab] = useState<Tab>('events')
   const [sideFilter, setSideFilter] = useState<SideFilter>('all')
   const [events, setEvents] = useState<GeunnalEvent[]>([])
@@ -57,10 +59,9 @@ export default function Dashboard({ pageId, token, onEventClick }: DashboardProp
     async function fetchData() {
       try {
         setLoading(true)
+        const opts = { token, pageId }
         // Fetch events
-        const eventsRes = await fetch(`/api/geunnal/events?pageId=${pageId}`, {
-          headers: { 'Authorization': `Bearer ${token}` },
-        })
+        const eventsRes = await geunnalFetch(`/api/geunnal/events?pageId=${pageId}`, opts, onSessionExpired)
         if (eventsRes.ok) {
           const data = (await eventsRes.json()) as { events: GeunnalEvent[] }
           setEvents(data.events)
@@ -69,25 +70,27 @@ export default function Dashboard({ pageId, token, onEventClick }: DashboardProp
           const allSubmissions: GeunnalSubmission[] = []
           for (const event of data.events) {
             try {
-              const subRes = await fetch(`/api/geunnal/submissions?eventId=${event.id}`, {
-                headers: { 'Authorization': `Bearer ${token}` },
-              })
+              const subRes = await geunnalFetch(`/api/geunnal/submissions?eventId=${event.id}`, opts, onSessionExpired)
               if (subRes.ok) {
                 const subData = (await subRes.json()) as { submissions: GeunnalSubmission[] }
                 allSubmissions.push(...subData.submissions)
               }
-            } catch { /* skip */ }
+            } catch (err) {
+              if (err instanceof SessionExpiredError) throw err
+              /* skip */
+            }
           }
           setSubmissions(allSubmissions)
         }
       } catch (error) {
+        if (error instanceof SessionExpiredError) return
         console.error('Dashboard fetch error:', error)
       } finally {
         setLoading(false)
       }
     }
     fetchData()
-  }, [pageId, token])
+  }, [pageId, token, onSessionExpired])
 
   // Only show completed events (cost entered)
   const completedEvents = useMemo(() =>

@@ -27,6 +27,7 @@ import GeunnalCard from './Card'
 import GeunnalBadge from './Badge'
 import { BlobAvatarById } from './BlobAvatar'
 import AddEventModal from './AddEventModal'
+import { geunnalFetch, SessionExpiredError } from '@/lib/geunnalFetch'
 
 interface EventDetailProps {
   eventId: string
@@ -35,6 +36,7 @@ interface EventDetailProps {
   onBack: () => void
   slug: string
   ogImage?: string
+  onSessionExpired?: () => void
 }
 
 const formatDate = (dateStr: string) => {
@@ -69,6 +71,7 @@ export default function EventDetail({
   onBack,
   slug,
   ogImage,
+  onSessionExpired,
 }: EventDetailProps) {
   const [event, setEvent] = useState<GeunnalEvent | null>(null)
   const [guests, setGuests] = useState<EventGuest[]>([])
@@ -91,12 +94,12 @@ export default function EventDetail({
   const fetchEventData = async () => {
     try {
       setLoading(true)
-      const headers = { 'Authorization': `Bearer ${token}` }
+      const opts = { token, pageId }
 
       const [eventRes, guestsRes, submissionsRes] = await Promise.all([
-        fetch(`/api/geunnal/events/${eventId}`, { headers }),
-        fetch(`/api/geunnal/events/${eventId}/guests`, { headers }),
-        fetch(`/api/geunnal/submissions?eventId=${eventId}`, { headers }),
+        geunnalFetch(`/api/geunnal/events/${eventId}`, opts, onSessionExpired),
+        geunnalFetch(`/api/geunnal/events/${eventId}/guests`, opts, onSessionExpired),
+        geunnalFetch(`/api/geunnal/submissions?eventId=${eventId}`, opts, onSessionExpired),
       ])
 
       if (!eventRes.ok) throw new Error('모임 불러오기 실패')
@@ -116,14 +119,18 @@ export default function EventDetail({
 
       // Fetch venue linked to this event
       try {
-        const venuesRes = await fetch(`/api/geunnal/venues?pageId=${pageId}`, { headers })
+        const venuesRes = await geunnalFetch(`/api/geunnal/venues?pageId=${pageId}`, opts, onSessionExpired)
         if (venuesRes.ok) {
           const venuesData = (await venuesRes.json()) as { venues: GeunnalVenue[] }
           const linked = venuesData.venues.find(v => v.event_id === eventId)
           setVenue(linked || null)
         }
-      } catch { /* ignore */ }
+      } catch (err) {
+        if (err instanceof SessionExpiredError) return
+        /* ignore */
+      }
     } catch (error) {
+      if (error instanceof SessionExpiredError) return
       console.error('Fetch event data error:', error)
       alert('모임을 불러올 수 없습니다.')
       onBack()
@@ -139,36 +146,47 @@ export default function EventDetail({
     const trimmed = newGuestName.trim()
     if (!trimmed) return
     try {
-      await fetch(`/api/geunnal/events/${eventId}/guests`, {
+      await geunnalFetch(`/api/geunnal/events/${eventId}/guests`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        token, pageId,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: trimmed }),
-      })
+      }, onSessionExpired)
       setNewGuestName('')
       fetchEventData()
       showToast(`${trimmed}님이 추가되었습니다`)
-    } catch { showToast('게스트 추가에 실패했습니다') }
+    } catch (err) {
+      if (err instanceof SessionExpiredError) return
+      showToast('게스트 추가에 실패했습니다')
+    }
   }
 
   const handleRemoveGuest = async (guestId: string) => {
     try {
-      await fetch(`/api/geunnal/events/${eventId}/guests/${guestId}`, {
+      await geunnalFetch(`/api/geunnal/events/${eventId}/guests/${guestId}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` },
-      })
+        token, pageId,
+      }, onSessionExpired)
       fetchEventData()
-    } catch { showToast('게스트 삭제에 실패했습니다') }
+    } catch (err) {
+      if (err instanceof SessionExpiredError) return
+      showToast('게스트 삭제에 실패했습니다')
+    }
   }
 
   const handleToggleContacted = async (guest: EventGuest) => {
     try {
-      await fetch(`/api/geunnal/events/${eventId}/guests/${guest.id}`, {
+      await geunnalFetch(`/api/geunnal/events/${eventId}/guests/${guest.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        token, pageId,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contacted: guest.contacted ? 0 : 1 }),
-      })
+      }, onSessionExpired)
       fetchEventData()
-    } catch { showToast('상태 변경에 실패했습니다') }
+    } catch (err) {
+      if (err instanceof SessionExpiredError) return
+      showToast('상태 변경에 실패했습니다')
+    }
   }
 
   // --- Cost editing ---
@@ -180,51 +198,62 @@ export default function EventDetail({
   const saveCost = async () => {
     const val = parseInt(costInput.replace(/[^0-9]/g, ''), 10)
     try {
-      await fetch(`/api/geunnal/events/${eventId}`, {
+      await geunnalFetch(`/api/geunnal/events/${eventId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        token, pageId,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ total_cost: isNaN(val) || val === 0 ? null : val }),
-      })
+      }, onSessionExpired)
       setEditingCost(false)
       fetchEventData()
       showToast('비용이 수정되었습니다')
-    } catch { showToast('비용 수정에 실패했습니다') }
+    } catch (err) {
+      if (err instanceof SessionExpiredError) return
+      showToast('비용 수정에 실패했습니다')
+    }
   }
 
   const resetCost = async () => {
     if (!confirm('비용을 초기화하시겠습니까?\n완료된 모임에서 미정 모임으로 이동합니다.')) return
     try {
-      await fetch(`/api/geunnal/events/${eventId}`, {
+      await geunnalFetch(`/api/geunnal/events/${eventId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        token, pageId,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ total_cost: null }),
-      })
+      }, onSessionExpired)
       fetchEventData()
       showToast('비용이 초기화되었습니다')
-    } catch { showToast('비용 초기화에 실패했습니다') }
+    } catch (err) {
+      if (err instanceof SessionExpiredError) return
+      showToast('비용 초기화에 실패했습니다')
+    }
   }
 
   // --- Delete ---
   const handleDelete = async () => {
     if (!confirm(`'${event?.name}' 모임을 삭제하시겠습니까?`)) return
     try {
-      await fetch(`/api/geunnal/events/${eventId}`, {
+      await geunnalFetch(`/api/geunnal/events/${eventId}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` },
-      })
+        token, pageId,
+      }, onSessionExpired)
       showToast('모임이 삭제되었습니다')
       onBack()
-    } catch { showToast('삭제에 실패했습니다') }
+    } catch (err) {
+      if (err instanceof SessionExpiredError) return
+      showToast('삭제에 실패했습니다')
+    }
   }
 
   // --- Delete Submission ---
   const handleDeleteSubmission = async (submissionId: string) => {
     if (!confirm('이 사진/메시지를 삭제하시겠습니까?')) return
     try {
-      const res = await fetch(`/api/geunnal/submissions/${submissionId}`, {
+      const res = await geunnalFetch(`/api/geunnal/submissions/${submissionId}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` },
-      })
+        token, pageId,
+      }, onSessionExpired)
       if (res.ok) {
         setSubmissions(prev => prev.filter(s => s.id !== submissionId))
         if (viewingPhoto?.id === submissionId) setViewingPhoto(null)
@@ -232,7 +261,10 @@ export default function EventDetail({
       } else {
         showToast('삭제에 실패했습니다')
       }
-    } catch { showToast('삭제에 실패했습니다') }
+    } catch (err) {
+      if (err instanceof SessionExpiredError) return
+      showToast('삭제에 실패했습니다')
+    }
   }
 
   // --- Reservation toggle ---
@@ -240,13 +272,17 @@ export default function EventDetail({
     if (!event) return
     const newStatus = event.reservation_status === status ? 'none' : status
     try {
-      await fetch(`/api/geunnal/events/${eventId}`, {
+      await geunnalFetch(`/api/geunnal/events/${eventId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        token, pageId,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reservation_status: newStatus }),
-      })
+      }, onSessionExpired)
       fetchEventData()
-    } catch { showToast('상태 변경에 실패했습니다') }
+    } catch (err) {
+      if (err instanceof SessionExpiredError) return
+      showToast('상태 변경에 실패했습니다')
+    }
   }
 
   // --- Share ---
@@ -753,6 +789,7 @@ export default function EventDetail({
         token={token}
         editEvent={event}
         guests={guests}
+        onSessionExpired={onSessionExpired}
       />
 
       {/* Toast */}

@@ -70,6 +70,7 @@ export default function GeunnalClient({
   const [showPasswordChange, setShowPasswordChange] = useState(false)
   const [showNotificationEdit, setShowNotificationEdit] = useState(false)
   const [showExitToast, setShowExitToast] = useState(false)
+  const [sessionExpiredToast, setSessionExpiredToast] = useState(false)
   const scrollPositionRef = useRef<number>(0)
   const skipNextPush = useRef(false)
   const backPressedOnce = useRef(false)
@@ -200,6 +201,14 @@ export default function GeunnalClient({
     setIsAuthenticated(false)
   }, [pageId])
 
+  const handleSessionExpired = useCallback(() => {
+    localStorage.removeItem(`geunnal-token-${pageId}`)
+    setToken(null)
+    setIsAuthenticated(false)
+    setSessionExpiredToast(true)
+    setTimeout(() => setSessionExpiredToast(false), 4000)
+  }, [pageId])
+
   const handleBackFromDetail = useCallback(() => {
     setActiveView(prev =>
       prev.type === 'event-detail' ? { type: prev.returnTo } : { type: 'home' }
@@ -255,6 +264,7 @@ export default function GeunnalClient({
             onPasswordChange={() => setShowPasswordChange(true)}
             onNotificationEdit={() => setShowNotificationEdit(true)}
             onLogout={handleLogout}
+            onSessionExpired={handleSessionExpired}
           />
         )}
 
@@ -266,6 +276,7 @@ export default function GeunnalClient({
             onBack={handleBackFromDetail}
             slug={slug}
             ogImage={ogImage}
+            onSessionExpired={handleSessionExpired}
           />
         )}
 
@@ -276,6 +287,7 @@ export default function GeunnalClient({
             slug={slug}
             groomName={groomName}
             brideName={brideName}
+            onSessionExpired={handleSessionExpired}
           />
         )}
 
@@ -284,6 +296,7 @@ export default function GeunnalClient({
             pageId={pageId}
             token={token || ''}
             onEventClick={(eventId) => handleEventClick(eventId, 'dashboard')}
+            onSessionExpired={handleSessionExpired}
           />
         )}
 
@@ -291,6 +304,7 @@ export default function GeunnalClient({
           <VenuePage
             pageId={pageId}
             token={token || ''}
+            onSessionExpired={handleSessionExpired}
           />
         )}
       </div>
@@ -308,6 +322,13 @@ export default function GeunnalClient({
         </div>
       )}
 
+      {/* Session Expired Toast */}
+      {sessionExpiredToast && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl bg-[#D4899A] text-white text-[14px] font-medium shadow-lg animate-fade-in whitespace-nowrap">
+          세션이 만료되었습니다. 다시 로그인해주세요.
+        </div>
+      )}
+
       {/* Password Change Sheet */}
       <PasswordChangeSheet
         open={showPasswordChange}
@@ -322,6 +343,7 @@ export default function GeunnalClient({
         onClose={() => setShowNotificationEdit(false)}
         pageId={pageId}
         token={token || ''}
+        onSessionExpired={handleSessionExpired}
       />
     </div>
   )

@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Download, Share2, BookmarkPlus, Plus, Check, X, 
 import { GeunnalEvent, EventSide } from '@/types/geunnal'
 import BottomSheet from './BottomSheet'
 import html2canvas from 'html2canvas'
+import { geunnalFetch, SessionExpiredError } from '@/lib/geunnalFetch'
 
 interface PhotoBoothProps {
   pageId: string
@@ -11,6 +12,7 @@ interface PhotoBoothProps {
   slug: string
   groomName: string
   brideName: string
+  onSessionExpired?: () => void
 }
 
 interface PhotoTransform {
@@ -26,7 +28,7 @@ const STEPS = [
   { label: '텍스트', description: '텍스트 꾸미기' },
 ]
 
-export default function PhotoBooth({ pageId, token, slug, groomName, brideName }: PhotoBoothProps) {
+export default function PhotoBooth({ pageId, token, slug, groomName, brideName, onSessionExpired }: PhotoBoothProps) {
   const frameRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -54,13 +56,11 @@ export default function PhotoBooth({ pageId, token, slug, groomName, brideName }
 
   // Fetch events
   useEffect(() => {
-    fetch(`/api/geunnal/events?pageId=${pageId}`, {
-      headers: { 'Authorization': `Bearer ${token}` },
-    })
+    geunnalFetch(`/api/geunnal/events?pageId=${pageId}`, { token, pageId }, onSessionExpired)
       .then(r => r.json() as Promise<{ events: GeunnalEvent[] }>)
       .then(data => setEvents(data.events))
-      .catch(() => {})
-  }, [pageId, token])
+      .catch((err) => { if (!(err instanceof SessionExpiredError)) console.error(err) })
+  }, [pageId, token, onSessionExpired])
 
   const handleLayoutChange = useCallback((newLayout: 2 | 3 | 4) => {
     setLayout(newLayout)
@@ -184,17 +184,20 @@ export default function PhotoBooth({ pageId, token, slug, groomName, brideName }
 
     // Fetch guests for this event and auto-fill attendees
     try {
-      const res = await fetch(`/api/geunnal/events/${event.id}/guests`, {
-        headers: { 'Authorization': `Bearer ${token}` },
-      })
+      const res = await geunnalFetch(`/api/geunnal/events/${event.id}/guests`, {
+        token, pageId,
+      }, onSessionExpired)
       if (res.ok) {
         const data = (await res.json()) as { guests: { name: string }[] }
         if (data.guests.length > 0) {
           setAttendees(data.guests.map(g => g.name).join(', '))
         }
       }
-    } catch { /* ignore */ }
-  }, [token])
+    } catch (err) {
+      if (err instanceof SessionExpiredError) return
+      /* ignore */
+    }
+  }, [token, pageId, onSessionExpired])
 
   // Shared html2canvas options - fix aspect-ratio/object-cover + strip unsupported colors
   const canvasOptions = {
@@ -344,17 +347,18 @@ export default function PhotoBooth({ pageId, token, slug, groomName, brideName }
       formData.append('file', file)
       formData.append('pageId', pageId)
       formData.append('eventId', eventId)
-      const uploadRes = await fetch('/api/geunnal/upload', {
+      const uploadRes = await geunnalFetch('/api/geunnal/upload', {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
+        token, pageId,
         body: formData,
-      })
+      }, onSessionExpired)
       let photoUrl = ''
       if (uploadRes.ok) {
         const uploadData = (await uploadRes.json()) as { url?: string }
         if (uploadData.url) photoUrl = uploadData.url
       }
       if (!photoUrl) throw new Error('업로드 실패')
+      // submissions endpoint is public (no auth required)
       const subRes = await fetch('/api/geunnal/submissions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -369,10 +373,13 @@ export default function PhotoBooth({ pageId, token, slug, groomName, brideName }
       })
       if (!subRes.ok) throw new Error('제출 실패')
       setShowEventSheet(false)
-      showToastMsg('💕 모임에 저장되었습니다')
-    } catch { showToastMsg('저장에 실패했습니다') }
+      showToastMsg('모임에 저장되었습니다')
+    } catch (err) {
+      if (err instanceof SessionExpiredError) return
+      showToastMsg('저장에 실패했습니다')
+    }
     finally { setSaving(false) }
-  }, [comment, title, groomName, brideName, pageId, token])
+  }, [comment, title, groomName, brideName, pageId, token, onSessionExpired])
 
   const showToastMsg = (msg: string) => {
     setToast(msg)

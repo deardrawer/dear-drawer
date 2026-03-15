@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { DollarSign } from 'lucide-react'
 import BottomSheet from './BottomSheet'
 import { GeunnalEvent } from '@/types/geunnal'
+import { geunnalFetch, SessionExpiredError } from '@/lib/geunnalFetch'
 
 interface CostEditModalProps {
   open: boolean
@@ -10,7 +11,9 @@ interface CostEditModalProps {
   event: GeunnalEvent | null
   guestCount: number
   token: string
+  pageId: string
   onSave: () => void
+  onSessionExpired?: () => void
 }
 
 export default function CostEditModal({
@@ -19,7 +22,9 @@ export default function CostEditModal({
   event,
   guestCount,
   token,
+  pageId,
   onSave,
+  onSessionExpired,
 }: CostEditModalProps) {
   const [totalCost, setTotalCost] = useState('')
   const [loading, setLoading] = useState(false)
@@ -45,16 +50,14 @@ export default function CostEditModal({
     setLoading(true)
 
     try {
-      const response = await fetch(`/api/geunnal/events/${event.id}`, {
+      const response = await geunnalFetch(`/api/geunnal/events/${event.id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
+        token, pageId,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           total_cost: costValue,
         }),
-      })
+      }, onSessionExpired)
 
       if (!response.ok) {
         throw new Error('비용 저장에 실패했습니다.')
@@ -63,6 +66,7 @@ export default function CostEditModal({
       onSave()
       onClose()
     } catch (error) {
+      if (error instanceof SessionExpiredError) return
       console.error('Cost save error:', error)
       alert(error instanceof Error ? error.message : '비용 저장 중 오류가 발생했습니다.')
     } finally {

@@ -10,6 +10,7 @@ import CostEditModal from './CostEditModal'
 import EventPopup from './EventPopup'
 import BottomSheet from './BottomSheet'
 import { sendKakaoShare } from '@/lib/geunnalKakao'
+import { geunnalFetch, SessionExpiredError } from '@/lib/geunnalFetch'
 
 interface EventManagementProps {
   pageId: string
@@ -22,6 +23,7 @@ interface EventManagementProps {
   onPasswordChange?: () => void
   onNotificationEdit?: () => void
   onLogout?: () => void
+  onSessionExpired?: () => void
 }
 
 interface EventWithGuests {
@@ -86,6 +88,7 @@ export default function EventManagement({
   onPasswordChange,
   onNotificationEdit,
   onLogout,
+  onSessionExpired,
 }: EventManagementProps) {
   const [eventsWithGuests, setEventsWithGuests] = useState<EventWithGuests[]>([])
   const [loading, setLoading] = useState(true)
@@ -113,9 +116,9 @@ export default function EventManagement({
   const fetchEvents = async () => {
     try {
       setLoading(true)
-      const eventsRes = await fetch(`/api/geunnal/events?pageId=${pageId}`, {
-        headers: { 'Authorization': `Bearer ${token}` },
-      })
+      const eventsRes = await geunnalFetch(`/api/geunnal/events?pageId=${pageId}`, {
+        token, pageId,
+      }, onSessionExpired)
       if (!eventsRes.ok) throw new Error('모임 불러오기 실패')
       const eventsData = (await eventsRes.json()) as { events: GeunnalEvent[] }
       const events = eventsData.events
@@ -123,19 +126,21 @@ export default function EventManagement({
       const eventsWithGuestsData = await Promise.all(
         events.map(async (event) => {
           try {
-            const guestsRes = await fetch(`/api/geunnal/events/${event.id}/guests`, {
-              headers: { 'Authorization': `Bearer ${token}` },
-            })
+            const guestsRes = await geunnalFetch(`/api/geunnal/events/${event.id}/guests`, {
+              token, pageId,
+            }, onSessionExpired)
             if (!guestsRes.ok) return { event, guests: [] }
             const guestsData = (await guestsRes.json()) as { guests: EventGuest[] }
             return { event, guests: guestsData.guests }
-          } catch {
+          } catch (err) {
+            if (err instanceof SessionExpiredError) throw err
             return { event, guests: [] as EventGuest[] }
           }
         })
       )
       setEventsWithGuests(eventsWithGuestsData)
     } catch (error) {
+      if (error instanceof SessionExpiredError) return
       console.error('Fetch events error:', error)
     } finally {
       setLoading(false)
@@ -242,15 +247,14 @@ export default function EventManagement({
   }
 
   function handleContactToggle(eventId: string, guestId: string, contacted: boolean) {
-    // Update guest contacted status via API
-    fetch(`/api/geunnal/events/${eventId}/guests/${guestId}`, {
+    geunnalFetch(`/api/geunnal/events/${eventId}/guests/${guestId}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
+      token, pageId,
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ contacted: contacted ? 1 : 0 }),
-    }).then(() => fetchEvents())
+    }, onSessionExpired)
+      .then(() => fetchEvents())
+      .catch((err) => { if (!(err instanceof SessionExpiredError)) console.error(err) })
   }
 
   const calendarEvents = useMemo(() =>
@@ -545,6 +549,7 @@ export default function EventManagement({
         pageId={pageId}
         token={token}
         initialDate={addModalDate}
+        onSessionExpired={onSessionExpired}
       />
 
       <CostEditModal
@@ -557,7 +562,9 @@ export default function EventManagement({
             : 0
         }
         token={token}
+        pageId={pageId}
         onSave={handleRefresh}
+        onSessionExpired={onSessionExpired}
       />
 
       <EventPopup

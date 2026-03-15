@@ -4,6 +4,7 @@ import { X, Calendar, Clock, MapPin, Users, Trash2, Search, MapPinned, Pencil } 
 import GeunnalBadge from './Badge'
 import { GeunnalEvent, EventGuest, EventSide, MealType, GeunnalVenue } from '@/types/geunnal'
 import { loadKakaoMapSDK, KakaoPlaceResult, KakaoPlaces, KakaoGeocoder } from '@/lib/geunnalKakaoMap'
+import { geunnalFetch, SessionExpiredError } from '@/lib/geunnalFetch'
 
 interface AddEventModalProps {
   open: boolean
@@ -14,6 +15,7 @@ interface AddEventModalProps {
   editEvent?: GeunnalEvent | null
   guests?: EventGuest[]
   initialDate?: string
+  onSessionExpired?: () => void
 }
 
 type RestaurantMode = 'none' | 'kakao' | 'venue' | 'manual' | 'selected'
@@ -27,6 +29,7 @@ export default function AddEventModal({
   editEvent,
   guests = [],
   initialDate,
+  onSessionExpired,
 }: AddEventModalProps) {
   const [loading, setLoading] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -110,13 +113,11 @@ export default function AddEventModal({
   // Fetch venues for the "모임장소" tab and area suggestions
   useEffect(() => {
     if (!open) return
-    fetch(`/api/geunnal/venues?pageId=${pageId}`, {
-      headers: { 'Authorization': `Bearer ${token}` },
-    })
+    geunnalFetch(`/api/geunnal/venues?pageId=${pageId}`, { token, pageId }, onSessionExpired)
       .then(res => res.ok ? res.json() as Promise<{ venues: GeunnalVenue[] }> : Promise.reject())
       .then(data => setVenues(data.venues || []))
-      .catch(() => setVenues([]))
-  }, [open, pageId, token])
+      .catch((err) => { if (!(err instanceof SessionExpiredError)) setVenues([]) })
+  }, [open, pageId, token, onSessionExpired])
 
   // Initialize form when modal opens or editEvent changes
   useEffect(() => {
@@ -375,28 +376,24 @@ export default function AddEventModal({
 
       if (editEvent) {
         // Update existing event
-        const response = await fetch(`/api/geunnal/events/${editEvent.id}`, {
+        const response = await geunnalFetch(`/api/geunnal/events/${editEvent.id}`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
+          token, pageId,
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(eventData),
-        })
+        }, onSessionExpired)
 
         if (!response.ok) {
           throw new Error('모임 수정에 실패했습니다.')
         }
       } else {
         // Create new event
-        const response = await fetch('/api/geunnal/events', {
+        const response = await geunnalFetch('/api/geunnal/events', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
+          token, pageId,
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(eventData),
-        })
+        }, onSessionExpired)
 
         if (!response.ok) {
           throw new Error('모임 생성에 실패했습니다.')
@@ -414,14 +411,12 @@ export default function AddEventModal({
 
         // Add new guests
         for (const guestName of newGuestNames) {
-          await fetch(`/api/geunnal/events/${eventId}/guests`, {
+          await geunnalFetch(`/api/geunnal/events/${eventId}/guests`, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`,
-            },
+            token, pageId,
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name: guestName }),
-          })
+          }, onSessionExpired)
         }
 
         // Remove guests that were deleted
@@ -429,12 +424,10 @@ export default function AddEventModal({
         for (const guestName of removedGuestNames) {
           const guestToRemove = guests.find(g => g.name === guestName)
           if (guestToRemove) {
-            await fetch(`/api/geunnal/events/${eventId}/guests/${guestToRemove.id}`, {
+            await geunnalFetch(`/api/geunnal/events/${eventId}/guests/${guestToRemove.id}`, {
               method: 'DELETE',
-              headers: {
-                'Authorization': `Bearer ${token}`,
-              },
-            })
+              token, pageId,
+            }, onSessionExpired)
           }
         }
       }
@@ -443,6 +436,7 @@ export default function AddEventModal({
       closedByButton.current = true
       onClose()
     } catch (error) {
+      if (error instanceof SessionExpiredError) return
       console.error('Event save error:', error)
       alert(error instanceof Error ? error.message : '모임 저장 중 오류가 발생했습니다.')
     } finally {
@@ -460,12 +454,10 @@ export default function AddEventModal({
     setDeleting(true)
 
     try {
-      const response = await fetch(`/api/geunnal/events/${editEvent.id}`, {
+      const response = await geunnalFetch(`/api/geunnal/events/${editEvent.id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      })
+        token, pageId,
+      }, onSessionExpired)
 
       if (!response.ok) {
         throw new Error('모임 삭제에 실패했습니다.')
@@ -475,6 +467,7 @@ export default function AddEventModal({
       closedByButton.current = true
       onClose()
     } catch (error) {
+      if (error instanceof SessionExpiredError) return
       console.error('Event delete error:', error)
       alert(error instanceof Error ? error.message : '모임 삭제 중 오류가 발생했습니다.')
     } finally {

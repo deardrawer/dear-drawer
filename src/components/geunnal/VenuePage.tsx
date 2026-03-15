@@ -6,10 +6,12 @@ import GeunnalBadge from './Badge'
 import GeunnalCard from './Card'
 import BottomSheet from './BottomSheet'
 import useKakaoMap from '@/hooks/useKakaoMap'
+import { geunnalFetch, SessionExpiredError } from '@/lib/geunnalFetch'
 
 interface VenuePageProps {
   pageId: string
   token: string
+  onSessionExpired?: () => void
 }
 
 const RATING_CONFIG: Record<VenueRating, { icon: typeof ThumbsUp; label: string; colorClass: string }> = {
@@ -36,7 +38,7 @@ const RESERVATION_OPTIONS: { value: ReservationStatus; label: string }[] = [
   { value: 'unknown', label: '모름' },
 ]
 
-export default function VenuePage({ pageId, token }: VenuePageProps) {
+export default function VenuePage({ pageId, token, onSessionExpired }: VenuePageProps) {
   const [venues, setVenues] = useState<GeunnalVenue[]>([])
   const [locationTabs, setLocationTabs] = useState<string[]>([])
   const [areaFilter, setAreaFilter] = useState<string>('all')
@@ -64,9 +66,9 @@ export default function VenuePage({ pageId, token }: VenuePageProps) {
 
   const fetchVenues = async () => {
     try {
-      const res = await fetch(`/api/geunnal/venues?pageId=${pageId}`, {
-        headers: { 'Authorization': `Bearer ${token}` },
-      })
+      const res = await geunnalFetch(`/api/geunnal/venues?pageId=${pageId}`, {
+        token, pageId,
+      }, onSessionExpired)
       if (res.ok) {
         const data = (await res.json()) as { venues: GeunnalVenue[] }
         setVenues(data.venues)
@@ -75,6 +77,7 @@ export default function VenuePage({ pageId, token }: VenuePageProps) {
         setLocationTabs(areas)
       }
     } catch (error) {
+      if (error instanceof SessionExpiredError) return
       console.error('Fetch venues error:', error)
     } finally {
       setLoading(false)
@@ -115,44 +118,43 @@ export default function VenuePage({ pageId, token }: VenuePageProps) {
 
   async function handleDeleteVenue(venueId: string) {
     try {
-      await fetch(`/api/geunnal/venues/${venueId}`, {
+      await geunnalFetch(`/api/geunnal/venues/${venueId}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` },
-      })
+        token, pageId,
+      }, onSessionExpired)
       fetchVenues()
     } catch (error) {
+      if (error instanceof SessionExpiredError) return
       console.error('Delete venue error:', error)
     }
   }
 
   async function handleRatingChange(venueId: string, rating: VenueRating) {
     try {
-      await fetch(`/api/geunnal/venues/${venueId}`, {
+      await geunnalFetch(`/api/geunnal/venues/${venueId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
+        token, pageId,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ rating }),
-      })
+      }, onSessionExpired)
       fetchVenues()
     } catch (error) {
+      if (error instanceof SessionExpiredError) return
       console.error('Update venue error:', error)
     }
   }
 
   async function handleReservationChange(venueId: string, reservation_status: ReservationStatus) {
     try {
-      await fetch(`/api/geunnal/venues/${venueId}`, {
+      await geunnalFetch(`/api/geunnal/venues/${venueId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
+        token, pageId,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reservation_status }),
-      })
+      }, onSessionExpired)
       fetchVenues()
     } catch (error) {
+      if (error instanceof SessionExpiredError) return
       console.error('Update venue error:', error)
     }
   }
@@ -313,6 +315,7 @@ export default function VenuePage({ pageId, token }: VenuePageProps) {
         token={token}
         locationTabs={locationTabs}
         editVenue={editVenue}
+        onSessionExpired={onSessionExpired}
       />
 
       {/* Venue Detail Sheet */}
@@ -384,7 +387,7 @@ function VenueCard({ venue, isHighlighted, onClick }: { venue: GeunnalVenue; isH
 }
 
 /* ─── Add Venue Sheet ─── */
-function AddVenueSheet({ open, onClose, onSave, pageId, token, locationTabs, editVenue }: {
+function AddVenueSheet({ open, onClose, onSave, pageId, token, locationTabs, editVenue, onSessionExpired }: {
   open: boolean
   onClose: () => void
   onSave: () => void
@@ -392,6 +395,7 @@ function AddVenueSheet({ open, onClose, onSave, pageId, token, locationTabs, edi
   token: string
   locationTabs: string[]
   editVenue: GeunnalVenue | null
+  onSessionExpired?: () => void
 }) {
   const [name, setName] = useState('')
   const [address, setAddress] = useState('')
@@ -507,20 +511,23 @@ function AddVenueSheet({ open, onClose, onSave, pageId, token, locationTabs, edi
       }
 
       if (isEdit) {
-        await fetch(`/api/geunnal/venues/${editVenue.id}`, {
+        await geunnalFetch(`/api/geunnal/venues/${editVenue.id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          token, pageId,
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
-        })
+        }, onSessionExpired)
       } else {
-        await fetch('/api/geunnal/venues', {
+        await geunnalFetch('/api/geunnal/venues', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          token, pageId,
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
-        })
+        }, onSessionExpired)
       }
       onSave()
     } catch (error) {
+      if (error instanceof SessionExpiredError) return
       console.error('Save venue error:', error)
     } finally {
       setSaving(false)

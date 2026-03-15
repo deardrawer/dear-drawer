@@ -97,9 +97,9 @@ export default function MainLayout({
               </a>
               <Link
                 href="/my-invitations"
-                className="text-sm transition-colors tracking-wide text-gray-500 hover:text-black"
+                className="text-sm font-medium px-4 py-2 bg-rose-50 text-rose-600 rounded-full hover:bg-rose-100 transition-colors"
               >
-                제작내역
+                내 청첩장 보기
               </Link>
               <Link
                 href="/templates"

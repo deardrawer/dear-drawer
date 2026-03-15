@@ -131,7 +131,7 @@ export default function GalleryPage() {
     <div
       ref={containerRef}
       className="overflow-hidden bg-white"
-      style={{ height: sectionHeight }}
+      style={{ height: sectionHeight, '--sh': sectionHeight } as React.CSSProperties}
     >
       {/* 섹션 인디케이터 - 모바일에서는 작게 */}
       <div className="fixed right-4 sm:right-6 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-2 sm:gap-3">
@@ -169,7 +169,7 @@ export default function GalleryPage() {
       >
         {/* ===== 섹션 1: 히어로 ===== */}
         <section
-          className="h-full flex flex-col items-center justify-center px-4 sm:px-6 py-4 sm:py-10 relative overflow-hidden bg-cover bg-center bg-no-repeat"
+          className="flex flex-col items-center justify-center [height:var(--sh)] px-4 sm:px-6 py-4 sm:py-10 relative overflow-hidden bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${BACKGROUND_IMAGES.hero})` }}
         >
           {/* 어두운 오버레이 */}
@@ -204,7 +204,7 @@ export default function GalleryPage() {
 
         {/* ===== 섹션 2: 브랜드 철학 ===== */}
         <section
-          className="h-full flex flex-col items-center justify-center px-4 sm:px-6 py-4 sm:py-10 relative overflow-hidden bg-cover bg-center bg-no-repeat"
+          className="flex flex-col items-center justify-center [height:var(--sh)] px-4 sm:px-6 py-4 sm:py-10 relative overflow-hidden bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${BACKGROUND_IMAGES.philosophy})` }}
         >
           {/* 어두운 오버레이 */}
@@ -241,7 +241,7 @@ export default function GalleryPage() {
         </section>
 
         {/* ===== 섹션 3: 템플릿 쇼케이스 ===== */}
-        <section className="h-full flex flex-col items-center justify-center px-4 sm:px-6 py-4 sm:py-10 overflow-hidden bg-gradient-to-br from-rose-50 via-white to-blue-50">
+        <section className="flex flex-col items-center justify-center [height:var(--sh)] px-4 sm:px-6 py-4 sm:py-10 overflow-hidden bg-gradient-to-br from-rose-50 via-white to-blue-50">
           <div className="w-full max-w-4xl">
 
             <div className="text-center mb-4 sm:mb-10">
@@ -385,7 +385,7 @@ export default function GalleryPage() {
 
         {/* ===== 섹션 4: 왜 dear drawer? ===== */}
         <section
-          className="h-full flex flex-col items-center justify-center px-3 sm:px-6 py-4 sm:py-10 relative overflow-hidden bg-cover bg-center bg-no-repeat"
+          className="flex flex-col items-center justify-center [height:var(--sh)] px-3 sm:px-6 py-4 sm:py-10 relative overflow-hidden bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${BACKGROUND_IMAGES.features})` }}
         >
           {/* 어두운 오버레이 */}
@@ -454,7 +454,7 @@ export default function GalleryPage() {
         </section>
 
         {/* ===== 섹션 5: CTA ===== */}
-        <section className="h-full flex flex-col items-center justify-center px-4 sm:px-6 py-4 sm:py-10 overflow-hidden bg-black text-white">
+        <section className="flex flex-col items-center justify-center [height:var(--sh)] px-4 sm:px-6 py-4 sm:py-10 overflow-hidden bg-black text-white">
           <div className="text-center max-w-2xl">
             <h2 className="text-xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-6 leading-tight">
               청첩장을 넘어<br />

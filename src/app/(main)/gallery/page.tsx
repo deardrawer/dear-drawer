@@ -16,11 +16,29 @@ const BACKGROUND_IMAGES = {
 
 export default function GalleryPage() {
   const [currentSection, setCurrentSection] = useState(0)
+  const [sectionHeight, setSectionHeight] = useState('100vh')
   const containerRef = useRef<HTMLDivElement>(null)
   const isScrolling = useRef(false)
   const touchStartY = useRef(0)
 
   const totalSections = 5
+
+  // 배너+헤더 높이를 빼고 실제 사용 가능한 높이 계산
+  useEffect(() => {
+    const measure = () => {
+      if (containerRef.current) {
+        const top = containerRef.current.getBoundingClientRect().top
+        setSectionHeight(`calc(100dvh - ${top}px)`)
+      }
+    }
+    measure()
+    // 배너 닫힘 등 레이아웃 변화 감지
+    const observer = new ResizeObserver(measure)
+    if (containerRef.current?.parentElement) {
+      observer.observe(containerRef.current.parentElement)
+    }
+    return () => observer.disconnect()
+  }, [])
 
   // 섹션 이동 함수
   const scrollToSection = (index: number) => {
@@ -112,7 +130,8 @@ export default function GalleryPage() {
   return (
     <div
       ref={containerRef}
-      className="h-screen overflow-hidden bg-white"
+      className="overflow-hidden bg-white"
+      style={{ height: sectionHeight }}
     >
       {/* 섹션 인디케이터 - 모바일에서는 작게 */}
       <div className="fixed right-4 sm:right-6 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-2 sm:gap-3">
@@ -146,11 +165,11 @@ export default function GalleryPage() {
       {/* 섹션 컨테이너 */}
       <div
         className="transition-transform duration-1000 ease-in-out"
-        style={{ transform: `translateY(-${currentSection * 100}vh)` }}
+        style={{ transform: `translateY(-${currentSection * 100}%)` }}
       >
         {/* ===== 섹션 1: 히어로 ===== */}
         <section
-          className="h-screen flex flex-col items-center justify-center px-4 sm:px-6 py-4 sm:py-10 relative overflow-hidden bg-cover bg-center bg-no-repeat"
+          className="h-full flex flex-col items-center justify-center px-4 sm:px-6 py-4 sm:py-10 relative overflow-hidden bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${BACKGROUND_IMAGES.hero})` }}
         >
           {/* 어두운 오버레이 */}
@@ -185,7 +204,7 @@ export default function GalleryPage() {
 
         {/* ===== 섹션 2: 브랜드 철학 ===== */}
         <section
-          className="h-screen flex flex-col items-center justify-center px-4 sm:px-6 py-4 sm:py-10 relative overflow-hidden bg-cover bg-center bg-no-repeat"
+          className="h-full flex flex-col items-center justify-center px-4 sm:px-6 py-4 sm:py-10 relative overflow-hidden bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${BACKGROUND_IMAGES.philosophy})` }}
         >
           {/* 어두운 오버레이 */}
@@ -222,7 +241,7 @@ export default function GalleryPage() {
         </section>
 
         {/* ===== 섹션 3: 템플릿 쇼케이스 ===== */}
-        <section className="h-screen flex flex-col items-center justify-center px-4 sm:px-6 py-4 sm:py-10 overflow-hidden bg-gradient-to-br from-rose-50 via-white to-blue-50">
+        <section className="h-full flex flex-col items-center justify-center px-4 sm:px-6 py-4 sm:py-10 overflow-hidden bg-gradient-to-br from-rose-50 via-white to-blue-50">
           <div className="w-full max-w-4xl">
 
             <div className="text-center mb-4 sm:mb-10">
@@ -366,7 +385,7 @@ export default function GalleryPage() {
 
         {/* ===== 섹션 4: 왜 dear drawer? ===== */}
         <section
-          className="h-screen flex flex-col items-center justify-center px-3 sm:px-6 py-4 sm:py-10 relative overflow-hidden bg-cover bg-center bg-no-repeat"
+          className="h-full flex flex-col items-center justify-center px-3 sm:px-6 py-4 sm:py-10 relative overflow-hidden bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${BACKGROUND_IMAGES.features})` }}
         >
           {/* 어두운 오버레이 */}
@@ -435,7 +454,7 @@ export default function GalleryPage() {
         </section>
 
         {/* ===== 섹션 5: CTA ===== */}
-        <section className="h-screen flex flex-col items-center justify-center px-4 sm:px-6 py-4 sm:py-10 overflow-hidden bg-black text-white">
+        <section className="h-full flex flex-col items-center justify-center px-4 sm:px-6 py-4 sm:py-10 overflow-hidden bg-black text-white">
           <div className="text-center max-w-2xl">
             <h2 className="text-xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-6 leading-tight">
               청첩장을 넘어<br />

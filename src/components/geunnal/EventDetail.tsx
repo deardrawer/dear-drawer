@@ -376,11 +376,6 @@ export default function EventDetail({
                   <p className="text-[12px] text-[#9B8CC4] mt-0.5 truncate">{event.location}</p>
                 )}
               </div>
-              {(locationText || event.location) && (
-                <button onClick={openKakaoMap} className="text-[#8B75D0] shrink-0 mt-0.5">
-                  <ExternalLink size={14} />
-                </button>
-              )}
             </div>
             <div className="flex items-center gap-2">
               <Clock size={16} strokeWidth={1.5} className="text-[#8B75D0] shrink-0" />
@@ -464,28 +459,24 @@ export default function EventDetail({
                 <div className="px-4 py-3">
                   <div className="flex items-center justify-between">
                     <p className="text-[14px] font-medium text-[#2A2240]">{venue.name}</p>
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        onClick={() => handleReservationToggle('reserved')}
-                        className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
-                          event.reservation_status === 'reserved'
-                            ? 'bg-[#E8F5E9] text-[#4CAF50]'
-                            : 'bg-[#F9F7FD] text-[#9B8CC4] hover:bg-[#EDE9FA]'
-                        }`}
-                      >
-                        예약완료
-                      </button>
-                      <button
-                        onClick={() => handleReservationToggle('unavailable')}
-                        className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
-                          event.reservation_status === 'unavailable'
-                            ? 'bg-[#FFEBEE] text-[#EF5350]'
-                            : 'bg-[#F9F7FD] text-[#9B8CC4] hover:bg-[#EDE9FA]'
-                        }`}
-                      >
+                    {venue.reservation_status === 'unavailable' ? (
+                      <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-[#FFEBEE] text-[#EF5350]">
                         예약불가
-                      </button>
-                    </div>
+                      </span>
+                    ) : (
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => handleReservationToggle('reserved')}
+                          className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                            event.reservation_status === 'reserved'
+                              ? 'bg-[#E8F5E9] text-[#4CAF50]'
+                              : 'bg-[#F9F7FD] text-[#9B8CC4] hover:bg-[#EDE9FA]'
+                          }`}
+                        >
+                          {event.reservation_status === 'reserved' ? '예약완료' : '미예약'}
+                        </button>
+                      </div>
+                    )}
                   </div>
                   <p className="text-[12px] text-[#9B8CC4] mt-0.5">{venue.address}</p>
                   {venue.phone && (
@@ -528,17 +519,7 @@ export default function EventDetail({
                             : 'bg-[#F9F7FD] text-[#9B8CC4] hover:bg-[#EDE9FA]'
                         }`}
                       >
-                        예약완료
-                      </button>
-                      <button
-                        onClick={() => handleReservationToggle('unavailable')}
-                        className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
-                          event.reservation_status === 'unavailable'
-                            ? 'bg-[#FFEBEE] text-[#EF5350]'
-                            : 'bg-[#F9F7FD] text-[#9B8CC4] hover:bg-[#EDE9FA]'
-                        }`}
-                      >
-                        예약불가
+                        {event.reservation_status === 'reserved' ? '예약완료' : '미예약'}
                       </button>
                     </div>
                   )}

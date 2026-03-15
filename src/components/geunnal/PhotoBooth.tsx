@@ -369,7 +369,7 @@ export default function PhotoBooth({ pageId, token, slug, groomName, brideName }
       })
       if (!subRes.ok) throw new Error('제출 실패')
       setShowEventSheet(false)
-      showToastMsg('모임에 저장되었습니다')
+      showToastMsg('💕 모임에 저장되었습니다')
     } catch { showToastMsg('저장에 실패했습니다') }
     finally { setSaving(false) }
   }, [comment, title, groomName, brideName, pageId, token])
@@ -435,8 +435,8 @@ export default function PhotoBooth({ pageId, token, slug, groomName, brideName }
           dateText={dateText}
           comment={comment}
           attendees={attendees}
-          onPhotoSlotClick={step === 1 ? handlePhotoSlotClick : undefined}
-          selectedSlot={step === 1 ? swapFrom : null}
+          onPhotoSlotClick={handlePhotoSlotClick}
+          selectedSlot={swapFrom}
         />
       </div>
 
@@ -484,13 +484,16 @@ export default function PhotoBooth({ pageId, token, slug, groomName, brideName }
           </>
         )}
         {step === 2 && (
-          <TextEditor
-            title={title} onTitleChange={setTitle}
-            dateText={dateText} onDateTextChange={setDateText}
-            comment={comment} onCommentChange={setComment}
-            attendees={attendees} onAttendeesChange={setAttendees}
-            events={events} selectedEventId={selectedEventId} onEventSelect={handleEventSelect}
-          />
+          <>
+            <TextEditor
+              title={title} onTitleChange={setTitle}
+              dateText={dateText} onDateTextChange={setDateText}
+              comment={comment} onCommentChange={setComment}
+              attendees={attendees} onAttendeesChange={setAttendees}
+              events={events} selectedEventId={selectedEventId} onEventSelect={handleEventSelect}
+            />
+            <p className="text-[12px] text-[#9B8CC4] mt-4">위 프레임의 빈 슬롯을 탭하여 사진을 추가할 수 있습니다</p>
+          </>
         )}
       </div>
 

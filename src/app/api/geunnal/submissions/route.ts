@@ -22,14 +22,6 @@ async function getAuthenticatedPageId(
 
 export async function GET(request: NextRequest) {
   try {
-    const authenticatedPageId = await getAuthenticatedPageId(request);
-    if (!authenticatedPageId) {
-      return NextResponse.json(
-        { error: "인증 토큰이 필요합니다" },
-        { status: 401 }
-      );
-    }
-
     const { searchParams } = new URL(request.url);
     const eventId = searchParams.get("eventId");
 
@@ -40,7 +32,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Verify that the event belongs to the authenticated page
+    // Verify event exists
     const event = await getEventById(eventId);
     if (!event) {
       return NextResponse.json(
@@ -49,7 +41,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (event.page_id !== authenticatedPageId) {
+    // If authenticated, verify page ownership for extra security
+    const authenticatedPageId = await getAuthenticatedPageId(request);
+    if (authenticatedPageId && event.page_id !== authenticatedPageId) {
       return NextResponse.json({ error: "권한이 없습니다" }, { status: 403 });
     }
 

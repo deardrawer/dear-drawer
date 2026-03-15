@@ -93,6 +93,7 @@ export default function EventManagement({
   const [upcomingSideFilter, setUpcomingSideFilter] = useState<EventSide | 'all'>('all')
   const [showCost, setShowCost] = useState(false)
   const [popupDate, setPopupDate] = useState<string | null>(null)
+  const [addModalDate, setAddModalDate] = useState<string | undefined>()
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({})
 
   const dday = getDday(weddingDate)
@@ -219,12 +220,6 @@ export default function EventManagement({
     }
   }, [eventsWithGuests])
 
-  const popupInitialIndex = useMemo(() => {
-    if (!popupDate) return 0
-    const idx = sortedEvents.findIndex(e => e.date.split('T')[0] === popupDate)
-    return idx >= 0 ? idx : 0
-  }, [sortedEvents, popupDate])
-
   const allEventsWithGuests = useMemo(() => {
     return eventsWithGuests
       .filter(ewg => ewg.event.date !== 'TBD' && ewg.event.date !== '')
@@ -232,10 +227,12 @@ export default function EventManagement({
   }, [eventsWithGuests])
 
   function handleDateClick(dateStr: string) {
-    const dateEvents = sortedEvents.filter(e => e.date.split('T')[0] === dateStr)
-    if (dateEvents.length > 0) {
-      setPopupDate(dateStr)
-    }
+    setPopupDate(dateStr)
+  }
+
+  function handleAddEventFromPopup(dateStr: string) {
+    setAddModalDate(dateStr)
+    setAddModalOpen(true)
   }
 
   function handleContactToggle(eventId: string, guestId: string, contacted: boolean) {
@@ -312,7 +309,7 @@ export default function EventManagement({
       </header>
 
       {/* Calendar */}
-      <MonthCalendar events={calendarEvents} onDateClick={handleDateClick} />
+      <MonthCalendar events={calendarEvents} onDateClick={handleDateClick} weddingDate={weddingDate} />
 
       {/* Cost Summary */}
       {costSummary.total > 0 && (
@@ -533,7 +530,7 @@ export default function EventManagement({
 
       {/* Add Event Button */}
       <button
-        onClick={() => setAddModalOpen(true)}
+        onClick={() => { setAddModalDate(undefined); setAddModalOpen(true) }}
         className="fixed bottom-24 right-5 w-14 h-14 text-white rounded-full shadow-lg flex items-center justify-center z-40 active:scale-95 transition-transform"
         style={{ background: 'linear-gradient(135deg, #8B75D0, #B87AAB, #D4899A)' }}
       >
@@ -543,10 +540,11 @@ export default function EventManagement({
       {/* Modals */}
       <AddEventModal
         open={addModalOpen}
-        onClose={() => setAddModalOpen(false)}
+        onClose={() => { setAddModalOpen(false); setAddModalDate(undefined) }}
         onSave={handleRefresh}
         pageId={pageId}
         token={token}
+        initialDate={addModalDate}
       />
 
       <CostEditModal
@@ -567,8 +565,9 @@ export default function EventManagement({
         onClose={() => setPopupDate(null)}
         events={sortedEvents}
         eventsWithGuests={allEventsWithGuests}
-        initialIndex={popupInitialIndex}
+        initialDate={popupDate || undefined}
         onEventClick={(id) => { setPopupDate(null); onEventClick(id) }}
+        onAddEvent={(dateStr) => { setPopupDate(null); handleAddEventFromPopup(dateStr) }}
       />
     </div>
   )

@@ -347,6 +347,9 @@ function StepAlbum({
             {groomName} & {brideName}
           </h1>
           <p className="text-[15px] text-[#5A5270] mt-1">결혼합니다</p>
+          <p className="text-[13px] text-[#9B8CC4] mt-2 leading-[1.6]">
+            소중한 분들과 인사를 나누고자<br />작은 식사 자리를 마련했습니다.
+          </p>
         </div>
 
         {/* Event Invitation Card */}
@@ -413,9 +416,9 @@ function StepAlbum({
           </div>
 
           {/* Kakao Map */}
-          {(venueLat && venueLng) ? (
+          {(venueLat && venueLng) || venueAddress ? (
             <div className="px-5 pb-4">
-              <KakaoMapEmbed lat={venueLat} lng={venueLng} name={venueName || locationDisplay} />
+              <KakaoMapEmbed lat={venueLat} lng={venueLng} name={venueName || locationDisplay} address={venueAddress} />
               <button
                 onClick={openKakaoMap}
                 className="w-full mt-2 h-9 rounded-full border border-[#E8E4F0] text-[12px] text-[#5A5270] font-medium flex items-center justify-center gap-1.5 hover:bg-[#EDE9FA]/20 transition-colors"
@@ -510,7 +513,7 @@ function StepAlbum({
 }
 
 /* ── Kakao Map Embed ── */
-function KakaoMapEmbed({ lat, lng, name }: { lat: number; lng: number; name: string }) {
+function KakaoMapEmbed({ lat, lng, name, address }: { lat?: number; lng?: number; name: string; address?: string }) {
   const mapRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -521,19 +524,43 @@ function KakaoMapEmbed({ lat, lng, name }: { lat: number; lng: number; name: str
       if (!mounted || !mapRef.current) return
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const kakao = (window as any).kakao
-      const position = new kakao.maps.LatLng(lat, lng)
-      const map = new kakao.maps.Map(mapRef.current, {
-        center: position,
-        level: 4,
-        draggable: false,
-        scrollwheel: false,
-        disableDoubleClickZoom: true,
-      })
-      new kakao.maps.Marker({ map, position })
+
+      const initMap = (position: { getLat: () => number; getLng: () => number }) => {
+        if (!mounted || !mapRef.current) return
+        const map = new kakao.maps.Map(mapRef.current, {
+          center: position,
+          level: 4,
+          draggable: false,
+          scrollwheel: false,
+          disableDoubleClickZoom: true,
+        })
+        new kakao.maps.Marker({ map, position })
+      }
+
+      if (lat && lng) {
+        initMap(new kakao.maps.LatLng(lat, lng))
+      } else if (address && kakao.maps.services) {
+        const geocoder = new kakao.maps.services.Geocoder()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        geocoder.addressSearch(address, (result: any[], status: string) => {
+          if (status === kakao.maps.services.Status.OK && result.length > 0) {
+            initMap(new kakao.maps.LatLng(result[0].y, result[0].x))
+          } else {
+            // Fallback: keyword search
+            const places = new kakao.maps.services.Places()
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            places.keywordSearch(address, (res: any[], s: string) => {
+              if (s === kakao.maps.services.Status.OK && res.length > 0) {
+                initMap(new kakao.maps.LatLng(res[0].y, res[0].x))
+              }
+            })
+          }
+        })
+      }
     }).catch(() => {})
 
     return () => { mounted = false }
-  }, [lat, lng])
+  }, [lat, lng, address])
 
   return (
     <div

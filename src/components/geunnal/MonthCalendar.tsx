@@ -7,6 +7,7 @@ import type { GeunnalEvent, MealType } from '@/types/geunnal'
 interface MonthCalendarProps {
   events: GeunnalEvent[]
   onDateClick?: (dateStr: string) => void
+  weddingDate?: string | null
 }
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
@@ -54,11 +55,12 @@ function getInitialMonth(events: GeunnalEvent[]): { year: number; month: number 
   return { year: today.getFullYear(), month: today.getMonth() }
 }
 
-export default function MonthCalendar({ events, onDateClick }: MonthCalendarProps) {
+export default function MonthCalendar({ events, onDateClick, weddingDate }: MonthCalendarProps) {
   const initial = useMemo(() => getInitialMonth(events), [events])
   const [year, setYear] = useState(initial.year)
   const [month, setMonth] = useState(initial.month)
   const todayStr = getTodayStr()
+  const weddingDateStr = weddingDate?.split('T')[0] || null
 
   useEffect(() => {
     sessionStorage.setItem('geunnal-calendar-month', JSON.stringify({ year, month }))
@@ -137,6 +139,7 @@ export default function MonthCalendar({ events, onDateClick }: MonthCalendarProp
 
           const dateStr = toDateStr(year, month, day)
           const isToday = dateStr === todayStr
+          const isWeddingDay = dateStr === weddingDateStr
           const dayEvents = eventMap[dateStr] || []
           const dayOfWeek = (firstDay + day - 1) % 7
 
@@ -147,20 +150,22 @@ export default function MonthCalendar({ events, onDateClick }: MonthCalendarProp
               className={`
                 min-h-[72px] flex flex-col items-start p-0.5
                 rounded-lg transition-colors relative text-left
-                ${isToday ? 'bg-[#EDE9FA]' : 'hover:bg-[#F9F7FD]'}
+                ${isWeddingDay ? 'bg-[#FAE9F0]' : isToday ? 'bg-[#EDE9FA]' : 'hover:bg-[#F9F7FD]'}
               `}
             >
               {/* Day number + side icons */}
               <div className="flex items-center gap-0.5 ml-0.5 mb-0.5">
                 <span
                   className={`text-[12px] leading-none ${
-                    isToday
-                      ? 'font-semibold text-[#8B75D0]'
-                      : dayOfWeek === 0
-                        ? 'text-[#D4899A]'
-                        : dayOfWeek === 6
-                          ? 'text-[#8B75D0]'
-                          : 'text-[#2A2240]'
+                    isWeddingDay
+                      ? 'font-semibold text-[#D4899A]'
+                      : isToday
+                        ? 'font-semibold text-[#8B75D0]'
+                        : dayOfWeek === 0
+                          ? 'text-[#D4899A]'
+                          : dayOfWeek === 6
+                            ? 'text-[#8B75D0]'
+                            : 'text-[#2A2240]'
                   }`}
                 >
                   {day}
@@ -181,6 +186,11 @@ export default function MonthCalendar({ events, onDateClick }: MonthCalendarProp
                   </div>
                 )}
               </div>
+
+              {/* Wedding day label */}
+              {isWeddingDay && (
+                <span className="text-[8px] leading-[1.2] font-bold text-[#D4899A] ml-0.5">OUR W DAY</span>
+              )}
 
               {/* Event details */}
               <div className="flex flex-col gap-[2px] w-full overflow-hidden">

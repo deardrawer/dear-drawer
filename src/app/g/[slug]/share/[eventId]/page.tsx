@@ -1,7 +1,7 @@
 import { getPageBySlug, getEventById, getGuestsByEventId, getVenuesByPageId } from "@/lib/geunnalDb";
 import { notFound } from "next/navigation";
 import GuestEventClient from "./GuestEventClient";
-import type { Viewport } from "next";
+import type { Viewport, Metadata } from "next";
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -12,6 +12,19 @@ export const viewport: Viewport = {
 
 interface PageProps {
   params: Promise<{ slug: string; eventId: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const page = await getPageBySlug(slug);
+  if (!page) return {};
+  const title = `${page.groom_name} & ${page.bride_name} 모임 초대`;
+  const description = `${page.groom_name} & ${page.bride_name} 청첩장 모임에 초대합니다.`;
+  return {
+    title,
+    description,
+    openGraph: { title, description },
+  };
 }
 
 export default async function GuestSharePage({ params }: PageProps) {

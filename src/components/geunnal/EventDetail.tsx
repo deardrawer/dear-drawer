@@ -14,8 +14,6 @@ import {
   Check,
   X,
   Plus,
-  UserCheck,
-  UserX,
   Eye,
   Download,
   Link,
@@ -514,7 +512,7 @@ export default function EventDetail({
                 <div
                   key={guest.id}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                    guest.contacted ? 'bg-[#EDE9FA]/20' : 'hover:bg-[#F9F7FD]'
+                    guest.contacted ? 'bg-[#E8F5E9]/30' : 'hover:bg-[#F9F7FD]'
                   }`}
                 >
                   <button
@@ -526,9 +524,9 @@ export default function EventDetail({
                       {guest.name}
                     </span>
                     {guest.contacted ? (
-                      <UserCheck size={16} className="text-[#8B75D0] shrink-0" />
+                      <Phone size={16} className="text-[#66BB6A] shrink-0" />
                     ) : (
-                      <UserX size={16} className="text-[#9B8CC4] shrink-0" />
+                      <Phone size={16} className="text-[#C5BAE8] shrink-0" />
                     )}
                   </button>
                   <button

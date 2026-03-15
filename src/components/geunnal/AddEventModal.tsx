@@ -1,7 +1,6 @@
 'use client'
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { X, Calendar, Clock, MapPin, Users, Trash2, Search, MapPinned, Pencil } from 'lucide-react'
-import BottomSheet from './BottomSheet'
 import GeunnalBadge from './Badge'
 import { GeunnalEvent, EventGuest, EventSide, MealType, GeunnalVenue } from '@/types/geunnal'
 import { loadKakaoMapSDK, KakaoPlaceResult, KakaoPlaces } from '@/lib/geunnalKakaoMap'
@@ -14,6 +13,7 @@ interface AddEventModalProps {
   token: string
   editEvent?: GeunnalEvent | null
   guests?: EventGuest[]
+  initialDate?: string
 }
 
 type RestaurantMode = 'none' | 'kakao' | 'venue' | 'manual' | 'selected'
@@ -26,6 +26,7 @@ export default function AddEventModal({
   token,
   editEvent,
   guests = [],
+  initialDate,
 }: AddEventModalProps) {
   const [loading, setLoading] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -136,7 +137,7 @@ export default function AddEventModal({
       setName('')
       setSide('both')
       setMealType('lunch')
-      setDate('')
+      setDate(initialDate || '')
       setTime('')
       setDateTbd(false)
       setArea('')
@@ -365,8 +366,20 @@ export default function AddEventModal({
     }
   }
 
+  if (!open) return null
+
   return (
-    <BottomSheet open={open} onClose={onClose} title={editEvent ? '모임 수정' : '새 모임 추가'}>
+    <div className="fixed inset-0 z-50 bg-white flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 py-4 border-b border-[#E8E4F0] shrink-0">
+        <h2 className="text-[17px] font-semibold text-[#2A2240]">{editEvent ? '모임 수정' : '새 모임 추가'}</h2>
+        <button type="button" onClick={onClose} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[#F9F7FD] transition-colors">
+          <X size={20} strokeWidth={1.5} className="text-[#5A5270]" />
+        </button>
+      </div>
+
+      {/* Scrollable form */}
+      <div className="flex-1 overflow-y-auto px-5 py-5">
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Event Name */}
         <div>
@@ -596,7 +609,7 @@ export default function AddEventModal({
                     }`}
                   >
                     <Search size={12} strokeWidth={1.5} />
-                    카카오 검색
+                    식당검색
                   </button>
                   <button
                     type="button"
@@ -833,6 +846,7 @@ export default function AddEventModal({
           </button>
         </div>
       </form>
-    </BottomSheet>
+      </div>
+    </div>
   )
 }

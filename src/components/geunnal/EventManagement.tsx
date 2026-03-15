@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useMemo, useRef } from 'react'
-import { Plus, Clock, MapPin, Users, ChevronDown, ChevronUp, Wallet, Pencil, CalendarOff, Check, Phone, Settings, Lock, Bell, Link, LogOut, ChevronRight } from 'lucide-react'
+import { Plus, Clock, MapPin, Users, ChevronDown, ChevronUp, Wallet, Pencil, CalendarOff, Check, Phone, Settings, Lock, Bell, MessageCircle, LogOut, ChevronRight } from 'lucide-react'
 import { GeunnalEvent, EventGuest, EventSide, MealType } from '@/types/geunnal'
 import GeunnalCard from './Card'
 import GeunnalBadge from './Badge'
@@ -9,6 +9,7 @@ import AddEventModal from './AddEventModal'
 import CostEditModal from './CostEditModal'
 import EventPopup from './EventPopup'
 import BottomSheet from './BottomSheet'
+import { sendKakaoShare } from '@/lib/geunnalKakao'
 
 interface EventManagementProps {
   pageId: string
@@ -99,7 +100,6 @@ export default function EventManagement({
   const [popupDate, setPopupDate] = useState<string | null>(null)
   const [addModalDate, setAddModalDate] = useState<string | undefined>()
   const [showSettings, setShowSettings] = useState(false)
-  const [linkCopied, setLinkCopied] = useState(false)
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({})
 
   const dday = getDday(weddingDate)
@@ -300,25 +300,12 @@ export default function EventManagement({
           open={showSettings}
           onClose={() => setShowSettings(false)}
           slug={slug}
-          linkCopied={linkCopied}
-          onLinkCopy={() => {
-            const url = `https://invite.deardrawer.com/g/${slug}`
-            navigator.clipboard.writeText(url).then(() => {
-              setLinkCopied(true)
-              setTimeout(() => setLinkCopied(false), 2000)
-            })
-          }}
+          groomName={groomName}
+          brideName={brideName}
           onPasswordChange={onPasswordChange}
           onNotificationEdit={onNotificationEdit}
           onLogout={onLogout}
         />
-      )}
-
-      {/* Link Copied Toast */}
-      {linkCopied && (
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 rounded-full bg-[#2A2240]/85 text-white text-[13px] font-medium shadow-lg whitespace-nowrap">
-          링크가 복사되었습니다
-        </div>
       )}
 
       {/* Calendar */}
@@ -587,12 +574,12 @@ export default function EventManagement({
 }
 
 /* ─── Settings Sheet ─── */
-function SettingsSheet({ open, onClose, slug, linkCopied, onLinkCopy, onPasswordChange, onNotificationEdit, onLogout }: {
+function SettingsSheet({ open, onClose, slug, groomName, brideName, onPasswordChange, onNotificationEdit, onLogout }: {
   open: boolean
   onClose: () => void
   slug: string
-  linkCopied: boolean
-  onLinkCopy: () => void
+  groomName: string
+  brideName: string
   onPasswordChange?: () => void
   onNotificationEdit?: () => void
   onLogout?: () => void
@@ -610,6 +597,24 @@ function SettingsSheet({ open, onClose, slug, linkCopied, onLinkCopy, onPassword
             <ChevronRight size={16} strokeWidth={1.5} className="text-[#C5BAE8]" />
           </button>
         )}
+        <button
+          onClick={() => {
+            try {
+              sendKakaoShare({
+                title: `${groomName} & ${brideName} 청첩장 모임에 초대합니다`,
+                description: '함께 모임을 관리해요',
+                url: `https://invite.deardrawer.com/g/${slug}`,
+              })
+            } catch {
+              // Kakao SDK not loaded fallback
+            }
+          }}
+          className="flex items-center gap-3 px-1 py-3.5 border-b border-[#F3F0FA]"
+        >
+          <MessageCircle size={20} strokeWidth={1.5} className="text-[#9B8CC4]" />
+          <span className="flex-1 text-left text-[14px] text-[#2A2240]">카카오톡 공유</span>
+          <ChevronRight size={16} strokeWidth={1.5} className="text-[#C5BAE8]" />
+        </button>
         {onNotificationEdit && (
           <button
             onClick={() => { onClose(); onNotificationEdit() }}
@@ -620,18 +625,6 @@ function SettingsSheet({ open, onClose, slug, linkCopied, onLinkCopy, onPassword
             <ChevronRight size={16} strokeWidth={1.5} className="text-[#C5BAE8]" />
           </button>
         )}
-        <button
-          onClick={onLinkCopy}
-          className="flex items-center gap-3 px-1 py-3.5 border-b border-[#F3F0FA]"
-        >
-          <Link size={20} strokeWidth={1.5} className="text-[#9B8CC4]" />
-          <span className="flex-1 text-left text-[14px] text-[#2A2240]">링크 복사</span>
-          {linkCopied ? (
-            <span className="text-[12px] text-[#8B75D0] font-medium">복사됨!</span>
-          ) : (
-            <ChevronRight size={16} strokeWidth={1.5} className="text-[#C5BAE8]" />
-          )}
-        </button>
         {onLogout && (
           <button
             onClick={() => { onClose(); onLogout() }}

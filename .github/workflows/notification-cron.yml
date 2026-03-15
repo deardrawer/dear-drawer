@@ -2,8 +2,8 @@ name: Send Geunnal Notifications
 
 on:
   schedule:
-    # 매시간 정각 (UTC) - KST는 +9시간
-    - cron: '0 * * * *'
+    # 매 30분마다 (UTC) - KST는 +9시간
+    - cron: '0,30 * * * *'
   workflow_dispatch:
     # 수동 실행 가능
 

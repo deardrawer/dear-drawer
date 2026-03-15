@@ -19,9 +19,10 @@ const DAY_OPTIONS = [
 
 type DayValue = (typeof DAY_OPTIONS)[number]['value']
 
-const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => {
-  const h = String(i).padStart(2, '0')
-  return { value: `${h}:00`, label: `${h}:00` }
+const TIME_OPTIONS = Array.from({ length: 48 }, (_, i) => {
+  const h = String(Math.floor(i / 2)).padStart(2, '0')
+  const m = i % 2 === 0 ? '00' : '30'
+  return { value: `${h}:${m}`, label: `${h}:${m}` }
 })
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || ''
@@ -223,7 +224,7 @@ export default function NotificationSheet({
                     disabled={saving}
                     className="w-full appearance-none px-4 py-3 text-[14px] text-[#2A2240] bg-[#F9F7FD] border border-[#E8E4F0] rounded-xl focus:outline-none focus:border-[#8B75D0] transition-colors pr-10"
                   >
-                    {HOUR_OPTIONS.map(({ value, label }) => (
+                    {TIME_OPTIONS.map(({ value, label }) => (
                       <option key={value} value={value}>{label}</option>
                     ))}
                   </select>

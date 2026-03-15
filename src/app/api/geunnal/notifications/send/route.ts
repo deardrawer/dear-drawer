@@ -10,12 +10,14 @@ import {
 import { sendPushNotification } from "@/lib/webPush";
 
 // KST 현재 날짜/시간 가져오기
-function getKSTNow(): { date: string; hour: string } {
+function getKSTNow(): { date: string; time: string } {
   const now = new Date();
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const date = kst.toISOString().slice(0, 10); // YYYY-MM-DD
-  const hour = String(kst.getUTCHours()).padStart(2, "0") + ":00";
-  return { date, hour };
+  const minutes = kst.getUTCMinutes();
+  const roundedMin = minutes < 30 ? "00" : "30";
+  const time = String(kst.getUTCHours()).padStart(2, "0") + ":" + roundedMin;
+  return { date, time };
 }
 
 // 날짜 오프셋 계산
@@ -61,7 +63,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "VAPID keys not configured" }, { status: 500 });
   }
 
-  const { date: today, hour: currentHour } = getKSTNow();
+  const { date: today, time: currentTime } = getKSTNow();
   const allSettings = await getAllActiveNotificationSettings();
 
   let sent = 0;
@@ -70,7 +72,7 @@ export async function POST(request: NextRequest) {
 
   for (const setting of allSettings) {
     // 시간 매칭: 현재 시각이 설정된 notify_time과 일치해야 함
-    if (setting.notify_time !== currentHour) {
+    if (setting.notify_time !== currentTime) {
       skipped++;
       continue;
     }
@@ -140,7 +142,7 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({
     success: true,
     date: today,
-    hour: currentHour,
+    time: currentTime,
     stats: { sent, skipped, expired, total: allSettings.length },
   });
 }

@@ -65,7 +65,7 @@ export default function MainLayout({
       <header className="border-b border-gray-100 bg-white/90 backdrop-blur-md sticky top-0 z-50">
         <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between">
           {/* Logo */}
-          <Link href="/gallery" className="flex-shrink-0">
+          <Link href="/" className="flex-shrink-0">
             <Image
               src="/logo.png"
               alt="dear drawer"
@@ -200,7 +200,7 @@ export default function MainLayout({
                 <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-3">서비스</h4>
                 <ul className="space-y-2">
                   <li>
-                    <Link href="/gallery" className="text-sm text-gray-500 hover:text-black transition-colors">
+                    <Link href="/" className="text-sm text-gray-500 hover:text-black transition-colors">
                       템플릿 둘러보기
                     </Link>
                   </li>

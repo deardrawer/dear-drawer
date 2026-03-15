@@ -321,6 +321,7 @@ export default function GeunnalClient({
         open={showNotificationEdit}
         onClose={() => setShowNotificationEdit(false)}
         pageId={pageId}
+        token={token || ''}
       />
     </div>
   )

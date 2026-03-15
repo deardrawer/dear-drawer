@@ -5,6 +5,8 @@ import type {
   EventGuest,
   GeunnalSubmission,
   GeunnalVenue, GeunnalVenueInput,
+  GeunnalPushSubscription,
+  GeunnalNotificationSettings, NotificationDayBefore,
 } from "@/types/geunnal";
 
 // D1 Database 타입
@@ -398,5 +400,143 @@ export async function updateVenue(id: string, input: GeunnalVenueInput): Promise
 export async function deleteVenue(id: string): Promise<boolean> {
   const db = await getDB();
   const result = await db.prepare("DELETE FROM geunnal_venues WHERE id = ?").bind(id).run();
+  return result.meta.changes > 0;
+}
+
+// ── Push Subscriptions ──
+
+export async function upsertPushSubscription(
+  pageId: string, endpoint: string, p256dh: string, auth: string
+): Promise<GeunnalPushSubscription> {
+  const db = await getDB();
+  const now = new Date().toISOString();
+
+  // Delete existing subscription for this endpoint, then insert new
+  await db.prepare("DELETE FROM geunnal_push_subscriptions WHERE endpoint = ?").bind(endpoint).run();
+
+  const id = generateId();
+  const result = await db
+    .prepare(
+      `INSERT INTO geunnal_push_subscriptions (id, page_id, endpoint, p256dh, auth, created_at)
+       VALUES (?, ?, ?, ?, ?, ?) RETURNING *`
+    )
+    .bind(id, pageId, endpoint, p256dh, auth, now)
+    .first<GeunnalPushSubscription>();
+
+  if (!result) throw new Error("Failed to upsert push subscription");
+  return result;
+}
+
+export async function deletePushSubscription(endpoint: string): Promise<boolean> {
+  const db = await getDB();
+  const result = await db
+    .prepare("DELETE FROM geunnal_push_subscriptions WHERE endpoint = ?")
+    .bind(endpoint)
+    .run();
+  return result.meta.changes > 0;
+}
+
+export async function getSubscriptionsByPageId(pageId: string): Promise<GeunnalPushSubscription[]> {
+  const db = await getDB();
+  const result = await db
+    .prepare("SELECT * FROM geunnal_push_subscriptions WHERE page_id = ?")
+    .bind(pageId)
+    .all<GeunnalPushSubscription>();
+  return result.results || [];
+}
+
+// ── Notification Settings ──
+
+export async function upsertNotificationSettings(
+  pageId: string, dayBefore: NotificationDayBefore, notifyTime: string
+): Promise<GeunnalNotificationSettings> {
+  const db = await getDB();
+  const now = new Date().toISOString();
+
+  const existing = await db
+    .prepare("SELECT id FROM geunnal_notification_settings WHERE page_id = ?")
+    .bind(pageId)
+    .first<{ id: string }>();
+
+  if (existing) {
+    const result = await db
+      .prepare(
+        `UPDATE geunnal_notification_settings
+         SET day_before = ?, notify_time = ?, updated_at = ?
+         WHERE page_id = ? RETURNING *`
+      )
+      .bind(dayBefore, notifyTime, now, pageId)
+      .first<GeunnalNotificationSettings>();
+    if (!result) throw new Error("Failed to update notification settings");
+    return result;
+  }
+
+  const id = generateId();
+  const result = await db
+    .prepare(
+      `INSERT INTO geunnal_notification_settings (id, page_id, day_before, notify_time, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?) RETURNING *`
+    )
+    .bind(id, pageId, dayBefore, notifyTime, now, now)
+    .first<GeunnalNotificationSettings>();
+
+  if (!result) throw new Error("Failed to create notification settings");
+  return result;
+}
+
+export async function getNotificationSettings(pageId: string): Promise<GeunnalNotificationSettings | null> {
+  const db = await getDB();
+  return db
+    .prepare("SELECT * FROM geunnal_notification_settings WHERE page_id = ?")
+    .bind(pageId)
+    .first<GeunnalNotificationSettings>();
+}
+
+export async function deleteNotificationSettings(pageId: string): Promise<boolean> {
+  const db = await getDB();
+  // Delete settings and all subscriptions for this page
+  await db.prepare("DELETE FROM geunnal_push_subscriptions WHERE page_id = ?").bind(pageId).run();
+  const result = await db
+    .prepare("DELETE FROM geunnal_notification_settings WHERE page_id = ?")
+    .bind(pageId)
+    .run();
+  return result.meta.changes > 0;
+}
+
+interface ActiveNotificationRow {
+  page_id: string
+  day_before: NotificationDayBefore
+  notify_time: string
+  last_sent_date: string | null
+  slug: string
+  groom_name: string
+  bride_name: string
+}
+
+export async function getAllActiveNotificationSettings(): Promise<ActiveNotificationRow[]> {
+  const db = await getDB();
+  const result = await db
+    .prepare(
+      `SELECT ns.page_id, ns.day_before, ns.notify_time, ns.last_sent_date,
+              p.slug, p.groom_name, p.bride_name
+       FROM geunnal_notification_settings ns
+       JOIN geunnal_pages p ON ns.page_id = p.id
+       WHERE ns.day_before != 'none'`
+    )
+    .all<ActiveNotificationRow>();
+  return result.results || [];
+}
+
+export async function updateLastSentDate(pageId: string, date: string): Promise<void> {
+  const db = await getDB();
+  await db
+    .prepare("UPDATE geunnal_notification_settings SET last_sent_date = ?, updated_at = ? WHERE page_id = ?")
+    .bind(date, new Date().toISOString(), pageId)
+    .run();
+}
+
+export async function deletePushSubscriptionById(id: string): Promise<boolean> {
+  const db = await getDB();
+  const result = await db.prepare("DELETE FROM geunnal_push_subscriptions WHERE id = ?").bind(id).run();
   return result.meta.changes > 0;
 }

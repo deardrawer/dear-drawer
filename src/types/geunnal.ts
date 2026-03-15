@@ -81,6 +81,28 @@ export interface GeunnalVenue {
   updated_at: string
 }
 
+// Push notification types
+export type NotificationDayBefore = 'none' | '0d' | '1d' | '2d'
+
+export interface GeunnalPushSubscription {
+  id: string
+  page_id: string
+  endpoint: string
+  p256dh: string
+  auth: string
+  created_at: string
+}
+
+export interface GeunnalNotificationSettings {
+  id: string
+  page_id: string
+  day_before: NotificationDayBefore
+  notify_time: string
+  last_sent_date: string | null
+  created_at: string
+  updated_at: string
+}
+
 // Input types for create/update operations
 export interface GeunnalPageInput {
   invitation_id?: string | null

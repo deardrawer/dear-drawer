@@ -443,7 +443,7 @@ export default function GalleryPage() {
                     </svg>
                   </div>
                 </div>
-                <h3 className="text-xs sm:text-base font-bold text-white mb-1 sm:mb-2">디어데이</h3>
+                <h3 className="text-xs sm:text-base font-bold text-white mb-1 sm:mb-2">데이드로어</h3>
                 <p className="text-[9px] sm:text-sm text-white/80 leading-relaxed">
                   청첩장 모임 관리<br />
                   웹앱으로 간편하게

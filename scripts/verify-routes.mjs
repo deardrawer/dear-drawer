@@ -10,6 +10,7 @@ const CRITICAL_ROUTES = [
   'src/app/api/rsvp/route.ts',
   'src/app/api/guestbook/route.ts',
   'src/app/api/invite/[inviteId]/route.ts',
+  'public/sw.js',
 ];
 
 const missing = [];

@@ -526,9 +526,18 @@ function AddVenueSheet({ open, onClose, onSave, pageId, token, locationTabs, edi
 
   const inputClass = "w-full h-11 px-3.5 rounded-[10px] bg-white border border-[#E8E4F0] text-[15px] text-[#2A2240] placeholder:text-[#C5BAE8] focus:outline-none focus:border-[#8B75D0] focus:ring-1 focus:ring-[#8B75D0]/30 transition-colors"
 
+  if (!open) return null
+
   return (
-    <BottomSheet open={open} onClose={handleClose} title={isEdit ? '장소 수정' : '장소 추가'}>
-      <div className="flex flex-col gap-4 mt-2">
+    <div className="fixed inset-0 z-50 bg-white overflow-y-auto">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-[#E8E4F0]">
+        <h2 className="text-lg font-medium text-[#2A2240]">{isEdit ? '장소 수정' : '장소 추가'}</h2>
+        <button onClick={handleClose} className="p-1 text-[#5A5270] hover:text-[#2A2240] transition-colors">
+          <X size={22} strokeWidth={1.8} />
+        </button>
+      </div>
+      <div className="px-5 py-5">
+      <div className="flex flex-col gap-4">
         {/* Kakao Place Search */}
         <div className="flex flex-col gap-1.5">
           <label className="text-[11px] font-medium tracking-[1.5px] uppercase text-[#9B8CC4]">장소 검색</label>
@@ -649,7 +658,8 @@ function AddVenueSheet({ open, onClose, onSave, pageId, token, locationTabs, edi
           </button>
         </div>
       </div>
-    </BottomSheet>
+      </div>
+    </div>
   )
 }
 

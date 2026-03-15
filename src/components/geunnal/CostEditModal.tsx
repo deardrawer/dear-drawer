@@ -131,9 +131,14 @@ export default function CostEditModal({
         )}
 
         {/* Note */}
-        <p className="text-xs text-[#9B8CC4]">
-          💡 비용을 비워두면 미입력 상태로 저장됩니다.
-        </p>
+        <div className="space-y-1.5">
+          <p className="text-xs text-[#9B8CC4]">
+            비용을 입력하면 모임 상태가 완료로 변경됩니다.
+          </p>
+          <p className="text-xs text-[#9B8CC4]">
+            비용을 비워두면 미입력 상태로 저장됩니다.
+          </p>
+        </div>
 
         {/* Buttons */}
         <div className="flex gap-3 pt-4">

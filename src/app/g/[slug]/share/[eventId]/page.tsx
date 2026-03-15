@@ -14,12 +14,35 @@ interface PageProps {
   params: Promise<{ slug: string; eventId: string }>;
 }
 
+function formatOgDate(dateStr: string): string {
+  if (!dateStr || dateStr === 'TBD') return ''
+  const d = new Date(dateStr)
+  const days = ['일', '월', '화', '수', '목', '금', '토']
+  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일(${days[d.getDay()]})`
+}
+
+function formatOgTime(timeStr: string): string {
+  if (!timeStr) return ''
+  const [h, m] = timeStr.split(':').map(Number)
+  const period = h < 12 ? '오전' : '오후'
+  const hour = h > 12 ? h - 12 : h === 0 ? 12 : h
+  return m > 0 ? `${period} ${hour}시 ${m}분` : `${period} ${hour}시`
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug, eventId } = await params;
   const page = await getPageBySlug(slug);
   if (!page) return {};
-  const title = `${page.groom_name} & ${page.bride_name} 모임 초대`;
-  const description = `${page.groom_name} & ${page.bride_name} 청첩장 모임에 초대합니다.`;
+  const event = await getEventById(eventId);
+
+  const title = `${page.groom_name} & ${page.bride_name} 청첩장 모임에 초대합니다`;
+  const descParts: string[] = []
+  if (event?.date) descParts.push(formatOgDate(event.date))
+  if (event?.time) descParts.push(formatOgTime(event.time))
+  const location = [event?.area, event?.restaurant].filter(Boolean).join(' ')
+  if (location) descParts.push(location)
+  const description = descParts.join(' · ') || `${page.groom_name} & ${page.bride_name}의 모임`
+
   return {
     title,
     description,

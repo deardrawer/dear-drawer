@@ -61,6 +61,30 @@ export default function AddEventModal({
   // Area auto-complete
   const [showAreaSuggestions, setShowAreaSuggestions] = useState(false)
 
+  // Handle back button to close modal
+  const closedByButton = useRef(false)
+  useEffect(() => {
+    if (!open) {
+      closedByButton.current = false
+      return
+    }
+    closedByButton.current = false
+    window.history.pushState({ modal: 'add-event' }, '')
+    const handlePopState = () => {
+      if (!closedByButton.current) {
+        onClose()
+      }
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => {
+      window.removeEventListener('popstate', handlePopState)
+      // If closed by button (not back), remove the pushed history entry
+      if (closedByButton.current) {
+        window.history.back()
+      }
+    }
+  }, [open, onClose])
+
   // Initialize Kakao Places service
   useEffect(() => {
     if (!open) return
@@ -326,6 +350,7 @@ export default function AddEventModal({
       }
 
       onSave()
+      closedByButton.current = true
       onClose()
     } catch (error) {
       console.error('Event save error:', error)
@@ -357,6 +382,7 @@ export default function AddEventModal({
       }
 
       onSave()
+      closedByButton.current = true
       onClose()
     } catch (error) {
       console.error('Event delete error:', error)
@@ -373,7 +399,7 @@ export default function AddEventModal({
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-[#E8E4F0]">
         <h2 className="text-[17px] font-semibold text-[#2A2240]">{editEvent ? '모임 수정' : '새 모임 추가'}</h2>
-        <button type="button" onClick={onClose} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[#F9F7FD] transition-colors">
+        <button type="button" onClick={() => { closedByButton.current = true; onClose() }} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[#F9F7FD] transition-colors">
           <X size={20} strokeWidth={1.5} className="text-[#5A5270]" />
         </button>
       </div>
@@ -832,7 +858,7 @@ export default function AddEventModal({
           )}
           <button
             type="button"
-            onClick={onClose}
+            onClick={() => { closedByButton.current = true; onClose() }}
             className="flex-1 px-4 py-3 bg-[#F9F7FD] text-[#5A5270] rounded-xl font-medium hover:bg-[#EDE9FA] transition-colors"
           >
             취소

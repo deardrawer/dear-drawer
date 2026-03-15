@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useMemo, useRef } from 'react'
-import { Plus, Clock, MapPin, Users, ChevronDown, ChevronUp, Wallet, Pencil, CalendarOff, Check, Phone } from 'lucide-react'
+import { Plus, Clock, MapPin, Users, ChevronDown, ChevronUp, Wallet, Pencil, CalendarOff, Check, Phone, Settings, Lock, Bell, Link, LogOut, ChevronRight } from 'lucide-react'
 import { GeunnalEvent, EventGuest, EventSide, MealType } from '@/types/geunnal'
 import GeunnalCard from './Card'
 import GeunnalBadge from './Badge'
@@ -8,7 +8,7 @@ import MonthCalendar from './MonthCalendar'
 import AddEventModal from './AddEventModal'
 import CostEditModal from './CostEditModal'
 import EventPopup from './EventPopup'
-import { sendKakaoShare } from '@/lib/geunnalKakao'
+import BottomSheet from './BottomSheet'
 
 interface EventManagementProps {
   pageId: string
@@ -19,6 +19,8 @@ interface EventManagementProps {
   weddingDate: string | null
   onEventClick: (eventId: string) => void
   onPasswordChange?: () => void
+  onNotificationEdit?: () => void
+  onLogout?: () => void
 }
 
 interface EventWithGuests {
@@ -81,6 +83,8 @@ export default function EventManagement({
   weddingDate,
   onEventClick,
   onPasswordChange,
+  onNotificationEdit,
+  onLogout,
 }: EventManagementProps) {
   const [eventsWithGuests, setEventsWithGuests] = useState<EventWithGuests[]>([])
   const [loading, setLoading] = useState(true)
@@ -94,6 +98,8 @@ export default function EventManagement({
   const [showCost, setShowCost] = useState(false)
   const [popupDate, setPopupDate] = useState<string | null>(null)
   const [addModalDate, setAddModalDate] = useState<string | undefined>()
+  const [showSettings, setShowSettings] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({})
 
   const dday = getDday(weddingDate)
@@ -272,41 +278,48 @@ export default function EventManagement({
             <h1 className="text-xl font-medium text-[#2A2240]" style={{ fontFamily: 'Isamanru, sans-serif' }}>
               {groomName} & {brideName}
             </h1>
-            {weddingDate && (
-              <p className="text-[13px] text-[#9B8CC4] mt-0.5">
-                {formatDate(weddingDate)}
-              </p>
-            )}
           </div>
-          {ddayText && <GeunnalBadge variant="lavender">{ddayText}</GeunnalBadge>}
-        </div>
-        <div className="flex gap-2 mt-3">
-          {onPasswordChange && (
-            <button
-              onClick={onPasswordChange}
-              className="px-3 py-1.5 text-[12px] font-medium text-[#9B8CC4] border border-[#E8E4F0] rounded-lg hover:bg-[#F9F7FD] transition-colors"
-            >
-              비밀번호 변경
-            </button>
-          )}
           <button
-            onClick={() => {
-              try {
-                sendKakaoShare({
-                  title: `${groomName} & ${brideName}의 그날`,
-                  description: '함께 모임을 관리해요',
-                  url: `https://invite.deardrawer.com/g/${slug}`,
-                })
-              } catch {
-                // Kakao SDK not loaded fallback
-              }
-            }}
-            className="px-3 py-1.5 text-[12px] font-medium text-[#9B8CC4] border border-[#E8E4F0] rounded-lg hover:bg-[#F9F7FD] transition-colors"
+            onClick={() => setShowSettings(true)}
+            className="p-1 -mr-1 text-[#9B8CC4] hover:text-[#8B75D0] transition-colors"
           >
-            카카오톡 공유
+            <Settings size={18} strokeWidth={1.5} />
           </button>
         </div>
+        <div className="flex items-center justify-between mt-0.5">
+          {weddingDate ? (
+            <p className="text-[13px] text-[#9B8CC4]">{formatDate(weddingDate)}</p>
+          ) : <span />}
+          {ddayText && <GeunnalBadge variant="lavender">{ddayText}</GeunnalBadge>}
+        </div>
       </header>
+
+      {/* Settings BottomSheet */}
+      {showSettings && (
+        <SettingsSheet
+          open={showSettings}
+          onClose={() => setShowSettings(false)}
+          slug={slug}
+          linkCopied={linkCopied}
+          onLinkCopy={() => {
+            const url = `https://invite.deardrawer.com/g/${slug}`
+            navigator.clipboard.writeText(url).then(() => {
+              setLinkCopied(true)
+              setTimeout(() => setLinkCopied(false), 2000)
+            })
+          }}
+          onPasswordChange={onPasswordChange}
+          onNotificationEdit={onNotificationEdit}
+          onLogout={onLogout}
+        />
+      )}
+
+      {/* Link Copied Toast */}
+      {linkCopied && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 rounded-full bg-[#2A2240]/85 text-white text-[13px] font-medium shadow-lg whitespace-nowrap">
+          링크가 복사되었습니다
+        </div>
+      )}
 
       {/* Calendar */}
       <MonthCalendar events={calendarEvents} onDateClick={handleDateClick} weddingDate={weddingDate} />
@@ -570,6 +583,67 @@ export default function EventManagement({
         onAddEvent={(dateStr) => { setPopupDate(null); handleAddEventFromPopup(dateStr) }}
       />
     </div>
+  )
+}
+
+/* ─── Settings Sheet ─── */
+function SettingsSheet({ open, onClose, slug, linkCopied, onLinkCopy, onPasswordChange, onNotificationEdit, onLogout }: {
+  open: boolean
+  onClose: () => void
+  slug: string
+  linkCopied: boolean
+  onLinkCopy: () => void
+  onPasswordChange?: () => void
+  onNotificationEdit?: () => void
+  onLogout?: () => void
+}) {
+  return (
+    <BottomSheet open={open} onClose={onClose} title="설정">
+      <div className="flex flex-col">
+        {onPasswordChange && (
+          <button
+            onClick={() => { onClose(); onPasswordChange() }}
+            className="flex items-center gap-3 px-1 py-3.5 border-b border-[#F3F0FA]"
+          >
+            <Lock size={20} strokeWidth={1.5} className="text-[#9B8CC4]" />
+            <span className="flex-1 text-left text-[14px] text-[#2A2240]">비밀번호 변경</span>
+            <ChevronRight size={16} strokeWidth={1.5} className="text-[#C5BAE8]" />
+          </button>
+        )}
+        {onNotificationEdit && (
+          <button
+            onClick={() => { onClose(); onNotificationEdit() }}
+            className="flex items-center gap-3 px-1 py-3.5 border-b border-[#F3F0FA]"
+          >
+            <Bell size={20} strokeWidth={1.5} className="text-[#9B8CC4]" />
+            <span className="flex-1 text-left text-[14px] text-[#2A2240]">모임 알림 시간</span>
+            <ChevronRight size={16} strokeWidth={1.5} className="text-[#C5BAE8]" />
+          </button>
+        )}
+        <button
+          onClick={onLinkCopy}
+          className="flex items-center gap-3 px-1 py-3.5 border-b border-[#F3F0FA]"
+        >
+          <Link size={20} strokeWidth={1.5} className="text-[#9B8CC4]" />
+          <span className="flex-1 text-left text-[14px] text-[#2A2240]">링크 복사</span>
+          {linkCopied ? (
+            <span className="text-[12px] text-[#8B75D0] font-medium">복사됨!</span>
+          ) : (
+            <ChevronRight size={16} strokeWidth={1.5} className="text-[#C5BAE8]" />
+          )}
+        </button>
+        {onLogout && (
+          <button
+            onClick={() => { onClose(); onLogout() }}
+            className="flex items-center gap-3 px-1 py-3.5"
+          >
+            <LogOut size={20} strokeWidth={1.5} className="text-[#D4899A]" />
+            <span className="flex-1 text-left text-[14px] text-[#D4899A]">로그아웃</span>
+            <ChevronRight size={16} strokeWidth={1.5} className="text-[#C5BAE8]" />
+          </button>
+        )}
+      </div>
+    </BottomSheet>
   )
 }
 

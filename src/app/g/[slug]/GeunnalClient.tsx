@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import BottomNav from '@/components/geunnal/BottomNav'
 import LoginScreen from '@/components/geunnal/LoginScreen'
 import PasswordChangeSheet from '@/components/geunnal/PasswordChangeSheet'
+import NotificationSheet from '@/components/geunnal/NotificationSheet'
 import EventManagement from '@/components/geunnal/EventManagement'
 import EventDetail from '@/components/geunnal/EventDetail'
 import Dashboard from '@/components/geunnal/Dashboard'
@@ -67,8 +68,12 @@ export default function GeunnalClient({
     return parseHash(window.location.hash)
   })
   const [showPasswordChange, setShowPasswordChange] = useState(false)
+  const [showNotificationEdit, setShowNotificationEdit] = useState(false)
+  const [showExitToast, setShowExitToast] = useState(false)
   const scrollPositionRef = useRef<number>(0)
   const skipNextPush = useRef(false)
+  const backPressedOnce = useRef(false)
+  const backTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Sync activeView → URL hash (push history)
   useEffect(() => {
@@ -83,15 +88,38 @@ export default function GeunnalClient({
     }
   }, [activeView])
 
-  // Listen for browser back/forward (popstate)
+  // Listen for browser back/forward (popstate) with double-back exit
   useEffect(() => {
     const handlePopState = () => {
+      const parsed = parseHash(window.location.hash)
+
+      // If we're already on home and hash is empty → user is trying to exit
+      if (parsed.type === 'home' && activeView.type === 'home') {
+        if (backPressedOnce.current) {
+          // Second press within 2s → allow exit
+          return
+        }
+        // First press → block exit, show toast
+        backPressedOnce.current = true
+        setShowExitToast(true)
+        window.history.pushState(null, '', window.location.pathname)
+        if (backTimerRef.current) clearTimeout(backTimerRef.current)
+        backTimerRef.current = setTimeout(() => {
+          backPressedOnce.current = false
+          setShowExitToast(false)
+        }, 2000)
+        return
+      }
+
       skipNextPush.current = true
-      setActiveView(parseHash(window.location.hash))
+      setActiveView(parsed)
     }
     window.addEventListener('popstate', handlePopState)
-    return () => window.removeEventListener('popstate', handlePopState)
-  }, [])
+    return () => {
+      window.removeEventListener('popstate', handlePopState)
+      if (backTimerRef.current) clearTimeout(backTimerRef.current)
+    }
+  }, [activeView])
 
   // Mobile keyboard: scroll focused input to top of viewport
   useEffect(() => {
@@ -166,6 +194,12 @@ export default function GeunnalClient({
     window.scrollTo(0, 0)
   }, [])
 
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem(`geunnal-token-${pageId}`)
+    setToken(null)
+    setIsAuthenticated(false)
+  }, [pageId])
+
   const handleBackFromDetail = useCallback(() => {
     setActiveView(prev =>
       prev.type === 'event-detail' ? { type: prev.returnTo } : { type: 'home' }
@@ -219,6 +253,8 @@ export default function GeunnalClient({
             weddingDate={weddingDate}
             onEventClick={handleEventClick}
             onPasswordChange={() => setShowPasswordChange(true)}
+            onNotificationEdit={() => setShowNotificationEdit(true)}
+            onLogout={handleLogout}
           />
         )}
 
@@ -265,12 +301,26 @@ export default function GeunnalClient({
         onTabChange={handleTabChange}
       />
 
+      {/* Exit Toast */}
+      {showExitToast && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 rounded-full bg-[#2A2240]/85 text-white text-[13px] font-medium shadow-lg animate-fade-in whitespace-nowrap">
+          뒤로 버튼을 한 번 더 누르면 종료됩니다
+        </div>
+      )}
+
       {/* Password Change Sheet */}
       <PasswordChangeSheet
         open={showPasswordChange}
         onClose={() => setShowPasswordChange(false)}
         pageId={pageId}
         onPasswordChanged={handlePasswordChanged}
+      />
+
+      {/* Notification Edit Sheet */}
+      <NotificationSheet
+        open={showNotificationEdit}
+        onClose={() => setShowNotificationEdit(false)}
+        pageId={pageId}
       />
     </div>
   )

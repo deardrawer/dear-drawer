@@ -343,10 +343,10 @@ function StepAlbum({
       <div className="bg-gradient-to-b from-[#EDE9FA]/60 to-white px-5 pt-10 pb-6">
         {/* Header */}
         <div className="text-center mb-6">
-          <h1 className="text-xl font-medium text-[#2A2240]">
+          <h1 className="text-xl font-medium text-[#2A2240]" style={{ fontFamily: 'Isamanru, sans-serif' }}>
             {groomName} & {brideName}
           </h1>
-          <p className="text-[15px] text-[#5A5270] mt-1">결혼합니다</p>
+          <p className="text-[15px] text-[#5A5270] mt-1" style={{ fontFamily: 'Isamanru, sans-serif' }}>결혼합니다</p>
           <p className="text-[13px] text-[#9B8CC4] mt-2 leading-[1.6]">
             소중한 분들과 인사를 나누고자<br />작은 식사 자리를 마련했습니다.
           </p>

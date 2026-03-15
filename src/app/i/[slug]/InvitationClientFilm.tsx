@@ -751,9 +751,11 @@ function FilmSceneCard({ item, idx, total, groomName, brideName, fonts, tc }: {
       if (!text) return null
       return (
         <div key={key} style={{ marginBottom: '14px' }}>
-          {text.split('\n').map((line: string, i: number) => (
-            <p key={i} style={{ fontFamily: fonts.body, fontSize: '13px', lineHeight: 1.8, color: cg, marginBottom: '4px' }}>{line}</p>
-          ))}
+          {text.split('\n').map((line: string, i: number) =>
+            line.trim().length === 0
+              ? <div key={i} style={{ height: '12px' }} />
+              : <p key={i} style={{ fontFamily: fonts.body, fontSize: '13px', lineHeight: 1.8, color: cg, marginBottom: '4px' }}>{line}</p>
+          )}
         </div>
       )
     }
@@ -765,9 +767,11 @@ function FilmSceneCard({ item, idx, total, groomName, brideName, fonts, tc }: {
           <div style={{ fontFamily: fonts.display, fontSize: '9px', fontWeight: 600, letterSpacing: '3px', color: tc.accent, marginBottom: '5px' }}>
             {groomLabel}
           </div>
-          {text.split('\n').map((line: string, i: number) => (
-            <p key={i} style={{ fontFamily: fonts.body, fontSize: '14px', lineHeight: 1.8, color: ct }}>{line}</p>
-          ))}
+          {text.split('\n').map((line: string, i: number) =>
+            line.trim().length === 0
+              ? <div key={i} style={{ height: '12px' }} />
+              : <p key={i} style={{ fontFamily: fonts.body, fontSize: '14px', lineHeight: 1.8, color: ct }}>{line}</p>
+          )}
         </div>
       )
     }
@@ -779,9 +783,11 @@ function FilmSceneCard({ item, idx, total, groomName, brideName, fonts, tc }: {
           <div style={{ fontFamily: fonts.display, fontSize: '9px', fontWeight: 600, letterSpacing: '3px', color: tc.accent, marginBottom: '5px' }}>
             {brideLabel}
           </div>
-          {text.split('\n').map((line: string, i: number) => (
-            <p key={i} style={{ fontFamily: fonts.body, fontSize: '14px', lineHeight: 1.8, color: ct }}>{line}</p>
-          ))}
+          {text.split('\n').map((line: string, i: number) =>
+            line.trim().length === 0
+              ? <div key={i} style={{ height: '12px' }} />
+              : <p key={i} style={{ fontFamily: fonts.body, fontSize: '14px', lineHeight: 1.8, color: ct }}>{line}</p>
+          )}
         </div>
       )
     }

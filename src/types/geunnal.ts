@@ -19,6 +19,7 @@ export interface GeunnalPage {
 
 export type EventSide = 'groom' | 'bride' | 'both'
 export type MealType = 'lunch' | 'dinner' | 'other'
+export type EventReservation = 'none' | 'reserved' | 'unavailable'
 
 export interface GeunnalEvent {
   id: string
@@ -34,6 +35,7 @@ export interface GeunnalEvent {
   area: string
   restaurant: string
   meal_type: MealType
+  reservation_status: EventReservation
   sort_order: number
   created_at: string
   updated_at: string
@@ -105,6 +107,7 @@ export interface GeunnalEventInput {
   area?: string
   restaurant?: string
   meal_type?: MealType
+  reservation_status?: EventReservation
   sort_order?: number
 }
 

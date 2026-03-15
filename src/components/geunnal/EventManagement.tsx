@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { Plus, Clock, MapPin, Users, ChevronDown, ChevronUp, Wallet, Pencil, CalendarOff, Check, Phone, Settings, Lock, Bell, MessageCircle, LogOut, ChevronRight } from 'lucide-react'
-import { GeunnalEvent, EventGuest, EventSide, MealType } from '@/types/geunnal'
+import { GeunnalEvent, EventGuest, EventSide, MealType, EventReservation } from '@/types/geunnal'
 import GeunnalCard from './Card'
 import GeunnalBadge from './Badge'
 import MonthCalendar from './MonthCalendar'
@@ -662,6 +662,7 @@ function EventCard({ ewg, onClick, onCostClick, isCompleted, needsSettlement }: 
   const { event, guests } = ewg
   const guestCount = guests.length || event.expected_guests || 0
   const costText = event.total_cost ? `${event.total_cost.toLocaleString()}원` : null
+  const contactedCount = guests.filter(g => g.contacted === 1).length
 
   return (
     <GeunnalCard
@@ -690,13 +691,14 @@ function EventCard({ ewg, onClick, onCostClick, isCompleted, needsSettlement }: 
           </span>
         </div>
 
-        {/* Row 3: Area & Restaurant */}
+        {/* Row 3: Area & Restaurant + Reservation */}
         {(event.area || event.restaurant) ? (
           <div className="flex items-center gap-1.5">
             <MapPin size={14} strokeWidth={1.5} className="text-[#9B8CC4] shrink-0" />
-            <span className="text-[13px] text-[#9B8CC4] truncate">
+            <span className="text-[13px] text-[#9B8CC4] truncate flex-1">
               {event.area}{event.restaurant ? ` · ${event.restaurant}` : ''}
             </span>
+            {event.restaurant && <ReservationBadge status={event.reservation_status} />}
           </div>
         ) : (
           <div className="flex items-center gap-1.5">
@@ -728,6 +730,22 @@ function EventCard({ ewg, onClick, onCostClick, isCompleted, needsSettlement }: 
             </button>
           )}
         </div>
+
+        {/* Row 5: Contact progress */}
+        {guests.length > 0 && (
+          <div className="flex items-center gap-2">
+            <Phone size={13} strokeWidth={1.5} className="text-[#9B8CC4] shrink-0" />
+            <span className="text-[12px] text-[#9B8CC4]">
+              연락 {contactedCount}/{guests.length}
+            </span>
+            <div className="flex-1 h-1.5 bg-[#F9F7FD] rounded-full overflow-hidden">
+              <div
+                className="h-full bg-[#8B75D0] rounded-full transition-all duration-300"
+                style={{ width: `${(contactedCount / guests.length) * 100}%` }}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Needs settlement prompt */}
         {needsSettlement && !costText && (
@@ -787,12 +805,13 @@ function TBDEventCard({ ewg, onClick, onContactToggle }: {
             <CalendarOff size={14} strokeWidth={1.5} className="text-[#9B8CC4] shrink-0" />
             <span className="text-[13px] text-[#9B8CC4]">날짜 미정</span>
           </div>
-          {event.area && (
+          {(event.area || event.restaurant) && (
             <div className="flex items-center gap-1.5">
               <MapPin size={14} strokeWidth={1.5} className="text-[#9B8CC4] shrink-0" />
-              <span className="text-[13px] text-[#9B8CC4] truncate">
+              <span className="text-[13px] text-[#9B8CC4] truncate flex-1">
                 {event.area}{event.restaurant ? ` · ${event.restaurant}` : ''}
               </span>
+              {event.restaurant && <ReservationBadge status={event.reservation_status} />}
             </div>
           )}
         </div>
@@ -836,6 +855,17 @@ function TBDEventCard({ ewg, onClick, onContactToggle }: {
       </div>
     </GeunnalCard>
   )
+}
+
+/* ─── Reservation Badge ─── */
+function ReservationBadge({ status }: { status?: EventReservation }) {
+  if (status === 'reserved') {
+    return <span className="text-[10px] px-2 py-0.5 bg-[#E8F5E9] text-[#66BB6A] rounded-full font-medium shrink-0">예약완료</span>
+  }
+  if (status === 'unavailable') {
+    return <span className="text-[10px] px-2 py-0.5 bg-[#FFEBEE] text-[#EF5350] rounded-full font-medium shrink-0">예약불가</span>
+  }
+  return <span className="text-[10px] px-2 py-0.5 bg-[#F9F7FD] text-[#C5BAE8] rounded-full shrink-0">미예약</span>
 }
 
 /* ─── Cost Breakdown with Side Tabs ─── */

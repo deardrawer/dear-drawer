@@ -405,7 +405,7 @@ export default function AddEventModal({
       </div>
 
       {/* Form */}
-      <div className="px-5 py-5">
+      <div className="px-5 pt-5 pb-28">
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Event Name */}
         <div>

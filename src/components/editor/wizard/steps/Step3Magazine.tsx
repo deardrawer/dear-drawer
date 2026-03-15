@@ -149,6 +149,14 @@ export default function Step3Magazine({ templateId, invitationId }: Step3Magazin
                 onChange={(e) => {
                   const newTime = e.target.value
                   updateNestedField('wedding.time', newTime)
+                  if (newTime) {
+                    const [h, m] = newTime.split(':').map(Number)
+                    const p = h < 12 ? '오전' : '오후'
+                    const dh = h === 0 ? 12 : h > 12 ? h - 12 : h
+                    updateNestedField('wedding.timeDisplay', m === 0 ? `${p} ${dh}시` : `${p} ${dh}시 ${m}분`)
+                  } else {
+                    updateNestedField('wedding.timeDisplay', '')
+                  }
                   updateKakaoDescriptionIfAuto(undefined, newTime, undefined)
                 }}
                 onFocus={() => setActiveSection('venue-info')}

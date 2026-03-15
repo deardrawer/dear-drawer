@@ -175,7 +175,7 @@ const defaultData: FeedInvitationData = {
     profile: { image: '', intro: '', subtitle: '' },
   },
   wedding: {
-    date: '2026-06-20', time: '12:00', timeDisplay: '낮 12시',
+    date: '2026-06-20', time: '12:00', timeDisplay: '오후 12시',
     venue: { name: '더채플앳청담', hall: '그랜드볼룸', address: '' },
     directions: { car: '', publicTransport: '', train: '', expressBus: '' },
   },

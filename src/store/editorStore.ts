@@ -602,7 +602,7 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
   wedding: {
     date: template.id === 'narrative-our' ? '2026-10-10' : template.id === 'narrative-family' ? '2026-11-14' : template.id === 'narrative-film' ? '2026-05-23' : template.id === 'narrative-record' ? '2026-06-20' : template.id === 'narrative-magazine' ? '2026-05-30' : '',
     time: template.id === 'narrative-our' ? '14:00' : template.id === 'narrative-family' ? '12:00' : template.id === 'narrative-film' ? '13:30' : template.id === 'narrative-record' ? '14:00' : template.id === 'narrative-magazine' ? '12:00' : '',
-    timeDisplay: template.id === 'narrative-our' ? '오후 2시' : template.id === 'narrative-family' ? '낮 12시' : template.id === 'narrative-film' ? '오후 1시 30분' : template.id === 'narrative-record' ? '오후 2시' : template.id === 'narrative-magazine' ? '낮 12시' : '',
+    timeDisplay: template.id === 'narrative-our' ? '오후 2시' : template.id === 'narrative-family' ? '오후 12시' : template.id === 'narrative-film' ? '오후 1시 30분' : template.id === 'narrative-record' ? '오후 2시' : template.id === 'narrative-magazine' ? '오후 12시' : '',
     dayOfWeek: '',
     title: template.id === 'narrative-family' ? 'WEDDING INVITATION' : 'OUR WEDDING',
     venue: {

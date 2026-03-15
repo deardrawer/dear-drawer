@@ -200,6 +200,7 @@ export async function updateEvent(id: string, input: GeunnalEventInput): Promise
   if (input.area !== undefined) { updates.push("area = ?"); values.push(input.area); }
   if (input.restaurant !== undefined) { updates.push("restaurant = ?"); values.push(input.restaurant); }
   if (input.meal_type !== undefined) { updates.push("meal_type = ?"); values.push(input.meal_type); }
+  if (input.reservation_status !== undefined) { updates.push("reservation_status = ?"); values.push(input.reservation_status); }
   if (input.sort_order !== undefined) { updates.push("sort_order = ?"); values.push(input.sort_order); }
 
   if (updates.length === 0) return getEventById(id);

@@ -22,7 +22,7 @@ import {
   Navigation,
   Phone,
 } from 'lucide-react'
-import { GeunnalEvent, EventGuest, GeunnalSubmission, GeunnalVenue } from '@/types/geunnal'
+import { GeunnalEvent, EventGuest, EventReservation, GeunnalSubmission, GeunnalVenue } from '@/types/geunnal'
 import GeunnalCard from './Card'
 import GeunnalBadge from './Badge'
 import { BlobAvatarById } from './BlobAvatar'
@@ -235,6 +235,20 @@ export default function EventDetail({
     } catch { showToast('삭제에 실패했습니다') }
   }
 
+  // --- Reservation toggle ---
+  const handleReservationToggle = async (status: EventReservation) => {
+    if (!event) return
+    const newStatus = event.reservation_status === status ? 'none' : status
+    try {
+      await fetch(`/api/geunnal/events/${eventId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ reservation_status: newStatus }),
+      })
+      fetchEventData()
+    } catch { showToast('상태 변경에 실패했습니다') }
+  }
+
   // --- Share ---
   const handleCopyLink = async () => {
     try {
@@ -438,7 +452,31 @@ export default function EventDetail({
             {venue ? (
               <>
                 <div className="px-4 py-3">
-                  <p className="text-[14px] font-medium text-[#2A2240]">{venue.name}</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-[14px] font-medium text-[#2A2240]">{venue.name}</p>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => handleReservationToggle('reserved')}
+                        className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                          event.reservation_status === 'reserved'
+                            ? 'bg-[#E8F5E9] text-[#4CAF50]'
+                            : 'bg-[#F9F7FD] text-[#9B8CC4] hover:bg-[#EDE9FA]'
+                        }`}
+                      >
+                        예약완료
+                      </button>
+                      <button
+                        onClick={() => handleReservationToggle('unavailable')}
+                        className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                          event.reservation_status === 'unavailable'
+                            ? 'bg-[#FFEBEE] text-[#EF5350]'
+                            : 'bg-[#F9F7FD] text-[#9B8CC4] hover:bg-[#EDE9FA]'
+                        }`}
+                      >
+                        예약불가
+                      </button>
+                    </div>
+                  </div>
                   <p className="text-[12px] text-[#9B8CC4] mt-0.5">{venue.address}</p>
                   {venue.phone && (
                     <a
@@ -463,7 +501,33 @@ export default function EventDetail({
               </>
             ) : (
               <div className="px-4 pb-4">
-                <p className="text-[14px] text-[#5A5270]">{locationText}</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-[14px] text-[#5A5270]">{locationText}</p>
+                  {event.restaurant && (
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => handleReservationToggle('reserved')}
+                        className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                          event.reservation_status === 'reserved'
+                            ? 'bg-[#E8F5E9] text-[#4CAF50]'
+                            : 'bg-[#F9F7FD] text-[#9B8CC4] hover:bg-[#EDE9FA]'
+                        }`}
+                      >
+                        예약완료
+                      </button>
+                      <button
+                        onClick={() => handleReservationToggle('unavailable')}
+                        className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                          event.reservation_status === 'unavailable'
+                            ? 'bg-[#FFEBEE] text-[#EF5350]'
+                            : 'bg-[#F9F7FD] text-[#9B8CC4] hover:bg-[#EDE9FA]'
+                        }`}
+                      >
+                        예약불가
+                      </button>
+                    </div>
+                  )}
+                </div>
                 <button
                   onClick={openKakaoMap}
                   className="w-full mt-2 h-9 rounded-full border border-[#E8E4F0] text-[13px] text-[#5A5270] font-medium flex items-center justify-center gap-1.5 hover:bg-[#EDE9FA]/20 transition-colors"

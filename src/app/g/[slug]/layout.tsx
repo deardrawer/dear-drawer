@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: LayoutProps): Promise<Metadat
       'mobile-web-app-capable': 'yes',
       'apple-mobile-web-app-capable': 'yes',
       'apple-mobile-web-app-status-bar-style': 'default',
-      'apple-mobile-web-app-title': '그 날',
+      'apple-mobile-web-app-title': '디어데이',
     },
     icons: {
       apple: '/favicon.png',

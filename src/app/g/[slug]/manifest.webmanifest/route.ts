@@ -7,8 +7,8 @@ export async function GET(
   const { slug } = await params;
 
   const manifest = {
-    name: '그 날 - 청첩장 모임 관리',
-    short_name: '그 날',
+    name: '디어데이 - 청첩장 모임 관리',
+    short_name: '디어데이',
     start_url: `/g/${slug}`,
     scope: `/g/${slug}`,
     display: 'standalone',

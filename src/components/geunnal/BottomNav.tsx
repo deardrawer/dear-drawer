@@ -9,7 +9,7 @@ interface BottomNavProps {
 const tabs = [
   { id: 'home', label: '홈', icon: Home },
   { id: 'venues', label: '모임장소', icon: MapPinned },
-  { id: 'dashboard', label: '그날', icon: LayoutDashboard },
+  { id: 'dashboard', label: '디어데이', icon: LayoutDashboard },
   { id: 'photobooth', label: '포토부스', icon: Camera },
 ]
 

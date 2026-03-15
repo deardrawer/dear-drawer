@@ -10,6 +10,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   themeColor: '#8B75D0',
+  interactiveWidget: 'resizes-content',
 };
 
 interface PageProps {

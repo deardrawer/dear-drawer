@@ -155,8 +155,9 @@ export default function Dashboard({ pageId, token, onEventClick }: DashboardProp
       <header className="flex items-start justify-between pt-5 pb-5 -mx-5 px-5 border-b border-[#E8E4F0]">
         <div>
           <h1 className="text-xl font-medium text-[#2A2240]" style={{ fontFamily: 'Isamanru, sans-serif' }}>
-            소중한 그날의 기록
+            디어데이
           </h1>
+          <p className="text-[13px] text-[#5A5270] mt-0.5">소중한 그날의 기록</p>
         </div>
       </header>
 

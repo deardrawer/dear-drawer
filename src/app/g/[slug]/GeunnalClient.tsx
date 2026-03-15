@@ -30,6 +30,25 @@ type ActiveView =
   | { type: 'venues' }
   | { type: 'event-detail'; eventId: string; returnTo: 'home' | 'dashboard' }
 
+const VALID_TABS = new Set(['home', 'photobooth', 'dashboard', 'venues'])
+
+function parseHash(hash: string): ActiveView {
+  const h = hash.replace('#', '')
+  if (!h || h === 'home') return { type: 'home' }
+  if (h.startsWith('event/')) {
+    const eventId = h.slice(6)
+    if (eventId) return { type: 'event-detail', eventId, returnTo: 'home' }
+  }
+  if (VALID_TABS.has(h)) return { type: h } as ActiveView
+  return { type: 'home' }
+}
+
+function viewToHash(view: ActiveView): string {
+  if (view.type === 'home') return ''
+  if (view.type === 'event-detail') return `#event/${view.eventId}`
+  return `#${view.type}`
+}
+
 export default function GeunnalClient({
   pageId,
   slug,
@@ -43,9 +62,36 @@ export default function GeunnalClient({
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [checkingAuth, setCheckingAuth] = useState(true)
   const [hasPassword, setHasPassword] = useState(initialHasPassword)
-  const [activeView, setActiveView] = useState<ActiveView>({ type: 'home' })
+  const [activeView, setActiveView] = useState<ActiveView>(() => {
+    if (typeof window === 'undefined') return { type: 'home' }
+    return parseHash(window.location.hash)
+  })
   const [showPasswordChange, setShowPasswordChange] = useState(false)
   const scrollPositionRef = useRef<number>(0)
+  const skipNextPush = useRef(false)
+
+  // Sync activeView → URL hash (push history)
+  useEffect(() => {
+    if (skipNextPush.current) {
+      skipNextPush.current = false
+      return
+    }
+    const newHash = viewToHash(activeView)
+    const currentHash = window.location.hash
+    if (newHash !== currentHash) {
+      window.history.pushState(null, '', newHash || window.location.pathname)
+    }
+  }, [activeView])
+
+  // Listen for browser back/forward (popstate)
+  useEffect(() => {
+    const handlePopState = () => {
+      skipNextPush.current = true
+      setActiveView(parseHash(window.location.hash))
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
 
   // Mobile keyboard: scroll focused input to top of viewport
   useEffect(() => {

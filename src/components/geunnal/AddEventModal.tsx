@@ -369,17 +369,17 @@ export default function AddEventModal({
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 bg-white flex flex-col">
+    <div className="fixed inset-0 z-50 bg-white overflow-y-auto">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-[#E8E4F0] shrink-0">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-[#E8E4F0]">
         <h2 className="text-[17px] font-semibold text-[#2A2240]">{editEvent ? '모임 수정' : '새 모임 추가'}</h2>
         <button type="button" onClick={onClose} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[#F9F7FD] transition-colors">
           <X size={20} strokeWidth={1.5} className="text-[#5A5270]" />
         </button>
       </div>
 
-      {/* Scrollable form */}
-      <div className="flex-1 overflow-y-auto px-5 py-5">
+      {/* Form */}
+      <div className="px-5 py-5">
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Event Name */}
         <div>

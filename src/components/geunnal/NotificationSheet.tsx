@@ -19,11 +19,15 @@ const DAY_OPTIONS = [
 
 type DayValue = (typeof DAY_OPTIONS)[number]['value']
 
-const TIME_OPTIONS = Array.from({ length: 48 }, (_, i) => {
-  const h = String(Math.floor(i / 2)).padStart(2, '0')
-  const m = i % 2 === 0 ? '00' : '30'
-  return { value: `${h}:${m}`, label: `${h}:${m}` }
-})
+const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => ({
+  value: String(i).padStart(2, '0'),
+  label: String(i).padStart(2, '0'),
+}))
+
+const MINUTE_OPTIONS = Array.from({ length: 60 }, (_, i) => ({
+  value: String(i).padStart(2, '0'),
+  label: String(i).padStart(2, '0'),
+}))
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || ''
 
@@ -217,18 +221,34 @@ export default function NotificationSheet({
             {needsTime && (
               <div className="flex flex-col gap-1.5">
                 <label className="text-[13px] font-medium text-[#2A2240] px-1">알림 시각</label>
-                <div className="relative">
-                  <select
-                    value={selectedTime}
-                    onChange={e => setSelectedTime(e.target.value)}
-                    disabled={saving}
-                    className="w-full appearance-none px-4 py-3 text-[14px] text-[#2A2240] bg-[#F9F7FD] border border-[#E8E4F0] rounded-xl focus:outline-none focus:border-[#8B75D0] transition-colors pr-10"
-                  >
-                    {TIME_OPTIONS.map(({ value, label }) => (
-                      <option key={value} value={value}>{label}</option>
-                    ))}
-                  </select>
-                  <ChevronDown size={16} strokeWidth={1.5} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9B8CC4] pointer-events-none" />
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <select
+                      value={selectedTime.split(':')[0]}
+                      onChange={e => setSelectedTime(`${e.target.value}:${selectedTime.split(':')[1]}`)}
+                      disabled={saving}
+                      className="w-full appearance-none px-4 py-3 text-[14px] text-[#2A2240] bg-[#F9F7FD] border border-[#E8E4F0] rounded-xl focus:outline-none focus:border-[#8B75D0] transition-colors pr-10"
+                    >
+                      {HOUR_OPTIONS.map(({ value, label }) => (
+                        <option key={value} value={value}>{label}</option>
+                      ))}
+                    </select>
+                    <ChevronDown size={16} strokeWidth={1.5} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9B8CC4] pointer-events-none" />
+                  </div>
+                  <span className="text-[16px] font-medium text-[#2A2240]">:</span>
+                  <div className="relative flex-1">
+                    <select
+                      value={selectedTime.split(':')[1]}
+                      onChange={e => setSelectedTime(`${selectedTime.split(':')[0]}:${e.target.value}`)}
+                      disabled={saving}
+                      className="w-full appearance-none px-4 py-3 text-[14px] text-[#2A2240] bg-[#F9F7FD] border border-[#E8E4F0] rounded-xl focus:outline-none focus:border-[#8B75D0] transition-colors pr-10"
+                    >
+                      {MINUTE_OPTIONS.map(({ value, label }) => (
+                        <option key={value} value={value}>{label}</option>
+                      ))}
+                    </select>
+                    <ChevronDown size={16} strokeWidth={1.5} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9B8CC4] pointer-events-none" />
+                  </div>
                 </div>
                 <p className="text-[11px] text-[#C5BAE8] px-1">
                   {selectedDay === '0d' && `모임 당일 ${selectedTime}에 알림을 보냅니다.`}

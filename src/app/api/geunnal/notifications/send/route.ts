@@ -14,9 +14,7 @@ function getKSTNow(): { date: string; time: string } {
   const now = new Date();
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const date = kst.toISOString().slice(0, 10); // YYYY-MM-DD
-  const minutes = kst.getUTCMinutes();
-  const roundedMin = minutes < 30 ? "00" : "30";
-  const time = String(kst.getUTCHours()).padStart(2, "0") + ":" + roundedMin;
+  const time = String(kst.getUTCHours()).padStart(2, "0") + ":" + String(kst.getUTCMinutes()).padStart(2, "0");
   return { date, time };
 }
 
@@ -71,8 +69,12 @@ export async function POST(request: NextRequest) {
   let expired = 0;
 
   for (const setting of allSettings) {
-    // 시간 매칭: 현재 시각이 설정된 notify_time과 일치해야 함
-    if (setting.notify_time !== currentTime) {
+    // 시간 매칭: cron은 5분 간격이므로 ±2분 허용
+    const [setH, setM] = setting.notify_time.split(":").map(Number);
+    const [curH, curM] = currentTime.split(":").map(Number);
+    const setTotal = setH * 60 + setM;
+    const curTotal = curH * 60 + curM;
+    if (Math.abs(setTotal - curTotal) > 2) {
       skipped++;
       continue;
     }

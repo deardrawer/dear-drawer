@@ -47,6 +47,23 @@ export interface KakaoPlaces {
   ) => void
 }
 
+export interface KakaoGeocoderResult {
+  address_name: string
+  road_address?: {
+    address_name: string
+    building_name: string
+  }
+  x: string
+  y: string
+}
+
+export interface KakaoGeocoder {
+  addressSearch: (
+    address: string,
+    callback: (result: KakaoGeocoderResult[], status: string) => void,
+  ) => void
+}
+
 let sdkLoaded = false
 let sdkLoading: Promise<void> | null = null
 

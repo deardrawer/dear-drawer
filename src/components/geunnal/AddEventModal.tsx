@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import { X, Calendar, Clock, MapPin, Users, Trash2, Search, MapPinned, Pencil } from 'lucide-react'
 import GeunnalBadge from './Badge'
 import { GeunnalEvent, EventGuest, EventSide, MealType, GeunnalVenue } from '@/types/geunnal'
-import { loadKakaoMapSDK, KakaoPlaceResult, KakaoPlaces } from '@/lib/geunnalKakaoMap'
+import { loadKakaoMapSDK, KakaoPlaceResult, KakaoPlaces, KakaoGeocoder } from '@/lib/geunnalKakaoMap'
 
 interface AddEventModalProps {
   open: boolean
@@ -41,6 +41,10 @@ export default function AddEventModal({
   const [area, setArea] = useState('')
   const [areaTbd, setAreaTbd] = useState(false)
   const [restaurant, setRestaurant] = useState('')
+  const [manualAddress, setManualAddress] = useState('')
+  const [addressQuery, setAddressQuery] = useState('')
+  const [addressResults, setAddressResults] = useState<KakaoPlaceResult[]>([])
+  const [showAddressResults, setShowAddressResults] = useState(false)
   const [guestTags, setGuestTags] = useState<string[]>([])
   const [newGuestTag, setNewGuestTag] = useState('')
 
@@ -53,6 +57,7 @@ export default function AddEventModal({
   const [searchResults, setSearchResults] = useState<KakaoPlaceResult[]>([])
   const [showResults, setShowResults] = useState(false)
   const placesRef = useRef<KakaoPlaces | null>(null)
+  const geocoderRef = useRef<KakaoGeocoder | null>(null)
 
   // Venues data
   const [venues, setVenues] = useState<GeunnalVenue[]>([])
@@ -94,6 +99,9 @@ export default function AddEventModal({
         const win = window as any
         if (win.kakao?.maps?.services?.Places) {
           placesRef.current = new win.kakao.maps.services.Places()
+        }
+        if (win.kakao?.maps?.services?.Geocoder) {
+          geocoderRef.current = new win.kakao.maps.services.Geocoder()
         }
       })
       .catch(() => {})
@@ -140,6 +148,7 @@ export default function AddEventModal({
       }
 
       setRestaurant(editEvent.restaurant || '')
+      setManualAddress(editEvent.location || '')
 
       // Restaurant mode
       if (editEvent.restaurant) {
@@ -167,6 +176,7 @@ export default function AddEventModal({
       setArea('')
       setAreaTbd(false)
       setRestaurant('')
+      setManualAddress('')
       setGuestTags([])
       setRestaurantMode('none')
       setSelectedInfo(null)
@@ -174,6 +184,9 @@ export default function AddEventModal({
     setSearchQuery('')
     setSearchResults([])
     setShowResults(false)
+    setAddressQuery('')
+    setAddressResults([])
+    setShowAddressResults(false)
     setVenueFilter('')
     setShowAreaSuggestions(false)
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -240,6 +253,82 @@ export default function AddEventModal({
     setRestaurantMode('selected')
   }
 
+  // ── Address search (for manual input) ──
+  const handleAddressSearch = () => {
+    const q = addressQuery.trim()
+    if (!q) return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const win = window as any
+
+    // Try keyword search first (place names)
+    if (placesRef.current) {
+      placesRef.current.keywordSearch(q, (results: KakaoPlaceResult[], status: string) => {
+        if (status === win.kakao.maps.services.Status.OK && results.length > 0) {
+          setAddressResults(results.slice(0, 5))
+          setShowAddressResults(true)
+        } else {
+          // Fallback: try geocoder for raw address strings
+          if (geocoderRef.current) {
+            geocoderRef.current.addressSearch(q, (geoResults, geoStatus) => {
+              if (geoStatus === win.kakao.maps.services.Status.OK && geoResults.length > 0) {
+                const converted: KakaoPlaceResult[] = geoResults.map((r, i) => ({
+                  id: `geo-${i}`,
+                  place_name: r.road_address?.building_name || r.address_name,
+                  address_name: r.address_name,
+                  road_address_name: r.road_address?.address_name || '',
+                  phone: '',
+                  x: r.x,
+                  y: r.y,
+                  category_name: '',
+                }))
+                setAddressResults(converted)
+                setShowAddressResults(true)
+              } else {
+                setAddressResults([])
+                setShowAddressResults(true)
+              }
+            })
+          } else {
+            setAddressResults([])
+            setShowAddressResults(true)
+          }
+        }
+      })
+    } else if (geocoderRef.current) {
+      // Places not available, try geocoder directly
+      geocoderRef.current.addressSearch(q, (geoResults, geoStatus) => {
+        if (geoStatus === win.kakao.maps.services.Status.OK && geoResults.length > 0) {
+          const converted: KakaoPlaceResult[] = geoResults.map((r, i) => ({
+            id: `geo-${i}`,
+            place_name: r.road_address?.building_name || r.address_name,
+            address_name: r.address_name,
+            road_address_name: r.road_address?.address_name || '',
+            phone: '',
+            x: r.x,
+            y: r.y,
+            category_name: '',
+          }))
+          setAddressResults(converted)
+          setShowAddressResults(true)
+        } else {
+          setAddressResults([])
+          setShowAddressResults(true)
+        }
+      })
+    }
+  }
+
+  const selectAddress = (place: KakaoPlaceResult) => {
+    const addr = place.road_address_name || place.address_name
+    setManualAddress(addr)
+    if (!restaurant.trim() && place.place_name && !place.place_name.startsWith('geo-')) {
+      setRestaurant(place.place_name)
+    }
+    setAddressQuery('')
+    setAddressResults([])
+    setShowAddressResults(false)
+  }
+
   // ── Guests ──
   const handleAddGuestTag = () => {
     const trimmed = newGuestTag.trim()
@@ -278,6 +367,7 @@ export default function AddEventModal({
         time: dateTbd ? '' : time,
         area: areaTbd ? '' : area.trim(),
         restaurant: areaTbd ? '' : restaurant.trim(),
+        location: restaurantMode === 'manual' ? manualAddress.trim() : (selectedInfo?.address || ''),
         expected_guests: guestTags.length,
       }
 
@@ -596,7 +686,7 @@ export default function AddEventModal({
         {!areaTbd && (
           <div>
             <label className="block text-sm font-medium text-[#2A2240] mb-2">
-              식당 선택
+              {mealType === 'other' ? '장소 선택' : '식당 선택'}
             </label>
 
             {/* Selected state */}
@@ -778,13 +868,67 @@ export default function AddEventModal({
 
                 {/* Manual input */}
                 {restaurantMode === 'manual' && (
-                  <input
-                    type="text"
-                    value={restaurant}
-                    onChange={(e) => setRestaurant(e.target.value)}
-                    placeholder="예: 모던한정식"
-                    className="w-full px-4 py-3 bg-[#F9F7FD] border border-[#E8E4F0] rounded-xl text-[#2A2240] placeholder:text-[#C5BAE8] focus:outline-none focus:border-[#8B75D0] focus:ring-2 focus:ring-[#8B75D0]/20"
-                  />
+                  <div className="flex flex-col gap-2">
+                    <input
+                      type="text"
+                      value={restaurant}
+                      onChange={(e) => setRestaurant(e.target.value)}
+                      placeholder={mealType === 'other' ? '예: OO카페, OO공원' : '예: 모던한정식'}
+                      className="w-full px-4 py-3 bg-[#F9F7FD] border border-[#E8E4F0] rounded-xl text-[#2A2240] placeholder:text-[#C5BAE8] focus:outline-none focus:border-[#8B75D0] focus:ring-2 focus:ring-[#8B75D0]/20"
+                    />
+                    {/* Address search via Kakao */}
+                    <div className="flex flex-col gap-1.5">
+                      <div className="relative">
+                        <input
+                          value={addressQuery}
+                          onChange={e => setAddressQuery(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault()
+                              handleAddressSearch()
+                            }
+                          }}
+                          placeholder="주소 검색 (장소명 또는 주소)"
+                          className="w-full px-4 pr-10 py-3 bg-[#F9F7FD] border border-[#E8E4F0] rounded-xl text-[#2A2240] placeholder:text-[#C5BAE8] focus:outline-none focus:border-[#8B75D0] focus:ring-2 focus:ring-[#8B75D0]/20"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAddressSearch}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#9B8CC4] hover:text-[#8B75D0] transition-colors"
+                        >
+                          <Search size={18} strokeWidth={1.5} />
+                        </button>
+                      </div>
+                      {showAddressResults && (
+                        <div className="border border-[#E8E4F0] rounded-xl bg-white overflow-hidden max-h-[200px] overflow-y-auto">
+                          {addressResults.length === 0 ? (
+                            <div className="px-4 py-3 text-[13px] text-[#9B8CC4]">검색 결과가 없습니다</div>
+                          ) : (
+                            addressResults.map(place => (
+                              <button
+                                key={place.id}
+                                type="button"
+                                onClick={() => selectAddress(place)}
+                                className="w-full text-left px-4 py-2.5 hover:bg-[#F9F7FD] transition-colors border-b border-[#E8E4F0] last:border-b-0"
+                              >
+                                <div className="text-[14px] font-medium text-[#2A2240]">{place.place_name}</div>
+                                <div className="text-[12px] text-[#9B8CC4] mt-0.5">{place.road_address_name || place.address_name}</div>
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      )}
+                      {manualAddress && (
+                        <div className="flex items-center gap-2 px-3 py-2 bg-[#EDE9FA]/50 rounded-lg">
+                          <MapPin size={14} className="text-[#8B75D0] shrink-0" />
+                          <span className="text-[13px] text-[#2A2240] flex-1 truncate">{manualAddress}</span>
+                          <button type="button" onClick={() => setManualAddress('')} className="text-[#9B8CC4] hover:text-[#D4899A]">
+                            <X size={14} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 )}
               </>
             )}

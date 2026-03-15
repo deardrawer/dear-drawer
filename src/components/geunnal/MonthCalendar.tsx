@@ -199,9 +199,16 @@ export default function MonthCalendar({ events, onDateClick, weddingDate }: Mont
                     <span className="text-[9px] leading-[1.2] font-medium text-[#2A2240] truncate w-full">
                       {evt.name.length > 6 ? evt.name.slice(0, 5) + '...' : evt.name}
                     </span>
-                    <span className={`text-[8px] leading-[1.2] ${getMealColor(evt.meal_type)}`}>
-                      {MEAL_SHORT[evt.meal_type]}
-                    </span>
+                    <div className="flex items-center gap-0.5">
+                      <span className={`text-[8px] leading-[1.2] ${getMealColor(evt.meal_type)}`}>
+                        {MEAL_SHORT[evt.meal_type]}
+                      </span>
+                      {evt.area && (
+                        <span className="text-[7px] leading-[1.2] text-[#7A7A8A] bg-[#EDEDF0] rounded px-0.5 truncate max-w-[30px]">
+                          {evt.area}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 ))}
                 {dayEvents.length > 2 && (

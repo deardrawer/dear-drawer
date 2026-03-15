@@ -285,9 +285,9 @@ export default function EventDetail({
     if (venue) {
       window.open(`https://map.kakao.com/link/map/${encodeURIComponent(venue.name)},${venue.lat},${venue.lng}`, '_blank')
     } else {
-      const locationText = [event?.area, event?.restaurant].filter(Boolean).join(' ')
-      if (locationText) {
-        window.open(`https://map.kakao.com/link/search/${encodeURIComponent(locationText)}`, '_blank')
+      const searchText = event?.location || event?.restaurant || event?.area || ''
+      if (searchText) {
+        window.open(`https://map.kakao.com/link/search/${encodeURIComponent(searchText)}`, '_blank')
       }
     }
   }
@@ -306,7 +306,7 @@ export default function EventDetail({
   if (!event) return null
 
   const contactedCount = guests.filter(g => g.contacted).length
-  const locationText = [event.area, event.restaurant].filter(Boolean).join(' ')
+  const locationText = event.restaurant || event.area || ''
   const photos = submissions.filter(s => s.photo_url)
   const messages = submissions.filter(s => s.message)
 
@@ -332,6 +332,11 @@ export default function EventDetail({
                 <GeunnalBadge variant="soft">
                   {event.meal_type === 'lunch' ? '점심' : event.meal_type === 'dinner' ? '저녁' : '기타'}
                 </GeunnalBadge>
+              )}
+              {event.area && (
+                <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-[#EDEDF0] text-[#7A7A8A]">
+                  {event.area}
+                </span>
               )}
             </div>
             <h1 className="text-xl font-bold text-[#2A2240] mt-1 truncate">{event.name}</h1>
@@ -363,11 +368,16 @@ export default function EventDetail({
                 {event.date ? `${formatDate(event.date)} ${formatTime(event.time)}` : '날짜 미정'}
               </span>
             </div>
-            <div className="flex items-center gap-2">
-              <MapPin size={16} strokeWidth={1.5} className="text-[#8B75D0] shrink-0" />
-              <span className="text-[14px] text-[#5A5270] flex-1">{locationText || '장소 미정'}</span>
-              {locationText && (
-                <button onClick={openKakaoMap} className="text-[#8B75D0]">
+            <div className="flex items-start gap-2">
+              <MapPin size={16} strokeWidth={1.5} className="text-[#8B75D0] shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <span className="text-[14px] text-[#5A5270]">{locationText || '장소 미정'}</span>
+                {event.location && event.location !== locationText && (
+                  <p className="text-[12px] text-[#9B8CC4] mt-0.5 truncate">{event.location}</p>
+                )}
+              </div>
+              {(locationText || event.location) && (
+                <button onClick={openKakaoMap} className="text-[#8B75D0] shrink-0 mt-0.5">
                   <ExternalLink size={14} />
                 </button>
               )}
@@ -502,7 +512,12 @@ export default function EventDetail({
             ) : (
               <div className="px-4 pb-4">
                 <div className="flex items-center justify-between">
-                  <p className="text-[14px] text-[#5A5270]">{locationText}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[14px] text-[#5A5270]">{locationText}</p>
+                    {event.location && event.location !== locationText && (
+                      <p className="text-[12px] text-[#9B8CC4] mt-0.5 truncate">{event.location}</p>
+                    )}
+                  </div>
                   {event.restaurant && (
                     <div className="flex items-center gap-1.5">
                       <button

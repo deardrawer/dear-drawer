@@ -670,7 +670,7 @@ function EventCard({ ewg, onClick, onCostClick, isCompleted, needsSettlement }: 
       onClick={onClick}
     >
       <div className="flex flex-col gap-2">
-        {/* Row 1: Side badge + Name + Meal badge */}
+        {/* Row 1: Side badge + Name + Area tag + Meal badge */}
         <div className="flex items-center gap-2">
           <GeunnalBadge variant={SIDE_BADGE_VARIANT[event.side]} className="text-[11px] px-2 py-0.5">
             {SIDE_LABELS[event.side]}
@@ -678,6 +678,11 @@ function EventCard({ ewg, onClick, onCostClick, isCompleted, needsSettlement }: 
           <span className="text-[15px] font-medium text-[#2A2240] flex-1 truncate">
             {event.name}
           </span>
+          {event.area && (
+            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-[#EDEDF0] text-[#7A7A8A] shrink-0">
+              {event.area}
+            </span>
+          )}
           <GeunnalBadge variant={MEAL_BADGE_VARIANT[event.meal_type]} className="text-[11px] px-2 py-0.5">
             {MEAL_LABELS[event.meal_type]}
           </GeunnalBadge>
@@ -692,11 +697,11 @@ function EventCard({ ewg, onClick, onCostClick, isCompleted, needsSettlement }: 
         </div>
 
         {/* Row 3: Area & Restaurant + Reservation */}
-        {(event.area || event.restaurant) ? (
+        {(event.restaurant || event.area) ? (
           <div className="flex items-center gap-1.5">
             <MapPin size={14} strokeWidth={1.5} className="text-[#9B8CC4] shrink-0" />
             <span className="text-[13px] text-[#9B8CC4] truncate flex-1">
-              {event.area}{event.restaurant ? ` · ${event.restaurant}` : ''}
+              {event.restaurant || event.area}
             </span>
             {event.restaurant && <ReservationBadge status={event.reservation_status} />}
           </div>
@@ -789,7 +794,7 @@ function TBDEventCard({ ewg, onClick, onContactToggle }: {
   return (
     <GeunnalCard className="cursor-pointer active:scale-[0.98] transition-transform" onClick={onClick}>
       <div className="flex flex-col gap-2.5">
-        {/* Row 1: Side badge + Name */}
+        {/* Row 1: Side badge + Name + Area tag */}
         <div className="flex items-center gap-2">
           <GeunnalBadge variant={SIDE_BADGE_VARIANT[event.side]} className="text-[11px] px-2 py-0.5">
             {SIDE_LABELS[event.side]}
@@ -797,6 +802,11 @@ function TBDEventCard({ ewg, onClick, onContactToggle }: {
           <span className="text-[15px] font-medium text-[#2A2240] flex-1 truncate">
             {event.name}
           </span>
+          {event.area && (
+            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-[#EDEDF0] text-[#7A7A8A] shrink-0">
+              {event.area}
+            </span>
+          )}
         </div>
 
         {/* Row 2: TBD date + Area */}
@@ -805,11 +815,11 @@ function TBDEventCard({ ewg, onClick, onContactToggle }: {
             <CalendarOff size={14} strokeWidth={1.5} className="text-[#9B8CC4] shrink-0" />
             <span className="text-[13px] text-[#9B8CC4]">날짜 미정</span>
           </div>
-          {(event.area || event.restaurant) && (
+          {(event.restaurant || event.area) && (
             <div className="flex items-center gap-1.5">
               <MapPin size={14} strokeWidth={1.5} className="text-[#9B8CC4] shrink-0" />
               <span className="text-[13px] text-[#9B8CC4] truncate flex-1">
-                {event.area}{event.restaurant ? ` · ${event.restaurant}` : ''}
+                {event.restaurant || event.area}
               </span>
               {event.restaurant && <ReservationBadge status={event.reservation_status} />}
             </div>

@@ -84,7 +84,7 @@ export default function EventPopup({ open, onClose, events, eventsWithGuests, on
   const safeIndex = Math.min(eventIndex, Math.max(0, dayEvents.length - 1))
   const event = hasEvents ? dayEvents[safeIndex] : null
   const guests = event ? (eventsWithGuests?.find(ewg => ewg.event.id === event.id)?.guests || []) : []
-  const locationText = event ? [event.area, event.restaurant].filter(Boolean).join(' · ') : ''
+  const locationText = event ? (event.restaurant || event.area || '') : ''
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
@@ -135,6 +135,11 @@ export default function EventPopup({ open, onClose, events, eventsWithGuests, on
                 <GeunnalBadge variant="soft">
                   {MEAL_LABELS[event!.meal_type] || '기타'}
                 </GeunnalBadge>
+                {event!.area && (
+                  <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-[#EDEDF0] text-[#7A7A8A]">
+                    {event!.area}
+                  </span>
+                )}
               </div>
 
               {/* Event Name */}
@@ -182,10 +187,16 @@ export default function EventPopup({ open, onClose, events, eventsWithGuests, on
               </div>
             </div>
 
-            {/* Footer: Day Navigation + Detail Button */}
+            {/* Footer: Event/Day Navigation + Detail Button */}
             <div className="flex items-center justify-between px-5 py-4">
               <button
-                onClick={handlePrevDay}
+                onClick={() => {
+                  if (safeIndex > 0) {
+                    setEventIndex(i => i - 1)
+                  } else {
+                    handlePrevDay()
+                  }
+                }}
                 className="w-9 h-9 flex items-center justify-center rounded-full border border-[#E8E4F0] hover:bg-[#F9F7FD] transition-colors"
               >
                 <ChevronLeft size={18} strokeWidth={1.5} className="text-[#5A5270]" />
@@ -202,7 +213,13 @@ export default function EventPopup({ open, onClose, events, eventsWithGuests, on
               </button>
 
               <button
-                onClick={handleNextDay}
+                onClick={() => {
+                  if (safeIndex < dayEvents.length - 1) {
+                    setEventIndex(i => i + 1)
+                  } else {
+                    handleNextDay()
+                  }
+                }}
                 className="w-9 h-9 flex items-center justify-center rounded-full border border-[#E8E4F0] hover:bg-[#F9F7FD] transition-colors"
               >
                 <ChevronRight size={18} strokeWidth={1.5} className="text-[#5A5270]" />

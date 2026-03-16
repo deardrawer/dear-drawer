@@ -62,6 +62,14 @@ function formatRelativeTime(dateStr: string): string {
   return `${days}일 전`
 }
 
+function isHostSubmission(guestName: string, groomName?: string, brideName?: string): boolean {
+  if (!groomName || !brideName || !guestName) return false
+  const name = guestName.toLowerCase().replace(/\s/g, '')
+  const groom = groomName.toLowerCase().replace(/\s/g, '')
+  const bride = brideName.toLowerCase().replace(/\s/g, '')
+  return name.includes(groom) && name.includes(bride)
+}
+
 function isEventPast(dateStr: string, timeStr: string): boolean {
   if (!dateStr) return false
   const now = new Date()
@@ -450,30 +458,56 @@ function StepAlbum({
         ) : (
           <>
             <div className="grid grid-cols-2 gap-3">
-              {submissions.map(s => (
-                <GeunnalCard key={s.id} noPadding className="overflow-hidden">
-                  {s.photo_url && (
-                    <div
-                      className="aspect-[4/3] cursor-pointer overflow-hidden"
-                      onClick={() => onViewSubmission(s)}
-                    >
-                      <img src={s.photo_url} alt="" className="w-full h-full object-cover" />
-                    </div>
-                  )}
-                  <div className="p-3">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <BlobAvatar id={s.avatar_id ?? 0} size={28} />
-                      <span className="text-[12px] font-medium text-[#2A2240] truncate">
-                        {s.is_anonymous ? '익명' : s.guest_name}
-                      </span>
-                    </div>
-                    {s.message && (
-                      <p className="text-[12px] text-[#5A5270] leading-[1.5] line-clamp-2">{s.message}</p>
+              {submissions.map(s => {
+                const isHost = isHostSubmission(s.guest_name, groomName, brideName)
+                return (
+                  <GeunnalCard
+                    key={s.id}
+                    noPadding
+                    className={`overflow-hidden ${isHost ? 'bg-gradient-to-br from-[#EDE9FA]/40 via-white to-[#FAE9F0]/40 !border-[#C5BAE8] shadow-sm' : ''}`}
+                  >
+                    {s.photo_url && (
+                      <div
+                        className="aspect-[4/3] cursor-pointer overflow-hidden relative"
+                        onClick={() => onViewSubmission(s)}
+                      >
+                        <img src={s.photo_url} alt="" className="w-full h-full object-cover" />
+                        {isHost && (
+                          <div className="absolute top-2 left-2 w-5 h-5 rounded-full bg-gradient-to-br from-[#EDE9FA] to-[#FAE9F0] flex items-center justify-center shadow-sm">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <circle cx="9" cy="12" r="5" stroke="#8B75D0" strokeWidth="2" fill="none" />
+                              <circle cx="15" cy="12" r="5" stroke="#D4899A" strokeWidth="2" fill="none" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
                     )}
-                    <p className="text-[10px] text-[#9B8CC4] mt-1.5">{formatRelativeTime(s.created_at)}</p>
-                  </div>
-                </GeunnalCard>
-              ))}
+                    <div className="p-3">
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        {isHost ? (
+                          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#EDE9FA] to-[#FAE9F0] flex items-center justify-center shrink-0">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <circle cx="9" cy="12" r="5" stroke="#8B75D0" strokeWidth="1.8" fill="none" />
+                              <circle cx="15" cy="12" r="5" stroke="#D4899A" strokeWidth="1.8" fill="none" />
+                              <circle cx="9" cy="12" r="1.2" fill="#8B75D0" />
+                              <circle cx="15" cy="12" r="1.2" fill="#D4899A" />
+                            </svg>
+                          </div>
+                        ) : (
+                          <BlobAvatar id={s.avatar_id ?? 0} size={28} />
+                        )}
+                        <span className={`text-[12px] font-medium text-[#2A2240] truncate ${isHost ? 'font-semibold' : ''}`}>
+                          {s.is_anonymous ? '익명' : s.guest_name}
+                        </span>
+                      </div>
+                      {s.message && (
+                        <p className="text-[12px] text-[#5A5270] leading-[1.5] line-clamp-2">{s.message}</p>
+                      )}
+                      <p className="text-[10px] text-[#9B8CC4] mt-1.5">{formatRelativeTime(s.created_at)}</p>
+                    </div>
+                  </GeunnalCard>
+                )
+              })}
             </div>
 
             <div className="text-center py-10 mt-4">

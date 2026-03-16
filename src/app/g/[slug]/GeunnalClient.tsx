@@ -277,6 +277,8 @@ export default function GeunnalClient({
             slug={slug}
             ogImage={ogImage}
             onSessionExpired={handleSessionExpired}
+            groomName={groomName}
+            brideName={brideName}
           />
         )}
 

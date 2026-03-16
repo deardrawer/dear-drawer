@@ -37,6 +37,16 @@ interface EventDetailProps {
   slug: string
   ogImage?: string
   onSessionExpired?: () => void
+  groomName?: string
+  brideName?: string
+}
+
+const isHostSubmission = (guestName: string, groomName?: string, brideName?: string): boolean => {
+  if (!groomName || !brideName || !guestName) return false
+  const name = guestName.toLowerCase().replace(/\s/g, '')
+  const groom = groomName.toLowerCase().replace(/\s/g, '')
+  const bride = brideName.toLowerCase().replace(/\s/g, '')
+  return name.includes(groom) && name.includes(bride)
 }
 
 const formatDate = (dateStr: string) => {
@@ -72,6 +82,8 @@ export default function EventDetail({
   slug,
   ogImage,
   onSessionExpired,
+  groomName,
+  brideName,
 }: EventDetailProps) {
   const [event, setEvent] = useState<GeunnalEvent | null>(null)
   const [guests, setGuests] = useState<EventGuest[]>([])
@@ -676,20 +688,31 @@ export default function EventDetail({
               <p className="text-[15px] font-medium text-[#2A2240]">사진 ({photos.length})</p>
             </div>
             <div className="grid grid-cols-3 gap-1.5">
-              {photos.map(s => (
-                <div
-                  key={s.id}
-                  className="relative aspect-square rounded-lg overflow-hidden cursor-pointer active:scale-[0.97] transition-transform"
-                  onClick={() => setViewingPhoto(s)}
-                >
-                  <img src={s.photo_url!} alt="" className="w-full h-full object-cover" />
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/50 to-transparent p-2 pt-6">
-                    <p className="text-white text-[10px] font-medium truncate">
-                      {s.is_anonymous ? '익명' : s.guest_name}
-                    </p>
+              {photos.map(s => {
+                const isHost = isHostSubmission(s.guest_name, groomName, brideName)
+                return (
+                  <div
+                    key={s.id}
+                    className={`relative aspect-square rounded-lg overflow-hidden cursor-pointer active:scale-[0.97] transition-transform ${isHost ? 'ring-2 ring-[#C5BAE8]' : ''}`}
+                    onClick={() => setViewingPhoto(s)}
+                  >
+                    <img src={s.photo_url!} alt="" className="w-full h-full object-cover" />
+                    {isHost && (
+                      <div className="absolute top-1.5 left-1.5 w-5 h-5 rounded-full bg-gradient-to-br from-[#EDE9FA] to-[#FAE9F0] flex items-center justify-center shadow-sm">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <circle cx="9" cy="12" r="5" stroke="#8B75D0" strokeWidth="2" fill="none" />
+                          <circle cx="15" cy="12" r="5" stroke="#D4899A" strokeWidth="2" fill="none" />
+                        </svg>
+                      </div>
+                    )}
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/50 to-transparent p-2 pt-6">
+                      <p className="text-white text-[10px] font-medium truncate">
+                        {s.is_anonymous ? '익명' : s.guest_name}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </section>
         )}
@@ -699,39 +722,58 @@ export default function EventDetail({
           <section>
             <p className="text-[15px] font-medium text-[#2A2240] mb-3">메시지 ({messages.length})</p>
             <div className="flex flex-col gap-2">
-              {messages.map(msg => (
-                <GeunnalCard key={msg.id}>
-                  <div className="flex gap-3">
-                    <BlobAvatarById id={msg.avatar_id ?? 0} size={36} showBorder={false} />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-[13px] font-medium text-[#2A2240] truncate">
-                          {msg.is_anonymous ? '익명' : msg.guest_name}
-                        </p>
-                        <div className="flex items-center gap-1 shrink-0">
-                          <span className="text-[11px] text-[#9B8CC4]">
-                            {formatRelativeTime(msg.created_at)}
-                          </span>
-                          <button
-                            onClick={() => handleDeleteSubmission(msg.id)}
-                            className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-red-50 transition-colors"
-                          >
-                            <Trash2 size={12} strokeWidth={1.5} className="text-red-300 hover:text-red-400" />
-                          </button>
+              {messages.map(msg => {
+                const isHost = isHostSubmission(msg.guest_name, groomName, brideName)
+                return (
+                  <GeunnalCard
+                    key={msg.id}
+                    className={isHost ? 'bg-gradient-to-br from-[#EDE9FA]/40 via-white to-[#FAE9F0]/40 !border-[#C5BAE8] shadow-sm' : ''}
+                  >
+                    <div className="flex gap-3">
+                      {isHost ? (
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#EDE9FA] to-[#FAE9F0] flex items-center justify-center shrink-0">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="9" cy="12" r="5" stroke="#8B75D0" strokeWidth="1.8" fill="none" />
+                            <circle cx="15" cy="12" r="5" stroke="#D4899A" strokeWidth="1.8" fill="none" />
+                            <circle cx="9" cy="12" r="1.2" fill="#8B75D0" />
+                            <circle cx="15" cy="12" r="1.2" fill="#D4899A" />
+                          </svg>
                         </div>
-                      </div>
-                      <p className="text-[14px] text-[#5A5270] mt-1">{msg.message}</p>
-                      {msg.photo_url && (
-                        <img
-                          src={msg.photo_url} alt=""
-                          className="mt-2 w-20 h-20 rounded-lg object-cover cursor-pointer active:scale-[0.97] transition-transform"
-                          onClick={() => setViewingPhoto(msg)}
-                        />
+                      ) : (
+                        <BlobAvatarById id={msg.avatar_id ?? 0} size={36} showBorder={false} />
                       )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <p className={`text-[13px] font-medium text-[#2A2240] truncate ${isHost ? 'font-semibold' : ''}`}>
+                              {msg.is_anonymous ? '익명' : msg.guest_name}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <span className="text-[11px] text-[#9B8CC4]">
+                              {formatRelativeTime(msg.created_at)}
+                            </span>
+                            <button
+                              onClick={() => handleDeleteSubmission(msg.id)}
+                              className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-red-50 transition-colors"
+                            >
+                              <Trash2 size={12} strokeWidth={1.5} className="text-red-300 hover:text-red-400" />
+                            </button>
+                          </div>
+                        </div>
+                        <p className="text-[14px] text-[#5A5270] mt-1">{msg.message}</p>
+                        {msg.photo_url && (
+                          <img
+                            src={msg.photo_url} alt=""
+                            className={`mt-2 rounded-lg object-cover cursor-pointer active:scale-[0.97] transition-transform ${isHost ? 'w-28 h-28' : 'w-20 h-20'}`}
+                            onClick={() => setViewingPhoto(msg)}
+                          />
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </GeunnalCard>
-              ))}
+                  </GeunnalCard>
+                )
+              })}
             </div>
           </section>
         )}

@@ -135,7 +135,6 @@ const songMyung = Song_Myung({
   variable: "--font-song-myung",
   weight: ["400"],
   display: "swap",
-  preload: false,
 });
 
 const hahmlet = Hahmlet({

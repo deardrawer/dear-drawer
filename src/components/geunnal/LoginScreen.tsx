@@ -144,7 +144,7 @@ export default function LoginScreen({ pageId, groomName, brideName, mode, onLogi
             {groomName} ♥ {brideName}
           </h1>
           <p className="text-sm text-[#5A5270]">
-            {mode === 'setup' ? '그날 비밀번호 설정' : '그날 관리 페이지'}
+            {mode === 'setup' ? '데이드로어 비밀번호 설정' : '데이드로어 청첩장 모임 관리'}
           </p>
         </div>
 

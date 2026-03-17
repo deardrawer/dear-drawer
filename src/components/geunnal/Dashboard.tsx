@@ -160,7 +160,7 @@ export default function Dashboard({ pageId, token, onEventClick, onSessionExpire
           <h1 className="text-xl font-medium text-[#2A2240]" style={{ fontFamily: 'Isamanru, sans-serif' }}>
             데이드로어
           </h1>
-          <p className="text-[13px] text-[#5A5270] mt-0.5">소중한 그날의 기록</p>
+          <p className="text-[13px] text-[#5A5270] mt-0.5">청첩장 모임 관리</p>
         </div>
       </header>
 

@@ -410,7 +410,7 @@ export default function AdminPage() {
               color: activeTab === 'geunnal' ? '#2C2C2C' : '#888',
             }}
           >
-            그날 관리
+            데이드로어 관리
             {geunnalPages.length > 0 && (
               <span className="ml-2 text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: '#8B75D0', color: '#FFF' }}>
                 {geunnalPages.length}
@@ -771,7 +771,7 @@ export default function AdminPage() {
         {activeTab === 'geunnal' && (
           <>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-semibold" style={{ color: '#2C2C2C' }}>그날 페이지 목록</h2>
+              <h2 className="text-base font-semibold" style={{ color: '#2C2C2C' }}>데이드로어 페이지 목록</h2>
               <button
                 onClick={() => setShowGeunnalForm(v => !v)}
                 className="px-4 py-2 rounded-lg text-sm font-medium text-white"
@@ -839,7 +839,7 @@ export default function AdminPage() {
 
             {geunnalPages.length === 0 ? (
               <div className="text-center py-12 text-sm" style={{ color: '#888' }}>
-                생성된 그날 페이지가 없습니다
+                생성된 데이드로어 페이지가 없습니다
               </div>
             ) : (
               <div className="flex flex-col gap-3">
@@ -920,7 +920,7 @@ export default function AdminPage() {
   }
 
   async function handleDeleteGeunnalPage(pageId: string) {
-    if (!confirm('이 그날 페이지를 삭제하시겠습니까? 관련 모임과 데이터가 모두 삭제됩니다.')) return
+    if (!confirm('이 데이드로어 페이지를 삭제하시겠습니까? 관련 모임과 데이터가 모두 삭제됩니다.')) return
 
     try {
       const res = await fetch(`/api/geunnal/pages/${pageId}`, {

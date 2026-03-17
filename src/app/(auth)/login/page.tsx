@@ -32,13 +32,8 @@ function LoginContent() {
   }
 
   const handleKakaoLogin = () => {
-    const clientId = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID
-    const redirectUri = process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI
-
-    if (!clientId || !redirectUri) {
-      alert('카카오 로그인 설정이 되어있지 않습니다.')
-      return
-    }
+    const clientId = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID || '45cff9edef371e0e18394dfd5d0f29f7'
+    const redirectUri = `${window.location.origin}/api/auth/callback/kakao`
 
     const params = new URLSearchParams({
       client_id: clientId,

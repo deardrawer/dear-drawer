@@ -214,6 +214,28 @@ export default function MyInvitationsPage() {
   const [rsvpSort, setRsvpSort] = useState<'date' | 'name' | 'count'>('date')
   const [deletingRsvpId, setDeletingRsvpId] = useState<string | null>(null)
 
+  // 데이드로어 비밀번호 리셋
+  const [deardrawerStatus, setDeardrawerStatus] = useState<{ hasPage: boolean; hasPassword: boolean } | null>(null)
+  const [isLoadingDeardrawer, setIsLoadingDeardrawer] = useState(false)
+  const [resetPin, setResetPin] = useState(['', '', '', ''])
+  const [confirmResetPin, setConfirmResetPin] = useState(['', '', '', ''])
+  const [resetStep, setResetStep] = useState<'idle' | 'enter' | 'confirm'>('idle')
+  const [resetError, setResetError] = useState('')
+  const [isResettingPassword, setIsResettingPassword] = useState(false)
+  const [resetSuccess, setResetSuccess] = useState(false)
+  const resetPinRefs = [
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+  ]
+  const confirmPinRefs = [
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+  ]
+
   // 공유 URL
   const baseUrl = 'https://invite.deardrawer.com'
   const getInvitationUrl = (inv: InvitationSummary) => {
@@ -253,6 +275,16 @@ export default function MyInvitationsPage() {
       setRsvpFilter('all')
       setRsvpSearch('')
       setRsvpSort('date')
+      // 데이드로어 상태 초기화 및 로드
+      setDeardrawerStatus(null)
+      setResetStep('idle')
+      setResetPin(['', '', '', ''])
+      setConfirmResetPin(['', '', '', ''])
+      setResetError('')
+      setResetSuccess(false)
+      if (manageInvitation.is_paid) {
+        fetchDeardrawerStatus(manageInvitation.id)
+      }
     }
   }, [manageInvitation])
 
@@ -487,6 +519,108 @@ export default function MyInvitationsPage() {
       link.download = `qrcode-${manageInvitation.slug || manageInvitation.id}.png`
       link.href = manageQrCodeUrl
       link.click()
+    }
+  }
+
+  const fetchDeardrawerStatus = async (invitationId: string) => {
+    setIsLoadingDeardrawer(true)
+    try {
+      const res = await fetch(`/api/geunnal/reset-password?invitationId=${invitationId}`)
+      if (res.ok) {
+        const data: { hasPage: boolean; hasPassword: boolean } = await res.json()
+        setDeardrawerStatus(data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch deardrawer status:', error)
+    } finally {
+      setIsLoadingDeardrawer(false)
+    }
+  }
+
+  const handleResetPinChange = (index: number, value: string, isConfirm: boolean) => {
+    if (value.length > 1) return
+    if (value && !/^\d$/.test(value)) return
+
+    const target = isConfirm ? confirmResetPin : resetPin
+    const setter = isConfirm ? setConfirmResetPin : setResetPin
+    const refs = isConfirm ? confirmPinRefs : resetPinRefs
+
+    const newPin = [...target]
+    newPin[index] = value
+    setter(newPin)
+    setResetError('')
+
+    if (value && index < 3) {
+      refs[index + 1].current?.focus()
+    }
+  }
+
+  const handleResetPinKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>, isConfirm: boolean) => {
+    const target = isConfirm ? confirmResetPin : resetPin
+    const refs = isConfirm ? confirmPinRefs : resetPinRefs
+
+    if (e.key === 'Backspace' && !target[index] && index > 0) {
+      refs[index - 1].current?.focus()
+    }
+  }
+
+  const handleResetPassword = async () => {
+    if (!manageInvitation) return
+
+    const password = resetPin.join('')
+    if (password.length !== 4) {
+      setResetError('4자리 비밀번호를 입력해주세요')
+      return
+    }
+
+    if (resetStep === 'enter') {
+      setResetStep('confirm')
+      setResetError('')
+      setTimeout(() => confirmPinRefs[0].current?.focus(), 100)
+      return
+    }
+
+    // confirm step
+    const confirmPassword = confirmResetPin.join('')
+    if (confirmPassword.length !== 4) {
+      setResetError('확인 비밀번호를 입력해주세요')
+      return
+    }
+    if (password !== confirmPassword) {
+      setResetError('비밀번호가 일치하지 않습니다')
+      setConfirmResetPin(['', '', '', ''])
+      confirmPinRefs[0].current?.focus()
+      return
+    }
+
+    setIsResettingPassword(true)
+    setResetError('')
+
+    try {
+      const res = await fetch('/api/geunnal/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          invitationId: manageInvitation.id,
+          newPassword: password,
+        }),
+      })
+
+      const data: { success?: boolean; error?: string } = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || '비밀번호 재설정 실패')
+      }
+
+      setResetSuccess(true)
+      setResetStep('idle')
+      setResetPin(['', '', '', ''])
+      setConfirmResetPin(['', '', '', ''])
+      setDeardrawerStatus({ hasPage: true, hasPassword: true })
+    } catch (err) {
+      setResetError(err instanceof Error ? err.message : '오류가 발생했습니다')
+    } finally {
+      setIsResettingPassword(false)
     }
   }
 
@@ -924,7 +1058,7 @@ export default function MyInvitationsPage() {
                       </Link>
                     ) : (
                       <Link href={`/g/${invitation.slug || invitation.id}-g`}>
-                        <Button size="sm" className="w-full bg-violet-500 hover:bg-violet-600 text-white">모임 관리</Button>
+                        <Button size="sm" className="w-full bg-violet-500 hover:bg-violet-600 text-white text-xs">청첩장 모임관리</Button>
                       </Link>
                     )}
                   </div>
@@ -1074,9 +1208,12 @@ export default function MyInvitationsPage() {
           </DialogHeader>
 
           <Tabs defaultValue="rsvp" className="flex-1 overflow-hidden flex flex-col">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className={`grid w-full ${manageInvitation?.is_paid ? 'grid-cols-3' : 'grid-cols-2'}`}>
               <TabsTrigger value="rsvp">RSVP ({rsvpSummary.total})</TabsTrigger>
               <TabsTrigger value="guestbook">방명록 ({guestbookData.length})</TabsTrigger>
+              {manageInvitation?.is_paid && (
+                <TabsTrigger value="deardrawer">데이드로어</TabsTrigger>
+              )}
             </TabsList>
 
             {isLoadingManageData ? (
@@ -1308,6 +1445,169 @@ export default function MyInvitationsPage() {
                     )}
                   </div>
                 </TabsContent>
+
+                {/* 데이드로어 탭 */}
+                {manageInvitation?.is_paid && (
+                  <TabsContent value="deardrawer" className="flex-1 overflow-auto mt-4">
+                    <div className="space-y-6">
+                      {/* 데이드로어 소개 */}
+                      <div className="bg-violet-50 rounded-xl p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-8 h-8 bg-violet-100 rounded-full flex items-center justify-center">
+                            <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                          </div>
+                          <h3 className="font-semibold text-violet-900">데이드로어 비밀번호 관리</h3>
+                        </div>
+                        <p className="text-xs text-violet-700">
+                          데이드로어 모임 관리 앱의 4자리 비밀번호를 재설정할 수 있습니다.
+                          비밀번호만 변경되며, 모임/게스트/제출 데이터는 그대로 유지됩니다.
+                        </p>
+                      </div>
+
+                      {isLoadingDeardrawer ? (
+                        <div className="flex items-center justify-center py-8">
+                          <div className="animate-spin rounded-full h-6 w-6 border-2 border-violet-200 border-t-violet-600" />
+                        </div>
+                      ) : !deardrawerStatus?.hasPage ? (
+                        <div className="text-center py-8">
+                          <p className="text-gray-400 text-sm">연결된 데이드로어 페이지가 없습니다</p>
+                          <p className="text-gray-400 text-xs mt-1">모임 관리 버튼을 눌러 먼저 데이드로어 페이지를 생성해주세요</p>
+                        </div>
+                      ) : (
+                        <>
+                          {/* 현재 상태 */}
+                          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                            <div className={`w-2.5 h-2.5 rounded-full ${deardrawerStatus.hasPassword ? 'bg-green-500' : 'bg-yellow-500'}`} />
+                            <span className="text-sm text-gray-700">
+                              {deardrawerStatus.hasPassword ? '비밀번호가 설정되어 있습니다' : '비밀번호가 아직 설정되지 않았습니다'}
+                            </span>
+                          </div>
+
+                          {/* 성공 메시지 */}
+                          {resetSuccess && (
+                            <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                              <svg className="w-5 h-5 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <span className="text-sm text-green-700">비밀번호가 성공적으로 재설정되었습니다</span>
+                            </div>
+                          )}
+
+                          {/* 비밀번호 리셋 UI */}
+                          {resetStep === 'idle' ? (
+                            <Button
+                              onClick={() => {
+                                setResetStep('enter')
+                                setResetSuccess(false)
+                                setTimeout(() => resetPinRefs[0].current?.focus(), 100)
+                              }}
+                              className="w-full bg-violet-600 hover:bg-violet-700 text-white"
+                            >
+                              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                              </svg>
+                              비밀번호 재설정
+                            </Button>
+                          ) : (
+                            <div className="bg-white border border-gray-200 rounded-xl p-6">
+                              <p className="text-center text-sm text-gray-600 mb-4">
+                                {resetStep === 'enter'
+                                  ? '새로운 4자리 비밀번호를 입력해주세요'
+                                  : '확인을 위해 한 번 더 입력해주세요'}
+                              </p>
+
+                              {/* PIN 입력 */}
+                              <div className="flex gap-3 justify-center mb-4">
+                                {(resetStep === 'confirm' ? confirmResetPin : resetPin).map((digit, index) => (
+                                  <input
+                                    key={`${resetStep}-${index}`}
+                                    ref={resetStep === 'confirm' ? confirmPinRefs[index] : resetPinRefs[index]}
+                                    type="password"
+                                    inputMode="numeric"
+                                    maxLength={1}
+                                    value={digit}
+                                    onChange={(e) => handleResetPinChange(index, e.target.value, resetStep === 'confirm')}
+                                    onKeyDown={(e) => handleResetPinKeyDown(index, e, resetStep === 'confirm')}
+                                    className="w-12 h-12 text-center text-xl font-bold border-2 border-gray-200 rounded-lg focus:border-violet-500 focus:outline-none transition-colors"
+                                    disabled={isResettingPassword}
+                                  />
+                                ))}
+                              </div>
+
+                              {/* 단계 표시 */}
+                              <div className="flex justify-center gap-2 mb-3">
+                                <div className={`w-2 h-2 rounded-full ${resetStep === 'enter' ? 'bg-violet-500' : 'bg-gray-200'}`} />
+                                <div className={`w-2 h-2 rounded-full ${resetStep === 'confirm' ? 'bg-violet-500' : 'bg-gray-200'}`} />
+                              </div>
+
+                              {/* 에러 */}
+                              {resetError && (
+                                <p className="text-center text-sm text-red-500 mb-3">{resetError}</p>
+                              )}
+
+                              {/* 버튼 */}
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="outline"
+                                  onClick={() => {
+                                    setResetStep('idle')
+                                    setResetPin(['', '', '', ''])
+                                    setConfirmResetPin(['', '', '', ''])
+                                    setResetError('')
+                                  }}
+                                  className="flex-1"
+                                  disabled={isResettingPassword}
+                                >
+                                  취소
+                                </Button>
+                                <Button
+                                  onClick={handleResetPassword}
+                                  disabled={isResettingPassword || (resetStep === 'enter' ? resetPin.join('').length !== 4 : confirmResetPin.join('').length !== 4)}
+                                  className="flex-1 bg-violet-600 hover:bg-violet-700 text-white"
+                                >
+                                  {isResettingPassword
+                                    ? '처리 중...'
+                                    : resetStep === 'enter'
+                                      ? '다음'
+                                      : '재설정 완료'}
+                                </Button>
+                              </div>
+
+                              {/* 확인 단계에서 뒤로 */}
+                              {resetStep === 'confirm' && !isResettingPassword && (
+                                <button
+                                  onClick={() => {
+                                    setResetStep('enter')
+                                    setConfirmResetPin(['', '', '', ''])
+                                    setResetError('')
+                                    setTimeout(() => resetPinRefs[0].current?.focus(), 100)
+                                  }}
+                                  className="w-full mt-2 py-1.5 text-xs text-violet-500 hover:text-violet-600 transition-colors"
+                                >
+                                  이전으로
+                                </button>
+                              )}
+                            </div>
+                          )}
+
+                          {/* 모임 관리 바로가기 */}
+                          <div className="border-t pt-4">
+                            <Link href={`/g/${manageInvitation?.slug || manageInvitation?.id}-g`}>
+                              <Button variant="outline" className="w-full text-sm">
+                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                </svg>
+                                데이드로어 모임 관리 페이지 열기
+                              </Button>
+                            </Link>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </TabsContent>
+                )}
               </>
             )}
           </Tabs>

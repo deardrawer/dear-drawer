@@ -189,11 +189,11 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
             WEDDING INVITATION
           </span>
           <div style={{ width: '1px', height: '50px', background: themeColors.divider, margin: '0 auto 40px' }} />
-          <div style={{ fontFamily: fonts.display, fontSize: '28px', fontWeight: 300, letterSpacing: '8px', color: themeColors.primary, lineHeight: 1.8 }}>
+          <div style={{ fontFamily: fonts.displayKr || fonts.display, fontSize: '28px', fontWeight: 300, letterSpacing: '8px', color: themeColors.primary, lineHeight: 1.8 }}>
             {groomName}
           </div>
           <span style={{ fontFamily: fonts.display, fontSize: '12px', letterSpacing: '5px', color: themeColors.gray }}>&amp;</span>
-          <div style={{ fontFamily: fonts.display, fontSize: '28px', fontWeight: 300, letterSpacing: '8px', color: themeColors.primary, lineHeight: 1.8 }}>
+          <div style={{ fontFamily: fonts.displayKr || fonts.display, fontSize: '28px', fontWeight: 300, letterSpacing: '8px', color: themeColors.primary, lineHeight: 1.8 }}>
             {brideName}
           </div>
           <div style={{ width: '1px', height: '50px', background: themeColors.divider, margin: '40px auto' }} />
@@ -292,7 +292,7 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
         style={{ opacity: loaded ? 1 : 0, transform: loaded ? 'translateY(0)' : 'translateY(20px)' }}
       >
         <div className="text-center">
-          <div style={{ fontFamily: fonts.display, fontSize: '22px', fontWeight: 300, letterSpacing: '6px', color: themeColors.primary, lineHeight: 1.6 }}>
+          <div style={{ fontFamily: fonts.displayKr || fonts.display, fontSize: '22px', fontWeight: 300, letterSpacing: '6px', color: themeColors.primary, lineHeight: 1.6 }}>
             {groomName} <span style={{ fontSize: '14px', letterSpacing: '4px', color: themeColors.gray, fontWeight: 300 }}>&amp;</span> {brideName}
           </div>
         </div>

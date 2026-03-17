@@ -34,6 +34,7 @@ const cormorantGaramond = Cormorant_Garamond({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
+  preload: false,
 });
 
 // Classic 스타일
@@ -42,6 +43,7 @@ const playfairDisplay = Playfair_Display({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
+  preload: false,
 });
 
 const nanumMyeongjo = Nanum_Myeongjo({
@@ -49,6 +51,7 @@ const nanumMyeongjo = Nanum_Myeongjo({
   subsets: ["latin"],
   weight: ["400", "700"],
   display: "swap",
+  preload: false,
 });
 
 // Modern 스타일
@@ -57,6 +60,7 @@ const montserrat = Montserrat({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
   display: "swap",
+  preload: false,
 });
 
 // Romantic 스타일
@@ -65,6 +69,7 @@ const greatVibes = Great_Vibes({
   subsets: ["latin"],
   weight: ["400"],
   display: "swap",
+  preload: false,
 });
 
 const lora = Lora({
@@ -72,6 +77,7 @@ const lora = Lora({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
+  preload: false,
 });
 
 const gowunBatang = Gowun_Batang({
@@ -79,6 +85,7 @@ const gowunBatang = Gowun_Batang({
   subsets: ["latin"],
   weight: ["400", "700"],
   display: "swap",
+  preload: false,
 });
 
 // Contemporary 스타일
@@ -87,6 +94,7 @@ const cinzel = Cinzel({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
+  preload: false,
 });
 
 const gowunDodum = Gowun_Dodum({
@@ -94,6 +102,7 @@ const gowunDodum = Gowun_Dodum({
   subsets: ["latin"],
   weight: ["400"],
   display: "swap",
+  preload: false,
 });
 
 // Luxury 스타일
@@ -102,6 +111,7 @@ const ebGaramond = EB_Garamond({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
+  preload: false,
 });
 
 const notoSerifKR = Noto_Serif_KR({
@@ -109,6 +119,7 @@ const notoSerifKR = Noto_Serif_KR({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
+  preload: false,
 });
 
 // 추가 한글 폰트 (Parents 템플릿용)
@@ -117,12 +128,14 @@ const nanumGothic = Nanum_Gothic({
   subsets: ["latin"],
   weight: ["400", "700"],
   display: "swap",
+  preload: false,
 });
 
 const songMyung = Song_Myung({
   variable: "--font-song-myung",
   weight: ["400"],
   display: "swap",
+  preload: false,
 });
 
 const hahmlet = Hahmlet({
@@ -130,6 +143,7 @@ const hahmlet = Hahmlet({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {

@@ -87,6 +87,8 @@ function RecordPreviewWrapper({ invitation, skipIntro }: { invitation: Invitatio
     youtube: (invitation as any).youtube,
     navStyle: invitation.navStyle,
     profileFrameShape: (invitation as any).profileFrameShape,
+    magazineSectionOrder: invitation.magazineSectionOrder,
+    magazineSectionBgMap: invitation.magazineSectionBgMap,
   }), [invitation])
 
   const invitationData = useMemo(() => ({
@@ -153,6 +155,8 @@ function InvitationPreviewWrapper({ invitation, skipIntro, onIntroScreenChange }
     parentIntroTextStyle: (invitation as any).parentIntroTextStyle,
     whyWeChoseTextStyle: (invitation as any).whyWeChoseTextStyle,
     navStyle: invitation.navStyle,
+    magazineSectionOrder: invitation.magazineSectionOrder,
+    magazineSectionBgMap: invitation.magazineSectionBgMap,
   }), [invitation])
 
   const invitationData = useMemo(() => ({

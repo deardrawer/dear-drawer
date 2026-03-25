@@ -372,7 +372,7 @@ function EditorsNote({ invitation, fonts, themeColors }: { invitation: any; font
 }
 
 // ===== Meet The Couple (Interviewee Profile) =====
-function MeetTheCouple({ invitation, fonts, themeColors }: { invitation: any; fonts: FontConfig; themeColors: ColorConfig }) {
+function MeetTheCouple({ invitation, fonts, themeColors, bgOverride }: { invitation: any; fonts: FontConfig; themeColors: ColorConfig; bgOverride?: string }) {
   const { ref, isVisible } = useScrollReveal()
   const groomProfile = invitation.groom?.profile
   const brideProfile = invitation.bride?.profile
@@ -388,7 +388,7 @@ function MeetTheCouple({ invitation, fonts, themeColors }: { invitation: any; fo
   const isPortrait = invitation.profileFrameShape === 'portrait'
 
   return (
-    <div ref={ref} className="px-6 py-16" style={{ backgroundColor: themeColors.sectionBg }}>
+    <div ref={ref} className="px-6 py-16" style={{ backgroundColor: bgOverride || themeColors.sectionBg }}>
       <div
         className="transition-all duration-1000"
         style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(40px)' }}
@@ -548,13 +548,13 @@ function MeetTheCouple({ invitation, fonts, themeColors }: { invitation: any; fo
 }
 
 // ===== Feature Interview Section =====
-function FeatureInterview({ invitation, fonts, themeColors }: { invitation: any; fonts: FontConfig; themeColors: ColorConfig }) {
+function FeatureInterview({ invitation, fonts, themeColors, bgOverride }: { invitation: any; fonts: FontConfig; themeColors: ColorConfig; bgOverride?: string }) {
   const interviews = invitation.interviews?.length ? invitation.interviews : invitation.content?.interviews || []
 
   if (interviews.length === 0) return null
 
   return (
-    <div style={{ backgroundColor: themeColors.sectionBg }}>
+    <div style={{ backgroundColor: bgOverride || themeColors.sectionBg }}>
       {/* Section Header */}
       <div className="px-6 pt-16 pb-8 text-center">
         <div style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '6px', color: themeColors.gray, marginBottom: '12px' }}>
@@ -654,8 +654,8 @@ function InterviewCard({ item, index, fonts, themeColors }: { item: any; index: 
 }
 
 // ===== Photo Spread Section =====
-function PhotoSpread({ invitation, fonts, themeColors, onOpenLightbox }: {
-  invitation: any; fonts: FontConfig; themeColors: ColorConfig; onOpenLightbox: (idx: number) => void
+function PhotoSpread({ invitation, fonts, themeColors, onOpenLightbox, bgOverride }: {
+  invitation: any; fonts: FontConfig; themeColors: ColorConfig; onOpenLightbox: (idx: number) => void; bgOverride?: string
 }) {
   const { ref, isVisible } = useScrollReveal()
   const allImages = (invitation.gallery?.images || []).map(extractImageUrl).filter(Boolean)
@@ -701,7 +701,7 @@ function PhotoSpread({ invitation, fonts, themeColors, onOpenLightbox }: {
   }
 
   return (
-    <div ref={ref} className="py-16" style={{ backgroundColor: themeColors.background }}>
+    <div ref={ref} className="py-16" style={{ backgroundColor: bgOverride || themeColors.background }}>
       <div
         className="transition-all duration-1000"
         style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(40px)' }}
@@ -747,7 +747,7 @@ function PhotoSpread({ invitation, fonts, themeColors, onOpenLightbox }: {
 }
 
 // ===== YouTube Section =====
-function YouTubeSection({ invitation, fonts, themeColors }: { invitation: any; fonts: FontConfig; themeColors: ColorConfig }) {
+function YouTubeSection({ invitation, fonts, themeColors, bgOverride }: { invitation: any; fonts: FontConfig; themeColors: ColorConfig; bgOverride?: string }) {
   const youtube = invitation.youtube
   if (!youtube?.enabled || !youtube?.url) return null
 
@@ -756,7 +756,7 @@ function YouTubeSection({ invitation, fonts, themeColors }: { invitation: any; f
   if (!videoId) return null
 
   return (
-    <div className="px-6 py-12" style={{ backgroundColor: themeColors.sectionBg }}>
+    <div className="px-6 py-12" style={{ backgroundColor: bgOverride || themeColors.sectionBg }}>
       <div className="text-center mb-6">
         <div style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '6px', color: themeColors.gray, marginBottom: '8px' }}>VIDEO</div>
         {youtube.title && (
@@ -777,7 +777,7 @@ function YouTubeSection({ invitation, fonts, themeColors }: { invitation: any; f
 }
 
 // ===== The Details (Wedding Info) Section =====
-function TheDetails({ invitation, fonts, themeColors }: { invitation: any; fonts: FontConfig; themeColors: ColorConfig }) {
+function TheDetails({ invitation, fonts, themeColors, bgOverride }: { invitation: any; fonts: FontConfig; themeColors: ColorConfig; bgOverride?: string }) {
   const { ref, isVisible } = useScrollReveal()
   const w = invitation.wedding || {}
   const date = w.date ? new Date(w.date) : null
@@ -791,7 +791,7 @@ function TheDetails({ invitation, fonts, themeColors }: { invitation: any; fonts
   const bride = invitation.bride || {}
 
   return (
-    <div ref={ref} className="px-6 py-20" style={{ backgroundColor: themeColors.background }}>
+    <div ref={ref} className="px-6 py-20" style={{ backgroundColor: bgOverride || themeColors.background }}>
       <div
         className="transition-all duration-1000"
         style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(40px)' }}
@@ -993,7 +993,7 @@ function DirectionItem({ label, text, fonts, themeColors }: { label: string; tex
 }
 
 // ===== Guidance & Info Section =====
-function GuidanceInfoSection({ invitation, fonts, themeColors }: { invitation: any; fonts: FontConfig; themeColors: ColorConfig }) {
+function GuidanceInfoSection({ invitation, fonts, themeColors, bgOverride }: { invitation: any; fonts: FontConfig; themeColors: ColorConfig; bgOverride?: string }) {
   const { ref, isVisible } = useScrollReveal()
   const guidance = invitation.guidance
   const info = invitation.content?.info
@@ -1013,7 +1013,7 @@ function GuidanceInfoSection({ invitation, fonts, themeColors }: { invitation: a
   if (!guidance?.enabled && enabledItems.length === 0) return null
 
   return (
-    <div ref={ref} className="py-12" style={{ backgroundColor: themeColors.sectionBg }}>
+    <div ref={ref} className="py-12" style={{ backgroundColor: bgOverride || themeColors.sectionBg }}>
       <div
         className="transition-all duration-1000"
         style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(30px)' }}
@@ -1067,13 +1067,13 @@ function GuidanceInfoSection({ invitation, fonts, themeColors }: { invitation: a
 }
 
 // ===== Thank You Section =====
-function ThankYouSection({ invitation, fonts, themeColors }: { invitation: any; fonts: FontConfig; themeColors: ColorConfig }) {
+function ThankYouSection({ invitation, fonts, themeColors, bgOverride }: { invitation: any; fonts: FontConfig; themeColors: ColorConfig; bgOverride?: string }) {
   const { ref, isVisible } = useScrollReveal()
   const thankYou = invitation.content?.thankYou
   if (!thankYou) return null
 
   return (
-    <div ref={ref} className="px-6 py-20 text-center" style={{ backgroundColor: themeColors.background }}>
+    <div ref={ref} className="px-6 py-20 text-center" style={{ backgroundColor: bgOverride || themeColors.background }}>
       <div
         className="transition-all duration-1000"
         style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(40px)' }}
@@ -1097,7 +1097,7 @@ function ThankYouSection({ invitation, fonts, themeColors }: { invitation: any; 
 }
 
 // ===== Contacts Section =====
-function ContactsSection({ invitation, fonts, themeColors }: { invitation: any; fonts: FontConfig; themeColors: ColorConfig }) {
+function ContactsSection({ invitation, fonts, themeColors, bgOverride }: { invitation: any; fonts: FontConfig; themeColors: ColorConfig; bgOverride?: string }) {
   const groom = invitation.groom || {}
   const bride = invitation.bride || {}
 
@@ -1152,7 +1152,7 @@ function ContactsSection({ invitation, fonts, themeColors }: { invitation: any; 
   }
 
   return (
-    <div className="px-6 py-12" style={{ backgroundColor: themeColors.sectionBg }}>
+    <div className="px-6 py-12" style={{ backgroundColor: bgOverride || themeColors.sectionBg }}>
       <div className="text-center mb-8">
         <div style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '6px', color: themeColors.gray, marginBottom: '8px' }}>
           GIFT
@@ -1216,8 +1216,8 @@ const sampleGuestbookMessages = [
   { id: 'sample-6', guest_name: '강민지', message: '행복한 가정 꾸리세요! 축하합니다', question: '두 사람에게 해주고 싶은 말은?', created_at: '2025-05-15T08:00:00Z' },
 ]
 
-function GuestbookSection({ invitation, invitationId, fonts, themeColors, isSample }: {
-  invitation: any; invitationId: string; fonts: FontConfig; themeColors: ColorConfig; isSample?: boolean
+function GuestbookSection({ invitation, invitationId, fonts, themeColors, isSample, bgOverride }: {
+  invitation: any; invitationId: string; fonts: FontConfig; themeColors: ColorConfig; isSample?: boolean; bgOverride?: string
 }) {
   const [messages, setMessages] = useState<any[]>(isSample ? sampleGuestbookMessages : [])
   const [name, setName] = useState('')
@@ -1281,7 +1281,7 @@ function GuestbookSection({ invitation, invitationId, fonts, themeColors, isSamp
   }
 
   return (
-    <div className="px-6 py-12" style={{ backgroundColor: themeColors.background }}>
+    <div className="px-6 py-12" style={{ backgroundColor: bgOverride || themeColors.background }}>
       <div className="text-center mb-8">
         <div style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '6px', color: themeColors.gray, marginBottom: '8px' }}>
           MESSAGES
@@ -1398,8 +1398,8 @@ function GuestbookSection({ invitation, invitationId, fonts, themeColors, isSamp
 }
 
 // ===== RSVP Section =====
-function RsvpSection({ invitation, invitationId, fonts, themeColors }: {
-  invitation: any; invitationId: string; fonts: FontConfig; themeColors: ColorConfig
+function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride }: {
+  invitation: any; invitationId: string; fonts: FontConfig; themeColors: ColorConfig; bgOverride?: string
 }) {
   const [name, setName] = useState('')
   const [attendance, setAttendance] = useState<'yes' | 'no'>('yes')
@@ -1434,7 +1434,7 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors }: {
 
   if (submitted) {
     return (
-      <div className="px-6 py-16 text-center" style={{ backgroundColor: themeColors.sectionBg }}>
+      <div className="px-6 py-16 text-center" style={{ backgroundColor: bgOverride || themeColors.sectionBg }}>
         <div style={{ fontFamily: fonts.display, fontSize: '24px', fontWeight: 300, letterSpacing: '4px', color: themeColors.primary, marginBottom: '12px' }}>
           RECEIVED
         </div>
@@ -1446,7 +1446,7 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors }: {
   }
 
   return (
-    <div className="px-6 py-12" style={{ backgroundColor: themeColors.sectionBg }}>
+    <div className="px-6 py-12" style={{ backgroundColor: bgOverride || themeColors.sectionBg }}>
       <div className="text-center mb-8">
         <div style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '6px', color: themeColors.gray, marginBottom: '8px' }}>
           ATTENDANCE
@@ -1682,7 +1682,22 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     deceasedDisplayStyle: content.deceasedDisplayStyle || 'flower',
     magazineIntroStyle: (content as any).magazineIntroStyle || 'cover',
     profileFrameShape: (content as any).profileFrameShape || 'circle',
+    magazineSectionOrder: content.magazineSectionOrder,
+    magazineSectionBgMap: (content as any).magazineSectionBgMap,
   }
+}
+
+const MAGAZINE_DEFAULT_BG: Record<string, 'background' | 'sectionBg'> = {
+  meetTheCouple: 'sectionBg',
+  featureInterview: 'sectionBg',
+  photoSpread: 'background',
+  youtube: 'sectionBg',
+  theDetails: 'background',
+  guidance: 'sectionBg',
+  thankYou: 'background',
+  contacts: 'sectionBg',
+  guestbook: 'background',
+  rsvp: 'sectionBg',
 }
 
 // ===== Main Component =====
@@ -1790,26 +1805,44 @@ function InvitationClientMagazineContent({
                         </div>
                       </div>
 
+                      {/* EditorsNote 항상 첫 번째 */}
                       <EditorsNote invitation={invitation} fonts={fonts} themeColors={themeColors} />
-                      <MeetTheCouple invitation={invitation} fonts={fonts} themeColors={themeColors} />
-                      <FeatureInterview invitation={invitation} fonts={fonts} themeColors={themeColors} />
-                      <PhotoSpread
-                        invitation={invitation}
-                        fonts={fonts}
-                        themeColors={themeColors}
-                        onOpenLightbox={(idx) => { setLightboxIndex(idx); setLightboxOpen(true) }}
-                      />
-                      <YouTubeSection invitation={invitation} fonts={fonts} themeColors={themeColors} />
-                      <TheDetails invitation={invitation} fonts={fonts} themeColors={themeColors} />
-                      <GuidanceInfoSection invitation={invitation} fonts={fonts} themeColors={themeColors} />
-                      <ThankYouSection invitation={invitation} fonts={fonts} themeColors={themeColors} />
-                      {(invitation as any).magazineLayout?.bankAccountsInMain !== false && (
-                        <ContactsSection invitation={invitation} fonts={fonts} themeColors={themeColors} />
-                      )}
-                      <GuestbookSection invitation={invitation} invitationId={dbInvitation.id} fonts={fonts} themeColors={themeColors} isSample={isSample} />
-                      {(invitation as any).magazineLayout?.rsvpInMain !== false && (
-                        <RsvpSection invitation={invitation} invitationId={dbInvitation.id} fonts={fonts} themeColors={themeColors} />
-                      )}
+                      {/* 동적 섹션 순서 */}
+                      {(() => {
+                        const sectionBgMap: Record<string, 'background' | 'sectionBg'> = invitation.magazineSectionBgMap || MAGAZINE_DEFAULT_BG
+                        const getBg = (id: string) => themeColors[sectionBgMap[id] || MAGAZINE_DEFAULT_BG[id] || 'sectionBg']
+                        return (invitation.magazineSectionOrder || ['meetTheCouple', 'featureInterview', 'photoSpread', 'youtube', 'theDetails', 'guidance', 'thankYou', 'contacts', 'guestbook', 'rsvp']).map((sectionId: string) => {
+                          switch (sectionId) {
+                            case 'meetTheCouple':
+                              return <MeetTheCouple key={sectionId} invitation={invitation} fonts={fonts} themeColors={themeColors} bgOverride={getBg(sectionId)} />
+                            case 'featureInterview':
+                              return <FeatureInterview key={sectionId} invitation={invitation} fonts={fonts} themeColors={themeColors} bgOverride={getBg(sectionId)} />
+                            case 'photoSpread':
+                              return <PhotoSpread key={sectionId} invitation={invitation} fonts={fonts} themeColors={themeColors} onOpenLightbox={(idx) => { setLightboxIndex(idx); setLightboxOpen(true) }} bgOverride={getBg(sectionId)} />
+                            case 'youtube':
+                              return <YouTubeSection key={sectionId} invitation={invitation} fonts={fonts} themeColors={themeColors} bgOverride={getBg(sectionId)} />
+                            case 'theDetails':
+                              return <TheDetails key={sectionId} invitation={invitation} fonts={fonts} themeColors={themeColors} bgOverride={getBg(sectionId)} />
+                            case 'guidance':
+                              return <GuidanceInfoSection key={sectionId} invitation={invitation} fonts={fonts} themeColors={themeColors} bgOverride={getBg(sectionId)} />
+                            case 'thankYou':
+                              return <ThankYouSection key={sectionId} invitation={invitation} fonts={fonts} themeColors={themeColors} bgOverride={getBg(sectionId)} />
+                            case 'contacts':
+                              return (invitation as any).magazineLayout?.bankAccountsInMain !== false
+                                ? <ContactsSection key={sectionId} invitation={invitation} fonts={fonts} themeColors={themeColors} bgOverride={getBg(sectionId)} />
+                                : null
+                            case 'guestbook':
+                              return <GuestbookSection key={sectionId} invitation={invitation} invitationId={dbInvitation.id} fonts={fonts} themeColors={themeColors} isSample={isSample} bgOverride={getBg(sectionId)} />
+                            case 'rsvp':
+                              return (invitation as any).magazineLayout?.rsvpInMain !== false
+                                ? <RsvpSection key={sectionId} invitation={invitation} invitationId={dbInvitation.id} fonts={fonts} themeColors={themeColors} bgOverride={getBg(sectionId)} />
+                                : null
+                            default:
+                              return null
+                          }
+                        })
+                      })()}
+                      {/* MagazineFooter 항상 마지막 */}
                       <MagazineFooter invitation={invitation} fonts={fonts} themeColors={themeColors} />
                     </>
                   )}

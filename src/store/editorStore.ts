@@ -449,6 +449,12 @@ export interface InvitationContent {
   // ===== 매거진 인트로 스타일 =====
   magazineIntroStyle?: 'cover' | 'clean' | 'editorial'
 
+  // ===== 매거진 섹션 순서 =====
+  magazineSectionOrder?: string[]
+
+  // ===== 매거진 섹션별 배경색 =====
+  magazineSectionBgMap?: Record<string, 'background' | 'sectionBg'>
+
   // ===== 레거시 필드 (AI 스토리용) =====
   ourStory: string
   decision: string

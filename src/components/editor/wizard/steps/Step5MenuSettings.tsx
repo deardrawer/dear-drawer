@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { SAMPLE_DIRECTIONS } from '@/lib/sampleData'
+import { SortableList, SortableItem } from '@/components/ui/sortable-list'
 
 // 전화번호 포맷팅 함수
 const formatPhone = (value: string) => {
@@ -58,6 +59,186 @@ export default function Step5MenuSettings() {
   }
 
   const isOurOrFamily = invitation.templateId === 'narrative-our' || invitation.templateId === 'narrative-family'
+
+  // 매거진/필름 섹션 순서 관련 설정
+  const MAGAZINE_DEFAULT_SECTION_ORDER = [
+    'meetTheCouple', 'featureInterview', 'photoSpread', 'youtube',
+    'theDetails', 'guidance', 'thankYou', 'contacts', 'guestbook', 'rsvp'
+  ]
+  const MAGAZINE_SECTION_LABELS: Record<string, string> = {
+    meetTheCouple: '커플 소개',
+    featureInterview: '인터뷰',
+    photoSpread: '갤러리',
+    youtube: '영상',
+    theDetails: '예식 정보',
+    guidance: '결혼식 안내',
+    thankYou: '감사 인사',
+    contacts: '마음 전하실 곳',
+    guestbook: '방명록',
+    rsvp: 'RSVP',
+  }
+  const MAGAZINE_DEFAULT_BG: Record<string, 'background' | 'sectionBg'> = {
+    meetTheCouple: 'sectionBg',
+    featureInterview: 'sectionBg',
+    photoSpread: 'background',
+    youtube: 'sectionBg',
+    theDetails: 'background',
+    guidance: 'sectionBg',
+    thankYou: 'background',
+    contacts: 'sectionBg',
+    guestbook: 'background',
+    rsvp: 'sectionBg',
+  }
+  const MAGAZINE_TOGGLEABLE: Record<string, { read: () => boolean; write: (checked: boolean) => void }> = {
+    youtube: {
+      read: () => (invitation as any).youtube?.enabled || false,
+      write: (checked) => updateNestedField('youtube.enabled', checked),
+    },
+    guidance: {
+      read: () => invitation.sectionVisibility.guidance !== false,
+      write: () => toggleSectionVisibility('guidance'),
+    },
+    contacts: {
+      read: () => invitation.sectionVisibility.bankAccounts !== false,
+      write: () => toggleSectionVisibility('bankAccounts'),
+    },
+    guestbook: {
+      read: () => invitation.sectionVisibility.guestbook !== false,
+      write: () => toggleSectionVisibility('guestbook'),
+    },
+    rsvp: {
+      read: () => invitation.rsvpEnabled,
+      write: (checked) => updateField('rsvpEnabled', checked),
+    },
+  }
+
+  const FILM_DEFAULT_SECTION_ORDER = [
+    'chapterTwo', 'filmScenes', 'chapterThree', 'video',
+    'premiere', 'guidance', 'credits', 'gift', 'guestbook', 'rsvp'
+  ]
+  const FILM_SECTION_LABELS: Record<string, string> = {
+    chapterTwo: '커플 소개',
+    filmScenes: '러브스토리',
+    chapterThree: '갤러리',
+    video: '영상',
+    premiere: '예식 정보',
+    guidance: '결혼식 안내',
+    credits: '감사 인사',
+    gift: '마음 전하실 곳',
+    guestbook: '방명록',
+    rsvp: 'RSVP',
+  }
+  const FILM_DEFAULT_BG: Record<string, 'background' | 'sectionBg'> = {
+    chapterTwo: 'sectionBg',
+    filmScenes: 'sectionBg',
+    chapterThree: 'background',
+    video: 'background',
+    premiere: 'sectionBg',
+    guidance: 'background',
+    credits: 'sectionBg',
+    gift: 'sectionBg',
+    guestbook: 'background',
+    rsvp: 'sectionBg',
+  }
+  const FILM_TOGGLEABLE: Record<string, { read: () => boolean; write: (checked: boolean) => void }> = {
+    video: {
+      read: () => (invitation as any).youtube?.enabled || false,
+      write: (checked) => updateNestedField('youtube.enabled', checked),
+    },
+    guidance: {
+      read: () => invitation.sectionVisibility.guidance !== false,
+      write: () => toggleSectionVisibility('guidance'),
+    },
+    gift: {
+      read: () => invitation.sectionVisibility.bankAccounts !== false,
+      write: () => toggleSectionVisibility('bankAccounts'),
+    },
+    guestbook: {
+      read: () => invitation.sectionVisibility.guestbook !== false,
+      write: () => toggleSectionVisibility('guestbook'),
+    },
+    rsvp: {
+      read: () => invitation.rsvpEnabled,
+      write: (checked) => updateField('rsvpEnabled', checked),
+    },
+  }
+
+  const RECORD_DEFAULT_SECTION_ORDER = [
+    'trackCouple', 'trackOurJourney', 'trackGallery', 'video',
+    'trackWeddingDay', 'guidance', 'bonusTrack', 'gift', 'fanMail', 'rsvp'
+  ]
+  const RECORD_SECTION_LABELS: Record<string, string> = {
+    trackCouple: '커플 소개',
+    trackOurJourney: '러브스토리',
+    trackGallery: '갤러리',
+    video: '영상',
+    trackWeddingDay: '예식 정보',
+    guidance: '결혼식 안내',
+    bonusTrack: '감사 인사',
+    gift: '마음 전하실 곳',
+    fanMail: '방명록',
+    rsvp: 'RSVP',
+  }
+  const RECORD_DEFAULT_BG: Record<string, 'background' | 'sectionBg'> = {
+    trackCouple: 'background',
+    trackOurJourney: 'background',
+    trackGallery: 'sectionBg',
+    video: 'background',
+    trackWeddingDay: 'background',
+    guidance: 'background',
+    bonusTrack: 'background',
+    gift: 'background',
+    fanMail: 'background',
+    rsvp: 'background',
+  }
+  const RECORD_TOGGLEABLE: Record<string, { read: () => boolean; write: (checked: boolean) => void }> = {
+    video: {
+      read: () => (invitation as any).youtube?.enabled || false,
+      write: (checked) => updateNestedField('youtube.enabled', checked),
+    },
+    guidance: {
+      read: () => invitation.sectionVisibility.guidance !== false,
+      write: () => toggleSectionVisibility('guidance'),
+    },
+    gift: {
+      read: () => invitation.sectionVisibility.bankAccounts !== false,
+      write: () => toggleSectionVisibility('bankAccounts'),
+    },
+    fanMail: {
+      read: () => invitation.sectionVisibility.guestbook !== false,
+      write: () => toggleSectionVisibility('guestbook'),
+    },
+    rsvp: {
+      read: () => invitation.rsvpEnabled,
+      write: (checked) => updateField('rsvpEnabled', checked),
+    },
+  }
+
+  // 템플릿에 따른 섹션 설정 선택
+  const sectionConfig = isMagazine
+    ? { order: MAGAZINE_DEFAULT_SECTION_ORDER, labels: MAGAZINE_SECTION_LABELS, bg: MAGAZINE_DEFAULT_BG, toggles: MAGAZINE_TOGGLEABLE, showBgToggle: true }
+    : isFilm
+    ? { order: FILM_DEFAULT_SECTION_ORDER, labels: FILM_SECTION_LABELS, bg: FILM_DEFAULT_BG, toggles: FILM_TOGGLEABLE, showBgToggle: true }
+    : isRecord
+    ? { order: RECORD_DEFAULT_SECTION_ORDER, labels: RECORD_SECTION_LABELS, bg: RECORD_DEFAULT_BG, toggles: RECORD_TOGGLEABLE, showBgToggle: false }
+    : null
+
+  const magazineSectionOrder = invitation.magazineSectionOrder || (sectionConfig?.order ?? MAGAZINE_DEFAULT_SECTION_ORDER)
+  const magazineSectionBgMap = invitation.magazineSectionBgMap || (sectionConfig?.bg ?? MAGAZINE_DEFAULT_BG)
+  const activeToggles = sectionConfig?.toggles ?? MAGAZINE_TOGGLEABLE
+  const activeLabels = sectionConfig?.labels ?? MAGAZINE_SECTION_LABELS
+  const activeDefaultBg = sectionConfig?.bg ?? MAGAZINE_DEFAULT_BG
+
+  const handleResetSections = () => {
+    updateField('magazineSectionOrder', undefined as any)
+    updateField('magazineSectionBgMap', undefined as any)
+  }
+
+  const handleToggleBg = (sectionId: string) => {
+    const currentBg = magazineSectionBgMap[sectionId] || activeDefaultBg[sectionId] || 'sectionBg'
+    const newBg = currentBg === 'background' ? 'sectionBg' : 'background'
+    updateField('magazineSectionBgMap', { ...magazineSectionBgMap, [sectionId]: newBg })
+  }
 
   const navStyleOptions: { value: 'hamburger' | 'bottom-nav' | 'bottom-mini'; label: string; desc: string; icon: React.ReactNode }[] = [
     {
@@ -143,6 +324,99 @@ export default function Step5MenuSettings() {
           ))}
         </div>
       </section>
+
+      {/* 섹션 순서 변경 (매거진/필름) */}
+      {sectionConfig && (
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+              <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="8" y1="6" x2="21" y2="6" />
+                <line x1="8" y1="12" x2="21" y2="12" />
+                <line x1="8" y1="18" x2="21" y2="18" />
+                <line x1="3" y1="6" x2="3.01" y2="6" />
+                <line x1="3" y1="12" x2="3.01" y2="12" />
+                <line x1="3" y1="18" x2="3.01" y2="18" />
+              </svg>
+              섹션 순서 변경
+            </h3>
+            <button
+              onClick={handleResetSections}
+              className="text-xs text-gray-500 hover:text-purple-600 transition-colors"
+            >
+              초기화
+            </button>
+          </div>
+          <p className="text-sm text-gray-500">
+            드래그하여 섹션 순서를 변경할 수 있습니다. 인사말은 항상 최상단에 고정됩니다.
+          </p>
+          {sectionConfig?.showBgToggle && (
+            <div className="flex items-center gap-3 text-[10px] text-gray-400 px-1">
+              <span className="flex items-center gap-1">
+                <span className="inline-block w-3 h-3 rounded-full border border-gray-300 bg-white" /> 흰색 배경
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="inline-block w-3 h-3 rounded-full border border-gray-300 bg-gray-100" /> 틴티드 배경
+              </span>
+            </div>
+          )}
+          <div className="space-y-1">
+            {/* 고정: 인사말 */}
+            <div className="flex items-center gap-3 px-3 py-2.5 bg-gray-100 rounded-lg opacity-60">
+              <svg className="w-4 h-4 text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+              <span className="text-sm text-gray-500">인사말 (고정)</span>
+            </div>
+            {/* 드래그 가능 섹션 */}
+            <SortableList
+              items={magazineSectionOrder}
+              onReorder={(newOrder) => updateField('magazineSectionOrder', newOrder)}
+              renderDragOverlay={(activeId) => (
+                <div className="flex items-center gap-3 px-3 py-2.5">
+                  <span className="text-sm font-medium text-gray-800">
+                    {activeLabels[activeId] || activeId}
+                  </span>
+                </div>
+              )}
+            >
+              {magazineSectionOrder.map((sectionId) => {
+                const toggle = activeToggles[sectionId]
+                const isOn = toggle ? toggle.read() : true
+                const currentBg = magazineSectionBgMap[sectionId] || activeDefaultBg[sectionId] || 'sectionBg'
+                return (
+                  <SortableItem key={sectionId} id={sectionId}>
+                    <div className={`flex items-center gap-2 px-3 py-2.5 bg-white border border-gray-200 rounded-lg mb-1 transition-opacity ${!isOn ? 'opacity-50' : ''}`}>
+                      {/* 섹션명 */}
+                      <span className="text-sm font-medium text-gray-800 flex-1">
+                        {activeLabels[sectionId] || sectionId}
+                      </span>
+                      {/* ON/OFF 스위치 (해당 섹션만) */}
+                      {toggle && (
+                        <Switch
+                          checked={isOn}
+                          onCheckedChange={(checked) => toggle.write(checked)}
+                          className="scale-75 origin-right"
+                        />
+                      )}
+                      {/* 배경색 토글 */}
+                      {sectionConfig?.showBgToggle && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleToggleBg(sectionId) }}
+                          className="w-5 h-5 rounded-full border border-gray-300 flex-shrink-0 transition-colors"
+                          style={{ backgroundColor: currentBg === 'sectionBg' ? '#f0f0f0' : '#ffffff' }}
+                          title={currentBg === 'sectionBg' ? '틴티드 배경' : '흰색 배경'}
+                        />
+                      )}
+                    </div>
+                  </SortableItem>
+                )
+              })}
+            </SortableList>
+          </div>
+        </section>
+      )}
 
       {/* 오시는 길 안내 */}
       <section className="space-y-4">

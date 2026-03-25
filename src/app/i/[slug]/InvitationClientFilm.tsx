@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, Fragment } from 'react'
 import GuestFloatingButton from '@/components/invitation/GuestFloatingButton'
 import { WatermarkOverlay } from '@/components/ui/WatermarkOverlay'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
@@ -600,7 +600,7 @@ function ChapterOne({ invitation, fonts, tc }: { invitation: any; fonts: FontCon
 }
 
 // ===== Chapter 2: Cast & Story =====
-function ChapterTwo({ invitation, fonts, tc }: { invitation: any; fonts: FontConfig; tc: ColorConfig }) {
+function ChapterTwo({ invitation, fonts, tc, bgOverride }: { invitation: any; fonts: FontConfig; tc: ColorConfig; bgOverride?: string }) {
   const { ref, isVisible } = useScrollReveal(0.3)
   const groomProfile = invitation.groom?.profile
   const brideProfile = invitation.bride?.profile
@@ -610,7 +610,7 @@ function ChapterTwo({ invitation, fonts, tc }: { invitation: any; fonts: FontCon
   const brideName = invitation.bride?.name || ''
 
   return (
-    <div style={{ backgroundColor: tc.sectionBg }}>
+    <div style={{ backgroundColor: bgOverride || tc.sectionBg }}>
       {/* CAST section */}
       <div ref={ref}>
         <div className="px-6 pt-16 pb-10 transition-all duration-1000"
@@ -880,7 +880,7 @@ function FilmSceneCard({ item, idx, total, groomName, brideName, fonts, tc }: {
   )
 }
 
-function FilmScenes({ invitation, fonts, tc }: { invitation: any; fonts: FontConfig; tc: ColorConfig }) {
+function FilmScenes({ invitation, fonts, tc, bgOverride }: { invitation: any; fonts: FontConfig; tc: ColorConfig; bgOverride?: string }) {
   const interviews = invitation.content?.interviews || []
   const groomName = invitation.groom?.name || ''
   const brideName = invitation.bride?.name || ''
@@ -889,7 +889,7 @@ function FilmScenes({ invitation, fonts, tc }: { invitation: any; fonts: FontCon
   if (interviews.length === 0) return null
 
   return (
-    <div ref={ref} style={{ backgroundColor: tc.sectionBg }}>
+    <div ref={ref} style={{ backgroundColor: bgOverride || tc.sectionBg }}>
       {/* Section label */}
       <div className="text-center pt-12 pb-8 px-6 transition-all duration-1000" style={{
         opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
@@ -912,8 +912,8 @@ function FilmScenes({ invitation, fonts, tc }: { invitation: any; fonts: FontCon
 }
 
 // ===== Chapter 3: Filmstrip Gallery =====
-function ChapterThree({ invitation, fonts, tc, onOpenLightbox }: {
-  invitation: any; fonts: FontConfig; tc: ColorConfig; onOpenLightbox: (idx: number) => void
+function ChapterThree({ invitation, fonts, tc, onOpenLightbox, bgOverride }: {
+  invitation: any; fonts: FontConfig; tc: ColorConfig; onOpenLightbox: (idx: number) => void; bgOverride?: string
 }) {
   const { ref, isVisible } = useScrollReveal()
   const images = (invitation.gallery?.images || []).map(extractImageUrl).filter(Boolean)
@@ -983,7 +983,7 @@ function ChapterThree({ invitation, fonts, tc, onOpenLightbox }: {
   if (images.length === 0) return null
 
   return (
-    <div ref={ref} className="py-16" style={{ backgroundColor: tc.background }}>
+    <div ref={ref} className="py-16" style={{ backgroundColor: bgOverride || tc.background }}>
       <div className="transition-all duration-1000" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(40px)' }}>
         {/* Chapter label */}
         <div className="text-center mb-8 px-6">
@@ -1078,7 +1078,7 @@ function ChapterThree({ invitation, fonts, tc, onOpenLightbox }: {
 }
 
 // ===== YouTube Video Section =====
-function FilmVideoSection({ invitation, fonts, tc }: { invitation: any; fonts: FontConfig; tc: ColorConfig }) {
+function FilmVideoSection({ invitation, fonts, tc, bgOverride }: { invitation: any; fonts: FontConfig; tc: ColorConfig; bgOverride?: string }) {
   const youtube = invitation.youtube
   if (!youtube?.enabled || !youtube?.url) return null
 
@@ -1087,7 +1087,7 @@ function FilmVideoSection({ invitation, fonts, tc }: { invitation: any; fonts: F
   if (!videoId) return null
 
   return (
-    <div className="py-8 px-5" style={{ backgroundColor: tc.background }}>
+    <div className="py-8 px-5" style={{ backgroundColor: bgOverride || tc.background }}>
       {youtube.title && (
         <p className="text-center mb-3" style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '3px', color: tc.gray }}>{youtube.title}</p>
       )}
@@ -1099,7 +1099,7 @@ function FilmVideoSection({ invitation, fonts, tc }: { invitation: any; fonts: F
 }
 
 // ===== The Premiere (Wedding Details - Ticket Design) =====
-function ThePremiere({ invitation, fonts, tc }: { invitation: any; fonts: FontConfig; tc: ColorConfig }) {
+function ThePremiere({ invitation, fonts, tc, bgOverride }: { invitation: any; fonts: FontConfig; tc: ColorConfig; bgOverride?: string }) {
   const ct = tc.cardText || tc.text
   const cg = tc.cardGray || tc.gray
   const { ref, isVisible } = useScrollReveal()
@@ -1112,7 +1112,7 @@ function ThePremiere({ invitation, fonts, tc }: { invitation: any; fonts: FontCo
   const brideName = bride.name || ''
 
   return (
-    <div ref={ref} className="px-5 py-20" style={{ backgroundColor: tc.sectionBg }}>
+    <div ref={ref} className="px-5 py-20" style={{ backgroundColor: bgOverride || tc.sectionBg }}>
       <div className="transition-all duration-1000" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(40px)' }}>
 
         {/* ===== TICKET CARD ===== */}
@@ -1369,7 +1369,7 @@ function MapSection({ invitation, fonts, tc }: { invitation: any; fonts: FontCon
 }
 
 // ===== Guidance Section =====
-function GuidanceSection({ invitation, fonts, tc }: { invitation: any; fonts: FontConfig; tc: ColorConfig }) {
+function GuidanceSection({ invitation, fonts, tc, bgOverride }: { invitation: any; fonts: FontConfig; tc: ColorConfig; bgOverride?: string }) {
   const { ref, isVisible } = useScrollReveal()
   const info = invitation.content?.info
   const defaultItemOrder = ['dressCode', 'photoBooth', 'photoShare', 'flowerGift', 'flowerChild', 'wreath', 'shuttle', 'reception']
@@ -1382,7 +1382,7 @@ function GuidanceSection({ invitation, fonts, tc }: { invitation: any; fonts: Fo
   if (enabledItems.length === 0 && !invitation.guidance?.enabled) return null
 
   return (
-    <div ref={ref} className="py-12" style={{ backgroundColor: tc.background }}>
+    <div ref={ref} className="py-12" style={{ backgroundColor: bgOverride || tc.background }}>
       <div className="transition-all duration-1000" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(30px)' }}>
         <div className="text-center mb-8 px-6">
           <h3 style={{ fontFamily: fonts.display, fontSize: '13px', fontWeight: 400, letterSpacing: '6px', color: tc.text }}>INFORMATION</h3>
@@ -1420,13 +1420,13 @@ function GuidanceSection({ invitation, fonts, tc }: { invitation: any; fonts: Fo
 }
 
 // ===== Credits Roll (auto-scroll) =====
-function CreditsSection({ invitation, fonts, tc }: { invitation: any; fonts: FontConfig; tc: ColorConfig }) {
+function CreditsSection({ invitation, fonts, tc, bgOverride }: { invitation: any; fonts: FontConfig; tc: ColorConfig; bgOverride?: string }) {
   const { ref, isVisible } = useScrollReveal()
   const thankYou = invitation.content?.thankYou
   if (!thankYou) return null
 
   return (
-    <div ref={ref} className="py-20 overflow-hidden" style={{ backgroundColor: tc.sectionBg }}>
+    <div ref={ref} className="py-20 overflow-hidden" style={{ backgroundColor: bgOverride || tc.sectionBg }}>
       <div className="transition-all duration-1000" style={{ opacity: isVisible ? 1 : 0 }}>
         {/* Credits viewport */}
         <div className="credits-viewport">
@@ -1474,7 +1474,7 @@ function CreditsSection({ invitation, fonts, tc }: { invitation: any; fonts: Fon
 }
 
 // ===== Gift Section =====
-function GiftSection({ invitation, fonts, tc }: { invitation: any; fonts: FontConfig; tc: ColorConfig }) {
+function GiftSection({ invitation, fonts, tc, bgOverride }: { invitation: any; fonts: FontConfig; tc: ColorConfig; bgOverride?: string }) {
   const groom = invitation.groom || {}
   const bride = invitation.bride || {}
   const hasAccounts = [groom.bank?.enabled, (groom.father as any)?.bank?.enabled, (groom.mother as any)?.bank?.enabled,
@@ -1505,7 +1505,7 @@ function GiftSection({ invitation, fonts, tc }: { invitation: any; fonts: FontCo
   }
 
   return (
-    <div className="px-6 py-12" style={{ backgroundColor: tc.sectionBg }}>
+    <div className="px-6 py-12" style={{ backgroundColor: bgOverride || tc.sectionBg }}>
       <div className="text-center mb-8">
         <h3 style={{ fontFamily: fonts.displayKr, fontSize: '14px', color: tc.text, fontWeight: 400 }}>마음 전하실 곳</h3>
       </div>
@@ -1541,8 +1541,8 @@ const sampleGuestbookMessages = [
 ]
 
 // ===== Audience Reviews (Guestbook) =====
-function AudienceReviews({ invitation, invitationId, fonts, tc, isSample }: {
-  invitation: any; invitationId: string; fonts: FontConfig; tc: ColorConfig; isSample?: boolean
+function AudienceReviews({ invitation, invitationId, fonts, tc, isSample, bgOverride }: {
+  invitation: any; invitationId: string; fonts: FontConfig; tc: ColorConfig; isSample?: boolean; bgOverride?: string
 }) {
   const [messages, setMessages] = useState<any[]>(isSample ? sampleGuestbookMessages : [])
   const [name, setName] = useState('')
@@ -1577,7 +1577,7 @@ function AudienceReviews({ invitation, invitationId, fonts, tc, isSample }: {
   const inputStyle: React.CSSProperties = { fontFamily: fonts.body, fontSize: '13px', padding: '10px 12px', border: `1px solid ${cdiv}`, background: tc.cardBg, outline: 'none', color: tc.cardText || tc.text, width: '100%' }
 
   return (
-    <div ref={ref} className="px-6 py-12" style={{ backgroundColor: tc.background }}>
+    <div ref={ref} className="px-6 py-12" style={{ backgroundColor: bgOverride || tc.background }}>
       <div className="transition-all duration-1000" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(30px)' }}>
       <div className="text-center mb-8">
         <h3 style={{ fontFamily: fonts.display, fontSize: '13px', fontWeight: 400, letterSpacing: '6px', color: tc.text }}>GUESTBOOK</h3>
@@ -1631,8 +1631,8 @@ function AudienceReviews({ invitation, invitationId, fonts, tc, isSample }: {
 }
 
 // ===== Ticket-style RSVP =====
-function TicketRsvp({ invitation, invitationId, fonts, tc }: {
-  invitation: any; invitationId: string; fonts: FontConfig; tc: ColorConfig
+function TicketRsvp({ invitation, invitationId, fonts, tc, bgOverride }: {
+  invitation: any; invitationId: string; fonts: FontConfig; tc: ColorConfig; bgOverride?: string
 }) {
   const { ref, isVisible } = useScrollReveal()
   const [name, setName] = useState('')
@@ -1661,7 +1661,7 @@ function TicketRsvp({ invitation, invitationId, fonts, tc }: {
 
   if (submitted) {
     return (
-      <div className="px-6 py-16 text-center" style={{ backgroundColor: tc.sectionBg }}>
+      <div className="px-6 py-16 text-center" style={{ backgroundColor: bgOverride || tc.sectionBg }}>
         <div style={{ fontFamily: fonts.display, fontSize: '13px', letterSpacing: '6px', color: tc.text, marginBottom: '8px' }}>CONFIRMED</div>
         <p style={{ fontFamily: fonts.body, fontSize: '13px', color: tc.gray }}>참석 여부가 전달되었습니다.</p>
       </div>
@@ -1672,7 +1672,7 @@ function TicketRsvp({ invitation, invitationId, fonts, tc }: {
   const date = w.date ? new Date(w.date) : null
 
   return (
-    <div ref={ref} className="px-6 py-12" style={{ backgroundColor: tc.sectionBg }}>
+    <div ref={ref} className="px-6 py-12" style={{ backgroundColor: bgOverride || tc.sectionBg }}>
       <div className="transition-all duration-1000" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(30px)' }}>
       {/* Ticket card */}
       <div className="ticket-card" style={{ background: tc.cardBg, border: `1px solid ${cdiv}`, position: 'relative', overflow: 'hidden' }}>
@@ -1903,7 +1903,27 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     youtube: content.youtube,
     deceasedDisplayStyle: content.deceasedDisplayStyle || 'flower',
     customAccentColor: content.customAccentColor,
+    magazineSectionOrder: content.magazineSectionOrder,
+    magazineSectionBgMap: (content as any).magazineSectionBgMap,
   }
+}
+
+const FILM_DEFAULT_SECTION_ORDER = [
+  'chapterTwo', 'filmScenes', 'chapterThree', 'video',
+  'premiere', 'guidance', 'credits', 'gift', 'guestbook', 'rsvp'
+]
+
+const FILM_DEFAULT_BG: Record<string, 'background' | 'sectionBg'> = {
+  chapterTwo: 'sectionBg',
+  filmScenes: 'sectionBg',
+  chapterThree: 'background',
+  video: 'background',
+  premiere: 'sectionBg',
+  guidance: 'background',
+  credits: 'sectionBg',
+  gift: 'sectionBg',
+  guestbook: 'background',
+  rsvp: 'sectionBg',
 }
 
 // ===== Main Component =====
@@ -1981,23 +2001,42 @@ function InvitationClientFilmContent({
                     <>
                       <FilmHeader invitation={invitation} fonts={fonts} tc={tc} />
                       <ChapterOne invitation={invitation} fonts={fonts} tc={tc} />
-                      <SceneCut from={tc.background} to={tc.sectionBg} />
-                      <ChapterTwo invitation={invitation} fonts={fonts} tc={tc} />
-                      <FilmScenes invitation={invitation} fonts={fonts} tc={tc} />
-                      <SceneCut from={tc.background} to={tc.background} />
-                      <ChapterThree invitation={invitation} fonts={fonts} tc={tc} onOpenLightbox={(idx) => { setLightboxIndex(idx); setLightboxOpen(true) }} />
-                      <FilmVideoSection invitation={invitation} fonts={fonts} tc={tc} />
-                      <SceneCut from={tc.background} to={tc.sectionBg} />
-                      <ThePremiere invitation={invitation} fonts={fonts} tc={tc} />
-                      <GuidanceSection invitation={invitation} fonts={fonts} tc={tc} />
-                      <CreditsSection invitation={invitation} fonts={fonts} tc={tc} />
-                      {(invitation as any).magazineLayout?.bankAccountsInMain !== false && (
-                        <GiftSection invitation={invitation} fonts={fonts} tc={tc} />
-                      )}
-                      <AudienceReviews invitation={invitation} invitationId={dbInvitation.id} fonts={fonts} tc={tc} isSample={isSample} />
-                      {(invitation as any).magazineLayout?.rsvpInMain !== false && (
-                        <TicketRsvp invitation={invitation} invitationId={dbInvitation.id} fonts={fonts} tc={tc} />
-                      )}
+                      {(() => {
+                        const sectionBgMap: Record<string, 'background' | 'sectionBg'> = invitation.magazineSectionBgMap || FILM_DEFAULT_BG
+                        const getBg = (id: string) => tc[sectionBgMap[id] || FILM_DEFAULT_BG[id] || 'sectionBg']
+                        const order = invitation.magazineSectionOrder || FILM_DEFAULT_SECTION_ORDER
+                        return order.map((sectionId: string, idx: number) => {
+                          const prevBg = idx === 0 ? tc.background : getBg(order[idx - 1])
+                          const curBg = getBg(sectionId)
+                          const sceneCut = <SceneCut key={`cut-${sectionId}`} from={prevBg} to={curBg} />
+                          switch (sectionId) {
+                            case 'chapterTwo':
+                              return <Fragment key={sectionId}>{sceneCut}<ChapterTwo invitation={invitation} fonts={fonts} tc={tc} bgOverride={curBg} /></Fragment>
+                            case 'filmScenes':
+                              return <Fragment key={sectionId}>{sceneCut}<FilmScenes invitation={invitation} fonts={fonts} tc={tc} bgOverride={curBg} /></Fragment>
+                            case 'chapterThree':
+                              return <Fragment key={sectionId}>{sceneCut}<ChapterThree invitation={invitation} fonts={fonts} tc={tc} onOpenLightbox={(i) => { setLightboxIndex(i); setLightboxOpen(true) }} bgOverride={curBg} /></Fragment>
+                            case 'video':
+                              return <Fragment key={sectionId}>{sceneCut}<FilmVideoSection invitation={invitation} fonts={fonts} tc={tc} bgOverride={curBg} /></Fragment>
+                            case 'premiere':
+                              return <Fragment key={sectionId}>{sceneCut}<ThePremiere invitation={invitation} fonts={fonts} tc={tc} bgOverride={curBg} /></Fragment>
+                            case 'guidance':
+                              return <Fragment key={sectionId}>{sceneCut}<GuidanceSection invitation={invitation} fonts={fonts} tc={tc} bgOverride={curBg} /></Fragment>
+                            case 'credits':
+                              return <Fragment key={sectionId}>{sceneCut}<CreditsSection invitation={invitation} fonts={fonts} tc={tc} bgOverride={curBg} /></Fragment>
+                            case 'gift':
+                              if ((invitation as any).magazineLayout?.bankAccountsInMain === false) return null
+                              return <Fragment key={sectionId}>{sceneCut}<GiftSection invitation={invitation} fonts={fonts} tc={tc} bgOverride={curBg} /></Fragment>
+                            case 'guestbook':
+                              return <Fragment key={sectionId}>{sceneCut}<AudienceReviews invitation={invitation} invitationId={dbInvitation.id} fonts={fonts} tc={tc} isSample={isSample} bgOverride={curBg} /></Fragment>
+                            case 'rsvp':
+                              if ((invitation as any).magazineLayout?.rsvpInMain === false) return null
+                              return <Fragment key={sectionId}>{sceneCut}<TicketRsvp invitation={invitation} invitationId={dbInvitation.id} fonts={fonts} tc={tc} bgOverride={curBg} /></Fragment>
+                            default:
+                              return null
+                          }
+                        })
+                      })()}
                       <FilmFooter invitation={invitation} fonts={fonts} tc={tc} />
                     </>
                   )}

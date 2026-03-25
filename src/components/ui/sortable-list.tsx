@@ -6,6 +6,7 @@ import {
   closestCenter,
   KeyboardSensor,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   DragEndEvent,
@@ -129,8 +130,13 @@ export function SortableList({ items, onReorder, children, renderDragOverlay }: 
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        // 모바일에서 스크롤과 구분하기 위해 거리 증가
         distance: 10,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200,
+        tolerance: 5,
       },
     }),
     useSensor(KeyboardSensor, {

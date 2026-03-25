@@ -74,7 +74,7 @@ export default function Step5MenuSettings() {
         </div>
       ),
     },
-    ...(!isOurOrFamily ? [{
+    {
       value: 'bottom-nav' as const,
       label: '하단 네비바',
       desc: '아이콘+텍스트 고정 바',
@@ -88,7 +88,7 @@ export default function Step5MenuSettings() {
           ))}
         </div>
       ),
-    }] : []),
+    },
     {
       value: 'bottom-mini',
       label: '미니 네비바',

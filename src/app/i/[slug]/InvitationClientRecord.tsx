@@ -580,6 +580,8 @@ function TrackCouple({ invitation, fonts, tc, trackRef }: {
   const groomName = invitation.groom?.name || ''
   const brideName = invitation.bride?.name || ''
 
+  const isPortrait = invitation.profileFrameShape === 'portrait'
+
   return (
     <div ref={(el) => { (ref as any).current = el; trackRef(el) }} className="px-5 py-10">
       {/* Track label */}
@@ -592,75 +594,125 @@ function TrackCouple({ invitation, fonts, tc, trackRef }: {
         </span>
       </div>
 
-      {/* Mini vinyl portraits */}
-      <div className="flex items-center justify-center gap-6" style={{
-        opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'scale(1)' : 'scale(0.85)',
-        transition: 'all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)',
-      }}>
-        {/* Groom vinyl */}
-        <div className="text-center">
-          <div className="relative" style={{ width: '120px', height: '120px', margin: '0 auto 12px' }}>
-            {groomImage ? (
-              <div style={{
-                width: '120px', height: '120px', borderRadius: '50%', overflow: 'hidden',
-                border: `3px solid ${tc.divider}`,
-              }}>
+      {isPortrait ? (
+        /* Portrait: Film-style grid cards */
+        <div className="grid grid-cols-2 gap-3 px-2" style={{
+          opacity: isVisible ? 1 : 0,
+          transform: isVisible ? 'scale(1)' : 'scale(0.85)',
+          transition: 'all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)',
+        }}>
+          {/* Groom card */}
+          <div className="flex flex-col items-center">
+            <div style={{ aspectRatio: '3/4', borderRadius: '6px', overflow: 'hidden', width: '100%' }}>
+              {groomImage ? (
                 <div className="w-full h-full" style={getImageCropStyle(groomImage, groomImgSettings)} />
-              </div>
-            ) : (
-              <div style={{
-                width: '120px', height: '120px', borderRadius: '50%',
-                background: tc.sectionBg, border: `3px solid ${tc.divider}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <span style={{ fontFamily: fonts.display, fontSize: '24px', color: tc.primary, opacity: 0.3 }}>&#9834;</span>
-              </div>
-            )}
+              ) : (
+                <div className="w-full h-full flex items-center justify-center" style={{ background: tc.sectionBg, border: `1px solid ${tc.divider}`, borderRadius: '6px' }}>
+                  <span style={{ fontFamily: fonts.display, fontSize: '24px', color: tc.primary, opacity: 0.3 }}>&#9834;</span>
+                </div>
+              )}
+            </div>
+            <div className="text-center mt-3">
+              <p style={{ fontFamily: fonts.display, fontSize: '13px', fontWeight: 500, letterSpacing: '2px', color: tc.text }}>
+                {groomName}
+              </p>
+              {groomProfile?.tag && (
+                <p style={{ fontFamily: fonts.body, fontSize: '10px', color: tc.gray, marginTop: '4px', lineHeight: 1.5, whiteSpace: 'pre-line' }}>{groomProfile.tag}</p>
+              )}
+            </div>
           </div>
-          <p style={{ fontFamily: fonts.display, fontSize: '14px', fontWeight: 500, letterSpacing: '2px', color: tc.text }}>
-            {groomName}
-          </p>
-          {groomProfile?.tag && (
-            <p style={{ fontFamily: fonts.body, fontSize: '10px', color: tc.gray, marginTop: '4px', whiteSpace: 'pre-line' }}>{groomProfile.tag}</p>
-          )}
-        </div>
-
-        {/* & separator with notes */}
-        <div className="flex flex-col items-center gap-1" style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.8s ease 0.3s' }}>
-          <span style={{ fontFamily: fonts.display, fontSize: '10px', color: `${tc.primary}60` }}>&#9834;</span>
-          <span style={{ fontFamily: fonts.display, fontSize: '18px', fontWeight: 300, color: tc.primary, letterSpacing: '2px' }}>&</span>
-          <span style={{ fontFamily: fonts.display, fontSize: '10px', color: `${tc.primary}60` }}>&#9834;</span>
-        </div>
-
-        {/* Bride vinyl */}
-        <div className="text-center">
-          <div className="relative" style={{ width: '120px', height: '120px', margin: '0 auto 12px' }}>
-            {brideImage ? (
-              <div style={{
-                width: '120px', height: '120px', borderRadius: '50%', overflow: 'hidden',
-                border: `3px solid ${tc.divider}`,
-              }}>
+          {/* Bride card */}
+          <div className="flex flex-col items-center">
+            <div style={{ aspectRatio: '3/4', borderRadius: '6px', overflow: 'hidden', width: '100%' }}>
+              {brideImage ? (
                 <div className="w-full h-full" style={getImageCropStyle(brideImage, brideImgSettings)} />
-              </div>
-            ) : (
-              <div style={{
-                width: '120px', height: '120px', borderRadius: '50%',
-                background: tc.sectionBg, border: `3px solid ${tc.divider}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <span style={{ fontFamily: fonts.display, fontSize: '24px', color: tc.primary, opacity: 0.3 }}>&#9835;</span>
-              </div>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center" style={{ background: tc.sectionBg, border: `1px solid ${tc.divider}`, borderRadius: '6px' }}>
+                  <span style={{ fontFamily: fonts.display, fontSize: '24px', color: tc.primary, opacity: 0.3 }}>&#9835;</span>
+                </div>
+              )}
+            </div>
+            <div className="text-center mt-3">
+              <p style={{ fontFamily: fonts.display, fontSize: '13px', fontWeight: 500, letterSpacing: '2px', color: tc.text }}>
+                {brideName}
+              </p>
+              {brideProfile?.tag && (
+                <p style={{ fontFamily: fonts.body, fontSize: '10px', color: tc.gray, marginTop: '4px', lineHeight: 1.5, whiteSpace: 'pre-line' }}>{brideProfile.tag}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* Circle: Original vinyl style */
+        <div className="flex items-center justify-center gap-6" style={{
+          opacity: isVisible ? 1 : 0,
+          transform: isVisible ? 'scale(1)' : 'scale(0.85)',
+          transition: 'all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)',
+        }}>
+          {/* Groom vinyl */}
+          <div className="text-center">
+            <div className="relative" style={{ width: '120px', height: '120px', margin: '0 auto 12px' }}>
+              {groomImage ? (
+                <div style={{
+                  width: '120px', height: '120px', borderRadius: '50%', overflow: 'hidden',
+                  border: `3px solid ${tc.divider}`,
+                }}>
+                  <div className="w-full h-full" style={getImageCropStyle(groomImage, groomImgSettings)} />
+                </div>
+              ) : (
+                <div style={{
+                  width: '120px', height: '120px', borderRadius: '50%',
+                  background: tc.sectionBg, border: `3px solid ${tc.divider}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <span style={{ fontFamily: fonts.display, fontSize: '24px', color: tc.primary, opacity: 0.3 }}>&#9834;</span>
+                </div>
+              )}
+            </div>
+            <p style={{ fontFamily: fonts.display, fontSize: '14px', fontWeight: 500, letterSpacing: '2px', color: tc.text }}>
+              {groomName}
+            </p>
+            {groomProfile?.tag && (
+              <p style={{ fontFamily: fonts.body, fontSize: '10px', color: tc.gray, marginTop: '4px', whiteSpace: 'pre-line' }}>{groomProfile.tag}</p>
             )}
           </div>
-          <p style={{ fontFamily: fonts.display, fontSize: '14px', fontWeight: 500, letterSpacing: '2px', color: tc.text }}>
-            {brideName}
-          </p>
-          {brideProfile?.tag && (
-            <p style={{ fontFamily: fonts.body, fontSize: '10px', color: tc.gray, marginTop: '4px', whiteSpace: 'pre-line' }}>{brideProfile.tag}</p>
-          )}
+
+          {/* & separator with notes */}
+          <div className="flex flex-col items-center gap-1" style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.8s ease 0.3s' }}>
+            <span style={{ fontFamily: fonts.display, fontSize: '10px', color: `${tc.primary}60` }}>&#9834;</span>
+            <span style={{ fontFamily: fonts.display, fontSize: '18px', fontWeight: 300, color: tc.primary, letterSpacing: '2px' }}>&</span>
+            <span style={{ fontFamily: fonts.display, fontSize: '10px', color: `${tc.primary}60` }}>&#9834;</span>
+          </div>
+
+          {/* Bride vinyl */}
+          <div className="text-center">
+            <div className="relative" style={{ width: '120px', height: '120px', margin: '0 auto 12px' }}>
+              {brideImage ? (
+                <div style={{
+                  width: '120px', height: '120px', borderRadius: '50%', overflow: 'hidden',
+                  border: `3px solid ${tc.divider}`,
+                }}>
+                  <div className="w-full h-full" style={getImageCropStyle(brideImage, brideImgSettings)} />
+                </div>
+              ) : (
+                <div style={{
+                  width: '120px', height: '120px', borderRadius: '50%',
+                  background: tc.sectionBg, border: `3px solid ${tc.divider}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <span style={{ fontFamily: fonts.display, fontSize: '24px', color: tc.primary, opacity: 0.3 }}>&#9835;</span>
+                </div>
+              )}
+            </div>
+            <p style={{ fontFamily: fonts.display, fontSize: '14px', fontWeight: 500, letterSpacing: '2px', color: tc.text }}>
+              {brideName}
+            </p>
+            {brideProfile?.tag && (
+              <p style={{ fontFamily: fonts.body, fontSize: '10px', color: tc.gray, marginTop: '4px', whiteSpace: 'pre-line' }}>{brideProfile.tag}</p>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
@@ -1923,6 +1975,7 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     guidance: content.guidance || {}, intro: content.intro,
     youtube: content.youtube,
     deceasedDisplayStyle: content.deceasedDisplayStyle || 'flower',
+    profileFrameShape: (content as any).profileFrameShape || 'circle',
   }
 }
 

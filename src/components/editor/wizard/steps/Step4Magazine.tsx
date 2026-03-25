@@ -170,13 +170,48 @@ export default function Step4Magazine() {
           <p className="text-sm text-blue-800"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>프로필 사진과 한줄 소개를 입력하면 MEET THE COUPLE 섹션에 표시됩니다.</p>
         </div>
 
+        {/* 프레임 형태 선택 */}
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">프레임 형태</Label>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => updateField('profileFrameShape', 'circle')}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm transition-colors ${
+                (invitation.profileFrameShape || 'circle') === 'circle'
+                  ? 'border-gray-900 bg-gray-900 text-white'
+                  : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <div className={`w-5 h-5 rounded-full border-2 ${
+                (invitation.profileFrameShape || 'circle') === 'circle' ? 'border-white' : 'border-gray-400'
+              }`} />
+              원형
+            </button>
+            <button
+              type="button"
+              onClick={() => updateField('profileFrameShape', 'portrait')}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm transition-colors ${
+                invitation.profileFrameShape === 'portrait'
+                  ? 'border-gray-900 bg-gray-900 text-white'
+                  : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <div className={`w-3.5 h-5 rounded-sm border-2 ${
+                invitation.profileFrameShape === 'portrait' ? 'border-white' : 'border-gray-400'
+              }`} />
+              사각형
+            </button>
+          </div>
+        </div>
+
         {/* 신랑 프로필 */}
         <div className="p-4 bg-gray-50 rounded-lg space-y-3">
           <Label className="text-sm font-medium">신랑</Label>
           <div className="flex items-start gap-4">
             {invitation.groom.profile.images[0] ? (
               <div className="relative flex-shrink-0">
-                <div className="w-16 h-16 rounded-full overflow-hidden border border-gray-200">
+                <div className={invitation.profileFrameShape === 'portrait' ? 'w-12 h-16 rounded-lg overflow-hidden border border-gray-200' : 'w-16 h-16 rounded-full overflow-hidden border border-gray-200'}>
                   <img src={invitation.groom.profile.images[0]} alt="신랑" className="w-full h-full object-cover" />
                 </div>
                 <button
@@ -191,7 +226,7 @@ export default function Step4Magazine() {
               </div>
             ) : (
               <label className="flex-shrink-0 cursor-pointer">
-                <div className="w-16 h-16 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-gray-400 transition-colors">
+                <div className={invitation.profileFrameShape === 'portrait' ? 'w-12 h-16 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-gray-400 transition-colors' : 'w-16 h-16 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-gray-400 transition-colors'}>
                   {uploadingImages.has('groom-profile') ? (
                     <div className="animate-spin w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full" />
                   ) : (
@@ -231,7 +266,7 @@ export default function Step4Magazine() {
                 imageUrl={invitation.groom.profile.images[0]}
                 settings={invitation.groom.profile.imageSettings?.[0] || { scale: 1.0, positionX: 0, positionY: 0 }}
                 onUpdate={(s) => updateNestedField('groom.profile.imageSettings', [{ ...(invitation.groom.profile.imageSettings?.[0] || {}), ...s }])}
-                aspectRatio={1}
+                aspectRatio={invitation.profileFrameShape === 'portrait' ? 3/4 : 1}
                 containerWidth={120}
               />
             </div>
@@ -244,7 +279,7 @@ export default function Step4Magazine() {
           <div className="flex items-start gap-4">
             {invitation.bride.profile.images[0] ? (
               <div className="relative flex-shrink-0">
-                <div className="w-16 h-16 rounded-full overflow-hidden border border-gray-200">
+                <div className={invitation.profileFrameShape === 'portrait' ? 'w-12 h-16 rounded-lg overflow-hidden border border-gray-200' : 'w-16 h-16 rounded-full overflow-hidden border border-gray-200'}>
                   <img src={invitation.bride.profile.images[0]} alt="신부" className="w-full h-full object-cover" />
                 </div>
                 <button
@@ -259,7 +294,7 @@ export default function Step4Magazine() {
               </div>
             ) : (
               <label className="flex-shrink-0 cursor-pointer">
-                <div className="w-16 h-16 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-gray-400 transition-colors">
+                <div className={invitation.profileFrameShape === 'portrait' ? 'w-12 h-16 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-gray-400 transition-colors' : 'w-16 h-16 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-gray-400 transition-colors'}>
                   {uploadingImages.has('bride-profile') ? (
                     <div className="animate-spin w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full" />
                   ) : (
@@ -299,7 +334,7 @@ export default function Step4Magazine() {
                 imageUrl={invitation.bride.profile.images[0]}
                 settings={invitation.bride.profile.imageSettings?.[0] || { scale: 1.0, positionX: 0, positionY: 0 }}
                 onUpdate={(s) => updateNestedField('bride.profile.imageSettings', [{ ...(invitation.bride.profile.imageSettings?.[0] || {}), ...s }])}
-                aspectRatio={1}
+                aspectRatio={invitation.profileFrameShape === 'portrait' ? 3/4 : 1}
                 containerWidth={120}
               />
             </div>

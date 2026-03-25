@@ -667,6 +667,38 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
               <span className="text-sm text-gray-700">자동 재생</span>
               <span className="text-xs text-gray-400 ml-auto">모바일에서 자동재생</span>
             </div>
+
+            {/* 재생 시작 페이지 선택 - OUR/FAMILY 템플릿 + 자동재생 ON일 때만 */}
+            {bgm?.autoplay && ['narrative-our', 'narrative-family'].includes(templateId || invitation.templateId || '') && (
+              <div className="p-3 bg-gray-50 rounded-lg space-y-2">
+                <p className="text-sm text-gray-700 font-medium">재생 시작 페이지</p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                      (bgm?.startPage || 'main') === 'intro'
+                        ? 'bg-black text-white shadow-sm'
+                        : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'
+                    }`}
+                    onClick={() => updateNestedField('bgm.startPage', 'intro')}
+                  >
+                    인트로 페이지
+                  </button>
+                  <button
+                    type="button"
+                    className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                      (bgm?.startPage || 'main') === 'main'
+                        ? 'bg-black text-white shadow-sm'
+                        : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'
+                    }`}
+                    onClick={() => updateNestedField('bgm.startPage', 'main')}
+                  >
+                    메인 페이지
+                  </button>
+                </div>
+                <p className="text-xs text-gray-400">인트로 페이지부터 음악을 시작할 수 있습니다</p>
+              </div>
+            )}
           </div>
         )}
       </section>

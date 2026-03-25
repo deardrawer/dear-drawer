@@ -249,6 +249,7 @@ export interface BgmSettings {
   enabled: boolean
   url: string
   autoplay: boolean
+  startPage?: 'intro' | 'main'  // BGM 재생 시작 페이지 (기본값 'main')
 }
 
 // 행복한 시간을 위한 안내 섹션
@@ -410,6 +411,9 @@ export interface InvitationContent {
 
   // ===== 프로필 순서 (신랑먼저/신부먼저) =====
   profileOrder: 'groom-first' | 'bride-first'
+
+  // ===== 프로필 프레임 형태 (원형/세로사각형) =====
+  profileFrameShape?: 'circle' | 'portrait'
 
   // ===== 디자인 설정 =====
   design: DesignSettings
@@ -811,6 +815,7 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
     enabled: false,
     url: '',
     autoplay: false,
+    startPage: 'main',
   },
 
   // 행복한 시간을 위한 안내

@@ -86,6 +86,7 @@ function RecordPreviewWrapper({ invitation, skipIntro }: { invitation: Invitatio
     meta: invitation.meta,
     youtube: (invitation as any).youtube,
     navStyle: invitation.navStyle,
+    profileFrameShape: (invitation as any).profileFrameShape,
   }), [invitation])
 
   const invitationData = useMemo(() => ({
@@ -140,6 +141,7 @@ function InvitationPreviewWrapper({ invitation, skipIntro, onIntroScreenChange }
     bodyTextColor: invitation.bodyTextColor,
     highlightColor: invitation.highlightColor,
     profileOrder: (invitation as any).profileOrder,
+    profileFrameShape: (invitation as any).profileFrameShape,
     profileTextStyle: (invitation as any).profileTextStyle,
     interviewTextStyle: (invitation as any).interviewTextStyle,
     intro: (invitation as any).intro,

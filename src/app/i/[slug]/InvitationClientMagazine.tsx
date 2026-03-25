@@ -385,6 +385,8 @@ function MeetTheCouple({ invitation, fonts, themeColors }: { invitation: any; fo
 
   if (!hasGroomContent && !hasBrideContent) return null
 
+  const isPortrait = invitation.profileFrameShape === 'portrait'
+
   return (
     <div ref={ref} className="px-6 py-16" style={{ backgroundColor: themeColors.sectionBg }}>
       <div
@@ -402,83 +404,144 @@ function MeetTheCouple({ invitation, fonts, themeColors }: { invitation: any; fo
           <div style={{ width: '40px', height: '1px', background: themeColors.primary, margin: '16px auto 0' }} />
         </div>
 
-        {/* Two circular portraits side by side */}
-        <div className="flex justify-center items-start gap-10">
-          {/* Groom */}
-          {hasGroomContent && (
-            <div className="flex flex-col items-center" style={{ maxWidth: '120px' }}>
-              <div
-                className="overflow-hidden mb-4"
-                style={{
-                  width: '100px',
-                  height: '100px',
-                  borderRadius: '50%',
-                  border: `1.5px solid ${themeColors.divider}`,
-                  backgroundColor: groomImage ? undefined : themeColors.sectionBg,
-                }}
-              >
-                {groomImage ? (
-                  <div className="w-full h-full" style={getImageCropStyle(groomImage, groomProfile?.imageSettings?.[0] || {})} />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center" style={{ color: themeColors.gray, fontSize: '24px' }}>
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        {isPortrait ? (
+          /* Portrait: Grid card style with text outside */
+          <div className="grid grid-cols-2 gap-4">
+            {/* Groom */}
+            {hasGroomContent && (
+              <div className="flex flex-col items-center">
+                <div style={{ aspectRatio: '3/4', overflow: 'hidden', width: '100%' }}>
+                  {groomImage ? (
+                    <div className="w-full h-full" style={getImageCropStyle(groomImage, groomProfile?.imageSettings?.[0] || {})} />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: themeColors.sectionBg, border: `1px solid ${themeColors.divider}` }}>
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke={themeColors.gray} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.4 }}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    </div>
+                  )}
+                </div>
+                <div className="text-center mt-3">
+                  <div style={{ fontFamily: fonts.display, fontSize: '11px', letterSpacing: '2px', color: themeColors.primary, fontWeight: 500 }}>
+                    {groomName}
                   </div>
-                )}
+                  <div style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '1px', color: themeColors.gray, marginTop: '2px' }}>
+                    GROOM
+                  </div>
+                  {groomProfile?.tag && (
+                    <p style={{ fontFamily: fonts.body, fontSize: '10px', color: themeColors.gray, marginTop: '6px', lineHeight: 1.5, whiteSpace: 'pre-line' }}>
+                      {groomProfile.tag}
+                    </p>
+                  )}
+                </div>
               </div>
-              <div style={{ fontFamily: fonts.display, fontSize: '11px', letterSpacing: '2px', color: themeColors.primary, fontWeight: 500 }}>
-                {groomName}
-              </div>
-              <div style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '1px', color: themeColors.gray, marginTop: '4px' }}>
-                GROOM
-              </div>
-              {groomProfile?.tag && (
-                <p style={{ fontFamily: fonts.body, fontSize: '11px', color: themeColors.gray, marginTop: '8px', textAlign: 'center', lineHeight: 1.5, whiteSpace: 'pre-line' }}>
-                  {groomProfile.tag}
-                </p>
-              )}
-            </div>
-          )}
+            )}
 
-          {/* Divider */}
-          <div className="flex flex-col items-center justify-center" style={{ paddingTop: '40px' }}>
-            <div style={{ width: '1px', height: '24px', background: themeColors.divider }} />
+            {/* Bride */}
+            {hasBrideContent && (
+              <div className="flex flex-col items-center">
+                <div style={{ aspectRatio: '3/4', overflow: 'hidden', width: '100%' }}>
+                  {brideImage ? (
+                    <div className="w-full h-full" style={getImageCropStyle(brideImage, brideProfile?.imageSettings?.[0] || {})} />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: themeColors.sectionBg, border: `1px solid ${themeColors.divider}` }}>
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke={themeColors.gray} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.4 }}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    </div>
+                  )}
+                </div>
+                <div className="text-center mt-3">
+                  <div style={{ fontFamily: fonts.display, fontSize: '11px', letterSpacing: '2px', color: themeColors.primary, fontWeight: 500 }}>
+                    {brideName}
+                  </div>
+                  <div style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '1px', color: themeColors.gray, marginTop: '2px' }}>
+                    BRIDE
+                  </div>
+                  {brideProfile?.tag && (
+                    <p style={{ fontFamily: fonts.body, fontSize: '10px', color: themeColors.gray, marginTop: '6px', lineHeight: 1.5, whiteSpace: 'pre-line' }}>
+                      {brideProfile.tag}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
-
-          {/* Bride */}
-          {hasBrideContent && (
-            <div className="flex flex-col items-center" style={{ maxWidth: '120px' }}>
-              <div
-                className="overflow-hidden mb-4"
-                style={{
-                  width: '100px',
-                  height: '100px',
-                  borderRadius: '50%',
-                  border: `1.5px solid ${themeColors.divider}`,
-                  backgroundColor: brideImage ? undefined : themeColors.sectionBg,
-                }}
-              >
-                {brideImage ? (
-                  <div className="w-full h-full" style={getImageCropStyle(brideImage, brideProfile?.imageSettings?.[0] || {})} />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center" style={{ color: themeColors.gray, fontSize: '24px' }}>
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                  </div>
+        ) : (
+          /* Circle: Original style */
+          <div className="flex justify-center items-start gap-10">
+            {/* Groom */}
+            {hasGroomContent && (
+              <div className="flex flex-col items-center" style={{ maxWidth: '120px' }}>
+                <div
+                  className="overflow-hidden mb-4"
+                  style={{
+                    width: '100px',
+                    height: '100px',
+                    borderRadius: '50%',
+                    border: `1.5px solid ${themeColors.divider}`,
+                    backgroundColor: groomImage ? undefined : themeColors.sectionBg,
+                  }}
+                >
+                  {groomImage ? (
+                    <div className="w-full h-full" style={getImageCropStyle(groomImage, groomProfile?.imageSettings?.[0] || {})} />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center" style={{ color: themeColors.gray, fontSize: '24px' }}>
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    </div>
+                  )}
+                </div>
+                <div style={{ fontFamily: fonts.display, fontSize: '11px', letterSpacing: '2px', color: themeColors.primary, fontWeight: 500 }}>
+                  {groomName}
+                </div>
+                <div style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '1px', color: themeColors.gray, marginTop: '4px' }}>
+                  GROOM
+                </div>
+                {groomProfile?.tag && (
+                  <p style={{ fontFamily: fonts.body, fontSize: '11px', color: themeColors.gray, marginTop: '8px', textAlign: 'center', lineHeight: 1.5, whiteSpace: 'pre-line' }}>
+                    {groomProfile.tag}
+                  </p>
                 )}
               </div>
-              <div style={{ fontFamily: fonts.display, fontSize: '11px', letterSpacing: '2px', color: themeColors.primary, fontWeight: 500 }}>
-                {brideName}
-              </div>
-              <div style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '1px', color: themeColors.gray, marginTop: '4px' }}>
-                BRIDE
-              </div>
-              {brideProfile?.tag && (
-                <p style={{ fontFamily: fonts.body, fontSize: '11px', color: themeColors.gray, marginTop: '8px', textAlign: 'center', lineHeight: 1.5, whiteSpace: 'pre-line' }}>
-                  {brideProfile.tag}
-                </p>
-              )}
+            )}
+
+            {/* Divider */}
+            <div className="flex flex-col items-center justify-center" style={{ paddingTop: '40px' }}>
+              <div style={{ width: '1px', height: '24px', background: themeColors.divider }} />
             </div>
-          )}
-        </div>
+
+            {/* Bride */}
+            {hasBrideContent && (
+              <div className="flex flex-col items-center" style={{ maxWidth: '120px' }}>
+                <div
+                  className="overflow-hidden mb-4"
+                  style={{
+                    width: '100px',
+                    height: '100px',
+                    borderRadius: '50%',
+                    border: `1.5px solid ${themeColors.divider}`,
+                    backgroundColor: brideImage ? undefined : themeColors.sectionBg,
+                  }}
+                >
+                  {brideImage ? (
+                    <div className="w-full h-full" style={getImageCropStyle(brideImage, brideProfile?.imageSettings?.[0] || {})} />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center" style={{ color: themeColors.gray, fontSize: '24px' }}>
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    </div>
+                  )}
+                </div>
+                <div style={{ fontFamily: fonts.display, fontSize: '11px', letterSpacing: '2px', color: themeColors.primary, fontWeight: 500 }}>
+                  {brideName}
+                </div>
+                <div style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '1px', color: themeColors.gray, marginTop: '4px' }}>
+                  BRIDE
+                </div>
+                {brideProfile?.tag && (
+                  <p style={{ fontFamily: fonts.body, fontSize: '11px', color: themeColors.gray, marginTop: '8px', textAlign: 'center', lineHeight: 1.5, whiteSpace: 'pre-line' }}>
+                    {brideProfile.tag}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -1618,6 +1681,7 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     bodyTextColor: (content as any).colors?.text,
     deceasedDisplayStyle: content.deceasedDisplayStyle || 'flower',
     magazineIntroStyle: (content as any).magazineIntroStyle || 'cover',
+    profileFrameShape: (content as any).profileFrameShape || 'circle',
   }
 }
 

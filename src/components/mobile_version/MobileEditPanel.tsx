@@ -297,7 +297,18 @@ export default function MobileEditPanel({ onOpenIntroSelector, invitationId, tem
                             }`}
                             onClick={() => updateNestedField('bgm.startPage', 'intro')}
                           >
-                            인트로 페이지
+                            커버
+                          </button>
+                          <button
+                            type="button"
+                            className={`flex-1 py-2.5 px-3 rounded-lg text-sm font-medium transition-all ${
+                              (invitation.bgm?.startPage || 'main') === 'invitation'
+                                ? 'bg-black text-white shadow-sm'
+                                : 'bg-white text-gray-600 border border-gray-200'
+                            }`}
+                            onClick={() => updateNestedField('bgm.startPage', 'invitation')}
+                          >
+                            초대장
                           </button>
                           <button
                             type="button"
@@ -308,10 +319,10 @@ export default function MobileEditPanel({ onOpenIntroSelector, invitationId, tem
                             }`}
                             onClick={() => updateNestedField('bgm.startPage', 'main')}
                           >
-                            메인 페이지
+                            메인
                           </button>
                         </div>
-                        <p className="text-xs text-gray-400">인트로 페이지부터 음악을 시작할 수 있습니다</p>
+                        <p className="text-xs text-gray-400">커버/초대장/메인 페이지 중 음악 시작 시점을 선택하세요</p>
                       </div>
                     )}
                   </>

@@ -2254,7 +2254,7 @@ const mockInvitation = {
     enabled: true,
     url: '/samples/parents/wedding-bgm.mp3',
     autoplay: true,
-    startPage: 'main' as 'intro' | 'main',
+    startPage: 'main' as 'intro' | 'invitation' | 'main',
   },
 
   // Intro animation settings
@@ -4019,8 +4019,9 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
 
   // Show music toggle only on main page (use bgm object, not media.bgm)
   // main 페이지에서는 섹션 내부에 음악 토글이 있으므로 fixed MusicToggle은 숨김
-  // startPage === 'intro'일 때는 인트로 페이지에서 fixed MusicToggle 표시
-  const showMusicToggle = invitation.bgm?.startPage === 'intro' && invitation.bgm?.enabled && !!invitation.bgm?.url && currentPage === 'intro' && introScreen === 'invitation'
+  // startPage === 'intro' 또는 'invitation'일 때는 인트로 페이지에서 fixed MusicToggle 표시
+  const bgmStartPage = invitation.bgm?.startPage || 'main'
+  const showMusicToggle = (bgmStartPage === 'intro' || bgmStartPage === 'invitation') && invitation.bgm?.enabled && !!invitation.bgm?.url && currentPage === 'intro' && introScreen === 'invitation'
 
   // Scroll to appropriate position when page changes
   useEffect(() => {
@@ -4175,11 +4176,12 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
 
               {/* Music Toggle */}
               <MusicToggle audioRef={audioRef} isVisible={showMusicToggle} shouldAutoPlay={
-                invitation.bgm?.autoplay === true && (
-                  invitation.bgm?.startPage === 'intro'
-                    ? (currentPage === 'intro' || currentPage === 'main')
-                    : currentPage === 'main'
-                )
+                invitation.bgm?.autoplay === true && (() => {
+                  const sp = invitation.bgm?.startPage || 'main'
+                  if (sp === 'intro') return currentPage === 'intro' || currentPage === 'main'
+                  if (sp === 'invitation') return (currentPage === 'intro' && introScreen === 'invitation') || currentPage === 'main'
+                  return currentPage === 'main'
+                })()
               } />
 
               {/* Gallery Lightbox */}

@@ -2614,7 +2614,7 @@ const mockInvitation = {
     enabled: true,
     url: '/samples/parents/wedding-bgm.mp3',
     autoplay: true,
-    startPage: 'main' as 'intro' | 'main',
+    startPage: 'main' as 'intro' | 'invitation' | 'main',
   },
 
   // Intro animation settings
@@ -4404,15 +4404,18 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
                     />
                   )}
 
-                  {/* Top-level Music Toggle for intro auto-play */}
-                  {invitation.bgm?.startPage === 'intro' && invitation.bgm?.enabled && !!invitation.bgm?.url && (
+                  {/* Top-level Music Toggle for intro/invitation auto-play */}
+                  {(invitation.bgm?.startPage === 'intro' || invitation.bgm?.startPage === 'invitation') && invitation.bgm?.enabled && !!invitation.bgm?.url && (
                     <MusicToggle
                       audioRef={audioRef}
                       isVisible={currentPage === 'intro' && introScreen === 'invitation'}
                       shouldAutoPlay={
-                        invitation.bgm?.autoplay === true && (
-                          currentPage === 'intro' || currentPage === 'main'
-                        )
+                        invitation.bgm?.autoplay === true && (() => {
+                          const sp = invitation.bgm?.startPage || 'main'
+                          if (sp === 'intro') return currentPage === 'intro' || currentPage === 'main'
+                          if (sp === 'invitation') return (currentPage === 'intro' && introScreen === 'invitation') || currentPage === 'main'
+                          return currentPage === 'main'
+                        })()
                       }
                     />
                   )}

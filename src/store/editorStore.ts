@@ -249,7 +249,7 @@ export interface BgmSettings {
   enabled: boolean
   url: string
   autoplay: boolean
-  startPage?: 'intro' | 'main'  // BGM 재생 시작 페이지 (기본값 'main')
+  startPage?: 'intro' | 'invitation' | 'main'  // BGM 재생 시작 페이지 (기본값 'main')
 }
 
 // 행복한 시간을 위한 안내 섹션

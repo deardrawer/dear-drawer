@@ -72,10 +72,10 @@ export function SortableItem({ id, children, isDragOverlay }: SortableItemProps)
           cursor-grab active:cursor-grabbing
           hover:bg-gray-100/70 rounded-l-lg
           transition-colors duration-150
-          touch-manipulation
           focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-inset
           ${isDragging || isSorting ? 'bg-gray-100' : ''}
         `}
+        style={{ touchAction: 'none' }}
         role="button"
         aria-label="드래그하여 순서 변경. 스페이스바로 선택, 화살표로 이동, 스페이스바로 놓기"
         tabIndex={0}

@@ -3,9 +3,12 @@
 import { useState, useRef } from 'react'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { Palette, Type, Music, Play, Pause, Upload, X, Loader2 } from 'lucide-react'
+import { Palette, Type, Music, Play, Pause, Upload, X, Loader2, ImageIcon } from 'lucide-react'
 import { COLOR_THEMES, type ColorThemeId } from '@/components/parents/types'
+import { hexToSealFilter } from '@/components/parents/EnvelopeScreen'
 import { bgmPresets } from '@/lib/bgmPresets'
+import { uploadImage } from '@/lib/imageUpload'
+import InlineCropEditor from '@/components/editor/InlineCropEditor'
 import type { ParentsInvitationData } from '../../page'
 
 interface ParentsStep1DesignProps {
@@ -33,6 +36,7 @@ export default function ParentsStep1Design({
 }: ParentsStep1DesignProps) {
   const [previewingBgmId, setPreviewingBgmId] = useState<string | null>(null)
   const [isUploadingAudio, setIsUploadingAudio] = useState(false)
+  const [isUploadingBg, setIsUploadingBg] = useState(false)
   const bgmAudioRef = useRef<HTMLAudioElement>(null)
 
   // 커스텀 BGM인지 확인 (프리셋 URL이 아닌 경우)
@@ -249,7 +253,28 @@ export default function ParentsStep1Design({
             )}
           </div>
           <p className="text-xs text-gray-500">봉투 인트로의 실링(밀랍) 스티커 색상을 변경할 수 있어요.</p>
-          <div className="flex items-center gap-4">
+
+          {/* 실링 미리보기 */}
+          <div className="flex justify-center py-2">
+            <div
+              className="w-20 h-20 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: data.customBackgroundColor || COLOR_THEMES[data.colorTheme || 'burgundy'].background }}
+            >
+              <img
+                src="/images/shilling-gray.png"
+                alt="실링 미리보기"
+                className="w-16 h-16 object-contain"
+                style={{
+                  filter: data.sealColor
+                    ? hexToSealFilter(data.sealColor)
+                    : 'sepia(1) saturate(3) hue-rotate(-10deg) brightness(0.6)',
+                }}
+              />
+            </div>
+          </div>
+
+          {/* 컬러 피커 + hex */}
+          <div className="flex items-center justify-center gap-3">
             <input
               type="color"
               value={data.sealColor || '#722F37'}
@@ -259,28 +284,195 @@ export default function ParentsStep1Design({
             <span className="text-[10px] text-gray-500 font-mono">
               {(data.sealColor || '#722F37').toUpperCase()}
             </span>
-            {/* 프리셋 색상들 */}
-            <div className="flex gap-1.5 flex-wrap">
-              {[
-                { color: '#722F37', label: '버건디' },
-                { color: '#1E3A5F', label: '네이비' },
-                { color: '#2D5A4A', label: '에메랄드' },
-                { color: '#C9A962', label: '골드' },
-                { color: '#C4A4A4', label: '로즈' },
-                { color: '#1A1A1A', label: '블랙' },
-              ].map(({ color, label }) => (
-                <button
-                  key={color}
-                  type="button"
-                  onClick={() => updateData({ sealColor: color })}
-                  className={`w-6 h-6 rounded-full border-2 transition-all ${
-                    data.sealColor === color ? 'border-gray-800 scale-110' : 'border-gray-200 hover:border-gray-400'
+          </div>
+
+          {/* 프리셋 색상들 - 2줄 그리드 */}
+          <div className="grid grid-cols-4 gap-2">
+            {[
+              { color: '#722F37', label: '버건디' },
+              { color: '#1E3A5F', label: '네이비' },
+              { color: '#C9A962', label: '골드' },
+              { color: '#1A1A1A', label: '블랙' },
+              { color: '#F5ECD7', label: '아이보리' },
+              { color: '#F2C4C4', label: '로즈핑크' },
+              { color: '#C8B8DB', label: '라벤더' },
+              { color: '#E8E8E8', label: '화이트' },
+            ].map(({ color, label }) => (
+              <button
+                key={color}
+                type="button"
+                onClick={() => updateData({ sealColor: color })}
+                className={`flex flex-col items-center gap-1 p-1.5 rounded-lg transition-all ${
+                  data.sealColor === color ? 'bg-gray-200 ring-1 ring-gray-400' : 'hover:bg-gray-100'
+                }`}
+              >
+                <div
+                  className={`w-7 h-7 rounded-full border-2 transition-all ${
+                    data.sealColor === color ? 'border-gray-800 scale-110' : 'border-gray-300'
                   }`}
                   style={{ backgroundColor: color }}
-                  title={label}
                 />
-              ))}
+                <span className="text-[9px] text-gray-500">{label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 봉투 배경 이미지 */}
+        <div className="mt-4 p-4 bg-gray-50 rounded-lg space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-gray-700">봉투 배경 이미지</p>
+            {data.envelope?.backgroundImage && (
+              <button
+                type="button"
+                onClick={() => {
+                  updateNestedData('envelope.backgroundImage', undefined)
+                  updateNestedData('envelope.backgroundImageSettings', undefined)
+                }}
+                className="text-xs text-gray-500 hover:text-gray-700 underline"
+              >
+                삭제
+              </button>
+            )}
+          </div>
+          <p className="text-xs text-gray-500">봉투 화면 뒤에 배경 이미지를 넣을 수 있어요.</p>
+
+          {data.envelope?.backgroundImage ? (
+            <div className="space-y-3">
+              {/* 크롭 에디터 */}
+              <InlineCropEditor
+                imageUrl={data.envelope.backgroundImage}
+                settings={data.envelope.backgroundImageSettings || { scale: 1.0, positionX: 0, positionY: 0 }}
+                onUpdate={(s) => {
+                  const current = data.envelope?.backgroundImageSettings || { scale: 1.0, positionX: 0, positionY: 0 }
+                  updateNestedData('envelope.backgroundImageSettings', { ...current, ...s })
+                }}
+                aspectRatio={9 / 16}
+                containerWidth={200}
+                colorClass="gray"
+              />
+
+              {/* 이미지 교체 */}
+              <div className="flex gap-2">
+                <label className="flex-1 text-center text-xs py-2 px-3 bg-gray-100 hover:bg-gray-200 rounded-md cursor-pointer transition-colors">
+                  이미지 교체
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        setIsUploadingBg(true)
+                        uploadImage(file, { invitationId: invitationId || undefined })
+                          .then((result) => {
+                            if (result.success && result.webUrl) {
+                              updateNestedData('envelope.backgroundImage', result.webUrl)
+                              updateNestedData('envelope.backgroundImageSettings', { scale: 1.0, positionX: 0, positionY: 0 })
+                            } else {
+                              alert(result.error || '이미지 업로드에 실패했습니다.')
+                            }
+                          })
+                          .catch(() => alert('이미지 업로드 중 오류가 발생했습니다.'))
+                          .finally(() => setIsUploadingBg(false))
+                        e.target.value = ''
+                      }
+                    }}
+                  />
+                </label>
+              </div>
             </div>
+          ) : (
+            <label className="flex flex-col items-center justify-center aspect-[9/16] max-w-[200px] mx-auto border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors relative">
+              {isUploadingBg ? (
+                <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
+              ) : (
+                <>
+                  <ImageIcon className="w-8 h-8 mb-2 text-gray-400" />
+                  <p className="text-xs text-gray-500">클릭하여 업로드</p>
+                  <p className="text-[10px] text-gray-400 mt-1">꽃, 풍경 등</p>
+                </>
+              )}
+              <input
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) {
+                    setIsUploadingBg(true)
+                    uploadImage(file, { invitationId: invitationId || undefined })
+                      .then((result) => {
+                        if (result.success && result.webUrl) {
+                          updateNestedData('envelope.backgroundImage', result.webUrl)
+                          updateNestedData('envelope.backgroundImageSettings', { scale: 1.0, positionX: 0, positionY: 0 })
+                        } else {
+                          alert(result.error || '이미지 업로드에 실패했습니다.')
+                        }
+                      })
+                      .catch(() => alert('이미지 업로드 중 오류가 발생했습니다.'))
+                      .finally(() => setIsUploadingBg(false))
+                    e.target.value = ''
+                  }
+                }}
+              />
+            </label>
+          )}
+        </div>
+
+        {/* 봉투 안내 문구 색상 */}
+        <div className="mt-4 p-4 bg-gray-50 rounded-lg space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-gray-700">안내 문구 색상</p>
+            {data.envelope?.hintTextColor && (
+              <button
+                type="button"
+                onClick={() => updateNestedData('envelope.hintTextColor', undefined)}
+                className="text-xs text-gray-500 hover:text-gray-700 underline"
+              >
+                기본으로 복원
+              </button>
+            )}
+          </div>
+          <p className="text-xs text-gray-500">&ldquo;편지가 도착했어요&rdquo; 안내 문구의 글자색을 변경할 수 있어요.</p>
+
+          <div className="flex items-center gap-3">
+            <input
+              type="color"
+              value={data.envelope?.hintTextColor || '#FFFFFF'}
+              onChange={(e) => updateNestedData('envelope.hintTextColor', e.target.value)}
+              className="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer p-0.5"
+            />
+            <span className="text-[10px] text-gray-500 font-mono">
+              {(data.envelope?.hintTextColor || '#FFFFFF').toUpperCase()}
+            </span>
+          </div>
+
+          {/* 프리셋 */}
+          <div className="grid grid-cols-4 gap-2">
+            {[
+              { color: '#FFFFFF', label: '화이트' },
+              { color: '#1A1A1A', label: '블랙' },
+              { color: '#F5ECD7', label: '아이보리' },
+              { color: '#C4A882', label: '샌드' },
+            ].map(({ color, label }) => (
+              <button
+                key={color}
+                type="button"
+                onClick={() => updateNestedData('envelope.hintTextColor', color)}
+                className={`flex flex-col items-center gap-1 p-1.5 rounded-lg transition-all ${
+                  data.envelope?.hintTextColor === color ? 'bg-gray-200 ring-1 ring-gray-400' : 'hover:bg-gray-100'
+                }`}
+              >
+                <div
+                  className={`w-7 h-7 rounded-full border-2 transition-all ${
+                    data.envelope?.hintTextColor === color ? 'border-gray-800 scale-110' : 'border-gray-300'
+                  }`}
+                  style={{ backgroundColor: color }}
+                />
+                <span className="text-[9px] text-gray-500">{label}</span>
+              </button>
+            ))}
           </div>
         </div>
       </section>

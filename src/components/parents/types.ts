@@ -106,55 +106,55 @@ export interface ColorTheme {
 export const COLOR_THEMES: Record<ColorThemeId, ColorTheme> = {
   burgundy: {
     id: 'burgundy',
-    name: '버건디',
-    primary: '#722F37',
-    accent: '#C9A962',
-    background: '#FFFEF8',
+    name: '로즈 핑크',
+    primary: '#C8A0A0',
+    accent: '#B89878',
+    background: '#FBF9F6',
     text: '#1A1A1A',
     textLight: '#666666',
   },
   navy: {
     id: 'navy',
-    name: '네이비',
-    primary: '#1E3A5F',
-    accent: '#D4AF37',
-    background: '#F8F9FA',
+    name: '소프트 블루',
+    primary: '#9CAEB8',
+    accent: '#8898A8',
+    background: '#F8F9FB',
     text: '#1A1A1A',
     textLight: '#666666',
   },
   sage: {
     id: 'sage',
     name: '세이지 그린',
-    primary: '#7D8471',
-    accent: '#C9B896',
-    background: '#FAFAF8',
+    primary: '#A5B09A',
+    accent: '#98907E',
+    background: '#F9FAF7',
     text: '#1A1A1A',
     textLight: '#666666',
   },
   dustyRose: {
     id: 'dustyRose',
-    name: '더스티 로즈',
-    primary: '#C4A4A4',
-    accent: '#8B7355',
-    background: '#FDF9F7',
+    name: '라일락 핑크',
+    primary: '#C0A0B8',
+    accent: '#A898A8',
+    background: '#FAF8FB',
     text: '#1A1A1A',
     textLight: '#666666',
   },
   emerald: {
     id: 'emerald',
-    name: '딥 에메랄드',
-    primary: '#2D5A4A',
-    accent: '#C9A962',
-    background: '#F8FAF9',
+    name: '웜 그레이',
+    primary: '#D0CBC5',
+    accent: '#B8B0A5',
+    background: '#F9F9F8',
     text: '#1A1A1A',
     textLight: '#666666',
   },
   slateBlue: {
     id: 'slateBlue',
-    name: '슬레이트 블루',
-    primary: '#6B7B8C',
-    accent: '#B8A88A',
-    background: '#F7F8FA',
+    name: '라떼 베이지',
+    primary: '#C0B0A0',
+    accent: '#B5A590',
+    background: '#FAF8F5',
     text: '#1A1A1A',
     textLight: '#666666',
   },
@@ -261,6 +261,17 @@ export interface ParentsInvitationContent {
   envelope: {
     message: string[]
     defaultGreeting: string
+    backgroundImage?: string      // 봉투 배경 이미지 URL
+    backgroundImageSettings?: {   // 배경 이미지 크롭 설정
+      scale: number
+      positionX: number
+      positionY: number
+      cropX?: number
+      cropY?: number
+      cropWidth?: number
+      cropHeight?: number
+    }
+    hintTextColor?: string        // 안내 문구 글자색
   }
 
   // 본문 인사말

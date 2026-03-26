@@ -139,6 +139,17 @@ export interface ParentsInvitationData {
   envelope: {
     message: string[] // 봉투 안 메시지
     defaultGreeting: string // 기본 인사말 (게스트 개인화 없을 때)
+    backgroundImage?: string // 봉투 배경 이미지 URL
+    backgroundImageSettings?: { // 배경 이미지 크롭 설정
+      scale: number
+      positionX: number
+      positionY: number
+      cropX?: number
+      cropY?: number
+      cropWidth?: number
+      cropHeight?: number
+    }
+    hintTextColor?: string // 안내 문구 글자색
   }
 
   // 본문 인사말

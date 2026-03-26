@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from 'react'
 
 // hex 색상을 CSS filter로 변환하는 함수
-function hexToSealFilter(hex: string): string {
+export function hexToSealFilter(hex: string): string {
   // hex → RGB
   const r = parseInt(hex.slice(1, 3), 16) / 255
   const g = parseInt(hex.slice(3, 5), 16) / 255
@@ -24,18 +24,25 @@ function hexToSealFilter(hex: string): string {
     }
   }
 
-  // sepia 기준(~30deg) 보정하여 hue-rotate 계산
-  const hueRotate = h - 30
-  const saturate = s > 0 ? Math.max(0.8, Math.min(5, s * 5)) : 0
-  // 밝기: 어두운 색도 실링으로 보이도록 최소 0.5 보장
-  const brightness = Math.max(0.5, Math.min(1.1, 0.4 + l * 0.7))
-
   if (s < 0.05) {
     // 거의 무채색 (검정~흰색)
-    const grayBright = Math.max(0.3, Math.min(1.2, l * 1.5))
+    const grayBright = Math.max(0.3, Math.min(2.5, l * 2.5))
     return `grayscale(1) brightness(${grayBright.toFixed(2)})`
   }
 
+  const hueRotate = h - 30
+
+  // 밝은 색상 (l > 0.6): sepia 줄이고 brightness 높여서 파스텔 효과
+  if (l > 0.6) {
+    const sepiaAmount = Math.max(0.15, 1 - (l - 0.6) * 2)
+    const saturate = Math.max(1, Math.min(4, s * 6))
+    const brightness = Math.max(1.0, Math.min(2.0, 0.6 + l * 1.4))
+    return `sepia(${sepiaAmount.toFixed(2)}) saturate(${saturate.toFixed(1)}) hue-rotate(${Math.round(hueRotate)}deg) brightness(${brightness.toFixed(2)})`
+  }
+
+  // 어두운/중간 색상
+  const saturate = Math.max(0.8, Math.min(5, s * 5))
+  const brightness = Math.max(0.5, Math.min(1.1, 0.4 + l * 0.7))
   return `sepia(1) saturate(${saturate.toFixed(1)}) hue-rotate(${Math.round(hueRotate)}deg) brightness(${brightness.toFixed(2)})`
 }
 
@@ -53,6 +60,17 @@ interface EnvelopeScreenProps {
   sealColor?: string   // 실링스티커 색상 (hex)
   fontClassName?: string // 폰트 클래스
   fontFamily?: string // 폰트 패밀리 CSS 값
+  backgroundImage?: string  // 봉투 배경 이미지
+  backgroundImageSettings?: {
+    scale: number
+    positionX: number
+    positionY: number
+    cropX?: number
+    cropY?: number
+    cropWidth?: number
+    cropHeight?: number
+  }
+  hintTextColor?: string    // 안내 문구 글자색
 }
 
 export default function EnvelopeScreen({
@@ -69,6 +87,9 @@ export default function EnvelopeScreen({
   sealColor,
   fontClassName = '',
   fontFamily = '',
+  backgroundImage,
+  backgroundImageSettings,
+  hintTextColor,
 }: EnvelopeScreenProps) {
   const [stage, setStage] = useState(0)
   const [isExtracted, setIsExtracted] = useState(false)
@@ -135,6 +156,44 @@ export default function EnvelopeScreen({
       } as React.CSSProperties}
       onClick={handleClick}
     >
+      {/* 배경 이미지 */}
+      {backgroundImage && (() => {
+        const s = backgroundImageSettings
+        const cw = s?.cropWidth ?? 1
+        const ch = s?.cropHeight ?? 1
+        const cx = s?.cropX ?? 0
+        const cy = s?.cropY ?? 0
+        const hasCrop = cw < 1 || ch < 1
+        // 크롭 영역을 container에 맞게 확대 (비율 유지)
+        const scaleX = 100 / cw
+        const scaleY = 100 / ch
+        const baseScale = Math.max(scaleX, scaleY)
+        // 위치 계산: 크롭 시작점 기준
+        const posX = hasCrop && cw < 1 ? (cx / (1 - cw)) * 100 : 50
+        const posY = hasCrop && ch < 1 ? (cy / (1 - ch)) * 100 : 50
+        return (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              zIndex: 0,
+              overflow: 'hidden',
+              backgroundImage: `url(${backgroundImage})`,
+              backgroundSize: `${baseScale}%`,
+              backgroundPosition: `${posX}% ${posY}%`,
+              backgroundRepeat: 'no-repeat',
+            }}
+          >
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                backgroundColor: 'rgba(0,0,0,0.1)',
+              }}
+            />
+          </div>
+        )
+      })()}
       <style jsx>{`
         .envelope-wrapper {
           perspective: 1500px;
@@ -348,7 +407,7 @@ export default function EnvelopeScreen({
         }
       `}</style>
 
-      <div className="envelope-wrapper" onClick={handleClick} style={{ perspective: '1500px' }}>
+      <div className="envelope-wrapper" onClick={handleClick} style={{ perspective: '1500px', position: 'relative', zIndex: 1 }}>
         <div
           className={`envelope-container ${stage >= 1 ? 'flipped' : ''}`}
           style={{ transformStyle: 'preserve-3d' }}
@@ -442,12 +501,14 @@ export default function EnvelopeScreen({
           cursor: 'pointer',
           marginTop: '24px',
           marginBottom: '60px',
+          position: 'relative',
+          zIndex: 1,
         }}
       >
         <p
           className="text-[14px] leading-relaxed px-4"
           style={{
-            color: 'rgba(255,255,255,0.95)',
+            color: hintTextColor || 'rgba(255,255,255,0.95)',
             textShadow: '0 1px 3px rgba(0,0,0,0.3)',
             fontWeight: 300,
             letterSpacing: '0.5px',

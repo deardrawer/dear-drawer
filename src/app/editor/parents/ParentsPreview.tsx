@@ -122,6 +122,9 @@ export default function ParentsPreview({
             sealColor={data.sealColor}
             fontClassName={fontStyle.className}
             fontFamily={fontStyle.cssVariable}
+            backgroundImage={data.envelope?.backgroundImage}
+            backgroundImageSettings={data.envelope?.backgroundImageSettings}
+            hintTextColor={data.envelope?.hintTextColor}
           />
         </div>
       ) : (

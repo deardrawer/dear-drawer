@@ -2,6 +2,43 @@
 
 import { useState, useCallback, useEffect } from 'react'
 
+// hex 색상을 CSS filter로 변환하는 함수
+function hexToSealFilter(hex: string): string {
+  // hex → RGB
+  const r = parseInt(hex.slice(1, 3), 16) / 255
+  const g = parseInt(hex.slice(3, 5), 16) / 255
+  const b = parseInt(hex.slice(5, 7), 16) / 255
+
+  // RGB → HSL
+  const max = Math.max(r, g, b), min = Math.min(r, g, b)
+  const l = (max + min) / 2
+  let h = 0, s = 0
+
+  if (max !== min) {
+    const d = max - min
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) * 60; break
+      case g: h = ((b - r) / d + 2) * 60; break
+      case b: h = ((r - g) / d + 4) * 60; break
+    }
+  }
+
+  // sepia 기준(~30deg) 보정하여 hue-rotate 계산
+  const hueRotate = h - 30
+  const saturate = s > 0 ? Math.max(0.8, Math.min(5, s * 5)) : 0
+  // 밝기: 어두운 색도 실링으로 보이도록 최소 0.5 보장
+  const brightness = Math.max(0.5, Math.min(1.1, 0.4 + l * 0.7))
+
+  if (s < 0.05) {
+    // 거의 무채색 (검정~흰색)
+    const grayBright = Math.max(0.3, Math.min(1.2, l * 1.5))
+    return `grayscale(1) brightness(${grayBright.toFixed(2)})`
+  }
+
+  return `sepia(1) saturate(${saturate.toFixed(1)}) hue-rotate(${Math.round(hueRotate)}deg) brightness(${brightness.toFixed(2)})`
+}
+
 interface EnvelopeScreenProps {
   recipientName: string
   recipientTitle?: string
@@ -13,6 +50,7 @@ interface EnvelopeScreenProps {
   isPreview?: boolean
   themeColor?: string  // 메인 테마 컬러
   accentColor?: string // 포인트 컬러
+  sealColor?: string   // 실링스티커 색상 (hex)
   fontClassName?: string // 폰트 클래스
   fontFamily?: string // 폰트 패밀리 CSS 값
 }
@@ -28,6 +66,7 @@ export default function EnvelopeScreen({
   isPreview = false,
   themeColor = '#722F37',
   accentColor = '#C9A962',
+  sealColor,
   fontClassName = '',
   fontFamily = '',
 }: EnvelopeScreenProps) {
@@ -344,7 +383,15 @@ export default function EnvelopeScreen({
             }}
           >
             <div className="sealing-wax" style={{ opacity: isHidden ? 0 : 1, transition: 'opacity 0.6s ease' }}>
-              <img src="/images/shilling2.png" alt="seal" />
+              <img
+                src="/images/shilling-gray.png"
+                alt="seal"
+                style={{
+                  filter: sealColor
+                    ? hexToSealFilter(sealColor)
+                    : 'sepia(1) saturate(3) hue-rotate(-10deg) brightness(0.6)',
+                }}
+              />
             </div>
 
             <div className="front flap" style={{ opacity: isHidden ? 0 : 1, transition: 'opacity 0.6s ease' }}></div>

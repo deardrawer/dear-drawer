@@ -21,13 +21,14 @@ function getImageCropStyle(img: string, s: ImageSettings) {
     const ch = s.cropHeight || 1
     const cx = s.cropX || 0
     const cy = s.cropY || 0
-    const posX = cw >= 1 ? 0 : (cx / (1 - cw)) * 100
-    const posY = ch >= 1 ? 0 : (cy / (1 - ch)) * 100
+    // 크롭 중심점 기반 배치 (cover로 비율 유지)
+    const centerX = (cx + cw / 2) * 100
+    const centerY = (cy + ch / 2) * 100
 
     return {
       backgroundImage: `url(${img})`,
-      backgroundSize: `${100 / cw}% ${100 / ch}%`,
-      backgroundPosition: `${posX}% ${posY}%`,
+      backgroundSize: 'cover' as const,
+      backgroundPosition: `${centerX}% ${centerY}%`,
       backgroundRepeat: 'no-repeat' as const,
     }
   }

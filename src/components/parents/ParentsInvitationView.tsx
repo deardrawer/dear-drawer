@@ -208,6 +208,7 @@ export default function ParentsInvitationView({
           isPreview={isPreview}
           themeColor={theme.primary}
           accentColor={theme.accent}
+          sealColor={data.sealColor}
           fontClassName={fontStyle.className}
           fontFamily={fontStyle.cssVariable}
         />

@@ -177,15 +177,18 @@ export default function MainPhotoSection({
                     const ch = photo.cropHeight || 1
                     const cx = photo.cropX || 0
                     const cy = photo.cropY || 0
-                    const posX = cw >= 1 ? 0 : (cx / (1 - cw)) * 100
-                    const posY = ch >= 1 ? 0 : (cy / (1 - ch)) * 100
+
+                    // 크롭 중심점 기반 배치 (cover로 비율 유지)
+                    const centerX = (cx + cw / 2) * 100
+                    const centerY = (cy + ch / 2) * 100
+
                     return (
                       <div
                         className="w-full h-full"
                         style={{
                           backgroundImage: `url(${photo.url})`,
-                          backgroundSize: `${100 / cw}% ${100 / ch}%`,
-                          backgroundPosition: `${posX}% ${posY}%`,
+                          backgroundSize: 'cover',
+                          backgroundPosition: `${centerX}% ${centerY}%`,
                           backgroundRepeat: 'no-repeat',
                         }}
                       />
@@ -245,8 +248,11 @@ export default function MainPhotoSection({
               const ch = photo.cropHeight || 1
               const cx = photo.cropX || 0
               const cy = photo.cropY || 0
-              const posX = cw >= 1 ? 0 : (cx / (1 - cw)) * 100
-              const posY = ch >= 1 ? 0 : (cy / (1 - ch)) * 100
+
+              // 크롭 중심점 기반 배치 (cover로 비율 유지)
+              const centerX = (cx + cw / 2) * 100
+              const centerY = (cy + ch / 2) * 100
+
               return (
                 <div
                   key={`grid-${photo.id}`}
@@ -257,8 +263,8 @@ export default function MainPhotoSection({
                     className="w-full h-full"
                     style={{
                       backgroundImage: `url(${photo.url})`,
-                      backgroundSize: `${100 / cw}% ${100 / ch}%`,
-                      backgroundPosition: `${posX}% ${posY}%`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: `${centerX}% ${centerY}%`,
                       backgroundRepeat: 'no-repeat',
                     }}
                   />

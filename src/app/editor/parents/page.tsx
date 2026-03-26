@@ -244,6 +244,7 @@ export interface ParentsInvitationData {
   customPrimaryColor?: string
   customAccentColor?: string
   customBackgroundColor?: string
+  sealColor?: string
 }
 
 const defaultData: ParentsInvitationData = {

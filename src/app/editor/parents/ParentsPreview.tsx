@@ -119,6 +119,7 @@ export default function ParentsPreview({
             isPreview={!fullscreen}
             themeColor={theme.primary}
             accentColor={theme.accent}
+            sealColor={data.sealColor}
             fontClassName={fontStyle.className}
             fontFamily={fontStyle.cssVariable}
           />

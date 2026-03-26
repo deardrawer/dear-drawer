@@ -233,6 +233,56 @@ export default function ParentsStep1Design({
             )}
           </div>
         </div>
+
+        {/* 실링스티커 색상 */}
+        <div className="mt-4 p-4 bg-gray-50 rounded-lg space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-gray-700">실링스티커 색상</p>
+            {data.sealColor && (
+              <button
+                type="button"
+                onClick={() => updateData({ sealColor: undefined })}
+                className="text-xs text-gray-500 hover:text-gray-700 underline"
+              >
+                기본 색상으로 복원
+              </button>
+            )}
+          </div>
+          <p className="text-xs text-gray-500">봉투 인트로의 실링(밀랍) 스티커 색상을 변경할 수 있어요.</p>
+          <div className="flex items-center gap-4">
+            <input
+              type="color"
+              value={data.sealColor || '#722F37'}
+              onChange={(e) => updateData({ sealColor: e.target.value })}
+              className="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer p-0.5"
+            />
+            <span className="text-[10px] text-gray-500 font-mono">
+              {(data.sealColor || '#722F37').toUpperCase()}
+            </span>
+            {/* 프리셋 색상들 */}
+            <div className="flex gap-1.5 flex-wrap">
+              {[
+                { color: '#722F37', label: '버건디' },
+                { color: '#1E3A5F', label: '네이비' },
+                { color: '#2D5A4A', label: '에메랄드' },
+                { color: '#C9A962', label: '골드' },
+                { color: '#C4A4A4', label: '로즈' },
+                { color: '#1A1A1A', label: '블랙' },
+              ].map(({ color, label }) => (
+                <button
+                  key={color}
+                  type="button"
+                  onClick={() => updateData({ sealColor: color })}
+                  className={`w-6 h-6 rounded-full border-2 transition-all ${
+                    data.sealColor === color ? 'border-gray-800 scale-110' : 'border-gray-200 hover:border-gray-400'
+                  }`}
+                  style={{ backgroundColor: color }}
+                  title={label}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* 폰트 스타일 */}

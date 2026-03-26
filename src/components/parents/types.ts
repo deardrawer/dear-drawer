@@ -324,6 +324,7 @@ export interface ParentsInvitationContent {
   customPrimaryColor?: string
   customAccentColor?: string
   customBackgroundColor?: string
+  sealColor?: string  // 실링스티커 색상 (hex)
 
   // 공유 메타 정보
   meta?: {

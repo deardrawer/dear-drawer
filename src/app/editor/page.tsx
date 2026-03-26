@@ -154,6 +154,11 @@ function EditorContent() {
               router.push(`/editor/essay?id=${editId}`)
               return
             }
+            // THANKYOU 템플릿이면 thank-you 에디터로 리다이렉트
+            if (inv.template_id === 'narrative-thankyou') {
+              router.push(`/editor/thank-you?id=${editId}`)
+              return
+            }
             // RECORD 템플릿은 공유 에디터 사용 (리다이렉트 불필요)
             // content 필드에서 전체 데이터 파싱
             if (inv.content) {

@@ -123,6 +123,11 @@ function getTemplateDisplayName(templateId: string, senderSide?: string) {
     case 'narrative-exhibit':
     case 'exhibit':
       return 'FEED'
+    case 'narrative-essay':
+    case 'essay':
+      return 'ESSAY'
+    case 'narrative-thankyou':
+      return '감사장'
     default:
       return templateId || '기본'
   }
@@ -152,6 +157,12 @@ function getTemplateBadgeColor(templateId: string, senderSide?: string) {
   }
   if (templateId === 'narrative-exhibit' || templateId === 'exhibit') {
     return 'bg-violet-100 text-violet-700'
+  }
+  if (templateId === 'narrative-essay' || templateId === 'essay') {
+    return 'bg-amber-100 text-amber-800'
+  }
+  if (templateId === 'narrative-thankyou') {
+    return 'bg-amber-100 text-amber-600'
   }
   return 'bg-gray-100 text-gray-600'
 }
@@ -1048,6 +1059,8 @@ export default function MyInvitationsPage() {
                         ? `/editor/parents?id=${invitation.id}`
                         : invitation.template_id === 'narrative-exhibit' || invitation.template_id === 'exhibit'
                         ? `/editor/feed?id=${invitation.id}`
+                        : invitation.template_id === 'narrative-thankyou'
+                        ? `/editor/thank-you?id=${invitation.id}`
                         : `/editor?id=${invitation.id}`
                     }>
                       <Button size="sm" className="w-full bg-gray-900 hover:bg-gray-800 text-white">에디터 편집하기</Button>

@@ -1,4 +1,4 @@
-export type NarrativeType = 'our' | 'family' | 'parents' | 'magazine' | 'film' | 'record' | 'exhibit' | 'essay'
+export type NarrativeType = 'our' | 'family' | 'parents' | 'magazine' | 'film' | 'record' | 'exhibit' | 'essay' | 'thankyou'
 
 export type TemplateSection = {
   id: string
@@ -273,6 +273,32 @@ export const templates: Template[] = [
       { id: 'closing', title: '감사 인사', aiGenerated: false },
     ],
   },
+  {
+    id: 'narrative-thankyou',
+    name: 'THANKS',
+    description: '결혼식 후 감사의 마음을 전하는 모바일 감사장',
+    thumbnail: '/templates/narrative-thankyou.jpg',
+    defaultCoverImage: '/samples/parents/1.png',
+    narrativeType: 'thankyou',
+    emoji: '💌',
+    colors: {
+      primary: '#2C2C2C',
+      secondary: '#F5F3EF',
+      accent: '#7A7570',
+      background: '#F5F3EF',
+      text: '#2C2C2C',
+    },
+    fonts: {
+      heading: 'Noto Sans KR',
+      body: 'Noto Sans KR',
+    },
+    features: ['스크롤 애니메이션', '폴라로이드 사진', '커튼 연출', '감사 메시지'],
+    sections: [
+      { id: 'intro', title: '인트로', aiGenerated: false },
+      { id: 'photos', title: '사진', aiGenerated: false },
+      { id: 'closing', title: '감사인사', aiGenerated: false },
+    ],
+  },
 ]
 
 export function getTemplateById(id: string): Template | undefined {
@@ -313,4 +339,8 @@ export function getExhibitTemplate(): Template {
 
 export function getEssayTemplate(): Template {
   return templates.find((template) => template.narrativeType === 'essay')!
+}
+
+export function getThankYouTemplate(): Template {
+  return templates.find((template) => template.narrativeType === 'thankyou')!
 }

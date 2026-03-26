@@ -163,14 +163,16 @@ export default function EnvelopeScreen({
         const ch = s?.cropHeight ?? 1
         const cx = s?.cropX ?? 0
         const cy = s?.cropY ?? 0
-        const hasCrop = cw < 1 || ch < 1
-        // 크롭 영역을 container에 맞게 확대 (비율 유지)
-        const scaleX = 100 / cw
-        const scaleY = 100 / ch
-        const baseScale = Math.max(scaleX, scaleY)
-        // 위치 계산: 크롭 시작점 기준
-        const posX = hasCrop && cw < 1 ? (cx / (1 - cw)) * 100 : 50
-        const posY = hasCrop && ch < 1 ? (cy / (1 - ch)) * 100 : 50
+        const hasCrop = cw < 0.99 || ch < 0.99
+        // 크롭 중심점 (0~1)
+        const centerX = cx + cw / 2
+        const centerY = cy + ch / 2
+        // 이미지를 크롭 영역 기준으로 확대 (가로/세로 독립)
+        const scaleValX = hasCrop ? 1 / cw : 1
+        const scaleValY = hasCrop ? 1 / ch : 1
+        // object-position: 크롭 중심을 컨테이너 중심에 맞춤
+        const posX = hasCrop ? centerX * 100 : 50
+        const posY = hasCrop ? centerY * 100 : 50
         return (
           <div
             style={{
@@ -178,12 +180,21 @@ export default function EnvelopeScreen({
               inset: 0,
               zIndex: 0,
               overflow: 'hidden',
-              backgroundImage: `url(${backgroundImage})`,
-              backgroundSize: `${baseScale}%`,
-              backgroundPosition: `${posX}% ${posY}%`,
-              backgroundRepeat: 'no-repeat',
             }}
           >
+            <img
+              src={backgroundImage}
+              alt=""
+              style={{
+                position: 'absolute',
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                objectPosition: `${posX}% ${posY}%`,
+                transform: hasCrop ? `scale(${Math.max(scaleValX, scaleValY)})` : undefined,
+                transformOrigin: `${posX}% ${posY}%`,
+              }}
+            />
             <div
               style={{
                 position: 'absolute',

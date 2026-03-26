@@ -28,7 +28,7 @@ interface ShareModalProps {
   thumbnailUrl?: string
   shareTitle?: string
   shareDescription?: string
-  templateType?: 'our' | 'family' | 'parents' | 'magazine' | 'film' | 'record' | 'exhibit'
+  templateType?: 'our' | 'family' | 'parents' | 'magazine' | 'film' | 'record' | 'exhibit' | 'thankyou'
 }
 
 export default function ShareModal({

@@ -8,6 +8,7 @@ import InvitationClientFilm from "./InvitationClientFilm";
 import InvitationClientRecord from "./InvitationClientRecord";
 import InvitationClientExhibit from "./InvitationClientExhibit";
 import InvitationClientEssay from "./InvitationClientEssay";
+import InvitationClientThankYou from "./InvitationClientThankYou";
 import type { Invitation } from "@/types/invitation";
 import type { Viewport } from "next";
 import { isUUID } from "@/lib/slug";
@@ -148,6 +149,20 @@ export default async function InvitationPage({ params, searchParams }: PageProps
   const isRecord = invitation.template_id === 'narrative-record';
   const isExhibit = invitation.template_id === 'narrative-exhibit';
   const isEssay = invitation.template_id === 'narrative-essay';
+  const isThankYou = invitation.template_id === 'narrative-thankyou';
+
+  // 감사장은 별도 렌더링 (props가 다름)
+  if (isThankYou) {
+    return (
+      <InvitationClientThankYou
+        invitation={invitation}
+        content={invitationContent}
+        isPaid={isPaid}
+        isPreview={isPreview}
+        isSample={isSampleInvitation}
+      />
+    );
+  }
 
   // 템플릿에 따라 적절한 컴포넌트 렌더링
   const ClientComponent = isEssay ? InvitationClientEssay : isExhibit ? InvitationClientExhibit : isRecord ? InvitationClientRecord : isFilm ? InvitationClientFilm : isMagazine ? InvitationClientMagazine : isFamily ? InvitationClientFamily : InvitationClient;

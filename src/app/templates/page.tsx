@@ -13,9 +13,9 @@ const generateRandomSlug = () => {
   return `invitation-${randomPart}`
 }
 
-type TemplateCategory = null | 'story' | 'mini' | 'parents'
+type TemplateCategory = null | 'story' | 'mini' | 'parents' | 'thankyou'
 type QuizStep = 'q1' | 'q2a' | 'q2b' | 'q3a' | 'q3b' | 'result' | null
-type ShowcaseFilter = 'all' | 'story' | 'mini' | 'parents'
+type ShowcaseFilter = 'all' | 'story' | 'mini' | 'parents' | 'thankyou'
 
 // 퀴즈 결과 데이터
 const QUIZ_RESULTS: Record<string, {
@@ -150,7 +150,7 @@ const SHOWCASE_ITEMS: {
   templateId: string
   name: string
   tagline: string
-  category: 'story' | 'mini' | 'parents'
+  category: 'story' | 'mini' | 'parents' | 'thankyou'
   categoryLabel: string
   thumbnail: string
   sampleUrl: string
@@ -262,6 +262,19 @@ const SHOWCASE_ITEMS: {
     badgeBg: 'bg-sky-50',
     btnClass: 'bg-sky-500 hover:bg-sky-600',
   },
+  {
+    id: 'thankyou',
+    templateId: 'narrative-thankyou',
+    name: 'THANKS',
+    tagline: '결혼식 후 감사의 마음을 전하는',
+    category: 'thankyou',
+    categoryLabel: '감사장',
+    thumbnail: '/sample/preview-thankyou.png',
+    sampleUrl: '/sample/thank-you',
+    badgeColor: 'text-amber-600',
+    badgeBg: 'bg-amber-50',
+    btnClass: 'bg-amber-500 hover:bg-amber-600',
+  },
 ]
 
 function TemplatesContent() {
@@ -337,6 +350,8 @@ function TemplatesContent() {
       router.push(`/editor/feed?slug=${autoSlug}`)
     } else if (templateId === 'narrative-essay') {
       router.push(`/editor/essay?slug=${autoSlug}`)
+    } else if (templateId === 'narrative-thankyou') {
+      router.push(`/editor/thank-you?slug=${autoSlug}`)
     } else {
       router.push(`/editor?template=${templateId}&slug=${autoSlug}`)
     }
@@ -684,6 +699,7 @@ function TemplatesContent() {
                     { key: 'story' as ShowcaseFilter, label: '스토리형', count: SHOWCASE_ITEMS.filter(i => i.category === 'story').length, activeClass: 'bg-rose-500 text-white' },
                     { key: 'mini' as ShowcaseFilter, label: '미니스토리형', count: SHOWCASE_ITEMS.filter(i => i.category === 'mini').length, activeClass: 'bg-violet-500 text-white' },
                     { key: 'parents' as ShowcaseFilter, label: '혼주용', count: SHOWCASE_ITEMS.filter(i => i.category === 'parents').length, activeClass: 'bg-sky-500 text-white' },
+                    { key: 'thankyou' as ShowcaseFilter, label: '감사장', count: SHOWCASE_ITEMS.filter(i => i.category === 'thankyou').length, activeClass: 'bg-amber-500 text-white' },
                   ]).map(tab => (
                     <button
                       key={tab.key}

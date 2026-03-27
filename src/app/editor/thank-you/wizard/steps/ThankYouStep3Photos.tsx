@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { Upload, X, Loader2 } from 'lucide-react'
 import { useThankYouEditorStore } from '@/store/thankYouEditorStore'
 import InlineCropEditor from '@/components/editor/InlineCropEditor'
+import { uploadImage } from '@/lib/imageUpload'
 import type { ImageSettings } from '@/store/editorStore'
 import type { CropData } from '@/components/thank-you/types'
 
@@ -45,20 +46,14 @@ export default function ThankYouStep3Photos({ invitationId }: ThankYouStep3Photo
 
     setUploadingIndex(index)
     try {
-      const formData = new FormData()
-      formData.append('file', file)
-      if (invitationId) {
-        formData.append('invitationId', invitationId)
-      }
-      const res = await fetch('/api/upload', { method: 'POST', body: formData })
-      const result = await res.json() as { url?: string; error?: string }
+      const result = await uploadImage(file, { invitationId: invitationId || undefined })
 
-      if (result.url) {
+      if (result.success && result.webUrl) {
         if (index === -1) {
-          updateField('heroImage', result.url)
+          updateField('heroImage', result.webUrl)
           updateField('heroCrop', undefined as unknown as CropData)
         } else {
-          updatePolaroid(index, { image: result.url, crop: undefined })
+          updatePolaroid(index, { image: result.webUrl, crop: undefined })
         }
       } else {
         alert(result.error || '업로드에 실패했습니다.')

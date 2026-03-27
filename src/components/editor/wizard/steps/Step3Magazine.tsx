@@ -315,7 +315,7 @@ export default function Step3Magazine({ templateId, invitationId }: Step3Magazin
           />
           {media.coverImage ? (
             <div className="space-y-3">
-              <div className="relative w-full max-w-[200px] aspect-[3/4] mx-auto rounded-lg overflow-hidden shadow-md">
+              <div className={`relative w-full max-w-[200px] ${introStyle === 'editorial' ? 'aspect-[9/16]' : 'aspect-[3/4]'} mx-auto rounded-lg overflow-hidden shadow-md`}>
                 <img src={media.coverImage} alt="커버" className="w-full h-full object-cover" />
                 {isUploadingCover && (
                   <div className="absolute inset-0 bg-white/80 flex flex-col items-center justify-center">
@@ -348,15 +348,16 @@ export default function Step3Magazine({ templateId, invitationId }: Step3Magazin
                   imageUrl={media.coverImage}
                   settings={media.coverImageSettings || { scale: 1.0, positionX: 0, positionY: 0 }}
                   onUpdate={(s) => updateNestedField('media.coverImageSettings', { ...(media.coverImageSettings || {}), ...s })}
-                  aspectRatio={3/4}
+                  aspectRatio={introStyle === 'editorial' ? 9/16 : 3/4}
                   containerWidth={160}
+                  disableResize={introStyle === 'editorial'}
                 />
               </div>
             </div>
           ) : (
             <div
               onClick={() => !isUploadingCover && coverInputRef.current?.click()}
-              className="w-full max-w-[200px] mx-auto aspect-[3/4] rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 cursor-pointer flex flex-col items-center justify-center text-gray-400 transition-colors"
+              className={`w-full max-w-[200px] mx-auto ${introStyle === 'editorial' ? 'aspect-[9/16]' : 'aspect-[3/4]'} rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 cursor-pointer flex flex-col items-center justify-center text-gray-400 transition-colors`}
             >
               {isUploadingCover ? (
                 <>

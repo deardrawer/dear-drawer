@@ -12,6 +12,7 @@ interface InlineCropEditorProps {
   aspectRatio?: number // 고정 비율 (1 = 정사각형, 3/4 = 세로형)
   containerWidth?: number
   colorClass?: string
+  disableResize?: boolean // 리사이즈 핸들 비활성화 (이동만 허용)
 }
 
 export default function InlineCropEditor({
@@ -21,6 +22,7 @@ export default function InlineCropEditor({
   aspectRatio = 1,
   containerWidth = 200,
   colorClass = 'rose',
+  disableResize = false,
 }: InlineCropEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 })
@@ -363,38 +365,42 @@ export default function InlineCropEditor({
             <div className="absolute top-1/2 left-0 right-0 h-px bg-white/50 -translate-y-px" />
           </div>
 
-          {/* 코너 핸들 */}
-          <div
-            className="absolute w-3 h-3 bg-white rounded-full shadow-md cursor-nwse-resize z-10 border border-gray-300"
-            style={{ top: '-6px', left: '-6px' }}
-            onMouseDown={(e) => handleDragStart(e, 'nw')}
-            onTouchStart={(e) => handleDragStart(e, 'nw')}
-          />
-          <div
-            className="absolute w-3 h-3 bg-white rounded-full shadow-md cursor-nesw-resize z-10 border border-gray-300"
-            style={{ top: '-6px', right: '-6px' }}
-            onMouseDown={(e) => handleDragStart(e, 'ne')}
-            onTouchStart={(e) => handleDragStart(e, 'ne')}
-          />
-          <div
-            className="absolute w-3 h-3 bg-white rounded-full shadow-md cursor-nesw-resize z-10 border border-gray-300"
-            style={{ bottom: '-6px', left: '-6px' }}
-            onMouseDown={(e) => handleDragStart(e, 'sw')}
-            onTouchStart={(e) => handleDragStart(e, 'sw')}
-          />
-          <div
-            className="absolute w-3 h-3 bg-white rounded-full shadow-md cursor-nwse-resize z-10 border border-gray-300"
-            style={{ bottom: '-6px', right: '-6px' }}
-            onMouseDown={(e) => handleDragStart(e, 'se')}
-            onTouchStart={(e) => handleDragStart(e, 'se')}
-          />
+          {/* 코너 핸들 (disableResize 시 숨김) */}
+          {!disableResize && (
+            <>
+              <div
+                className="absolute w-3 h-3 bg-white rounded-full shadow-md cursor-nwse-resize z-10 border border-gray-300"
+                style={{ top: '-6px', left: '-6px' }}
+                onMouseDown={(e) => handleDragStart(e, 'nw')}
+                onTouchStart={(e) => handleDragStart(e, 'nw')}
+              />
+              <div
+                className="absolute w-3 h-3 bg-white rounded-full shadow-md cursor-nesw-resize z-10 border border-gray-300"
+                style={{ top: '-6px', right: '-6px' }}
+                onMouseDown={(e) => handleDragStart(e, 'ne')}
+                onTouchStart={(e) => handleDragStart(e, 'ne')}
+              />
+              <div
+                className="absolute w-3 h-3 bg-white rounded-full shadow-md cursor-nesw-resize z-10 border border-gray-300"
+                style={{ bottom: '-6px', left: '-6px' }}
+                onMouseDown={(e) => handleDragStart(e, 'sw')}
+                onTouchStart={(e) => handleDragStart(e, 'sw')}
+              />
+              <div
+                className="absolute w-3 h-3 bg-white rounded-full shadow-md cursor-nwse-resize z-10 border border-gray-300"
+                style={{ bottom: '-6px', right: '-6px' }}
+                onMouseDown={(e) => handleDragStart(e, 'se')}
+                onTouchStart={(e) => handleDragStart(e, 'se')}
+              />
+            </>
+          )}
         </div>
 
         {/* 드래그 힌트 */}
         {dragType && (
           <div className="absolute top-2 left-1/2 -translate-x-1/2 px-2 py-1 bg-black/60 rounded text-[10px] text-white flex items-center gap-1 z-20">
             <Move className="w-3 h-3" />
-            {dragType === 'move' ? '드래그로 위치 조정' : '크기 조정 중'}
+            {dragType === 'move' ? '드래그로 위치 조정' : disableResize ? '드래그로 위치 조정' : '크기 조정 중'}
           </div>
         )}
       </div>

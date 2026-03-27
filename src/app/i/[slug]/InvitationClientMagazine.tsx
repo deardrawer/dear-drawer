@@ -228,11 +228,27 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
 
   // Style: editorial (에디토리얼 - 사진 위 타이포그래피 오버레이)
   if (introStyle === 'editorial') {
+    // editorial은 100vh 풀블리드 — 기기마다 비율이 다르므로 cover + 크롭 중심점 사용
+    const coverSettings = invitation.media?.coverImageSettings || {} as any
+    const hasCropData = coverSettings.cropWidth !== undefined && coverSettings.cropHeight !== undefined && (coverSettings.cropWidth < 1 || coverSettings.cropHeight < 1)
+    const editorialImageStyle: React.CSSProperties = hasCropData
+      ? {
+          backgroundImage: `url(${coverImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: `${((coverSettings.cropX || 0) + (coverSettings.cropWidth || 1) / 2) * 100}% ${((coverSettings.cropY || 0) + (coverSettings.cropHeight || 1) / 2) * 100}%`,
+          backgroundRepeat: 'no-repeat',
+        }
+      : {
+          backgroundImage: `url(${coverImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          transform: `scale(${coverSettings.scale || 1}) translate(${coverSettings.positionX || 0}%, ${coverSettings.positionY || 0}%)`,
+        }
     return (
       <div className="relative w-full flex flex-col" style={{ backgroundColor: '#000', height: isPreview ? '660px' : '100vh' }}>
         {/* Full bleed cover */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="w-full h-full" style={{ ...getImageCropStyle(coverImage, invitation.media?.coverImageSettings || {}), opacity: loaded ? 1 : 0, transition: 'opacity 2s ease' }} />
+          <div className="w-full h-full" style={{ ...editorialImageStyle, opacity: loaded ? 1 : 0, transition: 'opacity 2s ease' }} />
         </div>
         {/* Gradient overlay */}
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, transparent 25%, transparent 55%, rgba(0,0,0,0.6) 100%)' }} />
@@ -293,7 +309,7 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
         </div>
       </div>
       <div
-        className="relative z-10 mx-6 overflow-hidden transition-all duration-[2000ms]"
+        className="relative z-10 overflow-hidden transition-all duration-[2000ms]"
         style={{ aspectRatio: '3/4', opacity: loaded ? 1 : 0, transform: loaded ? 'scale(1)' : 'scale(1.02)' }}
       >
         <div className="w-full h-full" style={getImageCropStyle(coverImage, invitation.media?.coverImageSettings || {})} />
@@ -628,6 +644,20 @@ function InterviewCard({ item, index, fonts, themeColors }: { item: any; index: 
               <div className="w-full h-full" style={getImageCropStyle(img, item.imageSettings?.[imgIdx] || {})} />
             </div>
           ))}
+        </div>
+      )}
+      {images.length >= 3 && (
+        <div className="mb-6 space-y-1">
+          <div className="w-full overflow-hidden" style={{ aspectRatio: '3/4' }}>
+            <div className="w-full h-full" style={getImageCropStyle(images[0], item.imageSettings?.[0] || {})} />
+          </div>
+          <div className="grid grid-cols-2 gap-1">
+            {images.slice(1, 3).map((img: string, imgIdx: number) => (
+              <div key={imgIdx} className="overflow-hidden" style={{ aspectRatio: '4/5' }}>
+                <div className="w-full h-full" style={getImageCropStyle(img, item.imageSettings?.[imgIdx + 1] || {})} />
+              </div>
+            ))}
+          </div>
         </div>
       )}
       {/* Question - Magazine headline style */}
@@ -1688,8 +1718,12 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     interviews: (content as any).interviews?.length ? (content as any).interviews : (content as any).content?.interviews || [],
     intro: content.intro,
     youtube: content.youtube,
-    accentTextColor: (content as any).colors?.accent,
-    bodyTextColor: (content as any).colors?.text,
+    customAccentColor: (content as any).customAccentColor,
+    customBgColor: (content as any).customBgColor,
+    customSectionBgColor: (content as any).customSectionBgColor,
+    sectionTextColor: (content as any).sectionTextColor,
+    accentTextColor: (content as any).accentTextColor || (content as any).colors?.accent,
+    bodyTextColor: (content as any).bodyTextColor || (content as any).colors?.text,
     deceasedDisplayStyle: content.deceasedDisplayStyle || 'flower',
     magazineIntroStyle: (content as any).magazineIntroStyle || 'cover',
     profileFrameShape: (content as any).profileFrameShape || 'circle',
@@ -1758,7 +1792,23 @@ function InvitationClientMagazineContent({
     setCurrentPage(skipIntro ? 'main' : 'cover')
   }, [skipIntro])
 
-  const themeColors = colorThemes[effectiveColorTheme]
+  const baseThemeColors = colorThemes[effectiveColorTheme]
+  // 사용자 커스텀 색상 오버라이드
+  const customAccent = (invitation as any)?.customAccentColor
+  const customBodyText = (invitation as any)?.bodyTextColor
+  const customAccentText = (invitation as any)?.accentTextColor
+  const customBgColor = (invitation as any)?.customBgColor
+  const customSectionBgColor = (invitation as any)?.customSectionBgColor
+  const customSectionText = (invitation as any)?.sectionTextColor
+  const themeColors: ColorConfig = {
+    ...baseThemeColors,
+    ...(customAccent ? { primary: customAccent, accent: customAccent, divider: customAccent + '60' } : {}),
+    ...(customBodyText ? { text: customBodyText, gray: customBodyText + 'CC' } : {}),
+    ...(customAccentText ? { highlight: customAccentText } : {}),
+    ...(customBgColor ? { background: customBgColor, cardBg: customBgColor } : {}),
+    ...(customSectionBgColor ? { sectionBg: customSectionBgColor } : {}),
+    ...(customSectionText ? { sectionText: customSectionText } : {}),
+  }
   const fonts = fontStyles[effectiveFontStyle]
 
   useEffect(() => { window.scrollTo(0, 0) }, [currentPage])
@@ -1832,31 +1882,36 @@ function InvitationClientMagazineContent({
                       {(() => {
                         const sectionBgMap: Record<string, 'background' | 'sectionBg'> = invitation.magazineSectionBgMap || MAGAZINE_DEFAULT_BG
                         const getBg = (id: string) => themeColors[sectionBgMap[id] || MAGAZINE_DEFAULT_BG[id] || 'sectionBg']
+                        const sectionTextColor = (themeColors as any).sectionText
+                        const getColors = (id: string) => {
+                          const isSec = (sectionBgMap[id] || MAGAZINE_DEFAULT_BG[id] || 'sectionBg') === 'sectionBg'
+                          return (sectionTextColor && isSec) ? { ...themeColors, text: sectionTextColor, gray: sectionTextColor + 'CC' } : themeColors
+                        }
                         return (invitation.magazineSectionOrder || ['meetTheCouple', 'featureInterview', 'photoSpread', 'youtube', 'theDetails', 'guidance', 'thankYou', 'contacts', 'guestbook', 'rsvp']).map((sectionId: string) => {
                           switch (sectionId) {
                             case 'meetTheCouple':
-                              return <MeetTheCouple key={sectionId} invitation={invitation} fonts={fonts} themeColors={themeColors} bgOverride={getBg(sectionId)} />
+                              return <MeetTheCouple key={sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />
                             case 'featureInterview':
-                              return <FeatureInterview key={sectionId} invitation={invitation} fonts={fonts} themeColors={themeColors} bgOverride={getBg(sectionId)} />
+                              return <FeatureInterview key={sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />
                             case 'photoSpread':
-                              return <PhotoSpread key={sectionId} invitation={invitation} fonts={fonts} themeColors={themeColors} onOpenLightbox={(idx) => { setLightboxIndex(idx); setLightboxOpen(true) }} bgOverride={getBg(sectionId)} />
+                              return <PhotoSpread key={sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} onOpenLightbox={(idx) => { setLightboxIndex(idx); setLightboxOpen(true) }} bgOverride={getBg(sectionId)} />
                             case 'youtube':
-                              return <YouTubeSection key={sectionId} invitation={invitation} fonts={fonts} themeColors={themeColors} bgOverride={getBg(sectionId)} />
+                              return <YouTubeSection key={sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />
                             case 'theDetails':
-                              return <TheDetails key={sectionId} invitation={invitation} fonts={fonts} themeColors={themeColors} bgOverride={getBg(sectionId)} />
+                              return <TheDetails key={sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />
                             case 'guidance':
-                              return <GuidanceInfoSection key={sectionId} invitation={invitation} fonts={fonts} themeColors={themeColors} bgOverride={getBg(sectionId)} />
+                              return <GuidanceInfoSection key={sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />
                             case 'thankYou':
-                              return <ThankYouSection key={sectionId} invitation={invitation} fonts={fonts} themeColors={themeColors} bgOverride={getBg(sectionId)} />
+                              return <ThankYouSection key={sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />
                             case 'contacts':
                               return (invitation as any).magazineLayout?.bankAccountsInMain !== false
-                                ? <ContactsSection key={sectionId} invitation={invitation} fonts={fonts} themeColors={themeColors} bgOverride={getBg(sectionId)} />
+                                ? <ContactsSection key={sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />
                                 : null
                             case 'guestbook':
-                              return <GuestbookSection key={sectionId} invitation={invitation} invitationId={dbInvitation.id} fonts={fonts} themeColors={themeColors} isSample={isSample} bgOverride={getBg(sectionId)} />
+                              return <GuestbookSection key={sectionId} invitation={invitation} invitationId={dbInvitation.id} fonts={fonts} themeColors={getColors(sectionId)} isSample={isSample} bgOverride={getBg(sectionId)} />
                             case 'rsvp':
                               return (invitation as any).magazineLayout?.rsvpInMain !== false
-                                ? <RsvpSection key={sectionId} invitation={invitation} invitationId={dbInvitation.id} fonts={fonts} themeColors={themeColors} bgOverride={getBg(sectionId)} />
+                                ? <RsvpSection key={sectionId} invitation={invitation} invitationId={dbInvitation.id} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />
                                 : null
                             default:
                               return null

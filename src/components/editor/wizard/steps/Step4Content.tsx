@@ -539,7 +539,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                   onChange={(images) => updateNestedField('groom.profile.images', images)}
                   maxImages={3}
                   placeholder="사진 추가"
-                  aspectRatio="aspect-square"
+                  aspectRatio="aspect-[3/4]"
                 />
                 {/* 이미지 크롭 조정 */}
                 {(invitation.groom.profile.images?.filter(img => img)?.length || 0) > 0 && (
@@ -555,7 +555,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                             imageUrl={imageUrl}
                             settings={settings}
                             onUpdate={(s) => updateProfileImageSettings('groom', imgIndex, s)}
-                            aspectRatio={4/5}
+                            aspectRatio={3/4}
                             containerWidth={140}
                             colorClass="blue"
                           />
@@ -643,7 +643,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                   onChange={(images) => updateNestedField('bride.profile.images', images)}
                   maxImages={3}
                   placeholder="사진 추가"
-                  aspectRatio="aspect-square"
+                  aspectRatio="aspect-[3/4]"
                 />
                 {/* 이미지 크롭 조정 */}
                 {(invitation.bride.profile.images?.filter(img => img)?.length || 0) > 0 && (
@@ -659,7 +659,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                             imageUrl={imageUrl}
                             settings={settings}
                             onUpdate={(s) => updateProfileImageSettings('bride', imgIndex, s)}
-                            aspectRatio={4/5}
+                            aspectRatio={3/4}
                             containerWidth={140}
                             colorClass="pink"
                           />
@@ -1210,7 +1210,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                         onChange={(images) => updateNestedField('whyWeChose.groom.images', images)}
                         maxImages={2}
                         placeholder="사진 추가"
-                        aspectRatio="aspect-[4/5]"
+                        aspectRatio="aspect-[3/4]"
                       />
                       {/* 이미지 크롭 조정 */}
                       {(whyWeChose.groom?.images?.filter((img: string) => img)?.length || 0) > 0 && (
@@ -1226,7 +1226,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                                   imageUrl={imageUrl}
                                   settings={settings}
                                   onUpdate={(s) => updateWhyWeChoseImageSettings('groom', imgIndex, s)}
-                                  aspectRatio={4/5}
+                                  aspectRatio={3/4}
                                   containerWidth={140}
                                   colorClass="blue"
                                 />
@@ -1294,7 +1294,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                         onChange={(images) => updateNestedField('whyWeChose.bride.images', images)}
                         maxImages={2}
                         placeholder="사진 추가"
-                        aspectRatio="aspect-[4/5]"
+                        aspectRatio="aspect-[3/4]"
                       />
                       {/* 이미지 크롭 조정 */}
                       {(whyWeChose.bride?.images?.filter((img: string) => img)?.length || 0) > 0 && (
@@ -1310,7 +1310,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                                   imageUrl={imageUrl}
                                   settings={settings}
                                   onUpdate={(s) => updateWhyWeChoseImageSettings('bride', imgIndex, s)}
-                                  aspectRatio={4/5}
+                                  aspectRatio={3/4}
                                   containerWidth={140}
                                   colorClass="pink"
                                 />
@@ -1645,7 +1645,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                     onChange={(images) => updateNestedField(`content.interviews.${index}.images`, images)}
                     maxImages={isMagazine ? 3 : 2}
                     placeholder="사진 추가"
-                    aspectRatio="aspect-[4/5]"
+                    aspectRatio="aspect-[3/4]"
                   />
                   {/* 이미지 크롭 조정 */}
                   {(interview.images?.filter(img => img)?.length || 0) > 0 && (
@@ -1661,7 +1661,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                               imageUrl={imageUrl}
                               settings={settings}
                               onUpdate={(s) => updateInterviewImageSettings(index, imgIndex, s)}
-                              aspectRatio={4/5}
+                              aspectRatio={3/4}
                               containerWidth={140}
                               colorClass="amber"
                             />

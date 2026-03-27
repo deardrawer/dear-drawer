@@ -173,9 +173,9 @@ export default function IntroAnimation({
   // cover 효과를 위해 더 큰 스케일 사용 (비율 유지)
   const baseScale = Math.max(scaleX, scaleY)
 
-  // 사용자 정의 스케일 추가 (기본 100)
+  // 사용자 정의 스케일: 크롭이 있으면 크롭 스케일만 사용 (getImageCropStyle과 동일)
   const userScale = settings.backgroundScale || 100
-  const finalScale = baseScale * (userScale / 100)
+  const finalScale = hasCrop ? baseScale : baseScale * (userScale / 100)
 
   // 위치 계산: 크롭이 있으면 크롭 시작점 기준, 없으면 coverImageSettings의 position 사용
   const positionX = hasCrop ? (cropX / (1 - cropWidth)) * 100 : 50

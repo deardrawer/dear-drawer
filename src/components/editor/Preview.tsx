@@ -96,6 +96,9 @@ function RecordPreviewWrapper({ invitation, skipIntro }: { invitation: Invitatio
     profileFrameShape: (invitation as any).profileFrameShape,
     magazineSectionOrder: invitation.magazineSectionOrder,
     magazineSectionBgMap: invitation.magazineSectionBgMap,
+    accentTextColor: invitation.accentTextColor,
+    bodyTextColor: invitation.bodyTextColor,
+    highlightColor: invitation.highlightColor,
   }), [invitation])
 
   const invitationData = useMemo(() => ({
@@ -164,6 +167,9 @@ function InvitationPreviewWrapper({ invitation, skipIntro, onIntroScreenChange }
     navStyle: invitation.navStyle,
     magazineSectionOrder: invitation.magazineSectionOrder,
     magazineSectionBgMap: invitation.magazineSectionBgMap,
+    customBgColor: (invitation as any).customBgColor,
+    customSectionBgColor: (invitation as any).customSectionBgColor,
+    sectionTextColor: (invitation as any).sectionTextColor,
   }), [invitation])
 
   const invitationData = useMemo(() => ({

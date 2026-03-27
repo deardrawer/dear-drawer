@@ -127,7 +127,7 @@ export default function WhyWeChoseEditor() {
                     <div key={imgIndex} className="relative">
                       {imageUrl ? (
                         <div className="relative group">
-                          <div className="aspect-square rounded-lg overflow-hidden border border-pink-200">
+                          <div className="aspect-[3/4] rounded-lg overflow-hidden border border-pink-200">
                             <Image
                               src={imageUrl}
                               alt={`${label} ${imgIndex + 1}`}
@@ -147,7 +147,7 @@ export default function WhyWeChoseEditor() {
                           </button>
                         </div>
                       ) : (
-                        <label className={`aspect-square border-2 border-dashed border-pink-200 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-pink-400 transition-colors bg-white/50 ${uploadingImages.has(uploadKey) ? 'opacity-50' : ''}`}>
+                        <label className={`aspect-[3/4] border-2 border-dashed border-pink-200 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-pink-400 transition-colors bg-white/50 ${uploadingImages.has(uploadKey) ? 'opacity-50' : ''}`}>
                           {uploadingImages.has(uploadKey) ? (
                             <>
                               <div className="w-5 h-5 border-2 border-pink-300 border-t-pink-600 rounded-full animate-spin" />
@@ -192,7 +192,7 @@ export default function WhyWeChoseEditor() {
                           imageUrl={imageUrl}
                           settings={settings}
                           onUpdate={(newSettings) => updateImageSettings(side, imgIndex, newSettings)}
-                          aspectRatio={1}
+                          aspectRatio={3/4}
                           containerWidth={140}
                           colorClass="pink"
                         />

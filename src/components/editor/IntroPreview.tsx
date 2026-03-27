@@ -17,6 +17,10 @@ interface IntroPreviewProps {
   weddingDate?: string
   weddingTime?: string
   venueName?: string
+  // 매거진 인트로 스타일
+  magazineIntroStyle?: 'cover' | 'clean' | 'editorial'
+  groomName?: string
+  brideName?: string
 }
 
 // 보케(빛 입자) 컴포넌트
@@ -147,6 +151,9 @@ export default function IntroPreview({
   weddingDate,
   weddingTime,
   venueName,
+  magazineIntroStyle,
+  groomName,
+  brideName,
 }: IntroPreviewProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [key, setKey] = useState(0)
@@ -196,9 +203,9 @@ export default function IntroPreview({
   // cover 효과를 위해 더 큰 스케일 사용 (비율 유지)
   const baseScale = Math.max(scaleX, scaleY)
 
-  // 사용자 정의 스케일 추가 (기본 100)
+  // 사용자 정의 스케일: 크롭이 있으면 크롭 스케일만 사용 (실제 페이지 getImageCropStyle과 동일)
   const userScale = settings.backgroundScale || 100
-  const finalScale = baseScale * (userScale / 100)
+  const finalScale = hasCrop ? baseScale : baseScale * (userScale / 100)
 
   // 위치 계산: 크롭 시작점 기준
   const positionX = hasCrop ? (cropX / (1 - cropWidth)) * 100 : (settings.backgroundPositionX ?? 50)

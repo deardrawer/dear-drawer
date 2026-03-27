@@ -99,6 +99,9 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
   const currentAccentColor = accentTextColor || defaultAccentColor
   const currentBodyColor = bodyTextColor || defaultBodyColor
 
+  // Magazine 전용 상태
+  const currentMagazineAccent = invitation.customAccentColor || defaultAccentColor
+
   // 테마 변경 핸들러 (색상들도 함께 초기화)
   const handleThemeChange = (themeId: string) => {
     updateField('colorTheme', themeId as typeof colorTheme)
@@ -271,6 +274,109 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
                   </button>
                 )
               })}
+            </div>
+          </section>
+
+          {/* Record 포인트 컬러 */}
+          <section className="space-y-4">
+            <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+              <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
+                <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
+                <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
+                <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
+                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" />
+              </svg>
+              포인트 컬러
+            </h3>
+            <p className="text-sm text-blue-600">제목, 구분선, 섹션 라벨에 사용될 포인트 색상을 선택하세요</p>
+
+            <div className="flex flex-wrap gap-3 items-center">
+              {ACCENT_PRESETS.map((preset) => (
+                <button
+                  key={preset.color}
+                  onClick={() => updateField('customAccentColor', preset.color)}
+                  className="relative group flex flex-col items-center gap-1"
+                  title={preset.label}
+                >
+                  <div
+                    className={`w-10 h-10 rounded-full border-2 transition-all ${
+                      currentRecordAccent === preset.color
+                        ? 'border-gray-900 ring-2 ring-gray-900/20 scale-110'
+                        : 'border-gray-200 hover:border-gray-400 hover:scale-105'
+                    }`}
+                    style={{ backgroundColor: preset.color }}
+                  />
+                  <span className="text-[10px] text-gray-500">{preset.label}</span>
+                </button>
+              ))}
+              <div className="flex flex-col items-center gap-1">
+                <label className="relative cursor-pointer">
+                  <div
+                    className={`w-10 h-10 rounded-full border-2 transition-all overflow-hidden ${
+                      !ACCENT_PRESETS.some(p => p.color === currentRecordAccent)
+                        ? 'border-gray-900 ring-2 ring-gray-900/20 scale-110'
+                        : 'border-gray-200 hover:border-gray-400 hover:scale-105'
+                    }`}
+                    style={{
+                      background: !ACCENT_PRESETS.some(p => p.color === currentRecordAccent)
+                        ? currentRecordAccent
+                        : 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)',
+                    }}
+                  />
+                  <input
+                    type="color"
+                    value={currentRecordAccent}
+                    onChange={(e) => updateField('customAccentColor', e.target.value)}
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                  />
+                </label>
+                <span className="text-[10px] text-gray-500">커스텀</span>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-lg border border-gray-200" style={{ backgroundColor: '#FAF7F4' }}>
+              <div className="flex items-center gap-3 justify-center">
+                <div className="w-10 h-10 rounded-full border-2 flex items-center justify-center" style={{ borderColor: currentRecordAccent }}>
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: currentRecordAccent }} />
+                </div>
+                <div>
+                  <div className="w-8 h-0.5" style={{ backgroundColor: currentRecordAccent }} />
+                  <span className="text-[10px] tracking-[3px] mt-1 block" style={{ color: currentRecordAccent }}>PREVIEW</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Record 텍스트 색상 */}
+          <section className="space-y-4">
+            <div className="p-4 bg-gray-50 rounded-xl space-y-4">
+              <h4 className="text-sm font-medium text-gray-800">텍스트 색상 설정</h4>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-700">본문 색상</p>
+                  <p className="text-xs text-gray-500">청첩장 전체 글자색</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input type="color" value={currentBodyColor} onChange={(e) => updateField('bodyTextColor', e.target.value)} className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300" style={{ padding: 0 }} />
+                  <span className="text-xs text-gray-600 font-mono w-16">{currentBodyColor}</span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-700">강조 색상</p>
+                  <p className="text-xs text-gray-500">**텍스트** 형식 강조색</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input type="color" value={currentAccentColor} onChange={(e) => updateField('accentTextColor', e.target.value)} className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300" style={{ padding: 0 }} />
+                  <span className="text-xs text-gray-600 font-mono w-16">{currentAccentColor}</span>
+                </div>
+              </div>
+              <div className="p-3 bg-white rounded-lg border border-gray-200">
+                <p className="text-sm" style={{ color: currentBodyColor }}>
+                  본문 텍스트와 <span style={{ color: currentAccentColor, fontWeight: 500 }}>강조된 텍스트</span>를 비교해 보세요
+                </p>
+              </div>
             </div>
           </section>
         </>
@@ -455,8 +561,142 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
           })}
         </div>
 
-        {/* 텍스트 색상 커스텀 (매거진 제외 - 매거진은 테마 색상으로 자동 적용) */}
-        {!isMagazine && (
+        {/* Magazine 포인트 컬러 */}
+        {isMagazine && (
+          <div className="mt-4 space-y-4">
+            <h4 className="text-sm font-medium text-gray-800 flex items-center gap-2">
+              <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
+                <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
+                <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
+                <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
+                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" />
+              </svg>
+              커스텀 색상 설정
+            </h4>
+            <p className="text-sm text-blue-600">포인트 컬러, 배경, 텍스트 색상을 자유롭게 커스텀할 수 있습니다</p>
+
+            <div className="flex flex-wrap gap-3 items-center">
+              {ACCENT_PRESETS.map((preset) => (
+                <button
+                  key={preset.color}
+                  onClick={() => updateField('customAccentColor', preset.color)}
+                  className="relative group flex flex-col items-center gap-1"
+                  title={preset.label}
+                >
+                  <div
+                    className={`w-10 h-10 rounded-full border-2 transition-all ${
+                      currentMagazineAccent === preset.color
+                        ? 'border-gray-900 ring-2 ring-gray-900/20 scale-110'
+                        : 'border-gray-200 hover:border-gray-400 hover:scale-105'
+                    }`}
+                    style={{ backgroundColor: preset.color }}
+                  />
+                  <span className="text-[10px] text-gray-500">{preset.label}</span>
+                </button>
+              ))}
+              <div className="flex flex-col items-center gap-1">
+                <label className="relative cursor-pointer">
+                  <div
+                    className={`w-10 h-10 rounded-full border-2 transition-all overflow-hidden ${
+                      !ACCENT_PRESETS.some(p => p.color === currentMagazineAccent)
+                        ? 'border-gray-900 ring-2 ring-gray-900/20 scale-110'
+                        : 'border-gray-200 hover:border-gray-400 hover:scale-105'
+                    }`}
+                    style={{
+                      background: !ACCENT_PRESETS.some(p => p.color === currentMagazineAccent)
+                        ? currentMagazineAccent
+                        : 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)',
+                    }}
+                  />
+                  <input
+                    type="color"
+                    value={currentMagazineAccent}
+                    onChange={(e) => updateField('customAccentColor', e.target.value)}
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                  />
+                </label>
+                <span className="text-[10px] text-gray-500">커스텀</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="p-4 rounded-lg border border-gray-200 bg-white flex-1">
+                <div className="flex items-center gap-3 justify-center">
+                  <div className="w-12 h-0.5" style={{ backgroundColor: currentMagazineAccent }} />
+                  <span className="text-[10px] tracking-[4px] uppercase" style={{ color: currentMagazineAccent }}>Preview</span>
+                  <div className="w-12 h-0.5" style={{ backgroundColor: currentMagazineAccent }} />
+                </div>
+              </div>
+              {invitation.customAccentColor && (
+                <button
+                  type="button"
+                  onClick={() => updateField('customAccentColor', undefined as unknown as string)}
+                  className="text-xs text-blue-600 hover:text-blue-700 whitespace-nowrap"
+                >
+                  초기화
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* 매거진 배경 컬러 (포인트 컬러 하단) */}
+        {isMagazine && (
+          <div className="mt-4 space-y-3">
+            <h4 className="text-sm font-medium text-gray-800">배경 색상</h4>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-700">전체 배경</p>
+                <p className="text-xs text-gray-500">전체 배경 컬러</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={(invitation as any).customBgColor || '#FFFFFF'}
+                  onChange={(e) => updateField('customBgColor' as any, e.target.value)}
+                  className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300"
+                  style={{ padding: 0 }}
+                />
+                <span className="text-xs text-gray-600 font-mono w-16">{(invitation as any).customBgColor || '#FFFFFF'}</span>
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-700">섹션 배경</p>
+                <p className="text-xs text-gray-500">구분 섹션 배경 컬러</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={(invitation as any).customSectionBgColor || '#F5F5F5'}
+                  onChange={(e) => updateField('customSectionBgColor' as any, e.target.value)}
+                  className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300"
+                  style={{ padding: 0 }}
+                />
+                <span className="text-xs text-gray-600 font-mono w-16">{(invitation as any).customSectionBgColor || '#F5F5F5'}</span>
+              </div>
+            </div>
+            <div className="p-3 rounded-lg border border-gray-200 flex gap-2">
+              <div className="flex-1 h-8 rounded" style={{ backgroundColor: (invitation as any).customBgColor || '#FFFFFF', border: '1px solid #eee' }} />
+              <div className="flex-1 h-8 rounded" style={{ backgroundColor: (invitation as any).customSectionBgColor || '#F5F5F5', border: '1px solid #eee' }} />
+            </div>
+            {((invitation as any).customBgColor || (invitation as any).customSectionBgColor) && (
+              <button
+                type="button"
+                onClick={() => {
+                  updateField('customBgColor' as any, undefined as unknown as string)
+                  updateField('customSectionBgColor' as any, undefined as unknown as string)
+                }}
+                className="text-xs text-blue-600 hover:text-blue-700"
+              >
+                배경 색상 초기화
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* 텍스트 색상 커스텀 */}
         <div className="mt-4 p-4 bg-gray-50 rounded-xl space-y-4">
           <h4 className="text-sm font-medium text-gray-800">텍스트 색상 설정</h4>
           <p className="text-[11px] text-gray-400 leading-relaxed">
@@ -467,8 +707,8 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
           {/* 본문 텍스트 색상 */}
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-700">본문 색상</p>
-              <p className="text-xs text-gray-500">청첩장 전체 글자색</p>
+              <p className="text-sm text-gray-700">{isMagazine ? '전체 배경 텍스트' : '본문 색상'}</p>
+              <p className="text-xs text-gray-500">{isMagazine ? '메인 배경 위 글자색' : '청첩장 전체 글자색'}</p>
             </div>
             <div className="flex items-center gap-2">
               <input
@@ -482,47 +722,86 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
             </div>
           </div>
 
-          {/* 강조 텍스트 색상 */}
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-700">강조 색상</p>
-              <p className="text-xs text-gray-500">**텍스트** 형식 강조색</p>
+          {/* 매거진 섹션 배경 텍스트 색상 */}
+          {isMagazine && (
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-700">섹션 배경 텍스트</p>
+                <p className="text-xs text-gray-500">섹션 배경 위 글자색</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={(invitation as any).sectionTextColor || currentBodyColor}
+                  onChange={(e) => updateField('sectionTextColor' as any, e.target.value)}
+                  className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300"
+                  style={{ padding: 0 }}
+                />
+                <span className="text-xs text-gray-600 font-mono w-16">{(invitation as any).sectionTextColor || currentBodyColor}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="color"
-                value={currentAccentColor}
-                onChange={(e) => updateField('accentTextColor', e.target.value)}
-                className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300"
-                style={{ padding: 0 }}
-              />
-              <span className="text-xs text-gray-600 font-mono w-16">{currentAccentColor}</span>
-            </div>
-          </div>
+          )}
 
-          {/* 미리보기 */}
-          <div className="p-3 bg-white rounded-lg border border-gray-200">
-            <p className="text-sm" style={{ color: currentBodyColor }}>
-              본문 텍스트와 <span style={{ color: currentAccentColor, fontWeight: 500 }}>강조된 텍스트</span>를 비교해 보세요
-            </p>
-          </div>
+          {/* 강조 텍스트 색상 (매거진 제외) */}
+          {!isMagazine && (
+            <>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-700">강조 색상</p>
+                  <p className="text-xs text-gray-500">**텍스트** 형식 강조색</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={currentAccentColor}
+                    onChange={(e) => updateField('accentTextColor', e.target.value)}
+                    className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300"
+                    style={{ padding: 0 }}
+                  />
+                  <span className="text-xs text-gray-600 font-mono w-16">{currentAccentColor}</span>
+                </div>
+              </div>
+
+              {/* 미리보기 */}
+              <div className="p-3 bg-white rounded-lg border border-gray-200">
+                <p className="text-sm" style={{ color: currentBodyColor }}>
+                  본문 텍스트와 <span style={{ color: currentAccentColor, fontWeight: 500 }}>강조된 텍스트</span>를 비교해 보세요
+                </p>
+              </div>
+            </>
+          )}
+
+          {/* 매거진 미리보기 */}
+          {isMagazine && (
+            <div className="p-3 rounded-lg border border-gray-200 flex gap-2">
+              <div className="flex-1 p-2 rounded text-center text-xs" style={{ backgroundColor: (invitation as any).customBgColor || '#FFFFFF', color: currentBodyColor, border: '1px solid #eee' }}>
+                전체 배경
+              </div>
+              <div className="flex-1 p-2 rounded text-center text-xs" style={{ backgroundColor: (invitation as any).customSectionBgColor || '#F5F5F5', color: (invitation as any).sectionTextColor || currentBodyColor, border: '1px solid #eee' }}>
+                섹션 배경
+              </div>
+            </div>
+          )}
 
           {/* 기본값 복원 버튼 */}
           {((accentTextColor && accentTextColor !== defaultAccentColor) ||
-            (bodyTextColor && bodyTextColor !== defaultBodyColor)) && (
+            (bodyTextColor && bodyTextColor !== defaultBodyColor) ||
+            (isMagazine && (invitation as any).sectionTextColor)) && (
             <button
               type="button"
               onClick={() => {
                 updateField('accentTextColor', undefined as unknown as string)
                 updateField('bodyTextColor', undefined as unknown as string)
+                if (isMagazine) {
+                  updateField('sectionTextColor' as any, undefined as unknown as string)
+                }
               }}
               className="text-xs text-blue-600 hover:text-blue-700"
             >
-              테마 기본 색상으로 복원
+              텍스트 색상 초기화
             </button>
           )}
         </div>
-        )}
       </section>
       )}
 

@@ -1986,6 +1986,9 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     design: content.design || {}, bgm: content.bgm || {},
     guidance: content.guidance || {}, intro: content.intro,
     youtube: content.youtube,
+    customAccentColor: (content as any).customAccentColor,
+    accentTextColor: (content as any).accentTextColor,
+    bodyTextColor: (content as any).bodyTextColor,
     deceasedDisplayStyle: content.deceasedDisplayStyle || 'flower',
     profileFrameShape: (content as any).profileFrameShape || 'circle',
     magazineSectionOrder: content.magazineSectionOrder,
@@ -2046,7 +2049,17 @@ function InvitationClientRecordContent({
   const [lightboxIndex, setLightboxIndex] = useState(0)
   const [isAudioPlaying, setIsAudioPlaying] = useState(false)
 
-  const tc = colorThemes[effectiveColorTheme]
+  const baseTc = colorThemes[effectiveColorTheme]
+  // 사용자 커스텀 색상 오버라이드
+  const customAccent = (invitation as any)?.customAccentColor
+  const customBodyText = (invitation as any)?.bodyTextColor
+  const customAccentText = (invitation as any)?.accentTextColor
+  const tc: ColorConfig = {
+    ...baseTc,
+    ...(customAccent ? { primary: customAccent, accent: customAccent, divider: customAccent + '60' } : {}),
+    ...(customBodyText ? { text: customBodyText, gray: customBodyText + 'CC' } : {}),
+    ...(customAccentText ? { highlight: customAccentText } : {}),
+  }
   const fonts = fontStyles[effectiveFontStyle]
 
   // Track current track via scroll

@@ -1970,7 +1970,7 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     colorTheme: (content.colorTheme || 'record-coral') as ColorTheme,
     fontStyle: (content.fontStyle || 'modern') as FontStyle,
     groom: content.groom || {}, bride: content.bride || {},
-    wedding: { ...(content.wedding || {}), timeDisplay: content.wedding?.timeDisplay || invitation.wedding_time || '' }, relationship: content.relationship || {},
+    wedding: { ...(content.wedding || {}), timeDisplay: content.wedding?.timeDisplay || invitation.wedding_time || formatTimeToDisplay(content.wedding?.time) || '' }, relationship: content.relationship || {},
     content: content.content || {}, gallery: content.gallery || {},
     media: content.media || {}, rsvpEnabled: content.rsvpEnabled ?? true,
     rsvpDeadline: content.rsvpDeadline || '', rsvpAllowGuestCount: content.rsvpAllowGuestCount ?? true,
@@ -2001,6 +2001,16 @@ const RECORD_DEFAULT_BG: Record<string, 'background' | 'sectionBg'> = {
   gift: 'background',
   fanMail: 'background',
   rsvp: 'background',
+}
+
+// ===== Time Format Helper =====
+function formatTimeToDisplay(time?: string): string {
+  if (!time) return ''
+  const [h, m] = time.split(':').map(Number)
+  if (isNaN(h)) return ''
+  const p = h < 12 ? '오전' : '오후'
+  const dh = h === 0 ? 12 : h > 12 ? h - 12 : h
+  return m === 0 ? `${p} ${dh}시` : `${p} ${dh}시 ${m}분`
 }
 
 // ===== Main Component =====

@@ -2313,8 +2313,8 @@ function transformToDisplayData(dbInvitation: Invitation, content: InvitationCon
     bride: content.bride || mockInvitation.bride,
     wedding: {
       ...(content.wedding || mockInvitation.wedding),
-      // DB wedding_time fallback: content에 timeDisplay가 없으면 DB 값 사용
-      timeDisplay: content.wedding?.timeDisplay || dbInvitation.wedding_time || (content.wedding || mockInvitation.wedding).timeDisplay || '',
+      // fallback 체인: content.timeDisplay → DB wedding_time → content.time 변환
+      timeDisplay: content.wedding?.timeDisplay || dbInvitation.wedding_time || formatTimeToDisplay(content.wedding?.time) || '',
     },
     relationship: content.relationship || mockInvitation.relationship,
     content: content.content || mockInvitation.content,
@@ -2337,6 +2337,16 @@ function transformToDisplayData(dbInvitation: Invitation, content: InvitationCon
     deceasedDisplayStyle: content.deceasedDisplayStyle || mockInvitation.deceasedDisplayStyle,
     profileOrder: (content as any).profileOrder || 'groom-first',
   } as unknown as DisplayInvitation
+}
+
+/** "14:00" → "오후 2시", "09:30" → "오전 9시 30분" */
+function formatTimeToDisplay(time?: string): string {
+  if (!time) return ''
+  const [h, m] = time.split(':').map(Number)
+  if (isNaN(h)) return ''
+  const p = h < 12 ? '오전' : '오후'
+  const dh = h === 0 ? 12 : h > 12 ? h - 12 : h
+  return m === 0 ? `${p} ${dh}시` : `${p} ${dh}시 ${m}분`
 }
 
 function formatDateDisplay(d: string): string {

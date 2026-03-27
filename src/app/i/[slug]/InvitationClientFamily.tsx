@@ -2674,7 +2674,7 @@ function transformToDisplayData(dbInvitation: Invitation, content: InvitationCon
     bride: content.bride || mockInvitation.bride,
     wedding: {
       ...(content.wedding || mockInvitation.wedding),
-      timeDisplay: content.wedding?.timeDisplay || dbInvitation.wedding_time || (content.wedding || mockInvitation.wedding).timeDisplay || '',
+      timeDisplay: content.wedding?.timeDisplay || dbInvitation.wedding_time || formatTimeToDisplay(content.wedding?.time) || '',
     },
     relationship: content.relationship || mockInvitation.relationship,
     content: content.content || mockInvitation.content,
@@ -2701,6 +2701,15 @@ function transformToDisplayData(dbInvitation: Invitation, content: InvitationCon
     deceasedDisplayStyle: content.deceasedDisplayStyle || mockInvitation.deceasedDisplayStyle,
     whyWeChoseTextStyle: content.whyWeChoseTextStyle,
   } as unknown as DisplayInvitation
+}
+
+function formatTimeToDisplay(time?: string): string {
+  if (!time) return ''
+  const [h, m] = time.split(':').map(Number)
+  if (isNaN(h)) return ''
+  const p = h < 12 ? '오전' : '오후'
+  const dh = h === 0 ? 12 : h > 12 ? h - 12 : h
+  return m === 0 ? `${p} ${dh}시` : `${p} ${dh}시 ${m}분`
 }
 
 function formatDateDisplay(d: string): string {

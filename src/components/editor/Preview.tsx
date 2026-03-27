@@ -50,7 +50,7 @@ function getAccentTint(hex: string, whiteMix: number): string {
   return `#${tr.toString(16).padStart(2, '0')}${tg.toString(16).padStart(2, '0')}${tb.toString(16).padStart(2, '0')}`
 }
 
-type FontStyle = 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury'
+type FontStyle = 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury' | 'gulim' | 'adulthand' | 'neathand' | 'roundhand' | 'roundgothic' | 'suit' | 'myungjo'
 interface FontConfig { display: string; displayKr: string; body: string }
 
 const fontStyles: Record<FontStyle, FontConfig> = {
@@ -59,6 +59,13 @@ const fontStyles: Record<FontStyle, FontConfig> = {
   romantic: { display: "'Lora', serif", displayKr: "'Okticon', serif", body: "'Okticon', serif" },
   contemporary: { display: "'Cinzel', serif", displayKr: "'JeonnamEducationBarun', sans-serif", body: "'JeonnamEducationBarun', sans-serif" },
   luxury: { display: "'EB Garamond', serif", displayKr: "'ELandChoice', serif", body: "'ELandChoice', serif" },
+  gulim: { display: "'EB Garamond', serif", displayKr: "'JoseonGulim', serif", body: "'JoseonGulim', serif" },
+  adulthand: { display: "'Montserrat', sans-serif", displayKr: "'GangwonEducationModuche', sans-serif", body: "'GangwonEducationModuche', sans-serif" },
+  neathand: { display: "'Montserrat', sans-serif", displayKr: "'OmuDaye', sans-serif", body: "'OmuDaye', sans-serif" },
+  roundhand: { display: "'Montserrat', sans-serif", displayKr: "'OngleipKonkon', sans-serif", body: "'OngleipKonkon', sans-serif" },
+  roundgothic: { display: "'Montserrat', sans-serif", displayKr: "'NanumSquareRound', sans-serif", body: "'NanumSquareRound', sans-serif" },
+  suit: { display: "'Montserrat', sans-serif", displayKr: "'Suit', sans-serif", body: "'Suit', sans-serif" },
+  myungjo: { display: "'Montserrat', sans-serif", displayKr: "'ChosunIlboMyungjo', serif", body: "'ChosunIlboMyungjo', serif" },
 }
 
 // Record Preview Wrapper - Zustand data → InvitationClientRecord props

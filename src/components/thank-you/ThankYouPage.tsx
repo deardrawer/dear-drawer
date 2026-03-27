@@ -13,7 +13,7 @@ import { SAMPLE_DATA } from "./types";
 
 /* ───────── font mapping ───────── */
 
-export type ThankYouFontStyle = "classic" | "modern" | "romantic" | "contemporary" | "luxury";
+export type ThankYouFontStyle = "classic" | "modern" | "romantic" | "contemporary" | "luxury" | "gulim" | "adulthand" | "neathand" | "roundhand" | "roundgothic" | "suit" | "myungjo";
 
 const FONT_MAP: Record<ThankYouFontStyle, { korean: string; english: string }> = {
   classic: {
@@ -36,7 +36,52 @@ const FONT_MAP: Record<ThankYouFontStyle, { korean: string; english: string }> =
     korean: "'ELandChoice', var(--font-noto-serif-kr), serif",
     english: "var(--font-montserrat), sans-serif",
   },
+  gulim: {
+    korean: "'JoseonGulim', var(--font-noto-serif-kr), serif",
+    english: "var(--font-montserrat), sans-serif",
+  },
+  adulthand: {
+    korean: "'GangwonEducationModuche', sans-serif",
+    english: "var(--font-montserrat), sans-serif",
+  },
+  neathand: {
+    korean: "'OmuDaye', sans-serif",
+    english: "var(--font-montserrat), sans-serif",
+  },
+  roundhand: {
+    korean: "'OngleipKonkon', sans-serif",
+    english: "var(--font-montserrat), sans-serif",
+  },
+  roundgothic: {
+    korean: "'NanumSquareRound', sans-serif",
+    english: "var(--font-montserrat), sans-serif",
+  },
+  suit: {
+    korean: "'Suit', sans-serif",
+    english: "var(--font-montserrat), sans-serif",
+  },
+  myungjo: {
+    korean: "'ChosunIlboMyungjo', serif",
+    english: "var(--font-montserrat), sans-serif",
+  },
 };
+
+/* ───────── accent → light bg tint ───────── */
+
+function accentToBg(hex: string, opacity = 0.07): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${opacity})`;
+}
+
+function accentGradient(hex: string): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  // soft warm wash: light cream top → richer peach bottom (like watercolor paper)
+  return `linear-gradient(170deg, rgba(${r},${g},${b},0.12) 0%, rgba(${r},${g},${b},0.18) 40%, rgba(${r},${g},${b},0.28) 100%)`;
+}
 
 /* ───────── cropped image ───────── */
 
@@ -266,7 +311,7 @@ export default function ThankYouPage({
         {/* ── BG: background behind shrinking photo ── */}
         <motion.div
           className="absolute inset-0"
-          style={{ opacity: bgOpacity, backgroundColor: "#F9F8F6" }}
+          style={{ opacity: bgOpacity, background: accentGradient(accentColor) }}
         >
           {data.backgroundImage && (
             <BackgroundImage
@@ -676,7 +721,7 @@ function ReducedMotionView({ data, fontStyle = "classic", accentColor = "#B89878
   return (
     <div
       className="mx-auto flex min-h-dvh flex-col items-center justify-center px-8 py-16"
-      style={{ maxWidth: 430, backgroundColor: "#F9F8F6" }}
+      style={{ maxWidth: 430, background: accentGradient(accentColor) }}
     >
       <div style={{
         background: "#FFFFFF",

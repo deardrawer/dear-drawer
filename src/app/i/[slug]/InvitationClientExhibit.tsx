@@ -2567,6 +2567,24 @@ function GalleryLightbox({
 }
 
 // ============================================================
+// Font mapping
+// ============================================================
+const FONT_MAP: Record<string, string> = {
+  classic: "'Ridibatang', serif",
+  modern: "-apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif",
+  romantic: "'Okticon', serif",
+  contemporary: "'JeonnamEducationBarun', sans-serif",
+  luxury: "'ELandChoice', serif",
+  gulim: "'JoseonGulim', serif",
+  adulthand: "'GangwonEducationModuche', sans-serif",
+  neathand: "'OmuDaye', sans-serif",
+  roundhand: "'OngleipKonkon', sans-serif",
+  roundgothic: "'NanumSquareRound', sans-serif",
+  suit: "'Suit', sans-serif",
+  myungjo: "'ChosunIlboMyungjo', serif",
+}
+
+// ============================================================
 // Main Component
 // ============================================================
 function InvitationClientExhibitContent({
@@ -2693,6 +2711,9 @@ function InvitationClientExhibitContent({
   // Guestbook questions
   const guestbookQuestions = content?.content?.guestbookQuestions || ['축하 메시지를 남겨주세요']
 
+  // Font style
+  const fontFamily = FONT_MAP[content?.fontStyle || 'modern'] || FONT_MAP.modern
+
   // Section visibility
   const showGuestbook = content?.sectionVisibility?.guestbook !== false
   const showGuidance = content?.sectionVisibility?.guidance !== false
@@ -2712,7 +2733,7 @@ function InvitationClientExhibitContent({
               ref={scrollContainerRef}
               className="w-full max-w-[430px] relative ig-scroll"
               style={{
-                fontFamily: "-apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif",
+                fontFamily,
                 background: '#FFFFFF',
               }}
             >

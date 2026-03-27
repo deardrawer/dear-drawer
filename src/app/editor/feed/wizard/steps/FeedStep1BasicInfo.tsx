@@ -146,6 +146,66 @@ export default function FeedStep1BasicInfo({
         <p className="text-xs text-gray-400 mt-1">특수문자, 이모지 사용 가능</p>
       </div>
 
+      {/* 폰트 스타일 */}
+      <div className={sectionClass}>
+        <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2 mb-2">
+          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+          </svg>
+          폰트 스타일
+        </h3>
+        <p className="text-xs text-blue-600 mb-3">텍스트의 글꼴을 선택해주세요.</p>
+
+        <div className="grid grid-cols-1 gap-1.5">
+          {([
+            { id: 'classic', name: '클래식', sample: '우리 결혼합니다', fontFamily: "'Ridibatang', serif", desc: '리디바탕' },
+            { id: 'modern', name: '모던', sample: '우리 결혼합니다', fontFamily: "'Pretendard', sans-serif", desc: '프리텐다드', recommended: true },
+            { id: 'romantic', name: '손글씨', sample: '우리 결혼합니다', fontFamily: "'Okticon', serif", desc: '오케이티콘체' },
+            { id: 'contemporary', name: '컨템포러리', sample: '우리 결혼합니다', fontFamily: "'JeonnamEducationBarun', sans-serif", desc: '전남교육바른체' },
+            { id: 'luxury', name: '포멀', sample: '우리 결혼합니다', fontFamily: "'ELandChoice', serif", desc: '이랜드초이스체' },
+            { id: 'gulim', name: '굴림', sample: '우리 결혼합니다', fontFamily: "'JoseonGulim', serif", desc: '조선굴림체' },
+            { id: 'adulthand', name: '어른손글씨', sample: '우리 결혼합니다', fontFamily: "'GangwonEducationModuche', sans-serif", desc: '강원교육모두체' },
+            { id: 'neathand', name: '또박또박', sample: '우리 결혼합니다', fontFamily: "'OmuDaye', sans-serif", desc: '오무다예체' },
+            { id: 'roundhand', name: '둥근손글씨', sample: '우리 결혼합니다', fontFamily: "'OngleipKonkon', sans-serif", desc: '온글잎 콘콘체' },
+            { id: 'roundgothic', name: '둥근고딕', sample: '우리 결혼합니다', fontFamily: "'NanumSquareRound', sans-serif", desc: '나눔스퀘어라운드' },
+            { id: 'suit', name: 'SUIT', sample: '우리 결혼합니다', fontFamily: "'Suit', sans-serif", desc: 'SUIT' },
+            { id: 'myungjo', name: '명조', sample: '우리 결혼합니다', fontFamily: "'ChosunIlboMyungjo', serif", desc: '조선일보명조체' },
+          ] as const).map((font) => {
+            const isSelected = (data.fontStyle || 'modern') === font.id
+            return (
+              <button
+                key={font.id}
+                onClick={() => updateData({ fontStyle: font.id })}
+                className={`flex items-center justify-between py-2.5 px-3.5 rounded-xl border-2 transition-all ${
+                  isSelected ? 'border-gray-900 bg-gray-50' : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  {isSelected && (
+                    <div className="w-4 h-4 bg-black rounded-full flex items-center justify-center shrink-0">
+                      <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  )}
+                  <span className="text-xs text-gray-500 flex items-center gap-1.5">
+                    {font.desc}
+                    {'recommended' in font && font.recommended && <span className="text-[10px] text-white bg-black px-1.5 py-0.5 rounded-full font-normal">추천</span>}
+                  </span>
+                </div>
+                <span
+                  className="text-base text-gray-800"
+                  style={{ fontFamily: font.fontFamily }}
+                >
+                  {font.sample}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
       {/* 배경음악 - Instagram Music Selector Style */}
       <div className="px-6 py-6">
         <div className="flex items-center justify-between mb-3">

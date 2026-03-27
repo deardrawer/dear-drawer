@@ -35,7 +35,7 @@ export default function FeedPreview({ data, fullscreen: _fullscreen }: FeedPrevi
     design: {},
     templateId: 'exhibit',
     colorTheme: 'exhibit-white',
-    fontStyle: 'modern',
+    fontStyle: data.fontStyle || 'modern',
   }), [data])
 
   // InvitationClientExhibit이 요구하는 invitation 객체 형식으로 변환

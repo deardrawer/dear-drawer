@@ -11,12 +11,19 @@ import { hexToSealFilter } from '@/components/parents/EnvelopeScreen'
 import { uploadImage } from '@/lib/imageUpload'
 import InlineCropEditor from '@/components/editor/InlineCropEditor'
 
-const FONT_STYLE_OPTIONS: { id: ThankYouFontStyle; name: string; desc: string; preview: string }[] = [
-  { id: 'classic', name: '클래식', desc: 'Ridibatang', preview: '정갈한 바탕체' },
-  { id: 'modern', name: '모던', desc: 'Pretendard', preview: '세련된 산세리프체' },
-  { id: 'romantic', name: '손글씨', desc: 'Okticon', preview: '따뜻하고 감성적인' },
-  { id: 'contemporary', name: '컨템포러리', desc: 'JeonnamEducationBarun', preview: '깔끔한 바른체' },
-  { id: 'luxury', name: '포멀', desc: 'ELandChoice', preview: '고급스러운 명조체' },
+const FONT_STYLE_OPTIONS: { id: ThankYouFontStyle; name: string; fontFamily: string; sample: string }[] = [
+  { id: 'classic', name: '리디바탕', fontFamily: "'Ridibatang', serif", sample: '감사합니다' },
+  { id: 'modern', name: '프리텐다드', fontFamily: "'Pretendard', sans-serif", sample: '감사합니다' },
+  { id: 'romantic', name: '오케이티콘체', fontFamily: "'Okticon', serif", sample: '감사합니다' },
+  { id: 'contemporary', name: '전남교육바른체', fontFamily: "'JeonnamEducationBarun', sans-serif", sample: '감사합니다' },
+  { id: 'luxury', name: '이랜드초이스체', fontFamily: "'ELandChoice', serif", sample: '감사합니다' },
+  { id: 'gulim', name: '조선굴림체', fontFamily: "'JoseonGulim', serif", sample: '감사합니다' },
+  { id: 'adulthand', name: '강원교육모두체', fontFamily: "'GangwonEducationModuche', sans-serif", sample: '감사합니다' },
+  { id: 'neathand', name: '오무다예체', fontFamily: "'OmuDaye', sans-serif", sample: '감사합니다' },
+  { id: 'roundhand', name: '온글잎 콘콘체', fontFamily: "'OngleipKonkon', sans-serif", sample: '감사합니다' },
+  { id: 'roundgothic', name: '나눔스퀘어라운드', fontFamily: "'NanumSquareRound', sans-serif", sample: '감사합니다' },
+  { id: 'suit', name: 'SUIT', fontFamily: "'Suit', sans-serif", sample: '감사합니다' },
+  { id: 'myungjo', name: '조선일보명조체', fontFamily: "'ChosunIlboMyungjo', serif", sample: '감사합니다' },
 ]
 
 const SEAL_PRESETS = [
@@ -245,24 +252,21 @@ export default function ThankYouStep1Design({ invitationId }: ThankYouStep1Desig
         <h3 className="text-base font-semibold text-[#2C2824] mb-4 flex items-center gap-2">
           <span className="text-lg">Aa</span> 폰트 스타일
         </h3>
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           {FONT_STYLE_OPTIONS.map((option) => (
             <button
               key={option.id}
               onClick={() => setFontStyle(option.id)}
-              className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+              className={`w-full py-2.5 px-3.5 rounded-xl border-2 text-left transition-all flex items-center justify-between ${
                 fontStyle === option.id
                   ? 'border-[#A37E69] bg-[#A37E69]/5'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
             >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-[#2C2824]">{option.name}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{option.desc}</p>
-                </div>
-                <span className="text-sm text-gray-400">{option.preview}</span>
-              </div>
+              <span className="text-xs text-gray-500">{option.name}</span>
+              <span className="text-base text-[#2C2824]" style={{ fontFamily: option.fontFamily }}>
+                {option.sample}
+              </span>
             </button>
           ))}
         </div>

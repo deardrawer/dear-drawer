@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import type { ThankYouData, PolaroidData, BackgroundImageSettings } from '@/components/thank-you/types'
 import { SAMPLE_DATA } from '@/components/thank-you/types'
 
-export type ThankYouFontStyle = 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury'
+export type ThankYouFontStyle = 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury' | 'gulim' | 'adulthand' | 'neathand' | 'roundhand' | 'roundgothic' | 'suit' | 'myungjo'
 
 export interface ThankYouEditorState {
   // Data

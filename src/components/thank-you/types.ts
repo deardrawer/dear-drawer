@@ -29,6 +29,13 @@ export interface BackgroundImageSettings {
   cropHeight?: number
 }
 
+export interface PhotoShareConfig {
+  enabled: boolean
+  message: string
+  url: string
+  buttonText: string
+}
+
 export interface ThankYouData {
   coupleNames: string;
   date: string;
@@ -39,6 +46,7 @@ export interface ThankYouData {
   backgroundImageSettings?: BackgroundImageSettings;
   polaroids: PolaroidData[];
   closingLines: string[];
+  photoShare?: PhotoShareConfig;
 }
 
 export interface PolaroidData {
@@ -53,22 +61,22 @@ export const SAMPLE_DATA: ThankYouData = {
   coupleNames: "민준 & 서연",
   date: "2026. 03. 14",
   heroMessage: "함께해 주셔서 감사합니다",
-  heroImage: "/samples/parents/1.png",
+  heroImage: "/sample/thankyou-main.jpg",
   polaroids: [
     {
-      image: "/samples/parents/2.png",
+      image: "/sample/thankyou-sub.jpg",
       caption: "우리의 시작",
       rotation: -3,
       offsetX: 0,
     },
     {
-      image: "/samples/parents/3.png",
+      image: "/sample/thankyou-sub2.jpg",
       caption: "함께한 날들",
       rotation: 4,
       offsetX: 12,
     },
     {
-      image: "/samples/parents/4.png",
+      image: "/sample/thankyou-sub.jpg",
       caption: "영원히 함께",
       rotation: -2,
       offsetX: -8,
@@ -81,4 +89,10 @@ export const SAMPLE_DATA: ThankYouData = {
     "그 마음을 잊지 않고,\n천천히 그리고 단단하게\n저희만의 이야기를 이어가겠습니다.",
     "민준 & 서연 올림",
   ],
+  photoShare: {
+    enabled: true,
+    message: '결혼식에서 찍은 사진들을 공유해주세요.\n여러분의 시선으로 담긴 우리의 결혼식,\n소중한 추억으로 간직하겠습니다.',
+    url: 'https://photos.google.com',
+    buttonText: '사진 공유하기',
+  },
 };

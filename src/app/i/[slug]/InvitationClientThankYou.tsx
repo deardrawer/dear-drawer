@@ -38,6 +38,7 @@ export default function InvitationClientThankYou({
       crop: p.crop as ThankYouData['heroCrop'],
     })) : [],
     closingLines: Array.isArray(content.closingLines) ? content.closingLines as string[] : [],
+    photoShare: content.photoShare as ThankYouData['photoShare'],
   } : undefined
 
   // 폰트 스타일
@@ -130,11 +131,14 @@ export default function InvitationClientThankYou({
       )}
 
       {/* 미리보기/무료 워터마크 */}
-      {(isPreview || (!isPaid && !isSample)) && (
+      {isPreview && (
         <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-black/60 backdrop-blur-sm rounded-full">
-          <p className="text-xs text-white/80">
-            {isPreview ? '미리보기 모드' : 'dear drawer'}
-          </p>
+          <p className="text-xs text-white/80">미리보기 모드</p>
+        </div>
+      )}
+      {!isPaid && !isPreview && !isSample && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px 16px', backgroundColor: 'rgba(0,0,0,0.9)' }}>
+          <span style={{ color: 'rgba(255,255,255,0.95)', fontSize: '13px', fontWeight: 500 }}>결제 후 워터마크가 제거됩니다</span>
         </div>
       )}
     </div>

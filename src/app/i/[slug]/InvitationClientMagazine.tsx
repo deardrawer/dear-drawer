@@ -12,7 +12,7 @@ import { IntroSettings, getDefaultIntroSettings } from '@/lib/introPresets'
 
 // ===== Types =====
 type ColorTheme = 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-green' | 'luxury-navy' | 'sunset-coral'
-interface ColorConfig { primary: string; secondary: string; accent: string; background: string; sectionBg: string; cardBg: string; divider: string; text: string; gray: string; highlight?: string }
+interface ColorConfig { primary: string; secondary: string; accent: string; background: string; sectionBg: string; cardBg: string; divider: string; text: string; gray: string; highlight?: string; buttonText?: string }
 
 const colorThemes: Record<ColorTheme, ColorConfig> = {
   'classic-rose': { primary: '#C41050', secondary: '#D4768A', accent: '#C41050', background: '#FFFFFF', sectionBg: '#FFF5F5', cardBg: '#FFFFFF', divider: '#E8A0B0', text: '#3d3d3d', gray: '#555555' },
@@ -32,7 +32,7 @@ const fontStyles: Record<FontStyle, FontConfig> = {
   romantic: { display: "'Lora', serif", displayKr: "'Okticon', serif", body: "'Okticon', serif" },
   contemporary: { display: "'Cinzel', serif", displayKr: "'JeonnamEducationBarun', sans-serif", body: "'JeonnamEducationBarun', sans-serif" },
   luxury: { display: "'EB Garamond', serif", displayKr: "'ELandChoice', serif", body: "'ELandChoice', serif" },
-  gulim: { display: "'EB Garamond', serif", displayKr: "'JoseonGulim', serif", body: "'JoseonGulim', serif" },
+  gulim: { display: "'Montserrat', sans-serif", displayKr: "'JoseonGulim', serif", body: "'JoseonGulim', serif" },
   adulthand: { display: "'Montserrat', sans-serif", displayKr: "'GangwonEducationModuche', sans-serif", body: "'GangwonEducationModuche', sans-serif" },
   neathand: { display: "'Montserrat', sans-serif", displayKr: "'OmuDaye', sans-serif", body: "'OmuDaye', sans-serif" },
   roundhand: { display: "'Montserrat', sans-serif", displayKr: "'OngleipKonkon', sans-serif", body: "'OngleipKonkon', sans-serif" },
@@ -1213,7 +1213,7 @@ function ContactsSection({ invitation, fonts, themeColors, bgOverride }: { invit
             padding: '12px',
             border: `0.5px solid ${expandedSide === 'groom' ? themeColors.primary : themeColors.divider}`,
             background: expandedSide === 'groom' ? themeColors.primary : themeColors.cardBg,
-            color: expandedSide === 'groom' ? '#FFFFFF' : themeColors.text,
+            color: expandedSide === 'groom' ? '#FFFFFF' : (themeColors.buttonText || themeColors.text),
             cursor: 'pointer',
             transition: 'all 0.3s',
           }}
@@ -1229,7 +1229,7 @@ function ContactsSection({ invitation, fonts, themeColors, bgOverride }: { invit
             padding: '12px',
             border: `0.5px solid ${expandedSide === 'bride' ? themeColors.primary : themeColors.divider}`,
             background: expandedSide === 'bride' ? themeColors.primary : themeColors.cardBg,
-            color: expandedSide === 'bride' ? '#FFFFFF' : themeColors.text,
+            color: expandedSide === 'bride' ? '#FFFFFF' : (themeColors.buttonText || themeColors.text),
             cursor: 'pointer',
             transition: 'all 0.3s',
           }}
@@ -1370,7 +1370,7 @@ function GuestbookSection({ invitation, invitationId, fonts, themeColors, isSamp
             onChange={e => setName(e.target.value)}
             placeholder="이름"
             maxLength={20}
-            style={{ fontFamily: fonts.body, fontSize: '13px', padding: '10px 12px', border: `0.5px solid ${themeColors.divider}`, background: themeColors.cardBg, outline: 'none', width: '100%', color: themeColors.text }}
+            style={{ fontFamily: fonts.body, fontSize: '13px', padding: '10px 12px', border: `0.5px solid ${themeColors.divider}`, background: themeColors.cardBg, outline: 'none', width: '100%', color: themeColors.buttonText || themeColors.text }}
           />
         <textarea
           value={message}
@@ -1378,7 +1378,7 @@ function GuestbookSection({ invitation, invitationId, fonts, themeColors, isSamp
           placeholder="메시지를 남겨주세요 (100자 이내)"
           rows={3}
           maxLength={100}
-          style={{ fontFamily: fonts.body, fontSize: '13px', padding: '10px 12px', border: `0.5px solid ${themeColors.divider}`, background: themeColors.cardBg, outline: 'none', width: '100%', resize: 'none', color: themeColors.text }}
+          style={{ fontFamily: fonts.body, fontSize: '13px', padding: '10px 12px', border: `0.5px solid ${themeColors.divider}`, background: themeColors.cardBg, outline: 'none', width: '100%', resize: 'none', color: themeColors.buttonText || themeColors.text }}
         />
         <button
           onClick={handleSubmit}
@@ -1502,7 +1502,7 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
           value={name}
           onChange={e => setName(e.target.value)}
           placeholder="성함"
-          style={{ fontFamily: fonts.body, fontSize: '13px', padding: '10px 12px', border: `0.5px solid ${themeColors.divider}`, background: themeColors.cardBg, outline: 'none', width: '100%', color: themeColors.text }}
+          style={{ fontFamily: fonts.body, fontSize: '13px', padding: '10px 12px', border: `0.5px solid ${themeColors.divider}`, background: themeColors.cardBg, outline: 'none', width: '100%', color: themeColors.buttonText || themeColors.text }}
         />
 
         <div className="grid grid-cols-2 gap-2">
@@ -1517,7 +1517,7 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
                 padding: '12px',
                 border: `0.5px solid ${side === opt.value ? themeColors.primary : themeColors.divider}`,
                 background: side === opt.value ? themeColors.primary : themeColors.cardBg,
-                color: side === opt.value ? '#FFFFFF' : themeColors.text,
+                color: side === opt.value ? '#FFFFFF' : (themeColors.buttonText || themeColors.text),
                 cursor: 'pointer',
                 transition: 'all 0.3s',
               }}
@@ -1539,7 +1539,7 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
                 padding: '12px',
                 border: `0.5px solid ${attendance === opt ? themeColors.primary : themeColors.divider}`,
                 background: attendance === opt ? themeColors.primary : themeColors.cardBg,
-                color: attendance === opt ? '#FFFFFF' : themeColors.text,
+                color: attendance === opt ? '#FFFFFF' : (themeColors.buttonText || themeColors.text),
                 cursor: 'pointer',
                 transition: 'all 0.3s',
               }}
@@ -1555,14 +1555,14 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setGuestCount(Math.max(1, guestCount - 1))}
-                style={{ width: '32px', height: '32px', border: `0.5px solid ${themeColors.divider}`, background: themeColors.cardBg, cursor: 'pointer', fontSize: '16px', color: themeColors.text }}
+                style={{ width: '32px', height: '32px', border: `0.5px solid ${themeColors.divider}`, background: themeColors.cardBg, cursor: 'pointer', fontSize: '16px', color: themeColors.buttonText || themeColors.text }}
               >
                 -
               </button>
-              <span style={{ fontFamily: fonts.display, fontSize: '14px', width: '32px', textAlign: 'center', color: themeColors.text }}>{guestCount}</span>
+              <span style={{ fontFamily: fonts.display, fontSize: '14px', width: '32px', textAlign: 'center', color: themeColors.buttonText || themeColors.text }}>{guestCount}</span>
               <button
                 onClick={() => setGuestCount(guestCount + 1)}
-                style={{ width: '32px', height: '32px', border: `0.5px solid ${themeColors.divider}`, background: themeColors.cardBg, cursor: 'pointer', fontSize: '16px', color: themeColors.text }}
+                style={{ width: '32px', height: '32px', border: `0.5px solid ${themeColors.divider}`, background: themeColors.cardBg, cursor: 'pointer', fontSize: '16px', color: themeColors.buttonText || themeColors.text }}
               >
                 +
               </button>
@@ -1575,7 +1575,7 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
           onChange={e => setRsvpMessage(e.target.value)}
           placeholder="전하고 싶은 말 (선택)"
           rows={2}
-          style={{ fontFamily: fonts.body, fontSize: '13px', padding: '10px 12px', border: `0.5px solid ${themeColors.divider}`, background: themeColors.cardBg, outline: 'none', width: '100%', resize: 'none', color: themeColors.text }}
+          style={{ fontFamily: fonts.body, fontSize: '13px', padding: '10px 12px', border: `0.5px solid ${themeColors.divider}`, background: themeColors.cardBg, outline: 'none', width: '100%', resize: 'none', color: themeColors.buttonText || themeColors.text }}
         />
 
         <button
@@ -1885,7 +1885,10 @@ function InvitationClientMagazineContent({
                         const sectionTextColor = (themeColors as any).sectionText
                         const getColors = (id: string) => {
                           const isSec = (sectionBgMap[id] || MAGAZINE_DEFAULT_BG[id] || 'sectionBg') === 'sectionBg'
-                          return (sectionTextColor && isSec) ? { ...themeColors, text: sectionTextColor, gray: sectionTextColor + 'CC' } : themeColors
+                          if (sectionTextColor && isSec) {
+                            return { ...themeColors, text: sectionTextColor, gray: sectionTextColor + 'CC', buttonText: themeColors.text }
+                          }
+                          return { ...themeColors, buttonText: themeColors.text }
                         }
                         return (invitation.magazineSectionOrder || ['meetTheCouple', 'featureInterview', 'photoSpread', 'youtube', 'theDetails', 'guidance', 'thankYou', 'contacts', 'guestbook', 'rsvp']).map((sectionId: string) => {
                           switch (sectionId) {

@@ -251,11 +251,12 @@ export default function Step4Magazine() {
               </label>
             )}
             <div className="flex-1 space-y-2">
-              <Input
+              <Textarea
                 value={invitation.groom.profile.tag || ''}
                 onChange={(e) => updateNestedField('groom.profile.tag', e.target.value)}
-                placeholder="한줄 소개 (예: 세상에서 가장 따뜻한 사람)"
-                className="text-sm"
+                placeholder="소개 (예: 세상에서 가장 따뜻한 사람)"
+                className="text-sm resize-none"
+                rows={2}
               />
             </div>
           </div>
@@ -319,11 +320,12 @@ export default function Step4Magazine() {
               </label>
             )}
             <div className="flex-1 space-y-2">
-              <Input
+              <Textarea
                 value={invitation.bride.profile.tag || ''}
                 onChange={(e) => updateNestedField('bride.profile.tag', e.target.value)}
-                placeholder="한줄 소개 (예: 매일 웃게 해주는 사람)"
-                className="text-sm"
+                placeholder="소개 (예: 매일 웃게 해주는 사람)"
+                className="text-sm resize-none"
+                rows={2}
               />
             </div>
           </div>

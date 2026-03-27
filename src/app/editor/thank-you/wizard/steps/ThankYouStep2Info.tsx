@@ -44,12 +44,12 @@ export default function ThankYouStep2Info() {
       {/* 히어로 메시지 */}
       <div>
         <label className="block text-sm font-medium text-[#2C2824] mb-2">히어로 메시지</label>
-        <input
-          type="text"
+        <textarea
           value={data.heroMessage}
           onChange={(e) => updateField('heroMessage', e.target.value)}
           placeholder="예: 함께해 주셔서 감사합니다"
-          className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#A37E69] focus:ring-1 focus:ring-[#A37E69]/20 transition-colors"
+          rows={2}
+          className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#A37E69] focus:ring-1 focus:ring-[#A37E69]/20 transition-colors resize-none"
         />
         <p className="text-xs text-gray-400 mt-1.5">첫 화면에 크게 표시되는 감사 메시지입니다</p>
       </div>

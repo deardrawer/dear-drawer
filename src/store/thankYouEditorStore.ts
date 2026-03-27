@@ -4,6 +4,15 @@ import { SAMPLE_DATA } from '@/components/thank-you/types'
 
 export type ThankYouFontStyle = 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury' | 'gulim' | 'adulthand' | 'neathand' | 'roundhand' | 'roundgothic' | 'suit' | 'myungjo'
 
+export interface ThankYouMeta {
+  title: string
+  description: string
+  ogImage: string
+  ogImageSettings?: { scale: number; positionX: number; positionY: number; cropX?: number; cropY?: number; cropWidth?: number; cropHeight?: number }
+  kakaoThumbnail: string
+  kakaoThumbnailSettings?: { scale: number; positionX: number; positionY: number }
+}
+
 export interface ThankYouEditorState {
   // Data
   data: ThankYouData
@@ -15,6 +24,7 @@ export interface ThankYouEditorState {
     url: string
     autoplay: boolean
   }
+  meta: ThankYouMeta
 
   // UI state
   wizardStep: 1 | 2 | 3 | 4 | 5
@@ -32,6 +42,7 @@ export interface ThankYouEditorState {
   setBgm: (bgm: Partial<ThankYouEditorState['bgm']>) => void
   setBackgroundImage: (url: string) => void
   setBackgroundImageSettings: (settings: Partial<BackgroundImageSettings>) => void
+  updateMeta: (key: string, value: unknown) => void
   setWizardStep: (step: 1 | 2 | 3 | 4 | 5) => void
   setIsDirty: (dirty: boolean) => void
   setIsSaving: (saving: boolean) => void
@@ -65,6 +76,7 @@ export const useThankYouEditorStore = create<ThankYouEditorState>((set, get) => 
   accentColor: '#B89878',
   sealColor: '#722F37',
   bgm: { enabled: false, url: '', autoplay: false },
+  meta: { title: '', description: '', ogImage: '', kakaoThumbnail: '' },
   wizardStep: 1,
   isDirty: false,
   isSaving: false,
@@ -115,6 +127,11 @@ export const useThankYouEditorStore = create<ThankYouEditorState>((set, get) => 
     isDirty: true,
   })),
 
+  updateMeta: (key, value) => set((state) => ({
+    meta: { ...state.meta, [key]: value },
+    isDirty: true,
+  })),
+
   setWizardStep: (step) => set({ wizardStep: step }),
 
   setIsDirty: (isDirty) => set({ isDirty }),
@@ -127,13 +144,14 @@ export const useThankYouEditorStore = create<ThankYouEditorState>((set, get) => 
     accentColor: '#B89878',
     sealColor: '#722F37',
     bgm: { enabled: false, url: '', autoplay: false },
+    meta: { title: '', description: '', ogImage: '', kakaoThumbnail: '' },
     wizardStep: 1,
     isDirty: false,
     isSaving: false,
   }),
 
   loadFromContent: (content) => {
-    const { fontStyle, accentColor, colorTheme, sealColor, bgm, ...thankYouData } = content as Record<string, unknown>
+    const { fontStyle, accentColor, colorTheme, sealColor, bgm, meta, ...thankYouData } = content as Record<string, unknown>
     // colorTheme 하위호환: 기존 저장된 데이터에 colorTheme이 있으면 accentColor로 변환
     let resolvedAccent = (accentColor as string) || '#B89878'
     if (!accentColor && colorTheme) {
@@ -143,6 +161,7 @@ export const useThankYouEditorStore = create<ThankYouEditorState>((set, get) => 
       }
       resolvedAccent = legacyMap[colorTheme as string] || '#B89878'
     }
+    const parsedMeta = (meta as ThankYouMeta) || {}
     set({
       data: { ...DEFAULT_DATA, ...(thankYouData as Partial<ThankYouData>) },
       fontStyle: (fontStyle as ThankYouFontStyle) || 'classic',
@@ -153,12 +172,20 @@ export const useThankYouEditorStore = create<ThankYouEditorState>((set, get) => 
         url: (bgm as { url?: string })?.url ?? '',
         autoplay: (bgm as { autoplay?: boolean })?.autoplay ?? false,
       },
+      meta: {
+        title: parsedMeta.title || '',
+        description: parsedMeta.description || '',
+        ogImage: parsedMeta.ogImage || '',
+        ogImageSettings: parsedMeta.ogImageSettings,
+        kakaoThumbnail: parsedMeta.kakaoThumbnail || '',
+        kakaoThumbnailSettings: parsedMeta.kakaoThumbnailSettings,
+      },
       isDirty: false,
     })
   },
 
   toSavePayload: () => {
-    const { data, fontStyle, accentColor, sealColor, bgm } = get()
-    return JSON.stringify({ ...data, fontStyle, accentColor, sealColor, bgm })
+    const { data, fontStyle, accentColor, sealColor, bgm, meta } = get()
+    return JSON.stringify({ ...data, fontStyle, accentColor, sealColor, bgm, meta })
   },
 }))

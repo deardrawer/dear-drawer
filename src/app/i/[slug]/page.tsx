@@ -273,10 +273,11 @@ export async function generateMetadata({ params }: PageProps) {
         if (typeof img === "object" && img !== null && "url" in img) return (img as { url: string }).url || "";
         return "";
       };
-      // OG 썸네일 우선순위: ogImage > coverImage > mainImage > gallery 첫번째 이미지 > kakaoThumbnail
+      // OG 썸네일 우선순위: ogImage > coverImage > heroImage(감사장) > mainImage > gallery 첫번째 이미지 > kakaoThumbnail
       rawThumbnailImage =
         extractImageUrl(content?.meta?.ogImage) ||
         extractImageUrl(content?.media?.coverImage) ||
+        extractImageUrl(content?.heroImage) ||
         extractImageUrl(content?.mainImage) ||
         extractImageUrl(content?.gallery?.images?.[0]) ||
         extractImageUrl(content?.meta?.kakaoThumbnail) ||
@@ -290,8 +291,9 @@ export async function generateMetadata({ params }: PageProps) {
   const thumbnailImage = toAbsoluteImageUrl(rawThumbnailImage, baseUrl);
 
   // 커스텀 값이 있으면 사용, 없으면 자동 생성
-  const title = customTitle || `${groomName} ♥ ${brideName} 결혼합니다`;
-  const description = customDescription || invitation.greeting_message || "저희 결혼식에 초대합니다";
+  const isThankYouTemplate = invitation.template_id === 'narrative-thankyou';
+  const title = customTitle || (isThankYouTemplate ? `${groomName} & ${brideName}의 감사 인사` : `${groomName} ♥ ${brideName} 결혼합니다`);
+  const description = customDescription || invitation.greeting_message || (isThankYouTemplate ? "감사장이 도착했습니다" : "저희 결혼식에 초대합니다");
 
   return {
     title,

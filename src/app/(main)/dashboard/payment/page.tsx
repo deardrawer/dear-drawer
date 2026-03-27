@@ -14,6 +14,9 @@ function PaymentForm() {
   const invitationId = searchParams.get('invitationId')
   const templateId = searchParams.get('templateId') || ''
 
+  // 감사장 템플릿
+  const isThankYou = templateId === 'narrative-thankyou'
+
   // 미니스토리형 템플릿 목록
   const MINI_STORY_TEMPLATES = [
     'narrative-magazine', 'narrative-film', 'narrative-record', 'narrative-exhibit', 'narrative-essay',
@@ -108,23 +111,40 @@ function PaymentForm() {
       <div className="max-w-md mx-auto px-4">
         <div className="bg-white rounded-2xl shadow-sm p-8">
           <h1 className="text-xl font-semibold text-gray-900 mb-2">워터마크 제거 요청</h1>
-          <p className="text-sm text-gray-600 mb-4">
-            디어드로어에서 모바일 청첩장 결제 완료 후 주문번호를 입력해주세요.
-          </p>
 
-          <a
-            href={`https://www.deardrawer.com/invitation/?idx=${paymentIdx}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block w-full mb-6"
-          >
-            <Button variant="outline" className="w-full bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-100">
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-              {productName} 결제하기
-            </Button>
-          </a>
+          {isThankYou ? (
+            <div className="mb-6">
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl mb-3">
+                <p className="text-sm text-amber-800 font-medium mb-1">감사장 무료 제작 안내</p>
+                <p className="text-sm text-amber-700 leading-relaxed">
+                  모바일 청첩장을 구매하신 분들께는 <strong>최대 3장</strong>까지 감사장을 무료로 제작하실 수 있습니다.
+                </p>
+              </div>
+              <p className="text-sm text-gray-600">
+                기존에 구매하신 주문번호를 입력해주세요.
+              </p>
+            </div>
+          ) : (
+            <>
+              <p className="text-sm text-gray-600 mb-4">
+                디어드로어에서 모바일 청첩장 결제 완료 후 주문번호를 입력해주세요.
+              </p>
+
+              <a
+                href={`https://www.deardrawer.com/invitation/?idx=${paymentIdx}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full mb-6"
+              >
+                <Button variant="outline" className="w-full bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-100">
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                  {productName} 결제하기
+                </Button>
+              </a>
+            </>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
@@ -137,7 +157,9 @@ function PaymentForm() {
                 required
               />
               <p className="text-xs text-gray-500">
-                아임웹 주문 완료 후 안내된 주문번호를 입력하세요.
+                {isThankYou
+                  ? '모바일 청첩장 구매 시 안내된 주문번호를 입력하세요.'
+                  : '아임웹 주문 완료 후 안내된 주문번호를 입력하세요.'}
               </p>
             </div>
 

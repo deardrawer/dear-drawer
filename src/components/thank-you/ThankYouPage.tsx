@@ -295,6 +295,17 @@ export default function ThankYouPage({
   const endLine5Opacity = useTransform(p, lerp(0.92, 0.95, 0, 1));
   const endLine5Y = useTransform(p, lerp(0.92, 0.95, 16, 0));
 
+  // ── Photo share popup (0.96+) ──
+  const [showPhotoShare, setShowPhotoShare] = useState(false);
+  const [photoShareDismissed, setPhotoShareDismissed] = useState(false);
+  useEffect(() => {
+    if (!data.photoShare?.enabled || !data.photoShare?.url || photoShareDismissed) return;
+    const unsubscribe = p.on("change", (v: number) => {
+      if (v >= 0.96 && !showPhotoShare) setShowPhotoShare(true);
+    });
+    return unsubscribe;
+  }, [p, data.photoShare, showPhotoShare, photoShareDismissed]);
+
   if (prefersReducedMotion) {
     return <ReducedMotionView data={data} fontStyle={fontStyle} accentColor={accentColor} />;
   }
@@ -423,7 +434,7 @@ export default function ThankYouPage({
 
           {/* Line 4: Short message */}
           <motion.p
-            className="mt-6 text-base font-light leading-relaxed text-white/90"
+            className="mt-6 text-base font-light leading-relaxed text-white/90 whitespace-pre-line"
             style={{
               fontFamily: fonts.korean,
             }}
@@ -711,6 +722,78 @@ export default function ThankYouPage({
             />
           </motion.svg>
         </motion.div>
+
+        {/* ═══ Photo Share Popup ═══ */}
+        {showPhotoShare && data.photoShare?.enabled && data.photoShare?.url && (
+          <motion.div
+            className="absolute inset-0 flex items-center justify-center"
+            style={{ zIndex: 60 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4 }}
+          >
+            <div
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+              onClick={() => { setShowPhotoShare(false); setPhotoShareDismissed(true); }}
+            />
+            <motion.div
+              className="relative mx-6 w-full max-w-[320px] bg-white rounded-2xl shadow-2xl overflow-hidden"
+              initial={{ opacity: 0, y: 40, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.4, delay: 0.1, ease: "easeOut" }}
+            >
+              {/* Close button */}
+              <button
+                onClick={() => { setShowPhotoShare(false); setPhotoShareDismissed(true); }}
+                className="absolute top-3 right-3 w-7 h-7 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors z-10"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+              </button>
+
+              {/* Icon */}
+              <div className="pt-8 pb-4 flex justify-center">
+                <div
+                  className="w-16 h-16 rounded-full flex items-center justify-center"
+                  style={{ background: `${accentColor}18` }}
+                >
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={accentColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <circle cx="9" cy="9" r="2" />
+                    <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Message */}
+              <div className="px-6 pb-6 text-center">
+                <p
+                  className="text-sm leading-relaxed whitespace-pre-line mb-6"
+                  style={{ color: '#4A4A4A', fontFamily: fonts.korean }}
+                >
+                  {data.photoShare.message}
+                </p>
+
+                {/* CTA Button */}
+                <a
+                  href={data.photoShare.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full py-3.5 rounded-xl text-white text-sm font-medium transition-opacity hover:opacity-90"
+                  style={{ background: accentColor }}
+                >
+                  {data.photoShare.buttonText || '사진 공유하기'}
+                </a>
+
+                <button
+                  onClick={() => { setShowPhotoShare(false); setPhotoShareDismissed(true); }}
+                  className="mt-3 text-xs text-gray-400 hover:text-gray-500 transition-colors"
+                >
+                  닫기
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
       </div>
     </div>
   );
@@ -752,6 +835,27 @@ function ReducedMotionView({ data, fontStyle = "classic", accentColor = "#B89878
           {data.closingLines[data.closingLines.length - 1]}
         </p>
       </div>
+
+      {/* Photo share (reduced motion) */}
+      {data.photoShare?.enabled && data.photoShare?.url && (
+        <div className="mt-8 text-center">
+          <p
+            className="text-sm leading-relaxed whitespace-pre-line mb-4"
+            style={{ color: "#6B5E56", fontFamily: fonts.korean }}
+          >
+            {data.photoShare.message}
+          </p>
+          <a
+            href={data.photoShare.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block px-8 py-3 rounded-xl text-white text-sm font-medium"
+            style={{ background: accentColor }}
+          >
+            {data.photoShare.buttonText || '사진 공유하기'}
+          </a>
+        </div>
+      )}
     </div>
   );
 }

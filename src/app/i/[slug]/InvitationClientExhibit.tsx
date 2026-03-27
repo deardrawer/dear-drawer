@@ -70,6 +70,88 @@ function timeAgo(dateStr: string): string {
 }
 
 // ============================================================
+// Instagram-style Swipe Carousel Hook
+// ============================================================
+function useSwipeCarousel(count: number) {
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [dragOffset, setDragOffset] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const startX = useRef(0)
+  const startY = useRef(0)
+  const isHorizontal = useRef<boolean | null>(null)
+  const dragOffsetRef = useRef(0)
+  const currentIndexRef = useRef(0)
+
+  // Keep refs in sync with state
+  useEffect(() => { currentIndexRef.current = currentIndex }, [currentIndex])
+
+  const handlers = useMemo(() => ({
+    onTouchStart(e: React.TouchEvent) {
+      startX.current = e.touches[0].clientX
+      startY.current = e.touches[0].clientY
+      isHorizontal.current = null
+      setIsDragging(true)
+    },
+    onTouchMove(e: React.TouchEvent) {
+      if (isHorizontal.current === false) return
+      const dx = e.touches[0].clientX - startX.current
+      const dy = e.touches[0].clientY - startY.current
+      // Determine direction after 8px movement
+      if (isHorizontal.current === null) {
+        if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
+          isHorizontal.current = Math.abs(dx) > Math.abs(dy)
+          if (!isHorizontal.current) {
+            setIsDragging(false)
+            setDragOffset(0)
+            dragOffsetRef.current = 0
+            return
+          }
+        } else {
+          return
+        }
+      }
+      e.preventDefault()
+      // Rubber band at boundaries
+      const idx = currentIndexRef.current
+      let clampedDx = dx
+      if ((idx === 0 && dx > 0) || (idx === count - 1 && dx < 0)) {
+        clampedDx = dx * 0.3
+      }
+      dragOffsetRef.current = clampedDx
+      setDragOffset(clampedDx)
+    },
+    onTouchEnd() {
+      if (!isHorizontal.current) {
+        setIsDragging(false)
+        setDragOffset(0)
+        dragOffsetRef.current = 0
+        return
+      }
+      const width = containerRef.current?.offsetWidth || 1
+      const offset = dragOffsetRef.current
+      const idx = currentIndexRef.current
+      const ratio = offset / width
+      if (ratio < -0.3 && idx < count - 1) {
+        setCurrentIndex(prev => prev + 1)
+      } else if (ratio > 0.3 && idx > 0) {
+        setCurrentIndex(prev => prev - 1)
+      }
+      setIsDragging(false)
+      setDragOffset(0)
+      dragOffsetRef.current = 0
+    },
+  }), [count])
+
+  const style: React.CSSProperties = {
+    transform: `translateX(calc(-${currentIndex * 100}% + ${dragOffset}px))`,
+    transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+  }
+
+  return { currentIndex, setCurrentIndex, style, handlers, containerRef, isDragging }
+}
+
+// ============================================================
 // Global Styles — Instagram Theme
 // ============================================================
 const globalStyles = `
@@ -297,7 +379,7 @@ function InlineBgmEqualizer({
 }
 
 // === 2. Cover Section (Instagram Story Style — tap to navigate) ===
-function CoverSection({ content, invitation, displayId, audioRef, bgmEnabled }: { content: any; invitation: any; displayId: string; audioRef: React.RefObject<HTMLAudioElement | null>; bgmEnabled: boolean }) {
+function CoverSection({ content, invitation, displayId, audioRef, bgmEnabled, fontFamily }: { content: any; invitation: any; displayId: string; audioRef: React.RefObject<HTMLAudioElement | null>; bgmEnabled: boolean; fontFamily?: string }) {
   const coverImage = extractImageUrl(content?.media?.coverImage) || '/sample/cover.png'
   const miniAvatarImage = extractImageUrl(content?.media?.profileAvatar) || coverImage
   const miniAvatarSettings = content?.media?.profileAvatarSettings || null
@@ -497,7 +579,7 @@ function CoverSection({ content, invitation, displayId, audioRef, bgmEnabled }: 
       <div className="absolute bottom-0 left-0 right-0 z-10 px-5 pb-16">
         <h1
           className="text-[26px] font-light text-white tracking-wide mb-2"
-          style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif" }}
+          style={{ fontFamily: fontFamily || "-apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif" }}
         >
           {groomName} & {brideName}
         </h1>
@@ -796,8 +878,7 @@ function TabBar({ activeTab, onTabChange }: { activeTab: ContentTab; onTabChange
 
 // === 5-1. People Tab (신랑/신부 소개) ===
 function ProfileCarousel({ images, imageSettings }: { images: string[]; imageSettings?: any }) {
-  const [currentIdx, setCurrentIdx] = useState(0)
-  const touchStartX = useRef(0)
+  const { currentIndex, style: swipeStyle, handlers, containerRef } = useSwipeCarousel(images.length)
 
   const getImageCropStyle = (img: string, s: any) => {
     if (!s) return { backgroundImage: `url(${img})`, backgroundSize: 'cover' as const, backgroundPosition: 'center' as const }
@@ -827,17 +908,20 @@ function ProfileCarousel({ images, imageSettings }: { images: string[]; imageSet
   return (
     <div className="relative w-full" style={{ aspectRatio: '4/5', background: '#FAFAFA' }}>
       <div
+        ref={containerRef}
         className="w-full h-full overflow-hidden"
-        style={getImageCropStyle(images[currentIdx], imageSettings)}
-        onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX }}
-        onTouchEnd={(e) => {
-          const diff = touchStartX.current - e.changedTouches[0].clientX
-          if (Math.abs(diff) > 40) {
-            if (diff > 0 && currentIdx < images.length - 1) setCurrentIdx(currentIdx + 1)
-            if (diff < 0 && currentIdx > 0) setCurrentIdx(currentIdx - 1)
-          }
-        }}
-      />
+        {...handlers}
+      >
+        <div className="flex h-full" style={swipeStyle}>
+          {images.map((img, idx) => (
+            <div
+              key={idx}
+              className="w-full h-full flex-shrink-0"
+              style={getImageCropStyle(img, imageSettings)}
+            />
+          ))}
+        </div>
+      </div>
       {/* Dot indicators */}
       <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1">
         {images.map((_, idx) => (
@@ -845,9 +929,9 @@ function ProfileCarousel({ images, imageSettings }: { images: string[]; imageSet
             key={idx}
             className="rounded-full transition-all"
             style={{
-              width: idx === currentIdx ? 6 : 5,
-              height: idx === currentIdx ? 6 : 5,
-              background: idx === currentIdx ? '#0095F6' : 'rgba(255,255,255,0.6)',
+              width: idx === currentIndex ? 6 : 5,
+              height: idx === currentIndex ? 6 : 5,
+              background: idx === currentIndex ? '#0095F6' : 'rgba(255,255,255,0.6)',
             }}
           />
         ))}
@@ -1262,7 +1346,6 @@ function WeddingInfoPost({
   username: string
 }) {
   const { ref, isRevealed } = useScrollReveal(0.1)
-  const [infoSlide, setInfoSlide] = useState(0)
   const wedding = content?.wedding || {}
   const venue = wedding?.venue || {}
   const date = wedding?.date || invitation?.wedding_date || ''
@@ -1300,6 +1383,7 @@ function WeddingInfoPost({
   }, [dateObj])
 
   const totalSlides = 2
+  const { currentIndex: infoSlide, setCurrentIndex: setInfoSlide, style: infoSwipeStyle, handlers: infoHandlers, containerRef: infoContainerRef } = useSwipeCarousel(totalSlides)
   const hasDirections = !!(directions?.car || directions?.publicTransport || directions?.train || directions?.expressBus)
   const avatarSettings = content?.media?.profileAvatarSettings || null
 
@@ -1388,10 +1472,10 @@ function WeddingInfoPost({
       >
         {/* Carousel: Calendar + Venue Card */}
         <div className="relative">
-          <div className="overflow-hidden">
+          <div ref={infoContainerRef} className="overflow-hidden" {...infoHandlers}>
             <div
-              className="flex transition-transform duration-300"
-              style={{ transform: `translateX(-${infoSlide * 100}%)` }}
+              className="flex"
+              style={infoSwipeStyle}
             >
               {/* Slide 1: Mini Calendar */}
               <div className="w-full flex-shrink-0 aspect-square flex items-center justify-center" style={{ background: '#FAFAFA' }}>
@@ -1571,11 +1655,11 @@ function GuidancePost({
     })
   }
 
-  if (items.length === 0) return null
-
   const pastelBgs = ['#F0F7FF', '#FFF5F5', '#F5FFF0', '#FFF8E1', '#F3F0FF', '#FFF0F7', '#F0FFFA', '#FFFBF0']
-  const [activeSlide, setActiveSlide] = useState(0)
+  const { currentIndex: activeSlide, setCurrentIndex: setActiveSlide, style: guidanceSwipeStyle, handlers: guidanceHandlers, containerRef: guidanceContainerRef } = useSwipeCarousel(items.length || 1)
   const avatarSettings = content?.media?.profileAvatarSettings || null
+
+  if (items.length === 0) return null
 
   return (
     <InstagramPost
@@ -1593,10 +1677,10 @@ function GuidancePost({
     >
       {/* Carousel of guidance items */}
       <div className="relative">
-        <div className="overflow-hidden">
+        <div ref={guidanceContainerRef} className="overflow-hidden" {...guidanceHandlers}>
           <div
-            className="flex transition-transform duration-300"
-            style={{ transform: `translateX(-${activeSlide * 100}%)` }}
+            className="flex"
+            style={guidanceSwipeStyle}
           >
             {items.map((item, i) => (
               <div
@@ -2743,7 +2827,7 @@ function InvitationClientExhibitContent({
               <InstagramHeader showHeader={showHeader} />
 
               {/* 1. Cover (Story style) */}
-              <CoverSection content={content} invitation={invitation} displayId={displayId} audioRef={audioRef} bgmEnabled={bgmEnabled} />
+              <CoverSection content={content} invitation={invitation} displayId={displayId} audioRef={audioRef} bgmEnabled={bgmEnabled} fontFamily={fontFamily} />
 
               {/* 2. Profile Section */}
               <ProfileSection

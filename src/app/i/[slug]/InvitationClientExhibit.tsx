@@ -379,7 +379,7 @@ function InlineBgmEqualizer({
 }
 
 // === 2. Cover Section (Instagram Story Style — tap to navigate) ===
-function CoverSection({ content, invitation, displayId, audioRef, bgmEnabled, fontFamily }: { content: any; invitation: any; displayId: string; audioRef: React.RefObject<HTMLAudioElement | null>; bgmEnabled: boolean; fontFamily?: string }) {
+function CoverSection({ content, invitation, displayId, audioRef, bgmEnabled, fontFamily, onComplete }: { content: any; invitation: any; displayId: string; audioRef: React.RefObject<HTMLAudioElement | null>; bgmEnabled: boolean; fontFamily?: string; onComplete?: () => void }) {
   const coverImage = extractImageUrl(content?.media?.coverImage) || '/sample/cover.png'
   const miniAvatarImage = extractImageUrl(content?.media?.profileAvatar) || coverImage
   const miniAvatarSettings = content?.media?.profileAvatarSettings || null
@@ -457,12 +457,15 @@ function CoverSection({ content, invitation, displayId, audioRef, bgmEnabled, fo
     }
   }, [currentIndex, isPaused, storyImages.length])
 
-  // Reset progress on index change
+  // Reset progress on index change + notify complete
   useEffect(() => {
     startTimeRef.current = Date.now()
     pausedProgressRef.current = 0
     setProgress(0)
-  }, [currentIndex])
+    if (currentIndex === storyImages.length - 1) {
+      onComplete?.()
+    }
+  }, [currentIndex, storyImages.length, onComplete])
 
   // Tap handler: left third = prev, right two-thirds = next
   const handleTap = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
@@ -2694,6 +2697,28 @@ function InvitationClientExhibitContent({
   // Instagram header visibility (show after scrolling past cover)
   const [showHeader, setShowHeader] = useState(false)
 
+  // Cover story 완료 전 스크롤 방지
+  const [coverComplete, setCoverComplete] = useState(false)
+  const handleCoverComplete = useCallback(() => setCoverComplete(true), [])
+
+  useEffect(() => {
+    if (coverComplete) return
+    const el = scrollContainerRef.current
+    if (!el) return
+    const prevent = (e: Event) => {
+      // 커버 영역 내에서만 스크롤 방지
+      if (window.scrollY < window.innerHeight * 0.5) {
+        e.preventDefault()
+      }
+    }
+    window.addEventListener('wheel', prevent, { passive: false })
+    window.addEventListener('touchmove', prevent, { passive: false })
+    return () => {
+      window.removeEventListener('wheel', prevent)
+      window.removeEventListener('touchmove', prevent)
+    }
+  }, [coverComplete])
+
   useEffect(() => {
     const handleScroll = () => {
       setShowHeader(window.scrollY > window.innerHeight * 0.7)
@@ -2827,7 +2852,7 @@ function InvitationClientExhibitContent({
               <InstagramHeader showHeader={showHeader} />
 
               {/* 1. Cover (Story style) */}
-              <CoverSection content={content} invitation={invitation} displayId={displayId} audioRef={audioRef} bgmEnabled={bgmEnabled} fontFamily={fontFamily} />
+              <CoverSection content={content} invitation={invitation} displayId={displayId} audioRef={audioRef} bgmEnabled={bgmEnabled} fontFamily={fontFamily} onComplete={handleCoverComplete} />
 
               {/* 2. Profile Section */}
               <ProfileSection

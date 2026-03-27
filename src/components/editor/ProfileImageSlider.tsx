@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef, memo } from 'react'
+import CroppedImageDiv from '@/components/ui/CroppedImageDiv'
 
 interface ImageSettings {
   scale: number
@@ -10,38 +11,6 @@ interface ImageSettings {
   cropY?: number
   cropWidth?: number
   cropHeight?: number
-}
-
-// 이미지 크롭 스타일 계산 헬퍼 함수
-function getImageCropStyle(img: string, s: ImageSettings) {
-  const hasCropData = s.cropWidth !== undefined && s.cropHeight !== undefined && (s.cropWidth < 1 || s.cropHeight < 1)
-
-  if (hasCropData) {
-    const cw = s.cropWidth || 1
-    const ch = s.cropHeight || 1
-    const cx = s.cropX || 0
-    const cy = s.cropY || 0
-
-    // 단일값 스케일로 비율 유지 + 크롭 줌
-    const scale = Math.max(100 / cw, 100 / ch)
-    const posX = cw < 1 ? (cx / (1 - cw)) * 100 : 50
-    const posY = ch < 1 ? (cy / (1 - ch)) * 100 : 50
-
-    return {
-      backgroundImage: `url(${img})`,
-      backgroundSize: `${scale}%`,
-      backgroundPosition: `${posX}% ${posY}%`,
-      backgroundRepeat: 'no-repeat' as const,
-    }
-  }
-
-  // 기존 scale/position 방식 (호환성 유지)
-  return {
-    backgroundImage: `url(${img})`,
-    backgroundSize: 'cover' as const,
-    backgroundPosition: 'center' as const,
-    transform: `scale(${s.scale || 1}) translate(${s.positionX || 0}%, ${s.positionY || 0}%)`,
-  }
 }
 
 interface ProfileImageSliderProps {
@@ -205,9 +174,10 @@ function ProfileImageSliderComponent({
     const settings = imageSettings[0] || { scale: 1.0, positionX: 0, positionY: 0 }
     return (
       <div className={`w-full aspect-[3/4] rounded-xl overflow-hidden ${className}`}>
-        <div
-          className="w-full h-full transition-transform duration-300"
-          style={getImageCropStyle(images[0], settings)}
+        <CroppedImageDiv
+          src={images[0]}
+          crop={settings}
+          className="w-full h-full"
         />
       </div>
     )
@@ -249,9 +219,10 @@ function ProfileImageSliderComponent({
                 key={index}
                 className="w-full h-full flex-shrink-0 overflow-hidden"
               >
-                <div
-                  className="w-full h-full transition-transform duration-300"
-                  style={getImageCropStyle(image, settings)}
+                <CroppedImageDiv
+                  src={image}
+                  crop={settings}
+                  className="w-full h-full"
                 />
               </div>
             )

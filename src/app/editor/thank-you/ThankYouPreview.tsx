@@ -1,14 +1,20 @@
 'use client'
 
-import ThankYouPage from '@/components/thank-you/ThankYouPage'
+import { useRef } from 'react'
+import ThankYouPage, { type ThankYouFontStyle } from '@/components/thank-you/ThankYouPage'
 import type { ThankYouData } from '@/components/thank-you/types'
 import { SAMPLE_DATA } from '@/components/thank-you/types'
 
 interface ThankYouPreviewProps {
   data: ThankYouData
+  fontStyle?: ThankYouFontStyle
+  accentColor?: string
+  sealColor?: string
 }
 
-export default function ThankYouPreview({ data }: ThankYouPreviewProps) {
+export default function ThankYouPreview({ data, fontStyle = 'classic', accentColor = '#B89878', sealColor = '#722F37' }: ThankYouPreviewProps) {
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+
   // 미리보기용: 빈 이미지는 샘플로 대체
   const previewData: ThankYouData = {
     ...data,
@@ -23,8 +29,18 @@ export default function ThankYouPreview({ data }: ThankYouPreviewProps) {
   }
 
   return (
-    <div className="h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
-      <ThankYouPage data={previewData} />
+    <div
+      ref={scrollContainerRef}
+      className="h-full overflow-y-auto"
+      style={{ WebkitOverflowScrolling: 'touch' }}
+    >
+      <ThankYouPage
+        data={previewData}
+        fontStyle={fontStyle}
+        accentColor={accentColor}
+        sealColor={sealColor}
+        scrollContainerRef={scrollContainerRef}
+      />
     </div>
   )
 }

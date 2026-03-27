@@ -1970,7 +1970,7 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     colorTheme: (content.colorTheme || 'record-coral') as ColorTheme,
     fontStyle: (content.fontStyle || 'modern') as FontStyle,
     groom: content.groom || {}, bride: content.bride || {},
-    wedding: content.wedding || {}, relationship: content.relationship || {},
+    wedding: { ...(content.wedding || {}), timeDisplay: content.wedding?.timeDisplay || invitation.wedding_time || '' }, relationship: content.relationship || {},
     content: content.content || {}, gallery: content.gallery || {},
     media: content.media || {}, rsvpEnabled: content.rsvpEnabled ?? true,
     rsvpDeadline: content.rsvpDeadline || '', rsvpAllowGuestCount: content.rsvpAllowGuestCount ?? true,

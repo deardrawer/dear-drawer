@@ -1665,7 +1665,7 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     fontStyle: (content.fontStyle || 'modern') as FontStyle,
     groom: content.groom || {},
     bride: content.bride || {},
-    wedding: content.wedding || {},
+    wedding: { ...(content.wedding || {}), timeDisplay: content.wedding?.timeDisplay || invitation.wedding_time || '' },
     relationship: content.relationship || {},
     content: content.content || {},
     gallery: content.gallery || {},

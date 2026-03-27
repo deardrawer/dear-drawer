@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import ThankYouPage from '@/components/thank-you/ThankYouPage'
+import ThankYouPage, { type ThankYouFontStyle } from '@/components/thank-you/ThankYouPage'
 import type { ThankYouData } from '@/components/thank-you/types'
 import type { Invitation } from '@/types/invitation'
 
@@ -29,14 +29,31 @@ export default function InvitationClientThankYou({
     date: (content.date as string) || '',
     heroMessage: (content.heroMessage as string) || '',
     heroImage: (content.heroImage as string) || '',
+    heroCrop: content.heroCrop as ThankYouData['heroCrop'],
     polaroids: Array.isArray(content.polaroids) ? content.polaroids.map((p: Record<string, unknown>) => ({
       image: (p.image as string) || '',
       caption: (p.caption as string) || '',
       rotation: (p.rotation as number) || 0,
       offsetX: (p.offsetX as number) || 0,
+      crop: p.crop as ThankYouData['heroCrop'],
     })) : [],
     closingLines: Array.isArray(content.closingLines) ? content.closingLines as string[] : [],
   } : undefined
+
+  // 폰트 스타일
+  const fontStyleValue = (content?.fontStyle as ThankYouFontStyle) || 'classic'
+
+  // 메인컬러 + 실링 (하위호환: colorTheme → accentColor)
+  let accentColorValue = (content?.accentColor as string) || ''
+  if (!accentColorValue && content?.colorTheme) {
+    const legacyMap: Record<string, string> = {
+      burgundy: '#B89878', navy: '#8898A8', sage: '#98907E',
+      dustyRose: '#A898A8', emerald: '#B8B0A5', slateBlue: '#B5A590',
+    }
+    accentColorValue = legacyMap[content.colorTheme as string] || '#B89878'
+  }
+  if (!accentColorValue) accentColorValue = '#B89878'
+  const sealColorValue = (content?.sealColor as string) || '#722F37'
 
   // BGM 설정
   const bgmConfig = content?.bgm as { enabled?: boolean; url?: string; autoplay?: boolean } | undefined
@@ -87,7 +104,7 @@ export default function InvitationClientThankYou({
 
   return (
     <div className="relative">
-      <ThankYouPage data={thankYouData} />
+      <ThankYouPage data={thankYouData} fontStyle={fontStyleValue} accentColor={accentColorValue} sealColor={sealColorValue} />
 
       {/* BGM 토글 버튼 */}
       {bgmEnabled && bgmUrl && (

@@ -1,13 +1,15 @@
 import { create } from 'zustand'
-import type { ThankYouData, PolaroidData } from '@/components/thank-you/types'
+import type { ThankYouData, PolaroidData, BackgroundImageSettings } from '@/components/thank-you/types'
 import { SAMPLE_DATA } from '@/components/thank-you/types'
 
-export type ThankYouFontStyle = 'classic' | 'modern' | 'romantic'
+export type ThankYouFontStyle = 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury'
 
 export interface ThankYouEditorState {
   // Data
   data: ThankYouData
   fontStyle: ThankYouFontStyle
+  accentColor: string
+  sealColor: string
   bgm: {
     enabled: boolean
     url: string
@@ -25,7 +27,11 @@ export interface ThankYouEditorState {
   updatePolaroid: (index: number, updates: Partial<PolaroidData>) => void
   updateClosingLine: (index: number, value: string) => void
   setFontStyle: (style: ThankYouFontStyle) => void
+  setAccentColor: (color: string) => void
+  setSealColor: (color: string) => void
   setBgm: (bgm: Partial<ThankYouEditorState['bgm']>) => void
+  setBackgroundImage: (url: string) => void
+  setBackgroundImageSettings: (settings: Partial<BackgroundImageSettings>) => void
   setWizardStep: (step: 1 | 2 | 3 | 4 | 5) => void
   setIsDirty: (dirty: boolean) => void
   setIsSaving: (saving: boolean) => void
@@ -46,8 +52,8 @@ const DEFAULT_DATA: ThankYouData = {
   ],
   closingLines: [
     '감사합니다.',
-    '바쁘신 와중에도 저희의 결혼을 축하해주시고\n그날을 함께해주셔서 진심으로 감사드립니다.',
-    '여러분과 함께한 그 순간은\n저희에게 오래도록 기억될 소중한 시간이었습니다.',
+    '바쁘신 와중에도\n저희의 결혼을 축하해주시고,\n그날을 함께해주셔서\n진심으로 감사드립니다.',
+    '여러분과 함께한 그 순간은\n저희에게 오래도록 기억될\n소중한 시간이었습니다.',
     '그 마음을 잊지 않고,\n천천히 그리고 단단하게\n저희만의 이야기를 이어가겠습니다.',
     '올림',
   ],
@@ -56,6 +62,8 @@ const DEFAULT_DATA: ThankYouData = {
 export const useThankYouEditorStore = create<ThankYouEditorState>((set, get) => ({
   data: { ...DEFAULT_DATA },
   fontStyle: 'classic',
+  accentColor: '#B89878',
+  sealColor: '#722F37',
   bgm: { enabled: false, url: '', autoplay: false },
   wizardStep: 1,
   isDirty: false,
@@ -82,8 +90,28 @@ export const useThankYouEditorStore = create<ThankYouEditorState>((set, get) => 
 
   setFontStyle: (fontStyle) => set({ fontStyle, isDirty: true }),
 
+  setAccentColor: (accentColor) => set({ accentColor, isDirty: true }),
+
+  setSealColor: (sealColor) => set({ sealColor, isDirty: true }),
+
   setBgm: (bgm) => set((state) => ({
     bgm: { ...state.bgm, ...bgm },
+    isDirty: true,
+  })),
+
+  setBackgroundImage: (url) => set((state) => ({
+    data: { ...state.data, backgroundImage: url },
+    isDirty: true,
+  })),
+
+  setBackgroundImageSettings: (settings) => set((state) => ({
+    data: {
+      ...state.data,
+      backgroundImageSettings: {
+        ...state.data.backgroundImageSettings,
+        ...settings,
+      },
+    },
     isDirty: true,
   })),
 
@@ -96,6 +124,8 @@ export const useThankYouEditorStore = create<ThankYouEditorState>((set, get) => 
   reset: () => set({
     data: { ...DEFAULT_DATA },
     fontStyle: 'classic',
+    accentColor: '#B89878',
+    sealColor: '#722F37',
     bgm: { enabled: false, url: '', autoplay: false },
     wizardStep: 1,
     isDirty: false,
@@ -103,10 +133,21 @@ export const useThankYouEditorStore = create<ThankYouEditorState>((set, get) => 
   }),
 
   loadFromContent: (content) => {
-    const { fontStyle, bgm, ...thankYouData } = content as Record<string, unknown>
+    const { fontStyle, accentColor, colorTheme, sealColor, bgm, ...thankYouData } = content as Record<string, unknown>
+    // colorTheme 하위호환: 기존 저장된 데이터에 colorTheme이 있으면 accentColor로 변환
+    let resolvedAccent = (accentColor as string) || '#B89878'
+    if (!accentColor && colorTheme) {
+      const legacyMap: Record<string, string> = {
+        burgundy: '#B89878', navy: '#8898A8', sage: '#98907E',
+        dustyRose: '#A898A8', emerald: '#B8B0A5', slateBlue: '#B5A590',
+      }
+      resolvedAccent = legacyMap[colorTheme as string] || '#B89878'
+    }
     set({
       data: { ...DEFAULT_DATA, ...(thankYouData as Partial<ThankYouData>) },
       fontStyle: (fontStyle as ThankYouFontStyle) || 'classic',
+      accentColor: resolvedAccent,
+      sealColor: (sealColor as string) || '#722F37',
       bgm: {
         enabled: (bgm as { enabled?: boolean })?.enabled ?? false,
         url: (bgm as { url?: string })?.url ?? '',
@@ -117,7 +158,7 @@ export const useThankYouEditorStore = create<ThankYouEditorState>((set, get) => 
   },
 
   toSavePayload: () => {
-    const { data, fontStyle, bgm } = get()
-    return JSON.stringify({ ...data, fontStyle, bgm })
+    const { data, fontStyle, accentColor, sealColor, bgm } = get()
+    return JSON.stringify({ ...data, fontStyle, accentColor, sealColor, bgm })
   },
 }))

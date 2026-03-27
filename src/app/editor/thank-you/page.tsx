@@ -19,9 +19,10 @@ function ThankYouEditorContent() {
   const urlSlug = searchParams.get('slug')
 
   const {
-    data, fontStyle, bgm, isDirty, isSaving,
+    data, fontStyle, accentColor, sealColor, bgm, isDirty, isSaving,
     setIsDirty, setIsSaving, loadFromContent, toSavePayload, reset,
   } = useThankYouEditorStore()
+  const fontStyleValue = fontStyle
 
   const [invitationId, setInvitationId] = useState<string | null>(editId)
   const [savedSlug, setSavedSlug] = useState<string | null>(urlSlug || null)
@@ -288,7 +289,7 @@ function ThankYouEditorContent() {
             {!isMobile && (
               <div className="w-[440px] min-w-[440px] sticky top-0 overflow-hidden editor-panel m-4 mr-0 flex flex-col justify-center items-center" style={{ height: 'calc(100vh - 88px)' }}>
                 <div className="w-[360px] shadow-2xl bg-white overflow-hidden border border-gray-200" style={{ height: '710px' }}>
-                  <ThankYouPreview data={data} />
+                  <ThankYouPreview data={data} fontStyle={fontStyleValue} accentColor={accentColor} sealColor={sealColor} />
                 </div>
               </div>
             )}
@@ -297,7 +298,7 @@ function ThankYouEditorContent() {
             {isMobile && mobileView === 'preview' && (
               <div className="w-full flex flex-col justify-center items-center py-8" style={{ minHeight: 'calc(100vh - 104px)' }}>
                 <div className="w-[320px] shadow-2xl bg-white overflow-hidden border border-gray-200" style={{ height: '630px' }}>
-                  <ThankYouPreview data={data} />
+                  <ThankYouPreview data={data} fontStyle={fontStyleValue} accentColor={accentColor} sealColor={sealColor} />
                 </div>
               </div>
             )}
@@ -332,7 +333,7 @@ function ThankYouEditorContent() {
             <div className="w-[375px] bg-gray-900 rounded-[50px] p-3 shadow-2xl border border-gray-700">
               <div className="rounded-[40px] overflow-hidden bg-white relative" style={{ height: '812px' }}>
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[35px] bg-black rounded-b-3xl z-10 pointer-events-none" />
-                <ThankYouPreview data={data} />
+                <ThankYouPreview data={data} fontStyle={fontStyleValue} accentColor={accentColor} sealColor={sealColor} />
                 <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-gray-300 rounded-full" />
               </div>
             </div>

@@ -2672,7 +2672,10 @@ function transformToDisplayData(dbInvitation: Invitation, content: InvitationCon
     fontStyle: (content.fontStyle || 'romantic') as FontStyle,
     groom: content.groom || mockInvitation.groom,
     bride: content.bride || mockInvitation.bride,
-    wedding: content.wedding || mockInvitation.wedding,
+    wedding: {
+      ...(content.wedding || mockInvitation.wedding),
+      timeDisplay: content.wedding?.timeDisplay || dbInvitation.wedding_time || (content.wedding || mockInvitation.wedding).timeDisplay || '',
+    },
     relationship: content.relationship || mockInvitation.relationship,
     content: content.content || mockInvitation.content,
     gallery: content.gallery || mockInvitation.gallery,

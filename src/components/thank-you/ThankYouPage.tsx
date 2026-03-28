@@ -7,6 +7,8 @@ import {
   useScroll,
   useTransform,
   useReducedMotion,
+  useMotionValue,
+  animate,
 } from "framer-motion";
 import type { ThankYouData, CropData, BackgroundImageSettings } from "./types";
 import { SAMPLE_DATA } from "./types";
@@ -172,12 +174,15 @@ function lerp(start: number, end: number, from: number, to: number) {
 
 /* ───────── component ───────── */
 
+export type IntroMode = "auto" | "compact" | "tap";
+
 interface ThankYouPageProps {
   data?: ThankYouData;
   fontStyle?: ThankYouFontStyle;
   accentColor?: string;
   sealColor?: string;
   scrollContainerRef?: RefObject<HTMLElement | null>;
+  introMode?: IntroMode;
 }
 
 export default function ThankYouPage({
@@ -186,6 +191,7 @@ export default function ThankYouPage({
   accentColor = "#B89878",
   sealColor = "#722F37",
   scrollContainerRef,
+  introMode = "auto",
 }: ThankYouPageProps) {
   const prefersReducedMotion = useReducedMotion();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -203,12 +209,46 @@ export default function ThankYouPage({
     return () => ro.disconnect();
   }, [scrollContainerRef]);
 
-  // 텍스트 애니메이션 완료 전 스크롤 차단 (마지막 텍스트: delay 2.5s + duration 0.8s = 3.3s)
+  // ── 인트로 모드별 상태 관리 ──
   const [scrollLocked, setScrollLocked] = useState(true);
+  const [introFadedOut, setIntroFadedOut] = useState(false);    // A,C 모드: 텍스트 자동/수동 페이드아웃 완료
+  const [tapReady, setTapReady] = useState(false);               // C 모드: "터치하세요" 표시 여부
+  const autoIntroOpacity = useMotionValue(1);                     // A,C 모드: JS 애니메이션으로 텍스트 opacity 제어
+
+  // 텍스트 애니메이션 완료 대기 (공통: 3.3초)
   useEffect(() => {
-    const timer = setTimeout(() => setScrollLocked(false), 3500);
-    return () => clearTimeout(timer);
-  }, []);
+    const textDone = setTimeout(() => {
+      if (introMode === "auto") {
+        // A: 텍스트 2초 머물다 자동 페이드아웃
+        const autoFade = setTimeout(() => {
+          animate(autoIntroOpacity, 0, { duration: 0.8, ease: "easeOut" });
+          setTimeout(() => {
+            setIntroFadedOut(true);
+            setScrollLocked(false);
+          }, 800);
+        }, 1500);
+        return () => clearTimeout(autoFade);
+      } else if (introMode === "compact") {
+        // B: 바로 스크롤 해제 (스크롤로 fade-out)
+        setScrollLocked(false);
+      } else if (introMode === "tap") {
+        // C: "터치하세요" 표시
+        setTapReady(true);
+      }
+    }, 3500);
+    return () => clearTimeout(textDone);
+  }, [introMode, autoIntroOpacity]);
+
+  // C 모드: 터치 핸들러
+  const handleTapToContinue = () => {
+    if (introMode !== "tap" || !tapReady) return;
+    setTapReady(false);
+    animate(autoIntroOpacity, 0, { duration: 0.6, ease: "easeOut" });
+    setTimeout(() => {
+      setIntroFadedOut(true);
+      setScrollLocked(false);
+    }, 600);
+  };
 
   // 스크롤 컨테이너 또는 window의 스크롤 차단
   useEffect(() => {
@@ -252,79 +292,96 @@ export default function ThankYouPage({
   });
   const scrollHintOpacity = useTransform(p, lerp(0.02, 0.05, 1, 0));
 
-  // ── Phase 2: Text fade-out (0.06–0.12) ──
-  const introOpacity = useTransform(p, lerp(0.06, 0.12, 1, 0));
-  const introVisibility = useTransform(p, (v) =>
-    v >= 0.13 ? "hidden" as const : "visible" as const
+  // ── Phase 2: Text fade-out — 모드별 다르게 동작 ──
+  // B(compact): 스크롤 0.01~0.04로 빠르게 fade-out
+  const scrollIntroOpacity = useTransform(p,
+    introMode === "compact" ? lerp(0.01, 0.04, 1, 0) : lerp(0.06, 0.12, 1, 0)
   );
+  // A,C: autoIntroOpacity (JS 애니메이션)로 제어, B: scrollIntroOpacity로 제어
+  const introOpacity = introMode === "compact" ? scrollIntroOpacity : autoIntroOpacity;
+  const introVisibility = useTransform(p, (v) => {
+    if (introMode !== "compact" && introFadedOut) return "hidden" as const;
+    if (introMode === "compact" && v >= 0.05) return "hidden" as const;
+    return "visible" as const;
+  });
 
-  // ── Phase 3: Photo shrinks → polaroid (0.14–0.30) ──
-  const heroScale = useTransform(p, lerp(0.14, 0.30, 1.65, 0.62));
-  const overlayOpacity = useTransform(p, lerp(0.14, 0.20, 1, 0));
-  const bgOpacity = useTransform(p, lerp(0.14, 0.20, 0, 1));
-  const heroPadding = useTransform(p, lerp(0.18, 0.28, 0, 10));
-  const heroShadow = useTransform(p, (v) => {
-    const t = Math.max(0, Math.min(1, (v - 0.20) / (0.30 - 0.20)));
+  /* ── 모드별 타임라인 ──
+   * default:  텍스트 0.06-0.12 → 사진 0.14-0.30 → 카드2 0.34-0.46 → ...
+   * auto(A):  텍스트 자동fade → 사진 0.04-0.16 → 카드2 0.20-0.32 → ...
+   * compact(B): 텍스트 0.01-0.04 → 사진 0.05-0.15 → 카드2 0.17-0.25 → ...
+   */
+  const A = introMode === "auto";
+  const B = introMode === "compact";
+
+  // ── Phase 3: Photo shrinks → polaroid ──
+  const heroScale    = useTransform(p, lerp(B ? 0.05 : A ? 0.04 : 0.14, B ? 0.15 : A ? 0.16 : 0.30, 1.65, 0.62));
+  const overlayOpacity = useTransform(p, lerp(B ? 0.05 : A ? 0.04 : 0.14, B ? 0.09 : A ? 0.08 : 0.20, 1, 0));
+  const bgOpacity    = useTransform(p, lerp(B ? 0.05 : A ? 0.04 : 0.14, B ? 0.09 : A ? 0.08 : 0.20, 0, 1));
+  const heroPadding  = useTransform(p, lerp(B ? 0.07 : A ? 0.06 : 0.18, B ? 0.13 : A ? 0.14 : 0.28, 0, 10));
+  const heroShadow   = useTransform(p, (v) => {
+    const s = B ? 0.09 : A ? 0.08 : 0.20, e = B ? 0.15 : A ? 0.16 : 0.30;
+    const t = Math.max(0, Math.min(1, (v - s) / (e - s)));
     return `0 ${t * 8}px ${t * 32}px rgba(0,0,0,${t * 0.15})`;
   });
-  const heroRotation = useTransform(p, lerp(0.24, 0.30, 0, -3));
-  const captionHeight = useTransform(p, lerp(0.26, 0.30, 0, 65));
-  const captionOpacity = useTransform(p, lerp(0.28, 0.32, 0, 1));
-  const heroY = useTransform(p, lerp(0.30, 0.44, 0, -150));
+  const heroRotation   = useTransform(p, lerp(B ? 0.11 : A ? 0.11 : 0.24, B ? 0.15 : A ? 0.16 : 0.30, 0, -3));
+  const captionHeight  = useTransform(p, lerp(B ? 0.12 : A ? 0.12 : 0.26, B ? 0.15 : A ? 0.16 : 0.30, 0, 65));
+  const captionOpacity = useTransform(p, lerp(B ? 0.13 : A ? 0.14 : 0.28, B ? 0.16 : A ? 0.18 : 0.32, 0, 1));
+  const heroY          = useTransform(p, lerp(B ? 0.15 : A ? 0.16 : 0.30, B ? 0.22 : A ? 0.28 : 0.44, 0, -150));
 
-  // ── Phase 4: Card 2 enters (0.34–0.46) ──
-  const card2Opacity = useTransform(p, lerp(0.34, 0.38, 0, 1));
-  const card2Y = useTransform(p, lerp(0.34, 0.46, 400, 10));
-  const card2Rotate = useTransform(p, lerp(0.36, 0.46, 10, 3));
-  const card2X = useTransform(p, lerp(0.36, 0.46, 50, 24));
+  // ── Phase 4: Card 2 enters (A=기존) ──
+  const card2Opacity = useTransform(p, lerp(B ? 0.17 : 0.34, B ? 0.20 : 0.38, 0, 1));
+  const card2Y       = useTransform(p, lerp(B ? 0.17 : 0.34, B ? 0.25 : 0.46, 400, 10));
+  const card2Rotate  = useTransform(p, lerp(B ? 0.18 : 0.36, B ? 0.25 : 0.46, 10, 3));
+  const card2X       = useTransform(p, lerp(B ? 0.18 : 0.36, B ? 0.25 : 0.46, 50, 24));
 
-  // ── Phase 5: Card 3 enters (0.48–0.58) ──
-  const card3Opacity = useTransform(p, lerp(0.48, 0.52, 0, 1));
-  const card3Y = useTransform(p, lerp(0.48, 0.58, 400, 110));
-  const card3Rotate = useTransform(p, lerp(0.50, 0.58, -10, -5));
-  const card3X = useTransform(p, lerp(0.50, 0.58, -40, 15));
+  // ── Phase 5: Card 3 enters (A=압축) ──
+  const card3Opacity = useTransform(p, lerp(B ? 0.27 : A ? 0.48 : 0.48, B ? 0.30 : A ? 0.51 : 0.52, 0, 1));
+  const card3Y       = useTransform(p, lerp(B ? 0.27 : A ? 0.48 : 0.48, B ? 0.35 : A ? 0.54 : 0.58, 400, 110));
+  const card3Rotate  = useTransform(p, lerp(B ? 0.28 : A ? 0.49 : 0.50, B ? 0.35 : A ? 0.54 : 0.58, -10, -5));
+  const card3X       = useTransform(p, lerp(B ? 0.28 : A ? 0.49 : 0.50, B ? 0.35 : A ? 0.54 : 0.58, -40, 15));
 
-  // ── Phase 6: Tracing paper — top ↓ / bottom ↑ with overlap (0.62–0.72) ──
-  // 55% height + overlap = 포장하듯 살짝 겹침
+  // ── Phase 6: Tracing paper (A=카드3 직후 바로 시작) ──
+  const tracingS = B ? 0.38 : A ? 0.56 : 0.62, tracingE = B ? 0.46 : A ? 0.64 : 0.72;
   const tracingTopY = useTransform(p, (v) => {
-    const t = Math.max(0, Math.min(1, (v - 0.62) / (0.72 - 0.62)));
+    const t = Math.max(0, Math.min(1, (v - tracingS) / (tracingE - tracingS)));
     return `${-(1 - t) * 100}%`;
   });
   const tracingBottomY = useTransform(p, (v) => {
-    const t = Math.max(0, Math.min(1, (v - 0.62) / (0.72 - 0.62)));
+    const t = Math.max(0, Math.min(1, (v - tracingS) / (tracingE - tracingS)));
     return `${(1 - t) * 100}%`;
   });
-  const tracingOpacity = useTransform(p, lerp(0.62, 0.68, 0, 1));
+  const tracingOpacity = useTransform(p, lerp(B ? 0.38 : A ? 0.56 : 0.62, B ? 0.42 : A ? 0.60 : 0.68, 0, 1));
 
-  // ── Phase 6.5: Sealing stamp (0.72–0.76) ──
-  const sealScale = useTransform(p, lerp(0.72, 0.75, 0.5, 1));
-  const sealOpacity = useTransform(p, lerp(0.72, 0.75, 0, 1));
-  const sealRotate = useTransform(p, lerp(0.72, 0.75, -30, 0));
+  // ── Phase 6.5: Sealing stamp (A=커튼 직후) ──
+  const sealScale  = useTransform(p, lerp(B ? 0.46 : A ? 0.64 : 0.72, B ? 0.49 : A ? 0.67 : 0.75, 0.5, 1));
+  const sealOpacity = useTransform(p, lerp(B ? 0.46 : A ? 0.64 : 0.72, B ? 0.49 : A ? 0.67 : 0.75, 0, 1));
+  const sealRotate = useTransform(p, lerp(B ? 0.46 : A ? 0.64 : 0.72, B ? 0.49 : A ? 0.67 : 0.75, -30, 0));
 
-  // ── Phase 7: Card + ending text (0.76–0.94) ──
-  const cardScale = useTransform(p, lerp(0.76, 0.80, 0.9, 1));
-  const cardOpacity = useTransform(p, lerp(0.76, 0.80, 0, 1));
-  const endLine1Opacity = useTransform(p, lerp(0.80, 0.83, 0, 1));
-  const endLine1Y = useTransform(p, lerp(0.80, 0.83, 16, 0));
-  const endLine2Opacity = useTransform(p, lerp(0.83, 0.86, 0, 1));
-  const endLine2Y = useTransform(p, lerp(0.83, 0.86, 16, 0));
-  const endLine3Opacity = useTransform(p, lerp(0.86, 0.89, 0, 1));
-  const endLine3Y = useTransform(p, lerp(0.86, 0.89, 16, 0));
-  const endLine4Opacity = useTransform(p, lerp(0.89, 0.92, 0, 1));
-  const endLine4Y = useTransform(p, lerp(0.89, 0.92, 16, 0));
-  const endLine5Opacity = useTransform(p, lerp(0.92, 0.95, 0, 1));
-  const endLine5Y = useTransform(p, lerp(0.92, 0.95, 16, 0));
+  // ── Phase 7: Card + ending text (기존) ──
+  const cardScale       = useTransform(p, lerp(B ? 0.50 : 0.76, B ? 0.53 : 0.80, 0.9, 1));
+  const cardOpacity     = useTransform(p, lerp(B ? 0.50 : 0.76, B ? 0.53 : 0.80, 0, 1));
+  const endLine1Opacity = useTransform(p, lerp(B ? 0.54 : 0.80, B ? 0.57 : 0.83, 0, 1));
+  const endLine1Y       = useTransform(p, lerp(B ? 0.54 : 0.80, B ? 0.57 : 0.83, 16, 0));
+  const endLine2Opacity = useTransform(p, lerp(B ? 0.57 : 0.83, B ? 0.60 : 0.86, 0, 1));
+  const endLine2Y       = useTransform(p, lerp(B ? 0.57 : 0.83, B ? 0.60 : 0.86, 16, 0));
+  const endLine3Opacity = useTransform(p, lerp(B ? 0.60 : 0.86, B ? 0.63 : 0.89, 0, 1));
+  const endLine3Y       = useTransform(p, lerp(B ? 0.60 : 0.86, B ? 0.63 : 0.89, 16, 0));
+  const endLine4Opacity = useTransform(p, lerp(B ? 0.63 : 0.89, B ? 0.66 : 0.92, 0, 1));
+  const endLine4Y       = useTransform(p, lerp(B ? 0.63 : 0.89, B ? 0.66 : 0.92, 16, 0));
+  const endLine5Opacity = useTransform(p, lerp(B ? 0.66 : 0.92, B ? 0.69 : 0.95, 0, 1));
+  const endLine5Y       = useTransform(p, lerp(B ? 0.66 : 0.92, B ? 0.69 : 0.95, 16, 0));
 
-  // ── Photo share popup (0.96+) ──
+  // ── Photo share popup ──
+  const photoShareTrigger = B ? 0.76 : 0.96;
   const [showPhotoShare, setShowPhotoShare] = useState(false);
   const [photoShareDismissed, setPhotoShareDismissed] = useState(false);
   useEffect(() => {
     if (!data.photoShare?.enabled || !data.photoShare?.url || photoShareDismissed) return;
     const unsubscribe = p.on("change", (v: number) => {
-      if (v >= 0.96 && !showPhotoShare) setShowPhotoShare(true);
+      if (v >= photoShareTrigger && !showPhotoShare) setShowPhotoShare(true);
     });
     return unsubscribe;
-  }, [p, data.photoShare, showPhotoShare, photoShareDismissed]);
+  }, [p, data.photoShare, showPhotoShare, photoShareDismissed, photoShareTrigger]);
 
   if (prefersReducedMotion) {
     return <ReducedMotionView data={data} fontStyle={fontStyle} accentColor={accentColor} />;
@@ -462,7 +519,28 @@ export default function ThankYouPage({
           >
             {data.heroMessage}
           </motion.p>
+
+          {/* C 모드: "화면을 터치하세요" */}
+          {introMode === "tap" && tapReady && (
+            <motion.p
+              className="mt-10 text-xs tracking-widest uppercase"
+              style={{ color: "rgba(255,255,255,0.6)", fontFamily: fonts.english }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0, 1, 0.5, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              Tap to continue
+            </motion.p>
+          )}
         </motion.div>
+
+        {/* C 모드: 터치 영역 (텍스트 위에 투명 오버레이) */}
+        {introMode === "tap" && tapReady && (
+          <div
+            className="absolute inset-0 z-50 cursor-pointer"
+            onClick={handleTapToContinue}
+          />
+        )}
 
         {/* ═══ LAYER C — Card 2 ═══ z-20 */}
         <motion.div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
@@ -738,40 +816,71 @@ export default function ThankYouPage({
 
         {/* ═══ Scroll Hint ═══ z-35 — 텍스트 애니메이션 후에만 표시 */}
         {!scrollLocked && (
+        <>
+        {/* 블랙 오버레이 — 스크롤 시작하면 사라짐 */}
         <motion.div
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1"
+          className="absolute inset-0 pointer-events-none"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          style={{ opacity: scrollHintOpacity, zIndex: 34, background: "rgba(0,0,0,0.35)" }}
+        />
+        {/* 스크롤 유도 UI */}
+        <motion.div
+          className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
           style={{ opacity: scrollHintOpacity, zIndex: 35 }}
         >
           <span
-            className="text-xs tracking-widest uppercase"
+            className="text-base tracking-wider"
             style={{
-              color: "rgba(255,255,255,0.7)",
-              fontFamily: fonts.english,
+              color: "rgba(255,255,255,0.9)",
+              fontFamily: fonts.korean,
             }}
           >
-            Scroll
+            아래로 스크롤 내려보세요
           </span>
-          <motion.svg
-            width="20"
-            height="20"
-            viewBox="0 0 20 20"
-            fill="none"
-            animate={{ y: [0, 6, 0] }}
+          {/* 손가락 스와이프 애니메이션 */}
+          <motion.div
+            className="mt-5 flex flex-col items-center"
+            animate={{ y: [0, -20, 0] }}
             transition={{
-              duration: 1.5,
+              duration: 1.8,
               repeat: Infinity,
               ease: "easeInOut",
             }}
           >
-            <path
-              d="M4 7L10 13L16 7"
-              stroke="rgba(255,255,255,0.7)"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </motion.svg>
+            <svg width="36" height="52" viewBox="0 0 36 52" fill="none">
+              {/* 손가락 아이콘 */}
+              <ellipse cx="18" cy="10" rx="7" ry="9" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" />
+              <rect x="11" y="10" width="14" height="18" rx="7" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" />
+            </svg>
+          </motion.div>
+          {/* 아래 방향 쉐브론 3개 페이드 */}
+          <div className="mt-2 flex flex-col items-center gap-0">
+            <motion.svg width="24" height="12" viewBox="0 0 24 12" fill="none"
+              animate={{ opacity: [0.3, 1, 0.3] }}
+              transition={{ duration: 1.8, repeat: Infinity, delay: 0 }}
+            >
+              <path d="M4 2l8 8 8-8" stroke="rgba(255,255,255,0.8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </motion.svg>
+            <motion.svg width="24" height="12" viewBox="0 0 24 12" fill="none"
+              animate={{ opacity: [0.3, 1, 0.3] }}
+              transition={{ duration: 1.8, repeat: Infinity, delay: 0.3 }}
+            >
+              <path d="M4 2l8 8 8-8" stroke="rgba(255,255,255,0.6)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </motion.svg>
+            <motion.svg width="24" height="12" viewBox="0 0 24 12" fill="none"
+              animate={{ opacity: [0.3, 1, 0.3] }}
+              transition={{ duration: 1.8, repeat: Infinity, delay: 0.6 }}
+            >
+              <path d="M4 2l8 8 8-8" stroke="rgba(255,255,255,0.4)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </motion.svg>
+          </div>
         </motion.div>
+        </>
         )}
 
         {/* ═══ Photo Share Popup ═══ */}

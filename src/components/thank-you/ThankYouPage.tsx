@@ -384,7 +384,7 @@ export default function ThankYouPage({
                 className="object-cover"
               />
               <motion.div
-                className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/10 to-black/45"
+                className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/50"
                 style={{ opacity: overlayOpacity }}
               />
             </div>

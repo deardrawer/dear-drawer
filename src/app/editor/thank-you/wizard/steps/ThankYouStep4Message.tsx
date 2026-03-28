@@ -39,7 +39,7 @@ export default function ThankYouStep4Message() {
       {/* 안내 */}
       <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
         <p className="text-base text-amber-800 font-medium mb-1">감사 인사</p>
-        <p className="text-sm text-amber-600">커튼이 닫힌 후 제목 → 본문 → 서명 순서로 나타나는 감사 메시지입니다.</p>
+        <p className="text-sm text-amber-600">커튼이 닫힌 후 스크롤에 따라 제목 → 본문 → 서명 순서로 나타나는 감사 메시지입니다.</p>
       </div>
 
       {/* 제목 */}
@@ -58,7 +58,7 @@ export default function ThankYouStep4Message() {
       {/* 본문 (통합) */}
       <div>
         <label className="block text-sm font-medium text-[#2C2824] mb-2">본문</label>
-        <p className="text-xs text-gray-400 mb-2">감사의 마음을 전하는 내용을 작성해주세요. 본문은 한 번에 함께 나타납니다. Enter로 줄바꿈, 빈 줄로 문단 구분이 가능합니다.</p>
+        <p className="text-xs text-gray-400 mb-2">감사의 마음을 전하는 내용을 작성해주세요. 스크롤에 따라 문단별로 순차적으로 나타납니다. Enter로 줄바꿈, 빈 줄로 문단 구분이 가능합니다.</p>
         <textarea
           value={bodyText}
           onChange={(e) => handleBodyChange(e.target.value)}
@@ -140,7 +140,7 @@ export default function ThankYouStep4Message() {
       {/* 미리보기 안내 */}
       <div className="p-4 bg-gray-50 rounded-xl">
         <p className="text-xs text-gray-500 leading-relaxed">
-          커튼이 닫힌 후 제목 → 본문(전체) → 서명 3단계로 자동 페이드인됩니다.
+          커튼이 닫힌 후 스크롤에 따라 제목 → 본문(문단별) → 서명 순서로 나타납니다.
           <br />Enter로 줄바꿈, 빈 줄(Enter 2번)로 문단을 나눌 수 있습니다.
         </p>
       </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import ThankYouPage, { type ThankYouFontStyle } from '@/components/thank-you/ThankYouPage'
 import type { ThankYouData } from '@/components/thank-you/types'
 import { SAMPLE_DATA } from '@/components/thank-you/types'
@@ -10,9 +10,10 @@ interface ThankYouPreviewProps {
   fontStyle?: ThankYouFontStyle
   accentColor?: string
   sealColor?: string
+  wizardStep?: number
 }
 
-export default function ThankYouPreview({ data, fontStyle = 'classic', accentColor = '#B89878', sealColor = '#722F37' }: ThankYouPreviewProps) {
+export default function ThankYouPreview({ data, fontStyle = 'classic', accentColor = '#B89878', sealColor = '#722F37', wizardStep }: ThankYouPreviewProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [previewKey, setPreviewKey] = useState(0)
 
@@ -42,6 +43,13 @@ export default function ThankYouPreview({ data, fontStyle = 'classic', accentCol
     }
     setPreviewKey(k => k + 1)
   }
+
+  // "기본 정보" 탭(step 2) 진입 시 인트로 화면으로 자동 리셋
+  useEffect(() => {
+    if (wizardStep === 2) {
+      handleReset()
+    }
+  }, [wizardStep])
 
   return (
     <div className="relative h-full">

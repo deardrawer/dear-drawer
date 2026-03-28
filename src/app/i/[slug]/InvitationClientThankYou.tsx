@@ -62,35 +62,38 @@ export default function InvitationClientThankYou({
   const bgmUrl = bgmConfig?.url || ''
   const bgmAutoplay = bgmConfig?.autoplay ?? false
 
-  // 자동 재생
+  // 자동 재생 — iOS Safari는 click/touchend만 "사용자 제스처"로 인정
   useEffect(() => {
-    if (bgmEnabled && bgmUrl && bgmAutoplay && audioRef.current) {
-      const playBgm = () => {
-        audioRef.current?.play().then(() => {
-          setBgmPlaying(true)
-        }).catch(() => {
-          // 자동 재생 실패 (브라우저 정책)
-        })
-      }
-      // 사용자 인터랙션 후 재생 시도
-      const handleInteraction = () => {
-        playBgm()
-        document.removeEventListener('scroll', handleInteraction)
-        document.removeEventListener('click', handleInteraction)
-        document.removeEventListener('touchstart', handleInteraction)
-      }
-      document.addEventListener('scroll', handleInteraction, { once: true })
-      document.addEventListener('click', handleInteraction, { once: true })
-      document.addEventListener('touchstart', handleInteraction, { once: true })
-      // 즉시 시도
-      playBgm()
+    if (!bgmEnabled || !bgmUrl || !bgmAutoplay || !audioRef.current) return
 
-      return () => {
-        document.removeEventListener('scroll', handleInteraction)
-        document.removeEventListener('click', handleInteraction)
-        document.removeEventListener('touchstart', handleInteraction)
-      }
+    let resolved = false
+    const playBgm = () => {
+      if (resolved) return
+      audioRef.current?.play().then(() => {
+        resolved = true
+        setBgmPlaying(true)
+        cleanup()
+      }).catch(() => {
+        // 자동 재생 실패 — 다음 인터랙션에서 재시도
+      })
     }
+
+    const handleInteraction = () => playBgm()
+
+    const cleanup = () => {
+      document.removeEventListener('click', handleInteraction)
+      document.removeEventListener('touchend', handleInteraction)
+      document.removeEventListener('scroll', handleInteraction)
+    }
+
+    // iOS: click, touchend가 가장 안정적인 user gesture
+    document.addEventListener('click', handleInteraction)
+    document.addEventListener('touchend', handleInteraction)
+    document.addEventListener('scroll', handleInteraction)
+    // 즉시 시도 (데스크톱에서는 성공할 수 있음)
+    playBgm()
+
+    return cleanup
   }, [bgmEnabled, bgmUrl, bgmAutoplay])
 
   const toggleBgm = () => {

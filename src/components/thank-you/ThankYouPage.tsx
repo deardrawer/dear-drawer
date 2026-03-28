@@ -395,16 +395,21 @@ export default function ThankYouPage({
   }, [A, p, data.photoShare, showPhotoShare, photoShareDismissed, photoShareTrigger]);
 
   // ── A 모드: 카드+씰 완전 노출(0.62) 감지 → 스크롤 잠금 + 엔딩 자동 시작 ──
+  // p.on("change")는 모바일에서 누락될 수 있으므로 rAF 폴링으로 안정적 감지
   useEffect(() => {
     if (introMode !== "auto" || endingStarted) return;
     const threshold = 0.62;
-    const unsubscribe = p.on("change", (v: number) => {
-      if (v >= threshold) {
+    let rafId: number;
+    const check = () => {
+      if (p.get() >= threshold) {
         setEndingStarted(true);
         setScrollLocked(true);
+        return;
       }
-    });
-    return unsubscribe;
+      rafId = requestAnimationFrame(check);
+    };
+    rafId = requestAnimationFrame(check);
+    return () => cancelAnimationFrame(rafId);
   }, [introMode, p, endingStarted]);
 
   // ── A 모드: 엔딩 3그룹 자동 애니메이션 ──
@@ -547,7 +552,7 @@ export default function ThankYouPage({
 
           {/* Line 2: Couple names */}
           <motion.h1
-            className="mb-4 text-2xl font-medium tracking-wide text-white"
+            className="mb-1 text-2xl font-medium tracking-wide text-white"
             style={{
               fontFamily: fonts.korean,
             }}
@@ -556,26 +561,26 @@ export default function ThankYouPage({
             {data.coupleNames}
           </motion.h1>
 
-          {/* Line 3: Date */}
+          {/* Line 3: Short message */}
           <motion.p
-            className="mb-2 text-sm tracking-wider text-white/70"
-            style={{
-              fontFamily: fonts.english,
-            }}
-            {...autoFadeIn(1.5)}
-          >
-            {data.date}
-          </motion.p>
-
-          {/* Line 4: Short message */}
-          <motion.p
-            className="mt-6 text-base font-light leading-relaxed text-white/90 whitespace-pre-line"
+            className="mt-4 mb-1 text-base font-light leading-relaxed text-white/90 whitespace-pre-line"
             style={{
               fontFamily: fonts.korean,
             }}
-            {...autoFadeIn(2.5)}
+            {...autoFadeIn(1.5)}
           >
             {data.heroMessage}
+          </motion.p>
+
+          {/* Line 4: Date */}
+          <motion.p
+            className="mt-3 text-sm tracking-wider text-white/70"
+            style={{
+              fontFamily: fonts.english,
+            }}
+            {...autoFadeIn(2.3)}
+          >
+            {data.date}
           </motion.p>
 
           {/* C 모드: "화면을 터치하세요" */}

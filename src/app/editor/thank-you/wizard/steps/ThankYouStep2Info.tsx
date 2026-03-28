@@ -58,7 +58,7 @@ export default function ThankYouStep2Info() {
       <div className="p-4 bg-gray-50 rounded-xl">
         <p className="text-xs text-gray-500 leading-relaxed">
           입력한 정보는 감사장 인트로 화면에 표시됩니다.
-          <br />스크롤하면 "Thank You" &rarr; 이름 &rarr; 날짜 &rarr; 히어로 메시지 순서로 나타납니다.
+          <br />스크롤하면 "Thank You" &rarr; 이름 &rarr; 히어로 메시지 &rarr; 날짜 순서로 나타납니다.
         </p>
       </div>
     </div>

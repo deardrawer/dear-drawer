@@ -405,10 +405,10 @@ export default function ThankYouPage({
   }, [A, p, data.photoShare, showPhotoShare, photoShareDismissed, photoShareTrigger, photoShareReady]);
   // A 모드: 트리거 후 2초 딜레이
   useEffect(() => {
-    if (!photoShareReady || showPhotoShare) return;
+    if (!photoShareReady || showPhotoShare || photoShareDismissed) return;
     const timer = setTimeout(() => setShowPhotoShare(true), 2000);
     return () => clearTimeout(timer);
-  }, [photoShareReady, showPhotoShare]);
+  }, [photoShareReady, showPhotoShare, photoShareDismissed]);
 
 
 

@@ -215,6 +215,15 @@ export default function ThankYouPage({
   const [tapReady, setTapReady] = useState(false);               // C 모드: "터치하세요" 표시 여부
   const autoIntroOpacity = useMotionValue(1);                     // A,C 모드: JS 애니메이션으로 텍스트 opacity 제어
 
+  // ── Phase 7 자동 애니메이션 — 3그룹: 제목 / 본문 / 서명 (A 모드) ──
+  const [endingStarted, setEndingStarted] = useState(false);
+  const autoG1Op = useMotionValue(0);  // 제목 (감사합니다)
+  const autoG1Y = useMotionValue(16);
+  const autoG2Op = useMotionValue(0);  // 본문 (중간 단락 전체)
+  const autoG2Y = useMotionValue(16);
+  const autoG3Op = useMotionValue(0);  // 서명 (올림)
+  const autoG3Y = useMotionValue(16);
+
   // 텍스트 애니메이션 완료 대기 (공통: 3.3초)
   useEffect(() => {
     const textDone = setTimeout(() => {
@@ -375,13 +384,62 @@ export default function ThankYouPage({
   const photoShareTrigger = B ? 0.76 : 0.99;
   const [showPhotoShare, setShowPhotoShare] = useState(false);
   const [photoShareDismissed, setPhotoShareDismissed] = useState(false);
+  // B/default 모드: 스크롤 기반 팝업 트리거 (A 모드는 타이머로 처리)
   useEffect(() => {
+    if (A) return;
     if (!data.photoShare?.enabled || !data.photoShare?.url || photoShareDismissed) return;
     const unsubscribe = p.on("change", (v: number) => {
       if (v >= photoShareTrigger && !showPhotoShare) setShowPhotoShare(true);
     });
     return unsubscribe;
-  }, [p, data.photoShare, showPhotoShare, photoShareDismissed, photoShareTrigger]);
+  }, [A, p, data.photoShare, showPhotoShare, photoShareDismissed, photoShareTrigger]);
+
+  // ── A 모드: 카드+씰 완전 노출(0.62) 감지 → 스크롤 잠금 + 엔딩 자동 시작 ──
+  useEffect(() => {
+    if (introMode !== "auto" || endingStarted) return;
+    const threshold = 0.62;
+    const unsubscribe = p.on("change", (v: number) => {
+      if (v >= threshold) {
+        setEndingStarted(true);
+        setScrollLocked(true);
+      }
+    });
+    return unsubscribe;
+  }, [introMode, p, endingStarted]);
+
+  // ── A 모드: 엔딩 3그룹 자동 애니메이션 ──
+  useEffect(() => {
+    if (!endingStarted) return;
+    const timeouts: ReturnType<typeof setTimeout>[] = [];
+
+    // Group 1: 제목 (감사합니다)
+    timeouts.push(setTimeout(() => {
+      animate(autoG1Op, 1, { duration: 0.6, ease: "easeOut" });
+      animate(autoG1Y, 0, { duration: 0.6, ease: "easeOut" });
+    }, 400));
+
+    // Group 2: 본문 (중간 단락 전체)
+    timeouts.push(setTimeout(() => {
+      animate(autoG2Op, 1, { duration: 0.7, ease: "easeOut" });
+      animate(autoG2Y, 0, { duration: 0.7, ease: "easeOut" });
+    }, 1400));
+
+    // Group 3: 서명 (올림)
+    timeouts.push(setTimeout(() => {
+      animate(autoG3Op, 1, { duration: 0.5, ease: "easeOut" });
+      animate(autoG3Y, 0, { duration: 0.5, ease: "easeOut" });
+    }, 2800));
+
+    // Photo share popup (서명 완료 후 충분한 여운)
+    timeouts.push(setTimeout(() => {
+      if (data.photoShare?.enabled && data.photoShare?.url) {
+        setShowPhotoShare(true);
+      }
+    }, 5500));
+
+    return () => timeouts.forEach(clearTimeout);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [endingStarted]);
 
   if (prefersReducedMotion) {
     return <ReducedMotionView data={data} fontStyle={fontStyle} accentColor={accentColor} />;
@@ -720,8 +778,8 @@ export default function ThankYouPage({
             <motion.p
               className="mb-6 text-lg font-medium tracking-wider text-center"
               style={{
-                opacity: endLine1Opacity,
-                y: endLine1Y,
+                opacity: A ? autoG1Op : endLine1Opacity,
+                y: A ? autoG1Y : endLine1Y,
                 color: "#3D3530",
                 fontFamily: fonts.korean,
               }}
@@ -732,8 +790,8 @@ export default function ThankYouPage({
             <motion.p
               className="mb-4 text-sm font-light leading-relaxed tracking-wide text-center whitespace-pre-line"
               style={{
-                opacity: endLine2Opacity,
-                y: endLine2Y,
+                opacity: A ? autoG2Op : endLine2Opacity,
+                y: A ? autoG2Y : endLine2Y,
                 color: "#6B5E56",
                 fontFamily: fonts.korean,
               }}
@@ -744,8 +802,8 @@ export default function ThankYouPage({
             <motion.p
               className="mb-4 text-sm font-light leading-relaxed tracking-wide text-center whitespace-pre-line"
               style={{
-                opacity: endLine3Opacity,
-                y: endLine3Y,
+                opacity: A ? autoG2Op : endLine3Opacity,
+                y: A ? autoG2Y : endLine3Y,
                 color: "#6B5E56",
                 fontFamily: fonts.korean,
               }}
@@ -756,8 +814,8 @@ export default function ThankYouPage({
             <motion.p
               className="mb-6 text-sm font-light leading-relaxed tracking-wide text-center whitespace-pre-line"
               style={{
-                opacity: endLine4Opacity,
-                y: endLine4Y,
+                opacity: A ? autoG2Op : endLine4Opacity,
+                y: A ? autoG2Y : endLine4Y,
                 color: "#6B5E56",
                 fontFamily: fonts.korean,
               }}
@@ -777,8 +835,8 @@ export default function ThankYouPage({
             <motion.p
               className="text-xs tracking-[0.2em] text-center"
               style={{
-                opacity: endLine5Opacity,
-                y: endLine5Y,
+                opacity: A ? autoG3Op : endLine5Opacity,
+                y: A ? autoG3Y : endLine5Y,
                 color: accentColor,
                 fontFamily: fonts.korean,
               }}

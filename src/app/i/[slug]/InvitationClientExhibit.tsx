@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { WatermarkOverlay } from '@/components/ui/WatermarkOverlay'
+import CroppedImageDiv from '@/components/ui/CroppedImageDiv'
 
 // ============================================================
 // Types
@@ -883,28 +884,14 @@ function TabBar({ activeTab, onTabChange }: { activeTab: ContentTab; onTabChange
 function ProfileCarousel({ images, imageSettings }: { images: string[]; imageSettings?: any }) {
   const { currentIndex, style: swipeStyle, handlers, containerRef } = useSwipeCarousel(images.length)
 
-  const getImageCropStyle = (img: string, s: any) => {
-    if (!s) return { backgroundImage: `url(${img})`, backgroundSize: 'cover' as const, backgroundPosition: 'center' as const }
-    const hasCropData = s.cropWidth !== undefined && s.cropHeight !== undefined && (s.cropWidth < 1 || s.cropHeight < 1)
-    if (hasCropData) {
-      const cw = s.cropWidth || 1
-      const ch = s.cropHeight || 1
-      const cx = s.cropX || 0
-      const cy = s.cropY || 0
-
-      // 단일값 스케일로 비율 유지 + 크롭 줌
-      const scale = Math.max(100 / cw, 100 / ch)
-      const posX = cw < 1 ? (cx / (1 - cw)) * 100 : 50
-      const posY = ch < 1 ? (cy / (1 - ch)) * 100 : 50
-
-      return { backgroundImage: `url(${img})`, backgroundSize: `${scale}%`, backgroundPosition: `${posX}% ${posY}%`, backgroundRepeat: 'no-repeat' as const }
-    }
-    return { backgroundImage: `url(${img})`, backgroundSize: 'cover' as const, backgroundPosition: 'center' as const, transform: `scale(${s.scale || 1}) translate(${s.positionX || 0}%, ${s.positionY || 0}%)` }
-  }
-
   if (images.length <= 1) {
     return (
-      <div className="w-full overflow-hidden" style={{ aspectRatio: '4/5', background: '#FAFAFA', ...getImageCropStyle(images[0], imageSettings) }} />
+      <CroppedImageDiv
+        src={images[0]}
+        crop={imageSettings}
+        className="w-full overflow-hidden"
+        style={{ aspectRatio: '4/5', background: '#FAFAFA' }}
+      />
     )
   }
 
@@ -917,10 +904,11 @@ function ProfileCarousel({ images, imageSettings }: { images: string[]; imageSet
       >
         <div className="flex h-full" style={swipeStyle}>
           {images.map((img, idx) => (
-            <div
+            <CroppedImageDiv
               key={idx}
+              src={img}
+              crop={imageSettings}
               className="w-full h-full flex-shrink-0"
-              style={getImageCropStyle(img, imageSettings)}
             />
           ))}
         </div>
@@ -962,26 +950,6 @@ function PeopleTab({ content, profileImage, username }: { content: any; profileI
   const groomFirstName = getFirstName(groom?.name || '')
   const brideFirstName = getFirstName(bride?.name || '')
 
-  // 이미지 크롭 스타일 계산 (for header avatar)
-  const getImageCropStyle = (img: string, s: any) => {
-    if (!s) return { backgroundImage: `url(${img})`, backgroundSize: 'cover' as const, backgroundPosition: 'center' as const }
-    const hasCropData = s.cropWidth !== undefined && s.cropHeight !== undefined && (s.cropWidth < 1 || s.cropHeight < 1)
-    if (hasCropData) {
-      const cw = s.cropWidth || 1
-      const ch = s.cropHeight || 1
-      const cx = s.cropX || 0
-      const cy = s.cropY || 0
-
-      // 단일값 스케일로 비율 유지 + 크롭 줌
-      const scale = Math.max(100 / cw, 100 / ch)
-      const posX = cw < 1 ? (cx / (1 - cw)) * 100 : 50
-      const posY = ch < 1 ? (cy / (1 - ch)) * 100 : 50
-
-      return { backgroundImage: `url(${img})`, backgroundSize: `${scale}%`, backgroundPosition: `${posX}% ${posY}%`, backgroundRepeat: 'no-repeat' as const }
-    }
-    return { backgroundImage: `url(${img})`, backgroundSize: 'cover' as const, backgroundPosition: 'center' as const, transform: `scale(${s.scale || 1}) translate(${s.positionX || 0}%, ${s.positionY || 0}%)` }
-  }
-
   const people = [
     {
       name: groom?.name || '',
@@ -1015,7 +983,11 @@ function PeopleTab({ content, profileImage, username }: { content: any; profileI
         <div key={i} className="border-b" style={{ borderColor: '#EFEFEF' }}>
           {/* Post header */}
           <div className="flex items-center gap-3 px-3 py-2.5">
-            <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0" style={getImageCropStyle(person.image, person.imageSettings)} />
+            <CroppedImageDiv
+              src={person.image}
+              crop={person.imageSettings}
+              className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0"
+            />
 
             <div className="flex items-center gap-2">
               <span className="text-[13px] font-semibold" style={{ color: '#262626' }}>{person.name}</span>

@@ -11,38 +11,7 @@ import type { InvitationContent } from '@/store/editorStore'
 import IntroAnimation from '@/components/invitation/IntroAnimation'
 import { IntroSettings, getDefaultIntroSettings } from '@/lib/introPresets'
 import { parseHighlight } from '@/lib/textUtils'
-
-// 이미지 크롭 스타일 계산 헬퍼 함수
-function getImageCropStyle(img: string, s: { scale?: number; positionX?: number; positionY?: number; cropX?: number; cropY?: number; cropWidth?: number; cropHeight?: number }) {
-  const hasCropData = s.cropWidth !== undefined && s.cropHeight !== undefined && (s.cropWidth < 1 || s.cropHeight < 1)
-
-  if (hasCropData) {
-    const cw = s.cropWidth || 1
-    const ch = s.cropHeight || 1
-    const cx = s.cropX || 0
-    const cy = s.cropY || 0
-
-    // 단일값 스케일로 비율 유지 + 크롭 줌
-    const scale = Math.max(100 / cw, 100 / ch)
-    const posX = cw < 1 ? (cx / (1 - cw)) * 100 : 50
-    const posY = ch < 1 ? (cy / (1 - ch)) * 100 : 50
-
-    return {
-      backgroundImage: `url(${img})`,
-      backgroundSize: `${scale}%`,
-      backgroundPosition: `${posX}% ${posY}%`,
-      backgroundRepeat: 'no-repeat' as const,
-    }
-  }
-
-  // 기존 scale/position 방식 (호환성 유지)
-  return {
-    backgroundImage: `url(${img})`,
-    backgroundSize: 'cover' as const,
-    backgroundPosition: 'center' as const,
-    transform: `scale(${s.scale || 1}) translate(${s.positionX || 0}%, ${s.positionY || 0}%)`,
-  }
-}
+import CroppedImageDiv from '@/components/ui/CroppedImageDiv'
 
 // Music Toggle Component
 function MusicToggle({
@@ -996,7 +965,7 @@ const globalStyles = `
     width: 100%;
     height: 100%;
     z-index: 0;
-    /* background-size와 background-position은 인라인 스타일로 제어 (getImageCropStyle) */
+    /* 이미지 크롭은 CroppedImageDiv 컴포넌트로 제어 */
   }
 
   .full-height-divider-overlay {
@@ -1529,10 +1498,11 @@ function FullHeightDividerSection({
     >
       {/* Background Image */}
       {image && (
-        <div
+        <CroppedImageDiv
+          src={image}
+          crop={settings}
           className="full-height-divider-bg"
           style={{
-            ...getImageCropStyle(image, settings),
             filter: `grayscale(${settings.grayscale ?? 100}%)`,
             opacity: (settings.opacity ?? 100) / 100,
           }}
@@ -2293,13 +2263,15 @@ function StorySection({
                   overflow: 'hidden'
                 }}
               >
-                <div
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    ...(img ? getImageCropStyle(img, imgSettings) : {})
-                  }}
-                />
+                {img ? (
+                  <CroppedImageDiv
+                    src={img}
+                    crop={imgSettings}
+                    className="w-full h-full"
+                  />
+                ) : (
+                  <div className="w-full h-full" />
+                )}
               </div>
             )
           })}
@@ -2966,18 +2938,28 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
         onWheel={handleWheel}
       >
         {/* Cover Background Image */}
-        <div
-          className="absolute inset-0"
-          style={{
-            ...(invitation.media.coverImage
-              ? getImageCropStyle(invitation.media.coverImage, invitation.media.coverImageSettings || {})
-              : { background: 'linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)' }
-            ),
-            opacity: coverAnimated ? 1 : 0,
-            transform: coverAnimated ? 'scale(1)' : 'scale(1.03)',
-            transition: 'opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1), transform 1.1s cubic-bezier(0.22, 1, 0.36, 1)'
-          }}
-        />
+        {invitation.media.coverImage ? (
+          <CroppedImageDiv
+            src={invitation.media.coverImage}
+            crop={invitation.media.coverImageSettings || {}}
+            className="absolute inset-0"
+            style={{
+              opacity: coverAnimated ? 1 : 0,
+              transform: coverAnimated ? 'scale(1)' : 'scale(1.03)',
+              transition: 'opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1), transform 1.1s cubic-bezier(0.22, 1, 0.36, 1)'
+            }}
+          />
+        ) : (
+          <div
+            className="absolute inset-0"
+            style={{
+              background: 'linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)',
+              opacity: coverAnimated ? 1 : 0,
+              transform: coverAnimated ? 'scale(1)' : 'scale(1.03)',
+              transition: 'opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1), transform 1.1s cubic-bezier(0.22, 1, 0.36, 1)'
+            }}
+          />
+        )}
 
         {/* Cover Overlay */}
         <div className="absolute inset-0" style={{ background: 'rgba(0, 0, 0, 0.3)' }} />
@@ -3578,7 +3560,11 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
                       className="relative aspect-square overflow-hidden cursor-pointer transition-transform hover:scale-[1.02]"
                       onClick={() => onOpenLightbox?.(i)}
                     >
-                      <div className="w-full h-full bg-gray-100" style={img ? getImageCropStyle(img, imgSettings) : undefined} />
+                      {img ? (
+                        <CroppedImageDiv src={img} crop={imgSettings} className="w-full h-full" />
+                      ) : (
+                        <div className="w-full h-full bg-gray-100" />
+                      )}
                       {hasMore && i === 5 && (
                         <div
                           className="absolute inset-0 bg-black/40 flex items-center justify-center cursor-pointer"

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback, createContext, useContext, Fr
 import GuestFloatingButton from '@/components/invitation/GuestFloatingButton'
 import { WatermarkOverlay } from '@/components/ui/WatermarkOverlay'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import CroppedImageDiv from '@/components/ui/CroppedImageDiv'
 import type { Invitation } from '@/types/invitation'
 import type { InvitationContent } from '@/store/editorStore'
 
@@ -130,34 +131,6 @@ function extractImageUrl(img: unknown): string {
   return ''
 }
 
-// Image crop style helper - supports both cropX/Y/Width/Height format and legacy scale/position format
-function getImageCropStyle(imgUrl: string, s: { scale?: number; positionX?: number; positionY?: number; cropX?: number; cropY?: number; cropWidth?: number; cropHeight?: number }): React.CSSProperties {
-  const hasCropData = s.cropWidth !== undefined && s.cropHeight !== undefined && (s.cropWidth < 1 || s.cropHeight < 1)
-  if (hasCropData) {
-    const cw = s.cropWidth || 1
-    const ch = s.cropHeight || 1
-    const cx = s.cropX || 0
-    const cy = s.cropY || 0
-
-    // 단일값 스케일로 비율 유지 + 크롭 줌
-    const scale = Math.max(100 / cw, 100 / ch)
-    const posX = cw < 1 ? (cx / (1 - cw)) * 100 : 50
-    const posY = ch < 1 ? (cy / (1 - ch)) * 100 : 50
-
-    return {
-      backgroundImage: `url(${imgUrl})`,
-      backgroundSize: `${scale}%`,
-      backgroundPosition: `${posX}% ${posY}%`,
-      backgroundRepeat: 'no-repeat' as const,
-    }
-  }
-  return {
-    backgroundImage: `url(${imgUrl})`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    transform: `scale(${s.scale || 1}) translate(${s.positionX || 0}%, ${s.positionY || 0}%)`,
-  }
-}
 
 function useScrollReveal(threshold = 0.15) {
   const isPreview = useContext(PreviewModeContext)
@@ -339,7 +312,7 @@ function VinylRecordCover({ invitation, fonts, tc, onEnter, colorTheme }: {
         <div className="vinyl-record-wrapper" onClick={() => setIsSpinning(!isSpinning)}>
           <div className={`vinyl-disc ${isSpinning ? 'vinyl-spinning' : 'vinyl-paused'}`}>
             <div className="vinyl-photo-bg">
-              <div className="w-full h-full" style={getImageCropStyle(coverImage, coverSettings)} />
+              <CroppedImageDiv src={coverImage} crop={coverSettings} className="w-full h-full" />
             </div>
             <div className="vinyl-grooves" />
             <div className="vinyl-label" style={{ background: isLightCover ? coverBaseBg : `linear-gradient(135deg, ${tc.primary}, ${tc.accent})` }} />
@@ -616,7 +589,7 @@ function TrackCouple({ invitation, fonts, tc, trackRef, bgOverride, trackNumber 
           <div className="flex flex-col items-center">
             <div style={{ aspectRatio: '3/4', borderRadius: '6px', overflow: 'hidden', width: '100%' }}>
               {groomImage ? (
-                <div className="w-full h-full" style={getImageCropStyle(groomImage, groomImgSettings)} />
+                <CroppedImageDiv src={groomImage} crop={groomImgSettings} className="w-full h-full" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center" style={{ background: tc.sectionBg, border: `1px solid ${tc.divider}`, borderRadius: '6px' }}>
                   <span style={{ fontFamily: fonts.display, fontSize: '24px', color: tc.primary, opacity: 0.3 }}>&#9834;</span>
@@ -636,7 +609,7 @@ function TrackCouple({ invitation, fonts, tc, trackRef, bgOverride, trackNumber 
           <div className="flex flex-col items-center">
             <div style={{ aspectRatio: '3/4', borderRadius: '6px', overflow: 'hidden', width: '100%' }}>
               {brideImage ? (
-                <div className="w-full h-full" style={getImageCropStyle(brideImage, brideImgSettings)} />
+                <CroppedImageDiv src={brideImage} crop={brideImgSettings} className="w-full h-full" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center" style={{ background: tc.sectionBg, border: `1px solid ${tc.divider}`, borderRadius: '6px' }}>
                   <span style={{ fontFamily: fonts.display, fontSize: '24px', color: tc.primary, opacity: 0.3 }}>&#9835;</span>
@@ -668,7 +641,7 @@ function TrackCouple({ invitation, fonts, tc, trackRef, bgOverride, trackNumber 
                   width: '120px', height: '120px', borderRadius: '50%', overflow: 'hidden',
                   border: `3px solid ${tc.divider}`,
                 }}>
-                  <div className="w-full h-full" style={getImageCropStyle(groomImage, groomImgSettings)} />
+                  <CroppedImageDiv src={groomImage} crop={groomImgSettings} className="w-full h-full" />
                 </div>
               ) : (
                 <div style={{
@@ -703,7 +676,7 @@ function TrackCouple({ invitation, fonts, tc, trackRef, bgOverride, trackNumber 
                   width: '120px', height: '120px', borderRadius: '50%', overflow: 'hidden',
                   border: `3px solid ${tc.divider}`,
                 }}>
-                  <div className="w-full h-full" style={getImageCropStyle(brideImage, brideImgSettings)} />
+                  <CroppedImageDiv src={brideImage} crop={brideImgSettings} className="w-full h-full" />
                 </div>
               ) : (
                 <div style={{
@@ -807,7 +780,7 @@ function TrackOurJourney({ invitation, fonts, tc, trackRef, bgOverride, trackNum
                   const imgSettings = item.imageSettings?.[0] || {}
                   return (
                     <div style={{ aspectRatio: '16/10', overflow: 'hidden' }}>
-                      <div className="w-full h-full" style={getImageCropStyle(mainImg, imgSettings)} />
+                      <CroppedImageDiv src={mainImg} crop={imgSettings} className="w-full h-full" />
                     </div>
                   )
                 })()}
@@ -913,7 +886,7 @@ function CdBookletGrid({ images, invitation, fonts, tc, onOpenLightbox }: {
         cursor: 'pointer', marginBottom: '6px',
         border: `1px solid ${tc.divider}30`,
       }}>
-        <div className="w-full h-full" style={getImageCropStyle(images[0], invitation.gallery?.imageSettings?.[0] || {})} />
+        <CroppedImageDiv src={images[0]} crop={invitation.gallery?.imageSettings?.[0] || {}} className="w-full h-full" />
       </div>
 
       {/* Grid */}
@@ -928,7 +901,7 @@ function CdBookletGrid({ images, invitation, fonts, tc, onOpenLightbox }: {
               border: `1px solid ${tc.divider}30`,
               position: 'relative',
             }}>
-              <div className="w-full h-full" style={getImageCropStyle(img, invitation.gallery?.imageSettings?.[actualIdx] || {})} />
+              <CroppedImageDiv src={img} crop={invitation.gallery?.imageSettings?.[actualIdx] || {}} className="w-full h-full" />
               {isLast && remainCount > 0 && (
                 <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.4)' }}>
                   <span style={{ fontFamily: fonts.display, fontSize: '14px', color: '#fff', letterSpacing: '1px' }}>+{remainCount}</span>

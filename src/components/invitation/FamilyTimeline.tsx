@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import CroppedImageDiv from '@/components/ui/CroppedImageDiv';
 
 interface TimelineItem {
   year: string;
@@ -15,29 +16,6 @@ interface TimelineItem {
   };
 }
 
-// 이미지 크롭 스타일 계산 헬퍼 함수
-function getImageCropStyle(item: TimelineItem) {
-  const img = item.image
-  if (img && img.url && (img.cropWidth < 1 || img.cropHeight < 1)) {
-    const cw = img.cropWidth || 1
-    const ch = img.cropHeight || 1
-    const cx = img.cropX || 0
-    const cy = img.cropY || 0
-
-    // 단일값 스케일로 비율 유지 + 크롭 줌
-    const scale = Math.max(100 / cw, 100 / ch)
-    const posX = cw < 1 ? (cx / (1 - cw)) * 100 : 50
-    const posY = ch < 1 ? (cy / (1 - ch)) * 100 : 50
-
-    return {
-      backgroundImage: `url(${img.url})`,
-      backgroundSize: `${scale}%`,
-      backgroundPosition: `${posX}% ${posY}%`,
-      backgroundRepeat: 'no-repeat' as const,
-    }
-  }
-  return null
-}
 
 interface ThemeColors {
   primary: string;
@@ -156,15 +134,21 @@ function TimelineItemComponent({
           }}
         >
           {(() => {
-            const cropStyle = getImageCropStyle(item)
             const imageUrl = item.image?.url || item.imageUrl
+            const hasCropData = item.image && (item.image.cropWidth < 1 || item.image.cropHeight < 1)
 
-            if (cropStyle) {
-              // 크롭 데이터가 있는 경우 background로 표시
+            if (hasCropData && item.image) {
+              // 크롭 데이터가 있는 경우 CroppedImageDiv 사용
               return (
-                <div
+                <CroppedImageDiv
+                  src={item.image.url}
+                  crop={{
+                    cropX: item.image.cropX,
+                    cropY: item.image.cropY,
+                    cropWidth: item.image.cropWidth,
+                    cropHeight: item.image.cropHeight,
+                  }}
                   className="w-full h-full"
-                  style={cropStyle}
                 />
               )
             } else if (imageUrl) {

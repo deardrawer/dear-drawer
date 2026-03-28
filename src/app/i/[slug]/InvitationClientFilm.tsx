@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback, Fragment } from 'react'
 import GuestFloatingButton from '@/components/invitation/GuestFloatingButton'
 import { WatermarkOverlay } from '@/components/ui/WatermarkOverlay'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import CroppedImageDiv from '@/components/ui/CroppedImageDiv'
 import type { Invitation } from '@/types/invitation'
 import type { InvitationContent } from '@/store/editorStore'
 
@@ -42,35 +43,6 @@ const colorThemes: Record<ColorTheme, ColorConfig> = {
     text: '#1A1A1A',
     gray: '#999999',
   },
-}
-
-// Image crop helper
-function getImageCropStyle(img: string, s: { scale?: number; positionX?: number; positionY?: number; cropX?: number; cropY?: number; cropWidth?: number; cropHeight?: number }) {
-  const hasCropData = s.cropWidth !== undefined && s.cropHeight !== undefined && (s.cropWidth < 1 || s.cropHeight < 1)
-  if (hasCropData) {
-    const cw = s.cropWidth || 1
-    const ch = s.cropHeight || 1
-    const cx = s.cropX || 0
-    const cy = s.cropY || 0
-
-    // 단일값 스케일로 비율 유지 + 크롭 줌
-    const scale = Math.max(100 / cw, 100 / ch)
-    const posX = cw < 1 ? (cx / (1 - cw)) * 100 : 50
-    const posY = ch < 1 ? (cy / (1 - ch)) * 100 : 50
-
-    return {
-      backgroundImage: `url(${img})`,
-      backgroundSize: `${scale}%`,
-      backgroundPosition: `${posX}% ${posY}%`,
-      backgroundRepeat: 'no-repeat' as const,
-    }
-  }
-  return {
-    backgroundImage: `url(${img})`,
-    backgroundSize: 'cover' as const,
-    backgroundPosition: 'center' as const,
-    transform: `scale(${s.scale || 1}) translate(${s.positionX || 0}%, ${s.positionY || 0}%)`,
-  }
 }
 
 // Accent color → light tint utility (blend with white)
@@ -650,9 +622,11 @@ function ChapterTwo({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
             }}>
               <div className="relative w-full h-full">
                 {groomImage ? (
-                  <div className="w-full h-full"
+                  <CroppedImageDiv
+                    src={groomImage}
+                    crop={groomProfile?.imageSettings?.[0] || {}}
+                    className="w-full h-full"
                     style={{
-                      ...getImageCropStyle(groomImage, groomProfile?.imageSettings?.[0] || {}),
                       transform: `${isVisible ? 'scale(1)' : 'scale(1.2)'} ${(groomProfile?.imageSettings?.[0] && !groomProfile.imageSettings[0].cropWidth) ? `translate(${groomProfile.imageSettings[0].positionX || 0}%, ${groomProfile.imageSettings[0].positionY || 0}%)` : ''}`,
                       transition: 'transform 2.5s cubic-bezier(0.16, 1, 0.3, 1) 0.2s',
                     }}
@@ -693,9 +667,11 @@ function ChapterTwo({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
             }}>
               <div className="relative w-full h-full">
                 {brideImage ? (
-                  <div className="w-full h-full"
+                  <CroppedImageDiv
+                    src={brideImage}
+                    crop={brideProfile?.imageSettings?.[0] || {}}
+                    className="w-full h-full"
                     style={{
-                      ...getImageCropStyle(brideImage, brideProfile?.imageSettings?.[0] || {}),
                       transform: `${isVisible ? 'scale(1)' : 'scale(1.2)'} ${(brideProfile?.imageSettings?.[0] && !brideProfile.imageSettings[0].cropWidth) ? `translate(${brideProfile.imageSettings[0].positionX || 0}%, ${brideProfile.imageSettings[0].positionY || 0}%)` : ''}`,
                       transition: 'transform 2.5s cubic-bezier(0.16, 1, 0.3, 1) 0.6s',
                     }}
@@ -844,7 +820,7 @@ function FilmSceneCard({ item, idx, total, groomName, brideName, fonts, tc }: {
               const imgSettings = item.imageSettings?.[imgIdx] || {}
               return (
               <div key={imgIdx} className="relative overflow-hidden" style={{ flex: 1, aspectRatio: '1/1', borderRadius: '2px', border: `1px solid ${tc.cardText ? getAccentTint(tc.accent, 0.70) : tc.divider}60` }}>
-                <div className="w-full h-full" style={getImageCropStyle(img, imgSettings)} />
+                <CroppedImageDiv src={img} crop={imgSettings} className="w-full h-full" />
                 <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.15) 100%)' }} />
                 <div className="absolute top-2 right-3" style={{ fontFamily: fonts.display, fontSize: '8px', color: 'rgba(255,255,255,0.5)', letterSpacing: '1px' }}>
                   {String(idx + 1).padStart(2, '0')}:{String(imgIdx + 1).padStart(3, '0')}
@@ -1024,7 +1000,7 @@ function ChapterThree({ invitation, fonts, tc, onOpenLightbox, bgOverride }: {
               const imgSettings = (invitation.gallery as any)?.imageSettings?.[originalIdx] || {}
               return (
               <div key={i} className="filmstrip-frame" onClick={() => onOpenLightbox(originalIdx)}>
-                <div className="w-full h-full" style={getImageCropStyle(img, imgSettings)} />
+                <CroppedImageDiv src={img} crop={imgSettings} className="w-full h-full" />
               </div>
               )
             })}
@@ -1056,7 +1032,7 @@ function ChapterThree({ invitation, fonts, tc, onOpenLightbox, bgOverride }: {
                   return (
                     <div key={i} className="relative overflow-hidden" style={{ aspectRatio: '3/4', cursor: 'pointer' }}
                       onClick={() => onOpenLightbox(i)}>
-                      <div className="w-full h-full" style={getImageCropStyle(img, imgSettings)} />
+                      <CroppedImageDiv src={img} crop={imgSettings} className="w-full h-full" />
                       {hasMoreGrid && i === 5 && (
                         <div
                           className="absolute inset-0 bg-black/40 flex items-center justify-center cursor-pointer"
@@ -1403,7 +1379,7 @@ function GuidanceSection({ invitation, fonts, tc, bgOverride }: { invitation: an
         {invitation.guidance?.image && (
           <div className="px-6 mb-8">
             <div className="w-full overflow-hidden" style={{ aspectRatio: '16/9' }}>
-              <div className="w-full h-full" style={getImageCropStyle(invitation.guidance.image, (invitation.guidance as any).imageSettings || {})} />
+              <CroppedImageDiv src={invitation.guidance.image} crop={(invitation.guidance as any).imageSettings || {}} className="w-full h-full" />
             </div>
           </div>
         )}

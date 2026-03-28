@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import GuestFloatingButton from '@/components/invitation/GuestFloatingButton'
 import { WatermarkOverlay } from '@/components/ui/WatermarkOverlay'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import CroppedImageDiv from '@/components/ui/CroppedImageDiv'
 import type { Invitation } from '@/types/invitation'
 import type { InvitationContent } from '@/store/editorStore'
 import IntroAnimation from '@/components/invitation/IntroAnimation'
@@ -139,34 +140,6 @@ function MusicToggle({ audioRef, isVisible, shouldAutoPlay }: { audioRef: React.
   )
 }
 
-// ===== Image Crop Style Helper =====
-function getImageCropStyle(img: string, s: { scale?: number; positionX?: number; positionY?: number; cropX?: number; cropY?: number; cropWidth?: number; cropHeight?: number }) {
-  const hasCropData = s.cropWidth !== undefined && s.cropHeight !== undefined && (s.cropWidth < 1 || s.cropHeight < 1)
-  if (hasCropData) {
-    const cw = s.cropWidth || 1
-    const ch = s.cropHeight || 1
-    const cx = s.cropX || 0
-    const cy = s.cropY || 0
-
-    // 단일값 스케일로 비율 유지 + 크롭 줌
-    const scale = Math.max(100 / cw, 100 / ch)
-    const posX = cw < 1 ? (cx / (1 - cw)) * 100 : 50
-    const posY = ch < 1 ? (cy / (1 - ch)) * 100 : 50
-
-    return {
-      backgroundImage: `url(${img})`,
-      backgroundSize: `${scale}%`,
-      backgroundPosition: `${posX}% ${posY}%`,
-      backgroundRepeat: 'no-repeat' as const,
-    }
-  }
-  return {
-    backgroundImage: `url(${img})`,
-    backgroundSize: 'cover' as const,
-    backgroundPosition: 'center' as const,
-    transform: `scale(${s.scale || 1}) translate(${s.positionX || 0}%, ${s.positionY || 0}%)`,
-  }
-}
 
 // ===== Magazine Cover Section =====
 function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
@@ -312,7 +285,7 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
         className="relative z-10 overflow-hidden transition-all duration-[2000ms]"
         style={{ aspectRatio: '3/4', opacity: loaded ? 1 : 0, transform: loaded ? 'scale(1)' : 'scale(1.02)' }}
       >
-        <div className="w-full h-full" style={getImageCropStyle(coverImage, invitation.media?.coverImageSettings || {})} />
+        <CroppedImageDiv src={coverImage} crop={invitation.media?.coverImageSettings || {}} className="w-full h-full" />
       </div>
       <div
         className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-10 transition-all duration-[1500ms] delay-500"
@@ -439,7 +412,7 @@ function MeetTheCouple({ invitation, fonts, themeColors, bgOverride }: { invitat
               <div className="flex flex-col items-center">
                 <div style={{ aspectRatio: '3/4', overflow: 'hidden', width: '100%' }}>
                   {groomImage ? (
-                    <div className="w-full h-full" style={getImageCropStyle(groomImage, groomProfile?.imageSettings?.[0] || {})} />
+                    <CroppedImageDiv src={groomImage} crop={groomProfile?.imageSettings?.[0] || {}} className="w-full h-full" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: themeColors.sectionBg, border: `1px solid ${themeColors.divider}` }}>
                       <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke={themeColors.gray} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.4 }}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -467,7 +440,7 @@ function MeetTheCouple({ invitation, fonts, themeColors, bgOverride }: { invitat
               <div className="flex flex-col items-center">
                 <div style={{ aspectRatio: '3/4', overflow: 'hidden', width: '100%' }}>
                   {brideImage ? (
-                    <div className="w-full h-full" style={getImageCropStyle(brideImage, brideProfile?.imageSettings?.[0] || {})} />
+                    <CroppedImageDiv src={brideImage} crop={brideProfile?.imageSettings?.[0] || {}} className="w-full h-full" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: themeColors.sectionBg, border: `1px solid ${themeColors.divider}` }}>
                       <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke={themeColors.gray} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.4 }}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -507,7 +480,7 @@ function MeetTheCouple({ invitation, fonts, themeColors, bgOverride }: { invitat
                   }}
                 >
                   {groomImage ? (
-                    <div className="w-full h-full" style={getImageCropStyle(groomImage, groomProfile?.imageSettings?.[0] || {})} />
+                    <CroppedImageDiv src={groomImage} crop={groomProfile?.imageSettings?.[0] || {}} className="w-full h-full" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center" style={{ color: themeColors.gray, fontSize: '24px' }}>
                       <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -547,7 +520,7 @@ function MeetTheCouple({ invitation, fonts, themeColors, bgOverride }: { invitat
                   }}
                 >
                   {brideImage ? (
-                    <div className="w-full h-full" style={getImageCropStyle(brideImage, brideProfile?.imageSettings?.[0] || {})} />
+                    <CroppedImageDiv src={brideImage} crop={brideProfile?.imageSettings?.[0] || {}} className="w-full h-full" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center" style={{ color: themeColors.gray, fontSize: '24px' }}>
                       <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -634,14 +607,14 @@ function InterviewCard({ item, index, fonts, themeColors }: { item: any; index: 
       {/* Images above question: 1장=3:4 세로형, 2장=2열 그리드 */}
       {images.length === 1 && (
         <div className="w-full mb-6 overflow-hidden" style={{ aspectRatio: '3/4' }}>
-          <div className="w-full h-full" style={getImageCropStyle(images[0], item.imageSettings?.[0] || {})} />
+          <CroppedImageDiv src={images[0]} crop={item.imageSettings?.[0] || {}} className="w-full h-full" />
         </div>
       )}
       {images.length === 2 && (
         <div className="mb-6 grid grid-cols-2 gap-1">
           {images.map((img: string, imgIdx: number) => (
             <div key={imgIdx} className="overflow-hidden" style={{ aspectRatio: '4/5' }}>
-              <div className="w-full h-full" style={getImageCropStyle(img, item.imageSettings?.[imgIdx] || {})} />
+              <CroppedImageDiv src={img} crop={item.imageSettings?.[imgIdx] || {}} className="w-full h-full" />
             </div>
           ))}
         </div>
@@ -649,12 +622,12 @@ function InterviewCard({ item, index, fonts, themeColors }: { item: any; index: 
       {images.length >= 3 && (
         <div className="mb-6 space-y-1">
           <div className="w-full overflow-hidden" style={{ aspectRatio: '3/4' }}>
-            <div className="w-full h-full" style={getImageCropStyle(images[0], item.imageSettings?.[0] || {})} />
+            <CroppedImageDiv src={images[0]} crop={item.imageSettings?.[0] || {}} className="w-full h-full" />
           </div>
           <div className="grid grid-cols-2 gap-1">
             {images.slice(1, 3).map((img: string, imgIdx: number) => (
               <div key={imgIdx} className="overflow-hidden" style={{ aspectRatio: '4/5' }}>
-                <div className="w-full h-full" style={getImageCropStyle(img, item.imageSettings?.[imgIdx + 1] || {})} />
+                <CroppedImageDiv src={img} crop={item.imageSettings?.[imgIdx + 1] || {}} className="w-full h-full" />
               </div>
             ))}
           </div>
@@ -723,7 +696,7 @@ function PhotoSpread({ invitation, fonts, themeColors, onOpenLightbox, bgOverrid
                 onClick={() => onOpenLightbox(startIdx + i)}
                 style={{ aspectRatio: '4/5' }}
               >
-                <div className="w-full h-full transition-transform duration-700 hover:scale-105" style={getImageCropStyle(img, invitation.gallery?.imageSettings?.[startIdx + i] || {})} />
+                <CroppedImageDiv src={img} crop={invitation.gallery?.imageSettings?.[startIdx + i] || {}} className="w-full h-full transition-transform duration-700 hover:scale-105" />
               </div>
             ))}
           </div>
@@ -734,7 +707,7 @@ function PhotoSpread({ invitation, fonts, themeColors, onOpenLightbox, bgOverrid
             onClick={() => onOpenLightbox(lastSingleIdx)}
             style={{ aspectRatio: '4/5' }}
           >
-            <div className="w-full h-full transition-transform duration-700 hover:scale-105" style={getImageCropStyle(lastSingle, invitation.gallery?.imageSettings?.[lastSingleIdx] || {})} />
+            <CroppedImageDiv src={lastSingle} crop={invitation.gallery?.imageSettings?.[lastSingleIdx] || {}} className="w-full h-full transition-transform duration-700 hover:scale-105" />
           </div>
         )}
       </>
@@ -766,7 +739,7 @@ function PhotoSpread({ invitation, fonts, themeColors, onOpenLightbox, bgOverrid
               onClick={() => onOpenLightbox(0)}
               style={{ aspectRatio: '4/5' }}
             >
-              <div className="w-full h-full transition-transform duration-700 hover:scale-105" style={getImageCropStyle(images[0], invitation.gallery?.imageSettings?.[0] || {})} />
+              <CroppedImageDiv src={images[0]} crop={invitation.gallery?.imageSettings?.[0] || {}} className="w-full h-full transition-transform duration-700 hover:scale-105" />
             </div>
           )}
           {images.length > 1 && renderGrid(images.slice(1), 1)}

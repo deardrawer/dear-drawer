@@ -9,6 +9,7 @@ import { Switch } from '@/components/ui/switch'
 import ImageUploader from '@/components/editor/ImageUploader'
 import InlineCropEditor from '@/components/editor/InlineCropEditor'
 import ImageCropEditor, { CropData } from '@/components/parents/ImageCropEditor'
+import CroppedImageDiv from '@/components/ui/CroppedImageDiv'
 import { getPresetById } from '@/lib/introPresets'
 import { SAMPLE_GREETING, SAMPLE_QUOTE } from '@/lib/sampleData'
 import { Sparkles, X, Loader2 } from 'lucide-react'
@@ -37,37 +38,6 @@ function generateKakaoDescription(date: string, time: string, venueName: string)
   return venueLine ? `${dateLine}\n${venueLine}` : dateLine
 }
 
-// 이미지 크롭 스타일 계산 헬퍼 함수 (Preview.tsx와 동일)
-function getImageCropStyle(img: string, s: { scale?: number; positionX?: number; positionY?: number; cropX?: number; cropY?: number; cropWidth?: number; cropHeight?: number }) {
-  const hasCropData = s.cropWidth !== undefined && s.cropHeight !== undefined && (s.cropWidth < 1 || s.cropHeight < 1)
-
-  if (hasCropData) {
-    const cw = s.cropWidth || 1
-    const ch = s.cropHeight || 1
-    const cx = s.cropX || 0
-    const cy = s.cropY || 0
-
-    // 단일값 스케일로 비율 유지 + 크롭 줌
-    const scale = Math.max(100 / cw, 100 / ch)
-    const posX = cw < 1 ? (cx / (1 - cw)) * 100 : 50
-    const posY = ch < 1 ? (cy / (1 - ch)) * 100 : 50
-
-    return {
-      backgroundImage: `url(${img})`,
-      backgroundSize: `${scale}%`,
-      backgroundPosition: `${posX}% ${posY}%`,
-      backgroundRepeat: 'no-repeat' as const,
-    }
-  }
-
-  // 기존 scale/position 방식 (호환성 유지)
-  return {
-    backgroundImage: `url(${img})`,
-    backgroundSize: 'cover' as const,
-    backgroundPosition: 'center' as const,
-    transform: `scale(${s.scale || 1}) translate(${s.positionX || 0}%, ${s.positionY || 0}%)`,
-  }
-}
 
 interface Step3InvitationProps {
   onOpenIntroSelector?: () => void
@@ -471,9 +441,10 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
         {/* 미리보기 썸네일 */}
         {media.coverImage && (
           <div className="relative w-full max-w-[160px] aspect-[9/16] mx-auto rounded-lg overflow-hidden shadow-md">
-            <div
+            <CroppedImageDiv
+              src={media.coverImage}
+              crop={media.coverImageSettings || {}}
               className="absolute inset-0"
-              style={getImageCropStyle(media.coverImage, media.coverImageSettings || {})}
             />
             <div className="absolute inset-0 flex items-center justify-center bg-black/20">
               <span className="text-white text-xs font-medium px-2 py-1 bg-black/50 rounded">
@@ -515,7 +486,11 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
         </button>
         {media.coverImage && (
           <div className="relative w-full max-w-[200px] aspect-[3/4] mx-auto rounded-lg overflow-hidden shadow-md">
-            <div className="absolute inset-0" style={getImageCropStyle(media.coverImage, media.coverImageSettings || {})} />
+            <CroppedImageDiv
+              src={media.coverImage}
+              crop={media.coverImageSettings || {}}
+              className="absolute inset-0"
+            />
           </div>
         )}
       </section>

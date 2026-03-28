@@ -17,6 +17,17 @@ function ThankYouEditorContent() {
   const { user, status } = useAuth()
   const editId = searchParams.get('id')
   const urlSlug = searchParams.get('slug')
+  const isAdminMode = searchParams.get('admin') === 'true'
+
+  // Admin 모드 헤더 구성
+  const getAdminHeaders = (): Record<string, string> => {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (isAdminMode) {
+      const adminPw = localStorage.getItem('admin_password')
+      if (adminPw) headers['x-admin-password'] = adminPw
+    }
+    return headers
+  }
 
   const {
     data, fontStyle, accentColor, sealColor, bgm, isDirty, isSaving,
@@ -74,7 +85,7 @@ function ThankYouEditorContent() {
 
     if (editId) {
       setIsLoading(true)
-      fetch(`/api/invitations/${editId}`)
+      fetch(`/api/invitations/${editId}`, { headers: getAdminHeaders() })
         .then(async res => await res.json() as { invitation?: { content?: string; template_id?: string; slug?: string } })
         .then((result) => {
           if (result.invitation) {
@@ -101,7 +112,7 @@ function ThankYouEditorContent() {
 
   // 저장
   const handleSave = async (silent = false) => {
-    if (!user) {
+    if (!user && !isAdminMode) {
       try {
         sessionStorage.setItem('editor_draft_thankyou', toSavePayload())
       } catch { /* ignore */ }
@@ -139,13 +150,13 @@ function ThankYouEditorContent() {
       if (invitationId) {
         response = await fetch(`/api/invitations/${invitationId}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAdminHeaders(),
           body: JSON.stringify(payload),
         })
       } else {
         response = await fetch('/api/invitations', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAdminHeaders(),
           body: JSON.stringify(payload),
         })
       }
@@ -158,7 +169,8 @@ function ThankYouEditorContent() {
 
       if (!invitationId && result.invitation?.id) {
         setInvitationId(result.invitation.id)
-        window.history.replaceState({}, '', `/editor/thank-you?id=${result.invitation.id}`)
+        const adminParam = isAdminMode ? '&admin=true' : ''
+        window.history.replaceState({}, '', `/editor/thank-you?id=${result.invitation.id}${adminParam}`)
       }
 
       setIsDirty(false)
@@ -205,8 +217,8 @@ function ThankYouEditorContent() {
     setSavedSlug(newSlug)
   }
 
-  // 기존 편집 시 로그인 필수
-  if (status === 'unauthenticated' && editId) {
+  // 기존 편집 시 로그인 필수 (admin 모드 제외)
+  if (status === 'unauthenticated' && editId && !isAdminMode) {
     const currentUrl = window.location.pathname + window.location.search
     router.replace(`/login?redirect=${encodeURIComponent(currentUrl)}`)
     return null

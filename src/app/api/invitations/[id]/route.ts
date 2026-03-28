@@ -15,27 +15,45 @@ interface RouteParams {
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    const cookieName = getAuthCookieName();
-    const token = request.cookies.get(cookieName)?.value;
 
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Admin 인증 확인
+    const adminPassword = request.headers.get("x-admin-password");
+    const isAdmin =
+      adminPassword && adminPassword === process.env.ADMIN_PASSWORD;
+
+    if (!isAdmin) {
+      // 기존 토큰 기반 인증
+      const cookieName = getAuthCookieName();
+      const token = request.cookies.get(cookieName)?.value;
+
+      if (!token) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+
+      const payload = await verifyToken(token);
+      if (!payload) {
+        return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+      }
+
+      const invitation = await getInvitationById(id);
+
+      if (!invitation) {
+        return NextResponse.json({ error: "Not found" }, { status: 404 });
+      }
+
+      // 본인 청첩장만 조회 가능
+      if (invitation.user_id !== payload.user.id) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+
+      return NextResponse.json({ invitation });
     }
 
-    const payload = await verifyToken(token);
-    if (!payload) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-    }
-
+    // Admin: 소유권 검증 없이 조회
     const invitation = await getInvitationById(id);
 
     if (!invitation) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
-    }
-
-    // 본인 청첩장만 조회 가능
-    if (invitation.user_id !== payload.user.id) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     return NextResponse.json({ invitation });
@@ -52,16 +70,36 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    const cookieName = getAuthCookieName();
-    const token = request.cookies.get(cookieName)?.value;
 
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // Admin 인증 확인
+    const adminPassword = request.headers.get("x-admin-password");
+    const isAdmin =
+      adminPassword && adminPassword === process.env.ADMIN_PASSWORD;
 
-    const payload = await verifyToken(token);
-    if (!payload) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+    let userId: string;
+
+    if (!isAdmin) {
+      // 기존 토큰 기반 인증
+      const cookieName = getAuthCookieName();
+      const token = request.cookies.get(cookieName)?.value;
+
+      if (!token) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+
+      const payload = await verifyToken(token);
+      if (!payload) {
+        return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+      }
+
+      userId = payload.user.id;
+    } else {
+      // Admin: 원래 소유자의 user_id로 업데이트
+      const existingInvitation = await getInvitationById(id);
+      if (!existingInvitation) {
+        return NextResponse.json({ error: "Not found" }, { status: 404 });
+      }
+      userId = existingInvitation.user_id;
     }
 
     const rawBody = await request.text();
@@ -95,7 +133,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "슬러그가 너무 깁니다." }, { status: 400 });
     }
 
-    const invitation = await updateInvitation(id, payload.user.id, body);
+    const invitation = await updateInvitation(id, userId, body);
 
     if (!invitation) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });

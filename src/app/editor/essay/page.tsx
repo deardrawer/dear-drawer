@@ -236,6 +236,17 @@ function EssayEditorContent() {
   const { user, status } = useAuth()
   const editId = searchParams.get('id')
   const urlSlug = searchParams.get('slug')
+  const isAdminMode = searchParams.get('admin') === 'true'
+
+  // Admin 모드 헤더 구성
+  const getAdminHeaders = (): Record<string, string> => {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (isAdminMode) {
+      const adminPw = localStorage.getItem('admin_password')
+      if (adminPw) headers['x-admin-password'] = adminPw
+    }
+    return headers
+  }
 
   const [data, setData] = useState<EssayInvitationData>(defaultData)
   const [invitationId, setInvitationId] = useState<string | null>(editId)
@@ -284,7 +295,7 @@ function EssayEditorContent() {
     if (status === 'loading') return
     if (editId) {
       setIsLoading(true)
-      fetch(`/api/invitations/${editId}`)
+      fetch(`/api/invitations/${editId}`, { headers: getAdminHeaders() })
         .then(async res => await res.json() as { invitation?: { content?: string; slug?: string } })
         .then((result) => {
           if (result.invitation) {
@@ -322,7 +333,7 @@ function EssayEditorContent() {
 
   // 저장
   const handleSave = async (silent = false) => {
-    if (!user) {
+    if (!user && !isAdminMode) {
       // 게스트 모드: sessionStorage에 드래프트 저장 후 로그인 이동
       try {
         sessionStorage.setItem('editor_draft_essay', JSON.stringify(data))
@@ -355,15 +366,16 @@ function EssayEditorContent() {
 
       let response
       if (invitationId) {
-        response = await fetch(`/api/invitations/${invitationId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        response = await fetch(`/api/invitations/${invitationId}`, { method: 'PUT', headers: getAdminHeaders(), body: JSON.stringify(payload) })
       } else {
-        response = await fetch('/api/invitations', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        response = await fetch('/api/invitations', { method: 'POST', headers: getAdminHeaders(), body: JSON.stringify(payload) })
       }
       const result = await response.json() as { error?: string; invitation?: { id: string } }
       if (!response.ok) throw new Error(result.error || '저장에 실패했습니다.')
       if (!invitationId && result.invitation?.id) {
         setInvitationId(result.invitation.id)
-        window.history.replaceState({}, '', `/editor/essay?id=${result.invitation.id}`)
+        const adminParam = isAdminMode ? '&admin=true' : ''
+        window.history.replaceState({}, '', `/editor/essay?id=${result.invitation.id}${adminParam}`)
       }
       setIsDirty(false)
       if (typeof window !== 'undefined' && window.dataLayer) {
@@ -389,8 +401,8 @@ function EssayEditorContent() {
     setSavedSlug(newSlug)
   }
 
-  // 기존 청첩장 편집 시에만 로그인 필수 (새 청첩장은 게스트 모드 허용)
-  if (status === 'unauthenticated' && editId) {
+  // 기존 청첩장 편집 시에만 로그인 필수 (새 청첩장은 게스트 모드 허용, admin 모드 제외)
+  if (status === 'unauthenticated' && editId && !isAdminMode) {
     const currentUrl = window.location.pathname + window.location.search
     router.replace(`/login?redirect=${encodeURIComponent(currentUrl)}`)
     return null

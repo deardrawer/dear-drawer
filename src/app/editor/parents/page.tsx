@@ -422,6 +422,17 @@ function ParentsEditorContent() {
   const { user, status } = useAuth()
   const editId = searchParams.get('id')
   const urlSlug = searchParams.get('slug') // 템플릿 시작 시 설정한 커스텀 URL
+  const isAdminMode = searchParams.get('admin') === 'true'
+
+  // Admin 모드 헤더 구성
+  const getAdminHeaders = (): Record<string, string> => {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (isAdminMode) {
+      const adminPw = localStorage.getItem('admin_password')
+      if (adminPw) headers['x-admin-password'] = adminPw
+    }
+    return headers
+  }
 
   const [data, setData] = useState<ParentsInvitationData>(defaultData)
   const [invitationId, setInvitationId] = useState<string | null>(editId)
@@ -484,7 +495,7 @@ function ParentsEditorContent() {
 
     if (editId) {
       setIsLoading(true)
-      fetch(`/api/invitations/${editId}`)
+      fetch(`/api/invitations/${editId}`, { headers: getAdminHeaders() })
         .then(async res => await res.json() as { invitation?: { content?: string; template_id?: string; slug?: string } })
         .then((result) => {
           if (result.invitation) {
@@ -537,7 +548,7 @@ function ParentsEditorContent() {
 
   // 저장 (silent: true일 때 alert 표시하지 않고, 에러 시 throw)
   const handleSave = async (silent = false) => {
-    if (!user) {
+    if (!user && !isAdminMode) {
       // 게스트 모드: sessionStorage에 드래프트 저장 후 로그인 이동
       try {
         sessionStorage.setItem('editor_draft_parents', JSON.stringify(data))
@@ -589,13 +600,13 @@ function ParentsEditorContent() {
       if (invitationId) {
         response = await fetch(`/api/invitations/${invitationId}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAdminHeaders(),
           body: JSON.stringify(payload),
         })
       } else {
         response = await fetch('/api/invitations', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAdminHeaders(),
           body: JSON.stringify(payload),
         })
       }
@@ -609,7 +620,8 @@ function ParentsEditorContent() {
       if (!invitationId && result.invitation?.id) {
         setInvitationId(result.invitation.id)
         // URL 업데이트
-        window.history.replaceState({}, '', `/editor/parents?id=${result.invitation.id}`)
+        const adminParam = isAdminMode ? '&admin=true' : ''
+        window.history.replaceState({}, '', `/editor/parents?id=${result.invitation.id}${adminParam}`)
       }
 
       setIsDirty(false)
@@ -671,8 +683,8 @@ function ParentsEditorContent() {
     setSavedSlug(newSlug)
   }
 
-  // 기존 청첩장 편집 시에만 로그인 필수 (새 청첩장은 게스트 모드 허용)
-  if (status === 'unauthenticated' && editId) {
+  // 기존 청첩장 편집 시에만 로그인 필수 (새 청첩장은 게스트 모드 허용, admin 모드 제외)
+  if (status === 'unauthenticated' && editId && !isAdminMode) {
     const currentUrl = window.location.pathname + window.location.search
     router.replace(`/login?redirect=${encodeURIComponent(currentUrl)}`)
     return null

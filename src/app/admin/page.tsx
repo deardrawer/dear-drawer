@@ -630,6 +630,15 @@ export default function AdminPage() {
                             >
                               보기
                             </a>
+                            <a
+                              href={`/editor?id=${inv.id}&admin=true`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-3 py-1 rounded text-xs"
+                              style={{ backgroundColor: '#E8E4DD', color: '#2C2C2C' }}
+                            >
+                              편집
+                            </a>
                             <button
                               onClick={() => handleDelete(inv.id)}
                               className="px-3 py-1 rounded text-xs text-white"

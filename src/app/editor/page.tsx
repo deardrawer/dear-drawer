@@ -25,6 +25,17 @@ function EditorContent() {
   const editId = searchParams.get('id') // 기존 청첩장 편집용 ID
   const templateId = searchParams.get('template') || 'narrative-our'
   const urlSlug = searchParams.get('slug') // 템플릿 시작 시 설정한 커스텀 URL
+  const isAdminMode = searchParams.get('admin') === 'true'
+
+  // Admin 모드 헤더 구성
+  const getAdminHeaders = (): Record<string, string> => {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (isAdminMode) {
+      const adminPw = localStorage.getItem('admin_password')
+      if (adminPw) headers['x-admin-password'] = adminPw
+    }
+    return headers
+  }
   const urlTemplate = getTemplateById(templateId)
 
   const { invitation, template, initInvitation, updateMultipleFields, updateNestedField, toggleSectionVisibility, isDirty, isSaving, isLoaded, setSaving, setLoaded, resetDirty, markStepsSaved, setWizardStep } = useEditorStore()
@@ -130,7 +141,7 @@ function EditorContent() {
 
       // 로그인하지 않은 경우에도 청첩장 데이터는 로드 (공개 데이터)
       setIsLoading(true)
-      fetch(`/api/invitations/${editId}`)
+      fetch(`/api/invitations/${editId}`, { headers: getAdminHeaders() })
         .then(async res => await res.json() as { invitation?: { content?: string; template_id?: string; slug?: string } })
         .then((data) => {
           if (data.invitation) {
@@ -139,24 +150,25 @@ function EditorContent() {
             if (inv.slug) {
               setSavedSlug(inv.slug)
             }
+            const adminParam = isAdminMode ? '&admin=true' : ''
             // PARENTS 템플릿이면 parents 에디터로 리다이렉트
             if (inv.template_id === 'narrative-parents' || inv.template_id === 'parents') {
-              router.push(`/editor/parents?id=${editId}`)
+              router.push(`/editor/parents?id=${editId}${adminParam}`)
               return
             }
             // FEED 템플릿이면 feed 에디터로 리다이렉트
             if (inv.template_id === 'narrative-exhibit' || inv.template_id === 'exhibit') {
-              router.push(`/editor/feed?id=${editId}`)
+              router.push(`/editor/feed?id=${editId}${adminParam}`)
               return
             }
             // ESSAY 템플릿이면 essay 에디터로 리다이렉트
             if (inv.template_id === 'narrative-essay') {
-              router.push(`/editor/essay?id=${editId}`)
+              router.push(`/editor/essay?id=${editId}${adminParam}`)
               return
             }
             // THANKYOU 템플릿이면 thank-you 에디터로 리다이렉트
             if (inv.template_id === 'narrative-thankyou') {
-              router.push(`/editor/thank-you?id=${editId}`)
+              router.push(`/editor/thank-you?id=${editId}${adminParam}`)
               return
             }
             // RECORD 템플릿은 공유 에디터 사용 (리다이렉트 불필요)
@@ -233,9 +245,9 @@ function EditorContent() {
     }
   }, [user, isNewInvitation, editId])
 
-  // Auto-save: 로그인 + 기존 저장된 청첩장 + 로드 완료 시에만 동작
+  // Auto-save: 로그인(또는 admin) + 기존 저장된 청첩장 + 로드 완료 시에만 동작
   useEffect(() => {
-    if (!isDirty || !user || !invitationId || !isLoaded || isSaving) return
+    if (!isDirty || (!user && !isAdminMode) || !invitationId || !isLoaded || isSaving) return
 
     // 이전 타이머 클리어
     if (autoSaveTimerRef.current) {
@@ -243,7 +255,7 @@ function EditorContent() {
     }
 
     autoSaveTimerRef.current = setTimeout(async () => {
-      if (!invitation || !user || !invitationId) return
+      if (!invitation || (!user && !isAdminMode) || !invitationId) return
 
       setAutoSaveStatus('saving')
       setSaving(true)
@@ -281,7 +293,7 @@ function EditorContent() {
 
         const response = await fetch(`/api/invitations/${invitationId}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAdminHeaders(),
           body: JSON.stringify(payload),
         })
 
@@ -310,7 +322,7 @@ function EditorContent() {
   const handleSave = async () => {
     if (isSaving) return // 이미 저장 중이면 중복 실행 방지
     if (!invitation) return
-    if (!user) {
+    if (!user && !isAdminMode) {
       // 게스트 모드: 현재 편집 상태를 sessionStorage에 저장 후 로그인으로 이동
       try {
         sessionStorage.setItem('editor_draft', JSON.stringify(invitation))
@@ -375,14 +387,14 @@ function EditorContent() {
         // Update existing
         response = await fetch(`/api/invitations/${invitationId}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAdminHeaders(),
           body: JSON.stringify(payload),
         })
       } else {
         // Create new
         response = await fetch('/api/invitations', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAdminHeaders(),
           body: JSON.stringify(payload),
         })
       }
@@ -555,8 +567,8 @@ function EditorContent() {
     setIsAIStoryGeneratorOpen(false)
   }
 
-  // 기존 청첩장 편집 시에만 로그인 필수 (새 청첩장은 게스트 모드 허용)
-  if (status === 'unauthenticated' && editId) {
+  // 기존 청첩장 편집 시에만 로그인 필수 (새 청첩장은 게스트 모드 허용, admin 모드 제외)
+  if (status === 'unauthenticated' && editId && !isAdminMode) {
     const currentUrl = window.location.pathname + window.location.search
     router.replace(`/login?redirect=${encodeURIComponent(currentUrl)}`)
     return null

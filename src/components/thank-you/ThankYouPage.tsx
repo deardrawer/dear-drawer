@@ -203,6 +203,26 @@ export default function ThankYouPage({
     return () => ro.disconnect();
   }, [scrollContainerRef]);
 
+  // 텍스트 애니메이션 완료 전 스크롤 차단 (마지막 텍스트: delay 2.5s + duration 0.8s = 3.3s)
+  const [scrollLocked, setScrollLocked] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => setScrollLocked(false), 3500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // 스크롤 컨테이너 또는 window의 스크롤 차단
+  useEffect(() => {
+    if (!scrollLocked) return;
+    if (isEmbedded && scrollContainerRef?.current) {
+      const el = scrollContainerRef.current;
+      el.style.overflow = "hidden";
+      return () => { el.style.overflow = ""; };
+    } else {
+      document.body.style.overflow = "hidden";
+      return () => { document.body.style.overflow = ""; };
+    }
+  }, [scrollLocked, isEmbedded, scrollContainerRef]);
+
   const stageHeight = isEmbedded && containerH > 0 ? `${containerH}px` : "100dvh";
   const scrollLength = isEmbedded && containerH > 0 ? `${containerH * 12}px` : "1200vh";
 
@@ -254,13 +274,13 @@ export default function ThankYouPage({
 
   // ── Phase 4: Card 2 enters (0.34–0.46) ──
   const card2Opacity = useTransform(p, lerp(0.34, 0.38, 0, 1));
-  const card2Y = useTransform(p, lerp(0.34, 0.46, 400, 50));
+  const card2Y = useTransform(p, lerp(0.34, 0.46, 400, 10));
   const card2Rotate = useTransform(p, lerp(0.36, 0.46, 10, 3));
   const card2X = useTransform(p, lerp(0.36, 0.46, 50, 24));
 
   // ── Phase 5: Card 3 enters (0.48–0.58) ──
   const card3Opacity = useTransform(p, lerp(0.48, 0.52, 0, 1));
-  const card3Y = useTransform(p, lerp(0.48, 0.58, 400, 170));
+  const card3Y = useTransform(p, lerp(0.48, 0.58, 400, 110));
   const card3Rotate = useTransform(p, lerp(0.50, 0.58, -10, -5));
   const card3X = useTransform(p, lerp(0.50, 0.58, -40, 15));
 
@@ -447,13 +467,15 @@ export default function ThankYouPage({
         {/* ═══ LAYER C — Card 2 ═══ z-20 */}
         <motion.div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
           <motion.div
-            className="bg-white p-2"
+            className="bg-white"
             style={{
               y: card2Y,
               x: card2X,
               opacity: card2Opacity,
               rotate: card2Rotate,
-              width: 220,
+              width: "62%",
+              maxWidth: 267,
+              padding: 10,
               boxShadow: "0 6px 24px rgba(0,0,0,0.10)",
               borderRadius: 2,
             }}
@@ -464,13 +486,13 @@ export default function ThankYouPage({
                 alt={data.polaroids[1].caption}
                 crop={data.polaroids[1].crop}
                 fill
-                sizes="220px"
+                sizes="(max-width: 430px) 62vw, 267px"
                 className="object-cover"
               />
             </div>
-            <div className="h-7 flex items-center justify-center">
+            <div className="h-10 flex items-center justify-center">
               <p
-                className="text-[11px] tracking-wide"
+                className="text-sm tracking-wide"
                 style={{
                   color: "#7A7570",
                   fontFamily: fonts.korean,
@@ -485,13 +507,15 @@ export default function ThankYouPage({
         {/* ═══ LAYER D — Card 3 ═══ z-25 */}
         <motion.div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ zIndex: 25 }}>
           <motion.div
-            className="bg-white p-2"
+            className="bg-white"
             style={{
               y: card3Y,
               x: card3X,
               opacity: card3Opacity,
               rotate: card3Rotate,
-              width: 220,
+              width: "62%",
+              maxWidth: 267,
+              padding: 10,
               boxShadow: "0 6px 24px rgba(0,0,0,0.10)",
               borderRadius: 2,
             }}
@@ -502,13 +526,13 @@ export default function ThankYouPage({
                 alt={data.polaroids[2].caption}
                 crop={data.polaroids[2].crop}
                 fill
-                sizes="220px"
+                sizes="(max-width: 430px) 62vw, 267px"
                 className="object-cover"
               />
             </div>
-            <div className="h-7 flex items-center justify-center">
+            <div className="h-10 flex items-center justify-center">
               <p
-                className="text-[11px] tracking-wide"
+                className="text-sm tracking-wide"
                 style={{
                   color: "#7A7570",
                   fontFamily: fonts.korean,
@@ -684,10 +708,36 @@ export default function ThankYouPage({
               {data.closingLines[4]}
             </motion.p>
             </div>{/* end card body */}
+
+            {/* 사진공유하러가기 버튼 — 팝업 닫은 후 표시 */}
+            {photoShareDismissed && data.photoShare?.enabled && data.photoShare?.url && (
+              <motion.div
+                className="mt-5 flex justify-center pointer-events-auto"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+              >
+                <a
+                  href={data.photoShare.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-6 py-3 rounded-full text-sm font-medium text-white transition-opacity hover:opacity-90"
+                  style={{ background: accentColor, boxShadow: '0 2px 12px rgba(0,0,0,0.12)' }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <circle cx="9" cy="9" r="2" />
+                    <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                  </svg>
+                  사진 공유하러 가기
+                </a>
+              </motion.div>
+            )}
           </motion.div>{/* end card+seal wrapper */}
         </div>
 
-        {/* ═══ Scroll Hint ═══ z-35 */}
+        {/* ═══ Scroll Hint ═══ z-35 — 텍스트 애니메이션 후에만 표시 */}
+        {!scrollLocked && (
         <motion.div
           className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1"
           style={{ opacity: scrollHintOpacity, zIndex: 35 }}
@@ -722,6 +772,7 @@ export default function ThankYouPage({
             />
           </motion.svg>
         </motion.div>
+        )}
 
         {/* ═══ Photo Share Popup ═══ */}
         {showPhotoShare && data.photoShare?.enabled && data.photoShare?.url && (
@@ -734,7 +785,6 @@ export default function ThankYouPage({
           >
             <div
               className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-              onClick={() => { setShowPhotoShare(false); setPhotoShareDismissed(true); }}
             />
             <motion.div
               className="relative mx-6 w-full max-w-[320px] bg-white rounded-2xl shadow-2xl overflow-hidden"

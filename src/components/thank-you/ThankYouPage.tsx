@@ -328,20 +328,20 @@ export default function ThankYouPage({
   const captionOpacity = useTransform(p, lerp(B ? 0.13 : A ? 0.14 : 0.28, B ? 0.16 : A ? 0.18 : 0.32, 0, 1));
   const heroY          = useTransform(p, lerp(B ? 0.15 : A ? 0.16 : 0.30, B ? 0.22 : A ? 0.28 : 0.44, 0, -150));
 
-  // ── Phase 4: Card 2 enters (A=기존) ──
-  const card2Opacity = useTransform(p, lerp(B ? 0.17 : 0.34, B ? 0.20 : 0.38, 0, 1));
-  const card2Y       = useTransform(p, lerp(B ? 0.17 : 0.34, B ? 0.25 : 0.46, 400, 10));
-  const card2Rotate  = useTransform(p, lerp(B ? 0.18 : 0.36, B ? 0.25 : 0.46, 10, 3));
-  const card2X       = useTransform(p, lerp(B ? 0.18 : 0.36, B ? 0.25 : 0.46, 50, 24));
+  // ── Phase 4: Card 2 enters (A=카드1 직후 빠르게) ──
+  const card2Opacity = useTransform(p, lerp(B ? 0.17 : A ? 0.24 : 0.34, B ? 0.20 : A ? 0.27 : 0.38, 0, 1));
+  const card2Y       = useTransform(p, lerp(B ? 0.17 : A ? 0.24 : 0.34, B ? 0.25 : A ? 0.36 : 0.46, 400, 10));
+  const card2Rotate  = useTransform(p, lerp(B ? 0.18 : A ? 0.26 : 0.36, B ? 0.25 : A ? 0.36 : 0.46, 10, 3));
+  const card2X       = useTransform(p, lerp(B ? 0.18 : A ? 0.26 : 0.36, B ? 0.25 : A ? 0.36 : 0.46, 50, 24));
 
-  // ── Phase 5: Card 3 enters (A=압축) ──
-  const card3Opacity = useTransform(p, lerp(B ? 0.27 : A ? 0.48 : 0.48, B ? 0.30 : A ? 0.51 : 0.52, 0, 1));
-  const card3Y       = useTransform(p, lerp(B ? 0.27 : A ? 0.48 : 0.48, B ? 0.35 : A ? 0.54 : 0.58, 400, 110));
-  const card3Rotate  = useTransform(p, lerp(B ? 0.28 : A ? 0.49 : 0.50, B ? 0.35 : A ? 0.54 : 0.58, -10, -5));
-  const card3X       = useTransform(p, lerp(B ? 0.28 : A ? 0.49 : 0.50, B ? 0.35 : A ? 0.54 : 0.58, -40, 15));
+  // ── Phase 5: Card 3 enters (A=카드2 직후) ──
+  const card3Opacity = useTransform(p, lerp(B ? 0.27 : A ? 0.38 : 0.48, B ? 0.30 : A ? 0.41 : 0.52, 0, 1));
+  const card3Y       = useTransform(p, lerp(B ? 0.27 : A ? 0.38 : 0.48, B ? 0.35 : A ? 0.46 : 0.58, 400, 110));
+  const card3Rotate  = useTransform(p, lerp(B ? 0.28 : A ? 0.39 : 0.50, B ? 0.35 : A ? 0.46 : 0.58, -10, -5));
+  const card3X       = useTransform(p, lerp(B ? 0.28 : A ? 0.39 : 0.50, B ? 0.35 : A ? 0.46 : 0.58, -40, 15));
 
   // ── Phase 6: Tracing paper (A=카드3 직후 바로 시작) ──
-  const tracingS = B ? 0.38 : A ? 0.56 : 0.62, tracingE = B ? 0.46 : A ? 0.64 : 0.72;
+  const tracingS = B ? 0.38 : A ? 0.48 : 0.62, tracingE = B ? 0.46 : A ? 0.56 : 0.72;
   const tracingTopY = useTransform(p, (v) => {
     const t = Math.max(0, Math.min(1, (v - tracingS) / (tracingE - tracingS)));
     return `${-(1 - t) * 100}%`;
@@ -350,12 +350,12 @@ export default function ThankYouPage({
     const t = Math.max(0, Math.min(1, (v - tracingS) / (tracingE - tracingS)));
     return `${(1 - t) * 100}%`;
   });
-  const tracingOpacity = useTransform(p, lerp(B ? 0.38 : A ? 0.56 : 0.62, B ? 0.42 : A ? 0.60 : 0.68, 0, 1));
+  const tracingOpacity = useTransform(p, lerp(B ? 0.38 : A ? 0.48 : 0.62, B ? 0.42 : A ? 0.52 : 0.68, 0, 1));
 
   // ── Phase 6.5: Sealing stamp (A=커튼 직후) ──
-  const sealScale  = useTransform(p, lerp(B ? 0.46 : A ? 0.64 : 0.72, B ? 0.49 : A ? 0.67 : 0.75, 0.5, 1));
-  const sealOpacity = useTransform(p, lerp(B ? 0.46 : A ? 0.64 : 0.72, B ? 0.49 : A ? 0.67 : 0.75, 0, 1));
-  const sealRotate = useTransform(p, lerp(B ? 0.46 : A ? 0.64 : 0.72, B ? 0.49 : A ? 0.67 : 0.75, -30, 0));
+  const sealScale  = useTransform(p, lerp(B ? 0.46 : A ? 0.56 : 0.72, B ? 0.49 : A ? 0.59 : 0.75, 0.5, 1));
+  const sealOpacity = useTransform(p, lerp(B ? 0.46 : A ? 0.56 : 0.72, B ? 0.49 : A ? 0.59 : 0.75, 0, 1));
+  const sealRotate = useTransform(p, lerp(B ? 0.46 : A ? 0.56 : 0.72, B ? 0.49 : A ? 0.59 : 0.75, -30, 0));
 
   // ── Phase 7: Card + ending text (기존) ──
   const cardScale       = useTransform(p, lerp(B ? 0.50 : 0.76, B ? 0.53 : 0.80, 0.9, 1));
@@ -371,8 +371,8 @@ export default function ThankYouPage({
   const endLine5Opacity = useTransform(p, lerp(B ? 0.66 : 0.92, B ? 0.69 : 0.95, 0, 1));
   const endLine5Y       = useTransform(p, lerp(B ? 0.66 : 0.92, B ? 0.69 : 0.95, 16, 0));
 
-  // ── Photo share popup ──
-  const photoShareTrigger = B ? 0.76 : 0.96;
+  // ── Photo share popup (글 끝나고 충분한 텀 후) ──
+  const photoShareTrigger = B ? 0.76 : 0.99;
   const [showPhotoShare, setShowPhotoShare] = useState(false);
   const [photoShareDismissed, setPhotoShareDismissed] = useState(false);
   useEffect(() => {

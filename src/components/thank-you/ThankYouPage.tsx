@@ -350,26 +350,26 @@ export default function ThankYouPage({
     const t = Math.max(0, Math.min(1, (v - tracingS) / (tracingE - tracingS)));
     return `${(1 - t) * 100}%`;
   });
-  const tracingOpacity = useTransform(p, lerp(B ? 0.38 : A ? 0.48 : 0.62, B ? 0.42 : A ? 0.52 : 0.68, 0, 1));
+  const tracingOpacity = useTransform(p, lerp(B ? 0.38 : A ? 0.48 : 0.62, B ? 0.42 : A ? 0.53 : 0.68, 0, 1));
 
   // ── Phase 6.5: Sealing stamp (A=커튼 직후) ──
   const sealScale  = useTransform(p, lerp(B ? 0.46 : A ? 0.56 : 0.72, B ? 0.49 : A ? 0.59 : 0.75, 0.5, 1));
   const sealOpacity = useTransform(p, lerp(B ? 0.46 : A ? 0.56 : 0.72, B ? 0.49 : A ? 0.59 : 0.75, 0, 1));
   const sealRotate = useTransform(p, lerp(B ? 0.46 : A ? 0.56 : 0.72, B ? 0.49 : A ? 0.59 : 0.75, -30, 0));
 
-  // ── Phase 7: Card + ending text (기존) ──
-  const cardScale       = useTransform(p, lerp(B ? 0.50 : 0.76, B ? 0.53 : 0.80, 0.9, 1));
-  const cardOpacity     = useTransform(p, lerp(B ? 0.50 : 0.76, B ? 0.53 : 0.80, 0, 1));
-  const endLine1Opacity = useTransform(p, lerp(B ? 0.54 : 0.80, B ? 0.57 : 0.83, 0, 1));
-  const endLine1Y       = useTransform(p, lerp(B ? 0.54 : 0.80, B ? 0.57 : 0.83, 16, 0));
-  const endLine2Opacity = useTransform(p, lerp(B ? 0.57 : 0.83, B ? 0.60 : 0.86, 0, 1));
-  const endLine2Y       = useTransform(p, lerp(B ? 0.57 : 0.83, B ? 0.60 : 0.86, 16, 0));
-  const endLine3Opacity = useTransform(p, lerp(B ? 0.60 : 0.86, B ? 0.63 : 0.89, 0, 1));
-  const endLine3Y       = useTransform(p, lerp(B ? 0.60 : 0.86, B ? 0.63 : 0.89, 16, 0));
-  const endLine4Opacity = useTransform(p, lerp(B ? 0.63 : 0.89, B ? 0.66 : 0.92, 0, 1));
-  const endLine4Y       = useTransform(p, lerp(B ? 0.63 : 0.89, B ? 0.66 : 0.92, 16, 0));
-  const endLine5Opacity = useTransform(p, lerp(B ? 0.66 : 0.92, B ? 0.69 : 0.95, 0, 1));
-  const endLine5Y       = useTransform(p, lerp(B ? 0.66 : 0.92, B ? 0.69 : 0.95, 16, 0));
+  // ── Phase 7: Card + ending text (A=씰 직후 시작) ──
+  const cardScale       = useTransform(p, lerp(B ? 0.50 : A ? 0.58 : 0.76, B ? 0.53 : A ? 0.61 : 0.80, 0.9, 1));
+  const cardOpacity     = useTransform(p, lerp(B ? 0.50 : A ? 0.58 : 0.76, B ? 0.53 : A ? 0.61 : 0.80, 0, 1));
+  const endLine1Opacity = useTransform(p, lerp(B ? 0.54 : A ? 0.62 : 0.80, B ? 0.57 : A ? 0.65 : 0.83, 0, 1));
+  const endLine1Y       = useTransform(p, lerp(B ? 0.54 : A ? 0.62 : 0.80, B ? 0.57 : A ? 0.65 : 0.83, 16, 0));
+  const endLine2Opacity = useTransform(p, lerp(B ? 0.57 : A ? 0.66 : 0.83, B ? 0.60 : A ? 0.69 : 0.86, 0, 1));
+  const endLine2Y       = useTransform(p, lerp(B ? 0.57 : A ? 0.66 : 0.83, B ? 0.60 : A ? 0.69 : 0.86, 16, 0));
+  const endLine3Opacity = useTransform(p, lerp(B ? 0.60 : A ? 0.70 : 0.86, B ? 0.63 : A ? 0.73 : 0.89, 0, 1));
+  const endLine3Y       = useTransform(p, lerp(B ? 0.60 : A ? 0.70 : 0.86, B ? 0.63 : A ? 0.73 : 0.89, 16, 0));
+  const endLine4Opacity = useTransform(p, lerp(B ? 0.63 : A ? 0.74 : 0.89, B ? 0.66 : A ? 0.77 : 0.92, 0, 1));
+  const endLine4Y       = useTransform(p, lerp(B ? 0.63 : A ? 0.74 : 0.89, B ? 0.66 : A ? 0.77 : 0.92, 16, 0));
+  const endLine5Opacity = useTransform(p, lerp(B ? 0.66 : A ? 0.78 : 0.92, B ? 0.69 : A ? 0.81 : 0.95, 0, 1));
+  const endLine5Y       = useTransform(p, lerp(B ? 0.66 : A ? 0.78 : 0.92, B ? 0.69 : A ? 0.81 : 0.95, 16, 0));
 
   // ── Photo share popup (글 끝나고 충분한 텀 후) ──
   const photoShareTrigger = B ? 0.76 : 0.99;

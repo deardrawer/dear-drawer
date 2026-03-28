@@ -169,7 +169,7 @@ export default function ThankYouStep3Photos({ invitationId }: ThankYouStep3Photo
         type="text"
         value={data.polaroids[0]?.caption || ''}
         onChange={(e) => updatePolaroid(0, { caption: e.target.value })}
-        placeholder="카드 1 캡션 (예: 우리의 시작)"
+        placeholder="카드 1 캡션 (예: 소중한 분들과)"
         className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#A37E69] focus:ring-1 focus:ring-[#A37E69]/20 transition-colors"
       />
 
@@ -188,7 +188,7 @@ export default function ThankYouStep3Photos({ invitationId }: ThankYouStep3Photo
         type="text"
         value={data.polaroids[1]?.caption || ''}
         onChange={(e) => updatePolaroid(1, { caption: e.target.value })}
-        placeholder="카드 2 캡션 (예: 함께한 날들)"
+        placeholder="카드 2 캡션 (예: 함께한 이 순간)"
         className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#A37E69] focus:ring-1 focus:ring-[#A37E69]/20 transition-colors"
       />
 
@@ -207,7 +207,7 @@ export default function ThankYouStep3Photos({ invitationId }: ThankYouStep3Photo
         type="text"
         value={data.polaroids[2]?.caption || ''}
         onChange={(e) => updatePolaroid(2, { caption: e.target.value })}
-        placeholder="카드 3 캡션 (예: 영원히 함께)"
+        placeholder="카드 3 캡션 (예: 오래 간직하겠습니다.)"
         className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#A37E69] focus:ring-1 focus:ring-[#A37E69]/20 transition-colors"
       />
     </div>

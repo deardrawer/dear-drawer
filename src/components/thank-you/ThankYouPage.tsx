@@ -268,7 +268,7 @@ export default function ThankYouPage({
     return `0 ${t * 8}px ${t * 32}px rgba(0,0,0,${t * 0.15})`;
   });
   const heroRotation = useTransform(p, lerp(0.24, 0.30, 0, -3));
-  const captionHeight = useTransform(p, lerp(0.26, 0.30, 0, 40));
+  const captionHeight = useTransform(p, lerp(0.26, 0.30, 0, 65));
   const captionOpacity = useTransform(p, lerp(0.28, 0.32, 0, 1));
   const heroY = useTransform(p, lerp(0.30, 0.44, 0, -150));
 
@@ -393,7 +393,7 @@ export default function ThankYouPage({
               style={{ height: captionHeight }}
             >
               <motion.p
-                className="text-sm tracking-wide whitespace-nowrap"
+                className="text-[23px] tracking-wide whitespace-nowrap"
                 style={{
                   opacity: captionOpacity,
                   color: "#7A7570",

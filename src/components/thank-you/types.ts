@@ -65,19 +65,19 @@ export const SAMPLE_DATA: ThankYouData = {
   polaroids: [
     {
       image: "/sample/thankyou-sub.jpg",
-      caption: "우리의 시작",
+      caption: "소중한 분들과",
       rotation: -3,
       offsetX: 0,
     },
     {
       image: "/sample/thankyou-sub2.jpg",
-      caption: "함께한 날들",
+      caption: "함께한 이 순간",
       rotation: 4,
       offsetX: 12,
     },
     {
       image: "/sample/thankyou-sub.jpg",
-      caption: "영원히 함께",
+      caption: "오래 간직하겠습니다.",
       rotation: -2,
       offsetX: -8,
     },

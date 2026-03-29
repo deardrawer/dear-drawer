@@ -742,8 +742,8 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
             </div>
           )}
 
-          {/* 강조 텍스트 색상 (매거진 제외) */}
-          {!isMagazine && (
+          {/* 강조 텍스트 색상 (매거진, 레코드 제외) */}
+          {!isMagazine && !isRecord && (
             <>
               <div className="flex items-center justify-between">
                 <div>

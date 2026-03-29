@@ -87,6 +87,12 @@ export default function MainLayout({
               >
                 디어드로어
               </a>
+              <Link
+                href="/faq"
+                className="text-sm transition-colors tracking-wide text-gray-500 hover:text-black"
+              >
+                자주 묻는 질문
+              </Link>
               <a
                 href="https://pf.kakao.com/_bEpxen/chat"
                 target="_blank"
@@ -140,6 +146,13 @@ export default function MainLayout({
               >
                 디어드로어
               </a>
+              <Link
+                href="/faq"
+                className="px-4 py-3 text-sm rounded-lg transition-colors text-gray-500 hover:bg-gray-50"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                자주 묻는 질문
+              </Link>
               <a
                 href="https://pf.kakao.com/_bEpxen/chat"
                 target="_blank"
@@ -216,6 +229,11 @@ export default function MainLayout({
               <div className="text-center md:text-left">
                 <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-3">고객지원</h4>
                 <ul className="space-y-2">
+                  <li>
+                    <Link href="/faq" className="text-sm text-gray-500 hover:text-black transition-colors">
+                      자주 묻는 질문
+                    </Link>
+                  </li>
                   <li>
                     <a href="https://pf.kakao.com/_bEpxen" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-500 hover:text-black transition-colors">
                       문의하기

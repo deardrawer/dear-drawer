@@ -362,21 +362,6 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
                   <span className="text-xs text-gray-600 font-mono w-16">{currentBodyColor}</span>
                 </div>
               </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-700">강조 색상</p>
-                  <p className="text-xs text-gray-500">**텍스트** 형식 강조색</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <input type="color" value={currentAccentColor} onChange={(e) => updateField('accentTextColor', e.target.value)} className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300" style={{ padding: 0 }} />
-                  <span className="text-xs text-gray-600 font-mono w-16">{currentAccentColor}</span>
-                </div>
-              </div>
-              <div className="p-3 bg-white rounded-lg border border-gray-200">
-                <p className="text-sm" style={{ color: currentBodyColor }}>
-                  본문 텍스트와 <span style={{ color: currentAccentColor, fontWeight: 500 }}>강조된 텍스트</span>를 비교해 보세요
-                </p>
-              </div>
             </div>
           </section>
         </>
@@ -742,8 +727,8 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
             </div>
           )}
 
-          {/* 강조 텍스트 색상 (매거진, 레코드 제외) */}
-          {!isMagazine && !isRecord && (
+          {/* 강조 텍스트 색상 (매거진 제외) */}
+          {!isMagazine && (
             <>
               <div className="flex items-center justify-between">
                 <div>

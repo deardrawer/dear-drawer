@@ -820,13 +820,19 @@ function StoryHighlights({
 // === 5. Tab Bar (게시물/사람/러브스토리) ===
 type ContentTab = 'grid' | 'people' | 'story'
 
-function TabBar({ activeTab, onTabChange }: { activeTab: ContentTab; onTabChange: (tab: ContentTab) => void }) {
-  const tabs: { id: ContentTab; label: string; icon: (active: boolean) => React.ReactNode }[] = [
+function TabBar({ activeTab, onTabChange, visitedTabs }: { activeTab: ContentTab; onTabChange: (tab: ContentTab) => void; visitedTabs: Set<ContentTab> }) {
+  const getIconColor = (tabId: ContentTab, isActive: boolean) => {
+    if (isActive) return '#262626'
+    if (tabId !== 'grid' && !visitedTabs.has(tabId)) return '#3B82F6'
+    return '#8E8E8E'
+  }
+
+  const tabs: { id: ContentTab; label: string; icon: (color: string, active: boolean) => React.ReactNode }[] = [
     {
       id: 'grid',
       label: '갤러리',
-      icon: (active) => (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill={active ? '#262626' : 'none'} stroke={active ? 'none' : '#8E8E8E'} strokeWidth="1.5">
+      icon: (color, active) => (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill={active ? '#262626' : 'none'} stroke={active ? 'none' : color} strokeWidth="1.5">
           <rect x="1" y="1" width="6.5" height="6.5" rx="0.5" />
           <rect x="8.75" y="1" width="6.5" height="6.5" rx="0.5" />
           <rect x="16.5" y="1" width="6.5" height="6.5" rx="0.5" />
@@ -842,8 +848,8 @@ function TabBar({ activeTab, onTabChange }: { activeTab: ContentTab; onTabChange
     {
       id: 'people',
       label: '소개',
-      icon: (active) => (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={active ? '#262626' : '#8E8E8E'} strokeWidth="1.5">
+      icon: (color) => (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5">
           <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
           <circle cx="12" cy="7" r="4" />
         </svg>
@@ -852,8 +858,8 @@ function TabBar({ activeTab, onTabChange }: { activeTab: ContentTab; onTabChange
     {
       id: 'story',
       label: '러브스토리',
-      icon: (active) => (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={active ? '#262626' : '#8E8E8E'} strokeWidth="1.5">
+      icon: (color) => (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5">
           <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
         </svg>
       ),
@@ -867,12 +873,22 @@ function TabBar({ activeTab, onTabChange }: { activeTab: ContentTab; onTabChange
         return (
           <button
             key={tab.id}
-            className="flex-1 py-2.5 flex flex-col items-center gap-1"
+            className="flex-1 py-2.5 flex flex-col items-center gap-1 relative"
             style={{ borderBottom: isActive ? '1px solid #262626' : '1px solid transparent' }}
             onClick={() => onTabChange(tab.id)}
           >
-            {tab.icon(isActive)}
-            <span className="text-[10px]" style={{ color: isActive ? '#262626' : '#8E8E8E' }}>{tab.label}</span>
+            <div className="relative">
+              {tab.icon(getIconColor(tab.id, isActive), isActive)}
+              {tab.id !== 'grid' && !visitedTabs.has(tab.id) && (
+                <span className="absolute -top-0.5 -right-1.5 w-[6px] h-[6px] bg-[#FF3040] rounded-full" />
+              )}
+            </div>
+            <span
+              className={`text-[10px] ${tab.id !== 'grid' && !visitedTabs.has(tab.id) && !isActive ? 'tab-neon-blue' : ''}`}
+              style={tab.id !== 'grid' && !visitedTabs.has(tab.id) && !isActive ? undefined : { color: isActive ? '#262626' : '#8E8E8E' }}
+            >
+              {tab.label}
+            </span>
           </button>
         )
       })}
@@ -1011,7 +1027,7 @@ function PeopleTab({ content, profileImage, username }: { content: any; profileI
               </svg>
             </div>
             <p className="text-[13px] leading-[1.7] whitespace-pre-line" style={{ color: '#262626' }}>
-              <span className="font-semibold">{person.subtitle || (person.role === '신랑' ? '신부가 소개하는 신랑 🤵' : '신랑이 소개하는 신부 👰')}</span>{' '}
+              <span className="font-semibold">{person.subtitle || (person.role === '신랑' ? '신부가 소개하는 신랑 🤵' : '신랑이 소개하는 신부 👰')}</span>{'\n'}
               {person.intro || (person.role === '신랑'
                 ? '처음 만났을 때부터 따뜻한 미소가 인상적이었던 사람. 항상 제 이야기에 귀 기울여주고, 힘들 때 묵묵히 곁에 있어주는 든든한 사람입니다.'
                 : '밝은 웃음소리가 참 예쁜 사람. 제가 지칠 때마다 힘이 되어주고, 작은 것에도 감사할 줄 아는 따뜻한 마음의 소유자입니다.')}
@@ -1145,10 +1161,10 @@ function PhotoGrid({
               <button
                 onClick={() => onHighlightClick(roomIdx)}
                 className="w-full py-3 text-center text-[12px] font-medium flex items-center justify-center gap-1"
-                style={{ color: '#0095F6', background: '#FAFAFA', borderBottom: '1px solid #EFEFEF' }}
+                style={{ color: '#262626', background: '#FAFAFA', borderBottom: '1px solid #EFEFEF' }}
               >
                 사진 더보기 ({allImages.length - maxInAll}+)
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0095F6" strokeWidth="2">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#262626" strokeWidth="2">
                   <polyline points="9 18 15 12 9 6" />
                 </svg>
               </button>
@@ -2665,6 +2681,15 @@ function InvitationClientExhibitContent({
 
   // Content tab (grid/people/story)
   const [contentTab, setContentTab] = useState<ContentTab>('grid')
+  const [visitedTabs, setVisitedTabs] = useState<Set<ContentTab>>(new Set(['grid']))
+  const handleTabChange = (tab: ContentTab) => {
+    setContentTab(tab)
+    setVisitedTabs(prev => {
+      const next = new Set(prev)
+      next.add(tab)
+      return next
+    })
+  }
 
   // Instagram header visibility (show after scrolling past cover)
   const [showHeader, setShowHeader] = useState(false)
@@ -2841,7 +2866,7 @@ function InvitationClientExhibitContent({
               <StoryHighlights rooms={rooms} activeRoom={activeRoom} onHighlightClick={handleHighlightClick} />
 
               {/* 4. Tab Bar */}
-              <TabBar activeTab={contentTab} onTabChange={setContentTab} />
+              <TabBar activeTab={contentTab} onTabChange={handleTabChange} visitedTabs={visitedTabs} />
 
               {/* 5. Tab Content */}
               {contentTab === 'grid' && (

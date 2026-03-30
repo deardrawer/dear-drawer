@@ -637,12 +637,15 @@ function InterviewCard({ item, index, fonts, themeColors }: { item: any; index: 
       <h3
         style={{
           fontFamily: fonts.displayKr,
-          fontSize: '18px',
+          fontSize: '16px',
           fontWeight: 600,
           lineHeight: 1.5,
           color: themeColors.text,
           marginBottom: '16px',
           letterSpacing: '-0.3px',
+          whiteSpace: 'pre-line',
+          paddingLeft: '1.1em',
+          textIndent: '-1.1em',
         }}
       >
         Q. {item.question}

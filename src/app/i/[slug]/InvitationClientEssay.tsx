@@ -13,9 +13,9 @@ type EssayFontStyle = 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxu
 interface EssayFontConfig { display: string; displayKr: string; body: string }
 
 const essayFontStyles: Record<EssayFontStyle, EssayFontConfig> = {
-  classic: { display: "'BonmyeongjoSourceHanSerif', serif", displayKr: "'Ridibatang', serif", body: "'Ridibatang', serif" },
+  classic: { display: "'Cinzel', serif", displayKr: "'Ridibatang', serif", body: "'Ridibatang', serif" },
   modern: { display: "'Montserrat', sans-serif", displayKr: "'Pretendard', sans-serif", body: "'Pretendard', sans-serif" },
-  romantic: { display: "'Lora', serif", displayKr: "'Okticon', serif", body: "'Okticon', serif" },
+  romantic: { display: "'Montserrat', sans-serif", displayKr: "'Okticon', serif", body: "'Okticon', serif" },
   contemporary: { display: "'Cinzel', serif", displayKr: "'JeonnamEducationBarun', sans-serif", body: "'JeonnamEducationBarun', sans-serif" },
   luxury: { display: "'EB Garamond', serif", displayKr: "'ELandChoice', serif", body: "'ELandChoice', serif" },
   gulim: { display: "'EB Garamond', serif", displayKr: "'JoseonGulim', serif", body: "'JoseonGulim', serif" },

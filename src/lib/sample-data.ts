@@ -551,6 +551,7 @@ export const essayStorySampleContent = {
   bgm: { enabled: true, url: '/api/r2/audio/marigold.mp3', autoplay: true },
   groom: {
     name: '김민준',
+    nameEn: 'MINJUN',
     lastName: '김',
     firstName: '민준',
     phone: '010-1234-5678',
@@ -561,6 +562,7 @@ export const essayStorySampleContent = {
   },
   bride: {
     name: '이서연',
+    nameEn: 'SEOYEON',
     lastName: '이',
     firstName: '서연',
     phone: '010-5678-1234',
@@ -735,7 +737,7 @@ export function createSampleInvitation(type: 'our' | 'family' | 'magazine' | 'fi
     imageSettings: Array(6).fill({ scale: 1, positionX: 0, positionY: 0 }),
   }
   const magazineMedia = { ...content.media, coverImage: '/sample/magazine-cover.png' }
-  const finalContent = type === 'magazine' ? { ...content, colorTheme: 'modern-black', fontStyle: 'modern', interviews: magazineInterviews, guidance: magazineGuidance, gallery: magazineGallery, media: magazineMedia } : content
+  const finalContent = type === 'magazine' ? { ...content, colorTheme: 'modern-black', fontStyle: 'modern', profileFrameShape: 'portrait', interviews: magazineInterviews, guidance: magazineGuidance, gallery: magazineGallery, media: magazineMedia } : content
 
   return {
     id: `sample-${type}-id`,

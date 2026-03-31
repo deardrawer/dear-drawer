@@ -60,9 +60,9 @@ type FontStyle = 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury' |
 interface FontConfig { display: string; displayKr: string; body: string; scale?: number }
 
 const fontStyles: Record<FontStyle, FontConfig> = {
-  classic: { display: "'Playfair Display', serif", displayKr: "'Ridibatang', serif", body: "'Ridibatang', serif" },
+  classic: { display: "'Cinzel', serif", displayKr: "'Ridibatang', serif", body: "'Ridibatang', serif" },
   modern: { display: "'Montserrat', sans-serif", displayKr: "'Pretendard', sans-serif", body: "'Pretendard', sans-serif" },
-  romantic: { display: "'Lora', serif", displayKr: "'Okticon', serif", body: "'Okticon', serif" },
+  romantic: { display: "'Montserrat', sans-serif", displayKr: "'Okticon', serif", body: "'Okticon', serif" },
   contemporary: { display: "'Cinzel', serif", displayKr: "'JeonnamEducationBarun', sans-serif", body: "'JeonnamEducationBarun', sans-serif" },
   luxury: { display: "'EB Garamond', serif", displayKr: "'ELandChoice', serif", body: "'ELandChoice', serif" },
   gulim: { display: "'EB Garamond', serif", displayKr: "'JoseonGulim', serif", body: "'JoseonGulim', serif" },
@@ -1623,7 +1623,7 @@ function TicketRsvp({ invitation, invitationId, fonts, tc, bgOverride }: {
 }) {
   const { ref, isVisible } = useScrollReveal()
   const [name, setName] = useState('')
-  const [attendance, setAttendance] = useState<'yes' | 'no'>('yes')
+  const [attendance, setAttendance] = useState<'yes' | 'no' | 'maybe'>('yes')
   const [guestCount, setGuestCount] = useState(1)
   const [rsvpMessage, setRsvpMessage] = useState('')
   const [side, setSide] = useState<'groom' | 'bride' | null>(null)
@@ -1636,7 +1636,7 @@ function TicketRsvp({ invitation, invitationId, fonts, tc, bgOverride }: {
     if (!name.trim()) return
     setSubmitting(true)
     try {
-      const attendanceMap: Record<string, string> = { yes: 'attending', no: 'not_attending' }
+      const attendanceMap: Record<string, string> = { yes: 'attending', no: 'not_attending', maybe: 'pending' }
       const res = await fetch('/api/rsvp', { method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ invitationId, guestName: name, attendance: attendanceMap[attendance] || attendance, guestCount: attendance === 'yes' ? guestCount : 0, message: rsvpMessage, side: side || undefined }) })
       if (res.ok) setSubmitted(true)
@@ -1700,8 +1700,8 @@ function TicketRsvp({ invitation, invitationId, fonts, tc, bgOverride }: {
                 </button>
               ))}
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              {(['yes', 'no'] as const).map(opt => (
+            <div className="grid grid-cols-3 gap-2">
+              {(['yes', 'maybe', 'no'] as const).map(opt => (
                 <button key={opt} onClick={() => setAttendance(opt)}
                   style={{
                     fontFamily: fonts.display, fontSize: '10px', letterSpacing: '2px', padding: '11px',
@@ -1709,7 +1709,7 @@ function TicketRsvp({ invitation, invitationId, fonts, tc, bgOverride }: {
                     background: attendance === opt ? tc.accent : 'transparent',
                     color: attendance === opt ? '#FFFFFF' : (tc.cardText || tc.text), cursor: 'pointer', transition: 'all 0.3s',
                   }}>
-                  {opt === 'yes' ? 'ATTENDING' : 'REGRET'}
+                  {{ yes: '참석', maybe: '미정', no: '불참' }[opt]}
                 </button>
               ))}
             </div>

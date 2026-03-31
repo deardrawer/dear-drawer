@@ -188,6 +188,7 @@ const magazineSectionStyles = `
   @keyframes mag-borderDrawRight { from { transform: scaleX(0); } to { transform: scaleX(1); } }
   @keyframes mag-footerTextFade { from { opacity: 0; } to { opacity: 1; } }
   @keyframes mag-highlightDraw { from { background-size: 0% 40%; } to { background-size: 100% 40%; } }
+  @keyframes mag-barGrow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
   @keyframes mag-typingCursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 `
 
@@ -927,7 +928,14 @@ function InterviewCard({ item, index, fonts, themeColors }: { item: any; index: 
       </h3>
 
       {/* Answer - Editorial body style */}
-      <div style={{ position: 'relative', paddingLeft: '16px', borderLeft: `2px solid ${themeColors.primary}` }}>
+      <div style={{ position: 'relative', paddingLeft: '16px' }}>
+        <div style={{
+          position: 'absolute', left: 0, top: 0, bottom: 0, width: '2px',
+          background: themeColors.primary,
+          transformOrigin: 'top',
+          transform: 'scaleY(0)',
+          ...(isVisible ? { animation: `mag-barGrow 0.8s cubic-bezier(0.22,1,0.36,1) ${0.3 + 0.15 * index}s both` } : {}),
+        }} />
         <p
           style={{
             fontFamily: fonts.body,
@@ -2237,7 +2245,9 @@ function InvitationClientMagazineContent({
                   }}
                 />
               )}
-              <MusicToggle audioRef={audioRef} isVisible={currentPage === 'main'} shouldAutoPlay={currentPage === 'main' && invitation.bgm?.autoplay === true} />
+              {invitation.bgm?.enabled && invitation.bgm?.url && (
+                <MusicToggle audioRef={audioRef} isVisible={currentPage === 'main'} shouldAutoPlay={currentPage === 'main' && invitation.bgm?.autoplay === true} />
+              )}
               <GalleryLightbox
                 images={invitation.gallery?.images || []}
                 isOpen={lightboxOpen}

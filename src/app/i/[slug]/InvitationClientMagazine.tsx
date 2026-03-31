@@ -187,6 +187,8 @@ const magazineSectionStyles = `
   @keyframes mag-formFadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes mag-borderDrawRight { from { transform: scaleX(0); } to { transform: scaleX(1); } }
   @keyframes mag-footerTextFade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes mag-highlightDraw { from { background-size: 0% 40%; } to { background-size: 100% 40%; } }
+  @keyframes mag-typingCursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 `
 
 // ===== Character Reveal Helper =====
@@ -235,7 +237,40 @@ function CountUp({ target, duration = 1500, delay = 0, started }: { target: numb
   return <>{value}</>
 }
 
-// ===== Magazine Cover Section =====
+// ===== Typewriter Animation =====
+function Typewriter({ text, delay = 0, speed = 80, started, style }: { text: string; delay?: number; speed?: number; started: boolean; style?: React.CSSProperties }) {
+  const [displayed, setDisplayed] = useState('')
+  const [showCursor, setShowCursor] = useState(false)
+  const hasRun = useRef(false)
+
+  useEffect(() => {
+    if (!started || hasRun.current) return
+    hasRun.current = true
+    const timer = setTimeout(() => {
+      setShowCursor(true)
+      let i = 0
+      const interval = setInterval(() => {
+        i++
+        setDisplayed(text.slice(0, i))
+        if (i >= text.length) {
+          clearInterval(interval)
+          setTimeout(() => setShowCursor(false), 600)
+        }
+      }, speed)
+      return () => clearInterval(interval)
+    }, delay)
+    return () => clearTimeout(timer)
+  }, [started, text, delay, speed])
+
+  return (
+    <span style={style}>
+      {displayed}
+      {showCursor && <span style={{ animation: 'mag-typingCursor 0.6s step-end infinite', marginLeft: '1px' }}>|</span>}
+    </span>
+  )
+}
+
+// =====Magazine Cover Section =====
 function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
   invitation: any; fonts: FontConfig; themeColors: ColorConfig; onEnter: () => void; isPreview?: boolean
 }) {
@@ -1333,8 +1368,8 @@ function ThankYouSection({ invitation, fonts, themeColors, bgOverride }: { invit
         <div style={{ width: '30px', height: '1px', background: themeColors.primary, margin: '0 auto 20px' }} />
         <p style={{ fontFamily: fonts.body, fontSize: '13px', lineHeight: 2, color: themeColors.gray, whiteSpace: 'pre-line' }}>{thankYou.message}</p>
         {thankYou.sign && (
-          <p style={{ fontFamily: fonts.displayKr, fontSize: '13px', color: themeColors.text, marginTop: '16px', fontWeight: 500, opacity: 0, ...(isVisible ? { animation: 'mag-lineReveal 0.6s ease 0.5s both' } : {}) }}>
-            {thankYou.sign}
+          <p style={{ fontFamily: fonts.displayKr, fontSize: '13px', color: themeColors.text, marginTop: '16px', fontWeight: 500, minHeight: '20px' }}>
+            <Typewriter text={thankYou.sign} delay={800} speed={100} started={isVisible} style={{ color: themeColors.text }} />
           </p>
         )}
       </div>
@@ -1545,14 +1580,24 @@ function GuestbookSection({ invitation, invitationId, fonts, themeColors, isSamp
 
       {/* Question */}
       <div className="text-center mb-6">
-        <p style={{
-          fontFamily: fonts.displayKr,
-          fontSize: '14px',
-          fontWeight: 500,
-          lineHeight: 1.7,
-          color: themeColors.text,
-          minHeight: '24px',
-        }}>
+        <p
+          key={currentQuestionIndex}
+          style={{
+            fontFamily: fonts.displayKr,
+            fontSize: '14px',
+            fontWeight: 500,
+            lineHeight: 1.7,
+            color: themeColors.text,
+            minHeight: '24px',
+            display: 'inline',
+            backgroundImage: `linear-gradient(${themeColors.primary}25, ${themeColors.primary}25)`,
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'left bottom',
+            backgroundSize: '0% 40%',
+            animation: 'mag-highlightDraw 0.8s cubic-bezier(0.22,1,0.36,1) 0.3s both',
+            paddingBottom: '2px',
+          }}
+        >
           {currentQuestion}
         </p>
         {questions.length > 1 && (
@@ -1567,6 +1612,8 @@ function GuestbookSection({ invitation, invitationId, fonts, themeColors, isSamp
               cursor: 'pointer',
               marginTop: '8px',
               letterSpacing: '1px',
+              display: 'block',
+              width: '100%',
             }}
           >
             다른 질문 보기 &rarr;

@@ -2976,6 +2976,15 @@ function InvitationClientFilmContent({
     touchStartYRef.current = e.touches[0].clientY
   }, [])
 
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    if (currentPage === 'cover' || isPreview) return
+    const deltaY = touchStartYRef.current - e.touches[0].clientY
+    const direction = deltaY > 0 ? 'down' : 'up'
+    // snap-long 내부 스크롤은 네이티브 허용 (scene 섹션 제외)
+    if (!isOnSceneSection() && canScrollInLongSection(direction)) return
+    e.preventDefault()
+  }, [currentPage, isPreview, isOnSceneSection, canScrollInLongSection])
+
   const handleTouchEnd = useCallback((e: TouchEvent) => {
     if (currentPage === 'cover' || isPreview) return
 
@@ -2984,7 +2993,7 @@ function InvitationClientFilmContent({
 
     const direction = deltaY > 0 ? 'down' : 'up'
 
-    // snap-long 내부 스크롤은 CSS snap이 처리
+    // snap-long 내부 스크롤은 네이티브가 처리
     if (!isOnSceneSection() && canScrollInLongSection(direction)) return
 
     if (isScrollingRef.current) return
@@ -2996,11 +3005,13 @@ function InvitationClientFilmContent({
         setSceneStep(prev => prev + 1)
         return
       }
+      scrollContainerRef.current?.scrollBy({ top: window.innerHeight, behavior: 'smooth' })
     } else {
       if (isOnSceneSection() && sceneStepRef.current > 1) {
         setSceneStep(prev => prev - 1)
         return
       }
+      scrollContainerRef.current?.scrollBy({ top: -window.innerHeight, behavior: 'smooth' })
     }
   }, [currentPage, isPreview, sceneCount, isOnSceneSection, canScrollInLongSection])
 
@@ -3041,15 +3052,17 @@ function InvitationClientFilmContent({
     if (!container || currentPage === 'cover' || isPreview) return
     container.addEventListener('wheel', handleWheel, { passive: false })
     container.addEventListener('touchstart', handleTouchStart, { passive: true })
+    container.addEventListener('touchmove', handleTouchMove, { passive: false })
     container.addEventListener('touchend', handleTouchEnd, { passive: true })
     document.addEventListener('keydown', handleKeyDown)
     return () => {
       container.removeEventListener('wheel', handleWheel)
       container.removeEventListener('touchstart', handleTouchStart)
+      container.removeEventListener('touchmove', handleTouchMove)
       container.removeEventListener('touchend', handleTouchEnd)
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [currentPage, isPreview, handleWheel, handleTouchStart, handleTouchEnd, handleKeyDown])
+  }, [currentPage, isPreview, handleWheel, handleTouchStart, handleTouchMove, handleTouchEnd, handleKeyDown])
 
   // Scene section IntersectionObserver
   useEffect(() => {

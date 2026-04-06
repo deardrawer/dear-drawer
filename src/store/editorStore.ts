@@ -443,11 +443,17 @@ export interface InvitationContent {
     url: string
   }
 
+  // ===== 영문 디스플레이 폰트 (Film/Record/Magazine) =====
+  displayFont?: string
+
   // ===== 네비게이션 스타일 =====
   navStyle?: 'hamburger' | 'bottom-nav' | 'bottom-mini'
 
   // ===== 매거진 인트로 스타일 =====
   magazineIntroStyle?: 'cover' | 'clean' | 'editorial'
+
+  // ===== 필름 인트로 스타일 =====
+  filmIntroStyle?: 'tudum' | 'cinematic'
 
   // ===== 매거진 섹션 순서 =====
   magazineSectionOrder?: string[]
@@ -575,7 +581,7 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
       name: '민준',
       profile: { ...createDefaultPerson(true).profile, tag: '세상에서 가장 따뜻한 사람' },
     } : template.id === 'narrative-record' ? {
-      profile: { ...createDefaultPerson(true).profile, tag: '' },
+      profile: { ...createDefaultPerson(true).profile, tag: '세상에서 가장 따뜻한 사람' },
     } : template.id === 'narrative-magazine' ? {
       profile: { ...createDefaultPerson(true).profile, tag: '세상에서 가장 따뜻한 사람' },
     } : {}),
@@ -602,7 +608,7 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
       name: '서연',
       profile: { ...createDefaultPerson(false).profile, tag: '매일 웃게 해주는 사람' },
     } : template.id === 'narrative-record' ? {
-      profile: { ...createDefaultPerson(false).profile, tag: '' },
+      profile: { ...createDefaultPerson(false).profile, tag: '매일 웃게 해주는 사람' },
     } : template.id === 'narrative-magazine' ? {
       profile: { ...createDefaultPerson(false).profile, tag: '매일 웃게 해주는 사람' },
     } : {}),
@@ -618,11 +624,11 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
     venue: {
       name: template.id === 'narrative-our' ? '아펠가모 강남' : template.id === 'narrative-family' ? '라비돌웨딩홀' : template.id === 'narrative-film' ? '더채플앳청담' : template.id === 'narrative-record' ? '그랜드힐 컨벤션' : template.id === 'narrative-magazine' ? '포시즌스 호텔' : '',
       hall: template.id === 'narrative-our' ? '그랜드홀' : template.id === 'narrative-family' ? '로즈홀 3층' : template.id === 'narrative-film' ? '그랜드홀' : template.id === 'narrative-record' ? '크리스탈홀' : template.id === 'narrative-magazine' ? '그랜드볼룸' : '',
-      address: '',
+      address: template.id === 'narrative-record' ? '서울특별시 강남구 청담동 123-45' : '',
     },
     directions: {
-      car: '',
-      publicTransport: '',
+      car: template.id === 'narrative-record' ? '네비게이션에 "그랜드힐 컨벤션" 검색\n강남역 방면에서 청담사거리 방향으로 직진 후 우회전\n주차: 건물 지하주차장 이용 가능 (3시간 무료)' : '',
+      publicTransport: template.id === 'narrative-record' ? '지하철: 압구정로데오역 5번 출구 도보 10분\n버스: 146, 301, 401, 3422' : '',
       train: '',
       expressBus: '',
       shuttle: '',
@@ -659,7 +665,7 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
       : template.id === 'narrative-film'
       ? '솔직히 말하면,\n처음엔 그냥 밥 한번 먹자는 거였는데\n어쩌다 보니 평생 같이 먹게 됐습니다.'
       : template.id === 'narrative-record'
-      ? '두 사람의 하모니가\n하나의 멜로디가 되어\n평생을 함께 연주합니다.\n\n이 특별한 무대에\n여러분을 초대합니다.'
+      ? '두 사람의 하모니가 하나의 멜로디가 되어\n평생의 노래를 함께 부르려 합니다.\n\n저희의 첫 번째 합주에\n귀 기울여 주시겠어요?'
       : template.id === 'narrative-magazine'
       ? '서로 다른 두 사람이\n같은 방향을 바라보며\n하나의 길을 걸어가려 합니다.\n\n소중한 분들을 초대합니다.'
       : '',
@@ -673,7 +679,7 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
       : template.id === 'narrative-film'
       ? { text: 'I came here tonight because when you realize you want to spend the rest of your life with somebody, you want the rest of your life to start as soon as possible.', author: 'When Harry Met Sally' }
       : template.id === 'narrative-record'
-      ? { text: 'Every love story is beautiful,\nbut ours is my favorite.', author: '' }
+      ? { text: 'Every love story is a beautiful song, but ours is my favorite.', author: '' }
       : template.id === 'narrative-magazine'
       ? { text: 'Whatever our souls are made of,\nhis and mine are the same.', author: 'Emily Brontë' }
       : { text: '', author: '' },
@@ -684,7 +690,7 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
       : template.id === 'narrative-film'
       ? { title: 'SPECIAL THANKS', message: '바쁘신 와중에도 저희의 결혼을\n축하해 주셔서 진심으로 감사드립니다.\n\n여러분의 축복을 마음에 새기며\n서로 아끼고 사랑하며 살겠습니다.', sign: '민준 & 서연 올림' }
       : template.id === 'narrative-record'
-      ? { title: 'LINER NOTES', message: '저희의 첫 앨범 발매에\n함께해 주셔서 감사합니다.\n\n여러분의 축하와 응원이\n가장 아름다운 반주가 되어줄 거예요.', sign: '길동 & 민지 올림' }
+      ? { title: 'LINER NOTES', message: '이 앨범이 완성되기까지\n함께해주신 모든 분들께 감사드립니다.\n\n여러분의 축복이 담긴 이 노래를\n평생 함께 부르며 살겠습니다.', sign: '민준 & 서연 올림' }
       : template.id === 'narrative-magazine'
       ? { title: 'THANK YOU', message: '바쁘신 가운데\n저희의 새로운 시작을\n축하해 주셔서 감사합니다.\n\n여러분의 따뜻한 마음을 담아\n행복하게 살겠습니다.', sign: '민준 & 서연 올림' }
       : { title: 'THANK YOU', message: '', sign: '' },
@@ -709,15 +715,15 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
     filmTitle: template.id === 'narrative-film' ? 'THE WEDDING' : undefined,
     interviews: template.id === 'narrative-film'
       ? [
-          { question: '첫 만남', answer: '', groomDialogue: '첫인상이 어땠냐고? 솔직히 별 생각 없었어.', brideDialogue: '나도. 근데 두 번째 만났을 때 좀 설렜어. 아주 조금.', narration: '', displayOrder: ['narration', 'groom', 'bride'] as ('groom' | 'bride' | 'narration')[], images: [], imageSettings: [], bgClass: '' },
-          { question: '우리의 시간', answer: '', groomDialogue: '이 사람 장점? 제가 하는 말에 잘 웃어줘요.', brideDialogue: '아니 진짜 웃긴 걸 어떡해. 근데 본인은 모름.', narration: '', displayOrder: ['narration', 'groom', 'bride'] as ('groom' | 'bride' | 'narration')[], images: [], imageSettings: [], bgClass: '' },
-          { question: '프로포즈', answer: '', groomDialogue: '프로포즈를 엄청 준비했는데 긴장해서 다 까먹었어.', brideDialogue: '그래서 그냥 울었잖아. 그게 더 감동이었어 사실.', narration: '', displayOrder: ['narration', 'groom', 'bride'] as ('groom' | 'bride' | 'narration')[], images: [], imageSettings: [], bgClass: '' },
+          { question: '처음 만났을 때 서로의 첫인상은?', answer: '', groomDialogue: '카페에서 책을 읽고 있는 모습이 정말 예뻤어요', brideDialogue: '웃을 때 눈이 반달처럼 되는 게 인상적이었어요', narration: '', displayOrder: ['narration', 'groom', 'bride'] as ('groom' | 'bride' | 'narration')[], images: [], imageSettings: [], bgClass: '' },
+          { question: '결혼을 결심하게 된 순간은?', answer: '', groomDialogue: '아플 때 밤새 간호해주는 모습을 보고 확신했어요', brideDialogue: '이 사람과 함께라면 어떤 어려움도 이겨낼 수 있겠다 싶었어요', narration: '', displayOrder: ['narration', 'groom', 'bride'] as ('groom' | 'bride' | 'narration')[], images: [], imageSettings: [], bgClass: '' },
+          { question: '서로에게 하고 싶은 한마디는?', answer: '', groomDialogue: '평생 웃게 해줄게요. 사랑해요', brideDialogue: '당신을 만나서 정말 행복해요. 영원히 함께해요', narration: '', displayOrder: ['narration', 'groom', 'bride'] as ('groom' | 'bride' | 'narration')[], images: [], imageSettings: [], bgClass: '' },
         ]
       : template.id === 'narrative-record'
       ? [
-          { question: '첫 만남', answer: '친구 소개로 만난 우리,\n첫눈에 반했다고 하면 거짓말이지만\n두 번째 만남부터는 확실했어요.', images: [], imageSettings: [], bgClass: '' },
-          { question: '사랑에 빠진 순간', answer: '같은 노래를 좋아한다는 걸 알았을 때,\n이 사람이다 싶었어요.', images: [], imageSettings: [], bgClass: '' },
-          { question: '프로포즈', answer: '특별한 건 없었어요.\n평범한 일상 속에서\n"평생 같이 있자"라는 한마디.', images: [], imageSettings: [], bgClass: '' },
+          { question: '첫 만남의 멜로디', answer: '우연히 같은 카페에서 흘러나온 노래에\n동시에 흥얼거리기 시작했어요.\n서로를 바라보며 웃었던 그 순간,\n우리만의 첫 번째 곡이 시작되었습니다.', images: [], imageSettings: [], bgClass: 'pink-bg' },
+          { question: '함께 만든 하모니', answer: '서로 다른 음색이 만나\n더 아름다운 화음이 되었어요.\n때로는 불협화음도 있었지만\n그마저도 우리만의 음악이 되었습니다.', images: [], imageSettings: [], bgClass: 'white-bg' },
+          { question: '영원한 듀엣', answer: '"평생 너와 듀엣을 하고 싶어."\n떨리는 목소리로 건넨 프로포즈에\n그녀는 눈물을 글썽이며 고개를 끄덕였습니다.\n우리의 가장 아름다운 곡이 시작되는 순간이었어요.', images: [], imageSettings: [], bgClass: 'pink-bg' },
         ]
       : template.id === 'narrative-magazine'
       ? [
@@ -767,6 +773,9 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
   fontStyle: template.id === 'narrative-magazine' ? 'modern'
     : template.id === 'narrative-film' ? 'contemporary'
     : template.id === 'narrative-record' ? 'modern' : 'classic',
+  displayFont: template.id === 'narrative-film' ? 'playfair'
+    : template.id === 'narrative-record' ? 'montserrat'
+    : template.id === 'narrative-magazine' ? 'montserrat' : undefined,
   colorTheme: template.id === 'narrative-magazine' ? 'modern-black'
     : template.id === 'narrative-film' ? 'film-dark'
     : template.id === 'narrative-record' ? 'record-coral' : 'classic-rose',
@@ -802,7 +811,18 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
       : template.id === 'narrative-family' ? 'WEDDING INVITATION'
       : template.id === 'narrative-film' ? 'THE WEDDING'
       : template.id === 'narrative-record' ? 'WE ARE GETTING MARRIED' : 'OUR WEDDING',
-    sectionDividers: {
+    sectionDividers: template.id === 'narrative-record' ? {
+      invitation: 'TRACK 01',
+      ourStory: 'TRACK 03',
+      aboutUs: 'TRACK 02',
+      interview: 'TRACK 03',
+      gallery: 'TRACK 04',
+      information: 'INFORMATION',
+      location: 'TRACK 05',
+      rsvp: 'RSVP',
+      thankYou: 'BONUS TRACK',
+      guestbook: 'FAN MAIL',
+    } : {
       invitation: 'INVITATION',
       ourStory: 'OUR STORY',
       aboutUs: 'ABOUT US',

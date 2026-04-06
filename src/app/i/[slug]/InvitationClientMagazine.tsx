@@ -25,7 +25,7 @@ const colorThemes: Record<ColorTheme, ColorConfig> = {
 }
 
 type FontStyle = 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury' | 'gulim' | 'adulthand' | 'neathand' | 'roundhand' | 'roundgothic' | 'suit' | 'myungjo'
-interface FontConfig { display: string; displayKr: string; body: string; scale?: number }
+interface FontConfig { display: string; displayKr: string; body: string; scale?: number; isScript?: boolean }
 
 const fontStyles: Record<FontStyle, FontConfig> = {
   classic: { display: "'Cinzel', serif", displayKr: "'Ridibatang', serif", body: "'Ridibatang', serif" },
@@ -275,6 +275,7 @@ function Typewriter({ text, delay = 0, speed = 80, started, style }: { text: str
 function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
   invitation: any; fonts: FontConfig; themeColors: ColorConfig; onEnter: () => void; isPreview?: boolean
 }) {
+  const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
   const [loaded, setLoaded] = useState(false)
   const coverImage = extractImageUrl(invitation.media?.coverImage) || '/images/our-cover.png'
   const introStyle = invitation.magazineIntroStyle || 'cover'
@@ -376,7 +377,7 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
             ...(loaded ? { animation: 'mag-fadeIn 0.6s ease 3s both, mag-btnPulse 3s ease-in-out 3.6s infinite' } : {}),
           }}
         >
-          OPEN
+          {dt('OPEN')}
         </button>
       </div>
     )
@@ -423,7 +424,7 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
             color: 'rgba(255,255,255,0.9)',
             opacity: 0, transform: 'translateX(-30px)',
             ...(loaded ? { animation: 'mag-slideInLeft 0.8s cubic-bezier(0.22,1,0.36,1) 1.8s both' } : {}),
-          }}>WEDDING</span>
+          }}>{dt('WEDDING')}</span>
           <span style={{
             fontFamily: fonts.display, fontSize: '10px', letterSpacing: '2px',
             color: 'rgba(255,255,255,0.7)',
@@ -476,7 +477,7 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
               ...(loaded ? { animation: 'mag-fadeIn 0.6s ease 3.3s both, mag-btnPulseWhite 3s ease-in-out 4s infinite' } : {}),
             }}
           >
-            OPEN
+            {dt('OPEN')}
           </button>
         </div>
       </div>
@@ -573,7 +574,7 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
             ...(loaded ? { animation: `mag-fadeIn 0.6s ease ${btnDelay}s both, mag-btnPulse 3s ease-in-out ${btnDelay + 0.6}s infinite` } : {}),
           }}
         >
-          OPEN
+          {dt('OPEN')}
         </button>
       </div>
     </div>
@@ -651,6 +652,7 @@ function EditorsNote({ invitation, fonts, themeColors }: { invitation: any; font
 
 // ===== Meet The Couple (Interviewee Profile) =====
 function MeetTheCouple({ invitation, fonts, themeColors, bgOverride }: { invitation: any; fonts: FontConfig; themeColors: ColorConfig; bgOverride?: string }) {
+  const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
   const { ref, isVisible } = useScrollReveal()
   const groomProfile = invitation.groom?.profile
   const brideProfile = invitation.bride?.profile
@@ -671,10 +673,10 @@ function MeetTheCouple({ invitation, fonts, themeColors, bgOverride }: { invitat
         {/* Section Label */}
         <div className="text-center mb-10" style={{ opacity: 0, ...(isVisible ? { animation: 'mag-sectionFadeIn 1s ease 0.3s both' } : {}) }}>
           <div style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '6px', color: themeColors.gray, marginBottom: '12px' }}>
-            INTERVIEWEE
+            {dt('INTERVIEWEE')}
           </div>
           <h2 style={{ fontFamily: fonts.display, fontSize: '24px', fontWeight: 300, letterSpacing: '4px', color: themeColors.primary }}>
-            MEET THE COUPLE
+            {dt('MEET THE COUPLE')}
           </h2>
           <div style={{ width: '40px', height: '1px', background: themeColors.primary, margin: '16px auto 0' }} />
         </div>
@@ -699,7 +701,7 @@ function MeetTheCouple({ invitation, fonts, themeColors, bgOverride }: { invitat
                     {groomName}
                   </div>
                   <div style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '1px', color: themeColors.gray, marginTop: '2px' }}>
-                    GROOM
+                    {dt('GROOM')}
                   </div>
                   {groomProfile?.tag && (
                     <p style={{ fontFamily: fonts.body, fontSize: '10px', color: themeColors.gray, marginTop: '6px', lineHeight: 1.5, whiteSpace: 'pre-line' }}>
@@ -727,7 +729,7 @@ function MeetTheCouple({ invitation, fonts, themeColors, bgOverride }: { invitat
                     {brideName}
                   </div>
                   <div style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '1px', color: themeColors.gray, marginTop: '2px' }}>
-                    BRIDE
+                    {dt('BRIDE')}
                   </div>
                   {brideProfile?.tag && (
                     <p style={{ fontFamily: fonts.body, fontSize: '10px', color: themeColors.gray, marginTop: '6px', lineHeight: 1.5, whiteSpace: 'pre-line' }}>
@@ -766,7 +768,7 @@ function MeetTheCouple({ invitation, fonts, themeColors, bgOverride }: { invitat
                   {groomName}
                 </div>
                 <div style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '1px', color: themeColors.gray, marginTop: '4px' }}>
-                  GROOM
+                  {dt('GROOM')}
                 </div>
                 {groomProfile?.tag && (
                   <p style={{ fontFamily: fonts.body, fontSize: '11px', color: themeColors.gray, marginTop: '8px', textAlign: 'center', lineHeight: 1.5, whiteSpace: 'pre-line' }}>
@@ -806,7 +808,7 @@ function MeetTheCouple({ invitation, fonts, themeColors, bgOverride }: { invitat
                   {brideName}
                 </div>
                 <div style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '1px', color: themeColors.gray, marginTop: '4px' }}>
-                  BRIDE
+                  {dt('BRIDE')}
                 </div>
                 {brideProfile?.tag && (
                   <p style={{ fontFamily: fonts.body, fontSize: '11px', color: themeColors.gray, marginTop: '8px', textAlign: 'center', lineHeight: 1.5, whiteSpace: 'pre-line' }}>
@@ -824,6 +826,7 @@ function MeetTheCouple({ invitation, fonts, themeColors, bgOverride }: { invitat
 
 // ===== Feature Interview Section =====
 function FeatureInterview({ invitation, fonts, themeColors, bgOverride }: { invitation: any; fonts: FontConfig; themeColors: ColorConfig; bgOverride?: string }) {
+  const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
   const { ref: headerRef, isVisible: headerVisible } = useScrollReveal()
   const interviews = invitation.interviews?.length ? invitation.interviews : invitation.content?.interviews || []
 
@@ -834,10 +837,10 @@ function FeatureInterview({ invitation, fonts, themeColors, bgOverride }: { invi
       {/* Section Header */}
       <div ref={headerRef} className="px-6 pt-16 pb-8 text-center" style={{ opacity: 0, ...(headerVisible ? { animation: 'mag-sectionFadeIn 1s ease both' } : {}) }}>
         <div style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '6px', color: themeColors.gray, marginBottom: '12px' }}>
-          EXCLUSIVE
+          {dt('EXCLUSIVE')}
         </div>
         <h2 style={{ fontFamily: fonts.display, fontSize: '28px', fontWeight: 300, letterSpacing: '6px', color: themeColors.primary }}>
-          THE INTERVIEW
+          {dt('THE INTERVIEW')}
         </h2>
         <div style={{ width: '40px', height: '1px', background: themeColors.primary, margin: '16px auto 0' }} />
       </div>
@@ -957,6 +960,7 @@ function InterviewCard({ item, index, fonts, themeColors }: { item: any; index: 
 function PhotoSpread({ invitation, fonts, themeColors, onOpenLightbox, bgOverride }: {
   invitation: any; fonts: FontConfig; themeColors: ColorConfig; onOpenLightbox: (idx: number) => void; bgOverride?: string
 }) {
+  const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
   const { ref, isVisible } = useScrollReveal()
   const allImages = (invitation.gallery?.images || []).map(extractImageUrl).filter(Boolean)
   const [showAll, setShowAll] = useState(false)
@@ -1006,10 +1010,10 @@ function PhotoSpread({ invitation, fonts, themeColors, onOpenLightbox, bgOverrid
         {/* Section Header */}
         <div className="px-6 mb-8 text-center">
           <div style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '6px', color: themeColors.gray, marginBottom: '12px' }}>
-            GALLERY
+            {dt('GALLERY')}
           </div>
           <h2 style={{ fontFamily: fonts.display, fontSize: '28px', fontWeight: 300, letterSpacing: '6px', color: themeColors.primary }}>
-            PHOTO SPREAD
+            {dt('PHOTO SPREAD')}
           </h2>
           <div style={{ width: '40px', height: '1px', background: themeColors.primary, margin: '16px auto 0' }} />
         </div>
@@ -1045,6 +1049,7 @@ function PhotoSpread({ invitation, fonts, themeColors, onOpenLightbox, bgOverrid
 
 // ===== YouTube Section =====
 function YouTubeSection({ invitation, fonts, themeColors, bgOverride }: { invitation: any; fonts: FontConfig; themeColors: ColorConfig; bgOverride?: string }) {
+  const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
   const { ref, isVisible } = useScrollReveal()
   const youtube = invitation.youtube
   if (!youtube?.enabled || !youtube?.url) return null
@@ -1056,7 +1061,7 @@ function YouTubeSection({ invitation, fonts, themeColors, bgOverride }: { invita
   return (
     <div ref={ref} className="px-6 py-12" style={{ backgroundColor: bgOverride || themeColors.sectionBg }}>
       <div className="text-center mb-6" style={{ opacity: 0, ...(isVisible ? { animation: 'mag-sectionFadeIn 0.7s ease both' } : {}) }}>
-        <div style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '6px', color: themeColors.gray, marginBottom: '8px' }}>VIDEO</div>
+        <div style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '6px', color: themeColors.gray, marginBottom: '8px' }}>{dt('VIDEO')}</div>
         {youtube.title && (
           <p style={{ fontFamily: fonts.displayKr, fontSize: '14px', color: themeColors.text }}>{youtube.title}</p>
         )}
@@ -1076,6 +1081,7 @@ function YouTubeSection({ invitation, fonts, themeColors, bgOverride }: { invita
 
 // ===== The Details (Wedding Info) Section =====
 function TheDetails({ invitation, fonts, themeColors, bgOverride }: { invitation: any; fonts: FontConfig; themeColors: ColorConfig; bgOverride?: string }) {
+  const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
   const { ref, isVisible } = useScrollReveal()
   const w = invitation.wedding || {}
   const date = w.date ? new Date(w.date) : null
@@ -1094,10 +1100,10 @@ function TheDetails({ invitation, fonts, themeColors, bgOverride }: { invitation
         {/* Section Header */}
         <div className="text-center mb-12" style={{ opacity: 0, ...(isVisible ? { animation: 'mag-sectionFadeIn 0.7s ease 0.1s both' } : {}) }}>
           <div style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '6px', color: themeColors.gray, marginBottom: '12px' }}>
-            DETAILS
+            {dt('DETAILS')}
           </div>
           <h2 style={{ fontFamily: fonts.display, fontSize: '28px', fontWeight: 300, letterSpacing: '6px', color: themeColors.primary }}>
-            THE WEDDING
+            {dt('THE WEDDING')}
           </h2>
           <div style={{ width: '40px', height: '1px', background: themeColors.primary, margin: '16px auto 0' }} />
         </div>
@@ -1133,10 +1139,10 @@ function TheDetails({ invitation, fonts, themeColors, bgOverride }: { invitation
               return (
                 <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: `0.5px solid ${themeColors.divider}`, opacity: 0, ...(isVisible ? { animation: 'mag-scaleBlurReveal 0.8s ease 1.8s both' } : {}) }}>
                   <div style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '4px', color: themeColors.gray, marginBottom: '6px' }}>
-                    {diffDays === 0 ? 'TODAY' : 'D-DAY'}
+                    {diffDays === 0 ? dt('TODAY') : dt('D-DAY')}
                   </div>
                   <div style={{ fontFamily: fonts.display, fontSize: '24px', fontWeight: 300, color: themeColors.primary, letterSpacing: '2px' }}>
-                    {diffDays === 0 ? 'THE DAY' : <>D-<CountUp target={diffDays} duration={1000} delay={1800} started={isVisible} /></>}
+                    {diffDays === 0 ? dt('THE DAY') : <>D-<CountUp target={diffDays} duration={1000} delay={1800} started={isVisible} /></>}
                   </div>
                 </div>
               )
@@ -1147,7 +1153,7 @@ function TheDetails({ invitation, fonts, themeColors, bgOverride }: { invitation
         {/* Venue */}
         <div className="text-center mb-12" style={{ opacity: 0, ...(isVisible ? { animation: 'mag-lineReveal 0.7s ease 0.5s both' } : {}) }}>
           <div style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '4px', color: themeColors.gray, marginBottom: '8px' }}>
-            VENUE
+            {dt('VENUE')}
           </div>
           <p style={{ fontFamily: fonts.displayKr, fontSize: '16px', fontWeight: 500, color: themeColors.text }}>
             {w.venue?.name || ''}
@@ -1168,7 +1174,7 @@ function TheDetails({ invitation, fonts, themeColors, bgOverride }: { invitation
             <div className="grid grid-cols-2 gap-6">
               {/* Groom side */}
               <div className="text-center">
-                <div style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '3px', color: themeColors.gray, marginBottom: '12px' }}>GROOM</div>
+                <div style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '3px', color: themeColors.gray, marginBottom: '12px' }}>{dt('GROOM')}</div>
                 <p style={{ fontFamily: fonts.body, fontSize: '12px', color: themeColors.gray, lineHeight: 1.8 }}>
                   {groom.father?.name && <>{(groom.father as any)?.deceased ? (invitation.deceasedDisplayStyle === 'hanja' ? '故 ' : <><img src="/icons/chrysanthemum.svg" alt="고인" className="inline w-3 h-3 mr-0.5 opacity-70 align-middle" style={{ verticalAlign: 'middle', marginTop: '-2px' }} />{' '}</>) : ''}{groom.father.name} &middot; </>}
                   {groom.mother?.name && <>{(groom.mother as any)?.deceased ? (invitation.deceasedDisplayStyle === 'hanja' ? '故 ' : <><img src="/icons/chrysanthemum.svg" alt="고인" className="inline w-3 h-3 mr-0.5 opacity-70 align-middle" style={{ verticalAlign: 'middle', marginTop: '-2px' }} />{' '}</>) : ''}{groom.mother.name}</>}
@@ -1183,7 +1189,7 @@ function TheDetails({ invitation, fonts, themeColors, bgOverride }: { invitation
 
               {/* Bride side */}
               <div className="text-center">
-                <div style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '3px', color: themeColors.gray, marginBottom: '12px' }}>BRIDE</div>
+                <div style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '3px', color: themeColors.gray, marginBottom: '12px' }}>{dt('BRIDE')}</div>
                 <p style={{ fontFamily: fonts.body, fontSize: '12px', color: themeColors.gray, lineHeight: 1.8 }}>
                   {bride.father?.name && <>{(bride.father as any)?.deceased ? (invitation.deceasedDisplayStyle === 'hanja' ? '故 ' : <><img src="/icons/chrysanthemum.svg" alt="고인" className="inline w-3 h-3 mr-0.5 opacity-70 align-middle" style={{ verticalAlign: 'middle', marginTop: '-2px' }} />{' '}</>) : ''}{bride.father.name} &middot; </>}
                   {bride.mother?.name && <>{(bride.mother as any)?.deceased ? (invitation.deceasedDisplayStyle === 'hanja' ? '故 ' : <><img src="/icons/chrysanthemum.svg" alt="고인" className="inline w-3 h-3 mr-0.5 opacity-70 align-middle" style={{ verticalAlign: 'middle', marginTop: '-2px' }} />{' '}</>) : ''}{bride.mother.name}</>}
@@ -1216,7 +1222,7 @@ function TheDetails({ invitation, fonts, themeColors, bgOverride }: { invitation
                 <div className="w-8 h-8 rounded-full flex items-center justify-center mb-2" style={{ background: '#03C75A' }}>
                   <span className="text-white text-xs font-bold">N</span>
                 </div>
-                <span style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '1px', color: themeColors.gray }}>NAVER</span>
+                <span style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '1px', color: themeColors.gray }}>{dt('NAVER')}</span>
               </a>
               <a
                 href={`https://map.kakao.com/link/search/${encodeURIComponent(w.venue.address)}`}
@@ -1228,7 +1234,7 @@ function TheDetails({ invitation, fonts, themeColors, bgOverride }: { invitation
                 <div className="w-8 h-8 rounded-full flex items-center justify-center mb-2" style={{ background: '#FEE500' }}>
                   <span className="text-black text-xs font-bold">K</span>
                 </div>
-                <span style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '1px', color: themeColors.gray }}>KAKAO</span>
+                <span style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '1px', color: themeColors.gray }}>{dt('KAKAO')}</span>
               </a>
               <a
                 href={`tmap://search?name=${encodeURIComponent(w.venue.name || '')}`}
@@ -1238,7 +1244,7 @@ function TheDetails({ invitation, fonts, themeColors, bgOverride }: { invitation
                 <div className="w-8 h-8 rounded-full flex items-center justify-center mb-2" style={{ background: '#4285F4' }}>
                   <span className="text-white text-xs font-bold">T</span>
                 </div>
-                <span style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '1px', color: themeColors.gray }}>TMAP</span>
+                <span style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '1px', color: themeColors.gray }}>{dt('TMAP')}</span>
               </a>
             </div>
           </div>
@@ -1289,6 +1295,7 @@ function DirectionItem({ label, text, fonts, themeColors }: { label: string; tex
 
 // ===== Guidance & Info Section =====
 function GuidanceInfoSection({ invitation, fonts, themeColors, bgOverride }: { invitation: any; fonts: FontConfig; themeColors: ColorConfig; bgOverride?: string }) {
+  const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
   const { ref, isVisible } = useScrollReveal()
   const guidance = invitation.guidance
   const info = invitation.content?.info
@@ -1313,10 +1320,10 @@ function GuidanceInfoSection({ invitation, fonts, themeColors, bgOverride }: { i
         {/* Section Header */}
         <div className="text-center mb-8 px-6">
           <div style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '4px', color: themeColors.gray, marginBottom: '6px' }}>
-            FOR YOUR HAPPY TIME
+            {dt('FOR YOUR HAPPY TIME')}
           </div>
           <div style={{ fontFamily: fonts.display, fontSize: '18px', fontWeight: 300, letterSpacing: '4px', color: themeColors.primary }}>
-            INFORMATION
+            {dt('INFORMATION')}
           </div>
           <div style={{ width: '25px', height: '1px', background: themeColors.primary, margin: '8px auto 0' }} />
         </div>
@@ -1345,7 +1352,7 @@ function GuidanceInfoSection({ invitation, fonts, themeColors, bgOverride }: { i
               return (
                 <div key={i} style={{ padding: '16px', background: themeColors.cardBg, border: `0.5px solid ${themeColors.divider}`, transformOrigin: 'top center', opacity: 0, ...(isVisible ? { animation: `mag-expandIn 0.6s ease ${0.2 + i * 0.15}s both` } : {}) }}>
                   <div style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '3px', color: themeColors.primary, marginBottom: '8px' }}>
-                    {item.title?.toUpperCase()}
+                    {fonts.isScript ? item.title : item.title?.toUpperCase()}
                   </div>
                   <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: themeColors.gray, whiteSpace: 'pre-line' }}>{item.content}</p>
                 </div>
@@ -1387,6 +1394,7 @@ function ThankYouSection({ invitation, fonts, themeColors, bgOverride }: { invit
 
 // ===== Contacts Section =====
 function ContactsSection({ invitation, fonts, themeColors, bgOverride }: { invitation: any; fonts: FontConfig; themeColors: ColorConfig; bgOverride?: string }) {
+  const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
   const { ref, isVisible } = useScrollReveal()
   const groom = invitation.groom || {}
   const bride = invitation.bride || {}
@@ -1469,7 +1477,7 @@ function ContactsSection({ invitation, fonts, themeColors, bgOverride }: { invit
             ...(isVisible ? { animation: 'mag-cardFlipIn 0.6s ease 0.2s both' } : {}),
           }}
         >
-          GROOM
+          {dt('GROOM')}
         </button>
         <button
           onClick={() => setExpandedSide(expandedSide === 'bride' ? null : 'bride')}
@@ -1487,7 +1495,7 @@ function ContactsSection({ invitation, fonts, themeColors, bgOverride }: { invit
             ...(isVisible ? { animation: 'mag-cardFlipIn 0.6s ease 0.4s both' } : {}),
           }}
         >
-          BRIDE
+          {dt('BRIDE')}
         </button>
       </div>
 
@@ -1513,6 +1521,7 @@ const sampleGuestbookMessages = [
 function GuestbookSection({ invitation, invitationId, fonts, themeColors, isSample, bgOverride }: {
   invitation: any; invitationId: string; fonts: FontConfig; themeColors: ColorConfig; isSample?: boolean; bgOverride?: string
 }) {
+  const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
   const { ref, isVisible } = useScrollReveal()
   const [messages, setMessages] = useState<any[]>(isSample ? sampleGuestbookMessages : [])
   const [name, setName] = useState('')
@@ -1579,17 +1588,17 @@ function GuestbookSection({ invitation, invitationId, fonts, themeColors, isSamp
     <div ref={ref} className="px-6 py-12" style={{ backgroundColor: bgOverride || themeColors.background }}>
       <div className="text-center mb-8" style={{ opacity: 0, ...(isVisible ? { animation: 'mag-sectionFadeIn 0.7s ease both' } : {}) }}>
         <div style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '6px', color: themeColors.gray, marginBottom: '8px' }}>
-          MESSAGES
+          {dt('MESSAGES')}
         </div>
         <h3 style={{ fontFamily: fonts.display, fontSize: '20px', fontWeight: 300, letterSpacing: '4px', color: themeColors.primary }}>
-          GUESTBOOK
+          {dt('GUESTBOOK')}
         </h3>
       </div>
 
       {/* Question */}
       <div className="text-center mb-6">
         <p
-          key={currentQuestionIndex}
+          key={`${currentQuestionIndex}-${isVisible}`}
           style={{
             fontFamily: fonts.displayKr,
             fontSize: '14px',
@@ -1602,7 +1611,7 @@ function GuestbookSection({ invitation, invitationId, fonts, themeColors, isSamp
             backgroundRepeat: 'no-repeat',
             backgroundPosition: 'left bottom',
             backgroundSize: '0% 40%',
-            animation: 'mag-highlightDraw 0.8s cubic-bezier(0.22,1,0.36,1) 0.3s both',
+            ...(isVisible ? { animation: 'mag-highlightDraw 0.8s cubic-bezier(0.22,1,0.36,1) 0.3s both' } : {}),
             paddingBottom: '2px',
           }}
         >
@@ -1662,7 +1671,7 @@ function GuestbookSection({ invitation, invitationId, fonts, themeColors, isSamp
             opacity: submitting ? 0.5 : 1,
           }}
         >
-          LEAVE A MESSAGE
+          {dt('LEAVE A MESSAGE')}
         </button>
       </div>
 
@@ -1695,7 +1704,7 @@ function GuestbookSection({ invitation, invitationId, fonts, themeColors, isSamp
               className="w-full py-3 text-center"
               style={{ fontFamily: fonts.display, fontSize: '11px', letterSpacing: '2px', color: themeColors.primary, border: `0.5px solid ${themeColors.divider}`, background: 'transparent' }}
             >
-              +{messages.length - 5} MORE MESSAGES
+              +{messages.length - 5} {dt('MORE MESSAGES')}
             </button>
           )}
         </div>
@@ -1708,6 +1717,7 @@ function GuestbookSection({ invitation, invitationId, fonts, themeColors, isSamp
 function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride }: {
   invitation: any; invitationId: string; fonts: FontConfig; themeColors: ColorConfig; bgOverride?: string
 }) {
+  const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
   const { ref, isVisible } = useScrollReveal()
   const [name, setName] = useState('')
   const [attendance, setAttendance] = useState<'yes' | 'no' | 'maybe'>('yes')
@@ -1757,10 +1767,10 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
     <div ref={ref} className="px-6 py-12" style={{ backgroundColor: bgOverride || themeColors.sectionBg }}>
       <div className="text-center mb-8" style={{ opacity: 0, ...(isVisible ? { animation: 'mag-sectionFadeIn 0.8s ease both' } : {}) }}>
         <div style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '6px', color: themeColors.gray, marginBottom: '8px' }}>
-          ATTENDANCE
+          {dt('ATTENDANCE')}
         </div>
         <h3 style={{ fontFamily: fonts.display, fontSize: '20px', fontWeight: 300, letterSpacing: '4px', color: themeColors.primary }}>
-          RSVP
+          {dt('RSVP')}
         </h3>
       </div>
 
@@ -1860,7 +1870,7 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
             opacity: submitting ? 0.5 : 1,
           }}
         >
-          SUBMIT
+          {dt('SUBMIT')}
         </button>
       </div>
       </div>
@@ -2001,12 +2011,26 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     sectionTextColor: (content as any).sectionTextColor,
     accentTextColor: (content as any).accentTextColor || (content as any).colors?.accent,
     bodyTextColor: (content as any).bodyTextColor || (content as any).colors?.text,
+    displayFont: (content as any).displayFont,
     deceasedDisplayStyle: content.deceasedDisplayStyle || 'flower',
     magazineIntroStyle: (content as any).magazineIntroStyle || 'cover',
     profileFrameShape: (content as any).profileFrameShape || 'circle',
     magazineSectionOrder: content.magazineSectionOrder,
     magazineSectionBgMap: (content as any).magazineSectionBgMap,
   }
+}
+
+// 영문 디스플레이 폰트 맵
+const displayFontMap: Record<string, string> = {
+  playfair: "'Playfair Display', serif",
+  cinzel: "'Cinzel', serif",
+  montserrat: "'Montserrat', sans-serif",
+  garamond: "'EB Garamond', serif",
+  cormorant: "'Cormorant Garamond', serif",
+  greatvibes: "'Great Vibes', cursive",
+  lora: "'Lora', serif",
+  'made-slab': "'MADELikesSlab', serif",
+  italiana: "'Italiana', serif",
 }
 
 const MAGAZINE_DEFAULT_BG: Record<string, 'background' | 'sectionBg'> = {
@@ -2086,7 +2110,12 @@ function InvitationClientMagazineContent({
     ...(customSectionBgColor ? { sectionBg: customSectionBgColor } : {}),
     ...(customSectionText ? { sectionText: customSectionText } : {}),
   }
-  const fonts = fontStyles[effectiveFontStyle]
+  const baseFonts = fontStyles[effectiveFontStyle]
+  const isScriptFont = invitation?.displayFont === 'greatvibes'
+  const fonts = invitation?.displayFont && displayFontMap[invitation.displayFont]
+    ? { ...baseFonts, display: displayFontMap[invitation.displayFont], isScript: isScriptFont }
+    : { ...baseFonts, isScript: isScriptFont }
+  const dt = (text: string) => isScriptFont ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
 
   useEffect(() => { window.scrollTo(0, 0) }, [currentPage])
 

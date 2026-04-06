@@ -16,7 +16,10 @@ import {
   Gowun_Dodum,
   Song_Myung,
   Hahmlet,
+  Italiana,
+  Italianno,
 } from "next/font/google";
+import "./fonts.css";
 import "./globals.css";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { ErrorBoundaryProvider } from "@/components/providers/ErrorBoundaryProvider";
@@ -145,6 +148,22 @@ const hahmlet = Hahmlet({
   preload: false,
 });
 
+const italiana = Italiana({
+  variable: "--font-italiana",
+  weight: "400",
+  subsets: ["latin"],
+  display: "swap",
+  preload: false,
+});
+
+const italianno = Italianno({
+  variable: "--font-italianno",
+  weight: "400",
+  subsets: ["latin"],
+  display: "swap",
+  preload: false,
+});
+
 export const metadata: Metadata = {
   title: "디어드로어 | 스토리형 감성 모바일 청첩장",
   description: "우리의 이야기를 담는 스토리형 감성 모바일 청첩장. 사진과 러브스토리를 함께 담는 디어드로어 모바일 청첩장 제작 서비스.",
@@ -180,6 +199,8 @@ const fontVariables = [
   nanumGothic.variable,
   songMyung.variable,
   hahmlet.variable,
+  italiana.variable,
+  italianno.variable,
 ].join(' ');
 
 export default function RootLayout({

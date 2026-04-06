@@ -93,7 +93,7 @@ const colorThemes: Record<ColorTheme, ColorConfig> = {
 }
 
 type FontStyle = 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury' | 'gulim' | 'adulthand' | 'neathand' | 'roundhand' | 'roundgothic' | 'suit' | 'myungjo'
-interface FontConfig { display: string; displayKr: string; body: string; scale?: number }
+interface FontConfig { display: string; displayKr: string; body: string; scale?: number; isScript?: boolean }
 
 const fontStyles: Record<FontStyle, FontConfig> = {
   classic: { display: "'Cinzel', serif", displayKr: "'Ridibatang', serif", body: "'Ridibatang', serif" },
@@ -256,6 +256,7 @@ function MusicToggle({ audioRef, isVisible, shouldAutoPlay, tc }: { audioRef: Re
 function VinylRecordCover({ invitation, fonts, tc, onEnter, colorTheme }: {
   invitation: any; fonts: FontConfig; tc: ColorConfig; onEnter: () => void; colorTheme?: string
 }) {
+  const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
   const [phase, setPhase] = useState(0)
   const [isSpinning, setIsSpinning] = useState(true)
   const isLightCover = colorTheme === 'record-rose' || colorTheme === 'record-peach' || colorTheme === 'record-lilac'
@@ -321,7 +322,7 @@ function VinylRecordCover({ invitation, fonts, tc, onEnter, colorTheme }: {
             opacity: phase >= 3 ? 1 : 0, transition: 'opacity 0.5s ease',
           }}>
             <span style={{ fontFamily: fonts.display, fontSize: '7px', letterSpacing: '2px', color: 'rgba(255,255,255,0.4)' }}>
-              {isSpinning ? 'TAP TO PAUSE' : 'TAP TO PLAY'}
+              {isSpinning ? dt('TAP TO PAUSE') : dt('TAP TO PLAY')}
             </span>
           </div>
         </div>
@@ -340,7 +341,7 @@ function VinylRecordCover({ invitation, fonts, tc, onEnter, colorTheme }: {
           {invitation.design?.coverTitle || 'Our Love, Our Song'}
         </h1>
         <div style={{ width: '30px', height: '1px', background: isLightCover ? `${tc.primary}50` : 'rgba(255,255,255,0.3)', margin: '0 auto 12px' }} />
-        <p style={{ fontFamily: fonts.display, fontSize: '12px', letterSpacing: '2px', color: isLightCover ? `${tc.text}B0` : 'rgba(255,255,255,0.7)' }}>
+        <p style={{ fontFamily: fonts.displayKr, fontSize: '12px', letterSpacing: '2px', color: isLightCover ? `${tc.text}B0` : 'rgba(255,255,255,0.7)' }}>
           {groomName} & {brideName}
         </p>
         <p style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '2px', color: isLightCover ? `${tc.text}80` : 'rgba(255,255,255,0.5)', marginTop: '6px' }}>
@@ -374,13 +375,38 @@ function VinylRecordCover({ invitation, fonts, tc, onEnter, colorTheme }: {
 }
 
 // ===== Record Header (Sticky) with Equalizer =====
-function RecordHeader({ invitation, fonts, tc, currentTrack, progress }: {
-  invitation: any; fonts: FontConfig; tc: ColorConfig; currentTrack: number; progress: number
+function RecordHeader({ invitation, fonts, tc, currentTrack, progress, isCrossfade }: {
+  invitation: any; fonts: FontConfig; tc: ColorConfig; currentTrack: number; progress: number; isCrossfade?: boolean
 }) {
+  const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
   const trackNames = ['THE BEGINNING', 'THE COUPLE', 'OUR JOURNEY', 'GALLERY', 'THE WEDDING DAY', 'INFORMATION', 'LINER NOTES']
   const trackName = trackNames[Math.min(currentTrack - 1, trackNames.length - 1)] || ''
   const trackNum = currentTrack <= 5 ? String(currentTrack).padStart(2, '0') : currentTrack === 6 ? 'INFO' : 'B+'
 
+  if (isCrossfade) {
+    // Crossfade mode: compact header, no progress bar (progress in mini player)
+    return (
+      <div className="sticky top-0 z-40" style={{ backgroundColor: `${tc.background}F0`, backdropFilter: 'blur(12px)' }}>
+        <div className="px-5 py-3 flex items-center justify-center gap-3">
+          <div className="equalizer-container flex items-end gap-[2px]" style={{ height: '14px' }}>
+            <div className="equalizer-bar" style={{ width: '2px', background: tc.primary, animationDelay: '0s' }} />
+            <div className="equalizer-bar" style={{ width: '2px', background: tc.primary, animationDelay: '0.2s' }} />
+            <div className="equalizer-bar" style={{ width: '2px', background: tc.primary, animationDelay: '0.4s' }} />
+          </div>
+          <div style={{ fontFamily: fonts.display, fontSize: '11px', fontWeight: 500, letterSpacing: '3px', color: tc.text }}>
+            {invitation.groom?.name || ''} & {invitation.bride?.name || ''}
+          </div>
+          <div className="equalizer-container flex items-end gap-[2px]" style={{ height: '14px' }}>
+            <div className="equalizer-bar" style={{ width: '2px', background: tc.primary, animationDelay: '0.3s' }} />
+            <div className="equalizer-bar" style={{ width: '2px', background: tc.primary, animationDelay: '0.1s' }} />
+            <div className="equalizer-bar" style={{ width: '2px', background: tc.primary, animationDelay: '0.5s' }} />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Scroll mode: original header with progress bar
   return (
     <div className="sticky top-0 z-40" style={{ backgroundColor: `${tc.background}F0`, backdropFilter: 'blur(12px)' }}>
       <div className="px-5 py-3 flex items-center justify-center gap-3">
@@ -394,7 +420,7 @@ function RecordHeader({ invitation, fonts, tc, currentTrack, progress }: {
           {invitation.groom?.name || ''} & {invitation.bride?.name || ''}
         </div>
         <span style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '3px', color: tc.primary }}>
-          TRACK {trackNum}
+          {dt('TRACK')} {trackNum}
         </span>
       </div>
       {/* Progress bar */}
@@ -407,10 +433,51 @@ function RecordHeader({ invitation, fonts, tc, currentTrack, progress }: {
   )
 }
 
+// ===== Waveform Divider (animated) =====
+function WaveformDivider({ tc }: { tc: ColorConfig }) {
+  const isPreview = useContext(PreviewModeContext)
+  const ref = useRef<HTMLDivElement>(null)
+  const [isVisible, setIsVisible] = useState(isPreview)
+  const [isPulsing, setIsPulsing] = useState(isPreview)
+  useEffect(() => {
+    if (isPreview) { setIsVisible(true); setIsPulsing(true); return }
+    const el = ref.current
+    if (!el) return
+    const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) setIsVisible(true) }, { threshold: 0.15 })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [isPreview])
+  useEffect(() => {
+    if (!isVisible || isPreview) return
+    const timer = setTimeout(() => setIsPulsing(true), 1200)
+    return () => clearTimeout(timer)
+  }, [isVisible, isPreview])
+  return (
+    <div ref={ref} className="flex items-center justify-center py-6 px-10">
+      <div style={{ width: '100%', height: '20px', display: 'flex', alignItems: 'center', gap: '2px', justifyContent: 'center' }}>
+        {Array.from({ length: 40 }).map((_, i) => {
+          const h = Math.sin((i / 40) * Math.PI * 3) * 8 + 4
+          return (
+            <div key={i} style={{
+              width: '2px', height: `${h}px`, background: tc.primary, borderRadius: '1px',
+              transformOrigin: 'bottom',
+              opacity: isVisible ? 0.65 : 0,
+              transform: isVisible ? 'scaleY(1)' : 'scaleY(0)',
+              transition: `opacity 0.4s ease ${i * 35}ms, transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) ${i * 35}ms`,
+              ...(isPulsing && !isPreview ? { animation: `eqPulse 0.8s ease-in-out infinite alternate`, animationDelay: `${(i % 5) * 100}ms` } : {}),
+            }} />
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 // ===== Section Divider =====
 function SectionDivider({ type, tc, fonts }: {
   type: 'notes' | 'sideA' | 'sideB' | 'waveform' | 'line'; tc: ColorConfig; fonts: FontConfig
 }) {
+  const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
   if (type === 'notes') {
     return (
       <div className="flex items-center justify-center py-6" style={{ color: `${tc.primary}60` }}>
@@ -426,7 +493,7 @@ function SectionDivider({ type, tc, fonts }: {
       <div className="flex items-center justify-center py-8 gap-4">
         <div style={{ flex: 1, maxWidth: '60px', height: '1px', background: tc.divider }} />
         <span style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '4px', color: tc.gray, opacity: 0.6 }}>
-          SIDE A
+          {dt('SIDE A')}
         </span>
         <div style={{ flex: 1, maxWidth: '60px', height: '1px', background: tc.divider }} />
       </div>
@@ -438,7 +505,7 @@ function SectionDivider({ type, tc, fonts }: {
       <div className="flex items-center justify-center py-8 gap-4">
         <div style={{ flex: 1, maxWidth: '60px', height: '1px', background: tc.divider }} />
         <span style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '4px', color: tc.gray, opacity: 0.6 }}>
-          SIDE B
+          {dt('SIDE B')}
         </span>
         <div style={{ flex: 1, maxWidth: '60px', height: '1px', background: tc.divider }} />
       </div>
@@ -446,16 +513,7 @@ function SectionDivider({ type, tc, fonts }: {
   }
 
   if (type === 'waveform') {
-    return (
-      <div className="flex items-center justify-center py-6 px-10">
-        <div className="waveform-divider" style={{ width: '100%', height: '20px', display: 'flex', alignItems: 'center', gap: '2px', justifyContent: 'center' }}>
-          {Array.from({ length: 40 }).map((_, i) => {
-            const h = Math.sin((i / 40) * Math.PI * 3) * 8 + 4
-            return <div key={i} style={{ width: '2px', height: `${h}px`, background: `${tc.primary}30`, borderRadius: '1px' }} />
-          })}
-        </div>
-      </div>
-    )
+    return <WaveformDivider tc={tc} />
   }
 
   // line
@@ -470,6 +528,7 @@ function SectionDivider({ type, tc, fonts }: {
 function TrackGreeting({ invitation, fonts, tc, trackRef }: {
   invitation: any; fonts: FontConfig; tc: ColorConfig; trackRef: (el: HTMLDivElement | null) => void
 }) {
+  const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
   const { ref, isVisible } = useScrollReveal()
   const greeting = invitation.content?.greeting || ''
   const lines = greeting.split('\n')
@@ -477,7 +536,7 @@ function TrackGreeting({ invitation, fonts, tc, trackRef }: {
   return (
     <div ref={(el) => { (ref as any).current = el; trackRef(el) }} className="px-5 py-10" style={{ position: 'relative' }}>
       {/* Staff lines background */}
-      <div className="absolute inset-0 pointer-events-none" style={{ opacity: 0.04 }}>
+      <div className="absolute inset-0 pointer-events-none record-track-label" style={{ opacity: 0.04 }}>
         {[0, 1, 2, 3, 4].map(i => (
           <div key={i} style={{
             position: 'absolute', left: '20px', right: '20px',
@@ -487,9 +546,9 @@ function TrackGreeting({ invitation, fonts, tc, trackRef }: {
       </div>
 
       {/* Track label */}
-      <div className="mb-6">
+      <div className="mb-6 record-track-label">
         <span style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '4px', color: tc.primary, opacity: 0.7 }}>
-          TRACK 01
+          {dt('TRACK')} 01
         </span>
         <span style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '2px', color: tc.gray, marginLeft: '12px', opacity: 0.5 }}>
           {TRACK_CONFIG['01'].duration}
@@ -498,23 +557,39 @@ function TrackGreeting({ invitation, fonts, tc, trackRef }: {
 
       {/* Lyric sheet content */}
       <div style={{
-        borderLeft: `3px solid ${tc.primary}40`,
-        paddingLeft: '20px',
+        paddingLeft: '23px',
         textAlign: 'left',
+        position: 'relative',
       }}>
-        {lines.map((line: string, i: number) => {
-          if (line.trim().length === 0) return <div key={i} style={{ height: '12px' }} />
-          return (
-          <p key={i} className="transition-all" style={{
-            fontFamily: fonts.body, fontSize: '13px', lineHeight: 2.4, color: tc.text,
-            opacity: isVisible ? 1 : 0,
-            transform: isVisible ? 'translateX(0)' : 'translateX(-20px)',
-            transition: `all 0.6s ease ${i * 0.15}s`,
-          }}>
-            {line}
-          </p>
-          )
-        })}
+        {/* Animated left bar */}
+        <div style={{
+          position: 'absolute', left: 0, top: 0, bottom: 0, width: '3px',
+          background: `${tc.primary}40`,
+          transformOrigin: 'top',
+          transform: isVisible ? 'scaleY(1)' : 'scaleY(0)',
+          transition: 'transform 1.8s cubic-bezier(0.4, 0, 0.2, 1) 0.3s',
+        }} />
+        {(() => {
+          let lineIdx = 0
+          return lines.map((line: string, i: number) => {
+            if (line.trim().length === 0) return <div key={i} style={{ height: '12px' }} />
+            const currentIdx = lineIdx++
+            return (
+              <p key={i} style={{
+                fontFamily: fonts.body, fontSize: '13px', lineHeight: 2.4,
+                background: `linear-gradient(90deg, ${tc.text} 50%, ${tc.divider} 50%)`,
+                backgroundSize: '200% 100%',
+                backgroundPosition: isVisible ? '0% 0' : '100% 0',
+                WebkitBackgroundClip: 'text',
+                backgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                transition: `background-position 0.9s ease ${0.3 + currentIdx * 0.6}s`,
+              }}>
+                {line}
+              </p>
+            )
+          })
+        })()}
       </div>
 
       {/* Quote */}
@@ -540,7 +615,7 @@ function TrackGreeting({ invitation, fonts, tc, trackRef }: {
       )}
 
       {/* Waveform divider at bottom */}
-      <div className="mt-8 flex items-center gap-[1.5px] justify-center" style={{ opacity: 0.15 }}>
+      <div className="mt-8 flex items-center gap-[1.5px] justify-center record-track-label" style={{ opacity: 0.15 }}>
         {Array.from({ length: 60 }).map((_, i) => {
           const h = Math.sin((i / 60) * Math.PI * 4) * 6 + 3
           return <div key={i} style={{ width: '1.5px', height: `${h}px`, background: tc.primary, borderRadius: '1px' }} />
@@ -554,6 +629,7 @@ function TrackGreeting({ invitation, fonts, tc, trackRef }: {
 function TrackCouple({ invitation, fonts, tc, trackRef, bgOverride, trackNumber }: {
   invitation: any; fonts: FontConfig; tc: ColorConfig; trackRef: (el: HTMLDivElement | null) => void; bgOverride?: string; trackNumber?: number
 }) {
+  const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
   const { ref, isVisible } = useScrollReveal()
   const groomProfile = invitation.groom?.profile
   const brideProfile = invitation.bride?.profile
@@ -569,9 +645,9 @@ function TrackCouple({ invitation, fonts, tc, trackRef, bgOverride, trackNumber 
   return (
     <div ref={(el) => { (ref as any).current = el; trackRef(el) }} className="px-5 py-10" style={{ backgroundColor: bgOverride || 'transparent' }}>
       {/* Track label */}
-      <div className="mb-6 text-center">
+      <div className="mb-6 text-center record-track-label">
         <span style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '4px', color: tc.primary, opacity: 0.7 }}>
-          TRACK {String(trackNumber || 2).padStart(2, '0')}
+          {dt('TRACK')} {String(trackNumber || 2).padStart(2, '0')}
         </span>
         <span style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '2px', color: tc.gray, marginLeft: '12px', opacity: 0.5 }}>
           {TRACK_CONFIG[String(trackNumber || 2).padStart(2, '0')]?.duration || '2:58'}
@@ -580,13 +656,13 @@ function TrackCouple({ invitation, fonts, tc, trackRef, bgOverride, trackNumber 
 
       {isPortrait ? (
         /* Portrait: Film-style grid cards */
-        <div className="grid grid-cols-2 gap-3 px-2" style={{
-          opacity: isVisible ? 1 : 0,
-          transform: isVisible ? 'scale(1)' : 'scale(0.85)',
-          transition: 'all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)',
-        }}>
+        <div className="grid grid-cols-2 gap-3 px-2">
           {/* Groom card */}
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center" style={{
+            opacity: isVisible ? 1 : 0,
+            transform: isVisible ? 'translateX(0) rotate(0deg)' : 'translateX(-80px) rotate(-8deg)',
+            transition: 'all 1.0s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s',
+          }}>
             <div style={{ aspectRatio: '3/4', borderRadius: '6px', overflow: 'hidden', width: '100%' }}>
               {groomImage ? (
                 <CroppedImageDiv src={groomImage} crop={groomImgSettings} className="w-full h-full" />
@@ -597,7 +673,7 @@ function TrackCouple({ invitation, fonts, tc, trackRef, bgOverride, trackNumber 
               )}
             </div>
             <div className="text-center mt-3">
-              <p style={{ fontFamily: fonts.display, fontSize: '13px', fontWeight: 500, letterSpacing: '2px', color: tc.text }}>
+              <p style={{ fontFamily: fonts.displayKr, fontSize: '13px', fontWeight: 500, letterSpacing: '2px', color: tc.text }}>
                 {groomName}
               </p>
               {groomProfile?.tag && (
@@ -606,7 +682,11 @@ function TrackCouple({ invitation, fonts, tc, trackRef, bgOverride, trackNumber 
             </div>
           </div>
           {/* Bride card */}
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center" style={{
+            opacity: isVisible ? 1 : 0,
+            transform: isVisible ? 'translateX(0) rotate(0deg)' : 'translateX(80px) rotate(8deg)',
+            transition: 'all 1.0s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s',
+          }}>
             <div style={{ aspectRatio: '3/4', borderRadius: '6px', overflow: 'hidden', width: '100%' }}>
               {brideImage ? (
                 <CroppedImageDiv src={brideImage} crop={brideImgSettings} className="w-full h-full" />
@@ -617,7 +697,7 @@ function TrackCouple({ invitation, fonts, tc, trackRef, bgOverride, trackNumber 
               )}
             </div>
             <div className="text-center mt-3">
-              <p style={{ fontFamily: fonts.display, fontSize: '13px', fontWeight: 500, letterSpacing: '2px', color: tc.text }}>
+              <p style={{ fontFamily: fonts.displayKr, fontSize: '13px', fontWeight: 500, letterSpacing: '2px', color: tc.text }}>
                 {brideName}
               </p>
               {brideProfile?.tag && (
@@ -628,14 +708,15 @@ function TrackCouple({ invitation, fonts, tc, trackRef, bgOverride, trackNumber 
         </div>
       ) : (
         /* Circle: Original vinyl style */
-        <div className="flex items-center justify-center gap-6" style={{
-          opacity: isVisible ? 1 : 0,
-          transform: isVisible ? 'scale(1)' : 'scale(0.85)',
-          transition: 'all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)',
-        }}>
+        <div className="flex items-center justify-center gap-6">
           {/* Groom vinyl */}
           <div className="text-center">
-            <div className="relative" style={{ width: '120px', height: '120px', margin: '0 auto 12px' }}>
+            <div className="relative" style={{
+              width: '120px', height: '120px', margin: '0 auto 12px',
+              opacity: isVisible ? 1 : 0,
+              transform: isVisible ? 'rotate(0deg) scale(1)' : 'rotate(-360deg) scale(0.3)',
+              transition: 'all 1.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
+            }}>
               {groomImage ? (
                 <div style={{
                   width: '120px', height: '120px', borderRadius: '50%', overflow: 'hidden',
@@ -653,7 +734,11 @@ function TrackCouple({ invitation, fonts, tc, trackRef, bgOverride, trackNumber 
                 </div>
               )}
             </div>
-            <p style={{ fontFamily: fonts.display, fontSize: '14px', fontWeight: 500, letterSpacing: '2px', color: tc.text }}>
+            <p style={{
+              fontFamily: fonts.displayKr, fontSize: '14px', fontWeight: 500, letterSpacing: '2px', color: tc.text,
+              opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(10px)',
+              transition: 'all 0.6s ease 0.9s',
+            }}>
               {groomName}
             </p>
             {groomProfile?.tag && (
@@ -662,7 +747,11 @@ function TrackCouple({ invitation, fonts, tc, trackRef, bgOverride, trackNumber 
           </div>
 
           {/* & separator with notes */}
-          <div className="flex flex-col items-center gap-1" style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.8s ease 0.3s' }}>
+          <div className="flex flex-col items-center gap-1" style={{
+            opacity: isVisible ? 1 : 0,
+            transform: isVisible ? 'scale(1)' : 'scale(0)',
+            transition: 'all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.7s',
+          }}>
             <span style={{ fontFamily: fonts.display, fontSize: '10px', color: `${tc.primary}60` }}>&#9834;</span>
             <span style={{ fontFamily: fonts.display, fontSize: '18px', fontWeight: 300, color: tc.primary, letterSpacing: '2px' }}>&</span>
             <span style={{ fontFamily: fonts.display, fontSize: '10px', color: `${tc.primary}60` }}>&#9834;</span>
@@ -670,7 +759,12 @@ function TrackCouple({ invitation, fonts, tc, trackRef, bgOverride, trackNumber 
 
           {/* Bride vinyl */}
           <div className="text-center">
-            <div className="relative" style={{ width: '120px', height: '120px', margin: '0 auto 12px' }}>
+            <div className="relative" style={{
+              width: '120px', height: '120px', margin: '0 auto 12px',
+              opacity: isVisible ? 1 : 0,
+              transform: isVisible ? 'rotate(0deg) scale(1)' : 'rotate(-360deg) scale(0.3)',
+              transition: 'all 1.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s',
+            }}>
               {brideImage ? (
                 <div style={{
                   width: '120px', height: '120px', borderRadius: '50%', overflow: 'hidden',
@@ -688,7 +782,11 @@ function TrackCouple({ invitation, fonts, tc, trackRef, bgOverride, trackNumber 
                 </div>
               )}
             </div>
-            <p style={{ fontFamily: fonts.display, fontSize: '14px', fontWeight: 500, letterSpacing: '2px', color: tc.text }}>
+            <p style={{
+              fontFamily: fonts.displayKr, fontSize: '14px', fontWeight: 500, letterSpacing: '2px', color: tc.text,
+              opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(10px)',
+              transition: 'all 0.6s ease 1.2s',
+            }}>
               {brideName}
             </p>
             {brideProfile?.tag && (
@@ -705,6 +803,7 @@ function TrackCouple({ invitation, fonts, tc, trackRef, bgOverride, trackNumber 
 function TrackOurJourney({ invitation, fonts, tc, trackRef, bgOverride, trackNumber }: {
   invitation: any; fonts: FontConfig; tc: ColorConfig; trackRef: (el: HTMLDivElement | null) => void; bgOverride?: string; trackNumber?: number
 }) {
+  const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
   const { ref, isVisible } = useScrollReveal()
   const interviews = invitation.content?.interviews || []
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -726,19 +825,18 @@ function TrackOurJourney({ invitation, fonts, tc, trackRef, bgOverride, trackNum
       style={{
         backgroundColor: bgOverride || 'transparent',
         opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
-        transition: 'all 0.7s ease',
+        transition: 'opacity 0.5s ease',
       }}>
       {/* Track label */}
-      <div className="px-5 mb-6 flex items-center gap-2">
+      <div className="px-5 mb-6 flex items-center gap-2 record-track-label">
         <span style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '4px', color: tc.primary, opacity: 0.7 }}>
-          TRACK {String(trackNumber || 3).padStart(2, '0')}
+          {dt('TRACK')} {String(trackNumber || 3).padStart(2, '0')}
         </span>
         <span style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '2px', color: tc.gray, opacity: 0.5 }}>
           {TRACK_CONFIG[String(trackNumber || 3).padStart(2, '0')]?.duration || '4:15'}
         </span>
         <span style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '3px', color: tc.primary, marginLeft: 'auto', opacity: 0.4 }}>
-          VERSE {activeIdx + 1}
+          {dt('VERSE')} {activeIdx + 1}
         </span>
       </div>
 
@@ -758,7 +856,13 @@ function TrackOurJourney({ invitation, fonts, tc, trackRef, bgOverride, trackNum
           const mainImg = images[0] || ''
           const trackProgress = ((idx + 1) / interviews.length) * 100
           return (
-            <div key={idx} style={{ flex: '0 0 calc(100% - 16px)', scrollSnapAlign: 'center', marginRight: idx < interviews.length - 1 ? '12px' : '0' }}>
+            <div key={idx} style={{
+              flex: '0 0 calc(100% - 16px)', scrollSnapAlign: 'center',
+              marginRight: idx < interviews.length - 1 ? '12px' : '0',
+              opacity: isVisible ? 1 : 0,
+              transform: isVisible ? 'translateY(0) rotate(0deg) scale(1)' : 'translateY(80px) rotate(4deg) scale(0.95)',
+              transition: `all 1.2s cubic-bezier(0.22, 1, 0.36, 1) ${idx * 300}ms`,
+            }}>
               <div style={{
                 background: tc.cardBg, borderRadius: '12px', overflow: 'hidden',
                 border: `1px solid ${tc.divider}60`,
@@ -790,7 +894,7 @@ function TrackOurJourney({ invitation, fonts, tc, trackRef, bgOverride, trackNum
                   {/* Note marker */}
                   <div className="flex items-start gap-2 mb-2">
                     <span style={{ fontFamily: fonts.display, fontSize: '12px', color: `${tc.primary}50`, lineHeight: 1 }}>&#9834;</span>
-                    <p style={{ fontFamily: fonts.display, fontSize: '11px', fontWeight: 600, letterSpacing: '1px', color: tc.primary }}>
+                    <p style={{ fontFamily: fonts.displayKr, fontSize: '11px', fontWeight: 600, letterSpacing: '1px', color: tc.primary }}>
                       {item.question}
                     </p>
                   </div>
@@ -863,6 +967,7 @@ function TrackOurJourney({ invitation, fonts, tc, trackRef, bgOverride, trackNum
 function CdBookletGrid({ images, invitation, fonts, tc, onOpenLightbox }: {
   images: string[]; invitation: any; fonts: FontConfig; tc: ColorConfig; onOpenLightbox: (idx: number) => void
 }) {
+  const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
   const [expanded, setExpanded] = useState(false)
   const showExpand = images.length > 5
   // Show first photo full + 4 grid (=5 total) when collapsed, all when expanded
@@ -920,7 +1025,7 @@ function CdBookletGrid({ images, invitation, fonts, tc, onOpenLightbox }: {
           background: 'none', border: `1px solid ${tc.divider}`,
           borderRadius: '8px', cursor: 'pointer',
         }}>
-          <span style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '3px', color: tc.gray }}>VIEW ALL</span>
+          <span style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '3px', color: tc.gray }}>{dt('VIEW ALL')}</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill={tc.gray}><path d="M7 10l5 5 5-5z" /></svg>
         </button>
       )}
@@ -932,6 +1037,7 @@ function CdBookletGrid({ images, invitation, fonts, tc, onOpenLightbox }: {
 function TrackGallery({ invitation, fonts, tc, onOpenLightbox, trackRef, bgOverride }: {
   invitation: any; fonts: FontConfig; tc: ColorConfig; onOpenLightbox: (idx: number) => void; trackRef: (el: HTMLDivElement | null) => void; bgOverride?: string
 }) {
+  const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
   const { ref, isVisible } = useScrollReveal()
   const images = (invitation.gallery?.images || []).map(extractImageUrl).filter(Boolean)
   const [currentIdx, setCurrentIdx] = useState(0)
@@ -948,13 +1054,14 @@ function TrackGallery({ invitation, fonts, tc, onOpenLightbox, trackRef, bgOverr
       }}>
       <div className="px-5" style={{
         opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
-        transition: 'all 0.7s ease',
+        transition: 'opacity 0.5s ease',
       }}>
         {/* Large album art photo */}
         <div onClick={() => onOpenLightbox(currentIdx)} style={{
           width: '100%', aspectRatio: '3/4', borderRadius: '16px', overflow: 'hidden',
-          cursor: 'pointer', boxShadow: '0 8px 40px rgba(0,0,0,0.12)',
+          cursor: 'pointer',
+          boxShadow: isVisible ? '0 8px 40px rgba(0,0,0,0.15)' : '0 2px 10px rgba(0,0,0,0.06)',
+          transition: 'box-shadow 1s ease 0.7s',
           position: 'relative',
         }}>
           <div
@@ -966,6 +1073,12 @@ function TrackGallery({ invitation, fonts, tc, onOpenLightbox, trackRef, bgOverr
               transition: 'opacity 0.4s ease',
             }}
           />
+          {/* Sleeve cover - slides up to reveal */}
+          <div style={{
+            position: 'absolute', inset: 0, background: tc.sectionBg, zIndex: 2,
+            transform: isVisible ? 'translateY(-102%)' : 'translateY(0)',
+            transition: 'transform 1.3s cubic-bezier(0.22, 1, 0.36, 1) 0.3s',
+          }} />
           {/* Subtle gradient overlay at bottom */}
           <div className="absolute inset-x-0 bottom-0 h-16" style={{
             background: 'linear-gradient(transparent, rgba(0,0,0,0.08))',
@@ -973,12 +1086,15 @@ function TrackGallery({ invitation, fonts, tc, onOpenLightbox, trackRef, bgOverr
         </div>
 
         {/* Track info */}
-        <div className="mt-5 flex items-center justify-between">
+        <div className="mt-5 flex items-center justify-between record-track-label" style={{
+          opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(15px)',
+          transition: 'all 0.8s ease 1.3s',
+        }}>
           <span style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '3px', color: tc.primary, opacity: 0.7 }}>
-            TRACK {currentIdx + 1} / {images.length}
+            {dt('TRACK')} {currentIdx + 1} / {images.length}
           </span>
           <span style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '2px', color: tc.gray, opacity: 0.5 }}>
-            GALLERY
+            {dt('GALLERY')}
           </span>
         </div>
 
@@ -1001,7 +1117,10 @@ function TrackGallery({ invitation, fonts, tc, onOpenLightbox, trackRef, bgOverr
         </div>
 
         {/* Playback controls */}
-        <div className="flex items-center justify-center gap-10 mt-6 mb-2">
+        <div className="flex items-center justify-center gap-10 mt-6 mb-2" style={{
+          opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(15px)',
+          transition: 'all 0.8s ease 1.5s',
+        }}>
           {/* Previous */}
           <button onClick={goPrev} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px' }}>
             <svg width="28" height="28" viewBox="0 0 24 24" fill={tc.text} style={{ opacity: 0.5 }}>
@@ -1053,7 +1172,7 @@ function RecordVideoSection({ invitation, fonts, tc, bgOverride }: { invitation:
   return (
     <div className="py-8 px-5" style={{ backgroundColor: bgOverride || 'transparent' }}>
       {youtube.title && (
-        <p className="text-center mb-3" style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '3px', color: tc.gray }}>{youtube.title.toUpperCase()}</p>
+        <p className="text-center mb-3" style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '3px', color: tc.gray }}>{fonts.isScript ? youtube.title : youtube.title.toUpperCase()}</p>
       )}
       <div style={{ aspectRatio: '16/9', borderRadius: '8px', overflow: 'hidden', background: '#000' }}>
         <iframe src={`https://www.youtube.com/embed/${videoId}`} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
@@ -1066,7 +1185,10 @@ function RecordVideoSection({ invitation, fonts, tc, bgOverride }: { invitation:
 function TrackWeddingDay({ invitation, fonts, tc, trackRef, bgOverride, trackNumber }: {
   invitation: any; fonts: FontConfig; tc: ColorConfig; trackRef: (el: HTMLDivElement | null) => void; bgOverride?: string; trackNumber?: number
 }) {
+  const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
+  const isPreview = useContext(PreviewModeContext)
   const { ref, isVisible } = useScrollReveal()
+  const [isShaking, setIsShaking] = useState(false)
   const w = invitation.wedding || {}
   const date = w.date ? new Date(w.date) : null
   const dayNamesKr = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일']
@@ -1074,12 +1196,21 @@ function TrackWeddingDay({ invitation, fonts, tc, trackRef, bgOverride, trackNum
   const groom = invitation.groom || {}
   const bride = invitation.bride || {}
 
+  useEffect(() => {
+    if (!isVisible || isPreview) return
+    const timer = setTimeout(() => {
+      setIsShaking(true)
+      setTimeout(() => setIsShaking(false), 500)
+    }, 1200)
+    return () => clearTimeout(timer)
+  }, [isVisible, isPreview])
+
   return (
     <div ref={(el) => { (ref as any).current = el; trackRef(el) }} className="px-5 py-10" style={{ backgroundColor: bgOverride || 'transparent' }}>
       {/* Track label */}
-      <div className="mb-6">
+      <div className="mb-6 record-track-label">
         <span style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '4px', color: tc.primary, opacity: 0.7 }}>
-          TRACK {String(trackNumber || 5).padStart(2, '0')}
+          {dt('TRACK')} {String(trackNumber || 5).padStart(2, '0')}
         </span>
         <span style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '2px', color: tc.gray, marginLeft: '12px', opacity: 0.5 }}>
           {TRACK_CONFIG[String(trackNumber || 5).padStart(2, '0')]?.duration || '5:01'}
@@ -1087,10 +1218,11 @@ function TrackWeddingDay({ invitation, fonts, tc, trackRef, bgOverride, trackNum
       </div>
 
       {/* Concert ticket */}
-      <div className="transition-all" style={{
+      <div style={{
         opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'translateY(0) rotate(0deg)' : 'translateY(40px) rotate(-2deg)',
-        transition: 'all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)',
+        transform: isVisible ? 'translateY(0) rotate(0deg)' : 'translateY(50px) rotate(-3deg)',
+        transition: 'all 1.1s cubic-bezier(0.34, 1.56, 0.64, 1)',
+        ...(isShaking ? { animation: 'ticketShake 0.5s ease' } : {}),
       }}>
         <div style={{
           background: tc.cardBg, borderRadius: '12px', overflow: 'hidden',
@@ -1110,7 +1242,11 @@ function TrackWeddingDay({ invitation, fonts, tc, trackRef, bgOverride, trackNum
             fontFamily: fonts.display, fontSize: '8px', letterSpacing: '3px',
             color: tc.primary, border: `1.5px solid ${tc.primary}`,
             padding: '3px 10px', borderRadius: '2px',
-            transform: 'rotate(12deg)', opacity: 0.6,
+            opacity: isPreview ? 0.8 : 0,
+            transform: isPreview ? 'rotate(12deg) scale(1)' : 'rotate(12deg) scale(3)',
+            ...(isVisible && !isPreview ? {
+              animation: 'stampSlam 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.9s forwards',
+            } : {}),
           }}>
             LIVE
           </div>
@@ -1162,7 +1298,7 @@ function TrackWeddingDay({ invitation, fonts, tc, trackRef, bgOverride, trackNum
                 )}
                 </>
                 )}
-                <p style={{ fontFamily: fonts.display, fontSize: '20px', fontWeight: 400, letterSpacing: '2px', color: tc.text, marginTop: '6px' }}>
+                <p style={{ fontFamily: fonts.displayKr, fontSize: '20px', fontWeight: 400, letterSpacing: '2px', color: tc.text, marginTop: '6px' }}>
                   {groom.name || ''}
                 </p>
               </div>
@@ -1183,7 +1319,7 @@ function TrackWeddingDay({ invitation, fonts, tc, trackRef, bgOverride, trackNum
                 )}
                 </>
                 )}
-                <p style={{ fontFamily: fonts.display, fontSize: '20px', fontWeight: 400, letterSpacing: '2px', color: tc.text, marginTop: '6px' }}>
+                <p style={{ fontFamily: fonts.displayKr, fontSize: '20px', fontWeight: 400, letterSpacing: '2px', color: tc.text, marginTop: '6px' }}>
                   {bride.name || ''}
                 </p>
               </div>
@@ -1200,7 +1336,7 @@ function TrackWeddingDay({ invitation, fonts, tc, trackRef, bgOverride, trackNum
           {/* Venue section (below tear line) */}
           <div style={{ padding: '16px 20px 20px' }}>
             <div style={{ background: tc.sectionBg, borderRadius: '10px', padding: '16px', textAlign: 'center', marginBottom: '12px' }}>
-              <div style={{ fontFamily: fonts.display, fontSize: '7px', letterSpacing: '4px', color: tc.primary, marginBottom: '8px' }}>VENUE</div>
+              <div style={{ fontFamily: fonts.display, fontSize: '7px', letterSpacing: '4px', color: tc.primary, marginBottom: '8px' }}>{dt('VENUE')}</div>
               <p style={{ fontFamily: fonts.displayKr, fontSize: '15px', fontWeight: 500, color: tc.text }}>{w.venue?.name || ''}</p>
               {w.venue?.hall && !w.venue?.hideHall && (
                 <p style={{ fontFamily: fonts.body, fontSize: '12px', color: tc.gray, marginTop: '4px' }}>{w.venue.hall}</p>
@@ -1221,7 +1357,7 @@ function TrackWeddingDay({ invitation, fonts, tc, trackRef, bgOverride, trackNum
                     <div className="w-6 h-6 rounded-full flex items-center justify-center mb-1.5" style={{ background: m.color }}>
                       <span style={{ color: m.letterColor || '#fff', fontSize: '9px', fontWeight: 700 }}>{m.letter}</span>
                     </div>
-                    <span style={{ fontFamily: fonts.display, fontSize: '7px', letterSpacing: '1px', color: tc.gray }}>{m.label}</span>
+                    <span style={{ fontFamily: fonts.display, fontSize: '7px', letterSpacing: '1px', color: tc.gray }}>{dt(m.label)}</span>
                   </a>
                 ))}
               </div>
@@ -1232,31 +1368,31 @@ function TrackWeddingDay({ invitation, fonts, tc, trackRef, bgOverride, trackNum
               <div className="mt-4 space-y-3">
                 {w.directions.car && (
                   <div style={{ padding: '14px 16px', background: tc.sectionBg, borderRadius: '10px', borderLeft: `3px solid ${tc.primary}50` }}>
-                    <div style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '3px', color: tc.primary, marginBottom: '6px' }}>자가용</div>
+                    <div style={{ fontFamily: fonts.displayKr, fontSize: '8px', letterSpacing: '3px', color: tc.primary, marginBottom: '6px' }}>자가용</div>
                     <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.gray, whiteSpace: 'pre-line' }}>{w.directions.car}</p>
                   </div>
                 )}
                 {w.directions.publicTransport && (
                   <div style={{ padding: '14px 16px', background: tc.sectionBg, borderRadius: '10px', borderLeft: `3px solid ${tc.primary}50` }}>
-                    <div style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '3px', color: tc.primary, marginBottom: '6px' }}>대중교통</div>
+                    <div style={{ fontFamily: fonts.displayKr, fontSize: '8px', letterSpacing: '3px', color: tc.primary, marginBottom: '6px' }}>대중교통</div>
                     <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.gray, whiteSpace: 'pre-line' }}>{w.directions.publicTransport}</p>
                   </div>
                 )}
                 {w.directions.train && (
                   <div style={{ padding: '14px 16px', background: tc.sectionBg, borderRadius: '10px', borderLeft: `3px solid ${tc.primary}50` }}>
-                    <div style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '3px', color: tc.primary, marginBottom: '6px' }}>기차</div>
+                    <div style={{ fontFamily: fonts.displayKr, fontSize: '8px', letterSpacing: '3px', color: tc.primary, marginBottom: '6px' }}>기차</div>
                     <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.gray, whiteSpace: 'pre-line' }}>{w.directions.train}</p>
                   </div>
                 )}
                 {w.directions.expressBus && (
                   <div style={{ padding: '14px 16px', background: tc.sectionBg, borderRadius: '10px', borderLeft: `3px solid ${tc.primary}50` }}>
-                    <div style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '3px', color: tc.primary, marginBottom: '6px' }}>고속버스</div>
+                    <div style={{ fontFamily: fonts.displayKr, fontSize: '8px', letterSpacing: '3px', color: tc.primary, marginBottom: '6px' }}>고속버스</div>
                     <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.gray, whiteSpace: 'pre-line' }}>{w.directions.expressBus}</p>
                   </div>
                 )}
                 {w.directions.extraInfoEnabled && w.directions.extraInfoText && (
                   <div style={{ padding: '14px 16px', background: tc.sectionBg, borderRadius: '10px', borderLeft: `3px solid ${tc.primary}50` }}>
-                    <div style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '3px', color: tc.primary, marginBottom: '6px' }}>{w.directions.extraInfoTitle || '추가 안내사항'}</div>
+                    <div style={{ fontFamily: fonts.displayKr, fontSize: '8px', letterSpacing: '3px', color: tc.primary, marginBottom: '6px' }}>{w.directions.extraInfoTitle || '추가 안내사항'}</div>
                     <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.gray, whiteSpace: 'pre-line' }}>{w.directions.extraInfoText}</p>
                   </div>
                 )}
@@ -1280,6 +1416,7 @@ function TrackWeddingDay({ invitation, fonts, tc, trackRef, bgOverride, trackNum
 function GuidanceSection({ invitation, fonts, tc, trackRef, bgOverride }: {
   invitation: any; fonts: FontConfig; tc: ColorConfig; trackRef: (el: HTMLDivElement | null) => void; bgOverride?: string
 }) {
+  const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
   const { ref, isVisible } = useScrollReveal()
   const info = invitation.content?.info
   const defaultItemOrder = ['dressCode', 'photoBooth', 'photoShare', 'flowerGift', 'flowerChild', 'wreath', 'shuttle', 'reception']
@@ -1294,20 +1431,16 @@ function GuidanceSection({ invitation, fonts, tc, trackRef, bgOverride }: {
   return (
     <div ref={(el) => { (ref as any).current = el; trackRef(el) }} className="py-10 px-5" style={{ backgroundColor: bgOverride || 'transparent' }}>
       <div className="transition-all duration-700" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(40px)' }}>
-        <div className="text-center mb-6">
-          <h3 style={{ fontFamily: fonts.display, fontSize: '13px', fontWeight: 500, letterSpacing: '5px', color: tc.text }}>INFORMATION</h3>
+        <div className="text-center mb-6 record-track-label">
+          <h3 style={{ fontFamily: fonts.display, fontSize: '13px', fontWeight: 500, letterSpacing: '5px', color: tc.text }}>{dt('INFORMATION')}</h3>
           <div style={{ width: '20px', height: '1px', background: tc.primary, margin: '10px auto 0', opacity: 0.5 }} />
         </div>
 
         {invitation.guidance?.image && (
           <div className="mb-4">
-            <div className="w-full overflow-hidden" style={{
-              aspectRatio: '16/9',
-              borderRadius: '8px',
-              backgroundImage: `url(${invitation.guidance.image})`,
-              backgroundSize: 'cover',
-              backgroundPosition: `center ${50 - (invitation.guidance?.imageSettings?.positionY || 0)}%`,
-            }} />
+            <div className="w-full overflow-hidden" style={{ aspectRatio: '16/9', borderRadius: '8px' }}>
+              <CroppedImageDiv src={invitation.guidance.image} crop={invitation.guidance?.imageSettings || {}} className="w-full h-full" />
+            </div>
           </div>
         )}
 
@@ -1326,7 +1459,7 @@ function GuidanceSection({ invitation, fonts, tc, trackRef, bgOverride }: {
                   <div className="flex items-center gap-2 mb-2">
                     <span style={{ color: tc.primary, fontSize: '10px', opacity: 0.5 }}>&#10003;</span>
                     <span style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '3px', color: tc.primary }}>
-                      {item.title?.toUpperCase()}
+                      {fonts.isScript ? item.title : item.title?.toUpperCase()}
                     </span>
                   </div>
                   <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.gray, whiteSpace: 'pre-line' }}>{item.content}</p>
@@ -1344,16 +1477,19 @@ function GuidanceSection({ invitation, fonts, tc, trackRef, bgOverride }: {
 function BonusTrack({ invitation, fonts, tc, trackRef, bgOverride }: {
   invitation: any; fonts: FontConfig; tc: ColorConfig; trackRef: (el: HTMLDivElement | null) => void; bgOverride?: string
 }) {
+  const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
   const { ref, isVisible } = useScrollReveal()
   const thankYou = invitation.content?.thankYou
   if (!thankYou) return null
 
   return (
     <div ref={(el) => { (ref as any).current = el; trackRef(el) }} className="px-5 py-10" style={{ backgroundColor: bgOverride || 'transparent' }}>
-      <div className="transition-all" style={{
+      <div style={{ perspective: '1200px' }}>
+      <div style={{
         opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'translateY(0)' : 'translateY(40px)',
-        transition: 'all 1s ease',
+        transform: isVisible ? 'rotateX(0deg)' : 'rotateX(85deg)',
+        transformOrigin: 'bottom center',
+        transition: 'transform 1.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.6s ease',
       }}>
         <div style={{
           background: tc.cardBg, borderRadius: '16px', overflow: 'hidden',
@@ -1366,7 +1502,7 @@ function BonusTrack({ invitation, fonts, tc, trackRef, bgOverride }: {
           }} />
 
           {/* Bonus track ribbon */}
-          <div style={{
+          <div className="record-track-label" style={{
             background: `linear-gradient(135deg, ${tc.accent}, ${tc.primary})`,
             padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             position: 'relative',
@@ -1380,7 +1516,7 @@ function BonusTrack({ invitation, fonts, tc, trackRef, bgOverride }: {
                 B+
               </span>
               <span style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '3px', color: '#FFFFFF', fontWeight: 600 }}>
-                BONUS TRACK
+                {dt('BONUS TRACK')}
               </span>
             </div>
             <span style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '2px', color: 'rgba(255,255,255,0.7)' }}>
@@ -1394,7 +1530,7 @@ function BonusTrack({ invitation, fonts, tc, trackRef, bgOverride }: {
               fontFamily: fonts.display, fontSize: '13px', letterSpacing: '5px', color: tc.text, marginBottom: '16px',
               fontStyle: 'italic',
             }}>
-              {thankYou.title || 'LINER NOTES'}
+              {thankYou.title ? (fonts.isScript ? thankYou.title : thankYou.title) : dt('LINER NOTES')}
             </h3>
 
             {/* Musical note divider */}
@@ -1404,24 +1540,35 @@ function BonusTrack({ invitation, fonts, tc, trackRef, bgOverride }: {
               <div style={{ width: '20px', height: '1px', background: tc.primary, opacity: 0.3 }} />
             </div>
 
-            {thankYou.message?.split('\n').map((line: string, i: number) => {
-              const isEmpty = line.trim().length === 0
-              if (isEmpty) return <div key={i} style={{ height: '16px' }} />
-              return (
-                <p key={i} style={{
-                  fontFamily: fonts.body, fontSize: '13px', lineHeight: 2, color: tc.gray,
-                  fontStyle: 'italic',
-                }}>{line}</p>
-              )
-            })}
+            {(() => {
+              let msgLineIdx = 0
+              return thankYou.message?.split('\n').map((line: string, i: number) => {
+                const isEmpty = line.trim().length === 0
+                if (isEmpty) return <div key={i} style={{ height: '16px' }} />
+                const currentIdx = msgLineIdx++
+                return (
+                  <p key={i} style={{
+                    fontFamily: fonts.body, fontSize: '13px', lineHeight: 2, color: tc.gray,
+                    fontStyle: 'italic',
+                    opacity: isVisible ? 1 : 0,
+                    transform: isVisible ? 'translateY(0)' : 'translateY(10px)',
+                    transition: `all 0.6s ease ${1.0 + currentIdx * 0.3}s`,
+                  }}>{line}</p>
+                )
+              })
+            })()}
             {thankYou.sign && (
-              <div className="mt-8">
+              <div className="mt-8" style={{
+                opacity: isVisible ? 1 : 0,
+                transition: 'opacity 0.6s ease 2.8s',
+              }}>
                 <div style={{ width: '1px', height: '20px', background: `${tc.divider}40`, margin: '0 auto 10px' }} />
                 <p style={{ fontFamily: fonts.displayKr, fontSize: '13px', color: tc.text, fontWeight: 400 }}>{thankYou.sign}</p>
               </div>
             )}
           </div>
         </div>
+      </div>
       </div>
     </div>
   )
@@ -1460,7 +1607,7 @@ function GiftSection({ invitation, fonts, tc, bgOverride }: { invitation: any; f
 
   return (
     <div className="px-5 py-10" style={{ backgroundColor: bgOverride || 'transparent' }}>
-      <div className="text-center mb-6">
+      <div className="text-center mb-6 record-track-label">
         <span style={{ fontFamily: fonts.display, fontSize: '7px', letterSpacing: '3px', color: tc.gray, opacity: 0.4, display: 'block', marginBottom: '6px' }}>
           &#9834; A-SIDE
         </span>
@@ -1501,6 +1648,7 @@ const sampleFanMailMessages = [
 function FanMailSection({ invitation, invitationId, fonts, tc, isSample, bgOverride }: {
   invitation: any; invitationId: string; fonts: FontConfig; tc: ColorConfig; isSample?: boolean; bgOverride?: string
 }) {
+  const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
   const [messages, setMessages] = useState<any[]>(isSample ? sampleFanMailMessages : [])
   const [name, setName] = useState('')
   const [message, setMessage] = useState('')
@@ -1535,11 +1683,11 @@ function FanMailSection({ invitation, invitationId, fonts, tc, isSample, bgOverr
   return (
     <div ref={ref} className="px-5 py-10" style={{ backgroundColor: bgOverride || 'transparent' }}>
       <div className="transition-all duration-700" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(40px)' }}>
-        <div className="text-center mb-6">
+        <div className="text-center mb-6 record-track-label">
           <span style={{ fontFamily: fonts.display, fontSize: '7px', letterSpacing: '3px', color: tc.gray, opacity: 0.4, display: 'block', marginBottom: '6px' }}>
-            &#9835; B-SIDE
+            &#9835; {dt('B-SIDE')}
           </span>
-          <h3 style={{ fontFamily: fonts.display, fontSize: '13px', fontWeight: 500, letterSpacing: '5px', color: tc.text }}>FAN MAIL</h3>
+          <h3 style={{ fontFamily: fonts.display, fontSize: '13px', fontWeight: 500, letterSpacing: '5px', color: tc.text }}>{dt('FAN MAIL')}</h3>
           <div style={{ width: '20px', height: '1px', background: tc.primary, margin: '10px auto 0', opacity: 0.5 }} />
         </div>
         <div className="text-center mb-6">
@@ -1557,7 +1705,7 @@ function FanMailSection({ invitation, invitationId, fonts, tc, isSample, bgOverr
             style={{ ...inputStyle, resize: 'none' as const }} />
           <button onClick={handleSubmit} disabled={submitting}
             style={{ width: '100%', fontFamily: fonts.display, fontSize: '10px', letterSpacing: '3px', padding: '12px', background: tc.primary, color: '#FFFFFF', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: submitting ? 0.5 : 1 }}>
-            SUBMIT
+            {dt('SUBMIT')}
           </button>
         </div>
         {messages.length === 0 ? (
@@ -1591,6 +1739,7 @@ function FanMailSection({ invitation, invitationId, fonts, tc, isSample, bgOverr
 function RsvpSection({ invitation, invitationId, fonts, tc, bgOverride }: {
   invitation: any; invitationId: string; fonts: FontConfig; tc: ColorConfig; bgOverride?: string
 }) {
+  const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
   const { ref, isVisible } = useScrollReveal()
   const [name, setName] = useState('')
   const [attendance, setAttendance] = useState<'yes' | 'no' | 'maybe'>('yes')
@@ -1618,7 +1767,7 @@ function RsvpSection({ invitation, invitationId, fonts, tc, bgOverride }: {
   if (submitted) {
     return (
       <div className="px-5 py-14 text-center" style={{ backgroundColor: bgOverride || 'transparent' }}>
-        <div style={{ fontFamily: fonts.display, fontSize: '13px', letterSpacing: '5px', color: tc.text, marginBottom: '8px' }}>CONFIRMED</div>
+        <div style={{ fontFamily: fonts.display, fontSize: '13px', letterSpacing: '5px', color: tc.text, marginBottom: '8px' }}>{dt('CONFIRMED')}</div>
         <p style={{ fontFamily: fonts.body, fontSize: '13px', color: tc.gray }}>참석 여부가 전달되었습니다.</p>
       </div>
     )
@@ -1630,11 +1779,11 @@ function RsvpSection({ invitation, invitationId, fonts, tc, bgOverride }: {
   return (
     <div ref={ref} className="px-5 py-10" style={{ backgroundColor: bgOverride || 'transparent' }}>
       <div className="transition-all duration-700" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(40px)' }}>
-        <div className="text-center mb-6">
+        <div className="text-center mb-6 record-track-label">
           <span style={{ fontFamily: fonts.display, fontSize: '7px', letterSpacing: '3px', color: tc.gray, opacity: 0.4, display: 'block', marginBottom: '6px' }}>
-            &#9834; ENCORE
+            &#9834; {dt('ENCORE')}
           </span>
-          <h3 style={{ fontFamily: fonts.display, fontSize: '13px', fontWeight: 500, letterSpacing: '5px', color: tc.text }}>RSVP</h3>
+          <h3 style={{ fontFamily: fonts.display, fontSize: '13px', fontWeight: 500, letterSpacing: '5px', color: tc.text }}>{dt('RSVP')}</h3>
           <div style={{ width: '20px', height: '1px', background: tc.primary, margin: '10px auto 0', opacity: 0.5 }} />
           {date && (
             <p style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.gray, marginTop: '8px' }}>
@@ -1689,7 +1838,7 @@ function RsvpSection({ invitation, invitationId, fonts, tc, bgOverride }: {
               style={{ ...inputStyle, resize: 'none' as const }} />
             <button onClick={handleSubmit} disabled={submitting}
               style={{ width: '100%', fontFamily: fonts.display, fontSize: '10px', letterSpacing: '3px', padding: '13px', background: tc.primary, color: '#FFFFFF', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: submitting ? 0.5 : 1 }}>
-              CONFIRM
+              {dt('CONFIRM')}
             </button>
           </div>
         </div>
@@ -1699,16 +1848,92 @@ function RsvpSection({ invitation, invitationId, fonts, tc, bgOverride }: {
 }
 
 // ===== MiniPlayerBar =====
-function MiniPlayerBar({ currentTrack, progress, isAudioPlaying, fonts, tc }: {
+function MiniPlayerBar({ currentTrack, progress, isAudioPlaying, fonts, tc, onPrev, onNext, totalSections, currentSection, trackName: overrideTrackName, trackLabel: overrideTrackLabel, artistName }: {
   currentTrack: number; progress: number; isAudioPlaying: boolean; fonts: FontConfig; tc: ColorConfig
+  onPrev?: () => void; onNext?: () => void; totalSections?: number; currentSection?: number; trackName?: string; trackLabel?: string; artistName?: string
 }) {
+  const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
   const trackNames = ['THE BEGINNING', 'THE COUPLE', 'OUR JOURNEY', 'GALLERY', 'THE WEDDING DAY', 'INFORMATION', 'LINER NOTES']
   const trackKeys = ['01', '02', '03', '04', '05', 'bonus', 'bonus']
-  const trackName = trackNames[Math.min(currentTrack - 1, trackNames.length - 1)] || ''
+  const displayName = overrideTrackName || trackNames[Math.min(currentTrack - 1, trackNames.length - 1)] || ''
   const trackKey = trackKeys[Math.min(currentTrack - 1, trackKeys.length - 1)] || '01'
   const duration = TRACK_CONFIG[trackKey]?.duration || '3:42'
   const trackNum = currentTrack <= 5 ? String(currentTrack).padStart(2, '0') : 'B+'
+  const hasCrossfade = onPrev && onNext
 
+  if (hasCrossfade) {
+    // === Crossfade mode: HTML sample style ===
+    return (
+      <div style={{
+        position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
+        width: '100%', maxWidth: '430px', height: '64px',
+        background: `${tc.cardBg}F0`, backdropFilter: 'blur(16px)',
+        borderTop: `1px solid ${tc.divider}40`,
+        display: 'flex', alignItems: 'center', padding: '0 16px',
+        zIndex: 90,
+      }}>
+        {/* Progress bar at top */}
+        <div style={{ position: 'absolute', top: '-2px', left: 0, right: 0, height: '2px', background: tc.divider }}>
+          <div className="mini-player-seekbar" style={{ height: '100%', background: tc.primary, width: `${progress * 100}%` }} />
+        </div>
+
+        {/* Mini vinyl disc */}
+        <div className={`flex-shrink-0 ${isAudioPlaying ? 'mini-vinyl-spin' : ''}`} style={{
+          width: '36px', height: '36px', borderRadius: '50%',
+          background: '#1A1A1A',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          position: 'relative', marginRight: '12px',
+        }}>
+          <div style={{
+            width: '12px', height: '12px', borderRadius: '50%',
+            background: `linear-gradient(135deg, ${tc.primary}, ${tc.accent})`,
+          }} />
+          <div className="absolute inset-0 rounded-full" style={{
+            background: 'repeating-radial-gradient(circle at center, transparent 0px, transparent 3px, rgba(255,255,255,0.05) 3px, rgba(255,255,255,0.05) 4px)',
+          }} />
+        </div>
+
+        {/* Track info */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{
+            fontFamily: fonts.display, fontSize: '11px', fontWeight: 500, letterSpacing: '1px',
+            color: tc.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }}>
+            {overrideTrackLabel ? dt(overrideTrackLabel) : dt(`TRACK ${trackNum}`)} &mdash; {dt(displayName)}
+          </div>
+          {artistName && (
+            <div style={{ fontFamily: fonts.display, fontSize: '9px', color: tc.gray, marginTop: '2px' }}>
+              {artistName}
+            </div>
+          )}
+        </div>
+
+        {/* Controls: prev / play indicator / next */}
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexShrink: 0 }}>
+          <button onClick={onPrev} style={{
+            background: 'none', border: 'none', cursor: 'pointer', padding: '4px',
+            opacity: currentSection === 0 ? 0.3 : 0.6, transition: 'opacity 0.2s',
+          }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill={tc.text}><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" /></svg>
+          </button>
+          <div style={{
+            width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            opacity: 0.6,
+          }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill={tc.text}><path d="M8 5v14l11-7z" /></svg>
+          </div>
+          <button onClick={onNext} style={{
+            background: 'none', border: 'none', cursor: 'pointer', padding: '4px',
+            opacity: currentSection === (totalSections || 1) - 1 ? 0.3 : 0.6, transition: 'opacity 0.2s',
+          }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill={tc.text}><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" /></svg>
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // === Scroll mode (preview): original layout ===
   return (
     <div style={{
       position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
@@ -1729,7 +1954,6 @@ function MiniPlayerBar({ currentTrack, progress, isAudioPlaying, fonts, tc }: {
           width: '8px', height: '8px', borderRadius: '50%',
           background: tc.cardBg, border: `1px solid ${tc.divider}`,
         }} />
-        {/* Grooves */}
         <div className="absolute inset-0 rounded-full" style={{
           background: 'repeating-radial-gradient(circle at center, transparent 0px, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 3px)',
         }} />
@@ -1739,7 +1963,7 @@ function MiniPlayerBar({ currentTrack, progress, isAudioPlaying, fonts, tc }: {
       <div style={{ flex: 1, minWidth: 0 }}>
         <div className="flex items-center justify-between mb-1">
           <span style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '2px', color: tc.text, fontWeight: 500 }}>
-            {trackNum}. {trackName}
+            {trackNum}. {dt(displayName)}
           </span>
           <span style={{ fontFamily: fonts.display, fontSize: '8px', color: tc.gray, opacity: 0.6 }}>
             {duration}
@@ -1765,6 +1989,28 @@ function MiniPlayerBar({ currentTrack, progress, isAudioPlaying, fonts, tc }: {
           }} />
         ))}
       </div>
+    </div>
+  )
+}
+
+// ===== Track Indicator (right-side dots) =====
+function TrackIndicator({ totalSections, currentSection, onGoTo, tc }: {
+  totalSections: number; currentSection: number; onGoTo: (idx: number) => void; tc: ColorConfig
+}) {
+  return (
+    <div className="track-indicator">
+      {Array.from({ length: totalSections }).map((_, i) => (
+        <button key={i} onClick={() => onGoTo(i)} style={{
+          width: '6px',
+          height: i === currentSection ? '18px' : '6px',
+          borderRadius: '3px',
+          background: i === currentSection ? tc.primary : `${tc.text}30`,
+          border: 'none',
+          padding: 0,
+          cursor: 'pointer',
+          transition: 'all 0.3s ease',
+        }} />
+      ))}
     </div>
   )
 }
@@ -1937,10 +2183,83 @@ const globalStyles = `
     50% { opacity: 0.6; }
   }
 
+  /* Equalizer pulse */
+  @keyframes eqPulse {
+    0% { transform: scaleY(0.7); opacity: 0.5; }
+    100% { transform: scaleY(1.3); opacity: 0.8; }
+  }
+
+  /* LIVE stamp slam */
+  @keyframes stampSlam {
+    0%   { opacity: 0; transform: rotate(12deg) scale(3); }
+    35%  { opacity: 0.9; transform: rotate(12deg) scale(0.85); }
+    55%  { transform: rotate(12deg) scale(1.15); }
+    75%  { transform: rotate(12deg) scale(0.95); }
+    100% { opacity: 0.8; transform: rotate(12deg) scale(1); }
+  }
+
+  /* Ticket shake */
+  @keyframes ticketShake {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    15% { transform: rotate(-0.8deg) translateX(-3px); }
+    30% { transform: rotate(0.8deg) translateX(3px); }
+    45% { transform: rotate(-0.4deg) translateX(-2px); }
+    60% { transform: rotate(0.4deg) translateX(1px); }
+    75% { transform: rotate(0deg); }
+  }
+
   /* Push GuestFloatingButton up to avoid mini player overlap */
   .mobile-frame-fixed-ui .fixed.bottom-6 {
-    bottom: 72px !important;
+    bottom: 80px !important;
   }
+
+  /* Crossfade navigation */
+  .crossfade-container {
+    position: relative;
+    overflow: hidden;
+  }
+  .crossfade-page {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    transition: opacity 0.6s ease;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .crossfade-page::-webkit-scrollbar { display: none; }
+  .track-indicator {
+    position: fixed;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Crossfade track page layout */
+  .crossfade-track-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100%;
+    width: 100%;
+  }
+  .crossfade-track-spacer { flex: 1 0 0px; min-height: 8px; }
+  .crossfade-track-header {
+    text-align: center;
+    padding: 28px 30px 20px;
+    flex-shrink: 0;
+    width: 100%;
+  }
+  .crossfade-track-content {
+    width: 100%;
+    flex-shrink: 0;
+  }
+  /* Hide individual section track labels inside crossfade track page */
+  .crossfade-track-page .record-track-label { display: none; }
 `
 
 // ===== Transform data =====
@@ -1962,11 +2281,25 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     customAccentColor: (content as any).customAccentColor,
     accentTextColor: (content as any).accentTextColor,
     bodyTextColor: (content as any).bodyTextColor,
+    displayFont: (content as any).displayFont,
     deceasedDisplayStyle: content.deceasedDisplayStyle || 'flower',
     profileFrameShape: (content as any).profileFrameShape || 'circle',
     magazineSectionOrder: content.magazineSectionOrder,
     magazineSectionBgMap: (content as any).magazineSectionBgMap,
   }
+}
+
+// 영문 디스플레이 폰트 맵
+const displayFontMap: Record<string, string> = {
+  playfair: "'Playfair Display', serif",
+  cinzel: "'Cinzel', serif",
+  montserrat: "'Montserrat', sans-serif",
+  garamond: "'EB Garamond', serif",
+  cormorant: "'Cormorant Garamond', serif",
+  greatvibes: "'Great Vibes', cursive",
+  lora: "'Lora', serif",
+  'made-slab': "'MADELikesSlab', serif",
+  italiana: "'Italiana', serif",
 }
 
 const RECORD_DEFAULT_SECTION_ORDER = [
@@ -1995,6 +2328,24 @@ function formatTimeToDisplay(time?: string): string {
   const p = h < 12 ? '오전' : '오후'
   const dh = h === 0 ? 12 : h > 12 ? h - 12 : h
   return m === 0 ? `${p} ${dh}시` : `${p} ${dh}시 ${m}분`
+}
+
+// ===== Section list item type =====
+interface SectionListItem {
+  id: string
+  trackNum: number | null
+  trackLabel: string // e.g. 'TRACK 01', 'B+', 'ENCORE', ''
+  name: string
+  duration: string
+  divider: React.ReactNode | null
+  component: React.ReactNode
+}
+
+const SECTION_DURATIONS: Record<string, string> = {
+  greeting: '3:42', trackCouple: '2:58', trackOurJourney: '4:15',
+  trackGallery: '3:24', video: '3:00', trackWeddingDay: '5:01',
+  guidance: '3:10', bonusTrack: '2:33', gift: '1:45',
+  fanMail: '2:20', rsvp: '1:30', footer: '',
 }
 
 // ===== Main Component =====
@@ -2033,10 +2384,23 @@ function InvitationClientRecordContent({
     ...(customBodyText ? { text: customBodyText, gray: customBodyText + 'CC' } : {}),
     ...(customAccentText ? { highlight: customAccentText } : {}),
   }
-  const fonts = fontStyles[effectiveFontStyle]
+  const baseFonts = fontStyles[effectiveFontStyle]
+  const isScriptFont = invitation?.displayFont === 'greatvibes'
+  const fonts = invitation?.displayFont && displayFontMap[invitation.displayFont]
+    ? { ...baseFonts, display: displayFontMap[invitation.displayFont], isScript: isScriptFont }
+    : { ...baseFonts, isScript: isScriptFont }
+  const dt = (text: string) => isScriptFont ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
 
-  // Track current track via scroll
+  // Track current track via scroll (used in preview/scroll mode)
   const { currentTrack, progress, setTrackRef } = useCurrentTrack()
+
+  // === Crossfade state (guest view only) ===
+  const [cfIndex, setCfIndex] = useState(0)
+  const [visitedSections, setVisitedSections] = useState<Set<number>>(() => new Set([0]))
+  const [isTransitioning, setIsTransitioning] = useState(false)
+  const crossfadePageRefs = useRef<(HTMLDivElement | null)[]>([])
+  const touchStartRef = useRef<{ y: number; t: number } | null>(null)
+  const wheelTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Listen for audio play/pause events
   useEffect(() => {
@@ -2071,6 +2435,161 @@ function InvitationClientRecordContent({
     (invitation.bride?.mother as any)?.bank?.enabled && { name: invitation.bride.mother.name, bank: (invitation.bride.mother as any).bank, role: '어머니', side: 'bride' as const },
   ].filter(Boolean) as { name: string; bank: any; role: string; side: 'groom' | 'bride' }[]
 
+  // === Build sectionList for crossfade ===
+  const sectionBgMap: Record<string, 'background' | 'sectionBg'> = invitation.magazineSectionBgMap || RECORD_DEFAULT_BG
+  const getBg = (id: string) => tc[sectionBgMap[id] || RECORD_DEFAULT_BG[id] || 'background']
+  const order = invitation.magazineSectionOrder || RECORD_DEFAULT_SECTION_ORDER
+  const trackRefMap: Record<string, number> = {
+    trackCouple: 1, trackOurJourney: 2, trackGallery: 3,
+    trackWeddingDay: 4, guidance: 5, bonusTrack: 6,
+  }
+  const numberedTracks = new Set(['trackCouple', 'trackOurJourney', 'trackGallery', 'trackWeddingDay'])
+  let trackCounter = 2
+  const n = order.length
+  const mid = Math.floor(n / 2)
+  const getDividerType = (idx: number): 'notes' | 'sideA' | 'sideB' | 'waveform' | 'line' => {
+    if (idx === 0) return 'notes'
+    if (idx === 1) return 'sideA'
+    if (idx === mid - 1) return 'waveform'
+    if (idx === mid) return 'sideB'
+    return 'line'
+  }
+
+  const sectionTrackNames: Record<string, string> = {
+    trackCouple: 'THE COUPLE', trackOurJourney: 'OUR JOURNEY', trackGallery: 'GALLERY',
+    video: 'VIDEO', trackWeddingDay: 'THE WEDDING DAY', guidance: 'INFORMATION',
+    bonusTrack: 'LINER NOTES', gift: 'GIFT', fanMail: 'FAN MAIL', rsvp: 'RSVP',
+  }
+
+  // Greeting section = first item
+  const sectionList: SectionListItem[] = [
+    { id: 'greeting', trackNum: 1, trackLabel: 'TRACK 01', name: 'THE BEGINNING', duration: SECTION_DURATIONS['greeting'], divider: null, component: <TrackGreeting invitation={invitation} fonts={fonts} tc={tc} trackRef={setTrackRef(0)} /> },
+  ]
+
+  // Special track labels for non-numbered sections
+  const specialTrackLabels: Record<string, string> = {
+    guidance: 'INFO', bonusTrack: 'B+', gift: 'SIDE B', fanMail: 'SIDE B', rsvp: 'ENCORE', video: 'MV',
+  }
+
+  // Build from order
+  order.forEach((sectionId: string, idx: number) => {
+    const curBg = getBg(sectionId)
+    const divType = getDividerType(idx)
+    const divider = <SectionDivider type={divType} tc={tc} fonts={fonts} />
+    const curTrackNum = numberedTracks.has(sectionId) ? trackCounter++ : null
+    const trackLabel = curTrackNum ? `TRACK ${String(curTrackNum).padStart(2, '0')}` : (specialTrackLabels[sectionId] || '')
+    const duration = SECTION_DURATIONS[sectionId] || ''
+
+    let component: React.ReactNode = null
+    switch (sectionId) {
+      case 'trackCouple':
+        component = <TrackCouple invitation={invitation} fonts={fonts} tc={tc} trackRef={setTrackRef(trackRefMap[sectionId])} bgOverride={curBg} trackNumber={curTrackNum || undefined} />
+        break
+      case 'trackOurJourney':
+        component = <TrackOurJourney invitation={invitation} fonts={fonts} tc={tc} trackRef={setTrackRef(trackRefMap[sectionId])} bgOverride={curBg} trackNumber={curTrackNum || undefined} />
+        break
+      case 'trackGallery':
+        component = <TrackGallery invitation={invitation} fonts={fonts} tc={tc} onOpenLightbox={(i) => { setLightboxIndex(i); setLightboxOpen(true) }} trackRef={setTrackRef(trackRefMap[sectionId])} bgOverride={curBg} />
+        break
+      case 'video': {
+        const yt = invitation.youtube
+        if (!yt?.enabled || !yt?.url) return
+        component = <RecordVideoSection invitation={invitation} fonts={fonts} tc={tc} bgOverride={curBg} />
+        break
+      }
+      case 'trackWeddingDay':
+        component = <TrackWeddingDay invitation={invitation} fonts={fonts} tc={tc} trackRef={setTrackRef(trackRefMap[sectionId])} bgOverride={curBg} trackNumber={curTrackNum || undefined} />
+        break
+      case 'guidance':
+        component = <GuidanceSection invitation={invitation} fonts={fonts} tc={tc} trackRef={setTrackRef(trackRefMap[sectionId])} bgOverride={curBg} />
+        break
+      case 'bonusTrack':
+        component = <BonusTrack invitation={invitation} fonts={fonts} tc={tc} trackRef={setTrackRef(trackRefMap[sectionId])} bgOverride={curBg} />
+        break
+      case 'gift':
+        if (invitation.sectionVisibility?.bankAccounts === false) return
+        component = <GiftSection invitation={invitation} fonts={fonts} tc={tc} bgOverride={curBg} />
+        break
+      case 'fanMail':
+        component = <FanMailSection invitation={invitation} invitationId={dbInvitation.id} fonts={fonts} tc={tc} isSample={isSample} bgOverride={curBg} />
+        break
+      case 'rsvp':
+        if (invitation.sectionVisibility?.rsvp === false) return
+        component = <RsvpSection invitation={invitation} invitationId={dbInvitation.id} fonts={fonts} tc={tc} bgOverride={curBg} />
+        break
+      default:
+        return
+    }
+    sectionList.push({ id: sectionId, trackNum: curTrackNum, trackLabel, name: sectionTrackNames[sectionId] || sectionId, duration, divider, component })
+  })
+
+  // Footer section = last item
+  sectionList.push({ id: 'footer', trackNum: null, trackLabel: '', name: 'END', duration: '', divider: null, component: <RecordFooter invitation={invitation} fonts={fonts} tc={tc} /> })
+
+  // === Crossfade navigation functions ===
+  const goToSection = useCallback((targetIdx: number) => {
+    if (targetIdx < 0 || targetIdx >= sectionList.length || targetIdx === cfIndex || isTransitioning) return
+    setIsTransitioning(true)
+    setVisitedSections(prev => { const next = new Set(prev); next.add(targetIdx); return next })
+    setCfIndex(targetIdx)
+    // Reset scroll of target page
+    const targetPage = crossfadePageRefs.current[targetIdx]
+    if (targetPage) targetPage.scrollTop = 0
+    setTimeout(() => setIsTransitioning(false), 650)
+  }, [cfIndex, isTransitioning, sectionList.length])
+
+  const goNext = useCallback(() => goToSection(cfIndex + 1), [cfIndex, goToSection])
+  const goPrev = useCallback(() => goToSection(cfIndex - 1), [cfIndex, goToSection])
+
+  // Swipe handler
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartRef.current = { y: e.touches[0].clientY, t: Date.now() }
+  }, [])
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    const start = touchStartRef.current
+    if (!start) return
+    const dy = e.changedTouches[0].clientY - start.y
+    const dt = Date.now() - start.t
+    touchStartRef.current = null
+
+    // Check if the current page is scrollable and not at edge
+    const currentPage = crossfadePageRefs.current[cfIndex]
+    if (currentPage) {
+      const { scrollTop, scrollHeight, clientHeight } = currentPage
+      const isAtTop = scrollTop <= 1
+      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1
+      // Only navigate if at scroll boundary
+      if (dy < -40 && dt < 500 && isAtBottom) goNext()
+      else if (dy > 40 && dt < 500 && isAtTop) goPrev()
+    }
+  }, [cfIndex, goNext, goPrev])
+
+  // Wheel handler
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    const currentPageEl = crossfadePageRefs.current[cfIndex]
+    if (currentPageEl) {
+      const { scrollTop, scrollHeight, clientHeight } = currentPageEl
+      const isAtTop = scrollTop <= 1
+      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1
+      if (e.deltaY > 20 && isAtBottom) {
+        if (wheelTimerRef.current) return
+        wheelTimerRef.current = setTimeout(() => { wheelTimerRef.current = null }, 800)
+        goNext()
+      } else if (e.deltaY < -20 && isAtTop) {
+        if (wheelTimerRef.current) return
+        wheelTimerRef.current = setTimeout(() => { wheelTimerRef.current = null }, 800)
+        goPrev()
+      }
+    }
+  }, [cfIndex, goNext, goPrev])
+
+  // Crossfade progress for mini player
+  const cfProgress = sectionList.length > 1 ? (cfIndex / (sectionList.length - 1)) : 0
+  const cfTrackNum = sectionList[cfIndex]?.trackNum || 1
+  const cfTrackName = sectionList[cfIndex]?.name || ''
+  const cfTrackLabel = sectionList[cfIndex]?.trackLabel || ''
+
   return (
     <PreviewModeContext.Provider value={!!isPreview}>
     <>
@@ -2091,65 +2610,86 @@ function InvitationClientRecordContent({
                 }}>
                   {currentPage === 'cover' ? (
                     <VinylRecordCover invitation={invitation} fonts={fonts} tc={tc} onEnter={() => setCurrentPage('main')} colorTheme={effectiveColorTheme} />
-                  ) : (
+                  ) : isPreview ? (
+                    /* === Editor preview: scroll layout with unified track headers === */
                     <>
                       <RecordHeader invitation={invitation} fonts={fonts} tc={tc} currentTrack={currentTrack} progress={progress} />
-                      <TrackGreeting invitation={invitation} fonts={fonts} tc={tc} trackRef={setTrackRef(0)} />
-                      {(() => {
-                        const sectionBgMap: Record<string, 'background' | 'sectionBg'> = invitation.magazineSectionBgMap || RECORD_DEFAULT_BG
-                        const getBg = (id: string) => tc[sectionBgMap[id] || RECORD_DEFAULT_BG[id] || 'background']
-                        const order = invitation.magazineSectionOrder || RECORD_DEFAULT_SECTION_ORDER
-                        const trackRefMap: Record<string, number> = {
-                          trackCouple: 1, trackOurJourney: 2, trackGallery: 3,
-                          trackWeddingDay: 4, guidance: 5, bonusTrack: 6,
-                        }
-                        // TRACK 번호가 있는 섹션들 (순서에 따라 동적 부여)
-                        const numberedTracks = new Set(['trackCouple', 'trackOurJourney', 'trackGallery', 'trackWeddingDay'])
-                        let trackCounter = 2 // TrackGreeting = TRACK 01, 다음부터 02
-                        // 위치 기반 SIDE 디바이더 계산
-                        const n = order.length
-                        const mid = Math.floor(n / 2)
-                        const getDividerType = (idx: number): 'notes' | 'sideA' | 'sideB' | 'waveform' | 'line' => {
-                          if (idx === 0) return 'notes'
-                          if (idx === 1) return 'sideA'
-                          if (idx === mid - 1) return 'waveform'
-                          if (idx === mid) return 'sideB'
-                          return 'line'
-                        }
-                        return order.map((sectionId: string, idx: number) => {
-                          const curBg = getBg(sectionId)
-                          const divType = getDividerType(idx)
-                          const divider = <SectionDivider key={`div-${sectionId}`} type={divType} tc={tc} fonts={fonts} />
-                          const curTrackNum = numberedTracks.has(sectionId) ? trackCounter++ : undefined
-                          switch (sectionId) {
-                            case 'trackCouple':
-                              return <Fragment key={sectionId}>{divider}<TrackCouple invitation={invitation} fonts={fonts} tc={tc} trackRef={setTrackRef(trackRefMap[sectionId])} bgOverride={curBg} trackNumber={curTrackNum} /></Fragment>
-                            case 'trackOurJourney':
-                              return <Fragment key={sectionId}>{divider}<TrackOurJourney invitation={invitation} fonts={fonts} tc={tc} trackRef={setTrackRef(trackRefMap[sectionId])} bgOverride={curBg} trackNumber={curTrackNum} /></Fragment>
-                            case 'trackGallery':
-                              return <Fragment key={sectionId}>{divider}<TrackGallery invitation={invitation} fonts={fonts} tc={tc} onOpenLightbox={(i) => { setLightboxIndex(i); setLightboxOpen(true) }} trackRef={setTrackRef(trackRefMap[sectionId])} bgOverride={curBg} /></Fragment>
-                            case 'video':
-                              return <Fragment key={sectionId}>{divider}<RecordVideoSection invitation={invitation} fonts={fonts} tc={tc} bgOverride={curBg} /></Fragment>
-                            case 'trackWeddingDay':
-                              return <Fragment key={sectionId}>{divider}<TrackWeddingDay invitation={invitation} fonts={fonts} tc={tc} trackRef={setTrackRef(trackRefMap[sectionId])} bgOverride={curBg} trackNumber={curTrackNum} /></Fragment>
-                            case 'guidance':
-                              return <Fragment key={sectionId}>{divider}<GuidanceSection invitation={invitation} fonts={fonts} tc={tc} trackRef={setTrackRef(trackRefMap[sectionId])} bgOverride={curBg} /></Fragment>
-                            case 'bonusTrack':
-                              return <Fragment key={sectionId}>{divider}<BonusTrack invitation={invitation} fonts={fonts} tc={tc} trackRef={setTrackRef(trackRefMap[sectionId])} bgOverride={curBg} /></Fragment>
-                            case 'gift':
-                              if (invitation.sectionVisibility?.bankAccounts === false) return null
-                              return <Fragment key={sectionId}>{divider}<GiftSection invitation={invitation} fonts={fonts} tc={tc} bgOverride={curBg} /></Fragment>
-                            case 'fanMail':
-                              return <Fragment key={sectionId}>{divider}<FanMailSection invitation={invitation} invitationId={dbInvitation.id} fonts={fonts} tc={tc} isSample={isSample} bgOverride={curBg} /></Fragment>
-                            case 'rsvp':
-                              if (invitation.sectionVisibility?.rsvp === false) return null
-                              return <Fragment key={sectionId}>{divider}<RsvpSection invitation={invitation} invitationId={dbInvitation.id} fonts={fonts} tc={tc} bgOverride={curBg} /></Fragment>
-                            default:
-                              return null
-                          }
-                        })
-                      })()}
-                      <RecordFooter invitation={invitation} fonts={fonts} tc={tc} />
+                      {sectionList.map((section) => (
+                        <div key={section.id} className="crossfade-track-page" style={{ minHeight: 'auto' }}>
+                          {/* Unified track header */}
+                          {section.id !== 'footer' && section.trackLabel && (
+                            <div className="crossfade-track-header" style={{ paddingTop: '20px', paddingBottom: '8px' }}>
+                              <div style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '4px', color: tc.primary, opacity: 0.7, marginBottom: '8px' }}>
+                                {dt(section.trackLabel)}
+                              </div>
+                              <h2 style={{ fontFamily: fonts.display, fontSize: '22px', fontWeight: 300, letterSpacing: '3px', color: tc.text, margin: '0 0 8px' }}>
+                                {dt(section.name)}
+                              </h2>
+                              {section.duration && (
+                                <div style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '2px', color: tc.gray }}>
+                                  {section.duration}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          {/* Divider + section content */}
+                          <div className="crossfade-track-content">
+                            {section.divider}
+                            {section.component}
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  ) : (
+                    /* === Guest view: crossfade navigation === */
+                    <>
+                      <RecordHeader invitation={invitation} fonts={fonts} tc={tc} currentTrack={cfTrackNum} progress={cfProgress} isCrossfade />
+                      <div
+                        className="crossfade-container"
+                        style={{ height: 'calc(100vh - 44px - 64px)' }}
+                        onTouchStart={handleTouchStart}
+                        onTouchEnd={handleTouchEnd}
+                        onWheel={handleWheel}
+                      >
+                        {sectionList.map((section, idx) => (
+                          <div
+                            key={section.id}
+                            ref={el => { crossfadePageRefs.current[idx] = el }}
+                            className="crossfade-page"
+                            style={{
+                              opacity: idx === cfIndex ? 1 : 0,
+                              pointerEvents: idx === cfIndex ? 'auto' : 'none',
+                            }}
+                          >
+                            {visitedSections.has(idx) && (
+                              <div className="crossfade-track-page">
+                                <div className="crossfade-track-spacer" />
+                                {/* Unified track header - skip for footer */}
+                                {section.id !== 'footer' && section.trackLabel && (
+                                  <div className="crossfade-track-header">
+                                    <div style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '4px', color: tc.primary, opacity: 0.7, marginBottom: '8px' }}>
+                                      {dt(section.trackLabel)}
+                                    </div>
+                                    <h2 style={{ fontFamily: fonts.display, fontSize: '22px', fontWeight: 300, letterSpacing: '3px', color: tc.text, margin: '0 0 8px' }}>
+                                      {dt(section.name)}
+                                    </h2>
+                                    {section.duration && (
+                                      <div style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '2px', color: tc.gray }}>
+                                        {section.duration}
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                                {/* Section content - no dividers in crossfade mode */}
+                                <div className="crossfade-track-content">
+                                  {section.component}
+                                </div>
+                                <div className="crossfade-track-spacer" />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </>
                   )}
                   {invitation.bgm?.enabled && invitation.bgm?.url && (
@@ -2169,8 +2709,25 @@ function InvitationClientRecordContent({
                       weddingDate: invitation.wedding?.date || '', weddingTime: invitation.wedding?.timeDisplay || invitation.wedding?.time || '',
                       thumbnailUrl: content?.meta?.kakaoThumbnail || content?.meta?.ogImage || extractImageUrl(invitation.media?.coverImage) || '',
                       shareTitle: content?.meta?.title, shareDescription: content?.meta?.description }} />
-                  <MiniPlayerBar currentTrack={currentTrack} progress={progress} isAudioPlaying={isAudioPlaying} fonts={fonts} tc={tc} />
+                  <MiniPlayerBar
+                    currentTrack={cfTrackNum}
+                    progress={cfProgress}
+                    isAudioPlaying={isAudioPlaying}
+                    fonts={fonts}
+                    tc={tc}
+                    onPrev={goPrev}
+                    onNext={goNext}
+                    totalSections={sectionList.length}
+                    currentSection={cfIndex}
+                    trackName={cfTrackName}
+                    trackLabel={cfTrackLabel}
+                    artistName={`${invitation.groom?.name || ''} & ${invitation.bride?.name || ''}`}
+                  />
+                  <TrackIndicator totalSections={sectionList.length} currentSection={cfIndex} onGoTo={goToSection} tc={tc} />
                 </>
+              )}
+              {currentPage === 'main' && isPreview && (
+                <MiniPlayerBar currentTrack={currentTrack} progress={progress} isAudioPlaying={isAudioPlaying} fonts={fonts} tc={tc} />
               )}
               {invitation.bgm?.enabled && invitation.bgm?.url && (
                 <MusicToggle audioRef={audioRef} isVisible={currentPage === 'main'} shouldAutoPlay={currentPage === 'main' && invitation.bgm?.autoplay === true} tc={tc} />

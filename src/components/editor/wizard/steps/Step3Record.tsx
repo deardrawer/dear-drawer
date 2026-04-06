@@ -499,30 +499,32 @@ export default function Step3Record({}: Step3RecordProps) {
         />
 
         {invitation.gallery.images.length > 0 && (
-          <div className="mt-3 p-3 bg-gray-50 rounded-lg space-y-4">
-            <p className="text-[10px] font-medium text-gray-600">이미지 크롭 조정</p>
-            {invitation.gallery.images.map((imageUrl, imgIndex) => {
-              const settings = invitation.gallery.imageSettings?.[imgIndex] || { scale: 1.0, positionX: 0, positionY: 0 }
-              return (
-                <div key={imgIndex} className="space-y-2 pb-3 border-b border-gray-200 last:border-0 last:pb-0">
-                  <p className="text-[9px] text-gray-500">사진 {imgIndex + 1}</p>
-                  <InlineCropEditor
-                    imageUrl={imageUrl}
-                    settings={settings}
-                    onUpdate={(newSettings) => {
-                      const currentSettings = [...(invitation.gallery.imageSettings || [])]
-                      while (currentSettings.length <= imgIndex) {
-                        currentSettings.push({ scale: 1.0, positionX: 0, positionY: 0 })
-                      }
-                      currentSettings[imgIndex] = { ...currentSettings[imgIndex], ...newSettings }
-                      updateNestedField('gallery.imageSettings', currentSettings)
-                    }}
-                    aspectRatio={imgIndex === 0 ? 16/10 : 1}
-                    containerWidth={140}
-                  />
-                </div>
-              )
-            })}
+          <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+            <p className="text-[10px] font-medium text-gray-600 mb-2">이미지 크롭 조정</p>
+            <div className="grid grid-cols-3 gap-2">
+              {invitation.gallery.images.map((imageUrl, imgIndex) => {
+                const settings = invitation.gallery.imageSettings?.[imgIndex] || { scale: 1.0, positionX: 0, positionY: 0 }
+                return (
+                  <div key={imgIndex}>
+                    <p className="text-[8px] text-gray-400 mb-1">{imgIndex + 1}</p>
+                    <InlineCropEditor
+                      imageUrl={imageUrl}
+                      settings={settings}
+                      onUpdate={(newSettings) => {
+                        const currentSettings = [...(invitation.gallery.imageSettings || [])]
+                        while (currentSettings.length <= imgIndex) {
+                          currentSettings.push({ scale: 1.0, positionX: 0, positionY: 0 })
+                        }
+                        currentSettings[imgIndex] = { ...currentSettings[imgIndex], ...newSettings }
+                        updateNestedField('gallery.imageSettings', currentSettings)
+                      }}
+                      aspectRatio={imgIndex === 0 ? 16/10 : 1}
+                      containerWidth={90}
+                    />
+                  </div>
+                )
+              })}
+            </div>
           </div>
         )}
       </section>

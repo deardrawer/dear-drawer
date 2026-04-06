@@ -114,7 +114,7 @@ export default function Step5MenuSettings() {
 
   const FILM_DEFAULT_SECTION_ORDER = [
     'chapterTwo', 'filmScenes', 'chapterThree', 'video',
-    'premiere', 'guidance', 'credits', 'gift', 'guestbook', 'rsvp'
+    'premiere', 'guidance', 'credits', 'guestbook', 'rsvp'
   ]
   const FILM_SECTION_LABELS: Record<string, string> = {
     chapterTwo: '커플 소개',
@@ -124,7 +124,6 @@ export default function Step5MenuSettings() {
     premiere: '예식 정보',
     guidance: '결혼식 안내',
     credits: '감사 인사',
-    gift: '마음 전하실 곳',
     guestbook: '방명록',
     rsvp: 'RSVP',
   }
@@ -136,7 +135,6 @@ export default function Step5MenuSettings() {
     premiere: 'sectionBg',
     guidance: 'background',
     credits: 'sectionBg',
-    gift: 'sectionBg',
     guestbook: 'background',
     rsvp: 'sectionBg',
   }
@@ -148,10 +146,6 @@ export default function Step5MenuSettings() {
     guidance: {
       read: () => invitation.sectionVisibility.guidance !== false,
       write: () => toggleSectionVisibility('guidance'),
-    },
-    gift: {
-      read: () => invitation.sectionVisibility.bankAccounts !== false,
-      write: () => toggleSectionVisibility('bankAccounts'),
     },
     guestbook: {
       read: () => invitation.sectionVisibility.guestbook !== false,
@@ -414,6 +408,21 @@ export default function Step5MenuSettings() {
                 )
               })}
             </SortableList>
+            {/* Film: 마음 전하실 곳은 RSVP 하단 고정 */}
+            {isFilm && (
+              <div className="flex items-center gap-2 px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg mt-1">
+                <svg className="w-4 h-4 text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                <span className="text-sm text-gray-500 flex-1">마음 전하실 곳 (RSVP 하단 고정)</span>
+                <Switch
+                  checked={invitation.sectionVisibility.bankAccounts !== false}
+                  onCheckedChange={() => toggleSectionVisibility('bankAccounts')}
+                  className="scale-75 origin-right"
+                />
+              </div>
+            )}
           </div>
         </section>
       )}

@@ -498,13 +498,15 @@ export default function Step3Film({}: Step3FilmProps) {
                     sortable={true}
                     maxImages={2}
                     placeholder="사진 추가"
-                    aspectRatio="aspect-square"
+                    aspectRatio={(interview.images?.length || 0) === 1 ? "aspect-[16/9]" : (interview.images?.length || 0) === 2 ? "aspect-[3/4]" : "aspect-square"}
                   />
                   {(interview.images?.length || 0) > 0 && (
                     <div className="mt-2 p-3 bg-white/70 rounded-lg space-y-3">
                       <p className="text-[10px] font-medium text-amber-700">이미지 크롭 조정</p>
                       {interview.images?.map((imageUrl, imgIndex) => {
                         const settings = interview.imageSettings?.[imgIndex] || { scale: 1.0, positionX: 0, positionY: 0 }
+                        const imgCount = interview.images?.length || 0
+                        const cropAspect = imgCount === 1 ? 16/9 : imgCount === 2 ? 3/4 : 1
                         return (
                           <div key={imgIndex} className="space-y-2 pb-3 border-b border-amber-100 last:border-0 last:pb-0">
                             <div className="flex items-center justify-between">
@@ -528,7 +530,7 @@ export default function Step3Film({}: Step3FilmProps) {
                               imageUrl={imageUrl}
                               settings={settings}
                               onUpdate={(s) => updateInterviewImageSettings(index, imgIndex, s)}
-                              aspectRatio={1}
+                              aspectRatio={cropAspect}
                               containerWidth={140}
                               colorClass="amber"
                             />
@@ -594,30 +596,32 @@ export default function Step3Film({}: Step3FilmProps) {
         />
 
         {invitation.gallery.images.length > 0 && (
-          <div className="mt-3 p-3 bg-gray-50 rounded-lg space-y-4">
-            <p className="text-[10px] font-medium text-gray-600">이미지 크롭 조정</p>
-            {invitation.gallery.images.map((imageUrl, imgIndex) => {
-              const settings = invitation.gallery.imageSettings?.[imgIndex] || { scale: 1.0, positionX: 0, positionY: 0 }
-              return (
-                <div key={imgIndex} className="space-y-2 pb-3 border-b border-gray-200 last:border-0 last:pb-0">
-                  <p className="text-[9px] text-gray-500">사진 {imgIndex + 1}</p>
-                  <InlineCropEditor
-                    imageUrl={imageUrl}
-                    settings={settings}
-                    onUpdate={(newSettings) => {
-                      const currentSettings = [...(invitation.gallery.imageSettings || [])]
-                      while (currentSettings.length <= imgIndex) {
-                        currentSettings.push({ scale: 1.0, positionX: 0, positionY: 0 })
-                      }
-                      currentSettings[imgIndex] = { ...currentSettings[imgIndex], ...newSettings }
-                      updateNestedField('gallery.imageSettings', currentSettings)
-                    }}
-                    aspectRatio={2/3}
-                    containerWidth={140}
-                  />
-                </div>
-              )
-            })}
+          <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+            <p className="text-[10px] font-medium text-gray-600 mb-2">이미지 크롭 조정</p>
+            <div className="grid grid-cols-3 gap-2">
+              {invitation.gallery.images.map((imageUrl, imgIndex) => {
+                const settings = invitation.gallery.imageSettings?.[imgIndex] || { scale: 1.0, positionX: 0, positionY: 0 }
+                return (
+                  <div key={imgIndex}>
+                    <p className="text-[8px] text-gray-400 mb-1">{imgIndex + 1}</p>
+                    <InlineCropEditor
+                      imageUrl={imageUrl}
+                      settings={settings}
+                      onUpdate={(newSettings) => {
+                        const currentSettings = [...(invitation.gallery.imageSettings || [])]
+                        while (currentSettings.length <= imgIndex) {
+                          currentSettings.push({ scale: 1.0, positionX: 0, positionY: 0 })
+                        }
+                        currentSettings[imgIndex] = { ...currentSettings[imgIndex], ...newSettings }
+                        updateNestedField('gallery.imageSettings', currentSettings)
+                      }}
+                      aspectRatio={2/3}
+                      containerWidth={90}
+                    />
+                  </div>
+                )
+              })}
+            </div>
           </div>
         )}
       </section>

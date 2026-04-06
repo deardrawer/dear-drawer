@@ -99,6 +99,7 @@ function RecordPreviewWrapper({ invitation, skipIntro }: { invitation: Invitatio
     accentTextColor: invitation.accentTextColor,
     bodyTextColor: invitation.bodyTextColor,
     highlightColor: invitation.highlightColor,
+    displayFont: (invitation as any).displayFont,
   }), [invitation])
 
   const invitationData = useMemo(() => ({
@@ -159,6 +160,7 @@ function InvitationPreviewWrapper({ invitation, skipIntro, onIntroScreenChange }
     intro: (invitation as any).intro,
     youtube: (invitation as any).youtube,
     magazineIntroStyle: (invitation as any).magazineIntroStyle,
+    filmIntroStyle: (invitation as any).filmIntroStyle,
     fullHeightDividers: (invitation as any).fullHeightDividers,
     parentIntro: (invitation as any).parentIntro,
     whyWeChose: (invitation as any).whyWeChose,
@@ -170,6 +172,7 @@ function InvitationPreviewWrapper({ invitation, skipIntro, onIntroScreenChange }
     customBgColor: (invitation as any).customBgColor,
     customSectionBgColor: (invitation as any).customSectionBgColor,
     sectionTextColor: (invitation as any).sectionTextColor,
+    displayFont: (invitation as any).displayFont,
   }), [invitation])
 
   const invitationData = useMemo(() => ({

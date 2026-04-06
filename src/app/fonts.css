@@ -1,0 +1,9 @@
+/* ===== Local Display Fonts (English Title) ===== */
+/* Separated from globals.css to avoid Tailwind v4 stripping @font-face */
+
+@font-face {
+  font-family: 'MADELikesSlab';
+  src: url('/fonts/MADELikesSlab.otf') format('opentype');
+  font-weight: normal;
+  font-display: swap;
+}

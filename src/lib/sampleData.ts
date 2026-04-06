@@ -112,10 +112,10 @@ export const SAMPLE_FILM_QUOTE = {
 
 export const SAMPLE_FILM_INTERVIEWS = [
   {
-    question: '첫 만남',
+    question: '처음 만났을 때 서로의 첫인상은?',
     answer: '',
-    groomDialogue: '첫인상이 어땠냐고? 솔직히 별 생각 없었어.',
-    brideDialogue: '나도. 근데 두 번째 만났을 때 좀 설렜어. 아주 조금.',
+    groomDialogue: '카페에서 책을 읽고 있는 모습이 정말 예뻤어요',
+    brideDialogue: '웃을 때 눈이 반달처럼 되는 게 인상적이었어요',
     narration: '',
     displayOrder: ['narration', 'groom', 'bride'] as ('groom' | 'bride' | 'narration')[],
     images: [] as string[],
@@ -123,10 +123,10 @@ export const SAMPLE_FILM_INTERVIEWS = [
     bgClass: 'pink-bg' as const,
   },
   {
-    question: '우리의 시간',
+    question: '결혼을 결심하게 된 순간은?',
     answer: '',
-    groomDialogue: '이 사람 장점? 제가 하는 말에 잘 웃어줘요.',
-    brideDialogue: '아니 진짜 웃긴 걸 어떡해. 근데 본인은 모름.',
+    groomDialogue: '아플 때 밤새 간호해주는 모습을 보고 확신했어요',
+    brideDialogue: '이 사람과 함께라면 어떤 어려움도 이겨낼 수 있겠다 싶었어요',
     narration: '',
     displayOrder: ['narration', 'groom', 'bride'] as ('groom' | 'bride' | 'narration')[],
     images: [] as string[],
@@ -134,10 +134,10 @@ export const SAMPLE_FILM_INTERVIEWS = [
     bgClass: 'white-bg' as const,
   },
   {
-    question: '프로포즈',
+    question: '서로에게 하고 싶은 한마디는?',
     answer: '',
-    groomDialogue: '프로포즈를 엄청 준비했는데 긴장해서 다 까먹었어.',
-    brideDialogue: '그래서 그냥 울었잖아. 그게 더 감동이었어 사실.',
+    groomDialogue: '평생 웃게 해줄게요. 사랑해요',
+    brideDialogue: '당신을 만나서 정말 행복해요. 영원히 함께해요',
     narration: '',
     displayOrder: ['narration', 'groom', 'bride'] as ('groom' | 'bride' | 'narration')[],
     images: [] as string[],

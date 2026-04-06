@@ -740,7 +740,7 @@ function EditorContent() {
       </header>
 
       {/* Main Editor Area - 페이지 레벨 스크롤 */}
-      <div id="editor-scroll-container" className={`flex-1 overflow-y-scroll ${isOurTemplate ? 'editor-scroll-area' : 'bg-white'}`} style={{ overflowAnchor: 'none' }}>
+      <div id="editor-scroll-container" className={`flex-1 overflow-y-auto ${isOurTemplate ? 'editor-scroll-area' : 'bg-white'}`} style={{ overflowAnchor: 'none' }}>
         <div className={`w-full ${isOurTemplate ? 'max-w-[1400px]' : 'max-w-7xl'} mx-auto`}>
           <div className={`${isOurTemplate ? '' : 'bg-white'} flex`}>
             {isIntroSelectorOpen ? (

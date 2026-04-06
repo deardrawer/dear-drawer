@@ -265,6 +265,7 @@ export const filmSampleContent = {
   templateId: 'film',
   colorTheme: 'film-dark' as const,
   fontStyle: 'contemporary' as const,
+  displayFont: 'playfair',
   groom: {
     ...ourSampleContent.groom,
     name: '김민준',
@@ -310,22 +311,22 @@ export const filmSampleContent = {
     },
     interviews: [
       {
-        question: '첫 만남',
-        answer: '"첫인상이 어땠냐고? 솔직히 별 생각 없었어."\n"나도. 근데 두 번째 만났을 때 좀 설렜어. 아주 조금."',
+        question: '처음 만났을 때 서로의 첫인상은?',
+        answer: '"카페에서 책을 읽고 있는 모습이 정말 예뻤어요"\n"웃을 때 눈이 반달처럼 되는 게 인상적이었어요"',
         images: ['/sample/story1-1.png', '/sample/story1-2.png'],
         imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],
         bgClass: 'pink-bg',
       },
       {
-        question: '우리의 시간',
-        answer: '"이 사람 장점? 제가 하는 말에 잘 웃어줘요."\n"아니 진짜 웃긴 걸 어떡해. 근데 본인은 모름."',
+        question: '결혼을 결심하게 된 순간은?',
+        answer: '"아플 때 밤새 간호해주는 모습을 보고 확신했어요"\n"이 사람과 함께라면 어떤 어려움도 이겨낼 수 있겠다 싶었어요"',
         images: ['/sample/story2-1.png', '/sample/story2-2.png'],
         imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],
         bgClass: 'white-bg',
       },
       {
-        question: '프로포즈',
-        answer: '"프로포즈를 엄청 준비했는데 긴장해서 다 까먹었어."\n"그래서 그냥 울었잖아. 그게 더 감동이었어 사실."',
+        question: '서로에게 하고 싶은 한마디는?',
+        answer: '"평생 웃게 해줄게요. 사랑해요"\n"당신을 만나서 정말 행복해요. 영원히 함께해요"',
         images: ['/sample/movie-story3-1.png', '/sample/movie-story3-2.png'],
         imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],
         bgClass: 'pink-bg',

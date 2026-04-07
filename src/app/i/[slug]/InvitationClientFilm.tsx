@@ -2347,7 +2347,7 @@ const globalStyles = `
     scroll-snap-align: start;
     display: flex; flex-direction: column; justify-content: center; align-items: center;
     position: relative;
-    padding: 80px 0;
+    padding: 40px 0;
     box-sizing: border-box;
     overflow: hidden;
   }
@@ -2357,7 +2357,7 @@ const globalStyles = `
     scroll-snap-align: start;
     scroll-snap-stop: always;
     display: flex; flex-direction: column; justify-content: center;
-    padding: 80px 0;
+    padding: 40px 0;
     box-sizing: border-box;
   }
   /* Scene stacking layout */

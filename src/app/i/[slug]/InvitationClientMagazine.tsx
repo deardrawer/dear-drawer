@@ -2202,6 +2202,7 @@ function InvitationClientMagazineContent({
                             case 'meetTheCouple':
                               return <MeetTheCouple key={sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />
                             case 'featureInterview':
+                              if (invitation.sectionVisibility?.interview === false) return null
                               return <FeatureInterview key={sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />
                             case 'photoSpread':
                               return <PhotoSpread key={sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} onOpenLightbox={(idx) => { setLightboxIndex(idx); setLightboxOpen(true) }} bgOverride={getBg(sectionId)} />
@@ -2214,12 +2215,15 @@ function InvitationClientMagazineContent({
                             case 'thankYou':
                               return <ThankYouSection key={sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />
                             case 'contacts':
+                              if (invitation.sectionVisibility?.bankAccounts === false) return null
                               return (invitation as any).magazineLayout?.bankAccountsInMain !== false
                                 ? <ContactsSection key={sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />
                                 : null
                             case 'guestbook':
+                              if (invitation.sectionVisibility?.guestbook === false) return null
                               return <GuestbookSection key={sectionId} invitation={invitation} invitationId={dbInvitation.id} fonts={fonts} themeColors={getColors(sectionId)} isSample={isSample} bgOverride={getBg(sectionId)} />
                             case 'rsvp':
+                              if (invitation.rsvpEnabled === false) return null
                               return (invitation as any).magazineLayout?.rsvpInMain !== false
                                 ? <RsvpSection key={sectionId} invitation={invitation} invitationId={dbInvitation.id} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />
                                 : null

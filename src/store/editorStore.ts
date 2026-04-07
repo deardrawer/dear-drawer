@@ -363,6 +363,8 @@ export interface InvitationContent {
   media: {
     coverImage: string
     coverImageSettings?: ImageSettings
+    jacketImage?: string
+    jacketImageSettings?: ImageSettings
     infoImage: string
     bgm: string
   }

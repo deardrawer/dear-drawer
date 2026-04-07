@@ -465,7 +465,7 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
           <div
             className="fixed left-0 right-0 z-[55] bg-white rounded-t-2xl max-h-[75vh] overflow-hidden flex flex-col"
             style={{
-              bottom: navStyle === 'bottom-nav' ? '56px' : navStyle === 'bottom-mini' ? '52px' : '0',
+              bottom: navStyle === 'bottom-nav' ? '66px' : navStyle === 'bottom-mini' ? '58px' : '0',
               animation: 'slideUpModal 0.3s ease-out',
             }}
             onClick={(e) => e.stopPropagation()}

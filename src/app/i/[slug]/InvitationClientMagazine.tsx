@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { createPortal } from 'react-dom'
 import GuestFloatingButton from '@/components/invitation/GuestFloatingButton'
 import { WatermarkOverlay } from '@/components/ui/WatermarkOverlay'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
@@ -10,6 +9,7 @@ import type { Invitation } from '@/types/invitation'
 import type { InvitationContent } from '@/store/editorStore'
 import IntroAnimation from '@/components/invitation/IntroAnimation'
 import { IntroSettings, getDefaultIntroSettings } from '@/lib/introPresets'
+import { getSectionPaddingStyle, isHidden, getFontSize, type StyleOverrides } from '@/lib/styleOverrides'
 
 // ===== Types =====
 type ColorTheme = 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-green' | 'luxury-navy' | 'sunset-coral'
@@ -592,9 +592,21 @@ function EditorsNote({ invitation, fonts, themeColors }: { invitation: any; font
 
   const greeting = invitation.content?.greeting || '두 사람이 함께 쓰는 새로운 이야기가 시작됩니다.'
 
+  const noteImage = invitation.editorsNoteImage
+  const noteImageSettings = invitation.editorsNoteImageSettings
+  const noteImageRatio = invitation.editorsNoteImageRatio || 'landscape'
+
   return (
     <div style={{ position: 'sticky', top: '44px', zIndex: 5, backgroundColor: themeColors.background }}>
-      <div className="px-6 py-20">
+      {/* Editor's Note 상단 사진 (옵션) */}
+      {noteImage && (
+        <div className="px-6 pt-16 pb-0" style={{ opacity: 0, ...(show ? { animation: 'mag-sectionFadeIn 1s ease 0.2s both' } : {}) }}>
+          <div className="overflow-hidden" style={{ aspectRatio: noteImageRatio === 'portrait' ? '3/4' : '16/9', ...(show ? { animation: 'mag-imgKenBurns 3s ease 0.4s both' } : { transform: 'scale(1.08)' }) }}>
+            <CroppedImageDiv src={noteImage} crop={noteImageSettings || {}} className="w-full h-full" />
+          </div>
+        </div>
+      )}
+      <div className={`px-6 ${noteImage ? 'pt-6 pb-20' : 'py-20'}`}>
         <div style={{ opacity: 0, ...(show ? { animation: 'mag-sectionFadeIn 1s ease both' } : {}) }}>
           {/* Section Label */}
           <div className="flex items-center gap-3 mb-8" style={{ opacity: 0, ...(show ? { animation: 'mag-dropCapScale 0.8s ease 0.3s both' } : {}) }}>
@@ -656,16 +668,107 @@ function MeetTheCouple({ invitation, fonts, themeColors, bgOverride }: { invitat
   const { ref, isVisible } = useScrollReveal()
   const groomProfile = invitation.groom?.profile
   const brideProfile = invitation.bride?.profile
-  const groomImage = extractImageUrl(groomProfile?.images?.[0])
-  const brideImage = extractImageUrl(brideProfile?.images?.[0])
+  const groomImages = (groomProfile?.images || []).map((img: unknown) => extractImageUrl(img)).filter(Boolean)
+  const brideImages = (brideProfile?.images || []).map((img: unknown) => extractImageUrl(img)).filter(Boolean)
   const groomName = invitation.groom?.name || '신랑'
   const brideName = invitation.bride?.name || '신부'
-  const hasGroomContent = groomImage || groomProfile?.tag
-  const hasBrideContent = brideImage || brideProfile?.tag
+  const hasGroomContent = groomImages.length > 0 || groomProfile?.tag
+  const hasBrideContent = brideImages.length > 0 || brideProfile?.tag
+
+  const [groomIdx, setGroomIdx] = useState(0)
+  const [brideIdx, setBrideIdx] = useState(0)
+  const groomTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const brideTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const groomPauseRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const bridePauseRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Auto-slide for groom images
+  useEffect(() => {
+    if (!isVisible || groomImages.length <= 1) return
+    const start = () => {
+      if (groomTimerRef.current) clearInterval(groomTimerRef.current)
+      groomTimerRef.current = setInterval(() => {
+        setGroomIdx(prev => (prev + 1) % groomImages.length)
+      }, 5000)
+    }
+    start()
+    return () => { if (groomTimerRef.current) clearInterval(groomTimerRef.current); if (groomPauseRef.current) clearTimeout(groomPauseRef.current) }
+  }, [isVisible, groomImages.length])
+
+  // Auto-slide for bride images
+  useEffect(() => {
+    if (!isVisible || brideImages.length <= 1) return
+    const start = () => {
+      if (brideTimerRef.current) clearInterval(brideTimerRef.current)
+      brideTimerRef.current = setInterval(() => {
+        setBrideIdx(prev => (prev + 1) % brideImages.length)
+      }, 5500) // slightly offset from groom
+    }
+    start()
+    return () => { if (brideTimerRef.current) clearInterval(brideTimerRef.current); if (bridePauseRef.current) clearTimeout(bridePauseRef.current) }
+  }, [isVisible, brideImages.length])
 
   if (!hasGroomContent && !hasBrideContent) return null
 
   const isPortrait = invitation.profileFrameShape === 'portrait'
+
+  const handleGroomTap = () => {
+    if (groomImages.length > 1) {
+      setGroomIdx(prev => (prev + 1) % groomImages.length)
+      // Pause auto-slide, resume after 5s
+      if (groomTimerRef.current) clearInterval(groomTimerRef.current)
+      if (groomPauseRef.current) clearTimeout(groomPauseRef.current)
+      groomPauseRef.current = setTimeout(() => {
+        groomTimerRef.current = setInterval(() => {
+          setGroomIdx(prev => (prev + 1) % groomImages.length)
+        }, 5000)
+      }, 5000)
+    }
+  }
+  const handleBrideTap = () => {
+    if (brideImages.length > 1) {
+      setBrideIdx(prev => (prev + 1) % brideImages.length)
+      if (brideTimerRef.current) clearInterval(brideTimerRef.current)
+      if (bridePauseRef.current) clearTimeout(bridePauseRef.current)
+      bridePauseRef.current = setTimeout(() => {
+        brideTimerRef.current = setInterval(() => {
+          setBrideIdx(prev => (prev + 1) % brideImages.length)
+        }, 5500)
+      }, 5000)
+    }
+  }
+
+  // Shared image renderer with crossfade for multi-photo
+  const renderProfileImage = (images: string[], currentIdx: number, settings: any[], onTap: () => void, placeholder: React.ReactNode) => {
+    if (images.length === 0) return placeholder
+    const hasMultiple = images.length > 1
+    return (
+      <div
+        onClick={hasMultiple ? onTap : undefined}
+        style={{ position: 'relative', width: '100%', height: '100%', cursor: hasMultiple ? 'pointer' : undefined }}
+      >
+        {images.map((img, i) => (
+          <div key={i} style={{ position: i === 0 ? 'relative' : 'absolute', inset: i === 0 ? undefined : 0, width: '100%', height: '100%', opacity: i === currentIdx ? 1 : 0, transition: 'opacity 0.5s ease', zIndex: i === currentIdx ? 1 : 0 }}>
+            <CroppedImageDiv src={img} crop={settings?.[i] || {}} className="w-full h-full" />
+          </div>
+        ))}
+        {hasMultiple && (
+          <div style={{ position: 'absolute', bottom: '6px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '4px', zIndex: 2 }}>
+            {images.map((_, i) => (
+              <div key={i} style={{ width: '4px', height: '4px', borderRadius: '50%', background: i === currentIdx ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.4)', transition: 'background 0.3s ease' }} />
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  const groomPlaceholder = (
+    <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: themeColors.sectionBg, border: `1px solid ${themeColors.divider}` }}>
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke={themeColors.gray} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.4 }}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    </div>
+  )
+  const bridePlaceholder = groomPlaceholder
 
   return (
     <div ref={ref} className="px-6 py-16" style={{ backgroundColor: bgOverride || themeColors.sectionBg }}>
@@ -688,13 +791,7 @@ function MeetTheCouple({ invitation, fonts, themeColors, bgOverride }: { invitat
             {hasGroomContent && (
               <div className="flex flex-col items-center" style={{ opacity: 0, ...(isVisible ? { animation: 'mag-slideFromLeft 1.2s cubic-bezier(0.22,1,0.36,1) 1.2s both' } : {}) }}>
                 <div style={{ aspectRatio: '3/4', overflow: 'hidden', width: '100%' }}>
-                  {groomImage ? (
-                    <CroppedImageDiv src={groomImage} crop={groomProfile?.imageSettings?.[0] || {}} className="w-full h-full" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: themeColors.sectionBg, border: `1px solid ${themeColors.divider}` }}>
-                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke={themeColors.gray} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.4 }}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                    </div>
-                  )}
+                  {renderProfileImage(groomImages, groomIdx, groomProfile?.imageSettings, handleGroomTap, groomPlaceholder)}
                 </div>
                 <div className="text-center mt-3">
                   <div style={{ fontFamily: fonts.display, fontSize: '11px', letterSpacing: '2px', color: themeColors.primary, fontWeight: 500, opacity: 0, ...(isVisible ? { animation: 'mag-nameBlurReveal 1s ease 2.0s both' } : {}) }}>
@@ -716,13 +813,7 @@ function MeetTheCouple({ invitation, fonts, themeColors, bgOverride }: { invitat
             {hasBrideContent && (
               <div className="flex flex-col items-center" style={{ opacity: 0, ...(isVisible ? { animation: 'mag-slideFromRight 1.2s cubic-bezier(0.22,1,0.36,1) 1.7s both' } : {}) }}>
                 <div style={{ aspectRatio: '3/4', overflow: 'hidden', width: '100%' }}>
-                  {brideImage ? (
-                    <CroppedImageDiv src={brideImage} crop={brideProfile?.imageSettings?.[0] || {}} className="w-full h-full" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: themeColors.sectionBg, border: `1px solid ${themeColors.divider}` }}>
-                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke={themeColors.gray} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.4 }}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                    </div>
-                  )}
+                  {renderProfileImage(brideImages, brideIdx, brideProfile?.imageSettings, handleBrideTap, bridePlaceholder)}
                 </div>
                 <div className="text-center mt-3">
                   <div style={{ fontFamily: fonts.display, fontSize: '11px', letterSpacing: '2px', color: themeColors.primary, fontWeight: 500, opacity: 0, ...(isVisible ? { animation: 'mag-nameBlurReveal 1s ease 2.5s both' } : {}) }}>
@@ -749,16 +840,14 @@ function MeetTheCouple({ invitation, fonts, themeColors, bgOverride }: { invitat
                 <div
                   className="overflow-hidden mb-4"
                   style={{
-                    width: isPortrait ? '85px' : '100px',
-                    height: isPortrait ? '113px' : '100px',
-                    borderRadius: isPortrait ? '4px' : '50%',
+                    width: '100px',
+                    height: '100px',
+                    borderRadius: '50%',
                     border: `1.5px solid ${themeColors.divider}`,
-                    backgroundColor: groomImage ? undefined : themeColors.sectionBg,
+                    backgroundColor: groomImages.length === 0 ? themeColors.sectionBg : undefined,
                   }}
                 >
-                  {groomImage ? (
-                    <CroppedImageDiv src={groomImage} crop={groomProfile?.imageSettings?.[0] || {}} className="w-full h-full" />
-                  ) : (
+                  {renderProfileImage(groomImages, groomIdx, groomProfile?.imageSettings, handleGroomTap,
                     <div className="w-full h-full flex items-center justify-center" style={{ color: themeColors.gray, fontSize: '24px' }}>
                       <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     </div>
@@ -789,16 +878,14 @@ function MeetTheCouple({ invitation, fonts, themeColors, bgOverride }: { invitat
                 <div
                   className="overflow-hidden mb-4"
                   style={{
-                    width: isPortrait ? '85px' : '100px',
-                    height: isPortrait ? '113px' : '100px',
-                    borderRadius: isPortrait ? '4px' : '50%',
+                    width: '100px',
+                    height: '100px',
+                    borderRadius: '50%',
                     border: `1.5px solid ${themeColors.divider}`,
-                    backgroundColor: brideImage ? undefined : themeColors.sectionBg,
+                    backgroundColor: brideImages.length === 0 ? themeColors.sectionBg : undefined,
                   }}
                 >
-                  {brideImage ? (
-                    <CroppedImageDiv src={brideImage} crop={brideProfile?.imageSettings?.[0] || {}} className="w-full h-full" />
-                  ) : (
+                  {renderProfileImage(brideImages, brideIdx, brideProfile?.imageSettings, handleBrideTap,
                     <div className="w-full h-full flex items-center justify-center" style={{ color: themeColors.gray, fontSize: '24px' }}>
                       <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     </div>
@@ -1163,9 +1250,33 @@ function TheDetails({ invitation, fonts, themeColors, bgOverride }: { invitation
               {w.venue.hall}
             </p>
           )}
-          <p style={{ fontFamily: fonts.body, fontSize: '12px', color: themeColors.gray, marginTop: '8px' }}>
-            {w.venue?.address || ''}
-          </p>
+          {w.venue?.address && (
+            <div className="flex items-center justify-center gap-1.5" style={{ marginTop: '8px' }}>
+              <p style={{ fontFamily: fonts.body, fontSize: '12px', color: themeColors.gray }}>
+                {w.venue.address}
+              </p>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(w.venue.address)
+                    .then(() => {
+                      const btn = document.getElementById('addr-copy-btn')
+                      if (btn) { btn.textContent = '복사됨'; setTimeout(() => { btn.textContent = '' }, 1500) }
+                    })
+                }}
+                className="flex-shrink-0 p-0.5 rounded hover:bg-black/5 transition-colors"
+                title="주소 복사"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={themeColors.gray} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.6 }}>
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+                <span id="addr-copy-btn" style={{ fontFamily: fonts.body, fontSize: '9px', color: themeColors.gray, position: 'absolute', marginTop: '2px' }}></span>
+              </button>
+            </div>
+          )}
+          {!w.venue?.address && (
+            <p style={{ fontFamily: fonts.body, fontSize: '12px', color: themeColors.gray, marginTop: '8px' }}></p>
+          )}
         </div>
 
         {/* Parents Introduction - Magazine column style */}
@@ -1206,49 +1317,39 @@ function TheDetails({ invitation, fonts, themeColors, bgOverride }: { invitation
         )}
 
         {/* Map Buttons */}
-        {w.venue?.address && (
-          <div className="mt-8">
-            <div style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '4px', color: themeColors.gray, marginBottom: '12px', textAlign: 'center' }}>
-              MAP
+        {w.venue?.address && (() => {
+          const mb = invitation.mapButtons || { naver: true, kakao: true, tmap: true }
+          const buttons = [
+            mb.naver !== false && { key: 'naver', href: `https://map.naver.com/v5/search/${encodeURIComponent(w.venue.address)}`, target: '_blank', bg: '#03C75A', letter: 'N', textColor: 'white', label: 'NAVER' },
+            mb.kakao !== false && { key: 'kakao', href: `https://map.kakao.com/link/search/${encodeURIComponent(w.venue.address)}`, target: '_blank', bg: '#FEE500', letter: 'K', textColor: 'black', label: 'KAKAO' },
+            mb.tmap !== false && { key: 'tmap', href: `tmap://search?name=${encodeURIComponent(w.venue.name || '')}`, target: undefined, bg: '#4285F4', letter: 'T', textColor: 'white', label: 'TMAP' },
+          ].filter(Boolean) as { key: string; href: string; target?: string; bg: string; letter: string; textColor: string; label: string }[]
+          if (buttons.length === 0) return null
+          return (
+            <div className="mt-8">
+              <div style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '4px', color: themeColors.gray, marginBottom: '12px', textAlign: 'center' }}>
+                MAP
+              </div>
+              <div className={`grid gap-2`} style={{ gridTemplateColumns: `repeat(${buttons.length}, 1fr)` }}>
+                {buttons.map(btn => (
+                  <a
+                    key={btn.key}
+                    href={btn.href}
+                    target={btn.target}
+                    rel={btn.target ? 'noopener noreferrer' : undefined}
+                    className="flex flex-col items-center p-3"
+                    style={{ border: `0.5px solid ${themeColors.divider}` }}
+                  >
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center mb-2" style={{ background: btn.bg }}>
+                      <span className={`text-${btn.textColor} text-xs font-bold`} style={{ color: btn.textColor }}>{btn.letter}</span>
+                    </div>
+                    <span style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '1px', color: themeColors.gray }}>{dt(btn.label)}</span>
+                  </a>
+                ))}
+              </div>
             </div>
-            <div className="grid grid-cols-3 gap-2">
-              <a
-                href={`https://map.naver.com/v5/search/${encodeURIComponent(w.venue.address)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex flex-col items-center p-3"
-                style={{ border: `0.5px solid ${themeColors.divider}` }}
-              >
-                <div className="w-8 h-8 rounded-full flex items-center justify-center mb-2" style={{ background: '#03C75A' }}>
-                  <span className="text-white text-xs font-bold">N</span>
-                </div>
-                <span style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '1px', color: themeColors.gray }}>{dt('NAVER')}</span>
-              </a>
-              <a
-                href={`https://map.kakao.com/link/search/${encodeURIComponent(w.venue.address)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex flex-col items-center p-3"
-                style={{ border: `0.5px solid ${themeColors.divider}` }}
-              >
-                <div className="w-8 h-8 rounded-full flex items-center justify-center mb-2" style={{ background: '#FEE500' }}>
-                  <span className="text-black text-xs font-bold">K</span>
-                </div>
-                <span style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '1px', color: themeColors.gray }}>{dt('KAKAO')}</span>
-              </a>
-              <a
-                href={`tmap://search?name=${encodeURIComponent(w.venue.name || '')}`}
-                className="flex flex-col items-center p-3"
-                style={{ border: `0.5px solid ${themeColors.divider}` }}
-              >
-                <div className="w-8 h-8 rounded-full flex items-center justify-center mb-2" style={{ background: '#4285F4' }}>
-                  <span className="text-white text-xs font-bold">T</span>
-                </div>
-                <span style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '1px', color: themeColors.gray }}>{dt('TMAP')}</span>
-              </a>
-            </div>
-          </div>
-        )}
+          )
+        })()}
 
         {/* Directions */}
         {w.directions && (w.directions.car || w.directions.publicTransport || w.directions.train || w.directions.expressBus || (w.directions.extraInfoEnabled && w.directions.extraInfoText)) && (
@@ -1851,6 +1952,7 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
           onChange={e => setRsvpMessage(e.target.value)}
           placeholder="전하고 싶은 말 (선택)"
           rows={2}
+          onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
           style={{ fontFamily: fonts.body, fontSize: '13px', padding: '10px 12px', border: `0.5px solid ${themeColors.divider}`, background: themeColors.cardBg, outline: 'none', width: '100%', resize: 'none', color: themeColors.buttonText || themeColors.text }}
         />
 
@@ -1922,9 +2024,127 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose }: { images: st
           src={resolvedImages[currentIndex]}
           alt=""
           className="max-w-full max-h-full object-contain"
-          onClick={e => { e.stopPropagation(); setCurrentIndex((currentIndex + 1) % resolvedImages.length) }}
+          onClick={e => { e.stopPropagation(); if (resolvedImages.length > 1) setCurrentIndex((currentIndex + 1) % resolvedImages.length) }}
         />
       )}
+    </div>
+  )
+}
+
+// ===== Interview Popup Button =====
+function InterviewPopupButton({ fonts, themeColors, bgOverride, onClick }: { fonts: FontConfig; themeColors: ColorConfig; bgOverride?: string; onClick: () => void }) {
+  const dt = (text: string) => (fonts as any).isScript ? text.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
+  const { ref, isVisible } = useScrollReveal()
+
+  return (
+    <div ref={ref} style={{ backgroundColor: bgOverride || themeColors.sectionBg, padding: '48px 24px', textAlign: 'center' }}>
+      <div style={{ opacity: 0, ...(isVisible ? { animation: 'mag-sectionFadeIn 1s ease both' } : {}) }}>
+        <button
+          onClick={onClick}
+          style={{
+            fontFamily: fonts.displayKr,
+            fontSize: '13px',
+            letterSpacing: '1px',
+            color: themeColors.background,
+            border: 'none',
+            padding: '16px 32px',
+            background: themeColors.primary,
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            width: '100%',
+            maxWidth: '280px',
+          }}
+        >
+          신랑신부 인터뷰 보러가기
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ===== Interview Popup (Fullscreen Modal inside mobile frame) =====
+function InterviewPopup({ invitation, fonts, themeColors, isOpen, onClose }: { invitation: any; fonts: FontConfig; themeColors: ColorConfig; isOpen: boolean; onClose: () => void }) {
+  const dt = (text: string) => (fonts as any).isScript ? text.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
+  const interviews = invitation.interviews?.length ? invitation.interviews : invitation.content?.interviews || []
+  const [animating, setAnimating] = useState(false)
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    if (isOpen) {
+      setAnimating(true)
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setVisible(true))
+      })
+    } else {
+      setVisible(false)
+      const timer = setTimeout(() => setAnimating(false), 500)
+      return () => clearTimeout(timer)
+    }
+  }, [isOpen])
+
+  if (!animating && !isOpen) return null
+  if (interviews.length === 0) return null
+
+  return (
+    <div style={{
+      position: 'fixed', top: 0, left: '50%', transform: 'translateX(-50%)',
+      width: '100%', maxWidth: '430px', height: '100vh',
+      zIndex: 200, pointerEvents: visible ? 'auto' : 'none',
+    }}>
+      {/* Backdrop */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        opacity: visible ? 1 : 0,
+        transition: 'opacity 0.4s ease',
+      }} onClick={onClose} />
+
+      {/* Modal panel */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        backgroundColor: themeColors.background,
+        transform: visible ? 'translateY(0)' : 'translateY(100%)',
+        transition: 'transform 0.5s cubic-bezier(0.32, 0.72, 0, 1)',
+        display: 'flex', flexDirection: 'column',
+      }}>
+        {/* Header */}
+        <div style={{
+          flexShrink: 0,
+          borderBottom: `1px solid ${themeColors.divider}`,
+          padding: '16px 20px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        }}>
+          <div>
+            <div style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '5px', color: themeColors.gray, marginBottom: '2px' }}>
+              {dt('EXCLUSIVE')}
+            </div>
+            <span style={{ fontFamily: fonts.display, fontSize: '12px', letterSpacing: '4px', color: themeColors.primary, fontWeight: 300 }}>
+              {dt('INTERVIEW')}
+            </span>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              width: '36px', height: '36px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: themeColors.text, fontSize: '22px',
+              background: 'none', border: `1px solid ${themeColors.divider}`,
+              cursor: 'pointer', lineHeight: 1,
+            }}
+          >
+            &times;
+          </button>
+        </div>
+
+        {/* Content */}
+        <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+          <div style={{ paddingTop: '24px', paddingBottom: '40px' }}>
+            {interviews.map((item: any, idx: number) => (
+              <InterviewCard key={idx} item={item} index={idx} fonts={fonts} themeColors={themeColors} />
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
@@ -2017,6 +2237,12 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     profileFrameShape: (content as any).profileFrameShape || 'circle',
     magazineSectionOrder: content.magazineSectionOrder,
     magazineSectionBgMap: (content as any).magazineSectionBgMap,
+    styleOverrides: (content as any).styleOverrides,
+    editorsNoteImage: (content as any).editorsNoteImage,
+    editorsNoteImageSettings: (content as any).editorsNoteImageSettings,
+    editorsNoteImageRatio: (content as any).editorsNoteImageRatio,
+    interviewDisplay: (content as any).interviewDisplay,
+    mapButtons: (content as any).mapButtons,
   }
 }
 
@@ -2087,6 +2313,7 @@ function InvitationClientMagazineContent({
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
+  const [interviewPopupOpen, setInterviewPopupOpen] = useState(false)
 
   // skipIntro prop 변경 시 페이지 전환 (에디터 미리보기용)
   useEffect(() => {
@@ -2197,35 +2424,50 @@ function InvitationClientMagazineContent({
                           }
                           return { ...themeColors, buttonText: themeColors.text }
                         }
+                        const so = (invitation as any).styleOverrides as StyleOverrides | undefined
+                        // Map magazine sectionId → styleOverrides sectionId
+                        const soMap: Record<string, string> = {
+                          meetTheCouple: 'couple', featureInterview: 'interview',
+                          photoSpread: 'gallery', theDetails: 'info',
+                          guidance: 'info', thankYou: 'thankYou',
+                          contacts: 'info', guestbook: 'guestbook', rsvp: 'rsvp',
+                        }
                         return (invitation.magazineSectionOrder || ['meetTheCouple', 'featureInterview', 'photoSpread', 'youtube', 'theDetails', 'guidance', 'thankYou', 'contacts', 'guestbook', 'rsvp']).map((sectionId: string) => {
+                          if (isHidden(so, sectionId)) return null
+                          const padStyle = getSectionPaddingStyle(so, soMap[sectionId] || sectionId, 0, 0)
+                          const wrapStyle = (padStyle.paddingTop || padStyle.paddingBottom) ? padStyle : undefined
+                          const wrap = (el: React.ReactNode) => wrapStyle ? <div key={sectionId} style={wrapStyle}>{el}</div> : el
                           switch (sectionId) {
                             case 'meetTheCouple':
-                              return <MeetTheCouple key={sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />
+                              return wrap(<MeetTheCouple key={wrapStyle ? undefined : sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />)
                             case 'featureInterview':
                               if (invitation.sectionVisibility?.interview === false) return null
-                              return <FeatureInterview key={sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />
+                              if (invitation.interviewDisplay === 'popup') {
+                                return wrap(<InterviewPopupButton key={wrapStyle ? undefined : sectionId} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} onClick={() => setInterviewPopupOpen(true)} />)
+                              }
+                              return wrap(<FeatureInterview key={wrapStyle ? undefined : sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />)
                             case 'photoSpread':
-                              return <PhotoSpread key={sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} onOpenLightbox={(idx) => { setLightboxIndex(idx); setLightboxOpen(true) }} bgOverride={getBg(sectionId)} />
+                              return wrap(<PhotoSpread key={wrapStyle ? undefined : sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} onOpenLightbox={(idx) => { setLightboxIndex(idx); setLightboxOpen(true) }} bgOverride={getBg(sectionId)} />)
                             case 'youtube':
-                              return <YouTubeSection key={sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />
+                              return wrap(<YouTubeSection key={wrapStyle ? undefined : sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />)
                             case 'theDetails':
-                              return <TheDetails key={sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />
+                              return wrap(<TheDetails key={wrapStyle ? undefined : sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />)
                             case 'guidance':
-                              return <GuidanceInfoSection key={sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />
+                              return wrap(<GuidanceInfoSection key={wrapStyle ? undefined : sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />)
                             case 'thankYou':
-                              return <ThankYouSection key={sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />
+                              return wrap(<ThankYouSection key={wrapStyle ? undefined : sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />)
                             case 'contacts':
                               if (invitation.sectionVisibility?.bankAccounts === false) return null
                               return (invitation as any).magazineLayout?.bankAccountsInMain !== false
-                                ? <ContactsSection key={sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />
+                                ? wrap(<ContactsSection key={wrapStyle ? undefined : sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />)
                                 : null
                             case 'guestbook':
                               if (invitation.sectionVisibility?.guestbook === false) return null
-                              return <GuestbookSection key={sectionId} invitation={invitation} invitationId={dbInvitation.id} fonts={fonts} themeColors={getColors(sectionId)} isSample={isSample} bgOverride={getBg(sectionId)} />
+                              return wrap(<GuestbookSection key={wrapStyle ? undefined : sectionId} invitation={invitation} invitationId={dbInvitation.id} fonts={fonts} themeColors={getColors(sectionId)} isSample={isSample} bgOverride={getBg(sectionId)} />)
                             case 'rsvp':
                               if (invitation.rsvpEnabled === false) return null
                               return (invitation as any).magazineLayout?.rsvpInMain !== false
-                                ? <RsvpSection key={sectionId} invitation={invitation} invitationId={dbInvitation.id} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />
+                                ? wrap(<RsvpSection key={wrapStyle ? undefined : sectionId} invitation={invitation} invitationId={dbInvitation.id} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />)
                                 : null
                             default:
                               return null
@@ -2286,6 +2528,13 @@ function InvitationClientMagazineContent({
                 isOpen={lightboxOpen}
                 initialIndex={lightboxIndex}
                 onClose={() => setLightboxOpen(false)}
+              />
+              <InterviewPopup
+                invitation={invitation}
+                fonts={fonts}
+                themeColors={themeColors}
+                isOpen={interviewPopupOpen}
+                onClose={() => setInterviewPopupOpen(false)}
               />
             </div>
           </div>

@@ -7,6 +7,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary'
 import CroppedImageDiv from '@/components/ui/CroppedImageDiv'
 import type { Invitation } from '@/types/invitation'
 import type { InvitationContent } from '@/store/editorStore'
+import { getSectionPaddingStyle, isHidden, type StyleOverrides } from '@/lib/styleOverrides'
 
 // Preview context - skip scroll reveal animations in editor preview
 const PreviewModeContext = createContext(false)
@@ -132,7 +133,9 @@ function extractImageUrl(img: unknown): string {
 }
 
 
-function useScrollReveal(threshold = 0.15) {
+function useScrollReveal(options?: { threshold?: number; rootMargin?: string }) {
+  const threshold = options?.threshold ?? 0.05
+  const rootMargin = options?.rootMargin ?? '0px 0px -40% 0px'
   const isPreview = useContext(PreviewModeContext)
   const ref = useRef<HTMLDivElement>(null)
   const [isVisible, setIsVisible] = useState(isPreview)
@@ -140,11 +143,58 @@ function useScrollReveal(threshold = 0.15) {
     if (isPreview) { setIsVisible(true); return }
     const el = ref.current
     if (!el) return
-    const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) setIsVisible(true) }, { threshold })
+    const scrollEl = el.closest('.mobile-frame-content') as HTMLElement | null
+    const scrollRoot = scrollEl && scrollEl.scrollHeight > scrollEl.clientHeight + 1 ? scrollEl : null
+    const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) setIsVisible(true) }, { threshold, root: scrollRoot, rootMargin })
     observer.observe(el)
     return () => observer.disconnect()
-  }, [threshold, isPreview])
+  }, [threshold, rootMargin, isPreview])
   return { ref, isVisible }
+}
+
+// ===== Reveal Section (scroll-triggered fade-in) =====
+function RevealSection({ children, className, style, margin, bare }: { children: React.ReactNode; className?: string; style?: React.CSSProperties; margin?: string; bare?: boolean }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [revealed, setRevealed] = useState(false)
+  const isPreview = useContext(PreviewModeContext)
+  const rm = margin || '0px 0px -40% 0px'
+  useEffect(() => {
+    if (isPreview) { setRevealed(true); return }
+    const el = ref.current
+    if (!el) return
+    const scrollEl = el.closest('.mobile-frame-content') as HTMLElement | null
+    // Only use as root if actually scrollable, otherwise use viewport (null)
+    const scrollRoot = scrollEl && scrollEl.scrollHeight > scrollEl.clientHeight + 1 ? scrollEl : null
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setRevealed(true); observer.disconnect() }
+    }, { threshold: 0.01, root: scrollRoot, rootMargin: rm })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [rm, isPreview])
+  const revealClass = bare ? '' : ` record-reveal${revealed ? ' revealed' : ''}`
+  return (
+    <div ref={ref} className={`${className || ''}${revealClass}`} style={style} data-revealed={revealed}>
+      {children}
+    </div>
+  )
+}
+
+// Hook: detect parent RevealSection's revealed state
+function useParentReveal(elRef: React.RefObject<HTMLElement | null>) {
+  const [isVisible, setIsVisible] = useState(false)
+  useEffect(() => {
+    const el = elRef.current
+    if (!el) return
+    const parent = el.closest('[data-revealed]')
+    if (!parent) { setIsVisible(true); return }
+    if (parent.getAttribute('data-revealed') === 'true') { setIsVisible(true); return }
+    const obs = new MutationObserver(() => {
+      if (parent.getAttribute('data-revealed') === 'true') { setIsVisible(true); obs.disconnect() }
+    })
+    obs.observe(parent, { attributes: true, attributeFilter: ['data-revealed'] })
+    return () => obs.disconnect()
+  }, [])
+  return isVisible
 }
 
 // ===== Track Config =====
@@ -555,6 +605,38 @@ function TrackGreeting({ invitation, fonts, tc, trackRef }: {
         </span>
       </div>
 
+      {/* Album jacket image (fallback to coverImage for existing invitations) */}
+      {(() => {
+        const jacketSrc = extractImageUrl(invitation.media?.jacketImage) || extractImageUrl(invitation.media?.coverImage)
+        const jacketCrop = invitation.media?.jacketImageSettings || (invitation.media?.jacketImage ? {} : invitation.media?.coverImageSettings) || {}
+        if (!jacketSrc) return null
+        return (
+        <div className="mb-8" style={{
+          width: '100%', aspectRatio: '1/1', borderRadius: '8px', overflow: 'hidden',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.10)',
+          opacity: isVisible ? 1 : 0,
+          transform: isVisible ? 'scale(1)' : 'scale(1.05)',
+          transition: 'opacity 0.8s ease, transform 0.8s ease',
+          position: 'relative',
+        }}>
+          <CroppedImageDiv
+            src={jacketSrc}
+            crop={jacketCrop}
+            className="w-full h-full"
+          />
+          {/* Diagonal hatching overlay */}
+          <div className="album-jacket-hatch" />
+          {/* Film grain noise */}
+          <div className="album-jacket-grain" />
+          {/* Light sheen reflection */}
+          <div style={{
+            position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 3,
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 35%, transparent 65%, rgba(255,255,255,0.08) 100%)',
+          }} />
+        </div>
+        )
+      })()}
+
       {/* Lyric sheet content */}
       <div style={{
         paddingLeft: '23px',
@@ -630,7 +712,7 @@ function TrackCouple({ invitation, fonts, tc, trackRef, bgOverride, trackNumber 
   invitation: any; fonts: FontConfig; tc: ColorConfig; trackRef: (el: HTMLDivElement | null) => void; bgOverride?: string; trackNumber?: number
 }) {
   const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
-  const { ref, isVisible } = useScrollReveal()
+  const { ref, isVisible } = useScrollReveal({ rootMargin: '0px 0px -55% 0px' })
   const groomProfile = invitation.groom?.profile
   const brideProfile = invitation.bride?.profile
   const groomImage = extractImageUrl(groomProfile?.images?.[0])
@@ -968,6 +1050,7 @@ function CdBookletGrid({ images, invitation, fonts, tc, onOpenLightbox }: {
   images: string[]; invitation: any; fonts: FontConfig; tc: ColorConfig; onOpenLightbox: (idx: number) => void
 }) {
   const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
+  const { ref: gridRef, isVisible: gridVisible } = useScrollReveal()
   const [expanded, setExpanded] = useState(false)
   const showExpand = images.length > 5
   // Show first photo full + 4 grid (=5 total) when collapsed, all when expanded
@@ -975,7 +1058,7 @@ function CdBookletGrid({ images, invitation, fonts, tc, onOpenLightbox }: {
   const remainCount = images.length - 5
 
   return (
-    <div className="mt-10">
+    <div ref={gridRef} className="mt-10">
       {/* SIDE B divider */}
       <div className="flex items-center justify-center gap-4 mb-6">
         <div style={{ flex: 1, maxWidth: '60px', height: '1px', background: tc.divider }} />
@@ -990,6 +1073,8 @@ function CdBookletGrid({ images, invitation, fonts, tc, onOpenLightbox }: {
         width: '100%', aspectRatio: '16/10', borderRadius: '10px', overflow: 'hidden',
         cursor: 'pointer', marginBottom: '6px',
         border: `1px solid ${tc.divider}30`,
+        opacity: 0,
+        ...(gridVisible ? { animation: 'rec-photoScale 1s cubic-bezier(0.22,1,0.36,1) 0.2s both' } : {}),
       }}>
         <CroppedImageDiv src={images[0]} crop={invitation.gallery?.imageSettings?.[0] || {}} className="w-full h-full" />
       </div>
@@ -1005,6 +1090,8 @@ function CdBookletGrid({ images, invitation, fonts, tc, onOpenLightbox }: {
               cursor: 'pointer',
               border: `1px solid ${tc.divider}30`,
               position: 'relative',
+              opacity: 0,
+              ...(gridVisible ? { animation: `${actualIdx % 2 === 0 ? 'rec-photoScale' : 'rec-photoScaleAlt'} 1s cubic-bezier(0.22,1,0.36,1) ${0.4 + i * 0.15}s both` } : {}),
             }}>
               <CroppedImageDiv src={img} crop={invitation.gallery?.imageSettings?.[actualIdx] || {}} className="w-full h-full" />
               {isLast && remainCount > 0 && (
@@ -1041,10 +1128,53 @@ function TrackGallery({ invitation, fonts, tc, onOpenLightbox, trackRef, bgOverr
   const { ref, isVisible } = useScrollReveal()
   const images = (invitation.gallery?.images || []).map(extractImageUrl).filter(Boolean)
   const [currentIdx, setCurrentIdx] = useState(0)
+  const [displayIdx, setDisplayIdx] = useState(0)
+  const [transitioning, setTransitioning] = useState(false)
+  const autoPlayRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const pauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   if (images.length === 0) return null
 
-  const goNext = () => setCurrentIdx((prev) => (prev + 1) % images.length)
-  const goPrev = () => setCurrentIdx((prev) => (prev - 1 + images.length) % images.length)
+  const changeImage = (newIdx: number) => {
+    if (newIdx === currentIdx || transitioning) return
+    setTransitioning(true)
+    setCurrentIdx(newIdx)
+    // After fade-out, swap and fade-in
+    setTimeout(() => { setDisplayIdx(newIdx); setTransitioning(false) }, 250)
+  }
+  const goNext = () => changeImage((currentIdx + 1) % images.length)
+  const goPrev = () => changeImage((currentIdx - 1 + images.length) % images.length)
+
+  // Auto-slide: 4초 간격 자동 전환, 수동 조작 시 5초 일시정지
+  const startAutoPlay = () => {
+    if (autoPlayRef.current) clearInterval(autoPlayRef.current)
+    autoPlayRef.current = setInterval(() => {
+      setCurrentIdx(prev => {
+        const next = (prev + 1) % images.length
+        setTransitioning(true)
+        setTimeout(() => { setDisplayIdx(next); setTransitioning(false) }, 250)
+        return next
+      })
+    }, 4000)
+  }
+  const pauseAutoPlay = () => {
+    if (autoPlayRef.current) { clearInterval(autoPlayRef.current); autoPlayRef.current = null }
+    if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current)
+    pauseTimerRef.current = setTimeout(() => startAutoPlay(), 5000)
+  }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (isVisible && images.length > 1) startAutoPlay()
+    return () => {
+      if (autoPlayRef.current) clearInterval(autoPlayRef.current)
+      if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current)
+    }
+  }, [isVisible, images.length])
+
+  const handleManualNav = (fn: () => void) => {
+    pauseAutoPlay()
+    fn()
+  }
   const progressPct = ((currentIdx + 1) / images.length) * 100
 
   return (
@@ -1067,10 +1197,12 @@ function TrackGallery({ invitation, fonts, tc, onOpenLightbox, trackRef, bgOverr
           <div
             className="w-full h-full"
             style={{
-              backgroundImage: `url(${images[currentIdx]})`,
+              backgroundImage: `url(${images[displayIdx]})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
-              transition: 'opacity 0.4s ease',
+              opacity: transitioning ? 0 : 1,
+              transform: transitioning ? 'scale(1.05)' : 'scale(1)',
+              transition: 'opacity 0.3s ease, transform 0.5s ease',
             }}
           />
           {/* Sleeve cover - slides up to reveal */}
@@ -1122,7 +1254,7 @@ function TrackGallery({ invitation, fonts, tc, onOpenLightbox, trackRef, bgOverr
           transition: 'all 0.8s ease 1.5s',
         }}>
           {/* Previous */}
-          <button onClick={goPrev} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px' }}>
+          <button onClick={() => handleManualNav(goPrev)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px' }}>
             <svg width="28" height="28" viewBox="0 0 24 24" fill={tc.text} style={{ opacity: 0.5 }}>
               <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
             </svg>
@@ -1144,7 +1276,7 @@ function TrackGallery({ invitation, fonts, tc, onOpenLightbox, trackRef, bgOverr
           </button>
 
           {/* Next */}
-          <button onClick={goNext} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px' }}>
+          <button onClick={() => handleManualNav(goNext)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px' }}>
             <svg width="28" height="28" viewBox="0 0 24 24" fill={tc.text} style={{ opacity: 0.5 }}>
               <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
             </svg>
@@ -1341,27 +1473,55 @@ function TrackWeddingDay({ invitation, fonts, tc, trackRef, bgOverride, trackNum
               {w.venue?.hall && !w.venue?.hideHall && (
                 <p style={{ fontFamily: fonts.body, fontSize: '12px', color: tc.gray, marginTop: '4px' }}>{w.venue.hall}</p>
               )}
-              <p style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.gray, marginTop: '6px', lineHeight: 1.6 }}>{w.venue?.address || ''}</p>
+              <div className="flex items-center justify-center gap-1.5" style={{ marginTop: '6px' }}>
+                <p style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.gray, lineHeight: 1.6 }}>{w.venue?.address || ''}</p>
+                {w.venue?.address && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      navigator.clipboard.writeText(w.venue.address)
+                        .then(() => {
+                          const btn = e.currentTarget.querySelector('.addr-copied') as HTMLElement
+                          if (btn) { btn.textContent = '복사됨'; setTimeout(() => { btn.textContent = '' }, 1500) }
+                        })
+                    }}
+                    className="flex-shrink-0 p-0.5 rounded hover:bg-black/5 transition-colors"
+                    title="주소 복사"
+                    style={{ position: 'relative' }}
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={tc.gray} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.6 }}>
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                    <span className="addr-copied" style={{ fontFamily: fonts.body, fontSize: '9px', color: tc.gray, position: 'absolute', left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap', marginTop: '2px' }}></span>
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Map buttons */}
-            {w.venue?.address && (
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { label: 'NAVER', color: '#03C75A', letter: 'N', url: `https://map.naver.com/v5/search/${encodeURIComponent(w.venue.address)}` },
-                  { label: 'KAKAO', color: '#FEE500', letter: 'K', letterColor: '#000', url: `https://map.kakao.com/link/search/${encodeURIComponent(w.venue.address)}` },
-                  { label: 'TMAP', color: '#4285F4', letter: 'T', url: `tmap://search?name=${encodeURIComponent(w.venue.name || '')}` },
-                ].map(m => (
-                  <a key={m.label} href={m.url} target="_blank" rel="noopener noreferrer"
-                    className="flex flex-col items-center py-3" style={{ background: tc.sectionBg, borderRadius: '8px' }}>
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center mb-1.5" style={{ background: m.color }}>
-                      <span style={{ color: m.letterColor || '#fff', fontSize: '9px', fontWeight: 700 }}>{m.letter}</span>
-                    </div>
-                    <span style={{ fontFamily: fonts.display, fontSize: '7px', letterSpacing: '1px', color: tc.gray }}>{dt(m.label)}</span>
-                  </a>
-                ))}
-              </div>
-            )}
+            {w.venue?.address && (() => {
+              const mb = invitation.mapButtons || { naver: true, kakao: true, tmap: true }
+              const buttons = [
+                mb.naver !== false && { label: 'NAVER', color: '#03C75A', letter: 'N', letterColor: '#fff', url: `https://map.naver.com/v5/search/${encodeURIComponent(w.venue.address)}` },
+                mb.kakao !== false && { label: 'KAKAO', color: '#FEE500', letter: 'K', letterColor: '#000', url: `https://map.kakao.com/link/search/${encodeURIComponent(w.venue.address)}` },
+                mb.tmap !== false && { label: 'TMAP', color: '#4285F4', letter: 'T', letterColor: '#fff', url: `tmap://search?name=${encodeURIComponent(w.venue.name || '')}` },
+              ].filter(Boolean) as { label: string; color: string; letter: string; letterColor: string; url: string }[]
+              if (buttons.length === 0) return null
+              return (
+                <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${buttons.length}, 1fr)` }}>
+                  {buttons.map(m => (
+                    <a key={m.label} href={m.url} target="_blank" rel="noopener noreferrer"
+                      className="flex flex-col items-center py-3" style={{ background: tc.sectionBg, borderRadius: '8px' }}>
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center mb-1.5" style={{ background: m.color }}>
+                        <span style={{ color: m.letterColor, fontSize: '9px', fontWeight: 700 }}>{m.letter}</span>
+                      </div>
+                      <span style={{ fontFamily: fonts.display, fontSize: '7px', letterSpacing: '1px', color: tc.gray }}>{dt(m.label)}</span>
+                    </a>
+                  ))}
+                </div>
+              )
+            })()}
 
             {/* Directions */}
             {w.directions && (w.directions.car || w.directions.publicTransport || w.directions.train || w.directions.expressBus) && (
@@ -1835,6 +1995,7 @@ function RsvpSection({ invitation, invitationId, fonts, tc, bgOverride }: {
               </div>
             )}
             <textarea value={rsvpMessage} onChange={e => setRsvpMessage(e.target.value)} placeholder="전하고 싶은 말 (선택)" rows={2}
+              onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
               style={{ ...inputStyle, resize: 'none' as const }} />
             <button onClick={handleSubmit} disabled={submitting}
               style={{ width: '100%', fontFamily: fonts.display, fontSize: '10px', letterSpacing: '3px', padding: '13px', background: tc.primary, color: '#FFFFFF', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: submitting ? 0.5 : 1 }}>
@@ -2207,26 +2368,30 @@ const globalStyles = `
     60% { transform: rotate(0.4deg) translateX(1px); }
     75% { transform: rotate(0deg); }
   }
+  @keyframes rec-photoScale {
+    from { opacity: 0; transform: scale(0.7) translateY(30px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  @keyframes rec-photoScaleAlt {
+    from { opacity: 0; transform: scale(0.75) rotate(-2deg); }
+    to { opacity: 1; transform: scale(1) rotate(0deg); }
+  }
 
   /* Push GuestFloatingButton up to avoid mini player overlap */
   .mobile-frame-fixed-ui .fixed.bottom-6 {
     bottom: 80px !important;
   }
 
-  /* Crossfade navigation */
+  /* Crossfade navigation - converted to normal scroll */
   .crossfade-container {
     position: relative;
-    overflow: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .crossfade-page {
-    position: absolute;
-    inset: 0;
-    overflow-y: auto;
-    transition: opacity 0.6s ease;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    position: relative;
+    overflow: visible;
   }
-  .crossfade-page::-webkit-scrollbar { display: none; }
   .track-indicator {
     position: fixed;
     right: 12px;
@@ -2260,6 +2425,37 @@ const globalStyles = `
   }
   /* Hide individual section track labels inside crossfade track page */
   .crossfade-track-page .record-track-label { display: none; }
+
+  /* Album jacket diagonal hatching */
+  .album-jacket-hatch {
+    position: absolute; inset: 0; pointer-events: none; z-index: 2;
+    background: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 3px,
+      rgba(0,0,0,0.06) 3px,
+      rgba(0,0,0,0.06) 4px
+    );
+  }
+  /* Album jacket film grain */
+  .album-jacket-grain {
+    position: absolute; inset: 0; pointer-events: none; z-index: 1;
+    opacity: 0.4;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
+    background-size: 100px 100px;
+    mix-blend-mode: overlay;
+  }
+
+  /* Section reveal on scroll */
+  .record-reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  .record-reveal.revealed {
+    opacity: 1;
+    transform: translateY(0);
+  }
 `
 
 // ===== Transform data =====
@@ -2286,6 +2482,8 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     profileFrameShape: (content as any).profileFrameShape || 'circle',
     magazineSectionOrder: content.magazineSectionOrder,
     magazineSectionBgMap: (content as any).magazineSectionBgMap,
+    styleOverrides: (content as any).styleOverrides,
+    mapButtons: (content as any).mapButtons,
   }
 }
 
@@ -2394,13 +2592,7 @@ function InvitationClientRecordContent({
   // Track current track via scroll (used in preview/scroll mode)
   const { currentTrack, progress, setTrackRef } = useCurrentTrack()
 
-  // === Crossfade state (guest view only) ===
-  const [cfIndex, setCfIndex] = useState(0)
-  const [visitedSections, setVisitedSections] = useState<Set<number>>(() => new Set([0]))
-  const [isTransitioning, setIsTransitioning] = useState(false)
-  const crossfadePageRefs = useRef<(HTMLDivElement | null)[]>([])
-  const touchStartRef = useRef<{ y: number; t: number } | null>(null)
-  const wheelTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // === Crossfade state removed - now using normal scroll ===
 
   // Listen for audio play/pause events
   useEffect(() => {
@@ -2472,13 +2664,21 @@ function InvitationClientRecordContent({
   }
 
   // Build from order
+  const so = (invitation as any).styleOverrides as StyleOverrides | undefined
   order.forEach((sectionId: string, idx: number) => {
+    if (isHidden(so, sectionId)) return
     const curBg = getBg(sectionId)
     const divType = getDividerType(idx)
     const divider = <SectionDivider type={divType} tc={tc} fonts={fonts} />
     const curTrackNum = numberedTracks.has(sectionId) ? trackCounter++ : null
     const trackLabel = curTrackNum ? `TRACK ${String(curTrackNum).padStart(2, '0')}` : (specialTrackLabels[sectionId] || '')
     const duration = SECTION_DURATIONS[sectionId] || ''
+    const soMap: Record<string, string> = {
+      trackCouple: 'couple', trackOurJourney: 'story',
+      trackGallery: 'gallery', trackWeddingDay: 'location',
+      bonusTrack: 'thankYou', fanMail: 'guestbook',
+    }
+    const padStyle = getSectionPaddingStyle(so, soMap[sectionId] || sectionId, 0, 0)
 
     let component: React.ReactNode = null
     switch (sectionId) {
@@ -2486,6 +2686,7 @@ function InvitationClientRecordContent({
         component = <TrackCouple invitation={invitation} fonts={fonts} tc={tc} trackRef={setTrackRef(trackRefMap[sectionId])} bgOverride={curBg} trackNumber={curTrackNum || undefined} />
         break
       case 'trackOurJourney':
+        if (invitation.sectionVisibility?.interview === false) return
         component = <TrackOurJourney invitation={invitation} fonts={fonts} tc={tc} trackRef={setTrackRef(trackRefMap[sectionId])} bgOverride={curBg} trackNumber={curTrackNum || undefined} />
         break
       case 'trackGallery':
@@ -2511,84 +2712,28 @@ function InvitationClientRecordContent({
         component = <GiftSection invitation={invitation} fonts={fonts} tc={tc} bgOverride={curBg} />
         break
       case 'fanMail':
+        if (invitation.sectionVisibility?.guestbook === false) return
         component = <FanMailSection invitation={invitation} invitationId={dbInvitation.id} fonts={fonts} tc={tc} isSample={isSample} bgOverride={curBg} />
         break
       case 'rsvp':
-        if (invitation.sectionVisibility?.rsvp === false) return
+        if (!invitation.rsvpEnabled) return
         component = <RsvpSection invitation={invitation} invitationId={dbInvitation.id} fonts={fonts} tc={tc} bgOverride={curBg} />
         break
       default:
         return
     }
-    sectionList.push({ id: sectionId, trackNum: curTrackNum, trackLabel, name: sectionTrackNames[sectionId] || sectionId, duration, divider, component })
+    // Wrap component with padding override if specified
+    const wrappedComponent = (padStyle.paddingTop || padStyle.paddingBottom)
+      ? <div style={padStyle}>{component}</div>
+      : component
+    sectionList.push({ id: sectionId, trackNum: curTrackNum, trackLabel, name: sectionTrackNames[sectionId] || sectionId, duration, divider, component: wrappedComponent })
   })
 
   // Footer section = last item
   sectionList.push({ id: 'footer', trackNum: null, trackLabel: '', name: 'END', duration: '', divider: null, component: <RecordFooter invitation={invitation} fonts={fonts} tc={tc} /> })
 
   // === Crossfade navigation functions ===
-  const goToSection = useCallback((targetIdx: number) => {
-    if (targetIdx < 0 || targetIdx >= sectionList.length || targetIdx === cfIndex || isTransitioning) return
-    setIsTransitioning(true)
-    setVisitedSections(prev => { const next = new Set(prev); next.add(targetIdx); return next })
-    setCfIndex(targetIdx)
-    // Reset scroll of target page
-    const targetPage = crossfadePageRefs.current[targetIdx]
-    if (targetPage) targetPage.scrollTop = 0
-    setTimeout(() => setIsTransitioning(false), 650)
-  }, [cfIndex, isTransitioning, sectionList.length])
-
-  const goNext = useCallback(() => goToSection(cfIndex + 1), [cfIndex, goToSection])
-  const goPrev = useCallback(() => goToSection(cfIndex - 1), [cfIndex, goToSection])
-
-  // Swipe handler
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStartRef.current = { y: e.touches[0].clientY, t: Date.now() }
-  }, [])
-
-  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-    const start = touchStartRef.current
-    if (!start) return
-    const dy = e.changedTouches[0].clientY - start.y
-    const dt = Date.now() - start.t
-    touchStartRef.current = null
-
-    // Check if the current page is scrollable and not at edge
-    const currentPage = crossfadePageRefs.current[cfIndex]
-    if (currentPage) {
-      const { scrollTop, scrollHeight, clientHeight } = currentPage
-      const isAtTop = scrollTop <= 1
-      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1
-      // Only navigate if at scroll boundary
-      if (dy < -40 && dt < 500 && isAtBottom) goNext()
-      else if (dy > 40 && dt < 500 && isAtTop) goPrev()
-    }
-  }, [cfIndex, goNext, goPrev])
-
-  // Wheel handler
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    const currentPageEl = crossfadePageRefs.current[cfIndex]
-    if (currentPageEl) {
-      const { scrollTop, scrollHeight, clientHeight } = currentPageEl
-      const isAtTop = scrollTop <= 1
-      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1
-      if (e.deltaY > 20 && isAtBottom) {
-        if (wheelTimerRef.current) return
-        wheelTimerRef.current = setTimeout(() => { wheelTimerRef.current = null }, 800)
-        goNext()
-      } else if (e.deltaY < -20 && isAtTop) {
-        if (wheelTimerRef.current) return
-        wheelTimerRef.current = setTimeout(() => { wheelTimerRef.current = null }, 800)
-        goPrev()
-      }
-    }
-  }, [cfIndex, goNext, goPrev])
-
-  // Crossfade progress for mini player
-  const cfProgress = sectionList.length > 1 ? (cfIndex / (sectionList.length - 1)) : 0
-  const cfTrackNum = sectionList[cfIndex]?.trackNum || 1
-  const cfTrackName = sectionList[cfIndex]?.name || ''
-  const cfTrackLabel = sectionList[cfIndex]?.trackLabel || ''
+  // Navigation functions removed - now using normal scroll
 
   return (
     <PreviewModeContext.Provider value={!!isPreview}>
@@ -2641,54 +2786,55 @@ function InvitationClientRecordContent({
                       ))}
                     </>
                   ) : (
-                    /* === Guest view: crossfade navigation === */
+                    /* === Guest view: normal scroll === */
                     <>
-                      <RecordHeader invitation={invitation} fonts={fonts} tc={tc} currentTrack={cfTrackNum} progress={cfProgress} isCrossfade />
+                      <RecordHeader invitation={invitation} fonts={fonts} tc={tc} currentTrack={currentTrack} progress={progress} isCrossfade={false} />
                       <div
                         className="crossfade-container"
-                        style={{ height: 'calc(100vh - 44px - 64px)' }}
-                        onTouchStart={handleTouchStart}
-                        onTouchEnd={handleTouchEnd}
-                        onWheel={handleWheel}
+                        style={{ flex: 1 }}
                       >
-                        {sectionList.map((section, idx) => (
+                        {sectionList.map((section, idx) => {
+                          const revealMargin = ['fanMail', 'rsvp'].includes(section.id) ? '0px 0px -50% 0px'
+                            : section.id === 'trackCouple' ? '0px 0px -55% 0px'
+                            : section.id === 'footer' ? '0px 0px -15% 0px' : undefined
+                          return (
                           <div
                             key={section.id}
-                            ref={el => { crossfadePageRefs.current[idx] = el }}
                             className="crossfade-page"
-                            style={{
-                              opacity: idx === cfIndex ? 1 : 0,
-                              pointerEvents: idx === cfIndex ? 'auto' : 'none',
-                            }}
                           >
-                            {visitedSections.has(idx) && (
-                              <div className="crossfade-track-page">
-                                <div className="crossfade-track-spacer" />
-                                {/* Unified track header - skip for footer */}
-                                {section.id !== 'footer' && section.trackLabel && (
-                                  <div className="crossfade-track-header">
-                                    <div style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '4px', color: tc.primary, opacity: 0.7, marginBottom: '8px' }}>
-                                      {dt(section.trackLabel)}
-                                    </div>
-                                    <h2 style={{ fontFamily: fonts.display, fontSize: '22px', fontWeight: 300, letterSpacing: '3px', color: tc.text, margin: '0 0 8px' }}>
-                                      {dt(section.name)}
-                                    </h2>
-                                    {section.duration && (
-                                      <div style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '2px', color: tc.gray }}>
-                                        {section.duration}
-                                      </div>
-                                    )}
+                            <RevealSection margin={revealMargin}>
+                            <div className="crossfade-track-page">
+                              <div className="crossfade-track-spacer" />
+                              {/* Unified track header - skip for footer */}
+                              {section.id !== 'footer' && section.trackLabel && (
+                                <div className="crossfade-track-header">
+                                  <div style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '4px', color: tc.primary, opacity: 0.7, marginBottom: '8px' }}>
+                                    {dt(section.trackLabel)}
                                   </div>
-                                )}
-                                {/* Section content - no dividers in crossfade mode */}
-                                <div className="crossfade-track-content">
-                                  {section.component}
+                                  <h2 style={{ fontFamily: fonts.display, fontSize: '22px', fontWeight: 300, letterSpacing: '3px', color: tc.text, margin: '0 0 8px' }}>
+                                    {dt(section.name)}
+                                  </h2>
+                                  {section.duration && (
+                                    <div style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '2px', color: tc.gray }}>
+                                      {section.duration}
+                                    </div>
+                                  )}
                                 </div>
-                                <div className="crossfade-track-spacer" />
+                              )}
+                              {/* Section content */}
+                              <div className="crossfade-track-content">
+                                {section.component}
                               </div>
+                              <div className="crossfade-track-spacer" />
+                            </div>
+                            </RevealSection>
+                            {/* Divider between sections - skip for last section */}
+                            {idx < sectionList.length - 1 && (
+                              <div style={{ height: '1px', background: tc.divider, margin: '0 24px' }} />
                             )}
                           </div>
-                        ))}
+                          )
+                        })}
                       </div>
                     </>
                   )}
@@ -2709,21 +2855,7 @@ function InvitationClientRecordContent({
                       weddingDate: invitation.wedding?.date || '', weddingTime: invitation.wedding?.timeDisplay || invitation.wedding?.time || '',
                       thumbnailUrl: content?.meta?.kakaoThumbnail || content?.meta?.ogImage || extractImageUrl(invitation.media?.coverImage) || '',
                       shareTitle: content?.meta?.title, shareDescription: content?.meta?.description }} />
-                  <MiniPlayerBar
-                    currentTrack={cfTrackNum}
-                    progress={cfProgress}
-                    isAudioPlaying={isAudioPlaying}
-                    fonts={fonts}
-                    tc={tc}
-                    onPrev={goPrev}
-                    onNext={goNext}
-                    totalSections={sectionList.length}
-                    currentSection={cfIndex}
-                    trackName={cfTrackName}
-                    trackLabel={cfTrackLabel}
-                    artistName={`${invitation.groom?.name || ''} & ${invitation.bride?.name || ''}`}
-                  />
-                  <TrackIndicator totalSections={sectionList.length} currentSection={cfIndex} onGoTo={goToSection} tc={tc} />
+                  <MiniPlayerBar currentTrack={currentTrack} progress={progress} isAudioPlaying={isAudioPlaying} fonts={fonts} tc={tc} />
                 </>
               )}
               {currentPage === 'main' && isPreview && (

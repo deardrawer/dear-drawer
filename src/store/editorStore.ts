@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { Template } from '@/lib/templates'
 import { GeneratedStory, FamilyWhyWeChoseStory } from '@/app/api/ai/generate-story/route'
 import { IntroSettings, IntroPresetId, getDefaultIntroSettings, mergeIntroSettings } from '@/lib/introPresets'
+import { StyleOverrides } from '@/lib/styleOverrides'
 
 // 계좌 정보
 export interface BankInfo {
@@ -460,6 +461,24 @@ export interface InvitationContent {
 
   // ===== 매거진 섹션별 배경색 =====
   magazineSectionBgMap?: Record<string, 'background' | 'sectionBg'>
+
+  // ===== 관리자 스타일 오버라이드 =====
+  styleOverrides?: StyleOverrides
+
+  // ===== 지도 버튼 표시 설정 =====
+  mapButtons?: {
+    naver: boolean
+    kakao: boolean
+    tmap: boolean
+  }
+
+  // ===== 매거진 Editor's Note 상단 사진 (옵션) =====
+  editorsNoteImage?: string
+  editorsNoteImageSettings?: ImageSettings
+  editorsNoteImageRatio?: 'landscape' | 'portrait'
+
+  // ===== 매거진 인터뷰 표시 방식 (옵션) =====
+  interviewDisplay?: 'inline' | 'popup'
 
   // ===== 레거시 필드 (AI 스토리용) =====
   ourStory: string

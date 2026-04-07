@@ -7,6 +7,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary'
 import CroppedImageDiv from '@/components/ui/CroppedImageDiv'
 import type { Invitation } from '@/types/invitation'
 import type { InvitationContent } from '@/store/editorStore'
+import { getSectionPaddingStyle, isHidden, type StyleOverrides } from '@/lib/styleOverrides'
 
 // ===== Types =====
 type ColorTheme = 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-green' | 'luxury-navy' | 'sunset-coral' | 'film-dark' | 'film-light'
@@ -97,17 +98,62 @@ function extractImageUrl(img: unknown): string {
   return ''
 }
 
-function useScrollReveal(threshold = 0.15) {
+function useScrollReveal(options?: { threshold?: number; rootMargin?: string }) {
+  const threshold = options?.threshold ?? 0.05
+  const rootMargin = options?.rootMargin ?? '0px 0px -40% 0px'
   const ref = useRef<HTMLDivElement>(null)
   const [isVisible, setIsVisible] = useState(false)
   useEffect(() => {
     const el = ref.current
     if (!el) return
-    const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) setIsVisible(true) }, { threshold })
+    const scrollEl = el.closest('.mobile-frame-content') as HTMLElement | null
+    const scrollRoot = scrollEl && scrollEl.scrollHeight > scrollEl.clientHeight + 1 ? scrollEl : null
+    const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) setIsVisible(true) }, { threshold, root: scrollRoot, rootMargin })
     observer.observe(el)
     return () => observer.disconnect()
-  }, [threshold])
+  }, [threshold, rootMargin])
   return { ref, isVisible }
+}
+
+// ===== Section Reveal Wrapper =====
+function RevealSection({ children, className, style, sectionKey, margin, bare }: { children: React.ReactNode; className: string; style: React.CSSProperties; sectionKey: string; margin?: string; bare?: boolean }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [revealed, setRevealed] = useState(false)
+  const rm = margin || '0px 0px -30% 0px'
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const scrollRoot = el.closest('.mobile-frame-content') || null
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setRevealed(true); observer.disconnect() }
+    }, { threshold: 0.01, root: scrollRoot, rootMargin: rm })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [rm])
+  const revealClass = bare ? '' : ` film-reveal${revealed ? ' revealed' : ''}`
+  return (
+    <div ref={ref} className={`${className}${revealClass}`} style={style} data-revealed={revealed}>
+      {children}
+    </div>
+  )
+}
+
+// Hook: detect parent RevealSection's revealed state
+function useParentReveal(elRef: React.RefObject<HTMLElement | null>) {
+  const [isVisible, setIsVisible] = useState(false)
+  useEffect(() => {
+    const el = elRef.current
+    if (!el) return
+    const parent = el.closest('[data-revealed]')
+    if (!parent) { setIsVisible(true); return }
+    if (parent.getAttribute('data-revealed') === 'true') { setIsVisible(true); return }
+    const obs = new MutationObserver(() => {
+      if (parent.getAttribute('data-revealed') === 'true') { setIsVisible(true); obs.disconnect() }
+    })
+    obs.observe(parent, { attributes: true, attributeFilter: ['data-revealed'] })
+    return () => obs.disconnect()
+  }, [])
+  return isVisible
 }
 
 // ===== Scene Cut (clean divider) =====
@@ -671,7 +717,7 @@ function ChapterOne({ invitation, fonts, tc }: { invitation: any; fonts: FontCon
   let lineCounter = 0
 
   return (
-    <div ref={ref} className="px-6" style={{ backgroundColor: tc.background }}>
+    <div ref={ref} className="px-6" style={{ backgroundColor: tc.background, paddingTop: '16px', paddingBottom: '16px' }}>
       {/* Chapter label - letter spacing animation */}
       <div className="text-center mb-10">
         <div className="flex items-center justify-center gap-3 mb-3" style={{
@@ -783,7 +829,8 @@ function ChapterOne({ invitation, fonts, tc }: { invitation: any; fonts: FontCon
 // ===== Chapter 2: Cast & Story =====
 function ChapterTwo({ invitation, fonts, tc, bgOverride }: { invitation: any; fonts: FontConfig; tc: ColorConfig; bgOverride?: string }) {
   const dfs = (px: number) => `${Math.round(px * (fonts.ds || 1))}px`
-  const { ref, isVisible } = useScrollReveal(0.3)
+  const ref = useRef<HTMLDivElement>(null)
+  const isVisible = useParentReveal(ref)
   const groomProfile = invitation.groom?.profile
   const brideProfile = invitation.bride?.profile
   const groomImage = extractImageUrl(groomProfile?.images?.[0])
@@ -792,9 +839,9 @@ function ChapterTwo({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
   const brideName = invitation.bride?.name || ''
 
   return (
-    <div style={{ backgroundColor: bgOverride || tc.sectionBg }}>
+    <div ref={ref} style={{ backgroundColor: bgOverride || tc.sectionBg }}>
       {/* CAST section */}
-      <div ref={ref}>
+      <div>
         <div className="px-6 transition-all duration-1000"
           style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(40px)' }}>
           {/* Chapter label */}
@@ -927,7 +974,7 @@ function FilmSceneCard({ item, idx, total, groomName, brideName, fonts, tc }: {
 }) {
   const dfs = (px: number) => `${Math.round(px * (fonts.ds || 1))}px`
   const images = (item.images || []).map(extractImageUrl).filter(Boolean)
-  const ref = useRef<HTMLDivElement>(null)
+  const { ref, isVisible } = useScrollReveal()
   // Scene은 어두운 배경 위에 직접 렌더 → 밝은 텍스트 사용 (HTML: #ffffff)
   const ct = tc.text
   const cg = tc.gray
@@ -1031,7 +1078,13 @@ function FilmSceneCard({ item, idx, total, groomName, brideName, fonts, tc }: {
     <div
       ref={ref}
       className="scene-card-inner"
-      style={{ padding: '0' }}
+      style={{
+        padding: '0',
+        opacity: 0,
+        transform: 'translateY(50px) scale(0.97)',
+        transition: `opacity 0.9s ease ${idx * 0.2}s, transform 0.9s cubic-bezier(0.22,1,0.36,1) ${idx * 0.2}s`,
+        ...(isVisible ? { opacity: 1, transform: 'translateY(0) scale(1)' } : {}),
+      }}
     >
       {/* Scene card - HTML style: left border, no card background */}
       <div className="scene-card-body" style={{
@@ -1110,18 +1163,47 @@ function FilmSceneCard({ item, idx, total, groomName, brideName, fonts, tc }: {
   )
 }
 
-function FilmScenes({ invitation, fonts, tc, bgOverride, sceneStep = 0 }: { invitation: any; fonts: FontConfig; tc: ColorConfig; bgOverride?: string; sceneStep?: number }) {
+function FilmScenes({ invitation, fonts, tc, bgOverride }: { invitation: any; fonts: FontConfig; tc: ColorConfig; bgOverride?: string }) {
   const dfs = (px: number) => `${Math.round(px * (fonts.ds || 1))}px`
   const interviews = invitation.content?.interviews || []
   const groomName = invitation.groom?.name || ''
   const brideName = invitation.bride?.name || ''
+  const [activeScene, setActiveScene] = useState(0)
+  const { ref, isVisible } = useScrollReveal()
+
+  // Swipe gesture handling
+  const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null)
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartRef.current = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+      time: Date.now(),
+    }
+  }, [])
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!touchStartRef.current) return
+    const dx = e.changedTouches[0].clientX - touchStartRef.current.x
+    const dy = e.changedTouches[0].clientY - touchStartRef.current.y
+    const dt = Date.now() - touchStartRef.current.time
+    touchStartRef.current = null
+
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.2 && dt < 500) {
+      if (dx < 0 && activeScene < interviews.length - 1) {
+        setActiveScene(prev => prev + 1)
+      } else if (dx > 0 && activeScene > 0) {
+        setActiveScene(prev => prev - 1)
+      }
+    }
+  }, [activeScene, interviews.length])
 
   if (interviews.length === 0) return null
 
   return (
-    <div style={{ backgroundColor: bgOverride || tc.sectionBg, display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* Section label - 상단 고정 */}
-      <div className="text-center pt-10 pb-4 px-6" style={{ flexShrink: 0 }}>
+    <div ref={ref} style={{ backgroundColor: bgOverride || tc.sectionBg, display: 'flex', flexDirection: 'column', minHeight: 'auto', padding: '20px 0' }}>
+      {/* Section label */}
+      <div className="text-center pt-10 pb-8 px-6" style={{ opacity: 0, ...(isVisible ? { animation: 'film-fadeSlideUp 0.8s ease both' } : {}) }}>
         <div style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '6px', color: tc.gray, textTransform: 'uppercase' as const, marginBottom: '6px' }}>
           OUR STORY
         </div>
@@ -1130,25 +1212,88 @@ function FilmScenes({ invitation, fonts, tc, bgOverride, sceneStep = 0 }: { invi
         </h2>
       </div>
 
-      {/* Scene cards - 나머지 공간에서 세로 중앙 */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-        <div className="scene-stack">
-          {interviews.map((item: any, idx: number) => {
-            const num = idx + 1
-            const cls = sceneStep >= num + 1 ? 'scene-timed scene-collapsed'
-                      : sceneStep === num ? 'scene-timed scene-show'
-                      : 'scene-timed'
-            return (
-              <div key={idx} className={cls}>
-                <FilmSceneCard item={item} idx={idx} total={interviews.length} groomName={groomName} brideName={brideName} fonts={fonts} tc={tc} />
+      {/* Scene cards */}
+      <div
+        style={{ display: 'flex', flexDirection: 'column', padding: '0 16px', gap: '4px', opacity: 0, ...(isVisible ? { animation: 'film-fadeSlideUp 0.8s ease 0.3s both' } : {}) }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        {interviews.map((item: any, idx: number) => {
+          const isActive = idx === activeScene
+          const isBeforeActive = idx < activeScene
+          return (
+            <div key={idx} style={{ borderRadius: '4px', position: 'relative' }}>
+              {/* Collapsed header - always visible */}
+              <div
+                onClick={() => setActiveScene(idx)}
+                style={{
+                  padding: '12px 20px',
+                  borderLeft: `3px solid ${isActive ? tc.accent : tc.accent + (isBeforeActive ? '20' : '50')}`,
+                  cursor: 'pointer',
+                  transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+                  background: isActive
+                    ? `rgba(${parseInt(tc.accent.slice(1,3),16)},${parseInt(tc.accent.slice(3,5),16)},${parseInt(tc.accent.slice(5,7),16)},0.06)`
+                    : 'transparent',
+                }}
+              >
+                <div className="flex items-center gap-2.5">
+                  <span style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 500, letterSpacing: '4px', color: tc.accent, opacity: isActive ? 1 : isBeforeActive ? 0.5 : 0.7, transition: 'opacity 0.6s ease' }}>
+                    SCENE {String(idx + 1).padStart(2, '0')}
+                  </span>
+                  <span style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '2px', color: tc.gray, opacity: isActive ? 0.7 : 0.4, transition: 'opacity 0.6s ease' }}>
+                    TAKE 1
+                  </span>
+                  {!isActive && (
+                    <span style={{
+                      fontFamily: fonts.displayKr, fontSize: '11px', fontWeight: 400, color: tc.text,
+                      opacity: isBeforeActive ? 0.35 : 0.5,
+                      marginLeft: '4px',
+                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1,
+                      transition: 'opacity 0.6s ease',
+                    }}>
+                      {item.question}
+                    </span>
+                  )}
+                </div>
               </div>
-            )
-          })}
-        </div>
 
-        {/* Scene progress */}
-        <div style={{ textAlign: 'center', padding: '12px', color: tc.gray, fontSize: '10px', letterSpacing: '3px' }}>
-          <span style={{ color: tc.accent }}>{Math.min(sceneStep, interviews.length)}</span> / {interviews.length}
+              {/* Expandable content area */}
+              <div style={{
+                display: 'grid',
+                gridTemplateRows: isActive ? '1fr' : '0fr',
+                transition: 'grid-template-rows 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+              }}>
+                <div style={{ overflow: 'hidden' }}>
+                  <div style={{
+                    opacity: isActive ? 1 : 0,
+                    transition: 'opacity 0.5s ease 0.1s',
+                  }}>
+                    <FilmSceneCard item={item} idx={idx} total={interviews.length} groomName={groomName} brideName={brideName} fonts={fonts} tc={tc} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+        })}
+
+        {/* Page indicator - dots */}
+        <div className="flex items-center justify-center gap-2.5" style={{ marginTop: '20px' }}>
+          {interviews.map((_: any, idx: number) => (
+            <button
+              key={idx}
+              onClick={() => setActiveScene(idx)}
+              style={{
+                width: idx === activeScene ? '20px' : '6px',
+                height: '6px',
+                borderRadius: '3px',
+                background: idx === activeScene ? tc.accent : `${tc.gray}50`,
+                border: 'none',
+                padding: 0,
+                cursor: 'pointer',
+                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+              }}
+            />
+          ))}
         </div>
       </div>
     </div>
@@ -1286,7 +1431,11 @@ function ChapterThree({ invitation, fonts, tc, onOpenLightbox, bgOverride }: {
                 {visibleGridImages.map((img: string, i: number) => {
                   const imgSettings = (invitation.gallery as any)?.imageSettings?.[i] || {}
                   return (
-                    <div key={i} className="relative overflow-hidden" style={{ aspectRatio: '3/4', cursor: 'pointer' }}
+                    <div key={i} className="relative overflow-hidden" style={{
+                      aspectRatio: '3/4', cursor: 'pointer',
+                      opacity: 0,
+                      ...(isVisible ? { animation: `${i % 2 === 0 ? 'film-photoScale' : 'film-photoScaleAlt'} 1s cubic-bezier(0.22,1,0.36,1) ${0.3 + i * 0.15}s both` } : {}),
+                    }}
                       onClick={() => onOpenLightbox(i)}>
                       <CroppedImageDiv src={img} crop={imgSettings} className="w-full h-full" />
                       {hasMoreGrid && i === 5 && (
@@ -1348,7 +1497,6 @@ function ThePremiere({ invitation, fonts, tc, bgOverride }: { invitation: any; f
   const ct = tc.cardText || tc.text
   const cg = tc.cardGray || tc.gray
   const { ref, isVisible } = useScrollReveal()
-  const [directionsOpen, setDirectionsOpen] = useState(false)
   const w = invitation.wedding || {}
   const date = w.date ? new Date(w.date) : null
   const dayNamesKr = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일']
@@ -1472,89 +1620,94 @@ function ThePremiere({ invitation, fonts, tc, bgOverride }: { invitation: any; f
               {w.venue?.hall && !w.venue?.hideHall && (
                 <p style={{ fontFamily: fonts.body, fontSize: '12px', color: cg, marginTop: '4px' }}>{w.venue.hall}</p>
               )}
-              <p style={{ fontFamily: fonts.body, fontSize: '11px', color: cg, marginTop: '6px', lineHeight: 1.6 }}>{w.venue?.address || ''}</p>
+              <div className="flex items-center justify-center gap-1.5" style={{ marginTop: '6px' }}>
+                <p style={{ fontFamily: fonts.body, fontSize: '11px', color: cg, lineHeight: 1.6 }}>{w.venue?.address || ''}</p>
+                {w.venue?.address && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      navigator.clipboard.writeText(w.venue.address)
+                        .then(() => {
+                          const btn = e.currentTarget.querySelector('.addr-copied') as HTMLElement
+                          if (btn) { btn.textContent = '복사됨'; setTimeout(() => { btn.textContent = '' }, 1500) }
+                        })
+                    }}
+                    className="flex-shrink-0 p-0.5 rounded hover:bg-black/5 transition-colors"
+                    title="주소 복사"
+                    style={{ position: 'relative' }}
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={cg} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.6 }}>
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                    <span className="addr-copied" style={{ fontFamily: fonts.body, fontSize: '9px', color: cg, position: 'absolute', left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap', marginTop: '2px' }}></span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Ticket Bottom - Map */}
           <div style={{ padding: '24px' }}>
             {/* Map buttons */}
-            {w.venue?.address && (
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { label: 'NAVER', color: '#03C75A', letter: 'N', url: `https://map.naver.com/v5/search/${encodeURIComponent(w.venue.address)}` },
-                  { label: 'KAKAO', color: '#FEE500', letter: 'K', letterColor: '#000', url: `https://map.kakao.com/link/search/${encodeURIComponent(w.venue.address)}` },
-                  { label: 'TMAP', color: '#4285F4', letter: 'T', url: `tmap://search?name=${encodeURIComponent(w.venue.name || '')}` },
-                ].map(m => (
-                  <a key={m.label} href={m.url} target="_blank" rel="noopener noreferrer"
-                    className="flex flex-col items-center py-3" style={{ background: getAccentTint(tc.accent, 0.85), borderRadius: '8px' }}>
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center mb-1.5" style={{ background: m.color }}>
-                      <span style={{ color: m.letterColor || '#fff', fontSize: '9px', fontWeight: 700 }}>{m.letter}</span>
-                    </div>
-                    <span style={{ fontFamily: fonts.display, fontSize: dfs(7), letterSpacing: '1px', color: cg }}>{m.label}</span>
-                  </a>
-                ))}
-              </div>
-            )}
+            {w.venue?.address && (() => {
+              const mb = invitation.mapButtons || { naver: true, kakao: true, tmap: true }
+              const buttons = [
+                mb.naver !== false && { label: 'NAVER', color: '#03C75A', letter: 'N', letterColor: '#fff', url: `https://map.naver.com/v5/search/${encodeURIComponent(w.venue.address)}` },
+                mb.kakao !== false && { label: 'KAKAO', color: '#FEE500', letter: 'K', letterColor: '#000', url: `https://map.kakao.com/link/search/${encodeURIComponent(w.venue.address)}` },
+                mb.tmap !== false && { label: 'TMAP', color: '#4285F4', letter: 'T', letterColor: '#fff', url: `tmap://search?name=${encodeURIComponent(w.venue.name || '')}` },
+              ].filter(Boolean) as { label: string; color: string; letter: string; letterColor: string; url: string }[]
+              if (buttons.length === 0) return null
+              return (
+                <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${buttons.length}, 1fr)` }}>
+                  {buttons.map(m => (
+                    <a key={m.label} href={m.url} target="_blank" rel="noopener noreferrer"
+                      className="flex flex-col items-center py-3" style={{ background: getAccentTint(tc.accent, 0.85), borderRadius: '8px' }}>
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center mb-1.5" style={{ background: m.color }}>
+                        <span style={{ color: m.letterColor, fontSize: '9px', fontWeight: 700 }}>{m.letter}</span>
+                      </div>
+                      <span style={{ fontFamily: fonts.display, fontSize: dfs(7), letterSpacing: '1px', color: cg }}>{m.label}</span>
+                    </a>
+                  ))}
+                </div>
+              )
+            })()}
           </div>
         </div>
 
-        {/* Directions - trigger button */}
+        {/* Directions - inline */}
         {w.directions && (w.directions.car || w.directions.publicTransport || w.directions.train || w.directions.expressBus || (w.directions.extraInfoEnabled && w.directions.extraInfoText)) && (
-          <button
-            onClick={() => setDirectionsOpen(true)}
-            className="mt-6 flex items-center justify-center gap-2 w-full py-3"
-            style={{ background: tc.accent, border: 'none', borderRadius: '10px', cursor: 'pointer' }}
-          >
-            <span style={{ fontFamily: fonts.body, fontSize: '12px', letterSpacing: '2px', color: '#FFFFFF', fontWeight: 500 }}>오시는 길</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
-          </button>
-        )}
-
-        {/* Directions Bottom Sheet */}
-        {directionsOpen && (
-          <div className="directions-overlay open" onClick={() => setDirectionsOpen(false)}>
-            <div className="directions-sheet" onClick={(e) => e.stopPropagation()} style={{ background: bgOverride || tc.sectionBg }}>
-              <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 4px' }}>
-                <div style={{ width: '36px', height: '4px', borderRadius: '2px', background: tc.divider }} />
+          <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {w.directions.car && (
+              <div className="direction-card revealed" style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
+                <div style={{ fontFamily: fonts.display, fontSize: dfs(8), letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>By Car</div>
+                <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: cg, whiteSpace: 'pre-line' }}>{w.directions.car}</p>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 20px 16px' }}>
-                <span style={{ fontFamily: fonts.body, fontSize: '13px', letterSpacing: '1px', color: tc.accent, fontWeight: 500 }}>오시는 길</span>
-                <button onClick={() => setDirectionsOpen(false)} style={{ background: 'none', border: 'none', fontSize: '20px', color: cg, cursor: 'pointer', padding: '4px' }}>&times;</button>
+            )}
+            {w.directions.publicTransport && (
+              <div className="direction-card revealed" style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
+                <div style={{ fontFamily: fonts.display, fontSize: dfs(8), letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>Public Transit</div>
+                <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: cg, whiteSpace: 'pre-line' }}>{w.directions.publicTransport}</p>
               </div>
-              <div style={{ padding: '0 20px 24px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {w.directions.car && (
-                  <div className="direction-card revealed" style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
-                    <div style={{ fontFamily: fonts.display, fontSize: dfs(8), letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>By Car</div>
-                    <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: cg, whiteSpace: 'pre-line' }}>{w.directions.car}</p>
-                  </div>
-                )}
-                {w.directions.publicTransport && (
-                  <div className="direction-card revealed" style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
-                    <div style={{ fontFamily: fonts.display, fontSize: dfs(8), letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>Public Transit</div>
-                    <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: cg, whiteSpace: 'pre-line' }}>{w.directions.publicTransport}</p>
-                  </div>
-                )}
-                {w.directions.train && (
-                  <div className="direction-card revealed" style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
-                    <div style={{ fontFamily: fonts.display, fontSize: dfs(8), letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>Train</div>
-                    <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: cg, whiteSpace: 'pre-line' }}>{typeof w.directions.train === 'string' ? w.directions.train : ''}</p>
-                  </div>
-                )}
-                {w.directions.expressBus && (
-                  <div className="direction-card revealed" style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
-                    <div style={{ fontFamily: fonts.display, fontSize: dfs(8), letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>Express Bus</div>
-                    <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: cg, whiteSpace: 'pre-line' }}>{typeof w.directions.expressBus === 'string' ? w.directions.expressBus : ''}</p>
-                  </div>
-                )}
-                {w.directions.extraInfoEnabled && w.directions.extraInfoText && (
-                  <div className="direction-card revealed" style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
-                    <div style={{ fontFamily: fonts.display, fontSize: dfs(8), letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>{(w.directions.extraInfoTitle || 'Info').split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')}</div>
-                    <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: cg, whiteSpace: 'pre-line' }}>{w.directions.extraInfoText}</p>
-                  </div>
-                )}
+            )}
+            {w.directions.train && (
+              <div className="direction-card revealed" style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
+                <div style={{ fontFamily: fonts.display, fontSize: dfs(8), letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>Train</div>
+                <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: cg, whiteSpace: 'pre-line' }}>{typeof w.directions.train === 'string' ? w.directions.train : ''}</p>
               </div>
-            </div>
+            )}
+            {w.directions.expressBus && (
+              <div className="direction-card revealed" style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
+                <div style={{ fontFamily: fonts.display, fontSize: dfs(8), letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>Express Bus</div>
+                <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: cg, whiteSpace: 'pre-line' }}>{typeof w.directions.expressBus === 'string' ? w.directions.expressBus : ''}</p>
+              </div>
+            )}
+            {w.directions.extraInfoEnabled && w.directions.extraInfoText && (
+              <div className="direction-card revealed" style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
+                <div style={{ fontFamily: fonts.display, fontSize: dfs(8), letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>{(w.directions.extraInfoTitle || 'Info').split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')}</div>
+                <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: cg, whiteSpace: 'pre-line' }}>{w.directions.extraInfoText}</p>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -2231,6 +2384,7 @@ function TicketRsvp({ invitation, invitationId, fonts, tc, bgOverride }: {
               </div>
             )}
             <textarea value={rsvpMessage} onChange={e => setRsvpMessage(e.target.value)} placeholder="전하고 싶은 말 (선택)" rows={2}
+              onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
               style={{ ...inputStyle, resize: 'none' as const }} />
             <button onClick={handleSubmit} disabled={submitting} className="rsvp-confirm-btn"
               style={{ width: '100%', fontFamily: fonts.displayKr, fontSize: '10px', letterSpacing: '3px', padding: '13px', background: tc.accent, color: '#FFFFFF', border: 'none', cursor: 'pointer', opacity: submitting ? 0.5 : 1 }}>
@@ -2336,91 +2490,54 @@ const globalStyles = `
   .mobile-frame-content {
     width: 100%; height: 100vh; height: 100dvh;
     overflow-y: auto; overflow-x: hidden;
-    scroll-snap-type: y mandatory;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; -ms-overflow-style: none;
   }
+  .mobile-frame-content::-webkit-scrollbar { display: none; }
   .mobile-frame-content.no-snap {
     scroll-snap-type: none; height: auto; min-height: 100vh;
   }
   .snap-section {
-    height: 100vh; height: 100dvh;
-    scroll-snap-align: start;
-    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    min-height: auto;
+    display: flex; flex-direction: column; align-items: center;
     position: relative;
-    padding: 40px 0;
+    padding: 60px 0;
     box-sizing: border-box;
-    overflow: hidden;
   }
   .snap-section > * { width: 100%; }
   .snap-long {
-    min-height: 100vh; height: auto;
-    scroll-snap-align: start;
-    scroll-snap-stop: always;
-    display: flex; flex-direction: column; justify-content: center;
-    padding: 40px 0;
+    min-height: auto; height: auto;
+    display: flex; flex-direction: column;
+    padding: 60px 0;
     box-sizing: border-box;
+  }
+  /* Section reveal on scroll */
+  .film-reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  .film-reveal.revealed {
+    opacity: 1;
+    transform: translateY(0);
   }
   /* Scene stacking layout */
   .scene-stack {
     display: flex; flex-direction: column; gap: 0;
     padding: 0 16px; width: 100%;
   }
-  /* Scene timed cards (matches HTML sample) */
-  .scene-timed {
-    opacity: 0; max-height: 0; overflow: hidden;
-    transform: translateY(20px);
-    transition: opacity 0.8s ease, transform 0.8s ease, max-height 0.8s ease, padding 0.8s ease, border-left-color 0.5s ease;
-    padding: 0 16px; margin-bottom: 0;
+  /* Scene cards - card deck stacking */
+  .scene-card-item {
+    padding: 0 16px; border-radius: 4px;
     position: relative;
+    transform-origin: center top;
   }
-  .scene-timed.scene-show {
-    opacity: 1; max-height: 800px; transform: translateY(0);
-    padding: 0 16px; margin-bottom: 8px;
-    background: rgba(212,131,143,0.03); border-radius: 4px;
-  }
-  .scene-timed.scene-show .scene-card-body {
+  .scene-card-item .scene-card-body {
     border-left-color: rgba(212,131,143,0.4) !important;
   }
-  /* Clap flash on scene appear */
-  .scene-timed.scene-show::after {
-    content: ''; position: absolute; inset: 0;
-    background: rgba(255,255,255,0.08);
-    animation: clapFlash 0.3s ease both;
-    pointer-events: none;
-  }
-  @keyframes clapFlash {
-    0% { opacity: 0.4; }
-    100% { opacity: 0; }
-  }
-  /* Collapsed state */
-  .scene-timed.scene-collapsed {
-    opacity: 0.35; max-height: 52px; transform: translateY(0) scale(0.95);
-    transform-origin: top center; padding: 0 16px; margin-bottom: 4px;
-    background: transparent; border-radius: 0;
-  }
-  .scene-timed.scene-collapsed .scene-card-body {
-    border-left-color: rgba(212,131,143,0.08) !important;
-    padding: 8px 16px !important;
-  }
-  .scene-collapsed .scene-card-inner { pointer-events: none; }
-  .scene-collapsed .scene-dialogue {
-    opacity: 0; max-height: 0; overflow: hidden; margin: 0;
-    transition: opacity 0.4s ease, max-height 0.4s ease;
-  }
-  .scene-collapsed .scene-question {
-    font-size: 11px !important; margin-bottom: 0 !important;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .scene-collapsed .scene-header { margin-bottom: 4px !important; }
-  .scene-collapsed .scene-photos { display: none; }
-  /* Scene photos - delayed animation */
+  /* Scene photos */
   .scene-photos {
     margin-top: 14px; display: flex; gap: 6px;
-    opacity: 0; transform: translateY(10px);
-    transition: opacity 0.6s ease 0.3s, transform 0.6s ease 0.3s;
-  }
-  .scene-timed.scene-show .scene-photos {
-    opacity: 1; transform: translateY(0);
   }
   .scene-photo-wrap {
     flex: 1; min-width: 0; overflow: hidden;
@@ -2605,6 +2722,18 @@ const globalStyles = `
     0% { opacity: 0; transform: translateY(10px); }
     100% { opacity: 0.5; transform: translateY(0); }
   }
+  @keyframes film-fadeSlideUp {
+    0% { opacity: 0; transform: translateY(30px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes film-photoScale {
+    from { opacity: 0; transform: scale(0.7) translateY(30px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  @keyframes film-photoScaleAlt {
+    from { opacity: 0; transform: scale(0.75) rotate(-2deg); }
+    to { opacity: 1; transform: scale(1) rotate(0deg); }
+  }
   @keyframes lineExpand {
     0% { width: 0; opacity: 0; }
     100% { width: 60px; opacity: 0.5; }
@@ -2751,13 +2880,13 @@ const globalStyles = `
     height: auto !important;
     min-height: auto !important;
     scroll-snap-align: none !important;
-    padding: 32px 0 !important;
+    padding: 60px 0 !important;
     overflow: visible !important;
   }
   .film-preview-mode .snap-long {
     min-height: auto !important;
     scroll-snap-align: none !important;
-    padding: 32px 0 !important;
+    padding: 60px 0 !important;
   }
   .film-preview-mode .mobile-frame-fixed-ui {
     position: relative !important;
@@ -2778,22 +2907,11 @@ const globalStyles = `
   .film-preview-mode .directions-overlay {
     position: absolute !important;
   }
-  .film-preview-mode .scene-timed {
-    opacity: 1 !important;
-    max-height: none !important;
-    transform: translateY(0) !important;
+  .film-preview-mode .scene-card-item {
     padding: 0 16px !important;
-    margin-bottom: 8px !important;
   }
-  .film-preview-mode .scene-timed .scene-card-body {
+  .film-preview-mode .scene-card-item .scene-card-body {
     border-left-color: rgba(212,131,143,0.4) !important;
-  }
-  .film-preview-mode .scene-timed::after {
-    display: none !important;
-  }
-  .film-preview-mode .scene-timed .scene-photos {
-    opacity: 1 !important;
-    transform: translateY(0) !important;
   }
 `
 
@@ -2828,6 +2946,8 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     filmIntroStyle: (content as any).filmIntroStyle,
     magazineSectionOrder: content.magazineSectionOrder,
     magazineSectionBgMap: (content as any).magazineSectionBgMap,
+    styleOverrides: (content as any).styleOverrides,
+    mapButtons: (content as any).mapButtons,
   }
 }
 
@@ -2885,16 +3005,6 @@ function InvitationClientFilmContent({
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
 
-  // Scene stacking state
-  const [sceneStep, setSceneStep] = useState(0)
-  const sceneCount = (invitation?.content?.interviews || []).length
-  const sceneSectionRef = useRef<HTMLDivElement>(null)
-  const isScrollingRef = useRef(false)
-  const touchStartYRef = useRef(0)
-  const sceneStepRef = useRef(0)
-
-  // ref mirror 동기화
-  useEffect(() => { sceneStepRef.current = sceneStep }, [sceneStep])
 
   // skipIntro prop 변경 시 페이지 전환 (에디터 미리보기용)
   useEffect(() => {
@@ -2916,164 +3026,8 @@ function InvitationClientFilmContent({
     ? { ...baseFonts, display: displayFontMap[invitation.displayFont], ds }
     : { ...baseFonts, ds }
 
-  // Scene 섹션 위에 있는지 판단
-  const isOnSceneSection = useCallback(() => {
-    const container = scrollContainerRef.current
-    const sceneEl = sceneSectionRef.current
-    if (!container || !sceneEl) return false
-    const cRect = container.getBoundingClientRect()
-    const sRect = sceneEl.getBoundingClientRect()
-    return Math.abs(sRect.top - cRect.top) < 80
-  }, [])
 
-  // snap-long 섹션 내부에서 아직 스크롤할 내용이 남았는지
-  const canScrollInLongSection = useCallback((direction: 'down' | 'up') => {
-    const container = scrollContainerRef.current
-    if (!container) return false
-    const longSections = container.querySelectorAll('.snap-long')
-    for (const section of longSections) {
-      const cRect = container.getBoundingClientRect()
-      const sRect = section.getBoundingClientRect()
-      if (Math.abs(sRect.top - cRect.top) < 80) {
-        if (direction === 'down') return sRect.bottom > cRect.bottom + 10
-        if (direction === 'up') return sRect.top < cRect.top - 10
-      }
-    }
-    return false
-  }, [])
 
-  // Wheel handler
-  const handleWheel = useCallback((e: WheelEvent) => {
-    if (currentPage === 'cover' || isPreview) return
-
-    const direction = e.deltaY > 0 ? 'down' : 'up'
-
-    // snap-long 섹션 내부 스크롤 허용 (scene 섹션 제외)
-    if (!isOnSceneSection() && canScrollInLongSection(direction)) return
-
-    e.preventDefault()
-    if (isScrollingRef.current) return
-    isScrollingRef.current = true
-    setTimeout(() => { isScrollingRef.current = false }, 800)
-
-    if (direction === 'down') {
-      if (isOnSceneSection() && sceneStepRef.current <= sceneCount) {
-        setSceneStep(prev => prev + 1)
-        return
-      }
-      scrollContainerRef.current?.scrollBy({ top: window.innerHeight, behavior: 'smooth' })
-    } else {
-      if (isOnSceneSection() && sceneStepRef.current > 1) {
-        setSceneStep(prev => prev - 1)
-        return
-      }
-      scrollContainerRef.current?.scrollBy({ top: -window.innerHeight, behavior: 'smooth' })
-    }
-  }, [currentPage, isPreview, sceneCount, isOnSceneSection, canScrollInLongSection])
-
-  // Touch handlers
-  const handleTouchStart = useCallback((e: TouchEvent) => {
-    touchStartYRef.current = e.touches[0].clientY
-  }, [])
-
-  const handleTouchMove = useCallback((e: TouchEvent) => {
-    if (currentPage === 'cover' || isPreview) return
-    const deltaY = touchStartYRef.current - e.touches[0].clientY
-    const direction = deltaY > 0 ? 'down' : 'up'
-    // snap-long 내부 스크롤은 네이티브 허용 (scene 섹션 제외)
-    if (!isOnSceneSection() && canScrollInLongSection(direction)) return
-    e.preventDefault()
-  }, [currentPage, isPreview, isOnSceneSection, canScrollInLongSection])
-
-  const handleTouchEnd = useCallback((e: TouchEvent) => {
-    if (currentPage === 'cover' || isPreview) return
-
-    const deltaY = touchStartYRef.current - e.changedTouches[0].clientY
-    if (Math.abs(deltaY) < 50) return
-
-    const direction = deltaY > 0 ? 'down' : 'up'
-
-    // snap-long 내부 스크롤은 네이티브가 처리
-    if (!isOnSceneSection() && canScrollInLongSection(direction)) return
-
-    if (isScrollingRef.current) return
-    isScrollingRef.current = true
-    setTimeout(() => { isScrollingRef.current = false }, 800)
-
-    if (direction === 'down') {
-      if (isOnSceneSection() && sceneStepRef.current <= sceneCount) {
-        setSceneStep(prev => prev + 1)
-        return
-      }
-      scrollContainerRef.current?.scrollBy({ top: window.innerHeight, behavior: 'smooth' })
-    } else {
-      if (isOnSceneSection() && sceneStepRef.current > 1) {
-        setSceneStep(prev => prev - 1)
-        return
-      }
-      scrollContainerRef.current?.scrollBy({ top: -window.innerHeight, behavior: 'smooth' })
-    }
-  }, [currentPage, isPreview, sceneCount, isOnSceneSection, canScrollInLongSection])
-
-  // Keyboard handler
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (currentPage === 'cover' || isPreview) return
-    const tag = (e.target as HTMLElement)?.tagName
-    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
-
-    const downKeys = ['ArrowDown', 'PageDown', ' ']
-    const upKeys = ['ArrowUp', 'PageUp']
-
-    if (!downKeys.includes(e.key) && !upKeys.includes(e.key)) return
-    e.preventDefault()
-
-    if (isScrollingRef.current) return
-    isScrollingRef.current = true
-    setTimeout(() => { isScrollingRef.current = false }, 800)
-
-    if (downKeys.includes(e.key)) {
-      if (isOnSceneSection() && sceneStepRef.current <= sceneCount) {
-        setSceneStep(prev => prev + 1)
-        return
-      }
-      scrollContainerRef.current?.scrollBy({ top: window.innerHeight, behavior: 'smooth' })
-    } else {
-      if (isOnSceneSection() && sceneStepRef.current > 1) {
-        setSceneStep(prev => prev - 1)
-        return
-      }
-      scrollContainerRef.current?.scrollBy({ top: -window.innerHeight, behavior: 'smooth' })
-    }
-  }, [currentPage, isPreview, sceneCount, isOnSceneSection])
-
-  // Attach event listeners
-  useEffect(() => {
-    const container = scrollContainerRef.current
-    if (!container || currentPage === 'cover' || isPreview) return
-    container.addEventListener('wheel', handleWheel, { passive: false })
-    container.addEventListener('touchstart', handleTouchStart, { passive: true })
-    container.addEventListener('touchmove', handleTouchMove, { passive: false })
-    container.addEventListener('touchend', handleTouchEnd, { passive: true })
-    document.addEventListener('keydown', handleKeyDown)
-    return () => {
-      container.removeEventListener('wheel', handleWheel)
-      container.removeEventListener('touchstart', handleTouchStart)
-      container.removeEventListener('touchmove', handleTouchMove)
-      container.removeEventListener('touchend', handleTouchEnd)
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [currentPage, isPreview, handleWheel, handleTouchStart, handleTouchMove, handleTouchEnd, handleKeyDown])
-
-  // Scene section IntersectionObserver
-  useEffect(() => {
-    if (!sceneSectionRef.current || !scrollContainerRef.current) return
-    const observer = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting) setSceneStep(0)
-      else if (sceneStepRef.current === 0) setSceneStep(1)
-    }, { root: scrollContainerRef.current, threshold: 0.3 })
-    observer.observe(sceneSectionRef.current)
-    return () => observer.disconnect()
-  }, [currentPage])
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -3109,10 +3063,9 @@ function InvitationClientFilmContent({
     return `${r},${g},${b}`
   })()
   const dynamicAccentCSS = `
-    .scene-timed.scene-show { background: rgba(${accentRgb},0.03) !important; }
-    .scene-timed.scene-show .scene-card-body { border-left-color: rgba(${accentRgb},0.4) !important; }
-    .scene-timed.scene-collapsed .scene-card-body { border-left-color: rgba(${accentRgb},0.08) !important; }
-    .film-preview-mode .scene-timed .scene-card-body { border-left-color: rgba(${accentRgb},0.4) !important; }
+    .scene-card-item { background: rgba(${accentRgb},0.03) !important; }
+    .scene-card-item .scene-card-body { border-left-color: rgba(${accentRgb},0.4) !important; }
+    .film-preview-mode .scene-card-item .scene-card-body { border-left-color: rgba(${accentRgb},0.4) !important; }
     .gb-question-highlight { background-image: linear-gradient(rgba(${accentRgb},0.2), rgba(${accentRgb},0.2)) !important; }
     .scene-photo-wrap { border: 1px solid rgba(${accentRgb},0.2) !important; }
   `
@@ -3142,43 +3095,53 @@ function InvitationClientFilmContent({
                       {(() => {
                         const sectionBgMap: Record<string, 'background' | 'sectionBg'> = invitation.magazineSectionBgMap || FILM_DEFAULT_BG
                         const getBg = (id: string) => tc[sectionBgMap[id] || FILM_DEFAULT_BG[id] || 'sectionBg']
+                        const so = (invitation as any).styleOverrides as StyleOverrides | undefined
                         const order = invitation.magazineSectionOrder || FILM_DEFAULT_SECTION_ORDER
                         return order.map((sectionId: string, idx: number) => {
+                          if (isHidden(so, sectionId)) return null
                           const prevBg = idx === 0 ? tc.background : getBg(order[idx - 1])
                           const curBg = getBg(sectionId)
                           const sceneCut = <SceneCut key={`cut-${sectionId}`} from={prevBg} to={curBg} />
                           const snapClass = ['guestbook', 'rsvp'].includes(sectionId) ? 'snap-long' : 'snap-section'
+                          const soMap: Record<string, string> = {
+                            chapterTwo: 'couple', filmScenes: 'interview',
+                            chapterThree: 'gallery', premiere: 'location',
+                            credits: 'thankYou',
+                          }
+                          const padStyle = getSectionPaddingStyle(so, soMap[sectionId] || sectionId, 60, 60)
+                          const secStyle = { backgroundColor: curBg, ...padStyle }
                           switch (sectionId) {
                             case 'chapterTwo':
-                              return <div key={sectionId} className={snapClass} style={{ backgroundColor: curBg }}>{sceneCut}<ChapterTwo invitation={invitation} fonts={fonts} tc={tc} bgOverride={curBg} /></div>
+                              return <RevealSection key={sectionId} sectionKey={sectionId} className={snapClass} style={secStyle} bare margin="0px 0px -55% 0px">{sceneCut}<ChapterTwo invitation={invitation} fonts={fonts} tc={tc} bgOverride={curBg} /></RevealSection>
                             case 'filmScenes':
-                              return <div key={sectionId} className={snapClass} style={{ backgroundColor: curBg, justifyContent: 'flex-start' }} ref={sceneSectionRef}>{sceneCut}<FilmScenes invitation={invitation} fonts={fonts} tc={tc} bgOverride={curBg} sceneStep={sceneStep} /></div>
+                              if (invitation.sectionVisibility?.interview === false) return null
+                              return <RevealSection key={sectionId} sectionKey={sectionId} className={snapClass} style={{ ...secStyle, justifyContent: 'flex-start' }}>{sceneCut}<FilmScenes invitation={invitation} fonts={fonts} tc={tc} bgOverride={curBg} /></RevealSection>
                             case 'chapterThree':
-                              return <div key={sectionId} className={snapClass} style={{ backgroundColor: curBg }}>{sceneCut}<ChapterThree invitation={invitation} fonts={fonts} tc={tc} onOpenLightbox={(i) => { setLightboxIndex(i); setLightboxOpen(true) }} bgOverride={curBg} /></div>
+                              return <RevealSection key={sectionId} sectionKey={sectionId} className={snapClass} style={secStyle}>{sceneCut}<ChapterThree invitation={invitation} fonts={fonts} tc={tc} onOpenLightbox={(i) => { setLightboxIndex(i); setLightboxOpen(true) }} bgOverride={curBg} /></RevealSection>
                             case 'video':
                               if (!(invitation as any).youtube?.enabled) return null
-                              return <div key={sectionId} className={snapClass} style={{ backgroundColor: curBg }}>{sceneCut}<FilmVideoSection invitation={invitation} fonts={fonts} tc={tc} bgOverride={curBg} /></div>
+                              return <RevealSection key={sectionId} sectionKey={sectionId} className={snapClass} style={secStyle}>{sceneCut}<FilmVideoSection invitation={invitation} fonts={fonts} tc={tc} bgOverride={curBg} /></RevealSection>
                             case 'premiere':
-                              return <div key={sectionId} className={snapClass} style={{ backgroundColor: curBg }}>{sceneCut}<ThePremiere invitation={invitation} fonts={fonts} tc={tc} bgOverride={curBg} /></div>
+                              return <RevealSection key={sectionId} sectionKey={sectionId} className={snapClass} style={secStyle}>{sceneCut}<ThePremiere invitation={invitation} fonts={fonts} tc={tc} bgOverride={curBg} /></RevealSection>
                             case 'guidance':
                               if (invitation.sectionVisibility?.guidance === false) return null
-                              return <div key={sectionId} className={snapClass} style={{ backgroundColor: curBg }}>{sceneCut}<GuidanceSection invitation={invitation} fonts={fonts} tc={tc} bgOverride={curBg} /></div>
+                              return <RevealSection key={sectionId} sectionKey={sectionId} className={snapClass} style={secStyle}>{sceneCut}<GuidanceSection invitation={invitation} fonts={fonts} tc={tc} bgOverride={curBg} /></RevealSection>
                             case 'credits':
-                              return <div key={sectionId} className={snapClass} style={{ backgroundColor: curBg }}>{sceneCut}<CreditsSection invitation={invitation} fonts={fonts} tc={tc} bgOverride={curBg} /></div>
+                              return <RevealSection key={sectionId} sectionKey={sectionId} className={snapClass} style={secStyle}>{sceneCut}<CreditsSection invitation={invitation} fonts={fonts} tc={tc} bgOverride={curBg} /></RevealSection>
                             case 'gift':
                               return null
                             case 'guestbook':
                               if (invitation.sectionVisibility?.guestbook === false) return null
-                              return <div key={sectionId} className={snapClass} style={{ backgroundColor: curBg }}>{sceneCut}<AudienceReviews invitation={invitation} invitationId={dbInvitation.id} fonts={fonts} tc={tc} isSample={isSample} bgOverride={curBg} /></div>
+                              return <RevealSection key={sectionId} sectionKey={sectionId} className={snapClass} style={secStyle} margin="0px 0px -50% 0px">{sceneCut}<AudienceReviews invitation={invitation} invitationId={dbInvitation.id} fonts={fonts} tc={tc} isSample={isSample} bgOverride={curBg} /></RevealSection>
                             case 'rsvp':
                               if (!invitation.rsvpEnabled) return null
-                              return <div key={sectionId} className={snapClass} style={{ backgroundColor: curBg }}>{sceneCut}<TicketRsvp invitation={invitation} invitationId={dbInvitation.id} fonts={fonts} tc={tc} bgOverride={curBg} /></div>
+                              return <RevealSection key={sectionId} sectionKey={sectionId} className={snapClass} style={secStyle} margin="0px 0px -50% 0px">{sceneCut}<TicketRsvp invitation={invitation} invitationId={dbInvitation.id} fonts={fonts} tc={tc} bgOverride={curBg} /></RevealSection>
                             default:
                               return null
                           }
                         })
                       })()}
-                      <div className="snap-section" style={{ backgroundColor: tc.background }}><FilmFooter invitation={invitation} fonts={fonts} tc={tc} /></div>
+                      <RevealSection sectionKey="fin" className="snap-section" style={{ backgroundColor: tc.background }} margin="0px 0px -15% 0px"><FilmFooter invitation={invitation} fonts={fonts} tc={tc} /></RevealSection>
                     </>
                   )}
                   {invitation.bgm?.enabled && invitation.bgm?.url && (

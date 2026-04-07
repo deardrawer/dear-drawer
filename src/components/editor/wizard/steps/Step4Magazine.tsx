@@ -80,6 +80,102 @@ export default function Step4Magazine() {
         </h3>
         <p className="text-sm text-blue-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>매거진 본문 상단에 표시되는 인사말과 명언을 작성해주세요.</p>
 
+        {/* Editor's Note 상단 사진 (옵션) */}
+        <div className="p-4 bg-gradient-to-br from-gray-50 to-slate-50 rounded-lg space-y-3">
+          <Label className="text-sm font-medium text-gray-800">상단 사진 (선택)</Label>
+          <p className="text-xs text-gray-500">Editor&apos;s Note 위에 표시될 사진입니다. 비워두면 사진 없이 표시됩니다.</p>
+
+          {/* 비율 선택 */}
+          {(invitation as any).editorsNoteImage && (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => updateField('editorsNoteImageRatio' as any, 'landscape')}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs transition-colors ${
+                  ((invitation as any).editorsNoteImageRatio || 'landscape') === 'landscape'
+                    ? 'border-gray-900 bg-gray-900 text-white'
+                    : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <div className={`w-6 h-3.5 rounded-sm border ${((invitation as any).editorsNoteImageRatio || 'landscape') === 'landscape' ? 'border-white' : 'border-gray-400'}`} />
+                가로 (16:9)
+              </button>
+              <button
+                type="button"
+                onClick={() => updateField('editorsNoteImageRatio' as any, 'portrait')}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs transition-colors ${
+                  (invitation as any).editorsNoteImageRatio === 'portrait'
+                    ? 'border-gray-900 bg-gray-900 text-white'
+                    : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <div className={`w-3.5 h-5 rounded-sm border ${(invitation as any).editorsNoteImageRatio === 'portrait' ? 'border-white' : 'border-gray-400'}`} />
+                세로 (3:4)
+              </button>
+            </div>
+          )}
+
+          {(invitation as any).editorsNoteImage ? (
+            <div className="space-y-3">
+              <div className="relative w-full max-w-[240px] mx-auto rounded-lg overflow-hidden bg-gray-100" style={{ aspectRatio: (invitation as any).editorsNoteImageRatio === 'portrait' ? '3/4' : '16/9' }}>
+                <img
+                  src={(invitation as any).editorsNoteImage}
+                  alt="Editor's Note"
+                  className="w-full h-full object-cover"
+                />
+                <button
+                  onClick={() => {
+                    updateNestedField('editorsNoteImage', '')
+                    updateNestedField('editorsNoteImageSettings', { scale: 1.0, positionX: 0, positionY: 0 })
+                  }}
+                  className="absolute top-2 right-2 w-6 h-6 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+              <div className="p-3 bg-white/70 rounded-lg space-y-2">
+                <p className="text-[10px] font-medium text-gray-600">이미지 크롭 조정</p>
+                <InlineCropEditor
+                  imageUrl={(invitation as any).editorsNoteImage}
+                  settings={(invitation as any).editorsNoteImageSettings || { scale: 1.0, positionX: 0, positionY: 0 }}
+                  onUpdate={(s) => updateNestedField('editorsNoteImageSettings', { ...((invitation as any).editorsNoteImageSettings || {}), ...s })}
+                  aspectRatio={(invitation as any).editorsNoteImageRatio === 'portrait' ? 3/4 : 16/9}
+                  containerWidth={140}
+                />
+              </div>
+            </div>
+          ) : (
+            <label className="block cursor-pointer">
+              <div className="w-full max-w-[240px] mx-auto border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-gray-400 hover:bg-gray-50/50 transition-colors" style={{ aspectRatio: '16/9' }}>
+                {uploadingImages.has('editors-note-image') ? (
+                  <div className="animate-spin w-6 h-6 border-2 border-gray-400 border-t-transparent rounded-full" />
+                ) : (
+                  <>
+                    <Plus className="w-8 h-8 text-gray-400" />
+                    <span className="text-xs text-gray-500">사진 추가</span>
+                  </>
+                )}
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                disabled={uploadingImages.has('editors-note-image')}
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) {
+                    handleImageUpload(file, 'editors-note-image', (url) => {
+                      updateNestedField('editorsNoteImage', url)
+                      updateNestedField('editorsNoteImageRatio', 'landscape')
+                    })
+                    e.target.value = ''
+                  }
+                }}
+              />
+            </label>
+          )}
+        </div>
+
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <Label className="text-xs font-medium">인사말</Label>
@@ -207,138 +303,178 @@ export default function Step4Magazine() {
 
         {/* 신랑 프로필 */}
         <div className="p-4 bg-gray-50 rounded-lg space-y-3">
-          <Label className="text-sm font-medium">신랑</Label>
-          <div className="flex items-start gap-4">
-            {invitation.groom.profile.images[0] ? (
-              <div className="relative flex-shrink-0">
-                <div className={invitation.profileFrameShape === 'portrait' ? 'w-12 h-16 rounded-lg overflow-hidden border border-gray-200' : 'w-16 h-16 rounded-full overflow-hidden border border-gray-200'}>
-                  <img src={invitation.groom.profile.images[0]} alt="신랑" className="w-full h-full object-cover" />
+          <Label className="text-sm font-medium">신랑 <span className="text-xs text-gray-400 font-normal ml-1">사진 최대 5장 (터치하면 전환)</span></Label>
+          <div className="space-y-3">
+            {/* 이미지 썸네일 리스트 */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {(invitation.groom.profile.images || []).map((img: string, idx: number) => (
+                <div key={idx} className="relative flex-shrink-0">
+                  <div className={invitation.profileFrameShape === 'portrait' ? 'w-12 h-16 rounded-lg overflow-hidden border border-gray-200' : 'w-12 h-12 rounded-full overflow-hidden border border-gray-200'}>
+                    <img src={img} alt={`신랑 ${idx + 1}`} className="w-full h-full object-cover" />
+                  </div>
+                  <button
+                    onClick={() => {
+                      const newImages = [...(invitation.groom.profile.images || [])]
+                      const newSettings = [...(invitation.groom.profile.imageSettings || [])]
+                      newImages.splice(idx, 1)
+                      newSettings.splice(idx, 1)
+                      updateNestedField('groom.profile.images', newImages)
+                      updateNestedField('groom.profile.imageSettings', newSettings)
+                    }}
+                    className="absolute -top-1 -right-1 w-4 h-4 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white"
+                  >
+                    <X className="w-2.5 h-2.5" />
+                  </button>
                 </div>
-                <button
-                  onClick={() => {
-                    updateNestedField('groom.profile.images', [])
-                    updateNestedField('groom.profile.imageSettings', [])
-                  }}
-                  className="absolute -top-1 -right-1 w-5 h-5 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </div>
-            ) : (
-              <label className="flex-shrink-0 cursor-pointer">
-                <div className={invitation.profileFrameShape === 'portrait' ? 'w-12 h-16 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-gray-400 transition-colors' : 'w-16 h-16 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-gray-400 transition-colors'}>
-                  {uploadingImages.has('groom-profile') ? (
-                    <div className="animate-spin w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full" />
-                  ) : (
-                    <Plus className="w-5 h-5 text-gray-400" />
-                  )}
-                </div>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  disabled={uploadingImages.has('groom-profile')}
-                  onChange={(e) => {
-                    const file = e.target.files?.[0]
-                    if (file) {
-                      handleImageUpload(file, 'groom-profile', (url) => {
-                        updateNestedField('groom.profile.images', [url])
-                      })
-                      e.target.value = ''
-                    }
-                  }}
-                />
-              </label>
-            )}
-            <div className="flex-1 space-y-2">
-              <Textarea
-                value={invitation.groom.profile.tag || ''}
-                onChange={(e) => updateNestedField('groom.profile.tag', e.target.value)}
-                placeholder="소개 (예: 세상에서 가장 따뜻한 사람)"
-                className="text-sm resize-none"
-                rows={2}
-              />
+              ))}
+              {(invitation.groom.profile.images || []).length < 5 && (
+                <label className="flex-shrink-0 cursor-pointer">
+                  <div className={invitation.profileFrameShape === 'portrait' ? 'w-12 h-16 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-gray-400 transition-colors' : 'w-12 h-12 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-gray-400 transition-colors'}>
+                    {uploadingImages.has('groom-profile') ? (
+                      <div className="animate-spin w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full" />
+                    ) : (
+                      <Plus className="w-4 h-4 text-gray-400" />
+                    )}
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={uploadingImages.has('groom-profile')}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        handleImageUpload(file, 'groom-profile', (url) => {
+                          const current = invitation.groom.profile.images || []
+                          updateNestedField('groom.profile.images', [...current, url])
+                        })
+                        e.target.value = ''
+                      }
+                    }}
+                  />
+                </label>
+              )}
             </div>
+            <Textarea
+              value={invitation.groom.profile.tag || ''}
+              onChange={(e) => updateNestedField('groom.profile.tag', e.target.value)}
+              placeholder="소개 (예: 세상에서 가장 따뜻한 사람)"
+              className="text-sm resize-none"
+              rows={2}
+            />
           </div>
-          {invitation.groom.profile.images[0] && (
-            <div className="p-3 bg-white/70 rounded-lg space-y-2">
+          {(invitation.groom.profile.images || []).length > 0 && (
+            <div className="p-3 bg-white/70 rounded-lg space-y-3">
               <p className="text-[10px] font-medium text-gray-600">이미지 크롭 조정</p>
-              <InlineCropEditor
-                imageUrl={invitation.groom.profile.images[0]}
-                settings={invitation.groom.profile.imageSettings?.[0] || { scale: 1.0, positionX: 0, positionY: 0 }}
-                onUpdate={(s) => updateNestedField('groom.profile.imageSettings', [{ ...(invitation.groom.profile.imageSettings?.[0] || {}), ...s }])}
-                aspectRatio={invitation.profileFrameShape === 'portrait' ? 3/4 : 1}
-                containerWidth={120}
-              />
+              {(invitation.groom.profile.images || []).map((imageUrl: string, imgIndex: number) => {
+                const settings = invitation.groom.profile.imageSettings?.[imgIndex] || { scale: 1.0, positionX: 0, positionY: 0 }
+                return (
+                  <div key={imgIndex} className="space-y-1 pb-3 border-b border-gray-100 last:border-0 last:pb-0">
+                    <p className="text-[9px] text-gray-500">사진 {imgIndex + 1}</p>
+                    <InlineCropEditor
+                      imageUrl={imageUrl}
+                      settings={settings}
+                      onUpdate={(s) => {
+                        const newSettings = [...(invitation.groom.profile.imageSettings || [])]
+                        while (newSettings.length <= imgIndex) newSettings.push({ scale: 1.0, positionX: 0, positionY: 0 })
+                        newSettings[imgIndex] = { ...newSettings[imgIndex], ...s }
+                        updateNestedField('groom.profile.imageSettings', newSettings)
+                      }}
+                      aspectRatio={invitation.profileFrameShape === 'portrait' ? 3/4 : 1}
+                      containerWidth={120}
+                    />
+                  </div>
+                )
+              })}
             </div>
           )}
         </div>
 
         {/* 신부 프로필 */}
         <div className="p-4 bg-gray-50 rounded-lg space-y-3">
-          <Label className="text-sm font-medium">신부</Label>
-          <div className="flex items-start gap-4">
-            {invitation.bride.profile.images[0] ? (
-              <div className="relative flex-shrink-0">
-                <div className={invitation.profileFrameShape === 'portrait' ? 'w-12 h-16 rounded-lg overflow-hidden border border-gray-200' : 'w-16 h-16 rounded-full overflow-hidden border border-gray-200'}>
-                  <img src={invitation.bride.profile.images[0]} alt="신부" className="w-full h-full object-cover" />
+          <Label className="text-sm font-medium">신부 <span className="text-xs text-gray-400 font-normal ml-1">사진 최대 5장 (터치하면 전환)</span></Label>
+          <div className="space-y-3">
+            {/* 이미지 썸네일 리스트 */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {(invitation.bride.profile.images || []).map((img: string, idx: number) => (
+                <div key={idx} className="relative flex-shrink-0">
+                  <div className={invitation.profileFrameShape === 'portrait' ? 'w-12 h-16 rounded-lg overflow-hidden border border-gray-200' : 'w-12 h-12 rounded-full overflow-hidden border border-gray-200'}>
+                    <img src={img} alt={`신부 ${idx + 1}`} className="w-full h-full object-cover" />
+                  </div>
+                  <button
+                    onClick={() => {
+                      const newImages = [...(invitation.bride.profile.images || [])]
+                      const newSettings = [...(invitation.bride.profile.imageSettings || [])]
+                      newImages.splice(idx, 1)
+                      newSettings.splice(idx, 1)
+                      updateNestedField('bride.profile.images', newImages)
+                      updateNestedField('bride.profile.imageSettings', newSettings)
+                    }}
+                    className="absolute -top-1 -right-1 w-4 h-4 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white"
+                  >
+                    <X className="w-2.5 h-2.5" />
+                  </button>
                 </div>
-                <button
-                  onClick={() => {
-                    updateNestedField('bride.profile.images', [])
-                    updateNestedField('bride.profile.imageSettings', [])
-                  }}
-                  className="absolute -top-1 -right-1 w-5 h-5 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </div>
-            ) : (
-              <label className="flex-shrink-0 cursor-pointer">
-                <div className={invitation.profileFrameShape === 'portrait' ? 'w-12 h-16 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-gray-400 transition-colors' : 'w-16 h-16 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-gray-400 transition-colors'}>
-                  {uploadingImages.has('bride-profile') ? (
-                    <div className="animate-spin w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full" />
-                  ) : (
-                    <Plus className="w-5 h-5 text-gray-400" />
-                  )}
-                </div>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  disabled={uploadingImages.has('bride-profile')}
-                  onChange={(e) => {
-                    const file = e.target.files?.[0]
-                    if (file) {
-                      handleImageUpload(file, 'bride-profile', (url) => {
-                        updateNestedField('bride.profile.images', [url])
-                      })
-                      e.target.value = ''
-                    }
-                  }}
-                />
-              </label>
-            )}
-            <div className="flex-1 space-y-2">
-              <Textarea
-                value={invitation.bride.profile.tag || ''}
-                onChange={(e) => updateNestedField('bride.profile.tag', e.target.value)}
-                placeholder="소개 (예: 매일 웃게 해주는 사람)"
-                className="text-sm resize-none"
-                rows={2}
-              />
+              ))}
+              {(invitation.bride.profile.images || []).length < 5 && (
+                <label className="flex-shrink-0 cursor-pointer">
+                  <div className={invitation.profileFrameShape === 'portrait' ? 'w-12 h-16 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-gray-400 transition-colors' : 'w-12 h-12 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-gray-400 transition-colors'}>
+                    {uploadingImages.has('bride-profile') ? (
+                      <div className="animate-spin w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full" />
+                    ) : (
+                      <Plus className="w-4 h-4 text-gray-400" />
+                    )}
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={uploadingImages.has('bride-profile')}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        handleImageUpload(file, 'bride-profile', (url) => {
+                          const current = invitation.bride.profile.images || []
+                          updateNestedField('bride.profile.images', [...current, url])
+                        })
+                        e.target.value = ''
+                      }
+                    }}
+                  />
+                </label>
+              )}
             </div>
+            <Textarea
+              value={invitation.bride.profile.tag || ''}
+              onChange={(e) => updateNestedField('bride.profile.tag', e.target.value)}
+              placeholder="소개 (예: 매일 웃게 해주는 사람)"
+              className="text-sm resize-none"
+              rows={2}
+            />
           </div>
-          {invitation.bride.profile.images[0] && (
-            <div className="p-3 bg-white/70 rounded-lg space-y-2">
+          {(invitation.bride.profile.images || []).length > 0 && (
+            <div className="p-3 bg-white/70 rounded-lg space-y-3">
               <p className="text-[10px] font-medium text-gray-600">이미지 크롭 조정</p>
-              <InlineCropEditor
-                imageUrl={invitation.bride.profile.images[0]}
-                settings={invitation.bride.profile.imageSettings?.[0] || { scale: 1.0, positionX: 0, positionY: 0 }}
-                onUpdate={(s) => updateNestedField('bride.profile.imageSettings', [{ ...(invitation.bride.profile.imageSettings?.[0] || {}), ...s }])}
-                aspectRatio={invitation.profileFrameShape === 'portrait' ? 3/4 : 1}
-                containerWidth={120}
-              />
+              {(invitation.bride.profile.images || []).map((imageUrl: string, imgIndex: number) => {
+                const settings = invitation.bride.profile.imageSettings?.[imgIndex] || { scale: 1.0, positionX: 0, positionY: 0 }
+                return (
+                  <div key={imgIndex} className="space-y-1 pb-3 border-b border-gray-100 last:border-0 last:pb-0">
+                    <p className="text-[9px] text-gray-500">사진 {imgIndex + 1}</p>
+                    <InlineCropEditor
+                      imageUrl={imageUrl}
+                      settings={settings}
+                      onUpdate={(s) => {
+                        const newSettings = [...(invitation.bride.profile.imageSettings || [])]
+                        while (newSettings.length <= imgIndex) newSettings.push({ scale: 1.0, positionX: 0, positionY: 0 })
+                        newSettings[imgIndex] = { ...newSettings[imgIndex], ...s }
+                        updateNestedField('bride.profile.imageSettings', newSettings)
+                      }}
+                      aspectRatio={invitation.profileFrameShape === 'portrait' ? 3/4 : 1}
+                      containerWidth={120}
+                    />
+                  </div>
+                )
+              })}
             </div>
           )}
         </div>
@@ -359,6 +495,40 @@ export default function Step4Magazine() {
 
         {invitation.sectionVisibility.interview && (
           <div className="space-y-4">
+            {/* 표시 방식 선택 */}
+            <div className="p-4 bg-gray-50 rounded-lg space-y-2">
+              <Label className="text-sm font-medium">표시 방식</Label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => updateField('interviewDisplay' as any, 'inline')}
+                  className={`flex-1 px-3 py-2.5 rounded-lg border text-sm transition-colors ${
+                    ((invitation as any).interviewDisplay || 'inline') === 'inline'
+                      ? 'border-gray-900 bg-gray-900 text-white'
+                      : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  인라인 표시
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateField('interviewDisplay' as any, 'popup')}
+                  className={`flex-1 px-3 py-2.5 rounded-lg border text-sm transition-colors ${
+                    (invitation as any).interviewDisplay === 'popup'
+                      ? 'border-gray-900 bg-gray-900 text-white'
+                      : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  팝업 보기
+                </button>
+              </div>
+              <p className="text-xs text-gray-500">
+                {(invitation as any).interviewDisplay === 'popup'
+                  ? '버튼 클릭 시 전체화면 팝업으로 인터뷰가 표시됩니다.'
+                  : '인터뷰가 페이지 본문에 직접 표시됩니다.'}
+              </p>
+            </div>
+
             {/* TIP 섹션 */}
             <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
               <p className="text-sm text-blue-800 mb-2"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>결혼을 앞둔 두 분의 생각과 이야기를, 질문에 답하듯 솔직하게 들려주세요.</p>

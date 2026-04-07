@@ -639,6 +639,15 @@ export default function AdminPage() {
                             >
                               편집
                             </a>
+                            <a
+                              href={`/admin/customize/${inv.id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-3 py-1 rounded text-xs"
+                              style={{ backgroundColor: '#FEF3C7', color: '#92400E' }}
+                            >
+                              커스텀
+                            </a>
                             <button
                               onClick={() => handleDelete(inv.id)}
                               className="px-3 py-1 rounded text-xs text-white"

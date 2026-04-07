@@ -231,6 +231,36 @@ export default function Step3Magazine({ templateId, invitationId }: Step3Magazin
               placeholder="서울특별시 강남구 삼성로 614"
             />
           </div>
+
+          {/* 지도 버튼 표시 설정 */}
+          <div className="space-y-2 pt-2">
+            <Label className="text-sm font-medium">지도 버튼</Label>
+            <div className="flex gap-3">
+              {([
+                { key: 'naver', label: '네이버', color: '#03C75A' },
+                { key: 'kakao', label: '카카오', color: '#FEE500' },
+                { key: 'tmap', label: 'T맵', color: '#4285F4' },
+              ] as const).map(({ key, label, color }) => {
+                const enabled = (invitation as any).mapButtons?.[key] !== false
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => {
+                      const current = (invitation as any).mapButtons || { naver: true, kakao: true, tmap: true }
+                      updateNestedField('mapButtons', { ...current, [key]: !enabled })
+                    }}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-all ${
+                      enabled ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-400'
+                    }`}
+                  >
+                    <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: color, opacity: enabled ? 1 : 0.3 }} />
+                    {label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
         </div>
       </section>
 

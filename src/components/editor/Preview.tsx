@@ -100,6 +100,7 @@ function RecordPreviewWrapper({ invitation, skipIntro }: { invitation: Invitatio
     bodyTextColor: invitation.bodyTextColor,
     highlightColor: invitation.highlightColor,
     displayFont: (invitation as any).displayFont,
+    styleOverrides: (invitation as any).styleOverrides,
   }), [invitation])
 
   const invitationData = useMemo(() => ({
@@ -173,6 +174,12 @@ function InvitationPreviewWrapper({ invitation, skipIntro, onIntroScreenChange }
     customSectionBgColor: (invitation as any).customSectionBgColor,
     sectionTextColor: (invitation as any).sectionTextColor,
     displayFont: (invitation as any).displayFont,
+    styleOverrides: (invitation as any).styleOverrides,
+    editorsNoteImage: (invitation as any).editorsNoteImage,
+    editorsNoteImageSettings: (invitation as any).editorsNoteImageSettings,
+    editorsNoteImageRatio: (invitation as any).editorsNoteImageRatio,
+    interviewDisplay: (invitation as any).interviewDisplay,
+    mapButtons: (invitation as any).mapButtons,
   }), [invitation])
 
   const invitationData = useMemo(() => ({

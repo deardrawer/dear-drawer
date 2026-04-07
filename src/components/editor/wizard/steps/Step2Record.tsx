@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import InlineCropEditor from '@/components/editor/InlineCropEditor'
 import { uploadImage } from '@/lib/imageUpload'
 import { X, Plus } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
 import ShareSettingsSection from '@/components/editor/ShareSettingsSection'
 
 function generateKakaoDescription(date: string, time: string, venueName: string): string {
@@ -141,6 +142,85 @@ export default function Step2Record({ invitationId }: Step2RecordProps) {
                 if (file) {
                   handleImageUpload(file, 'cover', (url) => {
                     updateNestedField('media.coverImage', url)
+                  })
+                  e.target.value = ''
+                }
+              }}
+            />
+          </label>
+        )}
+      </section>
+
+      {/* 앨범 자켓 이미지 (인사말 상단) */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <circle cx="9" cy="9" r="2" />
+              <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+            </svg>
+            앨범 자켓 이미지
+          </h3>
+          <Switch
+            checked={!!invitation.media?.jacketImage}
+            onCheckedChange={(checked) => {
+              if (!checked) {
+                updateNestedField('media.jacketImage', '')
+                updateNestedField('media.jacketImageSettings', undefined)
+              }
+            }}
+          />
+        </div>
+        <p className="text-sm text-blue-600">인사말(Track 01) 상단에 표시될 정사각형 이미지입니다.</p>
+
+        {invitation.media?.jacketImage ? (
+          <div className="space-y-3">
+            <div className="relative w-40 h-40 mx-auto rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
+              <img src={invitation.media.jacketImage} alt="앨범 자켓" className="w-full h-full object-cover" />
+              <button
+                onClick={() => {
+                  updateNestedField('media.jacketImage', '')
+                  updateNestedField('media.jacketImageSettings', undefined)
+                }}
+                className="absolute top-2 right-2 w-6 h-6 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-lg space-y-2">
+              <p className="text-[10px] font-medium text-gray-600">이미지 크롭 조정</p>
+              <InlineCropEditor
+                imageUrl={invitation.media.jacketImage}
+                settings={invitation.media.jacketImageSettings || { scale: 1.0, positionX: 0, positionY: 0 }}
+                onUpdate={(s) => updateNestedField('media.jacketImageSettings', { ...(invitation.media.jacketImageSettings || {}), ...s })}
+                aspectRatio={1}
+                containerWidth={160}
+              />
+            </div>
+          </div>
+        ) : (
+          <label className="block cursor-pointer">
+            <div className="w-40 h-40 mx-auto border-2 border-dashed border-orange-300 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-orange-400 hover:bg-orange-50/50 transition-colors">
+              {uploadingImages.has('jacket') ? (
+                <div className="animate-spin w-6 h-6 border-2 border-orange-400 border-t-transparent rounded-full" />
+              ) : (
+                <>
+                  <Plus className="w-8 h-8 text-orange-400" />
+                  <span className="text-xs text-orange-500">1:1 정사각형</span>
+                </>
+              )}
+            </div>
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              disabled={uploadingImages.has('jacket')}
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) {
+                  handleImageUpload(file, 'jacket', (url) => {
+                    updateNestedField('media.jacketImage', url)
                   })
                   e.target.value = ''
                 }

@@ -2315,6 +2315,7 @@ function transformToDisplayData(dbInvitation: Invitation, content: InvitationCon
     youtube: content.youtube,
     deceasedDisplayStyle: content.deceasedDisplayStyle || mockInvitation.deceasedDisplayStyle,
     profileOrder: (content as any).profileOrder || 'groom-first',
+    styleOverrides: (content as any).styleOverrides,
   } as unknown as DisplayInvitation
 }
 
@@ -2855,7 +2856,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
 
       {/* Directions Modal */}
       {showDirections && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center">
+        <div className="fixed inset-0 z-[65] flex items-end justify-center">
           <div className="absolute inset-0 bg-black/50" onClick={() => setShowDirections(false)} />
           <div
             className="relative w-full max-w-lg rounded-t-3xl p-6 pb-8 max-h-[80vh] overflow-y-auto"

@@ -265,7 +265,7 @@ export const filmSampleContent = {
   templateId: 'film',
   colorTheme: 'film-dark' as const,
   fontStyle: 'contemporary' as const,
-  displayFont: 'playfair',
+  displayFont: 'italiana',
   groom: {
     ...ourSampleContent.groom,
     name: '김민준',
@@ -364,6 +364,11 @@ export const filmSampleContent = {
       guestbook: 'AUDIENCE REVIEWS',
     },
   },
+  youtube: {
+    enabled: true,
+    title: '',
+    url: 'https://youtu.be/iK1eXqrFZ6s',
+  },
 }
 
 // RECORD 템플릿 샘플 데이터
@@ -447,6 +452,11 @@ export const recordSampleContent = {
       thankYou: 'BONUS TRACK',
       guestbook: 'FAN MAIL',
     },
+  },
+  youtube: {
+    enabled: true,
+    title: '',
+    url: 'https://youtu.be/iK1eXqrFZ6s',
   },
 }
 
@@ -738,7 +748,8 @@ export function createSampleInvitation(type: 'our' | 'family' | 'magazine' | 'fi
     imageSettings: Array(6).fill({ scale: 1, positionX: 0, positionY: 0 }),
   }
   const magazineMedia = { ...content.media, coverImage: '/sample/magazine-cover.png' }
-  const finalContent = type === 'magazine' ? { ...content, colorTheme: 'modern-black', fontStyle: 'modern', profileFrameShape: 'portrait', interviews: magazineInterviews, guidance: magazineGuidance, gallery: magazineGallery, media: magazineMedia } : content
+  const magazineYoutube = { enabled: true, title: '', url: 'https://youtu.be/iK1eXqrFZ6s' }
+  const finalContent = type === 'magazine' ? { ...content, colorTheme: 'modern-black', fontStyle: 'modern', profileFrameShape: 'portrait', interviews: magazineInterviews, guidance: magazineGuidance, gallery: magazineGallery, media: magazineMedia, youtube: magazineYoutube } : content
 
   return {
     id: `sample-${type}-id`,

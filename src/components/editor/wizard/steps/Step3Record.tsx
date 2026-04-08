@@ -90,6 +90,84 @@ export default function Step3Record({}: Step3RecordProps) {
           인사말 (TRACK 01)
         </h3>
 
+        {/* 인사말 상단 이미지 토글 */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <Label className="text-xs font-medium">상단 이미지</Label>
+            <Switch
+              checked={invitation.media?.showGreetingImage ?? false}
+              onCheckedChange={(checked) => updateNestedField('media.showGreetingImage', checked)}
+            />
+          </div>
+          {invitation.media?.showGreetingImage && invitation.media?.greetingImage && (
+            <div className="flex justify-end">
+              <button
+                onClick={() => {
+                  updateNestedField('media.greetingImage', '')
+                  updateNestedField('media.greetingImageSettings', undefined)
+                }}
+                className="text-xs text-gray-500 hover:text-red-500 transition-colors"
+              >
+                이미지 삭제
+              </button>
+            </div>
+          )}
+          {invitation.media?.showGreetingImage && invitation.media?.greetingImage ? (
+            <div className="space-y-3">
+              <div className="relative w-full aspect-square max-w-[200px] mx-auto rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
+                <img src={invitation.media.greetingImage} alt="인사말 이미지" className="w-full h-full object-cover" />
+                <button
+                  onClick={() => {
+                    updateNestedField('media.greetingImage', '')
+                    updateNestedField('media.greetingImageSettings', undefined)
+                  }}
+                  className="absolute top-2 right-2 w-6 h-6 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+              <div className="p-3 bg-gray-50 rounded-lg space-y-2">
+                <p className="text-[10px] font-medium text-gray-600">이미지 크롭 조정</p>
+                <InlineCropEditor
+                  imageUrl={invitation.media.greetingImage}
+                  settings={invitation.media.greetingImageSettings || { scale: 1.0, positionX: 0, positionY: 0 }}
+                  onUpdate={(s) => updateNestedField('media.greetingImageSettings', { ...(invitation.media.greetingImageSettings || {}), ...s })}
+                  aspectRatio={1}
+                  containerWidth={160}
+                />
+              </div>
+            </div>
+          ) : invitation.media?.showGreetingImage ? (
+            <label className="block cursor-pointer">
+              <div className="w-40 h-40 mx-auto border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-gray-400 hover:bg-gray-50/50 transition-colors">
+                {uploadingImages.has('greeting') ? (
+                  <div className="animate-spin w-6 h-6 border-2 border-gray-400 border-t-transparent rounded-full" />
+                ) : (
+                  <>
+                    <Plus className="w-8 h-8 text-gray-400" />
+                    <span className="text-xs text-gray-500">1:1 정사각형</span>
+                  </>
+                )}
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                disabled={uploadingImages.has('greeting')}
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) {
+                    handleImageUpload(file, 'greeting', (url) => {
+                      updateNestedField('media.greetingImage', url)
+                    })
+                    e.target.value = ''
+                  }
+                }}
+              />
+            </label>
+          ) : null}
+        </div>
+
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <Label className="text-xs font-medium">인사말</Label>

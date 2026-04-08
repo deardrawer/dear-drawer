@@ -605,11 +605,12 @@ function TrackGreeting({ invitation, fonts, tc, trackRef }: {
         </span>
       </div>
 
-      {/* Album jacket image (fallback to coverImage for existing invitations) */}
+      {/* Greeting image (only when showGreetingImage is on) */}
       {(() => {
-        const jacketSrc = extractImageUrl(invitation.media?.jacketImage) || extractImageUrl(invitation.media?.coverImage)
-        const jacketCrop = invitation.media?.jacketImageSettings || (invitation.media?.jacketImage ? {} : invitation.media?.coverImageSettings) || {}
-        if (!jacketSrc) return null
+        if (!invitation.media?.showGreetingImage) return null
+        const greetingSrc = extractImageUrl(invitation.media?.greetingImage)
+        if (!greetingSrc) return null
+        const imgCrop = invitation.media?.greetingImageSettings || {}
         return (
         <div className="mb-8" style={{
           width: '100%', aspectRatio: '1/1', borderRadius: '8px', overflow: 'hidden',
@@ -620,18 +621,16 @@ function TrackGreeting({ invitation, fonts, tc, trackRef }: {
           position: 'relative',
         }}>
           <CroppedImageDiv
-            src={jacketSrc}
-            crop={jacketCrop}
+            src={greetingSrc}
+            crop={imgCrop}
             className="w-full h-full"
+            style={{ filter: 'sepia(0.15) saturate(0.85) contrast(1.08) brightness(1.03)' }}
           />
-          {/* Diagonal hatching overlay */}
-          <div className="album-jacket-hatch" />
-          {/* Film grain noise */}
-          <div className="album-jacket-grain" />
-          {/* Light sheen reflection */}
+          {/* Warm vintage color overlay */}
           <div style={{
-            position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 3,
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 35%, transparent 65%, rgba(255,255,255,0.08) 100%)',
+            position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 1,
+            background: 'linear-gradient(180deg, rgba(180,140,100,0.12) 0%, rgba(120,90,60,0.08) 100%)',
+            mixBlendMode: 'multiply',
           }} />
         </div>
         )
@@ -1132,7 +1131,6 @@ function TrackGallery({ invitation, fonts, tc, onOpenLightbox, trackRef, bgOverr
   const [transitioning, setTransitioning] = useState(false)
   const autoPlayRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const pauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  if (images.length === 0) return null
 
   const changeImage = (newIdx: number) => {
     if (newIdx === currentIdx || transitioning) return
@@ -1170,6 +1168,8 @@ function TrackGallery({ invitation, fonts, tc, onOpenLightbox, trackRef, bgOverr
       if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current)
     }
   }, [isVisible, images.length])
+
+  if (images.length === 0) return null
 
   const handleManualNav = (fn: () => void) => {
     pauseAutoPlay()

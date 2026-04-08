@@ -365,6 +365,9 @@ export interface InvitationContent {
     coverImageSettings?: ImageSettings
     jacketImage?: string
     jacketImageSettings?: ImageSettings
+    greetingImage?: string
+    greetingImageSettings?: ImageSettings
+    showGreetingImage?: boolean
     infoImage: string
     bgm: string
   }
@@ -794,7 +797,7 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
   fontStyle: template.id === 'narrative-magazine' ? 'modern'
     : template.id === 'narrative-film' ? 'contemporary'
     : template.id === 'narrative-record' ? 'modern' : 'classic',
-  displayFont: template.id === 'narrative-film' ? 'playfair'
+  displayFont: template.id === 'narrative-film' ? 'italiana'
     : template.id === 'narrative-record' ? 'montserrat'
     : template.id === 'narrative-magazine' ? 'montserrat' : undefined,
   colorTheme: template.id === 'narrative-magazine' ? 'modern-black'

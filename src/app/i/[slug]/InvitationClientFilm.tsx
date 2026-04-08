@@ -1093,16 +1093,6 @@ function FilmSceneCard({ item, idx, total, groomName, brideName, fonts, tc }: {
         position: 'relative',
         overflow: 'hidden',
       }}>
-        {/* Header: SCENE 01 / TAKE 1 */}
-        <div className="scene-header flex items-baseline gap-2.5" style={{ marginBottom: '12px' }}>
-          <span className="scene-num" style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 500, letterSpacing: '4px', color: tc.accent }}>
-            SCENE {String(idx + 1).padStart(2, '0')}
-          </span>
-          <span className="scene-take" style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '2px', color: cg }}>
-            TAKE 1
-          </span>
-        </div>
-
         {/* Question - italic like HTML */}
         <div className="scene-question" style={{ fontFamily: fonts.displayKr, fontSize: '15px', fontWeight: 500, fontStyle: 'italic', color: ct, marginBottom: '12px', lineHeight: 1.6, letterSpacing: '0.5px' }}>
           {item.question}
@@ -1228,25 +1218,25 @@ function FilmScenes({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
                 onClick={() => setActiveScene(idx)}
                 style={{
                   padding: '12px 20px',
-                  borderLeft: `3px solid ${isActive ? tc.accent : tc.accent + (isBeforeActive ? '20' : '50')}`,
+                  borderLeft: `3px solid ${isActive ? tc.accent : tc.accent + '08'}`,
                   cursor: 'pointer',
                   transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
                   background: isActive
-                    ? `rgba(${parseInt(tc.accent.slice(1,3),16)},${parseInt(tc.accent.slice(3,5),16)},${parseInt(tc.accent.slice(5,7),16)},0.06)`
+                    ? `rgba(${parseInt(tc.accent.slice(1,3),16)},${parseInt(tc.accent.slice(3,5),16)},${parseInt(tc.accent.slice(5,7),16)},0.35)`
                     : 'transparent',
+                  opacity: isActive ? 1 : 0.3,
                 }}
               >
                 <div className="flex items-center gap-2.5">
-                  <span style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 500, letterSpacing: '4px', color: tc.accent, opacity: isActive ? 1 : isBeforeActive ? 0.5 : 0.7, transition: 'opacity 0.6s ease' }}>
+                  <span style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 500, letterSpacing: '4px', color: tc.accent, transition: 'opacity 0.6s ease' }}>
                     SCENE {String(idx + 1).padStart(2, '0')}
                   </span>
-                  <span style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '2px', color: tc.gray, opacity: isActive ? 0.7 : 0.4, transition: 'opacity 0.6s ease' }}>
+                  <span style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '2px', color: tc.gray, transition: 'opacity 0.6s ease' }}>
                     TAKE 1
                   </span>
                   {!isActive && (
                     <span style={{
                       fontFamily: fonts.displayKr, fontSize: '11px', fontWeight: 400, color: tc.text,
-                      opacity: isBeforeActive ? 0.35 : 0.5,
                       marginLeft: '4px',
                       whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1,
                       transition: 'opacity 0.6s ease',
@@ -2438,10 +2428,10 @@ function TicketRsvp({ invitation, invitationId, fonts, tc, bgOverride }: {
 // ===== Movie Footer =====
 function FilmFooter({ invitation, fonts, tc }: { invitation: any; fonts: FontConfig; tc: ColorConfig }) {
   const dfs = (px: number) => `${Math.round(px * (fonts.ds || 1))}px`
-  const { ref, isVisible } = useScrollReveal()
+  const { ref, isVisible } = useScrollReveal({ rootMargin: '0px 0px 0px 0px' })
   const vis = isVisible ? 'fin-visible' : ''
   return (
-    <div ref={ref} className="text-center" style={{ backgroundColor: tc.background, position: 'relative', overflow: 'hidden', padding: '0 24px' }}>
+    <div ref={ref} className="text-center" style={{ backgroundColor: tc.background, position: 'relative', overflow: 'hidden', padding: '60px 24px' }}>
       {/* Top subtle accent line */}
       <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '40px', height: '2px', background: `${tc.accent}40` }} />
       {/* Spotlight cone */}
@@ -3141,7 +3131,7 @@ function InvitationClientFilmContent({
                           }
                         })
                       })()}
-                      <RevealSection sectionKey="fin" className="snap-section" style={{ backgroundColor: tc.background }} margin="0px 0px -15% 0px"><FilmFooter invitation={invitation} fonts={fonts} tc={tc} /></RevealSection>
+                      <RevealSection sectionKey="fin" className="snap-section" style={{ backgroundColor: tc.background }} margin="0px 0px 0px 0px"><FilmFooter invitation={invitation} fonts={fonts} tc={tc} /></RevealSection>
                     </>
                   )}
                   {invitation.bgm?.enabled && invitation.bgm?.url && (

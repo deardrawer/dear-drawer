@@ -154,7 +154,7 @@ const magazineIntroStyles = `
   @keyframes mag-lineDrawRight { to { transform: scaleX(1); } }
   @keyframes mag-kenBurnsOut { 0% { transform: scale(1.15); } 100% { transform: scale(1.0); } }
   @keyframes mag-charReveal { to { opacity: 1; transform: translateY(0); } }
-  @keyframes mag-spacingCondense { 0% { opacity: 0; letter-spacing: 20px; } 100% { opacity: 1; letter-spacing: 5px; } }
+  @keyframes mag-spacingCondense { 0% { opacity: 0; letter-spacing: 12px; } 100% { opacity: 1; letter-spacing: 5px; } }
   @keyframes mag-maskRevealUp { to { transform: translateY(0); opacity: 1; } }
   @keyframes mag-editorialKenBurns { 0% { opacity: 0; transform: scale(1.12); } 30% { opacity: 1; } 100% { opacity: 1; transform: scale(1.0); } }
   @keyframes mag-slideInLeft { to { opacity: 1; transform: translateX(0); } }
@@ -305,8 +305,8 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
         {/* WEDDING INVITATION — letter-spacing condense */}
         <span style={{
           fontFamily: fonts.display, fontSize: '10px', color: themeColors.gray,
-          display: 'block', marginBottom: '40px',
-          opacity: 0, letterSpacing: '20px',
+          display: 'block', width: '100%', textAlign: 'center', marginBottom: '40px',
+          opacity: 0, letterSpacing: '12px',
           ...(loaded ? { animation: 'mag-spacingCondense 1.2s cubic-bezier(0.22,1,0.36,1) 0.3s both' } : {}),
         }}>
           WEDDING INVITATION

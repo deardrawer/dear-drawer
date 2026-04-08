@@ -695,17 +695,17 @@ function MeetTheCouple({ invitation, fonts, themeColors, bgOverride }: { invitat
     return () => { if (groomTimerRef.current) clearInterval(groomTimerRef.current); if (groomPauseRef.current) clearTimeout(groomPauseRef.current) }
   }, [isVisible, groomImages.length])
 
-  // Auto-slide for bride images
+  // Auto-slide for bride images (same interval, 0.5s delayed start for consistent offset)
   useEffect(() => {
     if (!isVisible || brideImages.length <= 1) return
     const start = () => {
       if (brideTimerRef.current) clearInterval(brideTimerRef.current)
       brideTimerRef.current = setInterval(() => {
         setBrideIdx(prev => (prev + 1) % brideImages.length)
-      }, 5500) // slightly offset from groom
+      }, 5000)
     }
-    start()
-    return () => { if (brideTimerRef.current) clearInterval(brideTimerRef.current); if (bridePauseRef.current) clearTimeout(bridePauseRef.current) }
+    const delayId = setTimeout(start, 500)
+    return () => { clearTimeout(delayId); if (brideTimerRef.current) clearInterval(brideTimerRef.current); if (bridePauseRef.current) clearTimeout(bridePauseRef.current) }
   }, [isVisible, brideImages.length])
 
   if (!hasGroomContent && !hasBrideContent) return null
@@ -733,7 +733,7 @@ function MeetTheCouple({ invitation, fonts, themeColors, bgOverride }: { invitat
       bridePauseRef.current = setTimeout(() => {
         brideTimerRef.current = setInterval(() => {
           setBrideIdx(prev => (prev + 1) % brideImages.length)
-        }, 5500)
+        }, 5000)
       }, 5000)
     }
   }
@@ -2435,7 +2435,8 @@ function InvitationClientMagazineContent({
                         return (invitation.magazineSectionOrder || ['meetTheCouple', 'featureInterview', 'photoSpread', 'youtube', 'theDetails', 'guidance', 'thankYou', 'contacts', 'guestbook', 'rsvp']).map((sectionId: string) => {
                           if (isHidden(so, sectionId)) return null
                           const padStyle = getSectionPaddingStyle(so, soMap[sectionId] || sectionId, 0, 0)
-                          const wrapStyle = (padStyle.paddingTop || padStyle.paddingBottom) ? padStyle : undefined
+                          const hasSpacing = Object.keys(padStyle).length > 0 && Object.values(padStyle).some(v => v !== 0)
+                          const wrapStyle = hasSpacing ? padStyle : undefined
                           const wrap = (el: React.ReactNode) => wrapStyle ? <div key={sectionId} style={wrapStyle}>{el}</div> : el
                           switch (sectionId) {
                             case 'meetTheCouple':

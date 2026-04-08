@@ -63,7 +63,11 @@ export function getSectionPaddingStyle(
   defaultBottom: number
 ): React.CSSProperties {
   const { paddingTop, paddingBottom } = getSectionPadding(so, sectionId, defaultTop, defaultBottom)
-  return { paddingTop, paddingBottom }
+  // 음수값은 padding 대신 margin으로 처리 (섹션 간격 좁히기)
+  const style: React.CSSProperties = {}
+  if (paddingTop >= 0) style.paddingTop = paddingTop; else style.marginTop = paddingTop
+  if (paddingBottom >= 0) style.paddingBottom = paddingBottom; else style.marginBottom = paddingBottom
+  return style
 }
 
 // Template-specific section definitions for the admin UI

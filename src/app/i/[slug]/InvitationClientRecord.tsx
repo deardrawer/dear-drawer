@@ -2723,7 +2723,8 @@ function InvitationClientRecordContent({
         return
     }
     // Wrap component with padding override if specified
-    const wrappedComponent = (padStyle.paddingTop || padStyle.paddingBottom)
+    const hasSpacing = Object.keys(padStyle).length > 0 && Object.values(padStyle).some(v => v !== 0)
+    const wrappedComponent = hasSpacing
       ? <div style={padStyle}>{component}</div>
       : component
     sectionList.push({ id: sectionId, trackNum: curTrackNum, trackLabel, name: sectionTrackNames[sectionId] || sectionId, duration, divider, component: wrappedComponent })

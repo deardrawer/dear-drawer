@@ -4320,14 +4320,14 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
     invitation.bride.mother.phone && (invitation.bride.mother as any)?.phoneEnabled !== false && { name: invitation.bride.mother.name, phone: invitation.bride.mother.phone, role: '어머니', side: 'bride' as const },
   ].filter(Boolean) as { name: string; phone: string; role: string; side: 'groom' | 'bride' }[]
 
-  // Prepare accounts for FloatingButton
-  const accounts = [
-    invitation.groom?.bank?.enabled && { name: invitation.groom.name, bank: invitation.groom.bank, role: '신랑', side: 'groom' as const },
-    (invitation.groom?.father as any)?.bank?.enabled && { name: invitation.groom.father.name, bank: (invitation.groom.father as any).bank, role: '아버지', side: 'groom' as const },
-    (invitation.groom?.mother as any)?.bank?.enabled && { name: invitation.groom.mother.name, bank: (invitation.groom.mother as any).bank, role: '어머니', side: 'groom' as const },
-    invitation.bride?.bank?.enabled && { name: invitation.bride.name, bank: invitation.bride.bank, role: '신부', side: 'bride' as const },
-    (invitation.bride?.father as any)?.bank?.enabled && { name: invitation.bride.father.name, bank: (invitation.bride.father as any).bank, role: '아버지', side: 'bride' as const },
-    (invitation.bride?.mother as any)?.bank?.enabled && { name: invitation.bride.mother.name, bank: (invitation.bride.mother as any).bank, role: '어머니', side: 'bride' as const },
+  // Prepare accounts for FloatingButton - only include if bank info is enabled AND account number exists
+  const accounts = invitation.sectionVisibility?.bankAccounts === false ? [] : [
+    invitation.groom?.bank?.enabled && invitation.groom?.bank?.account && { name: invitation.groom.name, bank: invitation.groom.bank, role: '신랑', side: 'groom' as const },
+    (invitation.groom?.father as any)?.bank?.enabled && (invitation.groom?.father as any)?.bank?.account && { name: invitation.groom.father.name, bank: (invitation.groom.father as any).bank, role: '아버지', side: 'groom' as const },
+    (invitation.groom?.mother as any)?.bank?.enabled && (invitation.groom?.mother as any)?.bank?.account && { name: invitation.groom.mother.name, bank: (invitation.groom.mother as any).bank, role: '어머니', side: 'groom' as const },
+    invitation.bride?.bank?.enabled && invitation.bride?.bank?.account && { name: invitation.bride.name, bank: invitation.bride.bank, role: '신부', side: 'bride' as const },
+    (invitation.bride?.father as any)?.bank?.enabled && (invitation.bride?.father as any)?.bank?.account && { name: invitation.bride.father.name, bank: (invitation.bride.father as any).bank, role: '아버지', side: 'bride' as const },
+    (invitation.bride?.mother as any)?.bank?.enabled && (invitation.bride?.mother as any)?.bank?.account && { name: invitation.bride.mother.name, bank: (invitation.bride.mother as any).bank, role: '어머니', side: 'bride' as const },
   ].filter(Boolean) as { name: string; bank: { bank: string; account: string; holder: string; enabled: boolean }; role: string; side: 'groom' | 'bride' }[]
 
   return (

@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Record Template - Navigation Styles</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #1a1a1a; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; overflow: hidden; height: 100vh; }
+
+  /* Mode selector */
+  .mode-selector {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    display: flex; gap: 0; background: #111;
+    border-bottom: 1px solid #333;
+  }
+  .mode-btn {
+    flex: 1; padding: 10px 4px; border: none; background: transparent;
+    color: #888; font-size: 11px; cursor: pointer; transition: all 0.3s;
+    border-bottom: 2px solid transparent; letter-spacing: 0.5px;
+  }
+  .mode-btn.active { color: #E89B8F; border-bottom-color: #E89B8F; background: #1a1a1a; }
+  .mode-btn:hover { color: #ccc; }
+
+  /* Phone frame */
+  .phone-frame {
+    width: 390px; height: 100vh; background: #FAF7F4;
+    position: relative; overflow: hidden;
+    margin-top: 40px;
+  }
+
+  /* ===== Track Sections (shared) ===== */
+  .track-section {
+    width: 100%; height: calc(100vh - 40px - 64px); /* minus mode-selector and mini-player */
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    padding: 40px 30px; text-align: center; position: absolute; top: 0; left: 0;
+  }
+  .track-label { font-size: 8px; letter-spacing: 4px; color: #E89B8F; opacity: 0.7; margin-bottom: 8px; }
+  .track-title { font-size: 22px; font-weight: 300; letter-spacing: 3px; margin-bottom: 16px; color: #3D3D3D; }
+  .track-duration { font-size: 9px; letter-spacing: 2px; color: #888; margin-bottom: 24px; }
+  .track-content { font-size: 13px; line-height: 2; color: #666; max-width: 280px; }
+  .track-img {
+    width: 200px; height: 200px; border-radius: 12px; margin-bottom: 20px;
+    background: linear-gradient(135deg, #E8DDD5, #E89B8F40);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 40px; opacity: 0.4;
+  }
+  .track-section:nth-child(1) { background: #FAF7F4; }
+  .track-section:nth-child(2) { background: #F5F1ED; }
+  .track-section:nth-child(3) { background: #FAF7F4; }
+  .track-section:nth-child(4) { background: #F5F1ED; }
+  .track-section:nth-child(5) { background: #FAF7F4; }
+
+  /* ===== Mini Player (shared) ===== */
+  .mini-player {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 64px;
+    background: #FFFFFF; border-top: 1px solid #E8DDD5;
+    display: flex; align-items: center; padding: 0 16px; z-index: 50;
+  }
+  .mini-vinyl {
+    width: 36px; height: 36px; border-radius: 50%; background: #1A1A1A;
+    display: flex; align-items: center; justify-content: center; margin-right: 12px;
+    flex-shrink: 0;
+  }
+  .mini-vinyl-inner {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: linear-gradient(135deg, #E89B8F, #D4766A);
+  }
+  .mini-info { flex: 1; min-width: 0; }
+  .mini-track-name { font-size: 11px; font-weight: 500; color: #3D3D3D; letter-spacing: 1px; }
+  .mini-artist { font-size: 9px; color: #888; margin-top: 2px; }
+  .mini-controls { display: flex; gap: 12px; align-items: center; }
+  .mini-btn {
+    background: none; border: none; cursor: pointer; padding: 4px;
+    color: #3D3D3D; font-size: 16px; opacity: 0.6; transition: opacity 0.2s;
+  }
+  .mini-btn:hover { opacity: 1; }
+  .mini-progress {
+    position: absolute; top: -2px; left: 0; right: 0; height: 2px; background: #E8DDD5;
+  }
+  .mini-progress-fill {
+    height: 100%; background: #E89B8F; transition: width 0.4s ease;
+  }
+
+  /* ===== Swipe hint ===== */
+  .swipe-hint {
+    position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+    font-size: 10px; color: #888; letter-spacing: 2px; opacity: 0;
+    animation: hintPulse 2s ease-in-out infinite;
+  }
+  @keyframes hintPulse {
+    0%, 100% { opacity: 0; transform: translateX(-50%) translateY(0); }
+    50% { opacity: 0.6; transform: translateX(-50%) translateY(-5px); }
+  }
+
+  /* ===== MODE 1: CROSSFADE ===== */
+  .mode-crossfade .track-section {
+    opacity: 0; transition: opacity 0.6s ease;
+    pointer-events: none;
+  }
+  .mode-crossfade .track-section.active {
+    opacity: 1; pointer-events: auto;
+  }
+
+  /* ===== MODE 2: NEEDLE DROP ===== */
+  .mode-needle .track-section {
+    opacity: 0; pointer-events: none;
+  }
+  .mode-needle .track-section.active {
+    opacity: 1; pointer-events: auto;
+  }
+  .mode-needle .track-section.exiting {
+    opacity: 0;
+  }
+
+  .needle-overlay {
+    position: absolute; inset: 0; z-index: 100;
+    background: rgba(26, 26, 26, 0.95);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .needle-overlay.active { opacity: 1; }
+
+  .needle-vinyl {
+    width: 120px; height: 120px; border-radius: 50%;
+    background: conic-gradient(#333 0deg, #222 60deg, #333 120deg, #222 180deg, #333 240deg, #222 300deg, #333 360deg);
+    position: relative; margin-bottom: 20px;
+    box-shadow: 0 0 40px rgba(0,0,0,0.5);
+  }
+  .needle-vinyl::after {
+    content: ''; position: absolute; top: 50%; left: 50%;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: #E89B8F; transform: translate(-50%, -50%);
+    box-shadow: 0 0 0 4px #333, 0 0 0 6px #555;
+  }
+  .needle-vinyl.spinning { animation: needleSpin 1s linear infinite; }
+  @keyframes needleSpin { to { transform: rotate(360deg); } }
+
+  .needle-arm {
+    position: absolute; top: 10px; right: 30px;
+    width: 3px; height: 70px; background: linear-gradient(to bottom, #888, #666);
+    transform-origin: top center; transform: rotate(-30deg);
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 2px; z-index: 101;
+  }
+  .needle-arm::after {
+    content: ''; position: absolute; bottom: -4px; left: 50%;
+    transform: translateX(-50%); width: 8px; height: 8px;
+    background: #aaa; border-radius: 50%;
+  }
+  .needle-arm.dropped { transform: rotate(5deg); }
+
+  .needle-text {
+    font-size: 10px; letter-spacing: 4px; color: #E89B8F;
+    opacity: 0; transition: opacity 0.3s ease 0.3s;
+  }
+  .needle-overlay.active .needle-text { opacity: 1; }
+
+  .needle-scratch {
+    display: flex; align-items: center; gap: 2px; margin-top: 16px; height: 20px;
+  }
+  .needle-scratch-bar {
+    width: 2px; background: #E89B8F; border-radius: 1px;
+    opacity: 0; animation: none;
+  }
+  .needle-overlay.active .needle-scratch-bar {
+    animation: scratchBar 0.15s ease-in-out infinite alternate;
+    opacity: 0.5;
+  }
+  @keyframes scratchBar {
+    0% { height: 4px; }
+    100% { height: 16px; }
+  }
+
+  /* ===== MODE 3: FADE + PROGRESS ===== */
+  .mode-progress .track-section {
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.5s ease;
+  }
+  .mode-progress .track-section.active {
+    opacity: 1; pointer-events: auto;
+  }
+  .mode-progress .track-section.fading-out {
+    opacity: 0;
+  }
+
+  .progress-overlay {
+    position: absolute; top: 0; left: 0; right: 0; height: 100%;
+    z-index: 80; pointer-events: none;
+  }
+  .progress-top-bar {
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: #E8DDD5;
+  }
+  .progress-top-fill {
+    height: 100%; width: 0; background: linear-gradient(90deg, #E89B8F, #D4766A);
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 8px #E89B8F80;
+  }
+  .progress-top-fill.animating { width: 100%; }
+
+  .progress-center-text {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-size: 10px; letter-spacing: 5px; color: #E89B8F;
+    opacity: 0; transition: opacity 0.3s ease;
+  }
+  .progress-center-text.show { opacity: 0.8; }
+
+  .progress-vignette {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.08) 100%);
+    opacity: 0; transition: opacity 0.5s ease;
+  }
+  .progress-vignette.active { opacity: 1; }
+
+  /* ===== MODE 4: SLIDE + PARALLAX ===== */
+  .mode-parallax .track-section {
+    transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.5s ease;
+    opacity: 0; pointer-events: none;
+  }
+  .mode-parallax .track-section.active {
+    transform: translateY(0) !important; opacity: 1; pointer-events: auto;
+  }
+  .mode-parallax .track-section.above {
+    transform: translateY(-100%); opacity: 0;
+  }
+  .mode-parallax .track-section.below {
+    transform: translateY(100%); opacity: 0;
+  }
+
+  .parallax-bg {
+    position: absolute; inset: -20%; z-index: 0;
+    transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .parallax-bg-circle {
+    width: 300px; height: 300px; border-radius: 50%;
+    background: radial-gradient(circle, transparent 30%, currentColor 31%, currentColor 32%, transparent 33%),
+                radial-gradient(circle, transparent 50%, currentColor 51%, currentColor 52%, transparent 53%),
+                radial-gradient(circle, transparent 70%, currentColor 71%, currentColor 72%, transparent 73%);
+    opacity: 0.03;
+  }
+  .parallax-content {
+    position: relative; z-index: 1;
+    transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .mode-parallax .track-section.below .parallax-content {
+    transform: translateY(60px);
+  }
+  .mode-parallax .track-section.above .parallax-content {
+    transform: translateY(-60px);
+  }
+  .mode-parallax .track-section.active .parallax-content {
+    transform: translateY(0);
+  }
+
+  /* Track number indicator */
+  .track-indicator {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 8px; z-index: 60;
+  }
+  .track-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: #E8DDD5;
+    transition: all 0.3s ease; cursor: pointer;
+  }
+  .track-dot.active {
+    background: #E89B8F; width: 6px; height: 18px; border-radius: 3px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Mode Selector -->
+<div class="mode-selector">
+  <button class="mode-btn active" onclick="setMode('crossfade')">1. CROSSFADE</button>
+  <button class="mode-btn" onclick="setMode('needle')">2. NEEDLE DROP</button>
+  <button class="mode-btn" onclick="setMode('progress')">3. PROGRESS</button>
+  <button class="mode-btn" onclick="setMode('parallax')">4. PARALLAX</button>
+</div>
+
+<!-- Phone Frame -->
+<div class="phone-frame" id="phoneFrame">
+  <div class="sections-container" id="sections">
+    <!-- Track 01 -->
+    <div class="track-section active" data-track="0">
+      <div class="parallax-bg"><div class="parallax-bg-circle" style="color:#E89B8F"></div></div>
+      <div class="parallax-content">
+        <div class="track-label">TRACK 01</div>
+        <div class="track-title">The Beginning</div>
+        <div class="track-duration">3:42</div>
+        <div class="track-content">
+          사랑하는 여러분께<br><br>
+          서로 다른 길을 걷던 두 사람이<br>
+          하나의 길 위에 함께 서게 되었습니다
+        </div>
+      </div>
+    </div>
+
+    <!-- Track 02 -->
+    <div class="track-section" data-track="1">
+      <div class="parallax-bg"><div class="parallax-bg-circle" style="color:#D4766A"></div></div>
+      <div class="parallax-content">
+        <div class="track-label">TRACK 02</div>
+        <div class="track-title">The Couple</div>
+        <div class="track-duration">2:58</div>
+        <div class="track-img">&#9835;</div>
+        <div class="track-content" style="font-size:16px; letter-spacing:3px;">
+          민준 &amp; 서연
+        </div>
+      </div>
+    </div>
+
+    <!-- Track 03 -->
+    <div class="track-section" data-track="2">
+      <div class="parallax-bg"><div class="parallax-bg-circle" style="color:#888"></div></div>
+      <div class="parallax-content">
+        <div class="track-label">TRACK 03</div>
+        <div class="track-title">Our Journey</div>
+        <div class="track-duration">4:15</div>
+        <div class="track-img" style="border-radius:8px; width:260px; height:160px;">&#9834;</div>
+        <div class="track-content">
+          처음 만난 순간부터<br>
+          지금까지의 이야기
+        </div>
+      </div>
+    </div>
+
+    <!-- Track 04 -->
+    <div class="track-section" data-track="3">
+      <div class="parallax-bg"><div class="parallax-bg-circle" style="color:#E89B8F"></div></div>
+      <div class="parallax-content">
+        <div class="track-label">TRACK 04</div>
+        <div class="track-title">Gallery</div>
+        <div class="track-duration">3:30</div>
+        <div class="track-img" style="width:220px; height:280px; border-radius:16px;">&#9835; &#9834;</div>
+      </div>
+    </div>
+
+    <!-- Track 05 -->
+    <div class="track-section" data-track="4">
+      <div class="parallax-bg"><div class="parallax-bg-circle" style="color:#D4766A"></div></div>
+      <div class="parallax-content">
+        <div class="track-label">TRACK 05</div>
+        <div class="track-title">Wedding Day</div>
+        <div class="track-duration">5:01</div>
+        <div class="track-content">
+          <span style="font-size:28px; font-weight:300; letter-spacing:3px;">26.06.15</span><br>
+          <span style="font-size:12px; letter-spacing:4px; color:#888;">토요일</span><br><br>
+          <span style="font-size:11px;">그랜드 웨딩홀</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Needle Drop Overlay -->
+  <div class="needle-overlay" id="needleOverlay">
+    <div class="needle-arm" id="needleArm"></div>
+    <div class="needle-vinyl" id="needleVinyl"></div>
+    <div class="needle-text" id="needleTrackText">TRACK 01</div>
+    <div class="needle-scratch">
+      <script>document.write(Array.from({length:30}).map((_,i)=>`<div class="needle-scratch-bar" style="animation-delay:${i*30}ms"></div>`).join(''))</script>
+    </div>
+  </div>
+
+  <!-- Progress Overlay -->
+  <div class="progress-overlay" id="progressOverlay">
+    <div class="progress-top-bar">
+      <div class="progress-top-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-center-text" id="progressText">TRACK 01</div>
+    <div class="progress-vignette" id="progressVignette"></div>
+  </div>
+
+  <!-- Track Indicator Dots -->
+  <div class="track-indicator" id="trackIndicator">
+    <div class="track-dot active" data-idx="0" onclick="goTo(0)"></div>
+    <div class="track-dot" data-idx="1" onclick="goTo(1)"></div>
+    <div class="track-dot" data-idx="2" onclick="goTo(2)"></div>
+    <div class="track-dot" data-idx="3" onclick="goTo(3)"></div>
+    <div class="track-dot" data-idx="4" onclick="goTo(4)"></div>
+  </div>
+
+  <!-- Mini Player -->
+  <div class="mini-player">
+    <div class="mini-progress">
+      <div class="mini-progress-fill" id="miniProgressFill" style="width:20%"></div>
+    </div>
+    <div class="mini-vinyl"><div class="mini-vinyl-inner"></div></div>
+    <div class="mini-info">
+      <div class="mini-track-name" id="miniTrackName">TRACK 01 — The Beginning</div>
+      <div class="mini-artist">민준 &amp; 서연</div>
+    </div>
+    <div class="mini-controls">
+      <button class="mini-btn" onclick="prev()">&#9664;&#9664;</button>
+      <button class="mini-btn" onclick="next()" style="font-size:20px;">&#9654;</button>
+      <button class="mini-btn" onclick="next()">&#9654;&#9654;</button>
+    </div>
+  </div>
+
+  <!-- Swipe hint -->
+  <div class="swipe-hint">&#8593; SWIPE &#8593;</div>
+</div>
+
+<script>
+const tracks = [
+  { name: 'TRACK 01 — The Beginning', num: '01' },
+  { name: 'TRACK 02 — The Couple', num: '02' },
+  { name: 'TRACK 03 — Our Journey', num: '03' },
+  { name: 'TRACK 04 — Gallery', num: '04' },
+  { name: 'TRACK 05 — Wedding Day', num: '05' },
+]
+
+let currentMode = 'crossfade'
+let currentTrack = 0
+let isTransitioning = false
+const totalTracks = 5
+
+const sections = document.querySelectorAll('.track-section')
+const dots = document.querySelectorAll('.track-dot')
+
+function setMode(mode) {
+  currentMode = mode
+  currentTrack = 0
+  isTransitioning = false
+
+  // Update buttons
+  document.querySelectorAll('.mode-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', btn.textContent.includes(mode.toUpperCase()) ||
+      (mode === 'crossfade' && i === 0) || (mode === 'needle' && i === 1) ||
+      (mode === 'progress' && i === 2) || (mode === 'parallax' && i === 3))
+  })
+
+  // Reset classes on phone frame
+  const frame = document.getElementById('phoneFrame')
+  frame.className = 'phone-frame mode-' + mode
+
+  // Reset all sections
+  sections.forEach((s, i) => {
+    s.className = 'track-section' + (i === 0 ? ' active' : '')
+    s.style.cssText = ''
+    if (mode === 'parallax' && i !== 0) {
+      s.classList.add('below')
+    }
+  })
+
+  // Reset overlays
+  document.getElementById('needleOverlay').classList.remove('active')
+  document.getElementById('progressFill').classList.remove('animating')
+  document.getElementById('progressText').classList.remove('show')
+  document.getElementById('progressVignette').classList.remove('active')
+
+  updateUI()
+}
+
+function updateUI() {
+  // Mini player
+  document.getElementById('miniTrackName').textContent = tracks[currentTrack].name
+  document.getElementById('miniProgressFill').style.width = ((currentTrack + 1) / totalTracks * 100) + '%'
+
+  // Dots
+  dots.forEach((d, i) => d.classList.toggle('active', i === currentTrack))
+}
+
+function goTo(idx) {
+  if (idx === currentTrack || isTransitioning || idx < 0 || idx >= totalTracks) return
+  const direction = idx > currentTrack ? 'next' : 'prev'
+
+  switch (currentMode) {
+    case 'crossfade': transitionCrossfade(idx); break
+    case 'needle': transitionNeedle(idx); break
+    case 'progress': transitionProgress(idx); break
+    case 'parallax': transitionParallax(idx, direction); break
+  }
+}
+
+function next() { goTo(currentTrack + 1) }
+function prev() { goTo(currentTrack - 1) }
+
+// ===== MODE 1: CROSSFADE =====
+function transitionCrossfade(idx) {
+  isTransitioning = true
+  sections[currentTrack].classList.remove('active')
+  sections[idx].classList.add('active')
+  currentTrack = idx
+  updateUI()
+  setTimeout(() => isTransitioning = false, 600)
+}
+
+// ===== MODE 2: NEEDLE DROP =====
+function transitionNeedle(idx) {
+  isTransitioning = true
+  const overlay = document.getElementById('needleOverlay')
+  const arm = document.getElementById('needleArm')
+  const vinyl = document.getElementById('needleVinyl')
+  const text = document.getElementById('needleTrackText')
+
+  // Phase 1: Show overlay + lift needle
+  sections[currentTrack].style.opacity = '0'
+  overlay.classList.add('active')
+  arm.classList.remove('dropped')
+  vinyl.classList.add('spinning')
+  text.textContent = 'TRACK ' + tracks[idx].num
+
+  // Phase 2: Drop needle (after short pause)
+  setTimeout(() => {
+    arm.classList.add('dropped')
+  }, 500)
+
+  // Phase 3: Hide overlay, show new section
+  setTimeout(() => {
+    overlay.classList.remove('active')
+    vinyl.classList.remove('spinning')
+    sections[currentTrack].classList.remove('active')
+    sections[currentTrack].style.opacity = ''
+    currentTrack = idx
+    sections[currentTrack].classList.add('active')
+    sections[currentTrack].style.opacity = '1'
+    updateUI()
+    setTimeout(() => isTransitioning = false, 300)
+  }, 1200)
+}
+
+// ===== MODE 3: FADE + PROGRESS =====
+function transitionProgress(idx) {
+  isTransitioning = true
+  const fill = document.getElementById('progressFill')
+  const text = document.getElementById('progressText')
+  const vignette = document.getElementById('progressVignette')
+
+  // Phase 1: Fade out current + show progress
+  text.textContent = 'TRACK ' + tracks[idx].num
+  text.classList.add('show')
+  vignette.classList.add('active')
+  sections[currentTrack].classList.add('fading-out')
+  fill.style.width = '0'
+  fill.offsetHeight // force reflow
+  fill.classList.add('animating')
+
+  // Phase 2: Switch content
+  setTimeout(() => {
+    sections[currentTrack].classList.remove('active', 'fading-out')
+    currentTrack = idx
+    sections[currentTrack].classList.add('active')
+    text.classList.remove('show')
+    vignette.classList.remove('active')
+    updateUI()
+  }, 600)
+
+  // Phase 3: Reset progress bar
+  setTimeout(() => {
+    fill.classList.remove('animating')
+    fill.style.width = '0'
+    isTransitioning = false
+  }, 1000)
+}
+
+// ===== MODE 4: SLIDE + PARALLAX =====
+function transitionParallax(idx, direction) {
+  isTransitioning = true
+
+  // Move current out
+  sections[currentTrack].classList.remove('active')
+  sections[currentTrack].classList.add(direction === 'next' ? 'above' : 'below')
+
+  // Move new in
+  sections[idx].classList.remove('above', 'below')
+  // Force to starting position first
+  sections[idx].style.transition = 'none'
+  sections[idx].classList.add(direction === 'next' ? 'below' : 'above')
+  sections[idx].offsetHeight // force reflow
+  sections[idx].style.transition = ''
+
+  // Animate in
+  requestAnimationFrame(() => {
+    sections[idx].classList.remove('above', 'below')
+    sections[idx].classList.add('active')
+
+    // Parallax: background moves slower
+    const bg = sections[idx].querySelector('.parallax-bg')
+    if (bg) {
+      bg.style.transform = direction === 'next' ? 'translateY(30px)' : 'translateY(-30px)'
+      setTimeout(() => { bg.style.transform = 'translateY(0)' }, 50)
+    }
+  })
+
+  currentTrack = idx
+  updateUI()
+  setTimeout(() => isTransitioning = false, 800)
+}
+
+// ===== Touch / Wheel handling =====
+let touchStartY = 0
+let touchStartTime = 0
+
+document.getElementById('phoneFrame').addEventListener('touchstart', (e) => {
+  touchStartY = e.touches[0].clientY
+  touchStartTime = Date.now()
+}, { passive: true })
+
+document.getElementById('phoneFrame').addEventListener('touchend', (e) => {
+  const dy = touchStartY - e.changedTouches[0].clientY
+  const dt = Date.now() - touchStartTime
+  if (Math.abs(dy) > 40 && dt < 500) {
+    if (dy > 0) next()
+    else prev()
+  }
+})
+
+document.getElementById('phoneFrame').addEventListener('wheel', (e) => {
+  e.preventDefault()
+  if (isTransitioning) return
+  if (e.deltaY > 20) next()
+  else if (e.deltaY < -20) prev()
+}, { passive: false })
+
+// Keyboard
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowRight') next()
+  else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') prev()
+})
+
+// Init
+setMode('crossfade')
+</script>
+
+</body>
+</html>

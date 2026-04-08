@@ -132,14 +132,14 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
   )
   // RSVP 활성화 체크 (참석 여부)
   const hasRsvp = !!invitation?.rsvpEnabled
-  // 계좌 정보 유무 체크 (마음 전하기)
+  // 계좌 정보 유무 체크 (마음 전하기) - enabled AND 계좌번호 존재 시에만
   const hasAccounts = !!(
-    invitation?.groom_bank_info?.enabled ||
-    invitation?.groom_father_bank_info?.enabled ||
-    invitation?.groom_mother_bank_info?.enabled ||
-    invitation?.bride_bank_info?.enabled ||
-    invitation?.bride_father_bank_info?.enabled ||
-    invitation?.bride_mother_bank_info?.enabled
+    (invitation?.groom_bank_info?.enabled && invitation?.groom_bank_info?.account) ||
+    (invitation?.groom_father_bank_info?.enabled && invitation?.groom_father_bank_info?.account) ||
+    (invitation?.groom_mother_bank_info?.enabled && invitation?.groom_mother_bank_info?.account) ||
+    (invitation?.bride_bank_info?.enabled && invitation?.bride_bank_info?.account) ||
+    (invitation?.bride_father_bank_info?.enabled && invitation?.bride_father_bank_info?.account) ||
+    (invitation?.bride_mother_bank_info?.enabled && invitation?.bride_mother_bank_info?.account)
   )
 
   const menuItems = [

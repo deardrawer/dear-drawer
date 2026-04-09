@@ -1170,12 +1170,15 @@ function PhotoSpread({ invitation, fonts, themeColors, onOpenLightbox, bgOverrid
 function YouTubeSection({ invitation, fonts, themeColors, bgOverride }: { invitation: any; fonts: FontConfig; themeColors: ColorConfig; bgOverride?: string }) {
   const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
   const { ref, isVisible } = useScrollReveal()
+  const [playing, setPlaying] = useState(false)
+  const [thumbSrc, setThumbSrc] = useState('')
   const youtube = invitation.youtube
   if (!youtube?.enabled || !youtube?.url) return null
 
   const match = youtube.url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/|youtube\.com\/live\/)([a-zA-Z0-9_-]+)/)
   const videoId = match?.[1]
   if (!videoId) return null
+  if (!thumbSrc) setThumbSrc(`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`)
 
   return (
     <div ref={ref} className="px-6 py-12" style={{ backgroundColor: bgOverride || themeColors.sectionBg }}>
@@ -1186,13 +1189,22 @@ function YouTubeSection({ invitation, fonts, themeColors, bgOverride }: { invita
         )}
       </div>
       <div className="w-full" style={{ aspectRatio: '16/9', opacity: 0, ...(isVisible ? { animation: 'mag-curtainOpen 0.8s ease 0.2s both' } : {}) }}>
-        <iframe
-          src={`https://www.youtube.com/embed/${videoId}`}
-          className="w-full h-full"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          style={{ border: 'none' }}
-        />
+        {playing ? (
+          <iframe
+            src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
+            className="w-full h-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            style={{ border: 'none' }}
+          />
+        ) : (
+          <div onClick={() => setPlaying(true)} style={{ cursor: 'pointer', position: 'relative', width: '100%', height: '100%' }}>
+            <img src={thumbSrc} onError={() => setThumbSrc(`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="60" height="60" viewBox="0 0 60 60" fill="none"><circle cx="30" cy="30" r="30" fill="rgba(0,0,0,0.6)"/><polygon points="24,18 24,42 44,30" fill="white"/></svg>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

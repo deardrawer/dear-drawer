@@ -1921,6 +1921,38 @@ function StorySection({
   )
 }
 
+// ===== YouTube Lite Section (thumbnail + click to play) =====
+function YouTubeLiteSection({ youtube, themeColors, cardBg }: { youtube: any; themeColors: any; cardBg: string }) {
+  const [playing, setPlaying] = useState(false)
+  const [thumbSrc, setThumbSrc] = useState('')
+  if (!youtube?.enabled || !youtube?.url) return null
+
+  const match = youtube.url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/|youtube\.com\/live\/)([a-zA-Z0-9_-]+)/)
+  const videoId = match?.[1]
+  if (!videoId) return null
+  if (!thumbSrc) setThumbSrc(`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`)
+
+  return (
+    <AnimatedSection className="px-5 py-12" style={{ background: cardBg }}>
+      {youtube.title && (
+        <p className="text-[10px] font-light text-center mb-6" style={{ color: themeColors.gray, letterSpacing: '4px' }}>{(youtube.title as string).toUpperCase()}</p>
+      )}
+      <div className="aspect-video rounded-lg overflow-hidden">
+        {playing ? (
+          <iframe src={`https://www.youtube.com/embed/${videoId}?autoplay=1`} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+        ) : (
+          <div onClick={() => setPlaying(true)} style={{ cursor: 'pointer', position: 'relative', width: '100%', height: '100%' }}>
+            <img src={thumbSrc} onError={() => setThumbSrc(`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="60" height="60" viewBox="0 0 60 60" fill="none"><circle cx="30" cy="30" r="30" fill="rgba(0,0,0,0.6)"/><polygon points="24,18 24,42 44,30" fill="white"/></svg>
+            </div>
+          </div>
+        )}
+      </div>
+    </AnimatedSection>
+  )
+}
+
 // Anniversary Counter Section Component with Sequential Animation
 function AnniversaryCounterSection({
   startDate,
@@ -3330,22 +3362,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
       </AnimatedSection>
 
       {/* YouTube Section - OUR */}
-      {(invitation as any).youtube?.enabled && (invitation as any).youtube?.url && (() => {
-        const url = (invitation as any).youtube.url as string
-        const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/|youtube\.com\/live\/)([a-zA-Z0-9_-]+)/)
-        const videoId = match?.[1]
-        if (!videoId) return null
-        return (
-          <AnimatedSection className="px-5 py-12" style={{ background: themeColors.cardBg }}>
-            {(invitation as any).youtube.title && (
-              <p className="text-[10px] font-light text-center mb-6" style={{ color: themeColors.gray, letterSpacing: '4px' }}>{((invitation as any).youtube.title as string).toUpperCase()}</p>
-            )}
-            <div className="aspect-video rounded-lg overflow-hidden">
-              <iframe src={`https://www.youtube.com/embed/${videoId}`} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
-            </div>
-          </AnimatedSection>
-        )
-      })()}
+      <YouTubeLiteSection youtube={(invitation as any).youtube} themeColors={themeColors} cardBg={themeColors.cardBg} />
 
       {/* Interview Title Section - OUR 템플릿: DividerSection 사용 */}
       {invitation.sectionVisibility?.interview !== false && invitation.content.interviews.some(i => i.question || i.answer) && (

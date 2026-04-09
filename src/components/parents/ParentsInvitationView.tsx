@@ -37,6 +37,23 @@ interface ParentsInvitationViewProps {
   invitationId?: string  // RSVP 저장을 위한 청첩장 ID
 }
 
+// YouTube Lite: thumbnail + click to play
+function YouTubeLiteEmbed({ videoId }: { videoId: string }) {
+  const [playing, setPlaying] = useState(false)
+  const [thumbSrc, setThumbSrc] = useState(`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`)
+  if (playing) {
+    return <iframe src={`https://www.youtube.com/embed/${videoId}?autoplay=1`} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+  }
+  return (
+    <div onClick={() => setPlaying(true)} style={{ cursor: 'pointer', position: 'relative', width: '100%', height: '100%' }}>
+      <img src={thumbSrc} onError={() => setThumbSrc(`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <svg width="60" height="60" viewBox="0 0 60 60" fill="none"><circle cx="30" cy="30" r="30" fill="rgba(0,0,0,0.6)"/><polygon points="24,18 24,42 44,30" fill="white"/></svg>
+      </div>
+    </div>
+  )
+}
+
 export default function ParentsInvitationView({
   data,
   guestInfo,
@@ -363,12 +380,7 @@ export default function ParentsInvitationView({
                       </h2>
                     )}
                     <div className="w-full max-w-[400px] aspect-video rounded-lg overflow-hidden shadow-md">
-                      <iframe
-                        src={`https://www.youtube.com/embed/${videoId}`}
-                        className="w-full h-full"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      />
+                      <YouTubeLiteEmbed videoId={videoId} />
                     </div>
                   </section>
                 </div>

@@ -26,6 +26,15 @@ const FONT_STYLE_OPTIONS = [
   { id: 'friendly', name: '친근한 고딕', desc: '나눔고딕', preview: '부드럽고 읽기 쉬운' },
   { id: 'ridibatang', name: '가독성 좋은 바탕', desc: 'RIDIBatang', preview: '깔끔하고 가독성 좋은' },
   { id: 'okticon', name: '손글씨체', desc: 'Okticon', preview: '손글씨 느낌의 귀여운' },
+  { id: 'pretendard', name: '프리텐다드', desc: 'Pretendard', preview: '모던하고 깔끔한' },
+  { id: 'contemporary', name: '컨템포러리', desc: '전남교육바른체', preview: '세련되고 현대적인' },
+  { id: 'luxury', name: '포멀', desc: '이랜드초이스체', preview: '격식있고 우아한' },
+  { id: 'gulim', name: '굴림', desc: '조선굴림체', preview: '전통적이고 단정한' },
+  { id: 'neathand', name: '또박또박', desc: '오무다예체', preview: '또박또박 정성스러운' },
+  { id: 'roundhand', name: '둥근손글씨', desc: '온글잎 콘콘체', preview: '둥글둥글 귀여운' },
+  { id: 'roundgothic', name: '둥근고딕', desc: '나눔스퀘어라운드', preview: '둥글고 부드러운' },
+  { id: 'suit', name: 'SUIT', desc: 'SUIT', preview: '깔끔하고 모던한' },
+  { id: 'myungjo', name: '명조', desc: '조선일보명조체', preview: '격조있는 명조' },
 ] as const
 
 export default function ParentsStep1Design({

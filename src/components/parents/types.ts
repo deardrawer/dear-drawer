@@ -10,7 +10,7 @@ export interface ImageCropData {
 }
 
 // 폰트 스타일 타입 (한글 중심)
-export type FontStyleId = 'elegant' | 'soft' | 'classic' | 'brush' | 'modern' | 'friendly' | 'ridibatang' | 'gangwon' | 'okticon'
+export type FontStyleId = 'elegant' | 'soft' | 'classic' | 'brush' | 'modern' | 'friendly' | 'ridibatang' | 'gangwon' | 'okticon' | 'pretendard' | 'contemporary' | 'luxury' | 'gulim' | 'neathand' | 'roundhand' | 'roundgothic' | 'suit' | 'myungjo'
 
 // 폰트 스타일 정의
 export interface FontStyle {
@@ -85,6 +85,69 @@ export const FONT_STYLES: Record<FontStyleId, FontStyle> = {
     fontName: 'Okticon',
     className: 'font-parents-okticon',
     cssVariable: "'Okticon', serif",
+  },
+  pretendard: {
+    id: 'pretendard',
+    name: '프리텐다드',
+    fontName: 'Pretendard',
+    className: 'font-parents-pretendard',
+    cssVariable: "'Pretendard', sans-serif",
+  },
+  contemporary: {
+    id: 'contemporary',
+    name: '컨템포러리',
+    fontName: '전남교육바른체',
+    className: 'font-parents-contemporary',
+    cssVariable: "'JeonnamEducationBarun', sans-serif",
+  },
+  luxury: {
+    id: 'luxury',
+    name: '포멀',
+    fontName: '이랜드초이스체',
+    className: 'font-parents-luxury',
+    cssVariable: "'ELandChoice', serif",
+  },
+  gulim: {
+    id: 'gulim',
+    name: '굴림',
+    fontName: '조선굴림체',
+    className: 'font-parents-gulim',
+    cssVariable: "'JoseonGulim', serif",
+  },
+  neathand: {
+    id: 'neathand',
+    name: '또박또박',
+    fontName: '오무다예체',
+    className: 'font-parents-neathand',
+    cssVariable: "'OmuDaye', sans-serif",
+  },
+  roundhand: {
+    id: 'roundhand',
+    name: '둥근손글씨',
+    fontName: '온글잎 콘콘체',
+    className: 'font-parents-roundhand',
+    cssVariable: "'OngleipKonkon', sans-serif",
+  },
+  roundgothic: {
+    id: 'roundgothic',
+    name: '둥근고딕',
+    fontName: '나눔스퀘어라운드',
+    className: 'font-parents-roundgothic',
+    cssVariable: "'NanumSquareRound', sans-serif",
+  },
+  suit: {
+    id: 'suit',
+    name: 'SUIT',
+    fontName: 'SUIT',
+    className: 'font-parents-suit',
+    cssVariable: "'Suit', sans-serif",
+  },
+  myungjo: {
+    id: 'myungjo',
+    name: '명조',
+    fontName: '조선일보명조체',
+    className: 'font-parents-myungjo',
+    cssVariable: "'ChosunIlboMyungjo', serif",
   },
 }
 

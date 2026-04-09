@@ -1047,6 +1047,60 @@
   font-display: swap;
 }
 
+/* 프리텐다드 */
+.font-parents-pretendard,
+.font-parents-pretendard * {
+  font-family: 'Pretendard', sans-serif !important;
+}
+
+/* 컨템포러리 - 전남교육바른체 */
+.font-parents-contemporary,
+.font-parents-contemporary * {
+  font-family: 'JeonnamEducationBarun', sans-serif !important;
+}
+
+/* 포멀 - 이랜드초이스체 */
+.font-parents-luxury,
+.font-parents-luxury * {
+  font-family: 'ELandChoice', serif !important;
+}
+
+/* 굴림 - 조선굴림체 */
+.font-parents-gulim,
+.font-parents-gulim * {
+  font-family: 'JoseonGulim', serif !important;
+}
+
+/* 또박또박 - 오무다예체 */
+.font-parents-neathand,
+.font-parents-neathand * {
+  font-family: 'OmuDaye', sans-serif !important;
+}
+
+/* 둥근손글씨 - 온글잎 콘콘체 */
+.font-parents-roundhand,
+.font-parents-roundhand * {
+  font-family: 'OngleipKonkon', sans-serif !important;
+}
+
+/* 둥근고딕 - 나눔스퀘어라운드 */
+.font-parents-roundgothic,
+.font-parents-roundgothic * {
+  font-family: 'NanumSquareRound', sans-serif !important;
+}
+
+/* SUIT */
+.font-parents-suit,
+.font-parents-suit * {
+  font-family: 'Suit', sans-serif !important;
+}
+
+/* 명조 - 조선일보명조체 */
+.font-parents-myungjo,
+.font-parents-myungjo * {
+  font-family: 'ChosunIlboMyungjo', serif !important;
+}
+
 /* =====================
    Gallery Page - 모바일 헤더 숨김
    ===================== */

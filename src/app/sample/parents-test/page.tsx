@@ -104,7 +104,7 @@ const sampleData: ParentsInvitationContent = {
 }
 
 const validColorThemes: ColorThemeId[] = ['burgundy', 'navy', 'sage', 'dustyRose', 'emerald', 'slateBlue']
-const validFontStyles: FontStyleId[] = ['elegant', 'soft', 'classic', 'brush', 'modern', 'friendly', 'ridibatang', 'gangwon', 'okticon']
+const validFontStyles: FontStyleId[] = ['elegant', 'soft', 'classic', 'brush', 'modern', 'friendly', 'ridibatang', 'gangwon', 'okticon', 'pretendard', 'contemporary', 'luxury', 'gulim', 'neathand', 'roundhand', 'roundgothic', 'suit', 'myungjo']
 
 function ParentsTestContent() {
   const searchParams = useSearchParams()

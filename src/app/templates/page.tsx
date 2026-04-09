@@ -269,7 +269,7 @@ const SHOWCASE_ITEMS: {
     tagline: '결혼식 후 감사의 마음을 전하는',
     category: 'thankyou',
     categoryLabel: '감사장',
-    thumbnail: '/sample/preview-thankyou.png',
+    thumbnail: '/sample/tannkyou_thumbnail.png',
     sampleUrl: '/sample/thank-you',
     badgeColor: 'text-amber-600',
     badgeBg: 'bg-amber-50',

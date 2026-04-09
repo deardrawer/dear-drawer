@@ -180,6 +180,7 @@ function InvitationPreviewWrapper({ invitation, skipIntro, onIntroScreenChange }
     editorsNoteImageRatio: (invitation as any).editorsNoteImageRatio,
     interviewDisplay: (invitation as any).interviewDisplay,
     mapButtons: (invitation as any).mapButtons,
+    magazineSectionTitles: (invitation as any).magazineSectionTitles,
   }), [invitation])
 
   const invitationData = useMemo(() => ({

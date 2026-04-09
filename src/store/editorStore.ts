@@ -467,6 +467,15 @@ export interface InvitationContent {
   // ===== 매거진 섹션별 배경색 =====
   magazineSectionBgMap?: Record<string, 'background' | 'sectionBg'>
 
+  // ===== 매거진 섹션 제목 커스터마이징 =====
+  magazineSectionTitles?: {
+    editorsNote?: { main?: string }
+    meetTheCouple?: { sub?: string; main?: string }
+    photoSpread?: { sub?: string; main?: string }
+    theDetails?: { sub?: string; main?: string }
+    guidance?: { sub?: string; main?: string }
+  }
+
   // ===== 관리자 스타일 오버라이드 =====
   styleOverrides?: StyleOverrides
 

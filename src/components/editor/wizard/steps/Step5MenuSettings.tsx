@@ -427,6 +427,129 @@ export default function Step5MenuSettings() {
         </section>
       )}
 
+      {/* 매거진 섹션 제목 편집 */}
+      {isMagazine && (
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+              <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+              섹션 제목 편집
+            </h3>
+            <button
+              onClick={() => updateNestedField('magazineSectionTitles', undefined)}
+              className="text-xs text-gray-500 hover:text-purple-600 transition-colors"
+            >
+              초기화
+            </button>
+          </div>
+          <p className="text-xs text-gray-500">비워두면 해당 제목이 숨겨집니다.</p>
+
+          <div className="space-y-4">
+            {/* Editor's Note */}
+            <div className="p-3 bg-gray-50 rounded-lg space-y-2">
+              <p className="text-sm font-medium text-gray-700">Editor&apos;s Note</p>
+              <div className="space-y-1">
+                <Label className="text-xs text-gray-500">제목</Label>
+                <Input
+                  value={(invitation as any).magazineSectionTitles?.editorsNote?.main ?? "EDITOR'S NOTE"}
+                  onChange={(e) => updateNestedField('magazineSectionTitles.editorsNote.main', e.target.value)}
+                  placeholder="비우면 숨김"
+                />
+              </div>
+            </div>
+
+            {/* 커플 소개 */}
+            <div className="p-3 bg-gray-50 rounded-lg space-y-2">
+              <p className="text-sm font-medium text-gray-700">커플 소개</p>
+              <div className="space-y-1">
+                <Label className="text-xs text-gray-500">서브</Label>
+                <Input
+                  value={(invitation as any).magazineSectionTitles?.meetTheCouple?.sub ?? 'INTERVIEWEE'}
+                  onChange={(e) => updateNestedField('magazineSectionTitles.meetTheCouple.sub', e.target.value)}
+                  placeholder="비우면 숨김"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-gray-500">메인</Label>
+                <Input
+                  value={(invitation as any).magazineSectionTitles?.meetTheCouple?.main ?? 'MEET THE COUPLE'}
+                  onChange={(e) => updateNestedField('magazineSectionTitles.meetTheCouple.main', e.target.value)}
+                  placeholder="비우면 숨김"
+                />
+              </div>
+            </div>
+
+            {/* 갤러리 */}
+            <div className="p-3 bg-gray-50 rounded-lg space-y-2">
+              <p className="text-sm font-medium text-gray-700">갤러리</p>
+              <div className="space-y-1">
+                <Label className="text-xs text-gray-500">서브</Label>
+                <Input
+                  value={(invitation as any).magazineSectionTitles?.photoSpread?.sub ?? 'GALLERY'}
+                  onChange={(e) => updateNestedField('magazineSectionTitles.photoSpread.sub', e.target.value)}
+                  placeholder="비우면 숨김"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-gray-500">메인</Label>
+                <Input
+                  value={(invitation as any).magazineSectionTitles?.photoSpread?.main ?? 'PHOTO SPREAD'}
+                  onChange={(e) => updateNestedField('magazineSectionTitles.photoSpread.main', e.target.value)}
+                  placeholder="비우면 숨김"
+                />
+              </div>
+            </div>
+
+            {/* 예식 정보 */}
+            <div className="p-3 bg-gray-50 rounded-lg space-y-2">
+              <p className="text-sm font-medium text-gray-700">예식 정보</p>
+              <div className="space-y-1">
+                <Label className="text-xs text-gray-500">서브</Label>
+                <Input
+                  value={(invitation as any).magazineSectionTitles?.theDetails?.sub ?? 'DETAILS'}
+                  onChange={(e) => updateNestedField('magazineSectionTitles.theDetails.sub', e.target.value)}
+                  placeholder="비우면 숨김"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-gray-500">메인</Label>
+                <Input
+                  value={(invitation as any).magazineSectionTitles?.theDetails?.main ?? 'THE WEDDING'}
+                  onChange={(e) => updateNestedField('magazineSectionTitles.theDetails.main', e.target.value)}
+                  placeholder="비우면 숨김"
+                />
+              </div>
+            </div>
+
+            {/* 안내 */}
+            {invitation.sectionVisibility.guidance !== false && (
+            <div className="p-3 bg-gray-50 rounded-lg space-y-2">
+              <p className="text-sm font-medium text-gray-700">안내</p>
+              <div className="space-y-1">
+                <Label className="text-xs text-gray-500">서브</Label>
+                <Input
+                  value={(invitation as any).magazineSectionTitles?.guidance?.sub ?? 'FOR YOUR HAPPY TIME'}
+                  onChange={(e) => updateNestedField('magazineSectionTitles.guidance.sub', e.target.value)}
+                  placeholder="비우면 숨김"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-gray-500">메인</Label>
+                <Input
+                  value={(invitation as any).magazineSectionTitles?.guidance?.main ?? 'INFORMATION'}
+                  onChange={(e) => updateNestedField('magazineSectionTitles.guidance.main', e.target.value)}
+                  placeholder="비우면 숨김"
+                />
+              </div>
+            </div>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* 오시는 길 안내 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">

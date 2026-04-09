@@ -583,6 +583,12 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
 
 // ===== Editor's Note Section =====
 function EditorsNote({ invitation, fonts, themeColors }: { invitation: any; fonts: FontConfig; themeColors: ColorConfig }) {
+  const mst = invitation.magazineSectionTitles || {}
+  const getTitle = (section: string, type: 'main' | 'sub', defaultVal: string) => {
+    const val = (mst as any)[section]?.[type]
+    if (val === '') return null
+    return val ?? defaultVal
+  }
   const [show, setShow] = useState(false)
 
   useEffect(() => {
@@ -609,13 +615,15 @@ function EditorsNote({ invitation, fonts, themeColors }: { invitation: any; font
       <div className={`px-6 ${noteImage ? 'pt-6 pb-20' : 'py-20'}`}>
         <div style={{ opacity: 0, ...(show ? { animation: 'mag-sectionFadeIn 1s ease both' } : {}) }}>
           {/* Section Label */}
+          {getTitle('editorsNote', 'main', "EDITOR'S NOTE") !== null && (
           <div className="flex items-center gap-3 mb-8" style={{ opacity: 0, ...(show ? { animation: 'mag-dropCapScale 0.8s ease 0.3s both' } : {}) }}>
             <div style={{ height: '0.5px', flex: 1, background: themeColors.divider }} />
             <span style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '4px', color: themeColors.gray }}>
-              EDITOR&apos;S NOTE
+              {getTitle('editorsNote', 'main', "EDITOR'S NOTE")}
             </span>
             <div style={{ height: '0.5px', flex: 1, background: themeColors.divider }} />
           </div>
+          )}
 
           {/* Drop Cap Style Greeting */}
           <div style={{ maxWidth: '320px', margin: '0 auto' }}>
@@ -665,6 +673,12 @@ function EditorsNote({ invitation, fonts, themeColors }: { invitation: any; font
 // ===== Meet The Couple (Interviewee Profile) =====
 function MeetTheCouple({ invitation, fonts, themeColors, bgOverride }: { invitation: any; fonts: FontConfig; themeColors: ColorConfig; bgOverride?: string }) {
   const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
+  const mst = invitation.magazineSectionTitles || {}
+  const getTitle = (section: string, type: 'main' | 'sub', defaultVal: string) => {
+    const val = (mst as any)[section]?.[type]
+    if (val === '') return null
+    return dt(val ?? defaultVal)
+  }
   const { ref, isVisible } = useScrollReveal()
   const groomProfile = invitation.groom?.profile
   const brideProfile = invitation.bride?.profile
@@ -774,15 +788,21 @@ function MeetTheCouple({ invitation, fonts, themeColors, bgOverride }: { invitat
     <div ref={ref} className="px-6 py-16" style={{ backgroundColor: bgOverride || themeColors.sectionBg }}>
       <div style={{ opacity: 0, ...(isVisible ? { animation: 'mag-sectionFadeIn 1s ease both' } : {}) }}>
         {/* Section Label */}
+        {(getTitle('meetTheCouple', 'sub', 'INTERVIEWEE') !== null || getTitle('meetTheCouple', 'main', 'MEET THE COUPLE') !== null) && (
         <div className="text-center mb-10" style={{ opacity: 0, ...(isVisible ? { animation: 'mag-sectionFadeIn 1s ease 0.3s both' } : {}) }}>
+          {getTitle('meetTheCouple', 'sub', 'INTERVIEWEE') !== null && (
           <div style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '6px', color: themeColors.gray, marginBottom: '12px' }}>
-            {dt('INTERVIEWEE')}
+            {getTitle('meetTheCouple', 'sub', 'INTERVIEWEE')}
           </div>
+          )}
+          {getTitle('meetTheCouple', 'main', 'MEET THE COUPLE') !== null && (
           <h2 style={{ fontFamily: fonts.display, fontSize: '24px', fontWeight: 300, letterSpacing: '4px', color: themeColors.primary }}>
-            {dt('MEET THE COUPLE')}
+            {getTitle('meetTheCouple', 'main', 'MEET THE COUPLE')}
           </h2>
+          )}
           <div style={{ width: '40px', height: '1px', background: themeColors.primary, margin: '16px auto 0' }} />
         </div>
+        )}
 
         {isPortrait ? (
           /* Portrait: Grid card style with text outside */
@@ -1048,6 +1068,12 @@ function PhotoSpread({ invitation, fonts, themeColors, onOpenLightbox, bgOverrid
   invitation: any; fonts: FontConfig; themeColors: ColorConfig; onOpenLightbox: (idx: number) => void; bgOverride?: string
 }) {
   const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
+  const mst = invitation.magazineSectionTitles || {}
+  const getTitle = (section: string, type: 'main' | 'sub', defaultVal: string) => {
+    const val = (mst as any)[section]?.[type]
+    if (val === '') return null
+    return dt(val ?? defaultVal)
+  }
   const { ref, isVisible } = useScrollReveal()
   const allImages = (invitation.gallery?.images || []).map(extractImageUrl).filter(Boolean)
   const [showAll, setShowAll] = useState(false)
@@ -1095,15 +1121,21 @@ function PhotoSpread({ invitation, fonts, themeColors, onOpenLightbox, bgOverrid
     <div ref={ref} className="py-16" style={{ backgroundColor: bgOverride || themeColors.background }}>
       <div style={{ opacity: 0, ...(isVisible ? { animation: 'mag-sectionFadeIn 0.8s ease both' } : {}) }}>
         {/* Section Header */}
+        {(getTitle('photoSpread', 'sub', 'GALLERY') !== null || getTitle('photoSpread', 'main', 'PHOTO SPREAD') !== null) && (
         <div className="px-6 mb-8 text-center">
+          {getTitle('photoSpread', 'sub', 'GALLERY') !== null && (
           <div style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '6px', color: themeColors.gray, marginBottom: '12px' }}>
-            {dt('GALLERY')}
+            {getTitle('photoSpread', 'sub', 'GALLERY')}
           </div>
+          )}
+          {getTitle('photoSpread', 'main', 'PHOTO SPREAD') !== null && (
           <h2 style={{ fontFamily: fonts.display, fontSize: '28px', fontWeight: 300, letterSpacing: '6px', color: themeColors.primary }}>
-            {dt('PHOTO SPREAD')}
+            {getTitle('photoSpread', 'main', 'PHOTO SPREAD')}
           </h2>
+          )}
           <div style={{ width: '40px', height: '1px', background: themeColors.primary, margin: '16px auto 0' }} />
         </div>
+        )}
 
         {/* Magazine-style grid */}
         <div className="px-3">
@@ -1169,6 +1201,12 @@ function YouTubeSection({ invitation, fonts, themeColors, bgOverride }: { invita
 // ===== The Details (Wedding Info) Section =====
 function TheDetails({ invitation, fonts, themeColors, bgOverride }: { invitation: any; fonts: FontConfig; themeColors: ColorConfig; bgOverride?: string }) {
   const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
+  const mst = invitation.magazineSectionTitles || {}
+  const getTitle = (section: string, type: 'main' | 'sub', defaultVal: string) => {
+    const val = (mst as any)[section]?.[type]
+    if (val === '') return null
+    return dt(val ?? defaultVal)
+  }
   const { ref, isVisible } = useScrollReveal()
   const w = invitation.wedding || {}
   const date = w.date ? new Date(w.date) : null
@@ -1185,15 +1223,21 @@ function TheDetails({ invitation, fonts, themeColors, bgOverride }: { invitation
     <div ref={ref} className="px-6 py-20" style={{ backgroundColor: bgOverride || themeColors.background }}>
       <div style={{ opacity: 0, ...(isVisible ? { animation: 'mag-sectionFadeIn 0.8s ease both' } : {}) }}>
         {/* Section Header */}
+        {(getTitle('theDetails', 'sub', 'DETAILS') !== null || getTitle('theDetails', 'main', 'THE WEDDING') !== null) && (
         <div className="text-center mb-12" style={{ opacity: 0, ...(isVisible ? { animation: 'mag-sectionFadeIn 0.7s ease 0.1s both' } : {}) }}>
+          {getTitle('theDetails', 'sub', 'DETAILS') !== null && (
           <div style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '6px', color: themeColors.gray, marginBottom: '12px' }}>
-            {dt('DETAILS')}
+            {getTitle('theDetails', 'sub', 'DETAILS')}
           </div>
+          )}
+          {getTitle('theDetails', 'main', 'THE WEDDING') !== null && (
           <h2 style={{ fontFamily: fonts.display, fontSize: '28px', fontWeight: 300, letterSpacing: '6px', color: themeColors.primary }}>
-            {dt('THE WEDDING')}
+            {getTitle('theDetails', 'main', 'THE WEDDING')}
           </h2>
+          )}
           <div style={{ width: '40px', height: '1px', background: themeColors.primary, margin: '16px auto 0' }} />
         </div>
+        )}
 
         {/* Date Card */}
         {date && (
@@ -1397,6 +1441,12 @@ function DirectionItem({ label, text, fonts, themeColors }: { label: string; tex
 // ===== Guidance & Info Section =====
 function GuidanceInfoSection({ invitation, fonts, themeColors, bgOverride }: { invitation: any; fonts: FontConfig; themeColors: ColorConfig; bgOverride?: string }) {
   const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
+  const mst = invitation.magazineSectionTitles || {}
+  const getTitle = (section: string, type: 'main' | 'sub', defaultVal: string) => {
+    const val = (mst as any)[section]?.[type]
+    if (val === '') return null
+    return dt(val ?? defaultVal)
+  }
   const { ref, isVisible } = useScrollReveal()
   const guidance = invitation.guidance
   const info = invitation.content?.info
@@ -1419,15 +1469,21 @@ function GuidanceInfoSection({ invitation, fonts, themeColors, bgOverride }: { i
     <div ref={ref} className="py-12" style={{ backgroundColor: bgOverride || themeColors.sectionBg }}>
       <div style={{ opacity: 0, ...(isVisible ? { animation: 'mag-sectionFadeIn 0.8s ease both' } : {}) }}>
         {/* Section Header */}
+        {(getTitle('guidance', 'sub', 'FOR YOUR HAPPY TIME') !== null || getTitle('guidance', 'main', 'INFORMATION') !== null) && (
         <div className="text-center mb-8 px-6">
+          {getTitle('guidance', 'sub', 'FOR YOUR HAPPY TIME') !== null && (
           <div style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '4px', color: themeColors.gray, marginBottom: '6px' }}>
-            {dt('FOR YOUR HAPPY TIME')}
+            {getTitle('guidance', 'sub', 'FOR YOUR HAPPY TIME')}
           </div>
+          )}
+          {getTitle('guidance', 'main', 'INFORMATION') !== null && (
           <div style={{ fontFamily: fonts.display, fontSize: '18px', fontWeight: 300, letterSpacing: '4px', color: themeColors.primary }}>
-            {dt('INFORMATION')}
+            {getTitle('guidance', 'main', 'INFORMATION')}
           </div>
+          )}
           <div style={{ width: '25px', height: '1px', background: themeColors.primary, margin: '8px auto 0' }} />
         </div>
+        )}
 
         {/* Guidance Image */}
         {guidance?.image && (
@@ -2243,6 +2299,7 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     editorsNoteImageRatio: (content as any).editorsNoteImageRatio,
     interviewDisplay: (content as any).interviewDisplay,
     mapButtons: (content as any).mapButtons,
+    magazineSectionTitles: (content as any).magazineSectionTitles,
   }
 }
 

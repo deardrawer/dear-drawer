@@ -1,0 +1,1492 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>The Invitation — No. 001</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper:   #F6F4EF;   /* off-white — not pure white, more luxurious */
+    --ink:     #0A0A0A;   /* near-black — softer than #000 */
+    --ink-70:  rgba(10,10,10,0.72);
+    --ink-50:  rgba(10,10,10,0.5);
+    --ink-30:  rgba(10,10,10,0.3);
+    --ink-15:  rgba(10,10,10,0.15);
+    --ink-08:  rgba(10,10,10,0.08);
+    --line:    rgba(10,10,10,0.18);
+
+    --f-display: "Playfair Display", "Cormorant Garamond", serif;
+    --f-serif:   "Cormorant Garamond", serif;
+    --f-sans:    "Inter", -apple-system, sans-serif;
+    --f-mono:    "JetBrains Mono", ui-monospace, monospace;
+
+    --w: min(100vw, 430px);
+  }
+
+  * { box-sizing: border-box; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; margin: 0; padding: 0; }
+  html, body { background: #1a1a1a; }
+  body {
+    font-family: var(--f-serif);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+    letter-spacing: -0.005em;
+  }
+
+  /* ─────────────────────────────────────── */
+  /* FRAME — the invitation "book" */
+  /* ─────────────────────────────────────── */
+  .book {
+    width: var(--w);
+    margin: 0 auto;
+    background: var(--paper);
+    position: relative;
+    min-height: 100vh;
+    overflow: hidden;
+    box-shadow: 0 30px 100px rgba(0,0,0,0.5);
+  }
+
+  /* Paper grain texture overlay */
+  .book::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: var(--w);
+    height: 100vh;
+    pointer-events: none;
+    z-index: 100;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.12 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    mix-blend-mode: multiply;
+    opacity: 0.8;
+  }
+
+  /* ─────────────────────────────────────── */
+  /* SIDE RAIL — hotel floor indicator */
+  /* ─────────────────────────────────────── */
+  .rail {
+    position: fixed;
+    top: 0; bottom: 0;
+    left: calc(50vw - var(--w)/2);
+    width: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    z-index: 50;
+    pointer-events: none;
+  }
+  .rail__dot {
+    font-family: var(--f-mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: var(--ink-30);
+    transition: color .4s ease;
+    writing-mode: vertical-rl;
+  }
+  .rail__dot.is-active {
+    color: var(--ink);
+  }
+
+  /* ─────────────────────────────────────── */
+  /* TOP BAR — edition number */
+  /* ─────────────────────────────────────── */
+  .topbar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    padding: 20px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+    font-family: var(--f-mono);
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    color: var(--ink-50);
+    text-transform: uppercase;
+  }
+  .topbar__progress {
+    position: fixed;
+    top: 0;
+    left: calc(50vw - var(--w)/2);
+    width: var(--w);
+    height: 1px;
+    background: var(--ink-08);
+    z-index: 60;
+  }
+  .topbar__progress-bar {
+    height: 100%;
+    width: 0%;
+    background: var(--ink);
+    transition: width .1s linear;
+  }
+
+  /* ─────────────────────────────────────── */
+  /* WAX SEAL INTRO OVERLAY */
+  /* ─────────────────────────────────────── */
+  .seal {
+    position: fixed;
+    inset: 0;
+    background: var(--paper);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: opacity 1.2s cubic-bezier(.22,.61,.36,1), transform 1.2s cubic-bezier(.22,.61,.36,1);
+  }
+  .seal.is-open {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(1.1);
+  }
+  .seal__stamp {
+    width: 128px; height: 128px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--paper);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,0.06),
+      inset 0 0 30px rgba(255,255,255,0.03),
+      0 20px 60px rgba(0,0,0,0.25);
+    animation: sealPulse 3.2s ease-in-out infinite;
+  }
+  .seal__stamp::before {
+    content: "";
+    position: absolute;
+    inset: 6px;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 50%;
+  }
+  .seal__stamp svg {
+    width: 54px; height: 54px;
+  }
+  .seal__label {
+    margin-top: 36px;
+    font-family: var(--f-mono);
+    font-size: 10px;
+    letter-spacing: 0.4em;
+    color: var(--ink-50);
+    text-transform: uppercase;
+  }
+  .seal__hint {
+    margin-top: 8px;
+    font-family: var(--f-serif);
+    font-style: italic;
+    font-size: 13px;
+    color: var(--ink-30);
+  }
+  @keyframes sealPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+  }
+
+  /* ─────────────────────────────────────── */
+  /* HERO — monogram crest */
+  /* ─────────────────────────────────────── */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    padding: 72px 28px 40px;
+    display: flex;
+    flex-direction: column;
+  }
+  .hero__kicker {
+    text-align: center;
+    font-family: var(--f-mono);
+    font-size: 9px;
+    letter-spacing: 0.42em;
+    color: var(--ink-50);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .hero__kicker-bar {
+    width: 24px; height: 1px;
+    background: var(--ink-50);
+    margin: 10px auto 0;
+  }
+  .hero__monogram {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin: 24px 0;
+  }
+  .hero__monogram-ring {
+    width: 260px; height: 260px;
+    border: 1px solid var(--ink);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .hero__monogram-ring::before,
+  .hero__monogram-ring::after {
+    content: "";
+    position: absolute;
+    border: 1px solid var(--ink-30);
+    border-radius: 50%;
+  }
+  .hero__monogram-ring::before { inset: 8px; }
+  .hero__monogram-ring::after  { inset: 18px; border-color: var(--ink-15); }
+  .hero__initials {
+    font-family: var(--f-display);
+    font-size: 150px;
+    line-height: 0.85;
+    font-weight: 400;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 0;
+    letter-spacing: -0.04em;
+    position: relative;
+  }
+  .hero__initials .amp {
+    font-size: 56px;
+    font-style: italic;
+    font-weight: 300;
+    margin: 0 -6px;
+    transform: translateY(-14px);
+    opacity: 0.55;
+  }
+  .hero__roman {
+    position: absolute;
+    top: -4px;
+    font-family: var(--f-mono);
+    font-size: 8px;
+    letter-spacing: 0.3em;
+    color: var(--ink-50);
+    text-transform: uppercase;
+  }
+  .hero__roman--left  { left: 50%; transform: translateX(-142px) rotate(-90deg); transform-origin: top left; }
+  .hero__roman--right { right: 50%; transform: translateX(142px) rotate(90deg); transform-origin: top right; }
+
+  .hero__year {
+    text-align: center;
+    font-family: var(--f-mono);
+    font-size: 10px;
+    letter-spacing: 0.32em;
+    color: var(--ink-70);
+    text-transform: uppercase;
+  }
+  .hero__year-bar {
+    width: 60px; height: 1px;
+    background: var(--ink);
+    margin: 14px auto;
+  }
+  .hero__scroll {
+    position: absolute;
+    bottom: 24px; left: 0; right: 0;
+    text-align: center;
+    font-family: var(--f-mono);
+    font-size: 8px;
+    letter-spacing: 0.36em;
+    color: var(--ink-30);
+    text-transform: uppercase;
+  }
+  .hero__scroll::after {
+    content: "";
+    display: block;
+    width: 1px; height: 28px;
+    background: var(--ink-30);
+    margin: 10px auto 0;
+    animation: scrollLine 2.4s ease-in-out infinite;
+    transform-origin: top;
+  }
+  @keyframes scrollLine {
+    0%, 100% { transform: scaleY(0.2); opacity: 0.3; }
+    50% { transform: scaleY(1); opacity: 1; }
+  }
+
+  /* ─────────────────────────────────────── */
+  /* MARQUEE — kinetic name ticker */
+  /* ─────────────────────────────────────── */
+  .marquee {
+    overflow: hidden;
+    border-top: 1px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
+    padding: 18px 0;
+    background: var(--paper);
+  }
+  .marquee__track {
+    display: flex;
+    gap: 48px;
+    animation: marquee 28s linear infinite;
+    white-space: nowrap;
+    width: max-content;
+  }
+  .marquee__item {
+    font-family: var(--f-display);
+    font-size: 28px;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 48px;
+  }
+  .marquee__item::after {
+    content: "✦";
+    font-style: normal;
+    font-size: 10px;
+    color: var(--ink-50);
+    display: inline-block;
+    transform: translateY(-4px);
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* ─────────────────────────────────────── */
+  /* GUEST NUMBERED CARD */
+  /* ─────────────────────────────────────── */
+  .guest {
+    padding: 72px 32px 64px;
+    text-align: center;
+    border-bottom: 1px solid var(--ink-08);
+  }
+  .guest__label {
+    font-family: var(--f-mono);
+    font-size: 9px;
+    letter-spacing: 0.36em;
+    color: var(--ink-50);
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+  .guest__name {
+    font-family: var(--f-display);
+    font-size: 42px;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--ink);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .guest__rule {
+    width: 32px; height: 1px;
+    background: var(--ink);
+    margin: 24px auto;
+  }
+  .guest__msg {
+    font-family: var(--f-serif);
+    font-size: 14px;
+    line-height: 1.85;
+    color: var(--ink-70);
+    max-width: 280px;
+    margin: 0 auto;
+  }
+  .guest__seat {
+    margin-top: 28px;
+    font-family: var(--f-mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--ink-50);
+  }
+
+  /* ─────────────────────────────────────── */
+  /* GREETING — letter style */
+  /* ─────────────────────────────────────── */
+  .letter {
+    padding: 96px 32px 88px;
+    position: relative;
+  }
+  .letter__stamp {
+    position: absolute;
+    top: 32px; right: 28px;
+    width: 58px; height: 58px;
+    border: 1px solid var(--ink);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--f-mono);
+    font-size: 7px;
+    letter-spacing: 0.18em;
+    color: var(--ink);
+    text-transform: uppercase;
+    text-align: center;
+    line-height: 1.3;
+    transform: rotate(-8deg);
+    opacity: 0.9;
+  }
+  .letter__stamp::before {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    border: 1px dashed var(--ink-30);
+    border-radius: 50%;
+  }
+  .letter__label {
+    font-family: var(--f-mono);
+    font-size: 9px;
+    letter-spacing: 0.36em;
+    color: var(--ink-50);
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+  .letter__lede {
+    font-family: var(--f-display);
+    font-size: 26px;
+    font-style: italic;
+    font-weight: 400;
+    line-height: 1.45;
+    color: var(--ink);
+    margin-bottom: 36px;
+    letter-spacing: -0.01em;
+  }
+  .letter__body {
+    font-size: 15px;
+    line-height: 2;
+    color: var(--ink-70);
+    margin-bottom: 20px;
+  }
+  .letter__sig {
+    margin-top: 48px;
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+  }
+  .letter__sig-line {
+    flex: 1;
+    height: 1px;
+    background: var(--ink-30);
+  }
+  .letter__sig-text {
+    font-family: var(--f-display);
+    font-style: italic;
+    font-size: 18px;
+    color: var(--ink);
+  }
+
+  /* ─────────────────────────────────────── */
+  /* DATE — typography as hero */
+  /* ─────────────────────────────────────── */
+  .date {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 96px 32px 88px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .date::before {
+    content: "";
+    position: absolute;
+    inset: 18px;
+    border: 1px solid rgba(246,244,239,0.18);
+    pointer-events: none;
+  }
+  .date::after {
+    content: "";
+    position: absolute;
+    inset: 24px;
+    border: 1px solid rgba(246,244,239,0.08);
+    pointer-events: none;
+  }
+  .date__label {
+    font-family: var(--f-mono);
+    font-size: 9px;
+    letter-spacing: 0.42em;
+    color: rgba(246,244,239,0.55);
+    text-transform: uppercase;
+    position: relative;
+  }
+  .date__month {
+    margin-top: 40px;
+    font-family: var(--f-display);
+    font-size: 14px;
+    letter-spacing: 0.56em;
+    text-transform: uppercase;
+    font-weight: 400;
+    position: relative;
+  }
+  .date__day {
+    font-family: var(--f-display);
+    font-size: 240px;
+    line-height: 0.78;
+    font-weight: 400;
+    margin: 14px 0;
+    letter-spacing: -0.04em;
+    position: relative;
+  }
+  .date__year {
+    font-family: var(--f-display);
+    font-size: 14px;
+    letter-spacing: 0.56em;
+    font-weight: 400;
+    position: relative;
+  }
+  .date__foot {
+    margin-top: 48px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    font-family: var(--f-mono);
+    font-size: 10px;
+    letter-spacing: 0.24em;
+    color: rgba(246,244,239,0.7);
+    text-transform: uppercase;
+    position: relative;
+  }
+  .date__foot span { width: 20px; height: 1px; background: rgba(246,244,239,0.4); }
+
+  /* ─────────────────────────────────────── */
+  /* GALLERY — editorial b&w archive */
+  /* ─────────────────────────────────────── */
+  .gallery {
+    padding: 96px 0 88px;
+    position: relative;
+  }
+  .gallery__head {
+    padding: 0 32px;
+    margin-bottom: 48px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .gallery__title {
+    font-family: var(--f-display);
+    font-size: 30px;
+    font-style: italic;
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+  .gallery__meta {
+    text-align: right;
+    font-family: var(--f-mono);
+    font-size: 8px;
+    letter-spacing: 0.28em;
+    color: var(--ink-50);
+    text-transform: uppercase;
+    line-height: 1.8;
+  }
+  .gallery__meta b { display: block; color: var(--ink); font-weight: 500; }
+
+  .gallery__hero {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    background: var(--ink-08);
+  }
+  .gallery__hero img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    filter: grayscale(1) contrast(1.05);
+    display: block;
+    transition: transform 1.4s cubic-bezier(.22,.61,.36,1);
+  }
+  .gallery__hero:hover img { transform: scale(1.04); }
+  .gallery__hero-caption {
+    position: absolute;
+    left: 24px; bottom: 22px; right: 24px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    color: var(--paper);
+    font-family: var(--f-mono);
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    text-shadow: 0 1px 10px rgba(0,0,0,0.5);
+  }
+  .gallery__hero-caption .num {
+    font-family: var(--f-display);
+    font-style: italic;
+    font-size: 34px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    text-transform: none;
+  }
+
+  .gallery__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--ink-08);
+    margin-top: 1px;
+  }
+  .gallery__cell {
+    position: relative;
+    aspect-ratio: 1 / 1.15;
+    overflow: hidden;
+    background: var(--paper);
+  }
+  .gallery__cell img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    filter: grayscale(1) contrast(1.05);
+    display: block;
+    transition: transform 1.4s cubic-bezier(.22,.61,.36,1);
+  }
+  .gallery__cell:hover img { transform: scale(1.05); }
+  .gallery__cell-tag {
+    position: absolute;
+    top: 14px; left: 14px;
+    font-family: var(--f-mono);
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    color: var(--paper);
+    text-transform: uppercase;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.6);
+  }
+
+  .gallery__foot {
+    padding: 40px 32px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--f-mono);
+    font-size: 9px;
+    letter-spacing: 0.24em;
+    color: var(--ink-50);
+    text-transform: uppercase;
+  }
+  .gallery__foot .line {
+    flex: 1;
+    height: 1px;
+    background: var(--ink-15);
+    margin: 0 18px;
+  }
+
+  /* ─────────────────────────────────────── */
+  /* VENUE — address + landmark list */
+  /* ─────────────────────────────────────── */
+  .venue {
+    padding: 96px 32px;
+    background: var(--paper);
+    border-top: 1px solid var(--ink-08);
+    border-bottom: 1px solid var(--ink-08);
+  }
+  .venue__label {
+    font-family: var(--f-mono);
+    font-size: 9px;
+    letter-spacing: 0.36em;
+    color: var(--ink-50);
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .venue__name {
+    font-family: var(--f-display);
+    font-size: 32px;
+    text-align: center;
+    line-height: 1.15;
+    margin-bottom: 12px;
+    letter-spacing: -0.01em;
+  }
+  .venue__name em {
+    font-style: italic;
+    display: block;
+    font-size: 14px;
+    color: var(--ink-50);
+    margin-top: 8px;
+    letter-spacing: 0.02em;
+  }
+  .venue__addr {
+    text-align: center;
+    font-family: var(--f-mono);
+    font-size: 11px;
+    line-height: 1.9;
+    color: var(--ink-70);
+    margin: 32px 0 48px;
+  }
+  .venue__landmarks {
+    list-style: none;
+    border-top: 1px solid var(--ink);
+  }
+  .venue__lm {
+    display: grid;
+    grid-template-columns: 28px 1fr auto;
+    gap: 14px;
+    align-items: baseline;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--ink-08);
+  }
+  .venue__lm-num {
+    font-family: var(--f-mono);
+    font-size: 9px;
+    color: var(--ink-50);
+    letter-spacing: 0.08em;
+  }
+  .venue__lm-name {
+    font-family: var(--f-serif);
+    font-size: 14px;
+    color: var(--ink);
+  }
+  .venue__lm-meta {
+    font-family: var(--f-mono);
+    font-size: 9px;
+    color: var(--ink-50);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .venue__cta {
+    display: flex;
+    gap: 10px;
+    margin-top: 36px;
+  }
+  .venue__btn {
+    flex: 1;
+    padding: 16px;
+    border: 1px solid var(--ink);
+    background: transparent;
+    font-family: var(--f-mono);
+    font-size: 10px;
+    letter-spacing: 0.24em;
+    color: var(--ink);
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all .35s ease;
+  }
+  .venue__btn:hover {
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  /* ─────────────────────────────────────── */
+  /* GIFT — private banking card */
+  /* ─────────────────────────────────────── */
+  .gift {
+    padding: 96px 32px 80px;
+    text-align: center;
+    position: relative;
+  }
+  .gift__label {
+    font-family: var(--f-mono);
+    font-size: 9px;
+    letter-spacing: 0.36em;
+    color: var(--ink-50);
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  .gift__title {
+    font-family: var(--f-display);
+    font-size: 30px;
+    font-style: italic;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    margin-bottom: 14px;
+  }
+  .gift__body {
+    font-family: var(--f-serif);
+    font-size: 14px;
+    line-height: 1.9;
+    color: var(--ink-70);
+    max-width: 300px;
+    margin: 0 auto 44px;
+  }
+  .gift__cards {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--ink);
+    border-top: 1px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
+    text-align: left;
+  }
+  .gift__card {
+    background: var(--paper);
+    overflow: hidden;
+  }
+  .gift__card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 22px;
+    cursor: pointer;
+    transition: background .3s ease;
+  }
+  .gift__card-head:hover { background: rgba(10,10,10,0.02); }
+  .gift__card-headline {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+  }
+  .gift__card-num {
+    font-family: var(--f-mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--ink-50);
+    text-transform: uppercase;
+  }
+  .gift__card-title {
+    font-family: var(--f-serif);
+    font-size: 15px;
+    color: var(--ink);
+  }
+  .gift__card-title em {
+    font-family: var(--f-display);
+    font-style: italic;
+    color: var(--ink-50);
+    font-size: 13px;
+    margin-left: 6px;
+  }
+  .gift__card-toggle {
+    width: 28px; height: 28px;
+    border: 1px solid var(--ink);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+    transition: transform .4s ease, background .3s ease;
+  }
+  .gift__card-toggle::before,
+  .gift__card-toggle::after {
+    content: "";
+    position: absolute;
+    background: var(--ink);
+    transition: transform .35s ease, background .3s ease;
+  }
+  .gift__card-toggle::before { width: 10px; height: 1px; }
+  .gift__card-toggle::after  { width: 1px; height: 10px; }
+  .gift__card.is-open .gift__card-toggle {
+    background: var(--ink);
+    transform: rotate(180deg);
+  }
+  .gift__card.is-open .gift__card-toggle::before { background: var(--paper); }
+  .gift__card.is-open .gift__card-toggle::after  { background: var(--paper); transform: rotate(90deg); }
+
+  .gift__card-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .6s cubic-bezier(.22,.61,.36,1);
+  }
+  .gift__card.is-open .gift__card-body {
+    max-height: 600px;
+  }
+  .gift__card-inner {
+    padding: 6px 22px 26px;
+    border-top: 1px dashed var(--ink-15);
+  }
+  .gift__row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 14px;
+    align-items: center;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--ink-08);
+  }
+  .gift__row:last-child { border-bottom: none; padding-bottom: 6px; }
+  .gift__row-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+  .gift__row-relation {
+    font-family: var(--f-mono);
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    color: var(--ink-50);
+    text-transform: uppercase;
+  }
+  .gift__row-name {
+    font-family: var(--f-serif);
+    font-size: 14px;
+    color: var(--ink);
+  }
+  .gift__row-bank {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    color: var(--ink-70);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .gift__copy {
+    flex-shrink: 0;
+    padding: 10px 14px;
+    background: transparent;
+    border: 1px solid var(--ink);
+    font-family: var(--f-mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--ink);
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all .3s ease;
+    white-space: nowrap;
+  }
+  .gift__copy:hover { background: var(--ink); color: var(--paper); }
+  .gift__copy.is-copied {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .gift__foot {
+    margin-top: 32px;
+    font-family: var(--f-display);
+    font-style: italic;
+    font-size: 13px;
+    color: var(--ink-50);
+  }
+
+  /* ─────────────────────────────────────── */
+  /* RSVP — art deco card */
+  /* ─────────────────────────────────────── */
+  .rsvp {
+    padding: 104px 32px 88px;
+    text-align: center;
+    position: relative;
+  }
+  .deco {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-bottom: 44px;
+  }
+  .deco__line {
+    width: 48px; height: 1px;
+    background: var(--ink);
+  }
+  .deco__diamond {
+    width: 6px; height: 6px;
+    border: 1px solid var(--ink);
+    transform: rotate(45deg);
+  }
+  .deco__diamond--fill { background: var(--ink); }
+  .rsvp__title {
+    font-family: var(--f-display);
+    font-size: 32px;
+    font-style: italic;
+    margin-bottom: 10px;
+    letter-spacing: -0.01em;
+  }
+  .rsvp__sub {
+    font-family: var(--f-mono);
+    font-size: 9px;
+    letter-spacing: 0.32em;
+    color: var(--ink-50);
+    text-transform: uppercase;
+    margin-bottom: 40px;
+  }
+  .rsvp__body {
+    font-family: var(--f-serif);
+    font-size: 15px;
+    line-height: 1.9;
+    color: var(--ink-70);
+    max-width: 300px;
+    margin: 0 auto 40px;
+  }
+  .rsvp__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 40px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    font-family: var(--f-mono);
+    font-size: 10px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: transform .35s ease, box-shadow .35s ease;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  }
+  .rsvp__btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 34px rgba(0,0,0,0.25);
+  }
+  .rsvp__btn svg { width: 12px; height: 12px; }
+
+  /* ─────────────────────────────────────── */
+  /* FOOTER CREST */
+  /* ─────────────────────────────────────── */
+  .footer {
+    padding: 96px 32px 88px;
+    text-align: center;
+    border-top: 1px solid var(--ink-08);
+  }
+  .footer__crest {
+    width: 64px; height: 64px;
+    border: 1px solid var(--ink);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--f-display);
+    font-size: 22px;
+    font-style: italic;
+    margin-bottom: 28px;
+    position: relative;
+  }
+  .footer__crest::before {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    border: 1px solid var(--ink-15);
+    border-radius: 50%;
+  }
+  .footer__names {
+    font-family: var(--f-display);
+    font-size: 20px;
+    letter-spacing: 0.02em;
+  }
+  .footer__date {
+    margin-top: 10px;
+    font-family: var(--f-mono);
+    font-size: 9px;
+    letter-spacing: 0.32em;
+    color: var(--ink-50);
+    text-transform: uppercase;
+  }
+  .footer__bottom {
+    margin-top: 48px;
+    font-family: var(--f-mono);
+    font-size: 8px;
+    letter-spacing: 0.28em;
+    color: var(--ink-30);
+    text-transform: uppercase;
+  }
+
+  /* ─────────────────────────────────────── */
+  /* REVEAL */
+  /* ─────────────────────────────────────── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 1s ease, transform 1s ease;
+  }
+  .reveal.is-in {
+    opacity: 1;
+    transform: none;
+  }
+</style>
+</head>
+<body>
+
+  <!-- Progress -->
+  <div class="topbar__progress"><div class="topbar__progress-bar" id="progress"></div></div>
+
+  <!-- Side rail -->
+  <div class="rail" aria-hidden="true">
+    <div class="rail__dot" data-sec="hero">I · INVITATION</div>
+    <div class="rail__dot" data-sec="letter">II · LETTER</div>
+    <div class="rail__dot" data-sec="date">III · DATE</div>
+    <div class="rail__dot" data-sec="gallery">IV · GALLERY</div>
+    <div class="rail__dot" data-sec="venue">V · VENUE</div>
+    <div class="rail__dot" data-sec="gift">VI · GIFT</div>
+    <div class="rail__dot" data-sec="rsvp">VII · RSVP</div>
+  </div>
+
+  <!-- Wax seal intro -->
+  <div class="seal" id="seal">
+    <div class="seal__stamp">
+      <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1">
+        <circle cx="50" cy="50" r="44"/>
+        <text x="50" y="58" text-anchor="middle" font-family="Playfair Display, serif" font-size="34" font-style="italic" fill="currentColor" stroke="none">D&amp;S</text>
+      </svg>
+    </div>
+    <div class="seal__label">Sealed · MMXXVI</div>
+    <div class="seal__hint">tap to open</div>
+  </div>
+
+  <div class="book">
+
+    <!-- ─────────────── HERO ─────────────── -->
+    <section class="hero" data-sec="hero">
+      <div class="topbar">
+        <span>Invitation · No. 001 / CXX</span>
+        <span>Est. MMXXVI</span>
+      </div>
+
+      <div class="hero__kicker" style="margin-top:40px;">
+        The Private Wedding Of
+        <div class="hero__kicker-bar"></div>
+      </div>
+
+      <div class="hero__monogram">
+        <div class="hero__monogram-ring">
+          <div class="hero__roman hero__roman--left">EST · MMXXVI</div>
+          <div class="hero__roman hero__roman--right">SEOUL · KR</div>
+          <div class="hero__initials">
+            D<span class="amp">&amp;</span>S
+          </div>
+        </div>
+      </div>
+
+      <div class="hero__year">
+        <div class="hero__year-bar"></div>
+        Do Yoon &nbsp;·&nbsp; Seo Yeon
+        <div class="hero__year-bar"></div>
+      </div>
+
+      <div class="hero__scroll">Scroll ↓</div>
+    </section>
+
+    <!-- ─────────────── MARQUEE ─────────────── -->
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee__track">
+        <span class="marquee__item">Do Yoon</span>
+        <span class="marquee__item">Seo Yeon</span>
+        <span class="marquee__item">Do Yoon</span>
+        <span class="marquee__item">Seo Yeon</span>
+        <span class="marquee__item">Do Yoon</span>
+        <span class="marquee__item">Seo Yeon</span>
+        <span class="marquee__item">Do Yoon</span>
+        <span class="marquee__item">Seo Yeon</span>
+      </div>
+    </div>
+
+    <!-- ─────────────── GUEST CARD ─────────────── -->
+    <section class="guest reveal">
+      <div class="guest__label">For Our Honoured Guest</div>
+      <div class="guest__name">Mr. &amp; Mrs. Han</div>
+      <div class="guest__rule"></div>
+      <p class="guest__msg">
+        귀하를 저희의 가장 특별한 하루에 정중히 초대합니다.
+      </p>
+      <div class="guest__seat">Table 07 · Seat 02</div>
+    </section>
+
+    <!-- ─────────────── LETTER ─────────────── -->
+    <section class="letter reveal" data-sec="letter">
+      <div class="letter__stamp">
+        MMXXVI<br/>
+        V · XXIII<br/>
+        ★★★★★
+      </div>
+      <div class="letter__label">Letter · I</div>
+      <p class="letter__lede">
+        긴 말 없이,<br/>
+        다만 이 한 줄로 초대합니다.
+      </p>
+      <p class="letter__body">
+        우리는 서로에게 가장 정성스러운 약속을 건네려 합니다.
+        오래 바라보았고, 조심스레 다가섰고, 그리고 마침내 나란히 서기로
+        했습니다.
+      </p>
+      <p class="letter__body">
+        화려한 것보다 단단한 것을, 많은 것보다 오래 가는 것을
+        함께 쌓아가려 합니다. 부디 이 하루의 증인이 되어 주십시오.
+      </p>
+      <div class="letter__sig">
+        <div class="letter__sig-line"></div>
+        <div class="letter__sig-text">D &amp; S</div>
+      </div>
+    </section>
+
+    <!-- ─────────────── DATE ─────────────── -->
+    <section class="date reveal" data-sec="date">
+      <div class="date__label">Save The Date</div>
+      <div class="date__month">2026년 · 5월</div>
+      <div class="date__day">23</div>
+      <div class="date__year">토요일 · SATURDAY</div>
+      <div class="date__foot">
+        <span></span> 오후 2시 · 2 : 00 PM <span></span>
+      </div>
+    </section>
+
+    <!-- ─────────────── GALLERY ─────────────── -->
+    <section class="gallery reveal" data-sec="gallery">
+      <div class="gallery__head">
+        <h3 class="gallery__title">The<br/>Memoirs</h3>
+        <div class="gallery__meta">
+          <b>Archive No. III</b>
+          Five Frames<br/>
+          MMXXII – MMXXVI
+        </div>
+      </div>
+
+      <div class="gallery__hero">
+        <img src="https://images.unsplash.com/photo-1519741497674-611481863552?w=900&q=80" alt="" />
+        <div class="gallery__hero-caption">
+          <span class="num">01</span>
+          <span>The First Light · Spring</span>
+        </div>
+      </div>
+
+      <div class="gallery__grid">
+        <div class="gallery__cell">
+          <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600&q=80" alt="" />
+          <div class="gallery__cell-tag">02 · Seoul</div>
+        </div>
+        <div class="gallery__cell">
+          <img src="https://images.unsplash.com/photo-1529636798458-92182e662485?w=600&q=80" alt="" />
+          <div class="gallery__cell-tag">03 · Jeju</div>
+        </div>
+        <div class="gallery__cell">
+          <img src="https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=600&q=80" alt="" />
+          <div class="gallery__cell-tag">04 · Winter</div>
+        </div>
+        <div class="gallery__cell">
+          <img src="https://images.unsplash.com/photo-1525258946800-98cfd641d0de?w=600&q=80" alt="" />
+          <div class="gallery__cell-tag">05 · Quietly</div>
+        </div>
+      </div>
+
+      <div class="gallery__foot">
+        <span>Vol. I</span>
+        <span class="line"></span>
+        <span>Printed in B&amp;W</span>
+      </div>
+    </section>
+
+    <!-- ─────────────── VENUE ─────────────── -->
+    <section class="venue reveal" data-sec="venue">
+      <div class="venue__label">The Venue</div>
+      <h3 class="venue__name">
+        더채플앳논현
+        <em>그랜드볼룸 · 3층</em>
+      </h3>
+      <div class="venue__addr">
+        서울특별시 강남구 논현로 838<br/>
+        (논현동, 더채플앳논현)
+      </div>
+
+      <ul class="venue__landmarks">
+        <li class="venue__lm">
+          <div class="venue__lm-num">01</div>
+          <div class="venue__lm-name">지하철 · 학동역</div>
+          <div class="venue__lm-meta">7호선 · 도보 3분</div>
+        </li>
+        <li class="venue__lm">
+          <div class="venue__lm-num">02</div>
+          <div class="venue__lm-name">자가용 · 발렛파킹</div>
+          <div class="venue__lm-meta">무료 제공</div>
+        </li>
+        <li class="venue__lm">
+          <div class="venue__lm-num">03</div>
+          <div class="venue__lm-name">셔틀버스 · 강남역</div>
+          <div class="venue__lm-meta">13:00 · 13:30 출발</div>
+        </li>
+      </ul>
+
+      <div class="venue__cta">
+        <button class="venue__btn">네이버 지도</button>
+        <button class="venue__btn">카카오 지도</button>
+      </div>
+    </section>
+
+    <!-- ─────────────── GIFT ─────────────── -->
+    <section class="gift reveal" data-sec="gift">
+      <div class="gift__label">Gift · Of · Heart</div>
+      <h3 class="gift__title">마음을<br/>전하실 곳</h3>
+      <p class="gift__body">
+        참석이 어려우신 분들을 위해 마음을 전하실 수 있는 곳을 마련했습니다.
+        주신 온기는 저희가 소중히 간직하겠습니다.
+      </p>
+
+      <div class="gift__cards">
+
+        <div class="gift__card" data-card>
+          <div class="gift__card-head" data-card-head>
+            <div class="gift__card-headline">
+              <span class="gift__card-num">I</span>
+              <span class="gift__card-title">신랑 측 <em>The Groom's Family</em></span>
+            </div>
+            <div class="gift__card-toggle"></div>
+          </div>
+          <div class="gift__card-body">
+            <div class="gift__card-inner">
+
+              <div class="gift__row">
+                <div class="gift__row-info">
+                  <span class="gift__row-relation">Groom</span>
+                  <span class="gift__row-name">김도윤</span>
+                  <span class="gift__row-bank">KB국민 · 123-4567-890123</span>
+                </div>
+                <button class="gift__copy" data-copy="123-4567-890123">Copy</button>
+              </div>
+
+              <div class="gift__row">
+                <div class="gift__row-info">
+                  <span class="gift__row-relation">Father</span>
+                  <span class="gift__row-name">김영철</span>
+                  <span class="gift__row-bank">신한은행 · 110-234-567890</span>
+                </div>
+                <button class="gift__copy" data-copy="110-234-567890">Copy</button>
+              </div>
+
+              <div class="gift__row">
+                <div class="gift__row-info">
+                  <span class="gift__row-relation">Mother</span>
+                  <span class="gift__row-name">이정숙</span>
+                  <span class="gift__row-bank">우리은행 · 1002-345-678901</span>
+                </div>
+                <button class="gift__copy" data-copy="1002-345-678901">Copy</button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="gift__card" data-card>
+          <div class="gift__card-head" data-card-head>
+            <div class="gift__card-headline">
+              <span class="gift__card-num">II</span>
+              <span class="gift__card-title">신부 측 <em>The Bride's Family</em></span>
+            </div>
+            <div class="gift__card-toggle"></div>
+          </div>
+          <div class="gift__card-body">
+            <div class="gift__card-inner">
+
+              <div class="gift__row">
+                <div class="gift__row-info">
+                  <span class="gift__row-relation">Bride</span>
+                  <span class="gift__row-name">박서연</span>
+                  <span class="gift__row-bank">카카오뱅크 · 3333-01-2345678</span>
+                </div>
+                <button class="gift__copy" data-copy="3333-01-2345678">Copy</button>
+              </div>
+
+              <div class="gift__row">
+                <div class="gift__row-info">
+                  <span class="gift__row-relation">Father</span>
+                  <span class="gift__row-name">박현수</span>
+                  <span class="gift__row-bank">하나은행 · 123-456789-01234</span>
+                </div>
+                <button class="gift__copy" data-copy="123-456789-01234">Copy</button>
+              </div>
+
+              <div class="gift__row">
+                <div class="gift__row-info">
+                  <span class="gift__row-relation">Mother</span>
+                  <span class="gift__row-name">최미영</span>
+                  <span class="gift__row-bank">NH농협 · 302-1234-5678-90</span>
+                </div>
+                <button class="gift__copy" data-copy="302-1234-5678-90">Copy</button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="gift__foot">— With gratitude</div>
+    </section>
+
+    <!-- ─────────────── RSVP ─────────────── -->
+    <section class="rsvp reveal" data-sec="rsvp">
+      <div class="deco">
+        <div class="deco__line"></div>
+        <div class="deco__diamond"></div>
+        <div class="deco__diamond deco__diamond--fill"></div>
+        <div class="deco__diamond"></div>
+        <div class="deco__line"></div>
+      </div>
+
+      <h3 class="rsvp__title">Répondez, s&rsquo;il vous plaît</h3>
+      <div class="rsvp__sub">Kindly Respond By April XXX</div>
+
+      <p class="rsvp__body">
+        귀하의 참석 여부를 미리 알려주시면
+        더욱 정성스럽게 준비하겠습니다.
+      </p>
+
+      <button class="rsvp__btn">
+        Confirm Attendance
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </section>
+
+    <!-- ─────────────── FOOTER ─────────────── -->
+    <footer class="footer">
+      <div class="footer__crest">D&amp;S</div>
+      <div class="footer__names">Do Yoon &nbsp;&&nbsp; Seo Yeon</div>
+      <div class="footer__date">XXIII · V · MMXXVI</div>
+      <div class="footer__bottom">Printed in Seoul · Ed. I of CXX</div>
+    </footer>
+
+  </div>
+
+  <script>
+    // Wax seal open
+    const seal = document.getElementById('seal');
+    const openSeal = () => seal.classList.add('is-open');
+    seal.addEventListener('click', openSeal);
+    seal.addEventListener('touchstart', openSeal, { passive: true });
+    setTimeout(() => { if (!seal.classList.contains('is-open')) openSeal(); }, 4200);
+
+    // Reveal animation
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('is-in');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.14 });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+    // Progress bar
+    const bar = document.getElementById('progress');
+    const onScroll = () => {
+      const h = document.documentElement;
+      const max = h.scrollHeight - h.clientHeight;
+      const p = max > 0 ? (h.scrollTop / max) * 100 : 0;
+      bar.style.width = p + '%';
+    };
+    document.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
+    // Gift accordion toggle
+    document.querySelectorAll('[data-card-head]').forEach(head => {
+      head.addEventListener('click', () => {
+        const card = head.closest('[data-card]');
+        card.classList.toggle('is-open');
+      });
+    });
+
+    // Gift copy-to-clipboard
+    document.querySelectorAll('.gift__copy').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const value = btn.getAttribute('data-copy') || '';
+        try {
+          await navigator.clipboard.writeText(value);
+        } catch (err) {
+          const ta = document.createElement('textarea');
+          ta.value = value;
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); } catch(_) {}
+          document.body.removeChild(ta);
+        }
+        const original = btn.textContent;
+        btn.textContent = 'Copied';
+        btn.classList.add('is-copied');
+        setTimeout(() => {
+          btn.textContent = original;
+          btn.classList.remove('is-copied');
+        }, 1600);
+      });
+    });
+
+    // Side rail active section
+    const rails = document.querySelectorAll('.rail__dot');
+    const sections = document.querySelectorAll('[data-sec]');
+    const railIo = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          const id = e.target.getAttribute('data-sec');
+          rails.forEach(r => r.classList.toggle('is-active', r.getAttribute('data-sec') === id));
+        }
+      });
+    }, { threshold: 0.35 });
+    sections.forEach(s => railIo.observe(s));
+  </script>
+</body>
+</html>

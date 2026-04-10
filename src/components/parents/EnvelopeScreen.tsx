@@ -495,10 +495,14 @@ export default function EnvelopeScreen({
                     </p>
                   ))}
                 </div>
-                <div className="h-px w-[40px] mx-auto mb-3" style={{ backgroundColor: accentColor }} />
-                <p className="text-[11px]" style={{ color: '#888' }}>
-                  {signature}
-                </p>
+                {signature && (
+                  <>
+                    <div className="h-px w-[40px] mx-auto mb-3" style={{ backgroundColor: accentColor }} />
+                    <p className="text-[11px]" style={{ color: '#888' }}>
+                      {signature}
+                    </p>
+                  </>
+                )}
               </div>
             </div>
           </div>

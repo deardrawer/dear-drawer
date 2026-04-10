@@ -71,13 +71,22 @@ export interface ParentsInvitationData {
     firstName: string // 이름
     fatherName: string
     motherName: string
+    fatherDeceased?: boolean
+    motherDeceased?: boolean
+    parentsHidden?: boolean
   }
   bride: {
     lastName: string  // 성
     firstName: string // 이름
     fatherName: string
     motherName: string
+    fatherDeceased?: boolean
+    motherDeceased?: boolean
+    parentsHidden?: boolean
   }
+
+  // 고인 표시 스타일
+  deceasedDisplayStyle?: 'hanja' | 'flower'
 
   // 결혼식 정보
   wedding: {
@@ -270,13 +279,18 @@ const defaultData: ParentsInvitationData = {
     firstName: '',
     fatherName: '',
     motherName: '',
+    fatherDeceased: false,
+    motherDeceased: false,
   },
   bride: {
     lastName: '',
     firstName: '',
     fatherName: '',
     motherName: '',
+    fatherDeceased: false,
+    motherDeceased: false,
   },
+  deceasedDisplayStyle: 'flower',
   wedding: {
     date: '',
     time: '12:00',

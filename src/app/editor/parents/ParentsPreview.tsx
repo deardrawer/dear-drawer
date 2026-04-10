@@ -75,9 +75,11 @@ export default function ParentsPreview({
   const recipientName = selectedGuest?.name || data.envelope.defaultGreeting?.replace(/님께$|께$|님$|에게$/, '') || '소중한 분'
   const recipientTitle = selectedGuest?.honorific || data.envelope.defaultGreeting?.match(/님께$|께$|님$|에게$/)?.[0] || '께'
 
-  // 부모님 서명 생성
-  const senderSignature = data.sender.signature ||
-    `아버지 ${data.sender.fatherName || '○○○'} · 어머니 ${data.sender.motherName || '○○○'} 드림`
+  // 부모님 서명 생성 (이름만, 호칭 없음, 비어있으면 빈 문자열 → 봉투에서 자동 숨김)
+  const senderNames = [data.sender.fatherName, data.sender.motherName]
+    .map(n => (n || '').trim())
+    .filter(Boolean)
+  const senderSignature = senderNames.length > 0 ? `${senderNames.join(' · ')} 드림` : ''
 
   // 봉투 메시지 - 선택된 게스트의 맞춤 메시지가 있으면 사용
   const envelopeMessage = selectedGuest?.custom_message
@@ -136,18 +138,6 @@ export default function ParentsPreview({
               isPreview={true}
             />
           </div>
-          {/* 라운드 테두리 - 스크롤과 무관하게 고정 */}
-          <div
-            style={{
-              position: 'absolute',
-              inset: '6px',
-              border: `2px solid ${theme.primary}`,
-              borderRadius: '26px',
-              pointerEvents: 'none',
-              zIndex: 9999,
-              boxShadow: `0 0 0 100px ${theme.primary}`,
-            }}
-          />
         </>
       )}
     </div>

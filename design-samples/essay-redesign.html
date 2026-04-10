@@ -1,0 +1,776 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Essay — Redesign Sample</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Inter:wght@300;400;500;600&family=Noto+Serif+KR:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Monochrome editorial palette with warm paper tone */
+    --bg:         #F7F4EE;
+    --bg-soft:    #EFEAE0;
+    --ink:        #1A1814;
+    --ink-soft:   #4A4640;
+    --ink-mute:   #8A847A;
+    --line:       #D8D2C4;
+    --line-soft:  #E8E2D4;
+    --accent:     #8C3A2B;      /* single restrained accent */
+    --accent-bg:  #F1E9DD;
+    --paper:      #FFFFFF;
+
+    --f-display:  "Cormorant Garamond", "Noto Serif KR", serif;
+    --f-serif:    "Noto Serif KR", "Cormorant Garamond", serif;
+    --f-sans:     "Inter", -apple-system, "Pretendard", sans-serif;
+
+    /* Editorial scale */
+    --w:          min(92vw, 520px);
+  }
+
+  * { box-sizing: border-box; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--f-serif);
+    font-weight: 400;
+    line-height: 1.75;
+    font-size: 15px;
+    letter-spacing: -0.005em;
+  }
+
+  .frame {
+    width: var(--w);
+    margin: 0 auto;
+    background: var(--bg);
+    position: relative;
+  }
+
+  /* ─────────────────────────────────────── */
+  /* COVER — full bleed, restrained typography */
+  /* ─────────────────────────────────────── */
+  .cover {
+    position: relative;
+    height: 100vh;
+    min-height: 680px;
+    overflow: hidden;
+    color: #fff;
+  }
+  .cover__img {
+    position: absolute; inset: 0;
+    background: url("https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&q=80") center/cover no-repeat;
+    filter: grayscale(0.15) brightness(0.86);
+  }
+  .cover__img::after {
+    content: "";
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.2) 50%, rgba(20,16,10,0.72) 100%);
+  }
+  .cover__top {
+    position: relative;
+    padding: 56px 32px 0;
+    text-align: center;
+    z-index: 2;
+  }
+  .cover__kicker {
+    font-family: var(--f-sans);
+    font-weight: 500;
+    font-size: 10px;
+    letter-spacing: 0.42em;
+    text-transform: uppercase;
+    opacity: 0.9;
+  }
+  .cover__rule {
+    width: 28px; height: 1px;
+    background: rgba(255,255,255,0.6);
+    margin: 18px auto 0;
+  }
+  .cover__bottom {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: 0 32px 72px;
+    z-index: 2;
+  }
+  .cover__names {
+    font-family: var(--f-display);
+    font-weight: 400;
+    font-size: clamp(44px, 13vw, 68px);
+    line-height: 1.02;
+    letter-spacing: -0.015em;
+  }
+  .cover__names .amp {
+    display: block;
+    font-style: italic;
+    font-weight: 300;
+    opacity: 0.7;
+    margin: 6px 0;
+    font-size: 0.55em;
+  }
+  .cover__meta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 28px;
+    font-family: var(--f-sans);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    opacity: 0.92;
+  }
+  .cover__meta .dot { width: 3px; height: 3px; border-radius: 50%; background: currentColor; opacity: 0.6; }
+  .cover__scroll {
+    position: absolute;
+    bottom: 22px; left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--f-sans);
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    opacity: 0.7;
+    z-index: 2;
+  }
+  .cover__scroll::after {
+    content: "";
+    display: block;
+    width: 1px; height: 22px;
+    background: rgba(255,255,255,0.6);
+    margin: 8px auto 0;
+    animation: scrollHint 2.2s ease-in-out infinite;
+  }
+  @keyframes scrollHint {
+    0%, 100% { transform: scaleY(0.3); transform-origin: top; opacity: 0.4; }
+    50% { transform: scaleY(1); opacity: 1; }
+  }
+
+  /* ─────────────────────────────────────── */
+  /* SECTION WRAPPER */
+  /* ─────────────────────────────────────── */
+  .section {
+    padding: 96px 32px;
+    position: relative;
+  }
+  .section--alt {
+    background: var(--bg-soft);
+  }
+  .section__label {
+    font-family: var(--f-sans);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+  .section__title {
+    font-family: var(--f-serif);
+    font-size: 24px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin: 0 0 40px;
+    line-height: 1.35;
+  }
+  .section__title em {
+    font-family: var(--f-display);
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+  }
+
+  /* ─────────────────────────────────────── */
+  /* GREETING — editorial lede, no drop-cap */
+  /* ─────────────────────────────────────── */
+  .greeting {
+    padding: 112px 32px 104px;
+  }
+  .greeting__marker {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-family: var(--f-sans);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-bottom: 44px;
+  }
+  .greeting__marker::before {
+    content: "";
+    width: 28px; height: 1px;
+    background: var(--ink-mute);
+  }
+  .greeting__lede {
+    font-family: var(--f-display);
+    font-size: 28px;
+    font-weight: 300;
+    line-height: 1.4;
+    color: var(--ink);
+    margin: 0 0 36px;
+    letter-spacing: -0.01em;
+  }
+  .greeting__lede em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .greeting__body {
+    font-family: var(--f-serif);
+    font-size: 15px;
+    line-height: 1.9;
+    color: var(--ink-soft);
+    margin: 0 0 20px;
+    font-weight: 400;
+  }
+  .greeting__sign {
+    margin-top: 48px;
+    font-family: var(--f-sans);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+
+  /* ─────────────────────────────────────── */
+  /* CHAPTER — modern editorial (no vertical title) */
+  /* ─────────────────────────────────────── */
+  .chapter {
+    padding: 104px 32px;
+    border-top: 1px solid var(--line-soft);
+  }
+  .chapter__head {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 18px;
+    align-items: baseline;
+    margin-bottom: 48px;
+  }
+  .chapter__num {
+    font-family: var(--f-display);
+    font-size: 14px;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+    letter-spacing: 0.02em;
+  }
+  .chapter__num::before {
+    content: "";
+    display: inline-block;
+    width: 18px; height: 1px;
+    background: var(--accent);
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+  .chapter__kicker {
+    font-family: var(--f-sans);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+  .chapter__title {
+    grid-column: 2;
+    font-family: var(--f-serif);
+    font-size: 32px;
+    font-weight: 500;
+    line-height: 1.25;
+    color: var(--ink);
+    margin: 14px 0 0;
+    letter-spacing: -0.015em;
+  }
+  .chapter__title em {
+    font-family: var(--f-display);
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+  }
+  .chapter__image {
+    width: calc(100% + 64px);
+    margin: 0 -32px 44px;
+    aspect-ratio: 4/5;
+    overflow: hidden;
+    background: var(--line-soft);
+  }
+  .chapter__image img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    filter: grayscale(0.08);
+  }
+  .chapter__caption {
+    font-family: var(--f-sans);
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin: 14px 0 36px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .chapter__caption::before {
+    content: ""; width: 18px; height: 1px; background: var(--ink-mute);
+  }
+  .chapter__body {
+    font-family: var(--f-serif);
+    font-size: 15px;
+    line-height: 1.95;
+    color: var(--ink-soft);
+    margin: 0 0 22px;
+  }
+
+  /* ─────────────────────────────────────── */
+  /* PULL QUOTE — modern editorial, no large gloyph */
+  /* ─────────────────────────────────────── */
+  .pullquote {
+    padding: 88px 32px;
+    background: var(--bg-soft);
+    border-top: 1px solid var(--line-soft);
+    border-bottom: 1px solid var(--line-soft);
+    text-align: left;
+  }
+  .pullquote__rule {
+    width: 40px; height: 1px;
+    background: var(--accent);
+    margin: 0 0 28px;
+  }
+  .pullquote__text {
+    font-family: var(--f-display);
+    font-size: 26px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--ink);
+    margin: 0 0 26px;
+    font-style: italic;
+    letter-spacing: -0.01em;
+  }
+  .pullquote__attr {
+    font-family: var(--f-sans);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+
+  /* ─────────────────────────────────────── */
+  /* INTERVIEW — cleaner Q&A, more air */
+  /* ─────────────────────────────────────── */
+  .interview {
+    padding: 104px 32px;
+  }
+  .interview__item {
+    padding: 36px 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .interview__item:first-of-type { border-top: 1px solid var(--line-soft); }
+  .interview__q-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--f-sans);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+  .interview__q-label::before {
+    content: ""; width: 16px; height: 1px; background: var(--accent);
+  }
+  .interview__q {
+    font-family: var(--f-serif);
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.5;
+    color: var(--ink);
+    margin: 0 0 18px;
+    letter-spacing: -0.01em;
+  }
+  .interview__a {
+    font-family: var(--f-serif);
+    font-size: 14px;
+    line-height: 1.9;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+  .interview__a::before {
+    content: "— ";
+    color: var(--ink-mute);
+  }
+  .interview__meta {
+    margin-top: 12px;
+    font-family: var(--f-sans);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+
+  /* ─────────────────────────────────────── */
+  /* WEDDING INFO — modern card with grid */
+  /* ─────────────────────────────────────── */
+  .info {
+    padding: 104px 32px 88px;
+    background: var(--bg-soft);
+    text-align: center;
+  }
+  .info__date {
+    font-family: var(--f-display);
+    font-size: 48px;
+    font-weight: 300;
+    line-height: 1;
+    color: var(--ink);
+    letter-spacing: 0.01em;
+  }
+  .info__date .sep { color: var(--ink-mute); margin: 0 4px; }
+  .info__dayline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 24px;
+    font-family: var(--f-sans);
+    font-size: 11px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+  .info__dayline span { width: 24px; height: 1px; background: var(--line); }
+  .info__venue {
+    margin-top: 48px;
+    font-family: var(--f-serif);
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+  }
+  .info__addr {
+    margin-top: 8px;
+    font-family: var(--f-sans);
+    font-size: 12px;
+    color: var(--ink-mute);
+    line-height: 1.7;
+  }
+  .info__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 36px;
+    padding: 14px 28px;
+    border: 1px solid var(--ink);
+    border-radius: 999px;
+    font-family: var(--f-sans);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: transparent;
+    cursor: pointer;
+    transition: all .3s ease;
+  }
+  .info__cta:hover {
+    background: var(--ink);
+    color: var(--bg);
+  }
+  .info__cta svg { width: 12px; height: 12px; }
+
+  /* ─────────────────────────────────────── */
+  /* CALENDAR — minimal grid */
+  /* ─────────────────────────────────────── */
+  .cal {
+    padding: 80px 32px;
+    text-align: center;
+  }
+  .cal__table {
+    margin: 32px auto 0;
+    width: 100%;
+    max-width: 320px;
+    border-collapse: collapse;
+    font-family: var(--f-sans);
+    font-size: 13px;
+  }
+  .cal__table th {
+    font-weight: 500;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    padding: 8px 0;
+  }
+  .cal__table td {
+    padding: 10px 0;
+    color: var(--ink-soft);
+  }
+  .cal__table td.cal__day--target {
+    position: relative;
+    color: var(--paper);
+    font-weight: 500;
+  }
+  .cal__table td.cal__day--target::before {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    background: var(--accent);
+    border-radius: 50%;
+    z-index: -1;
+  }
+  .cal__day-wrap {
+    display: inline-flex;
+    width: 32px; height: 32px;
+    align-items: center; justify-content: center;
+    border-radius: 50%;
+    position: relative;
+  }
+
+  /* ─────────────────────────────────────── */
+  /* CLOSING */
+  /* ─────────────────────────────────────── */
+  .closing {
+    padding: 120px 32px 140px;
+    text-align: center;
+  }
+  .closing__rule {
+    width: 40px; height: 1px;
+    background: var(--line);
+    margin: 0 auto 32px;
+  }
+  .closing__text {
+    font-family: var(--f-display);
+    font-size: 22px;
+    font-weight: 300;
+    line-height: 1.6;
+    font-style: italic;
+    color: var(--ink);
+    margin: 0 0 36px;
+  }
+  .closing__names {
+    font-family: var(--f-serif);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--ink);
+  }
+  .closing__date {
+    margin-top: 8px;
+    font-family: var(--f-sans);
+    font-size: 10px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+
+  /* ─────────────────────────────────────── */
+  /* REVEAL ANIMATION */
+  /* ─────────────────────────────────────── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity .9s ease, transform .9s ease;
+  }
+  .reveal.is-in {
+    opacity: 1;
+    transform: none;
+  }
+</style>
+</head>
+<body>
+  <div class="frame">
+
+    <!-- ─────────────── COVER ─────────────── -->
+    <section class="cover">
+      <div class="cover__img"></div>
+      <div class="cover__top">
+        <div class="cover__kicker">Our Wedding Essay</div>
+        <div class="cover__rule"></div>
+      </div>
+      <div class="cover__bottom">
+        <h1 class="cover__names">
+          도윤
+          <span class="amp">&amp;</span>
+          서연
+        </h1>
+        <div class="cover__meta">
+          <span>2026.05.23</span>
+          <span class="dot"></span>
+          <span>Saturday</span>
+          <span class="dot"></span>
+          <span>Seoul</span>
+        </div>
+      </div>
+      <div class="cover__scroll">Scroll</div>
+    </section>
+
+    <!-- ─────────────── GREETING ─────────────── -->
+    <section class="greeting reveal">
+      <div class="greeting__marker">Prologue</div>
+      <p class="greeting__lede">
+        우리는 어느 계절의 한가운데에서<br/>
+        서로의 <em>가장 작은 순간들</em>을 모아왔습니다.
+      </p>
+      <p class="greeting__body">
+        평범한 아침의 커피 한 잔, 지나간 계절에 나누었던 말들, 그리고 문득
+        마주 보며 웃게 되는 찰나. 그런 사소한 것들이 쌓여 우리의 하루가
+        되었고, 이제 한 권의 이야기로 묶이려 합니다.
+      </p>
+      <p class="greeting__body">
+        그 첫 장을 함께 펼쳐 주시면 감사하겠습니다.
+      </p>
+      <div class="greeting__sign">— From 도윤 &amp; 서연</div>
+    </section>
+
+    <!-- ─────────────── CHAPTER 01 ─────────────── -->
+    <section class="chapter reveal">
+      <div class="chapter__head">
+        <div class="chapter__num">Ch. 01</div>
+        <div class="chapter__kicker">The Beginning</div>
+        <h2 class="chapter__title">처음,<br/><em>봄의 저녁</em>이었습니다.</h2>
+      </div>
+
+      <div class="chapter__image">
+        <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=900&q=80" alt="" />
+      </div>
+      <div class="chapter__caption">Spring, 2022 · Seoul</div>
+
+      <p class="chapter__body">
+        서촌의 좁은 골목 끝, 노란 가로등이 막 켜지던 시간이었습니다. 친구의
+        친구로 만난 그 사람은 내가 좋아하는 책 이야기를 하다가 갑자기 조용해졌고,
+        나는 그 침묵이 이상하게 편안했습니다.
+      </p>
+      <p class="chapter__body">
+        돌아오는 길에 우리는 같은 골목을 두 번 걸었습니다. 한 번은 서로를
+        알기 위해, 또 한 번은 이 저녁을 조금 더 붙잡고 싶어서.
+      </p>
+    </section>
+
+    <!-- ─────────────── PULL QUOTE ─────────────── -->
+    <section class="pullquote reveal">
+      <div class="pullquote__rule"></div>
+      <p class="pullquote__text">
+        “우리는 서두르지 않기로 했다.<br/>
+        다만, 같은 방향을 바라보기로 했다.”
+      </p>
+      <div class="pullquote__attr">— An Unwritten Promise</div>
+    </section>
+
+    <!-- ─────────────── CHAPTER 02 ─────────────── -->
+    <section class="chapter reveal">
+      <div class="chapter__head">
+        <div class="chapter__num">Ch. 02</div>
+        <div class="chapter__kicker">Between the Lines</div>
+        <h2 class="chapter__title"><em>사소한</em> 계절들<br/>사이에서.</h2>
+      </div>
+
+      <p class="chapter__body">
+        우리는 별다른 일이 없는 날들을 가장 좋아했습니다. 퇴근 후 말없이
+        걷는 한강의 밤, 세 시의 해가 거실에 길게 드리워지는 주말, 특별할
+        것 없는 저녁을 둘이 나란히 앉아 먹는 식탁.
+      </p>
+      <p class="chapter__body">
+        그런 날들이 조용히 쌓여 우리가 되었고, 그 안에서 우리는 ‘함께’라는
+        단어의 무게를 배웠습니다.
+      </p>
+    </section>
+
+    <!-- ─────────────── INTERVIEW ─────────────── -->
+    <section class="interview section--alt reveal">
+      <div class="section__label">Interview</div>
+      <h3 class="section__title">두 사람에게<br/><em>몇 가지</em> 질문을 건넵니다.</h3>
+
+      <div class="interview__item">
+        <div class="interview__q-label">Q — 01</div>
+        <p class="interview__q">서로에게서 가장 먼저 좋아하게 된 점이 있다면?</p>
+        <p class="interview__a">말끝을 흐리며 웃는 모습. 그 웃음이 공기를 조금 가볍게 만드는 것 같았어요.</p>
+        <div class="interview__meta">— 도윤</div>
+      </div>
+
+      <div class="interview__item">
+        <div class="interview__q-label">Q — 02</div>
+        <p class="interview__q">함께한 시간 중 가장 기억에 남는 장면은?</p>
+        <p class="interview__a">이름 모를 골목에서 길을 잃었는데 둘 다 전혀 당황하지 않았던 날.
+          그때 알았어요, 이 사람이랑은 어디든 괜찮겠구나.</p>
+        <div class="interview__meta">— 서연</div>
+      </div>
+
+      <div class="interview__item">
+        <div class="interview__q-label">Q — 03</div>
+        <p class="interview__q">앞으로 함께 쓰고 싶은 이야기가 있다면?</p>
+        <p class="interview__a">거창하지 않은, 그러나 매일 새로 쓰이는 이야기.
+          긴 글보다는, 오래 읽히는 한 줄 같은 하루들.</p>
+        <div class="interview__meta">— 함께</div>
+      </div>
+    </section>
+
+    <!-- ─────────────── INFO ─────────────── -->
+    <section class="info reveal">
+      <div class="section__label">The Day</div>
+      <div class="info__date">
+        2026<span class="sep">.</span>05<span class="sep">.</span>23
+      </div>
+      <div class="info__dayline">
+        <span></span> Saturday · 2:00 PM <span></span>
+      </div>
+      <div class="info__venue">더채플앳논현 · 그랜드홀</div>
+      <div class="info__addr">
+        서울특별시 강남구 논현로 838<br/>
+        지하철 7호선 학동역 10번 출구
+      </div>
+      <button class="info__cta">
+        View on Map
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </section>
+
+    <!-- ─────────────── CALENDAR ─────────────── -->
+    <section class="cal reveal">
+      <div class="section__label">Calendar</div>
+      <h3 class="section__title">May, <em>2026</em></h3>
+      <table class="cal__table" aria-hidden="true">
+        <thead>
+          <tr><th>S</th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th></tr>
+        </thead>
+        <tbody>
+          <tr><td></td><td></td><td></td><td></td><td></td><td>1</td><td>2</td></tr>
+          <tr><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td></tr>
+          <tr><td>10</td><td>11</td><td>12</td><td>13</td><td>14</td><td>15</td><td>16</td></tr>
+          <tr><td>17</td><td>18</td><td>19</td><td>20</td><td>21</td><td>22</td><td class="cal__day--target">23</td></tr>
+          <tr><td>24</td><td>25</td><td>26</td><td>27</td><td>28</td><td>29</td><td>30</td></tr>
+          <tr><td>31</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ─────────────── CLOSING ─────────────── -->
+    <section class="closing reveal">
+      <div class="closing__rule"></div>
+      <p class="closing__text">
+        당신이 이 이야기의<br/>
+        다음 문장이 되어 주세요.
+      </p>
+      <div class="closing__names">도윤 &nbsp;·&nbsp; 서연</div>
+      <div class="closing__date">23 · 05 · 2026</div>
+    </section>
+
+  </div>
+
+  <script>
+    // Scroll reveal
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('is-in');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  </script>
+</body>
+</html>

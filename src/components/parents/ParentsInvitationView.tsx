@@ -16,6 +16,29 @@ import RsvpModal from './RsvpModal'
 import { COLOR_THEMES, FONT_STYLES, type ParentsInvitationContent, type GuestInfo } from './types'
 import { ThemeProvider } from './ThemeContext'
 
+// 국화 아이콘 (고인 표시 - 꽃 스타일)
+const ChrysanthemumIcon = () => (
+  <img
+    src="/icons/chrysanthemum.svg"
+    alt="고인"
+    className="inline w-3 h-3 mr-0.5 opacity-70 align-middle"
+    style={{ verticalAlign: 'middle', marginTop: '-2px' }}
+  />
+)
+
+// 한자 고인 표시
+const HanjaDeceasedIcon = () => (
+  <span className="inline-block mr-0.5 opacity-70" style={{ fontSize: 'inherit' }}>故</span>
+)
+
+// 부모님 이름 표시 (고인 시 선택된 스타일로 표시)
+const ParentName = ({ name, deceased, displayStyle = 'flower' }: { name: string; deceased?: boolean; displayStyle?: 'hanja' | 'flower' }) => (
+  <span>
+    {deceased && (displayStyle === 'hanja' ? <HanjaDeceasedIcon /> : <ChrysanthemumIcon />)}
+    {name}
+  </span>
+)
+
 // 글자 크기 타입
 type FontSizeLevel = 'normal' | 'large' | 'xlarge'
 
@@ -134,19 +157,25 @@ export default function ParentsInvitationView({
   const recipientName = guestInfo?.name || data.envelope.defaultGreeting?.replace(/님께$|께$|님$|에게$/, '') || '소중한 분'
   const recipientTitle = guestInfo?.honorific || data.envelope.defaultGreeting?.match(/님께$|께$|님$|에게$/)?.[0] || '께'
 
-  // 부모님 서명 생성
-  const senderSignature = data.sender.signature ||
-    `아버지 ${data.sender.fatherName || '○○○'} · 어머니 ${data.sender.motherName || '○○○'} 드림`
+  // 부모님 서명 생성 (이름만, 호칭 없음, 비어있으면 빈 문자열)
+  const senderNames = [data.sender.fatherName, data.sender.motherName]
+    .map(n => (n || '').trim())
+    .filter(Boolean)
+  const senderSignature = senderNames.length > 0 ? `${senderNames.join(' · ')} 드림` : ''
 
-  // 자녀 이름 (sender side에 따라) - 인사말에는 이름만, 다른 곳에는 풀네임
+  // 자녀 이름 (sender side에 따라) - 인사말에는 이름만 사용
   const childFirstName = data.sender.side === 'groom' ? data.groom.firstName : data.bride.firstName
-  const groomFullName = `${data.groom.lastName || ''}${data.groom.firstName || ''}`
-  const brideFullName = `${data.bride.lastName || ''}${data.bride.firstName || ''}`
 
-  // 갤러리 사진 (크롭 데이터 포함)
+  // 고인 표시 스타일
+  const deceasedStyle = data.deceasedDisplayStyle || 'flower'
+
+  // 갤러리 사진 (크롭 데이터 포함 + 빈 URL 필터링 강화)
   const photos = data.gallery.images.length > 0
     ? data.gallery.images
-        .filter(img => typeof img === 'string' ? img : img.url) // URL이 있는 것만
+        .filter(img => {
+          const url = typeof img === 'string' ? img : img.url
+          return url && url.trim() !== ''
+        })
         .map((img, i) => ({
           id: i + 1,
           url: typeof img === 'string' ? img : img.url,
@@ -201,6 +230,8 @@ export default function ParentsInvitationView({
 
   return (
     <ThemeProvider themeId={data.colorTheme || 'burgundy'} customPrimary={data.customPrimaryColor} customAccent={data.customAccentColor} customBackground={data.customBackgroundColor}>
+      {/* 전체 화면 배경색 (max-w-[390px] 바깥 영역 커버) */}
+      <div style={{ backgroundColor: theme.background, minHeight: '100vh' }}>
       <div
         className={`relative max-w-[390px] mx-auto min-h-screen overflow-hidden ${fontStyle.className}`}
         style={{
@@ -237,20 +268,7 @@ export default function ParentsInvitationView({
       {/* 본문 */}
       {isEnvelopeOpen && (
         <SectionHighlightProvider>
-          {/* 라운드 테두리 프레임 - 실제 청첩장에서만 표시 (외부 프레임이 있으면 숨김) */}
-          {!isPreview && !hideInternalFrame && (
-            <div
-              style={{
-                position: 'fixed',
-                inset: '8px',
-                border: `2px solid ${theme.primary}`,
-                borderRadius: '32px',
-                pointerEvents: 'none',
-                zIndex: 9999,
-                boxShadow: `0 0 0 100px ${theme.primary}`,
-              }}
-            />
-          )}
+          {/* 프레임 제거됨 */}
           <main className="animate-fade-in relative">
             {/* 상단 컨트롤 버튼들 */}
             {!isPreview && (
@@ -340,7 +358,7 @@ export default function ParentsInvitationView({
               <GreetingSection
                 childName={childFirstName || '○○'}
                 greeting={data.greeting}
-                parentSignature={`아버지 ${data.sender.fatherName || '○○○'} · 어머니 ${data.sender.motherName || '○○○'}`}
+                parentSignature={senderNames.length > 0 ? senderNames.join(' · ') : ''}
                 senderSide={data.sender.side}
               />
             </div>
@@ -352,14 +370,69 @@ export default function ParentsInvitationView({
             )}
             <div id="preview-couple">
               <SectionDivider />
-              <MainPhotoSection
-                photos={photos}
-                mainImage={data.mainImage}
-                groomName={groomFullName || '신랑'}
-                brideName={brideFullName || '신부'}
-                groomParents={`${data.groom.fatherName || '○○○'} · ${data.groom.motherName || '○○○'}의 아들`}
-                brideParents={`${data.bride.fatherName || '○○○'} · ${data.bride.motherName || '○○○'}의 딸`}
-              />
+              {(() => {
+                // 신랑측: parentsHidden이거나 두 이름 모두 비어있으면 숨김
+                const groomFather = (data.groom.fatherName || '').trim()
+                const groomMother = (data.groom.motherName || '').trim()
+                const groomHidden = data.groom.parentsHidden || (!groomFather && !groomMother)
+
+                // 신부측: parentsHidden이거나 두 이름 모두 비어있으면 숨김
+                const brideFather = (data.bride.fatherName || '').trim()
+                const brideMother = (data.bride.motherName || '').trim()
+                const brideHidden = data.bride.parentsHidden || (!brideFather && !brideMother)
+
+                // 텍스트 버전 (고인 표시 없을 때)
+                const groomParentsText = groomHidden
+                  ? ''
+                  : `${[groomFather, groomMother].filter(Boolean).join(' · ')}의 아들`
+                const brideParentsText = brideHidden
+                  ? ''
+                  : `${[brideFather, brideMother].filter(Boolean).join(' · ')}의 딸`
+
+                // 고인 표시가 있을 때 노드 버전
+                const groomHasDeceased = !groomHidden && (data.groom.fatherDeceased || data.groom.motherDeceased)
+                const brideHasDeceased = !brideHidden && (data.bride.fatherDeceased || data.bride.motherDeceased)
+
+                const groomParentsNode = groomHasDeceased ? (
+                  <>
+                    {groomFather && (
+                      <ParentName name={groomFather} deceased={data.groom.fatherDeceased} displayStyle={deceasedStyle} />
+                    )}
+                    {groomFather && groomMother && ' · '}
+                    {groomMother && (
+                      <ParentName name={groomMother} deceased={data.groom.motherDeceased} displayStyle={deceasedStyle} />
+                    )}
+                    의 아들
+                  </>
+                ) : undefined
+
+                const brideParentsNode = brideHasDeceased ? (
+                  <>
+                    {brideFather && (
+                      <ParentName name={brideFather} deceased={data.bride.fatherDeceased} displayStyle={deceasedStyle} />
+                    )}
+                    {brideFather && brideMother && ' · '}
+                    {brideMother && (
+                      <ParentName name={brideMother} deceased={data.bride.motherDeceased} displayStyle={deceasedStyle} />
+                    )}
+                    의 딸
+                  </>
+                ) : undefined
+
+                return (
+                  <MainPhotoSection
+                    photos={photos}
+                    mainImage={data.mainImage}
+                    groomName={(data.groom.firstName || '').trim() || '민수'}
+                    brideName={(data.bride.firstName || '').trim() || '서연'}
+                    groomParents={groomParentsText}
+                    brideParents={brideParentsText}
+                    isPreview={isPreview}
+                    groomParentsNode={groomParentsNode}
+                    brideParentsNode={brideParentsNode}
+                  />
+                )
+              })()}
             </div>
             {/* 유튜브 영상 */}
             {data.youtube?.enabled && data.youtube?.url && (() => {
@@ -485,6 +558,7 @@ export default function ParentsInvitationView({
         </SectionHighlightProvider>
       )}
 
+      </div>
       </div>
     </ThemeProvider>
   )

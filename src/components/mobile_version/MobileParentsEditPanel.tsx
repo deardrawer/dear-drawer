@@ -433,18 +433,10 @@ export default function MobileParentsEditPanel({ data, updateData, updateNestedD
                     />
                   </div>
                 </div>
-
-                {/* 서명 */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">편지 서명</Label>
-                  <Input
-                    value={data.sender.signature}
-                    onChange={(e) => updateNestedData('sender.signature', e.target.value)}
-                    placeholder="아버지 홍길동 · 어머니 김영희 드림"
-                    className="text-base h-12 rounded-lg"
-                    style={{ fontSize: '16px' }}
-                  />
-                </div>
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  ※ 이름을 입력하지 않으신 분은 봉투·인사말에 표시되지 않습니다.<br />
+                  두 분 모두 비워두시면 서명 영역이 숨겨집니다.
+                </p>
               </AccordionContent>
             </AccordionItem>
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,6 +13,10 @@ import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEn
 import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import type { ParentsInvitationData, TimelineItem } from '../../page'
+import {
+  SVG_ICON_KEYS, SVG_ICON_LABELS, renderSvgIcon, type SvgIconKey,
+  BusIcon, SubwayIcon, ExpressBusIcon, TrainIcon, ParkingIcon,
+} from '@/components/parents/icons'
 
 interface ParentsStep3ContentProps {
   data: ParentsInvitationData
@@ -30,6 +34,7 @@ function SortableGalleryCard({
   onDelete,
   onChange,
   invitationId,
+  galleryIndex,
 }: {
   id: string
   img: { url: string; cropX: number; cropY: number; cropWidth: number; cropHeight: number }
@@ -37,6 +42,7 @@ function SortableGalleryCard({
   onDelete: () => void
   onChange: (cropData: { url: string; cropX: number; cropY: number; cropWidth: number; cropHeight: number }) => void
   invitationId?: string
+  galleryIndex: number
 }) {
   const {
     attributes,
@@ -76,23 +82,99 @@ function SortableGalleryCard({
       <ImageCropEditor
         value={img}
         onChange={onChange}
-        aspectRatio={3/4}
+        aspectRatio={galleryIndex === 0 ? 16/10 : 1}
         containerWidth={240}
         invitationId={invitationId}
         label=""
       />
+      {galleryIndex === 0 && (
+        <p className="text-[10px] text-gray-400">첫 번째 사진은 가로형(16:10)으로 표시됩니다.</p>
+      )}
+    </div>
+  )
+}
+
+// SVG 아이콘 선택 팝오버
+function IconPickerButton({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [open])
+
+  const isSvg = value.startsWith('svg:')
+  const displayIcon = isSvg ? renderSvgIcon(value, { size: 20, color: '#8B7E74' }) : null
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="w-14 h-9 flex items-center justify-center rounded-md border border-input bg-background text-sm hover:bg-accent/10 transition-colors"
+        title="아이콘 선택"
+      >
+        {displayIcon || (value || '📌')}
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full mt-1 z-50 bg-white border rounded-lg shadow-lg p-2 w-[240px]">
+          <p className="text-[10px] text-gray-400 mb-1.5 px-1">SVG 아이콘</p>
+          <div className="grid grid-cols-6 gap-1 mb-2">
+            {SVG_ICON_KEYS.map((key) => {
+              const isSelected = value === `svg:${key}`
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => { onChange(`svg:${key}`); setOpen(false) }}
+                  className={`w-8 h-8 flex items-center justify-center rounded transition-colors ${
+                    isSelected ? 'bg-orange-50 ring-1 ring-orange-300' : 'hover:bg-gray-100'
+                  }`}
+                  title={SVG_ICON_LABELS[key as SvgIconKey]}
+                >
+                  {renderSvgIcon(`svg:${key}`, { size: 18, color: isSelected ? '#C4956A' : '#888' })}
+                </button>
+              )
+            })}
+          </div>
+          <p className="text-[10px] text-gray-400 mb-1.5 px-1">직접 입력</p>
+          <div className="flex gap-1">
+            <Input
+              value={isSvg ? '' : value}
+              onChange={(e) => onChange(e.target.value)}
+              placeholder="이모지 입력"
+              className="text-sm text-center h-8"
+              maxLength={2}
+            />
+            {value && (
+              <button
+                type="button"
+                onClick={() => { onChange(''); setOpen(false) }}
+                className="px-2 h-8 text-xs text-gray-400 hover:text-gray-600 border rounded"
+              >
+                초기화
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
 // 결혼식 안내 항목 설정
-const PARENTS_INFO_ITEMS_CONFIG: { key: string; label: string; emoji: string }[] = [
-  { key: 'flowerGift', label: '꽃 답례품 안내', emoji: '💐' },
-  { key: 'wreath', label: '화환 안내', emoji: '🌸' },
-  { key: 'flowerChild', label: '화동 안내', emoji: '🌼' },
-  { key: 'reception', label: '피로연 안내', emoji: '🍽' },
-  { key: 'photoBooth', label: '포토부스 안내', emoji: '📸' },
-  { key: 'shuttle', label: '셔틀버스 운행', emoji: '🚌' },
+const PARENTS_INFO_ITEMS_CONFIG: { key: string; label: string; iconKey: SvgIconKey }[] = [
+  { key: 'flowerGift', label: '꽃 답례품 안내', iconKey: 'bouquet' },
+  { key: 'wreath', label: '화환 안내', iconKey: 'wreath' },
+  { key: 'flowerChild', label: '화동 안내', iconKey: 'flower-child' },
+  { key: 'reception', label: '피로연 안내', iconKey: 'cutlery' },
+  { key: 'photoBooth', label: '포토부스 안내', iconKey: 'camera' },
+  { key: 'shuttle', label: '셔틀버스 운행', iconKey: 'bus' },
 ]
 
 const DEFAULT_ITEM_ORDER = PARENTS_INFO_ITEMS_CONFIG.map(item => item.key)
@@ -267,6 +349,184 @@ export default function ParentsStep3Content({
         )}
       </section>
 
+      {/* 메인 사진 (커플정보) */}
+      <section className="space-y-4">
+        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+          <div className="w-6 h-6 rounded-full bg-teal-100 flex items-center justify-center">
+            <ImagePlus className="w-3 h-3 text-teal-500" />
+          </div>
+          메인 사진
+        </h3>
+        <p className="text-sm text-blue-600">💙 커플정보 영역의 대표 사진입니다. 미설정 시 갤러리 첫 번째 사진이 사용됩니다.</p>
+
+        <ImageCropEditor
+          value={data.mainImage || { url: '', cropX: 0, cropY: 0, cropWidth: 1, cropHeight: 1 }}
+          onChange={(cropData) => updateNestedData('mainImage', cropData)}
+          aspectRatio={3/4}
+          containerWidth={240}
+          invitationId={invitationId || undefined}
+          label=""
+        />
+
+        {/* 양가 부모님 정보 - 메인 사진 아래에 함께 표시되는 영역 */}
+        <div className="space-y-3 pt-2">
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900">양가 부모님</h4>
+            <p className="text-[11px] text-gray-500 leading-relaxed mt-0.5">
+              ※ 이름을 입력하지 않으신 분은 본문 커플소개에 표시되지 않습니다.<br />
+              한 분만 입력하면 그 분만 표시되고, 두 분 모두 비우거나 &ldquo;부모님 입력 안함&rdquo;을 켜면 해당 측 전체가 숨겨집니다.
+            </p>
+          </div>
+
+          {/* 신랑 측 부모님 */}
+          <div className="space-y-3 p-3 bg-blue-50/50 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-medium text-blue-800">신랑 측 부모님</div>
+              <label className="flex items-center gap-1.5 cursor-pointer">
+                <Switch
+                  checked={data.groom.parentsHidden ?? false}
+                  onCheckedChange={(checked) => updateNestedData('groom.parentsHidden', checked)}
+                  className="scale-75 origin-right"
+                />
+                <span className="text-[10px] text-gray-500">부모님 입력 안함</span>
+              </label>
+            </div>
+            {!data.groom.parentsHidden && (
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <Label className="text-[10px] text-gray-500">아버지 성함</Label>
+                  <Input
+                    value={data.groom.fatherName}
+                    onChange={(e) => updateNestedData('groom.fatherName', e.target.value)}
+                    placeholder="홍길동"
+                    className="text-sm"
+                  />
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <Switch
+                      checked={data.groom.fatherDeceased ?? false}
+                      onCheckedChange={(checked) => updateNestedData('groom.fatherDeceased', checked)}
+                      className="scale-75 origin-left"
+                    />
+                    <span className="text-[10px] text-gray-400">고인</span>
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] text-gray-500">어머니 성함</Label>
+                  <Input
+                    value={data.groom.motherName}
+                    onChange={(e) => updateNestedData('groom.motherName', e.target.value)}
+                    placeholder="김영희"
+                    className="text-sm"
+                  />
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <Switch
+                      checked={data.groom.motherDeceased ?? false}
+                      onCheckedChange={(checked) => updateNestedData('groom.motherDeceased', checked)}
+                      className="scale-75 origin-left"
+                    />
+                    <span className="text-[10px] text-gray-400">고인</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            {data.groom.parentsHidden && (
+              <p className="text-[10px] text-gray-500">※ 신랑측 부모님은 본문에 표시되지 않습니다.</p>
+            )}
+          </div>
+
+          {/* 신부 측 부모님 */}
+          <div className="space-y-3 p-3 bg-pink-50/50 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-medium text-pink-800">신부 측 부모님</div>
+              <label className="flex items-center gap-1.5 cursor-pointer">
+                <Switch
+                  checked={data.bride.parentsHidden ?? false}
+                  onCheckedChange={(checked) => updateNestedData('bride.parentsHidden', checked)}
+                  className="scale-75 origin-right"
+                />
+                <span className="text-[10px] text-gray-500">부모님 입력 안함</span>
+              </label>
+            </div>
+            {!data.bride.parentsHidden && (
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <Label className="text-[10px] text-gray-500">아버지 성함</Label>
+                  <Input
+                    value={data.bride.fatherName}
+                    onChange={(e) => updateNestedData('bride.fatherName', e.target.value)}
+                    placeholder="홍길동"
+                    className="text-sm"
+                  />
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <Switch
+                      checked={data.bride.fatherDeceased ?? false}
+                      onCheckedChange={(checked) => updateNestedData('bride.fatherDeceased', checked)}
+                      className="scale-75 origin-left"
+                    />
+                    <span className="text-[10px] text-gray-400">고인</span>
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] text-gray-500">어머니 성함</Label>
+                  <Input
+                    value={data.bride.motherName}
+                    onChange={(e) => updateNestedData('bride.motherName', e.target.value)}
+                    placeholder="김영희"
+                    className="text-sm"
+                  />
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <Switch
+                      checked={data.bride.motherDeceased ?? false}
+                      onCheckedChange={(checked) => updateNestedData('bride.motherDeceased', checked)}
+                      className="scale-75 origin-left"
+                    />
+                    <span className="text-[10px] text-gray-400">고인</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            {data.bride.parentsHidden && (
+              <p className="text-[10px] text-gray-500">※ 신부측 부모님은 본문에 표시되지 않습니다.</p>
+            )}
+          </div>
+
+          {/* 고인 표시 스타일 (고인이 한 명이라도 있을 때만 노출) */}
+          {(data.groom.fatherDeceased || data.groom.motherDeceased || data.bride.fatherDeceased || data.bride.motherDeceased) && (
+            <div className="p-3 bg-gray-50 rounded-lg space-y-2">
+              <Label className="text-xs font-medium text-gray-700">고인 표시 스타일</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => updateData({ deceasedDisplayStyle: 'flower' })}
+                  className={`p-3 rounded-lg border-2 text-center transition-all ${
+                    (data.deceasedDisplayStyle || 'flower') === 'flower'
+                      ? 'border-gray-800 bg-white'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-center gap-1.5">
+                    <img src="/icons/chrysanthemum.svg" alt="" className="w-4 h-4 opacity-70" />
+                    <span className="text-sm font-medium">국화꽃</span>
+                  </div>
+                </button>
+                <button
+                  onClick={() => updateData({ deceasedDisplayStyle: 'hanja' })}
+                  className={`p-3 rounded-lg border-2 text-center transition-all ${
+                    data.deceasedDisplayStyle === 'hanja'
+                      ? 'border-gray-800 bg-white'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-center gap-1.5">
+                    <span className="text-sm opacity-70">故</span>
+                    <span className="text-sm font-medium">한자</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* 갤러리 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
@@ -292,8 +552,14 @@ export default function ParentsStep3Content({
             updateNestedData('gallery.images', arrayMove(images, oldIndex, newIndex))
           }
 
+          // 갤러리 인덱스 계산: mainImage가 설정되면 gallery[0]이 갤러리 첫 번째, 아니면 gallery[0]은 히어로이므로 gallery[1]이 갤러리 첫 번째
+          const hasMainImage = data.mainImage?.url && data.mainImage.url.trim() !== ''
+          const getGalleryIndex = (idx: number) => hasMainImage ? idx : idx - 1
+
           if (images.length < 2) {
-            return images.map((img, index) => (
+            return images.map((img, index) => {
+              const gIdx = getGalleryIndex(index)
+              return (
               <div key={index} className="border rounded-lg p-3 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium text-gray-600">사진 {index + 1}</span>
@@ -314,13 +580,19 @@ export default function ParentsStep3Content({
                     newImages[index] = cropData
                     updateNestedData('gallery.images', newImages)
                   }}
-                  aspectRatio={3/4}
+                  aspectRatio={gIdx === 0 ? 16/10 : gIdx < 0 ? 3/4 : 1}
                   containerWidth={240}
                   invitationId={invitationId || undefined}
                   label=""
                 />
+                {gIdx === 0 && (
+                  <p className="text-[10px] text-gray-400">갤러리 첫 번째 사진은 가로형(16:10)으로 표시됩니다.</p>
+                )}
+                {gIdx < 0 && !hasMainImage && (
+                  <p className="text-[10px] text-gray-400">메인 사진 미설정 시 이 사진이 히어로로 사용됩니다.</p>
+                )}
               </div>
-            ))
+            )})
           }
 
           return (
@@ -332,6 +604,7 @@ export default function ParentsStep3Content({
                     id={sortableIds[index]}
                     img={img}
                     index={index}
+                    galleryIndex={getGalleryIndex(index)}
                     onDelete={() => {
                       const newImages = images.filter((_, i) => i !== index)
                       updateNestedData('gallery.images', newImages)
@@ -492,7 +765,9 @@ export default function ParentsStep3Content({
           {/* 버스 */}
           <div className="border rounded-lg p-3 space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-medium">🚌 버스</Label>
+              <Label className="text-xs font-medium flex items-center gap-1.5">
+                <BusIcon size={14} color="#8B7E74" /> 버스
+              </Label>
               <Switch
                 checked={data.wedding.directions?.bus?.enabled ?? false}
                 onCheckedChange={(checked) => updateNestedData('wedding.directions.bus.enabled', checked)}
@@ -519,7 +794,9 @@ export default function ParentsStep3Content({
           {/* 지하철 */}
           <div className="border rounded-lg p-3 space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-medium">🚇 지하철</Label>
+              <Label className="text-xs font-medium flex items-center gap-1.5">
+                <SubwayIcon size={14} color="#8B7E74" /> 지하철
+              </Label>
               <Switch
                 checked={data.wedding.directions?.subway?.enabled ?? false}
                 onCheckedChange={(checked) => updateNestedData('wedding.directions.subway.enabled', checked)}
@@ -653,7 +930,9 @@ export default function ParentsStep3Content({
           {/* 고속버스 */}
           <div className="border rounded-lg p-3 space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-medium">🚐 고속버스</Label>
+              <Label className="text-xs font-medium flex items-center gap-1.5">
+                <ExpressBusIcon size={14} color="#8B7E74" /> 고속버스
+              </Label>
               <Switch
                 checked={data.wedding.directions?.expressBus?.enabled ?? false}
                 onCheckedChange={(checked) => updateNestedData('wedding.directions.expressBus.enabled', checked)}
@@ -756,7 +1035,9 @@ export default function ParentsStep3Content({
           {/* 기차 */}
           <div className="border rounded-lg p-3 space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-medium">🚆 기차 (KTX/SRT)</Label>
+              <Label className="text-xs font-medium flex items-center gap-1.5">
+                <TrainIcon size={14} color="#8B7E74" /> 기차 (KTX/SRT)
+              </Label>
               <Switch
                 checked={data.wedding.directions?.train?.enabled ?? false}
                 onCheckedChange={(checked) => updateNestedData('wedding.directions.train.enabled', checked)}
@@ -859,7 +1140,9 @@ export default function ParentsStep3Content({
           {/* 주차 */}
           <div className="border rounded-lg p-3 space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-medium">🅿️ 주차 안내</Label>
+              <Label className="text-xs font-medium flex items-center gap-1.5">
+                <ParkingIcon size={14} color="#8B7E74" /> 주차 안내
+              </Label>
               <Switch
                 checked={data.wedding.directions?.parking?.enabled ?? false}
                 onCheckedChange={(checked) => updateNestedData('wedding.directions.parking.enabled', checked)}
@@ -940,7 +1223,10 @@ export default function ParentsStep3Content({
               if (config) {
                 return (
                   <div className="p-3 bg-white">
-                    <span className="text-xs font-medium">{config.emoji} {config.label}</span>
+                    <span className="text-xs font-medium flex items-center gap-1.5">
+                      {renderSvgIcon(`svg:${config.iconKey}`, { size: 14, color: '#8B7E74' })}
+                      {config.label}
+                    </span>
                   </div>
                 )
               }
@@ -949,7 +1235,10 @@ export default function ParentsStep3Content({
                 const custom = data.weddingInfo?.customItems?.find(c => c.id === customId)
                 return (
                   <div className="p-3 bg-white">
-                    <span className="text-xs font-medium">{custom?.emoji || '📌'} {custom?.title || '사용자 안내'}</span>
+                    <span className="text-xs font-medium flex items-center gap-1">
+                      {renderSvgIcon(custom?.emoji || '', { size: 14, color: '#8B7E74' }) || (custom?.emoji || '📌')}
+                      {' '}{custom?.title || '사용자 안내'}
+                    </span>
                   </div>
                 )
               }
@@ -970,7 +1259,10 @@ export default function ParentsStep3Content({
                     <SortableItem key={itemKey} id={itemKey}>
                       <div className="border rounded-lg p-3 space-y-2 bg-white hover:border-gray-300 transition-colors">
                         <div className="flex items-center justify-between gap-2">
-                          <Label className="text-xs font-medium">{custom.emoji || '📌'} {custom.title || '사용자 안내'}</Label>
+                          <Label className="text-xs font-medium flex items-center gap-1">
+                            {renderSvgIcon(custom.emoji || '', { size: 14, color: '#8B7E74' }) || (custom.emoji || '📌')}
+                            {' '}{custom.title || '사용자 안내'}
+                          </Label>
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => {
@@ -999,12 +1291,9 @@ export default function ParentsStep3Content({
                                 placeholder="안내 제목"
                                 className="text-sm"
                               />
-                              <Input
+                              <IconPickerButton
                                 value={custom.emoji || ''}
-                                onChange={(e) => updateNestedData(`weddingInfo.customItems.${customIdx}.emoji`, e.target.value)}
-                                placeholder="📌"
-                                className="text-sm w-14 text-center"
-                                maxLength={2}
+                                onChange={(v) => updateNestedData(`weddingInfo.customItems.${customIdx}.emoji`, v)}
                               />
                             </div>
                             <Textarea
@@ -1041,7 +1330,10 @@ export default function ParentsStep3Content({
                   <SortableItem key={itemKey} id={itemKey}>
                     <div className="border rounded-lg p-3 space-y-2 bg-white hover:border-gray-300 transition-colors">
                       <div className="flex items-center justify-between gap-2">
-                        <Label className="text-xs font-medium">{config.emoji} {config.label}</Label>
+                        <Label className="text-xs font-medium flex items-center gap-1.5">
+                          {renderSvgIcon(`svg:${config.iconKey}`, { size: 14, color: '#8B7E74' })}
+                          {config.label}
+                        </Label>
                         <Switch
                           checked={isEnabled ?? false}
                           onCheckedChange={(checked) => updateNestedData(`weddingInfo.${itemKey}.enabled`, checked)}
@@ -1152,7 +1444,7 @@ export default function ParentsStep3Content({
             onClick={() => {
               const customItems = [...(data.weddingInfo?.customItems || [])]
               const newId = `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
-              customItems.push({ id: newId, enabled: true, title: '', content: '', emoji: '📌' })
+              customItems.push({ id: newId, enabled: true, title: '', content: '', emoji: 'svg:pin' })
               updateNestedData('weddingInfo.customItems', customItems)
               const currentOrder = data.weddingInfo?.itemOrder || DEFAULT_ITEM_ORDER
               updateNestedData('weddingInfo.itemOrder', [...currentOrder, `custom-${newId}`])

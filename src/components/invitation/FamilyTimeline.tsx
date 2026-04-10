@@ -29,6 +29,8 @@ interface FamilyTimelineProps {
   items: TimelineItem[];
   title?: string;
   theme?: ThemeColors;
+  hasAppeared?: boolean;
+  isActive?: boolean;
 }
 
 const defaultTheme: ThemeColors = {
@@ -39,35 +41,43 @@ const defaultTheme: ThemeColors = {
   textLight: '#666666',
 };
 
+const stagger = (hasAppeared: boolean, delay: number) => ({
+  opacity: hasAppeared ? 1 : 0,
+  transform: hasAppeared ? 'translateY(0)' : 'translateY(18px)',
+  transition: 'opacity 0.8s ease, transform 0.8s ease',
+  transitionDelay: hasAppeared ? `${delay}s` : '0s',
+});
+
 function TimelineItemComponent({
   item,
   index,
-  isActive,
+  isItemActive,
   onVisibilityChange,
   theme = defaultTheme,
+  sectionAppeared = false,
 }: {
   item: TimelineItem;
   index: number;
-  isActive: boolean;
+  isItemActive: boolean;
   onVisibilityChange: (index: number, ratio: number) => void;
   theme?: ThemeColors;
+  sectionAppeared?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [hasAppeared, setHasAppeared] = useState(false);
+  const [isPressed, setIsPressed] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        // 처음 나타났을 때 애니메이션 트리거
         if (entry.isIntersecting && !hasAppeared) {
           setHasAppeared(true);
         }
-        // 가시성 비율 전달
         onVisibilityChange(index, entry.intersectionRatio);
       },
       {
         threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1],
-        rootMargin: '-20% 0px -20% 0px' // 화면 중앙 영역에서 감지
+        rootMargin: '-20% 0px -20% 0px'
       }
     );
 
@@ -75,70 +85,76 @@ function TimelineItemComponent({
     return () => observer.disconnect();
   }, [index, onVisibilityChange, hasAppeared]);
 
+  const showItem = sectionAppeared && hasAppeared;
+
   return (
     <div
       ref={ref}
-      className="relative flex pb-10 last:pb-0 transition-all duration-500"
+      className="relative flex pb-12 last:pb-0"
       style={{
-        opacity: hasAppeared ? (isActive ? 1 : 0.3) : 0,
-        transform: hasAppeared ? 'translateY(0)' : 'translateY(20px)',
-        filter: isActive ? 'none' : 'grayscale(30%)',
+        opacity: showItem ? (isItemActive ? 1 : 0.3) : 0,
+        transform: showItem ? 'translateY(0)' : 'translateY(24px)',
+        filter: showItem ? (isItemActive ? 'none' : 'grayscale(30%)') : 'none',
+        transition: 'opacity 0.5s ease, transform 0.8s ease, filter 0.5s ease',
+        transitionDelay: !hasAppeared && showItem ? `${0.15 * index}s` : '0s',
       }}
     >
-      {/* 왼쪽: 세로선 + 동그라미 영역 */}
-      <div className="relative w-5 flex-shrink-0 flex justify-center items-start pt-[7px]">
-        {/* 동그라미 */}
+      {/* 왼쪽: 세로선 + 연도 마커 */}
+      <div className="relative w-12 flex-shrink-0 flex flex-col items-center">
+        {/* 연도 뱃지 */}
         <div
-          className="w-2.5 h-2.5 rounded-full z-10 transition-all duration-500"
+          className="relative z-10 px-1 py-0.5 rounded-md transition-all duration-500"
           style={{
-            backgroundColor: theme.accent,
-            transform: hasAppeared ? 'scale(1)' : 'scale(0)',
-            opacity: isActive ? 1 : 0.5,
+            backgroundColor: isItemActive ? theme.background : theme.background,
           }}
-        />
+        >
+          <span
+            className="text-[11px] tracking-[1px]"
+            style={{
+              fontFamily: "'Cormorant Garamond', 'Georgia', serif",
+              fontWeight: isItemActive ? 600 : 400,
+              color: isItemActive ? theme.accent : `${theme.accent}80`,
+              transition: 'color 0.5s, font-weight 0.3s',
+            }}
+          >
+            {item.year}
+          </span>
+        </div>
       </div>
 
       {/* 오른쪽: 내용 */}
-      <div className="flex-1">
-        {/* 연도 + 구분선 + 설명 (같은 줄) */}
-        <p className="mb-4 flex items-center gap-2">
-          {item.year && (
-            <>
-              <span
-                className="font-serif italic text-sm transition-colors duration-500"
-                style={{ color: isActive ? theme.accent : `${theme.accent}80` }}
-              >
-                {item.year}
-              </span>
-              <span
-                className="h-3 w-px transition-colors duration-500"
-                style={{ backgroundColor: isActive ? theme.accent : `${theme.accent}80` }}
-              />
-            </>
-          )}
-          <span
-            className="text-sm font-sans transition-colors duration-500"
-            style={{ color: isActive ? theme.text : '#999' }}
-          >
-            {item.description || '스토리를 입력하세요'}
-          </span>
-        </p>
-
-        {/* 사진 */}
-        <div
-          className="w-full aspect-[4/3] rounded-lg overflow-hidden transition-all duration-500"
+      <div className="flex-1 pt-0.5">
+        {/* 설명 텍스트 */}
+        <p
+          className="text-[13px] mb-3 leading-[1.6]"
           style={{
-            backgroundColor: '#E8E4DC',
-            boxShadow: isActive ? '0 4px 20px rgba(0, 0, 0, 0.12)' : '0 2px 8px rgba(0, 0, 0, 0.04)',
-            transform: isActive ? 'scale(1)' : 'scale(0.98)',
+            color: isItemActive ? theme.text : '#999',
+            fontWeight: 300,
+            transition: 'color 0.5s',
           }}
         >
+          {item.description || '스토리를 입력하세요'}
+        </p>
+
+        {/* 사진 카드 */}
+        <div
+          className="w-full aspect-[4/3] rounded-xl overflow-hidden transition-all duration-500 cursor-pointer"
+          style={{
+            backgroundColor: '#E8E4DC',
+            boxShadow: isItemActive
+              ? '0 4px 24px rgba(0, 0, 0, 0.12)'
+              : '0 1px 4px rgba(0, 0, 0, 0.03)',
+            transform: isPressed ? 'scale(0.97)' : (isItemActive ? 'scale(1)' : 'scale(0.96)'),
+          }}
+          onPointerDown={() => setIsPressed(true)}
+          onPointerUp={() => setIsPressed(false)}
+          onPointerLeave={() => setIsPressed(false)}
+        >
           {(() => {
-            const imageUrl = item.image?.url || item.imageUrl
-            const hasCropData = item.image && (item.image.cropWidth < 1 || item.image.cropHeight < 1)
+            const imageUrl = item.image?.url || item.imageUrl;
+            const hasCropData = item.image && (item.image.cropWidth < 1 || item.image.cropHeight < 1);
 
             if (hasCropData && item.image) {
-              // 크롭 데이터가 있는 경우 CroppedImageDiv 사용
               return (
                 <CroppedImageDiv
                   src={item.image.url}
@@ -150,25 +166,23 @@ function TimelineItemComponent({
                   }}
                   className="w-full h-full"
                 />
-              )
+              );
             } else if (imageUrl) {
-              // 일반 이미지
               return (
                 <img
                   src={imageUrl}
                   alt={item.description}
                   className="w-full h-full object-cover"
                 />
-              )
+              );
             } else {
-              // 이미지 없음
               return (
                 <div className="w-full h-full flex items-center justify-center">
                   <span className="text-xs" style={{ color: theme.accent }}>
                     Photo
                   </span>
                 </div>
-              )
+              );
             }
           })()}
         </div>
@@ -181,6 +195,8 @@ export default function FamilyTimeline({
   items,
   title = '우리 가족 이야기',
   theme = defaultTheme,
+  hasAppeared: sectionAppeared = true,
+  isActive: sectionActive = true,
 }: FamilyTimelineProps) {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const [isTitleVisible, setIsTitleVisible] = useState(false);
@@ -201,11 +217,9 @@ export default function FamilyTimeline({
     return () => observer.disconnect();
   }, []);
 
-  // 가시성 변경 핸들러: 가장 많이 보이는 항목을 active로 설정
   const handleVisibilityChange = useCallback((index: number, ratio: number) => {
     visibilityRatios.current.set(index, ratio);
 
-    // 가장 높은 가시성 비율을 가진 항목 찾기
     let maxRatio = 0;
     let maxIndex = 0;
 
@@ -221,32 +235,52 @@ export default function FamilyTimeline({
     }
   }, []);
 
+  const titleAppeared = sectionAppeared && isTitleVisible;
+
   return (
-    <section
-      className="px-6 py-20"
+    <div
+      className="px-6 py-16"
       style={{ backgroundColor: theme.background }}
     >
+      {/* OUR STORY label */}
+      <p
+        ref={titleRef}
+        className="text-[10px] tracking-[6px] text-center mb-3"
+        style={{
+          color: sectionActive ? `${theme.accent}80` : '#bbb',
+          fontWeight: 300,
+          ...stagger(titleAppeared, 0),
+        }}
+      >
+        OUR STORY
+      </p>
+
       {/* 제목 */}
       <h2
-        ref={titleRef}
-        className={`font-serif text-lg text-center mb-14 tracking-wider transition-all duration-700 ${
-          isTitleVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-        }`}
-        style={{ color: theme.accent }}
+        className="font-serif text-[16px] text-center mb-12 tracking-[1px]"
+        style={{
+          color: sectionActive ? theme.text : '#999',
+          fontWeight: 300,
+          ...stagger(titleAppeared, 0.15),
+        }}
       >
         {title}
       </h2>
 
       {/* 타임라인 */}
       <div className="relative max-w-sm mx-auto">
-        {/* 세로선 (첫번째 동그라미 중심부터 마지막 동그라미 중심까지) */}
+        {/* 세로선 */}
         <div
-          className="absolute bottom-0"
+          className="absolute"
           style={{
-            top: '12px',
-            left: 'calc(10px - 0.5px)',
+            top: '10px',
+            bottom: '0',
+            left: '23px',
             width: '1px',
-            backgroundColor: theme.accent
+            background: sectionActive
+              ? `linear-gradient(to bottom, ${theme.accent}40, ${theme.accent}15)`
+              : '#ddd',
+            transition: 'background 0.5s',
           }}
         />
 
@@ -256,12 +290,13 @@ export default function FamilyTimeline({
             key={`${item.year}-${index}`}
             item={item}
             index={index}
-            isActive={index === activeIndex}
+            isItemActive={index === activeIndex}
             onVisibilityChange={handleVisibilityChange}
             theme={theme}
+            sectionAppeared={sectionAppeared}
           />
         ))}
       </div>
-    </section>
+    </div>
   );
 }

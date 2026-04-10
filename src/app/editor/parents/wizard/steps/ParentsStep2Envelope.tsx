@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
-import { Mail, Heart, Share2, Upload, X, Sparkles } from 'lucide-react'
+import { Mail, Heart, Share2, Upload, X } from 'lucide-react'
 import { uploadImage } from '@/lib/imageUpload'
 import InlineCropEditor from '@/components/editor/InlineCropEditor'
 import ImageCropEditor from '@/components/parents/ImageCropEditor'
@@ -122,33 +122,13 @@ export default function ParentsStep2Envelope({
             />
           </div>
         </div>
-
-        {/* 서명 */}
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <Label className="text-xs">편지 서명</Label>
-            <button
-              type="button"
-              className="text-[11px] text-blue-500 hover:text-blue-600 flex items-center gap-1"
-              onClick={() => {
-                const fatherName = data.sender.fatherName || '홍길동'
-                const motherName = data.sender.motherName || '김영희'
-                updateNestedData('sender.signature', `아버지 ${fatherName} · 어머니 ${motherName} 드림`)
-              }}
-            >
-              <Sparkles className="w-3 h-3" />
-              샘플입력
-            </button>
-          </div>
-          <Input
-            value={data.sender.signature}
-            onChange={(e) => updateNestedData('sender.signature', e.target.value)}
-            placeholder="아버지 홍길동 · 어머니 김영희 드림"
-          />
-        </div>
+        <p className="text-[11px] text-gray-500 leading-relaxed">
+          ※ 이름을 입력하지 않으신 분은 봉투·인사말에 표시되지 않습니다.<br />
+          두 분 모두 비워두시면 서명 영역이 숨겨집니다.
+        </p>
       </section>
 
-      {/* 신랑·신부 정보 */}
+      {/* 신랑·신부 이름 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
           <div className="w-6 h-6 rounded-full bg-pink-100 flex items-center justify-center">
@@ -156,7 +136,10 @@ export default function ParentsStep2Envelope({
           </div>
           신랑 · 신부
         </h3>
-        <p className="text-sm text-blue-600">💙 결혼하는 자녀와 양가 부모님 정보를 입력해주세요.</p>
+        <p className="text-sm text-blue-600">💙 결혼하는 자녀의 이름을 입력해주세요.</p>
+        <p className="text-[11px] text-gray-500 leading-relaxed">
+          ※ 양가 부모님 정보와 고인 표시는 <b>03 본문 &gt; 메인 사진</b>에서 입력합니다.
+        </p>
 
         {/* 신랑 */}
         <div className="space-y-3 p-3 bg-blue-50/50 rounded-lg">
@@ -177,26 +160,6 @@ export default function ParentsStep2Envelope({
                 value={data.groom.firstName}
                 onChange={(e) => updateNestedData('groom.firstName', e.target.value)}
                 placeholder="민수"
-                className="text-sm"
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-1">
-              <Label className="text-[10px] text-gray-500">아버지 성함</Label>
-              <Input
-                value={data.groom.fatherName}
-                onChange={(e) => updateNestedData('groom.fatherName', e.target.value)}
-                placeholder="홍길동"
-                className="text-sm"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-[10px] text-gray-500">어머니 성함</Label>
-              <Input
-                value={data.groom.motherName}
-                onChange={(e) => updateNestedData('groom.motherName', e.target.value)}
-                placeholder="김영희"
                 className="text-sm"
               />
             </div>
@@ -222,26 +185,6 @@ export default function ParentsStep2Envelope({
                 value={data.bride.firstName}
                 onChange={(e) => updateNestedData('bride.firstName', e.target.value)}
                 placeholder="서연"
-                className="text-sm"
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-1">
-              <Label className="text-[10px] text-gray-500">아버지 성함</Label>
-              <Input
-                value={data.bride.fatherName}
-                onChange={(e) => updateNestedData('bride.fatherName', e.target.value)}
-                placeholder="홍길동"
-                className="text-sm"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-[10px] text-gray-500">어머니 성함</Label>
-              <Input
-                value={data.bride.motherName}
-                onChange={(e) => updateNestedData('bride.motherName', e.target.value)}
-                placeholder="김영희"
                 className="text-sm"
               />
             </div>

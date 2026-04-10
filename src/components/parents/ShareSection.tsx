@@ -12,6 +12,13 @@ interface ShareSectionProps {
   thumbnailUrl?: string
 }
 
+const stagger = (hasAppeared: boolean, delay: number) => ({
+  opacity: hasAppeared ? 1 : 0,
+  transform: hasAppeared ? 'translateY(0)' : 'translateY(18px)',
+  transition: 'opacity 0.8s ease, transform 0.8s ease',
+  transitionDelay: hasAppeared ? `${delay}s` : '0s',
+})
+
 export default function ShareSection({
   onKakaoShare,
   onSmsShare,
@@ -32,36 +39,37 @@ export default function ShareSection({
     }
   }
 
-  const buttonHoverStyle = (e: React.MouseEvent<HTMLButtonElement>, hover: boolean) => {
-    e.currentTarget.style.backgroundColor = hover ? theme.accent : '#F5F0EB'
-    e.currentTarget.style.color = hover ? 'white' : '#666'
-  }
-
   return (
     <section
       ref={ref as React.RefObject<HTMLDivElement>}
-      className="px-8 py-20 transition-all duration-500 min-h-screen"
+      className="px-6 py-20 min-h-screen"
       style={{
         backgroundColor: theme.background,
-        opacity: hasAppeared ? (isActive ? 1 : 0.3) : 0,
-        transform: hasAppeared ? 'translateY(0)' : 'translateY(20px)',
         filter: isActive ? 'none' : 'grayscale(30%)',
+        opacity: isActive ? 1 : 0.3,
+        transition: 'filter 0.5s, opacity 0.5s',
       }}
     >
       <p
-        className="text-center text-sm mb-8 tracking-wide transition-colors duration-500"
-        style={{ color: isActive ? '#666' : '#aaa' }}
+        className="text-center text-xs mb-5 tracking-[1px]"
+        style={{
+          color: isActive ? `${theme.accent}80` : '#aaa',
+          fontWeight: 300,
+          ...stagger(hasAppeared, 0),
+        }}
       >
         소중한 분들께 알려주세요
       </p>
 
-      <div className="flex items-center justify-center gap-3">
+      <div
+        className="flex items-center justify-center gap-3"
+        style={stagger(hasAppeared, 0.2)}
+      >
         <button
           onClick={() => {
             if (onKakaoShare) {
               onKakaoShare()
             } else {
-              // Kakao SDK를 사용한 공유
               const kakaoWindow = window as typeof window & {
                 Kakao?: {
                   isInitialized?: () => boolean
@@ -72,15 +80,12 @@ export default function ShareSection({
 
               if (typeof window !== 'undefined' && kakaoWindow.Kakao) {
                 try {
-                  // SDK 초기화 확인 및 초기화
                   if (!kakaoWindow.Kakao.isInitialized?.()) {
                     const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY || '0890847927f3189d845391481ead8ecc'
                     kakaoWindow.Kakao.init?.(kakaoKey)
                   }
 
-                  // Share 기능 사용 가능 여부 확인
                   if (kakaoWindow.Kakao.Share?.sendDefault) {
-                    // 이미지 URL 결정
                     let imageUrl = 'https://invite.deardrawer.com/og-image.png'
                     if (thumbnailUrl) {
                       if (thumbnailUrl.startsWith('https://')) {
@@ -112,7 +117,6 @@ export default function ShareSection({
                       ],
                     })
                   } else {
-                    // SDK가 아직 로딩 중일 수 있음 - 링크 복사로 대체
                     navigator.clipboard.writeText(window.location.href)
                     alert('카카오톡 공유 준비 중입니다. 링크가 복사되었습니다.')
                   }
@@ -122,31 +126,43 @@ export default function ShareSection({
                   alert('카카오톡 공유에 실패했습니다. 링크가 복사되었습니다.')
                 }
               } else {
-                // SDK 로드 안됨 - 링크 복사로 대체
                 navigator.clipboard.writeText(window.location.href)
                 alert('카카오톡 공유를 사용할 수 없습니다. 링크가 복사되었습니다.')
               }
             }
           }}
-          onMouseEnter={(e) => buttonHoverStyle(e, true)}
-          onMouseLeave={(e) => buttonHoverStyle(e, false)}
-          className="px-5 py-2.5 text-xs tracking-wide rounded-full transition-all"
-          style={{ backgroundColor: '#FEE500', color: '#3C1E1E' }}
+          className="flex items-center gap-1.5 px-5 py-2.5 text-[11px] tracking-[0.5px] rounded-3xl transition-all duration-200"
+          style={{
+            backgroundColor: '#FEE500',
+            border: '1px solid #FEE500',
+            color: '#3C1E1E',
+          }}
         >
           카카오톡
         </button>
         <button
           onClick={handleCopyLink}
-          onMouseEnter={(e) => buttonHoverStyle(e, true)}
-          onMouseLeave={(e) => buttonHoverStyle(e, false)}
-          className="px-5 py-2.5 text-xs tracking-wide rounded-full transition-all"
-          style={{ backgroundColor: '#F5F0EB', color: '#666' }}
+          className="flex items-center gap-1.5 px-5 py-2.5 text-[11px] tracking-[0.5px] rounded-3xl transition-all duration-200"
+          style={{
+            backgroundColor: '#FFFFFF',
+            border: `1px solid ${isActive ? '#E8E2DA' : '#eee'}`,
+            color: isActive ? theme.textLight : '#aaa',
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.borderColor = theme.accent; e.currentTarget.style.color = theme.accent; }}
+          onMouseLeave={(e) => { e.currentTarget.style.borderColor = isActive ? '#E8E2DA' : '#eee'; e.currentTarget.style.color = isActive ? theme.textLight : '#aaa'; }}
         >
           링크복사
         </button>
       </div>
 
-      <p className="text-center text-xs mt-16" style={{ color: '#CCC' }}>
+      <p
+        className="text-center text-[10px] mt-12 tracking-[4px]"
+        style={{
+          color: isActive ? `${theme.accent}60` : '#ccc',
+          fontWeight: 300,
+          ...stagger(hasAppeared, 0.4),
+        }}
+      >
         dear drawer
       </p>
     </section>

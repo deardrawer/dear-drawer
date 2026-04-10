@@ -23,28 +23,16 @@ export default function SectionDivider() {
   return (
     <div
       ref={ref}
-      className="flex flex-col items-center justify-center pt-0 pb-20"
+      className="flex items-center justify-center py-12"
       style={{ backgroundColor: theme.background }}
     >
-      {/* 세로선 */}
       <div
-        className="w-px transition-all duration-700 ease-out"
+        className="w-full max-w-[280px] transition-all duration-700 ease-out"
         style={{
-          backgroundColor: theme.accent,
-          height: isVisible ? '32px' : '0px',
-          opacity: isVisible ? 0.4 : 0,
-        }}
-      />
-      {/* 점 */}
-      <div
-        className="mt-2 transition-all duration-500"
-        style={{
-          width: '5px',
-          height: '5px',
-          borderRadius: '50%',
-          backgroundColor: theme.accent,
-          opacity: isVisible ? 0.5 : 0,
-          transform: isVisible ? 'scale(1)' : 'scale(0)',
+          height: '1px',
+          background: `linear-gradient(90deg, transparent, ${theme.accent}40, transparent)`,
+          opacity: isVisible ? 1 : 0,
+          transform: isVisible ? 'scaleX(1)' : 'scaleX(0)',
         }}
       />
     </div>

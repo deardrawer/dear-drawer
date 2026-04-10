@@ -10,6 +10,14 @@ interface GreetingSectionProps {
   senderSide?: 'groom' | 'bride'
 }
 
+// Staggered entrance animation helper
+const stagger = (hasAppeared: boolean, delay: number) => ({
+  opacity: hasAppeared ? 1 : 0,
+  transform: hasAppeared ? 'translateY(0)' : 'translateY(18px)',
+  transition: 'opacity 0.8s ease, transform 0.8s ease',
+  transitionDelay: hasAppeared ? `${delay}s` : '0s',
+})
+
 export default function GreetingSection({
   childName = '서연',
   greeting = `서연이는 저희 부부에게
@@ -32,7 +40,6 @@ export default function GreetingSection({
   parentSignature = '아버지 이○○ · 어머니 김○○',
   senderSide = 'bride',
 }: GreetingSectionProps) {
-  // 신랑측 혼주면 "아들", 신부측 혼주면 "딸"
   const childTitle = senderSide === 'groom' ? '아들' : '딸'
   const { ref, isActive, hasAppeared } = useSectionHighlight('greeting')
   const theme = useTheme()
@@ -40,40 +47,100 @@ export default function GreetingSection({
   return (
     <section
       ref={ref as React.RefObject<HTMLDivElement>}
-      className="min-h-screen flex flex-col items-center justify-center px-8 py-20 transition-all duration-500"
+      className="min-h-screen flex flex-col items-center justify-center px-8 py-20"
       style={{
         backgroundColor: theme.background,
-        opacity: hasAppeared ? (isActive ? 1 : 0.3) : 0,
-        transform: hasAppeared ? 'translateY(0)' : 'translateY(20px)',
         filter: isActive ? 'none' : 'grayscale(30%)',
+        opacity: isActive ? 1 : 0.3,
+        transition: 'filter 0.5s, opacity 0.5s',
       }}
     >
-      <span className="text-2xl mb-8" style={{ color: theme.accent }}>
-        ✦
+      {/* Ornament: horizontal line with center circle */}
+      <div
+        className="relative mb-10"
+        style={{
+          width: '48px',
+          height: '1px',
+          backgroundColor: theme.accent,
+          ...stagger(hasAppeared, 0),
+          transform: hasAppeared ? 'scaleX(1)' : 'scaleX(0)',
+        }}
+      >
+        <div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+          style={{
+            width: '7px',
+            height: '7px',
+            borderRadius: '50%',
+            border: `1px solid ${theme.accent}`,
+            backgroundColor: theme.background,
+          }}
+        />
+      </div>
+
+      {/* INVITATION label */}
+      <span
+        className="text-[11px] tracking-[6px] uppercase mb-7"
+        style={{
+          color: `${theme.accent}80`,
+          fontWeight: 300,
+          ...stagger(hasAppeared, 0.15),
+        }}
+      >
+        invitation
       </span>
 
       <h2
-        className="font-serif text-xl font-semibold tracking-wider mb-10 transition-colors duration-500"
-        style={{ color: isActive ? theme.text : '#999' }}
+        className="font-serif text-[19px] leading-[2] tracking-wider mb-9 text-center"
+        style={{
+          color: isActive ? theme.text : '#999',
+          fontWeight: 300,
+          ...stagger(hasAppeared, 0.3),
+        }}
       >
-        저희 {childTitle} <span style={{ color: theme.accent }}>{childName}</span> 결혼합니다
+        저희 {childTitle}{' '}
+        <em
+          className="not-italic"
+          style={{ color: theme.primary, fontWeight: 400 }}
+        >
+          {childName}
+        </em>
+        {' '}결혼합니다
       </h2>
 
-      <div className="text-center mb-12 max-w-[300px]">
+      <div
+        className="text-center mb-12 max-w-[280px]"
+        style={stagger(hasAppeared, 0.5)}
+      >
         <p
-          className="font-serif text-sm leading-[1.8] transition-colors duration-500 whitespace-pre-line"
-          style={{ color: isActive ? theme.textLight : '#999' }}
+          className="font-serif text-[13px] leading-[2.2] whitespace-pre-line"
+          style={{ color: isActive ? theme.textLight : '#999', letterSpacing: '0.3px' }}
         >
           {greeting}
         </p>
       </div>
 
-      <p
-        className="mt-8 text-sm tracking-wide transition-colors duration-500"
-        style={{ color: isActive ? theme.accent : `${theme.accent}80` }}
-      >
-        {parentSignature}
-      </p>
+      {/* Signature area with short divider line */}
+      {parentSignature && (
+        <div
+          className="flex flex-col items-center gap-2 mt-12"
+          style={stagger(hasAppeared, 0.7)}
+        >
+          <div
+            style={{
+              width: '24px',
+              height: '1px',
+              backgroundColor: `${theme.accent}30`,
+            }}
+          />
+          <p
+            className="text-xs tracking-[3px]"
+            style={{ color: isActive ? `${theme.accent}90` : `${theme.accent}50`, fontWeight: 300 }}
+          >
+            {parentSignature}
+          </p>
+        </div>
+      )}
     </section>
   )
 }

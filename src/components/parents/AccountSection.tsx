@@ -15,6 +15,13 @@ interface AccountSectionProps {
   accounts?: Account[]
 }
 
+const stagger = (hasAppeared: boolean, delay: number) => ({
+  opacity: hasAppeared ? 1 : 0,
+  transform: hasAppeared ? 'translateY(0)' : 'translateY(18px)',
+  transition: 'opacity 0.8s ease, transform 0.8s ease',
+  transitionDelay: hasAppeared ? `${delay}s` : '0s',
+})
+
 export default function AccountSection({
   accounts = [
     { label: '아버지', name: '이○○', bank: '국민은행', account: '123-45-6789012' },
@@ -24,7 +31,6 @@ export default function AccountSection({
 }: AccountSectionProps) {
   const { ref, isActive, hasAppeared } = useSectionHighlight('account')
   const theme = useTheme()
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
   const [showAccountModal, setShowAccountModal] = useState<{ name: string; bank: string; account: string } | null>(null)
 
@@ -32,17 +38,15 @@ export default function AccountSection({
     const accountNumber = item.account.replace(/[^0-9]/g, '')
     let copied = false
 
-    // 1차: navigator.clipboard (HTTPS 필요)
     if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
       try {
         await navigator.clipboard.writeText(accountNumber)
         copied = true
       } catch {
-        // clipboard API 실패 → fallback으로
+        // clipboard API failed
       }
     }
 
-    // 2차: execCommand fallback (iOS 대응 포함)
     if (!copied) {
       try {
         const textArea = document.createElement('textarea')
@@ -54,7 +58,6 @@ export default function AccountSection({
         textArea.style.opacity = '0'
         document.body.appendChild(textArea)
 
-        // iOS Safari 대응
         const range = document.createRange()
         const selection = window.getSelection()
         textArea.contentEditable = 'true'
@@ -75,7 +78,6 @@ export default function AccountSection({
       setCopiedIndex(index)
       setTimeout(() => setCopiedIndex(null), 2000)
     } else {
-      // 복사 실패 시 모달로 계좌번호 표시 (사용자가 직접 복사)
       setShowAccountModal({ name: item.name, bank: item.bank, account: accountNumber })
     }
   }
@@ -83,57 +85,80 @@ export default function AccountSection({
   return (
     <section
       ref={ref as React.RefObject<HTMLDivElement>}
-      className="px-8 py-20 transition-all duration-500 flex flex-col items-center justify-center"
+      className="px-6 py-16 flex flex-col items-center justify-center"
       style={{
         backgroundColor: theme.background,
-        opacity: hasAppeared ? (isActive ? 1 : 0.3) : 0,
-        transform: hasAppeared ? 'translateY(0)' : 'translateY(20px)',
         filter: isActive ? 'none' : 'grayscale(30%)',
+        opacity: isActive ? 1 : 0.3,
+        transition: 'filter 0.5s, opacity 0.5s',
       }}
     >
+      {/* GIFT label */}
+      <p
+        className="text-[10px] tracking-[6px] mb-3"
+        style={{
+          color: isActive ? `${theme.accent}80` : '#bbb',
+          fontWeight: 300,
+          ...stagger(hasAppeared, 0),
+        }}
+      >
+        GIFT
+      </p>
+
       <h2
-        className="font-serif text-lg font-semibold text-center mb-12 tracking-wider transition-colors duration-500"
-        style={{ color: isActive ? theme.text : '#999' }}
+        className="font-serif text-[16px] text-center mb-8 tracking-[1px]"
+        style={{
+          color: isActive ? theme.text : '#999',
+          fontWeight: 300,
+          ...stagger(hasAppeared, 0.15),
+        }}
       >
         마음 전하실 곳
       </h2>
 
-      <div className="space-y-3 w-full max-w-[320px]">
+      <div className="space-y-2 w-full max-w-[340px]">
         {accounts.map((item, index) => (
           <button
             key={`${item.name}-${index}`}
             onClick={() => handleCopy(item, index)}
-            onMouseEnter={() => setHoveredIndex(index)}
-            onMouseLeave={() => setHoveredIndex(null)}
-            className="w-full p-4 rounded-lg border text-left transition-all duration-500"
+            className="w-full px-5 py-4 rounded-xl text-left transition-all duration-300"
             style={{
-              borderColor: hoveredIndex === index ? theme.accent : '#E8E4DC',
-              boxShadow: isActive ? '0 2px 8px rgba(0,0,0,0.04)' : 'none',
+              backgroundColor: '#FFFFFF',
+              boxShadow: isActive ? '0 1px 8px rgba(0,0,0,0.03)' : 'none',
+              ...stagger(hasAppeared, 0.3 + index * 0.12),
             }}
+            onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 2px 16px rgba(0,0,0,0.06)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.boxShadow = isActive ? '0 1px 8px rgba(0,0,0,0.03)' : 'none'; }}
           >
             <div className="flex justify-between items-center">
               <div>
                 {item.label && (
                   <p
-                    className="text-[10px] font-medium mb-0.5 tracking-wide transition-colors duration-500"
-                    style={{ color: isActive ? theme.accent : '#bbb' }}
+                    className="text-[10px] mb-1 tracking-[1px]"
+                    style={{ color: isActive ? theme.primary : '#bbb' }}
                   >
                     {item.label}
                   </p>
                 )}
                 <p
-                  className="font-serif text-sm mb-1 transition-colors duration-500"
-                  style={{ color: isActive ? theme.text : '#999' }}
+                  className="font-serif text-sm mb-0.5"
+                  style={{ color: isActive ? theme.text : '#999', fontWeight: 400 }}
                 >
                   {item.name}
                 </p>
-                <p className="text-xs transition-colors duration-500" style={{ color: isActive ? '#999' : '#bbb' }}>
+                <p
+                  className="text-[11px]"
+                  style={{ color: isActive ? `${theme.accent}80` : '#bbb' }}
+                >
                   {item.bank} {item.account}
                 </p>
               </div>
               <span
-                className="text-xs transition-colors duration-500"
-                style={{ color: copiedIndex === index ? '#22c55e' : (isActive ? theme.accent : `${theme.accent}80`) }}
+                className="px-3.5 py-1.5 rounded-lg text-[11px] tracking-[0.5px] transition-all duration-300"
+                style={{
+                  backgroundColor: copiedIndex === index ? '#22c55e' : theme.background,
+                  color: copiedIndex === index ? '#FFFFFF' : (isActive ? theme.textLight : '#aaa'),
+                }}
               >
                 {copiedIndex === index ? '복사됨' : '복사'}
               </span>
@@ -142,7 +167,7 @@ export default function AccountSection({
         ))}
       </div>
 
-      {/* 복사 실패 시 계좌번호 직접 표시 모달 */}
+      {/* Copy failure modal */}
       {showAccountModal && (
         <div
           className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50"

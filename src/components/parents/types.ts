@@ -291,13 +291,22 @@ export interface ParentsInvitationContent {
     firstName: string
     fatherName: string
     motherName: string
+    fatherDeceased?: boolean
+    motherDeceased?: boolean
+    parentsHidden?: boolean
   }
   bride: {
     lastName: string
     firstName: string
     fatherName: string
     motherName: string
+    fatherDeceased?: boolean
+    motherDeceased?: boolean
+    parentsHidden?: boolean
   }
+
+  // 고인 표시 스타일
+  deceasedDisplayStyle?: 'hanja' | 'flower'
 
   // 결혼식 정보
   wedding: {

@@ -35,14 +35,11 @@ export default function TimelineSection({
   return (
     <section
       ref={ref as React.RefObject<HTMLDivElement>}
-      className="transition-all duration-500"
       style={{
-        opacity: hasAppeared ? (isActive ? 1 : 0.3) : 0,
-        transform: hasAppeared ? 'translateY(0)' : 'translateY(20px)',
-        filter: isActive ? 'none' : 'grayscale(30%)',
+        backgroundColor: theme.background,
       }}
     >
-      <FamilyTimeline items={items} theme={theme} />
+      <FamilyTimeline items={items} theme={theme} hasAppeared={hasAppeared} isActive={isActive} />
     </section>
   )
 }

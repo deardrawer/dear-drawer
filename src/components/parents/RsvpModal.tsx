@@ -184,6 +184,10 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId }:
           onFocus={(e) => {
             e.currentTarget.style.borderColor = theme.primary
             if (!isFullscreen) enterFullscreen()
+            const el = e.currentTarget
+            setTimeout(() => {
+              el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            }, 350)
           }}
           onBlur={(e) => { e.currentTarget.style.borderColor = '#E8E4DC' }}
         />
@@ -295,6 +299,11 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId }:
           onFocus={(e) => {
             e.currentTarget.style.borderColor = theme.primary
             if (!isFullscreen) enterFullscreen()
+            // 키보드가 textarea 를 가리지 않도록 스크롤
+            const el = e.currentTarget
+            setTimeout(() => {
+              el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            }, 350)
           }}
           onBlur={(e) => { e.currentTarget.style.borderColor = '#E8E4DC' }}
         />
@@ -324,12 +333,16 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId }:
   // 풀스크린 모달 컨텐츠
   const fullscreenModal = isFullscreen && typeof document !== 'undefined' ? createPortal(
     <div
-      className="fixed inset-0 z-[10000] flex flex-col"
-      style={{ backgroundColor: '#FFFFFF' }}
+      className="fixed left-0 right-0 top-0 z-[10000] flex flex-col"
+      style={{
+        backgroundColor: '#FFFFFF',
+        height: '100dvh',
+        maxHeight: '100dvh',
+      }}
     >
       {/* 헤더 */}
       <div
-        className="flex items-center justify-between px-4 py-3 border-b"
+        className="flex items-center justify-between px-4 py-3 border-b flex-shrink-0"
         style={{ borderColor: '#E8E4DC' }}
       >
         <button
@@ -356,8 +369,15 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId }:
         </button>
       </div>
 
-      {/* 폼 */}
-      <div className="flex-1 overflow-auto px-6 py-6">
+      {/* 폼 - 키보드가 올라와도 스크롤 가능하도록 여유 패딩 추가 */}
+      <div
+        className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-6"
+        style={{
+          paddingBottom: 'calc(env(safe-area-inset-bottom) + 280px)',
+          WebkitOverflowScrolling: 'touch',
+          scrollPaddingBottom: '320px',
+        }}
+      >
         {formContent}
       </div>
     </div>,

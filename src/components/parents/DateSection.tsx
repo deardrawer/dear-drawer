@@ -58,8 +58,9 @@ function RollingCounter({ target, isActive, hasStarted, theme }: {
         fontFamily: "'Cormorant Garamond', 'Georgia', serif",
         fontSize: '20px',
         display: 'inline-block',
-        minWidth: '2ch',
+        minWidth: '3ch',
         textAlign: 'center',
+        fontVariantNumeric: 'tabular-nums',
         transition: 'color 0.5s',
       }}
     >
@@ -230,47 +231,60 @@ export default function DateSection({
             return (
               <div
                 key={index}
-                className="text-center text-sm py-2 relative"
+                className="text-center text-sm py-2 flex items-center justify-center"
                 style={{ fontWeight: isWeddingDay ? 500 : 300 }}
               >
-                {isWeddingDay && (
-                  <>
-                    {/* Pulse ring - 바깥 원이 확장되며 사라짐 */}
-                    <div
-                      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full"
-                      style={{
-                        border: `1.5px solid ${theme.accent}`,
-                        opacity: 0,
-                        animation: hasAppeared ? 'weddingDayPulse 2.5s ease-out 1.2s infinite' : 'none',
-                      }}
-                    />
-                    {/* Static bg circle */}
-                    <div
-                      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
-                      style={{
-                        width: hasAppeared ? '32px' : '0px',
-                        height: hasAppeared ? '32px' : '0px',
-                        backgroundColor: theme.accent,
-                        opacity: 0.12,
-                        transition: 'width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                        transitionDelay: hasAppeared ? '0.8s' : '0s',
-                      }}
-                    />
-                  </>
-                )}
                 <span
-                  className="relative"
-                  style={{
-                    color: isWeddingDay
-                      ? theme.accent
-                      : isSunday
-                      ? '#D4897A'
-                      : isSaturday
-                      ? '#7A9CB8'
-                      : (isActive ? theme.text : '#999'),
-                  }}
+                  className="relative inline-flex items-center justify-center"
+                  style={{ width: '28px', height: '28px' }}
                 >
-                  {dayNum}
+                  {isWeddingDay && (
+                    <>
+                      {/* Pulse ring - 바깥 원이 확장되며 사라짐 */}
+                      <span
+                        className="absolute rounded-full pointer-events-none"
+                        style={{
+                          top: '50%',
+                          left: '50%',
+                          width: '28px',
+                          height: '28px',
+                          border: `1.5px solid ${theme.accent}`,
+                          opacity: 0,
+                          transformOrigin: 'center',
+                          animation: hasAppeared ? 'weddingDayPulse 2.5s ease-out 1.2s infinite' : 'none',
+                        }}
+                      />
+                      {/* Static bg circle */}
+                      <span
+                        className="absolute rounded-full pointer-events-none"
+                        style={{
+                          top: '50%',
+                          left: '50%',
+                          width: hasAppeared ? '28px' : '0px',
+                          height: hasAppeared ? '28px' : '0px',
+                          backgroundColor: theme.accent,
+                          opacity: 0.14,
+                          transform: 'translate(-50%, -50%)',
+                          transition: 'width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                          transitionDelay: hasAppeared ? '0.8s' : '0s',
+                        }}
+                      />
+                    </>
+                  )}
+                  <span
+                    className="relative"
+                    style={{
+                      color: isWeddingDay
+                        ? theme.accent
+                        : isSunday
+                        ? '#D4897A'
+                        : isSaturday
+                        ? '#7A9CB8'
+                        : (isActive ? theme.text : '#999'),
+                    }}
+                  >
+                    {dayNum}
+                  </span>
                 </span>
               </div>
             )

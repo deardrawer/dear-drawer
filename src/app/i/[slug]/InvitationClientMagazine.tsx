@@ -2093,7 +2093,7 @@ function MagazineFooter({ invitation, fonts, themeColors }: { invitation: any; f
   const brideEn = invitation.bride?.nameEn || ''
   const hasEnglishNames = groomEn || brideEn
   return (
-    <div ref={ref} className="px-6 py-8 text-center" style={{ backgroundColor: themeColors.background, position: 'relative' }}>
+    <div ref={ref} className="px-6 pt-8 pb-28 text-center" style={{ backgroundColor: themeColors.background, position: 'relative' }}>
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '0.5px', background: themeColors.divider, transformOrigin: 'left', transform: 'scaleX(0)', ...(isVisible ? { animation: 'mag-borderDrawRight 0.8s ease both' } : {}) }} />
       {hasEnglishNames && (
         <div style={{ fontFamily: fonts.display, fontSize: '11px', letterSpacing: '3px', color: themeColors.divider, opacity: 0, marginBottom: '6px', ...(isVisible ? { animation: 'mag-footerTextFade 0.6s ease 0.4s both' } : {}) }}>

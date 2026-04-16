@@ -511,7 +511,7 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
           <div className="fixed inset-0 bg-black/50 z-50" onClick={closeModal} />
           <div
             ref={modalSheetRef}
-            className="fixed left-0 right-0 z-[55] bg-white rounded-t-2xl max-h-[75vh] overflow-hidden flex flex-col"
+            className="fixed left-0 right-0 z-[55] bg-white rounded-t-2xl max-h-[60vh] overflow-hidden flex flex-col"
             style={{
               bottom: navStyle === 'bottom-nav' ? '66px' : navStyle === 'bottom-mini' ? '58px' : '0',
               animation: 'slideUpModal 0.3s ease-out',
@@ -545,7 +545,7 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
             </div>
 
             {/* Modal Content */}
-            <div ref={modalContentRef} className="p-6 overflow-y-auto flex-1">
+            <div ref={modalContentRef} className="p-4 overflow-y-auto flex-1">
               {/* Contact Content */}
               {activeModal === 'contact' && (
                 <>

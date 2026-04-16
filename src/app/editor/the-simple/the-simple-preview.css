@@ -2343,6 +2343,22 @@
   opacity: 0;
 }
 
+/* 애니메이션 완료 후 최종 상태 고정 — 리렌더링 시 재트리거 방지
+   인트로(.ts-intro)는 sticky로 고정되어 재트리거 문제가 없으므로 제외 */
+.ts-preview .ts-settled:not(.ts-intro) .ts-anim-item,
+.ts-preview .ts-settled:not(.ts-intro) .ts-anim-row,
+.ts-preview .ts-settled:not(.ts-intro) .ts-anim-card,
+.ts-preview .ts-settled:not(.ts-intro) .ts-anim-left,
+.ts-preview .ts-settled:not(.ts-intro) .ts-anim-right,
+.ts-preview .ts-settled:not(.ts-intro) .ts-anim-amp,
+.ts-preview .ts-settled:not(.ts-intro) .ts-anim-vline,
+.ts-preview .ts-settled:not(.ts-intro) .ts-anim-cinematic {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+}
+
 /* ==========================================================================
    섹션별 VARIANT 고유 애니메이션 (in-view 시 재생)
    ========================================================================== */
@@ -3012,25 +3028,56 @@
 .ts-gallery-scroll { -ms-overflow-style: none; scrollbar-width: none; }
 
 /* ---------- GALLERY (V1~V5) ---------- */
-/* V1 피처+썸네일 — fade up */
-.ts-preview .ts-anim-gallery-v1.in-view .ts-anim-item {
-  animation: tsFadeUp 0.8s var(--ts-ease) both;
+/* 갤러리 전용 키프레임 */
+@keyframes tsGalleryCurtain {
+  0%   { opacity: 0; clip-path: inset(100% 0 0 0); transform: scale(1.04); }
+  60%  { clip-path: inset(0 0 0 0); }
+  100% { opacity: 1; clip-path: inset(0 0 0 0); transform: scale(1); }
 }
-
-/* V2 풀 슬라이드쇼 — fade in */
-.ts-preview .ts-anim-gallery-v2.in-view .ts-anim-item {
-  animation: tsFadeIn 0.8s var(--ts-ease) both;
+@keyframes tsGalleryZoomBlur {
+  0%   { opacity: 0; transform: scale(1.12); filter: blur(6px); }
+  50%  { filter: blur(1px); }
+  100% { opacity: 1; transform: scale(1); filter: blur(0); }
 }
-
-/* V3~V5 커스텀 행 패턴 — 개별 이미지 stagger reveal */
+@keyframes tsGallerySlideUp {
+  0%   { opacity: 0; transform: translateY(30px) scale(0.95); }
+  60%  { opacity: 1; }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes tsGalleryFlipIn {
+  0%   { opacity: 0; transform: perspective(600px) rotateX(12deg) translateY(20px); }
+  60%  { opacity: 1; transform: perspective(600px) rotateX(-2deg) translateY(0); }
+  100% { opacity: 1; transform: none; }
+}
 @keyframes tsGalleryReveal {
   from { opacity: 0; transform: translateY(16px) scale(0.97); }
   to { opacity: 1; transform: none; }
 }
-.ts-preview .ts-anim-gallery-v3.in-view .ts-anim-item,
-.ts-preview .ts-anim-gallery-v4.in-view .ts-anim-item,
+
+/* V1 피처+썸네일 — 커튼 오픈 + 살짝 줌 */
+.ts-preview .ts-anim-gallery-v1 .ts-anim-item { overflow: hidden; }
+.ts-preview .ts-anim-gallery-v1.in-view .ts-anim-item {
+  animation: tsGalleryCurtain 1s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* V2 풀 슬라이드쇼 — 블러에서 선명하게 줌 */
+.ts-preview .ts-anim-gallery-v2.in-view .ts-anim-item {
+  animation: tsGalleryZoomBlur 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* V3 커스텀 행 패턴 — 3D 플립 등장 */
+.ts-preview .ts-anim-gallery-v3.in-view .ts-anim-item {
+  animation: tsGalleryFlipIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* V4 커스텀 행 패턴 — 아래에서 스케일업 */
+.ts-preview .ts-anim-gallery-v4.in-view .ts-anim-item {
+  animation: tsGallerySlideUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* V5 커스텀 행 패턴 — 스태거 리빌 */
 .ts-preview .ts-anim-gallery-v5.in-view .ts-anim-item {
-  animation: tsGalleryReveal 0.7s var(--ts-ease) both;
+  animation: tsGalleryReveal 0.8s var(--ts-ease) both;
 }
 
 /* ---------- VIDEO ---------- */
@@ -3192,11 +3239,11 @@
   animation-timing-function: var(--ts-ease);
   animation-fill-mode: both;
 }
-.ts-preview .ts-anim-gallery-v1.in-view .ts-anim-item { animation-name: tsFadeUp; }
-.ts-preview .ts-anim-gallery-v2.in-view .ts-anim-item { animation-name: tsFadeIn; }
-.ts-preview .ts-anim-gallery-v3.in-view .ts-anim-item { animation-name: tsFadeUp; }
-.ts-preview .ts-anim-gallery-v4.in-view .ts-anim-item { animation-name: tsFadeUp; }
-.ts-preview .ts-anim-gallery-v5.in-view .ts-anim-item { animation-name: tsFadeUp; }
+.ts-preview .ts-anim-gallery-v1.in-view .ts-anim-item { animation-name: tsGalleryCurtain; animation-duration: 1s; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+.ts-preview .ts-anim-gallery-v2.in-view .ts-anim-item { animation-name: tsGalleryZoomBlur; animation-duration: 1.2s; animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+.ts-preview .ts-anim-gallery-v3.in-view .ts-anim-item { animation-name: tsGalleryFlipIn; animation-duration: 0.9s; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+.ts-preview .ts-anim-gallery-v4.in-view .ts-anim-item { animation-name: tsGallerySlideUp; animation-duration: 0.8s; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+.ts-preview .ts-anim-gallery-v5.in-view .ts-anim-item { animation-name: tsGalleryReveal; }
 
 /* ---- Love Story V1 기본 — fade up ---- */
 .ts-preview .ts-anim-ls-v1 > * { opacity: 0; transform: translateY(8px); }

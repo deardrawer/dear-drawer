@@ -106,6 +106,8 @@ function useScrollReveal(options?: { threshold?: number; rootMargin?: string }) 
   useEffect(() => {
     const el = ref.current
     if (!el) return
+    // 에디터 프리뷰에서는 IntersectionObserver가 동작하지 않으므로 즉시 reveal
+    if (el.closest('.film-preview-mode')) { setIsVisible(true); return }
     const scrollEl = el.closest('.mobile-frame-content') as HTMLElement | null
     const scrollRoot = scrollEl && scrollEl.scrollHeight > scrollEl.clientHeight + 1 ? scrollEl : null
     const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) setIsVisible(true) }, { threshold, root: scrollRoot, rootMargin })
@@ -123,6 +125,8 @@ function RevealSection({ children, className, style, sectionKey, margin, bare }:
   useEffect(() => {
     const el = ref.current
     if (!el) return
+    // 에디터 프리뷰에서는 즉시 reveal
+    if (el.closest('.film-preview-mode')) { setRevealed(true); return }
     const scrollRoot = el.closest('.mobile-frame-content') || null
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) { setRevealed(true); observer.disconnect() }
@@ -1679,7 +1683,7 @@ function ThePremiere({ invitation, fonts, tc, bgOverride }: { invitation: any; f
 
         {/* Directions - inline */}
         {w.directions && (w.directions.car || w.directions.publicTransport || w.directions.train || w.directions.expressBus || (w.directions.extraInfoEnabled && w.directions.extraInfoText)) && (
-          <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '10px', alignSelf: 'stretch', width: '100%' }}>
             {w.directions.car && (
               <div className="direction-card revealed" style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
                 <div style={{ fontFamily: fonts.display, fontSize: dfs(8), letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>By Car</div>
@@ -2946,6 +2950,11 @@ const globalStyles = `
   .film-preview-mode .scene-card-item .scene-card-body {
     border-left-color: rgba(212,131,143,0.4) !important;
   }
+  /* 에디터 프리뷰에서는 IntersectionObserver가 동작하지 않으므로 즉시 reveal */
+  .film-preview-mode .film-reveal {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+  }
 `
 
 function formatTimeToDisplay(time?: string): string {
@@ -2997,6 +3006,7 @@ const displayFontMap: Record<string, string> = {
   'made-slab': "'MADELikesSlab', serif",
   italiana: "'Italiana', serif",
   italianno: "'Italianno', cursive",
+  majesty: "'Majesty', serif",
 }
 
 const displayFontScale: Record<string, number> = {

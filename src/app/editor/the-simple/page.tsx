@@ -1134,8 +1134,7 @@ function TheSimpleEditorContent() {
                   {/* 개발중 배너 */}
                   <div className="p-4 bg-stone-50 border border-stone-200 rounded-md text-xs text-stone-600 leading-relaxed">
                     <strong className="block mb-1 tracking-wide text-stone-800">THE SIMPLE 에디터</strong>
-                    입력한 내용은 실시간으로 오른쪽 프리뷰에 반영됩니다. 섹션 순서 변경, UI 대안 선택,
-                    갤러리 업로드 등은 다음 단계에서 추가됩니다.
+                    입력한 내용은 실시간으로 프리뷰에 반영됩니다. 각 섹션의 스타일 변형은 아래에서 선택할 수 있습니다.
                   </div>
 
                   {/* 폰트 · 영문/한글 폰트 선택 (매거진 에디터와 동일 목록) */}

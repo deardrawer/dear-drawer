@@ -368,8 +368,47 @@ interface AnimatedSectionProps {
 
 function AnimatedSection({ className = '', style, children }: AnimatedSectionProps) {
   const [ref, inView] = useInView<HTMLElement>()
+  const [settled, setSettled] = useState(false)
+  const settledRef = useRef(false)
+  const sectionRef = useRef<HTMLElement | null>(null)
+
+  // inView 전환 후 모든 자식 animation이 끝나면 settled → 재트리거 방지
+  useEffect(() => {
+    if (!inView || settledRef.current) return
+    const el = sectionRef.current
+    if (!el) return
+    const pending = new Set<HTMLElement>()
+    el.querySelectorAll<HTMLElement>('[class*="ts-anim-"], [class*="ts-in-anim"]').forEach((child) => {
+      if (getComputedStyle(child).animationName !== 'none') pending.add(child)
+    })
+    if (pending.size === 0) { settledRef.current = true; setSettled(true); return }
+    const onEnd = (e: AnimationEvent) => {
+      pending.delete(e.target as HTMLElement)
+      if (pending.size === 0) {
+        settledRef.current = true
+        setSettled(true)
+        el.removeEventListener('animationend', onEnd)
+      }
+    }
+    el.addEventListener('animationend', onEnd)
+    // 안전장치: 2초 후 강제 settled
+    const t = setTimeout(() => { if (!settledRef.current) { settledRef.current = true; setSettled(true); el.removeEventListener('animationend', onEnd) } }, 2000)
+    return () => { clearTimeout(t); el.removeEventListener('animationend', onEnd) }
+  }, [inView])
+
+  const setRefs = useCallback((el: HTMLElement | null) => {
+    sectionRef.current = el
+    ;(ref as React.MutableRefObject<HTMLElement | null>).current = el
+  }, [ref])
+
+  // inView 전까지 인라인 opacity:0 으로 확실히 숨김 (CSS 로딩 타이밍 무관)
+  const mergedStyle: React.CSSProperties = {
+    ...style,
+    ...(!inView ? { opacity: 0 } : {}),
+  }
+
   return (
-    <section ref={ref} className={`${className} ${inView ? 'in-view' : ''}`} style={style}>
+    <section ref={setRefs} className={`${className} ${inView ? 'in-view' : ''} ${settled ? 'ts-settled' : ''}`} style={mergedStyle}>
       {children}
     </section>
   )
@@ -3324,14 +3363,14 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
 
     account: (v) => {
       const guideText = account.guide || ''
-      const accountGuide = guideText ? (
+      const accountGuideEl = guideText ? (
         <p style={{
           fontFamily: 'var(--font-ko)',
           fontSize: 11,
           color: 'var(--mute)',
           textAlign: 'center',
           lineHeight: 1.8,
-          marginTop: 20,
+          marginBottom: 16,
           opacity: 0.8,
           whiteSpace: 'pre-line',
         }}>
@@ -3359,8 +3398,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         return (
           <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key="account">
             <div className="ts-eyebrow">{account.eyebrow}</div>
-            {accountGuide}
-            <div style={{ background: '#f5f5f0', padding: '20px 16px' }}>
+            <div style={{ background: '#f5f5f0', padding: '20px 16px', marginTop: 8 }}>
+              {accountGuideEl}
               <AccountTabbed {...tabbedProps} />
             </div>
           </AnimatedSection>
@@ -3390,76 +3429,78 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         return (
           <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key="account">
             <div className="ts-eyebrow">{account.eyebrow}</div>
-            {accountGuide}
-            {allList.length === 0 ? (
-              <p style={{ textAlign: 'center', fontSize: 11, color: '#b8b0a6', marginTop: 8 }}>
-                계좌를 추가하면 여기에 표시됩니다
-              </p>
-            ) : (
-              <div style={{ marginTop: 8 }}>
-                {allList.map((group, gi) => (
-                  <div
-                    key={gi}
-                    style={{
-                      padding: '16px 0',
-                      borderBottom:
-                        gi === allList.length - 1 ? 'none' : '1px solid var(--line)',
-                    }}
-                  >
+            <div style={{ marginTop: 8 }}>
+              {accountGuideEl}
+              {allList.length === 0 ? (
+                <p style={{ textAlign: 'center', fontSize: 11, color: '#b8b0a6', marginTop: 8 }}>
+                  계좌를 추가하면 여기에 표시됩니다
+                </p>
+              ) : (
+                <div>
+                  {allList.map((group, gi) => (
                     <div
+                      key={gi}
                       style={{
-                        display: 'flex',
-                        alignItems: 'baseline',
-                        gap: 8,
-                        marginBottom: 10,
+                        padding: '16px 0',
+                        borderBottom:
+                          gi === allList.length - 1 ? 'none' : '1px solid var(--line)',
                       }}
                     >
-                      <span
+                      <div
                         style={{
-                          fontFamily: 'var(--font-display)',
-                          fontSize: 10,
-                          letterSpacing: '0.2em',
-                          color: 'var(--accent)',
-                          textTransform: 'uppercase',
+                          display: 'flex',
+                          alignItems: 'baseline',
+                          gap: 8,
+                          marginBottom: 10,
                         }}
                       >
-                        {group.role}
-                      </span>
-                      {group.name && (
                         <span
                           style={{
-                            fontFamily: 'var(--font-ko)',
-                            fontSize: 14,
-                            fontWeight: 600,
-                            color: 'var(--ink)',
+                            fontFamily: 'var(--font-display)',
+                            fontSize: 10,
+                            letterSpacing: '0.2em',
+                            color: 'var(--accent)',
+                            textTransform: 'uppercase',
                           }}
                         >
-                          {group.name}
+                          {group.role}
                         </span>
-                      )}
-                    </div>
-                    {group.accounts.map((acc, i) => (
-                      <div
-                        key={i}
-                        style={{
-                          fontFamily: 'var(--font-ko)',
-                          fontSize: 12,
-                          color: '#5d5850',
-                          lineHeight: 1.9,
-                          paddingLeft: 2,
-                        }}
-                      >
-                        <span style={{ color: 'var(--mute)', marginRight: 6 }}>{acc.bank}</span>
-                        <span style={{ fontFamily: 'var(--font-mono), monospace' }}>{acc.number}</span>
-                        {acc.holder && (
-                          <span style={{ color: 'var(--mute)', marginLeft: 6 }}>· {acc.holder}</span>
+                        {group.name && (
+                          <span
+                            style={{
+                              fontFamily: 'var(--font-ko)',
+                              fontSize: 14,
+                              fontWeight: 600,
+                              color: 'var(--ink)',
+                            }}
+                          >
+                            {group.name}
+                          </span>
                         )}
                       </div>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            )}
+                      {group.accounts.map((acc, i) => (
+                        <div
+                          key={i}
+                          style={{
+                            fontFamily: 'var(--font-ko)',
+                            fontSize: 12,
+                            color: '#5d5850',
+                            lineHeight: 1.9,
+                            paddingLeft: 2,
+                          }}
+                        >
+                          <span style={{ color: 'var(--mute)', marginRight: 6 }}>{acc.bank}</span>
+                          <span style={{ fontFamily: 'var(--font-mono), monospace' }}>{acc.number}</span>
+                          {acc.holder && (
+                            <span style={{ color: 'var(--mute)', marginLeft: 6 }}>· {acc.holder}</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </AnimatedSection>
         )
       }
@@ -3469,8 +3510,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         return (
           <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key="account">
             <div className="ts-eyebrow">{account.eyebrow}</div>
-            {accountGuide}
-            <div style={{ border: '1px solid var(--line)', padding: '20px 16px' }}>
+            <div style={{ border: '1px solid var(--line)', padding: '20px 16px', marginTop: 8 }}>
+              {accountGuideEl}
               <AccountTabbed {...tabbedProps} />
             </div>
           </AnimatedSection>
@@ -3482,8 +3523,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         return (
           <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key="account">
             <div className="ts-eyebrow">{account.eyebrow}</div>
-            {accountGuide}
             <div style={{ textAlign: 'center', padding: '16px 0' }}>
+              {accountGuideEl}
               <AccountTabbed {...tabbedProps} />
             </div>
           </AnimatedSection>
@@ -3494,8 +3535,10 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       return (
         <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key="account">
           <div className="ts-eyebrow">{account.eyebrow}</div>
-          {accountGuide}
-          <AccountTabbed {...tabbedProps} />
+          <div style={{ marginTop: 8 }}>
+            {accountGuideEl}
+            <AccountTabbed {...tabbedProps} />
+          </div>
         </AnimatedSection>
       )
     },

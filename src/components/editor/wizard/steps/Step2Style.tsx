@@ -67,6 +67,7 @@ const DISPLAY_FONTS = [
   { id: 'made-slab', name: 'MADE Slab', sample: 'Wedding Day', fontFamily: "'MADELikesSlab', serif", desc: 'MADE Slab' },
   { id: 'italiana', name: 'Italiana', sample: 'Wedding Day', fontFamily: "'Italiana', serif", desc: 'Italiana' },
   { id: 'italianno', name: 'Italianno', sample: 'Wedding day', fontFamily: "'Italianno', cursive", desc: 'Italianno', filmOnly: true },
+  { id: 'majesty', name: 'Majesty', sample: 'Wedding Day', fontFamily: "'Majesty', serif", desc: 'Majesty' },
 ] as const
 
 const ACCENT_PRESETS = [

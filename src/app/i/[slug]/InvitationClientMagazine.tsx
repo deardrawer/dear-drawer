@@ -2364,6 +2364,7 @@ const displayFontMap: Record<string, string> = {
   lora: "'Lora', serif",
   'made-slab': "'MADELikesSlab', serif",
   italiana: "'Italiana', serif",
+  majesty: "'Majesty', serif",
 }
 
 const MAGAZINE_DEFAULT_BG: Record<string, 'background' | 'sectionBg'> = {

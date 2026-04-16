@@ -82,7 +82,39 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
   const [rsvpForm, setRsvpForm] = useState({ name: '', side: '' as '' | 'groom' | 'bride', attendance: '', mealAttendance: '' as '' | 'yes' | 'no', shuttleBus: '' as '' | 'yes' | 'no', guestCount: 1, message: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const scrollPositionRef = useRef(0)
+  const modalContentRef = useRef<HTMLDivElement>(null)
   const navVisible = !navHidden
+
+  // 모바일 키보드 열릴 때: 스크롤 영역에 하단 패딩 추가 + 포커스된 필드로 자동 스크롤
+  useEffect(() => {
+    if (activeModal === 'none') return
+    const vv = window.visualViewport
+    if (!vv) return
+
+    const handleViewportChange = () => {
+      const contentEl = modalContentRef.current
+      if (!contentEl) return
+      const keyboardHeight = window.innerHeight - vv.height - vv.offsetTop
+      if (keyboardHeight > 50) {
+        contentEl.style.paddingBottom = `${keyboardHeight}px`
+        // 포커스된 input/textarea를 스크롤 영역 내에서 보이도록
+        const focused = document.activeElement as HTMLElement
+        if (focused && (focused.tagName === 'INPUT' || focused.tagName === 'TEXTAREA') && contentEl.contains(focused)) {
+          setTimeout(() => focused.scrollIntoView({ block: 'center', behavior: 'smooth' }), 50)
+        }
+      } else {
+        contentEl.style.paddingBottom = ''
+      }
+    }
+
+    vv.addEventListener('resize', handleViewportChange)
+    vv.addEventListener('scroll', handleViewportChange)
+    return () => {
+      vv.removeEventListener('resize', handleViewportChange)
+      vv.removeEventListener('scroll', handleViewportChange)
+      if (modalContentRef.current) modalContentRef.current.style.paddingBottom = ''
+    }
+  }, [activeModal])
 
   // 외부에서 모달 열기
   useEffect(() => {
@@ -501,7 +533,7 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
             </div>
 
             {/* Modal Content */}
-            <div className="p-6 overflow-y-auto flex-1">
+            <div ref={modalContentRef} className="p-6 overflow-y-auto flex-1">
               {/* Contact Content */}
               {activeModal === 'contact' && (
                 <>

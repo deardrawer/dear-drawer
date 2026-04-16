@@ -217,12 +217,12 @@ export default function VenueSection({
 
       {/* Navigation chip buttons */}
       <div
-        className="flex flex-wrap items-center justify-center gap-2 mb-6 px-6"
+        className="flex items-center justify-center gap-2 mb-6 px-4"
         style={stagger(hasAppeared, 0.5)}
       >
         <button
           onClick={openNaverMap}
-          className="flex items-center gap-1.5 px-[18px] py-2.5 text-[11px] tracking-[0.5px] rounded-3xl whitespace-nowrap transition-all duration-200"
+          className="flex items-center gap-1.5 px-3.5 py-2.5 text-[11px] tracking-[0.5px] rounded-3xl whitespace-nowrap transition-all duration-200"
           style={{
             backgroundColor: '#FFFFFF',
             border: `1px solid ${isActive ? '#E8E2DA' : '#eee'}`,
@@ -239,7 +239,7 @@ export default function VenueSection({
         </button>
         <button
           onClick={openKakaoMap}
-          className="flex items-center gap-1.5 px-[18px] py-2.5 text-[11px] tracking-[0.5px] rounded-3xl whitespace-nowrap transition-all duration-200"
+          className="flex items-center gap-1.5 px-3.5 py-2.5 text-[11px] tracking-[0.5px] rounded-3xl whitespace-nowrap transition-all duration-200"
           style={{
             backgroundColor: '#FFFFFF',
             border: `1px solid ${isActive ? '#E8E2DA' : '#eee'}`,
@@ -256,7 +256,7 @@ export default function VenueSection({
         </button>
         <button
           onClick={openTmap}
-          className="flex items-center gap-1.5 px-[18px] py-2.5 text-[11px] tracking-[0.5px] rounded-3xl whitespace-nowrap transition-all duration-200"
+          className="flex items-center gap-1.5 px-3.5 py-2.5 text-[11px] tracking-[0.5px] rounded-3xl whitespace-nowrap transition-all duration-200"
           style={{
             backgroundColor: '#FFFFFF',
             border: `1px solid ${isActive ? '#E8E2DA' : '#eee'}`,

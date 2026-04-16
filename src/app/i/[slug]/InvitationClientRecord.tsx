@@ -1872,8 +1872,8 @@ function FanMailSection({ invitation, invitationId, fonts, tc, isSample, bgOverr
           )}
         </div>
         <div className="mb-8 space-y-3">
-          <input value={name} onChange={e => setName(e.target.value)} placeholder="이름" maxLength={20} style={inputStyle} />
-          <textarea value={message} onChange={e => setMessage(e.target.value)} placeholder="메시지를 남겨주세요 (100자 이내)" rows={3} maxLength={100}
+          <input value={name} onChange={e => setName(e.target.value)} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} placeholder="이름" maxLength={20} style={inputStyle} />
+          <textarea value={message} onChange={e => setMessage(e.target.value)} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} placeholder="메시지를 남겨주세요 (100자 이내)" rows={3} maxLength={100}
             style={{ ...inputStyle, resize: 'none' as const }} />
           <button onClick={handleSubmit} disabled={submitting}
             style={{ width: '100%', fontFamily: fonts.display, fontSize: '10px', letterSpacing: '3px', padding: '12px', background: tc.primary, color: '#FFFFFF', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: submitting ? 0.5 : 1 }}>
@@ -1970,7 +1970,7 @@ function RsvpSection({ invitation, invitationId, fonts, tc, bgOverride }: {
         </div>
         <div style={{ background: tc.cardBg, borderRadius: '12px', padding: '20px', border: `1px solid ${tc.divider}60` }}>
           <div className="space-y-3">
-            <input value={name} onChange={e => setName(e.target.value)} placeholder="성함" style={inputStyle} />
+            <input value={name} onChange={e => setName(e.target.value)} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} placeholder="성함" style={inputStyle} />
             <div className="grid grid-cols-2 gap-2">
               {([{ value: 'groom' as const, label: '신랑측' }, { value: 'bride' as const, label: '신부측' }]).map(opt => (
                 <button key={opt.value} onClick={() => setSide(side === opt.value ? null : opt.value)}

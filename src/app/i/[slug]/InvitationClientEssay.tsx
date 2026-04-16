@@ -881,8 +881,8 @@ function GuestbookSection({ data, invitationId, theme, isSample }: { data: any; 
           <p className="text-center mb-6" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '14px', fontWeight: 500, color: theme.heading }}>{questions[currentQ]}</p>
           {questions.length > 1 && <button onClick={() => setCurrentQ((currentQ + 1) % questions.length)} className="block mx-auto mb-4" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '11px', color: theme.gray, background: 'none', border: 'none', cursor: 'pointer' }}>다른 질문 보기 →</button>}
           <div className="space-y-3 mb-8">
-            <input value={name} onChange={e => setName(e.target.value)} placeholder="이름" maxLength={20} className="w-full px-4 py-3 text-sm outline-none" style={{ border: `0.5px solid ${theme.divider}`, background: theme.cardBg, color: theme.text }} />
-            <textarea value={message} onChange={e => setMessage(e.target.value)} placeholder="축하 메시지를 남겨주세요" rows={3} maxLength={500} className="w-full px-4 py-3 text-sm outline-none resize-none" style={{ border: `0.5px solid ${theme.divider}`, background: theme.cardBg, color: theme.text }} />
+            <input value={name} onChange={e => setName(e.target.value)} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} placeholder="이름" maxLength={20} className="w-full px-4 py-3 text-sm outline-none" style={{ border: `0.5px solid ${theme.divider}`, background: theme.cardBg, color: theme.text }} />
+            <textarea value={message} onChange={e => setMessage(e.target.value)} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} placeholder="축하 메시지를 남겨주세요" rows={3} maxLength={500} className="w-full px-4 py-3 text-sm outline-none resize-none" style={{ border: `0.5px solid ${theme.divider}`, background: theme.cardBg, color: theme.text }} />
             <button onClick={handleSubmit} disabled={submitting || !name.trim() || !message.trim()} className="w-full py-3 text-sm font-medium disabled:opacity-50" style={{ background: theme.accent, color: '#FFF' }}>{submitting ? '등록 중...' : '메시지 남기기'}</button>
           </div>
           {visible.length > 0 && <div className="space-y-3">
@@ -1623,11 +1623,11 @@ function PaperGuestbook({ data, invitationId, isSample }: { data: any; invitatio
         </PaperReveal>
         <PaperReveal delay={100}>
           <div className="space-y-3 mb-6">
-            <input value={name} onChange={e => setName(e.target.value)} placeholder="이름" maxLength={20} style={{
+            <input value={name} onChange={e => setName(e.target.value)} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} placeholder="이름" maxLength={20} style={{
               width: '100%', padding: '12px 16px', fontFamily: "'Pretendard', sans-serif", fontSize: '14px',
               color: paperColors.text, background: 'transparent', border: `1px solid ${paperColors.accent}`, borderRadius: '4px', outline: 'none',
             }} />
-            <textarea value={message} onChange={e => setMessage(e.target.value)} placeholder="메시지를 남겨주세요" rows={3} maxLength={500} style={{
+            <textarea value={message} onChange={e => setMessage(e.target.value)} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} placeholder="메시지를 남겨주세요" rows={3} maxLength={500} style={{
               width: '100%', padding: '12px 16px', fontFamily: "'Pretendard', sans-serif", fontSize: '14px',
               color: paperColors.text, background: 'transparent', border: `1px solid ${paperColors.accent}`, borderRadius: '4px', outline: 'none', resize: 'none',
             }} />
@@ -2634,7 +2634,7 @@ function BookFullscreenModal({ type, onChangeType, onClose, data, invitationId, 
               {data.rsvpNotice && (
                 <p className="text-xs text-center mb-3 whitespace-pre-line leading-relaxed" style={{ color: bookColors.muted, lineHeight: 1.6 }}>{data.rsvpNotice}</p>
               )}
-              <input type="text" placeholder="이름" value={rsvpForm.name} onChange={(e) => setRsvpForm({ ...rsvpForm, name: e.target.value })} className="w-full p-3 rounded-xl mb-3 text-sm outline-none" style={{ background: `${accent}08`, color: bookColors.text }} />
+              <input type="text" placeholder="이름" value={rsvpForm.name} onChange={(e) => setRsvpForm({ ...rsvpForm, name: e.target.value })} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} className="w-full p-3 rounded-xl mb-3 text-sm outline-none" style={{ background: `${accent}08`, color: bookColors.text }} />
               <div className="grid grid-cols-2 gap-2 mb-3">
                 <button onClick={() => setRsvpForm({ ...rsvpForm, side: rsvpForm.side === 'groom' ? '' : 'groom' })} className="py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.side === 'groom' ? accent : `${accent}08`, color: rsvpForm.side === 'groom' ? '#fff' : bookColors.text }}>신랑측</button>
                 <button onClick={() => setRsvpForm({ ...rsvpForm, side: rsvpForm.side === 'bride' ? '' : 'bride' })} className="py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.side === 'bride' ? accent : `${accent}08`, color: rsvpForm.side === 'bride' ? '#fff' : bookColors.text }}>신부측</button>
@@ -2677,7 +2677,7 @@ function BookFullscreenModal({ type, onChangeType, onClose, data, invitationId, 
                   </div>
                 </div>
               )}
-              <textarea placeholder="메시지 (선택)" value={rsvpForm.message} onChange={(e) => setRsvpForm({ ...rsvpForm, message: e.target.value })} className="w-full p-3 rounded-xl mb-4 text-sm outline-none resize-none h-20" style={{ background: `${accent}08`, color: bookColors.text }} />
+              <textarea placeholder="메시지 (선택)" value={rsvpForm.message} onChange={(e) => setRsvpForm({ ...rsvpForm, message: e.target.value })} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} className="w-full p-3 rounded-xl mb-4 text-sm outline-none resize-none h-20" style={{ background: `${accent}08`, color: bookColors.text }} />
               <button onClick={handleRsvpSubmit} disabled={isSubmitting || !rsvpForm.name.trim() || !rsvpForm.attendance} className="w-full py-3 rounded-xl text-sm text-white" style={{ background: accent, opacity: (!rsvpForm.name.trim() || !rsvpForm.attendance) ? 0.4 : 1 }}>{isSubmitting ? '전송중...' : '제출하기'}</button>
             </div>
           )}
@@ -3853,8 +3853,8 @@ function BookGuestbook({ data, invitationId, isSample }: { data: any; invitation
           ))}
         </BA>
         <BA d={600} className="space-y-3 mb-6">
-          <input value={name} onChange={e => setName(e.target.value)} onClick={e => e.stopPropagation()} placeholder="이름" maxLength={20} className="w-full px-4 py-3 text-sm outline-none" style={{ border: `0.5px solid ${bookInfoColors.divider}`, background: bookInfoColors.cardBg, color: bookInfoColors.text }} />
-          <textarea value={message} onChange={e => setMessage(e.target.value)} onClick={e => e.stopPropagation()} placeholder="축하 메시지를 남겨주세요" rows={3} maxLength={500} className="w-full px-4 py-3 text-sm outline-none resize-none" style={{ border: `0.5px solid ${bookInfoColors.divider}`, background: bookInfoColors.cardBg, color: bookInfoColors.text }} />
+          <input value={name} onChange={e => setName(e.target.value)} onClick={e => e.stopPropagation()} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} placeholder="이름" maxLength={20} className="w-full px-4 py-3 text-sm outline-none" style={{ border: `0.5px solid ${bookInfoColors.divider}`, background: bookInfoColors.cardBg, color: bookInfoColors.text }} />
+          <textarea value={message} onChange={e => setMessage(e.target.value)} onClick={e => e.stopPropagation()} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} placeholder="축하 메시지를 남겨주세요" rows={3} maxLength={500} className="w-full px-4 py-3 text-sm outline-none resize-none" style={{ border: `0.5px solid ${bookInfoColors.divider}`, background: bookInfoColors.cardBg, color: bookInfoColors.text }} />
           <button onClick={(e) => { e.stopPropagation(); handleSubmit() }} disabled={submitting || !name.trim() || !message.trim()} className="w-full py-3 text-sm disabled:opacity-50" style={{ background: bookInfoColors.accent, color: '#FFF', border: 'none', cursor: 'pointer' }}>{submitting ? '등록 중...' : '메시지 남기기'}</button>
         </BA>
         {/* 메시지 카드 */}

@@ -2151,8 +2151,8 @@ function AudienceReviews({ invitation, invitationId, fonts, tc, isSample, bgOver
         )}
       </div>
       <div className="mb-8 space-y-3">
-        <input value={name} onChange={e => setName(e.target.value)} placeholder="이름" maxLength={20} style={inputStyle} />
-        <textarea value={message} onChange={e => setMessage(e.target.value)} placeholder="메시지를 남겨주세요 (100자 이내)" rows={3} maxLength={100}
+        <input value={name} onChange={e => setName(e.target.value)} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} placeholder="이름" maxLength={20} style={inputStyle} />
+        <textarea value={message} onChange={e => setMessage(e.target.value)} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} placeholder="메시지를 남겨주세요 (100자 이내)" rows={3} maxLength={100}
           style={{ ...inputStyle, resize: 'none' as const }} />
         <button onClick={handleSubmit} disabled={submitting}
           style={{ width: '100%', fontFamily: fonts.displayKr, fontSize: '10px', letterSpacing: '3px', padding: '12px', background: tc.accent, color: '#FFFFFF', border: 'none', cursor: 'pointer', opacity: submitting ? 0.5 : 1 }}>
@@ -2355,7 +2355,7 @@ function TicketRsvp({ invitation, invitationId, fonts, tc, bgOverride }: {
             {invitation.rsvpNotice && (
               <p style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.cardGray || tc.gray, textAlign: 'center', lineHeight: 1.6, whiteSpace: 'pre-line' }}>{invitation.rsvpNotice}</p>
             )}
-            <input value={name} onChange={e => setName(e.target.value)} placeholder="성함" style={inputStyle} />
+            <input value={name} onChange={e => setName(e.target.value)} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} placeholder="성함" style={inputStyle} />
             <div className="grid grid-cols-2 gap-2">
               {([{ value: 'groom' as const, label: '신랑측' }, { value: 'bride' as const, label: '신부측' }]).map(opt => (
                 <button key={opt.value} onClick={() => setSide(side === opt.value ? null : opt.value)}

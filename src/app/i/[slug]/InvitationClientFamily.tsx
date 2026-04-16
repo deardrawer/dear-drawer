@@ -3868,6 +3868,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
                 type="text"
                 value={guestName}
                 onChange={(e) => setGuestName(e.target.value)}
+                onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
                 className="w-full px-3.5 py-3 border border-gray-200 rounded-lg typo-caption"
                 style={{ background: '#fafafa', color: themeColors.text }}
                 placeholder="이름"
@@ -3878,6 +3879,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
                   type="text"
                   value={guestMessage}
                   onChange={(e) => setGuestMessage(e.target.value)}
+                  onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
                   className="flex-1 px-3.5 py-3 border border-gray-200 rounded-lg typo-caption"
                   style={{ background: '#fafafa', color: themeColors.text }}
                   placeholder="메시지 (100자 이내)"

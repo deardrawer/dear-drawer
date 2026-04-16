@@ -1891,6 +1891,7 @@ function GuestbookSection({
           type="text"
           value={guestName}
           onChange={(e) => setGuestName(e.target.value)}
+          onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
           placeholder="이름"
           className="w-full text-[13px] py-2 px-3 rounded-lg outline-none"
           style={{ background: '#FAFAFA', border: '1px solid #DBDBDB', color: '#262626' }}
@@ -1900,6 +1901,7 @@ function GuestbookSection({
             type="text"
             value={guestMessage}
             onChange={(e) => setGuestMessage(e.target.value)}
+            onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
             placeholder="댓글 달기..."
             className="flex-1 text-[13px] py-2 px-3 rounded-lg outline-none"
             style={{ background: '#FAFAFA', border: '1px solid #DBDBDB', color: '#262626' }}

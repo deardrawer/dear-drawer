@@ -1812,6 +1812,7 @@ function GuestbookSection({ invitation, invitationId, fonts, themeColors, isSamp
         <input
             value={name}
             onChange={e => setName(e.target.value)}
+            onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
             placeholder="이름"
             maxLength={20}
             style={{ fontFamily: fonts.body, fontSize: '13px', padding: '10px 12px', border: `0.5px solid ${themeColors.divider}`, background: themeColors.cardBg, outline: 'none', width: '100%', color: themeColors.buttonText || themeColors.text }}
@@ -1819,6 +1820,7 @@ function GuestbookSection({ invitation, invitationId, fonts, themeColors, isSamp
         <textarea
           value={message}
           onChange={e => setMessage(e.target.value)}
+          onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
           placeholder="메시지를 남겨주세요 (100자 이내)"
           rows={3}
           maxLength={100}
@@ -1955,6 +1957,7 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
         <input
           value={name}
           onChange={e => setName(e.target.value)}
+          onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
           placeholder="성함"
           style={{ fontFamily: fonts.body, fontSize: '13px', padding: '10px 12px', border: `0.5px solid ${themeColors.divider}`, background: themeColors.cardBg, outline: 'none', width: '100%', color: themeColors.buttonText || themeColors.text }}
         />

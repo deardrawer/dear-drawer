@@ -578,7 +578,7 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
                   {invitation.rsvpNotice && (
                     <p className="text-xs text-center mb-3 whitespace-pre-line leading-relaxed" style={{ color: themeColors.gray }}>{invitation.rsvpNotice}</p>
                   )}
-                  <input type="text" placeholder="이름" value={rsvpForm.name} onChange={(e) => setRsvpForm({ ...rsvpForm, name: e.target.value })} className="w-full p-3 rounded-xl mb-3 text-sm outline-none" style={{ background: themeColors.sectionBg, color: themeColors.text }} />
+                  <input type="text" placeholder="이름" value={rsvpForm.name} onChange={(e) => setRsvpForm({ ...rsvpForm, name: e.target.value })} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} className="w-full p-3 rounded-xl mb-3 text-sm outline-none" style={{ background: themeColors.sectionBg, color: themeColors.text }} />
                   <div className="grid grid-cols-2 gap-2 mb-3">
                     <button onClick={() => setRsvpForm({ ...rsvpForm, side: rsvpForm.side === 'groom' ? '' : 'groom' })} className="py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.side === 'groom' ? '#3B82F6' : themeColors.sectionBg, color: rsvpForm.side === 'groom' ? 'white' : themeColors.text }}>신랑측</button>
                     <button onClick={() => setRsvpForm({ ...rsvpForm, side: rsvpForm.side === 'bride' ? '' : 'bride' })} className="py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.side === 'bride' ? '#EC4899' : themeColors.sectionBg, color: rsvpForm.side === 'bride' ? 'white' : themeColors.text }}>신부측</button>
@@ -612,7 +612,7 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
                       </div>
                     </div>
                   )}
-                  <textarea placeholder="메시지 (선택)" value={rsvpForm.message} onChange={(e) => setRsvpForm({ ...rsvpForm, message: e.target.value })} className="w-full p-3 rounded-xl mb-4 text-sm outline-none resize-none h-16" style={{ background: themeColors.sectionBg, color: themeColors.text }} />
+                  <textarea placeholder="메시지 (선택)" value={rsvpForm.message} onChange={(e) => setRsvpForm({ ...rsvpForm, message: e.target.value })} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} className="w-full p-3 rounded-xl mb-4 text-sm outline-none resize-none h-16" style={{ background: themeColors.sectionBg, color: themeColors.text }} />
                   <button onClick={handleRsvpSubmit} disabled={isSubmitting || !rsvpForm.name.trim() || !rsvpForm.attendance} className="w-full py-3 rounded-xl text-sm text-white transition-opacity" style={{ background: themeColors.primary, opacity: (!rsvpForm.name.trim() || !rsvpForm.attendance) ? 0.4 : 1 }}>{isSubmitting ? '전송중...' : '제출하기'}</button>
                 </>
               )}

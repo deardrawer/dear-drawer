@@ -83,36 +83,27 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
   const [isSubmitting, setIsSubmitting] = useState(false)
   const scrollPositionRef = useRef(0)
   const modalContentRef = useRef<HTMLDivElement>(null)
-  const modalSheetRef = useRef<HTMLDivElement>(null)
   const navVisible = !navHidden
 
-  // 모바일 키보드 열릴 때: 모달 높이를 visualViewport에 맞추고 포커스 필드로 스크롤
+  // 모바일 키보드 열릴 때: 스크롤 영역에 하단 패딩 추가 + 포커스된 필드로 자동 스크롤
   useEffect(() => {
     if (activeModal === 'none') return
     const vv = window.visualViewport
     if (!vv) return
 
     const handleViewportChange = () => {
-      const sheetEl = modalSheetRef.current
       const contentEl = modalContentRef.current
-      if (!sheetEl) return
+      if (!contentEl) return
       const keyboardHeight = window.innerHeight - vv.height - vv.offsetTop
       if (keyboardHeight > 50) {
-        // 키보드가 열렸을 때: 모달 높이를 보이는 영역의 75%로 제한하고 bottom 고정
-        const navOffset = navStyle === 'bottom-nav' ? 66 : navStyle === 'bottom-mini' ? 58 : 0
-        const availableHeight = vv.height - navOffset
-        sheetEl.style.maxHeight = `${availableHeight}px`
-        sheetEl.style.bottom = `${keyboardHeight + navOffset}px`
+        contentEl.style.paddingBottom = `${keyboardHeight}px`
         // 포커스된 input/textarea를 스크롤 영역 내에서 보이도록
-        if (contentEl) {
-          const focused = document.activeElement as HTMLElement
-          if (focused && (focused.tagName === 'INPUT' || focused.tagName === 'TEXTAREA') && contentEl.contains(focused)) {
-            setTimeout(() => focused.scrollIntoView({ block: 'center', behavior: 'smooth' }), 50)
-          }
+        const focused = document.activeElement as HTMLElement
+        if (focused && (focused.tagName === 'INPUT' || focused.tagName === 'TEXTAREA') && contentEl.contains(focused)) {
+          setTimeout(() => focused.scrollIntoView({ block: 'center', behavior: 'smooth' }), 50)
         }
       } else {
-        sheetEl.style.maxHeight = ''
-        sheetEl.style.bottom = ''
+        contentEl.style.paddingBottom = ''
       }
     }
 
@@ -121,10 +112,9 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
     return () => {
       vv.removeEventListener('resize', handleViewportChange)
       vv.removeEventListener('scroll', handleViewportChange)
-      const sheetEl = modalSheetRef.current
-      if (sheetEl) { sheetEl.style.maxHeight = ''; sheetEl.style.bottom = '' }
+      if (modalContentRef.current) modalContentRef.current.style.paddingBottom = ''
     }
-  }, [activeModal, navStyle])
+  }, [activeModal])
 
   // 외부에서 모달 열기
   useEffect(() => {
@@ -510,12 +500,10 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
         <>
           <div className="fixed inset-0 bg-black/50 z-50" onClick={closeModal} />
           <div
-            ref={modalSheetRef}
-            className="fixed left-0 right-0 z-[55] bg-white rounded-t-2xl max-h-[60vh] overflow-hidden flex flex-col"
+            className="fixed left-0 right-0 z-[55] bg-white rounded-t-2xl max-h-[75vh] overflow-hidden flex flex-col"
             style={{
               bottom: navStyle === 'bottom-nav' ? '66px' : navStyle === 'bottom-mini' ? '58px' : '0',
               animation: 'slideUpModal 0.3s ease-out',
-              transition: 'max-height 0.15s ease-out, bottom 0.15s ease-out',
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -545,7 +533,7 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
             </div>
 
             {/* Modal Content */}
-            <div ref={modalContentRef} className="p-4 overflow-y-auto flex-1">
+            <div ref={modalContentRef} className="p-6 overflow-y-auto flex-1">
               {/* Contact Content */}
               {activeModal === 'contact' && (
                 <>

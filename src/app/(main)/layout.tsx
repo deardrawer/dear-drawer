@@ -47,7 +47,7 @@ export default function MainLayout({
       {showBanner && (
         <div className="bg-[#F4A7B0] text-center py-2.5 sm:py-3 px-4 sm:px-10 relative">
           <p className="text-xs sm:text-sm font-semibold text-gray-900 tracking-wide">
-            [EVENT 🎉] 후기 남기면, 혼주용 모바일 청첩장 무료!
+            [The simple 오픈기념 EVENT 🎉] 결재 후 후기 남기면, The simple 청첩장 or 혼주용 모바일 청첩장 무료!
           </p>
           <p className="text-[10px] sm:text-xs text-gray-800/80 mt-0.5">
             선착순 10쌍 한정 · 4월 이벤트

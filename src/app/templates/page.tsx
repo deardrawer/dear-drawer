@@ -173,6 +173,7 @@ const SHOWCASE_ITEMS: {
   badgeColor: string
   badgeBg: string
   btnClass: string
+  badge?: 'Best' | 'New'
 }[] = [
   {
     id: 'our',
@@ -186,6 +187,7 @@ const SHOWCASE_ITEMS: {
     badgeColor: 'text-rose-600',
     badgeBg: 'bg-rose-50',
     btnClass: 'bg-rose-500 hover:bg-rose-600',
+    badge: 'Best',
   },
   {
     id: 'family',
@@ -212,6 +214,7 @@ const SHOWCASE_ITEMS: {
     badgeColor: 'text-violet-600',
     badgeBg: 'bg-violet-50',
     btnClass: 'bg-violet-500 hover:bg-violet-600',
+    badge: 'Best',
   },
   {
     id: 'movie',
@@ -277,6 +280,7 @@ const SHOWCASE_ITEMS: {
     badgeColor: 'text-stone-700',
     badgeBg: 'bg-stone-100',
     btnClass: 'bg-stone-800 hover:bg-stone-900',
+    badge: 'New',
   },
   {
     id: 'parents',
@@ -777,6 +781,16 @@ function TemplatesContent() {
                           <span className={`px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-medium rounded-full ${item.badgeBg} ${item.badgeColor}`}>
                             {item.categoryLabel}
                           </span>
+                          {item.badge === 'Best' && (
+                            <span className="px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-bold rounded-full bg-amber-400 text-white">
+                              Best
+                            </span>
+                          )}
+                          {item.badge === 'New' && (
+                            <span className="px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-bold rounded-full bg-emerald-500 text-white">
+                              New
+                            </span>
+                          )}
                         </div>
                         <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-0.5">{item.name}</h3>
                         <p className="text-[10px] sm:text-xs text-gray-400 mb-3 line-clamp-2 flex-1">{item.tagline}</p>
@@ -794,7 +808,7 @@ function TemplatesContent() {
                             onClick={() => handleTemplateSelect(item.templateId)}
                             className={`w-full h-9 sm:h-10 flex items-center justify-center text-xs sm:text-sm font-medium text-white rounded-lg transition-colors ${item.btnClass}`}
                           >
-                            {item.id === 'the-simple' ? '4.17 정식오픈 예정' : '이 스타일로 시작'}
+                            이 스타일로 시작
                           </button>
                         </div>
                       </div>

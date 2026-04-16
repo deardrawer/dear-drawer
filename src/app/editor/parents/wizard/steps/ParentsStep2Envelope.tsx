@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
 import { Mail, Heart, Share2, Upload, X } from 'lucide-react'
 import { uploadImage } from '@/lib/imageUpload'
 import InlineCropEditor from '@/components/editor/InlineCropEditor'
@@ -112,6 +113,14 @@ export default function ParentsStep2Envelope({
               onChange={(e) => updateNestedData('sender.fatherName', e.target.value)}
               placeholder="홍길동"
             />
+            <div className="flex items-center gap-1.5">
+              <Switch
+                checked={data.sender.fatherDeceased ?? false}
+                onCheckedChange={(checked) => updateNestedData('sender.fatherDeceased', checked)}
+                className="scale-75 origin-left"
+              />
+              <span className="text-[10px] text-gray-400">고인</span>
+            </div>
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs">{data.sender.side === 'bride' ? '신부측 어머니 성함' : '신랑측 어머니 성함'}</Label>
@@ -120,12 +129,57 @@ export default function ParentsStep2Envelope({
               onChange={(e) => updateNestedData('sender.motherName', e.target.value)}
               placeholder="김영희"
             />
+            <div className="flex items-center gap-1.5">
+              <Switch
+                checked={data.sender.motherDeceased ?? false}
+                onCheckedChange={(checked) => updateNestedData('sender.motherDeceased', checked)}
+                className="scale-75 origin-left"
+              />
+              <span className="text-[10px] text-gray-400">고인</span>
+            </div>
           </div>
         </div>
         <p className="text-[11px] text-gray-500 leading-relaxed">
           ※ 이름을 입력하지 않으신 분은 봉투·인사말에 표시되지 않습니다.<br />
           두 분 모두 비워두시면 서명 영역이 숨겨집니다.
         </p>
+
+        {/* 고인 표시 스타일 (sender 고인이 한 명이라도 있을 때만 노출) */}
+        {(data.sender.fatherDeceased || data.sender.motherDeceased) && (
+          <div className="p-3 bg-gray-50 rounded-lg space-y-2">
+            <Label className="text-xs font-medium text-gray-700">고인 표시 스타일</Label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => updateData({ deceasedDisplayStyle: 'flower' })}
+                className={`p-3 rounded-lg border-2 text-center transition-all ${
+                  (data.deceasedDisplayStyle || 'flower') === 'flower'
+                    ? 'border-gray-800 bg-white'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center justify-center gap-1.5">
+                  <img src="/icons/chrysanthemum.svg" alt="" className="w-4 h-4 opacity-70" />
+                  <span className="text-sm font-medium">국화꽃</span>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => updateData({ deceasedDisplayStyle: 'hanja' })}
+                className={`p-3 rounded-lg border-2 text-center transition-all ${
+                  data.deceasedDisplayStyle === 'hanja'
+                    ? 'border-gray-800 bg-white'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center justify-center gap-1.5">
+                  <span className="text-sm opacity-70">故</span>
+                  <span className="text-sm font-medium">한자</span>
+                </div>
+              </button>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* 신랑·신부 이름 */}

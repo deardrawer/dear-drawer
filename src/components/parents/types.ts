@@ -282,6 +282,8 @@ export interface ParentsInvitationContent {
     side: 'groom' | 'bride'
     fatherName: string
     motherName: string
+    fatherDeceased?: boolean
+    motherDeceased?: boolean
     signature: string
   }
 

@@ -94,7 +94,7 @@ export const SAMPLE_DIRECTIONS = {
 
 export const SAMPLE_THANK_YOU = {
   message: '저희의 새로운 시작을 축하해 주셔서 감사합니다.\n오시는 모든 분들께 감사의 마음을 전합니다.',
-  sign: '신랑 ○○ & 신부 ○○ 드림',
+  sign: '신랑 ○○ & 신부 ○○ 올림',
 }
 
 // MOVIE 템플릿 전용 샘플

@@ -1,0 +1,915 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Premium B&W Tap to Open Covers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Inter:wght@200;300;400&family=Noto+Serif+KR:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════ */
+/* BASE RESET & TOKENS                             */
+/* ═══════════════════════════════════════════════ */
+:root {
+  --pure-white: #FFFFFF;
+  --pure-black: #000000;
+  --jet: #0A0A0A;
+  --charcoal: #1A1A1A;
+  --smoke: rgba(0,0,0,0.05);
+  --veil: rgba(0,0,0,0.70);
+  --whisper: rgba(0,0,0,0.15);
+
+  --f-serif: "Cormorant Garamond", serif;
+  --f-sans: "Inter", -apple-system, sans-serif;
+  --f-serif-kr: "Noto Serif KR", serif;
+
+  --w: min(100vw, 430px);
+  --h: 100dvh;
+
+  --ease-premium: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-reveal: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-breath: cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  background: #0A0A0A;
+}
+
+body {
+  font-family: var(--f-serif);
+  color: var(--charcoal);
+  line-height: 1.7;
+  font-size: 15px;
+  overflow-x: hidden;
+}
+
+/* ═══════════════════════════════════════════════ */
+/* GALLERY NAVIGATION                              */
+/* ═══════════════════════════════════════════════ */
+.gallery-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  background: rgba(10,10,10,0.97);
+  backdrop-filter: blur(16px);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.gallery-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.gallery-nav .label {
+  flex-shrink: 0;
+  font: 600 9px/1 var(--f-sans);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+  margin-right: 6px;
+}
+
+.gallery-nav a {
+  flex-shrink: 0;
+  padding: 7px 16px;
+  border-radius: 20px;
+  font: 400 11px/1 var(--f-sans);
+  letter-spacing: 0.05em;
+  color: rgba(255,255,255,0.5);
+  text-decoration: none;
+  border: 1px solid rgba(255,255,255,0.12);
+  transition: all 0.25s var(--ease-premium);
+  white-space: nowrap;
+}
+
+.gallery-nav a:hover,
+.gallery-nav a.active {
+  color: var(--pure-white);
+  border-color: rgba(255,255,255,0.5);
+  background: rgba(255,255,255,0.06);
+}
+
+/* ═══════════════════════════════════════════════ */
+/* VARIANT WRAPPER                                 */
+/* ═══════════════════════════════════════════════ */
+.variant-wrapper {
+  padding: 90px 0 70px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.variant-wrapper:first-of-type {
+  padding-top: 100px;
+}
+
+.variant-label {
+  font: 500 10px/1 var(--f-sans);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.phone-frame {
+  width: var(--w);
+  height: var(--h);
+  max-height: 932px;
+  position: relative;
+  border-radius: 0;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.08),
+    0 20px 60px rgba(0,0,0,0.5);
+}
+
+/* ═══════════════════════════════════════════════ */
+/* V1 — HEARTLINE                                  */
+/* Pure white background, single thin line draws   */
+/* itself into minimal heart outline, names fade   */
+/* in with extreme letter-spacing                  */
+/* ═══════════════════════════════════════════════ */
+.v1-heartline {
+  background: var(--pure-white);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 48px;
+  padding: 0 40px;
+}
+
+.v1-heart-container {
+  width: 140px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.v1-heart-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.v1-heart-path {
+  fill: none;
+  stroke: var(--charcoal);
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  animation: v1-draw-heart 2.5s var(--ease-reveal) 0.3s forwards;
+}
+
+@keyframes v1-draw-heart {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.v1-names {
+  text-align: center;
+  opacity: 0;
+  animation: v1-fade-in 1.2s var(--ease-premium) 1.8s forwards;
+}
+
+@keyframes v1-fade-in {
+  to {
+    opacity: 1;
+  }
+}
+
+.v1-couple {
+  font: 300 32px/1.3 var(--f-serif);
+  letter-spacing: 0.35em;
+  color: var(--charcoal);
+  text-indent: 0.35em;
+}
+
+.v1-date {
+  font: 200 13px/1 var(--f-sans);
+  letter-spacing: 0.25em;
+  color: rgba(26,26,26,0.6);
+  margin-top: 20px;
+  text-indent: 0.25em;
+}
+
+.v1-tap-hint {
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  font: 300 12px/1 var(--f-sans);
+  letter-spacing: 0.15em;
+  color: rgba(26,26,26,0.4);
+  animation: v1-pulse 2s var(--ease-breath) 2.5s infinite;
+}
+
+@keyframes v1-pulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ═══════════════════════════════════════════════ */
+/* V2 — MONOLITH                                   */
+/* Jet black background, thin white rectangle      */
+/* border draws outward, ultra-thin text with      */
+/* breathing opacity                               */
+/* ═══════════════════════════════════════════════ */
+.v2-monolith {
+  background: var(--jet);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 40px;
+}
+
+.v2-card-outline {
+  width: 200px;
+  height: 280px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border: 1px solid var(--pure-white);
+  clip-path: inset(50% 50% 50% 50%);
+  animation: v2-reveal-card 1.8s var(--ease-reveal) 0.4s forwards;
+}
+
+@keyframes v2-reveal-card {
+  to {
+    clip-path: inset(0% 0% 0% 0%);
+  }
+}
+
+.v2-name {
+  font: 200 28px/1.3 var(--f-serif);
+  color: var(--pure-white);
+  letter-spacing: 0.08em;
+  opacity: 0;
+  animation: v2-breathe 3s var(--ease-breath) 1.5s infinite;
+}
+
+@keyframes v2-breathe {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.v2-heart-icon {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  animation: v2-breathe 3s var(--ease-breath) 1.6s infinite;
+}
+
+.v2-heart-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.v2-heart-path {
+  fill: none;
+  stroke: var(--pure-white);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.v2-date {
+  font: 200 11px/1 var(--f-sans);
+  letter-spacing: 0.2em;
+  color: rgba(255,255,255,0.6);
+  opacity: 0;
+  animation: v2-breathe 3s var(--ease-breath) 1.7s infinite;
+}
+
+.v2-open-hint {
+  position: absolute;
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  opacity: 0;
+  animation: v2-fade-in-hint 1s var(--ease-premium) 2.5s forwards;
+}
+
+@keyframes v2-fade-in-hint {
+  to {
+    opacity: 1;
+  }
+}
+
+.v2-line {
+  width: 20px;
+  height: 1px;
+  background: rgba(255,255,255,0.3);
+  transform: scaleX(0);
+  animation: v2-grow-line 1.2s var(--ease-reveal) 3s forwards;
+}
+
+@keyframes v2-grow-line {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.v2-open-text {
+  font: 300 11px/1 var(--f-sans);
+  letter-spacing: 0.18em;
+  color: rgba(255,255,255,0.5);
+}
+
+/* ═══════════════════════════════════════════════ */
+/* V3 — VEIL                                       */
+/* White background with semi-transparent black    */
+/* overlay that slowly fades, revealing content    */
+/* like curtains parting                           */
+/* ═══════════════════════════════════════════════ */
+.v3-veil {
+  background: var(--pure-white);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  padding: 0 40px;
+  position: relative;
+}
+
+.v3-overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--pure-black);
+  opacity: 0.7;
+  animation: v3-lift-veil 3s var(--ease-reveal) 0.5s forwards;
+  pointer-events: none;
+}
+
+@keyframes v3-lift-veil {
+  to {
+    opacity: 0.15;
+  }
+}
+
+.v3-heart-outline {
+  width: 120px;
+  height: 120px;
+  border: 1px solid var(--charcoal);
+  border-radius: 50% 50% 0 0;
+  transform: rotate(45deg);
+  position: relative;
+}
+
+.v3-heart-outline::before,
+.v3-heart-outline::after {
+  content: "";
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  border: 1px solid var(--charcoal);
+  border-radius: 50%;
+  background: var(--pure-white);
+}
+
+.v3-heart-outline::before {
+  top: -60px;
+  left: 0;
+}
+
+.v3-heart-outline::after {
+  top: 0;
+  left: -60px;
+}
+
+.v3-content {
+  text-align: center;
+  z-index: 1;
+}
+
+.v3-names {
+  font: 400 34px/1.4 var(--f-serif);
+  letter-spacing: 0.12em;
+  color: var(--charcoal);
+  text-indent: 0.12em;
+}
+
+.v3-date {
+  font: 300 13px/1 var(--f-sans);
+  letter-spacing: 0.2em;
+  color: rgba(26,26,26,0.65);
+  margin-top: 24px;
+  text-indent: 0.2em;
+}
+
+.v3-tap-hint {
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  font: 300 12px/1 var(--f-sans);
+  letter-spacing: 0.15em;
+  color: rgba(26,26,26,0.5);
+  z-index: 1;
+  opacity: 0;
+  animation: v3-appear-hint 0.8s var(--ease-premium) 3s forwards;
+}
+
+@keyframes v3-appear-hint {
+  to {
+    opacity: 1;
+  }
+}
+
+/* ═══════════════════════════════════════════════ */
+/* V4 — SPLIT HEART                                */
+/* Two halves of heart drift together, split names */
+/* converge with & appearing in center             */
+/* ═══════════════════════════════════════════════ */
+.v4-split-heart {
+  background: var(--pure-white);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 50px;
+  padding: 0 40px;
+  position: relative;
+}
+
+.v4-heart-container {
+  width: 160px;
+  height: 160px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.v4-heart-svg {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+}
+
+.v4-heart-left {
+  fill: none;
+  stroke: var(--charcoal);
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform: translateX(-12px);
+  animation: v4-merge-left 2s var(--ease-reveal) 0.5s forwards;
+}
+
+@keyframes v4-merge-left {
+  to {
+    transform: translateX(0);
+  }
+}
+
+.v4-heart-right {
+  fill: none;
+  stroke: var(--charcoal);
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform: translateX(12px);
+  animation: v4-merge-right 2s var(--ease-reveal) 0.5s forwards;
+}
+
+@keyframes v4-merge-right {
+  to {
+    transform: translateX(0);
+  }
+}
+
+.v4-names-container {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+.v4-groom {
+  font: 300 30px/1 var(--f-serif);
+  letter-spacing: 0.1em;
+  color: var(--charcoal);
+  text-align: left;
+}
+
+.v4-ampersand {
+  font: 200 24px/1 var(--f-serif);
+  color: rgba(26,26,26,0.4);
+  opacity: 0;
+  animation: v4-fade-ampersand 0.8s var(--ease-premium) 2.2s forwards;
+}
+
+@keyframes v4-fade-ampersand {
+  to {
+    opacity: 1;
+  }
+}
+
+.v4-bride {
+  font: 300 30px/1 var(--f-serif);
+  letter-spacing: 0.1em;
+  color: var(--charcoal);
+  text-align: right;
+}
+
+.v4-date {
+  font: 200 12px/1 var(--f-sans);
+  letter-spacing: 0.25em;
+  color: rgba(26,26,26,0.55);
+  text-align: center;
+  text-indent: 0.25em;
+}
+
+.v4-tap-hint {
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  font: 300 12px/1 var(--f-sans);
+  letter-spacing: 0.15em;
+  color: rgba(26,26,26,0.4);
+  opacity: 0;
+  animation: v4-appear-hint 0.8s var(--ease-premium) 2.8s forwards;
+}
+
+@keyframes v4-appear-hint {
+  to {
+    opacity: 1;
+  }
+}
+
+/* ═══════════════════════════════════════════════ */
+/* V5 — ENVELOPE NOIR                              */
+/* Black background with minimal white envelope    */
+/* outline, card rises from inside. Architectural  */
+/* blueprint quality                               */
+/* ═══════════════════════════════════════════════ */
+.v5-envelope-noir {
+  background: var(--pure-black);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 40px;
+  position: relative;
+}
+
+.v5-envelope-container {
+  width: 240px;
+  height: 160px;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.v5-envelope-body {
+  width: 100%;
+  height: 120px;
+  border: 1px solid var(--pure-white);
+  border-top: none;
+  position: relative;
+  z-index: 1;
+}
+
+.v5-envelope-flap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.v5-flap-triangle {
+  width: 0;
+  height: 0;
+  border-left: 120px solid transparent;
+  border-right: 120px solid transparent;
+  border-top: 60px solid transparent;
+  border-top-color: var(--pure-black);
+  position: absolute;
+  top: 0;
+  left: 0;
+  outline: 1px solid var(--pure-white);
+  outline-offset: -1px;
+}
+
+.v5-card {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  width: 180px;
+  height: 140px;
+  background: var(--pure-white);
+  border: 1px solid rgba(255,255,255,0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  z-index: 3;
+  animation: v5-rise-card 2.2s var(--ease-reveal) 0.6s forwards;
+}
+
+@keyframes v5-rise-card {
+  to {
+    transform: translateX(-50%) translateY(-60px);
+  }
+}
+
+.v5-card-name {
+  font: 300 26px/1.3 var(--f-serif);
+  letter-spacing: 0.1em;
+  color: var(--charcoal);
+  text-indent: 0.1em;
+}
+
+.v5-card-date {
+  font: 200 11px/1 var(--f-sans);
+  letter-spacing: 0.2em;
+  color: rgba(26,26,26,0.6);
+  text-indent: 0.2em;
+}
+
+.v5-heart-seal {
+  position: absolute;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 24px;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.v5-seal-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.v5-seal-path {
+  fill: var(--pure-black);
+  stroke: var(--pure-white);
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.v5-tap-hint {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  font: 300 11px/1 var(--f-sans);
+  letter-spacing: 0.18em;
+  color: rgba(255,255,255,0.4);
+  text-transform: lowercase;
+  opacity: 0;
+  animation: v5-appear-hint 1s var(--ease-premium) 2.5s forwards;
+}
+
+@keyframes v5-appear-hint {
+  to {
+    opacity: 1;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- Gallery Navigation -->
+<nav class="gallery-nav">
+  <span class="label">Premium B&W</span>
+  <a href="#v1" class="active">V1 Heartline</a>
+  <a href="#v2">V2 Monolith</a>
+  <a href="#v3">V3 Veil</a>
+  <a href="#v4">V4 Split Heart</a>
+  <a href="#v5">V5 Envelope Noir</a>
+</nav>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- V1 — HEARTLINE                                  -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="variant-wrapper" id="v1">
+  <div class="variant-label">V1 — Heartline</div>
+  <div class="phone-frame">
+    <div class="v1-heartline">
+
+      <div class="v1-heart-container">
+        <svg class="v1-heart-svg" viewBox="0 0 140 140" xmlns="http://www.w3.org/2000/svg">
+          <path class="v1-heart-path" d="M70,110 C70,110 35,85 35,65 C35,50 45,45 52,45 C60,45 65,50 70,60 C75,50 80,45 88,45 C95,45 105,50 105,65 C105,85 70,110 70,110 Z" />
+        </svg>
+      </div>
+
+      <div class="v1-names">
+        <div class="v1-couple">준혁  &  서연</div>
+        <div class="v1-date">2025 . 06 . 28</div>
+      </div>
+
+      <div class="v1-tap-hint">tap to open</div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- V2 — MONOLITH                                   -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="variant-wrapper" id="v2">
+  <div class="variant-label">V2 — Monolith</div>
+  <div class="phone-frame">
+    <div class="v2-monolith">
+
+      <div class="v2-card-outline">
+        <div class="v2-name">준혁</div>
+
+        <div class="v2-heart-icon">
+          <svg class="v2-heart-svg" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+            <path class="v2-heart-path" d="M8,13 C8,13 3,10 3,7 C3,5 4.5,4 5.5,4 C6.5,4 7,5 8,6 C9,5 9.5,4 10.5,4 C11.5,4 13,5 13,7 C13,10 8,13 8,13 Z" />
+          </svg>
+        </div>
+
+        <div class="v2-name">서연</div>
+        <div class="v2-date">2025 . 06 . 28</div>
+      </div>
+
+      <div class="v2-open-hint">
+        <div class="v2-line"></div>
+        <div class="v2-open-text">open</div>
+        <div class="v2-line"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- V3 — VEIL                                       -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="variant-wrapper" id="v3">
+  <div class="variant-label">V3 — Veil</div>
+  <div class="phone-frame">
+    <div class="v3-veil">
+
+      <div class="v3-overlay"></div>
+
+      <div class="v3-heart-outline"></div>
+
+      <div class="v3-content">
+        <div class="v3-names">준혁 & 서연</div>
+        <div class="v3-date">2025 . 06 . 28</div>
+      </div>
+
+      <div class="v3-tap-hint">tap to open</div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- V4 — SPLIT HEART                                -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="variant-wrapper" id="v4">
+  <div class="variant-label">V4 — Split Heart</div>
+  <div class="phone-frame">
+    <div class="v4-split-heart">
+
+      <div class="v4-heart-container">
+        <svg class="v4-heart-svg" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+          <!-- Left half -->
+          <path class="v4-heart-left" d="M80,120 L80,80 C80,70 75,65 68,65 C60,65 50,70 50,85 C50,100 80,120 80,120 Z" />
+          <!-- Right half -->
+          <path class="v4-heart-right" d="M80,120 C80,120 110,100 110,85 C110,70 100,65 92,65 C85,65 80,70 80,80 L80,120 Z" />
+        </svg>
+      </div>
+
+      <div class="v4-names-container">
+        <div class="v4-groom">준혁</div>
+        <div class="v4-ampersand">&</div>
+        <div class="v4-bride">서연</div>
+      </div>
+
+      <div class="v4-date">2025 . 06 . 28</div>
+
+      <div class="v4-tap-hint">tap to open</div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- V5 — ENVELOPE NOIR                              -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="variant-wrapper" id="v5">
+  <div class="variant-label">V5 — Envelope Noir</div>
+  <div class="phone-frame">
+    <div class="v5-envelope-noir">
+
+      <div class="v5-envelope-container">
+        <div class="v5-envelope-body"></div>
+        <div class="v5-envelope-flap">
+          <div class="v5-flap-triangle"></div>
+        </div>
+
+        <div class="v5-heart-seal">
+          <svg class="v5-seal-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path class="v5-seal-path" d="M12,20 C12,20 6,16 6,11 C6,8 8,7 9.5,7 C11,7 11.5,8 12,10 C12.5,8 13,7 14.5,7 C16,7 18,8 18,11 C18,16 12,20 12,20 Z" />
+          </svg>
+        </div>
+
+        <div class="v5-card">
+          <div class="v5-card-name">준혁 & 서연</div>
+          <div class="v5-card-date">2025 . 06 . 28</div>
+        </div>
+      </div>
+
+      <div class="v5-tap-hint">open invitation</div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// Simple navigation active state
+document.addEventListener('DOMContentLoaded', () => {
+  const navLinks = document.querySelectorAll('.gallery-nav a');
+
+  const updateActiveLink = () => {
+    const hash = window.location.hash || '#v1';
+    navLinks.forEach(link => {
+      if (link.getAttribute('href') === hash) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
+  };
+
+  window.addEventListener('hashchange', updateActiveLink);
+  updateActiveLink();
+
+  // Smooth scroll
+  navLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = document.querySelector(link.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        window.history.pushState(null, '', link.getAttribute('href'));
+        updateActiveLink();
+      }
+    });
+  });
+});
+</script>
+
+</body>
+</html>

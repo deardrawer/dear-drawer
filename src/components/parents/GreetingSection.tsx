@@ -6,7 +6,7 @@ import { useTheme } from './ThemeContext'
 interface GreetingSectionProps {
   childName?: string
   greeting?: string
-  parentSignature?: string
+  parentSignature?: React.ReactNode
   senderSide?: 'groom' | 'bride'
 }
 
@@ -37,7 +37,7 @@ export default function GreetingSection({
 서연이의 앞날에
 따뜻한 축복과 응원을 보내주시길
 부탁드립니다.`,
-  parentSignature = '아버지 이○○ · 어머니 김○○',
+  parentSignature = '아버지 이○○ · 어머니 김○○ 올림',
   senderSide = 'bride',
 }: GreetingSectionProps) {
   const childTitle = senderSide === 'groom' ? '아들' : '딸'

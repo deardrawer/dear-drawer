@@ -1,0 +1,853 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Intro Variants — Dark Premium</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Noto+Serif+KR:wght@200;300;400;500&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+<style>
+/* ================================================================
+   GLOBAL
+   ================================================================ */
+:root {
+  --w: min(100vw, 430px);
+  --vh: 100dvh;
+  --f-display: "Cormorant Garamond", serif;
+  --f-ko: "Noto Serif KR", serif;
+  --f-sans: "Inter", -apple-system, sans-serif;
+  --ease-luxury: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { background: #0a0a0a; scroll-behavior: smooth; }
+body {
+  font-family: var(--f-display);
+  -webkit-font-smoothing: antialiased;
+  color: #fff;
+}
+
+/* 각 variant 섹션 */
+.variant {
+  width: var(--w);
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 구분선 */
+.divider {
+  width: var(--w);
+  margin: 0 auto;
+  padding: 60px 0;
+  text-align: center;
+  background: #0a0a0a;
+  color: rgba(255,255,255,0.25);
+  font-family: var(--f-sans);
+  font-size: 11px;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+}
+
+/* ================================================================
+   SHARED — 배경 레이어
+   ================================================================ */
+.bg-layer {
+  position: absolute;
+  inset: 0;
+  background: url('https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80') center/cover no-repeat;
+  filter: brightness(0.45) saturate(0.7);
+  transform-origin: center;
+}
+.bg-layer--black { background: #000; filter: none; }
+.bg-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ================================================================
+   KEYFRAMES
+   ================================================================ */
+@keyframes kenBurnsSlow {
+  0%   { transform: scale(1.12); }
+  100% { transform: scale(1.0); }
+}
+@keyframes blurReveal {
+  from { opacity: 0; filter: blur(8px); transform: translateY(16px); }
+  to   { opacity: 1; filter: blur(0);   transform: none; }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes letterSpread {
+  from { opacity: 0; letter-spacing: -0.02em; }
+  to   { opacity: 1; letter-spacing: 0.5em; }
+}
+@keyframes lineDraw {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+@keyframes lineDrawY {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+@keyframes boxReveal {
+  0%   { clip-path: inset(0 100% 100% 0); }
+  50%  { clip-path: inset(0 0 100% 0); }
+  100% { clip-path: inset(0 0 0 0); }
+}
+@keyframes maskUp {
+  from { clip-path: inset(100% 0 0 0); opacity: 0; }
+  to   { clip-path: inset(0 0 0 0); opacity: 1; }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes letterDrop {
+  from { opacity: 0; transform: translateY(-24px) scale(0.97); }
+  60%  { opacity: 1; transform: translateY(3px) scale(1.003); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* ================================================================
+   V1 · EDITORIAL COVER
+   클래식 잡지 레이아웃. 3분할 구조(top/center/bottom).
+   ================================================================ */
+.v1 {
+  min-height: var(--vh);
+  display: flex;
+  color: #fff;
+}
+.v1 .bg-layer {
+  animation: kenBurnsSlow 12s var(--ease-smooth) both;
+}
+.v1 .bg-overlay {
+  background: linear-gradient(
+    180deg,
+    rgba(0,0,0,0.4) 0%,
+    rgba(0,0,0,0.08) 35%,
+    rgba(0,0,0,0.06) 55%,
+    rgba(0,0,0,0.7) 100%
+  );
+}
+.v1-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+  padding: 28px 26px;
+  min-height: var(--vh);
+}
+.v1-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fadeIn 1.4s var(--ease-luxury) 0.6s both;
+  line-height: 1.9;
+}
+.v1-top b { display: block; font-weight: 500; }
+.v1-top .r { text-align: right; }
+.v1-center {
+  text-align: center;
+  margin: auto 0;
+}
+.v1-kicker {
+  font-size: 10px;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  opacity: 0;
+  animation: letterSpread 1.6s var(--ease-luxury) 1.0s both;
+}
+.v1-rule {
+  width: 32px;
+  height: 1px;
+  background: rgba(255,255,255,0.6);
+  margin: 20px auto;
+  transform-origin: center;
+  transform: scaleX(0);
+  animation: lineDraw 1.2s var(--ease-luxury) 1.5s both;
+}
+.v1-names {
+  font-style: italic;
+  font-size: 48px;
+  line-height: 0.92;
+  letter-spacing: -0.02em;
+  font-weight: 300;
+  opacity: 0;
+  animation: blurReveal 2s var(--ease-luxury) 1.8s both;
+}
+.v1-names small {
+  display: block;
+  font-family: var(--f-ko);
+  font-style: normal;
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  margin-top: 14px;
+  font-weight: 300;
+  opacity: 0.8;
+}
+.v1-date {
+  font-size: 10px;
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fadeIn 1.2s var(--ease-luxury) 2.6s both;
+  margin-top: 4px;
+}
+.v1-bottom {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fadeIn 1.4s var(--ease-luxury) 3s both;
+  line-height: 1.9;
+}
+.v1-bottom b { display: block; font-weight: 500; }
+.v1-bottom .r { text-align: right; }
+
+/* ================================================================
+   V2 · CINEMATIC FADE
+   시네마 타이틀 시퀀스. 중앙 정렬, 글자가 안개 속에서 나타남.
+   ================================================================ */
+.v2 {
+  min-height: var(--vh);
+  display: flex;
+  color: #fff;
+}
+.v2 .bg-layer {
+  animation: kenBurnsSlow 14s var(--ease-smooth) both;
+  filter: brightness(0.35) saturate(0.5);
+}
+.v2 .bg-overlay {
+  background: linear-gradient(
+    180deg,
+    rgba(0,0,0,0.5) 0%,
+    rgba(0,0,0,0.15) 40%,
+    rgba(0,0,0,0.15) 60%,
+    rgba(0,0,0,0.55) 100%
+  );
+}
+.v2-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 40px 28px;
+  min-height: var(--vh);
+  gap: 0;
+}
+.v2-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.6);
+  opacity: 0;
+  animation: letterSpread 1.8s var(--ease-luxury) 0.5s both;
+}
+.v2-names {
+  font-style: italic;
+  font-size: 52px;
+  line-height: 0.9;
+  font-weight: 300;
+  margin: 24px 0 28px;
+  text-align: center;
+  opacity: 0;
+  animation: blurReveal 2.2s var(--ease-luxury) 1.2s both;
+}
+.v2-rule {
+  width: 36px;
+  height: 1px;
+  background: rgba(255,255,255,0.4);
+  transform-origin: center;
+  transform: scaleX(0);
+  animation: lineDraw 1.4s var(--ease-luxury) 2.2s both;
+}
+.v2-date {
+  font-size: 12px;
+  letter-spacing: 0.36em;
+  color: rgba(255,255,255,0.55);
+  text-transform: uppercase;
+  margin-top: 24px;
+  opacity: 0;
+  animation: fadeIn 1.4s var(--ease-luxury) 2.8s both;
+}
+.v2-time {
+  font-size: 15px;
+  letter-spacing: 0.14em;
+  color: rgba(255,255,255,0.85);
+  margin-top: 8px;
+  opacity: 0;
+  animation: fadeIn 1.4s var(--ease-luxury) 3.2s both;
+}
+
+/* ================================================================
+   V3 · MINIMAL FRAME
+   다크 배경 위 얇은 화이트 프레임. 정적인 우아함.
+   ================================================================ */
+.v3 {
+  min-height: var(--vh);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+.v3 .bg-layer {
+  animation: kenBurnsSlow 14s var(--ease-smooth) both;
+  filter: brightness(0.3) saturate(0.4);
+}
+.v3 .bg-overlay {
+  background: rgba(0,0,0,0.35);
+}
+.v3-frame {
+  position: relative;
+  z-index: 2;
+  border: 1px solid rgba(255,255,255,0.3);
+  margin: 40px 28px;
+  padding: 56px 32px;
+  width: calc(100% - 56px);
+  text-align: center;
+  opacity: 0;
+  animation: boxReveal 1.8s var(--ease-luxury) 0.5s both;
+}
+.v3-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.36em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+  opacity: 0;
+  animation: fadeIn 1.2s var(--ease-luxury) 1.6s both;
+}
+.v3-names {
+  font-style: italic;
+  font-size: 36px;
+  line-height: 1;
+  font-weight: 300;
+  margin: 20px 0 16px;
+  opacity: 0;
+  animation: blurReveal 1.6s var(--ease-luxury) 2s both;
+}
+.v3-rule {
+  width: 24px;
+  height: 1px;
+  background: rgba(255,255,255,0.35);
+  margin: 0 auto 16px;
+  transform-origin: center;
+  transform: scaleX(0);
+  animation: lineDraw 1s var(--ease-luxury) 2.6s both;
+}
+.v3-date {
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fadeIn 1.2s var(--ease-luxury) 3s both;
+}
+.v3-venue {
+  font-family: var(--f-ko);
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 0.08em;
+  margin-top: 12px;
+  font-weight: 300;
+  opacity: 0;
+  animation: fadeIn 1.2s var(--ease-luxury) 3.4s both;
+}
+
+/* ================================================================
+   V4 · GRAND QUOTE
+   풀스크린 인용구. 따옴표 + 본문 + 이름.
+   ================================================================ */
+.v4 {
+  min-height: var(--vh);
+  display: flex;
+  color: #fff;
+}
+.v4 .bg-layer--black {
+  background: #0a0a0a;
+}
+.v4 .bg-overlay {
+  display: none;
+}
+.v4-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 48px 36px;
+  min-height: var(--vh);
+}
+.v4-mark {
+  font-size: 72px;
+  line-height: 0.3;
+  color: rgba(255,255,255,0.2);
+  margin-bottom: 20px;
+  opacity: 0;
+  animation: scaleIn 1.4s var(--ease-luxury) 0.4s both;
+}
+.v4-quote {
+  font-family: var(--f-ko);
+  font-style: normal;
+  font-size: 17px;
+  line-height: 2;
+  color: rgba(255,255,255,0.85);
+  text-align: center;
+  font-weight: 200;
+  letter-spacing: 0.04em;
+  opacity: 0;
+  animation: maskUp 1.8s var(--ease-luxury) 1.2s both;
+}
+.v4-rule {
+  width: 24px;
+  height: 1px;
+  background: rgba(255,255,255,0.25);
+  margin: 36px auto 20px;
+  transform-origin: center;
+  transform: scaleX(0);
+  animation: lineDraw 1.2s var(--ease-luxury) 2.4s both;
+}
+.v4-names {
+  font-size: 14px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.9);
+  opacity: 0;
+  animation: blurReveal 1.4s var(--ease-luxury) 3s both;
+}
+.v4-date {
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: rgba(255,255,255,0.4);
+  text-transform: uppercase;
+  margin-top: 14px;
+  opacity: 0;
+  animation: fadeIn 1.2s var(--ease-luxury) 3.6s both;
+}
+
+/* ================================================================
+   V5 · LETTER CARD
+   다크 배경 위 화이트 편지지. 고급 스테이셔너리.
+   ================================================================ */
+.v5 {
+  min-height: var(--vh);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1a1a1a;
+}
+.v5 .bg-layer {
+  animation: kenBurnsSlow 14s var(--ease-smooth) both;
+  filter: brightness(0.25) saturate(0.3);
+}
+.v5 .bg-overlay {
+  background: linear-gradient(
+    180deg,
+    rgba(0,0,0,0.5) 0%,
+    rgba(0,0,0,0.4) 50%,
+    rgba(0,0,0,0.6) 100%
+  );
+}
+.v5-card {
+  position: relative;
+  z-index: 2;
+  background: rgba(255,255,255,0.93);
+  margin: 36px 28px;
+  padding: 44px 28px;
+  width: calc(100% - 56px);
+  text-align: center;
+  opacity: 0;
+  animation: letterDrop 1.4s var(--ease-luxury) 0.5s both;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.1);
+}
+/* 이중 보더 (내부) */
+.v5-card::before {
+  content: '';
+  position: absolute;
+  inset: 10px;
+  border: 1px solid rgba(0,0,0,0.07);
+  pointer-events: none;
+}
+.v5-eyebrow {
+  font-size: 9px;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: #999;
+  opacity: 0;
+  animation: fadeIn 1.2s var(--ease-luxury) 1.4s both;
+}
+.v5-names {
+  font-style: italic;
+  font-size: 30px;
+  line-height: 1;
+  font-weight: 300;
+  color: #1a1a1a;
+  margin: 18px 0 16px;
+  opacity: 0;
+  animation: blurReveal 1.6s var(--ease-luxury) 1.8s both;
+}
+.v5-names small {
+  display: block;
+  font-family: var(--f-ko);
+  font-style: normal;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  margin-top: 10px;
+  font-weight: 300;
+  color: #666;
+}
+.v5-rule {
+  width: 20px;
+  height: 1px;
+  background: #ccc;
+  margin: 0 auto 16px;
+  transform-origin: center;
+  transform: scaleX(0);
+  animation: lineDraw 1s var(--ease-luxury) 2.6s both;
+}
+.v5-date {
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: #1a1a1a;
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fadeIn 1s var(--ease-luxury) 3s both;
+}
+.v5-venue {
+  font-family: var(--f-ko);
+  font-size: 11px;
+  color: #999;
+  letter-spacing: 0.06em;
+  margin-top: 6px;
+  font-weight: 300;
+  opacity: 0;
+  animation: fadeIn 1s var(--ease-luxury) 3.3s both;
+}
+
+/* ================================================================
+   V6 · MONOGRAM SEAL (보너스 — 완전히 다른 구조)
+   다크 배경 위 모노그램 원형 씰 중심. 미니멀 극한.
+   ================================================================ */
+.v6 {
+  min-height: var(--vh);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  color: #fff;
+}
+.v6 .bg-layer--black { background: #0a0a0a; }
+.v6-seal {
+  position: relative;
+  z-index: 2;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  animation: scaleIn 1.6s var(--ease-luxury) 0.6s both;
+}
+.v6-seal::before {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.v6-monogram {
+  font-style: italic;
+  font-size: 42px;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  color: rgba(255,255,255,0.9);
+}
+.v6-below {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  margin-top: 36px;
+}
+.v6-names {
+  font-size: 13px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.7);
+  opacity: 0;
+  animation: blurReveal 1.4s var(--ease-luxury) 1.6s both;
+}
+.v6-rule {
+  width: 20px;
+  height: 1px;
+  background: rgba(255,255,255,0.2);
+  margin: 18px auto;
+  transform-origin: center;
+  transform: scaleX(0);
+  animation: lineDraw 1s var(--ease-luxury) 2.2s both;
+}
+.v6-date {
+  font-size: 10px;
+  letter-spacing: 0.36em;
+  color: rgba(255,255,255,0.4);
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fadeIn 1.2s var(--ease-luxury) 2.8s both;
+}
+.v6-venue {
+  font-family: var(--f-ko);
+  font-size: 11px;
+  color: rgba(255,255,255,0.3);
+  letter-spacing: 0.06em;
+  margin-top: 8px;
+  font-weight: 300;
+  opacity: 0;
+  animation: fadeIn 1.2s var(--ease-luxury) 3.2s both;
+}
+
+/* ================================================================
+   V7 · HORIZONTAL RULE STACK (보너스 — 수평선 중심)
+   가로선이 하나씩 그려지며 그 사이 텍스트 등장.
+   ================================================================ */
+.v7 {
+  min-height: var(--vh);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+.v7 .bg-layer {
+  animation: kenBurnsSlow 14s var(--ease-smooth) both;
+  filter: brightness(0.3) saturate(0.35);
+}
+.v7 .bg-overlay {
+  background: rgba(0,0,0,0.45);
+}
+.v7-stack {
+  position: relative;
+  z-index: 2;
+  width: calc(100% - 56px);
+  margin: 40px 28px;
+  text-align: center;
+}
+.v7-line {
+  height: 1px;
+  background: rgba(255,255,255,0.2);
+  transform-origin: center;
+  transform: scaleX(0);
+}
+.v7-line:nth-child(1) { animation: lineDraw 1.4s var(--ease-luxury) 0.4s both; }
+.v7-line:nth-child(3) { animation: lineDraw 1.4s var(--ease-luxury) 1.2s both; }
+.v7-line:nth-child(5) { animation: lineDraw 1.4s var(--ease-luxury) 2.6s both; }
+.v7-line:nth-child(7) { animation: lineDraw 1.4s var(--ease-luxury) 3.6s both; }
+.v7-row {
+  padding: 20px 0;
+}
+.v7-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  opacity: 0;
+  animation: fadeIn 1.2s var(--ease-luxury) 1s both;
+}
+.v7-names {
+  font-style: italic;
+  font-size: 38px;
+  line-height: 1;
+  font-weight: 300;
+  padding: 22px 0;
+  opacity: 0;
+  animation: blurReveal 1.8s var(--ease-luxury) 1.6s both;
+}
+.v7-meta {
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fadeIn 1.2s var(--ease-luxury) 3s both;
+}
+.v7-meta span {
+  display: block;
+  margin-top: 4px;
+  color: rgba(255,255,255,0.35);
+  font-size: 9px;
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     V1 · EDITORIAL COVER — 잡지 에디토리얼
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="variant v1">
+  <div class="bg-layer"></div>
+  <div class="bg-overlay"></div>
+  <div class="v1-content">
+    <div class="v1-top">
+      <div>Vol. I<br><b>MMXXVI</b></div>
+      <div class="r"><b>Wedding</b>Invitation</div>
+    </div>
+    <div class="v1-center">
+      <div class="v1-kicker">The Simple</div>
+      <div class="v1-rule"></div>
+      <div class="v1-names">
+        Minjun<br>&amp; Seoyeon
+        <small>김민준 &amp; 이서연</small>
+      </div>
+      <div class="v1-date">2026 · 05 · 16</div>
+    </div>
+    <div class="v1-bottom">
+      <div><b>Save the Date</b>SATURDAY · 오후 1시</div>
+      <div class="r"><b>그랜드 하얏트 서울</b>그랜드 볼룸</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider">V2 · Cinematic Fade</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     V2 · CINEMATIC FADE — 시네마 타이틀 시퀀스
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="variant v2">
+  <div class="bg-layer"></div>
+  <div class="bg-overlay"></div>
+  <div class="v2-content">
+    <div class="v2-eyebrow">We Invite You</div>
+    <div class="v2-names">
+      Minjun<br>&amp; Seoyeon
+    </div>
+    <div class="v2-rule"></div>
+    <div class="v2-date">2026 · 05 · 16</div>
+    <div class="v2-time">Saturday · 오후 1시</div>
+  </div>
+</div>
+
+<div class="divider">V3 · Minimal Frame</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     V3 · MINIMAL FRAME — 프레임이 그려지며 등장
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="variant v3">
+  <div class="bg-layer"></div>
+  <div class="bg-overlay"></div>
+  <div class="v3-frame">
+    <div class="v3-eyebrow">Save the Date</div>
+    <div class="v3-names">Minjun &amp; Seoyeon</div>
+    <div class="v3-rule"></div>
+    <div class="v3-date">May · 16 · 2026</div>
+    <div class="v3-venue">그랜드 하얏트 서울</div>
+  </div>
+</div>
+
+<div class="divider">V4 · Grand Quote</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     V4 · GRAND QUOTE — 순수 블랙 + 인용구
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="variant v4">
+  <div class="bg-layer bg-layer--black"></div>
+  <div class="bg-overlay"></div>
+  <div class="v4-content">
+    <div class="v4-mark">&ldquo;</div>
+    <p class="v4-quote">
+      가장 평범한 단어로<br>
+      가장 특별한 하루를 전합니다.
+    </p>
+    <div class="v4-rule"></div>
+    <div class="v4-names">Minjun &amp; Seoyeon</div>
+    <div class="v4-date">May 16, 2026 · Sat</div>
+  </div>
+</div>
+
+<div class="divider">V5 · Letter Card</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     V5 · LETTER CARD — 편지지 카드
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="variant v5">
+  <div class="bg-layer"></div>
+  <div class="bg-overlay"></div>
+  <div class="v5-card">
+    <div class="v5-eyebrow">Save the Date</div>
+    <div class="v5-names">
+      Minjun &amp; Seoyeon
+      <small>김민준 &amp; 이서연</small>
+    </div>
+    <div class="v5-rule"></div>
+    <div class="v5-date">16 · 05 · 2026</div>
+    <div class="v5-venue">그랜드 하얏트 서울 · 그랜드 볼룸</div>
+  </div>
+</div>
+
+<div class="divider">V6 · Monogram Seal (보너스)</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     V6 · MONOGRAM SEAL — 원형 모노그램 중심
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="variant v6">
+  <div class="bg-layer bg-layer--black"></div>
+  <div class="v6-seal">
+    <div class="v6-monogram">M&amp;S</div>
+  </div>
+  <div class="v6-below">
+    <div class="v6-names">Minjun &amp; Seoyeon</div>
+    <div class="v6-rule"></div>
+    <div class="v6-date">May · 16 · 2026</div>
+    <div class="v6-venue">그랜드 하얏트 서울</div>
+  </div>
+</div>
+
+<div class="divider">V7 · Horizontal Rule Stack (보너스)</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     V7 · HORIZONTAL RULE STACK — 수평선 사이 텍스트
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="variant v7">
+  <div class="bg-layer"></div>
+  <div class="bg-overlay"></div>
+  <div class="v7-stack">
+    <div class="v7-line"></div>
+    <div class="v7-row v7-eyebrow">Wedding Invitation</div>
+    <div class="v7-line"></div>
+    <div class="v7-row v7-names">Minjun<br>&amp; Seoyeon</div>
+    <div class="v7-line"></div>
+    <div class="v7-row v7-meta">
+      2026 · 05 · 16 · Saturday
+      <span>그랜드 하얏트 서울 · 그랜드 볼룸</span>
+    </div>
+    <div class="v7-line"></div>
+  </div>
+</div>
+
+<div class="divider" style="padding-bottom:120px;">— END —</div>
+
+</body>
+</html>

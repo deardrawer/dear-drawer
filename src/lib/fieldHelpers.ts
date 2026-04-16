@@ -379,7 +379,7 @@ export const fieldHelpers: Record<string, FieldHelper> = {
   'content.thankYou.sign': {
     label: '서명',
     explanation: '감사 인사 아래 두 분의 이름이 표시돼요.',
-    example: '민준 & 서연 드림',
+    example: '민준 & 서연 올림',
     previewSection: 'thank-you',
   },
 

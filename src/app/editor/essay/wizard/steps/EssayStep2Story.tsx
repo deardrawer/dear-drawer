@@ -265,7 +265,7 @@ export default function EssayStep2Story({ data, updateData, updateNestedData }: 
           className={inputClass}
           value={data.thankYou.sign}
           onChange={e => updateNestedData('thankYou.sign', e.target.value)}
-          placeholder="서명 (예: 민준 & 서연 드림)"
+          placeholder="서명 (예: 민준 & 서연 올림)"
         />
       </section>
 

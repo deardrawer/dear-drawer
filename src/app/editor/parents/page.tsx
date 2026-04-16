@@ -62,7 +62,9 @@ export interface ParentsInvitationData {
     side: 'groom' | 'bride'
     fatherName: string
     motherName: string
-    signature: string // "아버지 이○○ · 어머니 김○○ 드림"
+    fatherDeceased?: boolean
+    motherDeceased?: boolean
+    signature: string // "아버지 이○○ · 어머니 김○○ 올림"
   }
 
   // 신랑신부 정보

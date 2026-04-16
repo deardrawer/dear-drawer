@@ -52,7 +52,7 @@ interface EnvelopeScreenProps {
   recipientRelation?: string  // 관계 (예: 이모, 삼촌)
   greetingTo?: string
   message?: string[]
-  signature?: string
+  signature?: React.ReactNode
   onOpen: () => void
   isPreview?: boolean
   themeColor?: string  // 메인 테마 컬러
@@ -79,7 +79,7 @@ export default function EnvelopeScreen({
   recipientRelation,
   greetingTo,
   message = ['항상 저희 가족', '챙겨주셔서 감사합니다', '', '서연이가 좋은 사람 만나', '결혼하게 되었습니다', '', '꼭 오셔서', '축복해 주세요'],
-  signature = '아버지 이○○ · 어머니 김○○ 드림',
+  signature = '아버지 이○○ · 어머니 김○○ 올림',
   onOpen,
   isPreview = false,
   themeColor = '#722F37',

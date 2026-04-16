@@ -142,6 +142,22 @@ const QUIZ_RESULTS: Record<string, {
     ],
     sampleUrl: '/i/sample-essay-book',
   },
+  'narrative-the-simple': {
+    templateId: 'narrative-the-simple',
+    templateName: 'THE SIMPLE',
+    category: 'mini',
+    categoryLabel: '미니 스토리형',
+    tagline: '가장 일반적이면서도 특별한, 세련된 더심플',
+    color: 'text-stone-700',
+    colorBg: 'bg-stone-800',
+    colorBorder: 'border-stone-200',
+    points: [
+      '에디토리얼 타이포그래피와 고급스러운 여백',
+      '모든 섹션에 5~12가지 UI 대안 제공',
+      '섹션 순서·폰트·구분선까지 자유 커스텀',
+    ],
+    sampleUrl: '/i/sample-the-simple',
+  },
 }
 
 // 샘플 쇼케이스 데이터
@@ -250,6 +266,19 @@ const SHOWCASE_ITEMS: {
     btnClass: 'bg-violet-500 hover:bg-violet-600',
   },
   {
+    id: 'the-simple',
+    templateId: 'narrative-the-simple',
+    name: 'THE SIMPLE',
+    tagline: '가장 일반적이면서도 특별한, 세련된 더심플',
+    category: 'mini',
+    categoryLabel: '미니스토리형',
+    thumbnail: '/sample/preview-the-simple.png',
+    sampleUrl: '/i/sample-the-simple',
+    badgeColor: 'text-stone-700',
+    badgeBg: 'bg-stone-100',
+    btnClass: 'bg-stone-800 hover:bg-stone-900',
+  },
+  {
     id: 'parents',
     templateId: 'narrative-parents',
     name: 'PARENTS',
@@ -352,6 +381,8 @@ function TemplatesContent() {
       router.push(`/editor/essay?slug=${autoSlug}`)
     } else if (templateId === 'narrative-thankyou') {
       router.push(`/editor/thank-you?slug=${autoSlug}`)
+    } else if (templateId === 'narrative-the-simple') {
+      router.push(`/editor/the-simple?slug=${autoSlug}`)
     } else {
       router.push(`/editor?template=${templateId}&slug=${autoSlug}`)
     }
@@ -763,7 +794,7 @@ function TemplatesContent() {
                             onClick={() => handleTemplateSelect(item.templateId)}
                             className={`w-full h-9 sm:h-10 flex items-center justify-center text-xs sm:text-sm font-medium text-white rounded-lg transition-colors ${item.btnClass}`}
                           >
-                            이 스타일로 시작
+                            {item.id === 'the-simple' ? '4.17 정식오픈 예정' : '이 스타일로 시작'}
                           </button>
                         </div>
                       </div>

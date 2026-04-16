@@ -9,10 +9,11 @@ import InvitationClientRecord from "./InvitationClientRecord";
 import InvitationClientExhibit from "./InvitationClientExhibit";
 import InvitationClientEssay from "./InvitationClientEssay";
 import InvitationClientThankYou from "./InvitationClientThankYou";
+import InvitationClientTheSimple from "./InvitationClientTheSimple";
 import type { Invitation } from "@/types/invitation";
 import type { Viewport } from "next";
 import { isUUID } from "@/lib/slug";
-import { createSampleInvitation, ourSampleContent, familySampleContent } from "@/lib/sample-data";
+import { createSampleInvitation, ourSampleContent, familySampleContent, theSimpleSampleContent } from "@/lib/sample-data";
 
 // 핀치 줌 비활성화를 위한 viewport 설정
 export const viewport: Viewport = {
@@ -37,10 +38,11 @@ export default async function InvitationPage({ params, searchParams }: PageProps
   let isSampleInvitation = false;
 
   // 샘플 청첩장 처리
-  const sampleSlugs = ['sample-our', 'sample-family', 'sample-magazine', 'sample-film', 'sample-record', 'sample-exhibit', 'sample-feed', 'sample-essay', 'sample-essay-paper', 'sample-essay-book'];
+  const sampleSlugs = ['sample-our', 'sample-family', 'sample-magazine', 'sample-film', 'sample-record', 'sample-exhibit', 'sample-feed', 'sample-essay', 'sample-essay-paper', 'sample-essay-book', 'sample-the-simple'];
   if (sampleSlugs.includes(slug)) {
-    let sampleType: 'our' | 'family' | 'magazine' | 'film' | 'record' | 'exhibit' | 'essay' = 'our';
-    if (slug === 'sample-essay' || slug === 'sample-essay-paper' || slug === 'sample-essay-book') sampleType = 'essay';
+    let sampleType: 'our' | 'family' | 'magazine' | 'film' | 'record' | 'exhibit' | 'essay' | 'the-simple' = 'our';
+    if (slug === 'sample-the-simple') sampleType = 'the-simple';
+    else if (slug === 'sample-essay' || slug === 'sample-essay-paper' || slug === 'sample-essay-book') sampleType = 'essay';
     else if (slug === 'sample-exhibit' || slug === 'sample-feed') sampleType = 'exhibit';
     else if (slug === 'sample-record') sampleType = 'record';
     else if (slug === 'sample-film') sampleType = 'film';
@@ -150,6 +152,7 @@ export default async function InvitationPage({ params, searchParams }: PageProps
   const isExhibit = invitation.template_id === 'narrative-exhibit';
   const isEssay = invitation.template_id === 'narrative-essay';
   const isThankYou = invitation.template_id === 'narrative-thankyou';
+  const isTheSimple = invitation.template_id === 'narrative-the-simple';
 
   // 감사장은 별도 렌더링 (props가 다름)
   if (isThankYou) {
@@ -165,7 +168,7 @@ export default async function InvitationPage({ params, searchParams }: PageProps
   }
 
   // 템플릿에 따라 적절한 컴포넌트 렌더링
-  const ClientComponent = isEssay ? InvitationClientEssay : isExhibit ? InvitationClientExhibit : isRecord ? InvitationClientRecord : isFilm ? InvitationClientFilm : isMagazine ? InvitationClientMagazine : isFamily ? InvitationClientFamily : InvitationClient;
+  const ClientComponent = isTheSimple ? InvitationClientTheSimple : isEssay ? InvitationClientEssay : isExhibit ? InvitationClientExhibit : isRecord ? InvitationClientRecord : isFilm ? InvitationClientFilm : isMagazine ? InvitationClientMagazine : isFamily ? InvitationClientFamily : InvitationClient;
 
   return (
     <ClientComponent
@@ -202,8 +205,27 @@ export async function generateMetadata({ params }: PageProps) {
   const baseUrl = "https://invite.deardrawer.com";
 
   // 샘플 청첩장 메타데이터 처리
-  const metaSampleSlugs = ['sample-our', 'sample-family', 'sample-magazine', 'sample-film', 'sample-record', 'sample-exhibit', 'sample-feed', 'sample-essay', 'sample-essay-paper', 'sample-essay-book'];
+  const metaSampleSlugs = ['sample-our', 'sample-family', 'sample-magazine', 'sample-film', 'sample-record', 'sample-exhibit', 'sample-feed', 'sample-essay', 'sample-essay-paper', 'sample-essay-book', 'sample-the-simple'];
   if (metaSampleSlugs.includes(slug)) {
+    // THE SIMPLE은 독자 스키마
+    if (slug === 'sample-the-simple') {
+      const ts = theSimpleSampleContent;
+      const title = ts.meta.title || `${ts.groom.name} ♥ ${ts.bride.name} 결혼합니다`;
+      const description = ts.meta.description || ts.sections.greeting.body;
+      return {
+        title,
+        description,
+        openGraph: {
+          title,
+          description,
+          type: "website",
+          url: `${baseUrl}/i/${slug}`,
+          siteName: "dear drawer - 모바일 청첩장",
+          locale: "ko_KR",
+        },
+        twitter: { card: "summary_large_image", title, description },
+      };
+    }
     const sampleType = (slug === 'sample-essay' || slug === 'sample-essay-paper' || slug === 'sample-essay-book') ? 'essay' : (slug === 'sample-exhibit' || slug === 'sample-feed') ? 'exhibit' : slug === 'sample-record' ? 'record' : slug === 'sample-film' ? 'film' : slug === 'sample-magazine' ? 'magazine' : slug === 'sample-our' ? 'our' : 'family';
     const content = sampleType === 'family' ? familySampleContent : ourSampleContent;
     const title = `${content.groom.name} ♥ ${content.bride.name} 결혼합니다`;
@@ -292,8 +314,28 @@ export async function generateMetadata({ params }: PageProps) {
 
   // 커스텀 값이 있으면 사용, 없으면 자동 생성
   const isThankYouTemplate = invitation.template_id === 'narrative-thankyou';
+  const isTheSimpleTemplate = invitation.template_id === 'narrative-the-simple';
   const title = customTitle || (isThankYouTemplate ? `${groomName} & ${brideName}의 감사 인사` : `${groomName} ♥ ${brideName} 결혼합니다`);
-  const description = customDescription || invitation.greeting_message || (isThankYouTemplate ? "감사장이 도착했습니다" : "저희 결혼식에 초대합니다");
+
+  // THE SIMPLE: 날짜/장소 기반 자동 설명
+  let autoDescription = '';
+  if (!customDescription && isTheSimpleTemplate && invitation.content) {
+    try {
+      const c = JSON.parse(invitation.content);
+      const wDate = c?.wedding?.date;
+      const wTime = c?.wedding?.timeDisplay;
+      const vName = c?.wedding?.venue?.name;
+      if (wDate) {
+        const d = new Date(wDate + 'T00:00:00');
+        if (!isNaN(d.getTime())) {
+          const wd = ['일','월','화','수','목','금','토'];
+          autoDescription = `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 ${wd[d.getDay()]}요일${wTime ? ` ${wTime}` : ''}`;
+          if (vName) autoDescription += `\n${vName}`;
+        }
+      }
+    } catch { /* ignore */ }
+  }
+  const description = customDescription || autoDescription || invitation.greeting_message || (isThankYouTemplate ? "감사장이 도착했습니다" : "저희 결혼식에 초대합니다");
 
   return {
     title,

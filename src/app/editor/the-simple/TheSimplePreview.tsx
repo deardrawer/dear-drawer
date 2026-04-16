@@ -1,0 +1,4898 @@
+'use client'
+
+import { useMemo, useRef, useEffect, useState, useCallback } from 'react'
+import type { TheSimpleInvitationData, ImageWithSettings, TheSimpleImageSettings, GalleryImage } from './page'
+import { getSectionType } from './utils'
+import { useCroppedImageStyle, getImageCropStyleFallback } from '@/hooks/useCroppedImageStyle'
+import { resolveDisplayFontFamily, resolveKoreanFontFamily } from './fontOptions'
+import { loadKakaoMapSDK } from '@/lib/geunnalKakaoMap'
+import { ParkingIcon, BusIcon, SubwayIcon, TrainIcon, ExpressBusIcon, InfoIcon } from '@/components/parents/icons'
+import './the-simple-preview.css'
+
+interface TheSimplePreviewProps {
+  data: TheSimpleInvitationData
+  fullscreen?: boolean
+  /** 커버가 활성화된 상태 — 인트로 배경 fade-in 생략 (즉시 표시) */
+  skipIntroBgFade?: boolean
+}
+
+/* ==========================================================================
+ * useContainedOverlay — 에디터 폰 프레임 안에서 모달 오버레이 위치 고정
+ * 스크롤 컨테이너를 찾아 absolute 포지셔닝 + 스크롤 잠금 처리.
+ * 게스트 뷰(전체 화면)에서는 position:fixed가 유지됨.
+ * ========================================================================== */
+function useContainedOverlay(
+  ref: React.RefObject<HTMLDivElement | null>,
+  isOpen: boolean,
+) {
+  useEffect(() => {
+    if (!isOpen || !ref.current) return
+    const el = ref.current
+
+    // 가장 가까운 overflow-y:auto/scroll 부모 찾기
+    let scrollParent: HTMLElement | null = el.parentElement
+    while (scrollParent) {
+      const ov = getComputedStyle(scrollParent).overflowY
+      if (ov === 'auto' || ov === 'scroll') break
+      scrollParent = scrollParent.parentElement
+    }
+
+    // body/html이 아닌 스크롤 컨테이너 = 에디터 폰 프레임
+    if (
+      scrollParent &&
+      scrollParent !== document.documentElement &&
+      scrollParent !== document.body
+    ) {
+      const top = scrollParent.scrollTop
+      const height = scrollParent.clientHeight
+
+      el.style.position = 'absolute'
+      el.style.top = `${top}px`
+      el.style.left = '0'
+      el.style.right = '0'
+      el.style.bottom = 'auto'
+      el.style.height = `${height}px`
+      el.style.width = '100%'
+
+      const prev = scrollParent.style.overflowY
+      scrollParent.style.overflowY = 'hidden'
+      return () => { scrollParent!.style.overflowY = prev }
+    }
+    // 게스트 뷰: CSS의 position:fixed 그대로 사용
+  }, [isOpen, ref])
+}
+
+/* ==========================================================================
+ * IntersectionObserver 훅 — 한 번 화면에 들어오면 inView=true
+ * ========================================================================== */
+function useInView<T extends HTMLElement>(
+  options?: IntersectionObserverInit
+): [React.RefObject<T | null>, boolean] {
+  const ref = useRef<T | null>(null)
+  const [inView, setInView] = useState(false)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true)
+          io.disconnect()
+        }
+      },
+      { threshold: 0.15, rootMargin: '-40px 0px', ...options }
+    )
+    io.observe(el)
+    return () => io.disconnect()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  return [ref, inView]
+}
+
+/* ==========================================================================
+ * PhotoBox — 신랑/신부 사진 공통 렌더러
+ * photo가 없으면 .ts-ph placeholder로 graceful fallback.
+ * ========================================================================== */
+type PhotoShape = 'circle' | 'square' | 'portrait' | 'arch'
+
+interface PhotoBoxProps {
+  photo?: ImageWithSettings
+  shape: PhotoShape
+  size: number | string
+  className?: string
+  rounded?: number
+}
+
+function PhotoBox({ photo, shape, size, className = '', rounded }: PhotoBoxProps) {
+  const aspect = shape === 'arch' ? '5/7' : shape === 'portrait' ? '3/4' : '1/1'
+  const radius = shape === 'circle' ? '50%' : shape === 'arch' ? '50% 50% 0 0 / 36% 36% 0 0' : rounded ?? 2
+  const widthStyle = typeof size === 'number' ? `${size}px` : size
+
+  const containerStyle: React.CSSProperties = {
+    width: widthStyle,
+    height: shape === 'arch' || shape === 'portrait' ? 'auto' : undefined,
+    aspectRatio: aspect,
+    borderRadius: radius,
+    overflow: 'hidden',
+    position: 'relative',
+    flexShrink: 0,
+  }
+
+  if (!photo?.url) {
+    return <div className={`ts-ph ${className}`} style={containerStyle} />
+  }
+
+  return (
+    <CropBg
+      src={photo.url}
+      settings={photo.settings as TheSimpleImageSettings}
+      className={className}
+      style={containerStyle}
+    />
+  )
+}
+
+/* ==========================================================================
+ * getPhotos — photos 배열 우선, 없으면 기존 photo를 배열로 변환
+ * ========================================================================== */
+function getPhotos(person: { photo?: ImageWithSettings; photos?: ImageWithSettings[] }): ImageWithSettings[] {
+  if (person.photos && person.photos.length > 0) return person.photos
+  if (person.photo) return [person.photo]
+  return []
+}
+
+/* ==========================================================================
+ * PhotoSlideBox — fade 기반 자동 슬라이드 커플 사진 컴포넌트
+ * 1장 이하: 단일 PhotoBox, 2장 이상: fade auto-slide + dot indicators
+ * ========================================================================== */
+function PhotoSlideBox({
+  photos,
+  shape,
+  size,
+  className = '',
+  rounded,
+  delay = 0,
+}: {
+  photos: ImageWithSettings[]
+  shape: PhotoShape
+  size: number | string
+  className?: string
+  rounded?: number
+  delay?: number
+}) {
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [started, setStarted] = useState(delay === 0)
+
+  // 초기 지연 타이머
+  useEffect(() => {
+    if (delay <= 0) return
+    const t = setTimeout(() => setStarted(true), delay)
+    return () => clearTimeout(t)
+  }, [delay])
+
+  // 자동 전환 (5초 간격)
+  useEffect(() => {
+    if (!started || photos.length <= 1) return
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % photos.length)
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [started, photos.length])
+
+  // 1장 이하: 기존 PhotoBox와 동일
+  if (photos.length <= 1) {
+    return <PhotoBox photo={photos[0]} shape={shape} size={size} className={className} rounded={rounded} />
+  }
+
+  const aspect = shape === 'arch' ? '5/7' : shape === 'portrait' ? '3/4' : '1/1'
+  const radius = shape === 'circle' ? '50%' : shape === 'arch' ? '50% 50% 0 0 / 36% 36% 0 0' : rounded ?? 2
+  const widthStyle = typeof size === 'number' ? `${size}px` : size
+
+  return (
+    <div className={className} style={{ position: 'relative', width: widthStyle, flexShrink: 0 }}>
+      <div
+        style={{
+          position: 'relative',
+          width: '100%',
+          aspectRatio: aspect,
+          borderRadius: radius,
+          overflow: 'hidden',
+        }}
+      >
+        {photos.map((photo, i) => (
+          <CropBg
+            key={i}
+            src={photo.url}
+            settings={photo.settings as TheSimpleImageSettings}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              opacity: i === currentIndex ? 1 : 0,
+              transition: 'opacity 0.8s ease-in-out',
+            }}
+          />
+        ))}
+      </div>
+      {/* Dot indicators */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          gap: 4,
+          marginTop: 6,
+        }}
+      >
+        {photos.map((_, i) => (
+          <div
+            key={i}
+            style={{
+              width: 5,
+              height: 5,
+              borderRadius: '50%',
+              background: i === currentIndex ? 'var(--ink, #333)' : 'var(--ink, #333)',
+              opacity: i === currentIndex ? 0.7 : 0.2,
+              transition: 'opacity 0.3s',
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/* ==========================================================================
+ * GalleryImg — 갤러리 이미지 공통 렌더러 (imageSettings 적용)
+ * ========================================================================== */
+interface GalleryImgProps {
+  src?: string | null
+  settings?: TheSimpleImageSettings
+  aspectRatio?: string | number
+  className?: string
+  style?: React.CSSProperties
+  onClick?: () => void
+}
+
+function GalleryImg({ src, settings, aspectRatio = '1 / 1', className = '', style, onClick }: GalleryImgProps) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const exactStyle = useCroppedImageStyle(src ?? undefined, settings, containerRef)
+
+  const containerStyle: React.CSSProperties = {
+    aspectRatio: typeof aspectRatio === 'number' ? String(aspectRatio) : aspectRatio,
+    background: '#eee',
+    overflow: 'hidden',
+    position: 'relative',
+    cursor: onClick ? 'pointer' : undefined,
+    ...style,
+  }
+  if (!src) return <div className={className} style={containerStyle} />
+
+  // 픽셀 정확값 우선, 없으면 fallback
+  const bg = exactStyle || getImageCropStyleFallback(src, settings ?? { scale: 1, positionX: 0, positionY: 0 })
+  return (
+    <div
+      ref={containerRef}
+      className={className}
+      onClick={onClick}
+      style={{
+        ...containerStyle,
+        ...bg,
+      }}
+    />
+  )
+}
+
+/* ==========================================================================
+ * CropBg — 크롭 설정을 픽셀 정확하게 렌더링하는 배경 div
+ * ========================================================================== */
+interface CropBgProps {
+  src: string
+  settings?: TheSimpleImageSettings
+  className?: string
+  style?: React.CSSProperties
+}
+
+function CropBg({ src, settings, className, style }: CropBgProps) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const exactStyle = useCroppedImageStyle(src, settings, containerRef)
+  const bg = exactStyle || getImageCropStyleFallback(src, settings ?? { scale: 1, positionX: 0, positionY: 0 })
+  return <div ref={containerRef} className={className} style={{ ...bg, ...style }} />
+}
+
+/* ==========================================================================
+ * SectionToggle — 접기/펼치기 토글 래퍼
+ * ========================================================================== */
+function SectionToggle({
+  enabled,
+  label,
+  children,
+  btnStyle = 1,
+}: {
+  enabled: boolean
+  label: string
+  children: React.ReactNode
+  btnStyle?: number
+}) {
+  const [open, setOpen] = useState(!enabled) // 토글 비활성이면 항상 열림
+
+  if (!enabled) return <>{children}</>
+
+  const getButtonStyle = (): React.CSSProperties => {
+    const base: React.CSSProperties = {
+      fontFamily: 'var(--font-ko)',
+      fontSize: 12,
+      cursor: 'pointer',
+      transition: 'all 0.2s',
+    }
+    switch (btnStyle) {
+      case 2:
+        return { ...base, background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 20, padding: '8px 24px' }
+      case 3:
+        return { ...base, background: 'transparent', color: 'var(--mute)', border: 'none', padding: '6px 0', textDecoration: 'underline', textUnderlineOffset: '3px' }
+      case 4:
+        return { ...base, background: 'var(--ink)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px' }
+      default:
+        return { ...base, color: 'var(--mute)', border: '1px solid var(--line)', borderRadius: 20, padding: '8px 24px', background: 'transparent' }
+    }
+  }
+
+  const buttonLabel = open
+    ? (btnStyle === 3 ? '접기 ▲' : '접기')
+    : (btnStyle === 3 ? `${label} ▼` : label)
+
+  return (
+    <div>
+      {open && children}
+      <div style={{ textAlign: 'center', padding: open ? '8px 0 0' : '0' }}>
+        <button
+          type="button"
+          onClick={() => setOpen((p) => !p)}
+          style={getButtonStyle()}
+        >
+          {buttonLabel}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+/* ==========================================================================
+ * AnimatedSection — 각 섹션 variant 컨테이너에 useInView 적용
+ * ========================================================================== */
+interface AnimatedSectionProps {
+  className?: string
+  style?: React.CSSProperties
+  children: React.ReactNode
+}
+
+function AnimatedSection({ className = '', style, children }: AnimatedSectionProps) {
+  const [ref, inView] = useInView<HTMLElement>()
+  return (
+    <section ref={ref} className={`${className} ${inView ? 'in-view' : ''}`} style={style}>
+      {children}
+    </section>
+  )
+}
+
+/* ==========================================================================
+ * AccountTabbed — GROOM/BRIDE 탭 전환 + 역할별 계좌 목록 + 복사
+ * ========================================================================== */
+function AccountTabbed({
+  groomRole,
+  brideRole,
+  groomAccounts,
+  brideAccounts,
+  groomFather,
+  groomMother,
+  brideFather,
+  brideMother,
+  groomFatherName,
+  groomMotherName,
+  brideFatherName,
+  brideMotherName,
+  variant = 1,
+}: {
+  groomRole: string
+  brideRole: string
+  groomAccounts: Array<{ bank: string; number: string; holder: string }>
+  brideAccounts: Array<{ bank: string; number: string; holder: string }>
+  groomFather: Array<{ bank: string; number: string; holder: string }>
+  groomMother: Array<{ bank: string; number: string; holder: string }>
+  brideFather: Array<{ bank: string; number: string; holder: string }>
+  brideMother: Array<{ bank: string; number: string; holder: string }>
+  groomFatherName?: string
+  groomMotherName?: string
+  brideFatherName?: string
+  brideMotherName?: string
+  variant?: number
+}) {
+  const [tab, setTab] = useState<'groom' | 'bride'>('groom')
+  const [copied, setCopied] = useState<string | null>(null)
+
+  const copyAccount = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(text)
+      setTimeout(() => setCopied(null), 1500)
+    }).catch(() => {})
+  }
+
+  const hasGroom = groomAccounts.length > 0 || groomFather.length > 0 || groomMother.length > 0
+  const hasBride = brideAccounts.length > 0 || brideFather.length > 0 || brideMother.length > 0
+
+  const rows: Array<{ role: string; name?: string; accounts: Array<{ bank: string; number: string; holder: string }> }> = []
+  if (tab === 'groom') {
+    if (groomAccounts.length > 0) rows.push({ role: groomRole || '신랑', accounts: groomAccounts })
+    if (groomFather.length > 0) rows.push({ role: '아버지', name: groomFatherName, accounts: groomFather })
+    if (groomMother.length > 0) rows.push({ role: '어머니', name: groomMotherName, accounts: groomMother })
+  } else {
+    if (brideAccounts.length > 0) rows.push({ role: brideRole || '신부', accounts: brideAccounts })
+    if (brideFather.length > 0) rows.push({ role: '아버지', name: brideFatherName, accounts: brideFather })
+    if (brideMother.length > 0) rows.push({ role: '어머니', name: brideMotherName, accounts: brideMother })
+  }
+
+  /* ── 탭 버튼 스타일 (variant별) ── */
+  const tabBase: React.CSSProperties = {
+    fontFamily: 'var(--font-display)',
+    cursor: 'pointer',
+    textTransform: 'uppercase',
+    transition: 'all 0.2s',
+  }
+
+  const getTabStyle = (side: 'groom' | 'bride'): React.CSSProperties => {
+    const active = tab === side
+    const isRight = side === 'bride'
+
+    // V2 · 둥근 필 탭
+    if (variant === 2) {
+      return {
+        ...tabBase,
+        fontSize: 11,
+        letterSpacing: '0.12em',
+        padding: '9px 0',
+        borderRadius: isRight ? '0 20px 20px 0' : '20px 0 0 20px',
+        border: '1px solid var(--line)',
+        borderLeft: isRight ? 'none' : '1px solid var(--line)',
+        background: active ? 'var(--ink)' : 'transparent',
+        color: active ? '#fff' : 'var(--mute)',
+      }
+    }
+
+    // V4 · 언더라인 탭
+    if (variant === 4) {
+      return {
+        ...tabBase,
+        fontSize: 11,
+        letterSpacing: '0.2em',
+        padding: '8px 0 10px',
+        border: 'none',
+        borderBottom: active ? '2px solid var(--ink)' : '1px solid var(--line)',
+        background: 'transparent',
+        color: active ? 'var(--ink)' : 'var(--mute)',
+      }
+    }
+
+    // V5 · 중앙 필 캡슐
+    if (variant === 5) {
+      return {
+        ...tabBase,
+        fontSize: 10,
+        letterSpacing: '0.25em',
+        padding: '8px 0',
+        border: 'none',
+        background: active ? 'var(--ink)' : 'var(--bg, #f5f5f0)',
+        color: active ? '#fff' : 'var(--mute)',
+        borderRadius: isRight ? '0 4px 4px 0' : '4px 0 0 4px',
+      }
+    }
+
+    // V1 · 기본 (직각 보더)
+    return {
+      ...tabBase,
+      fontSize: 12,
+      letterSpacing: '0.15em',
+      padding: '10px 0',
+      border: '1px solid var(--ink)',
+      borderLeft: isRight ? 'none' : '1px solid var(--ink)',
+      background: active ? 'var(--ink)' : 'transparent',
+      color: active ? '#fff' : 'var(--ink)',
+    }
+  }
+
+  /* ── 리스트 래퍼 스타일 (variant별) ── */
+  const getListStyle = (): React.CSSProperties => {
+    if (variant === 2) return { padding: '0 4px' }
+    if (variant === 4) return {}
+    if (variant === 5) return {}
+    return { border: '1px solid var(--line)', padding: '0 14px' }
+  }
+
+  /* ── 행 구분선 스타일 ── */
+  const getRowBorder = (isLast: boolean): React.CSSProperties => {
+    if (isLast) return {}
+    if (variant === 5) return { borderBottom: '1px dashed var(--line)' }
+    return { borderBottom: '1px solid var(--line)' }
+  }
+
+  /* ── COPY 버튼 스타일 ── */
+  const getCopyStyle = (num: string): React.CSSProperties => {
+    const done = copied === num
+    if (variant === 2) {
+      return {
+        fontFamily: 'var(--font-display)',
+        fontSize: 9,
+        letterSpacing: '0.1em',
+        color: done ? 'var(--accent)' : 'var(--mute)',
+        background: 'transparent',
+        border: '1px solid var(--line)',
+        borderRadius: 12,
+        padding: '4px 12px',
+        cursor: 'pointer',
+        flexShrink: 0,
+        marginLeft: 10,
+        textTransform: 'uppercase' as const,
+      }
+    }
+    if (variant === 4) {
+      return {
+        fontFamily: 'var(--font-display)',
+        fontSize: 10,
+        letterSpacing: '0.08em',
+        color: done ? 'var(--accent)' : 'var(--ink)',
+        background: 'transparent',
+        border: 'none',
+        borderBottom: '1px solid var(--ink)',
+        padding: '2px 0',
+        cursor: 'pointer',
+        flexShrink: 0,
+        marginLeft: 10,
+        textTransform: 'uppercase' as const,
+      }
+    }
+    if (variant === 5) {
+      return {
+        fontFamily: 'var(--font-display)',
+        fontSize: 9,
+        letterSpacing: '0.15em',
+        color: done ? 'var(--accent)' : '#fff',
+        background: done ? 'transparent' : 'var(--ink)',
+        border: done ? '1px solid var(--accent)' : 'none',
+        borderRadius: 2,
+        padding: '5px 14px',
+        cursor: 'pointer',
+        flexShrink: 0,
+        marginLeft: 10,
+        textTransform: 'uppercase' as const,
+      }
+    }
+    return {
+      fontFamily: 'var(--font-display)',
+      fontSize: 10,
+      letterSpacing: '0.1em',
+      color: done ? 'var(--accent)' : 'var(--ink)',
+      background: 'transparent',
+      border: '1px solid var(--line)',
+      padding: '5px 12px',
+      cursor: 'pointer',
+      flexShrink: 0,
+      marginLeft: 10,
+      textTransform: 'uppercase' as const,
+    }
+  }
+
+  return (
+    <div>
+      {/* 탭 */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', marginBottom: 16 }}>
+        <button type="button" onClick={() => setTab('groom')} style={getTabStyle('groom')}>
+          {groomRole || 'Groom'}
+        </button>
+        <button type="button" onClick={() => setTab('bride')} style={getTabStyle('bride')}>
+          {brideRole || 'Bride'}
+        </button>
+      </div>
+
+      {/* 계좌 목록 */}
+      {(tab === 'groom' ? hasGroom : hasBride) ? (
+        <div style={getListStyle()}>
+          {rows.map((group, gi) =>
+            group.accounts.map((acc, ai) => {
+              const isLast = gi === rows.length - 1 && ai === group.accounts.length - 1
+              return (
+                <div
+                  key={`${gi}-${ai}`}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '14px 0',
+                    ...getRowBorder(isLast),
+                  }}
+                >
+                  <div style={{ textAlign: 'left' }}>
+                    <div style={{ fontFamily: 'var(--font-ko)', fontSize: 12, color: 'var(--mute)', marginBottom: 2 }}>
+                      {group.role}{group.name ? ` · ${group.name}` : ''}
+                    </div>
+                    <div style={{ fontFamily: 'var(--font-ko)', fontSize: 12, color: 'var(--ink)', lineHeight: 1.5 }}>
+                      <span style={{ color: 'var(--mute)' }}>{acc.bank}</span>
+                      <span style={{ marginLeft: 4 }}>{acc.number}</span>
+                      {acc.holder && <span style={{ color: 'var(--mute)', marginLeft: 4 }}>({acc.holder})</span>}
+                    </div>
+                  </div>
+                  <button type="button" onClick={() => copyAccount(acc.number)} style={getCopyStyle(acc.number)}>
+                    {copied === acc.number ? 'DONE' : 'COPY'}
+                  </button>
+                </div>
+              )
+            })
+          )}
+        </div>
+      ) : (
+        <p style={{ textAlign: 'center', fontSize: 11, color: '#b8b0a6', marginTop: 8 }}>
+          계좌를 추가하면 여기에 표시됩니다
+        </p>
+      )}
+    </div>
+  )
+}
+
+/* ==========================================================================
+ * TransportInfo — 교통편 안내 (Direction 섹션 공통)
+ * ========================================================================== */
+const TRANSPORT_ITEMS: Array<{
+  key: keyof NonNullable<import('./page').SectionContents['direction']['transport']>
+  icon: (props: { size?: number; color?: string }) => React.JSX.Element
+  label: string
+}> = [
+  { key: 'car', icon: ParkingIcon, label: '자가용/주차' },
+  { key: 'bus', icon: BusIcon, label: '버스' },
+  { key: 'subway', icon: SubwayIcon, label: '지하철' },
+  { key: 'train', icon: TrainIcon, label: '기차' },
+  { key: 'expressBus', icon: ExpressBusIcon, label: '고속버스' },
+]
+
+function TransportInfo({ transport }: { transport?: Record<string, string | undefined> }) {
+  if (!transport) return null
+  // custom 항목은 customLabel이 있으면 해당 제목 사용
+  const allItems = [
+    ...TRANSPORT_ITEMS,
+    ...(transport.custom ? [{ key: 'custom' as const, icon: InfoIcon, label: transport.customLabel || '안내' }] : []),
+  ]
+  const items = allItems.filter((t) => transport[t.key])
+  if (items.length === 0) return null
+
+  return (
+    <div className="ts-transport" style={{ marginTop: 16, textAlign: 'left' }}>
+      <div style={{ borderTop: '1px solid var(--line)', paddingTop: 16 }}>
+        {items.map((item, i) => {
+          const Icon = item.icon
+          return (
+            <div
+              key={item.key}
+              style={{
+                display: 'flex',
+                gap: 10,
+                padding: '10px 0',
+                borderBottom: i < items.length - 1 ? '1px solid var(--line)' : 'none',
+              }}
+            >
+              <div style={{ flexShrink: 0, paddingTop: 1 }}>
+                <Icon size={16} color="var(--accent)" />
+              </div>
+              <div>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: 10, letterSpacing: '0.15em', color: 'var(--accent)', marginBottom: 3 }}>
+                  {item.label}
+                </div>
+                <div style={{ fontFamily: 'var(--font-ko)', fontSize: 12, color: '#5d5850', lineHeight: 1.7, whiteSpace: 'pre-line' }}>
+                  {transport[item.key]}
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+/* ==========================================================================
+ * GalleryV1Feature — 피처+썸네일 자동 슬라이드 (V1)
+ * 메인 이미지 자동 페이드 전환 + 하단 썸네일 클릭 네비게이션.
+ * ========================================================================== */
+interface GalleryAutoSlideProps {
+  images: GalleryImage[]
+  galleryEyebrow: string
+  onOpenLightbox?: (images: string[], index: number) => void
+}
+
+function GalleryV1Feature({ images, galleryEyebrow, onOpenLightbox }: GalleryAutoSlideProps) {
+  const total = images.length
+  const [activeIdx, setActiveIdx] = useState(0)
+  const intervalRef = useRef<ReturnType<typeof setInterval>>(undefined)
+
+  const resetTimer = useCallback(() => {
+    clearInterval(intervalRef.current)
+    if (total > 1) {
+      intervalRef.current = setInterval(() => {
+        setActiveIdx(p => (p + 1) % total)
+      }, 3500)
+    }
+  }, [total])
+
+  useEffect(() => {
+    resetTimer()
+    return () => clearInterval(intervalRef.current)
+  }, [resetTimer])
+
+  useEffect(() => {
+    if (total > 0 && activeIdx >= total) setActiveIdx(0)
+  }, [total, activeIdx])
+
+  const settingsFor = (i: number): TheSimpleImageSettings =>
+    images[i]?.settings ?? { scale: 1, positionX: 0, positionY: 0 }
+
+  if (total === 0) {
+    return (
+      <AnimatedSection className="ts-sec ts-gallery ts-anim-gallery-v1">
+        {galleryEyebrow && <div className="ts-eyebrow">{galleryEyebrow}</div>}
+        <div style={{ aspectRatio: '4/5', background: '#eee', marginBottom: 6 }} />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 6 }}>
+          {[0,1,2,3].map(i => <div key={i} style={{ aspectRatio: '1/1', background: '#eee' }} />)}
+        </div>
+      </AnimatedSection>
+    )
+  }
+
+  // 하단 썸네일: 현재 이미지 다음 장들 (순환)
+  const thumbIndices: number[] = []
+  for (let t = 1; t <= Math.min(total - 1, 4); t++) {
+    thumbIndices.push((activeIdx + t) % total)
+  }
+
+  const webUrls = images.map(img => img.webUrl).filter(Boolean) as string[]
+
+  return (
+    <AnimatedSection className="ts-sec ts-gallery ts-anim-gallery-v1">
+      {galleryEyebrow && <div className="ts-eyebrow">{galleryEyebrow}</div>}
+      {/* 메인 피처 — 무한 루프 페이드 전환 */}
+      <div
+        className="ts-anim-item ts-anim-delay-1"
+        style={{ position: 'relative', aspectRatio: '4/5', overflow: 'hidden', background: '#eee', marginBottom: 6, cursor: 'pointer' }}
+        onClick={() => onOpenLightbox?.(webUrls, activeIdx)}
+      >
+        {images.map((img, i) => (
+          <div key={img.id} style={{
+            position: 'absolute', inset: 0,
+            opacity: i === activeIdx ? 1 : 0,
+            transition: 'opacity 0.8s ease',
+          }}>
+            <GalleryImg
+              src={img.webUrl}
+              settings={settingsFor(i)}
+              aspectRatio="4/5"
+              style={{ width: '100%', height: '100%' }}
+            />
+          </div>
+        ))}
+        {total > 1 && (
+          <div style={{
+            position: 'absolute', bottom: 8, right: 10, zIndex: 2,
+            background: 'rgba(0,0,0,0.45)', borderRadius: 10,
+            padding: '2px 8px', fontSize: 10, color: '#fff',
+            letterSpacing: '0.05em',
+          }}>
+            {activeIdx + 1} / {total}
+          </div>
+        )}
+      </div>
+      {/* 다음 장 썸네일 (자동 갱신) */}
+      {thumbIndices.length > 0 && (
+        <div
+          className="ts-anim-item ts-anim-delay-2"
+          style={{ display: 'grid', gridTemplateColumns: `repeat(${thumbIndices.length},1fr)`, gap: 6 }}
+        >
+          {thumbIndices.map((imgIdx) => (
+            <div
+              key={images[imgIdx].id}
+              onClick={() => { onOpenLightbox?.(webUrls, imgIdx) }}
+              style={{ cursor: 'pointer' }}
+            >
+              <GalleryImg src={images[imgIdx].webUrl} settings={settingsFor(imgIdx)} aspectRatio="1/1" />
+            </div>
+          ))}
+        </div>
+      )}
+    </AnimatedSection>
+  )
+}
+
+/* ==========================================================================
+ * GalleryShowMore — V3/V4/V5 커스텀 레이아웃 + 사진 더보기 접기/펼치기
+ * showMoreRow=0 → 전체 표시, 1~N → 해당 행까지만 보이고 "사진 더보기" 버튼
+ * ========================================================================== */
+function GalleryShowMore({
+  instanceId,
+  rows,
+  showMoreRow,
+  v,
+  gap,
+  galleryEyebrow,
+  aspectForCount,
+  settingsFor,
+  keyFor,
+  validSrcs,
+  openLightbox,
+}: {
+  instanceId: string
+  rows: Array<{ count: number; items: Array<{ src: string | null; idx: number }> }>
+  showMoreRow: number
+  v: number
+  gap: number
+  galleryEyebrow: string
+  aspectForCount: (n: number) => string
+  settingsFor: (idx: number) => TheSimpleImageSettings | undefined
+  keyFor: (idx: number) => string
+  validSrcs: string[]
+  openLightbox: (srcs: string[], idx: number) => void
+}) {
+  const [expanded, setExpanded] = useState(false)
+  const hasFold = showMoreRow > 0 && rows.length > showMoreRow
+  const visibleRows = hasFold && !expanded ? rows.slice(0, showMoreRow) : rows
+  const hiddenCount = hasFold ? rows.slice(showMoreRow).reduce((sum, r) => sum + r.items.filter(i => i.src).length, 0) : 0
+
+  let imgCounter = 0
+  return (
+    <AnimatedSection className={`ts-sec ts-gallery ts-anim-gallery-v${v}`} key={instanceId}>
+      {galleryEyebrow && <div className="ts-eyebrow">{galleryEyebrow}</div>}
+      <div style={{ display: 'flex', flexDirection: 'column', gap }}>
+        {visibleRows.map((row, rowIdx) => (
+          <div
+            key={rowIdx}
+            style={{
+              display: 'grid',
+              gridTemplateColumns: `repeat(${row.count}, 1fr)`,
+              gap,
+            }}
+          >
+            {row.items.map((item) => {
+              const delay = imgCounter * 100
+              imgCounter++
+              return (
+                <div key={keyFor(item.idx)} className="ts-anim-item" style={{ animationDelay: `${delay}ms` }}>
+                  <GalleryImg
+                    src={item.src}
+                    settings={settingsFor(item.idx)}
+                    aspectRatio={aspectForCount(row.count)}
+                    onClick={item.src ? () => openLightbox(validSrcs, validSrcs.indexOf(item.src!)) : undefined}
+                  />
+                </div>
+              )
+            })}
+          </div>
+        ))}
+      </div>
+      {hasFold && (
+        <button
+          type="button"
+          onClick={() => setExpanded(!expanded)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+            width: '100%',
+            marginTop: 12,
+            padding: '10px 0',
+            border: '1px solid var(--ink, #333)',
+            borderRadius: 4,
+            background: 'transparent',
+            color: 'var(--ink, #333)',
+            fontFamily: 'var(--font-ko)',
+            fontSize: 12,
+            letterSpacing: '0.03em',
+            cursor: 'pointer',
+            opacity: 0.7,
+            transition: 'opacity 0.2s',
+          }}
+        >
+          {expanded ? '접기' : `사진 더보기 (+${hiddenCount})`}
+          <span style={{
+            display: 'inline-block',
+            transition: 'transform 0.3s',
+            transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+            fontSize: 10,
+          }}>
+            ▼
+          </span>
+        </button>
+      )}
+    </AnimatedSection>
+  )
+}
+
+/* ==========================================================================
+ * GalleryV2Slideshow — 풀 슬라이드쇼 자동 전환 (V2)
+ * 자동 스크롤 + 도트 인디케이터 + 좌우 화살표 네비게이션.
+ * ========================================================================== */
+function GalleryV2Slideshow({ images, galleryEyebrow, onOpenLightbox }: GalleryAutoSlideProps) {
+  const total = images.length
+  const [activeIdx, setActiveIdx] = useState(0)
+  const intervalRef = useRef<ReturnType<typeof setInterval>>(undefined)
+
+  const settingsFor = (i: number): TheSimpleImageSettings =>
+    images[i]?.settings ?? { scale: 1, positionX: 0, positionY: 0 }
+
+  const resetTimer = useCallback(() => {
+    clearInterval(intervalRef.current)
+    if (total > 1) {
+      intervalRef.current = setInterval(() => {
+        setActiveIdx(prev => (prev + 1) % total)
+      }, 3500)
+    }
+  }, [total])
+
+  useEffect(() => {
+    resetTimer()
+    return () => clearInterval(intervalRef.current)
+  }, [resetTimer])
+
+  useEffect(() => {
+    if (total > 0 && activeIdx >= total) setActiveIdx(0)
+  }, [total, activeIdx])
+
+  const goPrev = () => {
+    setActiveIdx(p => (p - 1 + total) % total)
+    resetTimer()
+  }
+  const goNext = () => {
+    setActiveIdx(p => (p + 1) % total)
+    resetTimer()
+  }
+
+  // placeholder
+  if (total === 0) {
+    return (
+      <AnimatedSection className="ts-sec ts-gallery ts-anim-gallery-v2">
+        {galleryEyebrow && <div className="ts-eyebrow">{galleryEyebrow}</div>}
+        <div style={{ aspectRatio: '4/5', background: '#eee' }} />
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginTop: 12 }}>
+          {[0,1,2].map(i => <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: i === 0 ? '#1a1a1a' : '#d4d4d4' }} />)}
+        </div>
+      </AnimatedSection>
+    )
+  }
+
+  const webUrls = images.map(img => img.webUrl).filter(Boolean) as string[]
+
+  return (
+    <AnimatedSection className="ts-sec ts-gallery ts-anim-gallery-v2">
+      {galleryEyebrow && <div className="ts-eyebrow">{galleryEyebrow}</div>}
+      {/* 무한 루프 페이드 슬라이드 + 화살표 */}
+      <div style={{ position: 'relative' }}>
+        <div
+          className="ts-anim-item ts-anim-delay-1"
+          style={{ position: 'relative', aspectRatio: '4/5', overflow: 'hidden', background: '#eee', cursor: 'pointer' }}
+          onClick={() => onOpenLightbox?.(webUrls, activeIdx)}
+        >
+          {images.map((img, i) => (
+            <div key={img.id} style={{
+              position: 'absolute', inset: 0,
+              opacity: i === activeIdx ? 1 : 0,
+              transition: 'opacity 0.8s ease',
+            }}>
+              <GalleryImg
+                src={img.webUrl}
+                settings={settingsFor(i)}
+                aspectRatio="4/5"
+                style={{ width: '100%', height: '100%' }}
+              />
+            </div>
+          ))}
+        </div>
+        {/* 좌우 화살표 */}
+        {total > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={goPrev}
+              aria-label="이전"
+              style={{
+                position: 'absolute', left: 4, top: '50%', transform: 'translateY(-50%)',
+                width: 28, height: 28, borderRadius: '50%',
+                background: 'rgba(255,255,255,0.65)', border: 'none',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 14, color: '#333', zIndex: 2,
+              }}
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              onClick={goNext}
+              aria-label="다음"
+              style={{
+                position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)',
+                width: 28, height: 28, borderRadius: '50%',
+                background: 'rgba(255,255,255,0.65)', border: 'none',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 14, color: '#333', zIndex: 2,
+              }}
+            >
+              ›
+            </button>
+          </>
+        )}
+      </div>
+      {/* 도트 인디케이터 */}
+      {total > 1 && (
+        <div
+          className="ts-anim-item ts-anim-delay-2"
+          style={{ display: 'flex', justifyContent: 'center', gap: 6, marginTop: 12 }}
+        >
+          {images.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => { setActiveIdx(i); resetTimer() }}
+              style={{
+                width: 6, height: 6, borderRadius: '50%', padding: 0, border: 'none',
+                background: i === activeIdx ? '#1a1a1a' : '#d4d4d4',
+                transition: 'background 0.3s', cursor: 'pointer',
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </AnimatedSection>
+  )
+}
+
+/* ==========================================================================
+ * CountingNumber — 0 → target 까지 숫자가 올라가는 카운터
+ * 화면에 보이는 순간 requestAnimationFrame 으로 카운팅 시작.
+ * easeOutCubic 으로 처음 빠르게, 끝에서 천천히.
+ * ========================================================================== */
+function CountingNumber({ target, className }: { target: number; className?: string }) {
+  const [ref, inView] = useInView<HTMLSpanElement>()
+  const [current, setCurrent] = useState(0)
+  const hasAnimated = useRef(false)
+
+  useEffect(() => {
+    if (!inView || hasAnimated.current) return
+    hasAnimated.current = true
+
+    const duration = 1600
+    const start = performance.now()
+
+    function tick(now: number) {
+      const elapsed = now - start
+      const progress = Math.min(elapsed / duration, 1)
+      const eased = 1 - Math.pow(1 - progress, 3) // easeOutCubic
+      setCurrent(Math.round(eased * target))
+      if (progress < 1) requestAnimationFrame(tick)
+    }
+    requestAnimationFrame(tick)
+  }, [inView, target])
+
+  // 목표와 동일한 자릿수로 패딩
+  const targetLen = String(target).length
+  const digits = String(current).padStart(targetLen, '0').split('')
+
+  return (
+    <span ref={ref} className={className}>
+      {digits.map((d, i) => (
+        <span key={i} className="ts-i5-n ts-count-digit">{d}</span>
+      ))}
+    </span>
+  )
+}
+
+/* ==========================================================================
+ * KakaoMapBox — 주소 기반 카카오맵 렌더링
+ * Geocoder로 주소→좌표 변환 후 지도 + 마커 표시.
+ * SDK 실패 시 회색 placeholder 표시.
+ * ========================================================================== */
+/* ==========================================================================
+ * YouTubeLite — 썸네일 클릭 시 재생 (다른 템플릿과 동일 패턴)
+ * ========================================================================== */
+function YouTubeLite({ videoId }: { videoId: string }) {
+  const [playing, setPlaying] = useState(false)
+  const [thumbErr, setThumbErr] = useState(false)
+
+  if (playing) {
+    return (
+      <div style={{ aspectRatio: '16/9', width: '100%' }}>
+        <iframe
+          src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          style={{ width: '100%', height: '100%', border: 'none' }}
+          title="YouTube video"
+        />
+      </div>
+    )
+  }
+
+  return (
+    <div
+      onClick={() => setPlaying(true)}
+      style={{ aspectRatio: '16/9', width: '100%', position: 'relative', cursor: 'pointer', background: '#000' }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={thumbErr
+          ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+          : `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+        onError={() => setThumbErr(true)}
+        alt=""
+        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+      />
+      {/* 재생 버튼 오버레이 */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <div
+          style={{
+            width: 56,
+            height: 56,
+            borderRadius: '50%',
+            background: 'rgba(0,0,0,0.55)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function KakaoMapBox({
+  address,
+  venueName,
+  aspectRatio = '16 / 10',
+  className = '',
+}: {
+  address: string
+  venueName?: string
+  aspectRatio?: string
+  className?: string
+}) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const mapRef = useRef<unknown>(null)
+  const [failed, setFailed] = useState(false)
+
+  useEffect(() => {
+    // 주소 변경 시 기존 맵 제거 후 재생성
+    if (mapRef.current) {
+      mapRef.current = null
+      if (containerRef.current) containerRef.current.innerHTML = ''
+    }
+    setFailed(false)
+    if (!address || !containerRef.current) return
+    let cancelled = false
+
+    loadKakaoMapSDK()
+      .then(() => {
+        if (cancelled || !containerRef.current) return
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const kakao = (window as any).kakao
+        if (!kakao?.maps) { setFailed(true); return }
+
+        const geocoder = new kakao.maps.services.Geocoder()
+        geocoder.addressSearch(address, (result: { x: string; y: string }[], status: string) => {
+          if (cancelled || !containerRef.current) return
+          if (status !== kakao.maps.services.Status.OK || !result[0]) {
+            // fallback: 키워드 검색
+            const places = new kakao.maps.services.Places()
+            const keyword = venueName ? `${venueName} ${address}` : address
+            places.keywordSearch(keyword, (pResult: { x: string; y: string }[], pStatus: string) => {
+              if (cancelled || !containerRef.current) return
+              if (pStatus !== kakao.maps.services.Status.OK || !pResult[0]) {
+                setFailed(true)
+                return
+              }
+              createMap(kakao, containerRef.current!, pResult[0].y, pResult[0].x)
+            })
+            return
+          }
+          createMap(kakao, containerRef.current!, result[0].y, result[0].x)
+        })
+      })
+      .catch(() => { if (!cancelled) setFailed(true) })
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    function createMap(kakao: any, el: HTMLDivElement, lat: string, lng: string) {
+      const pos = new kakao.maps.LatLng(parseFloat(lat), parseFloat(lng))
+      const map = new kakao.maps.Map(el, { center: pos, level: 3 })
+      new kakao.maps.Marker({ position: pos, map })
+      mapRef.current = map
+    }
+
+    return () => { cancelled = true }
+  }, [address, venueName])
+
+  if (failed || !address) {
+    return (
+      <div
+        className={`ts-ph ${className}`}
+        style={{ aspectRatio, background: 'linear-gradient(135deg, #e8e8e8 0%, #d4d4d4 100%)' }}
+      />
+    )
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      className={className}
+      style={{ aspectRatio, width: '100%', background: '#eee' }}
+    />
+  )
+}
+
+/* ==========================================================================
+ * AddressCopy — 주소 텍스트 + 📋 복사 버튼
+ * ========================================================================== */
+function AddressCopy({ address, className = '' }: { address: string; className?: string }) {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = useCallback(() => {
+    if (!address) return
+    navigator.clipboard.writeText(address).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    })
+  }, [address])
+
+  return (
+    <span className={`ts-addr-copy ${className}`}>
+      <span className="ts-addr-text">{address}</span>
+      <button type="button" className="ts-addr-btn" onClick={handleCopy} title="주소 복사">
+        {copied ? (
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+        ) : (
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+        )}
+      </button>
+    </span>
+  )
+}
+
+/* ==========================================================================
+ * GuestbookForm — 방명록 글쓰기 폼
+ * invitationId가 있으면 실제 API 호출, 없으면 시각적 표시만.
+ * ========================================================================== */
+function GuestbookForm({
+  invitationId,
+  onSubmitted,
+}: {
+  invitationId?: string
+  onSubmitted?: () => void
+}) {
+  const [name, setName] = useState('')
+  const [message, setMessage] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [done, setDone] = useState(false)
+
+  const handleSubmit = useCallback(async () => {
+    if (!name.trim() || !message.trim() || submitting) return
+    if (!invitationId) return // 에디터 프리뷰에서는 작동하지 않음
+    setSubmitting(true)
+    try {
+      const res = await fetch('/api/guestbook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          invitationId,
+          guestName: name.trim(),
+          message: message.trim(),
+        }),
+      })
+      if (res.ok) {
+        setName('')
+        setMessage('')
+        setDone(true)
+        setTimeout(() => setDone(false), 2000)
+        onSubmitted?.()
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setSubmitting(false)
+    }
+  }, [name, message, invitationId, submitting, onSubmitted])
+
+  return (
+    <div className="ts-gb-form">
+      <input
+        type="text"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="이름"
+        maxLength={50}
+        className="ts-gb-input"
+      />
+      <textarea
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        placeholder="축하 메시지를 남겨주세요"
+        maxLength={500}
+        rows={3}
+        className="ts-gb-textarea"
+      />
+      <button
+        type="button"
+        onClick={handleSubmit}
+        disabled={submitting || !name.trim() || !message.trim()}
+        className="ts-gb-submit"
+      >
+        {done ? '등록 완료!' : submitting ? '등록 중...' : '등록'}
+      </button>
+    </div>
+  )
+}
+
+/* ==========================================================================
+ * RsvpModal — 참석 의사 모달
+ * .ts-preview 안에 absolute로 배치되며, 현재 보이는 영역(스크롤 위치)에
+ * 모달을 표시. 모바일 키보드에 의해 필드가 가려지지 않도록 visualViewport 대응.
+ * ========================================================================== */
+function RsvpModal({
+  open,
+  onClose,
+  invitationId,
+}: {
+  open: boolean
+  onClose: () => void
+  invitationId?: string
+}) {
+  const [name, setName] = useState('')
+  const [attendance, setAttendance] = useState<'attending' | 'not_attending' | 'undecided'>('attending')
+  const [count, setCount] = useState(1)
+  const [message, setMessage] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [done, setDone] = useState(false)
+  const overlayRef = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
+
+  useContainedOverlay(overlayRef, open)
+
+  // 모바일 키보드 대응 + body 스크롤 잠금
+  useEffect(() => {
+    if (!open) return
+    // body 스크롤 잠금
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    const vv = window.visualViewport
+    if (vv) {
+      const handleVVResize = () => {
+        if (!contentRef.current) return
+        contentRef.current.style.maxHeight = `${(vv.height ?? window.innerHeight) - 40}px`
+      }
+      vv.addEventListener('resize', handleVVResize)
+      handleVVResize()
+      return () => {
+        document.body.style.overflow = prev
+        vv.removeEventListener('resize', handleVVResize)
+      }
+    }
+
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [open])
+
+  const handleSubmit = useCallback(async () => {
+    if (!name.trim() || submitting) return
+    if (!invitationId) return
+    setSubmitting(true)
+    try {
+      const res = await fetch('/api/rsvp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          invitationId,
+          guestName: name.trim(),
+          attendance,
+          guestCount: attendance === 'attending' ? count : 0,
+          message: message.trim() || undefined,
+        }),
+      })
+      if (res.ok) {
+        setDone(true)
+        setTimeout(() => {
+          onClose()
+          setDone(false)
+          setName('')
+          setAttendance('attending')
+          setCount(1)
+          setMessage('')
+        }, 1500)
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setSubmitting(false)
+    }
+  }, [name, attendance, count, message, invitationId, submitting, onClose])
+
+  if (!open) return null
+
+  return (
+    <div
+      ref={overlayRef}
+      className="ts-rsvp-modal-overlay"
+      onClick={(e) => { if (e.target === overlayRef.current) onClose() }}
+    >
+      <div ref={contentRef} className="ts-rsvp-modal">
+        <button type="button" className="ts-rsvp-modal-close" onClick={onClose}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+
+        {done ? (
+          <div className="ts-rsvp-modal-done">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent, #888)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            <div style={{ marginTop: 12, fontFamily: 'var(--font-ko)', fontSize: 14, color: 'var(--ink)' }}>
+              감사합니다!
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="ts-rsvp-modal-title">참석 의사 전달</div>
+            <div className="ts-rsvp-modal-fields">
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="이름"
+                maxLength={50}
+                className="ts-rsvp-modal-input"
+              />
+              <div className="ts-rsvp-modal-toggle ts-rsvp-modal-toggle--3">
+                <button
+                  type="button"
+                  className={`ts-rsvp-modal-opt ${attendance === 'attending' ? 'active' : ''}`}
+                  onClick={() => setAttendance('attending')}
+                >
+                  참석
+                </button>
+                <button
+                  type="button"
+                  className={`ts-rsvp-modal-opt ${attendance === 'undecided' ? 'active' : ''}`}
+                  onClick={() => setAttendance('undecided')}
+                >
+                  미정
+                </button>
+                <button
+                  type="button"
+                  className={`ts-rsvp-modal-opt ${attendance === 'not_attending' ? 'active' : ''}`}
+                  onClick={() => setAttendance('not_attending')}
+                >
+                  불참
+                </button>
+              </div>
+              {attendance === 'attending' && (
+                <div className="ts-rsvp-modal-count">
+                  <span style={{ fontFamily: 'var(--font-ko)', fontSize: 13, color: 'var(--ink)' }}>참석 인원</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <button
+                      type="button"
+                      className="ts-rsvp-modal-cnt-btn"
+                      onClick={() => setCount((c) => Math.max(1, c - 1))}
+                    >
+                      -
+                    </button>
+                    <span style={{ fontFamily: 'var(--font-ko)', fontSize: 16, fontWeight: 600, minWidth: 20, textAlign: 'center' }}>{count}</span>
+                    <button
+                      type="button"
+                      className="ts-rsvp-modal-cnt-btn"
+                      onClick={() => setCount((c) => Math.min(10, c + 1))}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              )}
+              <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="축하 메시지 (선택)"
+                maxLength={500}
+                rows={2}
+                className="ts-rsvp-modal-textarea"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={submitting || !name.trim()}
+              className="ts-rsvp-modal-submit"
+            >
+              {submitting ? '전송 중...' : '전송하기'}
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/**
+ * THE SIMPLE 청첩장 프리뷰
+ *
+ * 각 섹션 렌더러는 `variant` 번호를 받아 UI 대안을 분기합니다.
+ * 아직 포팅되지 않은 variant는 자동으로 V1 JSX로 폴백합니다.
+ */
+export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePreviewProps) {
+  const [rsvpOpen, setRsvpOpen] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState(0)
+  const [lightboxImages, setLightboxImages] = useState<string[]>([])
+
+  const openLightbox = useCallback((images: string[], index: number) => {
+    setLightboxImages(images)
+    setLightboxIndex(index)
+    setLightboxOpen(true)
+  }, [])
+
+  const weddingMeta = useMemo(() => {
+    const date = data.wedding.date ? new Date(data.wedding.date) : new Date('2026-05-16')
+    const y = date.getFullYear()
+    const m = date.getMonth() + 1
+    const d = date.getDate()
+    const monthName = date.toLocaleString('en-US', { month: 'long' }).toUpperCase()
+    const weekday = date.toLocaleString('ko-KR', { weekday: 'long' })
+    return { y, m, d, monthName, weekday }
+  }, [data.wedding.date])
+
+  // Variant 1 · 달력 생성 (전체 월)
+  const calendar = useMemo(() => {
+    const date = data.wedding.date ? new Date(data.wedding.date) : new Date('2026-05-16')
+    const year = date.getFullYear()
+    const month = date.getMonth()
+    const target = date.getDate()
+    const firstDay = new Date(year, month, 1).getDay()
+    const daysInMonth = new Date(year, month + 1, 0).getDate()
+    const cells: { day: number | null; pick: boolean }[] = []
+    for (let i = 0; i < firstDay; i++) cells.push({ day: null, pick: false })
+    for (let d = 1; d <= daysInMonth; d++) cells.push({ day: d, pick: d === target })
+    while (cells.length % 7 !== 0) cells.push({ day: null, pick: false })
+    const rows: { day: number | null; pick: boolean }[][] = []
+    for (let i = 0; i < cells.length; i += 7) rows.push(cells.slice(i, i + 7))
+    return rows
+  }, [data.wedding.date])
+
+  const groomName = data.groom.name || '김민준'
+  const brideName = data.bride.name || '이서연'
+  const groomNameEn = data.groom.nameEn || ''
+  const brideNameEn = data.bride.nameEn || ''
+  const venueName = data.wedding.venue.name || '그랜드 하얏트 서울'
+  const venueHall = data.wedding.venue.hall || ''
+  const venueAddress = data.wedding.venue.address || '서울특별시 용산구 소월로 322'
+  const intro = data.sections.intro
+  const greeting = data.sections.greeting
+  const couple = data.sections.couple
+  const info = data.sections.info
+  const direction = data.sections.direction
+  const interview = data.sections.interview
+  const guide = data.sections.guide
+  const video = data.sections.video
+  const account = data.sections.account
+  const rsvp = data.sections.rsvp
+  const thanks = data.sections.thanks
+
+  // 섹션 렌더러 매핑 — variant 번호에 따라 분기
+  // 포팅되지 않은 variant는 V1 JSX로 자동 폴백
+  // 두 번째 인자는 섹션 인스턴스 ID (예: 'gallery', 'gallery-1734567890')
+  const renderers: Record<string, (variant: number, instanceId: string) => React.ReactNode> = {
+    intro: (v) => {
+      // 공통 데이터 포맷
+      const mm = String(weddingMeta.m).padStart(2, '0')
+      const dd = String(weddingMeta.d).padStart(2, '0')
+      const yy = weddingMeta.y
+      const monthUpper = (weddingMeta.monthName || '').toUpperCase()
+      const weekdayUpper = (weddingMeta.weekday || '').toUpperCase()
+      const timeDisplay = data.wedding.timeDisplay || '오후 1시'
+      const initials = `${groomName.slice(0, 1)}&${brideName.slice(0, 1)}`
+      const showNames = intro.showNames || 'korean'
+      const textPos = intro.textPosition || 'center'
+      const textPosCls = textPos !== 'center' ? ` ts-text-${textPos}` : ''
+
+      // IntroBg 헬퍼 — 사진 or 블랙 배경 렌더링 (V1~V5 공통)
+      const introBg = () => {
+        const photo = intro.photo
+        if (photo?.url) {
+          return <CropBg src={photo.url} settings={photo.settings} className="ts-in-bg" style={{ position: 'absolute', inset: 0 }} />
+        }
+        return <div className="ts-in-bg ts-in-bg--black" />
+      }
+
+      // 이름 렌더링 헬퍼 — showNames 값에 따라 렌더
+      // mode: 'stack' (줄바꿈), 'inline' (한 줄)
+      const renderNames = (mode: 'stack' | 'inline' = 'stack') => {
+        if (showNames === 'english') {
+          const gEn = groomNameEn || groomName
+          const bEn = brideNameEn || brideName
+          return mode === 'stack' ? <>{gEn}<br />&amp; {bEn}</> : <>{gEn} &amp; {bEn}</>
+        }
+        if (showNames === 'custom') {
+          const custom = intro.customNames || `${groomName} & ${brideName}`
+          return <>{custom}</>
+        }
+        // korean (기본)
+        return mode === 'stack' ? <>{groomName}<br />&amp; {brideName}</> : <>{groomName} &amp; {brideName}</>
+      }
+
+      // 한글 이름일 때 폰트 크기 축소용 클래스
+      const namesCls = showNames === 'english' ? '' : ' ts-names-ko'
+
+      // V1 · Editorial Cover (photo background)
+      if (v === 1) {
+        const photo = intro.photo
+        return (
+          <AnimatedSection className="ts-sec" key="intro" style={{ padding: 0 }}>
+            <div className={`ts-in1${textPosCls}`}>
+              {photo?.url
+                ? <CropBg src={photo.url} settings={photo.settings} className={`bg ${skipIntroBgFade ? 'ts-in-anim-cover' : 'ts-in-anim'}`} style={{ position: 'absolute', inset: 0 }} />
+                : <div className={`bg ${skipIntroBgFade ? 'ts-in-anim-cover' : 'ts-in-anim'}`} />
+              }
+              <div className="content">
+                <div className="top ts-in-anim">
+                  <div>
+                    Vol. I
+                    <br />
+                    <b>MMXXVI</b>
+                  </div>
+                  <div className="r">
+                    <b>Wedding</b>
+                    Invitation
+                  </div>
+                </div>
+                <div className="center">
+                  <div className="kicker ts-in-anim">{intro.eyebrow || 'The Simple'}</div>
+                  <div className="rule ts-in-anim" />
+                  <h3 className={`ts-in-anim${namesCls}`}>
+                    {renderNames('stack')}
+                  </h3>
+                  <div className="sub ts-in-anim">
+                    {yy} · {mm} · {dd}
+                  </div>
+                </div>
+                <div className="bottom ts-in-anim">
+                  <div>
+                    <b>Save the Date</b>
+                    {weekdayUpper} · {timeDisplay}
+                  </div>
+                  <div className="r">
+                    <b>{venueName}</b>
+                    {venueHall && venueHall}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </AnimatedSection>
+        )
+      }
+
+      // V2 · Cinematic Fade (다크 배경)
+      if (v === 2) {
+        const splitBottom = textPos === 'top'
+        return (
+          <AnimatedSection className="ts-sec" key="intro" style={{ padding: 0 }}>
+            <div className={`ts-in2${textPosCls}`}>
+              {introBg()}
+              <div className="ts-in2-content">
+                <div className="eng ts-in-anim">{intro.eyebrow || 'We Invite You'}</div>
+                <h3 className={`ts-in-anim${namesCls}`}>
+                  {renderNames('stack')}
+                </h3>
+                {!splitBottom && (
+                  <>
+                    <div className="rule ts-in-anim" />
+                    <div className="date ts-in-anim">{yy} · {mm} · {dd}</div>
+                    <div className="day ts-in-anim">{weekdayUpper} · {timeDisplay}</div>
+                  </>
+                )}
+              </div>
+              {splitBottom && (
+                <div className="ts-in2-bottom ts-in-anim">
+                  <div className="date">{yy} · {mm} · {dd}</div>
+                  <div className="day">{weekdayUpper} · {timeDisplay}</div>
+                </div>
+              )}
+            </div>
+          </AnimatedSection>
+        )
+      }
+
+      // V3 · Minimal Frame (다크 배경 + 화이트 프레임)
+      if (v === 3) {
+        return (
+          <AnimatedSection className="ts-sec" key="intro" style={{ padding: 0 }}>
+            <div className={`ts-in3${textPosCls}`}>
+              {introBg()}
+              <div className="ts-in3-frame ts-in-anim">
+                <div className="ts-in3-inner">
+                  <div className="eng ts-in-child">{intro.eyebrow || 'Save the Date'}</div>
+                  <h3 className={`ts-in-child${namesCls}`}>
+                    {renderNames('inline')}
+                  </h3>
+                  <div className="date ts-in-child">
+                    {monthUpper} · {dd} · {yy}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </AnimatedSection>
+        )
+      }
+
+      // V4 · Arch Doorway (아치 문)
+      if (v === 4) {
+        return (
+          <AnimatedSection className="ts-sec" key="intro" style={{ padding: 0 }}>
+            <div className="ts-in4">
+              <div className="ts-in4-gate ts-in-anim">
+                {introBg()}
+                <div className="ts-in4-gate-overlay" />
+                <div className="ts-in4-gate-text">
+                  <div className="eyebrow ts-in-anim">{intro.eyebrow || 'Save the Date'}</div>
+                  <div className={`names ts-in-anim${namesCls}`}>
+                    {renderNames('stack')}
+                  </div>
+                  <div className="date ts-in-anim">
+                    {monthUpper} · {dd} · {yy}
+                  </div>
+                </div>
+              </div>
+              <div className="ts-in4-below">
+                <div className="venue ts-in-anim">{venueName}{venueHall && ` · ${venueHall}`}</div>
+              </div>
+            </div>
+          </AnimatedSection>
+        )
+      }
+
+      // V5 · Editorial Giant Date (에디토리얼)
+      if (v === 5) {
+        const digits = dd.split('')
+        const splitBottom5 = textPos === 'top'
+        return (
+          <AnimatedSection className="ts-sec" key="intro" style={{ padding: 0 }}>
+            <div className={`ts-in5${textPosCls}`}>
+              {introBg()}
+              <div className="ts-in5-top-bar ts-in-anim">
+                <span>청첩장 &mdash; No. 001</span>
+                <span>{yy}년 {weddingMeta.m}월</span>
+              </div>
+              <div className="ts-in5-content">
+                <div className="big-number ts-in-anim">
+                  {digits.map((d, i) => <span key={i}>{d}</span>)}
+                </div>
+                <div className="ts-in5-title-block">
+                  <div className="eyebrow ts-in-anim">{intro.eyebrow || 'Wedding Ceremony'}</div>
+                  <div className={`names ts-in-anim${namesCls}`}>{renderNames('inline')}</div>
+                  {!splitBottom5 && (
+                    <>
+                      <div className="divider ts-in-anim" />
+                      <div className="venue-info ts-in-anim">
+                        {weekdayUpper} · {timeDisplay}<br />
+                        {venueName}{venueHall && ` · ${venueHall}`}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+              {splitBottom5 && (
+                <div className="ts-in5-bottom-info ts-in-anim">
+                  <div className="venue-info">
+                    {weekdayUpper} · {timeDisplay}
+                  </div>
+                  <div className="venue-name">
+                    {venueName}{venueHall && ` · ${venueHall}`}
+                  </div>
+                </div>
+              )}
+              <div className="ts-in5-bottom-bar ts-in-anim">
+                <div className="open-label">
+                  열기
+                  <div className="arrow-line" />
+                </div>
+                <div className="page-num">01 / 01</div>
+              </div>
+            </div>
+          </AnimatedSection>
+        )
+      }
+
+      // V6 · Ticket Band (티켓)
+      if (v === 6) {
+        const tickerItems = [
+          intro.eyebrow || 'Save the Date',
+          `${monthUpper} ${dd}, ${yy}`,
+          renderNames('inline'),
+          venueName,
+        ]
+        const tickerBottom = [
+          weekdayUpper,
+          venueHall || 'Grand Ballroom',
+          timeDisplay,
+          `${groomName} & ${brideName}`,
+        ]
+        return (
+          <AnimatedSection className="ts-sec" key="intro" style={{ padding: 0 }}>
+            <div className="ts-in6">
+              {introBg()}
+              <div className="ts-in6-band ts-in-anim">
+                <div className="ts-in6-band-inner">
+                  {tickerItems.map((item, i) => <span key={i}>{item}</span>)}
+                  {tickerItems.map((item, i) => <span key={`dup-${i}`}>{item}</span>)}
+                </div>
+              </div>
+              <div className="ts-in6-center">
+                <div className="eyebrow ts-in-anim">{intro.eyebrow || 'Wedding Invitation'}</div>
+                <div className={`names ts-in-anim${namesCls}`}>{renderNames('inline')}</div>
+                <div className="rule ts-in-anim" />
+                <div className="date ts-in-anim">
+                  {yy} · {mm} · {dd}
+                </div>
+              </div>
+              <div className="ts-in6-band ts-in-anim">
+                <div className="ts-in6-band-inner reverse">
+                  {tickerBottom.map((item, i) => <span key={i}>{item}</span>)}
+                  {tickerBottom.map((item, i) => <span key={`dup-${i}`}>{item}</span>)}
+                </div>
+              </div>
+            </div>
+          </AnimatedSection>
+        )
+      }
+
+      // V7 · Crosshair Grid (그리드)
+      if (v === 7) {
+        return (
+          <AnimatedSection className="ts-sec" key="intro" style={{ padding: 0 }}>
+            <div className={`ts-in7${textPosCls}`}>
+              {introBg()}
+              <div className="h-line ts-in-anim" />
+              <div className="h-line ts-in-anim" />
+              <div className="v-line ts-in-anim" />
+              <div className="v-line ts-in-anim" />
+              <div className="corner corner--tl ts-in-anim" />
+              <div className="corner corner--tr ts-in-anim" />
+              <div className="corner corner--bl ts-in-anim" />
+              <div className="corner corner--br ts-in-anim" />
+              <div className="ts-in7-content">
+                <div className="tag ts-in-anim">No. 001 — {intro.eyebrow || 'Wedding Invitation'}</div>
+                <div className={`names ts-in-anim${namesCls}`}>{renderNames('inline')}</div>
+                <div className="date ts-in-anim">{monthUpper} {dd}, {yy} · {weekdayUpper}</div>
+              </div>
+            </div>
+          </AnimatedSection>
+        )
+      }
+
+      // V8 · Monogram Seal (실) — 항상 영문 이니셜
+      if (v === 8) {
+        const gEn = groomNameEn || groomName
+        const bEn = brideNameEn || brideName
+        const enInitials = `${gEn.slice(0, 1).toUpperCase()}&${bEn.slice(0, 1).toUpperCase()}`
+        return (
+          <AnimatedSection className="ts-sec" key="intro" style={{ padding: 0 }}>
+            <div className="ts-in8">
+              <div className="seal ts-in-anim">
+                <div className="monogram">{enInitials}</div>
+              </div>
+              <div className="ts-in8-below">
+                <div className="names ts-in-anim">{gEn.toUpperCase()} &amp; {bEn.toUpperCase()}</div>
+                <div className="rule ts-in-anim" />
+                <div className="date ts-in-anim">{monthUpper} · {dd} · {yy}</div>
+                <div className="venue ts-in-anim">{venueName}</div>
+              </div>
+            </div>
+          </AnimatedSection>
+        )
+      }
+
+      // V9 · Horizontal Rule Stack (룰스택)
+      if (v === 9) {
+        return (
+          <AnimatedSection className="ts-sec" key="intro" style={{ padding: 0 }}>
+            <div className={`ts-in9${textPosCls}`}>
+              {introBg()}
+              <div className="ts-in9-stack">
+                <div className="h-line ts-in-anim" />
+                <div className="h-row eyebrow ts-in-anim">{intro.eyebrow || 'Wedding Invitation'}</div>
+                <div className="h-line ts-in-anim" />
+                <div className={`h-row names ts-in-anim${namesCls}`}>
+                  {renderNames('stack')}
+                </div>
+                <div className="h-line ts-in-anim" />
+                <div className="h-row meta ts-in-anim">
+                  {yy} · {mm} · {dd} · {weekdayUpper}
+                  <span>{venueName}{venueHall && ` · ${venueHall}`}</span>
+                </div>
+                <div className="h-line ts-in-anim" />
+              </div>
+            </div>
+          </AnimatedSection>
+        )
+      }
+
+      // Fallback to V1
+      return null
+    },
+
+    greeting: (v) => {
+      // V2 · Karaoke Fill (회색→검정 채워지기, 줄 단위 stagger)
+      if (v === 2) {
+        const bodyLines = (greeting.body || '').split('\n').filter((l) => l.trim())
+        const ruleDelay = 600 + bodyLines.length * 400
+        return (
+          <AnimatedSection className="ts-sec ts-greet ts-greet--v2 ts-anim-greet-v2" key="greeting" style={{ textAlign: 'left' }}>
+            <div className="ts-greet-label ts-anim-item">{greeting.label}</div>
+            <div className="ts-greet-title ts-anim-item" style={{ marginTop: 14, marginBottom: 24 }}>
+              {greeting.title}
+            </div>
+            {bodyLines.map((line, i) => (
+              <div
+                className="ts-g2-karaoke"
+                key={i}
+                style={{ animationDelay: `${600 + i * 400}ms` }}
+              >
+                {line}
+              </div>
+            ))}
+            <div
+              className="ts-greet-rule ts-anim-rule"
+              style={{ marginLeft: 0, marginTop: 28, animationDelay: `${ruleDelay}ms` }}
+            />
+          </AnimatedSection>
+        )
+      }
+      // V3 · 인용 블록 (상하 라인 + 이탤릭)
+      if (v === 3) {
+        return (
+          <AnimatedSection className="ts-sec ts-greet ts-greet--v3 ts-anim-greet-v3" key="greeting">
+            <div className="ts-g3-rule-top ts-anim-item" />
+            <blockquote className="ts-g3-quote ts-anim-item">
+              {greeting.body}
+              <span className="ts-g3-attr ts-anim-item">— {greeting.label || 'INVITATION'} —</span>
+            </blockquote>
+            <div className="ts-g3-rule-bot ts-anim-item" />
+          </AnimatedSection>
+        )
+      }
+      // V4 · 프레임 박스
+      if (v === 4) {
+        return (
+          <AnimatedSection className="ts-sec ts-greet ts-greet--v4 ts-anim-greet-v4" key="greeting">
+            <div className="ts-g4-frame ts-anim-card">
+              <div
+                className="ts-greet-title ts-anim-item"
+                style={{ fontFamily: 'var(--font-display)', fontSize: 22, letterSpacing: '0.12em', marginBottom: 14 }}
+              >
+                {greeting.title || 'SAVE THE DATE'}
+              </div>
+              <p className="ts-greet-body ts-anim-item" style={{ fontSize: 13, lineHeight: 2 }}>
+                {greeting.body}
+              </p>
+              <div
+                className="ts-anim-item"
+                style={{
+                  marginTop: 18,
+                  fontFamily: 'var(--font-ko)',
+                  fontSize: 13,
+                  color: 'var(--mute)',
+                }}
+              >
+                {groomName} · {brideName}
+              </div>
+            </div>
+          </AnimatedSection>
+        )
+      }
+      // V5 · Vertical Rule (좌측 세로선 + 우측 텍스트)
+      if (v === 5) {
+        return (
+          <AnimatedSection
+            className="ts-sec ts-greet ts-greet--v5 ts-anim-greet-v5"
+            key="greeting"
+          >
+            <div className="ts-g5-bar ts-anim-vline" />
+            <div className="ts-g5-txt">
+              <div className="ts-greet-label ts-anim-item" style={{ textAlign: 'left' }}>
+                {greeting.label || 'WE INVITE YOU'}
+              </div>
+              <div
+                className="ts-greet-title ts-anim-item"
+                style={{ textAlign: 'left', fontSize: 17, lineHeight: 1.9, margin: '10px 0 14px' }}
+              >
+                {greeting.title}
+              </div>
+              <p
+                className="ts-greet-body ts-anim-item"
+                style={{ textAlign: 'left', fontSize: 13, lineHeight: 2 }}
+              >
+                {greeting.body}
+              </p>
+            </div>
+          </AnimatedSection>
+        )
+      }
+      // V1 (default · classic centered)
+      return (
+        <AnimatedSection className="ts-sec ts-greet ts-anim-greet-v1" key="greeting">
+          <div className="ts-greet-label ts-anim-item">{greeting.label}</div>
+          <div className="ts-greet-title ts-anim-item">{greeting.title}</div>
+          <p className="ts-greet-body ts-anim-item">{greeting.body}</p>
+          <div className="ts-greet-rule ts-anim-item" />
+        </AnimatedSection>
+      )
+    },
+
+    couple: (v) => {
+      // 태그 렌더 헬퍼 (V3 제외 모든 variant에서 사용)
+      const renderTags = (tags?: string[], variant?: string, align?: 'left' | 'right' | 'center') => {
+        if (!tags || tags.length === 0) return null
+        const cls = variant ? `ts-c-tags ts-c-tags--${variant}` : 'ts-c-tags'
+        const st = align ? { justifyContent: align === 'right' ? 'flex-end' : align === 'center' ? 'center' : 'flex-start' } : undefined
+        return (
+          <div className={cls} style={st}>
+            {tags.map((tag, ti) => (
+              <span key={ti}>{tag.startsWith('#') ? tag : `#${tag}`}</span>
+            ))}
+          </div>
+        )
+      }
+
+      // V2 · 세로 스택 · 큰 포토 프레임
+      if (v === 2) {
+        return (
+          <AnimatedSection className="ts-sec ts-couple ts-couple--v2 ts-anim-couple-v2" key="couple">
+            <div className="ts-eyebrow">{couple.eyebrow}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+              {[
+                { role: couple.groom.role, name: groomName, bio: couple.groom.bio, photos: getPhotos(couple.groom), tags: couple.groom.tags },
+                { role: couple.bride.role, name: brideName, bio: couple.bride.bio, photos: getPhotos(couple.bride), tags: couple.bride.tags },
+              ].map((p, i) => (
+                <div
+                  key={i}
+                  className={`ts-anim-row ts-anim-delay-${i + 1}`}
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '88px 1fr',
+                    gap: 18,
+                    alignItems: 'center',
+                  }}
+                >
+                  <PhotoSlideBox photos={p.photos} shape="circle" size={88} delay={i * 500} />
+                  <div style={{ textAlign: 'left' }}>
+                    <div className="ts-couple-role" style={{ marginBottom: 4 }}>{p.role}</div>
+                    <div className="ts-couple-name" style={{ fontSize: 18 }}>{p.name}</div>
+                    <p className="ts-couple-bio" style={{ textAlign: 'left', maxWidth: '100%', marginTop: 6 }}>{p.bio}</p>
+                    {renderTags(p.tags, 'v2', 'left')}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </AnimatedSection>
+        )
+      }
+      // V3 · 오버랩 포트레이트 (사진 겹침 + 하단 이름/bio — 태그 없음)
+      if (v === 3) {
+        return (
+          <AnimatedSection className="ts-sec ts-couple ts-couple--v3 ts-anim-couple-v3" key="couple">
+            <div className="ts-eyebrow">{couple.eyebrow}</div>
+            <div className="ts-c3-photos">
+              <div className="ts-c3-photo ts-c3-photo--left ts-anim-photo-l">
+                <PhotoSlideBox photos={getPhotos(couple.groom)} shape="portrait" size="100%" rounded={4} delay={0} />
+              </div>
+              <div className="ts-c3-photo ts-c3-photo--right ts-anim-photo-r">
+                <PhotoSlideBox photos={getPhotos(couple.bride)} shape="portrait" size="100%" rounded={4} delay={500} />
+              </div>
+            </div>
+            <div className="ts-c3-names ts-anim-item">
+              <span className="ts-c3-name">{groomName}</span>
+              <span className="ts-c3-amp">&amp;</span>
+              <span className="ts-c3-name">{brideName}</span>
+            </div>
+            {(couple.groom.bio || couple.bride.bio) && (
+              <div className="ts-c3-bio ts-anim-item">
+                {couple.groom.bio && <p>{couple.groom.bio}</p>}
+                {couple.bride.bio && <p>{couple.bride.bio}</p>}
+              </div>
+            )}
+          </AnimatedSection>
+        )
+      }
+      // V4 · 카드 그리드 (박스 + 상단 풀 3:4 사진)
+      if (v === 4) {
+        return (
+          <AnimatedSection className="ts-sec ts-couple ts-couple--v4 ts-anim-couple-v4" key="couple">
+            <div className="ts-eyebrow">{couple.eyebrow}</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {[
+                { role: couple.groom.role, name: groomName, bio: couple.groom.bio, photos: getPhotos(couple.groom), tags: couple.groom.tags },
+                { role: couple.bride.role, name: brideName, bio: couple.bride.bio, photos: getPhotos(couple.bride), tags: couple.bride.tags },
+              ].map((p, i) => (
+                <div
+                  key={i}
+                  className={`ts-anim-card ts-anim-delay-${i + 1}`}
+                  style={{ padding: 0, textAlign: 'center', overflow: 'hidden' }}
+                >
+                  <PhotoSlideBox photos={p.photos} shape="portrait" size="100%" rounded={0} delay={i * 500} />
+                  <div style={{ padding: '14px 12px 18px' }}>
+                    <div className="ts-couple-role">{p.role}</div>
+                    <div className="ts-couple-name" style={{ marginTop: 2 }}>{p.name}</div>
+                    <p className="ts-couple-bio" style={{ margin: '8px auto 0', fontSize: 11 }}>{p.bio}</p>
+                    {renderTags(p.tags, 'v4', 'center')}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </AnimatedSection>
+        )
+      }
+      // V5 · 좌우 분할 + 센터 라인
+      if (v === 5) {
+        return (
+          <AnimatedSection className="ts-sec ts-couple ts-couple--v5 ts-anim-couple-v5" key="couple">
+            <div className="ts-eyebrow">{couple.eyebrow}</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1px 1fr', alignItems: 'start', gap: 18 }}>
+              {/* 신랑 */}
+              <div className="ts-anim-left" style={{ textAlign: 'right', paddingRight: 4 }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}>
+                  <PhotoSlideBox photos={getPhotos(couple.groom)} shape="square" size={100} delay={0} />
+                </div>
+                <div className="ts-couple-role">{couple.groom.role}</div>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: 20, lineHeight: 1.2, margin: '4px 0' }}>{groomName}</div>
+                <p className="ts-couple-bio" style={{ textAlign: 'right', maxWidth: '100%', marginLeft: 'auto', fontSize: 11 }}>{couple.groom.bio}</p>
+                {renderTags(couple.groom.tags, 'v5', 'right')}
+              </div>
+              {/* 세로선 */}
+              <div className="ts-anim-vline" style={{ background: 'var(--ink)', width: 1, minHeight: 180, opacity: 0.3 }} />
+              {/* 신부 */}
+              <div className="ts-anim-right" style={{ textAlign: 'left', paddingLeft: 4 }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 10 }}>
+                  <PhotoSlideBox photos={getPhotos(couple.bride)} shape="square" size={100} delay={500} />
+                </div>
+                <div className="ts-couple-role">{couple.bride.role}</div>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: 20, lineHeight: 1.2, margin: '4px 0' }}>{brideName}</div>
+                <p className="ts-couple-bio" style={{ textAlign: 'left', maxWidth: '100%', fontSize: 11 }}>{couple.bride.bio}</p>
+                {renderTags(couple.bride.tags, 'v5', 'left')}
+              </div>
+            </div>
+          </AnimatedSection>
+        )
+      }
+      // V1 (default) · 좌우 원형 아바타 + & + 이름
+      return (
+        <AnimatedSection className="ts-sec ts-couple ts-anim-couple-v1" key="couple">
+          <div className="ts-eyebrow">{couple.eyebrow}</div>
+          <div className="ts-couple-grid">
+            <div className="ts-couple-cell ts-anim-left">
+              <PhotoSlideBox photos={getPhotos(couple.groom)} shape="arch" size={120} className="ts-couple-avatar" delay={0} />
+              <div className="ts-couple-role">{couple.groom.role}</div>
+              <div className="ts-couple-name">{groomName}</div>
+              <p className="ts-couple-bio">{couple.groom.bio}</p>
+              {renderTags(couple.groom.tags, 'v1', 'center')}
+            </div>
+            <div className="ts-couple-amp ts-anim-amp">&amp;</div>
+            <div className="ts-couple-cell ts-anim-right">
+              <PhotoSlideBox photos={getPhotos(couple.bride)} shape="arch" size={120} className="ts-couple-avatar" delay={500} />
+              <div className="ts-couple-role">{couple.bride.role}</div>
+              <div className="ts-couple-name">{brideName}</div>
+              <p className="ts-couple-bio">{couple.bride.bio}</p>
+              {renderTags(couple.bride.tags, 'v1', 'center')}
+            </div>
+          </div>
+        </AnimatedSection>
+      )
+    },
+
+    info: (v) => {
+      const timeDisplay = data.wedding.timeDisplay || '오후 1시'
+
+      // V2 · Big Date (큰 날짜 + 메타 그리드)
+      if (v === 2) {
+        const dayStr = String(weddingMeta.d).padStart(2, '0')
+        return (
+          <AnimatedSection className="ts-sec ts-info ts-anim-info-v2" key="info">
+            <div className="ts-i2">
+              <div className="ts-i2-top ts-anim-item">{weddingMeta.y}. {String(weddingMeta.m).padStart(2, '0')}</div>
+              <div className="ts-i2-day ts-anim-item">
+                {dayStr.split('').map((ch, i) => (
+                  <span key={i} className="ts-digit" style={{ animationDelay: `${280 + i * 120}ms` }}>{ch}</span>
+                ))}
+              </div>
+              <div className="ts-i2-bot ts-anim-item">{weddingMeta.weekday}</div>
+              <div className="ts-i2-divider ts-anim-item" />
+              <div className="ts-i2-meta ts-anim-item">
+                <div><b>TIME</b>{timeDisplay}</div>
+                <div><b>PLACE</b>{venueName}</div>
+                {venueHall && <div><b>HALL</b>{venueHall}</div>}
+              </div>
+            </div>
+          </AnimatedSection>
+        )
+      }
+
+      // V3 · Week Strip (주간 캘린더 스트립)
+      if (v === 3) {
+        // 예식일이 속한 주(일~토) 추출
+        const wDate = data.wedding.date ? new Date(data.wedding.date) : new Date('2026-05-16')
+        const dayOfWeek = wDate.getDay()
+        const weekStart = new Date(wDate)
+        weekStart.setDate(wDate.getDate() - dayOfWeek)
+        const weekDays = Array.from({ length: 7 }, (_, i) => {
+          const d = new Date(weekStart)
+          d.setDate(weekStart.getDate() + i)
+          return { day: d.getDate(), isTarget: d.getDate() === wDate.getDate() && d.getMonth() === wDate.getMonth() }
+        })
+        const dows = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
+        return (
+          <AnimatedSection className="ts-sec ts-info ts-anim-info-v3" key="info">
+            <div className="ts-i3">
+              <div className="ts-i3-title ts-anim-item">
+                <div className="ts-i3-month">{weddingMeta.y}. {String(weddingMeta.m).padStart(2, '0')}</div>
+              </div>
+              <div className="ts-i3-week ts-anim-item">
+                {dows.map((dow, i) => (
+                  <div className="ts-i3-dow ts-i3-cell" key={dow} style={{ animationDelay: `${350 + i * 50}ms` }}>{dow}</div>
+                ))}
+                {weekDays.map((wd, i) => (
+                  <div className={`ts-i3-dd ts-i3-cell${wd.isTarget ? ' mark' : ''}`} key={i} style={{ animationDelay: `${700 + i * 70}ms` }}>
+                    {wd.isTarget ? <span>{wd.day}</span> : wd.day}
+                  </div>
+                ))}
+              </div>
+              <div className="ts-i3-foot ts-anim-item">
+                <b>{weddingMeta.weekday} · {timeDisplay}</b>
+                <div className="ts-i3-venue">{venueName}{venueHall && <><br />{venueHall}</>}</div>
+              </div>
+            </div>
+          </AnimatedSection>
+        )
+      }
+
+      // V4 · Ticket (티켓 스타일)
+      if (v === 4) {
+        return (
+          <AnimatedSection className="ts-sec ts-info ts-anim-info-v4" key="info">
+            <div className="ts-i4">
+              <div className="ts-i4-ticket ts-anim-card">
+                <div className="ts-i4-top">
+                  <div className="ts-i4-cap ts-anim-item">WEDDING INVITATION</div>
+                  <div className="ts-i4-names ts-anim-item">{groomName.toUpperCase()} &amp; {brideName.toUpperCase()}</div>
+                </div>
+                <div className="ts-i4-bot ts-anim-item">
+                  <div><b>Date</b>{weddingMeta.y}.{String(weddingMeta.m).padStart(2, '0')}.{String(weddingMeta.d).padStart(2, '0')} {weddingMeta.weekday}</div>
+                  <div><b>Time</b>{timeDisplay}</div>
+                  <div><b>Venue</b>{venueName}</div>
+                  {venueHall && <div><b>Hall</b>{venueHall}</div>}
+                </div>
+              </div>
+            </div>
+          </AnimatedSection>
+        )
+      }
+
+      // V5 · Countdown Hero (D-Day 카운트다운 + 정보 행)
+      if (v === 5) {
+        const target = data.wedding.date ? new Date(data.wedding.date) : new Date('2026-05-16')
+        const now = new Date()
+        const diff = Math.ceil((target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+        const dNum = Math.abs(diff)
+        return (
+          <AnimatedSection className="ts-sec ts-info ts-anim-info-v5" key="info">
+            <div className="ts-i5">
+              <div className="ts-i5-cap ts-anim-item">COUNTDOWN TO THE DAY</div>
+              <div className="ts-i5-box ts-anim-item">
+                <div className="ts-i5-count">
+                  <div className="ts-i5-dash ts-digit" style={{ animationDelay: '200ms' }}>D—</div>
+                  <CountingNumber target={dNum} className="ts-i5-counter" />
+                </div>
+                <div className="ts-i5-note">
+                  {weddingMeta.monthName} {weddingMeta.d}, {weddingMeta.y}
+                </div>
+              </div>
+              <div className="ts-i5-rule ts-anim-item" />
+              <div className="ts-i5-rows ts-anim-item">
+                <div className="ts-i5-row"><b>DATE</b><span>{weddingMeta.m}월 {weddingMeta.d}일 {weddingMeta.weekday}</span></div>
+                <div className="ts-i5-row"><b>TIME</b><span>{timeDisplay}</span></div>
+                <div className="ts-i5-row"><b>VENUE</b><span>{venueName}</span></div>
+                {venueHall && <div className="ts-i5-row"><b>HALL</b><span>{venueHall}</span></div>}
+              </div>
+            </div>
+          </AnimatedSection>
+        )
+      }
+
+      // V1 · Calendar (기본 — 풀 캘린더)
+      {
+        const dateStr = `${weddingMeta.y}.${String(weddingMeta.m).padStart(2, '0')}.${String(weddingMeta.d).padStart(2, '0')}`
+        return (
+        <AnimatedSection className="ts-sec ts-info ts-anim-info-v1" key="info">
+          <div className="ts-eyebrow">{info.eyebrow}</div>
+          <div className="ts-i1">
+            <div className="ts-i1-big ts-anim-item">
+              {dateStr.split('').map((ch, i) => (
+                <span key={i} className={ch === '.' ? 'ts-dot' : 'ts-digit'} style={{ animationDelay: `${180 + i * 60}ms` }}>{ch}</span>
+              ))}
+            </div>
+            <div className="ts-i1-sub ts-anim-item">{weddingMeta.weekday} · {timeDisplay}</div>
+          </div>
+          <div className="ts-cal ts-anim-item">
+            <div className="ts-cal-head">
+              {['S','M','T','W','T','F','S'].map((d, i) => <span key={i}>{d}</span>)}
+            </div>
+            {calendar.map((row, i) => (
+              <div className="ts-cal-row" key={i}>
+                {row.map((cell, j) => (
+                  <span key={j} className={cell.day === null ? 'mute' : cell.pick ? 'pick' : ''}>
+                    {cell.day ?? ''}
+                    {cell.pick && (
+                      <svg className="ts-circle-draw" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="20" cy="20" r="15" fill="none" stroke="var(--ink)" strokeWidth="1.5" />
+                      </svg>
+                    )}
+                  </span>
+                ))}
+              </div>
+            ))}
+          </div>
+          <div className="ts-i1-venue ts-anim-item">{venueName}{venueHall && <><br />{venueHall}</>}</div>
+        </AnimatedSection>
+      )
+      }
+    },
+
+    direction: (v) => {
+      // V2 · Full Map · 하단 정보 박스
+      if (v === 2) {
+        return (
+          <AnimatedSection className="ts-sec ts-dir ts-anim-dir-v2" key="direction">
+            <div className="ts-eyebrow">{direction.eyebrow}</div>
+            <div className="ts-anim-item" style={{ marginBottom: 10 }}>
+              <KakaoMapBox address={venueAddress} venueName={venueName} aspectRatio="4 / 3" />
+            </div>
+            <div className="ts-anim-item" style={{ background: '#f3f3f3', padding: '18px 16px', textAlign: 'center' }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: 16, letterSpacing: '0.08em', color: 'var(--ink)', marginBottom: 4 }}>
+                {venueName}
+              </div>
+              {venueHall && <div style={{ fontFamily: 'var(--font-ko)', fontSize: 12, color: 'var(--mute)', marginBottom: 10 }}>
+                {venueHall}
+              </div>}
+              <div style={{ width: 24, height: 1, background: 'var(--line)', margin: '0 auto 10px' }} />
+              <AddressCopy address={venueAddress} />
+            </div>
+            <TransportInfo transport={direction.transport} />
+          </AnimatedSection>
+        )
+      }
+
+      // V3 · 정보 상단 · 맵 하단
+      if (v === 3) {
+        return (
+          <AnimatedSection className="ts-sec ts-dir ts-anim-dir-v3" key="direction">
+            <div className="ts-eyebrow">{direction.eyebrow}</div>
+            <div className="ts-anim-item" style={{ textAlign: 'center', padding: '12px 0 18px' }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, letterSpacing: '0.06em', color: 'var(--ink)', marginBottom: 6 }}>
+                {venueName}
+              </div>
+              <div style={{ width: 30, height: 1, background: 'var(--line)', margin: '0 auto 10px' }} />
+              <AddressCopy address={venueAddress} />
+              {venueHall && <p style={{ fontFamily: 'var(--font-display)', fontSize: 10, letterSpacing: '0.2em', color: 'var(--accent)', textTransform: 'uppercase', marginTop: 6 }}>
+                {venueHall}
+              </p>}
+            </div>
+            <div className="ts-anim-item">
+              <KakaoMapBox address={venueAddress} venueName={venueName} aspectRatio="16 / 9" />
+            </div>
+            <TransportInfo transport={direction.transport} />
+          </AnimatedSection>
+        )
+      }
+
+      // V4 · 맵 + 정보 카드
+      if (v === 4) {
+        return (
+          <AnimatedSection className="ts-sec ts-dir ts-anim-dir-v4" key="direction">
+            <div className="ts-eyebrow">{direction.eyebrow}</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12, marginTop: 8 }}>
+              <div className="ts-anim-item">
+                <KakaoMapBox address={venueAddress} venueName={venueName} aspectRatio="3 / 2" />
+              </div>
+              <div className="ts-anim-card" style={{ border: '1px solid var(--line)', padding: '16px 14px' }}>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: 9, letterSpacing: '0.2em', color: 'var(--accent)', textTransform: 'uppercase', marginBottom: 4 }}>
+                  Venue
+                </div>
+                <div style={{ fontFamily: 'var(--font-ko)', fontSize: 15, fontWeight: 600, color: 'var(--ink)', marginBottom: 2 }}>
+                  {venueName}
+                </div>
+                {venueHall && <div style={{ fontFamily: 'var(--font-ko)', fontSize: 12, color: 'var(--mute)', marginBottom: 10, paddingBottom: 10, borderBottom: '1px solid var(--line)' }}>
+                  {venueHall}
+                </div>}
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: 9, letterSpacing: '0.2em', color: 'var(--accent)', textTransform: 'uppercase', marginBottom: 4 }}>
+                  Address
+                </div>
+                <AddressCopy address={venueAddress} />
+              </div>
+            </div>
+            <TransportInfo transport={direction.transport} />
+          </AnimatedSection>
+        )
+      }
+
+      // V5 · 좌측 라벨 · 우측 정보 · 맵 풀 폭
+      if (v === 5) {
+        return (
+          <AnimatedSection className="ts-sec ts-dir ts-anim-dir-v5" key="direction">
+            <div className="ts-eyebrow">{direction.eyebrow}</div>
+            <div className="ts-anim-item" style={{ marginBottom: 14 }}>
+              <KakaoMapBox address={venueAddress} venueName={venueName} aspectRatio="16 / 10" />
+            </div>
+            <div className="ts-anim-item" style={{ display: 'flex', alignItems: 'baseline', gap: 16, padding: '14px 0', borderTop: '1px solid var(--line)', borderBottom: '1px solid var(--line)' }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: 10, letterSpacing: '0.2em', color: 'var(--mute)', textTransform: 'uppercase', flexShrink: 0, width: 70 }}>
+                Venue
+              </div>
+              <div style={{ fontFamily: 'var(--font-ko)', fontSize: 13, fontWeight: 500, color: 'var(--ink)', lineHeight: 1.5 }}>
+                {venueName}{venueHall && ` · ${venueHall}`}
+              </div>
+            </div>
+            <div className="ts-anim-item" style={{ display: 'flex', alignItems: 'baseline', gap: 16, padding: '14px 0', borderBottom: '1px solid var(--line)' }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: 10, letterSpacing: '0.2em', color: 'var(--mute)', textTransform: 'uppercase', flexShrink: 0, width: 70 }}>
+                Address
+              </div>
+              <AddressCopy address={venueAddress} />
+            </div>
+            <TransportInfo transport={direction.transport} />
+          </AnimatedSection>
+        )
+      }
+
+      // V1 · Map Card (기본)
+      return (
+        <AnimatedSection className="ts-sec ts-dir ts-anim-dir-v1" key="direction">
+          <div className="ts-eyebrow">{direction.eyebrow}</div>
+          <div className="ts-dir-name ts-anim-item">{venueName}</div>
+          <div className="ts-anim-item">
+            <KakaoMapBox address={venueAddress} venueName={venueName} className="ts-dir-map" />
+          </div>
+          <div className="ts-dir-addr ts-anim-item">
+            <AddressCopy address={venueAddress} />
+          </div>
+          <TransportInfo transport={direction.transport} />
+        </AnimatedSection>
+      )
+    },
+
+    interview: (v) => {
+      const intvToggle = interview.toggle
+      // V2 · 번호 매김 · 라인 구분
+      if (v === 2) {
+        return (
+          <AnimatedSection className={`ts-sec ts-interview ts-anim-intv-v${v}`} key="interview">
+            <div className="ts-eyebrow">{interview.eyebrow}</div>
+            <SectionToggle enabled={intvToggle?.enabled ?? false} label={intvToggle?.label || '인터뷰 보기'} btnStyle={intvToggle?.style}>
+            <div style={{ marginTop: 8 }}>
+              {interview.items.map((item, i) => (
+                <div
+                  key={i}
+                  style={{
+                    padding: '20px 0',
+                    borderBottom:
+                      i === interview.items.length - 1 ? 'none' : '1px solid var(--line)',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 10 }}>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-display)',
+                        fontSize: 22,
+                        color: 'var(--accent)',
+                        lineHeight: 1,
+                      }}
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-ko)',
+                        fontSize: 14,
+                        fontWeight: 500,
+                        color: 'var(--ink)',
+                      }}
+                    >
+                      {item.question}
+                    </span>
+                  </div>
+                  <p
+                    style={{
+                      fontFamily: 'var(--font-ko)',
+                      fontSize: 13,
+                      color: '#5d5850',
+                      lineHeight: 1.85,
+                      paddingLeft: 34,
+                      whiteSpace: 'pre-line',
+                    }}
+                  >
+                    {item.answer}
+                  </p>
+                </div>
+              ))}
+            </div>
+            </SectionToggle>
+          </AnimatedSection>
+        )
+      }
+
+      // V3 · 말풍선 · 좌우 교차
+      if (v === 3) {
+        return (
+          <AnimatedSection className={`ts-sec ts-interview ts-anim-intv-v${v}`} key="interview">
+            <div className="ts-eyebrow">{interview.eyebrow}</div>
+            <SectionToggle enabled={intvToggle?.enabled ?? false} label={intvToggle?.label || '인터뷰 보기'} btnStyle={intvToggle?.style}>
+            <div style={{ marginTop: 12 }}>
+              {interview.items.map((item, i) => (
+                <div key={i} style={{ marginBottom: 24 }}>
+                  <div
+                    style={{
+                      background: '#f5f5f5',
+                      border: '1px solid var(--line)',
+                      borderRadius: 16,
+                      padding: '12px 16px',
+                      marginBottom: 8,
+                      marginRight: 40,
+                      position: 'relative',
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-display)',
+                        fontSize: 10,
+                        letterSpacing: '0.2em',
+                        color: 'var(--accent)',
+                        marginBottom: 4,
+                      }}
+                    >
+                      QUESTION
+                    </div>
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-ko)',
+                        fontSize: 13,
+                        color: 'var(--ink)',
+                      }}
+                    >
+                      {item.question}
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      background: '#fff',
+                      border: '1px solid var(--line)',
+                      borderRadius: 16,
+                      padding: '12px 16px',
+                      marginLeft: 40,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-display)',
+                        fontSize: 10,
+                        letterSpacing: '0.2em',
+                        color: 'var(--mute)',
+                        marginBottom: 4,
+                      }}
+                    >
+                      ANSWER
+                    </div>
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-ko)',
+                        fontSize: 13,
+                        color: '#3d3d3d',
+                        lineHeight: 1.75,
+                        whiteSpace: 'pre-line',
+                      }}
+                    >
+                      {item.answer}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            </SectionToggle>
+          </AnimatedSection>
+        )
+      }
+
+      // V4 · 인용 타이포 · 풀번드너리스
+      if (v === 4) {
+        return (
+          <AnimatedSection className={`ts-sec ts-interview ts-anim-intv-v${v}`} key="interview">
+            <div className="ts-eyebrow">{interview.eyebrow}</div>
+            <SectionToggle enabled={intvToggle?.enabled ?? false} label={intvToggle?.label || '인터뷰 보기'} btnStyle={intvToggle?.style}>
+            <div style={{ marginTop: 12 }}>
+              {interview.items.map((item, i) => (
+                <div
+                  key={i}
+                  style={{
+                    textAlign: 'center',
+                    padding: '20px 0',
+                    borderTop: i === 0 ? 'none' : '1px solid var(--line)',
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 14,
+                      fontStyle: 'italic',
+                      color: 'var(--mute)',
+                      marginBottom: 10,
+                    }}
+                  >
+                    "{item.question}"
+                  </div>
+                  <p
+                    style={{
+                      fontFamily: 'var(--font-ko)',
+                      fontSize: 14,
+                      color: 'var(--ink)',
+                      lineHeight: 1.85,
+                      fontWeight: 500,
+                      whiteSpace: 'pre-line',
+                    }}
+                  >
+                    {item.answer}
+                  </p>
+                </div>
+              ))}
+            </div>
+            </SectionToggle>
+          </AnimatedSection>
+        )
+      }
+
+      // V5 · 카드 · 라벨 분리
+      if (v === 5) {
+        return (
+          <AnimatedSection className={`ts-sec ts-interview ts-anim-intv-v${v}`} key="interview">
+            <div className="ts-eyebrow">{interview.eyebrow}</div>
+            <SectionToggle enabled={intvToggle?.enabled ?? false} label={intvToggle?.label || '인터뷰 보기'} btnStyle={intvToggle?.style}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
+              {interview.items.map((item, i) => (
+                <div
+                  key={i}
+                  style={{
+                    border: '1px solid var(--line)',
+                    padding: '16px 14px',
+                    background: '#f3f3f3',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '50px 1fr',
+                      gap: 10,
+                      alignItems: 'start',
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-display)',
+                        fontSize: 10,
+                        letterSpacing: '0.2em',
+                        color: 'var(--accent)',
+                        paddingTop: 2,
+                      }}
+                    >
+                      Q.
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-ko)',
+                        fontSize: 13,
+                        color: 'var(--ink)',
+                        fontWeight: 500,
+                      }}
+                    >
+                      {item.question}
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-display)',
+                        fontSize: 10,
+                        letterSpacing: '0.2em',
+                        color: 'var(--mute)',
+                        borderTop: '1px solid var(--line)',
+                        paddingTop: 12,
+                        marginTop: 10,
+                      }}
+                    >
+                      A.
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-ko)',
+                        fontSize: 13,
+                        color: '#5d5850',
+                        lineHeight: 1.75,
+                        borderTop: '1px solid var(--line)',
+                        paddingTop: 12,
+                        marginTop: 10,
+                        whiteSpace: 'pre-line',
+                      }}
+                    >
+                      {item.answer}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            </SectionToggle>
+          </AnimatedSection>
+        )
+      }
+
+      // V1 · 기본
+      return (
+        <AnimatedSection className={`ts-sec ts-interview ts-anim-intv-v${v}`} key="interview">
+          <div className="ts-eyebrow">{interview.eyebrow}</div>
+          <SectionToggle enabled={intvToggle?.enabled ?? false} label={intvToggle?.label || '인터뷰 보기'} btnStyle={intvToggle?.style}>
+          {interview.items.map((item, i) => (
+            <div className="ts-qa" key={i}>
+              <div className="ts-q">
+                <b>Q.</b> {item.question}
+              </div>
+              <p className="ts-a">{item.answer}</p>
+            </div>
+          ))}
+          </SectionToggle>
+        </AnimatedSection>
+      )
+    },
+
+    gallery: (v, instanceId) => {
+      const images = data.galleries?.[instanceId] ?? []
+      const srcs: (string | null)[] =
+        images.length > 0 ? images.map((img) => img.webUrl) : [null, null, null, null, null, null]
+      const keyFor = (i: number) => images[i]?.id ?? `ph-${i}`
+      const settingsFor = (i: number): TheSimpleImageSettings =>
+        images[i]?.settings ?? { scale: 1, positionX: 0, positionY: 0 }
+      const galleryEyebrow = data.galleryEyebrows?.[instanceId] ?? 'Gallery'
+
+      // V1 · 피처 포토 + 하단 썸네일 (자동 페이드 전환)
+      if (v === 1) {
+        return <GalleryV1Feature key={instanceId} images={images} galleryEyebrow={galleryEyebrow} onOpenLightbox={openLightbox} />
+      }
+
+      // V2 · 풀 슬라이드쇼 (자동 스크롤 + 도트 + 화살표)
+      if (v === 2) {
+        return <GalleryV2Slideshow key={instanceId} images={images} galleryEyebrow={galleryEyebrow} onOpenLightbox={openLightbox} />
+      }
+
+      // V3 / V4 / V5 · 커스텀 행 패턴 레이아웃 (비율 차별화)
+      {
+        const defaultPatterns: Record<number, number[]> = {
+          3: [1, 2, 1],
+          4: [1, 2, 1],
+          5: [1, 3, 2, 1],
+        }
+        const rowPattern = data.galleryRowPatterns?.[instanceId] ?? defaultPatterns[v] ?? [1]
+        const gap = 6
+
+        // V3: 전부 16:9, V4: 전부 3:4, V5: 행별 가변
+        const aspectForCount = (n: number): string => {
+          if (v === 3) return '16 / 9'
+          if (v === 4) return '3 / 4'
+          // V5 혼합: 1장=16:9, 2장=4:5, 3+장=1:1
+          if (n === 1) return '16 / 9'
+          if (n === 2) return '4 / 5'
+          return '1 / 1'
+        }
+
+        // 이미지를 행 패턴에 따라 배분 (패턴 순환 반복)
+        const rows: Array<{ count: number; items: Array<{ src: string | null; idx: number }> }> = []
+        let imgIdx = 0
+        const totalImages = srcs.length
+        if (totalImages === 0) {
+          for (const count of rowPattern) {
+            const items: Array<{ src: string | null; idx: number }> = []
+            for (let c = 0; c < count; c++) {
+              items.push({ src: null, idx: imgIdx++ })
+            }
+            rows.push({ count, items })
+          }
+        } else {
+          let patternIdx = 0
+          while (imgIdx < totalImages) {
+            const count = rowPattern[patternIdx % rowPattern.length]
+            const items: Array<{ src: string | null; idx: number }> = []
+            for (let c = 0; c < count && imgIdx < totalImages; c++) {
+              items.push({ src: srcs[imgIdx], idx: imgIdx })
+              imgIdx++
+            }
+            rows.push({ count, items })
+            patternIdx++
+          }
+        }
+
+        const validSrcs = srcs.filter(Boolean) as string[]
+        let imgCounter = 0
+        const showMoreRow = data.galleryShowMoreRow?.[instanceId] ?? 0
+        return (
+          <GalleryShowMore
+            key={instanceId}
+            instanceId={instanceId}
+            rows={rows}
+            showMoreRow={showMoreRow}
+            v={v}
+            gap={gap}
+            galleryEyebrow={galleryEyebrow}
+            aspectForCount={aspectForCount}
+            settingsFor={settingsFor}
+            keyFor={keyFor}
+            validSrcs={validSrcs}
+            openLightbox={openLightbox}
+          />
+        )
+      }
+    },
+
+    video: (v) => {
+      const videoUrl = video?.url || ''
+      const videoMatch = videoUrl.match(
+        /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/|youtube\.com\/live\/)([a-zA-Z0-9_-]+)/
+      )
+      const videoId = videoMatch?.[1]
+
+      // URL이 없거나 유효하지 않으면 placeholder
+      if (!videoId) {
+        return (
+          <AnimatedSection className={`ts-sec ts-video ts-anim-vid-v${v}`} key="video">
+            <div className="ts-eyebrow">{video?.eyebrow || 'Video'}</div>
+            <div
+              style={{
+                aspectRatio: '16/9',
+                background: 'linear-gradient(135deg, #e8e8e8, #d4d4d4)',
+                borderRadius: v === 1 ? 8 : 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#aaa',
+                fontFamily: 'var(--font-ko)',
+                fontSize: 12,
+              }}
+            >
+              유튜브 URL을 입력하세요
+            </div>
+          </AnimatedSection>
+        )
+      }
+
+      const thumbEl = <YouTubeLite videoId={videoId} />
+
+      // V2 · 풀폭 (패딩 없음)
+      if (v === 2) {
+        return (
+          <AnimatedSection className={`ts-sec ts-video ts-anim-vid-v${v}`} key="video" style={{ padding: 0 }}>
+            {video?.eyebrow && (
+              <div className="ts-eyebrow" style={{ padding: '0 26px', paddingTop: 'calc(56px * var(--ts-spacing-scale))' }}>
+                {video.eyebrow}
+              </div>
+            )}
+            <div style={{ marginTop: video?.eyebrow ? 18 : 0 }}>
+              {thumbEl}
+            </div>
+          </AnimatedSection>
+        )
+      }
+
+      // V3 · 시네마 (어두운 배경 + letterbox)
+      if (v === 3) {
+        return (
+          <AnimatedSection
+            className={`ts-sec ts-video ts-anim-vid-v${v}`}
+            key="video"
+            style={{ background: '#111', padding: '40px 0' }}
+          >
+            {video?.eyebrow && (
+              <div
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 11,
+                  letterSpacing: '0.32em',
+                  color: 'rgba(255,255,255,0.5)',
+                  textTransform: 'uppercase',
+                  textAlign: 'center',
+                  marginBottom: 18,
+                }}
+              >
+                {video.eyebrow}
+              </div>
+            )}
+            <div style={{ padding: '0 16px' }}>
+              <div style={{ borderRadius: 4, overflow: 'hidden' }}>
+                {thumbEl}
+              </div>
+            </div>
+          </AnimatedSection>
+        )
+      }
+
+      // V1 · 기본 (패딩 + 라운드)
+      return (
+        <AnimatedSection className={`ts-sec ts-video ts-anim-vid-v${v}`} key="video">
+          <div className="ts-eyebrow">{video?.eyebrow || 'Video'}</div>
+          <div style={{ borderRadius: 8, overflow: 'hidden', marginTop: 18 }}>
+            {thumbEl}
+          </div>
+        </AnimatedSection>
+      )
+    },
+
+    guide: (v) => {
+      /** 링크 버튼 공통 렌더러 */
+      const renderLink = (link: string | undefined, small = false) => {
+        if (!link) return null
+        return (
+          <a
+            href={link}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-block',
+              marginTop: 8,
+              fontFamily: 'var(--font-display)',
+              fontSize: small ? 10 : 11,
+              letterSpacing: '0.12em',
+              color: 'var(--accent)',
+              borderBottom: '1px solid var(--accent)',
+              paddingBottom: 1,
+              textDecoration: 'none',
+            }}
+          >
+            LINK →
+          </a>
+        )
+      }
+
+      // V2 · 세로 리스트 · 아이콘 슬롯
+      if (v === 2) {
+        return (
+          <AnimatedSection className={`ts-sec ts-guide ts-anim-guide-v${v}`} key="guide">
+            <div className="ts-eyebrow">{guide.eyebrow}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 8 }}>
+              {guide.items.map((item, i) => (
+                <div
+                  key={i}
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '40px 1fr',
+                    gap: 12,
+                    padding: '16px 0',
+                    borderBottom:
+                      i === guide.items.length - 1 ? 'none' : '1px solid var(--line)',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: '50%',
+                      background: '#f5f5f5',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontFamily: 'var(--font-display)',
+                      fontSize: 14,
+                      color: 'var(--accent)',
+                    }}
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </div>
+                  <div>
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-display)',
+                        fontSize: 9,
+                        letterSpacing: '0.2em',
+                        color: 'var(--mute)',
+                        textTransform: 'uppercase',
+                        marginBottom: 2,
+                      }}
+                    >
+                      {item.label}
+                    </div>
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-ko)',
+                        fontSize: 14,
+                        fontWeight: 600,
+                        color: 'var(--ink)',
+                        marginBottom: 4,
+                      }}
+                    >
+                      {item.title}
+                    </div>
+                    <p
+                      style={{
+                        fontFamily: 'var(--font-ko)',
+                        fontSize: 12,
+                        color: '#5d5850',
+                        lineHeight: 1.75,
+                        whiteSpace: 'pre-line',
+                      }}
+                    >
+                      {item.body}
+                    </p>
+                    {renderLink(item.link)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </AnimatedSection>
+        )
+      }
+
+      // V3 · 아코디언 느낌 · 좌측 라벨
+      if (v === 3) {
+        return (
+          <AnimatedSection className={`ts-sec ts-guide ts-anim-guide-v${v}`} key="guide">
+            <div className="ts-eyebrow">{guide.eyebrow}</div>
+            <div style={{ marginTop: 8 }}>
+              {guide.items.map((item, i) => (
+                <div
+                  key={i}
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '90px 1fr',
+                    padding: '18px 0',
+                    borderBottom: '1px solid var(--line)',
+                    borderTop: i === 0 ? '1px solid var(--line)' : 'none',
+                  }}
+                >
+                  <div>
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-display)',
+                        fontSize: 10,
+                        letterSpacing: '0.2em',
+                        color: 'var(--accent)',
+                        textTransform: 'uppercase',
+                        marginBottom: 4,
+                      }}
+                    >
+                      {item.label}
+                    </div>
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-ko)',
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: 'var(--ink)',
+                      }}
+                    >
+                      {item.title}
+                    </div>
+                  </div>
+                  <div>
+                    <p
+                      style={{
+                        fontFamily: 'var(--font-ko)',
+                        fontSize: 12,
+                        color: '#5d5850',
+                        lineHeight: 1.85,
+                        whiteSpace: 'pre-line',
+                      }}
+                    >
+                      {item.body}
+                    </p>
+                    {renderLink(item.link)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </AnimatedSection>
+        )
+      }
+
+      // V4 · 베이지 배경 카드 2열
+      if (v === 4) {
+        return (
+          <AnimatedSection className={`ts-sec ts-guide ts-anim-guide-v${v}`} key="guide">
+            <div className="ts-eyebrow">{guide.eyebrow}</div>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: 8,
+                marginTop: 10,
+              }}
+            >
+              {guide.items.map((item, i) => (
+                <div
+                  key={i}
+                  style={{
+                    background: '#f5f5f5',
+                    padding: '20px 14px',
+                    textAlign: 'center',
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: 'var(--font-display)',
+                      fontSize: 9,
+                      letterSpacing: '0.2em',
+                      color: 'var(--accent)',
+                      textTransform: 'uppercase',
+                      marginBottom: 8,
+                    }}
+                  >
+                    {item.label}
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: 'var(--font-ko)',
+                      fontSize: 14,
+                      fontWeight: 600,
+                      color: 'var(--ink)',
+                      marginBottom: 8,
+                    }}
+                  >
+                    {item.title}
+                  </div>
+                  <div
+                    style={{
+                      width: 20,
+                      height: 1,
+                      background: 'var(--line)',
+                      margin: '0 auto 8px',
+                    }}
+                  />
+                  <p
+                    style={{
+                      fontFamily: 'var(--font-ko)',
+                      fontSize: 11,
+                      color: '#5d5850',
+                      lineHeight: 1.75,
+                      whiteSpace: 'pre-line',
+                    }}
+                  >
+                    {item.body}
+                  </p>
+                  {renderLink(item.link, true)}
+                </div>
+              ))}
+            </div>
+          </AnimatedSection>
+        )
+      }
+
+      // V5 · 노트 스타일 · 좌측 정렬 리스트
+      if (v === 5) {
+        return (
+          <AnimatedSection className={`ts-sec ts-guide ts-anim-guide-v${v}`} key="guide">
+            <div className="ts-eyebrow">{guide.eyebrow}</div>
+            <div
+              style={{
+                marginTop: 10,
+                padding: '20px 18px',
+                border: '1px solid var(--line)',
+                background: '#f3f3f3',
+              }}
+            >
+              {guide.items.map((item, i) => (
+                <div
+                  key={i}
+                  style={{
+                    paddingBottom: i === guide.items.length - 1 ? 0 : 14,
+                    marginBottom: i === guide.items.length - 1 ? 0 : 14,
+                    borderBottom:
+                      i === guide.items.length - 1 ? 'none' : '1px dashed var(--line)',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'baseline',
+                      gap: 8,
+                      marginBottom: 4,
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-display)',
+                        fontSize: 11,
+                        color: 'var(--accent)',
+                        letterSpacing: '0.15em',
+                        textTransform: 'uppercase',
+                      }}
+                    >
+                      — {item.label}
+                    </span>
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: 'var(--font-ko)',
+                      fontSize: 14,
+                      fontWeight: 600,
+                      color: 'var(--ink)',
+                      marginBottom: 4,
+                    }}
+                  >
+                    {item.title}
+                  </div>
+                  <p
+                    style={{
+                      fontFamily: 'var(--font-ko)',
+                      fontSize: 12,
+                      color: '#5d5850',
+                      lineHeight: 1.75,
+                      whiteSpace: 'pre-line',
+                    }}
+                  >
+                    {item.body}
+                  </p>
+                  {renderLink(item.link)}
+                </div>
+              ))}
+            </div>
+          </AnimatedSection>
+        )
+      }
+
+      // V1 · 기본
+      return (
+        <AnimatedSection className={`ts-sec ts-guide ts-anim-guide-v${v}`} key="guide">
+          <div className="ts-eyebrow">{guide.eyebrow}</div>
+          <div className="ts-guide-grid">
+            {guide.items.map((item, i) => (
+              <div className="ts-guide-cell" key={i}>
+                <div className="ts-guide-label">{item.label}</div>
+                <b>{item.title}</b>
+                <p style={{ whiteSpace: 'pre-line' }}>{item.body}</p>
+                {renderLink(item.link)}
+              </div>
+            ))}
+          </div>
+        </AnimatedSection>
+      )
+    },
+
+    account: (v) => {
+      const tabbedProps = {
+        groomRole: couple.groom.role,
+        brideRole: couple.bride.role,
+        groomAccounts: account.groom,
+        brideAccounts: account.bride,
+        groomFather: account.groomFather || [],
+        groomMother: account.groomMother || [],
+        brideFather: account.brideFather || [],
+        brideMother: account.brideMother || [],
+        groomFatherName: account.groomFatherName,
+        groomMotherName: account.groomMotherName,
+        brideFatherName: account.brideFatherName,
+        brideMotherName: account.brideMotherName,
+        variant: v,
+      }
+
+      // V2 · 베이지 카드
+      if (v === 2) {
+        return (
+          <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key="account">
+            <div className="ts-eyebrow">{account.eyebrow}</div>
+            <div style={{ background: '#f5f5f0', padding: '20px 16px' }}>
+              <AccountTabbed {...tabbedProps} />
+            </div>
+          </AnimatedSection>
+        )
+      }
+
+      // V3 · 전체 펼침 · 계좌번호 바로 표시 (탭 없이)
+      if (v === 3) {
+        const allList: Array<{
+          side: string
+          role: string
+          name: string
+          accounts: typeof account.groom
+        }> = []
+        if (account.groom.length > 0)
+          allList.push({ side: 'groom', role: couple.groom.role, name: groomName, accounts: account.groom })
+        if ((account.groomFather || []).length > 0)
+          allList.push({ side: 'groomFather', role: '아버지', name: account.groomFatherName || '', accounts: account.groomFather || [] })
+        if ((account.groomMother || []).length > 0)
+          allList.push({ side: 'groomMother', role: '어머니', name: account.groomMotherName || '', accounts: account.groomMother || [] })
+        if (account.bride.length > 0)
+          allList.push({ side: 'bride', role: couple.bride.role, name: brideName, accounts: account.bride })
+        if ((account.brideFather || []).length > 0)
+          allList.push({ side: 'brideFather', role: '아버지', name: account.brideFatherName || '', accounts: account.brideFather || [] })
+        if ((account.brideMother || []).length > 0)
+          allList.push({ side: 'brideMother', role: '어머니', name: account.brideMotherName || '', accounts: account.brideMother || [] })
+        return (
+          <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key="account">
+            <div className="ts-eyebrow">{account.eyebrow}</div>
+            {allList.length === 0 ? (
+              <p style={{ textAlign: 'center', fontSize: 11, color: '#b8b0a6', marginTop: 8 }}>
+                계좌를 추가하면 여기에 표시됩니다
+              </p>
+            ) : (
+              <div style={{ marginTop: 8 }}>
+                {allList.map((group, gi) => (
+                  <div
+                    key={gi}
+                    style={{
+                      padding: '16px 0',
+                      borderBottom:
+                        gi === allList.length - 1 ? 'none' : '1px solid var(--line)',
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'baseline',
+                        gap: 8,
+                        marginBottom: 10,
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-display)',
+                          fontSize: 10,
+                          letterSpacing: '0.2em',
+                          color: 'var(--accent)',
+                          textTransform: 'uppercase',
+                        }}
+                      >
+                        {group.role}
+                      </span>
+                      {group.name && (
+                        <span
+                          style={{
+                            fontFamily: 'var(--font-ko)',
+                            fontSize: 14,
+                            fontWeight: 600,
+                            color: 'var(--ink)',
+                          }}
+                        >
+                          {group.name}
+                        </span>
+                      )}
+                    </div>
+                    {group.accounts.map((acc, i) => (
+                      <div
+                        key={i}
+                        style={{
+                          fontFamily: 'var(--font-ko)',
+                          fontSize: 12,
+                          color: '#5d5850',
+                          lineHeight: 1.9,
+                          paddingLeft: 2,
+                        }}
+                      >
+                        <span style={{ color: 'var(--mute)', marginRight: 6 }}>{acc.bank}</span>
+                        <span style={{ fontFamily: 'var(--font-mono), monospace' }}>{acc.number}</span>
+                        {acc.holder && (
+                          <span style={{ color: 'var(--mute)', marginLeft: 6 }}>· {acc.holder}</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            )}
+          </AnimatedSection>
+        )
+      }
+
+      // V4 · 보더 카드
+      if (v === 4) {
+        return (
+          <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key="account">
+            <div className="ts-eyebrow">{account.eyebrow}</div>
+            <div style={{ border: '1px solid var(--line)', padding: '20px 16px' }}>
+              <AccountTabbed {...tabbedProps} />
+            </div>
+          </AnimatedSection>
+        )
+      }
+
+      // V5 · 세로 스택 · 중앙정렬
+      if (v === 5) {
+        return (
+          <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key="account">
+            <div className="ts-eyebrow">{account.eyebrow}</div>
+            <div style={{ textAlign: 'center', padding: '16px 0' }}>
+              <AccountTabbed {...tabbedProps} />
+            </div>
+          </AnimatedSection>
+        )
+      }
+
+      // V1 · 기본
+      return (
+        <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key="account">
+          <div className="ts-eyebrow">{account.eyebrow}</div>
+          <AccountTabbed {...tabbedProps} />
+        </AnimatedSection>
+      )
+    },
+
+    rsvp: (v) => {
+      // V2 · 베이지 블록 · 큰 필기체
+      if (v === 2) {
+        return (
+          <AnimatedSection className={`ts-sec ts-rsvp ts-anim-rsvp-v${v}`} key="rsvp">
+            <div
+              style={{
+                background: '#f5f5f5',
+                padding: '36px 24px',
+                textAlign: 'center',
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 40,
+                  fontStyle: 'italic',
+                  color: 'var(--accent)',
+                  lineHeight: 1,
+                  marginBottom: 10,
+                }}
+              >
+                R.s.v.p
+              </div>
+              <div
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 11,
+                  letterSpacing: '0.25em',
+                  color: 'var(--mute)',
+                  textTransform: 'uppercase',
+                  marginBottom: 16,
+                }}
+              >
+                Kindly Respond
+              </div>
+              <p
+                style={{
+                  fontFamily: 'var(--font-ko)',
+                  fontSize: 12,
+                  color: '#5d5850',
+                  lineHeight: 1.8,
+                  marginBottom: 18,
+                  whiteSpace: 'pre-line',
+                }}
+              >
+                {rsvp.body}
+              </p>
+              <span
+                onClick={() => setRsvpOpen(true)}
+                style={{
+                  display: 'inline-block',
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 10,
+                  letterSpacing: '0.3em',
+                  color: '#fff',
+                  background: 'var(--ink)',
+                  padding: '10px 24px',
+                  textTransform: 'uppercase',
+                  cursor: 'pointer',
+                }}
+              >
+                Reply
+              </span>
+            </div>
+          </AnimatedSection>
+        )
+      }
+
+      // V3 · 미니멀 · 중앙 라인 · 얇은 버튼
+      if (v === 3) {
+        return (
+          <AnimatedSection className={`ts-sec ts-rsvp ts-anim-rsvp-v${v}`} key="rsvp">
+            <div style={{ textAlign: 'center', padding: '40px 24px' }}>
+              <div
+                style={{
+                  width: 1,
+                  height: 30,
+                  background: 'var(--line)',
+                  margin: '0 auto 16px',
+                }}
+              />
+              <div
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 14,
+                  letterSpacing: '0.4em',
+                  color: 'var(--ink)',
+                  textTransform: 'uppercase',
+                  marginBottom: 12,
+                }}
+              >
+                R S V P
+              </div>
+              <p
+                style={{
+                  fontFamily: 'var(--font-ko)',
+                  fontSize: 12,
+                  color: 'var(--mute)',
+                  lineHeight: 1.8,
+                  marginBottom: 20,
+                  whiteSpace: 'pre-line',
+                }}
+              >
+                {rsvp.body}
+              </p>
+              <span
+                onClick={() => setRsvpOpen(true)}
+                style={{
+                  display: 'inline-block',
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 11,
+                  letterSpacing: '0.2em',
+                  color: 'var(--ink)',
+                  borderBottom: '1px solid var(--ink)',
+                  padding: '2px 4px 4px',
+                  textTransform: 'uppercase',
+                  cursor: 'pointer',
+                }}
+              >
+                Reply Here
+              </span>
+              <div
+                style={{
+                  width: 1,
+                  height: 30,
+                  background: 'var(--line)',
+                  margin: '16px auto 0',
+                }}
+              />
+            </div>
+          </AnimatedSection>
+        )
+      }
+
+      // V4 · 듀얼 버튼 · 참석/불참 (YES / NO)
+      if (v === 4) {
+        return (
+          <AnimatedSection className={`ts-sec ts-rsvp ts-anim-rsvp-v${v}`} key="rsvp">
+            <div
+              style={{
+                border: '1px solid var(--line)',
+                padding: '32px 20px',
+                textAlign: 'center',
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 22,
+                  letterSpacing: '0.2em',
+                  color: 'var(--ink)',
+                  marginBottom: 6,
+                }}
+              >
+                R.S.V.P.
+              </div>
+              <p
+                style={{
+                  fontFamily: 'var(--font-ko)',
+                  fontSize: 12,
+                  color: 'var(--mute)',
+                  lineHeight: 1.75,
+                  marginBottom: 20,
+                  whiteSpace: 'pre-line',
+                }}
+              >
+                {rsvp.body}
+              </p>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: 8,
+                }}
+              >
+                <span
+                  onClick={() => setRsvpOpen(true)}
+                  style={{
+                    fontFamily: 'var(--font-display)',
+                    fontSize: 11,
+                    letterSpacing: '0.2em',
+                    color: '#fff',
+                    background: 'var(--ink)',
+                    padding: '12px 0',
+                    textTransform: 'uppercase',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Attending
+                </span>
+                <span
+                  onClick={() => setRsvpOpen(true)}
+                  style={{
+                    fontFamily: 'var(--font-display)',
+                    fontSize: 11,
+                    letterSpacing: '0.2em',
+                    color: 'var(--ink)',
+                    background: 'transparent',
+                    border: '1px solid var(--ink)',
+                    padding: '11px 0',
+                    textTransform: 'uppercase',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Regrets
+                </span>
+              </div>
+            </div>
+          </AnimatedSection>
+        )
+      }
+
+      // V5 · 상단 라벨 · 카드 프레임 · 액센트 버튼
+      if (v === 5) {
+        return (
+          <AnimatedSection className={`ts-sec ts-rsvp ts-anim-rsvp-v${v}`} key="rsvp">
+            <div style={{ position: 'relative', padding: '32px 20px' }}>
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 22,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  background: '#fff',
+                  padding: '0 14px',
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 10,
+                  letterSpacing: '0.3em',
+                  color: 'var(--accent)',
+                  textTransform: 'uppercase',
+                }}
+              >
+                Save the Date
+              </div>
+              <div
+                style={{
+                  border: '1px solid var(--ink)',
+                  padding: '32px 20px 28px',
+                  textAlign: 'center',
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 28,
+                    fontStyle: 'italic',
+                    color: 'var(--ink)',
+                    marginBottom: 14,
+                  }}
+                >
+                  Will you join us?
+                </div>
+                <p
+                  style={{
+                    fontFamily: 'var(--font-ko)',
+                    fontSize: 12,
+                    color: 'var(--mute)',
+                    lineHeight: 1.8,
+                    marginBottom: 20,
+                    whiteSpace: 'pre-line',
+                  }}
+                >
+                  {rsvp.body}
+                </p>
+                <span
+                  onClick={() => setRsvpOpen(true)}
+                  style={{
+                    display: 'inline-block',
+                    fontFamily: 'var(--font-display)',
+                    fontSize: 11,
+                    letterSpacing: '0.25em',
+                    color: 'var(--accent)',
+                    border: '1px solid var(--accent)',
+                    padding: '10px 28px',
+                    textTransform: 'uppercase',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Reply
+                </span>
+              </div>
+            </div>
+          </AnimatedSection>
+        )
+      }
+
+      // V1 · 기본
+      return (
+        <AnimatedSection className={`ts-sec ts-rsvp ts-anim-rsvp-v${v}`} key="rsvp">
+          <div className="ts-rsvp-box">
+            <div className="ts-rsvp-title">R.S.V.P.</div>
+            <p className="ts-rsvp-sub" style={{ whiteSpace: 'pre-line' }}>
+              {rsvp.body}
+            </p>
+            <span className="ts-rsvp-btn" onClick={() => setRsvpOpen(true)} style={{ cursor: 'pointer' }}>참석 회신하기</span>
+          </div>
+        </AnimatedSection>
+      )
+    },
+
+    guestbook: (v) => {
+      const samples = [
+        { name: '민지', date: '5.12', text: '두 분의 시작을 진심으로 축하드려요. 행복하세요!' },
+        { name: '지훈', date: '5.13', text: '결혼 축하드립니다. 늘 행복한 일만 가득하길 바랍니다.' },
+        { name: '수현', date: '5.14', text: '아름다운 두 분, 앞으로도 서로를 아끼며 살아가시길!' },
+      ]
+
+      // V2 · 카드 그리드 · 베이지 톤
+      if (v === 2) {
+        return (
+          <AnimatedSection className={`ts-sec ts-guestbook ts-anim-gb-v${v}`} key="guestbook">
+            <div style={{ textAlign: 'center', marginBottom: 14 }}>
+              <div
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 22,
+                  letterSpacing: '0.08em',
+                  color: 'var(--ink)',
+                  marginBottom: 4,
+                }}
+              >
+                Guestbook
+              </div>
+              <div
+                style={{
+                  fontFamily: 'var(--font-ko)',
+                  fontSize: 11,
+                  color: 'var(--mute)',
+                }}
+              >
+                따뜻한 한 마디를 남겨주세요
+              </div>
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 8,
+              }}
+            >
+              {samples.slice(0, 2).map((s, i) => (
+                <div
+                  key={i}
+                  style={{
+                    background: '#f5f5f5',
+                    padding: '14px 14px',
+                    borderLeft: '3px solid var(--accent)',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'baseline',
+                      marginBottom: 6,
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-ko)',
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: 'var(--ink)',
+                      }}
+                    >
+                      {s.name}
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-display)',
+                        fontSize: 10,
+                        color: 'var(--mute)',
+                      }}
+                    >
+                      {s.date}
+                    </span>
+                  </div>
+                  <p
+                    style={{
+                      fontFamily: 'var(--font-ko)',
+                      fontSize: 12,
+                      color: '#5d5850',
+                      lineHeight: 1.75,
+                    }}
+                  >
+                    {s.text}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <div
+              style={{
+                textAlign: 'center',
+                marginTop: 14,
+                fontFamily: 'var(--font-display)',
+                fontSize: 10,
+                letterSpacing: '0.25em',
+                color: 'var(--accent)',
+                textTransform: 'uppercase',
+              }}
+            >
+              + Write a Message
+            </div>
+            <GuestbookForm invitationId={data.id} />
+          </AnimatedSection>
+        )
+      }
+
+      // V3 · 타임라인 스타일 · 좌측 도트
+      if (v === 3) {
+        return (
+          <AnimatedSection className={`ts-sec ts-guestbook ts-anim-gb-v${v}`} key="guestbook">
+            <div
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: 10,
+                letterSpacing: '0.25em',
+                color: 'var(--accent)',
+                textTransform: 'uppercase',
+                marginBottom: 14,
+              }}
+            >
+              Messages
+            </div>
+            <div style={{ position: 'relative', paddingLeft: 20 }}>
+              <div
+                style={{
+                  position: 'absolute',
+                  left: 4,
+                  top: 4,
+                  bottom: 4,
+                  width: 1,
+                  background: 'var(--line)',
+                }}
+              />
+              {samples.map((s, i) => (
+                <div
+                  key={i}
+                  style={{
+                    position: 'relative',
+                    marginBottom: i === samples.length - 1 ? 0 : 18,
+                  }}
+                >
+                  <div
+                    style={{
+                      position: 'absolute',
+                      left: -20,
+                      top: 6,
+                      width: 9,
+                      height: 9,
+                      borderRadius: '50%',
+                      background: '#fff',
+                      border: '1px solid var(--accent)',
+                    }}
+                  />
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'baseline',
+                      gap: 8,
+                      marginBottom: 4,
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-ko)',
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: 'var(--ink)',
+                      }}
+                    >
+                      {s.name}
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-display)',
+                        fontSize: 10,
+                        color: 'var(--mute)',
+                      }}
+                    >
+                      {s.date}
+                    </span>
+                  </div>
+                  <p
+                    style={{
+                      fontFamily: 'var(--font-ko)',
+                      fontSize: 12,
+                      color: '#5d5850',
+                      lineHeight: 1.75,
+                    }}
+                  >
+                    {s.text}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <GuestbookForm invitationId={data.id} />
+          </AnimatedSection>
+        )
+      }
+
+      // V4 · 편지지 스타일 · 가운데 인용
+      if (v === 4) {
+        return (
+          <AnimatedSection className={`ts-sec ts-guestbook ts-anim-gb-v${v}`} key="guestbook">
+            <div
+              style={{
+                border: '1px solid var(--line)',
+                padding: '24px 20px',
+                textAlign: 'center',
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 28,
+                  fontStyle: 'italic',
+                  color: 'var(--accent)',
+                  lineHeight: 0.5,
+                  marginBottom: 14,
+                }}
+              >
+                &ldquo;
+              </div>
+              <p
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 14,
+                  fontStyle: 'italic',
+                  color: 'var(--ink)',
+                  lineHeight: 1.8,
+                  marginBottom: 12,
+                }}
+              >
+                {samples[0].text}
+              </p>
+              <div
+                style={{
+                  width: 20,
+                  height: 1,
+                  background: 'var(--line)',
+                  margin: '0 auto 8px',
+                }}
+              />
+              <div
+                style={{
+                  fontFamily: 'var(--font-ko)',
+                  fontSize: 11,
+                  color: 'var(--mute)',
+                }}
+              >
+                {samples[0].name} · {samples[0].date}
+              </div>
+            </div>
+            <div
+              style={{
+                textAlign: 'center',
+                marginTop: 14,
+                fontFamily: 'var(--font-display)',
+                fontSize: 10,
+                letterSpacing: '0.25em',
+                color: 'var(--accent)',
+                textTransform: 'uppercase',
+              }}
+            >
+              View All Messages
+            </div>
+            <GuestbookForm invitationId={data.id} />
+          </AnimatedSection>
+        )
+      }
+
+      // V5 · 컴팩트 리스트 · 라인 구분 · 우측 화살표
+      if (v === 5) {
+        return (
+          <AnimatedSection className={`ts-sec ts-guestbook ts-anim-gb-v${v}`} key="guestbook">
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'baseline',
+                marginBottom: 10,
+                paddingBottom: 10,
+                borderBottom: '1px solid var(--ink)',
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 16,
+                  letterSpacing: '0.1em',
+                  color: 'var(--ink)',
+                }}
+              >
+                Guestbook
+              </div>
+              <div
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 10,
+                  letterSpacing: '0.2em',
+                  color: 'var(--accent)',
+                  textTransform: 'uppercase',
+                }}
+              >
+                + New
+              </div>
+            </div>
+            {samples.map((s, i) => (
+              <div
+                key={i}
+                style={{
+                  padding: '14px 0',
+                  borderBottom:
+                    i === samples.length - 1 ? 'none' : '1px solid var(--line)',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'baseline',
+                    justifyContent: 'space-between',
+                    marginBottom: 4,
+                  }}
+                >
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-ko)',
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: 'var(--ink)',
+                    }}
+                  >
+                    {s.name}
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-display)',
+                      fontSize: 10,
+                      color: 'var(--mute)',
+                    }}
+                  >
+                    {s.date}
+                  </span>
+                </div>
+                <p
+                  style={{
+                    fontFamily: 'var(--font-ko)',
+                    fontSize: 12,
+                    color: '#5d5850',
+                    lineHeight: 1.7,
+                  }}
+                >
+                  {s.text}
+                </p>
+              </div>
+            ))}
+            <GuestbookForm invitationId={data.id} />
+          </AnimatedSection>
+        )
+      }
+
+      // V1 · 기본
+      return (
+        <AnimatedSection className={`ts-sec ts-guestbook ts-anim-gb-v${v}`} key="guestbook">
+          <div className="ts-gb-head">
+            <div className="ts-gb-title">Guestbook</div>
+            <div className="ts-gb-sub">따뜻한 한 마디를 남겨주세요</div>
+          </div>
+          <div className="ts-gb-entry">
+            <div className="ts-gb-meta">민지 · 5.12</div>
+            <p className="ts-gb-text">두 분의 시작을 진심으로 축하드려요. 행복하세요!</p>
+          </div>
+          <div className="ts-gb-entry">
+            <div className="ts-gb-meta">지훈 · 5.13</div>
+            <p className="ts-gb-text">결혼 축하드립니다. 늘 행복한 일만 가득하길 바랍니다.</p>
+          </div>
+          <GuestbookForm invitationId={data.id} />
+        </AnimatedSection>
+      )
+    },
+
+    lovestory: (v) => {
+      const ls = data.sections.lovestory
+      const lsToggle = ls?.toggle
+      const items = ls?.items ?? []
+      if (items.length === 0) return null
+
+      /** 아이템별 사진 배열 추출 헬퍼 */
+      const getPhotos = (item: typeof items[number]) =>
+        [item.photo1, item.photo2].filter((p): p is ImageWithSettings => !!p?.url)
+
+      /** 아이템 하나를 렌더링하는 공통 블록 (사진 위 + 텍스트 아래) */
+      const renderItemV1 = (item: typeof items[number], idx: number) => {
+        const photos = getPhotos(item)
+        return (
+          <div key={idx} style={{ marginTop: idx > 0 ? 28 : 0 }}>
+            {photos.length > 0 && (
+              <div
+                style={{
+                  display: 'flex',
+                  gap: 8,
+                  marginBottom: 12,
+                  justifyContent: photos.length === 1 ? 'center' : 'space-between',
+                }}
+              >
+                {photos.map((p, i) => (
+                  <CropBg
+                    key={i}
+                    src={p.url}
+                    settings={p.settings}
+                    style={{
+                      flex: photos.length === 1 ? '0 0 70%' : 1,
+                      aspectRatio: '4/3',
+                      borderRadius: 4,
+                      overflow: 'hidden',
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+            {item.body && (
+              <p style={{ fontFamily: 'var(--font-ko)', fontSize: 13, lineHeight: 2, color: '#5d5850', whiteSpace: 'pre-line' }}>
+                {item.body}
+              </p>
+            )}
+          </div>
+        )
+      }
+
+      // V2 · 좌 사진 + 우 텍스트 (아이템별)
+      if (v === 2) {
+        return (
+          <AnimatedSection className={`ts-sec ts-anim-ls-v2`} key="lovestory">
+            <div className="ts-eyebrow ts-anim-item">{ls.eyebrow}</div>
+            <SectionToggle enabled={lsToggle?.enabled ?? false} label={lsToggle?.label || '스토리 보기'} btnStyle={lsToggle?.style}>
+            {items.map((item, idx) => {
+              const photos = getPhotos(item)
+              return (
+                <div
+                  key={idx}
+                  style={{
+                    display: photos.length > 0 ? 'flex' : 'block',
+                    gap: 16,
+                    marginTop: idx === 0 ? 16 : 28,
+                  }}
+                >
+                  {photos.length > 0 && (
+                    <div style={{ width: '40%', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {photos.map((p, i) => (
+                        <CropBg
+                          key={i}
+                          src={p.url}
+                          settings={p.settings}
+                          style={{
+                            width: '100%', aspectRatio: '3/4', borderRadius: 4, overflow: 'hidden',
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  {item.body && (
+                    <p style={{ fontFamily: 'var(--font-ko)', fontSize: 13, lineHeight: 2, color: '#5d5850', whiteSpace: 'pre-line', flex: 1 }}>
+                      {item.body}
+                    </p>
+                  )}
+                </div>
+              )
+            })}
+            </SectionToggle>
+          </AnimatedSection>
+        )
+      }
+
+      // V3 · 풀폭 사진 배경 + 오버레이 (첫 아이템 사진 사용, 나머지는 V1 fallback)
+      if (v === 3) {
+        const firstPhotos = getPhotos(items[0])
+        if (firstPhotos.length > 0) {
+          const photo = firstPhotos[0]
+          return (
+            <AnimatedSection className={`ts-sec ts-anim-ls-v3`} key="lovestory" style={{ padding: 0 }}>
+              <SectionToggle enabled={lsToggle?.enabled ?? false} label={lsToggle?.label || '스토리 보기'} btnStyle={lsToggle?.style}>
+              {/* 첫 번째 아이템: 풀폭 배경 */}
+              <div style={{ position: 'relative', width: '100%', minHeight: 320, overflow: 'hidden' }}>
+                <CropBg src={photo.url} settings={photo.settings} style={{ position: 'absolute', inset: 0 }} />
+                <div
+                  style={{
+                    position: 'relative', zIndex: 1, background: 'rgba(0,0,0,0.35)',
+                    minHeight: 320, display: 'flex', flexDirection: 'column', justifyContent: 'center',
+                    padding: '40px 28px', color: '#fff',
+                  }}
+                >
+                  <div style={{ fontFamily: 'var(--font-display)', fontSize: 10, letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: 16, opacity: 0.85 }}>
+                    {ls.eyebrow}
+                  </div>
+                  {items[0].body && (
+                    <p style={{ fontFamily: 'var(--font-ko)', fontSize: 13, lineHeight: 2, whiteSpace: 'pre-line', opacity: 0.92 }}>
+                      {items[0].body}
+                    </p>
+                  )}
+                </div>
+              </div>
+              {/* 나머지 아이템: V1 스타일 */}
+              {items.length > 1 && (
+                <div style={{ padding: '0 24px 32px' }}>
+                  {items.slice(1).map((item, idx) => renderItemV1(item, idx))}
+                </div>
+              )}
+              </SectionToggle>
+            </AnimatedSection>
+          )
+        }
+        // no photo → fall through to V1
+      }
+
+      // V4 · 카드 레이아웃 (아이템별 카드)
+      if (v === 4) {
+        return (
+          <AnimatedSection className={`ts-sec ts-anim-ls-v4`} key="lovestory">
+            <div className="ts-eyebrow ts-anim-item">{ls.eyebrow}</div>
+            <SectionToggle enabled={lsToggle?.enabled ?? false} label={lsToggle?.label || '스토리 보기'} btnStyle={lsToggle?.style}>
+            {items.map((item, idx) => {
+              const photos = getPhotos(item)
+              return (
+                <div
+                  key={idx}
+                  style={{
+                    marginTop: idx === 0 ? 16 : 16,
+                    border: '1px solid var(--line)',
+                    borderRadius: 4,
+                    overflow: 'hidden',
+                  }}
+                >
+                  {photos.length > 0 && (
+                    <div style={{ display: 'flex', gap: 0 }}>
+                      {photos.map((p, i) => (
+                        <CropBg key={i} src={p.url} settings={p.settings} style={{ flex: 1, aspectRatio: '4/3' }} />
+                      ))}
+                    </div>
+                  )}
+                  {item.body && (
+                    <div style={{ padding: '20px 20px' }}>
+                      <p style={{ fontFamily: 'var(--font-ko)', fontSize: 13, lineHeight: 2, color: '#5d5850', whiteSpace: 'pre-line' }}>
+                        {item.body}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+            </SectionToggle>
+          </AnimatedSection>
+        )
+      }
+
+      // V5 · 타임라인 스타일 (아이템별 타임라인 노드)
+      if (v === 5) {
+        return (
+          <AnimatedSection className={`ts-sec ts-anim-ls-v5`} key="lovestory">
+            <div className="ts-eyebrow ts-anim-item">{ls.eyebrow}</div>
+            <SectionToggle enabled={lsToggle?.enabled ?? false} label={lsToggle?.label || '스토리 보기'} btnStyle={lsToggle?.style}>
+            <div style={{ display: 'flex', gap: 20, marginTop: 16 }}>
+              <div style={{ width: 1, background: 'var(--line)', flexShrink: 0, alignSelf: 'stretch' }} />
+              <div style={{ flex: 1 }}>
+                {items.map((item, idx) => {
+                  const photos = getPhotos(item)
+                  return (
+                    <div key={idx} style={{ marginTop: idx > 0 ? 28 : 0 }}>
+                      {photos.length > 0 && (
+                        <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+                          {photos.map((p, i) => (
+                            <CropBg
+                              key={i}
+                              src={p.url}
+                              settings={p.settings}
+                              style={{
+                                flex: 1, aspectRatio: '4/3', borderRadius: 4, overflow: 'hidden',
+                              }}
+                            />
+                          ))}
+                        </div>
+                      )}
+                      {item.body && (
+                        <p style={{ fontFamily: 'var(--font-ko)', fontSize: 13, lineHeight: 2, color: '#5d5850', whiteSpace: 'pre-line' }}>
+                          {item.body}
+                        </p>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+            </SectionToggle>
+          </AnimatedSection>
+        )
+      }
+
+      // V1 · 기본 (사진 위 + 텍스트 아래, 아이템별 반복)
+      return (
+        <AnimatedSection className={`ts-sec ts-anim-ls-v1`} key="lovestory">
+          <div className="ts-eyebrow ts-anim-item">{ls.eyebrow}</div>
+          <SectionToggle enabled={lsToggle?.enabled ?? false} label={lsToggle?.label || '스토리 보기'} btnStyle={lsToggle?.style}>
+          {items.map((item, idx) => renderItemV1(item, idx))}
+          </SectionToggle>
+        </AnimatedSection>
+      )
+    },
+
+    thanks: (v) => {
+      // V2 · 미니멀 · 이름 + 얇은 라인
+      if (v === 2) {
+        return (
+          <AnimatedSection className={`ts-thanks ts-anim-thx-v${v}`} key="thanks" style={{ textAlign: 'center', padding: '40px 24px' }}>
+            <div
+              style={{
+                fontFamily: 'var(--font-ko)',
+                fontSize: 13,
+                color: 'var(--mute)',
+                lineHeight: 2,
+                whiteSpace: 'pre-line',
+                marginBottom: 24,
+              }}
+            >
+              {thanks.body}
+            </div>
+            <div
+              style={{
+                width: 30,
+                height: 1,
+                background: 'var(--line)',
+                margin: '0 auto 20px',
+              }}
+            />
+            <div
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: 15,
+                letterSpacing: '0.1em',
+                color: 'var(--ink)',
+              }}
+            >
+              {groomName} &middot; {brideName}
+            </div>
+          </AnimatedSection>
+        )
+      }
+
+      // V3 · 스크립트 마크 · 큰 타이틀
+      if (v === 3) {
+        return (
+          <AnimatedSection className={`ts-thanks ts-anim-thx-v${v}`} key="thanks" style={{ textAlign: 'center', padding: '48px 24px' }}>
+            <div
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 32,
+                fontStyle: 'italic',
+                color: 'var(--accent)',
+                lineHeight: 1,
+                marginBottom: 16,
+              }}
+            >
+              {thanks.mark || 'Thank you'}
+            </div>
+            <div
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: 13,
+                letterSpacing: '0.3em',
+                color: 'var(--ink)',
+                textTransform: 'uppercase',
+                marginBottom: 20,
+              }}
+            >
+              {thanks.title}
+            </div>
+            <p
+              style={{
+                fontFamily: 'var(--font-ko)',
+                fontSize: 13,
+                color: 'var(--mute)',
+                lineHeight: 1.9,
+                whiteSpace: 'pre-line',
+                marginBottom: 24,
+              }}
+            >
+              {thanks.body}
+            </p>
+            <div
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 16,
+                fontStyle: 'italic',
+                color: 'var(--ink)',
+              }}
+            >
+              {groomName} &amp; {brideName}
+            </div>
+          </AnimatedSection>
+        )
+      }
+
+      // V4 · 카드 프레임 · 베이지 박스
+      if (v === 4) {
+        return (
+          <AnimatedSection className={`ts-thanks ts-anim-thx-v${v}`} key="thanks" style={{ padding: '32px 20px' }}>
+            <div
+              style={{
+                background: '#f5f5f5',
+                border: '1px solid var(--line)',
+                padding: '36px 24px',
+                textAlign: 'center',
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 11,
+                  letterSpacing: '0.3em',
+                  color: 'var(--accent)',
+                  textTransform: 'uppercase',
+                  marginBottom: 14,
+                }}
+              >
+                {thanks.mark || 'With Gratitude'}
+              </div>
+              <div
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 20,
+                  color: 'var(--ink)',
+                  letterSpacing: '0.05em',
+                  marginBottom: 16,
+                }}
+              >
+                {thanks.title}
+              </div>
+              <p
+                style={{
+                  fontFamily: 'var(--font-ko)',
+                  fontSize: 13,
+                  color: '#5d5850',
+                  lineHeight: 1.9,
+                  whiteSpace: 'pre-line',
+                  marginBottom: 20,
+                }}
+              >
+                {thanks.body}
+              </p>
+              <div
+                style={{
+                  width: 24,
+                  height: 1,
+                  background: 'var(--ink)',
+                  margin: '0 auto 12px',
+                }}
+              />
+              <div
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 18,
+                  letterSpacing: '0.1em',
+                  color: 'var(--ink)',
+                }}
+              >
+                {groomName} &amp; {brideName}
+              </div>
+            </div>
+          </AnimatedSection>
+        )
+      }
+
+      // V5 · 센터 스탬프 · 데코 보더
+      if (v === 5) {
+        return (
+          <AnimatedSection className={`ts-thanks ts-anim-thx-v${v}`} key="thanks" style={{ padding: '48px 24px', textAlign: 'center' }}>
+            <div
+              style={{
+                display: 'inline-block',
+                border: '1px double var(--ink)',
+                padding: '28px 32px',
+                minWidth: 220,
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 11,
+                  letterSpacing: '0.4em',
+                  color: 'var(--mute)',
+                  textTransform: 'uppercase',
+                  marginBottom: 10,
+                }}
+              >
+                {thanks.mark || 'Thank You'}
+              </div>
+              <div
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 18,
+                  color: 'var(--ink)',
+                  letterSpacing: '0.08em',
+                  marginBottom: 14,
+                }}
+              >
+                {thanks.title}
+              </div>
+              <div
+                style={{
+                  width: 40,
+                  height: 1,
+                  background: 'var(--line)',
+                  margin: '0 auto 12px',
+                }}
+              />
+              <div
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 14,
+                  fontStyle: 'italic',
+                  color: 'var(--ink)',
+                }}
+              >
+                {groomName} &amp; {brideName}
+              </div>
+            </div>
+            <p
+              style={{
+                fontFamily: 'var(--font-ko)',
+                fontSize: 12,
+                color: 'var(--mute)',
+                lineHeight: 1.9,
+                whiteSpace: 'pre-line',
+                marginTop: 20,
+              }}
+            >
+              {thanks.body}
+            </p>
+          </AnimatedSection>
+        )
+      }
+
+      // V1 · 기본
+      return (
+        <AnimatedSection className={`ts-thanks ts-anim-thx-v${v}`} key="thanks">
+          <div className="ts-thanks-mark">{thanks.mark}</div>
+          <div className="ts-thanks-title">{thanks.title}</div>
+          <div className="ts-thanks-rule" />
+          <p className="ts-thanks-body" style={{ whiteSpace: 'pre-line' }}>
+            {thanks.body}
+          </p>
+          <div className="ts-thanks-sign">
+            {groomName} &amp; {brideName}
+          </div>
+        </AnimatedSection>
+      )
+    },
+  }
+
+  // 숨김 섹션 필터링
+  const visibleSections = data.sectionOrder.filter((id) => !data.hiddenSections.includes(id))
+
+  // 폰트 설정 (에디터에서 선택) → CSS 변수로 주입
+  const displayFontFamily = resolveDisplayFontFamily(data.displayFont)
+  const koreanFontFamily = resolveKoreanFontFamily(data.fontStyle)
+  const fontScale = typeof data.fontScale === 'number' ? data.fontScale : 1
+  const spacingScale = typeof data.sectionSpacing === 'number' ? data.sectionSpacing : 1
+  const dividerV = data.dividerVariant ?? 1
+  const previewFontStyle = {
+    ['--font-display' as string]: displayFontFamily,
+    ['--font-ko' as string]: koreanFontFamily,
+    ['--font-sans' as string]: koreanFontFamily,
+    ['--font-serif' as string]: koreanFontFamily,
+    ['--ts-font-scale' as string]: String(fontScale),
+    ['--ts-spacing-scale' as string]: String(spacingScale),
+  } as React.CSSProperties
+
+  return (
+    <div className="ts-preview" style={previewFontStyle}>
+      {/* 인트로는 sticky로 화면에 고정 — 본문이 그 위를 덮으며 올라옴 */}
+      <div className="ts-intro-sticky">
+        {(() => {
+          const introId = visibleSections.find((id) => getSectionType(id) === 'intro')
+          if (!introId) return null
+          const introVariant = data.sectionVariants[introId] ?? 1
+          return renderers.intro(introVariant, introId)
+        })()}
+      </div>
+      {/* 본문 래퍼 — 인트로 위로 겹쳐 올라오는 오버랩 */}
+      <div className="ts-body-wrap">
+      {visibleSections
+        .filter((id) => getSectionType(id) !== 'intro')
+        .map((id, index) => {
+        const type = getSectionType(id)
+        const renderer = renderers[type]
+        if (!renderer) return null
+        const variant = data.sectionVariants[id] ?? 1
+        return (
+          <div key={id}>
+            {index > 0 && (
+              <div className="ts-sec ts-sec--compact" aria-hidden="true">
+                <Divider variant={dividerV} />
+              </div>
+            )}
+            {renderer(variant, id)}
+          </div>
+        )
+      })}
+      {/* 공유 버튼 + 푸��� */}
+      <div
+        style={{
+          textAlign: 'center',
+          padding: '32px 24px 20px',
+          borderTop: '1px solid var(--line)',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: 10,
+            marginBottom: 28,
+          }}
+        >
+          {/* 카카오 공유 */}
+          <button
+            type="button"
+            onClick={() => {
+              const kakaoWindow = window as typeof window & {
+                Kakao?: {
+                  isInitialized?: () => boolean
+                  Share?: { sendDefault: (config: object) => void }
+                }
+              }
+              const url = typeof window !== 'undefined' ? window.location.href : ''
+              const gN = data.groom?.name || '신랑'
+              const bN = data.bride?.name || '신부'
+              if (kakaoWindow.Kakao?.Share && kakaoWindow.Kakao.isInitialized?.()) {
+                kakaoWindow.Kakao.Share.sendDefault({
+                  objectType: 'feed',
+                  content: {
+                    title: `${gN} ♥ ${bN}의 결혼식에 초대합니다`,
+                    description: data.wedding?.venue?.name || '',
+                    imageUrl: 'https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png',
+                    link: { mobileWebUrl: url, webUrl: url },
+                  },
+                  buttons: [{ title: '청첩장 보기', link: { mobileWebUrl: url, webUrl: url } }],
+                })
+              } else {
+                navigator.clipboard.writeText(url)
+                alert('카카오톡 공유를 사용할 수 없어 링크가 복사��었습니다.')
+              }
+            }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              fontFamily: 'var(--font-ko)',
+              fontSize: 12,
+              color: 'var(--ink)',
+              border: '1px solid var(--line)',
+              borderRadius: 6,
+              padding: '10px 18px',
+              background: '#fff',
+              cursor: 'pointer',
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3C6.48 3 2 6.58 2 10.94c0 2.8 1.86 5.27 4.66 6.67l-.9 3.33c-.07.28.24.51.48.36l3.87-2.57c.6.08 1.23.13 1.89.13 5.52 0 10-3.58 10-7.92S17.52 3 12 3z" /></svg>
+            카카오톡 공유
+          </button>
+          {/* 링크 복사 */}
+          <button
+            type="button"
+            onClick={() => {
+              const url = typeof window !== 'undefined' ? window.location.href : ''
+              navigator.clipboard.writeText(url).then(() => {
+                setLinkCopied(true)
+                setTimeout(() => setLinkCopied(false), 2000)
+              })
+            }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              fontFamily: 'var(--font-ko)',
+              fontSize: 12,
+              color: 'var(--ink)',
+              border: '1px solid var(--line)',
+              borderRadius: 6,
+              padding: '10px 18px',
+              background: '#fff',
+              cursor: 'pointer',
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
+            {linkCopied ? '복사됨!' : '링크 복사'}
+          </button>
+        </div>
+        {/* dear drawer 푸터 */}
+        <div
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: 10,
+            letterSpacing: '0.2em',
+            color: '#bbb',
+            textTransform: 'uppercase',
+          }}
+        >
+          dear drawer
+        </div>
+      </div>
+      </div>{/* /ts-body-wrap */}
+      <RsvpModal open={rsvpOpen} onClose={() => setRsvpOpen(false)} invitationId={data.id} />
+      <GalleryLightbox images={lightboxImages} isOpen={lightboxOpen} initialIndex={lightboxIndex} onClose={() => setLightboxOpen(false)} />
+    </div>
+  )
+}
+
+/* ==========================================================================
+ * GalleryLightbox — Editorial Page Style 갤러리 뷰어
+ * ========================================================================== */
+function GalleryLightbox({ images, isOpen, initialIndex, onClose }: {
+  images: string[]
+  isOpen: boolean
+  initialIndex: number
+  onClose: () => void
+}) {
+  const [idx, setIdx] = useState(initialIndex)
+  const [animClass, setAnimClass] = useState('')
+  const [transitioning, setTransitioning] = useState(false)
+  const touchStartX = useRef(0)
+  const overlayRef = useRef<HTMLDivElement>(null)
+
+  useContainedOverlay(overlayRef, isOpen)
+
+  useEffect(() => {
+    if (isOpen) {
+      setIdx(initialIndex)
+      setAnimClass('')
+      setTransitioning(false)
+    }
+  }, [initialIndex, isOpen])
+
+  const goTo = useCallback((nextIdx: number, dir: 'next' | 'prev') => {
+    if (transitioning || nextIdx === idx) return
+    setTransitioning(true)
+    setAnimClass(`ts-lb-img--exit-${dir}`)
+    setTimeout(() => {
+      setIdx(nextIdx)
+      setAnimClass(`ts-lb-img--enter-${dir}`)
+      setTimeout(() => {
+        setAnimClass('')
+        setTransitioning(false)
+      }, 350)
+    }, 350)
+  }, [transitioning, idx])
+
+  const goNext = useCallback(() => {
+    goTo((idx + 1) % images.length, 'next')
+  }, [goTo, idx, images.length])
+
+  const goPrev = useCallback(() => {
+    goTo((idx - 1 + images.length) % images.length, 'prev')
+  }, [goTo, idx, images.length])
+
+  useEffect(() => {
+    if (!isOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+      if (e.key === 'ArrowRight') goNext()
+      if (e.key === 'ArrowLeft') goPrev()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [isOpen, onClose, goNext, goPrev])
+
+  if (!isOpen || images.length === 0) return null
+
+  const pad = (n: number) => String(n).padStart(2, '0')
+
+  return (
+    <div ref={overlayRef} className="ts-lightbox" onClick={onClose}>
+      {/* 상단 바 */}
+      <div className="ts-lb-topbar">
+        <span className="ts-lb-topbar-title">Gallery</span>
+        <button className="ts-lb-topbar-close" onClick={onClose}>&times;</button>
+      </div>
+
+      {/* 이미지 영역 */}
+      <div
+        className="ts-lb-image-wrap"
+        onClick={e => e.stopPropagation()}
+        onTouchStart={e => { touchStartX.current = e.touches[0].clientX }}
+        onTouchEnd={e => {
+          const diff = e.changedTouches[0].clientX - touchStartX.current
+          if (Math.abs(diff) > 50) {
+            if (diff < 0) goNext()
+            else goPrev()
+          }
+        }}
+      >
+        {images[idx] && (
+          <img
+            src={images[idx]}
+            alt=""
+            className={`ts-lb-img ${animClass}`}
+            onClick={goNext}
+            draggable={false}
+          />
+        )}
+      </div>
+
+      {/* 에디토리얼 카운터 */}
+      <div className="ts-lb-counter">
+        {pad(idx + 1)} / {pad(images.length)}
+      </div>
+
+      {/* 프로그레스 바 */}
+      <div className="ts-lb-progress">
+        <div
+          className="ts-lb-progress-fill"
+          style={{ width: `${((idx + 1) / images.length) * 100}%` }}
+        />
+      </div>
+    </div>
+  )
+}
+
+/**
+ * 섹션 사이 구분선 · 6 variants
+ * 0=none, 1=line, 2=dots, 3=dashed, 4=double, 5=ornament
+ */
+function Divider({ variant }: { variant: number }) {
+  switch (variant) {
+    case 0:
+      return null
+    case 2:
+      return (
+        <div className="ts-divider--v2" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </div>
+      )
+    case 3:
+      return <div className="ts-divider--v3" aria-hidden="true" />
+    case 4:
+      return <div className="ts-divider--v4" aria-hidden="true" />
+    case 5:
+      return (
+        <div className="ts-divider--v5" aria-hidden="true">
+          <i />
+        </div>
+      )
+    case 1:
+    default:
+      return <div className="ts-divider--v1" aria-hidden="true" />
+  }
+}

@@ -678,8 +678,230 @@ export const essayInterviewSampleContent = {
   colorTheme: 'essay-blush' as const,
 }
 
+// THE SIMPLE 템플릿 샘플 데이터
+// 주의: the-simple은 독자적 스키마를 사용 (SectionContents + sectionOrder + sectionVariants)
+const tsImg = (filename: string) => ({
+  url: `/sample/${filename}`,
+  settings: { scale: 1, positionX: 0, positionY: 0 },
+})
+const tsGalleryImg = (filename: string, idx: number) => ({
+  id: `sample-${idx}`,
+  webUrl: `/sample/${filename}`,
+  thumbUrl: `/sample/${filename}`,
+  settings: { scale: 1, positionX: 0, positionY: 0 },
+})
+
+export const theSimpleSampleContent = {
+  groom: { name: '김민준', phone: '010-1234-5678', nameEn: 'Minjun' },
+  bride: { name: '이서연', phone: '010-5678-1234', nameEn: 'Seoyeon' },
+  wedding: {
+    date: '2026-05-16',
+    time: '13:00',
+    timeDisplay: '오후 1시',
+    venue: {
+      name: '그랜드 하얏트 서울',
+      hall: '그랜드 볼룸',
+      address: '서울특별시 용산구 소월로 322',
+    },
+  },
+  sections: {
+    intro: {
+      eyebrow: 'The Simple · Invitation',
+      title: 'THE SIMPLE',
+      body: '가장 평범한 단어로\n가장 특별한 하루를 전합니다.',
+      showNames: 'english',
+      photo: tsImg('ts-intro.png'),
+    },
+    greeting: {
+      label: 'Invitation',
+      title: '초대합니다',
+      body: '서로 다른 시간을 걸어온 두 사람이\n같은 길 위에서 만났습니다.\n\n저희 두 사람의 시작에\n귀한 걸음으로 축복해 주세요.',
+    },
+    couple: {
+      eyebrow: 'The Couple',
+      groom: {
+        role: 'Groom',
+        bio: '따뜻한 미소가 매력적인 사람',
+        photo: tsImg('ts-groom.png'),
+        photos: [tsImg('ts-groom.png'), tsImg('groom2.png')],
+      },
+      bride: {
+        role: 'Bride',
+        bio: '밝은 에너지로 주변을 환하게 하는 사람',
+        photo: tsImg('ts-bride.jpeg'),
+        photos: [tsImg('ts-bride.jpeg'), tsImg('bride2.png')],
+      },
+    },
+    info: {
+      eyebrow: 'Wedding Date',
+      timeLabel: 'Time',
+      placeLabel: 'Place',
+    },
+    direction: {
+      eyebrow: 'Direction',
+      transport: {
+        car: '내비게이션 "그랜드 하얏트 서울" 검색\n주차장 2시간 무료 (웨딩홀 도장 지참)',
+        bus: '강남역 2번 출구 앞 472번, 741번\n그랜드 하얏트 정류장 하차 도보 3분',
+        subway: '2호선 강남역 2번 출구 도보 10분\n분당선 한티역 3번 출구 도보 5분',
+      },
+    },
+    interview: {
+      eyebrow: 'Q&A',
+      items: [
+        { question: '서로의 첫인상은 어땠나요?', answer: '처음 본 순간, 이 사람이구나 싶었습니다.' },
+        {
+          question: '결혼을 결심한 이유는?',
+          answer:
+            '평범한 하루가 특별해지는 사람이라는 걸 알게 되었을 때, 망설일 이유가 없었습니다.',
+        },
+        { question: '앞으로의 다짐 한마디.', answer: '같은 방향을 바라보며 천천히, 오래 걸어가겠습니다.' },
+      ],
+    },
+    lovestory: {
+      eyebrow: 'Love Story',
+      items: [
+        {
+          body: '어느 봄날, 같은 카페에서 눈이 마주쳤습니다.',
+          photo1: tsImg('couple1.jpg'),
+          photo2: tsImg('couple2.jpg'),
+        },
+        {
+          body: '함께하는 시간이 늘어갈수록 서로에게 빠져들었습니다.',
+          photo1: tsImg('couple3.jpg'),
+        },
+      ],
+    },
+    guide: {
+      eyebrow: 'Guide',
+      items: [
+        { label: 'Dress Code', title: '드레스코드', body: '블랙 & 화이트를 제외한\n여러분의 스타일로 함께해주세요.' },
+        { label: 'Photo Booth', title: '포토부스 안내', body: '1F 로비 · 3F 테라스\n오픈 13:00' },
+        { label: 'Flower', title: '꽃 답례품 안내', body: '감사의 마음을 담은\n작은 꽃다발을 준비했습니다.' },
+        { label: 'Photo', title: '사진공유', body: '여러분의 시선으로 담긴\n우리의 순간을 나눠주세요.' },
+      ],
+    },
+    rsvp: {
+      title: 'R.S.V.P.',
+      body: '참석 여부를 전해주시면\n정성껏 준비하겠습니다.',
+    },
+    account: {
+      eyebrow: 'Account',
+      groom: [{ bank: '신한은행', number: '110-123-456789', holder: '김민준' }],
+      bride: [{ bank: '국민은행', number: '123-45-678901', holder: '이서연' }],
+    },
+    thanks: {
+      mark: 'Thank You',
+      title: '소중한 걸음에 감사드립니다',
+      body: '귀한 시간 내어 축복해 주신 마음,\n오래도록 간직하겠습니다.',
+    },
+  },
+  sectionOrder: [
+    'intro',
+    'greeting',
+    'couple',
+    'info',
+    'direction',
+    'gallery',
+    'interview',
+    'guide',
+    'account',
+    'rsvp',
+    'guestbook',
+    'gallery-2',
+    'thanks',
+  ],
+  sectionVariants: {
+    intro: 1,
+    greeting: 1,
+    couple: 1,
+    lovestory: 1,
+    info: 1,
+    direction: 1,
+    interview: 1,
+    gallery: 1,
+    guide: 1,
+    account: 1,
+    rsvp: 1,
+    guestbook: 1,
+    thanks: 1,
+    'gallery-2': 3,
+  } as Record<string, number>,
+  hiddenSections: [] as string[],
+  galleries: {
+    gallery: [
+      tsGalleryImg('ts-1galley1.png', 0),
+      tsGalleryImg('ts-1galley2.png', 1),
+      tsGalleryImg('ts-1galley3.png', 2),
+      tsGalleryImg('ts-1galley4.png', 3),
+      tsGalleryImg('ts-1galley5.png', 4),
+      tsGalleryImg('ts-1galley6.png', 5),
+      tsGalleryImg('ts-1galley7.png', 6),
+      tsGalleryImg('ts-1galley8.png', 7),
+      tsGalleryImg('ts-1galley9.png', 8),
+    ],
+    'gallery-2': [
+      tsGalleryImg('ts-2galley1.png', 10),
+      tsGalleryImg('ts-2galley2.png', 11),
+      tsGalleryImg('ts-2galley3.png', 12),
+      tsGalleryImg('ts-2galley4.png', 13),
+      tsGalleryImg('ts-2galley5.png', 14),
+      tsGalleryImg('ts-2galley6.png', 15),
+      tsGalleryImg('ts-2galley7.png', 16),
+    ],
+  } as Record<string, unknown[]>,
+  galleryRowPatterns: {} as Record<string, number[]>,
+  galleryShowMoreRow: {} as Record<string, number>,
+  galleryEyebrows: {
+    gallery: 'Gallery',
+    'gallery-2': 'Gallery II',
+  },
+  coverVariant: 5,
+  dividerVariant: 1,
+  bgm: {
+    enabled: true,
+    url: '/api/r2/audio/wedding-bgm.mp3',
+    autoplay: true,
+  },
+  meta: {
+    title: 'THE SIMPLE · 민준 ♥ 서연 결혼합니다',
+    description: '2026년 5월 16일 토요일 오후 1시\n그랜드 하얏트 서울 그랜드 볼룸',
+    ogImage: '',
+  },
+}
+
 // 샘플 청첩장 객체 생성 함수
-export function createSampleInvitation(type: 'our' | 'family' | 'magazine' | 'film' | 'record' | 'exhibit' | 'essay', essayConcept?: string) {
+export function createSampleInvitation(type: 'our' | 'family' | 'magazine' | 'film' | 'record' | 'exhibit' | 'essay' | 'the-simple', essayConcept?: string) {
+  // the-simple 타입은 별도 처리 (독자 스키마)
+  if (type === 'the-simple') {
+    const now = new Date().toISOString()
+    return {
+      id: 'sample-the-simple-id',
+      user_id: 'sample-user-id',
+      template_id: 'narrative-the-simple' as const,
+      groom_name: theSimpleSampleContent.groom.name,
+      bride_name: theSimpleSampleContent.bride.name,
+      wedding_date: theSimpleSampleContent.wedding.date,
+      wedding_time: theSimpleSampleContent.wedding.timeDisplay,
+      venue_name: theSimpleSampleContent.wedding.venue.name,
+      venue_address: theSimpleSampleContent.wedding.venue.address,
+      venue_detail: null,
+      venue_map_url: null,
+      main_image: '',
+      gallery_images: '[]',
+      greeting_message: theSimpleSampleContent.sections.greeting.body,
+      contact_groom: theSimpleSampleContent.groom.phone,
+      contact_bride: theSimpleSampleContent.bride.phone,
+      account_info: JSON.stringify([]),
+      content: JSON.stringify(theSimpleSampleContent),
+      is_paid: 1,
+      is_published: 1,
+      slug: 'sample-the-simple',
+      created_at: now,
+      updated_at: now,
+    }
+  }
+
+
   // essay 타입은 별도 처리
   if (type === 'essay') {
     const now = new Date().toISOString()

@@ -11,7 +11,7 @@ function EnvelopeScreen({
   recipientTitle = '님께',
   greetingTo = '김영희 이모님께',
   message = ['항상 저희 가족', '챙겨주셔서 감사합니다', '', '서연이가 좋은 사람 만나', '결혼하게 되었습니다', '', '꼭 오셔서', '축복해 주세요'],
-  signature = '아버지 이○○ · 어머니 김○○ 드림',
+  signature = '아버지 이○○ · 어머니 김○○ 올림',
   onOpen,
 }: {
   recipientName: string;

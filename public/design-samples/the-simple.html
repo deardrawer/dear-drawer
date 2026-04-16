@@ -1,0 +1,2093 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+<title>THE SIMPLE · 섹션별 UI 대안</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Italiana&family=Inter:wght@300;400;500;600&family=Noto+Serif+KR:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* ---------- Design Tokens ---------- */
+  :root{
+    --ink:#1a1a1a;
+    --ink-2:#2c2c2c;
+    --mute:#8a8680;
+    --mute-2:#b6b2ac;
+    --line:#e6e2dc;
+    --line-2:#efece6;
+    --bg:#fbfaf7;       /* warm ivory */
+    --bg-2:#f3f0ea;
+    --accent:#a38d6d;    /* warm champagne */
+    --accent-2:#c7a979;
+    --font-serif:"Cormorant Garamond","Noto Serif KR",serif;
+    --font-display:"Italiana","Cormorant Garamond",serif;
+    --font-sans:"Inter","Pretendard","Apple SD Gothic Neo",sans-serif;
+  }
+
+  *{box-sizing:border-box;-webkit-font-smoothing:antialiased}
+  html,body{margin:0;padding:0;background:#ece9e3;color:var(--ink);font-family:var(--font-sans);font-size:15px;line-height:1.6}
+
+  /* ---------- Page frame ---------- */
+  .page{
+    max-width:980px;margin:0 auto;padding:56px 24px 120px;
+  }
+  .page-title{
+    font-family:var(--font-display);font-weight:400;letter-spacing:.18em;
+    font-size:40px;margin:0 0 6px;text-align:center;color:var(--ink)
+  }
+  .page-sub{
+    text-align:center;color:var(--mute);letter-spacing:.24em;font-size:11px;
+    text-transform:uppercase;margin-bottom:40px
+  }
+  .legend{
+    display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:48px
+  }
+  .legend a{
+    font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    padding:8px 14px;border:1px solid var(--line);border-radius:999px;
+    color:var(--ink-2);text-decoration:none;background:#fff
+  }
+  .legend a:hover{background:var(--bg-2)}
+
+  /* Section block */
+  .sec{
+    background:#fff;border:1px solid var(--line);border-radius:2px;
+    padding:40px 0 8px;margin:0 0 56px;
+  }
+  .sec-head{
+    display:flex;align-items:baseline;justify-content:space-between;
+    padding:0 32px 28px;border-bottom:1px solid var(--line-2);margin-bottom:8px
+  }
+  .sec-head h2{
+    font-family:var(--font-display);font-weight:400;letter-spacing:.14em;
+    margin:0;font-size:26px
+  }
+  .sec-head .ko{color:var(--mute);font-size:12px;letter-spacing:.2em;text-transform:uppercase}
+
+  /* variant grid */
+  .variants{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
+    gap:28px;padding:28px 28px 36px
+  }
+  .card{
+    background:var(--bg);border:1px solid var(--line);border-radius:2px;
+    overflow:hidden;display:flex;flex-direction:column
+  }
+  .card-label{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:12px 16px;border-bottom:1px solid var(--line);
+    font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);
+    background:#fff
+  }
+  .card-label b{color:var(--ink);font-weight:500;letter-spacing:.22em}
+  .card-body{padding:0}
+
+  /* Mobile-frame inner */
+  .mob{background:var(--bg);padding:28px 22px;min-height:360px}
+
+  /* Typography helpers */
+  .kr-serif{font-family:"Noto Serif KR",serif}
+  .eng-display{font-family:var(--font-display);letter-spacing:.12em}
+  .eng-serif{font-family:var(--font-serif);font-style:italic}
+  .caps{letter-spacing:.22em;text-transform:uppercase}
+  .mute{color:var(--mute)}
+  hr.line{border:0;border-top:1px solid var(--line);margin:18px 0}
+  hr.line-ink{border:0;border-top:1px solid var(--ink);margin:18px 0}
+  .dot{display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--ink);vertical-align:middle;margin:0 8px}
+
+  /* ---------- 1. INTRO ---------- */
+  /* V1 Full-bleed cover */
+  .in1{position:relative;aspect-ratio:3/4;margin:-28px -22px;overflow:hidden;color:#fff}
+  .in1 .bg{position:absolute;inset:0;background:linear-gradient(135deg,#4a4339,#736554 40%,#9a8870);filter:grayscale(.1) brightness(.85)}
+  .in1 .bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.3) 0%,rgba(0,0,0,.08) 28%,rgba(0,0,0,.1) 60%,rgba(0,0,0,.78) 100%)}
+  .in1 .content{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:26px 24px;z-index:2}
+  .in1 .top{display:flex;justify-content:space-between;font-family:var(--font-display);font-size:9px;letter-spacing:.3em;text-transform:uppercase;opacity:.88;line-height:1.8}
+  .in1 .top b{display:block;color:#fff;font-weight:500}
+  .in1 .top .r{text-align:right}
+  .in1 .center{text-align:center;margin:auto 0}
+  .in1 .center .kicker{font-family:var(--font-display);font-size:10px;letter-spacing:.5em;text-transform:uppercase;opacity:.92}
+  .in1 .center .rule{width:28px;height:1px;background:rgba(255,255,255,.7);margin:18px auto}
+  .in1 .center h3{font-family:var(--font-display);font-style:italic;font-size:46px;line-height:.95;letter-spacing:-.02em;margin:8px 0 16px;font-weight:400}
+  .in1 .center .sub{font-family:var(--font-display);font-size:10px;letter-spacing:.38em;text-transform:uppercase;opacity:.85}
+  .in1 .bottom{display:flex;justify-content:space-between;font-family:var(--font-display);font-size:9px;letter-spacing:.22em;text-transform:uppercase;opacity:.78;line-height:1.8}
+  .in1 .bottom b{display:block;color:#fff;font-weight:500}
+  .in1 .bottom .r{text-align:right}
+
+  /* V2 Typographic minimal */
+  .in2{text-align:center;padding:36px 6px 24px}
+  .in2 .eng{font-family:var(--font-display);font-size:10px;letter-spacing:.42em;text-transform:uppercase;color:var(--mute)}
+  .in2 .rule{width:28px;height:1px;background:var(--ink);margin:22px auto}
+  .in2 h3{font-family:var(--font-display);font-style:italic;font-size:46px;line-height:1;margin:16px 0 20px;font-weight:400}
+  .in2 h3 .amp{color:var(--accent);padding:0 4px;font-style:italic}
+  .in2 .date{font-family:var(--font-display);font-size:12px;letter-spacing:.36em;color:var(--mute);text-transform:uppercase}
+  .in2 .day{font-family:var(--font-display);font-size:16px;letter-spacing:.14em;margin-top:6px;color:var(--ink)}
+
+  /* V3 Envelope */
+  .in3{padding:10px 0}
+  .in3 .env{background:#fff;border:1px solid var(--ink);position:relative;padding:64px 22px 30px;margin-top:8px}
+  .in3 .flap{position:absolute;top:-1px;left:-1px;right:-1px;height:64px;background:var(--bg-2);clip-path:polygon(0 0,100% 0,50% 100%);border-bottom:1px solid var(--ink)}
+  .in3 .seal{position:absolute;top:44px;left:50%;transform:translateX(-50%);width:34px;height:34px;border-radius:50%;background:var(--accent);z-index:2;display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-display);font-style:italic;font-size:15px;box-shadow:0 2px 6px rgba(0,0,0,.12)}
+  .in3 .content{text-align:center;padding-top:6px}
+  .in3 .eng{font-family:var(--font-display);font-size:10px;letter-spacing:.32em;color:var(--mute);text-transform:uppercase}
+  .in3 h3{font-family:var(--font-display);font-style:italic;font-size:30px;margin:12px 0 8px;font-weight:400;line-height:1}
+  .in3 .date{font-family:var(--font-display);font-size:11px;letter-spacing:.3em;color:var(--mute);text-transform:uppercase;margin-top:10px}
+  .in3 .tap{margin-top:14px;font-size:9px;letter-spacing:.28em;color:var(--mute);font-family:var(--font-display);text-transform:uppercase}
+
+  /* V4 Quote */
+  .in4{padding:28px 8px 18px;text-align:center}
+  .in4 .mark{font-family:var(--font-display);font-size:56px;color:var(--accent);line-height:.3;margin-bottom:14px}
+  .in4 .quote{font-family:var(--font-serif);font-style:italic;font-size:18px;line-height:1.7;color:var(--ink-2);margin:0}
+  .in4 .rule{width:24px;height:1px;background:var(--ink);margin:30px auto 16px}
+  .in4 .names{font-family:var(--font-display);font-size:13px;letter-spacing:.26em;text-transform:uppercase}
+  .in4 .date{font-family:var(--font-display);font-size:10px;letter-spacing:.3em;color:var(--mute);text-transform:uppercase;margin-top:10px}
+
+  /* V5 Save-the-Date Stamp */
+  .in5{padding:16px 4px}
+  .in5 .stamp{border:2px double var(--ink);padding:30px 18px;text-align:center;position:relative}
+  .in5 .stamp::before{content:"";position:absolute;inset:7px;border:1px solid var(--line);pointer-events:none}
+  .in5 .eng{position:relative;font-family:var(--font-display);font-size:10px;letter-spacing:.4em;color:var(--mute);text-transform:uppercase}
+  .in5 .big{position:relative;font-family:var(--font-display);font-style:italic;font-size:28px;line-height:1.05;margin:16px 0 14px;font-weight:400}
+  .in5 .rule{position:relative;width:20px;height:1px;background:var(--ink);margin:14px auto}
+  .in5 .date{position:relative;font-family:var(--font-display);font-size:12px;letter-spacing:.3em;color:var(--ink);text-transform:uppercase;margin-top:4px}
+  .in5 .sub{position:relative;font-size:10px;color:var(--mute);letter-spacing:.22em;margin-top:6px;text-transform:uppercase;font-family:var(--font-display)}
+
+  /* ---------- 2. GREETING ---------- */
+  /* V1 classic centered */
+  .g1{text-align:center;padding:18px 6px}
+  .g1 .sup{font-family:var(--font-display);letter-spacing:.3em;font-size:12px;color:var(--mute)}
+  .g1 h3{font-family:"Noto Serif KR",serif;font-weight:400;font-size:18px;margin:14px 0 18px;line-height:1.9}
+  .g1 p{color:var(--ink-2);font-size:13px;line-height:2;margin:0}
+  .g1 .rule{width:24px;height:1px;background:var(--ink);margin:18px auto}
+
+  /* V2 editorial left */
+  .g2{padding:4px 2px}
+  .g2 .num{font-family:var(--font-display);font-size:64px;line-height:1;color:var(--accent)}
+  .g2 .cap{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--mute);margin:6px 0 18px}
+  .g2 h3{font-family:"Noto Serif KR",serif;font-weight:400;font-size:17px;line-height:1.8;margin:0 0 14px}
+  .g2 p{font-size:13px;line-height:2;color:var(--ink-2);margin:0}
+
+  /* V3 quote */
+  .g3{text-align:center;padding:20px 10px;position:relative}
+  .g3::before,.g3::after{content:"";display:block;width:40%;height:1px;background:var(--line);margin:0 auto}
+  .g3 blockquote{margin:26px 8px;font-family:var(--font-serif);font-style:italic;font-size:19px;line-height:1.8;color:var(--ink-2)}
+  .g3 blockquote span{display:block;font-family:var(--font-display);font-size:12px;letter-spacing:.3em;color:var(--mute);font-style:normal;margin-top:14px}
+
+  /* V4 boxed frame */
+  .g4{padding:10px 4px}
+  .g4 .frame{border:1px solid var(--ink);padding:28px 20px;text-align:center}
+  .g4 .frame h3{font-family:var(--font-display);font-weight:400;font-size:22px;margin:0 0 14px;letter-spacing:.12em}
+  .g4 .frame p{font-family:"Noto Serif KR",serif;font-size:13px;line-height:2;color:var(--ink-2);margin:0}
+  .g4 .names{margin-top:18px;font-family:"Noto Serif KR",serif;font-size:13px;color:var(--mute)}
+
+  /* V5 vertical lines */
+  .g5{display:flex;gap:18px;padding:6px 4px 2px}
+  .g5 .bar{width:1px;background:var(--ink);align-self:stretch}
+  .g5 .txt{flex:1}
+  .g5 .sup{font-family:var(--font-display);font-size:11px;letter-spacing:.3em;color:var(--mute);text-transform:uppercase}
+  .g5 h3{font-family:"Noto Serif KR",serif;font-weight:400;font-size:17px;line-height:1.9;margin:10px 0 14px}
+  .g5 p{font-size:13px;line-height:2;color:var(--ink-2);margin:0}
+
+  /* ---------- 2. WEDDING INFO ---------- */
+  /* V1 calendar + info */
+  .i1 h3{text-align:center;font-family:var(--font-display);letter-spacing:.22em;font-size:13px;color:var(--mute);margin:0 0 6px}
+  .i1 .big{text-align:center;font-family:var(--font-display);font-size:34px;letter-spacing:.14em;margin:0 0 2px}
+  .i1 .sub{text-align:center;font-size:12px;color:var(--mute);letter-spacing:.2em;margin-bottom:18px}
+  .cal{width:100%;border-collapse:collapse;text-align:center;font-size:12px}
+  .cal th{color:var(--mute);font-weight:400;padding:6px 0;font-size:10px;letter-spacing:.12em}
+  .cal td{padding:8px 0;color:var(--ink-2)}
+  .cal td.mute{color:var(--mute-2)}
+  .cal td.mark{position:relative;color:#fff}
+  .cal td.mark span{display:inline-block;width:26px;height:26px;line-height:26px;border-radius:50%;background:var(--ink)}
+  .i1 .venue{margin-top:20px;text-align:center;font-size:13px;line-height:1.9;color:var(--ink-2)}
+
+  /* V2 big date typography */
+  .i2{padding:10px 4px;text-align:center}
+  .i2 .top{font-family:var(--font-display);font-size:13px;letter-spacing:.34em;color:var(--mute);text-transform:uppercase;margin-bottom:8px}
+  .i2 .day{font-family:var(--font-display);font-size:96px;line-height:.88;letter-spacing:.02em;color:var(--ink);margin:0}
+  .i2 .bot{font-family:var(--font-display);font-size:13px;letter-spacing:.34em;color:var(--mute);text-transform:uppercase;margin:10px 0 18px}
+  .i2 .divider{width:32px;height:1px;background:var(--ink);margin:0 auto 16px}
+  .i2 .meta{display:grid;gap:8px;text-align:center}
+  .i2 .meta div{font-size:14px;color:var(--ink-2);font-family:"Noto Serif KR",serif}
+  .i2 .meta div b{display:block;font-family:var(--font-display);font-size:10px;letter-spacing:.26em;color:var(--mute);text-transform:uppercase;margin-bottom:3px;font-weight:500}
+
+  /* V3 week strip calendar */
+  .i3{padding:10px 2px}
+  .i3 .title{text-align:center;margin-bottom:22px}
+  .i3 .title .m{font-family:var(--font-display);font-size:36px;letter-spacing:.1em;line-height:1;margin:0;color:var(--ink)}
+  .i3 .title .y{font-family:var(--font-display);font-size:11px;letter-spacing:.34em;color:var(--mute);margin-top:8px;text-transform:uppercase}
+  .i3 .week{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px 0 12px}
+  .i3 .week .dow{font-family:var(--font-display);font-size:10px;letter-spacing:.14em;color:var(--mute);padding:8px 0 10px;text-transform:uppercase;border-bottom:1px solid var(--line-2);margin:0 2px 10px}
+  .i3 .week .dd{font-family:"Noto Serif KR",serif;font-size:15px;color:var(--ink-2);padding:6px 0;display:flex;align-items:center;justify-content:center;height:42px}
+  .i3 .week .dd.mute{color:var(--mute-2)}
+  .i3 .week .dd.mark span{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border:1px solid var(--ink);border-radius:50%;font-family:var(--font-display);font-size:18px;color:var(--ink);background:#fff}
+  .i3 .foot{text-align:center;padding-top:18px}
+  .i3 .foot b{display:block;font-family:var(--font-display);font-size:12px;letter-spacing:.3em;color:var(--mute);text-transform:uppercase;margin-bottom:10px}
+  .i3 .foot .venue{font-family:"Noto Serif KR",serif;font-size:14px;color:var(--ink-2);line-height:1.9}
+
+  /* V4 ticket */
+  .i4 .ticket{background:#fff;border:1px solid var(--ink);padding:0;position:relative;margin:4px 0}
+  .i4 .t-top{padding:16px 18px;border-bottom:1px dashed var(--ink)}
+  .i4 .t-top .cap{font-size:10px;letter-spacing:.28em;color:var(--mute);text-transform:uppercase}
+  .i4 .t-top h4{margin:6px 0 0;font-family:var(--font-display);font-size:22px;letter-spacing:.1em}
+  .i4 .t-bot{padding:16px 18px;display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px}
+  .i4 .t-bot div b{display:block;font-size:9px;letter-spacing:.22em;color:var(--mute);text-transform:uppercase;margin-bottom:4px;font-weight:500}
+  .i4 .ticket::before,.i4 .ticket::after{
+    content:"";position:absolute;width:14px;height:14px;border-radius:50%;background:var(--bg);border:1px solid var(--ink);
+    top:46px;
+  }
+  .i4 .ticket::before{left:-8px}
+  .i4 .ticket::after{right:-8px}
+
+  /* V5 countdown hero */
+  .i5{padding:8px 2px;text-align:center}
+  .i5 .cap{font-family:var(--font-display);font-size:11px;letter-spacing:.3em;color:var(--mute);text-transform:uppercase;margin-bottom:12px}
+  .i5 .count{font-family:var(--font-display);line-height:.9;margin:0 0 10px}
+  .i5 .count .dash{font-size:34px;color:var(--mute);vertical-align:middle;margin-right:6px}
+  .i5 .count .n{font-size:84px;color:var(--ink);letter-spacing:.02em}
+  .i5 .note{font-family:var(--font-display);font-size:12px;letter-spacing:.28em;color:var(--mute);text-transform:uppercase;margin-bottom:16px}
+  .i5 .rule{width:24px;height:1px;background:var(--ink);margin:0 auto 16px}
+  .i5 .rows{display:grid;gap:10px;text-align:left;padding:0 6px}
+  .i5 .rows .row{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--line-2)}
+  .i5 .rows .row:last-child{border-bottom:0}
+  .i5 .rows .row b{font-family:var(--font-display);font-size:11px;letter-spacing:.22em;color:var(--mute);text-transform:uppercase;font-weight:500}
+  .i5 .rows .row span{font-family:"Noto Serif KR",serif;font-size:14px;color:var(--ink-2)}
+
+  /* ---------- 3. DIRECTIONS ---------- */
+  /* map placeholder */
+  .mapbox{
+    aspect-ratio:16/9;background:
+      repeating-linear-gradient(45deg,#ecece6 0 8px,#e3e0d8 8px 16px);
+    border:1px solid var(--line);position:relative
+  }
+  .mapbox::after{
+    content:"";position:absolute;left:50%;top:50%;width:10px;height:10px;border-radius:50%;
+    background:var(--ink);transform:translate(-50%,-50%);box-shadow:0 0 0 6px rgba(0,0,0,.08)
+  }
+  .d1 h4{margin:14px 0 4px;font-family:"Noto Serif KR",serif;font-size:15px}
+  .d1 .addr{font-size:12px;color:var(--mute);margin-bottom:10px}
+  .d1 .btns{display:flex;gap:6px}
+  .d1 .btns button{flex:1;background:#fff;border:1px solid var(--line);padding:8px 0;font-size:11px;letter-spacing:.1em;color:var(--ink-2)}
+
+  .d2 .mapbox{aspect-ratio:4/5}
+  .d2 .overlay{margin-top:-1px;background:#fff;border:1px solid var(--line);border-top:0;padding:14px;text-align:center}
+  .d2 .overlay .n{font-family:var(--font-display);font-size:18px;letter-spacing:.12em}
+  .d2 .overlay .a{font-size:11px;color:var(--mute);margin-top:4px}
+
+  .d3 .tabs{display:flex;border-bottom:1px solid var(--line);margin:6px 0 14px}
+  .d3 .tabs button{flex:1;background:none;border:0;padding:10px 0;font-size:11px;letter-spacing:.16em;color:var(--mute);cursor:pointer;text-transform:uppercase}
+  .d3 .tabs button.on{color:var(--ink);border-bottom:1px solid var(--ink);margin-bottom:-1px;font-weight:500}
+  .d3 ul{list-style:none;padding:0;margin:0}
+  .d3 li{display:flex;gap:12px;padding:10px 0;border-bottom:1px dotted var(--line)}
+  .d3 li b{font-size:10px;letter-spacing:.2em;color:var(--mute);min-width:52px;padding-top:3px}
+  .d3 li span{font-size:12px;color:var(--ink-2);line-height:1.7}
+
+  .d4 ul{list-style:none;padding:10px 0 0;margin:0}
+  .d4 li{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--line-2)}
+  .d4 li:last-child{border-bottom:0}
+  .d4 .ic{width:32px;height:32px;border:1px solid var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+  .d4 li h5{margin:0;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute)}
+  .d4 li p{margin:4px 0 0;font-size:13px;color:var(--ink-2);line-height:1.7}
+
+  .d5{padding:18px 4px;text-align:center}
+  .d5 .eng{font-family:var(--font-display);font-size:14px;letter-spacing:.3em;color:var(--mute)}
+  .d5 h4{font-family:"Noto Serif KR",serif;font-weight:400;font-size:20px;margin:12px 0}
+  .d5 .rule{width:28px;height:1px;background:var(--ink);margin:8px auto 18px}
+  .d5 p{font-size:12px;color:var(--ink-2);line-height:2;margin:0}
+  .d5 .link{display:inline-block;margin-top:18px;font-size:10px;letter-spacing:.3em;color:var(--ink);border-bottom:1px solid var(--ink);padding-bottom:3px;text-transform:uppercase;text-decoration:none}
+
+  /* ---------- 2. COUPLE ---------- */
+  .portrait{background:linear-gradient(140deg,#d8d3c9,#eae6dd);aspect-ratio:3/4;position:relative;overflow:hidden}
+  .portrait::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 40% 30%,rgba(255,255,255,.5),transparent 55%)}
+
+  .c1 .pair{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .c1 .p{text-align:center}
+  .c1 .p .portrait{margin-bottom:12px}
+  .c1 .p .role{font-family:var(--font-display);font-size:11px;letter-spacing:.28em;color:var(--mute);text-transform:uppercase}
+  .c1 .p .name{font-family:"Noto Serif KR",serif;font-size:16px;margin:4px 0}
+  .c1 .p .desc{font-size:11px;color:var(--mute);line-height:1.7}
+  .c1 .amp{text-align:center;font-family:var(--font-display);font-size:22px;color:var(--accent);margin:14px 0 4px}
+
+  .c2{text-align:center;padding:6px 2px}
+  .c2 .portrait{aspect-ratio:4/3;margin-bottom:18px}
+  .c2 .mono{font-family:var(--font-display);font-size:46px;letter-spacing:.08em;line-height:1;margin:0}
+  .c2 .mono span{color:var(--accent);padding:0 6px}
+  .c2 .sub{font-size:11px;letter-spacing:.26em;color:var(--mute);text-transform:uppercase;margin:10px 0 14px}
+  .c2 .bio{font-family:"Noto Serif KR",serif;font-size:13px;line-height:1.9;color:var(--ink-2);margin:0}
+
+  .c3 .row{background:#fff;border:1px solid var(--line);padding:16px;display:grid;grid-template-columns:70px 1fr;gap:14px;align-items:center;margin-bottom:10px}
+  .c3 .row:last-child{margin-bottom:0}
+  .c3 .row .portrait{aspect-ratio:1/1;border-radius:50%}
+  .c3 .row .info .role{font-family:var(--font-display);font-size:10px;letter-spacing:.24em;color:var(--mute);text-transform:uppercase}
+  .c3 .row .info .name{font-family:"Noto Serif KR",serif;font-size:15px;margin:3px 0 4px}
+  .c3 .row .info .line{font-size:11px;color:var(--mute);line-height:1.6}
+
+  .c4 .side{padding:16px 0;border-bottom:1px solid var(--line-2);display:grid;grid-template-columns:86px 1fr;gap:14px;align-items:center}
+  .c4 .side:first-child{padding-top:4px}
+  .c4 .side:last-child{border-bottom:0}
+  .c4 .side .portrait{aspect-ratio:3/4;width:100%}
+  .c4 .side .label{font-family:var(--font-display);font-size:10px;letter-spacing:.24em;color:var(--mute);text-transform:uppercase;margin-bottom:5px}
+  .c4 .side .name{font-family:"Noto Serif KR",serif;font-size:16px;margin:0 0 5px}
+  .c4 .side .bio{font-family:var(--font-serif);font-style:italic;font-size:12px;color:var(--ink-2);line-height:1.6;margin:0 0 8px}
+  .c4 .side .parents{font-size:11px;color:var(--mute);line-height:1.7}
+  .c4 .side .parents b{font-weight:500;color:var(--mute);margin-right:4px;font-size:10px;letter-spacing:.1em}
+
+  .c5{padding:4px 2px}
+  .c5 .profile{padding:16px 0;border-bottom:1px solid var(--line-2)}
+  .c5 .profile:first-child{padding-top:4px}
+  .c5 .profile:last-child{border-bottom:0}
+  .c5 .profile .top{display:grid;grid-template-columns:72px 1fr;gap:14px;align-items:flex-start;margin-bottom:12px}
+  .c5 .profile .portrait{aspect-ratio:1/1;width:100%;border-radius:50%}
+  .c5 .profile .head{display:flex;align-items:baseline;gap:10px;margin-bottom:6px}
+  .c5 .profile .head b{font-family:var(--font-display);font-size:22px;line-height:1;color:var(--accent)}
+  .c5 .profile .head .name{font-family:"Noto Serif KR",serif;font-size:15px}
+  .c5 .profile .head small{margin-left:auto;font-size:9px;letter-spacing:.2em;color:var(--mute);text-transform:uppercase}
+  .c5 .profile .bio{font-family:var(--font-serif);font-style:italic;font-size:12px;color:var(--ink-2);line-height:1.55;margin:0}
+  .c5 .profile .tags{display:flex;flex-wrap:wrap;gap:5px}
+  .c5 .profile .tags span{font-size:10px;padding:4px 9px;border:1px solid var(--line);color:var(--ink-2);letter-spacing:.06em;background:#fff}
+
+  /* ---------- 7. GUIDE ---------- */
+  .w1 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:4px 0}
+  .w1 .cell{background:#fff;border:1px solid var(--line);padding:18px 14px;text-align:center;min-height:130px;display:flex;flex-direction:column;justify-content:center}
+  .w1 .cell .ic{font-family:var(--font-display);font-size:24px;color:var(--accent);margin-bottom:6px;letter-spacing:.06em}
+  .w1 .cell b{font-family:"Noto Serif KR",serif;font-size:13px;display:block;margin-bottom:6px}
+  .w1 .cell p{font-size:11px;color:var(--mute);line-height:1.6;margin:0}
+
+  .w2 ul{list-style:none;padding:0;margin:4px 0}
+  .w2 li{padding:16px 0;border-bottom:1px solid var(--line-2);display:grid;grid-template-columns:80px 1fr;gap:14px}
+  .w2 li:last-child{border-bottom:0}
+  .w2 li b{font-size:10px;letter-spacing:.2em;color:var(--mute);text-transform:uppercase;padding-top:3px}
+  .w2 li .desc h5{margin:0 0 5px;font-family:"Noto Serif KR",serif;font-size:14px;font-weight:500}
+  .w2 li .desc p{margin:0;font-size:12px;color:var(--ink-2);line-height:1.7}
+
+  .w3 .item{border:1px solid var(--line);background:#fff;margin-bottom:8px}
+  .w3 .item:last-child{margin-bottom:0}
+  .w3 .item .q{padding:14px 16px;display:flex;justify-content:space-between;align-items:center;font-family:"Noto Serif KR",serif;font-size:13px;cursor:pointer}
+  .w3 .item .q .plus{font-family:var(--font-display);font-size:18px;color:var(--mute)}
+  .w3 .item.open .q .plus{transform:rotate(45deg);display:inline-block}
+  .w3 .item .a{padding:0 16px 14px;font-size:12px;color:var(--mute);line-height:1.8;border-top:1px solid var(--line-2);padding-top:12px;display:none}
+  .w3 .item.open .a{display:block}
+
+  .w4 .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:6px 0}
+  .w4 .badge{background:var(--ink);color:#fff;padding:16px 10px;text-align:center;aspect-ratio:1/1;display:flex;flex-direction:column;justify-content:center;gap:4px}
+  .w4 .badge .l{font-family:var(--font-display);font-size:11px;letter-spacing:.22em;opacity:.7;text-transform:uppercase}
+  .w4 .badge b{font-family:"Noto Serif KR",serif;font-size:12px;font-weight:500}
+  .w4 .badge small{font-size:9px;letter-spacing:.08em;opacity:.7}
+  .w4 .badge.alt{background:#fff;color:var(--ink);border:1px solid var(--ink)}
+  .w4 .badge.alt .l{opacity:.6}
+  .w4 .badge.alt small{opacity:.6}
+
+  .w5 .strip{display:grid;grid-template-columns:72px 1fr;gap:0;border-bottom:1px solid var(--line-2)}
+  .w5 .strip:last-child{border-bottom:0}
+  .w5 .strip .left{background:var(--bg-2);padding:14px 8px;text-align:center;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:12px;letter-spacing:.18em;color:var(--ink);text-transform:uppercase}
+  .w5 .strip .right{padding:14px 16px}
+  .w5 .strip .right b{display:block;font-family:"Noto Serif KR",serif;font-size:13px;margin-bottom:4px}
+  .w5 .strip .right p{margin:0;font-size:11px;color:var(--mute);line-height:1.7}
+
+  /* ---------- 5. INTERVIEW ---------- */
+  .n1 .q{font-family:var(--font-display);font-size:13px;letter-spacing:.2em;color:var(--mute);text-transform:uppercase;margin:14px 0 6px}
+  .n1 .q::before{content:"Q. "}
+  .n1 .a{font-family:"Noto Serif KR",serif;font-size:13px;line-height:1.9;color:var(--ink-2);padding-left:16px;border-left:1px solid var(--line)}
+  .n1 hr{border:0;border-top:1px dotted var(--line);margin:16px 0}
+
+  .n2{padding:14px 6px;text-align:center}
+  .n2 .mark{font-family:var(--font-display);font-size:56px;color:var(--accent);line-height:.6;margin-bottom:6px}
+  .n2 blockquote{margin:0;font-family:"Noto Serif KR",serif;font-size:15px;line-height:2;color:var(--ink-2)}
+  .n2 .who{margin-top:16px;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute)}
+
+  .n3{padding:6px 2px}
+  .n3 .row{display:flex;gap:12px;align-items:flex-start;margin:12px 0}
+  .n3 .avatar{width:44px;height:44px;border:1px solid var(--ink);border-radius:50%;background:var(--bg-2);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:14px;flex-shrink:0}
+  .n3 .bub{flex:1;background:#fff;border:1px solid var(--line);padding:12px 14px;position:relative}
+  .n3 .bub b{display:block;font-size:10px;letter-spacing:.22em;color:var(--mute);text-transform:uppercase;margin-bottom:4px}
+  .n3 .bub p{margin:0;font-size:13px;color:var(--ink-2);line-height:1.7}
+
+  .n4 ul{list-style:none;padding:0;margin:4px 0}
+  .n4 li{padding:14px 0;border-bottom:1px solid var(--line-2);display:grid;grid-template-columns:38px 1fr;gap:12px}
+  .n4 li:last-child{border-bottom:0}
+  .n4 li .n{font-family:var(--font-display);font-size:28px;color:var(--accent-2);line-height:.9}
+  .n4 li .q{font-size:11px;letter-spacing:.18em;color:var(--mute);text-transform:uppercase;margin-bottom:6px}
+  .n4 li .a{font-family:"Noto Serif KR",serif;font-size:13px;line-height:1.8;color:var(--ink-2)}
+
+  .n5{padding:6px 2px}
+  .n5 .m{display:flex;gap:10px;margin:12px 0;align-items:flex-end}
+  .n5 .m.right{flex-direction:row-reverse;text-align:right}
+  .n5 .m .who{font-family:var(--font-display);font-size:10px;letter-spacing:.22em;color:var(--mute);text-transform:uppercase;width:50px;flex-shrink:0;padding-bottom:12px}
+  .n5 .m.right .who{text-align:left}
+  .n5 .m p{flex:1;margin:0;background:#fff;border:1px solid var(--line);padding:10px 14px;font-size:12px;line-height:1.7;color:var(--ink-2)}
+
+  /* ---------- 6. GALLERY · photobook ---------- */
+  .ph{background:linear-gradient(135deg,#d6d1c8,#ece8df);position:relative;overflow:hidden}
+  .ph::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.5),transparent 60%);pointer-events:none}
+
+  .g-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+  .g-head .num{font-family:var(--font-display);font-size:10px;letter-spacing:.22em;color:var(--accent);text-transform:uppercase;display:flex;align-items:center;gap:10px}
+  .g-head .num::before{content:"";display:inline-block;width:20px;height:1px;background:var(--accent)}
+  .g-head .cnt{font-size:9px;letter-spacing:.22em;color:var(--mute);text-transform:uppercase}
+  .g-title{font-family:var(--font-display);font-style:italic;font-size:34px;line-height:.95;letter-spacing:-.025em;margin:2px 0 8px;font-weight:400}
+  .g-tag{font-size:9px;letter-spacing:.26em;color:var(--mute);text-transform:uppercase;padding-top:10px;border-top:1px solid var(--line);margin-bottom:14px}
+
+  /* V1 · Portrait stacked */
+  .g-1 .item{margin-top:16px}
+  .g-1 .item:first-of-type{margin-top:0}
+  .g-1 .item .ph{aspect-ratio:4/5}
+  .g-1 .cap{display:flex;justify-content:space-between;align-items:baseline;padding-top:10px;font-size:8px;letter-spacing:.2em;color:var(--mute);text-transform:uppercase}
+  .g-1 .cap em{font-family:var(--font-display);font-style:italic;font-size:12px;color:var(--ink);letter-spacing:0;text-transform:none}
+
+  /* V2 · Diptych */
+  .g-2 .pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .g-2 .pair .ph{aspect-ratio:3/4}
+  .g-2 .lbl{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center;padding:10px 0 0;font-size:8px;letter-spacing:.2em;color:var(--mute);text-transform:uppercase}
+  .g-2 .lbl .ctr{font-family:var(--font-display);font-style:italic;font-size:12px;color:var(--ink);letter-spacing:0;text-transform:none}
+  .g-2 .lbl .r{text-align:right}
+  .g-2 .sep{height:22px}
+
+  /* V3 · Strip (horizontal swipe) */
+  .g-3 .rail{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -22px;padding:4px 22px 8px;scrollbar-width:none}
+  .g-3 .rail::-webkit-scrollbar{display:none}
+  .g-3 .frame{flex:0 0 76%;scroll-snap-align:center}
+  .g-3 .frame .ph{aspect-ratio:3/4}
+  .g-3 .meta{display:flex;justify-content:space-between;align-items:baseline;margin-top:10px;font-size:8px;letter-spacing:.18em;color:var(--mute);text-transform:uppercase}
+  .g-3 .meta em{font-family:var(--font-display);font-style:italic;font-size:11px;color:var(--ink);text-transform:none;letter-spacing:0}
+  .g-3 .hint{display:flex;align-items:center;gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line-2);font-size:9px;letter-spacing:.26em;color:var(--mute);text-transform:uppercase}
+  .g-3 .hint .ln{flex:1;height:1px;background:var(--line)}
+
+  /* V4 · Mosaic asymmetric */
+  .g-4 .mos{display:grid;grid-template-columns:repeat(6,1fr);grid-auto-rows:32px;gap:5px}
+  .g-4 .mos .ph{position:relative}
+  .g-4 .mos .tag{position:absolute;top:6px;left:8px;font-family:var(--font-display);font-size:8px;letter-spacing:.14em;color:rgba(255,255,255,.92);text-shadow:0 1px 3px rgba(0,0,0,.5);text-transform:uppercase;z-index:2}
+  .g-4 .m-a{grid-column:1/span 4;grid-row:1/span 5}
+  .g-4 .m-b{grid-column:5/span 2;grid-row:1/span 3}
+  .g-4 .m-c{grid-column:5/span 2;grid-row:4/span 2}
+  .g-4 .m-d{grid-column:1/span 2;grid-row:6/span 2}
+  .g-4 .m-e{grid-column:3/span 2;grid-row:6/span 3}
+  .g-4 .m-f{grid-column:5/span 2;grid-row:6/span 3}
+  .g-4 .m-g{grid-column:1/span 2;grid-row:8/span 2}
+  .g-4 .foot{display:flex;justify-content:space-between;padding-top:14px;margin-top:16px;border-top:1px solid var(--line-2);font-size:9px;letter-spacing:.22em;color:var(--mute);text-transform:uppercase}
+
+  /* V5 · Cinema letterbox (dark) */
+  .g-5{background:#0e0d0a;color:#e8e4dc;margin:-28px -22px;padding:28px 22px}
+  .g-5 .g-head .num{color:#b67c57}
+  .g-5 .g-head .num::before{background:#b67c57}
+  .g-5 .g-head .cnt{color:rgba(255,255,255,.45)}
+  .g-5 .g-title{color:#e8e4dc}
+  .g-5 .g-tag{color:rgba(255,255,255,.55);border-top-color:rgba(255,255,255,.15)}
+  .g-5 .cine{margin-top:16px}
+  .g-5 .cine:first-of-type{margin-top:0}
+  .g-5 .cine .wrap{position:relative;overflow:hidden}
+  .g-5 .cine .ph{aspect-ratio:21/9;filter:grayscale(.35) contrast(1.05)}
+  .g-5 .cine .wrap::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(0,0,0,.6));pointer-events:none;z-index:1}
+  .g-5 .cine .sub{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);font-family:var(--font-serif);font-style:italic;font-size:11px;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.6);white-space:nowrap;z-index:2}
+  .g-5 .cine .cap{display:flex;justify-content:space-between;padding-top:8px;font-size:8px;letter-spacing:.2em;color:rgba(255,255,255,.45);text-transform:uppercase}
+  .g-5 .foot{display:flex;align-items:center;gap:14px;margin-top:22px;font-size:9px;letter-spacing:.22em;color:rgba(255,255,255,.5);text-transform:uppercase}
+  .g-5 .foot .line{flex:1;height:1px;background:rgba(255,255,255,.15)}
+
+  /* V6 · 3-Column Grid (original) */
+  .og-1 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .og-1 .grid .ph{aspect-ratio:1/1}
+  .og-1 .cap{text-align:center;font-family:var(--font-display);font-size:11px;letter-spacing:.22em;color:var(--mute);margin-top:12px;text-transform:uppercase}
+
+  /* V7 · Slider (original) */
+  .og-2 .slider{position:relative}
+  .og-2 .slide{aspect-ratio:4/5}
+  .og-2 .dots{display:flex;justify-content:center;gap:6px;margin-top:10px}
+  .og-2 .dots span{width:5px;height:5px;border-radius:50%;background:var(--mute-2)}
+  .og-2 .dots span.on{background:var(--ink);width:16px;border-radius:3px}
+  .og-2 .cap{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.18em;color:var(--mute);margin-top:10px;text-transform:uppercase}
+
+  /* V8 · Masonry Mix (original) */
+  .og-3 .m{display:grid;grid-template-columns:1fr 1fr;gap:6px;grid-auto-rows:80px}
+  .og-3 .m .ph.a{grid-row:span 2}
+  .og-3 .m .ph.b{grid-row:span 1}
+  .og-3 .m .ph.c{grid-row:span 2;grid-column:2}
+  .og-3 .m .ph.d{grid-row:span 1}
+
+  /* V9 · Polaroid (original) */
+  .og-4{padding:12px 6px 4px}
+  .og-4 .stack{position:relative;height:240px}
+  .og-4 .pol{position:absolute;background:#fff;padding:8px 8px 28px;box-shadow:0 6px 20px rgba(0,0,0,.08);width:150px}
+  .og-4 .pol .ph{aspect-ratio:1/1}
+  .og-4 .pol small{display:block;text-align:center;font-family:var(--font-serif);font-style:italic;font-size:11px;color:var(--mute);margin-top:6px}
+  .og-4 .p1{left:14px;top:6px;transform:rotate(-6deg)}
+  .og-4 .p2{right:14px;top:20px;transform:rotate(4deg)}
+  .og-4 .p3{left:50%;margin-left:-75px;top:40px;transform:rotate(-1deg)}
+
+  /* V10 · Hero Single (original) */
+  .og-5{padding:0}
+  .og-5 > .ph{aspect-ratio:3/4}
+  .og-5 .caption{padding:16px 2px 4px;text-align:center}
+  .og-5 .caption b{display:block;font-family:var(--font-display);font-size:16px;letter-spacing:.12em}
+  .og-5 .caption small{display:block;color:var(--mute);font-size:11px;letter-spacing:.2em;margin-top:4px;text-transform:uppercase}
+
+  /* ---------- 7. RSVP ---------- */
+  .r1 h4{font-family:var(--font-display);font-size:18px;letter-spacing:.18em;text-align:center;margin:6px 0 6px}
+  .r1 p{text-align:center;font-size:12px;color:var(--mute);margin:0 0 18px}
+  .r1 .row{display:flex;gap:8px;margin-bottom:10px}
+  .r1 .row input,.r1 .row select{flex:1;padding:12px;border:1px solid var(--line);background:#fff;font-size:12px;font-family:inherit;color:var(--ink-2)}
+  .r1 .radio{display:flex;gap:8px;margin-bottom:12px}
+  .r1 .radio label{flex:1;text-align:center;padding:11px;border:1px solid var(--line);font-size:11px;letter-spacing:.18em;background:#fff;cursor:pointer;text-transform:uppercase}
+  .r1 .radio label.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .r1 button.submit{width:100%;padding:13px;border:1px solid var(--ink);background:var(--ink);color:#fff;font-size:11px;letter-spacing:.28em;text-transform:uppercase}
+
+  .r2{text-align:center;padding:20px 6px}
+  .r2 .eng{font-family:var(--font-display);font-size:14px;letter-spacing:.28em;color:var(--mute);text-transform:uppercase}
+  .r2 h4{font-family:"Noto Serif KR",serif;font-weight:400;font-size:17px;margin:12px 0 6px}
+  .r2 p{font-size:12px;color:var(--mute);line-height:1.9;margin:0 0 20px}
+  .r2 button{background:#fff;border:1px solid var(--ink);padding:13px 34px;font-size:11px;letter-spacing:.28em;color:var(--ink);text-transform:uppercase}
+
+  .r3 .card-in{background:#fff;border:1px solid var(--line);padding:20px 18px}
+  .r3 .card-in h4{margin:0 0 4px;font-family:var(--font-display);font-size:16px;letter-spacing:.18em}
+  .r3 .card-in .sub{font-size:11px;color:var(--mute);margin-bottom:14px}
+  .r3 .opts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px}
+  .r3 .opts label{border:1px solid var(--line);padding:18px 0;text-align:center}
+  .r3 .opts label.on{border-color:var(--ink)}
+  .r3 .opts label b{display:block;font-family:var(--font-display);font-size:14px;letter-spacing:.16em}
+  .r3 .opts label small{display:block;font-size:10px;color:var(--mute);margin-top:3px}
+  .r3 button{width:100%;padding:12px;background:none;border:1px solid var(--ink);font-size:11px;letter-spacing:.22em}
+
+  .r4{text-align:center;padding:28px 4px 20px}
+  .r4 .rule{width:20px;height:1px;background:var(--ink);margin:0 auto 16px}
+  .r4 p{font-family:"Noto Serif KR",serif;font-size:13px;color:var(--ink-2);line-height:2;margin:0}
+  .r4 a{display:inline-block;margin-top:18px;font-family:var(--font-display);font-size:13px;letter-spacing:.32em;color:var(--ink);border-bottom:1px solid var(--ink);padding-bottom:4px;text-decoration:none}
+
+  .r5 h4{text-align:center;font-family:var(--font-display);font-size:15px;letter-spacing:.2em;margin:4px 0 14px}
+  .r5 .counters{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+  .r5 .counter{border:1px solid var(--line);background:#fff;padding:14px 10px;text-align:center}
+  .r5 .counter b{display:block;font-size:10px;letter-spacing:.2em;color:var(--mute);text-transform:uppercase;margin-bottom:8px}
+  .r5 .counter .n{display:flex;align-items:center;justify-content:space-between;gap:6px}
+  .r5 .counter .n button{width:26px;height:26px;background:#fff;border:1px solid var(--line);font-size:14px;line-height:1}
+  .r5 .counter .n span{font-family:var(--font-display);font-size:20px}
+  .r5 .attending{display:flex;gap:6px;margin-bottom:12px}
+  .r5 .attending label{flex:1;padding:10px;text-align:center;border:1px solid var(--line);background:#fff;font-size:11px;letter-spacing:.18em;text-transform:uppercase}
+  .r5 .attending label.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .r5 button.go{width:100%;padding:12px;background:var(--ink);color:#fff;border:0;font-size:11px;letter-spacing:.28em;text-transform:uppercase}
+
+  /* ---------- 8. GUESTBOOK ---------- */
+  .b1 .head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+  .b1 .head b{font-family:var(--font-display);font-size:14px;letter-spacing:.22em}
+  .b1 .head a{font-size:10px;letter-spacing:.2em;color:var(--mute);text-transform:uppercase;text-decoration:none;border-bottom:1px solid var(--line)}
+  .b1 .list{display:grid;gap:10px}
+  .b1 .item{background:#fff;border:1px solid var(--line);padding:14px 16px}
+  .b1 .item .top{display:flex;justify-content:space-between;font-size:10px;color:var(--mute);letter-spacing:.14em;margin-bottom:6px}
+  .b1 .item p{margin:0;font-size:13px;line-height:1.7;color:var(--ink-2)}
+
+  .b2{padding:4px 0 8px}
+  .b2 .wall{display:grid;grid-template-columns:1fr 1fr;gap:10px;position:relative}
+  .b2 .note{background:#fefcf4;padding:14px 12px 20px;position:relative;font-family:var(--font-serif);font-style:italic;font-size:12px;line-height:1.6;color:var(--ink-2);box-shadow:2px 4px 10px rgba(0,0,0,.06);min-height:90px}
+  .b2 .note.b{background:#faf5ea;transform:rotate(-1deg)}
+  .b2 .note.c{background:#f7f3eb;transform:rotate(.6deg)}
+  .b2 .note.d{background:#fbf8ef;transform:rotate(-.4deg)}
+  .b2 .note small{display:block;margin-top:8px;font-style:normal;font-family:var(--font-sans);font-size:10px;letter-spacing:.18em;color:var(--mute);text-transform:uppercase}
+
+  .b3{padding:0 2px}
+  .b3 .chat{display:flex;flex-direction:column;gap:10px;margin:6px 0}
+  .b3 .msg{max-width:78%;padding:10px 14px;font-size:12px;line-height:1.6;border:1px solid var(--line);background:#fff}
+  .b3 .msg b{display:block;font-size:9px;letter-spacing:.2em;color:var(--mute);text-transform:uppercase;margin-bottom:4px}
+  .b3 .msg.you{align-self:flex-end;background:var(--ink);border-color:var(--ink);color:#fff}
+  .b3 .msg.you b{color:var(--mute-2)}
+
+  .b4{padding:6px 4px}
+  .b4 .book{background:#fff;border:1px solid var(--line);padding:22px 20px;position:relative}
+  .b4 .book::before{content:"";position:absolute;left:16px;right:16px;top:8px;height:1px;background:var(--line)}
+  .b4 .entry{padding:14px 0;border-bottom:1px dashed var(--line-2);font-family:var(--font-serif);font-style:italic;font-size:13px;color:var(--ink-2);line-height:1.7}
+  .b4 .entry:last-child{border-bottom:0}
+  .b4 .entry .sig{display:block;text-align:right;font-style:normal;font-family:var(--font-display);font-size:11px;letter-spacing:.2em;color:var(--mute);margin-top:6px;text-transform:uppercase}
+
+  .b5 h4{text-align:center;font-family:var(--font-display);font-size:15px;letter-spacing:.22em;margin:4px 0 4px}
+  .b5 .note{text-align:center;font-size:11px;color:var(--mute);margin-bottom:14px}
+  .b5 textarea{width:100%;min-height:84px;resize:none;border:1px solid var(--line);background:#fff;padding:12px;font-family:inherit;font-size:12px;color:var(--ink-2)}
+  .b5 .bar{display:flex;gap:6px;margin-top:8px}
+  .b5 .bar input{flex:1;padding:11px 12px;border:1px solid var(--line);font-size:11px;background:#fff}
+  .b5 .bar button{padding:11px 18px;background:var(--ink);color:#fff;border:0;font-size:11px;letter-spacing:.2em}
+
+  /* ---------- 8. ACCOUNT · 마음전하실 곳 ---------- */
+  .a1{padding:2px 2px}
+  .a1 .group{margin-bottom:18px}
+  .a1 .group:last-child{margin-bottom:0}
+  .a1 .group h5{font-family:var(--font-display);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--mute);margin:0 0 10px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  .a1 .row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px dashed var(--line-2)}
+  .a1 .row:last-child{border-bottom:0}
+  .a1 .row .info b{display:block;font-family:"Noto Serif KR",serif;font-size:13px;margin-bottom:3px}
+  .a1 .row .info small{font-size:11px;color:var(--mute);font-family:var(--font-serif);font-style:italic}
+  .a1 .row .copy{font-family:var(--font-display);font-size:10px;letter-spacing:.2em;padding:7px 10px;border:1px solid var(--line);background:#fff;color:var(--ink);text-transform:uppercase}
+
+  .a2 .env{background:#fff;border:1px solid var(--line);padding:22px 20px;text-align:center;position:relative}
+  .a2 .env::before,.a2 .env::after{content:"";position:absolute;top:0;width:50%;height:28px;background:linear-gradient(135deg,var(--line-2) 50%,transparent 50%)}
+  .a2 .env::before{left:0}
+  .a2 .env::after{right:0;background:linear-gradient(-135deg,var(--line-2) 50%,transparent 50%)}
+  .a2 .env .inner{position:relative;padding-top:20px}
+  .a2 .env .eng{font-family:var(--font-display);font-size:11px;letter-spacing:.3em;color:var(--mute);text-transform:uppercase}
+  .a2 .env h4{font-family:"Noto Serif KR",serif;font-weight:400;font-size:16px;margin:10px 0 12px}
+  .a2 .env p{font-family:var(--font-serif);font-style:italic;font-size:12px;color:var(--ink-2);line-height:1.8;margin:0 0 16px}
+  .a2 .env .btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px}
+  .a2 .env .btns button{padding:11px;background:var(--ink);color:#fff;border:0;font-size:10px;letter-spacing:.22em;text-transform:uppercase}
+  .a2 .env .btns button.alt{background:#fff;color:var(--ink);border:1px solid var(--ink)}
+
+  .a3 ul{list-style:none;padding:0;margin:0}
+  .a3 li{padding:14px 0;border-bottom:1px solid var(--line-2)}
+  .a3 li:last-child{border-bottom:0}
+  .a3 li .head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+  .a3 li .head b{font-family:var(--font-display);font-size:10px;letter-spacing:.22em;color:var(--mute);text-transform:uppercase}
+  .a3 li .head .name{font-family:"Noto Serif KR",serif;font-size:14px;color:var(--ink)}
+  .a3 li .account{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--ink-2);font-family:var(--font-serif);font-style:italic}
+  .a3 li .account .copy{font-size:9px;letter-spacing:.18em;padding:5px 9px;border:1px solid var(--line);background:#fff;text-transform:uppercase;font-style:normal;font-family:var(--font-display);cursor:pointer}
+
+  .a4 .tabs{display:flex;border-bottom:1px solid var(--ink);margin-bottom:14px}
+  .a4 .tabs button{flex:1;padding:10px 0;background:none;border:0;font-family:var(--font-display);font-size:11px;letter-spacing:.22em;color:var(--mute);text-transform:uppercase}
+  .a4 .tabs button.on{color:var(--ink);background:var(--ink);color:#fff}
+  .a4 .box{background:#fff;border:1px solid var(--line);border-top:0;padding:16px}
+  .a4 .acc{padding:12px 0;border-bottom:1px dashed var(--line-2)}
+  .a4 .acc:last-child{border-bottom:0}
+  .a4 .acc .name{font-family:"Noto Serif KR",serif;font-size:13px;margin-bottom:3px}
+  .a4 .acc .n{font-family:var(--font-serif);font-style:italic;font-size:12px;color:var(--mute)}
+  .a4 .acc .role{font-size:9px;letter-spacing:.2em;color:var(--accent);text-transform:uppercase;margin-bottom:4px;font-family:var(--font-display)}
+
+  .a5{text-align:center;padding:18px 6px}
+  .a5 .eng{font-family:var(--font-display);font-size:11px;letter-spacing:.32em;color:var(--mute);text-transform:uppercase}
+  .a5 h4{font-family:"Noto Serif KR",serif;font-weight:400;font-size:17px;margin:12px 0 6px}
+  .a5 .rule{width:24px;height:1px;background:var(--ink);margin:14px auto 18px}
+  .a5 p{font-family:var(--font-serif);font-style:italic;font-size:13px;color:var(--ink-2);line-height:1.9;margin:0 0 22px}
+  .a5 .btn{display:inline-block;padding:13px 28px;background:var(--ink);color:#fff;font-family:var(--font-display);font-size:11px;letter-spacing:.3em;text-transform:uppercase;text-decoration:none;border:0}
+
+  /* ---------- 11. THANKS ---------- */
+  .th1{text-align:center;padding:30px 6px 20px}
+  .th1 .mark{font-family:var(--font-display);font-style:italic;font-size:32px;color:var(--ink);line-height:1;margin-bottom:14px}
+  .th1 h4{font-family:"Noto Serif KR",serif;font-weight:400;font-size:16px;margin:0 0 8px}
+  .th1 .rule{width:28px;height:1px;background:var(--ink);margin:18px auto}
+  .th1 p{font-family:var(--font-serif);font-style:italic;font-size:13px;color:var(--ink-2);line-height:2;margin:0}
+  .th1 .names{margin-top:22px;font-family:var(--font-display);font-size:13px;letter-spacing:.3em;color:var(--mute);text-transform:uppercase}
+
+  .th2{padding:14px 4px 4px}
+  .th2 .ph{aspect-ratio:4/3;margin-bottom:18px}
+  .th2 .content{text-align:center}
+  .th2 .eng{font-family:var(--font-display);font-size:11px;letter-spacing:.32em;color:var(--mute);text-transform:uppercase;margin-bottom:10px}
+  .th2 h4{font-family:"Noto Serif KR",serif;font-weight:400;font-size:17px;margin:0 0 12px}
+  .th2 p{font-family:var(--font-serif);font-style:italic;font-size:13px;color:var(--ink-2);line-height:1.9;margin:0}
+  .th2 .sign{margin-top:18px;font-family:var(--font-display);font-size:12px;letter-spacing:.26em;color:var(--ink);text-transform:uppercase}
+
+  .th3{background:var(--ink);color:#fff;margin:-28px -22px;padding:48px 28px;text-align:center;position:relative}
+  .th3::before{content:"";position:absolute;inset:14px;border:1px solid rgba(255,255,255,.12);pointer-events:none}
+  .th3 .eng{position:relative;font-family:var(--font-display);font-size:11px;letter-spacing:.34em;color:rgba(255,255,255,.6);text-transform:uppercase}
+  .th3 .big{position:relative;font-family:var(--font-display);font-style:italic;font-size:42px;margin:18px 0;line-height:1}
+  .th3 p{position:relative;font-family:var(--font-serif);font-style:italic;font-size:13px;color:rgba(255,255,255,.78);line-height:1.9;margin:0}
+  .th3 .names{position:relative;margin-top:22px;font-family:var(--font-display);font-size:11px;letter-spacing:.3em;color:rgba(255,255,255,.55);text-transform:uppercase}
+
+  .th4{padding:20px 4px}
+  .th4 .stamp{border:1px solid var(--ink);padding:26px 18px;text-align:center}
+  .th4 .cap{font-family:var(--font-display);font-size:10px;letter-spacing:.36em;color:var(--mute);text-transform:uppercase}
+  .th4 .cap::before,.th4 .cap::after{content:"—";margin:0 8px;color:var(--mute)}
+  .th4 h4{font-family:var(--font-display);font-style:italic;font-size:26px;margin:14px 0 8px;color:var(--ink)}
+  .th4 p{font-family:"Noto Serif KR",serif;font-size:13px;line-height:2;color:var(--ink-2);margin:0}
+  .th4 .date{margin-top:18px;padding-top:14px;border-top:1px solid var(--line-2);font-family:var(--font-display);font-size:10px;letter-spacing:.28em;color:var(--mute);text-transform:uppercase}
+
+  .th5{padding:8px 2px}
+  .th5 .grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px}
+  .th5 .grid .ph{aspect-ratio:1/1}
+  .th5 .body{text-align:center}
+  .th5 .body .eng{font-family:var(--font-display);font-size:10px;letter-spacing:.3em;color:var(--accent);text-transform:uppercase}
+  .th5 .body h4{font-family:"Noto Serif KR",serif;font-weight:400;font-size:15px;margin:10px 0 8px}
+  .th5 .body p{font-family:var(--font-serif);font-style:italic;font-size:12px;color:var(--ink-2);line-height:1.8;margin:0}
+  .th5 .body .sign{margin-top:16px;font-family:var(--font-display);font-size:11px;letter-spacing:.28em;color:var(--mute);text-transform:uppercase}
+
+  /* ---------- Editor controls preview ---------- */
+  .controls{
+    background:#fff;border:1px solid var(--line);border-radius:2px;
+    padding:24px 28px;margin-bottom:56px
+  }
+  .controls h2{margin:0 0 14px;font-family:var(--font-display);letter-spacing:.14em;font-size:20px}
+  .controls .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
+  .controls .ctl b{font-size:10px;letter-spacing:.2em;color:var(--mute);text-transform:uppercase;display:block;margin-bottom:8px}
+  .controls input[type=range]{width:100%}
+  .controls .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .controls .chip{padding:6px 12px;border:1px solid var(--line);font-size:11px;background:#fff;cursor:pointer}
+  .controls .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  /* ========== DIVIDERS ========== */
+  .dv{padding:40px 26px;display:flex;align-items:center;justify-content:center;min-height:120px}
+
+  /* V1 · Thin Hairline */
+  .dv1{width:100%}
+  .dv1 .line{height:1px;background:var(--ink);opacity:.9}
+
+  /* V2 · Double Line */
+  .dv2{width:100%}
+  .dv2 .line{height:1px;background:var(--ink)}
+  .dv2 .gap{height:3px}
+
+  /* V3 · Dotted */
+  .dv3{width:100%;border-top:1.5px dotted var(--ink)}
+
+  /* V4 · Dashed */
+  .dv4{width:100%;border-top:1px dashed var(--ink);opacity:.85}
+
+  /* V5 · Short Center Bar */
+  .dv5{display:flex;justify-content:center;width:100%}
+  .dv5 .bar{width:48px;height:2px;background:var(--ink)}
+
+  /* V6 · Diamond Ornament */
+  .dv6{display:flex;align-items:center;gap:14px;width:100%}
+  .dv6 .l{flex:1;height:1px;background:var(--ink)}
+  .dv6 .d{width:8px;height:8px;background:var(--ink);transform:rotate(45deg)}
+
+  /* V7 · Triple Dots */
+  .dv7{display:flex;align-items:center;gap:14px;width:100%}
+  .dv7 .l{flex:1;height:1px;background:var(--ink);opacity:.5}
+  .dv7 .dots{display:flex;gap:6px}
+  .dv7 .dots span{width:4px;height:4px;border-radius:50%;background:var(--ink)}
+
+  /* V8 · Asterisk */
+  .dv8{display:flex;align-items:center;gap:16px;width:100%}
+  .dv8 .l{flex:1;height:1px;background:var(--ink)}
+  .dv8 .sym{font-family:var(--font-serif);font-size:18px;color:var(--ink);line-height:1}
+
+  /* V9 · Ampersand */
+  .dv9{display:flex;align-items:center;gap:18px;width:100%}
+  .dv9 .l{flex:1;height:1px;background:var(--ink);opacity:.7}
+  .dv9 .amp{font-family:var(--font-display);font-style:italic;font-size:26px;color:var(--ink);line-height:1}
+
+  /* V10 · Labeled Section */
+  .dv10{display:flex;align-items:center;gap:14px;width:100%}
+  .dv10 .l{flex:1;height:1px;background:var(--ink)}
+  .dv10 .lbl{font-family:var(--font-display);font-size:10px;letter-spacing:.32em;color:var(--mute);text-transform:uppercase}
+
+  /* V11 · Roman Numeral */
+  .dv11{display:flex;align-items:center;gap:18px;width:100%}
+  .dv11 .l{flex:1;height:1px;background:var(--ink)}
+  .dv11 .num{font-family:var(--font-display);font-size:14px;letter-spacing:.2em;color:var(--ink)}
+
+  /* V12 · Thick + Thin */
+  .dv12{width:100%}
+  .dv12 .thick{height:3px;background:var(--ink);margin-bottom:4px}
+  .dv12 .thin{height:1px;background:var(--ink);opacity:.5}
+
+  footer{max-width:980px;margin:0 auto;padding:24px;text-align:center;color:var(--mute);font-size:11px;letter-spacing:.22em;text-transform:uppercase}
+
+  @media (max-width:680px){
+    .page{padding:32px 14px 80px}
+    .sec-head{padding:0 18px 20px}
+    .variants{padding:20px 14px 28px;grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<main class="page">
+
+  <h1 class="page-title">THE&nbsp;SIMPLE</h1>
+  <div class="page-sub">section · ui alternatives</div>
+
+  <nav class="legend">
+    <a href="#editor">Editor</a>
+    <a href="#intro">01 Intro</a>
+    <a href="#greeting">02 Greeting</a>
+    <a href="#couple">03 Couple</a>
+    <a href="#info">04 Info</a>
+    <a href="#direction">05 Direction</a>
+    <a href="#interview">06 Interview</a>
+    <a href="#gallery">07 Gallery</a>
+    <a href="#guide">08 Guide</a>
+    <a href="#account">09 Account</a>
+    <a href="#rsvp">10 RSVP</a>
+    <a href="#guestbook">11 Guestbook</a>
+    <a href="#thanks">12 Thanks</a>
+    <a href="#dividers">13 Dividers</a>
+  </nav>
+
+  <!-- ========== Editor controls mock ========== -->
+  <section id="editor" class="controls">
+    <h2>Editor Controls</h2>
+    <div class="grid">
+      <div class="ctl">
+        <b>Section Order</b>
+        <div class="chips">
+          <span class="chip on">↕ Greeting</span>
+          <span class="chip on">↕ Info</span>
+          <span class="chip on">↕ Gallery · A</span>
+          <span class="chip on">↕ Timeline</span>
+          <span class="chip on">↕ Interview</span>
+        </div>
+      </div>
+      <div class="ctl">
+        <b>Font Size</b>
+        <input type="range" min="90" max="120" value="100" />
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--mute);margin-top:4px"><span>S</span><span>M</span><span>L</span></div>
+      </div>
+      <div class="ctl">
+        <b>Section Spacing</b>
+        <input type="range" min="0" max="100" value="50" />
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--mute);margin-top:4px"><span>compact</span><span>airy</span></div>
+      </div>
+      <div class="ctl">
+        <b>Variant</b>
+        <div class="chips">
+          <span class="chip on">01</span>
+          <span class="chip">02</span>
+          <span class="chip">03</span>
+          <span class="chip">04</span>
+          <span class="chip">05</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 1. INTRO ========== -->
+  <section id="intro" class="sec">
+    <div class="sec-head">
+      <h2>01 · INTRO</h2>
+      <span class="ko">인트로</span>
+    </div>
+    <div class="variants">
+
+      <div class="card">
+        <div class="card-label"><b>Variant 01</b><span>Full Cover</span></div>
+        <div class="mob" style="padding:0;overflow:hidden">
+          <div class="in1">
+            <div class="bg"></div>
+            <div class="content">
+              <div class="top">
+                <div>Vol. I<br/><b>MMXXVI</b></div>
+                <div class="r"><b>Wedding</b>Invitation</div>
+              </div>
+              <div class="center">
+                <div class="kicker">The Simple</div>
+                <div class="rule"></div>
+                <h3>Minjun<br/>&amp; Seoyeon</h3>
+                <div class="sub">2026 · 05 · 16</div>
+              </div>
+              <div class="bottom">
+                <div><b>Save the Date</b>Saturday · 2 PM</div>
+                <div class="r"><b>Grand Hyatt</b>Seoul</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 02</b><span>Typographic</span></div>
+        <div class="mob">
+          <div class="in2">
+            <div class="eng">We Invite You</div>
+            <div class="rule"></div>
+            <h3>Minjun<span class="amp">&amp;</span>Seoyeon</h3>
+            <div class="date">2026 · 05 · 16</div>
+            <div class="day">SATURDAY · 2 PM</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 03</b><span>Envelope</span></div>
+        <div class="mob">
+          <div class="in3">
+            <div class="env">
+              <div class="flap"></div>
+              <div class="seal">M&amp;S</div>
+              <div class="content">
+                <div class="eng">Save the Date</div>
+                <h3>Minjun &amp; Seoyeon</h3>
+                <div class="date">MAY · 16 · 2026</div>
+                <div class="tap">TAP TO OPEN</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 04</b><span>Quote</span></div>
+        <div class="mob">
+          <div class="in4">
+            <div class="mark">&ldquo;</div>
+            <p class="quote">나란히 걷는 사람과<br/>같은 방향을 바라봅니다.</p>
+            <div class="rule"></div>
+            <div class="names">Minjun &amp; Seoyeon</div>
+            <div class="date">MAY 16, 2026 · SAT</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 05</b><span>Stamp Card</span></div>
+        <div class="mob">
+          <div class="in5">
+            <div class="stamp">
+              <div class="eng">Save the Date</div>
+              <div class="big">Minjun<br/>&amp; Seoyeon</div>
+              <div class="rule"></div>
+              <div class="date">16 · 05 · 2026</div>
+              <div class="sub">Saturday · 2 PM</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========== 2. GREETING ========== -->
+  <section id="greeting" class="sec">
+    <div class="sec-head">
+      <h2>02 · GREETING</h2>
+      <span class="ko">인사말</span>
+    </div>
+    <div class="variants">
+
+      <!-- V1 -->
+      <div class="card">
+        <div class="card-label"><b>Variant 01</b><span>Classic Center</span></div>
+        <div class="mob">
+          <div class="g1">
+            <div class="sup">INVITATION</div>
+            <div class="rule"></div>
+            <h3>서로의 계절을<br/>함께 걸어가려 합니다</h3>
+            <p>작은 시작이 큰 인연이 되어<br/>이제 한 길을 걷고자 합니다.<br/>귀한 걸음으로 축복해 주세요.</p>
+            <div class="rule"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- V2 -->
+      <div class="card">
+        <div class="card-label"><b>Variant 02</b><span>Editorial Left</span></div>
+        <div class="mob">
+          <div class="g2">
+            <div class="num">01</div>
+            <div class="cap">GREETING</div>
+            <h3>나란히 걸으며,<br/>같은 곳을 바라봅니다.</h3>
+            <p>두 사람이 함께 만드는 시간은<br/>앞으로도 오래 이어질 예정입니다.<br/>축복해 주시면 감사하겠습니다.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- V3 -->
+      <div class="card">
+        <div class="card-label"><b>Variant 03</b><span>Quote Ornament</span></div>
+        <div class="mob">
+          <div class="g3">
+            <blockquote>
+              &ldquo;봄날의 햇살처럼 따뜻한,<br/>가을 바람처럼 다정한 사람과<br/>함께 걸어가려 합니다.&rdquo;
+              <span>— INVITATION —</span>
+            </blockquote>
+          </div>
+        </div>
+      </div>
+
+      <!-- V4 -->
+      <div class="card">
+        <div class="card-label"><b>Variant 04</b><span>Boxed Frame</span></div>
+        <div class="mob">
+          <div class="g4">
+            <div class="frame">
+              <h3>SAVE THE DATE</h3>
+              <p>저희 두 사람이<br/>사랑의 결실을 맺는 날<br/>따뜻한 축복으로 함께해 주세요.</p>
+              <div class="names">민준 · 서연</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- V5 -->
+      <div class="card">
+        <div class="card-label"><b>Variant 05</b><span>Vertical Rule</span></div>
+        <div class="mob">
+          <div class="g5">
+            <div class="bar"></div>
+            <div class="txt">
+              <div class="sup">WE INVITE YOU</div>
+              <h3>두 사람이 하나 되는<br/>의미 있는 자리에<br/>당신을 초대합니다.</h3>
+              <p>오래도록 기억에 남을<br/>소중한 하루가 될 수 있도록<br/>함께 자리해 주세요.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 2. COUPLE INTRO ========== -->
+  <section id="couple" class="sec">
+    <div class="sec-head">
+      <h2>03 · COUPLE</h2>
+      <span class="ko">커플 소개</span>
+    </div>
+    <div class="variants">
+
+      <div class="card">
+        <div class="card-label"><b>Variant 01</b><span>Portrait Pair</span></div>
+        <div class="mob">
+          <div class="c1">
+            <div class="pair">
+              <div class="p">
+                <div class="portrait"></div>
+                <div class="role">GROOM</div>
+                <div class="name">김민준</div>
+                <div class="desc">다정하고 묵묵한 사람</div>
+              </div>
+              <div class="p">
+                <div class="portrait"></div>
+                <div class="role">BRIDE</div>
+                <div class="name">이서연</div>
+                <div class="desc">맑고 단단한 사람</div>
+              </div>
+            </div>
+            <div class="amp">&amp;</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 02</b><span>Monogram</span></div>
+        <div class="mob">
+          <div class="c2">
+            <div class="portrait"></div>
+            <h3 class="mono">M<span>&amp;</span>S</h3>
+            <div class="sub">MINJUN &amp; SEOYEON</div>
+            <p class="bio">서로가 가장 편안한 이가 되어<br/>같은 방향을 바라보며 걷기로 했습니다.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 03</b><span>Card Stack</span></div>
+        <div class="mob">
+          <div class="c3">
+            <div class="row">
+              <div class="portrait"></div>
+              <div class="info">
+                <div class="role">GROOM</div>
+                <div class="name">김민준</div>
+                <div class="line">공간을 설계하고, 책을 모읍니다.</div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="portrait"></div>
+              <div class="info">
+                <div class="role">BRIDE</div>
+                <div class="name">이서연</div>
+                <div class="line">글을 쓰고, 작은 식물을 돌봅니다.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 04</b><span>Family + Photo</span></div>
+        <div class="mob">
+          <div class="c4">
+            <div class="side">
+              <div class="portrait"></div>
+              <div>
+                <div class="label">GROOM · 신랑</div>
+                <div class="name">김민준</div>
+                <p class="bio">다정하고 묵묵한 사람.</p>
+                <div class="parents"><b>父</b>김영호 · <b>母</b>박지선 의 장남</div>
+              </div>
+            </div>
+            <div class="side">
+              <div class="portrait"></div>
+              <div>
+                <div class="label">BRIDE · 신부</div>
+                <div class="name">이서연</div>
+                <p class="bio">맑고 단단한 사람.</p>
+                <div class="parents"><b>父</b>이준혁 · <b>母</b>최수민 의 차녀</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 05</b><span>Tag + Photo</span></div>
+        <div class="mob">
+          <div class="c5">
+            <div class="profile">
+              <div class="top">
+                <div class="portrait"></div>
+                <div>
+                  <div class="head"><b>01</b><span class="name">김민준</span><small>GROOM</small></div>
+                  <p class="bio">공간을 설계하고, 오래된 책을 모으는 사람.</p>
+                </div>
+              </div>
+              <div class="tags"><span>#건축가</span><span>#고양이집사</span><span>#느린산책</span><span>#캠핑</span></div>
+            </div>
+            <div class="profile">
+              <div class="top">
+                <div class="portrait"></div>
+                <div>
+                  <div class="head"><b>02</b><span class="name">이서연</span><small>BRIDE</small></div>
+                  <p class="bio">글을 쓰고, 작은 식물을 돌보는 사람.</p>
+                </div>
+              </div>
+              <div class="tags"><span>#에디터</span><span>#오래된책</span><span>#커피</span><span>#흑백사진</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========== 3. WEDDING INFO ========== -->
+  <section id="info" class="sec">
+    <div class="sec-head">
+      <h2>04 · WEDDING INFO</h2>
+      <span class="ko">예식정보</span>
+    </div>
+    <div class="variants">
+
+      <div class="card">
+        <div class="card-label"><b>Variant 01</b><span>Calendar</span></div>
+        <div class="mob">
+          <div class="i1">
+            <h3>WEDDING DAY</h3>
+            <div class="big">2026.05.16</div>
+            <div class="sub">SATURDAY · 14:00</div>
+            <table class="cal">
+              <tr><th>S</th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th></tr>
+              <tr><td class="mute">26</td><td class="mute">27</td><td class="mute">28</td><td class="mute">29</td><td class="mute">30</td><td>1</td><td>2</td></tr>
+              <tr><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td></tr>
+              <tr><td>10</td><td>11</td><td>12</td><td>13</td><td>14</td><td>15</td><td class="mark"><span>16</span></td></tr>
+              <tr><td>17</td><td>18</td><td>19</td><td>20</td><td>21</td><td>22</td><td>23</td></tr>
+              <tr><td>24</td><td>25</td><td>26</td><td>27</td><td>28</td><td>29</td><td>30</td></tr>
+            </table>
+            <div class="venue">그랜드 하얏트 서울<br/>그랜드 볼룸</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 02</b><span>Big Date</span></div>
+        <div class="mob">
+          <div class="i2">
+            <div class="top">MAY · 2026</div>
+            <div class="day">16</div>
+            <div class="bot">SATURDAY</div>
+            <div class="divider"></div>
+            <div class="meta">
+              <div><b>TIME</b>오후 2시</div>
+              <div><b>PLACE</b>그랜드 하얏트 서울</div>
+              <div><b>HALL</b>그랜드 볼룸</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 03</b><span>Week Strip</span></div>
+        <div class="mob">
+          <div class="i3">
+            <div class="title">
+              <div class="m">MAY</div>
+              <div class="y">2026</div>
+            </div>
+            <div class="week">
+              <div class="dow">SUN</div>
+              <div class="dow">MON</div>
+              <div class="dow">TUE</div>
+              <div class="dow">WED</div>
+              <div class="dow">THU</div>
+              <div class="dow">FRI</div>
+              <div class="dow">SAT</div>
+              <div class="dd">10</div>
+              <div class="dd">11</div>
+              <div class="dd">12</div>
+              <div class="dd">13</div>
+              <div class="dd">14</div>
+              <div class="dd">15</div>
+              <div class="dd mark"><span>16</span></div>
+            </div>
+            <div class="foot">
+              <b>SATURDAY · PM 2:00</b>
+              <div class="venue">그랜드 하얏트 서울<br/>그랜드 볼룸</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 04</b><span>Ticket</span></div>
+        <div class="mob">
+          <div class="i4">
+            <div class="ticket">
+              <div class="t-top">
+                <div class="cap">WEDDING INVITATION</div>
+                <h4>MINJUN &amp; SEOYEON</h4>
+              </div>
+              <div class="t-bot">
+                <div><b>Date</b>2026.05.16 SAT</div>
+                <div><b>Time</b>PM 02:00</div>
+                <div><b>Venue</b>Grand Hyatt</div>
+                <div><b>Hall</b>Grand Ballroom</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 05</b><span>Countdown Hero</span></div>
+        <div class="mob">
+          <div class="i5">
+            <div class="cap">COUNTDOWN TO THE DAY</div>
+            <div class="count"><span class="dash">D—</span><span class="n">84</span></div>
+            <div class="note">MAY 16, 2026</div>
+            <div class="rule"></div>
+            <div class="rows">
+              <div class="row"><b>DATE</b><span>5월 16일 토요일</span></div>
+              <div class="row"><b>TIME</b><span>오후 2시</span></div>
+              <div class="row"><b>VENUE</b><span>그랜드 하얏트 서울</span></div>
+              <div class="row"><b>HALL</b><span>그랜드 볼룸</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========== 3. DIRECTION ========== -->
+  <section id="direction" class="sec">
+    <div class="sec-head">
+      <h2>05 · DIRECTION</h2>
+      <span class="ko">오시는 길</span>
+    </div>
+    <div class="variants">
+
+      <div class="card">
+        <div class="card-label"><b>Variant 01</b><span>Map Card</span></div>
+        <div class="mob">
+          <div class="d1">
+            <div class="mapbox"></div>
+            <h4>그랜드 하얏트 서울</h4>
+            <div class="addr">서울특별시 용산구 소월로 322</div>
+            <div class="btns">
+              <button>T Map</button><button>Kakao</button><button>Naver</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 02</b><span>Full Map</span></div>
+        <div class="mob">
+          <div class="d2">
+            <div class="mapbox"></div>
+            <div class="overlay">
+              <div class="n">GRAND HYATT SEOUL</div>
+              <div class="a">서울시 용산구 소월로 322</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 03</b><span>Transit Tabs</span></div>
+        <div class="mob">
+          <div class="d3">
+            <div class="tabs">
+              <button class="on">Subway</button>
+              <button>Bus</button>
+              <button>Car</button>
+            </div>
+            <ul>
+              <li><b>6호선</b><span>이태원역 1번 출구 · 도보 12분 · 셔틀버스 운행</span></li>
+              <li><b>1호선</b><span>남영역 하차 후 택시 5분</span></li>
+              <li><b>셔틀</b><span>이태원역 ↔ 웨딩홀 상시 운행</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 04</b><span>Icon List</span></div>
+        <div class="mob">
+          <div class="d4">
+            <ul>
+              <li><div class="ic">S</div><div><h5>Subway</h5><p>이태원역 1번 출구<br/>셔틀 상시 운행</p></div></li>
+              <li><div class="ic">B</div><div><h5>Bus</h5><p>하얏트호텔 정류장 하차<br/>110A, 421</p></div></li>
+              <li><div class="ic">P</div><div><h5>Parking</h5><p>호텔 내 발렛 파킹 2시간 무료</p></div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 05</b><span>Text Only</span></div>
+        <div class="mob">
+          <div class="d5">
+            <div class="eng">HOW TO FIND US</div>
+            <h4>그랜드 하얏트 서울</h4>
+            <div class="rule"></div>
+            <p>서울특별시 용산구 소월로 322<br/>Grand Ballroom, 1F</p>
+            <p class="mute" style="margin-top:14px;font-size:11px">지하철 6호선 · 이태원역<br/>셔틀버스 상시 운행 · 발렛 파킹</p>
+            <a class="link" href="#">VIEW ON MAP</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========== 5. INTERVIEW ========== -->
+  <section id="interview" class="sec">
+    <div class="sec-head">
+      <h2>06 · INTERVIEW</h2>
+      <span class="ko">인터뷰</span>
+    </div>
+    <div class="variants">
+
+      <div class="card">
+        <div class="card-label"><b>Variant 01</b><span>Q &amp; A</span></div>
+        <div class="mob">
+          <div class="n1">
+            <div class="q">첫 만남은 어땠나요?</div>
+            <div class="a">같은 스터디에서 우연히 만났어요. 긴 얘기를 나눈 날 이 사람과 오래 함께할 것 같다는 예감이 들었어요.</div>
+            <hr/>
+            <div class="q">결혼을 결심한 순간</div>
+            <div class="a">평범한 하루가 더 이상 평범하지 않게 느껴질 때, 이 사람과의 일상을 오래 지키고 싶어졌어요.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 02</b><span>Magazine Pull</span></div>
+        <div class="mob">
+          <div class="n2">
+            <div class="mark">&ldquo;</div>
+            <blockquote>함께 있는 시간이<br/>가장 편안한 사람과<br/>평생을 걷기로 했습니다.</blockquote>
+            <div class="who">FEATURE · THE COUPLE</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 03</b><span>Speech Bubble</span></div>
+        <div class="mob">
+          <div class="n3">
+            <div class="row">
+              <div class="avatar">M</div>
+              <div class="bub"><b>Groom · Minjun</b><p>서연이는 제가 알던 세계를 한 뼘 더 넓혀준 사람이에요.</p></div>
+            </div>
+            <div class="row">
+              <div class="avatar">S</div>
+              <div class="bub"><b>Bride · Seoyeon</b><p>이 사람과 있으면 저답게 있을 수 있어서 좋아요.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 04</b><span>Numbered</span></div>
+        <div class="mob">
+          <div class="n4">
+            <ul>
+              <li><div class="n">01</div><div><div class="q">서로를 부르는 별명</div><div class="a">&lsquo;우리&rsquo; 라는 한 단어로 부르고 있어요.</div></div></li>
+              <li><div class="n">02</div><div><div class="q">가장 좋아하는 데이트</div><div class="a">동네 한 바퀴 산책, 조용한 카페에서의 무료한 오후.</div></div></li>
+              <li><div class="n">03</div><div><div class="q">앞으로의 우리</div><div class="a">변함없이 다정한 일상이 계속되기를.</div></div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 05</b><span>Dialog</span></div>
+        <div class="mob">
+          <div class="n5">
+            <div class="m"><span class="who">Him</span><p>우리의 결혼식은 조용하지만 따뜻했으면 해.</p></div>
+            <div class="m right"><span class="who">Her</span><p>좋아. 오래 기억에 남는 자리로 만들자.</p></div>
+            <div class="m"><span class="who">Him</span><p>그날 너의 손을 꼭 잡고 있을게.</p></div>
+            <div class="m right"><span class="who">Her</span><p>그거면 충분해.</p></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========== 6. GALLERY ========== -->
+  <section id="gallery" class="sec">
+    <div class="sec-head">
+      <h2>07 · GALLERY</h2>
+      <span class="ko">갤러리</span>
+    </div>
+    <div class="variants">
+
+      <div class="card">
+        <div class="card-label"><b>Variant 01</b><span>Portrait Stacked</span></div>
+        <div class="mob">
+          <div class="g-1">
+            <div class="item"><div class="ph"></div></div>
+            <div class="item"><div class="ph"></div></div>
+            <div class="item"><div class="ph"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 02</b><span>Diptych Pairs</span></div>
+        <div class="mob">
+          <div class="g-2">
+            <div class="pair"><div class="ph"></div><div class="ph"></div></div>
+            <div class="sep"></div>
+            <div class="pair"><div class="ph"></div><div class="ph"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 03</b><span>Strip Swipe</span></div>
+        <div class="mob">
+          <div class="g-3">
+            <div class="rail">
+              <div class="frame"><div class="ph"></div></div>
+              <div class="frame"><div class="ph"></div></div>
+              <div class="frame"><div class="ph"></div></div>
+              <div class="frame"><div class="ph"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 04</b><span>Mosaic Grid</span></div>
+        <div class="mob">
+          <div class="g-4">
+            <div class="mos">
+              <div class="ph m-a"></div>
+              <div class="ph m-b"></div>
+              <div class="ph m-c"></div>
+              <div class="ph m-d"></div>
+              <div class="ph m-e"></div>
+              <div class="ph m-f"></div>
+              <div class="ph m-g"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 05</b><span>Cinema Letterbox</span></div>
+        <div class="mob">
+          <div class="g-5">
+            <div class="cine">
+              <div class="wrap"><div class="ph"></div></div>
+            </div>
+            <div class="cine">
+              <div class="wrap"><div class="ph"></div></div>
+            </div>
+            <div class="cine">
+              <div class="wrap"><div class="ph"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 06</b><span>3-Column Grid</span></div>
+        <div class="mob">
+          <div class="og-1">
+            <div class="grid">
+              <div class="ph"></div><div class="ph"></div><div class="ph"></div>
+              <div class="ph"></div><div class="ph"></div><div class="ph"></div>
+              <div class="ph"></div><div class="ph"></div><div class="ph"></div>
+            </div>
+            <div class="cap">OUR MOMENTS · 09 FRAMES</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 07</b><span>Slider</span></div>
+        <div class="mob">
+          <div class="og-2">
+            <div class="slider">
+              <div class="slide ph"></div>
+            </div>
+            <div class="dots"><span></span><span class="on"></span><span></span><span></span><span></span></div>
+            <div class="cap"><span>02 / 05</span><span>SLIDE</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 08</b><span>Masonry Mix</span></div>
+        <div class="mob">
+          <div class="og-3">
+            <div class="m">
+              <div class="ph a"></div>
+              <div class="ph b"></div>
+              <div class="ph c"></div>
+              <div class="ph d"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 09</b><span>Polaroid Stack</span></div>
+        <div class="mob">
+          <div class="og-4">
+            <div class="stack">
+              <div class="pol p1"><div class="ph"></div><small>first light</small></div>
+              <div class="pol p2"><div class="ph"></div><small>slow afternoon</small></div>
+              <div class="pol p3"><div class="ph"></div><small>golden hour</small></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 10</b><span>Hero Single</span></div>
+        <div class="mob">
+          <div class="og-5">
+            <div class="ph"></div>
+            <div class="caption">
+              <b>THE ONE</b>
+              <small>Single · Hero Frame</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========== 7. WEDDING GUIDE ========== -->
+  <section id="guide" class="sec">
+    <div class="sec-head">
+      <h2>08 · WEDDING GUIDE</h2>
+      <span class="ko">결혼식 안내</span>
+    </div>
+    <div class="variants">
+
+      <div class="card">
+        <div class="card-label"><b>Variant 01</b><span>Icon Grid</span></div>
+        <div class="mob">
+          <div class="w1">
+            <div class="grid">
+              <div class="cell"><div class="ic">SHUTTLE</div><b>셔틀버스</b><p>이태원역 1번 출구<br/>12:30부터 상시 운행</p></div>
+              <div class="cell"><div class="ic">FLOWER</div><b>화동 안내</b><p>오후 1시 40분까지<br/>2F 대기실 집결</p></div>
+              <div class="cell"><div class="ic">PARK</div><b>주차</b><p>호텔 지하주차장<br/>2시간 무료</p></div>
+              <div class="cell"><div class="ic">PHOTO</div><b>포토존</b><p>1F 로비 · 3F 테라스<br/>오픈 13:00</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 02</b><span>Detailed List</span></div>
+        <div class="mob">
+          <div class="w2">
+            <ul>
+              <li><b>SHUTTLE</b><div class="desc"><h5>셔틀버스 운행</h5><p>이태원역 1번 출구 ↔ 웨딩홀<br/>12:30~14:00 · 15분 간격</p></div></li>
+              <li><b>FLOWER</b><div class="desc"><h5>화동 / 사회자 안내</h5><p>오후 1시 40분까지<br/>2층 신부 대기실로 모여주세요</p></div></li>
+              <li><b>DRESS</b><div class="desc"><h5>드레스 코드</h5><p>Semi Formal · 화이트 톤은 피해주세요</p></div></li>
+              <li><b>GIFT</b><div class="desc"><h5>축의금</h5><p>접수대는 1층 입구 좌/우<br/>신랑측 / 신부측 별도 운영</p></div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 03</b><span>FAQ Accordion</span></div>
+        <div class="mob">
+          <div class="w3">
+            <div class="item open">
+              <div class="q">셔틀버스는 어떻게 이용하나요?<span class="plus">+</span></div>
+              <div class="a">이태원역 1번 출구 앞에서 12:30부터 상시 운행합니다. 약 15분 간격으로 출발하며, 예식 시작 20분 전까지 운행합니다.</div>
+            </div>
+            <div class="item">
+              <div class="q">주차는 가능한가요?<span class="plus">+</span></div>
+              <div class="a">호텔 지하 주차장 이용 가능합니다. 2시간 무료 제공.</div>
+            </div>
+            <div class="item">
+              <div class="q">화동은 언제 집결하나요?<span class="plus">+</span></div>
+              <div class="a">오후 1시 40분까지 2층 신부 대기실로 모여주세요.</div>
+            </div>
+            <div class="item">
+              <div class="q">드레스 코드가 있나요?<span class="plus">+</span></div>
+              <div class="a">Semi Formal입니다. 화이트 계열은 피해주시면 감사하겠습니다.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 04</b><span>Badge Cards</span></div>
+        <div class="mob">
+          <div class="w4">
+            <div class="grid">
+              <div class="badge"><div class="l">01</div><b>셔틀</b><small>12:30~</small></div>
+              <div class="badge alt"><div class="l">02</div><b>화동</b><small>13:40 집결</small></div>
+              <div class="badge"><div class="l">03</div><b>주차</b><small>2H FREE</small></div>
+              <div class="badge alt"><div class="l">04</div><b>드레스</b><small>Semi</small></div>
+              <div class="badge"><div class="l">05</div><b>포토존</b><small>1F · 3F</small></div>
+              <div class="badge alt"><div class="l">06</div><b>방명록</b><small>1F</small></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 05</b><span>Info Strips</span></div>
+        <div class="mob" style="padding:20px 0">
+          <div class="w5">
+            <div class="strip">
+              <div class="left">SHUTTLE</div>
+              <div class="right"><b>셔틀버스 운행</b><p>이태원역 1번 출구 · 12:30부터</p></div>
+            </div>
+            <div class="strip">
+              <div class="left">FLOWER</div>
+              <div class="right"><b>화동 안내</b><p>오후 1시 40분까지 2F 대기실</p></div>
+            </div>
+            <div class="strip">
+              <div class="left">PARK</div>
+              <div class="right"><b>주차 안내</b><p>호텔 지하주차장 2시간 무료</p></div>
+            </div>
+            <div class="strip">
+              <div class="left">DRESS</div>
+              <div class="right"><b>드레스 코드</b><p>Semi Formal · 화이트 제외</p></div>
+            </div>
+            <div class="strip">
+              <div class="left">GIFT</div>
+              <div class="right"><b>축의금 접수</b><p>1층 입구 · 신랑 / 신부측 별도</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========== 9. ACCOUNT · 마음전하실 곳 ========== -->
+  <section id="account" class="sec">
+    <div class="sec-head">
+      <h2>09 · ACCOUNT</h2>
+      <span class="ko">마음 전하실 곳</span>
+    </div>
+    <div class="variants">
+
+      <div class="card">
+        <div class="card-label"><b>Variant 01</b><span>Group List</span></div>
+        <div class="mob">
+          <div class="a1">
+            <div class="group">
+              <h5>GROOM · 신랑측</h5>
+              <div class="row"><div class="info"><b>김민준</b><small>신한 110-123-456789</small></div><button class="copy">Copy</button></div>
+              <div class="row"><div class="info"><b>김영호 · 父</b><small>국민 123-45-6789-01</small></div><button class="copy">Copy</button></div>
+              <div class="row"><div class="info"><b>박지선 · 母</b><small>우리 1002-345-678901</small></div><button class="copy">Copy</button></div>
+            </div>
+            <div class="group">
+              <h5>BRIDE · 신부측</h5>
+              <div class="row"><div class="info"><b>이서연</b><small>카카오 3333-01-2345678</small></div><button class="copy">Copy</button></div>
+              <div class="row"><div class="info"><b>이준혁 · 父</b><small>하나 123-456789-00</small></div><button class="copy">Copy</button></div>
+              <div class="row"><div class="info"><b>최수민 · 母</b><small>토스 1000-2345-6789</small></div><button class="copy">Copy</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 02</b><span>Envelope</span></div>
+        <div class="mob">
+          <div class="a2">
+            <div class="env">
+              <div class="inner">
+                <div class="eng">With Gratitude</div>
+                <h4>마음 전하실 곳</h4>
+                <p>축복의 마음을 담아<br/>전해주시는 정성을 감사히 받겠습니다.</p>
+                <div class="btns">
+                  <button>신랑측 계좌</button>
+                  <button class="alt">신부측 계좌</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 03</b><span>Inline Rows</span></div>
+        <div class="mob">
+          <div class="a3">
+            <ul>
+              <li><div class="head"><b>GROOM</b><span class="name">김민준</span></div><div class="account">신한 110-123-456789<button class="copy">Copy</button></div></li>
+              <li><div class="head"><b>GROOM · 父</b><span class="name">김영호</span></div><div class="account">국민 123-45-6789-01<button class="copy">Copy</button></div></li>
+              <li><div class="head"><b>BRIDE</b><span class="name">이서연</span></div><div class="account">카카오 3333-01-2345678<button class="copy">Copy</button></div></li>
+              <li><div class="head"><b>BRIDE · 母</b><span class="name">최수민</span></div><div class="account">토스 1000-2345-6789<button class="copy">Copy</button></div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 04</b><span>Tabs</span></div>
+        <div class="mob">
+          <div class="a4">
+            <div class="tabs">
+              <button class="on">GROOM</button>
+              <button>BRIDE</button>
+            </div>
+            <div class="box">
+              <div class="acc">
+                <div class="role">GROOM · 본인</div>
+                <div class="name">김민준</div>
+                <div class="n">신한 110-123-456789</div>
+              </div>
+              <div class="acc">
+                <div class="role">FATHER · 父</div>
+                <div class="name">김영호</div>
+                <div class="n">국민 123-45-6789-01</div>
+              </div>
+              <div class="acc">
+                <div class="role">MOTHER · 母</div>
+                <div class="name">박지선</div>
+                <div class="n">우리 1002-345-678901</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 05</b><span>Button Modal</span></div>
+        <div class="mob">
+          <div class="a5">
+            <div class="eng">WITH GRATITUDE</div>
+            <h4>마음 전하실 곳</h4>
+            <div class="rule"></div>
+            <p>멀리서도 축복의 마음을<br/>전하고 싶으신 분들을 위해<br/>계좌 정보를 안내드립니다.</p>
+            <a class="btn" href="#">VIEW ACCOUNTS</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========== 10. RSVP ========== -->
+  <section id="rsvp" class="sec">
+    <div class="sec-head">
+      <h2>10 · RSVP</h2>
+      <span class="ko">참석 의사</span>
+    </div>
+    <div class="variants">
+
+      <div class="card">
+        <div class="card-label"><b>Variant 01</b><span>Inline Form</span></div>
+        <div class="mob">
+          <div class="r1">
+            <h4>RSVP</h4>
+            <p>소중한 마음을 전해주세요</p>
+            <div class="row"><input placeholder="성함" /><select><option>본인 1명</option></select></div>
+            <div class="radio">
+              <label class="on">ATTEND</label>
+              <label>DECLINE</label>
+            </div>
+            <button class="submit">SUBMIT</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 02</b><span>Button + Modal</span></div>
+        <div class="mob">
+          <div class="r2">
+            <div class="eng">RSVP</div>
+            <h4>참석 의사 전달</h4>
+            <p>5월 10일까지 전달해 주시면<br/>감사히 맞이하겠습니다.</p>
+            <button>OPEN FORM</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 03</b><span>Yes / No Card</span></div>
+        <div class="mob">
+          <div class="r3">
+            <div class="card-in">
+              <h4>WILL YOU JOIN?</h4>
+              <div class="sub">5월 16일 · 토요일 · PM 2:00</div>
+              <div class="opts">
+                <label class="on"><b>YES</b><small>함께합니다</small></label>
+                <label><b>NO</b><small>참석 못해요</small></label>
+              </div>
+              <button>CONTINUE</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 04</b><span>Minimal Link</span></div>
+        <div class="mob">
+          <div class="r4">
+            <div class="rule"></div>
+            <p>참석이 어려우신 분들을 위해<br/>간단한 인사만 남기셔도 좋습니다.</p>
+            <a href="#">RSVP &nbsp;·&nbsp; CLICK</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 05</b><span>Counter</span></div>
+        <div class="mob">
+          <div class="r5">
+            <h4>HOW MANY?</h4>
+            <div class="attending">
+              <label class="on">ATTEND</label>
+              <label>DECLINE</label>
+            </div>
+            <div class="counters">
+              <div class="counter"><b>Adult</b><div class="n"><button>−</button><span>2</span><button>+</button></div></div>
+              <div class="counter"><b>Child</b><div class="n"><button>−</button><span>0</span><button>+</button></div></div>
+            </div>
+            <button class="go">SEND RSVP</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========== 8. GUESTBOOK ========== -->
+  <section id="guestbook" class="sec">
+    <div class="sec-head">
+      <h2>11 · GUESTBOOK</h2>
+      <span class="ko">방명록</span>
+    </div>
+    <div class="variants">
+
+      <div class="card">
+        <div class="card-label"><b>Variant 01</b><span>Card List</span></div>
+        <div class="mob">
+          <div class="b1">
+            <div class="head"><b>GUESTBOOK · 28</b><a href="#">WRITE</a></div>
+            <div class="list">
+              <div class="item"><div class="top"><span>SUJIN</span><span>04.10</span></div><p>두 사람의 시작을 진심으로 축복해.</p></div>
+              <div class="item"><div class="top"><span>JIHOON</span><span>04.09</span></div><p>항상 지금처럼 다정한 모습이길.</p></div>
+              <div class="item"><div class="top"><span>HAEUN</span><span>04.09</span></div><p>그날 꼭 갈게요. 미리 축하드려요!</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 02</b><span>Sticky Wall</span></div>
+        <div class="mob">
+          <div class="b2">
+            <div class="wall">
+              <div class="note">결혼 축하해! 오래오래 행복해야 해.<small>— SUJIN</small></div>
+              <div class="note b">따뜻한 가정 이루시길 바라요.<small>— JIHOON</small></div>
+              <div class="note c">두 사람 잘 어울려요 :)<small>— HAEUN</small></div>
+              <div class="note d">영원히 지금처럼 다정하기를.<small>— KYUNGHEE</small></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 03</b><span>Chat Bubble</span></div>
+        <div class="mob">
+          <div class="b3">
+            <div class="chat">
+              <div class="msg"><b>SUJIN</b>둘의 시작을 진심으로 축하해 💐</div>
+              <div class="msg you"><b>YOU</b>고마워! 당일에 봐~</div>
+              <div class="msg"><b>JIHOON</b>항상 지금처럼, 오래오래.</div>
+              <div class="msg"><b>HAEUN</b>꼭 갈게요. 미리 축하드려요.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 04</b><span>Guestbook</span></div>
+        <div class="mob">
+          <div class="b4">
+            <div class="book">
+              <div class="entry">두 사람의 시작을 진심으로 축복합니다.<span class="sig">— SUJIN</span></div>
+              <div class="entry">언제나 따뜻한 가정 이루시길 바랍니다.<span class="sig">— JIHOON</span></div>
+              <div class="entry">오래오래 서로에게 다정한 두 사람이 되기를.<span class="sig">— HAEUN</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 05</b><span>Write First</span></div>
+        <div class="mob">
+          <div class="b5">
+            <h4>LEAVE A NOTE</h4>
+            <div class="note">마음을 담아 한 줄 남겨주세요</div>
+            <textarea placeholder="축하 메시지를 남겨주세요."></textarea>
+            <div class="bar">
+              <input placeholder="이름" />
+              <button>SEND</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========== 12. THANKS ========== -->
+  <section id="thanks" class="sec">
+    <div class="sec-head">
+      <h2>12 · THANKS</h2>
+      <span class="ko">감사 인사</span>
+    </div>
+    <div class="variants">
+
+      <div class="card">
+        <div class="card-label"><b>Variant 01</b><span>Classic Letter</span></div>
+        <div class="mob">
+          <div class="th1">
+            <div class="mark">Thank You</div>
+            <h4>소중한 걸음에 감사드립니다</h4>
+            <div class="rule"></div>
+            <p>귀한 시간 내어 축복해 주신 마음,<br/>오래도록 간직하겠습니다.<br/>받은 사랑을 닮은 하루하루를<br/>만들어 가겠습니다.</p>
+            <div class="names">MINJUN &amp; SEOYEON</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 02</b><span>Photo + Message</span></div>
+        <div class="mob">
+          <div class="th2">
+            <div class="ph"></div>
+            <div class="content">
+              <div class="eng">WITH LOVE</div>
+              <h4>함께해 주셔서 감사합니다</h4>
+              <p>오늘의 따뜻한 축복이<br/>평생의 기억으로 남겠습니다.</p>
+              <div class="sign">— M &amp; S</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 03</b><span>Dark Framed</span></div>
+        <div class="mob" style="padding:0">
+          <div class="th3">
+            <div class="eng">THANK YOU</div>
+            <div class="big">Grateful.</div>
+            <p>귀한 마음으로 축복해 주신<br/>모든 분들께 감사드립니다.</p>
+            <div class="names">MINJUN &amp; SEOYEON · 2026</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 04</b><span>Stamp</span></div>
+        <div class="mob">
+          <div class="th4">
+            <div class="stamp">
+              <div class="cap">Thank You</div>
+              <h4>Grateful Hearts</h4>
+              <p>축복해 주신 모든 분들께<br/>진심으로 감사드립니다.<br/>받은 사랑을 닮은<br/>부부가 되겠습니다.</p>
+              <div class="date">MAY 16, 2026 · MINJUN &amp; SEOYEON</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 05</b><span>Gallery Ending</span></div>
+        <div class="mob">
+          <div class="th5">
+            <div class="grid">
+              <div class="ph"></div>
+              <div class="ph"></div>
+            </div>
+            <div class="body">
+              <div class="eng">— FIN —</div>
+              <h4>감사합니다</h4>
+              <p>오래도록 기억에 남을<br/>소중한 하루가 되었습니다.</p>
+              <div class="sign">MINJUN · SEOYEON</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========== 13. DIVIDERS ========== -->
+  <section id="dividers" class="sec">
+    <div class="sec-head">
+      <h2>13 · DIVIDERS</h2>
+      <span class="ko">구분선</span>
+    </div>
+    <div class="variants">
+
+      <div class="card">
+        <div class="card-label"><b>Variant 01</b><span>Thin Hairline</span></div>
+        <div class="mob"><div class="dv"><div class="dv1"><div class="line"></div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 02</b><span>Double Line</span></div>
+        <div class="mob"><div class="dv"><div class="dv2"><div class="line"></div><div class="gap"></div><div class="line"></div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 03</b><span>Dotted</span></div>
+        <div class="mob"><div class="dv"><div class="dv3"></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 04</b><span>Dashed</span></div>
+        <div class="mob"><div class="dv"><div class="dv4"></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 05</b><span>Short Bar</span></div>
+        <div class="mob"><div class="dv"><div class="dv5"><div class="bar"></div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 06</b><span>Diamond Ornament</span></div>
+        <div class="mob"><div class="dv"><div class="dv6"><div class="l"></div><div class="d"></div><div class="l"></div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 07</b><span>Triple Dots</span></div>
+        <div class="mob"><div class="dv"><div class="dv7"><div class="l"></div><div class="dots"><span></span><span></span><span></span></div><div class="l"></div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 08</b><span>Asterisk</span></div>
+        <div class="mob"><div class="dv"><div class="dv8"><div class="l"></div><div class="sym">&#10023;</div><div class="l"></div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 09</b><span>Ampersand</span></div>
+        <div class="mob"><div class="dv"><div class="dv9"><div class="l"></div><div class="amp">&amp;</div><div class="l"></div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 10</b><span>Labeled</span></div>
+        <div class="mob"><div class="dv"><div class="dv10"><div class="l"></div><div class="lbl">And So</div><div class="l"></div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 11</b><span>Roman Numeral</span></div>
+        <div class="mob"><div class="dv"><div class="dv11"><div class="l"></div><div class="num">II</div><div class="l"></div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-label"><b>Variant 12</b><span>Thick + Thin</span></div>
+        <div class="mob"><div class="dv"><div class="dv12"><div class="thick"></div><div class="thin"></div></div></div></div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>THE SIMPLE · DESIGN DRAFT · 2026</footer>
+
+</body>
+</html>

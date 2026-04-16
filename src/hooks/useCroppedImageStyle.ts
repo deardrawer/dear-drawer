@@ -136,7 +136,7 @@ export function useCroppedImageStyle(
 
 /**
  * SSR-safe한 순수 함수 버전 (서버 컴포넌트/초기 렌더링용)
- * 이미지 크기를 모를 때 Math.max 근사값 사용
+ * backgroundSize 단일 퍼센트(비율 유지) + 중심점 기반 위치 계산
  */
 export function getImageCropStyleFallback(
   img: string,
@@ -150,22 +150,26 @@ export function getImageCropStyleFallback(
     const cx = s.cropX || 0
     const cy = s.cropY || 0
 
-    const scale = Math.max(100 / cw, 100 / ch)
-    const posX = cw < 1 ? (cx / (1 - cw)) * 100 : 50
-    const posY = ch < 1 ? (cy / (1 - ch)) * 100 : 50
+    // 줌: 크롭 영역의 좁은 쪽 기준 확대 (단일 값 → 비율 유지)
+    const zoom = Math.max(100 / cw, 100 / ch)
+    // 위치: 크롭 영역 중심점 기반 (cover 호환)
+    const centerX = (cx + cw / 2) * 100
+    const centerY = (cy + ch / 2) * 100
 
     return {
       backgroundImage: `url(${img})`,
-      backgroundSize: `${scale}%`,
-      backgroundPosition: `${posX}% ${posY}%`,
+      backgroundSize: `${zoom}%`,
+      backgroundPosition: `${centerX}% ${centerY}%`,
       backgroundRepeat: 'no-repeat',
     }
   }
 
+  const sc = s.scale || 1
+  const px = s.positionX || 0
+  const py = s.positionY || 0
   return {
     backgroundImage: `url(${img})`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    transform: `scale(${s.scale || 1}) translate(${s.positionX || 0}%, ${s.positionY || 0}%)`,
+    backgroundSize: sc > 1 ? `${sc * 100}%` : 'cover',
+    backgroundPosition: sc > 1 ? `${50 - px}% ${50 - py}%` : 'center',
   }
 }

@@ -1,0 +1,794 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Intro Alternatives — Fresh Concepts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Noto+Serif+KR:wght@200;300;400;500&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+<style>
+/* ================================================================ */
+:root {
+  --w: min(100vw, 430px);
+  --vh: 100dvh;
+  --fd: "Cormorant Garamond", serif;
+  --fk: "Noto Serif KR", serif;
+  --fs: "Inter", sans-serif;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { background: #080808; }
+body { font-family: var(--fd); -webkit-font-smoothing: antialiased; color: #fff; }
+img.bg, .bg-photo img, .bg-right img, .b-gate img, .e-photo-area img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; object-position: center;
+}
+
+/* ─── TAB BAR (2줄 그리드) ─── */
+.tab-bar {
+  position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+  width: var(--w); z-index: 1000;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: rgba(10,10,10,0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.tab-btn {
+  padding: 10px 0;
+  font-family: var(--fs); font-size: 9px;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+  background: none; border: none; cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.3s, border-color 0.3s;
+  white-space: nowrap; text-align: center;
+}
+.tab-btn:hover { color: rgba(255,255,255,0.6); }
+.tab-btn.active {
+  color: #fff;
+  border-bottom-color: rgba(255,255,255,0.8);
+}
+
+/* ─── PANELS ─── */
+.panel {
+  display: none;
+  width: var(--w); margin: 0 auto;
+  position: relative; overflow: hidden;
+}
+.panel.active { display: block; }
+
+/* ── keyframes ── */
+@keyframes kbSlow {
+  0%   { transform: scale(1.12); }
+  100% { transform: scale(1.0); }
+}
+@keyframes blurIn {
+  from { opacity: 0; filter: blur(10px); transform: translateY(18px); }
+  to   { opacity: 1; filter: blur(0);   transform: none; }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes lineX {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+@keyframes lineY {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+@keyframes clipCenter {
+  from { clip-path: inset(50% 0 50% 0); }
+  to   { clip-path: inset(0 0 0 0); }
+}
+@keyframes tickerScroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes archDraw {
+  from { clip-path: inset(100% 15% 0% 15% round 0); opacity: 0; }
+  40%  { clip-path: inset(8% 8% 0% 8% round 50% 50% 0 0); opacity: 1; }
+  to   { clip-path: inset(8% 8% 0% 8% round 50% 50% 0 0); opacity: 1; }
+}
+@keyframes counterSlide {
+  from { opacity: 0; transform: translateY(100%); filter: blur(4px); }
+  to   { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+@keyframes curtainUp {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-100%); }
+}
+@keyframes curtainDown {
+  from { transform: translateY(0); }
+  to   { transform: translateY(100%); }
+}
+@keyframes boxReveal {
+  0%   { clip-path: inset(0 100% 100% 0); }
+  50%  { clip-path: inset(0 0 100% 0); }
+  100% { clip-path: inset(0 0 0 0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes maskUp {
+  from { clip-path: inset(100% 0 0 0); opacity: 0; }
+  to   { clip-path: inset(0 0 0 0); opacity: 1; }
+}
+@keyframes letterDrop {
+  from { opacity: 0; transform: translateY(-24px) scale(0.97); }
+  60%  { opacity: 1; transform: translateY(3px) scale(1.003); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ─── 애니메이션 재시작 지원: panel이 active가 아닐 때 모두 리셋 ─── */
+.panel:not(.active) * { animation: none !important; }
+
+/* ================================================================
+   A · SPLIT SCREEN
+   ================================================================ */
+.a-split { min-height: var(--vh); display: flex; position: relative; }
+.a-split .bg-left {
+  position: absolute; top: 0; left: 0; width: 42%; height: 100%;
+  background: #0a0a0a; z-index: 1;
+}
+.a-split .bg-right {
+  position: absolute; top: 0; right: 0; width: 58%; height: 100%;
+  overflow: hidden;
+}
+.a-split .bg-right img {
+  filter: brightness(0.7) saturate(0.6);
+  animation: kbSlow 14s ease-out both;
+}
+.a-split .bg-right::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, #0a0a0a 0%, transparent 40%);
+}
+.a-vline {
+  position: absolute; left: 42%; top: 0; width: 1px; height: 100%;
+  background: rgba(255,255,255,0.12); z-index: 3;
+  transform-origin: top; transform: scaleY(0);
+  animation: lineY 2s var(--ease) 0.3s both;
+}
+.a-content {
+  position: relative; z-index: 4;
+  width: 100%; display: flex; flex-direction: column;
+  justify-content: center; padding: 0 32px;
+  min-height: var(--vh);
+}
+.a-label {
+  font-size: 9px; letter-spacing: 0.5em; text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  opacity: 0; animation: fadeIn 1.4s var(--ease) 1.4s both;
+}
+.a-names {
+  font-style: italic; font-size: 44px; line-height: 0.9;
+  font-weight: 300; margin: 16px 0 20px;
+  opacity: 0; animation: blurIn 2s var(--ease) 1.8s both;
+}
+.a-ko {
+  font-family: var(--fk); font-size: 12px; font-weight: 200;
+  letter-spacing: 0.2em; color: rgba(255,255,255,0.55);
+  opacity: 0; animation: fadeIn 1.2s var(--ease) 2.8s both;
+}
+.a-rule {
+  width: 24px; height: 1px; background: rgba(255,255,255,0.25);
+  margin: 20px 0; transform-origin: left;
+  transform: scaleX(0); animation: lineX 1.2s var(--ease) 3.2s both;
+}
+.a-meta {
+  font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase;
+  color: rgba(255,255,255,0.5); line-height: 2;
+  opacity: 0; animation: fadeIn 1.2s var(--ease) 3.6s both;
+}
+
+/* ================================================================
+   B · ARCH DOORWAY
+   ================================================================ */
+.b-arch { min-height: var(--vh); display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0a0a0a; position: relative; }
+.b-gate {
+  position: relative; z-index: 2;
+  width: calc(100% - 64px); aspect-ratio: 3/4;
+  border-radius: 50% 50% 0 0 / 36% 36% 0 0;
+  overflow: hidden; opacity: 0;
+  animation: archDraw 2.4s var(--ease) 0.4s both;
+}
+.b-gate img {
+  filter: brightness(0.65) saturate(0.5);
+  animation: kbSlow 14s ease-out both;
+}
+.b-gate-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.7) 100%);
+}
+.b-gate-text {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  text-align: center; padding: 0 24px 28px; z-index: 2;
+}
+.b-eyebrow {
+  font-size: 9px; letter-spacing: 0.5em; text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+  opacity: 0; animation: fadeIn 1.2s var(--ease) 2s both;
+}
+.b-names {
+  font-style: italic; font-size: 34px; line-height: 1;
+  font-weight: 300; margin: 12px 0;
+  opacity: 0; animation: blurIn 1.6s var(--ease) 2.4s both;
+}
+.b-date {
+  font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+  opacity: 0; animation: fadeIn 1.2s var(--ease) 3.2s both;
+}
+.b-below { position: relative; z-index: 2; text-align: center; margin-top: 24px; }
+.b-venue {
+  font-family: var(--fk); font-size: 11px; font-weight: 200;
+  color: rgba(255,255,255,0.35); letter-spacing: 0.08em;
+  opacity: 0; animation: fadeIn 1.2s var(--ease) 3.6s both;
+}
+
+/* ================================================================
+   C · GIANT DATE
+   ================================================================ */
+/* C · elegant keyframes */
+@keyframes cGentleUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes cSoftReveal {
+  from { opacity: 0; filter: blur(6px); transform: translateY(6px) scale(0.98); }
+  to   { opacity: 1; filter: blur(0);   transform: translateY(0) scale(1); }
+}
+@keyframes cNumberRise {
+  0%   { opacity: 0; transform: translateY(40%) scale(0.95); filter: blur(8px); }
+  60%  { opacity: 0.08; filter: blur(2px); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+@keyframes cLineExpand {
+  from { transform: scaleX(0); opacity: 0; }
+  to   { transform: scaleX(1); opacity: 1; }
+}
+@keyframes cBreath {
+  0%, 100% { opacity: 0.25; }
+  50%      { opacity: 0.45; }
+}
+
+.c-date {
+  min-height: var(--vh); display: flex; flex-direction: column;
+  position: relative;
+}
+.c-date .bg-photo { position: absolute; inset: 0; overflow: hidden; }
+.c-date .bg-photo img {
+  filter: brightness(0.28) saturate(0.2);
+  animation: kbSlow 18s ease-out both;
+}
+/* Top bar */
+.c-top-bar {
+  position: relative; z-index: 2;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 28px 28px 0;
+  opacity: 0; animation: cGentleUp 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s both;
+}
+.c-top-bar .c-issue {
+  font-family: var(--fk); font-size: 9px; font-weight: 200;
+  letter-spacing: 0.12em;
+  color: rgba(255,255,255,0.3);
+}
+.c-top-bar .c-date-en {
+  font-family: var(--fk); font-size: 9px; font-weight: 200;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.3);
+}
+/* Main area */
+.c-content {
+  position: relative; z-index: 2; text-align: center;
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 40px 28px;
+}
+.c-number {
+  font-family: var(--fd); font-size: 120px; font-weight: 300; line-height: 0.85;
+  letter-spacing: -0.02em; color: rgba(255,255,255,0.08);
+  margin-bottom: 0; overflow: hidden;
+}
+.c-number span {
+  display: inline-block; opacity: 0;
+  animation: cNumberRise 2.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.c-number span:nth-child(1) { animation-delay: 0.6s; }
+.c-number span:nth-child(2) { animation-delay: 0.9s; }
+.c-title-block {
+  text-align: center; margin-top: -20px;
+  position: relative; z-index: 3;
+}
+.c-eyebrow {
+  font-family: var(--fs); font-size: 9px; font-weight: 300;
+  letter-spacing: 0.3em; text-transform: uppercase;
+  color: rgba(255,255,255,0.3); margin-bottom: 16px;
+  opacity: 0; animation: cGentleUp 1.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 1.6s both;
+}
+.c-names {
+  font-family: var(--fd); font-size: 26px; font-weight: 400; line-height: 1.4;
+  letter-spacing: 0.04em; color: #fff;
+  opacity: 0; animation: cSoftReveal 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) 2s both;
+}
+.c-names .c-et {
+  font-family: var(--fd); font-style: italic; font-size: 18px;
+  color: rgba(255,255,255,0.25);
+  animation: cBreath 4s ease-in-out 4.5s infinite;
+}
+/* Divider line between names and venue */
+.c-divider {
+  width: 40px; height: 1px; margin: 20px auto 0;
+  background: rgba(255,255,255,0.12);
+  transform-origin: center;
+  opacity: 0; animation: cLineExpand 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 3.2s both;
+}
+.c-venue-info {
+  font-family: var(--fk); font-size: 11px; font-weight: 200;
+  line-height: 1.8; letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.4); margin-top: 16px;
+  opacity: 0; animation: cGentleUp 1.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 3.6s both;
+}
+/* Bottom bar */
+.c-bottom-bar {
+  position: relative; z-index: 2;
+  padding: 0 28px 32px;
+  display: flex; justify-content: space-between; align-items: flex-end;
+  opacity: 0; animation: cGentleUp 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 4.2s both;
+}
+.c-open-label {
+  font-family: var(--fk); font-size: 9px; font-weight: 200;
+  letter-spacing: 0.12em;
+  color: rgba(255,255,255,0.3);
+  display: flex; align-items: center; gap: 8px;
+}
+.c-open-label .c-arrow-line {
+  width: 0; height: 1px;
+  background: rgba(255,255,255,0.15);
+  position: relative;
+  animation: cArrowGrow 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) 4.8s both;
+}
+@keyframes cArrowGrow {
+  from { width: 0; }
+  to   { width: 20px; }
+}
+.c-open-label .c-arrow-line::after {
+  content: "";
+  position: absolute; right: 0; top: 50%;
+  width: 5px; height: 5px;
+  border-right: 1px solid rgba(255,255,255,0.3);
+  border-top: 1px solid rgba(255,255,255,0.3);
+  transform: translateY(-50%) rotate(45deg);
+}
+.c-page-num {
+  font-family: var(--fs); font-size: 9px; font-weight: 300;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.15);
+}
+
+/* ================================================================
+   D · TICKER BAND
+   ================================================================ */
+.d-ticker { min-height: var(--vh); display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0a0a0a; position: relative; }
+.d-band {
+  width: 100%; overflow: hidden; padding: 14px 0;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  opacity: 0; animation: fadeIn 1.4s var(--ease) 0.3s both;
+}
+.d-band-inner {
+  display: flex; gap: 40px; white-space: nowrap;
+  animation: tickerScroll 20s linear infinite;
+  font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
+  color: rgba(255,255,255,0.2);
+}
+.d-band-inner span::after { content: '·'; margin-left: 40px; opacity: 0.4; }
+.d-center { padding: 56px 0; text-align: center; }
+.d-eyebrow {
+  font-size: 9px; letter-spacing: 0.6em; text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+  opacity: 0; animation: fadeIn 1.2s var(--ease) 1s both;
+}
+.d-names {
+  font-style: italic; font-size: 52px; line-height: 0.88;
+  font-weight: 300; margin: 24px 0;
+  opacity: 0; animation: blurIn 2.2s var(--ease) 1.6s both;
+}
+.d-rule {
+  width: 32px; height: 1px; margin: 0 auto;
+  background: rgba(255,255,255,0.2);
+  transform-origin: center; transform: scaleX(0);
+  animation: lineX 1.2s var(--ease) 2.8s both;
+}
+.d-date {
+  font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase;
+  color: rgba(255,255,255,0.5); margin-top: 20px;
+  opacity: 0; animation: fadeIn 1.2s var(--ease) 3.2s both;
+}
+
+/* ================================================================
+   E · CURTAIN REVEAL
+   ================================================================ */
+.e-curtain { min-height: var(--vh); display: flex; align-items: center; justify-content: center; position: relative; background: #0a0a0a; }
+.e-photo-area {
+  position: absolute; inset: 0;
+  clip-path: inset(50% 0 50% 0);
+  animation: clipCenter 2.4s var(--ease) 0.6s both;
+}
+.e-photo-area img {
+  filter: brightness(0.45) saturate(0.5);
+  animation: kbSlow 14s ease-out 0.6s both;
+}
+.e-photo-area::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg,
+    rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.1) 30%,
+    rgba(0,0,0,0.1) 60%, rgba(0,0,0,0.6) 100%);
+}
+.e-curtain-top, .e-curtain-bottom {
+  position: absolute; left: 0; right: 0; height: 50%;
+  background: #0a0a0a; z-index: 3;
+}
+.e-curtain-top { top: 0; animation: curtainUp 2s var(--ease) 0.4s both; }
+.e-curtain-bottom { bottom: 0; animation: curtainDown 2s var(--ease) 0.4s both; }
+.e-content { position: relative; z-index: 4; text-align: center; padding: 0 32px; }
+.e-eyebrow {
+  font-size: 10px; letter-spacing: 0.5em; text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+  opacity: 0; animation: fadeIn 1.2s var(--ease) 2.2s both;
+}
+.e-names {
+  font-style: italic; font-size: 44px; line-height: 0.9;
+  font-weight: 300; margin: 18px 0;
+  opacity: 0; animation: blurIn 2s var(--ease) 2.6s both;
+}
+.e-rule {
+  width: 28px; height: 1px; margin: 0 auto;
+  background: rgba(255,255,255,0.35);
+  transform-origin: center; transform: scaleX(0);
+  animation: lineX 1s var(--ease) 3.4s both;
+}
+.e-meta {
+  font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
+  color: rgba(255,255,255,0.5); margin-top: 16px; line-height: 2.2;
+  opacity: 0; animation: fadeIn 1.2s var(--ease) 3.8s both;
+}
+
+/* ================================================================
+   F · CROSSHAIR GRID
+   ================================================================ */
+.f-grid { min-height: var(--vh); display: flex; align-items: center; justify-content: center; position: relative; background: #0a0a0a; }
+.f-h-line {
+  position: absolute; left: 28px; right: 28px; height: 1px;
+  background: rgba(255,255,255,0.1); z-index: 2;
+  transform-origin: left; transform: scaleX(0);
+}
+.f-h-line:nth-of-type(1) { top: 35%; animation: lineX 2s var(--ease) 0.3s both; }
+.f-h-line:nth-of-type(2) { bottom: 35%; animation: lineX 2s var(--ease) 0.6s both; }
+.f-v-line {
+  position: absolute; top: 0; bottom: 0; width: 1px;
+  background: rgba(255,255,255,0.06); z-index: 2;
+  transform-origin: top; transform: scaleY(0);
+}
+.f-v-line:nth-of-type(3) { left: 30%; animation: lineY 2s var(--ease) 0.9s both; }
+.f-v-line:nth-of-type(4) { right: 30%; animation: lineY 2s var(--ease) 1.2s both; }
+.f-content { position: relative; z-index: 3; text-align: center; padding: 0 20px; }
+.f-tag {
+  font-family: var(--fs); font-size: 8px; letter-spacing: 0.6em;
+  text-transform: uppercase; color: rgba(255,255,255,0.25);
+  opacity: 0; animation: fadeIn 1.2s var(--ease) 2s both;
+}
+.f-names {
+  font-style: italic; font-size: 42px; line-height: 0.9;
+  font-weight: 300; margin: 20px 0;
+  opacity: 0; animation: blurIn 2s var(--ease) 2.4s both;
+}
+.f-ko {
+  font-family: var(--fk); font-size: 12px; font-weight: 200;
+  letter-spacing: 0.2em; color: rgba(255,255,255,0.4);
+  opacity: 0; animation: fadeIn 1.2s var(--ease) 3.4s both;
+}
+.f-date {
+  font-size: 10px; letter-spacing: 0.36em; text-transform: uppercase;
+  color: rgba(255,255,255,0.35); margin-top: 20px;
+  opacity: 0; animation: fadeIn 1.2s var(--ease) 3.8s both;
+}
+.f-corner { position: absolute; width: 16px; height: 16px; z-index: 3; opacity: 0; animation: fadeIn 1s var(--ease) 1.8s both; }
+.f-corner::before, .f-corner::after { content: ''; position: absolute; background: rgba(255,255,255,0.15); }
+.f-corner--tl { top: 28px; left: 28px; }
+.f-corner--tl::before { top: 0; left: 0; width: 16px; height: 1px; }
+.f-corner--tl::after  { top: 0; left: 0; width: 1px; height: 16px; }
+.f-corner--tr { top: 28px; right: 28px; }
+.f-corner--tr::before { top: 0; right: 0; width: 16px; height: 1px; }
+.f-corner--tr::after  { top: 0; right: 0; width: 1px; height: 16px; }
+.f-corner--bl { bottom: 28px; left: 28px; }
+.f-corner--bl::before { bottom: 0; left: 0; width: 16px; height: 1px; }
+.f-corner--bl::after  { bottom: 0; left: 0; width: 1px; height: 16px; }
+.f-corner--br { bottom: 28px; right: 28px; }
+.f-corner--br::before { bottom: 0; right: 0; width: 16px; height: 1px; }
+.f-corner--br::after  { bottom: 0; right: 0; width: 1px; height: 16px; }
+
+/* ================================================================
+   G · MONOGRAM SEAL (기존 V6)
+   ================================================================ */
+.g-seal-wrap { min-height: var(--vh); display: flex; align-items: center; justify-content: center; flex-direction: column; background: #0a0a0a; }
+.g-seal {
+  position: relative; z-index: 2;
+  width: 160px; height: 160px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.2);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; animation: scaleIn 1.6s var(--ease) 0.6s both;
+}
+.g-seal::before {
+  content: ''; position: absolute; inset: 8px;
+  border-radius: 50%; border: 1px solid rgba(255,255,255,0.1);
+}
+.g-monogram { font-style: italic; font-size: 42px; font-weight: 300; letter-spacing: 0.04em; color: rgba(255,255,255,0.9); }
+.g-below { position: relative; z-index: 2; text-align: center; margin-top: 36px; }
+.g-names {
+  font-size: 13px; letter-spacing: 0.3em; text-transform: uppercase;
+  color: rgba(255,255,255,0.7);
+  opacity: 0; animation: blurIn 1.4s var(--ease) 1.6s both;
+}
+.g-rule {
+  width: 20px; height: 1px; background: rgba(255,255,255,0.2);
+  margin: 18px auto; transform-origin: center; transform: scaleX(0);
+  animation: lineX 1s var(--ease) 2.2s both;
+}
+.g-date {
+  font-size: 10px; letter-spacing: 0.36em;
+  color: rgba(255,255,255,0.4); text-transform: uppercase;
+  opacity: 0; animation: fadeIn 1.2s var(--ease) 2.8s both;
+}
+.g-venue {
+  font-family: var(--fk); font-size: 11px; color: rgba(255,255,255,0.3);
+  letter-spacing: 0.06em; margin-top: 8px; font-weight: 300;
+  opacity: 0; animation: fadeIn 1.2s var(--ease) 3.2s both;
+}
+
+/* ================================================================
+   H · HORIZONTAL RULE STACK (기존 V7)
+   ================================================================ */
+.h-stack-wrap { min-height: var(--vh); display: flex; align-items: center; justify-content: center; position: relative; }
+.h-stack-wrap .bg-photo { position: absolute; inset: 0; overflow: hidden; }
+.h-stack-wrap .bg-photo img {
+  filter: brightness(0.3) saturate(0.35);
+  animation: kbSlow 14s ease-out both;
+}
+.h-stack-wrap .bg-photo::after {
+  content: ''; position: absolute; inset: 0;
+  background: rgba(0,0,0,0.45);
+}
+.h-stack {
+  position: relative; z-index: 2;
+  width: calc(100% - 56px); margin: 40px 28px; text-align: center;
+}
+.h-line {
+  height: 1px; background: rgba(255,255,255,0.2);
+  transform-origin: center; transform: scaleX(0);
+}
+.h-line:nth-child(1) { animation: lineX 1.4s var(--ease) 0.4s both; }
+.h-line:nth-child(3) { animation: lineX 1.4s var(--ease) 1.2s both; }
+.h-line:nth-child(5) { animation: lineX 1.4s var(--ease) 2.6s both; }
+.h-line:nth-child(7) { animation: lineX 1.4s var(--ease) 3.6s both; }
+.h-row { padding: 20px 0; }
+.h-eyebrow {
+  font-size: 10px; letter-spacing: 0.5em; text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  opacity: 0; animation: fadeIn 1.2s var(--ease) 1s both;
+}
+.h-names {
+  font-style: italic; font-size: 38px; line-height: 1;
+  font-weight: 300; padding: 22px 0;
+  opacity: 0; animation: blurIn 1.8s var(--ease) 1.6s both;
+}
+.h-meta {
+  font-size: 10px; letter-spacing: 0.3em;
+  color: rgba(255,255,255,0.5); text-transform: uppercase;
+  opacity: 0; animation: fadeIn 1.2s var(--ease) 3s both;
+}
+.h-meta span {
+  display: block; margin-top: 4px;
+  color: rgba(255,255,255,0.35); font-size: 9px;
+}
+</style>
+</head>
+<body>
+
+<!-- TAB BAR -->
+<nav class="tab-bar" id="tabs">
+  <button class="tab-btn active" data-panel="pa">A · Split</button>
+  <button class="tab-btn" data-panel="pb">B · Arch</button>
+  <button class="tab-btn" data-panel="pc">C · Date</button>
+  <button class="tab-btn" data-panel="pd">D · Ticker</button>
+  <button class="tab-btn" data-panel="pe">E · Curtain</button>
+  <button class="tab-btn" data-panel="pf">F · Grid</button>
+  <button class="tab-btn" data-panel="pg">G · Seal</button>
+  <button class="tab-btn" data-panel="ph">H · Rules</button>
+</nav>
+
+<!-- A · SPLIT SCREEN -->
+<div class="panel active" id="pa">
+  <div class="a-split">
+    <div class="bg-left"></div>
+    <div class="bg-right"><img src="https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80" alt=""></div>
+    <div class="a-vline"></div>
+    <div class="a-content">
+      <div class="a-label">Wedding Invitation</div>
+      <div class="a-names">Minjun<br>&amp; Seoyeon</div>
+      <div class="a-ko">김민준 &amp; 이서연</div>
+      <div class="a-rule"></div>
+      <div class="a-meta">2026 · 05 · 16 · Saturday<br>그랜드 하얏트 서울</div>
+    </div>
+  </div>
+</div>
+
+<!-- B · ARCH DOORWAY -->
+<div class="panel" id="pb">
+  <div class="b-arch">
+    <div class="b-gate">
+      <img src="https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80" alt="">
+      <div class="b-gate-overlay"></div>
+      <div class="b-gate-text">
+        <div class="b-eyebrow">Save the Date</div>
+        <div class="b-names">Minjun<br>&amp; Seoyeon</div>
+        <div class="b-date">May · 16 · 2026</div>
+      </div>
+    </div>
+    <div class="b-below"><div class="b-venue">그랜드 하얏트 서울 · 그랜드 볼룸</div></div>
+  </div>
+</div>
+
+<!-- C · GIANT DATE -->
+<div class="panel" id="pc">
+  <div class="c-date">
+    <div class="bg-photo"><img src="https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80" alt=""></div>
+    <div class="c-top-bar">
+      <span class="c-issue">청첩장 &mdash; No. 001</span>
+      <span class="c-date-en">2026년 5월</span>
+    </div>
+    <div class="c-content">
+      <div class="c-number"><span>1</span><span>6</span></div>
+      <div class="c-title-block">
+        <div class="c-eyebrow">Wedding Ceremony</div>
+        <div class="c-names">
+          Kim Minjun<br>
+          <span class="c-et">&amp;</span><br>
+          Lee Seoyeon
+        </div>
+        <div class="c-divider"></div>
+        <div class="c-venue-info">
+          토요일 · 오후 1시<br>
+          그랜드 하얏트 서울 · 그랜드볼룸
+        </div>
+      </div>
+    </div>
+    <div class="c-bottom-bar">
+      <div class="c-open-label">
+        열기
+        <div class="c-arrow-line"></div>
+      </div>
+      <div class="c-page-num">01 / 01</div>
+    </div>
+  </div>
+</div>
+
+<!-- D · TICKER BAND -->
+<div class="panel" id="pd">
+  <div class="d-ticker">
+    <div class="d-band">
+      <div class="d-band-inner">
+        <span>Save the Date</span><span>May 16, 2026</span>
+        <span>Minjun &amp; Seoyeon</span><span>Grand Hyatt Seoul</span>
+        <span>Save the Date</span><span>May 16, 2026</span>
+        <span>Minjun &amp; Seoyeon</span><span>Grand Hyatt Seoul</span>
+      </div>
+    </div>
+    <div class="d-center">
+      <div class="d-eyebrow">Wedding Invitation</div>
+      <div class="d-names">Minjun<br>&amp; Seoyeon</div>
+      <div class="d-rule"></div>
+      <div class="d-date">2026 · 05 · 16</div>
+    </div>
+    <div class="d-band">
+      <div class="d-band-inner" style="animation-direction:reverse;">
+        <span>Saturday</span><span>Grand Ballroom</span>
+        <span>오후 1시</span><span>김민준 &amp; 이서연</span>
+        <span>Saturday</span><span>Grand Ballroom</span>
+        <span>오후 1시</span><span>김민준 &amp; 이서연</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- E · CURTAIN REVEAL -->
+<div class="panel" id="pe">
+  <div class="e-curtain">
+    <div class="e-curtain-top"></div>
+    <div class="e-curtain-bottom"></div>
+    <div class="e-photo-area"><img src="https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80" alt=""></div>
+    <div class="e-content">
+      <div class="e-eyebrow">We Invite You</div>
+      <div class="e-names">Minjun<br>&amp; Seoyeon</div>
+      <div class="e-rule"></div>
+      <div class="e-meta">2026 · 05 · 16 · Saturday<br>그랜드 하얏트 서울 · 그랜드 볼룸</div>
+    </div>
+  </div>
+</div>
+
+<!-- F · CROSSHAIR GRID -->
+<div class="panel" id="pf">
+  <div class="f-grid">
+    <div class="f-h-line"></div>
+    <div class="f-h-line"></div>
+    <div class="f-v-line"></div>
+    <div class="f-v-line"></div>
+    <div class="f-corner f-corner--tl"></div>
+    <div class="f-corner f-corner--tr"></div>
+    <div class="f-corner f-corner--bl"></div>
+    <div class="f-corner f-corner--br"></div>
+    <div class="f-content">
+      <div class="f-tag">No. 001 — Wedding Invitation</div>
+      <div class="f-names">Minjun<br>&amp; Seoyeon</div>
+      <div class="f-ko">김민준 &amp; 이서연</div>
+      <div class="f-date">May 16, 2026 · Saturday</div>
+    </div>
+  </div>
+</div>
+
+<!-- G · MONOGRAM SEAL -->
+<div class="panel" id="pg">
+  <div class="g-seal-wrap">
+    <div class="g-seal"><div class="g-monogram">M&amp;S</div></div>
+    <div class="g-below">
+      <div class="g-names">Minjun &amp; Seoyeon</div>
+      <div class="g-rule"></div>
+      <div class="g-date">May · 16 · 2026</div>
+      <div class="g-venue">그랜드 하얏트 서울</div>
+    </div>
+  </div>
+</div>
+
+<!-- H · HORIZONTAL RULE STACK -->
+<div class="panel" id="ph">
+  <div class="h-stack-wrap">
+    <div class="bg-photo"><img src="https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80" alt=""></div>
+    <div class="h-stack">
+      <div class="h-line"></div>
+      <div class="h-row h-eyebrow">Wedding Invitation</div>
+      <div class="h-line"></div>
+      <div class="h-row h-names">Minjun<br>&amp; Seoyeon</div>
+      <div class="h-line"></div>
+      <div class="h-row h-meta">2026 · 05 · 16 · Saturday<span>그랜드 하얏트 서울 · 그랜드 볼룸</span></div>
+      <div class="h-line"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// 탭 전환 + 애니메이션 재시작
+const tabs = document.querySelectorAll('.tab-btn');
+const panels = document.querySelectorAll('.panel');
+
+tabs.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const target = btn.dataset.panel;
+    tabs.forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    panels.forEach(p => {
+      p.classList.remove('active');
+      if (p.id === target) {
+        // 애니메이션 재시작: reflow 강제
+        void p.offsetWidth;
+        p.classList.add('active');
+      }
+    });
+  });
+});
+</script>
+</body>
+</html>

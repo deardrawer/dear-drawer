@@ -1438,7 +1438,7 @@ export default function AdminDashboardPage() {
                     </div>
                     <div className="h-px w-[40px] mx-auto mb-2" style={{ backgroundColor: invitationInfo?.accentColor || '#C9A962' }} />
                     <p className="text-[10px]" style={{ color: '#888' }}>
-                      아버지 ○○○ · 어머니 ○○○ 드림
+                      아버지 ○○○ · 어머니 ○○○ 올림
                     </p>
                   </div>
                 </div>

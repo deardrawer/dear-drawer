@@ -161,13 +161,33 @@ export default function ParentsInvitationView({
   const senderNames = [data.sender.fatherName, data.sender.motherName]
     .map(n => (n || '').trim())
     .filter(Boolean)
-  const senderSignature = senderNames.length > 0 ? `${senderNames.join(' · ')} 드림` : ''
 
   // 자녀 이름 (sender side에 따라) - 인사말에는 이름만 사용
   const childFirstName = data.sender.side === 'groom' ? data.groom.firstName : data.bride.firstName
 
   // 고인 표시 스타일
   const deceasedStyle = data.deceasedDisplayStyle || 'flower'
+
+  // sender 고인 표시 포함 서명 (JSX)
+  const hasSenderDeceased = data.sender.fatherDeceased || data.sender.motherDeceased
+  const senderSignatureNode = senderNames.length > 0 ? (
+    <>
+      {[
+        { name: (data.sender.fatherName || '').trim(), deceased: data.sender.fatherDeceased },
+        { name: (data.sender.motherName || '').trim(), deceased: data.sender.motherDeceased },
+      ]
+        .filter(p => p.name)
+        .map((p, i, arr) => (
+          <span key={i}>
+            {i > 0 && ' · '}
+            <ParentName name={p.name} deceased={p.deceased} displayStyle={deceasedStyle} />
+          </span>
+        ))}
+      {' 올림'}
+    </>
+  ) : null
+  // 고인 없으면 단순 문자열, 있으면 JSX
+  const senderSignature = hasSenderDeceased ? senderSignatureNode : (senderNames.length > 0 ? `${senderNames.join(' · ')} 올림` : '')
 
   // 갤러리 사진 (크롭 데이터 포함 + 빈 URL 필터링 강화)
   const photos = data.gallery.images.length > 0
@@ -358,7 +378,7 @@ export default function ParentsInvitationView({
               <GreetingSection
                 childName={childFirstName || '○○'}
                 greeting={data.greeting}
-                parentSignature={senderNames.length > 0 ? senderNames.join(' · ') : ''}
+                parentSignature={hasSenderDeceased ? senderSignatureNode : (senderNames.length > 0 ? `${senderNames.join(' · ')} 올림` : '')}
                 senderSide={data.sender.side}
               />
             </div>

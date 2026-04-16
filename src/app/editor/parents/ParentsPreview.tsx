@@ -79,7 +79,32 @@ export default function ParentsPreview({
   const senderNames = [data.sender.fatherName, data.sender.motherName]
     .map(n => (n || '').trim())
     .filter(Boolean)
-  const senderSignature = senderNames.length > 0 ? `${senderNames.join(' · ')} 드림` : ''
+  const deceasedStyle = data.deceasedDisplayStyle || 'flower'
+  const hasSenderDeceased = data.sender.fatherDeceased || data.sender.motherDeceased
+
+  // 고인 표시 인라인 헬퍼
+  const DeceasedMark = ({ style }: { style: 'hanja' | 'flower' }) =>
+    style === 'hanja'
+      ? <span className="inline-block mr-0.5 opacity-70" style={{ fontSize: 'inherit' }}>故</span>
+      : <img src="/icons/chrysanthemum.svg" alt="고인" className="inline w-3 h-3 mr-0.5 opacity-70 align-middle" style={{ verticalAlign: 'middle', marginTop: '-2px' }} />
+
+  const senderSignature = hasSenderDeceased && senderNames.length > 0 ? (
+    <>
+      {[
+        { name: (data.sender.fatherName || '').trim(), deceased: data.sender.fatherDeceased },
+        { name: (data.sender.motherName || '').trim(), deceased: data.sender.motherDeceased },
+      ]
+        .filter(p => p.name)
+        .map((p, i) => (
+          <span key={i}>
+            {i > 0 && ' · '}
+            {p.deceased && <DeceasedMark style={deceasedStyle} />}
+            {p.name}
+          </span>
+        ))}
+      {' 올림'}
+    </>
+  ) : (senderNames.length > 0 ? `${senderNames.join(' · ')} 올림` : '')
 
   // 봉투 메시지 - 선택된 게스트의 맞춤 메시지가 있으면 사용
   const envelopeMessage = selectedGuest?.custom_message

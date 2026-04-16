@@ -1,4 +1,4 @@
-export type NarrativeType = 'our' | 'family' | 'parents' | 'magazine' | 'film' | 'record' | 'exhibit' | 'essay' | 'thankyou'
+export type NarrativeType = 'our' | 'family' | 'parents' | 'magazine' | 'film' | 'record' | 'exhibit' | 'essay' | 'thankyou' | 'the-simple'
 
 export type TemplateSection = {
   id: string
@@ -274,6 +274,41 @@ export const templates: Template[] = [
     ],
   },
   {
+    id: 'narrative-the-simple',
+    name: 'THE SIMPLE',
+    description: '가장 일반적이면서도 특별한, 세련된 더심플 컨셉',
+    thumbnail: '/templates/narrative-the-simple.jpg',
+    defaultCoverImage: '',
+    narrativeType: 'the-simple',
+    emoji: '✦',
+    colors: {
+      primary: '#1a1a1a',
+      secondary: '#fbfaf7',
+      accent: '#a38d6d',
+      background: '#fbfaf7',
+      text: '#1a1a1a',
+    },
+    fonts: {
+      heading: 'Cormorant Garamond',
+      body: 'Pretendard',
+    },
+    features: ['에디토리얼 타이포', 'UI 대안 5~12개', '섹션 순서 커스텀', '구분선 12종'],
+    sections: [
+      { id: 'intro', title: '인트로', aiGenerated: false },
+      { id: 'greeting', title: '인사말', aiGenerated: false },
+      { id: 'couple', title: '커플 소개', aiGenerated: false },
+      { id: 'info', title: '예식 정보', aiGenerated: false },
+      { id: 'direction', title: '오시는 길', aiGenerated: false },
+      { id: 'interview', title: '인터뷰', aiGenerated: false },
+      { id: 'gallery', title: '갤러리', aiGenerated: false },
+      { id: 'guide', title: '결혼식 안내', aiGenerated: false, optional: true },
+      { id: 'account', title: '마음 전하실 곳', aiGenerated: false, optional: true },
+      { id: 'rsvp', title: '참석 의사', aiGenerated: false, optional: true },
+      { id: 'guestbook', title: '방명록', aiGenerated: false, optional: true },
+      { id: 'thanks', title: '감사 인사', aiGenerated: false, optional: true },
+    ],
+  },
+  {
     id: 'narrative-thankyou',
     name: 'THANKS',
     description: '결혼식 후 감사의 마음을 전하는 모바일 감사장',
@@ -343,4 +378,8 @@ export function getEssayTemplate(): Template {
 
 export function getThankYouTemplate(): Template {
   return templates.find((template) => template.narrativeType === 'thankyou')!
+}
+
+export function getTheSimpleTemplate(): Template {
+  return templates.find((template) => template.narrativeType === 'the-simple')!
 }

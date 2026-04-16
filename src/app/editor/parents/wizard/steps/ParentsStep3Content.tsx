@@ -491,7 +491,7 @@ export default function ParentsStep3Content({
           </div>
 
           {/* 고인 표시 스타일 (고인이 한 명이라도 있을 때만 노출) */}
-          {(data.groom.fatherDeceased || data.groom.motherDeceased || data.bride.fatherDeceased || data.bride.motherDeceased) && (
+          {(data.groom.fatherDeceased || data.groom.motherDeceased || data.bride.fatherDeceased || data.bride.motherDeceased || data.sender.fatherDeceased || data.sender.motherDeceased) && (
             <div className="p-3 bg-gray-50 rounded-lg space-y-2">
               <Label className="text-xs font-medium text-gray-700">고인 표시 스타일</Label>
               <div className="grid grid-cols-2 gap-2">

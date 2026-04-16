@@ -10,7 +10,7 @@ const sampleData: ParentsInvitationContent = {
     side: 'groom',
     fatherName: '박영수',
     motherName: '최미영',
-    signature: '아버지 박영수 · 어머니 최미영 드림',
+    signature: '아버지 박영수 · 어머니 최미영 올림',
   },
   groom: {
     lastName: '박',

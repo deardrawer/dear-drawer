@@ -4809,8 +4809,19 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose }: {
       if (e.key === 'ArrowRight') goNext()
       if (e.key === 'ArrowLeft') goPrev()
     }
+    // iOS Safari 핀치줌 차단
+    const onGesture = (e: Event) => e.preventDefault()
+    const onTouchMove = (e: TouchEvent) => { if (e.touches.length > 1) e.preventDefault() }
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    document.addEventListener('gesturestart', onGesture, { passive: false })
+    document.addEventListener('gesturechange', onGesture, { passive: false })
+    document.addEventListener('touchmove', onTouchMove, { passive: false })
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.removeEventListener('gesturestart', onGesture)
+      document.removeEventListener('gesturechange', onGesture)
+      document.removeEventListener('touchmove', onTouchMove)
+    }
   }, [isOpen, onClose, goNext, goPrev])
 
   if (!isOpen || images.length === 0) return null

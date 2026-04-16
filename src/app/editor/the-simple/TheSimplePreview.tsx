@@ -875,16 +875,35 @@ function GalleryShowMore({
   openLightbox: (srcs: string[], idx: number) => void
 }) {
   const [expanded, setExpanded] = useState(false)
+  const expandRef = useRef<HTMLDivElement>(null)
   const hasFold = showMoreRow > 0 && rows.length > showMoreRow
-  const visibleRows = hasFold && !expanded ? rows.slice(0, showMoreRow) : rows
-  const hiddenCount = hasFold ? rows.slice(showMoreRow).reduce((sum, r) => sum + r.items.filter(i => i.src).length, 0) : 0
+  const initialRows = hasFold ? rows.slice(0, showMoreRow) : rows
+  const hiddenRows = hasFold ? rows.slice(showMoreRow) : []
+  const hiddenCount = hasFold ? hiddenRows.reduce((sum, r) => sum + r.items.filter(i => i.src).length, 0) : 0
+
+  // Animate expand/collapse height
+  useEffect(() => {
+    const el = expandRef.current
+    if (!el) return
+    if (expanded) {
+      el.style.height = el.scrollHeight + 'px'
+      const onEnd = () => { el.style.height = 'auto' }
+      el.addEventListener('transitionend', onEnd, { once: true })
+    } else {
+      if (el.style.height === 'auto') {
+        el.style.height = el.scrollHeight + 'px'
+        el.offsetHeight // force reflow
+      }
+      el.style.height = '0px'
+    }
+  }, [expanded])
 
   let imgCounter = 0
   return (
     <AnimatedSection className={`ts-sec ts-gallery ts-anim-gallery-v${v}`} key={instanceId}>
       {galleryEyebrow && <div className="ts-eyebrow">{galleryEyebrow}</div>}
       <div style={{ display: 'flex', flexDirection: 'column', gap }}>
-        {visibleRows.map((row, rowIdx) => (
+        {initialRows.map((row, rowIdx) => (
           <div
             key={rowIdx}
             style={{
@@ -911,39 +930,81 @@ function GalleryShowMore({
         ))}
       </div>
       {hasFold && (
-        <button
-          type="button"
-          onClick={() => setExpanded(!expanded)}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 6,
-            width: '100%',
-            marginTop: 12,
-            padding: '10px 0',
-            border: '1px solid var(--ink, #333)',
-            borderRadius: 4,
-            background: 'transparent',
-            color: 'var(--ink, #333)',
-            fontFamily: 'var(--font-ko)',
-            fontSize: 12,
-            letterSpacing: '0.03em',
-            cursor: 'pointer',
-            opacity: 0.7,
-            transition: 'opacity 0.2s',
-          }}
-        >
-          {expanded ? '접기' : `사진 더보기 (+${hiddenCount})`}
-          <span style={{
-            display: 'inline-block',
-            transition: 'transform 0.3s',
-            transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
-            fontSize: 10,
-          }}>
-            ▼
-          </span>
-        </button>
+        <>
+          <div
+            ref={expandRef}
+            style={{
+              height: 0,
+              overflow: 'hidden',
+              transition: 'height 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+            }}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap, paddingTop: gap }}>
+              {hiddenRows.map((row, rowIdx) => {
+                return (
+                  <div
+                    key={rowIdx}
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: `repeat(${row.count}, 1fr)`,
+                      gap,
+                      opacity: expanded ? 1 : 0,
+                      transform: expanded ? 'translateY(0)' : 'translateY(12px)',
+                      transition: `opacity 0.4s ease ${rowIdx * 0.08}s, transform 0.4s ease ${rowIdx * 0.08}s`,
+                    }}
+                  >
+                    {row.items.map((item) => {
+                      imgCounter++
+                      return (
+                        <div key={keyFor(item.idx)}>
+                          <GalleryImg
+                            src={item.src}
+                            settings={settingsFor(item.idx)}
+                            aspectRatio={aspectForCount(row.count)}
+                            onClick={item.src ? () => openLightbox(validSrcs, validSrcs.indexOf(item.src!)) : undefined}
+                          />
+                        </div>
+                      )
+                    })}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setExpanded(!expanded)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 6,
+              width: '100%',
+              marginTop: 12,
+              padding: '10px 0',
+              border: '1px solid var(--ink, #333)',
+              borderRadius: 4,
+              background: 'transparent',
+              color: 'var(--ink, #333)',
+              fontFamily: 'var(--font-ko)',
+              fontSize: 12,
+              letterSpacing: '0.03em',
+              cursor: 'pointer',
+              opacity: 0.7,
+              transition: 'opacity 0.2s',
+            }}
+          >
+            {expanded ? '접기' : `사진 더보기 (+${hiddenCount})`}
+            <span style={{
+              display: 'inline-block',
+              transition: 'transform 0.3s',
+              transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+              fontSize: 10,
+            }}>
+              ▼
+            </span>
+          </button>
+        </>
       )}
     </AnimatedSection>
   )

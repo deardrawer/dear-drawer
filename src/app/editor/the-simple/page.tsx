@@ -1035,7 +1035,7 @@ function TheSimpleEditorContent() {
       </header>
 
       {/* Main area */}
-      <div className="flex-1 overflow-hidden">
+      <div className={`flex-1 ${isMobile ? 'overflow-y-auto' : 'overflow-hidden'}`}>
         <div className="w-full h-full max-w-[1400px] mx-auto flex">
           {/* Preview (desktop) */}
           {!isMobile && (

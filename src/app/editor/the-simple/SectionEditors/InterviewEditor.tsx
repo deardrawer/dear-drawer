@@ -29,63 +29,6 @@ export default function InterviewEditor({ value, onChange }: InterviewEditorProp
 
   return (
     <div className="space-y-3">
-      <label className="block">
-        <span className="text-[10px] uppercase tracking-wider text-stone-400">Eyebrow</span>
-        <input
-          type="text"
-          value={value.eyebrow}
-          onChange={(e) => onChange({ ...value, eyebrow: e.target.value })}
-          placeholder="Q&A"
-          className="mt-0.5 w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white"
-        />
-      </label>
-
-      <div className="space-y-2">
-        {value.items.map((item, index) => (
-          <div
-            key={index}
-            className="rounded-md border border-stone-200 p-2.5 bg-white space-y-2 relative"
-          >
-            <div className="flex items-center justify-between">
-              <div className="text-[10px] uppercase tracking-wider text-stone-500">
-                Q{index + 1}
-              </div>
-              <button
-                type="button"
-                onClick={() => removeItem(index)}
-                aria-label="질문 삭제"
-                className="p-0.5 text-stone-400 hover:text-red-600"
-              >
-                <X size={12} />
-              </button>
-            </div>
-            <input
-              type="text"
-              value={item.question}
-              onChange={(e) => updateItem(index, { question: e.target.value })}
-              placeholder="질문"
-              className="w-full border border-stone-200 rounded px-2 py-1 text-xs focus:outline-none focus:border-stone-600"
-            />
-            <textarea
-              value={item.answer}
-              onChange={(e) => updateItem(index, { answer: e.target.value })}
-              rows={2}
-              placeholder="답변"
-              className="w-full border border-stone-200 rounded px-2 py-1 text-xs focus:outline-none focus:border-stone-600 leading-relaxed resize-none"
-            />
-          </div>
-        ))}
-      </div>
-
-      <button
-        type="button"
-        onClick={addItem}
-        className="w-full flex items-center justify-center gap-1.5 border border-dashed border-stone-300 rounded-md py-2 text-xs text-stone-500 hover:border-stone-500 hover:text-stone-800 transition-colors"
-      >
-        <Plus size={13} />
-        질문 추가
-      </button>
-
       {/* 토글 옵션 */}
       <div className="rounded-md border border-stone-200 p-2.5 bg-white space-y-2">
         <label className="flex items-center gap-2 cursor-pointer">
@@ -148,6 +91,63 @@ export default function InterviewEditor({ value, onChange }: InterviewEditorProp
           </>
         )}
       </div>
+
+      <label className="block">
+        <span className="text-[10px] uppercase tracking-wider text-stone-400">Eyebrow</span>
+        <input
+          type="text"
+          value={value.eyebrow}
+          onChange={(e) => onChange({ ...value, eyebrow: e.target.value })}
+          placeholder="Q&A"
+          className="mt-0.5 w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white"
+        />
+      </label>
+
+      <div className="space-y-2">
+        {value.items.map((item, index) => (
+          <div
+            key={index}
+            className="rounded-md border border-stone-200 p-2.5 bg-white space-y-2 relative"
+          >
+            <div className="flex items-center justify-between">
+              <div className="text-[10px] uppercase tracking-wider text-stone-500">
+                Q{index + 1}
+              </div>
+              <button
+                type="button"
+                onClick={() => removeItem(index)}
+                aria-label="질문 삭제"
+                className="p-0.5 text-stone-400 hover:text-red-600"
+              >
+                <X size={12} />
+              </button>
+            </div>
+            <input
+              type="text"
+              value={item.question}
+              onChange={(e) => updateItem(index, { question: e.target.value })}
+              placeholder="질문"
+              className="w-full border border-stone-200 rounded px-2 py-1 text-xs focus:outline-none focus:border-stone-600"
+            />
+            <textarea
+              value={item.answer}
+              onChange={(e) => updateItem(index, { answer: e.target.value })}
+              rows={2}
+              placeholder="답변"
+              className="w-full border border-stone-200 rounded px-2 py-1 text-xs focus:outline-none focus:border-stone-600 leading-relaxed resize-none"
+            />
+          </div>
+        ))}
+      </div>
+
+      <button
+        type="button"
+        onClick={addItem}
+        className="w-full flex items-center justify-center gap-1.5 border border-dashed border-stone-300 rounded-md py-2 text-xs text-stone-500 hover:border-stone-500 hover:text-stone-800 transition-colors"
+      >
+        <Plus size={13} />
+        질문 추가
+      </button>
     </div>
   )
 }

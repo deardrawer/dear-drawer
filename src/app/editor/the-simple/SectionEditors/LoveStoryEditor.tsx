@@ -148,64 +148,6 @@ export default function LoveStoryEditor({ value, onChange }: LoveStoryEditorProp
 
   return (
     <div className="space-y-3">
-      <label className="block">
-        <span className="text-[10px] uppercase tracking-wider text-stone-400">Eyebrow</span>
-        <input
-          type="text"
-          value={value.eyebrow}
-          onChange={(e) => onChange({ ...value, eyebrow: e.target.value })}
-          placeholder="Love Story"
-          className="mt-0.5 w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white"
-        />
-      </label>
-
-      {items.map((item, i) => (
-        <div
-          key={i}
-          className="relative border border-stone-200 rounded-md p-3 space-y-2.5 bg-white"
-        >
-          {/* 아이템 헤더 */}
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] uppercase tracking-wider text-stone-400 font-medium">
-              Story {i + 1}
-            </span>
-            {items.length > 1 && (
-              <button
-                type="button"
-                onClick={() => removeItem(i)}
-                className="text-[10px] text-stone-400 hover:text-red-500 border border-stone-200 rounded px-1.5 py-0.5"
-              >
-                삭제
-              </button>
-            )}
-          </div>
-
-          {/* 본문 */}
-          <textarea
-            value={item.body}
-            onChange={(e) => updateItem(i, { body: e.target.value })}
-            rows={5}
-            placeholder="우리의 이야기를 자유롭게 적어주세요."
-            className="w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white leading-relaxed resize-none"
-          />
-
-          {/* 사진 2장 */}
-          <div className="grid grid-cols-2 gap-2">
-            {renderPhotoSlot(i, 'photo1', '사진 1')}
-            {renderPhotoSlot(i, 'photo2', '사진 2')}
-          </div>
-        </div>
-      ))}
-
-      {/* 스토리 추가 버튼 */}
-      <button
-        type="button"
-        onClick={addItem}
-        className="w-full border-2 border-dashed border-stone-300 rounded-md py-2.5 text-xs text-stone-500 hover:border-stone-500 hover:text-stone-700 transition-colors"
-      >
-        + 스토리 추가
-      </button>
-
       {/* 토글 옵션 */}
       <div className="rounded-md border border-stone-200 p-2.5 bg-white space-y-2">
         <label className="flex items-center gap-2 cursor-pointer">
@@ -268,6 +210,64 @@ export default function LoveStoryEditor({ value, onChange }: LoveStoryEditorProp
           </>
         )}
       </div>
+
+      <label className="block">
+        <span className="text-[10px] uppercase tracking-wider text-stone-400">Eyebrow</span>
+        <input
+          type="text"
+          value={value.eyebrow}
+          onChange={(e) => onChange({ ...value, eyebrow: e.target.value })}
+          placeholder="Love Story"
+          className="mt-0.5 w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white"
+        />
+      </label>
+
+      {items.map((item, i) => (
+        <div
+          key={i}
+          className="relative border border-stone-200 rounded-md p-3 space-y-2.5 bg-white"
+        >
+          {/* 아이템 헤더 */}
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] uppercase tracking-wider text-stone-400 font-medium">
+              Story {i + 1}
+            </span>
+            {items.length > 1 && (
+              <button
+                type="button"
+                onClick={() => removeItem(i)}
+                className="text-[10px] text-stone-400 hover:text-red-500 border border-stone-200 rounded px-1.5 py-0.5"
+              >
+                삭제
+              </button>
+            )}
+          </div>
+
+          {/* 본문 */}
+          <textarea
+            value={item.body}
+            onChange={(e) => updateItem(i, { body: e.target.value })}
+            rows={5}
+            placeholder="우리의 이야기를 자유롭게 적어주세요."
+            className="w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white leading-relaxed resize-none"
+          />
+
+          {/* 사진 2장 */}
+          <div className="grid grid-cols-2 gap-2">
+            {renderPhotoSlot(i, 'photo1', '사진 1')}
+            {renderPhotoSlot(i, 'photo2', '사진 2')}
+          </div>
+        </div>
+      ))}
+
+      {/* 스토리 추가 버튼 */}
+      <button
+        type="button"
+        onClick={addItem}
+        className="w-full border-2 border-dashed border-stone-300 rounded-md py-2.5 text-xs text-stone-500 hover:border-stone-500 hover:text-stone-700 transition-colors"
+      >
+        + 스토리 추가
+      </button>
     </div>
   )
 }

@@ -1475,13 +1475,31 @@ export default function ParentsStep3Content({
         <p className="text-sm text-blue-600">💙 하객분들이 참석 여부를 전달할 수 있는 RSVP 기능이 표시됩니다.</p>
 
         {data.rsvpEnabled !== false && (
-          <div className="p-4 bg-gray-50 rounded-lg text-center">
-            <p className="text-sm text-gray-600">
-              게스트에게 참석 여부를 편리하게 받을 수 있어요.
-            </p>
-            <p className="text-xs text-gray-500 mt-2">
-              청첩장 발행 후 게스트 관리 페이지에서 응답을 확인할 수 있습니다.
-            </p>
+          <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center gap-3">
+              <Switch
+                checked={data.rsvpMealOption ?? false}
+                onCheckedChange={(checked) => updateData({ rsvpMealOption: checked })}
+              />
+              <span className="text-sm text-gray-700">식사 여부 입력 허용</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Switch
+                checked={data.rsvpShuttleOption ?? false}
+                onCheckedChange={(checked) => updateData({ rsvpShuttleOption: checked })}
+              />
+              <span className="text-sm text-gray-700">대절버스 이용 여부 입력 허용</span>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">안내 문구</Label>
+              <Textarea
+                value={data.rsvpNotice ?? ''}
+                onChange={(e) => updateData({ rsvpNotice: e.target.value })}
+                placeholder="예) 소규모로 진행되는 예식입니다.&#10;참석 여부를 미리 알려주시면 감사하겠습니다."
+                rows={2}
+                className="resize-none"
+              />
+            </div>
           </div>
         )}
       </section>

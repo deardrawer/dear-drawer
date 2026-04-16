@@ -407,7 +407,7 @@ function AccountTabbed({
   brideMotherName?: string
   variant?: number
 }) {
-  const [tab, setTab] = useState<'groom' | 'bride'>('groom')
+  const [tab, setTab] = useState<'groom' | 'bride' | null>(null)
   const [copied, setCopied] = useState<string | null>(null)
 
   const copyAccount = (text: string) => {
@@ -425,7 +425,7 @@ function AccountTabbed({
     if (groomAccounts.length > 0) rows.push({ role: groomRole || '신랑', accounts: groomAccounts })
     if (groomFather.length > 0) rows.push({ role: '아버지', name: groomFatherName, accounts: groomFather })
     if (groomMother.length > 0) rows.push({ role: '어머니', name: groomMotherName, accounts: groomMother })
-  } else {
+  } else if (tab === 'bride') {
     if (brideAccounts.length > 0) rows.push({ role: brideRole || '신부', accounts: brideAccounts })
     if (brideFather.length > 0) rows.push({ role: '아버지', name: brideFatherName, accounts: brideFather })
     if (brideMother.length > 0) rows.push({ role: '어머니', name: brideMotherName, accounts: brideMother })
@@ -593,7 +593,7 @@ function AccountTabbed({
       </div>
 
       {/* 계좌 목록 */}
-      {(tab === 'groom' ? hasGroom : hasBride) ? (
+      {tab !== null && (tab === 'groom' ? hasGroom : hasBride) && rows.length > 0 ? (
         <div style={getListStyle()}>
           {rows.map((group, gi) =>
             group.accounts.map((acc, ai) => {
@@ -627,11 +627,11 @@ function AccountTabbed({
             })
           )}
         </div>
-      ) : (
+      ) : tab !== null ? (
         <p style={{ textAlign: 'center', fontSize: 11, color: '#b8b0a6', marginTop: 8 }}>
           계좌를 추가하면 여기에 표시됩니다
         </p>
-      )}
+      ) : null}
     </div>
   )
 }
@@ -1351,14 +1351,22 @@ function RsvpModal({
   open,
   onClose,
   invitationId,
+  showMealOption,
+  showShuttleOption,
+  rsvpNotice,
 }: {
   open: boolean
   onClose: () => void
   invitationId?: string
+  showMealOption?: boolean
+  showShuttleOption?: boolean
+  rsvpNotice?: string
 }) {
   const [name, setName] = useState('')
   const [attendance, setAttendance] = useState<'attending' | 'not_attending' | 'undecided'>('attending')
   const [count, setCount] = useState(1)
+  const [mealAttendance, setMealAttendance] = useState<'yes' | 'no'>('yes')
+  const [shuttleBus, setShuttleBus] = useState<'yes' | 'no'>('no')
   const [message, setMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
@@ -1407,6 +1415,8 @@ function RsvpModal({
           attendance,
           guestCount: attendance === 'attending' ? count : 0,
           message: message.trim() || undefined,
+          ...(showMealOption && attendance === 'attending' ? { mealAttendance } : {}),
+          ...(showShuttleOption && attendance === 'attending' ? { shuttleBus } : {}),
         }),
       })
       if (res.ok) {
@@ -1417,6 +1427,8 @@ function RsvpModal({
           setName('')
           setAttendance('attending')
           setCount(1)
+          setMealAttendance('yes')
+          setShuttleBus('no')
           setMessage('')
         }, 1500)
       }
@@ -1425,7 +1437,7 @@ function RsvpModal({
     } finally {
       setSubmitting(false)
     }
-  }, [name, attendance, count, message, invitationId, submitting, onClose])
+  }, [name, attendance, count, mealAttendance, shuttleBus, message, invitationId, submitting, onClose, showMealOption, showShuttleOption])
 
   if (!open) return null
 
@@ -1454,6 +1466,19 @@ function RsvpModal({
         ) : (
           <>
             <div className="ts-rsvp-modal-title">참석 의사 전달</div>
+            {rsvpNotice && (
+              <p style={{
+                fontFamily: 'var(--font-ko)',
+                fontSize: 11,
+                color: 'var(--mute)',
+                lineHeight: 1.6,
+                marginBottom: 12,
+                textAlign: 'center',
+                whiteSpace: 'pre-line',
+              }}>
+                {rsvpNotice}
+              </p>
+            )}
             <div className="ts-rsvp-modal-fields">
               <input
                 type="text"
@@ -1505,6 +1530,24 @@ function RsvpModal({
                     >
                       +
                     </button>
+                  </div>
+                </div>
+              )}
+              {showMealOption && attendance === 'attending' && (
+                <div>
+                  <span style={{ fontFamily: 'var(--font-ko)', fontSize: 13, color: 'var(--ink)', display: 'block', marginBottom: 6 }}>식사 여부</span>
+                  <div className="ts-rsvp-modal-toggle">
+                    <button type="button" className={`ts-rsvp-modal-opt ${mealAttendance === 'yes' ? 'active' : ''}`} onClick={() => setMealAttendance('yes')}>식사 예정</button>
+                    <button type="button" className={`ts-rsvp-modal-opt ${mealAttendance === 'no' ? 'active' : ''}`} onClick={() => setMealAttendance('no')}>식사 안 함</button>
+                  </div>
+                </div>
+              )}
+              {showShuttleOption && attendance === 'attending' && (
+                <div>
+                  <span style={{ fontFamily: 'var(--font-ko)', fontSize: 13, color: 'var(--ink)', display: 'block', marginBottom: 6 }}>대절버스 이용</span>
+                  <div className="ts-rsvp-modal-toggle">
+                    <button type="button" className={`ts-rsvp-modal-opt ${shuttleBus === 'yes' ? 'active' : ''}`} onClick={() => setShuttleBus('yes')}>이용 예정</button>
+                    <button type="button" className={`ts-rsvp-modal-opt ${shuttleBus === 'no' ? 'active' : ''}`} onClick={() => setShuttleBus('no')}>이용 안 함</button>
                   </div>
                 </div>
               )}
@@ -3280,6 +3323,21 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
     },
 
     account: (v) => {
+      const guideText = account.guide || ''
+      const accountGuide = guideText ? (
+        <p style={{
+          fontFamily: 'var(--font-ko)',
+          fontSize: 11,
+          color: 'var(--mute)',
+          textAlign: 'center',
+          lineHeight: 1.8,
+          marginTop: 20,
+          opacity: 0.8,
+          whiteSpace: 'pre-line',
+        }}>
+          {guideText}
+        </p>
+      ) : null
       const tabbedProps = {
         groomRole: couple.groom.role,
         brideRole: couple.bride.role,
@@ -3301,6 +3359,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         return (
           <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key="account">
             <div className="ts-eyebrow">{account.eyebrow}</div>
+            {accountGuide}
             <div style={{ background: '#f5f5f0', padding: '20px 16px' }}>
               <AccountTabbed {...tabbedProps} />
             </div>
@@ -3331,6 +3390,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         return (
           <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key="account">
             <div className="ts-eyebrow">{account.eyebrow}</div>
+            {accountGuide}
             {allList.length === 0 ? (
               <p style={{ textAlign: 'center', fontSize: 11, color: '#b8b0a6', marginTop: 8 }}>
                 계좌를 추가하면 여기에 표시됩니다
@@ -3409,6 +3469,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         return (
           <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key="account">
             <div className="ts-eyebrow">{account.eyebrow}</div>
+            {accountGuide}
             <div style={{ border: '1px solid var(--line)', padding: '20px 16px' }}>
               <AccountTabbed {...tabbedProps} />
             </div>
@@ -3421,6 +3482,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         return (
           <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key="account">
             <div className="ts-eyebrow">{account.eyebrow}</div>
+            {accountGuide}
             <div style={{ textAlign: 'center', padding: '16px 0' }}>
               <AccountTabbed {...tabbedProps} />
             </div>
@@ -3432,6 +3494,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       return (
         <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key="account">
           <div className="ts-eyebrow">{account.eyebrow}</div>
+          {accountGuide}
           <AccountTabbed {...tabbedProps} />
         </AnimatedSection>
       )
@@ -4749,7 +4812,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         </div>
       </div>
       </div>{/* /ts-body-wrap */}
-      <RsvpModal open={rsvpOpen} onClose={() => setRsvpOpen(false)} invitationId={data.id} />
+      <RsvpModal open={rsvpOpen} onClose={() => setRsvpOpen(false)} invitationId={data.id} showMealOption={data.sections.rsvp.showMealOption} showShuttleOption={data.sections.rsvp.showShuttleOption} rsvpNotice={data.sections.rsvp.rsvpNotice} />
       <GalleryLightbox images={lightboxImages} isOpen={lightboxOpen} initialIndex={lightboxIndex} onClose={() => setLightboxOpen(false)} />
     </div>
   )

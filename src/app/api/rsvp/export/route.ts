@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     const data = await getRSVPsByInvitationId(invitationId);
 
     // Create CSV content
-    const headers = ["이름", "연락처", "소속", "참석여부", "동반인원", "메시지", "응답일시"];
+    const headers = ["이름", "연락처", "소속", "참석여부", "식사여부", "대절버스", "동반인원", "메시지", "응답일시"];
 
     const getAttendanceLabel = (attendance: string) => {
       switch (attendance) {
@@ -58,11 +58,35 @@ export async function GET(request: NextRequest) {
       }
     };
 
+    const getMealLabel = (meal: string | null) => {
+      switch (meal) {
+        case "yes":
+          return "식사 예정";
+        case "no":
+          return "식사 안 함";
+        default:
+          return "";
+      }
+    };
+
+    const getShuttleLabel = (shuttle: string | null) => {
+      switch (shuttle) {
+        case "yes":
+          return "이용 예정";
+        case "no":
+          return "이용 안 함";
+        default:
+          return "";
+      }
+    };
+
     const rows = data.map((r) => [
       r.guest_name,
       r.guest_phone || "",
       getSideLabel(r.side),
       getAttendanceLabel(r.attendance),
+      r.attendance === "attending" ? getMealLabel(r.meal_attendance) : "",
+      r.attendance === "attending" ? getShuttleLabel((r as any).shuttle_bus) : "",
       r.attendance === "attending" ? r.guest_count.toString() : "",
       (r.message || "").replace(/"/g, '""'),
       new Date(r.created_at).toLocaleString("ko-KR"),

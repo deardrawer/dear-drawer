@@ -26,6 +26,8 @@ export type RSVPSubmission = {
   guestCount: number;
   message?: string;
   side?: "groom" | "bride";
+  mealAttendance?: "yes" | "no";
+  shuttleBus?: "yes" | "no";
 };
 
 export async function POST(request: NextRequest) {
@@ -88,6 +90,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 참석이 아닌 경우 식사/대절버스 여부는 null
+    const mealAttendance = body.attendance === "attending" ? body.mealAttendance : undefined;
+    const shuttleBus = body.attendance === "attending" ? body.shuttleBus : undefined;
+
     // 기존 RSVP 확인 (같은 이름+전화번호 → 업데이트)
     const existing = await findExistingRSVP(body.invitationId, body.guestName);
 
@@ -99,6 +105,8 @@ export async function POST(request: NextRequest) {
         guest_count: guestCount,
         message: body.message,
         side: body.side,
+        meal_attendance: mealAttendance,
+        shuttle_bus: shuttleBus,
       });
     } else {
       data = await createRSVP({
@@ -109,6 +117,8 @@ export async function POST(request: NextRequest) {
         guest_count: guestCount,
         message: body.message,
         side: body.side,
+        meal_attendance: mealAttendance,
+        shuttle_bus: shuttleBus,
       });
     }
 

@@ -1895,6 +1895,8 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
   const [side, setSide] = useState<'groom' | 'bride' | null>(null)
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [mealAttendance, setMealAttendance] = useState<'' | 'yes' | 'no'>('')
+  const [shuttleBus, setShuttleBus] = useState<'' | 'yes' | 'no'>('')
 
   if (!invitation.rsvpEnabled) return null
 
@@ -1912,6 +1914,8 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
           guestCount: attendance === 'yes' ? guestCount : 0,
           message: rsvpMessage,
           side: side || undefined,
+          mealAttendance: attendance === 'yes' && mealAttendance ? mealAttendance : undefined,
+          shuttleBus: attendance === 'yes' && shuttleBus ? shuttleBus : undefined,
         }),
       })
       if (res.ok) setSubmitted(true)
@@ -1941,6 +1945,9 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
         <h3 style={{ fontFamily: fonts.display, fontSize: '20px', fontWeight: 300, letterSpacing: '4px', color: themeColors.primary }}>
           {dt('RSVP')}
         </h3>
+        {invitation.rsvpNotice && (
+          <p style={{ fontFamily: fonts.body, fontSize: '12px', color: themeColors.gray, textAlign: 'center', lineHeight: 1.6, marginTop: '10px', whiteSpace: 'pre-line' }}>{invitation.rsvpNotice}</p>
+        )}
       </div>
 
       <div style={{ background: '#FFFFFF', padding: '24px 20px', border: `0.5px solid ${themeColors.divider}`, transformOrigin: 'top center', opacity: 0, ...(isVisible ? { animation: 'mag-paperUnfold 1.2s cubic-bezier(0.22,1,0.36,1) 0.3s both' } : {}) }}>
@@ -2011,6 +2018,34 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
               >
                 +
               </button>
+            </div>
+          </div>
+        )}
+
+        {invitation.rsvpMealOption && attendance === 'yes' && (
+          <div>
+            <span style={{ fontFamily: fonts.body, fontSize: '13px', color: themeColors.gray, display: 'block', marginBottom: '6px' }}>식사 여부</span>
+            <div className="grid grid-cols-2 gap-2">
+              {([{ v: 'yes' as const, l: '식사 예정' }, { v: 'no' as const, l: '식사 안 함' }]).map(opt => (
+                <button key={opt.v} onClick={() => setMealAttendance(mealAttendance === opt.v ? '' : opt.v)}
+                  style={{ fontFamily: fonts.body, fontSize: '13px', padding: '12px', border: `0.5px solid ${mealAttendance === opt.v ? themeColors.primary : themeColors.divider}`, background: mealAttendance === opt.v ? themeColors.primary : themeColors.cardBg, color: mealAttendance === opt.v ? '#FFFFFF' : (themeColors.buttonText || themeColors.text), cursor: 'pointer', transition: 'all 0.3s' }}>
+                  {opt.l}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {invitation.rsvpShuttleOption && attendance === 'yes' && (
+          <div>
+            <span style={{ fontFamily: fonts.body, fontSize: '13px', color: themeColors.gray, display: 'block', marginBottom: '6px' }}>대절버스 이용 여부</span>
+            <div className="grid grid-cols-2 gap-2">
+              {([{ v: 'yes' as const, l: '이용 예정' }, { v: 'no' as const, l: '이용 안 함' }]).map(opt => (
+                <button key={opt.v} onClick={() => setShuttleBus(shuttleBus === opt.v ? '' : opt.v)}
+                  style={{ fontFamily: fonts.body, fontSize: '13px', padding: '12px', border: `0.5px solid ${shuttleBus === opt.v ? themeColors.primary : themeColors.divider}`, background: shuttleBus === opt.v ? themeColors.primary : themeColors.cardBg, color: shuttleBus === opt.v ? '#FFFFFF' : (themeColors.buttonText || themeColors.text), cursor: 'pointer', transition: 'all 0.3s' }}>
+                  {opt.l}
+                </button>
+              ))}
             </div>
           </div>
         )}
@@ -2286,6 +2321,9 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     rsvpEnabled: content.rsvpEnabled ?? true,
     rsvpDeadline: content.rsvpDeadline || '',
     rsvpAllowGuestCount: content.rsvpAllowGuestCount ?? true,
+    rsvpMealOption: content.rsvpMealOption ?? false,
+    rsvpShuttleOption: content.rsvpShuttleOption ?? false,
+    rsvpNotice: content.rsvpNotice ?? '',
     sectionVisibility: content.sectionVisibility || {},
     design: content.design || {},
     bgm: content.bgm || {},
@@ -2579,6 +2617,9 @@ function InvitationClientMagazineContent({
                     directions: invitation.wedding?.directions,
                     rsvpEnabled: invitation.rsvpEnabled,
                     rsvpAllowGuestCount: invitation.rsvpAllowGuestCount,
+                    rsvpMealOption: invitation.rsvpMealOption,
+                    rsvpShuttleOption: invitation.rsvpShuttleOption,
+                    rsvpNotice: invitation.rsvpNotice,
                     invitationId: dbInvitation.id,
                     groomName: invitation.groom?.name || '',
                     brideName: invitation.bride?.name || '',

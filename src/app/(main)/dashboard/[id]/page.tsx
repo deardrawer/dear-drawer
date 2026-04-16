@@ -18,6 +18,8 @@ type RSVPData = {
   guest_count: number
   message: string | null
   side: 'groom' | 'bride' | null
+  meal_attendance: 'yes' | 'no' | null
+  shuttle_bus: 'yes' | 'no' | null
   created_at: string
 }
 
@@ -31,6 +33,10 @@ type Summary = {
   brideSide: number
   groomSideGuests: number
   brideSideGuests: number
+  mealYes: number
+  mealNo: number
+  shuttleYes: number
+  shuttleNo: number
 }
 
 type GuestbookMessage = {
@@ -69,6 +75,10 @@ export default function DashboardPage() {
     brideSide: 0,
     groomSideGuests: 0,
     brideSideGuests: 0,
+    mealYes: 0,
+    mealNo: 0,
+    shuttleYes: 0,
+    shuttleNo: 0,
   })
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -135,6 +145,10 @@ export default function DashboardPage() {
         brideSide: 0,
         groomSideGuests: 0,
         brideSideGuests: 0,
+        mealYes: 0,
+        mealNo: 0,
+        shuttleYes: 0,
+        shuttleNo: 0,
       })
     } catch (error) {
       console.error('Failed to fetch RSVP data:', error)
@@ -405,7 +419,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500">총 응답</CardTitle>
@@ -436,6 +450,24 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-rose-600">{summary.totalGuests}명</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-orange-600">식사 인원</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-orange-600">{summary.mealYes}<span className="text-lg font-normal text-gray-400 ml-1">명</span></div>
+            <p className="text-xs text-gray-400 mt-1">식사안함 {summary.mealNo}명</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-purple-600">대절버스 이용</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-purple-600">{summary.shuttleYes}<span className="text-lg font-normal text-gray-400 ml-1">명</span></div>
+            <p className="text-xs text-gray-400 mt-1">미이용 {summary.shuttleNo}명</p>
           </CardContent>
         </Card>
       </div>
@@ -625,6 +657,8 @@ export default function DashboardPage() {
                         <th className="text-left py-3 px-2 font-medium">연락처</th>
                         <th className="text-left py-3 px-2 font-medium">소속</th>
                         <th className="text-left py-3 px-2 font-medium">참석</th>
+                        <th className="text-left py-3 px-2 font-medium">식사</th>
+                        <th className="text-left py-3 px-2 font-medium">대절버스</th>
                         <th className="text-left py-3 px-2 font-medium">인원</th>
                         <th className="text-left py-3 px-2 font-medium">메시지</th>
                         <th className="text-left py-3 px-2 font-medium">응답일</th>
@@ -648,6 +682,32 @@ export default function DashboardPage() {
                             <span className={`px-2 py-1 rounded-full text-xs ${getAttendanceColor(r.attendance)}`}>
                               {getAttendanceLabel(r.attendance)}
                             </span>
+                          </td>
+                          <td className="py-3 px-2">
+                            {r.attendance === 'attending' ? (
+                              r.meal_attendance === 'yes' ? (
+                                <span className="px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-700">식사</span>
+                              ) : r.meal_attendance === 'no' ? (
+                                <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">식사안함</span>
+                              ) : (
+                                <span className="text-gray-400">-</span>
+                              )
+                            ) : (
+                              <span className="text-gray-400">-</span>
+                            )}
+                          </td>
+                          <td className="py-3 px-2">
+                            {r.attendance === 'attending' ? (
+                              r.shuttle_bus === 'yes' ? (
+                                <span className="px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-700">이용</span>
+                              ) : r.shuttle_bus === 'no' ? (
+                                <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">미이용</span>
+                              ) : (
+                                <span className="text-gray-400">-</span>
+                              )
+                            ) : (
+                              <span className="text-gray-400">-</span>
+                            )}
                           </td>
                           <td className="py-3 px-2">{r.attendance === 'attending' ? r.guest_count : '-'}</td>
                           <td className="py-3 px-2 text-gray-500 max-w-[200px] truncate">

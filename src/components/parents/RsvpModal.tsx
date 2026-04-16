@@ -13,9 +13,12 @@ interface RsvpModalProps {
   }) => void
   isPreview?: boolean
   invitationId?: string  // RSVP 저장을 위한 청첩장 ID
+  rsvpMealOption?: boolean
+  rsvpShuttleOption?: boolean
+  rsvpNotice?: string
 }
 
-export default function RsvpModal({ onSubmit, isPreview = false, invitationId }: RsvpModalProps) {
+export default function RsvpModal({ onSubmit, isPreview = false, invitationId, rsvpMealOption = false, rsvpShuttleOption = false, rsvpNotice }: RsvpModalProps) {
   const ref = useRef<HTMLDivElement>(null)
   const formRef = useRef<HTMLDivElement>(null)
   const theme = useTheme()
@@ -25,6 +28,8 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId }:
     name: '',
     side: null as 'groom' | 'bride' | null,
     attendance: 'yes' as 'yes' | 'no' | 'maybe',
+    mealAttendance: null as 'yes' | 'no' | null,
+    shuttleBus: null as 'yes' | 'no' | null,
     guestCount: 1,
     message: '',
   })
@@ -111,6 +116,8 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId }:
           guestCount: formData.attendance === 'yes' ? formData.guestCount : 0,
           message: formData.message.trim() || undefined,
           side: formData.side || undefined,
+          mealAttendance: formData.attendance === 'yes' ? formData.mealAttendance : undefined,
+          shuttleBus: formData.attendance === 'yes' ? formData.shuttleBus : undefined,
         }),
       })
 
@@ -165,6 +172,11 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId }:
   // 폼 컨텐츠 (JSX 변수로 정의 - 함수 컴포넌트로 만들면 리렌더링 시 unmount됨)
   const formContent = isSubmitted ? successContent : (
     <form onSubmit={handleSubmit} className="space-y-5">
+      {rsvpNotice && (
+        <p className="text-xs text-center whitespace-pre-line leading-relaxed" style={{ color: '#999' }}>
+          {rsvpNotice}
+        </p>
+      )}
       {submitError && (
         <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">
           {submitError}
@@ -285,6 +297,62 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId }:
         </div>
       )}
 
+      {rsvpMealOption && formData.attendance === 'yes' && (
+        <div>
+          <label className="block text-xs mb-2" style={{ color: '#999' }}>
+            식사 여부
+          </label>
+          <div className="flex gap-2">
+            {[
+              { value: 'yes', label: '식사 예정' },
+              { value: 'no', label: '식사 안 함' },
+            ].map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, mealAttendance: option.value as 'yes' | 'no' }))}
+                className="flex-1 py-3 rounded-lg border text-sm transition-all"
+                style={{
+                  borderColor: formData.mealAttendance === option.value ? theme.primary : '#E8E4DC',
+                  backgroundColor: formData.mealAttendance === option.value ? `${theme.primary}10` : '#FFFFFF',
+                  color: formData.mealAttendance === option.value ? theme.primary : '#666',
+                }}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {rsvpShuttleOption && formData.attendance === 'yes' && (
+        <div>
+          <label className="block text-xs mb-2" style={{ color: '#999' }}>
+            대절버스 이용 여부
+          </label>
+          <div className="flex gap-2">
+            {[
+              { value: 'yes', label: '이용 예정' },
+              { value: 'no', label: '이용 안 함' },
+            ].map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, shuttleBus: option.value as 'yes' | 'no' }))}
+                className="flex-1 py-3 rounded-lg border text-sm transition-all"
+                style={{
+                  borderColor: formData.shuttleBus === option.value ? theme.primary : '#E8E4DC',
+                  backgroundColor: formData.shuttleBus === option.value ? `${theme.primary}10` : '#FFFFFF',
+                  color: formData.shuttleBus === option.value ? theme.primary : '#666',
+                }}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div>
         <label className="block text-xs mb-2" style={{ color: '#999' }}>
           축하 메시지 (선택)
@@ -327,6 +395,7 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId }:
           '전달하기'
         )}
       </button>
+
     </form>
   )
 

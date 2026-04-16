@@ -782,10 +782,11 @@ export const theSimpleSampleContent = {
     },
     rsvp: {
       title: 'R.S.V.P.',
-      body: '참석 여부를 전해주시면\n정성껏 준비하겠습니다.',
+      body: '본 예식은 동시 예식으로 진행되어\n소중한 하루를 더 잘 준비하고자\n참석 여부와 식사 여부를\n미리 여쭙고자 합니다.\n\n부담없이 편하신 마음으로 알려주시면\n감사한 마음으로 정성껏 준비하겠습니다.',
     },
     account: {
       eyebrow: 'Account',
+      guide: '참석이 어려우신 분들을 위해 기재했습니다.\n너그러운 마음으로 양해 부탁드립니다.',
       groom: [{ bank: '신한은행', number: '110-123-456789', holder: '김민준' }],
       bride: [{ bank: '국민은행', number: '123-45-678901', holder: '이서연' }],
     },

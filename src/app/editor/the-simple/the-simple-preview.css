@@ -21,7 +21,7 @@
   --ts-font-scale: 1;
   --ts-spacing-scale: 1;
   /* 공통 애니메이션 이징 */
-  --ts-ease: cubic-bezier(0.2, 0.8, 0.3, 1);
+  --ts-ease: cubic-bezier(0.25, 0.1, 0.25, 1);
 
   font-family: var(--font-sans);
   color: var(--ink);
@@ -2157,7 +2157,7 @@
 
 /* 공통 이징 */
 .ts-preview [class*="ts-anim-"] {
-  --ts-ease: cubic-bezier(0.2, 0.8, 0.3, 1);
+  --ts-ease: cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 /* ---------- Stagger delays ---------- */
@@ -2169,7 +2169,7 @@
 
 /* ---------- 기본 페이드업 (섹션 대부분 공통 fallback) ---------- */
 @keyframes tsFadeUp {
-  from { opacity: 0; transform: translateY(24px); }
+  from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: none; }
 }
 @keyframes tsFadeIn {
@@ -2228,7 +2228,7 @@
 }
 /* 커플소개 전용 — V1 아래에서 부드러운 상승 */
 @keyframes tsCoupleRiseUp {
-  0%   { opacity: 0; transform: translateY(30px); filter: blur(3px); }
+  0%   { opacity: 0; transform: translateY(12px); filter: blur(3px); }
   40%  { opacity: 0.7; filter: blur(0.5px); }
   100% { opacity: 1; transform: none; filter: blur(0); }
 }
@@ -2240,7 +2240,7 @@
 }
 /* 커플소개 전용 — V2 row 부드러운 슬라이드 */
 @keyframes tsCoupleRowSlide {
-  0%   { opacity: 0; transform: translateX(40px); filter: blur(3px); }
+  0%   { opacity: 0; transform: translateX(16px); filter: blur(3px); }
   40%  { opacity: 0.6; filter: blur(0.5px); }
   100% { opacity: 1; transform: none; filter: blur(0); }
 }
@@ -2608,7 +2608,7 @@
 /* ---------- GREETING ---------- */
 
 /* V1 · fade-up stagger (label → title → body → rule) */
-.ts-preview .ts-anim-greet-v1 .ts-anim-item { opacity: 0; transform: translateY(18px); }
+.ts-preview .ts-anim-greet-v1 .ts-anim-item { opacity: 0; transform: translateY(8px); }
 .ts-preview .ts-anim-greet-v1.in-view .ts-anim-item:nth-child(1) { animation: tsFadeUp 0.7s var(--ts-ease) 80ms both; }
 .ts-preview .ts-anim-greet-v1.in-view .ts-anim-item:nth-child(2) { animation: tsFadeUp 0.8s var(--ts-ease) 220ms both; }
 .ts-preview .ts-anim-greet-v1.in-view .ts-anim-item:nth-child(3) { animation: tsFadeUp 0.8s var(--ts-ease) 380ms both; }
@@ -2618,7 +2618,7 @@
 }
 
 /* V2 · Karaoke Fill (label/title fade-up → 본문 줄 단위 회색→검정 채우기) */
-.ts-preview .ts-anim-greet-v2 .ts-anim-item { opacity: 0; transform: translateY(14px); }
+.ts-preview .ts-anim-greet-v2 .ts-anim-item { opacity: 0; transform: translateY(6px); }
 .ts-preview .ts-anim-greet-v2.in-view .ts-anim-item:nth-child(1) { animation: tsFadeUp 0.6s var(--ts-ease) 80ms both; }
 .ts-preview .ts-anim-greet-v2.in-view .ts-anim-item:nth-child(2) { animation: tsFadeUp 0.7s var(--ts-ease) 200ms both; }
 .ts-preview .ts-anim-greet-v2 .ts-g2-karaoke { background-position: 100% 0; }
@@ -2661,7 +2661,7 @@
 
 /* V4 · card scale-in + 내부 stagger */
 .ts-preview .ts-anim-greet-v4 .ts-anim-card { opacity: 0; transform: scale(0.92); }
-.ts-preview .ts-anim-greet-v4 .ts-anim-item { opacity: 0; transform: translateY(12px); }
+.ts-preview .ts-anim-greet-v4 .ts-anim-item { opacity: 0; transform: translateY(6px); }
 .ts-preview .ts-anim-greet-v4.in-view .ts-anim-card { animation: tsScaleIn 0.7s var(--ts-ease) 60ms both; }
 .ts-preview .ts-anim-greet-v4.in-view .ts-anim-item:nth-child(1) { animation: tsFadeUp 0.7s var(--ts-ease) 300ms both; }
 .ts-preview .ts-anim-greet-v4.in-view .ts-anim-item:nth-child(2) { animation: tsFadeUp 0.7s var(--ts-ease) 440ms both; }
@@ -2669,7 +2669,7 @@
 
 /* V5 · vertical line draw + text slide-right stagger */
 .ts-preview .ts-anim-greet-v5 .ts-anim-vline { opacity: 0; }
-.ts-preview .ts-anim-greet-v5 .ts-anim-item { opacity: 0; transform: translateX(-16px); }
+.ts-preview .ts-anim-greet-v5 .ts-anim-item { opacity: 0; transform: translateX(-8px); }
 .ts-preview .ts-anim-greet-v5.in-view .ts-anim-vline {
   transform-origin: top center;
   animation: tsLineDraw 0.8s var(--ts-ease) 60ms both;
@@ -2682,12 +2682,12 @@
 /* V1: 아래에서 순차 fade-up + 블러 */
 .ts-preview .ts-anim-couple-v1 .ts-anim-left {
   opacity: 0;
-  transform: translateY(30px);
+  transform: translateY(10px);
   filter: blur(3px);
 }
 .ts-preview .ts-anim-couple-v1 .ts-anim-right {
   opacity: 0;
-  transform: translateY(30px);
+  transform: translateY(10px);
   filter: blur(3px);
 }
 .ts-preview .ts-anim-couple-v1 .ts-anim-amp {
@@ -2707,7 +2707,7 @@
 /* V2: 각 row 블러 슬라이드 + 시차 */
 .ts-preview .ts-anim-couple-v2 .ts-anim-row {
   opacity: 0;
-  transform: translateX(40px);
+  transform: translateX(16px);
   filter: blur(3px);
 }
 .ts-preview .ts-anim-couple-v2.in-view .ts-anim-row.ts-anim-delay-1 {
@@ -2728,7 +2728,7 @@
 }
 .ts-preview .ts-anim-couple-v3 .ts-anim-item {
   opacity: 0;
-  transform: translateY(16px);
+  transform: translateY(8px);
 }
 .ts-preview .ts-anim-couple-v3.in-view .ts-anim-photo-l {
   animation: tsSlideRight 1.6s var(--ts-ease) 200ms both;
@@ -2771,7 +2771,7 @@
 /* 날짜 자릿수 개별 롤업 + 캘린더 pick 원형 팝 */
 .ts-preview .ts-anim-info-v1 .ts-anim-item {
   opacity: 0;
-  transform: translateY(18px);
+  transform: translateY(8px);
 }
 /* 각 숫자 초기 상태 */
 .ts-preview .ts-anim-info-v1 .ts-digit,
@@ -2813,7 +2813,7 @@
 /* 96px 큰 날짜 자릿수 개별 롤업 */
 .ts-preview .ts-anim-info-v2 .ts-anim-item {
   opacity: 0;
-  transform: translateY(14px);
+  transform: translateY(6px);
 }
 .ts-preview .ts-anim-info-v2 .ts-digit {
   display: inline-block;
@@ -2843,7 +2843,7 @@
 /* 요일/날짜 셀 좌→우 물결 + 선택날짜 원형 팝 */
 .ts-preview .ts-anim-info-v3 .ts-anim-item {
   opacity: 0;
-  transform: translateY(16px);
+  transform: translateY(8px);
 }
 /* 셀 초기 상태 */
 .ts-preview .ts-anim-info-v3 .ts-i3-cell {
@@ -2899,7 +2899,7 @@
 /* D— 롤업 + CountingNumber 카운터 + 나머지 stagger */
 .ts-preview .ts-anim-info-v5 .ts-anim-item {
   opacity: 0;
-  transform: translateY(14px);
+  transform: translateY(6px);
 }
 /* D— 초기 숨김 */
 .ts-preview .ts-anim-info-v5 .ts-i5-dash.ts-digit {
@@ -2945,14 +2945,14 @@
 
 /* ---------- DIRECTION ---------- */
 /* V1 · Map Card: name fade → map kenburns → addr fade-up */
-.ts-preview .ts-anim-dir-v1 .ts-anim-item { opacity: 0; transform: translateY(16px); }
+.ts-preview .ts-anim-dir-v1 .ts-anim-item { opacity: 0; transform: translateY(8px); }
 .ts-preview .ts-anim-dir-v1.in-view .ts-eyebrow { animation: tsFadeUp 0.7s var(--ts-ease) 60ms both; }
 .ts-preview .ts-anim-dir-v1.in-view .ts-anim-item:nth-child(2) { animation: tsFadeUp 0.7s var(--ts-ease) 180ms both; }
 .ts-preview .ts-anim-dir-v1.in-view .ts-anim-item:nth-child(3) { animation: tsKenburns 1.1s var(--ts-ease) 340ms both; }
 .ts-preview .ts-anim-dir-v1.in-view .ts-anim-item:nth-child(4) { animation: tsFadeUp 0.8s var(--ts-ease) 600ms both; }
 
 /* V2 · Full Map: map kenburns → info box slide-up */
-.ts-preview .ts-anim-dir-v2 .ts-anim-item { opacity: 0; transform: translateY(16px); }
+.ts-preview .ts-anim-dir-v2 .ts-anim-item { opacity: 0; transform: translateY(8px); }
 .ts-preview .ts-anim-dir-v2.in-view .ts-anim-item:nth-child(2) { animation: tsKenburns 1.1s var(--ts-ease) 100ms both; }
 .ts-preview .ts-anim-dir-v2.in-view .ts-anim-item:nth-child(3) { animation: tsFadeUp 0.8s var(--ts-ease) 400ms both; }
 
@@ -2972,13 +2972,13 @@
 .ts-preview .ts-anim-dir-v4.in-view .ts-anim-card { animation: tsScaleIn 0.8s var(--ts-ease) 400ms both; }
 
 /* V5 · Label Grid: map kenburns → rows stagger slide-right */
-.ts-preview .ts-anim-dir-v5 .ts-anim-item { opacity: 0; transform: translateY(14px); }
+.ts-preview .ts-anim-dir-v5 .ts-anim-item { opacity: 0; transform: translateY(6px); }
 .ts-preview .ts-anim-dir-v5.in-view .ts-anim-item:nth-child(2) { animation: tsKenburns 1.1s var(--ts-ease) 100ms both; }
 .ts-preview .ts-anim-dir-v5.in-view .ts-anim-item:nth-child(3) { animation: tsSlideRight 0.7s var(--ts-ease) 400ms both; }
 .ts-preview .ts-anim-dir-v5.in-view .ts-anim-item:nth-child(4) { animation: tsSlideRight 0.7s var(--ts-ease) 550ms both; }
 
 /* Transport Info — 교통편 공통 */
-.ts-preview [class*="ts-anim-dir-"] .ts-transport { opacity: 0; transform: translateY(12px); }
+.ts-preview [class*="ts-anim-dir-"] .ts-transport { opacity: 0; transform: translateY(6px); }
 .ts-preview [class*="ts-anim-dir-"].in-view .ts-transport { animation: tsFadeUp 0.7s var(--ts-ease) 700ms both; }
 
 /* ---------- INTERVIEW ---------- */
@@ -2991,7 +2991,7 @@
 .ts-preview .ts-interview.in-view .ts-qa:nth-child(3) { animation-delay: 280ms; }
 .ts-preview .ts-interview.in-view .ts-qa:nth-child(4) { animation-delay: 380ms; }
 /* V2 번호 매김 — stagger slide up */
-.ts-preview .ts-anim-intv-v2 > * { opacity: 0; transform: translateY(20px); }
+.ts-preview .ts-anim-intv-v2 > * { opacity: 0; transform: translateY(8px); }
 .ts-preview .ts-anim-intv-v2.in-view > :nth-child(1) { animation: tsFadeUp 0.7s var(--ts-ease) 80ms both; }
 .ts-preview .ts-anim-intv-v2.in-view > :nth-child(2) { animation: tsFadeUp 0.9s var(--ts-ease) 260ms both; }
 /* V3 말풍선 — pop in */
@@ -3003,7 +3003,7 @@
 .ts-preview .ts-anim-intv-v4.in-view > :nth-child(1) { animation: tsFadeIn 0.8s var(--ts-ease) 80ms both; }
 .ts-preview .ts-anim-intv-v4.in-view > :nth-child(2) { animation: tsFadeIn 1.1s var(--ts-ease) 300ms both; }
 /* V5 카드 — slide up */
-.ts-preview .ts-anim-intv-v5 > * { opacity: 0; transform: translateY(18px); }
+.ts-preview .ts-anim-intv-v5 > * { opacity: 0; transform: translateY(8px); }
 .ts-preview .ts-anim-intv-v5.in-view > :nth-child(1) { animation: tsFadeUp 0.7s var(--ts-ease) 80ms both; }
 .ts-preview .ts-anim-intv-v5.in-view > :nth-child(2) { animation: tsFadeUp 0.8s var(--ts-ease) 220ms both; }
 
@@ -3038,7 +3038,7 @@
 .ts-preview .ts-anim-vid-v2 > *,
 .ts-preview .ts-anim-vid-v3 > * {
   opacity: 0;
-  transform: translateY(16px);
+  transform: translateY(8px);
 }
 .ts-preview .ts-anim-vid-v1.in-view > :nth-child(1) { animation: tsFadeUp 0.7s var(--ts-ease) 80ms both; }
 .ts-preview .ts-anim-vid-v1.in-view > :nth-child(2) { animation: tsFadeUp 0.8s var(--ts-ease) 200ms both; }
@@ -3057,11 +3057,11 @@
 .ts-preview .ts-guide.in-view .ts-guide-cell:nth-child(3) { animation-delay: 240ms; }
 .ts-preview .ts-guide.in-view .ts-guide-cell:nth-child(4) { animation-delay: 320ms; }
 /* V2 원형 번호 — slide right */
-.ts-preview .ts-anim-guide-v2 > * { opacity: 0; transform: translateX(-16px); }
+.ts-preview .ts-anim-guide-v2 > * { opacity: 0; transform: translateX(-8px); }
 .ts-preview .ts-anim-guide-v2.in-view > :nth-child(1) { animation: tsFadeUp 0.7s var(--ts-ease) 80ms both; }
 .ts-preview .ts-anim-guide-v2.in-view > :nth-child(2) { animation: tsSlideRight 0.9s var(--ts-ease) 250ms both; }
 /* V3 아코디언 — stagger fade up */
-.ts-preview .ts-anim-guide-v3 > * { opacity: 0; transform: translateY(18px); }
+.ts-preview .ts-anim-guide-v3 > * { opacity: 0; transform: translateY(8px); }
 .ts-preview .ts-anim-guide-v3.in-view > :nth-child(1) { animation: tsFadeUp 0.7s var(--ts-ease) 80ms both; }
 .ts-preview .ts-anim-guide-v3.in-view > :nth-child(2) { animation: tsFadeUp 0.9s var(--ts-ease) 250ms both; }
 /* V4 2열 카드 — scale in */
@@ -3069,7 +3069,7 @@
 .ts-preview .ts-anim-guide-v4.in-view > :nth-child(1) { animation: tsFadeUp 0.7s var(--ts-ease) 80ms both; }
 .ts-preview .ts-anim-guide-v4.in-view > :nth-child(2) { animation: tsScaleIn 0.8s var(--ts-ease) 220ms both; }
 /* V5 노트 — fade up */
-.ts-preview .ts-anim-guide-v5 > * { opacity: 0; transform: translateY(18px); }
+.ts-preview .ts-anim-guide-v5 > * { opacity: 0; transform: translateY(8px); }
 .ts-preview .ts-anim-guide-v5.in-view > :nth-child(1) { animation: tsFadeUp 0.7s var(--ts-ease) 80ms both; }
 .ts-preview .ts-anim-guide-v5.in-view > :nth-child(2) { animation: tsFadeUp 0.9s var(--ts-ease) 250ms both; }
 
@@ -3083,19 +3083,19 @@
 .ts-preview .ts-account.in-view .ts-acc-row:nth-child(3) { animation-delay: 240ms; }
 .ts-preview .ts-account.in-view .ts-acc-row:nth-child(4) { animation-delay: 320ms; }
 /* V1 기본 탭 — fade up */
-.ts-preview .ts-anim-acc-v1 > * { opacity: 0; transform: translateY(16px); }
+.ts-preview .ts-anim-acc-v1 > * { opacity: 0; transform: translateY(8px); }
 .ts-preview .ts-anim-acc-v1.in-view > :nth-child(1) { animation: tsFadeUp 0.7s var(--ts-ease) 80ms both; }
 .ts-preview .ts-anim-acc-v1.in-view > :nth-child(2) { animation: tsFadeUp 0.8s var(--ts-ease) 250ms both; }
 /* V2 베이지 카드 — slide up */
-.ts-preview .ts-anim-acc-v2 > * { opacity: 0; transform: translateY(20px); }
+.ts-preview .ts-anim-acc-v2 > * { opacity: 0; transform: translateY(8px); }
 .ts-preview .ts-anim-acc-v2.in-view > :nth-child(1) { animation: tsFadeUp 0.7s var(--ts-ease) 80ms both; }
 .ts-preview .ts-anim-acc-v2.in-view > :nth-child(2) { animation: tsFadeUp 0.9s var(--ts-ease) 250ms both; }
 /* V3 전체 펼침 — slide right */
-.ts-preview .ts-anim-acc-v3 > * { opacity: 0; transform: translateX(-14px); }
+.ts-preview .ts-anim-acc-v3 > * { opacity: 0; transform: translateX(-8px); }
 .ts-preview .ts-anim-acc-v3.in-view > :nth-child(1) { animation: tsFadeUp 0.7s var(--ts-ease) 80ms both; }
 .ts-preview .ts-anim-acc-v3.in-view > :nth-child(2) { animation: tsSlideRight 0.9s var(--ts-ease) 240ms both; }
 /* V4 보더 카드 — fade up */
-.ts-preview .ts-anim-acc-v4 > * { opacity: 0; transform: translateY(16px); }
+.ts-preview .ts-anim-acc-v4 > * { opacity: 0; transform: translateY(8px); }
 .ts-preview .ts-anim-acc-v4.in-view > :nth-child(1) { animation: tsFadeUp 0.7s var(--ts-ease) 80ms both; }
 .ts-preview .ts-anim-acc-v4.in-view > :nth-child(2) { animation: tsFadeUp 0.8s var(--ts-ease) 220ms both; }
 /* V5 세로 스택 — scale in */
@@ -3115,7 +3115,7 @@
 .ts-preview .ts-anim-rsvp-v3 > * { opacity: 0; }
 .ts-preview .ts-anim-rsvp-v3.in-view > * { animation: tsFadeIn 1s var(--ts-ease) 100ms both; }
 /* V4 듀얼 버튼 — fade up */
-.ts-preview .ts-anim-rsvp-v4 > * { opacity: 0; transform: translateY(20px); }
+.ts-preview .ts-anim-rsvp-v4 > * { opacity: 0; transform: translateY(8px); }
 .ts-preview .ts-anim-rsvp-v4.in-view > * { animation: tsFadeUp 0.8s var(--ts-ease) 100ms both; }
 /* V5 프레임 — scale in */
 .ts-preview .ts-anim-rsvp-v5 > * { opacity: 0; transform: scale(0.95); }
@@ -3131,13 +3131,13 @@
 .ts-preview .ts-guestbook.in-view .ts-gb-entry:nth-of-type(2) { animation-delay: 300ms; }
 .ts-preview .ts-guestbook.in-view .ts-gb-entry:nth-of-type(3) { animation-delay: 380ms; }
 /* V2 카드 — stagger fade up */
-.ts-preview .ts-anim-gb-v2 > * { opacity: 0; transform: translateY(18px); }
+.ts-preview .ts-anim-gb-v2 > * { opacity: 0; transform: translateY(8px); }
 .ts-preview .ts-anim-gb-v2.in-view > :nth-child(1) { animation: tsFadeUp 0.7s var(--ts-ease) 80ms both; }
 .ts-preview .ts-anim-gb-v2.in-view > :nth-child(2) { animation: tsFadeUp 0.8s var(--ts-ease) 220ms both; }
 .ts-preview .ts-anim-gb-v2.in-view > :nth-child(3) { animation: tsFadeIn 0.6s var(--ts-ease) 500ms both; }
 .ts-preview .ts-anim-gb-v2.in-view > .ts-gb-form { animation: tsFadeUp 0.7s var(--ts-ease) 600ms both; }
 /* V3 타임라인 — slide right */
-.ts-preview .ts-anim-gb-v3 > * { opacity: 0; transform: translateX(-14px); }
+.ts-preview .ts-anim-gb-v3 > * { opacity: 0; transform: translateX(-8px); }
 .ts-preview .ts-anim-gb-v3.in-view > :nth-child(1) { animation: tsFadeUp 0.7s var(--ts-ease) 80ms both; }
 .ts-preview .ts-anim-gb-v3.in-view > :nth-child(2) { animation: tsSlideRight 0.9s var(--ts-ease) 240ms both; }
 .ts-preview .ts-anim-gb-v3.in-view > .ts-gb-form { animation: tsFadeUp 0.7s var(--ts-ease) 400ms both; }
@@ -3147,7 +3147,7 @@
 .ts-preview .ts-anim-gb-v4.in-view > :nth-child(2) { animation: tsFadeIn 0.6s var(--ts-ease) 400ms both; }
 .ts-preview .ts-anim-gb-v4.in-view > .ts-gb-form { animation: tsFadeUp 0.7s var(--ts-ease) 550ms both; }
 /* V5 컴팩트 — stagger fade up */
-.ts-preview .ts-anim-gb-v5 > * { opacity: 0; transform: translateY(16px); }
+.ts-preview .ts-anim-gb-v5 > * { opacity: 0; transform: translateY(8px); }
 .ts-preview .ts-anim-gb-v5.in-view > :nth-child(1) { animation: tsFadeUp 0.7s var(--ts-ease) 80ms both; }
 .ts-preview .ts-anim-gb-v5.in-view > :nth-child(2) { animation: tsFadeUp 0.7s var(--ts-ease) 180ms both; }
 .ts-preview .ts-anim-gb-v5.in-view > :nth-child(3) { animation: tsFadeUp 0.7s var(--ts-ease) 280ms both; }
@@ -3165,15 +3165,15 @@
 .ts-preview .ts-thanks.in-view .ts-thanks-body { animation: tsFadeUp 0.9s var(--ts-ease) 460ms both; }
 .ts-preview .ts-thanks.in-view .ts-thanks-sign { animation: tsFadeIn 0.7s var(--ts-ease) 620ms both; }
 /* V2 미니멀 — body fade → line draw → names fade */
-.ts-preview .ts-anim-thx-v2 > * { opacity: 0; transform: translateY(16px); }
+.ts-preview .ts-anim-thx-v2 > * { opacity: 0; transform: translateY(8px); }
 .ts-preview .ts-anim-thx-v2.in-view > :nth-child(1) { animation: tsFadeUp 0.9s var(--ts-ease) 80ms both; }
 .ts-preview .ts-anim-thx-v2.in-view > :nth-child(2) { transform: translateY(0) scaleX(0); transform-origin: center; animation: tsLineDraw 0.5s var(--ts-ease) 500ms both; }
 .ts-preview .ts-anim-thx-v2.in-view > :nth-child(3) { animation: tsFadeUp 0.8s var(--ts-ease) 650ms both; }
 /* V3 스크립트 마크 — mark fade → title → body → names */
 .ts-preview .ts-anim-thx-v3 > * { opacity: 0; }
 .ts-preview .ts-anim-thx-v3.in-view > :nth-child(1) { animation: tsFadeIn 1s var(--ts-ease) 80ms both; }
-.ts-preview .ts-anim-thx-v3.in-view > :nth-child(2) { animation: tsFadeUp 0.8s var(--ts-ease) 300ms both; transform: translateY(16px); }
-.ts-preview .ts-anim-thx-v3.in-view > :nth-child(3) { animation: tsFadeUp 0.9s var(--ts-ease) 500ms both; transform: translateY(16px); }
+.ts-preview .ts-anim-thx-v3.in-view > :nth-child(2) { animation: tsFadeUp 0.8s var(--ts-ease) 300ms both; transform: translateY(8px); }
+.ts-preview .ts-anim-thx-v3.in-view > :nth-child(3) { animation: tsFadeUp 0.9s var(--ts-ease) 500ms both; transform: translateY(8px); }
 .ts-preview .ts-anim-thx-v3.in-view > :nth-child(4) { animation: tsFadeIn 0.8s var(--ts-ease) 700ms both; }
 /* V4 카드 프레임 — scale in */
 .ts-preview .ts-anim-thx-v4 > * { opacity: 0; transform: scale(0.94); }
@@ -3181,7 +3181,7 @@
 /* V5 스탬프 — scale + body fade */
 .ts-preview .ts-anim-thx-v5 > * { opacity: 0; }
 .ts-preview .ts-anim-thx-v5.in-view > :nth-child(1) { animation: tsScaleIn 0.9s var(--ts-ease) 80ms both; transform: scale(0.9); }
-.ts-preview .ts-anim-thx-v5.in-view > :nth-child(2) { animation: tsFadeUp 0.8s var(--ts-ease) 400ms both; transform: translateY(14px); }
+.ts-preview .ts-anim-thx-v5.in-view > :nth-child(2) { animation: tsFadeUp 0.8s var(--ts-ease) 400ms both; transform: translateY(6px); }
 
 /* ==========================================================================
    in-view 트리거 기반 공통 요소 애니메이션
@@ -3199,13 +3199,13 @@
 .ts-preview .ts-anim-gallery-v5.in-view .ts-anim-item { animation-name: tsFadeUp; }
 
 /* ---- Love Story V1 기본 — fade up ---- */
-.ts-preview .ts-anim-ls-v1 > * { opacity: 0; transform: translateY(16px); }
+.ts-preview .ts-anim-ls-v1 > * { opacity: 0; transform: translateY(8px); }
 .ts-preview .ts-anim-ls-v1.in-view > :nth-child(1) { animation: tsFadeUp 0.7s var(--ts-ease) 80ms both; }
 .ts-preview .ts-anim-ls-v1.in-view > :nth-child(2) { animation: tsFadeUp 0.8s var(--ts-ease) 200ms both; }
 .ts-preview .ts-anim-ls-v1.in-view > :nth-child(3) { animation: tsFadeUp 0.8s var(--ts-ease) 350ms both; }
 
 /* ---- Love Story V2 좌사진우텍스트 ---- */
-.ts-preview .ts-anim-ls-v2 > * { opacity: 0; transform: translateX(-14px); }
+.ts-preview .ts-anim-ls-v2 > * { opacity: 0; transform: translateX(-8px); }
 .ts-preview .ts-anim-ls-v2.in-view > :nth-child(1) { animation: tsFadeUp 0.7s var(--ts-ease) 80ms both; }
 .ts-preview .ts-anim-ls-v2.in-view > :nth-child(2) { animation: tsSlideRight 0.9s var(--ts-ease) 240ms both; }
 
@@ -3214,12 +3214,12 @@
 .ts-preview .ts-anim-ls-v3.in-view > :nth-child(1) { animation: tsFadeIn 1s var(--ts-ease) 100ms both; }
 
 /* ---- Love Story V4 카드 ---- */
-.ts-preview .ts-anim-ls-v4 > * { opacity: 0; transform: translateY(20px); }
+.ts-preview .ts-anim-ls-v4 > * { opacity: 0; transform: translateY(8px); }
 .ts-preview .ts-anim-ls-v4.in-view > :nth-child(1) { animation: tsFadeUp 0.7s var(--ts-ease) 80ms both; }
 .ts-preview .ts-anim-ls-v4.in-view > :nth-child(2) { animation: tsFadeUp 0.9s var(--ts-ease) 250ms both; }
 
 /* ---- Love Story V5 타임라인 ---- */
-.ts-preview .ts-anim-ls-v5 > * { opacity: 0; transform: translateY(12px); }
+.ts-preview .ts-anim-ls-v5 > * { opacity: 0; transform: translateY(6px); }
 .ts-preview .ts-anim-ls-v5.in-view > :nth-child(1) { animation: tsFadeUp 0.7s var(--ts-ease) 80ms both; }
 .ts-preview .ts-anim-ls-v5.in-view > :nth-child(2) { animation: tsFadeUp 0.8s var(--ts-ease) 200ms both; }
 

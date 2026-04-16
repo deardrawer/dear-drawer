@@ -61,6 +61,9 @@ interface GuestFloatingButtonProps {
     directions?: DirectionsInfo
     rsvpEnabled?: boolean
     rsvpAllowGuestCount?: boolean
+    rsvpMealOption?: boolean
+    rsvpShuttleOption?: boolean
+    rsvpNotice?: string
     invitationId?: string
     groomName?: string
     brideName?: string
@@ -76,7 +79,7 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false)
   const [activeModal, setActiveModal] = useState<ModalType>('none')
   const [directionsTab, setDirectionsTab] = useState<DirectionsTab>('car')
-  const [rsvpForm, setRsvpForm] = useState({ name: '', side: '' as '' | 'groom' | 'bride', attendance: '', guestCount: 1, message: '' })
+  const [rsvpForm, setRsvpForm] = useState({ name: '', side: '' as '' | 'groom' | 'bride', attendance: '', mealAttendance: '' as '' | 'yes' | 'no', shuttleBus: '' as '' | 'yes' | 'no', guestCount: 1, message: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const scrollPositionRef = useRef(0)
   const navVisible = !navHidden
@@ -165,12 +168,14 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
           guestCount: rsvpForm.attendance === 'yes' ? rsvpForm.guestCount : 0,
           message: rsvpForm.message,
           side: rsvpForm.side || undefined,
+          mealAttendance: rsvpForm.attendance === 'yes' && rsvpForm.mealAttendance ? rsvpForm.mealAttendance : undefined,
+          shuttleBus: rsvpForm.attendance === 'yes' && rsvpForm.shuttleBus ? rsvpForm.shuttleBus : undefined,
         }),
       })
       if (res.ok) {
         alert('참석 여부가 전달되었습니다. 감사합니다!')
         closeModal()
-        setRsvpForm({ name: '', side: '', attendance: '', guestCount: 1, message: '' })
+        setRsvpForm({ name: '', side: '', attendance: '', mealAttendance: '', shuttleBus: '', guestCount: 1, message: '' })
       } else {
         const data = (await res.json().catch(() => ({}))) as { error?: string }
         alert(data.error || '전송에 실패했습니다. 다시 시도해주세요.')
@@ -538,6 +543,9 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
               {/* RSVP Content */}
               {activeModal === 'rsvp' && (
                 <>
+                  {invitation.rsvpNotice && (
+                    <p className="text-xs text-center mb-3 whitespace-pre-line leading-relaxed" style={{ color: themeColors.gray }}>{invitation.rsvpNotice}</p>
+                  )}
                   <input type="text" placeholder="이름" value={rsvpForm.name} onChange={(e) => setRsvpForm({ ...rsvpForm, name: e.target.value })} className="w-full p-3 rounded-xl mb-3 text-sm outline-none" style={{ background: themeColors.sectionBg, color: themeColors.text }} />
                   <div className="grid grid-cols-2 gap-2 mb-3">
                     <button onClick={() => setRsvpForm({ ...rsvpForm, side: rsvpForm.side === 'groom' ? '' : 'groom' })} className="py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.side === 'groom' ? '#3B82F6' : themeColors.sectionBg, color: rsvpForm.side === 'groom' ? 'white' : themeColors.text }}>신랑측</button>
@@ -554,6 +562,21 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
                         <button onClick={() => setRsvpForm({ ...rsvpForm, guestCount: Math.max(1, rsvpForm.guestCount - 1) })} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: themeColors.sectionBg }}>-</button>
                         <span className="w-8 text-center text-sm" style={{ color: themeColors.text }}>{rsvpForm.guestCount}</span>
                         <button onClick={() => setRsvpForm({ ...rsvpForm, guestCount: rsvpForm.guestCount + 1 })} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: themeColors.sectionBg }}>+</button>
+                      </div>
+                    </div>
+                  )}
+                  {invitation.rsvpMealOption && rsvpForm.attendance === 'yes' && (
+                    <div className="flex gap-2 mb-3">
+                      <button onClick={() => setRsvpForm({ ...rsvpForm, mealAttendance: 'yes' })} className="flex-1 py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.mealAttendance === 'yes' ? themeColors.primary : themeColors.sectionBg, color: rsvpForm.mealAttendance === 'yes' ? 'white' : themeColors.text }}>식사 예정</button>
+                      <button onClick={() => setRsvpForm({ ...rsvpForm, mealAttendance: 'no' })} className="flex-1 py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.mealAttendance === 'no' ? themeColors.primary : themeColors.sectionBg, color: rsvpForm.mealAttendance === 'no' ? 'white' : themeColors.text }}>식사 안 함</button>
+                    </div>
+                  )}
+                  {invitation.rsvpShuttleOption && rsvpForm.attendance === 'yes' && (
+                    <div className="mb-3">
+                      <p className="text-xs mb-2" style={{ color: themeColors.gray }}>대절버스 이용 여부</p>
+                      <div className="flex gap-2">
+                        <button onClick={() => setRsvpForm({ ...rsvpForm, shuttleBus: 'yes' })} className="flex-1 py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.shuttleBus === 'yes' ? themeColors.primary : themeColors.sectionBg, color: rsvpForm.shuttleBus === 'yes' ? 'white' : themeColors.text }}>이용 예정</button>
+                        <button onClick={() => setRsvpForm({ ...rsvpForm, shuttleBus: 'no' })} className="flex-1 py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.shuttleBus === 'no' ? themeColors.primary : themeColors.sectionBg, color: rsvpForm.shuttleBus === 'no' ? 'white' : themeColors.text }}>이용 안 함</button>
                       </div>
                     </div>
                   )}

@@ -2240,6 +2240,8 @@ function TicketRsvp({ invitation, invitationId, fonts, tc, bgOverride }: {
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [giftExpanded, setGiftExpanded] = useState<'groom' | 'bride' | null>(null)
+  const [mealAttendance, setMealAttendance] = useState<'' | 'yes' | 'no'>('')
+  const [shuttleBus, setShuttleBus] = useState<'' | 'yes' | 'no'>('')
 
   // Gift accounts
   const groom = invitation.groom || {}
@@ -2255,7 +2257,7 @@ function TicketRsvp({ invitation, invitationId, fonts, tc, bgOverride }: {
     try {
       const attendanceMap: Record<string, string> = { yes: 'attending', no: 'not_attending', maybe: 'pending' }
       const res = await fetch('/api/rsvp', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ invitationId, guestName: name, attendance: attendanceMap[attendance] || attendance, guestCount: attendance === 'yes' ? guestCount : 0, message: rsvpMessage, side: side || undefined }) })
+        body: JSON.stringify({ invitationId, guestName: name, attendance: attendanceMap[attendance] || attendance, guestCount: attendance === 'yes' ? guestCount : 0, message: rsvpMessage, side: side || undefined, mealAttendance: attendance === 'yes' && mealAttendance ? mealAttendance : undefined, shuttleBus: attendance === 'yes' && shuttleBus ? shuttleBus : undefined }) })
       if (res.ok) setSubmitted(true)
     } catch {} setSubmitting(false)
   }
@@ -2346,6 +2348,9 @@ function TicketRsvp({ invitation, invitationId, fonts, tc, bgOverride }: {
 
           {/* Ticket bottom - form with staggered field animation */}
           <div className="rsvp-form-animated" style={{ padding: '16px 20px 20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {invitation.rsvpNotice && (
+              <p style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.cardGray || tc.gray, textAlign: 'center', lineHeight: 1.6, whiteSpace: 'pre-line' }}>{invitation.rsvpNotice}</p>
+            )}
             <input value={name} onChange={e => setName(e.target.value)} placeholder="성함" style={inputStyle} />
             <div className="grid grid-cols-2 gap-2">
               {([{ value: 'groom' as const, label: '신랑측' }, { value: 'bride' as const, label: '신부측' }]).map(opt => (
@@ -2382,6 +2387,32 @@ function TicketRsvp({ invitation, invitationId, fonts, tc, bgOverride }: {
                   <span style={{ fontFamily: fonts.display, fontSize: dfs(14), width: '28px', textAlign: 'center', color: tc.cardText || tc.text }}>{guestCount}</span>
                   <button onClick={() => setGuestCount(guestCount + 1)}
                     style={{ width: '30px', height: '30px', border: `1px solid ${cdiv}`, background: 'transparent', cursor: 'pointer', fontSize: '14px', color: tc.cardText || tc.text }}>+</button>
+                </div>
+              </div>
+            )}
+            {invitation.rsvpMealOption && attendance === 'yes' && (
+              <div>
+                <span style={{ fontFamily: fonts.body, fontSize: '12px', color: tc.cardGray || tc.gray, display: 'block', marginBottom: '6px' }}>식사 여부</span>
+                <div className="grid grid-cols-2 gap-2">
+                  {([{ v: 'yes' as const, l: '식사 예정' }, { v: 'no' as const, l: '식사 안 함' }]).map(opt => (
+                    <button key={opt.v} onClick={() => setMealAttendance(mealAttendance === opt.v ? '' : opt.v)}
+                      style={{ fontFamily: fonts.displayKr, fontSize: '10px', letterSpacing: '2px', padding: '11px', border: `1px solid ${mealAttendance === opt.v ? tc.accent : cdiv}`, background: mealAttendance === opt.v ? tc.accent : 'transparent', color: mealAttendance === opt.v ? '#FFFFFF' : (tc.cardText || tc.text), cursor: 'pointer', transition: 'all 0.3s' }}>
+                      {opt.l}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {invitation.rsvpShuttleOption && attendance === 'yes' && (
+              <div>
+                <span style={{ fontFamily: fonts.body, fontSize: '12px', color: tc.cardGray || tc.gray, display: 'block', marginBottom: '6px' }}>대절버스 이용 여부</span>
+                <div className="grid grid-cols-2 gap-2">
+                  {([{ v: 'yes' as const, l: '이용 예정' }, { v: 'no' as const, l: '이용 안 함' }]).map(opt => (
+                    <button key={opt.v} onClick={() => setShuttleBus(shuttleBus === opt.v ? '' : opt.v)}
+                      style={{ fontFamily: fonts.displayKr, fontSize: '10px', letterSpacing: '2px', padding: '11px', border: `1px solid ${shuttleBus === opt.v ? tc.accent : cdiv}`, background: shuttleBus === opt.v ? tc.accent : 'transparent', color: shuttleBus === opt.v ? '#FFFFFF' : (tc.cardText || tc.text), cursor: 'pointer', transition: 'all 0.3s' }}>
+                      {opt.l}
+                    </button>
+                  ))}
                 </div>
               </div>
             )}
@@ -2938,6 +2969,7 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     content: content.content || {}, gallery: content.gallery || {},
     media: content.media || {}, rsvpEnabled: content.rsvpEnabled ?? true,
     rsvpDeadline: content.rsvpDeadline || '', rsvpAllowGuestCount: content.rsvpAllowGuestCount ?? true,
+    rsvpMealOption: content.rsvpMealOption ?? false, rsvpShuttleOption: content.rsvpShuttleOption ?? false, rsvpNotice: content.rsvpNotice ?? '',
     sectionVisibility: content.sectionVisibility || {},
     design: content.design || {}, bgm: content.bgm || {},
     guidance: content.guidance || {}, intro: content.intro,
@@ -3161,6 +3193,7 @@ function InvitationClientFilmContent({
                   navStyle={content?.navStyle || 'hamburger'}
                   invitation={{ venue_name: invitation.wedding?.venue?.name || '', venue_address: invitation.wedding?.venue?.address || '', contacts, accounts,
                     directions: invitation.wedding?.directions, rsvpEnabled: invitation.rsvpEnabled, rsvpAllowGuestCount: invitation.rsvpAllowGuestCount,
+                    rsvpMealOption: invitation.rsvpMealOption, rsvpShuttleOption: invitation.rsvpShuttleOption, rsvpNotice: invitation.rsvpNotice,
                     invitationId: dbInvitation.id, groomName: invitation.groom?.name || '', brideName: invitation.bride?.name || '',
                     weddingDate: invitation.wedding?.date || '', weddingTime: invitation.wedding?.timeDisplay || invitation.wedding?.time || '',
                     thumbnailUrl: content?.meta?.kakaoThumbnail || content?.meta?.ogImage || extractImageUrl(invitation.media?.coverImage) || '',

@@ -109,6 +109,17 @@ export default function AccountEditor({ value, onChange }: AccountEditorProps) {
         />
       </label>
 
+      <label className="block">
+        <span className="text-[10px] uppercase tracking-wider text-stone-400">안내 문구</span>
+        <textarea
+          value={value.guide || ''}
+          onChange={(e) => onChange({ ...value, guide: e.target.value })}
+          placeholder="참석이 어려우신 분들을 위해 기재했습니다."
+          rows={2}
+          className="mt-0.5 w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white resize-none"
+        />
+      </label>
+
       <div className="text-xs font-semibold text-stone-700 pt-2">신랑측</div>
       {renderSide('groom', '신랑')}
       <div className="space-y-1.5">

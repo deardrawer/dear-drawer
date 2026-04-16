@@ -259,6 +259,9 @@ export interface ParentsInvitationData {
 
   // RSVP
   rsvpEnabled?: boolean
+  rsvpMealOption?: boolean
+  rsvpShuttleOption?: boolean
+  rsvpNotice?: string
 
   // 디자인
   colorTheme: ColorThemeId

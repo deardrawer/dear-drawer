@@ -2171,7 +2171,11 @@ function RsvpDmModal({
   profileImage,
   invitationId,
   allowGuestCount,
+  rsvpMealOption,
+  rsvpShuttleOption,
+  rsvpNotice,
   isSample,
+  isPreview,
 }: {
   isOpen: boolean
   onClose: () => void
@@ -2179,7 +2183,11 @@ function RsvpDmModal({
   profileImage: string
   invitationId: string
   allowGuestCount?: boolean
+  rsvpMealOption?: boolean
+  rsvpShuttleOption?: boolean
+  rsvpNotice?: string
   isSample?: boolean
+  isPreview?: boolean
 }) {
   const [step, setStep] = useState(0) // 0: form, 1: success
   const [name, setName] = useState('')
@@ -2188,6 +2196,8 @@ function RsvpDmModal({
   const [attendance, setAttendance] = useState<'attending' | 'not_attending' | 'pending' | null>(null)
   const [guestCount, setGuestCount] = useState(1)
   const [message, setMessage] = useState('')
+  const [mealAttendance, setMealAttendance] = useState<'' | 'yes' | 'no'>('')
+  const [shuttleBus, setShuttleBus] = useState<'' | 'yes' | 'no'>('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -2214,6 +2224,8 @@ function RsvpDmModal({
           guestCount: attendance === 'attending' ? guestCount : 0,
           message: message.trim() || undefined,
           side: side || undefined,
+          mealAttendance: attendance === 'attending' && mealAttendance ? mealAttendance : undefined,
+          shuttleBus: attendance === 'attending' && shuttleBus ? shuttleBus : undefined,
         }),
       })
       if (!res.ok) {
@@ -2239,6 +2251,8 @@ function RsvpDmModal({
       setAttendance(null)
       setGuestCount(1)
       setMessage('')
+      setMealAttendance('')
+      setShuttleBus('')
       setError(null)
     }, 300)
   }
@@ -2273,7 +2287,7 @@ function RsvpDmModal({
         </div>
 
         {step === 0 ? (
-          <div className="overflow-y-auto" style={{ maxHeight: 'calc(92vh - 56px)' }}>
+          <div className="overflow-y-auto" style={{ maxHeight: 'calc(92vh - 56px)', WebkitOverflowScrolling: 'touch' as const }}>
             {/* Chat area */}
             <div className="px-4 py-4 space-y-3">
               {/* Received message bubble */}
@@ -2282,15 +2296,15 @@ function RsvpDmModal({
                   <img src={profileImage} alt="" className="w-full h-full object-cover" />
                 </div>
                 <div className="rounded-2xl rounded-tl-sm px-4 py-2.5" style={{ background: '#EFEFEF' }}>
-                  <p className="text-[14px] leading-[1.5]" style={{ color: '#262626' }}>
-                    결혼식에 와주실 수 있나요? 💌{'\n'}참석 여부를 알려주세요!
+                  <p className="text-[14px] leading-[1.5] whitespace-pre-line" style={{ color: '#262626' }}>
+                    {rsvpNotice || '결혼식에 와주실 수 있나요? 💌\n참석 여부를 알려주세요!'}
                   </p>
                 </div>
               </div>
             </div>
 
             {/* Form area — styled as DM input */}
-            <div className="px-4 pb-6 space-y-4">
+            <div className="px-4 pb-6 space-y-4" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)' }}>
               {/* Name */}
               <div>
                 <label className="text-[11px] font-medium mb-1.5 block" style={{ color: '#8E8E8E' }}>이름 *</label>
@@ -2301,6 +2315,7 @@ function RsvpDmModal({
                   placeholder="이름을 입력하세요"
                   className="w-full text-[14px] py-2.5 px-4 rounded-2xl outline-none"
                   style={{ background: '#FAFAFA', border: '1px solid #DBDBDB', color: '#262626' }}
+                  onFocus={(e) => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 350)}
                 />
               </div>
 
@@ -2316,6 +2331,7 @@ function RsvpDmModal({
                   inputMode="numeric"
                   className="w-full text-[14px] py-2.5 px-4 rounded-2xl outline-none"
                   style={{ background: '#FAFAFA', border: '1px solid #DBDBDB', color: '#262626' }}
+                  onFocus={(e) => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 350)}
                 />
               </div>
 
@@ -2389,6 +2405,38 @@ function RsvpDmModal({
                 </div>
               )}
 
+              {/* Meal */}
+              {rsvpMealOption && attendance === 'attending' && (
+                <div>
+                  <label className="text-[11px] font-medium mb-1.5 block" style={{ color: '#8E8E8E' }}>식사 여부</label>
+                  <div className="flex gap-2">
+                    {([{ v: 'yes' as const, l: '식사 예정' }, { v: 'no' as const, l: '식사 안 함' }]).map(opt => (
+                      <button key={opt.v} onClick={() => setMealAttendance(mealAttendance === opt.v ? '' : opt.v)}
+                        className="flex-1 py-2.5 rounded-2xl text-[13px] font-medium transition-colors"
+                        style={{ background: mealAttendance === opt.v ? '#0095F6' : '#FAFAFA', color: mealAttendance === opt.v ? '#FFFFFF' : '#8E8E8E', border: `1px solid ${mealAttendance === opt.v ? '#0095F6' : '#DBDBDB'}` }}>
+                        {opt.l}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Shuttle */}
+              {rsvpShuttleOption && attendance === 'attending' && (
+                <div>
+                  <label className="text-[11px] font-medium mb-1.5 block" style={{ color: '#8E8E8E' }}>대절버스 이용 여부</label>
+                  <div className="flex gap-2">
+                    {([{ v: 'yes' as const, l: '이용 예정' }, { v: 'no' as const, l: '이용 안 함' }]).map(opt => (
+                      <button key={opt.v} onClick={() => setShuttleBus(shuttleBus === opt.v ? '' : opt.v)}
+                        className="flex-1 py-2.5 rounded-2xl text-[13px] font-medium transition-colors"
+                        style={{ background: shuttleBus === opt.v ? '#0095F6' : '#FAFAFA', color: shuttleBus === opt.v ? '#FFFFFF' : '#8E8E8E', border: `1px solid ${shuttleBus === opt.v ? '#0095F6' : '#DBDBDB'}` }}>
+                        {opt.l}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Message */}
               <div>
                 <label className="text-[11px] font-medium mb-1.5 block" style={{ color: '#8E8E8E' }}>축하 메시지</label>
@@ -2399,6 +2447,7 @@ function RsvpDmModal({
                   rows={3}
                   className="w-full text-[14px] py-2.5 px-4 rounded-2xl outline-none resize-none"
                   style={{ background: '#FAFAFA', border: '1px solid #DBDBDB', color: '#262626' }}
+                  onFocus={(e) => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 350)}
                 />
               </div>
 
@@ -2987,7 +3036,11 @@ function InvitationClientExhibitContent({
           profileImage={profileImage}
           invitationId={invitation?.id || ''}
           allowGuestCount={content?.rsvpAllowGuestCount}
+          rsvpMealOption={content?.rsvpMealOption}
+          rsvpShuttleOption={content?.rsvpShuttleOption}
+          rsvpNotice={content?.rsvpNotice}
           isSample={!!isSample}
+          isPreview={isPreview}
         />
       </div>
     </>

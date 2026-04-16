@@ -88,6 +88,9 @@ interface FloatingButtonProps {
     // RSVP 설정
     rsvpEnabled?: boolean
     rsvpAllowGuestCount?: boolean
+    rsvpMealOption?: boolean
+    rsvpShuttleOption?: boolean
+    rsvpNotice?: string
   }
 }
 
@@ -95,7 +98,7 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false)
   const [activeModal, setActiveModal] = useState<ModalType>('none')
   const [directionsTab, setDirectionsTab] = useState<DirectionsTab>('car')
-  const [rsvpForm, setRsvpForm] = useState({ name: '', attendance: '', guestCount: 1, message: '' })
+  const [rsvpForm, setRsvpForm] = useState({ name: '', side: '' as '' | 'groom' | 'bride', attendance: '', mealAttendance: '' as '' | 'yes' | 'no', shuttleBus: '' as '' | 'yes' | 'no', guestCount: 1, message: '' })
 
   // Bottom sheet/modal always use light colors (since they have white backgrounds)
   const isDarkTheme = themeColors.background === '#111111' || themeColors.sectionBg === '#111111'
@@ -526,6 +529,9 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
               {/* RSVP Content */}
               {activeModal === 'rsvp' && (
                 <>
+                  {invitation?.rsvpNotice && (
+                    <p className="text-xs text-center mb-3 whitespace-pre-line leading-relaxed" style={{ color: sheetColors.gray }}>{invitation.rsvpNotice}</p>
+                  )}
                   <input
                     type="text"
                     placeholder="이름"
@@ -534,6 +540,10 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
                     className="w-full p-3 rounded-xl mb-3 text-sm outline-none"
                     style={{ background: sheetColors.sectionBg, color: sheetColors.text }}
                   />
+                  <div className="grid grid-cols-2 gap-2 mb-3">
+                    <button onClick={() => setRsvpForm({ ...rsvpForm, side: rsvpForm.side === 'groom' ? '' : 'groom' })} className="py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.side === 'groom' ? '#3B82F6' : sheetColors.sectionBg, color: rsvpForm.side === 'groom' ? 'white' : sheetColors.text }}>신랑측</button>
+                    <button onClick={() => setRsvpForm({ ...rsvpForm, side: rsvpForm.side === 'bride' ? '' : 'bride' })} className="py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.side === 'bride' ? '#EC4899' : sheetColors.sectionBg, color: rsvpForm.side === 'bride' ? 'white' : sheetColors.text }}>신부측</button>
+                  </div>
                   <div className="flex gap-2 mb-3">
                     <button
                       onClick={() => setRsvpForm({ ...rsvpForm, attendance: 'yes' })}
@@ -561,6 +571,21 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
                           className="w-8 h-8 rounded-full flex items-center justify-center"
                           style={{ background: sheetColors.sectionBg }}
                         >+</button>
+                      </div>
+                    </div>
+                  )}
+                  {invitation?.rsvpMealOption && rsvpForm.attendance === 'yes' && (
+                    <div className="flex gap-2 mb-3">
+                      <button onClick={() => setRsvpForm({ ...rsvpForm, mealAttendance: 'yes' })} className="flex-1 py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.mealAttendance === 'yes' ? sheetColors.primary : sheetColors.sectionBg, color: rsvpForm.mealAttendance === 'yes' ? 'white' : sheetColors.text }}>식사 예정</button>
+                      <button onClick={() => setRsvpForm({ ...rsvpForm, mealAttendance: 'no' })} className="flex-1 py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.mealAttendance === 'no' ? sheetColors.primary : sheetColors.sectionBg, color: rsvpForm.mealAttendance === 'no' ? 'white' : sheetColors.text }}>식사 안 함</button>
+                    </div>
+                  )}
+                  {invitation?.rsvpShuttleOption && rsvpForm.attendance === 'yes' && (
+                    <div className="mb-3">
+                      <p className="text-xs mb-2" style={{ color: sheetColors.gray }}>대절버스 이용 여부</p>
+                      <div className="flex gap-2">
+                        <button onClick={() => setRsvpForm({ ...rsvpForm, shuttleBus: 'yes' })} className="flex-1 py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.shuttleBus === 'yes' ? sheetColors.primary : sheetColors.sectionBg, color: rsvpForm.shuttleBus === 'yes' ? 'white' : sheetColors.text }}>이용 예정</button>
+                        <button onClick={() => setRsvpForm({ ...rsvpForm, shuttleBus: 'no' })} className="flex-1 py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.shuttleBus === 'no' ? sheetColors.primary : sheetColors.sectionBg, color: rsvpForm.shuttleBus === 'no' ? 'white' : sheetColors.text }}>이용 안 함</button>
                       </div>
                     </div>
                   )}

@@ -37,6 +37,9 @@ export default function EssayPreview({ data, fullscreen }: EssayPreviewProps) {
     sectionVisibility: data.sectionVisibility,
     rsvpEnabled: data.rsvpEnabled,
     rsvpDeadline: data.rsvpDeadline,
+    rsvpMealOption: data.rsvpMealOption,
+    rsvpShuttleOption: data.rsvpShuttleOption,
+    rsvpNotice: data.rsvpNotice,
     deceasedDisplayStyle: data.deceasedDisplayStyle,
     meta: data.meta,
   }), [data, fullscreen])

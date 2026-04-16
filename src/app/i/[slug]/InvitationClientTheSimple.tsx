@@ -312,6 +312,7 @@ function normalizeTheSimpleData(
     },
     account: {
       eyebrow: 'Account',
+      guide: '',
       groom: [] as { bank: string; number: string; holder: string }[],
       bride: [] as { bank: string; number: string; holder: string }[],
       groomFather: [] as { bank: string; number: string; holder: string }[],

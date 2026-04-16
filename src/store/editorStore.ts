@@ -402,6 +402,9 @@ export interface InvitationContent {
   rsvpEnabled: boolean
   rsvpDeadline: string
   rsvpAllowGuestCount: boolean
+  rsvpMealOption?: boolean       // 식사 여부 옵션 표시 (기본 false)
+  rsvpShuttleOption?: boolean    // 대절버스 옵션 표시 (기본 false)
+  rsvpNotice?: string            // RSVP 안내 문구 (빈 문자열이면 미표시)
 
   // ===== 고인 표시 스타일 =====
   deceasedDisplayStyle: DeceasedDisplayStyle
@@ -817,6 +820,9 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
   rsvpEnabled: true,
   rsvpDeadline: '',
   rsvpAllowGuestCount: true,
+  rsvpMealOption: false,
+  rsvpShuttleOption: false,
+  rsvpNotice: '',
 
   // 고인 표시 스타일
   deceasedDisplayStyle: 'flower',

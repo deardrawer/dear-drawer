@@ -136,6 +136,9 @@ export interface FeedInvitationData {
   rsvpEnabled: boolean
   rsvpDeadline: string
   rsvpAllowGuestCount: boolean
+  rsvpMealOption?: boolean
+  rsvpShuttleOption?: boolean
+  rsvpNotice?: string
 
   // Section visibility
   sectionVisibility: {
@@ -563,7 +566,7 @@ function FeedEditorContent() {
             {/* Preview - 왼쪽 sticky 고정, 카드형 디바이스 프리뷰 (데스크탑) */}
             {!isMobile && (
               <div className="w-[440px] min-w-[440px] sticky top-0 overflow-hidden editor-panel m-4 mr-0 flex justify-center items-center" style={{ height: 'calc(100vh - 88px)' }}>
-                <div className="w-[360px] shadow-2xl bg-white overflow-hidden border border-gray-200" style={{ height: '710px' }}>
+                <div className="w-[360px] shadow-2xl bg-white overflow-hidden border border-gray-200" style={{ height: '710px', transform: 'translateZ(0)' }}>
                   <div className="h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                     <FeedPreview data={data} />
                   </div>
@@ -574,7 +577,7 @@ function FeedEditorContent() {
             {/* 모바일: 미리보기 모드 */}
             {isMobile && mobileView === 'preview' && (
               <div className="w-full flex justify-center items-center py-8" style={{ minHeight: 'calc(100vh - 104px)' }}>
-                <div className="w-[320px] shadow-2xl bg-white overflow-hidden border border-gray-200" style={{ height: '630px' }}>
+                <div className="w-[320px] shadow-2xl bg-white overflow-hidden border border-gray-200" style={{ height: '630px', transform: 'translateZ(0)' }}>
                   <div className="h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                     <FeedPreview data={data} />
                   </div>
@@ -617,8 +620,10 @@ function FeedEditorContent() {
             </svg>
           </button>
 
-          <div className="relative w-[390px] h-[844px] overflow-y-auto bg-white rounded-lg shadow-2xl">
-            <FeedPreview data={data} />
+          <div className="relative w-[390px] h-[844px] overflow-hidden bg-white rounded-lg shadow-2xl" style={{ transform: 'translateZ(0)' }}>
+            <div className="h-full overflow-y-auto">
+              <FeedPreview data={data} />
+            </div>
           </div>
         </div>
       )}

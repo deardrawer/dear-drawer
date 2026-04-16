@@ -87,6 +87,9 @@ function RecordPreviewWrapper({ invitation, skipIntro }: { invitation: Invitatio
     rsvpEnabled: invitation.rsvpEnabled,
     rsvpDeadline: invitation.rsvpDeadline,
     rsvpAllowGuestCount: invitation.rsvpAllowGuestCount,
+    rsvpMealOption: invitation.rsvpMealOption,
+    rsvpShuttleOption: invitation.rsvpShuttleOption,
+    rsvpNotice: invitation.rsvpNotice,
     sectionVisibility: invitation.sectionVisibility,
     guidance: invitation.guidance,
     deceasedDisplayStyle: invitation.deceasedDisplayStyle,
@@ -147,6 +150,9 @@ function InvitationPreviewWrapper({ invitation, skipIntro, onIntroScreenChange }
     rsvpEnabled: invitation.rsvpEnabled,
     rsvpDeadline: invitation.rsvpDeadline,
     rsvpAllowGuestCount: invitation.rsvpAllowGuestCount,
+    rsvpMealOption: invitation.rsvpMealOption,
+    rsvpShuttleOption: invitation.rsvpShuttleOption,
+    rsvpNotice: invitation.rsvpNotice,
     sectionVisibility: invitation.sectionVisibility,
     guidance: invitation.guidance,
     deceasedDisplayStyle: invitation.deceasedDisplayStyle,
@@ -444,6 +450,9 @@ const Preview = forwardRef<PreviewHandle, object>(function Preview(_, ref) {
                 directions: invitation.wedding.directions,
                 rsvpEnabled: invitation.rsvpEnabled,
                 rsvpAllowGuestCount: invitation.rsvpAllowGuestCount,
+                rsvpMealOption: invitation.rsvpMealOption,
+                rsvpShuttleOption: invitation.rsvpShuttleOption,
+                rsvpNotice: invitation.rsvpNotice,
               }} />}
           </div>
         </div>

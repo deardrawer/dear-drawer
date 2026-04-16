@@ -27,6 +27,9 @@ export default function FeedPreview({ data, fullscreen: _fullscreen }: FeedPrevi
     rsvpEnabled: data.rsvpEnabled,
     rsvpDeadline: data.rsvpDeadline,
     rsvpAllowGuestCount: data.rsvpAllowGuestCount,
+    rsvpMealOption: data.rsvpMealOption,
+    rsvpShuttleOption: data.rsvpShuttleOption,
+    rsvpNotice: data.rsvpNotice,
     sectionVisibility: data.sectionVisibility,
     accounts: data.accounts,
     displayId: data.displayId,
@@ -54,10 +57,7 @@ export default function FeedPreview({ data, fullscreen: _fullscreen }: FeedPrevi
   }), [data, content])
 
   return (
-    <div
-      className="overflow-y-auto h-full"
-      style={{ WebkitOverflowScrolling: 'touch' }}
-    >
+    <div className="relative">
       <InvitationClientExhibit
         invitation={invitation}
         content={content}

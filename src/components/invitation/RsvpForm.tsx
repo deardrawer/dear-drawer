@@ -13,6 +13,9 @@ interface RsvpFormProps {
   primaryColor: string
   onSuccess?: () => void
   allowGuestCount?: boolean
+  showMealOption?: boolean
+  showShuttleOption?: boolean
+  notice?: string
 }
 
 export default function RsvpForm({
@@ -20,11 +23,16 @@ export default function RsvpForm({
   primaryColor,
   onSuccess,
   allowGuestCount = true,
+  showMealOption = false,
+  showShuttleOption = false,
+  notice,
 }: RsvpFormProps) {
   const [guestName, setGuestName] = useState('')
   const [guestPhone, setGuestPhone] = useState('')
   const [side, setSide] = useState<'groom' | 'bride' | null>(null)
   const [attendance, setAttendance] = useState<Attendance | null>(null)
+  const [mealAttendance, setMealAttendance] = useState<'yes' | 'no' | null>(null)
+  const [shuttleBus, setShuttleBus] = useState<'yes' | 'no' | null>(null)
   const [guestCount, setGuestCount] = useState(1)
   const [message, setMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -59,6 +67,8 @@ export default function RsvpForm({
           guestCount: attendance === 'attending' ? guestCount : 0,
           message: message.trim() || undefined,
           side: side || undefined,
+          mealAttendance: attendance === 'attending' ? mealAttendance : undefined,
+          shuttleBus: attendance === 'attending' ? shuttleBus : undefined,
         }),
       })
 
@@ -113,6 +123,13 @@ export default function RsvpForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* 안내 문구 */}
+      {notice && (
+        <p className="text-xs text-gray-500 text-center whitespace-pre-line leading-relaxed">
+          {notice}
+        </p>
+      )}
+
       {error && (
         <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">
           {error}
@@ -130,6 +147,7 @@ export default function RsvpForm({
           onChange={(e) => setGuestName(e.target.value)}
           placeholder="홍길동"
           required
+          onFocus={(e) => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 350)}
         />
       </div>
 
@@ -142,6 +160,7 @@ export default function RsvpForm({
           value={guestPhone}
           onChange={(e) => setGuestPhone(e.target.value)}
           placeholder="010-1234-5678"
+          onFocus={(e) => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 350)}
         />
       </div>
 
@@ -246,6 +265,78 @@ export default function RsvpForm({
         </div>
       )}
 
+      {/* 식사 여부 (참석 + 옵션 ON 시만) */}
+      {showMealOption && attendance === 'attending' && (
+        <div className="space-y-2">
+          <Label>식사 여부</Label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setMealAttendance('yes')}
+              className={`py-3 px-4 rounded-lg border-2 text-sm font-medium transition-all ${
+                mealAttendance === 'yes'
+                  ? 'text-white'
+                  : 'border-gray-200 text-gray-700 hover:border-gray-300'
+              }`}
+              style={
+                mealAttendance === 'yes'
+                  ? { backgroundColor: primaryColor, borderColor: primaryColor }
+                  : {}
+              }
+            >
+              식사 예정
+            </button>
+            <button
+              type="button"
+              onClick={() => setMealAttendance('no')}
+              className={`py-3 px-4 rounded-lg border-2 text-sm font-medium transition-all ${
+                mealAttendance === 'no'
+                  ? 'bg-gray-700 text-white border-gray-700'
+                  : 'border-gray-200 text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              식사 안 함
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 대절버스 (참석 + 옵션 ON 시만) */}
+      {showShuttleOption && attendance === 'attending' && (
+        <div className="space-y-2">
+          <Label>대절버스 이용 여부</Label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setShuttleBus('yes')}
+              className={`py-3 px-4 rounded-lg border-2 text-sm font-medium transition-all ${
+                shuttleBus === 'yes'
+                  ? 'text-white'
+                  : 'border-gray-200 text-gray-700 hover:border-gray-300'
+              }`}
+              style={
+                shuttleBus === 'yes'
+                  ? { backgroundColor: primaryColor, borderColor: primaryColor }
+                  : {}
+              }
+            >
+              이용 예정
+            </button>
+            <button
+              type="button"
+              onClick={() => setShuttleBus('no')}
+              className={`py-3 px-4 rounded-lg border-2 text-sm font-medium transition-all ${
+                shuttleBus === 'no'
+                  ? 'bg-gray-700 text-white border-gray-700'
+                  : 'border-gray-200 text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              이용 안 함
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* 축하 메시지 */}
       <div className="space-y-2">
         <Label htmlFor="message">축하 메시지</Label>
@@ -256,6 +347,7 @@ export default function RsvpForm({
           placeholder="신랑 신부에게 전할 축하 메시지를 남겨주세요"
           rows={3}
           className="resize-none"
+          onFocus={(e) => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 350)}
         />
       </div>
 

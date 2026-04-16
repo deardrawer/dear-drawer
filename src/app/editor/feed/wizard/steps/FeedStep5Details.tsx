@@ -272,6 +272,33 @@ export default function FeedStep5Details({
               />
               <span className="text-sm text-gray-700">동반 인원 입력 허용</span>
             </div>
+
+            <div className="flex items-center gap-3">
+              <ToggleSwitch
+                checked={data.rsvpMealOption ?? false}
+                onChange={(checked) => updateData({ rsvpMealOption: checked })}
+              />
+              <span className="text-sm text-gray-700">식사 여부 입력 허용</span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <ToggleSwitch
+                checked={data.rsvpShuttleOption ?? false}
+                onChange={(checked) => updateData({ rsvpShuttleOption: checked })}
+              />
+              <span className="text-sm text-gray-700">대절버스 이용 여부 입력 허용</span>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className={labelClass}>안내 문구</label>
+              <textarea
+                className={`${inputClass} resize-none`}
+                value={data.rsvpNotice ?? ''}
+                onChange={(e) => updateData({ rsvpNotice: e.target.value })}
+                placeholder="예) 소규모로 진행되는 예식입니다.&#10;참석 여부를 미리 알려주시면 감사하겠습니다."
+                rows={2}
+              />
+            </div>
           </div>
         )}
       </section>

@@ -572,7 +572,7 @@ export default function ParentsInvitationView({
               }
             />
             {data.rsvpEnabled !== false && (
-              <RsvpModal isPreview={isPreview} invitationId={invitationId} />
+              <RsvpModal isPreview={isPreview} invitationId={invitationId} rsvpMealOption={data.rsvpMealOption} rsvpShuttleOption={data.rsvpShuttleOption} rsvpNotice={data.rsvpNotice} />
             )}
           </main>
         </SectionHighlightProvider>

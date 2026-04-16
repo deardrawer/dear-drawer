@@ -846,6 +846,34 @@ export default function Step5MenuSettings() {
               />
               <span className="text-sm text-gray-700">동반 인원 입력 허용</span>
             </div>
+
+            <div className="flex items-center gap-3">
+              <Switch
+                checked={invitation.rsvpMealOption ?? false}
+                onCheckedChange={(checked) => updateField('rsvpMealOption', checked)}
+              />
+              <span className="text-sm text-gray-700">식사 여부 입력 허용</span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Switch
+                checked={invitation.rsvpShuttleOption ?? false}
+                onCheckedChange={(checked) => updateField('rsvpShuttleOption', checked)}
+              />
+              <span className="text-sm text-gray-700">대절버스 이용 여부 입력 허용</span>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">안내 문구</Label>
+              <Textarea
+                value={invitation.rsvpNotice ?? ''}
+                onChange={(e) => updateField('rsvpNotice', e.target.value)}
+                placeholder="예) 소규모로 진행되는 예식입니다.&#10;참석 여부를 미리 알려주시면 감사하겠습니다."
+                rows={2}
+                className="resize-none"
+              />
+              <p className="text-xs text-gray-500">RSVP 폼 상단에 표시됩니다. 비워두면 표시되지 않습니다.</p>
+            </div>
           </div>
         )}
       </section>

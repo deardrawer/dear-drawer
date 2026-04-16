@@ -172,12 +172,17 @@ export default function InvitationClientTheSimple({
   const data: TheSimpleInvitationData = normalizeTheSimpleData(content, invitation)
   const hasCover = (data.coverVariant ?? 0) > 0
   const [coverOpen, setCoverOpen] = useState(false)
+  const [overlayFading, setOverlayFading] = useState(false)
+  const [overlayGone, setOverlayGone] = useState(false)
   const [curtainRevealed, setCurtainRevealed] = useState(false)
   const audioRef = useRef<HTMLAudioElement>(null)
   const hasBgm = data.bgm?.enabled && !!data.bgm?.url
 
   const handleCoverOpen = useCallback(() => {
     setCoverOpen(true)
+    // 커버 콘텐츠가 사라진 뒤 검정 오버레이를 fade out
+    setOverlayFading(true)
+    setTimeout(() => setOverlayGone(true), 800)
   }, [])
 
   const coverData = {
@@ -214,7 +219,7 @@ export default function InvitationClientTheSimple({
       )}
 
       {/* Cover overlay */}
-      {hasCover && !coverOpen && (
+      {hasCover && !overlayGone && (
         <div
           style={{
             position: 'fixed',
@@ -225,7 +230,10 @@ export default function InvitationClientTheSimple({
             zIndex: 9999,
             display: 'flex',
             justifyContent: 'center',
-            background: data.coverVariant === 5 ? 'transparent' : '#fff',
+            background: data.coverVariant === 5 ? 'transparent' : '#000',
+            opacity: overlayFading ? 0 : 1,
+            transition: overlayFading ? 'opacity 0.8s ease-out' : 'none',
+            pointerEvents: coverOpen ? 'none' : 'auto',
           }}
         >
           <div style={{ width: '100%', maxWidth: 430 }}>

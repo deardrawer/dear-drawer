@@ -633,6 +633,8 @@ function TheSimpleEditorContent() {
   // 커버 리플레이 키 (변경 시 TapToOpenCover 재마운트)
   const [coverKey, setCoverKey] = useState(0)
   const [coverDismissed, setCoverDismissed] = useState(false)
+  const [coverOverlayFading, setCoverOverlayFading] = useState(false)
+  const [coverOverlayGone, setCoverOverlayGone] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
   const [playingBgm, setPlayingBgm] = useState<string | null>(null)
   const bgmAudioRef = useRef<HTMLAudioElement>(null)
@@ -641,6 +643,8 @@ function TheSimpleEditorContent() {
   // 커버 variant 변경 또는 미리보기 탭 전환 시 자동 리셋
   useEffect(() => {
     setCoverDismissed(false)
+    setCoverOverlayFading(false)
+    setCoverOverlayGone(false)
     setCurtainRevealed(false)
     setCoverKey((k) => k + 1)
   }, [data.coverVariant, mobileView])
@@ -1045,8 +1049,14 @@ function TheSimpleEditorContent() {
                 style={{ height: 'calc(100vh - 88px)' }}
               >
                 <div className="w-full h-full overflow-y-auto relative" style={{ WebkitOverflowScrolling: 'touch', ['--ts-intro-vh' as string]: 'calc(100vh - 88px)' } as React.CSSProperties}>
-                  {(data.coverVariant ?? 0) > 0 && !coverDismissed && (
-                    <div style={{ position: 'absolute', inset: 0, zIndex: 50 }}>
+                  {(data.coverVariant ?? 0) > 0 && !coverOverlayGone && (
+                    <div style={{
+                      position: 'absolute', inset: 0, zIndex: 50,
+                      background: data.coverVariant === 5 ? 'transparent' : '#000',
+                      opacity: coverOverlayFading ? 0 : 1,
+                      transition: coverOverlayFading ? 'opacity 0.8s ease-out' : 'none',
+                      pointerEvents: coverDismissed ? 'none' : 'auto',
+                    }}>
                       <TapToOpenCover
                         key={coverKey}
                         variant={data.coverVariant!}
@@ -1060,15 +1070,19 @@ function TheSimpleEditorContent() {
                           venueName: data.wedding.venue.name,
                           venueHall: data.wedding.venue.hall,
                         }}
-                        onOpen={() => setCoverDismissed(true)}
+                        onOpen={() => {
+                          setCoverDismissed(true)
+                          setCoverOverlayFading(true)
+                          setTimeout(() => setCoverOverlayGone(true), 800)
+                        }}
                         onStartOpen={() => setCurtainRevealed(true)}
                       />
                     </div>
                   )}
-                  {(data.coverVariant ?? 0) > 0 && coverDismissed && (
+                  {(data.coverVariant ?? 0) > 0 && coverOverlayGone && (
                     <button
                       type="button"
-                      onClick={() => { setCoverDismissed(false); setCoverKey((k) => k + 1) }}
+                      onClick={() => { setCoverDismissed(false); setCoverOverlayFading(false); setCoverOverlayGone(false); setCoverKey((k) => k + 1) }}
                       className="absolute top-3 right-3 z-50 px-3 py-1.5 rounded-full bg-black/60 text-white text-[10px] tracking-wider hover:bg-black/80 transition-colors backdrop-blur-sm"
                     >
                       커버 다시 보기
@@ -1088,8 +1102,14 @@ function TheSimpleEditorContent() {
                 style={{ height: '630px' }}
               >
                 <div className="w-full h-full overflow-y-auto relative" style={{ WebkitOverflowScrolling: 'touch', ['--ts-intro-vh' as string]: '630px' } as React.CSSProperties}>
-                  {(data.coverVariant ?? 0) > 0 && !coverDismissed && (
-                    <div style={{ position: 'absolute', inset: 0, zIndex: 50 }}>
+                  {(data.coverVariant ?? 0) > 0 && !coverOverlayGone && (
+                    <div style={{
+                      position: 'absolute', inset: 0, zIndex: 50,
+                      background: data.coverVariant === 5 ? 'transparent' : '#000',
+                      opacity: coverOverlayFading ? 0 : 1,
+                      transition: coverOverlayFading ? 'opacity 0.8s ease-out' : 'none',
+                      pointerEvents: coverDismissed ? 'none' : 'auto',
+                    }}>
                       <TapToOpenCover
                         key={coverKey}
                         variant={data.coverVariant!}
@@ -1103,15 +1123,19 @@ function TheSimpleEditorContent() {
                           venueName: data.wedding.venue.name,
                           venueHall: data.wedding.venue.hall,
                         }}
-                        onOpen={() => setCoverDismissed(true)}
+                        onOpen={() => {
+                          setCoverDismissed(true)
+                          setCoverOverlayFading(true)
+                          setTimeout(() => setCoverOverlayGone(true), 800)
+                        }}
                         onStartOpen={() => setCurtainRevealed(true)}
                       />
                     </div>
                   )}
-                  {(data.coverVariant ?? 0) > 0 && coverDismissed && (
+                  {(data.coverVariant ?? 0) > 0 && coverOverlayGone && (
                     <button
                       type="button"
-                      onClick={() => { setCoverDismissed(false); setCoverKey((k) => k + 1) }}
+                      onClick={() => { setCoverDismissed(false); setCoverOverlayFading(false); setCoverOverlayGone(false); setCoverKey((k) => k + 1) }}
                       className="absolute top-3 right-3 z-50 px-3 py-1.5 rounded-full bg-black/60 text-white text-[10px] tracking-wider hover:bg-black/80 transition-colors backdrop-blur-sm"
                     >
                       커버 다시 보기

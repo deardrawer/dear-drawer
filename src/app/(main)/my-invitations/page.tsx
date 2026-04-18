@@ -1062,6 +1062,12 @@ export default function MyInvitationsPage() {
                         ? `/editor/feed?id=${invitation.id}`
                         : invitation.template_id === 'narrative-thankyou'
                         ? `/editor/thank-you?id=${invitation.id}`
+                        : invitation.template_id === 'narrative-the-simple'
+                        ? `/editor/the-simple?id=${invitation.id}`
+                        : invitation.template_id === 'narrative-essay'
+                        ? `/editor/essay?id=${invitation.id}`
+                        : invitation.template_id === 'narrative-magazine' || invitation.template_id === 'narrative-film' || invitation.template_id === 'narrative-record'
+                        ? `/editor/feed?id=${invitation.id}`
                         : `/editor?id=${invitation.id}`
                     }>
                       <Button size="sm" className="w-full bg-gray-900 hover:bg-gray-800 text-white">에디터 편집하기</Button>

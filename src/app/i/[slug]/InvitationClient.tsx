@@ -2670,11 +2670,11 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
   }
 
   const availableTabs: { key: DirectionsTab; label: string }[] = [
-    ...(directions.car ? [{ key: 'car' as DirectionsTab, label: '자가용' }] : []),
-    ...(directions.publicTransport ? [{ key: 'publicTransport' as DirectionsTab, label: '버스/지하철' }] : []),
-    ...(directions.train ? [{ key: 'train' as DirectionsTab, label: '기차' }] : []),
-    ...(directions.expressBus ? [{ key: 'expressBus' as DirectionsTab, label: '고속버스' }] : []),
-    ...(directions.shuttle ? [{ key: 'shuttle' as DirectionsTab, label: '셔틀버스' }] : []),
+    ...(directions?.car ? [{ key: 'car' as DirectionsTab, label: '자가용' }] : []),
+    ...(directions?.publicTransport ? [{ key: 'publicTransport' as DirectionsTab, label: '버스/지하철' }] : []),
+    ...(directions?.train ? [{ key: 'train' as DirectionsTab, label: '기차' }] : []),
+    ...(directions?.expressBus ? [{ key: 'expressBus' as DirectionsTab, label: '고속버스' }] : []),
+    ...(directions?.shuttle ? [{ key: 'shuttle' as DirectionsTab, label: '셔틀버스' }] : []),
   ]
 
   return (
@@ -3127,7 +3127,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
             </div>
 
             {/* 추가 안내사항 */}
-            {directions.extraInfoEnabled && directions.extraInfoText && (
+            {directions?.extraInfoEnabled && directions?.extraInfoText && (
               <div className="mt-6 p-4 rounded-xl border" style={{ background: `${themeColors.primary}10`, borderColor: `${themeColors.primary}30` }}>
                 <p className="text-sm whitespace-pre-line" style={{ color: themeColors.text }}>{directions.extraInfoText}</p>
               </div>

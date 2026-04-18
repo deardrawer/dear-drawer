@@ -449,6 +449,7 @@ function normalizeTheSimpleData(
     galleryEyebrows: (c as Record<string, unknown>).galleryEyebrows as Record<string, string> | undefined,
     coverVariant: typeof c.coverVariant === 'number' ? c.coverVariant : 0,
     dividerVariant: c.dividerVariant ?? 1,
+    lightboxVariant: typeof c.lightboxVariant === 'number' ? c.lightboxVariant : 1,
     displayFont: c.displayFont,
     fontStyle: c.fontStyle,
     fontScale: typeof c.fontScale === 'number' ? c.fontScale : 1,

@@ -129,6 +129,8 @@ function getTemplateDisplayName(templateId: string, senderSide?: string) {
       return 'ESSAY'
     case 'narrative-thankyou':
       return '감사장'
+    case 'narrative-the-simple':
+      return 'THE SIMPLE'
     default:
       return templateId || '기본'
   }
@@ -850,32 +852,6 @@ export default function MyInvitationsPage() {
         </div>
       </div>
 
-      {/* 필터 바 */}
-      {invitations.length > 0 && (
-        <div className="mb-6">
-          {/* 템플릿 필터 탭 */}
-          <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg w-fit">
-            {[
-              { key: 'all', label: '전체' },
-              { key: 'our', label: 'OUR' },
-              { key: 'family', label: 'FAMILY' },
-              { key: 'parents', label: 'PARENTS' },
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setFilterType(tab.key as typeof filterType)}
-                className={`px-3 py-1.5 text-sm rounded-md transition-all ${
-                  filterType === tab.key
-                    ? 'bg-white text-gray-900 shadow-sm font-medium'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
 
       {invitations.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-100 p-8 md:p-12">

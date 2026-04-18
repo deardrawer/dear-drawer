@@ -1986,15 +1986,12 @@
 }
 
 /* ---------- RSVP Modal ---------- */
-/* --- RSVP 풀프레임 슬라이드업 모달 --- */
+/* --- RSVP 풀스크린 슬라이드업 모달 --- */
 .ts-rsvp-modal-overlay {
   position: fixed;
   inset: 0;
   z-index: 9999;
   background: rgba(0, 0, 0, 0);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
   animation: tsModalOverlayIn 0.35s ease forwards;
 }
 .ts-rsvp-modal-overlay--closing {
@@ -2010,12 +2007,8 @@
 }
 .ts-rsvp-modal {
   background: #fff;
-  width: 100%;
-  max-width: 500px;
-  border-radius: 20px 20px 0 0;
-  padding: 0 0 24px;
-  position: relative;
-  max-height: 92vh;
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   transform: translateY(100%);
@@ -2033,33 +2026,24 @@
   to { transform: translateY(100%); }
 }
 .ts-rsvp-modal-handle {
-  display: flex;
-  justify-content: center;
-  padding: 12px 0 4px;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-.ts-rsvp-modal-handle span {
-  width: 36px;
-  height: 4px;
-  border-radius: 2px;
-  background: #d4d4d4;
+  display: none;
 }
 .ts-rsvp-modal-body {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding: 0 24px;
+  padding-top: 60px;
 }
 .ts-rsvp-modal-close {
   position: absolute;
-  top: 14px;
+  top: 20px;
   right: 20px;
   background: none;
   border: none;
   color: #999;
   cursor: pointer;
-  padding: 4px;
+  padding: 8px;
   z-index: 1;
 }
 .ts-rsvp-modal-close:hover {
@@ -2155,11 +2139,11 @@
 }
 .ts-rsvp-modal-submit {
   width: calc(100% - 48px);
-  margin: 16px auto 0;
+  margin: 20px auto 0;
   font-family: var(--font-ko, sans-serif);
   font-size: 15px;
   font-weight: 600;
-  padding: 14px 0;
+  padding: 16px 0;
   border: none;
   border-radius: 8px;
   background: #1a1a1a;

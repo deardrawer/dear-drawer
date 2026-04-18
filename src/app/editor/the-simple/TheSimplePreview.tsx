@@ -1794,11 +1794,6 @@ function RsvpModal({
       onClick={(e) => { if (e.target === overlayRef.current) handleClose() }}
     >
       <div ref={contentRef} className={`ts-rsvp-modal ${closing ? 'ts-rsvp-modal--closing' : ''}`}>
-        {/* 드래그 핸들 */}
-        <div className="ts-rsvp-modal-handle" onClick={handleClose}>
-          <span />
-        </div>
-
         <button type="button" className="ts-rsvp-modal-close" onClick={handleClose}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />

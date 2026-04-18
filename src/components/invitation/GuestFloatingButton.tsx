@@ -395,8 +395,8 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
         <div
           className="fixed bottom-0 left-0 right-0 z-[60] transition-all duration-500 ease-out border-t"
           style={{
-            transform: navVisible ? 'translateY(0)' : 'translateY(100%)',
-            opacity: navVisible ? 1 : 0,
+            transform: (navVisible && activeModal === 'none') ? 'translateY(0)' : 'translateY(100%)',
+            opacity: (navVisible && activeModal === 'none') ? 1 : 0,
             background: themeColors.cardBg,
             borderColor: `${themeColors.gray}20`,
           }}
@@ -433,8 +433,8 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
         <div
           className="fixed bottom-0 left-0 right-0 z-[60] transition-all duration-500 ease-out"
           style={{
-            transform: navVisible ? 'translateY(0)' : 'translateY(100%)',
-            opacity: navVisible ? 1 : 0,
+            transform: (navVisible && activeModal === 'none') ? 'translateY(0)' : 'translateY(100%)',
+            opacity: (navVisible && activeModal === 'none') ? 1 : 0,
             background: `${themeColors.cardBg}ee`,
             backdropFilter: 'blur(8px)',
             WebkitBackdropFilter: 'blur(8px)',
@@ -500,17 +500,9 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
         <>
           <div className="fixed inset-0 bg-black/50 z-50" onClick={closeModal} />
           <div
-            className={navStyle === 'hamburger'
-              ? "fixed inset-4 z-[55] bg-white rounded-2xl max-h-[80vh] m-auto overflow-hidden flex flex-col"
-              : "fixed left-0 right-0 z-[55] bg-white rounded-t-2xl max-h-[75vh] overflow-hidden flex flex-col"
-            }
+            className="fixed inset-4 z-[55] bg-white rounded-2xl max-h-[80vh] m-auto overflow-hidden flex flex-col"
             style={{
-              ...(navStyle !== 'hamburger' && {
-                bottom: navStyle === 'bottom-nav' ? '66px' : '58px',
-              }),
-              animation: navStyle === 'hamburger'
-                ? 'centerModalOpen 0.25s ease-out'
-                : 'slideUpModal 0.3s ease-out',
+              animation: 'centerModalOpen 0.25s ease-out',
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -777,12 +769,8 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
             </div>
           </div>
 
-          {/* Modal animations */}
+          {/* Modal animation */}
           <style>{`
-            @keyframes slideUpModal {
-              from { transform: translateY(100%); }
-              to { transform: translateY(0); }
-            }
             @keyframes centerModalOpen {
               from { opacity: 0; transform: scale(0.95); }
               to { opacity: 1; transform: scale(1); }

@@ -5440,6 +5440,8 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1 }:
   const touchStartX = useRef(0)
   const overlayRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
+  // V9: 오버레이 전환용 — 새 사진이 기존 위에 페이드인
+  const [v9Next, setV9Next] = useState<number | null>(null)
 
   useContainedOverlay(overlayRef, isOpen)
 
@@ -5449,7 +5451,7 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1 }:
       setAnimClass('')
       setTransitioning(false)
     }
-  }, [initialIndex, isOpen])
+  }, [initialIndex, isOpen, variant])
 
   const goTo = useCallback((nextIdx: number, dir: 'next' | 'prev') => {
     if (transitioning || nextIdx === idx) return
@@ -5461,6 +5463,16 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1 }:
         setIdx(nextIdx)
         setAnimClass('ts-lb-img--fade-in')
         setTimeout(() => { setAnimClass(''); setTransitioning(false) }, 500)
+      }, 500)
+      return
+    }
+    // V9: 기존 사진 위에 새 사진 오버레이 페이드인
+    if (variant === 9) {
+      setV9Next(nextIdx)
+      setTimeout(() => {
+        setIdx(nextIdx)
+        setV9Next(null)
+        setTransitioning(false)
       }, 500)
       return
     }
@@ -5504,10 +5516,6 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1 }:
     }
   }, [isOpen, onClose, goNext, goPrev, variant])
 
-  // V9(필름 스트립) 가로 스크롤용
-  const filmScrollRef = useRef<HTMLDivElement>(null)
-  const filmTouchStartX = useRef(0)
-  const filmScrollStartX = useRef(0)
 
   if (!isOpen || images.length === 0) return null
 
@@ -5528,45 +5536,6 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1 }:
     )
   }
 
-  // === V9: 필름 스트립 (가로 스크롤) ===
-  if (v === 9) {
-    return (
-      <div ref={overlayRef} className="ts-lightbox ts-lb--v9" onClick={onClose}>
-        <button className="ts-lb-topbar-close ts-lb-v9-close" onClick={onClose}>&times;</button>
-        {/* 상단 스프로킷 */}
-        <div className="ts-lb-v9-sprocket ts-lb-v9-sprocket--top" aria-hidden="true">
-          {Array.from({ length: 20 }).map((_, i) => <span key={i} />)}
-        </div>
-        <div
-          ref={filmScrollRef}
-          className="ts-lb-v9-strip"
-          onClick={e => e.stopPropagation()}
-          onTouchStart={e => {
-            filmTouchStartX.current = e.touches[0].clientX
-            filmScrollStartX.current = filmScrollRef.current?.scrollLeft ?? 0
-          }}
-          onTouchMove={e => {
-            if (filmScrollRef.current) {
-              const diff = filmTouchStartX.current - e.touches[0].clientX
-              filmScrollRef.current.scrollLeft = filmScrollStartX.current + diff
-            }
-          }}
-        >
-          {images.map((src, i) => (
-            <div key={i} className="ts-lb-v9-frame">
-              <img src={src} alt="" draggable={false} />
-            </div>
-          ))}
-        </div>
-        {/* 하단 스프로킷 */}
-        <div className="ts-lb-v9-sprocket ts-lb-v9-sprocket--bottom" aria-hidden="true">
-          {Array.from({ length: 20 }).map((_, i) => <span key={i} />)}
-        </div>
-        <div className="ts-lb-counter">{pad(idx + 1)} / {pad(images.length)}</div>
-      </div>
-    )
-  }
-
   // 공통 터치/스와이프 핸들러
   const touchProps = {
     onTouchStart: (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX },
@@ -5574,6 +5543,32 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1 }:
       const diff = e.changedTouches[0].clientX - touchStartX.current
       if (Math.abs(diff) > 50) { diff < 0 ? goNext() : goPrev() }
     },
+  }
+
+  // === V9: 필름 스트립 (좌우 캐러셀 — 중앙 사진 슬라이드) ===
+  if (v === 9) {
+    const prevIdx = (idx - 1 + images.length) % images.length
+    const nextIdx = (idx + 1) % images.length
+    return (
+      <div ref={overlayRef} className="ts-lightbox ts-lb--v9" onClick={onClose}>
+        <button className="ts-lb-topbar-close ts-lb-v9-close" onClick={onClose}>&times;</button>
+        <div className="ts-lb-v9-carousel" onClick={e => e.stopPropagation()} {...touchProps}>
+          <div className="ts-lb-v9-side ts-lb-v9-side--prev" onClick={goPrev}>
+            <img src={images[prevIdx]} alt="" draggable={false} />
+          </div>
+          <div className="ts-lb-v9-current">
+            <img src={images[idx]} alt="" draggable={false} />
+            {v9Next !== null && (
+              <img src={images[v9Next]} alt="" draggable={false} className="ts-lb-v9-overlay" />
+            )}
+          </div>
+          <div className="ts-lb-v9-side ts-lb-v9-side--next" onClick={goNext}>
+            <img src={images[nextIdx]} alt="" draggable={false} />
+          </div>
+        </div>
+        <div className="ts-lb-counter">{pad(idx + 1)} / {pad(images.length)}</div>
+      </div>
+    )
   }
 
   // === V1: 에디토리얼 (기존) ===
@@ -5649,11 +5644,18 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1 }:
           <button className="ts-lb-v7-arrow ts-lb-v7-arrow--next" onClick={e => { e.stopPropagation(); goNext() }} aria-label="다음">&#8250;</button>
         </div>
         <div className="ts-lb-v7-thumbs" onClick={e => e.stopPropagation()}>
-          {images.map((src, i) => (
-            <div key={i} className={`ts-lb-v7-thumb ${i === idx ? 'ts-lb-v7-thumb--active' : ''}`} onClick={() => { if (i !== idx) goTo(i, i > idx ? 'next' : 'prev') }}>
-              <img src={src} alt="" draggable={false} />
-            </div>
-          ))}
+          {(() => {
+            const total = images.length
+            const visible: number[] = []
+            for (let offset = -2; offset <= 2; offset++) {
+              visible.push(((idx + offset) % total + total) % total)
+            }
+            return visible.map((i) => (
+              <div key={i} className={`ts-lb-v7-thumb ${i === idx ? 'ts-lb-v7-thumb--active' : ''}`} onClick={() => { if (i !== idx) goTo(i, i > idx ? 'next' : 'prev') }}>
+                <img src={images[i]} alt="" draggable={false} />
+              </div>
+            ))
+          })()}
         </div>
       </div>
     )

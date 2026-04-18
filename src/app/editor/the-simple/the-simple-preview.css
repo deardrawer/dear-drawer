@@ -3647,17 +3647,26 @@
    Lightbox Variant 2 — 글라스모피즘
    ========================================================================== */
 .ts-lb--v2 {
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(32px) saturate(1.2);
+  -webkit-backdrop-filter: blur(32px) saturate(1.2);
 }
 .ts-lb-v2-close {
   position: absolute; top: 16px; right: 16px; z-index: 3;
-  color: rgba(255,255,255,0.7); font-size: 22px;
+  color: rgba(0,0,0,0.4); font-size: 22px;
 }
-.ts-lb-v2-wrap { padding: 40px 20px 80px; }
+.ts-lb-v2-wrap {
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
 .ts-lb-v2-img {
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 8px 20px rgba(0,0,0,0.3);
+  width: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08);
 }
 .ts-lb-v2-dots {
   position: absolute; bottom: 32px; left: 0; right: 0;
@@ -3666,12 +3675,12 @@
 }
 .ts-lb-v2-dot {
   width: 8px; height: 8px; border-radius: 50%;
-  background: rgba(255,255,255,0.3);
+  background: rgba(0,0,0,0.15);
   cursor: pointer;
   transition: background 0.3s, transform 0.3s;
 }
 .ts-lb-v2-dot--active {
-  background: rgba(255,255,255,0.9);
+  background: rgba(0,0,0,0.5);
   transform: scale(1.3);
 }
 
@@ -3773,7 +3782,8 @@
   color: rgba(255,255,255,0.5); font-size: 22px;
 }
 .ts-lb-v7-wrap {
-  flex: 1; padding: 40px 48px 0; position: relative;
+  flex: 1; padding: 0; position: relative;
+  display: flex; align-items: center; justify-content: center;
 }
 .ts-lb-v7-arrow {
   position: absolute; top: 50%; transform: translateY(-50%);
@@ -3786,15 +3796,14 @@
 .ts-lb-v7-arrow--prev { left: 4px; }
 .ts-lb-v7-arrow--next { right: 4px; }
 .ts-lb-v7-thumbs {
-  display: flex; gap: 4px; overflow-x: auto;
-  padding: 12px 16px 20px;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
+  display: flex; gap: 3px;
+  padding: 8px 0 16px;
+  justify-content: center;
+  align-items: center;
 }
-.ts-lb-v7-thumbs::-webkit-scrollbar { display: none; }
 .ts-lb-v7-thumb {
-  flex-shrink: 0; width: 48px; height: 48px;
-  border-radius: 4px; overflow: hidden;
+  flex: 1; height: 64px;
+  overflow: hidden;
   cursor: pointer; opacity: 0.4;
   border: 2px solid transparent;
   transition: opacity 0.2s, border-color 0.2s;
@@ -3810,35 +3819,87 @@
    Lightbox Variant 9 — 필름 스트립
    ========================================================================== */
 .ts-lb--v9 {
-  background: #000;
+  background: #fff;
   background-image: none;
 }
 .ts-lb-v9-close {
   position: absolute; top: 16px; right: 16px; z-index: 3;
-  color: rgba(255,255,255,0.5);
+  color: rgba(0,0,0,0.35); font-size: 22px;
 }
-.ts-lb-v9-sprocket { display: none; }
-.ts-lb-v9-strip {
-  display: flex; align-items: center;
-  height: 100%; overflow-x: auto;
-  gap: 12px; padding: 32px 24px;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-.ts-lb-v9-strip::-webkit-scrollbar { display: none; }
-.ts-lb-v9-frame {
-  flex-shrink: 0;
-  width: 75vw; max-width: 320px;
-  scroll-snap-align: center;
+
+/* 캐러셀 컨테이너 */
+.ts-lb-v9-carousel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  width: 100%;
   overflow: hidden;
+  gap: 6px;
+  padding: 0;
+  touch-action: pan-x;
 }
-.ts-lb-v9-frame img {
+
+/* 양옆 미리보기 */
+/* 양옆: 중앙 사진과 동일 크기, 대부분 화면 밖으로 잘림 */
+.ts-lb-v9-side {
+  flex-shrink: 0;
+  width: 80%;
+  overflow: hidden;
+  opacity: 0.3;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.ts-lb-v9-side:hover { opacity: 0.5; }
+.ts-lb-v9-side img {
   width: 100%; display: block;
 }
+.ts-lb-v9-side--prev { margin-left: -72%; }
+.ts-lb-v9-side--next { margin-right: -72%; }
+
+/* 현재 사진 */
+.ts-lb-v9-current {
+  flex-shrink: 0;
+  width: 80%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: opacity 0.35s cubic-bezier(0.2, 0.8, 0.3, 1),
+              transform 0.35s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+.ts-lb-v9-current img {
+  width: 100%; display: block;
+  border-radius: 4px;
+}
+
+/* V9 중앙: position relative로 오버레이 기준점 */
+.ts-lb-v9-current {
+  position: relative;
+}
+
+/* V9 오버레이 — 기존 사진 위에 새 사진 페이드인 */
+.ts-lb-v9-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: contain;
+  border-radius: 4px;
+  animation: ts-lb-v9-fade-in 0.45s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+@keyframes ts-lb-v9-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* 양옆 미리보기도 부드럽게 교체 */
+.ts-lb-v9-side img {
+  transition: opacity 0.35s ease;
+}
+
 .ts-lb--v9 .ts-lb-counter {
   bottom: 32px;
-  color: rgba(255,255,255,0.35);
+  color: rgba(0,0,0,0.3);
+  pointer-events: none;
 }
 
 /* ---------- Scroll Hint (인트로 하단 스크롤 유도) ---------- */

@@ -1775,16 +1775,31 @@ function RsvpModal({
     }
   }, [name, attendance, count, mealAttendance, shuttleBus, message, invitationId, submitting, onClose, showMealOption, showShuttleOption])
 
+  const [closing, setClosing] = useState(false)
+
+  const handleClose = useCallback(() => {
+    setClosing(true)
+    setTimeout(() => {
+      setClosing(false)
+      onClose()
+    }, 350)
+  }, [onClose])
+
   if (!open) return null
 
   return (
     <div
       ref={overlayRef}
-      className="ts-rsvp-modal-overlay"
-      onClick={(e) => { if (e.target === overlayRef.current) onClose() }}
+      className={`ts-rsvp-modal-overlay ${closing ? 'ts-rsvp-modal-overlay--closing' : ''}`}
+      onClick={(e) => { if (e.target === overlayRef.current) handleClose() }}
     >
-      <div ref={contentRef} className="ts-rsvp-modal">
-        <button type="button" className="ts-rsvp-modal-close" onClick={onClose}>
+      <div ref={contentRef} className={`ts-rsvp-modal ${closing ? 'ts-rsvp-modal--closing' : ''}`}>
+        {/* 드래그 핸들 */}
+        <div className="ts-rsvp-modal-handle" onClick={handleClose}>
+          <span />
+        </div>
+
+        <button type="button" className="ts-rsvp-modal-close" onClick={handleClose}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
           </svg>
@@ -1800,7 +1815,7 @@ function RsvpModal({
             </div>
           </div>
         ) : (
-          <>
+          <div className="ts-rsvp-modal-body">
             <div className="ts-rsvp-modal-title">참석 의사 전달</div>
             {rsvpNotice && (
               <p style={{
@@ -1904,7 +1919,7 @@ function RsvpModal({
             >
               {submitting ? '전송 중...' : '전송하기'}
             </button>
-          </>
+          </div>
         )}
       </div>
     </div>

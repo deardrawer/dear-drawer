@@ -788,9 +788,20 @@ function TheSimpleEditorContent() {
   }
 
   // 갤러리 이미지 업로드 (특정 섹션 인스턴스 대상)
+  const MAX_GALLERY_IMAGES = 30
+
   const handleGalleryUpload = async (instanceId: string, files: FileList | null) => {
     if (!files || files.length === 0) return
-    const fileArray = Array.from(files)
+    const current = data.galleries[instanceId] ?? []
+    const remaining = MAX_GALLERY_IMAGES - current.length
+    if (remaining <= 0) {
+      alert(`갤러리당 최대 ${MAX_GALLERY_IMAGES}장까지 업로드할 수 있습니다.`)
+      return
+    }
+    const fileArray = Array.from(files).slice(0, remaining)
+    if (fileArray.length < files.length) {
+      alert(`${MAX_GALLERY_IMAGES}장 제한으로 ${fileArray.length}장만 업로드됩니다.`)
+    }
     setUploadingCount((c) => c + fileArray.length)
     try {
       await uploadImages(fileArray, {
@@ -896,7 +907,14 @@ function TheSimpleEditorContent() {
   }
 
   // 새 갤러리 섹션 인스턴스 추가
+  const MAX_GALLERY_SECTIONS = 5
+
   const handleAddGallery = () => {
+    const galleryCount = data.sectionOrder.filter((id) => getSectionType(id) === 'gallery').length
+    if (galleryCount >= MAX_GALLERY_SECTIONS) {
+      alert(`갤러리 섹션은 최대 ${MAX_GALLERY_SECTIONS}개까지 추가할 수 있습니다.`)
+      return
+    }
     const newId = createSectionInstanceId('gallery')
     setData((prev) => {
       const order = [...prev.sectionOrder]
@@ -1911,11 +1929,11 @@ function TheSimpleEditorContent() {
                                   e.target.value = ''
                                 }}
                                 className="hidden"
-                                disabled={uploadingCount > 0}
+                                disabled={uploadingCount > 0 || images.length >= MAX_GALLERY_IMAGES}
                               />
                               <div
                                 className={`w-full border-2 border-dashed rounded-md px-4 py-3 text-center text-xs transition-colors cursor-pointer ${
-                                  uploadingCount > 0
+                                  uploadingCount > 0 || images.length >= MAX_GALLERY_IMAGES
                                     ? 'border-stone-300 bg-stone-50 text-stone-400 cursor-not-allowed'
                                     : 'border-stone-300 text-stone-500 hover:border-stone-500 hover:text-stone-700'
                                 }`}
@@ -1925,13 +1943,15 @@ function TheSimpleEditorContent() {
                                     <span className="animate-spin h-3 w-3 border-2 border-stone-400 border-t-transparent rounded-full" />
                                     업로드 중 · {uploadingCount}장
                                   </span>
+                                ) : images.length >= MAX_GALLERY_IMAGES ? (
+                                  <>최대 {MAX_GALLERY_IMAGES}장 도달</>
                                 ) : (
-                                  <>+ 사진 추가 (여러 장 선택 가능)</>
+                                  <>+ 사진 추가 ({images.length}/{MAX_GALLERY_IMAGES})</>
                                 )}
                               </div>
                             </label>
                             <p className="text-[10px] text-stone-400 leading-relaxed">
-                              JPG · PNG · WebP (최대 30MB)
+                              JPG · PNG · WebP (최대 30MB) · 갤러리당 {MAX_GALLERY_IMAGES}장
                             </p>
                             {/* 라이트박스 스타일 선택 */}
                             <div className="mt-3 pt-3 border-t border-stone-200 space-y-1.5">

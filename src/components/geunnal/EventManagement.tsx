@@ -24,6 +24,8 @@ interface EventManagementProps {
   onNotificationEdit?: () => void
   onLogout?: () => void
   onSessionExpired?: () => void
+  invitationSlug?: string | null
+  ogImage?: string
 }
 
 interface EventWithGuests {
@@ -89,6 +91,8 @@ export default function EventManagement({
   onNotificationEdit,
   onLogout,
   onSessionExpired,
+  invitationSlug,
+  ogImage,
 }: EventManagementProps) {
   const [eventsWithGuests, setEventsWithGuests] = useState<EventWithGuests[]>([])
   const [loading, setLoading] = useState(true)
@@ -283,12 +287,48 @@ export default function EventManagement({
               {groomName} & {brideName}
             </h1>
           </div>
-          <button
-            onClick={() => setShowSettings(true)}
-            className="p-1 -mr-1 text-[#9B8CC4] hover:text-[#8B75D0] transition-colors"
-          >
-            <Settings size={18} strokeWidth={1.5} />
-          </button>
+          <div className="flex items-center gap-1">
+            {invitationSlug && (
+              <button
+                onClick={() => {
+                  const invitationUrl = `https://invite.deardrawer.com/i/${invitationSlug}`
+                  const imageUrl = ogImage || 'https://invite.deardrawer.com/og-image.png'
+                  try {
+                    const win = window as unknown as { Kakao?: { isInitialized: () => boolean; Share: { sendDefault: (opts: Record<string, unknown>) => void } } }
+                    if (!win.Kakao?.isInitialized?.()) {
+                      navigator.clipboard.writeText(invitationUrl)
+                      alert('카카오톡 공유가 준비되지 않았습니다. 링크가 복사되었습니다.')
+                      return
+                    }
+                    win.Kakao.Share.sendDefault({
+                      objectType: 'feed',
+                      content: {
+                        title: `${groomName} ❤️ ${brideName}의 결혼식에 초대합니다`,
+                        description: weddingDate ? formatDate(weddingDate) : '모바일 청첩장을 확인해주세요',
+                        imageUrl,
+                        link: { mobileWebUrl: invitationUrl, webUrl: invitationUrl },
+                      },
+                      buttons: [
+                        { title: '모바일 청첩장 보기', link: { mobileWebUrl: invitationUrl, webUrl: invitationUrl } },
+                      ],
+                    })
+                  } catch {
+                    navigator.clipboard.writeText(invitationUrl)
+                    alert('카카오톡 공유에 실패했습니다. 링크가 복사되었습니다.')
+                  }
+                }}
+                className="p-1 text-[#9B8CC4] hover:text-[#8B75D0] transition-colors"
+              >
+                <MessageCircle size={18} strokeWidth={1.5} />
+              </button>
+            )}
+            <button
+              onClick={() => setShowSettings(true)}
+              className="p-1 -mr-1 text-[#9B8CC4] hover:text-[#8B75D0] transition-colors"
+            >
+              <Settings size={18} strokeWidth={1.5} />
+            </button>
+          </div>
         </div>
         <div className="flex items-center justify-between mt-0.5">
           {weddingDate ? (

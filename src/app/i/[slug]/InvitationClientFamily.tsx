@@ -1195,6 +1195,92 @@ function AnimatedSection({ children, className, style, delay = 0 }: {
   )
 }
 
+// Staggered Gallery Section (Family) - each photo fades in sequentially
+function StaggeredGallerySectionFamily({ invitation, themeColors, showAllGallery, onShowAllGallery, onOpenLightbox }: {
+  invitation: any
+  themeColors: ColorConfig
+  showAllGallery: boolean
+  onShowAllGallery: () => void
+  onOpenLightbox?: (index: number) => void
+}) {
+  const { ref, isVisible } = useScrollAnimation()
+  const [expandedVisible, setExpandedVisible] = useState(false)
+  const allImages = invitation.gallery?.images || []
+  const hasMore = allImages.length > 6 && !showAllGallery
+  const visibleImages = hasMore ? allImages.slice(0, 6) : allImages
+
+  useEffect(() => {
+    if (showAllGallery) {
+      setExpandedVisible(false)
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setExpandedVisible(true))
+      })
+    }
+  }, [showAllGallery])
+
+  return (
+    <div ref={ref} className="px-5 py-10" style={{ background: themeColors.sectionBg }}>
+      {allImages.length > 0 ? (
+        <>
+          <div className="grid grid-cols-2 gap-2">
+            {visibleImages.map((img: string, i: number) => {
+              const imgSettings = invitation.gallery?.imageSettings?.[i] || { scale: 1, positionX: 0, positionY: 0 }
+              const isExpanded = i >= 6
+              const show = isExpanded ? expandedVisible : isVisible
+              const delay = isExpanded ? (i - 6) * 0.1 : i * 0.1
+              return (
+                <div
+                  key={i}
+                  className="relative aspect-square overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform"
+                  style={{
+                    opacity: show ? 1 : 0,
+                    transform: show ? 'translateY(0)' : 'translateY(20px)',
+                    transition: `opacity 0.6s ease ${delay}s, transform 0.6s ease ${delay}s`,
+                  }}
+                  onClick={() => onOpenLightbox?.(i)}
+                >
+                  {img ? (
+                    <CroppedImageDiv src={img} crop={imgSettings} className="w-full h-full" />
+                  ) : (
+                    <div className="w-full h-full bg-gray-100" />
+                  )}
+                  {hasMore && i === 5 && (
+                    <div
+                      className="absolute inset-0 bg-black/40 flex items-center justify-center cursor-pointer"
+                      onClick={(e) => { e.stopPropagation(); onShowAllGallery() }}
+                    >
+                      <span className="text-white text-lg font-light">+{allImages.length - 6}</span>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+          {hasMore && (
+            <button
+              onClick={onShowAllGallery}
+              className="w-full mt-3 py-3 text-center transition-colors hover:opacity-80"
+              style={{ border: `1px solid ${themeColors.divider}`, background: themeColors.sectionBg }}
+            >
+              <span style={{ fontSize: '13px', color: themeColors.text }}>
+                +{allImages.length - 6}장 더 보기
+              </span>
+            </button>
+          )}
+        </>
+      ) : (
+        <div className="grid grid-cols-2 gap-2">
+          {[1, 2, 3, 4, 5, 6].map(i => (
+            <div key={i} className="aspect-square bg-gray-100 flex items-center justify-center">
+              <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // Gallery Lightbox Component - Infinite Loop
 function GalleryLightbox({
   images,
@@ -1212,10 +1298,20 @@ function GalleryLightbox({
   const slidesRef = useRef<HTMLDivElement>(null)
   const touchStartX = useRef(0)
 
-  // Reset to initial index when opening
+  // Reset to initial index when opening (no transition to jump instantly)
   useEffect(() => {
     if (isOpen) {
+      if (slidesRef.current) {
+        slidesRef.current.style.transition = 'none'
+      }
       setCurrentIndex(initialIndex + 1)
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (slidesRef.current) {
+            slidesRef.current.style.transition = ''
+          }
+        })
+      })
       document.body.classList.add('lightbox-open')
     } else {
       document.body.classList.remove('lightbox-open')
@@ -3583,62 +3679,13 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
       )}
 
       {/* Gallery Section */}
-      <AnimatedSection className="px-5 py-10" style={{ background: themeColors.sectionBg }}>
-        {invitation.gallery.images && invitation.gallery.images.length > 0 ? (() => {
-          const allImages = invitation.gallery.images
-          const hasMore = allImages.length > 6 && !showAllGallery
-          const visibleImages = hasMore ? allImages.slice(0, 6) : allImages
-          return (
-            <>
-              <div className="grid grid-cols-2 gap-2">
-                {visibleImages.map((img, i) => {
-                  const imgSettings = (invitation.gallery as any).imageSettings?.[i] || { scale: 1, positionX: 0, positionY: 0 }
-                  return (
-                    <div
-                      key={i}
-                      className="relative aspect-square overflow-hidden cursor-pointer transition-transform hover:scale-[1.02]"
-                      onClick={() => onOpenLightbox?.(i)}
-                    >
-                      {img ? (
-                        <CroppedImageDiv src={img} crop={imgSettings} className="w-full h-full" />
-                      ) : (
-                        <div className="w-full h-full bg-gray-100" />
-                      )}
-                      {hasMore && i === 5 && (
-                        <div
-                          className="absolute inset-0 bg-black/40 flex items-center justify-center cursor-pointer"
-                          onClick={(e) => { e.stopPropagation(); setShowAllGallery(true) }}
-                        >
-                          <span className="text-white text-lg font-light">+{allImages.length - 6}</span>
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-              {hasMore && (
-                <button
-                  onClick={() => setShowAllGallery(true)}
-                  className="w-full mt-3 py-3 text-center transition-colors hover:opacity-80"
-                  style={{ border: `1px solid ${themeColors.divider}`, background: themeColors.sectionBg }}
-                >
-                  <span style={{ fontSize: '13px', color: themeColors.text }}>
-                    +{allImages.length - 6}장 더 보기
-                  </span>
-                </button>
-              )}
-            </>
-          )
-        })() : (
-          <div className="grid grid-cols-2 gap-2">
-            {[1, 2, 3, 4, 5, 6].map(i => (
-              <div key={i} className="aspect-square bg-gray-100 flex items-center justify-center">
-                <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-              </div>
-            ))}
-          </div>
-        )}
-      </AnimatedSection>
+      <StaggeredGallerySectionFamily
+        invitation={invitation}
+        themeColors={themeColors}
+        showAllGallery={showAllGallery}
+        onShowAllGallery={() => setShowAllGallery(true)}
+        onOpenLightbox={onOpenLightbox}
+      />
 
       {/* YouTube Section - FAMILY */}
       <YouTubeLiteSectionFamily youtube={(invitation as any).youtube} themeColors={themeColors} sectionBg={themeColors.sectionBg} />

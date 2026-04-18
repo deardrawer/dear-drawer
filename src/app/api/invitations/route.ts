@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken, getAuthCookieName } from "@/lib/auth";
 import { createInvitation, getInvitationsByUserId } from "@/lib/db";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import type { InvitationInput } from "@/types/invitation";
 
 // 사용자 청첩장 목록 조회
@@ -20,7 +21,34 @@ export async function GET(request: NextRequest) {
 
     const invitations = await getInvitationsByUserId(payload.user.id);
 
-    return NextResponse.json({ invitations });
+    // Check which invitations have geunnal pages
+    const paidIds = invitations.filter(inv => inv.is_paid).map(inv => inv.id);
+    const geunnalSet = new Set<string>();
+
+    if (paidIds.length > 0) {
+      try {
+        const { env } = await getCloudflareContext() as { env: { DB?: import("@cloudflare/workers-types").D1Database } };
+        if (env.DB) {
+          const placeholders = paidIds.map(() => '?').join(',');
+          const result = await env.DB
+            .prepare(`SELECT invitation_id FROM geunnal_pages WHERE invitation_id IN (${placeholders})`)
+            .bind(...paidIds)
+            .all<{ invitation_id: string }>();
+          for (const row of result.results || []) {
+            geunnalSet.add(row.invitation_id);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to check geunnal pages:", e);
+      }
+    }
+
+    const invitationsWithGeunnal = invitations.map(inv => ({
+      ...inv,
+      has_geunnal: geunnalSet.has(inv.id) ? 1 : 0,
+    }));
+
+    return NextResponse.json({ invitations: invitationsWithGeunnal });
   } catch (error) {
     console.error("Get invitations error:", error);
     return NextResponse.json(

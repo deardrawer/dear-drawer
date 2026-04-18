@@ -71,6 +71,7 @@ export default function AdminPage() {
   // Payments state
   const [paymentRequests, setPaymentRequests] = useState<PaymentRequest[]>([])
   const [processingPayment, setProcessingPayment] = useState<string | null>(null)
+  const [geunnalToggle, setGeunnalToggle] = useState<Record<string, boolean>>({})
 
   // Geunnal state
   const [geunnalPages, setGeunnalPages] = useState<GeunnalPageItem[]>([])
@@ -171,7 +172,18 @@ export default function AdminPage() {
       const res = await fetch('/api/admin/payment-requests')
       if (res.ok) {
         const data = await res.json() as { requests?: PaymentRequest[] }
-        setPaymentRequests(data.requests || [])
+        const requests = data.requests || []
+        setPaymentRequests(requests)
+        // Initialize geunnal toggle for new pending requests (default: ON)
+        setGeunnalToggle(prev => {
+          const next = { ...prev }
+          for (const req of requests) {
+            if (req.status === 'pending' && !(req.id in next)) {
+              next[req.id] = true
+            }
+          }
+          return next
+        })
       }
     } catch (err) {
       console.error('Failed to fetch payments:', err)
@@ -186,7 +198,7 @@ export default function AdminPage() {
       const res = await fetch('/api/admin/approve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ requestId }),
+        body: JSON.stringify({ requestId, createGeunnal: geunnalToggle[requestId] ?? true }),
       })
 
       if (res.ok) {
@@ -720,23 +732,34 @@ export default function AdminPage() {
                             접수일: {new Date(req.created_at).toLocaleString('ko-KR')}
                           </p>
                         </div>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleReject(req.id)}
-                            disabled={processingPayment === req.id}
-                            className="px-4 py-2 rounded-lg text-sm font-medium border disabled:opacity-50"
-                            style={{ borderColor: '#E8E4DD', color: '#666' }}
-                          >
-                            거절
-                          </button>
-                          <button
-                            onClick={() => handleApprove(req.id)}
-                            disabled={processingPayment === req.id}
-                            className="px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-50"
-                            style={{ backgroundColor: '#C9A962' }}
-                          >
-                            {processingPayment === req.id ? '처리중...' : '승인'}
-                          </button>
+                        <div className="flex flex-col items-end gap-2">
+                          <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                            <input
+                              type="checkbox"
+                              checked={geunnalToggle[req.id] ?? true}
+                              onChange={(e) => setGeunnalToggle(prev => ({ ...prev, [req.id]: e.target.checked }))}
+                              className="w-4 h-4 rounded accent-purple-500"
+                            />
+                            <span className="text-xs font-medium" style={{ color: '#8B75D0' }}>데이드로어</span>
+                          </label>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleReject(req.id)}
+                              disabled={processingPayment === req.id}
+                              className="px-4 py-2 rounded-lg text-sm font-medium border disabled:opacity-50"
+                              style={{ borderColor: '#E8E4DD', color: '#666' }}
+                            >
+                              거절
+                            </button>
+                            <button
+                              onClick={() => handleApprove(req.id)}
+                              disabled={processingPayment === req.id}
+                              className="px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-50"
+                              style={{ backgroundColor: '#C9A962' }}
+                            >
+                              {processingPayment === req.id ? '처리중...' : '승인'}
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>

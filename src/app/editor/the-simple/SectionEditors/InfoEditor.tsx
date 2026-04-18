@@ -53,6 +53,50 @@ export default function InfoEditor({ value, onChange }: InfoEditorProps) {
           />
         </label>
       </div>
+      {/* D-Day 카운트다운 옵션 */}
+      <label className="flex items-center gap-2 cursor-pointer pt-1">
+        <input
+          type="checkbox"
+          checked={value.showCountdown ?? false}
+          onChange={(e) => update({ showCountdown: e.target.checked })}
+          className="rounded border-stone-300"
+        />
+        <span className="text-[10px] uppercase tracking-wider text-stone-500">D-Day 카운트다운</span>
+      </label>
+      {value.showCountdown && (
+        <div className="space-y-2 pl-0.5">
+          <label className="block">
+            <span className="text-[10px] text-stone-400">결혼식 전 문구 <span className="text-stone-300">({'{d}'} = 남은 일수)</span></span>
+            <input
+              type="text"
+              value={value.countdownBeforeMsg ?? ''}
+              onChange={(e) => update({ countdownBeforeMsg: e.target.value })}
+              placeholder="결혼식이 {d}일 남았습니다."
+              className="mt-0.5 w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white"
+            />
+          </label>
+          <label className="block">
+            <span className="text-[10px] text-stone-400">결혼식 당일 문구</span>
+            <input
+              type="text"
+              value={value.countdownTodayMsg ?? ''}
+              onChange={(e) => update({ countdownTodayMsg: e.target.value })}
+              placeholder="오늘 결혼합니다."
+              className="mt-0.5 w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white"
+            />
+          </label>
+          <label className="block">
+            <span className="text-[10px] text-stone-400">결혼식 후 문구</span>
+            <input
+              type="text"
+              value={value.countdownAfterMsg ?? ''}
+              onChange={(e) => update({ countdownAfterMsg: e.target.value })}
+              placeholder="행복하고 따뜻하게 살겠습니다."
+              className="mt-0.5 w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white"
+            />
+          </label>
+        </div>
+      )}
     </div>
   )
 }

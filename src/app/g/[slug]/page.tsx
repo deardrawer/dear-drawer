@@ -25,8 +25,9 @@ export default async function GeunnalPage({ params }: PageProps) {
     notFound();
   }
 
-  // Get invitation OG image
+  // Get invitation OG image and slug
   let ogImage = 'https://invite.deardrawer.com/og-image.png'
+  let invitationSlug: string | null = null
   if (page.invitation_id) {
     try {
       const invitation = await getInvitationById(page.invitation_id)
@@ -34,6 +35,9 @@ export default async function GeunnalPage({ params }: PageProps) {
         ogImage = invitation.main_image.startsWith('https://')
           ? invitation.main_image
           : `https://invite.deardrawer.com${invitation.main_image}`
+      }
+      if (invitation?.slug) {
+        invitationSlug = invitation.slug
       }
     } catch { /* fallback to default */ }
   }
@@ -50,6 +54,7 @@ export default async function GeunnalPage({ params }: PageProps) {
       venueAddress={page.venue_address}
       hasPassword={!!page.password_hash}
       ogImage={ogImage}
+      invitationSlug={invitationSlug}
     />
   );
 }

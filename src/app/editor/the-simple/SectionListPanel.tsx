@@ -49,8 +49,14 @@ export const SECTION_META: Record<string, SectionMetaItem> = {
   couple: {
     label: '커플 소개',
     variantCount: 5,
-    optional: false,
+    optional: true,
     variantLabels: { 1: '클래식', 2: '포트레이트', 3: '오버랩', 4: '카드', 5: '좌우분할' },
+  },
+  family: {
+    label: '커플소개2 + 연락하기',
+    variantCount: 3,
+    optional: true,
+    variantLabels: { 1: '클래식', 2: '카드', 3: '가로사진' },
   },
   info: {
     label: '예식 정보',

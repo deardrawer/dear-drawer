@@ -1661,6 +1661,133 @@
   transition: transform 0.08s ease-out;
 }
 
+/* ---------- LiveCountdown 공통 ---------- */
+.ts-preview .ts-countdown-inline {
+  text-align: center;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+.ts-preview .ts-live-countdown { text-align: center; }
+.ts-preview .ts-lcd-labels {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 6px;
+}
+.ts-preview .ts-lcd-labels span {
+  font-family: var(--font-display);
+  font-size: calc(9px * var(--ts-font-scale, 1));
+  letter-spacing: 0.15em;
+  color: var(--mute);
+  text-transform: uppercase;
+  width: 56px;
+  text-align: center;
+}
+.ts-preview .ts-lcd-digits {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 0;
+  margin-bottom: 14px;
+}
+.ts-preview .ts-lcd-num {
+  font-family: var(--font-ko);
+  font-size: calc(28px * var(--ts-font-scale, 1));
+  font-weight: 300;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+  width: 56px;
+  text-align: center;
+  line-height: 1;
+}
+.ts-preview .ts-lcd-sep {
+  font-family: var(--font-ko);
+  font-size: calc(20px * var(--ts-font-scale, 1));
+  color: var(--mute);
+  font-weight: 300;
+  line-height: 1;
+  margin: 0 -2px;
+}
+.ts-preview .ts-lcd-msg {
+  font-family: var(--font-ko);
+  font-size: calc(12px * var(--ts-font-scale, 1));
+  color: var(--ink-2, #2c2c2c);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* --- V1 · Calendar: 심플, 얇은 구분선 --- */
+.ts-preview .ts-cd-v1 { margin-top: 22px; padding-top: 22px; }
+
+/* --- V2 · Big Date: 숫자 굵고 크게, display 폰트 --- */
+.ts-preview .ts-cd-v2 { margin-top: 28px; padding-top: 28px; }
+.ts-preview .ts-cd-v2 .ts-lcd-num {
+  font-family: var(--font-display);
+  font-size: calc(34px * var(--ts-font-scale, 1));
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+.ts-preview .ts-cd-v2 .ts-lcd-sep {
+  font-size: calc(24px * var(--ts-font-scale, 1));
+}
+.ts-preview .ts-cd-v2 .ts-lcd-labels span {
+  width: 60px;
+}
+
+/* --- V3 · Week Strip: 컴팩트, 숫자 작게 --- */
+.ts-preview .ts-cd-v3 { margin-top: 20px; padding-top: 20px; }
+.ts-preview .ts-cd-v3 .ts-lcd-num {
+  font-size: calc(22px * var(--ts-font-scale, 1));
+  width: 46px;
+}
+.ts-preview .ts-cd-v3 .ts-lcd-sep {
+  font-size: calc(16px * var(--ts-font-scale, 1));
+}
+.ts-preview .ts-cd-v3 .ts-lcd-labels span {
+  font-size: calc(8px * var(--ts-font-scale, 1));
+  width: 46px;
+}
+.ts-preview .ts-cd-v3 .ts-lcd-digits { margin-bottom: 10px; }
+
+/* --- V4 · Ticket: 티켓 아래, 구분선 없이 여백만 --- */
+.ts-preview .ts-cd-v4 {
+  border-top: none;
+  margin-top: 20px;
+  padding-top: 0;
+}
+.ts-preview .ts-cd-v4 .ts-lcd-num {
+  font-family: var(--font-display);
+  font-size: calc(26px * var(--ts-font-scale, 1));
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  width: 52px;
+}
+.ts-preview .ts-cd-v4 .ts-lcd-sep {
+  font-size: calc(18px * var(--ts-font-scale, 1));
+}
+.ts-preview .ts-cd-v4 .ts-lcd-labels span {
+  font-size: calc(8px * var(--ts-font-scale, 1));
+  letter-spacing: 0.2em;
+  width: 52px;
+}
+
+/* --- V5 · Countdown Hero: 기존 톤에 맞게 --- */
+.ts-preview .ts-cd-v5 {
+  margin-top: 20px;
+  padding-top: 20px;
+}
+.ts-preview .ts-cd-v5 .ts-lcd-num {
+  font-size: calc(24px * var(--ts-font-scale, 1));
+  width: 50px;
+}
+.ts-preview .ts-cd-v5 .ts-lcd-sep {
+  font-size: calc(17px * var(--ts-font-scale, 1));
+}
+.ts-preview .ts-cd-v5 .ts-lcd-labels span {
+  width: 50px;
+}
+
 /* ---------- Direction ---------- */
 .ts-preview .ts-dir {
   text-align: center;
@@ -2959,6 +3086,23 @@
 .ts-preview .ts-anim-info-v5.in-view .ts-i5-row:nth-child(3) { animation: tsSlideRight 0.5s var(--ts-ease) 2240ms both; }
 .ts-preview .ts-anim-info-v5.in-view .ts-i5-row:nth-child(4) { animation: tsSlideRight 0.5s var(--ts-ease) 2320ms both; }
 
+/* ---- Countdown Inline (V1~V4 공용) ---- */
+/* 초기 숨김 */
+.ts-preview .ts-countdown-inline.ts-anim-item {
+  opacity: 0;
+  transform: translateY(8px);
+}
+/* V1: 캘린더 뒤에 등장 */
+.ts-preview .ts-anim-info-v1.in-view .ts-countdown-inline.ts-anim-item { animation: tsFadeUp 0.8s var(--ts-ease) 1500ms both; }
+/* V2: 메타 정보 뒤에 등장 */
+.ts-preview .ts-anim-info-v2.in-view .ts-countdown-inline.ts-anim-item { animation: tsFadeUp 0.8s var(--ts-ease) 1000ms both; }
+/* V3: 요일스트립 뒤에 등장 */
+.ts-preview .ts-anim-info-v3.in-view .ts-countdown-inline.ts-anim-item { animation: tsFadeUp 0.8s var(--ts-ease) 1600ms both; }
+/* V4: 티켓 아래 등장 */
+.ts-preview .ts-anim-info-v4.in-view .ts-countdown-inline.ts-anim-item { animation: tsFadeUp 0.8s var(--ts-ease) 1000ms both; }
+/* V5: 마지막 row(2320ms+500ms) 끝난 뒤 등장 */
+.ts-preview .ts-anim-info-v5.in-view .ts-countdown-inline.ts-anim-item { animation: tsFadeUp 0.8s var(--ts-ease) 3000ms both; }
+
 /* ---------- DIRECTION ---------- */
 /* V1 · Map Card: name fade → map kenburns → addr fade-up */
 .ts-preview .ts-anim-dir-v1 .ts-anim-item { opacity: 0; transform: translateY(8px); }
@@ -3445,7 +3589,7 @@
   left: 0;
   right: 0;
   text-align: center;
-  font-family: var(--font-display, 'Cormorant Garamond', serif);
+  font-family: var(--font-body, sans-serif);
   font-size: 11px;
   letter-spacing: 0.25em;
   color: rgba(255, 255, 255, 0.35);
@@ -3469,4 +3613,594 @@
   margin-top: -0.5px;
   background: rgba(255, 255, 255, 0.5);
   transition: width 0.4s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+/* ==========================================================================
+   Lightbox Variant 2 — 글라스모피즘
+   ========================================================================== */
+.ts-lb--v2 {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+.ts-lb-v2-close {
+  position: absolute; top: 16px; right: 16px; z-index: 3;
+  color: rgba(255,255,255,0.7); font-size: 22px;
+}
+.ts-lb-v2-wrap { padding: 40px 20px 80px; }
+.ts-lb-v2-img {
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 8px 20px rgba(0,0,0,0.3);
+}
+.ts-lb-v2-dots {
+  position: absolute; bottom: 32px; left: 0; right: 0;
+  display: flex; justify-content: center; gap: 8px;
+  z-index: 2;
+}
+.ts-lb-v2-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  cursor: pointer;
+  transition: background 0.3s, transform 0.3s;
+}
+.ts-lb-v2-dot--active {
+  background: rgba(255,255,255,0.9);
+  transform: scale(1.3);
+}
+
+/* ==========================================================================
+   Lightbox Variant 4 — 룩북 스크롤
+   ========================================================================== */
+.ts-lb--v4 {
+  background: #fff;
+  background-image: none;
+  align-items: stretch;
+  justify-content: flex-start;
+}
+.ts-lb-v4-close {
+  position: fixed; top: 16px; right: 16px; z-index: 10;
+  background: rgba(0,0,0,0.5); color: #fff;
+  border: none; width: 36px; height: 36px; border-radius: 50%;
+  font-size: 20px; cursor: pointer; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(8px);
+}
+.ts-lb-v4-scroll {
+  width: 100%; height: 100%;
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding: 0;
+}
+.ts-lb-v4-img {
+  width: 100%; display: block;
+}
+
+/* ==========================================================================
+   Lightbox Variant 5 — 시네마틱 페이드
+   ========================================================================== */
+.ts-lb--v5 {
+  background: #000;
+  background-image: none;
+}
+.ts-lb-v5-wrap { padding: 0; }
+.ts-lb-v5-img {
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.ts-lb-img--fade-out {
+  opacity: 0; transform: scale(0.96);
+}
+.ts-lb-img--fade-in {
+  opacity: 0; transform: scale(1.04);
+  animation: ts-lb-fade-in 0.5s ease forwards;
+}
+@keyframes ts-lb-fade-in {
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ==========================================================================
+   Lightbox Variant 6 — 미니멀 화이트
+   ========================================================================== */
+.ts-lb--v6 {
+  background: #fff;
+  background-image: none;
+}
+.ts-lb-v6-close {
+  position: absolute; top: 16px; right: 16px; z-index: 3;
+  color: rgba(0,0,0,0.35); font-size: 22px;
+}
+.ts-lb-v6-wrap {
+  padding: 60px 48px 60px;
+  position: relative;
+}
+.ts-lb-v6-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  background: none; border: none;
+  font-size: 32px; color: rgba(0,0,0,0.2);
+  cursor: pointer; padding: 8px;
+  transition: color 0.2s;
+  z-index: 2;
+}
+.ts-lb-v6-arrow:hover { color: rgba(0,0,0,0.5); }
+.ts-lb-v6-arrow--prev { left: 8px; }
+.ts-lb-v6-arrow--next { right: 8px; }
+.ts-lb-v6-counter {
+  position: absolute; bottom: 24px; left: 0; right: 0;
+  text-align: center;
+  font-family: var(--font-body, sans-serif);
+  font-size: 11px; letter-spacing: 0.2em;
+  color: rgba(0,0,0,0.25); font-weight: 400;
+  pointer-events: none;
+}
+.ts-lb--v6 .ts-lb-img {
+  max-width: 100%; max-height: 100%; object-fit: contain;
+}
+
+/* ==========================================================================
+   Lightbox Variant 7 — 매거진 (썸네일 스트립)
+   ========================================================================== */
+.ts-lb--v7 {
+  background: #000;
+  background-image: none;
+}
+.ts-lb-v7-close {
+  position: absolute; top: 16px; right: 16px; z-index: 3;
+  color: rgba(255,255,255,0.5); font-size: 22px;
+}
+.ts-lb-v7-wrap {
+  flex: 1; padding: 40px 48px 0; position: relative;
+}
+.ts-lb-v7-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  background: none; border: none;
+  font-size: 36px; color: rgba(255,255,255,0.3);
+  cursor: pointer; padding: 8px;
+  transition: color 0.2s; z-index: 2;
+}
+.ts-lb-v7-arrow:hover { color: rgba(255,255,255,0.7); }
+.ts-lb-v7-arrow--prev { left: 4px; }
+.ts-lb-v7-arrow--next { right: 4px; }
+.ts-lb-v7-thumbs {
+  display: flex; gap: 4px; overflow-x: auto;
+  padding: 12px 16px 20px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.ts-lb-v7-thumbs::-webkit-scrollbar { display: none; }
+.ts-lb-v7-thumb {
+  flex-shrink: 0; width: 48px; height: 48px;
+  border-radius: 4px; overflow: hidden;
+  cursor: pointer; opacity: 0.4;
+  border: 2px solid transparent;
+  transition: opacity 0.2s, border-color 0.2s;
+}
+.ts-lb-v7-thumb img {
+  width: 100%; height: 100%; object-fit: cover;
+}
+.ts-lb-v7-thumb--active {
+  opacity: 1; border-color: rgba(255,255,255,0.8);
+}
+
+/* ==========================================================================
+   Lightbox Variant 9 — 필름 스트립
+   ========================================================================== */
+.ts-lb--v9 {
+  background: #000;
+  background-image: none;
+}
+.ts-lb-v9-close {
+  position: absolute; top: 16px; right: 16px; z-index: 3;
+  color: rgba(255,255,255,0.5);
+}
+.ts-lb-v9-sprocket { display: none; }
+.ts-lb-v9-strip {
+  display: flex; align-items: center;
+  height: 100%; overflow-x: auto;
+  gap: 12px; padding: 32px 24px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.ts-lb-v9-strip::-webkit-scrollbar { display: none; }
+.ts-lb-v9-frame {
+  flex-shrink: 0;
+  width: 75vw; max-width: 320px;
+  scroll-snap-align: center;
+  overflow: hidden;
+}
+.ts-lb-v9-frame img {
+  width: 100%; display: block;
+}
+.ts-lb--v9 .ts-lb-counter {
+  bottom: 32px;
+  color: rgba(255,255,255,0.35);
+}
+
+/* ---------- Scroll Hint (인트로 하단 스크롤 유도) ---------- */
+.ts-preview .ts-scroll-hint {
+  position: absolute;
+  bottom: 56px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  color: #fff;
+  opacity: 0;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.4));
+}
+
+.ts-preview .ts-scroll-hint-label {
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  opacity: 0.8;
+}
+
+/* ==========================================================================
+   가족 소개 (Family) 섹션
+   ========================================================================== */
+
+/* ── 공통 ── */
+.ts-preview .ts-fam { text-align: center; }
+.ts-preview .ts-fam-photo {
+  overflow: hidden;
+  position: relative;
+  margin: 0 auto 24px;
+}
+.ts-preview .ts-fam-photo--portrait {
+  width: 70%; aspect-ratio: 3/4; border-radius: 4px;
+}
+.ts-preview .ts-fam-photo--landscape {
+  width: 100%; aspect-ratio: 16/9;
+  margin-top: 20px;
+}
+.ts-preview .ts-fam-parents {
+  font-family: var(--font-ko);
+  font-size: calc(13px * var(--ts-font-scale, 1));
+  color: var(--ink);
+  letter-spacing: 0.02em;
+}
+.ts-preview .ts-fam-dot { opacity: 0.4; }
+.ts-preview .ts-fam-relation { opacity: 0.6; font-size: calc(12px * var(--ts-font-scale, 1)); }
+.ts-preview .ts-fam-line { display: block; }
+.ts-preview .ts-fam-child {
+  font-family: var(--font-display);
+  font-size: calc(16px * var(--ts-font-scale, 1));
+  font-weight: 500;
+  display: block;
+  margin-top: 2px;
+}
+.ts-preview .ts-fam-deceased {
+  font-size: calc(11px * var(--ts-font-scale, 1));
+  opacity: 0.6;
+  margin-right: 2px;
+}
+.ts-preview .ts-fam-chrysanthemum {
+  display: inline;
+  width: 12px; height: 12px;
+  margin-right: 2px;
+  opacity: 0.6;
+  vertical-align: middle;
+  margin-top: -2px;
+}
+.ts-preview .ts-fcs-wrap { margin-top: 28px; text-align: center; }
+.ts-preview .ts-fam-contact-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-ko);
+  font-size: calc(13px * var(--ts-font-scale, 1));
+  color: var(--ink); background: var(--bg-2);
+  border: 1px solid var(--bg-2);
+  border-radius: 24px; padding: 8px 28px;
+  cursor: pointer; letter-spacing: 0.04em;
+  transition: background 0.2s, border-color 0.2s;
+}
+.ts-preview .ts-fam-contact-btn:hover {
+  background: var(--bg-2); border-color: var(--mute-2);
+}
+/* V1 네모 버튼 */
+.ts-preview .ts-fam--v1 .ts-fam-contact-btn {
+  border-radius: 4px; width: 100%; justify-content: center;
+  padding: 12px 28px;
+}
+.ts-preview .ts-fam-contact-chevron {
+  transition: transform 0.25s ease;
+}
+.ts-preview .ts-fam-contact-chevron--open {
+  transform: rotate(180deg);
+}
+.ts-preview .ts-fam-contact-icon {
+  opacity: 0.5; margin-right: 2px;
+}
+
+/* ── 연락처 인라인 패널 ── */
+.ts-preview .ts-fcs-panel {
+  margin-top: 16px; text-align: left;
+  animation: tsFadeUp 300ms ease both;
+}
+.ts-fcs-group { margin-bottom: 16px; }
+.ts-fcs-group:last-child { margin-bottom: 0; }
+
+/* V1 리스트 — 오시는 길 스타일 */
+.ts-preview .ts-fcs-v1-group {
+  font-family: var(--font-display);
+  font-size: 10px; letter-spacing: 0.15em;
+  color: var(--accent); padding: 12px 0 4px;
+  border-top: 1px solid var(--line);
+}
+.ts-preview .ts-fcs-v1-group:first-child { border-top: none; }
+.ts-preview .ts-fcs-v1-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.ts-preview .ts-fcs-v1-item:last-child { border-bottom: none; }
+.ts-preview .ts-fcs-v1-icon {
+  flex-shrink: 0; color: var(--accent); opacity: 0.6;
+}
+.ts-preview .ts-fcs-v1-info { flex: 1; min-width: 0; }
+.ts-preview .ts-fcs-v1-label {
+  font-family: var(--font-display);
+  font-size: 10px; letter-spacing: 0.12em;
+  color: var(--accent); margin-bottom: 1px;
+}
+.ts-preview .ts-fcs-v1-name {
+  font-family: var(--font-ko);
+  font-size: 12px; color: var(--mute); line-height: 1.5;
+}
+.ts-fcs-label {
+  font-family: var(--font-ko);
+  font-size: 13px; font-weight: 600;
+  margin-bottom: 10px; color: var(--ink);
+  display: flex; align-items: center; gap: 6px;
+}
+.ts-fcs-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  display: inline-block; background: var(--ink); opacity: 0.4;
+}
+.ts-fcs-row {
+  display: flex; align-items: center; justify-content: space-between;
+  border-radius: 10px; padding: 12px 14px;
+  margin-bottom: 6px; background: var(--bg-2);
+  border: 1px solid var(--line);
+}
+.ts-fcs-row:last-child { margin-bottom: 0; }
+.ts-fcs-info { display: flex; flex-direction: column; gap: 1px; }
+.ts-fcs-role {
+  font-family: var(--font-ko);
+  font-size: 13px; font-weight: 600; color: var(--ink);
+}
+.ts-fcs-name {
+  font-family: var(--font-ko);
+  font-size: 12px; color: var(--mute);
+}
+.ts-fcs-actions { display: flex; gap: 6px; }
+.ts-fcs-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: 50%;
+  text-decoration: none; transition: opacity 0.15s;
+  color: var(--ink); opacity: 0.45;
+  background: rgba(0,0,0,0.04);
+}
+.ts-fcs-btn:hover { opacity: 0.7; }
+
+/* ── V2 카드 — 좌우 2열 ── */
+.ts-preview .ts-fcs-panel--v2 { text-align: left; }
+.ts-preview .ts-fcs-simple-group {
+  margin-bottom: 12px;
+}
+.ts-preview .ts-fcs-simple-group:last-child { margin-bottom: 0; }
+.ts-preview .ts-fcs-simple-label {
+  font-family: var(--font-ko);
+  font-size: 10px; font-weight: 600; color: var(--mute);
+  letter-spacing: 0.06em;
+  padding-bottom: 6px;
+}
+.ts-preview .ts-fcs-simple-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.ts-preview .ts-fcs-simple-row:last-child { border-bottom: none; }
+.ts-preview .ts-fcs-simple-info {
+  display: flex; align-items: baseline; gap: 6px;
+}
+.ts-preview .ts-fcs-simple-name {
+  font-family: var(--font-display);
+  font-size: 14px; font-weight: 600; color: var(--ink);
+}
+.ts-preview .ts-fcs-simple-role {
+  font-family: var(--font-ko);
+  font-size: 11px; color: var(--mute);
+}
+.ts-preview .ts-fcs-actions-sm {
+  display: flex; justify-content: center; gap: 6px; margin-top: 10px;
+}
+.ts-preview .ts-fcs-btn-sm {
+  display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 50%;
+  text-decoration: none; transition: opacity 0.15s;
+  color: var(--ink); opacity: 0.35;
+  background: rgba(0,0,0,0.04);
+}
+.ts-preview .ts-fcs-btn-sm:hover { opacity: 0.65; }
+
+/* ── V3 좌우 2열 ── */
+.ts-preview .ts-fcs-panel--v3 { text-align: left; }
+.ts-preview .ts-fcs-grid3 {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 0; border-top: 1px solid var(--line);
+}
+.ts-preview .ts-fcs-col3 {
+  border-right: 1px solid var(--line);
+}
+.ts-preview .ts-fcs-col3:last-child { border-right: none; }
+.ts-preview .ts-fcs-row3 {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.ts-preview .ts-fcs-row3:last-child { border-bottom: none; }
+.ts-preview .ts-fcs-row3-info {
+  display: flex; align-items: baseline; gap: 4px;
+}
+.ts-preview .ts-fcs-row3-name {
+  font-family: var(--font-ko);
+  font-size: 12px; font-weight: 600; color: var(--ink);
+}
+.ts-preview .ts-fcs-row3-role {
+  font-size: 10px; color: var(--mute);
+}
+/* V3 풀폭 버튼 */
+.ts-preview .ts-fam--v3 .ts-fam-contact-btn {
+  width: 100%; justify-content: center; border-radius: 4px;
+  padding: 12px 28px;
+}
+
+/* ── V1 클래식 — 풀폭 사진 + 세로나열 ── */
+.ts-preview .ts-fam--v1 .ts-fam-photo {
+  width: 100%; border-radius: 0;
+}
+.ts-preview .ts-fam--v1 .ts-fam-row {
+  margin-bottom: 0; line-height: 1.9;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.ts-preview .ts-fam--v1 .ts-fam-row:last-of-type {
+  border-bottom: none;
+}
+.ts-preview .ts-fam--v1 .ts-fam-line {
+  display: flex; align-items: baseline;
+  justify-content: space-between;
+}
+.ts-preview .ts-fam--v1 .ts-fam-parents { display: inline; text-align: left; }
+.ts-preview .ts-fam--v1 .ts-fam-child {
+  display: inline; margin-top: 0;
+  font-size: calc(16px * var(--ts-font-scale, 1));
+  text-align: right; flex-shrink: 0;
+}
+
+/* ── V2 카드 — 사진 + 양가 정보 단일 카드 ── */
+.ts-preview .ts-fam-card {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+  text-align: center;
+}
+.ts-preview .ts-fam-card-photo {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3/4;
+}
+.ts-preview .ts-fam-card-body {
+  padding: 28px 20px;
+}
+.ts-preview .ts-fam-card-grid {
+  display: grid; grid-template-columns: 1fr auto 1fr;
+  align-items: center; gap: 12px;
+}
+.ts-preview .ts-fam-card-cell {
+  text-align: center;
+}
+.ts-preview .ts-fam-card-heart {
+  color: var(--ink); font-size: 12px; opacity: 0.5;
+  line-height: 1; padding-top: 14px;
+}
+.ts-preview .ts-fam-card-parents {
+  font-family: var(--font-ko);
+  font-size: calc(12px * var(--ts-font-scale, 1));
+  color: var(--ink);
+  line-height: 1.6;
+}
+.ts-preview .ts-fam-card-parents .ts-fam-relation {
+  opacity: 0.5;
+  font-size: calc(11px * var(--ts-font-scale, 1));
+}
+.ts-preview .ts-fam-card-divider {
+  width: 24px; height: 1px;
+  background: var(--line);
+  margin: 16px auto;
+}
+.ts-preview .ts-fam-card-name {
+  font-family: var(--font-ko);
+  font-size: calc(18px * var(--ts-font-scale, 1));
+  font-weight: 500;
+  color: var(--ink);
+  margin-top: 6px;
+  letter-spacing: 0.06em;
+}
+
+/* V2 연락하기 버튼 — 블랙 */
+.ts-preview .ts-fam--v2 .ts-fam-contact-btn {
+  border-radius: 6px; width: 100%; justify-content: center;
+  padding: 10px 28px;
+  background: var(--bg-2); color: var(--ink);
+  border-color: var(--bg-2);
+}
+
+/* V3 하트 구분자 */
+.ts-preview .ts-fam-heart {
+  color: var(--ink); font-size: 12px; opacity: 0.7;
+  flex-shrink: 0; line-height: 1;
+}
+
+/* ── V3 가로사진 + 좌우 하트 ── */
+.ts-preview .ts-fam--v3 .ts-fam-v3-grid {
+  display: grid; grid-template-columns: 1fr auto 1fr;
+  align-items: center; gap: 14px;
+}
+.ts-preview .ts-fam--v3 .ts-fam-v3-cell {
+  text-align: center;
+}
+.ts-preview .ts-fam--v3 .ts-fam-v3-cell .ts-fam-child {
+  display: block; margin-top: 10px;
+  font-family: var(--font-ko);
+  font-size: calc(18px * var(--ts-font-scale, 1));
+}
+.ts-preview .ts-fam--v3 .ts-fam-v3-role {
+  font-family: var(--font-ko);
+  font-size: calc(11px * var(--ts-font-scale, 1));
+  color: var(--mute); letter-spacing: 0.02em;
+  margin-bottom: 6px;
+}
+.ts-preview .ts-fam--v3 .ts-fam-v3-heart {
+  color: var(--ink); font-size: 16px; opacity: 0.7;
+  line-height: 1; padding-top: 16px;
+}
+
+/* ── 애니메이션 ── */
+.ts-anim-fam-v1.in-view .ts-anim-item,
+.ts-anim-fam-v2.in-view .ts-anim-item,
+.ts-anim-fam-v3.in-view .ts-anim-item {
+  animation: tsFadeUp 600ms ease both;
+}
+.ts-anim-fam-v1.in-view .ts-anim-item:nth-child(2),
+.ts-anim-fam-v2.in-view .ts-anim-item:nth-child(2),
+.ts-anim-fam-v3.in-view .ts-anim-item:nth-child(2) { animation-delay: 200ms; }
+.ts-anim-fam-v1.in-view .ts-anim-item:nth-child(3),
+.ts-anim-fam-v2.in-view .ts-anim-item:nth-child(3),
+.ts-anim-fam-v3.in-view .ts-anim-item:nth-child(3) { animation-delay: 400ms; }
+.ts-anim-fam-v1.in-view .ts-anim-item:nth-child(4),
+.ts-anim-fam-v2.in-view .ts-anim-item:nth-child(4),
+.ts-anim-fam-v3.in-view .ts-anim-item:nth-child(4) { animation-delay: 600ms; }
+
+/* 인트로 in-view 후 3.5초 지연 등장 (컨테이너 페이드인).
+   body-wrap(z-index:2)이 스크롤 시 자연스럽게 덮으므로 별도 퇴장 로직 불필요. */
+.ts-preview .ts-sec.in-view + .ts-scroll-hint {
+  animation: tsScrollHintIn 1s ease 3.5s both;
+}
+
+/* 화살표만 바운스 (텍스트는 고정) */
+.ts-preview .ts-sec.in-view + .ts-scroll-hint svg {
+  animation: tsScrollBounce 2s ease-in-out 4.5s infinite;
+}
+
+@keyframes tsScrollHintIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(-6px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes tsScrollBounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(8px); }
 }

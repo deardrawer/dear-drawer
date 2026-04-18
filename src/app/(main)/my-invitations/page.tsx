@@ -35,6 +35,7 @@ type InvitationSummary = {
   rsvp_count?: number
   main_image?: string
   content?: string
+  has_geunnal?: number
 }
 
 // PARENTS 템플릿 컬러 테마 맵핑
@@ -1069,11 +1070,11 @@ export default function MyInvitationsPage() {
                       <Link href={`/dashboard/payment?invitationId=${invitation.id}&templateId=${invitation.template_id}`}>
                         <Button size="sm" className="w-full bg-rose-500 hover:bg-rose-600 text-white">워터마크 제거하기</Button>
                       </Link>
-                    ) : (
+                    ) : invitation.has_geunnal ? (
                       <Link href={`/g/${invitation.slug || invitation.id}-g`}>
                         <Button size="sm" className="w-full bg-violet-500 hover:bg-violet-600 text-white text-xs">청첩장 모임관리</Button>
                       </Link>
-                    )}
+                    ) : null}
                   </div>
                   {/* 하단: 보조 액션 (복제, 공유, 관리, 삭제) */}
                   <div className="grid grid-cols-4 gap-2">

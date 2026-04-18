@@ -391,8 +391,8 @@ function AnimatedSection({ className = '', style, children }: AnimatedSectionPro
       }
     }
     el.addEventListener('animationend', onEnd)
-    // 안전장치: 2초 후 강제 settled
-    const t = setTimeout(() => { if (!settledRef.current) { settledRef.current = true; setSettled(true); el.removeEventListener('animationend', onEnd) } }, 2000)
+    // 안전장치: 4초 후 강제 settled (카운트다운 등 3s+ delay 애니메이션 보호)
+    const t = setTimeout(() => { if (!settledRef.current) { settledRef.current = true; setSettled(true); el.removeEventListener('animationend', onEnd) } }, 4000)
     return () => { clearTimeout(t); el.removeEventListener('animationend', onEnd) }
   }, [inView])
 
@@ -411,6 +411,167 @@ function AnimatedSection({ className = '', style, children }: AnimatedSectionPro
     <section ref={setRefs} className={`${className} ${inView ? 'in-view' : ''} ${settled ? 'ts-settled' : ''}`} style={mergedStyle}>
       {children}
     </section>
+  )
+}
+
+/* ==========================================================================
+ * FamilyContactSheet — 연락하기 버튼 + 인라인 펼침 (variant별 레이아웃)
+ * V1 클래식: 세로 리스트 (그룹 라벨 + 카드 행)
+ * V2 카드: 좌우 2열 그리드 (신랑측 왼쪽 · 신부측 오른쪽)
+ * V3 가로: 컴팩트 가로 나열 (이름 + 아이콘만)
+ * ========================================================================== */
+interface ContactPerson { role: string; name: string; phone: string }
+
+function FamilyContactSheet({
+  variant = 1,
+  groomName, brideName, groomPhone, bridePhone,
+  groomFather, groomMother, brideFather, brideMother,
+}: {
+  variant?: number
+  groomName: string; brideName: string
+  groomPhone?: string; bridePhone?: string
+  groomFather?: { name: string; phone?: string }
+  groomMother?: { name: string; phone?: string }
+  brideFather?: { name: string; phone?: string }
+  brideMother?: { name: string; phone?: string }
+}) {
+  const [open, setOpen] = useState(false)
+
+  const groom: ContactPerson[] = [
+    groomPhone ? { role: '신랑', name: groomName, phone: groomPhone } : null,
+    groomFather?.phone ? { role: '아버지', name: groomFather.name, phone: groomFather.phone } : null,
+    groomMother?.phone ? { role: '어머니', name: groomMother.name, phone: groomMother.phone } : null,
+  ].filter((c): c is ContactPerson => c !== null)
+
+  const bride: ContactPerson[] = [
+    bridePhone ? { role: '신부', name: brideName, phone: bridePhone } : null,
+    brideFather?.phone ? { role: '아버지', name: brideFather.name, phone: brideFather.phone } : null,
+    brideMother?.phone ? { role: '어머니', name: brideMother.name, phone: brideMother.phone } : null,
+  ].filter((c): c is ContactPerson => c !== null)
+
+  if (groom.length === 0 && bride.length === 0) return null
+
+  const smsIcon = (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+  )
+  const phoneIcon = (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+    </svg>
+  )
+  const phoneIconSm = (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+    </svg>
+  )
+
+  /* V1 — 리스트 (아이콘 + 라벨/이름 + 액션, 구분선) */
+  const userIcon = (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+    </svg>
+  )
+  const allV1 = [
+    ...groom.map((c) => ({ ...c, group: '신랑측' })),
+    ...bride.map((c) => ({ ...c, group: '신부측' })),
+  ]
+  const renderV1 = () => (
+    <div className="ts-fcs-panel ts-fcs-panel--v1">
+      {allV1.map((c, i) => {
+        const prevGroup = i > 0 ? allV1[i - 1].group : null
+        const showLabel = c.group !== prevGroup
+        return (
+          <div key={`${c.group}-${c.role}`}>
+            {showLabel && (
+              <div className="ts-fcs-v1-group">{c.group}</div>
+            )}
+            <div className="ts-fcs-v1-item">
+              <div className="ts-fcs-v1-icon">{userIcon}</div>
+              <div className="ts-fcs-v1-info">
+                <div className="ts-fcs-v1-label">{c.role}</div>
+                <div className="ts-fcs-v1-name">{c.name}</div>
+              </div>
+              <div className="ts-fcs-actions">
+                <a href={`sms:${c.phone}`} className="ts-fcs-btn">{smsIcon}</a>
+                <a href={`tel:${c.phone}`} className="ts-fcs-btn">{phoneIcon}</a>
+              </div>
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+
+  /* V2 — 심플 리스트 (신랑측/신부측 구분) */
+  const renderV2 = () => (
+    <div className="ts-fcs-panel ts-fcs-panel--v2">
+      {[{ label: '신랑측', list: groom }, { label: '신부측', list: bride }].map((side) =>
+        side.list.length > 0 ? (
+          <div key={side.label} className="ts-fcs-simple-group">
+            <div className="ts-fcs-simple-label">{side.label}</div>
+            {side.list.map((c, i) => (
+              <div key={`${side.label}-${i}`} className="ts-fcs-simple-row">
+                <div className="ts-fcs-simple-info">
+                  <span className="ts-fcs-simple-name">{c.name}</span>
+                  <span className="ts-fcs-simple-role">{c.role}</span>
+                </div>
+                <div className="ts-fcs-actions-sm">
+                  <a href={`sms:${c.phone}`} className="ts-fcs-btn-sm">{smsIcon}</a>
+                  <a href={`tel:${c.phone}`} className="ts-fcs-btn-sm">{phoneIcon}</a>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : null
+      )}
+    </div>
+  )
+
+  /* V3 — 좌우 2열 (신랑측 · 신부측 미러링) */
+  const renderV3 = () => (
+    <div className="ts-fcs-panel ts-fcs-panel--v3">
+      <div className="ts-fcs-grid3">
+        {[{ list: groom }, { list: bride }].map((side, si) =>
+          side.list.length > 0 ? (
+            <div key={si} className="ts-fcs-col3">
+              {side.list.map((c) => (
+                <div key={`${si}-${c.role}`} className="ts-fcs-row3">
+                  <div className="ts-fcs-row3-info">
+                    <span className="ts-fcs-row3-name">{c.name}</span>
+                    <span className="ts-fcs-row3-role">{c.role}</span>
+                  </div>
+                  <div className="ts-fcs-actions-sm">
+                    <a href={`sms:${c.phone}`} className="ts-fcs-btn-sm">{smsIcon}</a>
+                    <a href={`tel:${c.phone}`} className="ts-fcs-btn-sm">{phoneIcon}</a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null
+        )}
+      </div>
+    </div>
+  )
+
+  return (
+    <div className="ts-fcs-wrap ts-anim-item">
+      <button type="button" className="ts-fam-contact-btn" onClick={() => setOpen(!open)}>
+        <svg className="ts-fam-contact-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+        </svg>
+        연락하기
+        <svg
+          width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+          className={`ts-fam-contact-chevron ${open ? 'ts-fam-contact-chevron--open' : ''}`}
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+      {open && (variant === 3 ? renderV3() : variant === 2 ? renderV2() : renderV1())}
+    </div>
   )
 }
 
@@ -1156,8 +1317,14 @@ function CountingNumber({ target, className }: { target: number; className?: str
   const [ref, inView] = useInView<HTMLSpanElement>()
   const [current, setCurrent] = useState(0)
   const hasAnimated = useRef(false)
+  const prevTarget = useRef(target)
 
   useEffect(() => {
+    // target 변경 시 재애니메이션 허용
+    if (prevTarget.current !== target) {
+      hasAnimated.current = false
+      prevTarget.current = target
+    }
     if (!inView || hasAnimated.current) return
     hasAnimated.current = true
 
@@ -1184,6 +1351,75 @@ function CountingNumber({ target, className }: { target: number; className?: str
         <span key={i} className="ts-i5-n ts-count-digit">{d}</span>
       ))}
     </span>
+  )
+}
+
+/* ==========================================================================
+ * LiveCountdown — 실시간 카운트다운 (DAYS : HOUR : MIN : SEC)
+ * 1초마다 갱신. 결혼식 전/당일/후 상태별 메시지 표시.
+ * ========================================================================== */
+function LiveCountdown({ targetDate, beforeMsg, todayMsg, afterMsg }: {
+  targetDate: Date
+  beforeMsg: string
+  todayMsg: string
+  afterMsg: string
+}) {
+  const [now, setNow] = useState(() => new Date())
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  // 결혼식 시각 기준 판정
+  const timeDiff = targetDate.getTime() - now.getTime()
+  const isPast = timeDiff <= 0 // 결혼식 시간 지남
+
+  // 날짜 기준 D-day (문구용)
+  const todayMid = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const targetMid = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate())
+  const dayDiff = Math.round((targetMid.getTime() - todayMid.getTime()) / (1000 * 60 * 60 * 24))
+  const isToday = dayDiff === 0 && !isPast
+
+  // 실시간 시분초 계산 (결혼식 시각까지)
+  const absDiff = Math.max(0, timeDiff)
+  const days = Math.floor(absDiff / (1000 * 60 * 60 * 24))
+  const hours = Math.floor((absDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+  const minutes = Math.floor((absDiff % (1000 * 60 * 60)) / (1000 * 60))
+  const seconds = Math.floor((absDiff % (1000 * 60)) / 1000)
+
+  const pad = (n: number) => String(n).padStart(2, '0')
+
+  // 상태별 메시지
+  let message: string
+  if (isPast) {
+    message = afterMsg
+  } else if (isToday) {
+    message = todayMsg
+  } else {
+    message = beforeMsg.replace('{d}', String(dayDiff))
+  }
+
+  return (
+    <div className="ts-live-countdown">
+      {!isPast && (
+        <>
+          <div className="ts-lcd-labels">
+            <span>DAYS</span><span>HOUR</span><span>MIN</span><span>SEC</span>
+          </div>
+          <div className="ts-lcd-digits">
+            <span className="ts-lcd-num">{days}</span>
+            <span className="ts-lcd-sep">:</span>
+            <span className="ts-lcd-num">{pad(hours)}</span>
+            <span className="ts-lcd-sep">:</span>
+            <span className="ts-lcd-num">{pad(minutes)}</span>
+            <span className="ts-lcd-sep">:</span>
+            <span className="ts-lcd-num">{pad(seconds)}</span>
+          </div>
+        </>
+      )}
+      <p className="ts-lcd-msg">{message}</p>
+    </div>
   )
 }
 
@@ -1739,6 +1975,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
   const account = data.sections.account
   const rsvp = data.sections.rsvp
   const thanks = data.sections.thanks
+  const family = data.sections.family
 
   // 섹션 렌더러 매핑 — variant 번호에 따라 분기
   // 포팅되지 않은 variant는 V1 JSX로 자동 폴백
@@ -1789,7 +2026,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       if (v === 1) {
         const photo = intro.photo
         return (
-          <AnimatedSection className="ts-sec" key="intro" style={{ padding: 0 }}>
+          <AnimatedSection className="ts-sec" key={`intro-${v}`} style={{ padding: 0 }}>
             <div className={`ts-in1${textPosCls}`}>
               {photo?.url
                 ? <CropBg src={photo.url} settings={photo.settings} className={`bg ${skipIntroBgFade ? 'ts-in-anim-cover' : 'ts-in-anim'}`} style={{ position: 'absolute', inset: 0 }} />
@@ -1837,7 +2074,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       if (v === 2) {
         const splitBottom = textPos === 'top'
         return (
-          <AnimatedSection className="ts-sec" key="intro" style={{ padding: 0 }}>
+          <AnimatedSection className="ts-sec" key={`intro-${v}`} style={{ padding: 0 }}>
             <div className={`ts-in2${textPosCls}`}>
               {introBg()}
               <div className="ts-in2-content">
@@ -1867,7 +2104,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V3 · Minimal Frame (다크 배경 + 화이트 프레임)
       if (v === 3) {
         return (
-          <AnimatedSection className="ts-sec" key="intro" style={{ padding: 0 }}>
+          <AnimatedSection className="ts-sec" key={`intro-${v}`} style={{ padding: 0 }}>
             <div className={`ts-in3${textPosCls}`}>
               {introBg()}
               <div className="ts-in3-frame ts-in-anim">
@@ -1889,7 +2126,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V4 · Arch Doorway (아치 문)
       if (v === 4) {
         return (
-          <AnimatedSection className="ts-sec" key="intro" style={{ padding: 0 }}>
+          <AnimatedSection className="ts-sec" key={`intro-${v}`} style={{ padding: 0 }}>
             <div className="ts-in4">
               <div className="ts-in4-gate ts-in-anim">
                 {introBg()}
@@ -1917,7 +2154,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         const digits = dd.split('')
         const splitBottom5 = textPos === 'top'
         return (
-          <AnimatedSection className="ts-sec" key="intro" style={{ padding: 0 }}>
+          <AnimatedSection className="ts-sec" key={`intro-${v}`} style={{ padding: 0 }}>
             <div className={`ts-in5${textPosCls}`}>
               {introBg()}
               <div className="ts-in5-top-bar ts-in-anim">
@@ -1979,7 +2216,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
           `${groomName} & ${brideName}`,
         ]
         return (
-          <AnimatedSection className="ts-sec" key="intro" style={{ padding: 0 }}>
+          <AnimatedSection className="ts-sec" key={`intro-${v}`} style={{ padding: 0 }}>
             <div className="ts-in6">
               {introBg()}
               <div className="ts-in6-band ts-in-anim">
@@ -2010,7 +2247,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V7 · Crosshair Grid (그리드)
       if (v === 7) {
         return (
-          <AnimatedSection className="ts-sec" key="intro" style={{ padding: 0 }}>
+          <AnimatedSection className="ts-sec" key={`intro-${v}`} style={{ padding: 0 }}>
             <div className={`ts-in7${textPosCls}`}>
               {introBg()}
               <div className="h-line ts-in-anim" />
@@ -2037,7 +2274,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         const bEn = brideNameEn || brideName
         const enInitials = `${gEn.slice(0, 1).toUpperCase()}&${bEn.slice(0, 1).toUpperCase()}`
         return (
-          <AnimatedSection className="ts-sec" key="intro" style={{ padding: 0 }}>
+          <AnimatedSection className="ts-sec" key={`intro-${v}`} style={{ padding: 0 }}>
             <div className="ts-in8">
               <div className="seal ts-in-anim">
                 <div className="monogram">{enInitials}</div>
@@ -2056,7 +2293,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V9 · Horizontal Rule Stack (룰스택)
       if (v === 9) {
         return (
-          <AnimatedSection className="ts-sec" key="intro" style={{ padding: 0 }}>
+          <AnimatedSection className="ts-sec" key={`intro-${v}`} style={{ padding: 0 }}>
             <div className={`ts-in9${textPosCls}`}>
               {introBg()}
               <div className="ts-in9-stack">
@@ -2088,7 +2325,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         const bodyLines = (greeting.body || '').split('\n').filter((l) => l.trim())
         const ruleDelay = 600 + bodyLines.length * 400
         return (
-          <AnimatedSection className="ts-sec ts-greet ts-greet--v2 ts-anim-greet-v2" key="greeting" style={{ textAlign: 'left' }}>
+          <AnimatedSection className="ts-sec ts-greet ts-greet--v2 ts-anim-greet-v2" key={`greeting-${v}`} style={{ textAlign: 'left' }}>
             <div className="ts-greet-label ts-anim-item">{greeting.label}</div>
             <div className="ts-greet-title ts-anim-item" style={{ marginTop: 14, marginBottom: 24 }}>
               {greeting.title}
@@ -2112,7 +2349,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V3 · 인용 블록 (상하 라인 + 이탤릭)
       if (v === 3) {
         return (
-          <AnimatedSection className="ts-sec ts-greet ts-greet--v3 ts-anim-greet-v3" key="greeting">
+          <AnimatedSection className="ts-sec ts-greet ts-greet--v3 ts-anim-greet-v3" key={`greeting-${v}`}>
             <div className="ts-g3-rule-top ts-anim-item" />
             <blockquote className="ts-g3-quote ts-anim-item">
               {greeting.body}
@@ -2125,7 +2362,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V4 · 프레임 박스
       if (v === 4) {
         return (
-          <AnimatedSection className="ts-sec ts-greet ts-greet--v4 ts-anim-greet-v4" key="greeting">
+          <AnimatedSection className="ts-sec ts-greet ts-greet--v4 ts-anim-greet-v4" key={`greeting-${v}`}>
             <div className="ts-g4-frame ts-anim-card">
               <div
                 className="ts-greet-title ts-anim-item"
@@ -2156,7 +2393,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         return (
           <AnimatedSection
             className="ts-sec ts-greet ts-greet--v5 ts-anim-greet-v5"
-            key="greeting"
+            key={`greeting-${v}`}
           >
             <div className="ts-g5-bar ts-anim-vline" />
             <div className="ts-g5-txt">
@@ -2181,7 +2418,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       }
       // V1 (default · classic centered)
       return (
-        <AnimatedSection className="ts-sec ts-greet ts-anim-greet-v1" key="greeting">
+        <AnimatedSection className="ts-sec ts-greet ts-anim-greet-v1" key={`greeting-${v}`}>
           <div className="ts-greet-label ts-anim-item">{greeting.label}</div>
           <div className="ts-greet-title ts-anim-item">{greeting.title}</div>
           <p className="ts-greet-body ts-anim-item">{greeting.body}</p>
@@ -2208,7 +2445,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V2 · 세로 스택 · 큰 포토 프레임
       if (v === 2) {
         return (
-          <AnimatedSection className="ts-sec ts-couple ts-couple--v2 ts-anim-couple-v2" key="couple">
+          <AnimatedSection className="ts-sec ts-couple ts-couple--v2 ts-anim-couple-v2" key={`couple-${v}`}>
             <div className="ts-eyebrow">{couple.eyebrow}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
               {[
@@ -2241,7 +2478,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V3 · 오버랩 포트레이트 (사진 겹침 + 하단 이름/bio — 태그 없음)
       if (v === 3) {
         return (
-          <AnimatedSection className="ts-sec ts-couple ts-couple--v3 ts-anim-couple-v3" key="couple">
+          <AnimatedSection className="ts-sec ts-couple ts-couple--v3 ts-anim-couple-v3" key={`couple-${v}`}>
             <div className="ts-eyebrow">{couple.eyebrow}</div>
             <div className="ts-c3-photos">
               <div className="ts-c3-photo ts-c3-photo--left ts-anim-photo-l">
@@ -2268,7 +2505,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V4 · 카드 그리드 (박스 + 상단 풀 3:4 사진)
       if (v === 4) {
         return (
-          <AnimatedSection className="ts-sec ts-couple ts-couple--v4 ts-anim-couple-v4" key="couple">
+          <AnimatedSection className="ts-sec ts-couple ts-couple--v4 ts-anim-couple-v4" key={`couple-${v}`}>
             <div className="ts-eyebrow">{couple.eyebrow}</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               {[
@@ -2296,7 +2533,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V5 · 좌우 분할 + 센터 라인
       if (v === 5) {
         return (
-          <AnimatedSection className="ts-sec ts-couple ts-couple--v5 ts-anim-couple-v5" key="couple">
+          <AnimatedSection className="ts-sec ts-couple ts-couple--v5 ts-anim-couple-v5" key={`couple-${v}`}>
             <div className="ts-eyebrow">{couple.eyebrow}</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1px 1fr', alignItems: 'start', gap: 18 }}>
               {/* 신랑 */}
@@ -2327,7 +2564,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       }
       // V1 (default) · 좌우 원형 아바타 + & + 이름
       return (
-        <AnimatedSection className="ts-sec ts-couple ts-anim-couple-v1" key="couple">
+        <AnimatedSection className="ts-sec ts-couple ts-anim-couple-v1" key={`couple-${v}`}>
           <div className="ts-eyebrow">{couple.eyebrow}</div>
           <div className="ts-couple-grid">
             <div className="ts-couple-cell ts-anim-left">
@@ -2350,6 +2587,183 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       )
     },
 
+    family: (v) => {
+      if (!family) return null
+      const decStyle = family.deceasedStyle || 'flower'
+
+      const decIcon = (deceased?: boolean) => {
+        if (!deceased) return null
+        if (decStyle === 'hanja') return <span className="ts-fam-deceased">故</span>
+        return (
+          <img
+            src="/icons/chrysanthemum.svg"
+            alt="고인"
+            className="ts-fam-chrysanthemum"
+          />
+        )
+      }
+
+      const renderParentLine = (
+        father: { name: string; phone?: string; deceased?: boolean } | undefined,
+        mother: { name: string; phone?: string; deceased?: boolean } | undefined,
+      ) => {
+        const parts: React.ReactNode[] = []
+        if (father?.name) {
+          parts.push(<span key="f">{decIcon(father.deceased)}{father.name}</span>)
+        }
+        if (mother?.name) {
+          if (parts.length > 0) parts.push(<span key="dot" className="ts-fam-dot"> · </span>)
+          parts.push(<span key="m">{decIcon(mother.deceased)}{mother.name}</span>)
+        }
+        if (parts.length === 0) return null
+        return <span className="ts-fam-parents">{parts}</span>
+      }
+
+      const renderRelation = (
+        father: { name: string; deceased?: boolean } | undefined,
+        mother: { name: string; deceased?: boolean } | undefined,
+        childName: string,
+        gender: 'son' | 'daughter',
+      ) => {
+        const parentLine = renderParentLine(father, mother)
+        if (!parentLine) return null
+        return (
+          <span className="ts-fam-line">
+            <span className="ts-fam-parents">
+              {parentLine}
+              <span className="ts-fam-relation">의 {gender === 'son' ? '아들' : '딸'}</span>
+            </span>
+            <span className="ts-fam-child">{childName}</span>
+          </span>
+        )
+      }
+
+      const contactSheet = family.showContact ? (
+        <FamilyContactSheet
+          variant={v}
+          groomName={groomName || '신랑'}
+          brideName={brideName || '신부'}
+          groomPhone={data.groom.phone}
+          bridePhone={data.bride.phone}
+          groomFather={family.groomFather}
+          groomMother={family.groomMother}
+          brideFather={family.brideFather}
+          brideMother={family.brideMother}
+        />
+      ) : null
+
+      const famPhoto = (aspectClass: string) => {
+        if (!family.photo?.url) return (
+          <div className={`ts-fam-photo ${aspectClass} ts-ph ts-anim-item`} />
+        )
+        return (
+          <div className={`ts-fam-photo ${aspectClass} ts-anim-item`}>
+            <CropBg
+              src={family.photo.url}
+              settings={family.photo.settings as TheSimpleImageSettings}
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+            />
+          </div>
+        )
+      }
+
+      // V2 · 카드 — 사진 + 양가 정보 하나의 카드
+      if (v === 2) {
+        const groomParent = renderParentLine(family.groomFather, family.groomMother)
+        const brideParent = renderParentLine(family.brideFather, family.brideMother)
+        const hasPhoto = !!family.photo?.url
+        return (
+          <AnimatedSection className="ts-sec ts-fam ts-fam--v2 ts-anim-fam-v2" key={`family-${v}`}>
+            <div className="ts-eyebrow ts-anim-item">{family.eyebrow}</div>
+            <div className="ts-fam-card ts-anim-item">
+              {/* 사진 (카드 상단, 좌우 여백 없이) */}
+              {hasPhoto ? (
+                <div className="ts-fam-card-photo">
+                  <CropBg
+                    src={family.photo!.url}
+                    settings={family.photo!.settings as TheSimpleImageSettings}
+                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+                  />
+                </div>
+              ) : (
+                <div className="ts-fam-card-photo ts-ph" />
+              )}
+              {/* 텍스트 영역 — 좌우 그리드 */}
+              <div className="ts-fam-card-body">
+                <div className="ts-fam-card-grid">
+                  <div className="ts-fam-card-cell">
+                    {groomParent && (
+                      <div className="ts-fam-card-parents">
+                        {groomParent}<span className="ts-fam-relation">의 아들</span>
+                      </div>
+                    )}
+                    <div className="ts-fam-card-name">{groomName || '신랑'}</div>
+                  </div>
+                  <div className="ts-fam-card-heart">&#9829;</div>
+                  <div className="ts-fam-card-cell">
+                    {brideParent && (
+                      <div className="ts-fam-card-parents">
+                        {brideParent}<span className="ts-fam-relation">의 딸</span>
+                      </div>
+                    )}
+                    <div className="ts-fam-card-name">{brideName || '신부'}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {contactSheet}
+          </AnimatedSection>
+        )
+      }
+
+      // V3 · 가로사진 + 좌우 하트
+      if (v === 3) {
+        const groomParent = renderParentLine(family.groomFather, family.groomMother)
+        const brideParent = renderParentLine(family.brideFather, family.brideMother)
+        return (
+          <AnimatedSection className="ts-sec ts-fam ts-fam--v3 ts-anim-fam-v3" key={`family-${v}`}>
+            <div className="ts-eyebrow ts-anim-item">{family.eyebrow}</div>
+            {famPhoto('ts-fam-photo--landscape')}
+            <div className="ts-fam-v3-grid ts-anim-item">
+              <div className="ts-fam-v3-cell">
+                {groomParent && (
+                  <div className="ts-fam-v3-role">
+                    {groomParent}<span className="ts-fam-relation">의 아들</span>
+                  </div>
+                )}
+                <div className="ts-fam-child">{groomName || '신랑'}</div>
+              </div>
+              <div className="ts-fam-v3-heart">&#9829;</div>
+              <div className="ts-fam-v3-cell">
+                {brideParent && (
+                  <div className="ts-fam-v3-role">
+                    {brideParent}<span className="ts-fam-relation">의 딸</span>
+                  </div>
+                )}
+                <div className="ts-fam-child">{brideName || '신부'}</div>
+              </div>
+            </div>
+            {contactSheet}
+          </AnimatedSection>
+        )
+      }
+
+      // V1 · 클래식 (default) — 세로사진 + 세로나열
+      return (
+        <AnimatedSection className="ts-sec ts-fam ts-fam--v1 ts-anim-fam-v1" key={`family-${v}`}>
+          <div className="ts-eyebrow ts-anim-item">{family.eyebrow}</div>
+          {famPhoto('ts-fam-photo--portrait')}
+          <div className="ts-fam-row ts-anim-item">
+            {renderRelation(family.groomFather, family.groomMother, groomName || '신랑', 'son')}
+          </div>
+          <div className="ts-fam-row ts-anim-item">
+            {renderRelation(family.brideFather, family.brideMother, brideName || '신부', 'daughter')}
+          </div>
+          {contactSheet}
+        </AnimatedSection>
+      )
+    },
+
     info: (v) => {
       const timeDisplay = data.wedding.timeDisplay || '오후 1시'
 
@@ -2357,7 +2771,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       if (v === 2) {
         const dayStr = String(weddingMeta.d).padStart(2, '0')
         return (
-          <AnimatedSection className="ts-sec ts-info ts-anim-info-v2" key="info">
+          <AnimatedSection className="ts-sec ts-info ts-anim-info-v2" key={`info-${v}`}>
             <div className="ts-i2">
               <div className="ts-i2-top ts-anim-item">{weddingMeta.y}. {String(weddingMeta.m).padStart(2, '0')}</div>
               <div className="ts-i2-day ts-anim-item">
@@ -2372,6 +2786,16 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 <div><b>PLACE</b>{venueName}</div>
                 {venueHall && <div><b>HALL</b>{venueHall}</div>}
               </div>
+              {data.sections.info.showCountdown && (
+                <div className="ts-countdown-inline ts-cd-v2 ts-anim-item">
+                  <LiveCountdown
+                    targetDate={(() => { const d = data.wedding.date || '2026-05-16'; const t = data.wedding.time || '13:00'; return new Date(`${d}T${t}`) })()}
+                    beforeMsg={data.sections.info.countdownBeforeMsg || `${brideName}, ${groomName}의 결혼식이 {d}일 남았습니다.`}
+                    todayMsg={data.sections.info.countdownTodayMsg || '오늘 결혼합니다.'}
+                    afterMsg={data.sections.info.countdownAfterMsg || '행복하고 따뜻하게 살겠습니다.'}
+                  />
+                </div>
+              )}
             </div>
           </AnimatedSection>
         )
@@ -2391,7 +2815,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         })
         const dows = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
         return (
-          <AnimatedSection className="ts-sec ts-info ts-anim-info-v3" key="info">
+          <AnimatedSection className="ts-sec ts-info ts-anim-info-v3" key={`info-${v}`}>
             <div className="ts-i3">
               <div className="ts-i3-title ts-anim-item">
                 <div className="ts-i3-month">{weddingMeta.y}. {String(weddingMeta.m).padStart(2, '0')}</div>
@@ -2410,6 +2834,16 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 <b>{weddingMeta.weekday} · {timeDisplay}</b>
                 <div className="ts-i3-venue">{venueName}{venueHall && <><br />{venueHall}</>}</div>
               </div>
+              {data.sections.info.showCountdown && (
+                <div className="ts-countdown-inline ts-cd-v3 ts-anim-item">
+                  <LiveCountdown
+                    targetDate={(() => { const d = data.wedding.date || '2026-05-16'; const t = data.wedding.time || '13:00'; return new Date(`${d}T${t}`) })()}
+                    beforeMsg={data.sections.info.countdownBeforeMsg || `${brideName}, ${groomName}의 결혼식이 {d}일 남았습니다.`}
+                    todayMsg={data.sections.info.countdownTodayMsg || '오늘 결혼합니다.'}
+                    afterMsg={data.sections.info.countdownAfterMsg || '행복하고 따뜻하게 살겠습니다.'}
+                  />
+                </div>
+              )}
             </div>
           </AnimatedSection>
         )
@@ -2418,7 +2852,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V4 · Ticket (티켓 스타일)
       if (v === 4) {
         return (
-          <AnimatedSection className="ts-sec ts-info ts-anim-info-v4" key="info">
+          <AnimatedSection className="ts-sec ts-info ts-anim-info-v4" key={`info-${v}`}>
             <div className="ts-i4">
               <div className="ts-i4-ticket ts-anim-card">
                 <div className="ts-i4-top">
@@ -2432,6 +2866,16 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   {venueHall && <div><b>Hall</b>{venueHall}</div>}
                 </div>
               </div>
+              {data.sections.info.showCountdown && (
+                <div className="ts-countdown-inline ts-cd-v4 ts-anim-item">
+                  <LiveCountdown
+                    targetDate={(() => { const d = data.wedding.date || '2026-05-16'; const t = data.wedding.time || '13:00'; return new Date(`${d}T${t}`) })()}
+                    beforeMsg={data.sections.info.countdownBeforeMsg || `${brideName}, ${groomName}의 결혼식이 {d}일 남았습니다.`}
+                    todayMsg={data.sections.info.countdownTodayMsg || '오늘 결혼합니다.'}
+                    afterMsg={data.sections.info.countdownAfterMsg || '행복하고 따뜻하게 살겠습니다.'}
+                  />
+                </div>
+              )}
             </div>
           </AnimatedSection>
         )
@@ -2440,17 +2884,34 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V5 · Countdown Hero (D-Day 카운트다운 + 정보 행)
       if (v === 5) {
         const target = data.wedding.date ? new Date(data.wedding.date) : new Date('2026-05-16')
-        const now = new Date()
-        const diff = Math.ceil((target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+        // 날짜 기준 계산 (시/분/초 무시)
+        const todayMid = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())
+        const targetMid = new Date(target.getFullYear(), target.getMonth(), target.getDate())
+        const diff = Math.round((targetMid.getTime() - todayMid.getTime()) / (1000 * 60 * 60 * 24))
+        const isToday = diff === 0
+        const isPast = diff < 0 && !isToday
         const dNum = Math.abs(diff)
         return (
-          <AnimatedSection className="ts-sec ts-info ts-anim-info-v5" key="info">
+          <AnimatedSection className="ts-sec ts-info ts-anim-info-v5" key={`info-${v}`}>
             <div className="ts-i5">
-              <div className="ts-i5-cap ts-anim-item">COUNTDOWN TO THE DAY</div>
+              <div className="ts-i5-cap ts-anim-item">
+                {isToday ? 'TODAY IS THE DAY' : isPast ? 'WE GOT MARRIED' : 'COUNTDOWN TO THE DAY'}
+              </div>
               <div className="ts-i5-box ts-anim-item">
                 <div className="ts-i5-count">
-                  <div className="ts-i5-dash ts-digit" style={{ animationDelay: '200ms' }}>D—</div>
-                  <CountingNumber target={dNum} className="ts-i5-counter" />
+                  {isToday ? (
+                    <div className="ts-i5-dash ts-digit" style={{ animationDelay: '200ms', fontSize: 'calc(48px * var(--ts-font-scale, 1))' }}>D-DAY</div>
+                  ) : isPast ? (
+                    <>
+                      <div className="ts-i5-dash ts-digit" style={{ animationDelay: '200ms' }}>D+</div>
+                      <CountingNumber target={dNum} className="ts-i5-counter" />
+                    </>
+                  ) : (
+                    <>
+                      <div className="ts-i5-dash ts-digit" style={{ animationDelay: '200ms' }}>D—</div>
+                      <CountingNumber target={dNum} className="ts-i5-counter" />
+                    </>
+                  )}
                 </div>
                 <div className="ts-i5-note">
                   {weddingMeta.monthName} {weddingMeta.d}, {weddingMeta.y}
@@ -2463,6 +2924,16 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 <div className="ts-i5-row"><b>VENUE</b><span>{venueName}</span></div>
                 {venueHall && <div className="ts-i5-row"><b>HALL</b><span>{venueHall}</span></div>}
               </div>
+              {data.sections.info.showCountdown && (
+                <div className="ts-countdown-inline ts-cd-v5 ts-anim-item">
+                  <LiveCountdown
+                    targetDate={(() => { const d = data.wedding.date || '2026-05-16'; const t = data.wedding.time || '13:00'; return new Date(`${d}T${t}`) })()}
+                    beforeMsg={data.sections.info.countdownBeforeMsg || `${brideName}, ${groomName}의 결혼식이 {d}일 남았습니다.`}
+                    todayMsg={data.sections.info.countdownTodayMsg || '오늘 결혼합니다.'}
+                    afterMsg={data.sections.info.countdownAfterMsg || '행복하고 따뜻하게 살겠습니다.'}
+                  />
+                </div>
+              )}
             </div>
           </AnimatedSection>
         )
@@ -2472,7 +2943,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       {
         const dateStr = `${weddingMeta.y}.${String(weddingMeta.m).padStart(2, '0')}.${String(weddingMeta.d).padStart(2, '0')}`
         return (
-        <AnimatedSection className="ts-sec ts-info ts-anim-info-v1" key="info">
+        <AnimatedSection className="ts-sec ts-info ts-anim-info-v1" key={`info-${v}`}>
           <div className="ts-eyebrow">{info.eyebrow}</div>
           <div className="ts-i1">
             <div className="ts-i1-big ts-anim-item">
@@ -2502,6 +2973,16 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
             ))}
           </div>
           <div className="ts-i1-venue ts-anim-item">{venueName}{venueHall && <><br />{venueHall}</>}</div>
+          {data.sections.info.showCountdown && (
+            <div className="ts-countdown-inline ts-cd-v1 ts-anim-item">
+              <LiveCountdown
+                targetDate={(() => { const d = data.wedding.date || '2026-05-16'; const t = data.wedding.time || '13:00'; return new Date(`${d}T${t}`) })()}
+                beforeMsg={data.sections.info.countdownBeforeMsg || `${brideName}, ${groomName}의 결혼식이 {d}일 남았습니다.`}
+                todayMsg={data.sections.info.countdownTodayMsg || '오늘 결혼합니다.'}
+                afterMsg={data.sections.info.countdownAfterMsg || '행복하고 따뜻하게 살겠습니다.'}
+              />
+            </div>
+          )}
         </AnimatedSection>
       )
       }
@@ -2511,7 +2992,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V2 · Full Map · 하단 정보 박스
       if (v === 2) {
         return (
-          <AnimatedSection className="ts-sec ts-dir ts-anim-dir-v2" key="direction">
+          <AnimatedSection className="ts-sec ts-dir ts-anim-dir-v2" key={`direction-${v}`}>
             <div className="ts-eyebrow">{direction.eyebrow}</div>
             <div className="ts-anim-item" style={{ marginBottom: 10 }}>
               <KakaoMapBox address={venueAddress} venueName={venueName} aspectRatio="4 / 3" />
@@ -2534,7 +3015,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V3 · 정보 상단 · 맵 하단
       if (v === 3) {
         return (
-          <AnimatedSection className="ts-sec ts-dir ts-anim-dir-v3" key="direction">
+          <AnimatedSection className="ts-sec ts-dir ts-anim-dir-v3" key={`direction-${v}`}>
             <div className="ts-eyebrow">{direction.eyebrow}</div>
             <div className="ts-anim-item" style={{ textAlign: 'center', padding: '12px 0 18px' }}>
               <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, letterSpacing: '0.06em', color: 'var(--ink)', marginBottom: 6 }}>
@@ -2557,7 +3038,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V4 · 맵 + 정보 카드
       if (v === 4) {
         return (
-          <AnimatedSection className="ts-sec ts-dir ts-anim-dir-v4" key="direction">
+          <AnimatedSection className="ts-sec ts-dir ts-anim-dir-v4" key={`direction-${v}`}>
             <div className="ts-eyebrow">{direction.eyebrow}</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12, marginTop: 8 }}>
               <div className="ts-anim-item">
@@ -2587,7 +3068,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V5 · 좌측 라벨 · 우측 정보 · 맵 풀 폭
       if (v === 5) {
         return (
-          <AnimatedSection className="ts-sec ts-dir ts-anim-dir-v5" key="direction">
+          <AnimatedSection className="ts-sec ts-dir ts-anim-dir-v5" key={`direction-${v}`}>
             <div className="ts-eyebrow">{direction.eyebrow}</div>
             <div className="ts-anim-item" style={{ marginBottom: 14 }}>
               <KakaoMapBox address={venueAddress} venueName={venueName} aspectRatio="16 / 10" />
@@ -2613,7 +3094,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
 
       // V1 · Map Card (기본)
       return (
-        <AnimatedSection className="ts-sec ts-dir ts-anim-dir-v1" key="direction">
+        <AnimatedSection className="ts-sec ts-dir ts-anim-dir-v1" key={`direction-${v}`}>
           <div className="ts-eyebrow">{direction.eyebrow}</div>
           <div className="ts-dir-name ts-anim-item">{venueName}</div>
           <div className="ts-anim-item">
@@ -2632,7 +3113,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V2 · 번호 매김 · 라인 구분
       if (v === 2) {
         return (
-          <AnimatedSection className={`ts-sec ts-interview ts-anim-intv-v${v}`} key="interview">
+          <AnimatedSection className={`ts-sec ts-interview ts-anim-intv-v${v}`} key={`interview-${v}`}>
             <div className="ts-eyebrow">{interview.eyebrow}</div>
             <SectionToggle enabled={intvToggle?.enabled ?? false} label={intvToggle?.label || '인터뷰 보기'} btnStyle={intvToggle?.style}>
             <div style={{ marginTop: 8 }}>
@@ -2690,7 +3171,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V3 · 말풍선 · 좌우 교차
       if (v === 3) {
         return (
-          <AnimatedSection className={`ts-sec ts-interview ts-anim-intv-v${v}`} key="interview">
+          <AnimatedSection className={`ts-sec ts-interview ts-anim-intv-v${v}`} key={`interview-${v}`}>
             <div className="ts-eyebrow">{interview.eyebrow}</div>
             <SectionToggle enabled={intvToggle?.enabled ?? false} label={intvToggle?.label || '인터뷰 보기'} btnStyle={intvToggle?.style}>
             <div style={{ marginTop: 12 }}>
@@ -2771,7 +3252,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V4 · 인용 타이포 · 풀번드너리스
       if (v === 4) {
         return (
-          <AnimatedSection className={`ts-sec ts-interview ts-anim-intv-v${v}`} key="interview">
+          <AnimatedSection className={`ts-sec ts-interview ts-anim-intv-v${v}`} key={`interview-${v}`}>
             <div className="ts-eyebrow">{interview.eyebrow}</div>
             <SectionToggle enabled={intvToggle?.enabled ?? false} label={intvToggle?.label || '인터뷰 보기'} btnStyle={intvToggle?.style}>
             <div style={{ marginTop: 12 }}>
@@ -2818,7 +3299,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V5 · 카드 · 라벨 분리
       if (v === 5) {
         return (
-          <AnimatedSection className={`ts-sec ts-interview ts-anim-intv-v${v}`} key="interview">
+          <AnimatedSection className={`ts-sec ts-interview ts-anim-intv-v${v}`} key={`interview-${v}`}>
             <div className="ts-eyebrow">{interview.eyebrow}</div>
             <SectionToggle enabled={intvToggle?.enabled ?? false} label={intvToggle?.label || '인터뷰 보기'} btnStyle={intvToggle?.style}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
@@ -2898,7 +3379,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
 
       // V1 · 기본
       return (
-        <AnimatedSection className={`ts-sec ts-interview ts-anim-intv-v${v}`} key="interview">
+        <AnimatedSection className={`ts-sec ts-interview ts-anim-intv-v${v}`} key={`interview-${v}`}>
           <div className="ts-eyebrow">{interview.eyebrow}</div>
           <SectionToggle enabled={intvToggle?.enabled ?? false} label={intvToggle?.label || '인터뷰 보기'} btnStyle={intvToggle?.style}>
           {interview.items.map((item, i) => (
@@ -3011,7 +3492,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // URL이 없거나 유효하지 않으면 placeholder
       if (!videoId) {
         return (
-          <AnimatedSection className={`ts-sec ts-video ts-anim-vid-v${v}`} key="video">
+          <AnimatedSection className={`ts-sec ts-video ts-anim-vid-v${v}`} key={`video-${v}`}>
             <div className="ts-eyebrow">{video?.eyebrow || 'Video'}</div>
             <div
               style={{
@@ -3037,7 +3518,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V2 · 풀폭 (패딩 없음)
       if (v === 2) {
         return (
-          <AnimatedSection className={`ts-sec ts-video ts-anim-vid-v${v}`} key="video" style={{ padding: 0 }}>
+          <AnimatedSection className={`ts-sec ts-video ts-anim-vid-v${v}`} key={`video-${v}`} style={{ padding: 0 }}>
             {video?.eyebrow && (
               <div className="ts-eyebrow" style={{ padding: '0 26px', paddingTop: 'calc(56px * var(--ts-spacing-scale))' }}>
                 {video.eyebrow}
@@ -3055,7 +3536,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         return (
           <AnimatedSection
             className={`ts-sec ts-video ts-anim-vid-v${v}`}
-            key="video"
+            key={`video-${v}`}
             style={{ background: '#111', padding: '40px 0' }}
           >
             {video?.eyebrow && (
@@ -3084,7 +3565,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
 
       // V1 · 기본 (패딩 + 라운드)
       return (
-        <AnimatedSection className={`ts-sec ts-video ts-anim-vid-v${v}`} key="video">
+        <AnimatedSection className={`ts-sec ts-video ts-anim-vid-v${v}`} key={`video-${v}`}>
           <div className="ts-eyebrow">{video?.eyebrow || 'Video'}</div>
           <div style={{ borderRadius: 8, overflow: 'hidden', marginTop: 18 }}>
             {thumbEl}
@@ -3122,7 +3603,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V2 · 세로 리스트 · 아이콘 슬롯
       if (v === 2) {
         return (
-          <AnimatedSection className={`ts-sec ts-guide ts-anim-guide-v${v}`} key="guide">
+          <AnimatedSection className={`ts-sec ts-guide ts-anim-guide-v${v}`} key={`guide-${v}`}>
             <div className="ts-eyebrow">{guide.eyebrow}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 8 }}>
               {guide.items.map((item, i) => (
@@ -3200,7 +3681,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V3 · 아코디언 느낌 · 좌측 라벨
       if (v === 3) {
         return (
-          <AnimatedSection className={`ts-sec ts-guide ts-anim-guide-v${v}`} key="guide">
+          <AnimatedSection className={`ts-sec ts-guide ts-anim-guide-v${v}`} key={`guide-${v}`}>
             <div className="ts-eyebrow">{guide.eyebrow}</div>
             <div style={{ marginTop: 8 }}>
               {guide.items.map((item, i) => (
@@ -3262,7 +3743,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V4 · 베이지 배경 카드 2열
       if (v === 4) {
         return (
-          <AnimatedSection className={`ts-sec ts-guide ts-anim-guide-v${v}`} key="guide">
+          <AnimatedSection className={`ts-sec ts-guide ts-anim-guide-v${v}`} key={`guide-${v}`}>
             <div className="ts-eyebrow">{guide.eyebrow}</div>
             <div
               style={{
@@ -3334,7 +3815,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V5 · 노트 스타일 · 좌측 정렬 리스트
       if (v === 5) {
         return (
-          <AnimatedSection className={`ts-sec ts-guide ts-anim-guide-v${v}`} key="guide">
+          <AnimatedSection className={`ts-sec ts-guide ts-anim-guide-v${v}`} key={`guide-${v}`}>
             <div className="ts-eyebrow">{guide.eyebrow}</div>
             <div
               style={{
@@ -3406,7 +3887,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
 
       // V1 · 기본
       return (
-        <AnimatedSection className={`ts-sec ts-guide ts-anim-guide-v${v}`} key="guide">
+        <AnimatedSection className={`ts-sec ts-guide ts-anim-guide-v${v}`} key={`guide-${v}`}>
           <div className="ts-eyebrow">{guide.eyebrow}</div>
           <div className="ts-guide-grid">
             {guide.items.map((item, i) => (
@@ -3457,7 +3938,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V2 · 베이지 카드
       if (v === 2) {
         return (
-          <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key="account">
+          <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key={`account-${v}`}>
             <div className="ts-eyebrow">{account.eyebrow}</div>
             <div style={{ background: '#f5f5f0', padding: '20px 16px', marginTop: 8 }}>
               {accountGuideEl}
@@ -3488,7 +3969,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         if ((account.brideMother || []).length > 0)
           allList.push({ side: 'brideMother', role: '어머니', name: account.brideMotherName || '', accounts: account.brideMother || [] })
         return (
-          <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key="account">
+          <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key={`account-${v}`}>
             <div className="ts-eyebrow">{account.eyebrow}</div>
             <div style={{ marginTop: 8 }}>
               {accountGuideEl}
@@ -3569,7 +4050,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V4 · 보더 카드
       if (v === 4) {
         return (
-          <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key="account">
+          <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key={`account-${v}`}>
             <div className="ts-eyebrow">{account.eyebrow}</div>
             <div style={{ border: '1px solid var(--line)', padding: '20px 16px', marginTop: 8 }}>
               {accountGuideEl}
@@ -3582,7 +4063,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V5 · 세로 스택 · 중앙정렬
       if (v === 5) {
         return (
-          <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key="account">
+          <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key={`account-${v}`}>
             <div className="ts-eyebrow">{account.eyebrow}</div>
             <div style={{ textAlign: 'center', padding: '16px 0' }}>
               {accountGuideEl}
@@ -3594,7 +4075,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
 
       // V1 · 기본
       return (
-        <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key="account">
+        <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key={`account-${v}`}>
           <div className="ts-eyebrow">{account.eyebrow}</div>
           <div style={{ marginTop: 8 }}>
             {accountGuideEl}
@@ -3608,7 +4089,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V2 · 베이지 블록 · 큰 필기체
       if (v === 2) {
         return (
-          <AnimatedSection className={`ts-sec ts-rsvp ts-anim-rsvp-v${v}`} key="rsvp">
+          <AnimatedSection className={`ts-sec ts-rsvp ts-anim-rsvp-v${v}`} key={`rsvp-${v}`}>
             <div
               style={{
                 background: '#f5f5f5',
@@ -3676,7 +4157,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V3 · 미니멀 · 중앙 라인 · 얇은 버튼
       if (v === 3) {
         return (
-          <AnimatedSection className={`ts-sec ts-rsvp ts-anim-rsvp-v${v}`} key="rsvp">
+          <AnimatedSection className={`ts-sec ts-rsvp ts-anim-rsvp-v${v}`} key={`rsvp-${v}`}>
             <div style={{ textAlign: 'center', padding: '40px 24px' }}>
               <div
                 style={{
@@ -3742,7 +4223,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V4 · 듀얼 버튼 · 참석/불참 (YES / NO)
       if (v === 4) {
         return (
-          <AnimatedSection className={`ts-sec ts-rsvp ts-anim-rsvp-v${v}`} key="rsvp">
+          <AnimatedSection className={`ts-sec ts-rsvp ts-anim-rsvp-v${v}`} key={`rsvp-${v}`}>
             <div
               style={{
                 border: '1px solid var(--line)',
@@ -3820,7 +4301,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V5 · 상단 라벨 · 카드 프레임 · 액센트 버튼
       if (v === 5) {
         return (
-          <AnimatedSection className={`ts-sec ts-rsvp ts-anim-rsvp-v${v}`} key="rsvp">
+          <AnimatedSection className={`ts-sec ts-rsvp ts-anim-rsvp-v${v}`} key={`rsvp-${v}`}>
             <div style={{ position: 'relative', padding: '32px 20px' }}>
               <div
                 style={{
@@ -3893,7 +4374,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
 
       // V1 · 기본
       return (
-        <AnimatedSection className={`ts-sec ts-rsvp ts-anim-rsvp-v${v}`} key="rsvp">
+        <AnimatedSection className={`ts-sec ts-rsvp ts-anim-rsvp-v${v}`} key={`rsvp-${v}`}>
           <div className="ts-rsvp-box">
             <div className="ts-rsvp-title">R.S.V.P.</div>
             <p className="ts-rsvp-sub" style={{ whiteSpace: 'pre-line' }}>
@@ -3915,7 +4396,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V2 · 카드 그리드 · 베이지 톤
       if (v === 2) {
         return (
-          <AnimatedSection className={`ts-sec ts-guestbook ts-anim-gb-v${v}`} key="guestbook">
+          <AnimatedSection className={`ts-sec ts-guestbook ts-anim-gb-v${v}`} key={`guestbook-${v}`}>
             <div style={{ textAlign: 'center', marginBottom: 14 }}>
               <div
                 style={{
@@ -4016,7 +4497,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V3 · 타임라인 스타일 · 좌측 도트
       if (v === 3) {
         return (
-          <AnimatedSection className={`ts-sec ts-guestbook ts-anim-gb-v${v}`} key="guestbook">
+          <AnimatedSection className={`ts-sec ts-guestbook ts-anim-gb-v${v}`} key={`guestbook-${v}`}>
             <div
               style={{
                 fontFamily: 'var(--font-display)',
@@ -4109,7 +4590,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V4 · 편지지 스타일 · 가운데 인용
       if (v === 4) {
         return (
-          <AnimatedSection className={`ts-sec ts-guestbook ts-anim-gb-v${v}`} key="guestbook">
+          <AnimatedSection className={`ts-sec ts-guestbook ts-anim-gb-v${v}`} key={`guestbook-${v}`}>
             <div
               style={{
                 border: '1px solid var(--line)',
@@ -4180,7 +4661,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V5 · 컴팩트 리스트 · 라인 구분 · 우측 화살표
       if (v === 5) {
         return (
-          <AnimatedSection className={`ts-sec ts-guestbook ts-anim-gb-v${v}`} key="guestbook">
+          <AnimatedSection className={`ts-sec ts-guestbook ts-anim-gb-v${v}`} key={`guestbook-${v}`}>
             <div
               style={{
                 display: 'flex',
@@ -4269,7 +4750,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
 
       // V1 · 기본
       return (
-        <AnimatedSection className={`ts-sec ts-guestbook ts-anim-gb-v${v}`} key="guestbook">
+        <AnimatedSection className={`ts-sec ts-guestbook ts-anim-gb-v${v}`} key={`guestbook-${v}`}>
           <div className="ts-gb-head">
             <div className="ts-gb-title">Guestbook</div>
             <div className="ts-gb-sub">따뜻한 한 마디를 남겨주세요</div>
@@ -4338,7 +4819,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V2 · 좌 사진 + 우 텍스트 (아이템별)
       if (v === 2) {
         return (
-          <AnimatedSection className={`ts-sec ts-anim-ls-v2`} key="lovestory">
+          <AnimatedSection className={`ts-sec ts-anim-ls-v2`} key={`lovestory-${v}`}>
             <div className="ts-eyebrow ts-anim-item">{ls.eyebrow}</div>
             <SectionToggle enabled={lsToggle?.enabled ?? false} label={lsToggle?.label || '스토리 보기'} btnStyle={lsToggle?.style}>
             {items.map((item, idx) => {
@@ -4385,7 +4866,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         if (firstPhotos.length > 0) {
           const photo = firstPhotos[0]
           return (
-            <AnimatedSection className={`ts-sec ts-anim-ls-v3`} key="lovestory" style={{ padding: 0 }}>
+            <AnimatedSection className={`ts-sec ts-anim-ls-v3`} key={`lovestory-${v}`} style={{ padding: 0 }}>
               <SectionToggle enabled={lsToggle?.enabled ?? false} label={lsToggle?.label || '스토리 보기'} btnStyle={lsToggle?.style}>
               {/* 첫 번째 아이템: 풀폭 배경 */}
               <div style={{ position: 'relative', width: '100%', minHeight: 320, overflow: 'hidden' }}>
@@ -4423,7 +4904,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V4 · 카드 레이아웃 (아이템별 카드)
       if (v === 4) {
         return (
-          <AnimatedSection className={`ts-sec ts-anim-ls-v4`} key="lovestory">
+          <AnimatedSection className={`ts-sec ts-anim-ls-v4`} key={`lovestory-${v}`}>
             <div className="ts-eyebrow ts-anim-item">{ls.eyebrow}</div>
             <SectionToggle enabled={lsToggle?.enabled ?? false} label={lsToggle?.label || '스토리 보기'} btnStyle={lsToggle?.style}>
             {items.map((item, idx) => {
@@ -4463,7 +4944,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V5 · 타임라인 스타일 (아이템별 타임라인 노드)
       if (v === 5) {
         return (
-          <AnimatedSection className={`ts-sec ts-anim-ls-v5`} key="lovestory">
+          <AnimatedSection className={`ts-sec ts-anim-ls-v5`} key={`lovestory-${v}`}>
             <div className="ts-eyebrow ts-anim-item">{ls.eyebrow}</div>
             <SectionToggle enabled={lsToggle?.enabled ?? false} label={lsToggle?.label || '스토리 보기'} btnStyle={lsToggle?.style}>
             <div style={{ display: 'flex', gap: 20, marginTop: 16 }}>
@@ -4504,7 +4985,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
 
       // V1 · 기본 (사진 위 + 텍스트 아래, 아이템별 반복)
       return (
-        <AnimatedSection className={`ts-sec ts-anim-ls-v1`} key="lovestory">
+        <AnimatedSection className={`ts-sec ts-anim-ls-v1`} key={`lovestory-${v}`}>
           <div className="ts-eyebrow ts-anim-item">{ls.eyebrow}</div>
           <SectionToggle enabled={lsToggle?.enabled ?? false} label={lsToggle?.label || '스토리 보기'} btnStyle={lsToggle?.style}>
           {items.map((item, idx) => renderItemV1(item, idx))}
@@ -4517,7 +4998,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V2 · 미니멀 · 이름 + 얇은 라인
       if (v === 2) {
         return (
-          <AnimatedSection className={`ts-thanks ts-anim-thx-v${v}`} key="thanks" style={{ textAlign: 'center', padding: '40px 24px' }}>
+          <AnimatedSection className={`ts-thanks ts-anim-thx-v${v}`} key={`thanks-${v}`} style={{ textAlign: 'center', padding: '40px 24px' }}>
             <div
               style={{
                 fontFamily: 'var(--font-ko)',
@@ -4555,7 +5036,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V3 · 스크립트 마크 · 큰 타이틀
       if (v === 3) {
         return (
-          <AnimatedSection className={`ts-thanks ts-anim-thx-v${v}`} key="thanks" style={{ textAlign: 'center', padding: '48px 24px' }}>
+          <AnimatedSection className={`ts-thanks ts-anim-thx-v${v}`} key={`thanks-${v}`} style={{ textAlign: 'center', padding: '48px 24px' }}>
             <div
               style={{
                 fontFamily: 'var(--font-serif)',
@@ -4609,7 +5090,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V4 · 카드 프레임 · 베이지 박스
       if (v === 4) {
         return (
-          <AnimatedSection className={`ts-thanks ts-anim-thx-v${v}`} key="thanks" style={{ padding: '32px 20px' }}>
+          <AnimatedSection className={`ts-thanks ts-anim-thx-v${v}`} key={`thanks-${v}`} style={{ padding: '32px 20px' }}>
             <div
               style={{
                 background: '#f5f5f5',
@@ -4679,7 +5160,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V5 · 센터 스탬프 · 데코 보더
       if (v === 5) {
         return (
-          <AnimatedSection className={`ts-thanks ts-anim-thx-v${v}`} key="thanks" style={{ padding: '48px 24px', textAlign: 'center' }}>
+          <AnimatedSection className={`ts-thanks ts-anim-thx-v${v}`} key={`thanks-${v}`} style={{ padding: '48px 24px', textAlign: 'center' }}>
             <div
               style={{
                 display: 'inline-block',
@@ -4748,7 +5229,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
 
       // V1 · 기본
       return (
-        <AnimatedSection className={`ts-thanks ts-anim-thx-v${v}`} key="thanks">
+        <AnimatedSection className={`ts-thanks ts-anim-thx-v${v}`} key={`thanks-${v}`}>
           <div className="ts-thanks-mark">{thanks.mark}</div>
           <div className="ts-thanks-title">{thanks.title}</div>
           <div className="ts-thanks-rule" />
@@ -4789,7 +5270,18 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
           const introId = visibleSections.find((id) => getSectionType(id) === 'intro')
           if (!introId) return null
           const introVariant = data.sectionVariants[introId] ?? 1
-          return renderers.intro(introVariant, introId)
+          return (
+            <>
+              {renderers.intro(introVariant, introId)}
+              {/* 스크롤 유도 인디케이터 — 인트로 애니메이션 완료 후 등장 */}
+              <div className="ts-scroll-hint" aria-hidden="true">
+                <span className="ts-scroll-hint-label">SCROLL</span>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="7 10 12 15 17 10" />
+                </svg>
+              </div>
+            </>
+          )
         })()}
       </div>
       {/* 본문 래퍼 — 인트로 위로 겹쳐 올라오는 오버랩 */}
@@ -4917,25 +5409,27 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       </div>
       </div>{/* /ts-body-wrap */}
       <RsvpModal open={rsvpOpen} onClose={() => setRsvpOpen(false)} invitationId={data.id} showMealOption={data.sections.rsvp.showMealOption} showShuttleOption={data.sections.rsvp.showShuttleOption} rsvpNotice={data.sections.rsvp.rsvpNotice} />
-      <GalleryLightbox images={lightboxImages} isOpen={lightboxOpen} initialIndex={lightboxIndex} onClose={() => setLightboxOpen(false)} />
+      <GalleryLightbox images={lightboxImages} isOpen={lightboxOpen} initialIndex={lightboxIndex} onClose={() => setLightboxOpen(false)} variant={data.lightboxVariant ?? 1} />
     </div>
   )
 }
 
 /* ==========================================================================
- * GalleryLightbox — Editorial Page Style 갤러리 뷰어
+ * GalleryLightbox — 9 variant 갤러리 뷰어
  * ========================================================================== */
-function GalleryLightbox({ images, isOpen, initialIndex, onClose }: {
+function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1 }: {
   images: string[]
   isOpen: boolean
   initialIndex: number
   onClose: () => void
+  variant?: number
 }) {
   const [idx, setIdx] = useState(initialIndex)
   const [animClass, setAnimClass] = useState('')
   const [transitioning, setTransitioning] = useState(false)
   const touchStartX = useRef(0)
   const overlayRef = useRef<HTMLDivElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   useContainedOverlay(overlayRef, isOpen)
 
@@ -4950,16 +5444,24 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose }: {
   const goTo = useCallback((nextIdx: number, dir: 'next' | 'prev') => {
     if (transitioning || nextIdx === idx) return
     setTransitioning(true)
+    // V5(시네마틱) 페이드 전환
+    if (variant === 5) {
+      setAnimClass('ts-lb-img--fade-out')
+      setTimeout(() => {
+        setIdx(nextIdx)
+        setAnimClass('ts-lb-img--fade-in')
+        setTimeout(() => { setAnimClass(''); setTransitioning(false) }, 500)
+      }, 500)
+      return
+    }
+    // 기본 슬라이드 전환
     setAnimClass(`ts-lb-img--exit-${dir}`)
     setTimeout(() => {
       setIdx(nextIdx)
       setAnimClass(`ts-lb-img--enter-${dir}`)
-      setTimeout(() => {
-        setAnimClass('')
-        setTransitioning(false)
-      }, 350)
+      setTimeout(() => { setAnimClass(''); setTransitioning(false) }, 350)
     }, 350)
-  }, [transitioning, idx])
+  }, [transitioning, idx, variant])
 
   const goNext = useCallback(() => {
     goTo((idx + 1) % images.length, 'next')
@@ -4973,10 +5475,11 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose }: {
     if (!isOpen) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
-      if (e.key === 'ArrowRight') goNext()
-      if (e.key === 'ArrowLeft') goPrev()
+      if (variant !== 4) {
+        if (e.key === 'ArrowRight') goNext()
+        if (e.key === 'ArrowLeft') goPrev()
+      }
     }
-    // iOS Safari 핀치줌 차단
     const onGesture = (e: Event) => e.preventDefault()
     const onTouchMove = (e: TouchEvent) => { if (e.touches.length > 1) e.preventDefault() }
     window.addEventListener('keydown', onKey)
@@ -4989,55 +5492,176 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose }: {
       document.removeEventListener('gesturechange', onGesture)
       document.removeEventListener('touchmove', onTouchMove)
     }
-  }, [isOpen, onClose, goNext, goPrev])
+  }, [isOpen, onClose, goNext, goPrev, variant])
+
+  // V9(필름 스트립) 가로 스크롤용
+  const filmScrollRef = useRef<HTMLDivElement>(null)
+  const filmTouchStartX = useRef(0)
+  const filmScrollStartX = useRef(0)
 
   if (!isOpen || images.length === 0) return null
 
   const pad = (n: number) => String(n).padStart(2, '0')
+  const v = variant
 
+  // === V4: 룩북 스크롤 (전체 이미지 세로 나열) ===
+  if (v === 4) {
+    return (
+      <div ref={overlayRef} className="ts-lightbox ts-lb--v4" onClick={onClose}>
+        <button className="ts-lb-v4-close" onClick={onClose}>&times;</button>
+        <div ref={scrollRef} className="ts-lb-v4-scroll" onClick={e => e.stopPropagation()}>
+          {images.map((src, i) => (
+            <img key={i} src={src} alt="" className="ts-lb-v4-img" draggable={false} />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // === V9: 필름 스트립 (가로 스크롤) ===
+  if (v === 9) {
+    return (
+      <div ref={overlayRef} className="ts-lightbox ts-lb--v9" onClick={onClose}>
+        <button className="ts-lb-topbar-close ts-lb-v9-close" onClick={onClose}>&times;</button>
+        {/* 상단 스프로킷 */}
+        <div className="ts-lb-v9-sprocket ts-lb-v9-sprocket--top" aria-hidden="true">
+          {Array.from({ length: 20 }).map((_, i) => <span key={i} />)}
+        </div>
+        <div
+          ref={filmScrollRef}
+          className="ts-lb-v9-strip"
+          onClick={e => e.stopPropagation()}
+          onTouchStart={e => {
+            filmTouchStartX.current = e.touches[0].clientX
+            filmScrollStartX.current = filmScrollRef.current?.scrollLeft ?? 0
+          }}
+          onTouchMove={e => {
+            if (filmScrollRef.current) {
+              const diff = filmTouchStartX.current - e.touches[0].clientX
+              filmScrollRef.current.scrollLeft = filmScrollStartX.current + diff
+            }
+          }}
+        >
+          {images.map((src, i) => (
+            <div key={i} className="ts-lb-v9-frame">
+              <img src={src} alt="" draggable={false} />
+            </div>
+          ))}
+        </div>
+        {/* 하단 스프로킷 */}
+        <div className="ts-lb-v9-sprocket ts-lb-v9-sprocket--bottom" aria-hidden="true">
+          {Array.from({ length: 20 }).map((_, i) => <span key={i} />)}
+        </div>
+        <div className="ts-lb-counter">{pad(idx + 1)} / {pad(images.length)}</div>
+      </div>
+    )
+  }
+
+  // 공통 터치/스와이프 핸들러
+  const touchProps = {
+    onTouchStart: (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX },
+    onTouchEnd: (e: React.TouchEvent) => {
+      const diff = e.changedTouches[0].clientX - touchStartX.current
+      if (Math.abs(diff) > 50) { diff < 0 ? goNext() : goPrev() }
+    },
+  }
+
+  // === V1: 에디토리얼 (기존) ===
+  if (v === 1) {
+    return (
+      <div ref={overlayRef} className="ts-lightbox ts-lb--v1" onClick={onClose}>
+        <div className="ts-lb-topbar">
+          <span className="ts-lb-topbar-title">Gallery</span>
+          <button className="ts-lb-topbar-close" onClick={onClose}>&times;</button>
+        </div>
+        <div className="ts-lb-image-wrap" onClick={e => e.stopPropagation()} {...touchProps}>
+          {images[idx] && <img src={images[idx]} alt="" className={`ts-lb-img ${animClass}`} onClick={goNext} draggable={false} />}
+        </div>
+        <div className="ts-lb-counter">{pad(idx + 1)} / {pad(images.length)}</div>
+        <div className="ts-lb-progress">
+          <div className="ts-lb-progress-fill" style={{ width: `${((idx + 1) / images.length) * 100}%` }} />
+        </div>
+      </div>
+    )
+  }
+
+  // === V2: 글라스모피즘 ===
+  if (v === 2) {
+    return (
+      <div ref={overlayRef} className="ts-lightbox ts-lb--v2" onClick={onClose}>
+        <button className="ts-lb-topbar-close ts-lb-v2-close" onClick={onClose}>&times;</button>
+        <div className="ts-lb-image-wrap ts-lb-v2-wrap" onClick={e => e.stopPropagation()} {...touchProps}>
+          {images[idx] && <img src={images[idx]} alt="" className={`ts-lb-img ts-lb-v2-img ${animClass}`} onClick={goNext} draggable={false} />}
+        </div>
+        <div className="ts-lb-v2-dots">
+          {images.map((_, i) => (
+            <span key={i} className={`ts-lb-v2-dot ${i === idx ? 'ts-lb-v2-dot--active' : ''}`} onClick={e => { e.stopPropagation(); if (i !== idx) goTo(i, i > idx ? 'next' : 'prev') }} />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // === V5: 시네마틱 페이드 ===
+  if (v === 5) {
+    return (
+      <div ref={overlayRef} className="ts-lightbox ts-lb--v5" onClick={onClose}>
+        <div className="ts-lb-image-wrap ts-lb-v5-wrap" onClick={e => e.stopPropagation()} {...touchProps}>
+          {images[idx] && <img src={images[idx]} alt="" className={`ts-lb-img ts-lb-v5-img ${animClass}`} onClick={goNext} draggable={false} />}
+        </div>
+      </div>
+    )
+  }
+
+  // === V6: 미니멀 화이트 ===
+  if (v === 6) {
+    return (
+      <div ref={overlayRef} className="ts-lightbox ts-lb--v6" onClick={onClose}>
+        <button className="ts-lb-topbar-close ts-lb-v6-close" onClick={onClose}>&times;</button>
+        <div className="ts-lb-image-wrap ts-lb-v6-wrap" onClick={e => e.stopPropagation()} {...touchProps}>
+          <button className="ts-lb-v6-arrow ts-lb-v6-arrow--prev" onClick={e => { e.stopPropagation(); goPrev() }} aria-label="이전">&#8249;</button>
+          {images[idx] && <img src={images[idx]} alt="" className={`ts-lb-img ${animClass}`} draggable={false} />}
+          <button className="ts-lb-v6-arrow ts-lb-v6-arrow--next" onClick={e => { e.stopPropagation(); goNext() }} aria-label="다음">&#8250;</button>
+        </div>
+        <div className="ts-lb-v6-counter">{idx + 1} / {images.length}</div>
+      </div>
+    )
+  }
+
+  // === V7: 매거진 (썸네일 스트립) ===
+  if (v === 7) {
+    return (
+      <div ref={overlayRef} className="ts-lightbox ts-lb--v7" onClick={onClose}>
+        <button className="ts-lb-topbar-close ts-lb-v7-close" onClick={onClose}>&times;</button>
+        <div className="ts-lb-image-wrap ts-lb-v7-wrap" onClick={e => e.stopPropagation()} {...touchProps}>
+          <button className="ts-lb-v7-arrow ts-lb-v7-arrow--prev" onClick={e => { e.stopPropagation(); goPrev() }} aria-label="이전">&#8249;</button>
+          {images[idx] && <img src={images[idx]} alt="" className={`ts-lb-img ${animClass}`} draggable={false} />}
+          <button className="ts-lb-v7-arrow ts-lb-v7-arrow--next" onClick={e => { e.stopPropagation(); goNext() }} aria-label="다음">&#8250;</button>
+        </div>
+        <div className="ts-lb-v7-thumbs" onClick={e => e.stopPropagation()}>
+          {images.map((src, i) => (
+            <div key={i} className={`ts-lb-v7-thumb ${i === idx ? 'ts-lb-v7-thumb--active' : ''}`} onClick={() => { if (i !== idx) goTo(i, i > idx ? 'next' : 'prev') }}>
+              <img src={src} alt="" draggable={false} />
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // fallback → V1
   return (
-    <div ref={overlayRef} className="ts-lightbox" onClick={onClose}>
-      {/* 상단 바 */}
+    <div ref={overlayRef} className="ts-lightbox ts-lb--v1" onClick={onClose}>
       <div className="ts-lb-topbar">
         <span className="ts-lb-topbar-title">Gallery</span>
         <button className="ts-lb-topbar-close" onClick={onClose}>&times;</button>
       </div>
-
-      {/* 이미지 영역 */}
-      <div
-        className="ts-lb-image-wrap"
-        onClick={e => e.stopPropagation()}
-        onTouchStart={e => { touchStartX.current = e.touches[0].clientX }}
-        onTouchEnd={e => {
-          const diff = e.changedTouches[0].clientX - touchStartX.current
-          if (Math.abs(diff) > 50) {
-            if (diff < 0) goNext()
-            else goPrev()
-          }
-        }}
-      >
-        {images[idx] && (
-          <img
-            src={images[idx]}
-            alt=""
-            className={`ts-lb-img ${animClass}`}
-            onClick={goNext}
-            draggable={false}
-          />
-        )}
+      <div className="ts-lb-image-wrap" onClick={e => e.stopPropagation()} {...touchProps}>
+        {images[idx] && <img src={images[idx]} alt="" className={`ts-lb-img ${animClass}`} onClick={goNext} draggable={false} />}
       </div>
-
-      {/* 에디토리얼 카운터 */}
-      <div className="ts-lb-counter">
-        {pad(idx + 1)} / {pad(images.length)}
-      </div>
-
-      {/* 프로그레스 바 */}
+      <div className="ts-lb-counter">{pad(idx + 1)} / {pad(images.length)}</div>
       <div className="ts-lb-progress">
-        <div
-          className="ts-lb-progress-fill"
-          style={{ width: `${((idx + 1) / images.length) * 100}%` }}
-        />
+        <div className="ts-lb-progress-fill" style={{ width: `${((idx + 1) / images.length) * 100}%` }} />
       </div>
     </div>
   )

@@ -43,7 +43,7 @@ async function sendTelegramNotification(
 
 export async function POST(request: NextRequest) {
   try {
-    const { requestId } = await request.json() as { requestId: string };
+    const { requestId, createGeunnal } = await request.json() as { requestId: string; createGeunnal?: boolean };
 
     if (!requestId) {
       return NextResponse.json(
@@ -124,8 +124,8 @@ export async function POST(request: NextRequest) {
       // 에러가 발생해도 결제 승인은 성공으로 처리하되 로그 남김
     }
 
-    // Auto-create geunnal page for paid invitation
-    try {
+    // Auto-create geunnal page for paid invitation (skip if createGeunnal is explicitly false)
+    if (createGeunnal !== false) try {
       // Find the invitation that was just paid
       const invitationId = paymentRequest.invitation_id;
       if (invitationId) {

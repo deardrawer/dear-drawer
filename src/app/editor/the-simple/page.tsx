@@ -12,6 +12,7 @@ import SectionListPanel from './SectionListPanel'
 import IntroEditor from './SectionEditors/IntroEditor'
 import GreetingEditor from './SectionEditors/GreetingEditor'
 import CoupleEditor from './SectionEditors/CoupleEditor'
+import FamilyEditor from './SectionEditors/FamilyEditor'
 import ThanksEditor from './SectionEditors/ThanksEditor'
 import InterviewEditor from './SectionEditors/InterviewEditor'
 import GuideEditor from './SectionEditors/GuideEditor'
@@ -125,6 +126,10 @@ export interface SectionContents {
     eyebrow: string
     timeLabel: string
     placeLabel: string
+    showCountdown?: boolean
+    countdownBeforeMsg?: string
+    countdownTodayMsg?: string
+    countdownAfterMsg?: string
   }
   direction: {
     eyebrow: string
@@ -181,6 +186,16 @@ export interface SectionContents {
     mark: string
     title: string
     body: string
+  }
+  family: {
+    eyebrow: string
+    photo?: ImageWithSettings
+    deceasedStyle?: 'hanja' | 'flower'
+    showContact?: boolean
+    groomFather?: { name: string; phone?: string; deceased?: boolean }
+    groomMother?: { name: string; phone?: string; deceased?: boolean }
+    brideFather?: { name: string; phone?: string; deceased?: boolean }
+    brideMother?: { name: string; phone?: string; deceased?: boolean }
   }
 }
 
@@ -264,6 +279,10 @@ export interface TheSimpleInvitationData {
   // key = gallery instanceId, value = 표시 텍스트 (빈 문자열 → 제목 숨김)
   galleryEyebrows?: Record<string, string>
 
+  // 라이트박스 스타일 (1~9)
+  // 1=에디토리얼, 2=글라스, 4=룩북, 5=시네마, 6=미니멀, 7=매거진, 9=필름
+  lightboxVariant?: number
+
   // 커버 (Tap to Open) variant (0=없음, 1~10)
   coverVariant?: number
 
@@ -287,6 +306,7 @@ const DEFAULT_SECTION_ORDER = [
   'intro',
   'greeting',
   'couple',
+  'family',
   'lovestory',
   'info',
   'direction',
@@ -336,6 +356,10 @@ const defaultData: TheSimpleInvitationData = {
       eyebrow: 'Wedding Date',
       timeLabel: 'Time',
       placeLabel: 'Place',
+      showCountdown: false,
+      countdownBeforeMsg: '결혼식이 {d}일 남았습니다.',
+      countdownTodayMsg: '오늘 결혼합니다.',
+      countdownAfterMsg: '행복하고 따뜻하게 살겠습니다.',
     },
     direction: {
       eyebrow: 'Direction',
@@ -400,10 +424,20 @@ const defaultData: TheSimpleInvitationData = {
       title: '소중한 걸음에 감사드립니다',
       body: '귀한 시간 내어 축복해 주신 마음,\n오래도록 간직하겠습니다.',
     },
+    family: {
+      eyebrow: 'The Couple',
+      photo: { url: '', settings: { scale: 1, positionX: 0, positionY: 0 } },
+      deceasedStyle: 'flower',
+      showContact: false,
+      groomFather: { name: '김영호' },
+      groomMother: { name: '박순영' },
+      brideFather: { name: '이정수' },
+      brideMother: { name: '최미선' },
+    },
   },
   sectionOrder: DEFAULT_SECTION_ORDER,
   sectionVariants: Object.fromEntries(DEFAULT_SECTION_ORDER.map((id) => [id, 1])),
-  hiddenSections: [],
+  hiddenSections: ['family'],
   galleries: {
     gallery: [],
   },
@@ -412,6 +446,7 @@ const defaultData: TheSimpleInvitationData = {
   galleryEyebrows: {
     gallery: 'Gallery',
   },
+  lightboxVariant: 1,
   coverVariant: 0,
   dividerVariant: 1,
   displayFont: DEFAULT_DISPLAY_FONT_ID,
@@ -1569,6 +1604,22 @@ function TheSimpleEditorContent() {
                           )
                         }
 
+                        // 가족 소개 에디터
+                        if (type === 'family') {
+                          return (
+                            <FamilyEditor
+                              value={data.sections.family}
+                              groomName={data.groom.name}
+                              brideName={data.bride.name}
+                              onChange={(next) =>
+                                updateData({
+                                  sections: { ...data.sections, family: next },
+                                })
+                              }
+                            />
+                          )
+                        }
+
                         // 러브스토리 에디터
                         if (type === 'lovestory') {
                           return (
@@ -1882,6 +1933,37 @@ function TheSimpleEditorContent() {
                             <p className="text-[10px] text-stone-400 leading-relaxed">
                               JPG · PNG · WebP (최대 30MB)
                             </p>
+                            {/* 라이트박스 스타일 선택 */}
+                            <div className="mt-3 pt-3 border-t border-stone-200 space-y-1.5">
+                              <span className="text-[10px] uppercase tracking-wider text-stone-400">라이트박스 스타일</span>
+                              <div className="flex flex-wrap gap-1.5">
+                                {([
+                                  [1, '에디토리얼'],
+                                  [2, '글라스'],
+                                  [4, '룩북'],
+                                  [5, '시네마'],
+                                  [6, '미니멀'],
+                                  [7, '매거진'],
+                                  [9, '필름'],
+                                ] as const).map(([v, label]) => {
+                                  const active = (data.lightboxVariant ?? 1) === v
+                                  return (
+                                    <button
+                                      key={v}
+                                      type="button"
+                                      onClick={() => updateData({ lightboxVariant: v })}
+                                      className={`px-2.5 py-1 rounded-full text-[10px] border transition-colors ${
+                                        active
+                                          ? 'bg-stone-800 text-white border-stone-800'
+                                          : 'bg-white text-stone-500 border-stone-200 hover:border-stone-400'
+                                      }`}
+                                    >
+                                      {label}
+                                    </button>
+                                  )
+                                })}
+                              </div>
+                            </div>
                           </div>
                         )
                       }}

@@ -189,7 +189,7 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
 
       {/* === 하단 네비바 (아이콘+텍스트) === */}
       {navStyle === 'bottom-nav' && (
-        <div className="absolute bottom-0 left-0 right-0 z-[60] border-t" style={{ background: themeColors.cardBg, borderColor: `${themeColors.gray}20` }}>
+        <div className="absolute bottom-0 left-0 right-0 z-[60] border-t transition-all duration-300" style={{ background: themeColors.cardBg, borderColor: `${themeColors.gray}20`, transform: activeModal !== 'none' ? 'translateY(100%)' : 'translateY(0)', opacity: activeModal !== 'none' ? 0 : 1 }}>
           <div className="flex items-center justify-around py-2 px-1">
             {navIcons.map((item) => {
               const isActive = activeModal === item.key
@@ -214,12 +214,14 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
       {/* === 하단 미니바 (아이콘만, 반투명 blur, 풀너비) === */}
       {navStyle === 'bottom-mini' && (
         <div
-          className="absolute bottom-0 left-0 right-0 z-[60]"
+          className="absolute bottom-0 left-0 right-0 z-[60] transition-all duration-300"
           style={{
             background: `${themeColors.cardBg}ee`,
             backdropFilter: 'blur(8px)',
             WebkitBackdropFilter: 'blur(8px)',
             borderTop: `1px solid ${themeColors.gray}20`,
+            transform: activeModal !== 'none' ? 'translateY(100%)' : 'translateY(0)',
+            opacity: activeModal !== 'none' ? 0 : 1,
           }}
         >
           <div className="flex items-center justify-around py-1.5 px-2">
@@ -344,13 +346,10 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
         <>
           <div className="absolute inset-0 bg-black/50 z-50" onClick={closeModal} />
           <div
-            className={navStyle === 'hamburger'
-              ? "absolute inset-x-4 top-1/2 -translate-y-1/2 bg-white rounded-2xl z-[55] max-h-[80%] overflow-hidden flex flex-col"
-              : "absolute left-0 right-0 z-[55] bg-white rounded-t-2xl max-h-[75%] overflow-hidden flex flex-col"
-            }
+            className="absolute inset-x-4 top-1/2 -translate-y-1/2 bg-white rounded-2xl z-[55] max-h-[80%] overflow-hidden flex flex-col"
             style={{
               boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-              ...(navStyle === 'bottom-nav' ? { bottom: '56px' } : navStyle === 'bottom-mini' ? { bottom: '52px' } : {}),
+              animation: 'centerModalOpen 0.25s ease-out',
             }}
           >
             {/* Tab Navigation */}
@@ -872,6 +871,12 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
               <button onClick={closeModal} className="w-full py-3 rounded-xl text-sm" style={{ background: sheetColors.closeBg, color: sheetColors.gray }}>닫기</button>
             </div>
           </div>
+          <style>{`
+            @keyframes centerModalOpen {
+              from { opacity: 0; }
+              to { opacity: 1; }
+            }
+          `}</style>
         </>
       )}
     </>

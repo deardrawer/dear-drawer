@@ -772,8 +772,8 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
           {/* Modal animation */}
           <style>{`
             @keyframes centerModalOpen {
-              from { opacity: 0; transform: scale(0.95); }
-              to { opacity: 1; transform: scale(1); }
+              from { opacity: 0; }
+              to { opacity: 1; }
             }
           `}</style>
         </>

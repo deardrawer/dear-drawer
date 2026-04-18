@@ -662,7 +662,16 @@ function TheSimpleEditorContent() {
   const [isSaving, setIsSaving] = useState(false)
   const [isDirty, setIsDirty] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
-  const [mobileView, setMobileView] = useState<'editor' | 'preview'>('editor')
+  const [splitRatio, setSplitRatio] = useState(40) // 상단(미리보기) 비율 %, 기본 40%
+  const splitDragging = useRef(false)
+  const splitStartY = useRef(0)
+  const splitStartRatio = useRef(40)
+  const [previewZoom, setPreviewZoom] = useState(1) // 미리보기 줌 배율 (1 = 기본)
+  const pinchStartDist = useRef(0)
+  const pinchStartZoom = useRef(1)
+  const previewAreaRef = useRef<HTMLDivElement>(null)
+  const previewScrollRef = useRef<HTMLDivElement>(null)
+  const previewTouchY = useRef(0)
   const [uploadingCount, setUploadingCount] = useState(0)
   const [expandedImageId, setExpandedImageId] = useState<string | null>(null)
   // 커버 리플레이 키 (변경 시 TapToOpenCover 재마운트)
@@ -675,14 +684,14 @@ function TheSimpleEditorContent() {
   const bgmAudioRef = useRef<HTMLAudioElement>(null)
   const [curtainRevealed, setCurtainRevealed] = useState(false)
 
-  // 커버 variant 변경 또는 미리보기 탭 전환 시 자동 리셋
+  // 커버 variant 변경 시 자동 리셋
   useEffect(() => {
     setCoverDismissed(false)
     setCoverOverlayFading(false)
     setCoverOverlayGone(false)
     setCurtainRevealed(false)
     setCoverKey((k) => k + 1)
-  }, [data.coverVariant, mobileView])
+  }, [data.coverVariant])
 
   // 커버가 없거나 dismiss 완료 또는 V11 커튼이 열린 경우에만 본문 렌더링
   const showPreview = (data.coverVariant ?? 0) === 0 || coverDismissed || curtainRevealed
@@ -694,6 +703,85 @@ function TheSimpleEditorContent() {
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
+
+  // 분할 뷰 드래그 핸들
+  useEffect(() => {
+    const onMove = (clientY: number) => {
+      if (!splitDragging.current) return
+      const dy = clientY - splitStartY.current
+      const vh = window.innerHeight
+      const delta = (dy / vh) * 100
+      setSplitRatio(Math.min(70, Math.max(20, splitStartRatio.current + delta)))
+    }
+    const onEnd = () => { splitDragging.current = false }
+    const handleTouchMove = (e: TouchEvent) => { if (!splitDragging.current) return; e.preventDefault(); onMove(e.touches[0].clientY) }
+    const handleMouseMove = (e: MouseEvent) => onMove(e.clientY)
+    document.addEventListener('touchmove', handleTouchMove, { passive: false })
+    document.addEventListener('touchend', onEnd)
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', onEnd)
+    return () => {
+      document.removeEventListener('touchmove', handleTouchMove)
+      document.removeEventListener('touchend', onEnd)
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', onEnd)
+    }
+  }, [])
+
+  const startSplitDrag = (clientY: number) => {
+    splitDragging.current = true
+    splitStartY.current = clientY
+    splitStartRatio.current = splitRatio
+  }
+
+  // 미리보기 영역: 핀치 줌 + 터치/휠 스크롤 → 프레임 내부로 전달
+  useEffect(() => {
+    const el = previewAreaRef.current
+    if (!el) return
+    const scrollEl = previewScrollRef.current
+    const scale = 0.462 * previewZoom
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX
+        const dy = e.touches[0].clientY - e.touches[1].clientY
+        pinchStartDist.current = Math.sqrt(dx * dx + dy * dy)
+        pinchStartZoom.current = previewZoom
+      } else if (e.touches.length === 1) {
+        previewTouchY.current = e.touches[0].clientY
+      }
+    }
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        e.preventDefault()
+        const dx = e.touches[0].clientX - e.touches[1].clientX
+        const dy = e.touches[0].clientY - e.touches[1].clientY
+        const dist = Math.sqrt(dx * dx + dy * dy)
+        const ratio = dist / pinchStartDist.current
+        setPreviewZoom(Math.min(3, Math.max(0.5, pinchStartZoom.current * ratio)))
+      } else if (e.touches.length === 1 && scrollEl) {
+        e.preventDefault()
+        const dy = previewTouchY.current - e.touches[0].clientY
+        scrollEl.scrollTop += dy / scale
+        previewTouchY.current = e.touches[0].clientY
+      }
+    }
+    const onWheel = (e: WheelEvent) => {
+      if (scrollEl) {
+        e.preventDefault()
+        scrollEl.scrollTop += e.deltaY / scale
+      }
+    }
+
+    el.addEventListener('touchstart', onTouchStart, { passive: true })
+    el.addEventListener('touchmove', onTouchMove, { passive: false })
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart)
+      el.removeEventListener('touchmove', onTouchMove)
+      el.removeEventListener('wheel', onWheel)
+    }
+  }, [previewZoom])
 
   // 나가기 방지
   useEffect(() => {
@@ -1092,8 +1180,110 @@ function TheSimpleEditorContent() {
       </header>
 
       {/* Main area */}
-      <div className={`flex-1 ${isMobile ? 'overflow-y-auto' : 'overflow-hidden'}`}>
-        <div className="w-full h-full max-w-[1400px] mx-auto flex">
+      <div className={`flex-1 ${isMobile ? 'flex flex-col' : ''} overflow-hidden`}>
+        {/* Mobile: 상단 미리보기 */}
+        {isMobile && (
+          <>
+            <div ref={previewAreaRef} className="flex-shrink-0 overflow-hidden flex items-center justify-center bg-stone-100 relative" style={{ height: `${splitRatio}%` }}>
+              <div className="relative h-full overflow-hidden rounded-[10px] shadow-lg" style={{ width: `${180 * previewZoom}px`, transition: 'width 0.15s ease-out' }}>
+                <div
+                  className="bg-white overflow-hidden absolute top-0 left-0"
+                  style={{
+                    width: '390px',
+                    height: `${100 / (0.462 * previewZoom)}%`,
+                    transform: `scale(${0.462 * previewZoom})`,
+                    transformOrigin: 'top left',
+                    transition: 'transform 0.15s ease-out',
+                  }}
+                >
+
+                  <div ref={previewScrollRef} className="w-full h-full overflow-y-auto relative" style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', ['--ts-intro-vh' as string]: '630px' } as React.CSSProperties}>
+                  {(data.coverVariant ?? 0) > 0 && !coverOverlayGone && (
+                    <div style={{
+                      position: 'absolute', inset: 0, zIndex: 50,
+                      background: data.coverVariant === 5 ? 'transparent' : '#000',
+                      opacity: coverOverlayFading ? 0 : 1,
+                      transition: coverOverlayFading ? 'opacity 0.8s ease-out' : 'none',
+                      pointerEvents: coverDismissed ? 'none' : 'auto',
+                    }}>
+                      <TapToOpenCover
+                        key={coverKey}
+                        variant={data.coverVariant!}
+                        data={{
+                          groomName: data.groom.name,
+                          brideName: data.bride.name,
+                          groomNameEn: data.groom.nameEn || '',
+                          brideNameEn: data.bride.nameEn || '',
+                          weddingDate: data.wedding.date,
+                          weddingTime: data.wedding.timeDisplay,
+                          venueName: data.wedding.venue.name,
+                          venueHall: data.wedding.venue.hall,
+                        }}
+                        onOpen={() => {
+                          setCoverDismissed(true)
+                          setCoverOverlayFading(true)
+                          setTimeout(() => setCoverOverlayGone(true), 800)
+                        }}
+                        onStartOpen={() => setCurtainRevealed(true)}
+                      />
+                    </div>
+                  )}
+                  {(data.coverVariant ?? 0) > 0 && coverOverlayGone && (
+                    <button
+                      type="button"
+                      onClick={() => { setCoverDismissed(false); setCoverOverlayFading(false); setCoverOverlayGone(false); setCoverKey((k) => k + 1) }}
+                      className="absolute top-2 right-2 z-50 px-2 py-1 rounded-full bg-black/60 text-white text-[8px] tracking-wider hover:bg-black/80 transition-colors backdrop-blur-sm"
+                    >
+                      커버 다시 보기
+                    </button>
+                  )}
+                  {showPreview && <TheSimplePreview data={data} />}
+                </div>
+              </div>
+              </div>
+            </div>
+
+            {/* 드래그 핸들 + 줌 컨트롤 */}
+            <div className="flex-shrink-0 flex items-center bg-stone-100 select-none" style={{ height: '30px' }}>
+              {/* 줌 버튼 */}
+              <div className="flex items-center gap-1 pl-2">
+                <button
+                  type="button"
+                  onClick={() => setPreviewZoom((z) => Math.max(0.5, z - 0.25))}
+                  className="w-6 h-6 flex items-center justify-center rounded-full text-stone-500 hover:bg-stone-200 text-xs font-bold"
+                >
+                  −
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewZoom(1)}
+                  className="px-1 text-[10px] text-stone-400 hover:text-stone-600 tabular-nums"
+                >
+                  {Math.round(previewZoom * 100)}%
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewZoom((z) => Math.min(3, z + 0.25))}
+                  className="w-6 h-6 flex items-center justify-center rounded-full text-stone-500 hover:bg-stone-200 text-xs font-bold"
+                >
+                  +
+                </button>
+              </div>
+              {/* 드래그 바 */}
+              <div
+                className="flex-1 flex items-center justify-center cursor-row-resize touch-none h-full"
+                onTouchStart={(e) => startSplitDrag(e.touches[0].clientY)}
+                onMouseDown={(e) => startSplitDrag(e.clientY)}
+              >
+                <span className="block w-9 h-1 rounded-full bg-stone-300" />
+              </div>
+              {/* 우측 여백 맞춤 */}
+              <div className="w-[74px]" />
+            </div>
+          </>
+        )}
+
+        <div className={isMobile ? 'flex-1 overflow-hidden flex flex-col' : 'w-full h-full max-w-[1400px] mx-auto flex'}>
           {/* Preview (desktop) */}
           {!isMobile && (
             <div className="w-[460px] min-w-[460px] sticky top-0 flex justify-center items-center p-4">
@@ -1147,65 +1337,11 @@ function TheSimpleEditorContent() {
             </div>
           )}
 
-          {/* Preview (mobile · preview tab) */}
-          {isMobile && mobileView === 'preview' && (
-            <div className="w-full flex justify-center items-center py-6" style={{ minHeight: 'calc(100vh - 104px)' }}>
-              <div
-                className="w-[320px] shadow-2xl bg-white overflow-hidden border border-stone-200 rounded-[22px]"
-                style={{ height: '630px' }}
-              >
-                <div className="w-full h-full overflow-y-auto relative" style={{ WebkitOverflowScrolling: 'touch', ['--ts-intro-vh' as string]: '630px' } as React.CSSProperties}>
-                  {(data.coverVariant ?? 0) > 0 && !coverOverlayGone && (
-                    <div style={{
-                      position: 'absolute', inset: 0, zIndex: 50,
-                      background: data.coverVariant === 5 ? 'transparent' : '#000',
-                      opacity: coverOverlayFading ? 0 : 1,
-                      transition: coverOverlayFading ? 'opacity 0.8s ease-out' : 'none',
-                      pointerEvents: coverDismissed ? 'none' : 'auto',
-                    }}>
-                      <TapToOpenCover
-                        key={coverKey}
-                        variant={data.coverVariant!}
-                        data={{
-                          groomName: data.groom.name,
-                          brideName: data.bride.name,
-                          groomNameEn: data.groom.nameEn || '',
-                          brideNameEn: data.bride.nameEn || '',
-                          weddingDate: data.wedding.date,
-                          weddingTime: data.wedding.timeDisplay,
-                          venueName: data.wedding.venue.name,
-                          venueHall: data.wedding.venue.hall,
-                        }}
-                        onOpen={() => {
-                          setCoverDismissed(true)
-                          setCoverOverlayFading(true)
-                          setTimeout(() => setCoverOverlayGone(true), 800)
-                        }}
-                        onStartOpen={() => setCurtainRevealed(true)}
-                      />
-                    </div>
-                  )}
-                  {(data.coverVariant ?? 0) > 0 && coverOverlayGone && (
-                    <button
-                      type="button"
-                      onClick={() => { setCoverDismissed(false); setCoverOverlayFading(false); setCoverOverlayGone(false); setCoverKey((k) => k + 1) }}
-                      className="absolute top-3 right-3 z-50 px-3 py-1.5 rounded-full bg-black/60 text-white text-[10px] tracking-wider hover:bg-black/80 transition-colors backdrop-blur-sm"
-                    >
-                      커버 다시 보기
-                    </button>
-                  )}
-                  {showPreview && <TheSimplePreview data={data} />}
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Editor panel */}
-          {(!isMobile || mobileView === 'editor') && (
-            <div
-              className={`${isMobile ? 'w-full' : 'flex-1 flex flex-col overflow-hidden'} p-4`}
-              style={isMobile ? { paddingBottom: '72px' } : { height: 'calc(100vh - 56px)' }}
-            >
+          <div
+            className="flex-1 flex flex-col overflow-hidden p-4"
+            style={isMobile ? undefined : { height: 'calc(100vh - 56px)' }}
+          >
               <div className="bg-white border border-stone-200 rounded-lg p-6 overflow-y-auto flex-1">
                 <div className="max-w-xl mx-auto space-y-8">
                   {/* 개발중 배너 */}
@@ -2159,32 +2295,8 @@ function TheSimpleEditorContent() {
                 </div>
               </div>
             </div>
-          )}
         </div>
       </div>
-
-      {/* 모바일 하단 탭 */}
-      {isMobile && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-stone-200 flex safe-area-bottom">
-          <button
-            onClick={() => setMobileView('editor')}
-            className={`flex-1 py-3.5 text-xs font-medium tracking-wide transition-colors ${
-              mobileView === 'editor' ? 'text-stone-900' : 'text-stone-400'
-            }`}
-          >
-            편집
-          </button>
-          <div className="w-px bg-stone-200 my-2" />
-          <button
-            onClick={() => setMobileView('preview')}
-            className={`flex-1 py-3.5 text-xs font-medium tracking-wide transition-colors ${
-              mobileView === 'preview' ? 'text-stone-900' : 'text-stone-400'
-            }`}
-          >
-            미리보기
-          </button>
-        </div>
-      )}
 
       {/* ShareModal */}
       {invitationId && (

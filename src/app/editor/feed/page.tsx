@@ -247,6 +247,7 @@ function FeedEditorContent() {
   const wizardStepRef = useRef<number>(1) // 스텝 상태 보존용
   const [isMobile, setIsMobile] = useState(false)
   const [mobileView, setMobileView] = useState<'editor' | 'preview'>('editor')
+  const [previewKey, setPreviewKey] = useState(0)
   const [isExitModalOpen, setIsExitModalOpen] = useState(false)
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
 
@@ -574,20 +575,28 @@ function FeedEditorContent() {
               </div>
             )}
 
-            {/* 모바일: 미리보기 모드 */}
-            {isMobile && mobileView === 'preview' && (
-              <div className="w-full flex justify-center items-center py-8" style={{ minHeight: 'calc(100vh - 104px)' }}>
-                <div className="w-[320px] shadow-2xl bg-white overflow-hidden border border-gray-200" style={{ height: '630px', transform: 'translateZ(0)' }}>
+            {/* 모바일: 미리보기 모드 (항상 마운트, CSS로 숨김) */}
+            {isMobile && (
+              <div className="w-full flex flex-col items-center py-8 relative" style={{ minHeight: 'calc(100vh - 104px)', display: mobileView === 'preview' ? 'flex' : 'none' }}>
+                <button
+                  onClick={() => setPreviewKey(k => k + 1)}
+                  className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-black/5 hover:bg-black/10 active:bg-black/15 transition-colors"
+                  title="애니메이션 다시보기"
+                >
+                  <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                </button>
+                <div className="w-[320px] shadow-2xl bg-white overflow-hidden border border-gray-200 flex-1" style={{ maxHeight: '630px', transform: 'translateZ(0)' }}>
                   <div className="h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
-                    <FeedPreview data={data} />
+                    <FeedPreview key={previewKey} data={data} />
                   </div>
                 </div>
               </div>
             )}
 
             {/* Edit Panel - 오른쪽 (데스크탑) / 전체 (모바일 편집 모드) */}
-            {(!isMobile || mobileView === 'editor') && (
-              <div className={`${isMobile ? 'w-full' : 'flex-1 flex flex-col overflow-hidden editor-panel m-4 ml-3.5'}`} style={isMobile ? { paddingBottom: '56px' } : { height: 'calc(100vh - 88px)' }}>
+            <div className={`${isMobile ? 'w-full' : 'flex-1 flex flex-col overflow-hidden editor-panel m-4 ml-3.5'}`} style={isMobile ? { paddingBottom: '56px', display: mobileView === 'editor' ? 'block' : 'none' } : { height: 'calc(100vh - 88px)' }}>
                 <FeedWizardEditor
                   data={data}
                   updateData={updateData}
@@ -603,7 +612,6 @@ function FeedEditorContent() {
                   }}
                 />
               </div>
-            )}
           </div>
         </div>
       </div>

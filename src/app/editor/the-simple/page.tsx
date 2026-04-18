@@ -2092,6 +2092,7 @@ function TheSimpleEditorContent() {
                             {/* 라이트박스 스타일 선택 */}
                             <div className="mt-3 pt-3 border-t border-stone-200 space-y-1.5">
                               <span className="text-[10px] uppercase tracking-wider text-stone-400">라이트박스 스타일</span>
+                              <p className="text-[10px] text-stone-400 leading-relaxed">사진을 탭하면 열리는 뷰어의 스타일</p>
                               <div className="flex flex-wrap gap-1.5">
                                 {([
                                   [1, '에디토리얼'],
@@ -2231,6 +2232,78 @@ function TheSimpleEditorContent() {
                                 </div>
                               )
                             })}
+                          </div>
+
+                          {/* 직접 업로드 */}
+                          <div className="pt-1 space-y-1.5">
+                            <div className="text-[10px] uppercase tracking-wider text-stone-400">직접 업로드</div>
+                            {data.bgm?.url && !getBgmPresetByUrl(data.bgm.url) ? (
+                              <div className="flex items-center gap-2 p-2 rounded-md border border-stone-900 bg-stone-50">
+                                <div className="w-7 h-7 rounded-full flex items-center justify-center bg-stone-200 shrink-0">
+                                  <svg className="w-3.5 h-3.5 text-stone-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                                  </svg>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-xs text-stone-800 font-medium truncate">내 음악</div>
+                                  <div className="text-[10px] text-stone-400 truncate">직접 업로드한 파일</div>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setData((prev) => ({ ...prev, bgm: { ...prev.bgm!, url: '', enabled: false } }))
+                                    setIsDirty(true)
+                                    if (bgmAudioRef.current) { bgmAudioRef.current.pause(); setPlayingBgm(null) }
+                                  }}
+                                  className="text-[10px] text-stone-400 hover:text-stone-600 shrink-0 px-1"
+                                >
+                                  삭제
+                                </button>
+                              </div>
+                            ) : (
+                              <label className="block">
+                                <input
+                                  type="file"
+                                  accept="audio/mpeg,audio/mp3"
+                                  className="hidden"
+                                  disabled={!invitationId}
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0]
+                                    e.target.value = ''
+                                    if (!file || !invitationId) return
+                                    if (file.size > 10 * 1024 * 1024) { alert('파일 크기는 10MB 이하만 가능합니다.'); return }
+                                    try {
+                                      const formData = new FormData()
+                                      formData.append('file', file)
+                                      formData.append('invitationId', invitationId)
+                                      const res = await fetch('/api/upload-audio', { method: 'POST', body: formData })
+                                      const result = await res.json() as { success?: boolean; url?: string; error?: string }
+                                      if (result.success && result.url) {
+                                        setData((prev) => ({ ...prev, bgm: { ...prev.bgm!, url: result.url!, enabled: true } }))
+                                        setIsDirty(true)
+                                      } else {
+                                        alert(result.error || '업로드에 실패했습니다.')
+                                      }
+                                    } catch {
+                                      alert('업로드 중 오류가 발생했습니다.')
+                                    }
+                                  }}
+                                />
+                                <div className={`w-full border-2 border-dashed rounded-md px-4 py-3 text-center text-[11px] transition-colors ${
+                                  !invitationId
+                                    ? 'border-stone-200 text-stone-300 cursor-not-allowed'
+                                    : 'border-stone-300 text-stone-500 hover:border-stone-500 hover:text-stone-700 cursor-pointer'
+                                }`}>
+                                  + MP3 파일 업로드 (최대 10MB)
+                                </div>
+                              </label>
+                            )}
+                            {!invitationId && (
+                              <p className="text-[10px] text-amber-500">저장 후 음악 파일을 업로드할 수 있습니다</p>
+                            )}
+                            <p className="text-[10px] text-stone-400 leading-relaxed">
+                              저작권이 있는 음악을 업로드할 경우 발생하는 모든 법적 책임은 사용자에게 있습니다. 저작권에 위배되지 않는 MP3 파일만 업로드해주세요.
+                            </p>
                           </div>
 
                           {/* 자동재생 토글 */}

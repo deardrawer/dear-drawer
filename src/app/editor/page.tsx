@@ -55,6 +55,7 @@ function EditorContent() {
   const [loadAttempted, setLoadAttempted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [mobileView, setMobileView] = useState<'editor' | 'preview'>('editor')
+  const [previewKey, setPreviewKey] = useState(0)
   const [isExitModalOpen, setIsExitModalOpen] = useState(false)
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saved' | 'saving' | 'error'>('idle')
@@ -792,16 +793,24 @@ function EditorContent() {
                   </div>
                 )}
 
-                {/* 모바일: 미리보기 모드 */}
-                {isMobile && mobileView === 'preview' && (
-                  <div className="w-full flex flex-col items-center" style={{ minHeight: 'calc(100vh - 104px)' }}>
-                    <Preview ref={previewRef} />
+                {/* 모바일: 미리보기 모드 (항상 마운트, CSS로 숨김) */}
+                {isMobile && (
+                  <div className="w-full flex flex-col items-center relative" style={{ minHeight: 'calc(100vh - 104px)', display: mobileView === 'preview' ? 'flex' : 'none' }}>
+                    <button
+                      onClick={() => setPreviewKey(k => k + 1)}
+                      className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-black/5 hover:bg-black/10 active:bg-black/15 transition-colors"
+                      title="애니메이션 다시보기"
+                    >
+                      <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                    </button>
+                    <Preview key={previewKey} ref={previewRef} />
                   </div>
                 )}
 
                 {/* Edit Panel - 오른쪽 (데스크탑) / 전체 (모바일 편집 모드) */}
-                {(!isMobile || mobileView === 'editor') && (
-                  <div className={`${isMobile ? 'w-full' : 'flex-1 flex flex-col overflow-hidden'} ${isOurTemplate && !isMobile ? 'editor-panel m-4 ml-3.5' : ''}`} style={isMobile ? { paddingBottom: '56px' } : { height: isOurTemplate ? 'calc(100vh - 88px)' : 'calc(100vh - 56px)' }}>
+                <div className={`${isMobile ? 'w-full' : 'flex-1 flex flex-col overflow-hidden'} ${isOurTemplate && !isMobile ? 'editor-panel m-4 ml-3.5' : ''}`} style={isMobile ? { paddingBottom: '56px', display: mobileView === 'editor' ? 'block' : 'none' } : { height: isOurTemplate ? 'calc(100vh - 88px)' : 'calc(100vh - 56px)' }}>
                     <WizardEditor
                       onOpenIntroSelector={() => setIsIntroSelectorOpen(true)}
                       onOpenAIStoryGenerator={() => setIsAIStoryGeneratorOpen(true)}
@@ -830,7 +839,6 @@ function EditorContent() {
                       }}
                     />
                   </div>
-                )}
               </>
             )}
           </div>

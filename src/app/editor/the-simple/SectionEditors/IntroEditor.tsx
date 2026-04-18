@@ -171,6 +171,7 @@ export default function IntroEditor({ value, onChange }: IntroEditorProps) {
             </div>
           </div>
         ) : (
+          <>
           <label className="block">
             <input
               type="file"
@@ -200,6 +201,10 @@ export default function IntroEditor({ value, onChange }: IntroEditorProps) {
               )}
             </div>
           </label>
+          <p className="text-[10px] text-stone-400 leading-relaxed">
+            배경 이미지를 넣지 않으면 블랙 버전으로 표시됩니다
+          </p>
+          </>
         )}
       </div>
     </div>

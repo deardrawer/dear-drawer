@@ -570,7 +570,7 @@ export default function Step5MenuSettings() {
               </svg>
               교통 안내 정보를 입력해주세요.
             </p>
-            {!invitation.wedding.directions.car && !invitation.wedding.directions.publicTransport && !invitation.wedding.directions.train && !invitation.wedding.directions.expressBus && (
+            {!invitation.wedding.directions?.car && !invitation.wedding.directions?.publicTransport && !invitation.wedding.directions?.train && !invitation.wedding.directions?.expressBus && (
               <button onClick={applySampleDirections} className="text-xs text-blue-600 hover:underline">
                 샘플 적용
               </button>
@@ -581,7 +581,7 @@ export default function Step5MenuSettings() {
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">자가용 / 주차 <span className="text-red-500">*</span></Label>
               <Textarea
-                value={invitation.wedding.directions.car}
+                value={invitation.wedding.directions?.car}
                 onChange={(e) => updateNestedField('wedding.directions.car', e.target.value)}
                 placeholder={SAMPLE_DIRECTIONS.car}
                 rows={3}
@@ -591,7 +591,7 @@ export default function Step5MenuSettings() {
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">대중교통 (버스/지하철)</Label>
               <Textarea
-                value={invitation.wedding.directions.publicTransport}
+                value={invitation.wedding.directions?.publicTransport}
                 onChange={(e) => updateNestedField('wedding.directions.publicTransport', e.target.value)}
                 placeholder={SAMPLE_DIRECTIONS.publicTransport}
                 rows={3}
@@ -601,7 +601,7 @@ export default function Step5MenuSettings() {
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">기차 (KTX/SRT)</Label>
               <Textarea
-                value={invitation.wedding.directions.train || ''}
+                value={invitation.wedding.directions?.train || ''}
                 onChange={(e) => updateNestedField('wedding.directions.train', e.target.value)}
                 placeholder="예: KTX 서울역에서 하차 후 3번 출구에서 셔틀버스 이용 (15분 소요)"
                 rows={2}
@@ -611,7 +611,7 @@ export default function Step5MenuSettings() {
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">고속버스</Label>
               <Textarea
-                value={invitation.wedding.directions.expressBus || ''}
+                value={invitation.wedding.directions?.expressBus || ''}
                 onChange={(e) => updateNestedField('wedding.directions.expressBus', e.target.value)}
                 placeholder="예: 고속버스터미널에서 하차 후 택시로 10분 소요"
                 rows={2}
@@ -623,19 +623,19 @@ export default function Step5MenuSettings() {
               <div className="flex items-center justify-between">
                 <Label className="text-sm font-medium">추가 안내사항</Label>
                 <Switch
-                  checked={invitation.wedding.directions.extraInfoEnabled || false}
+                  checked={invitation.wedding.directions?.extraInfoEnabled || false}
                   onCheckedChange={(checked) => updateNestedField('wedding.directions.extraInfoEnabled', checked)}
                 />
               </div>
-              {invitation.wedding.directions.extraInfoEnabled && (
+              {invitation.wedding.directions?.extraInfoEnabled && (
                 <div className="space-y-2">
                   <Input
-                    value={invitation.wedding.directions.extraInfoTitle || ''}
+                    value={invitation.wedding.directions?.extraInfoTitle || ''}
                     onChange={(e) => updateNestedField('wedding.directions.extraInfoTitle', e.target.value)}
                     placeholder="제목 (기본: 추가 안내사항)"
                   />
                   <Textarea
-                    value={invitation.wedding.directions.extraInfoText || ''}
+                    value={invitation.wedding.directions?.extraInfoText || ''}
                     onChange={(e) => updateNestedField('wedding.directions.extraInfoText', e.target.value)}
                     placeholder="예: 주차권은 안내데스크에서 수령 / 혼잡 시간대는 대중교통 추천 / 예식장 입구는 ○○문입니다"
                     rows={3}

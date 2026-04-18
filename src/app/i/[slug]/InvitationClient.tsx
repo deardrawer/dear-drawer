@@ -2570,11 +2570,11 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
   // 첫 번째 가능한 탭으로 초기화
   const directions = invitation.wedding.directions
   const getFirstAvailableTab = (): DirectionsTab => {
-    if (directions.car) return 'car'
-    if (directions.publicTransport) return 'publicTransport'
-    if (directions.train) return 'train'
-    if (directions.expressBus) return 'expressBus'
-    if (directions.shuttle) return 'shuttle'
+    if (directions?.car) return 'car'
+    if (directions?.publicTransport) return 'publicTransport'
+    if (directions?.train) return 'train'
+    if (directions?.expressBus) return 'expressBus'
+    if (directions?.shuttle) return 'shuttle'
     return 'car'
   }
   const [directionsTab, setDirectionsTab] = useState<DirectionsTab>(getFirstAvailableTab)

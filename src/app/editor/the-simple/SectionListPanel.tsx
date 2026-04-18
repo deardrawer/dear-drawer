@@ -249,10 +249,13 @@ export default function SectionListPanel({
                 key={type}
                 type="button"
                 onClick={() => onAddInstance(type)}
-                className="flex-1 min-w-[120px] flex items-center justify-center gap-1.5 border border-dashed border-stone-300 rounded-md py-2.5 text-xs text-stone-500 hover:border-stone-500 hover:text-stone-800 transition-colors"
+                className="flex-1 min-w-[120px] flex flex-col items-center justify-center gap-1 bg-stone-50 border border-dashed border-stone-300 rounded-md py-3 text-xs text-stone-500 hover:bg-stone-100 hover:border-stone-500 hover:text-stone-800 transition-colors"
               >
-                <Plus size={13} />
-                {meta.label} 추가
+                <span className="flex items-center gap-1.5">
+                  <Plus size={13} />
+                  {meta.label} 추가
+                </span>
+                <span className="text-[9px] text-stone-400">사진을 더 보여주고 싶을 때</span>
               </button>
             )
           })}

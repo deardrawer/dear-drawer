@@ -1478,9 +1478,15 @@ function FilmVideoSection({ invitation, fonts, tc, bgOverride }: { invitation: a
 
   return (
     <div className="py-8 px-5" style={{ backgroundColor: bgOverride || tc.background }}>
-      {youtube.title && (
-        <p className="text-center mb-3" style={{ fontFamily: fonts.display, fontSize: dfs(10), letterSpacing: '3px', color: tc.gray }}>{youtube.title}</p>
-      )}
+      {/* Chapter label */}
+      <div className="text-center mb-8">
+        <div style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '6px', color: tc.gray, textTransform: 'uppercase' as const, marginBottom: '6px' }}>
+          MOVIE
+        </div>
+        <h2 style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '2px', color: tc.accent }}>
+          {youtube.title || 'Featured Film'}
+        </h2>
+      </div>
       <div style={{ aspectRatio: '16/9', borderRadius: '4px', overflow: 'hidden', background: '#000' }}>
         {playing ? (
           <iframe src={`https://www.youtube.com/embed/${videoId}?autoplay=1`} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />

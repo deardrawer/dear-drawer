@@ -166,7 +166,7 @@ const magazineIntroStyles = `
 const magazineSectionStyles = `
   @keyframes mag-sectionFadeIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes mag-dropCapScale { from { opacity: 0; transform: scale(1.5); } to { opacity: 1; transform: scale(1); } }
-  @keyframes mag-lineReveal { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes mag-lineReveal { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes mag-slideFromLeft { from { opacity: 0; transform: translateX(-60px); } to { opacity: 1; transform: translateX(0); } }
   @keyframes mag-slideFromRight { from { opacity: 0; transform: translateX(60px); } to { opacity: 1; transform: translateX(0); } }
   @keyframes mag-nameBlurReveal { from { opacity: 0; filter: blur(8px); transform: translateY(8px); } to { opacity: 1; filter: blur(0); transform: translateY(0); } }
@@ -641,7 +641,7 @@ function EditorsNote({ invitation, fonts, themeColors }: { invitation: any; font
                     textAlign: 'center',
                     marginBottom: '4px',
                     opacity: 0,
-                    ...(show ? { animation: `mag-lineReveal 0.7s ease ${0.6 + i * 0.2}s both` } : {}),
+                    ...(show ? { animation: `mag-lineReveal 1.2s ease ${0.8 + i * 0.3}s both` } : {}),
                   }}
                 >
                   {line}
@@ -652,7 +652,7 @@ function EditorsNote({ invitation, fonts, themeColors }: { invitation: any; font
 
           {/* Quote */}
           {invitation.content?.quote?.text && (
-            <div className="mt-12 text-center" style={{ opacity: 0, ...(show ? { animation: `mag-lineReveal 0.8s ease ${0.6 + greeting.split('\n').length * 0.2}s both` } : {}) }}>
+            <div className="mt-12 text-center" style={{ opacity: 0, ...(show ? { animation: `mag-lineReveal 1.2s ease ${0.8 + greeting.split('\n').length * 0.3}s both` } : {}) }}>
               <div style={{ width: '20px', height: '1px', background: themeColors.primary, margin: '0 auto 16px' }} />
               <p style={{ fontFamily: fonts.displayKr, fontSize: '13px', fontStyle: 'italic', lineHeight: 1.8, color: themeColors.primary, whiteSpace: 'pre-line' }}>
                 &ldquo;{invitation.content.quote.text}&rdquo;

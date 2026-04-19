@@ -104,7 +104,7 @@ export default function Step2BasicInfo({ templateId }: Step2BasicInfoProps) {
                       name: lastName + firstName
                     })
                   }}
-                  placeholder="김"
+                  placeholder="한"
                 />
               </div>
               <div className="space-y-1.5">
@@ -120,7 +120,7 @@ export default function Step2BasicInfo({ templateId }: Step2BasicInfoProps) {
                       name: lastName + firstName
                     })
                   }}
-                  placeholder="민준"
+                  placeholder="지훈"
                 />
               </div>
             </div>
@@ -130,7 +130,7 @@ export default function Step2BasicInfo({ templateId }: Step2BasicInfoProps) {
               <Input
                 value={invitation.groom.name}
                 onChange={(e) => updateNestedField('groom.name', e.target.value)}
-                placeholder="김민준"
+                placeholder="한지훈"
                 className={validationError?.tab === 'names' && !invitation.groom.name?.trim() ? 'border-red-500 ring-2 ring-red-200' : ''}
               />
               {validationError?.tab === 'names' && !invitation.groom.name?.trim() && (
@@ -158,7 +158,7 @@ export default function Step2BasicInfo({ templateId }: Step2BasicInfoProps) {
                       name: lastName + firstName
                     })
                   }}
-                  placeholder="이"
+                  placeholder="윤"
                 />
               </div>
               <div className="space-y-1.5">
@@ -184,7 +184,7 @@ export default function Step2BasicInfo({ templateId }: Step2BasicInfoProps) {
               <Input
                 value={invitation.bride.name}
                 onChange={(e) => updateNestedField('bride.name', e.target.value)}
-                placeholder="이서연"
+                placeholder="윤서연"
                 className={validationError?.tab === 'names' && !invitation.bride.name?.trim() ? 'border-red-500 ring-2 ring-red-200' : ''}
               />
               {validationError?.tab === 'names' && !invitation.bride.name?.trim() && (

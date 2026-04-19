@@ -817,7 +817,7 @@ function TextEditor({ title, onTitleChange, dateText, onDateTextChange, comment,
 
       <div className="flex flex-col gap-1.5">
         <label className="text-[11px] font-medium tracking-[1.5px] uppercase text-[#9B8CC4]">제목</label>
-        <input value={title} onChange={e => onTitleChange(e.target.value)} placeholder="김민준 & 이서연 결혼합니다" className={inputClass} />
+        <input value={title} onChange={e => onTitleChange(e.target.value)} placeholder="한지훈 & 윤서연 결혼합니다" className={inputClass} />
       </div>
       <div className="flex flex-col gap-1.5">
         <label className="text-[11px] font-medium tracking-[1.5px] uppercase text-[#9B8CC4]">날짜</label>

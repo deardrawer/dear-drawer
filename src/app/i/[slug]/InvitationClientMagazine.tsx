@@ -592,7 +592,7 @@ function EditorsNote({ invitation, fonts, themeColors }: { invitation: any; font
   const [show, setShow] = useState(false)
 
   useEffect(() => {
-    const timer = setTimeout(() => setShow(true), 600)
+    const timer = setTimeout(() => setShow(true), 200)
     return () => clearTimeout(timer)
   }, [])
 

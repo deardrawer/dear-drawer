@@ -26,7 +26,7 @@ export default function AccountSection({
   accounts = [
     { label: '아버지', name: '이○○', bank: '국민은행', account: '123-45-6789012' },
     { label: '어머니', name: '김○○', bank: '신한은행', account: '110-456-789012' },
-    { label: '신부', name: '이서연', bank: '토스뱅크', account: '1000-1234-5678' },
+    { label: '신부', name: '윤서연', bank: '토스뱅크', account: '1000-1234-5678' },
   ],
 }: AccountSectionProps) {
   const { ref, isActive, hasAppeared } = useSectionHighlight('account')

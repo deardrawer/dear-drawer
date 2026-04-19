@@ -98,7 +98,7 @@ export default function IntroEditor({ value, onChange }: IntroEditorProps) {
             type="text"
             value={value.customNames ?? ''}
             onChange={(e) => update({ customNames: e.target.value })}
-            placeholder="예: Minjun & Seoyeon"
+            placeholder="예: Jihun & Seoyeon"
             className="mt-1.5 w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white"
           />
         )}

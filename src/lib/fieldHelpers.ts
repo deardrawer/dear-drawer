@@ -81,7 +81,7 @@ export const fieldHelpers: Record<string, FieldHelper> = {
   'groom.name': {
     label: '신랑 이름',
     explanation: '인트로와 청첩장 곳곳에 표시돼요. 풀네임을 입력해주세요.',
-    example: '김민준',
+    example: '한지훈',
     previewSection: 'intro',
   },
   'groom.phone': {
@@ -93,7 +93,7 @@ export const fieldHelpers: Record<string, FieldHelper> = {
   'bride.name': {
     label: '신부 이름',
     explanation: '인트로와 청첩장 곳곳에 표시돼요. 풀네임을 입력해주세요.',
-    example: '이서연',
+    example: '윤서연',
     previewSection: 'intro',
   },
   'bride.phone': {
@@ -107,25 +107,25 @@ export const fieldHelpers: Record<string, FieldHelper> = {
   'groom.father.name': {
     label: '신랑 아버지 성함',
     explanation: '인트로 하단과 가족 소개에 표시돼요. 성함만 입력하시면 돼요.',
-    example: '김철수',
+    example: '한영수',
     previewSection: 'family',
   },
   'groom.mother.name': {
     label: '신랑 어머니 성함',
     explanation: '인트로 하단과 가족 소개에 표시돼요. 성함만 입력하시면 돼요.',
-    example: '박영희',
+    example: '김미경',
     previewSection: 'family',
   },
   'bride.father.name': {
     label: '신부 아버지 성함',
     explanation: '인트로 하단과 가족 소개에 표시돼요. 성함만 입력하시면 돼요.',
-    example: '이정호',
+    example: '윤정호',
     previewSection: 'family',
   },
   'bride.mother.name': {
     label: '신부 어머니 성함',
     explanation: '인트로 하단과 가족 소개에 표시돼요. 성함만 입력하시면 돼요.',
-    example: '김미영',
+    example: '이선영',
     previewSection: 'family',
   },
 
@@ -379,7 +379,7 @@ export const fieldHelpers: Record<string, FieldHelper> = {
   'content.thankYou.sign': {
     label: '서명',
     explanation: '감사 인사 아래 두 분의 이름이 표시돼요.',
-    example: '민준 & 서연 올림',
+    example: '지훈 & 서연 올림',
     previewSection: 'thank-you',
   },
 
@@ -399,7 +399,7 @@ export const fieldHelpers: Record<string, FieldHelper> = {
   'groom.bank.holder': {
     label: '예금주',
     explanation: '계좌 예금주 이름이에요. 정확하게 입력해주세요.',
-    example: '김민준',
+    example: '한지훈',
     previewSection: 'bank-accounts',
   },
 

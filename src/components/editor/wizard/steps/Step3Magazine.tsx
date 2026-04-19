@@ -99,7 +99,7 @@ export default function Step3Magazine({ templateId, invitationId }: Step3Magazin
             <Input
               value={invitation.groom.name}
               onChange={(e) => updateNestedField('groom.name', e.target.value)}
-              placeholder="김민준"
+              placeholder="한지훈"
               className={validationError?.tab === 'names' && !invitation.groom.name?.trim() ? 'border-red-500 ring-2 ring-red-200' : ''}
             />
           </div>
@@ -108,7 +108,7 @@ export default function Step3Magazine({ templateId, invitationId }: Step3Magazin
             <Input
               value={invitation.groom.nameEn || ''}
               onChange={(e) => updateNestedField('groom.nameEn', e.target.value)}
-              placeholder="MINJUN"
+              placeholder="JIHUN"
             />
           </div>
         </div>
@@ -120,7 +120,7 @@ export default function Step3Magazine({ templateId, invitationId }: Step3Magazin
             <Input
               value={invitation.bride.name}
               onChange={(e) => updateNestedField('bride.name', e.target.value)}
-              placeholder="이서연"
+              placeholder="윤서연"
               className={validationError?.tab === 'names' && !invitation.bride.name?.trim() ? 'border-red-500 ring-2 ring-red-200' : ''}
             />
           </div>

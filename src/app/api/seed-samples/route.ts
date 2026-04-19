@@ -4,11 +4,11 @@ import { getCloudflareContext } from '@opennextjs/cloudflare'
 // OUR 템플릿 샘플 데이터
 const ourSampleContent = {
   groom: {
-    name: '김민준',
+    name: '한지훈',
     phone: '010-1234-5678',
-    father: { name: '김철수', phone: '010-1111-2222', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
-    mother: { name: '박영희', phone: '010-3333-4444', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
-    bank: { bank: '신한은행', account: '110-123-456789', holder: '김민준', enabled: true },
+    father: { name: '한영수', phone: '010-1111-2222', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
+    mother: { name: '김미경', phone: '010-3333-4444', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
+    bank: { bank: '신한은행', account: '110-123-456789', holder: '한지훈', enabled: true },
     profile: {
       images: ['/sample/groom1.png', '/sample/groom2.png'],
       imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],
@@ -19,11 +19,11 @@ const ourSampleContent = {
     },
   },
   bride: {
-    name: '이서연',
+    name: '윤서연',
     phone: '010-5678-1234',
-    father: { name: '이정호', phone: '010-5555-6666', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
-    mother: { name: '최미경', phone: '010-7777-8888', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
-    bank: { bank: '국민은행', account: '123-45-678901', holder: '이서연', enabled: true },
+    father: { name: '윤정호', phone: '010-5555-6666', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
+    mother: { name: '이선영', phone: '010-7777-8888', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
+    bank: { bank: '국민은행', account: '123-45-678901', holder: '윤서연', enabled: true },
     profile: {
       images: ['/sample/bride1.png', '/sample/bride2.png'],
       imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],

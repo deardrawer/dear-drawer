@@ -110,7 +110,7 @@ function Option2_BottomNav() {
                   <div>
                     <div className="flex items-center gap-2 mb-2"><span className="w-1.5 h-1.5 rounded-full bg-blue-500" /><p className="text-xs font-medium text-blue-700">신랑측</p></div>
                     <div className="space-y-2">
-                      {[{ role: '아버지', name: '김철수' }, { role: '어머니', name: '박영희' }].map((c, i) => (
+                      {[{ role: '아버지', name: '한영수' }, { role: '어머니', name: '김미경' }].map((c, i) => (
                         <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-blue-50 border border-blue-100">
                           <div><span className="text-xs font-medium text-blue-900">{c.role}</span><p className="text-[11px] text-blue-700">{c.name}</p></div>
                           <div className="flex gap-1.5">
@@ -128,7 +128,7 @@ function Option2_BottomNav() {
                   <div>
                     <div className="flex items-center gap-2 mb-2"><span className="w-1.5 h-1.5 rounded-full bg-pink-500" /><p className="text-xs font-medium text-pink-700">신부측</p></div>
                     <div className="space-y-2">
-                      {[{ role: '아버지', name: '이정호' }, { role: '어머니', name: '최미경' }].map((c, i) => (
+                      {[{ role: '아버지', name: '윤정호' }, { role: '어머니', name: '이선영' }].map((c, i) => (
                         <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-pink-50 border border-pink-100">
                           <div><span className="text-xs font-medium text-pink-900">{c.role}</span><p className="text-[11px] text-pink-700">{c.name}</p></div>
                           <div className="flex gap-1.5">
@@ -213,7 +213,7 @@ function Option2_BottomNav() {
                   <div>
                     <div className="flex items-center gap-2 mb-2"><span className="w-1.5 h-1.5 rounded-full bg-blue-500" /><p className="text-xs font-medium text-blue-700">신랑측</p></div>
                     <div className="space-y-2">
-                      {[{ role: '신랑', name: '김민준', bank: '카카오뱅크', account: '3333-01-1234567' }].map((a, i) => (
+                      {[{ role: '신랑', name: '한지훈', bank: '카카오뱅크', account: '3333-01-1234567' }].map((a, i) => (
                         <div key={i} className="p-3 rounded-xl bg-blue-50 border border-blue-100">
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-xs font-medium text-blue-900">{a.role} {a.name}</span>
@@ -227,7 +227,7 @@ function Option2_BottomNav() {
                   <div>
                     <div className="flex items-center gap-2 mb-2"><span className="w-1.5 h-1.5 rounded-full bg-pink-500" /><p className="text-xs font-medium text-pink-700">신부측</p></div>
                     <div className="space-y-2">
-                      {[{ role: '신부', name: '이서연', bank: '국민은행', account: '940810-01-234567' }].map((a, i) => (
+                      {[{ role: '신부', name: '윤서연', bank: '국민은행', account: '940810-01-234567' }].map((a, i) => (
                         <div key={i} className="p-3 rounded-xl bg-pink-50 border border-pink-100">
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-xs font-medium text-pink-900">{a.role} {a.name}</span>
@@ -719,7 +719,7 @@ function DemoContactContent() {
       <div>
         <div className="flex items-center gap-2 mb-2"><span className="w-1.5 h-1.5 rounded-full bg-blue-500" /><p className="text-xs font-medium text-blue-700">신랑측</p></div>
         <div className="space-y-2">
-          {[{ role: '아버지', name: '김철수' }, { role: '어머니', name: '박영희' }].map((c, i) => (
+          {[{ role: '아버지', name: '한영수' }, { role: '어머니', name: '김미경' }].map((c, i) => (
             <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-blue-50 border border-blue-100">
               <div><span className="text-xs font-medium text-blue-900">{c.role}</span><p className="text-[11px] text-blue-700">{c.name}</p></div>
               <div className="flex gap-1.5">
@@ -733,7 +733,7 @@ function DemoContactContent() {
       <div>
         <div className="flex items-center gap-2 mb-2"><span className="w-1.5 h-1.5 rounded-full bg-pink-500" /><p className="text-xs font-medium text-pink-700">신부측</p></div>
         <div className="space-y-2">
-          {[{ role: '아버지', name: '이정호' }, { role: '어머니', name: '최미경' }].map((c, i) => (
+          {[{ role: '아버지', name: '윤정호' }, { role: '어머니', name: '이선영' }].map((c, i) => (
             <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-pink-50 border border-pink-100">
               <div><span className="text-xs font-medium text-pink-900">{c.role}</span><p className="text-[11px] text-pink-700">{c.name}</p></div>
               <div className="flex gap-1.5">
@@ -797,14 +797,14 @@ function DemoAccountContent() {
       <div>
         <div className="flex items-center gap-2 mb-2"><span className="w-1.5 h-1.5 rounded-full bg-blue-500" /><p className="text-xs font-medium text-blue-700">신랑측</p></div>
         <div className="p-3 rounded-xl bg-blue-50 border border-blue-100">
-          <div className="flex items-center justify-between mb-1"><span className="text-xs font-medium text-blue-900">신랑 김민준</span><button className="text-[10px] px-2.5 py-1 rounded-full bg-blue-100 text-blue-700">복사</button></div>
+          <div className="flex items-center justify-between mb-1"><span className="text-xs font-medium text-blue-900">신랑 한지훈</span><button className="text-[10px] px-2.5 py-1 rounded-full bg-blue-100 text-blue-700">복사</button></div>
           <p className="text-xs text-blue-800">카카오뱅크 3333-01-1234567</p>
         </div>
       </div>
       <div>
         <div className="flex items-center gap-2 mb-2"><span className="w-1.5 h-1.5 rounded-full bg-pink-500" /><p className="text-xs font-medium text-pink-700">신부측</p></div>
         <div className="p-3 rounded-xl bg-pink-50 border border-pink-100">
-          <div className="flex items-center justify-between mb-1"><span className="text-xs font-medium text-pink-900">신부 이서연</span><button className="text-[10px] px-2.5 py-1 rounded-full bg-pink-100 text-pink-700">복사</button></div>
+          <div className="flex items-center justify-between mb-1"><span className="text-xs font-medium text-pink-900">신부 윤서연</span><button className="text-[10px] px-2.5 py-1 rounded-full bg-pink-100 text-pink-700">복사</button></div>
           <p className="text-xs text-pink-800">국민은행 940810-01-234567</p>
         </div>
       </div>
@@ -850,7 +850,7 @@ export default function TestFabPage() {
     <div className="space-y-8" style={{ paddingBottom: activeOption === 6 || activeOption === 2 ? '100px' : '32px' }}>
       <div className="text-center pt-12 pb-8">
         <p className="text-sm tracking-widest mb-4" style={{ color: themeColors.primary }}>WEDDING INVITATION</p>
-        <h1 className="text-2xl font-light mb-2" style={{ color: themeColors.text }}>민준 & 서연</h1>
+        <h1 className="text-2xl font-light mb-2" style={{ color: themeColors.text }}>지훈 & 서연</h1>
         <p className="text-xs" style={{ color: themeColors.gray }}>2026. 12. 26 토요일 오후 2시</p>
       </div>
 
@@ -877,8 +877,8 @@ export default function TestFabPage() {
       </div>
 
       <div className="px-8 text-center space-y-2">
-        <p className="text-xs" style={{ color: themeColors.text }}>김철수 · 박영희 의 아들 <span style={{ color: themeColors.primary }}>김민준</span></p>
-        <p className="text-xs" style={{ color: themeColors.text }}>이정호 · 최미경 의 딸 <span style={{ color: themeColors.primary }}>이서연</span></p>
+        <p className="text-xs" style={{ color: themeColors.text }}>한영수 · 김미경 의 아들 <span style={{ color: themeColors.primary }}>한지훈</span></p>
+        <p className="text-xs" style={{ color: themeColors.text }}>윤정호 · 이선영 의 딸 <span style={{ color: themeColors.primary }}>윤서연</span></p>
       </div>
 
       <div className="mx-6 rounded-2xl p-8 text-center" style={{ background: themeColors.sectionBg }}>
@@ -905,7 +905,7 @@ export default function TestFabPage() {
       <div className="relative h-48 flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${themeColors.primary}30, ${themeColors.primary}10)` }}>
         <div className="text-center">
           <p className="text-[10px] tracking-[0.3em] mb-2" style={{ color: themeColors.primary }}>CHAPTER 1</p>
-          <p className="text-lg font-light" style={{ color: themeColors.text }}>민준 & 서연</p>
+          <p className="text-lg font-light" style={{ color: themeColors.text }}>지훈 & 서연</p>
           <p className="text-xs mt-1" style={{ color: themeColors.gray }}>결혼합니다</p>
         </div>
       </div>
@@ -916,7 +916,7 @@ export default function TestFabPage() {
           <div className="h-72 flex items-center justify-center" style={{ background: `${themeColors.primary}15` }}><span className="text-5xl opacity-20">📷</span></div>
           <div className="p-6 text-center">
             <p className="text-xs tracking-widest mb-2" style={{ color: themeColors.primary }}>GROOM</p>
-            <p className="text-sm font-medium mb-3" style={{ color: themeColors.text }}>김민준</p>
+            <p className="text-sm font-medium mb-3" style={{ color: themeColors.text }}>한지훈</p>
             <p className="text-xs leading-relaxed" style={{ color: themeColors.gray }}>당신과 함께하는 매 순간이<br />제 인생의 가장 빛나는 시간입니다.</p>
           </div>
         </div>
@@ -924,7 +924,7 @@ export default function TestFabPage() {
           <div className="h-72 flex items-center justify-center" style={{ background: `${themeColors.primary}15` }}><span className="text-5xl opacity-20">📷</span></div>
           <div className="p-6 text-center">
             <p className="text-xs tracking-widest mb-2" style={{ color: themeColors.primary }}>BRIDE</p>
-            <p className="text-sm font-medium mb-3" style={{ color: themeColors.text }}>이서연</p>
+            <p className="text-sm font-medium mb-3" style={{ color: themeColors.text }}>윤서연</p>
             <p className="text-xs leading-relaxed" style={{ color: themeColors.gray }}>당신이 있어 매일이 특별한 날입니다.<br />앞으로도 함께 걸어가요.</p>
           </div>
         </div>

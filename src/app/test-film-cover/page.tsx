@@ -9,10 +9,10 @@ const italianaFont = "'Italiana', serif"
 
 // ===== Shared Data & Config =====
 const sampleData = {
-  groomName: 'Minjun',
+  groomName: 'Jihun',
   brideName: 'Seoyeon',
-  groomNameKr: '김민준',
-  brideNameKr: '이서연',
+  groomNameKr: '한지훈',
+  brideNameKr: '윤서연',
   date: '2026-05-23',
   venueName: '더채플앳청담',
   coverImage: '/sample/cover.png',

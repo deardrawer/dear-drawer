@@ -2167,11 +2167,11 @@ const mockInvitation = {
   whyWeChoseTextStyle: undefined as { lineHeight?: number; textAlign?: 'left' | 'center' | 'right' } | undefined,
 
   groom: {
-    name: '김민준',
+    name: '한지훈',
     phone: '010-1234-5678',
-    father: { name: '김철수', phone: '010-1111-2222', deceased: false },
-    mother: { name: '이영희', phone: '010-3333-4444', deceased: false },
-    bank: { bank: '신한은행', account: '110-123-456789', holder: '김민준', enabled: true },
+    father: { name: '한영수', phone: '010-1111-2222', deceased: false },
+    mother: { name: '김미경', phone: '010-3333-4444', deceased: false },
+    bank: { bank: '신한은행', account: '110-123-456789', holder: '한지훈', enabled: true },
     profile: {
       images: ['/demo/groom1.jpg', '/demo/groom2.jpg'],
       imageSettings: [
@@ -2185,11 +2185,11 @@ const mockInvitation = {
     },
   },
   bride: {
-    name: '이서연',
+    name: '윤서연',
     phone: '010-5678-1234',
-    father: { name: '이정호', phone: '010-5555-6666', deceased: false },
-    mother: { name: '박미경', phone: '010-7777-8888', deceased: false },
-    bank: { bank: '국민은행', account: '123-45-678901', holder: '이서연', enabled: true },
+    father: { name: '윤정호', phone: '010-5555-6666', deceased: false },
+    mother: { name: '이선영', phone: '010-7777-8888', deceased: false },
+    bank: { bank: '국민은행', account: '123-45-678901', holder: '윤서연', enabled: true },
     profile: {
       images: ['/demo/bride1.jpg', '/demo/bride2.jpg'],
       imageSettings: [
@@ -2261,7 +2261,7 @@ const mockInvitation = {
     thankYou: {
       title: 'THANK YOU',
       message: '바쁘신 와중에도 저희의 결혼을\n축하해 주셔서 진심으로 감사드립니다.\n\n여러분의 축복을 마음에 새기며\n서로 아끼고 사랑하며 살겠습니다.',
-      sign: '민준 & 서연 올림',
+      sign: '지훈 & 서연 올림',
     },
     interviews: [
       {

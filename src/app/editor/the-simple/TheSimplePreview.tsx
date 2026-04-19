@@ -1967,8 +1967,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
     return rows
   }, [data.wedding.date])
 
-  const groomName = data.groom.name || '김민준'
-  const brideName = data.bride.name || '이서연'
+  const groomName = data.groom.name || '한지훈'
+  const brideName = data.bride.name || '윤서연'
   const groomNameEn = data.groom.nameEn || ''
   const brideNameEn = data.bride.nameEn || ''
   const venueName = data.wedding.venue.name || '그랜드 하얏트 서울'

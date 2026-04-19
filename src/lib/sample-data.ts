@@ -1,26 +1,26 @@
 // OUR 템플릿 샘플 데이터
 export const ourSampleContent = {
   groom: {
-    name: '김민준',
+    name: '한지훈',
     phone: '010-1234-5678',
-    father: { name: '김철수', phone: '010-1111-2222', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
-    mother: { name: '박영희', phone: '010-3333-4444', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
-    bank: { bank: '신한은행', account: '110-123-456789', holder: '김민준', enabled: true },
+    father: { name: '한영수', phone: '010-1111-2222', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
+    mother: { name: '김미경', phone: '010-3333-4444', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
+    bank: { bank: '신한은행', account: '110-123-456789', holder: '한지훈', enabled: true },
     profile: {
       images: ['/sample/groom1.png', '/sample/groom2.png'],
       imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],
       aboutLabel: 'ABOUT GROOM',
       subtitle: '신부가 소개하는 신랑 🤵',
-      intro: '민준이는\n마음이 단단한 사람입니다.\n\n한번 마음을 주면 쉽게 흔들리지 않고,\n좋아하는 것들을 오래, 꾸준히 곁에 두는 사람이에요.\n산책, 운동, 매일의 작은 루틴까지\n자기만의 속도로 성실하게 지켜갑니다.\n\n가끔은 그 단단함이 고집처럼 보일 때도 있지만,\n그래서 더 믿음이 가요.\n스스로에게 한 약속은\n반드시 지켜내는 사람이니까요.\n\n운동도 잘하고, 게임도 잘하고,\n무엇보다 처음 해보는 것 앞에서도\n주저하지 않는 용기가 있어요.\n\n그래서 어떤 날이 와도\n민준이와 함께라면 저는 쉽게 무너지지 않아요. 😌',
+      intro: '지훈이는\n마음이 단단한 사람입니다.\n\n한번 마음을 주면 쉽게 흔들리지 않고,\n좋아하는 것들을 오래, 꾸준히 곁에 두는 사람이에요.\n산책, 운동, 매일의 작은 루틴까지\n자기만의 속도로 성실하게 지켜갑니다.\n\n가끔은 그 단단함이 고집처럼 보일 때도 있지만,\n그래서 더 믿음이 가요.\n스스로에게 한 약속은\n반드시 지켜내는 사람이니까요.\n\n운동도 잘하고, 게임도 잘하고,\n무엇보다 처음 해보는 것 앞에서도\n주저하지 않는 용기가 있어요.\n\n그래서 어떤 날이 와도\n지훈이와 함께라면 저는 쉽게 무너지지 않아요. 😌',
       tag: '세상에서 가장 따뜻한 사람',
     },
   },
   bride: {
-    name: '이서연',
+    name: '윤서연',
     phone: '010-5678-1234',
-    father: { name: '이정호', phone: '010-5555-6666', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
-    mother: { name: '최미경', phone: '010-7777-8888', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
-    bank: { bank: '국민은행', account: '123-45-678901', holder: '이서연', enabled: true },
+    father: { name: '윤정호', phone: '010-5555-6666', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
+    mother: { name: '이선영', phone: '010-7777-8888', deceased: false, bank: { bank: '', account: '', holder: '', enabled: false } },
+    bank: { bank: '국민은행', account: '123-45-678901', holder: '윤서연', enabled: true },
     profile: {
       images: ['/sample/bride1.png', '/sample/bride2.png'],
       imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],
@@ -82,7 +82,7 @@ export const ourSampleContent = {
     thankYou: {
       title: 'THANK YOU',
       message: '바쁘신 와중에도 저희의 결혼을\n축하해 주셔서 진심으로 감사드립니다.\n\n여러분의 축복을 마음에 새기며\n서로 아끼고 사랑하며 살겠습니다.',
-      sign: '민준 & 서연 올림',
+      sign: '지훈 & 서연 올림',
     },
     info: {
       dressCode: { title: '드레스코드', content: '결혼식에 맞는 옷차림을 고민하지 않으셔도 괜찮아요.\n여러분이 가장 좋아하는 옷, 가장 여러분 다운 모습으로 오셔서 함께 웃고 즐겨주신다면 그걸로 충분합니다.\n우리의 특별한 하루를 함께 빛내주세요.', enabled: true },
@@ -126,7 +126,7 @@ export const ourSampleContent = {
     bgm: '',
   },
   meta: {
-    title: '민준 ♥ 서연 결혼합니다',
+    title: '지훈 ♥ 서연 결혼합니다',
     description: '2025년 5월 24일 토요일 오후 2시\n더채플앳청담 그랜드볼룸',
     ogImage: '/sample/cover3.png',
     kakaoThumbnail: '/sample/cover3.png',
@@ -192,7 +192,7 @@ export const familySampleContent = {
   parentIntro: {
     groom: {
       enabled: true,
-      parentNames: '김○○ · 박○○의',
+      parentNames: '한○○ · 김○○의',
       childOrder: '첫째',
       images: ['/images/son.png'],
       imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }],
@@ -200,7 +200,7 @@ export const familySampleContent = {
     },
     bride: {
       enabled: true,
-      parentNames: '이○○ · 김○○의',
+      parentNames: '윤○○ · 이○○의',
       childOrder: '첫째',
       images: ['/images/daughter.png'],
       imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }],
@@ -268,10 +268,10 @@ export const filmSampleContent = {
   displayFont: 'italiana',
   groom: {
     ...ourSampleContent.groom,
-    name: '김민준',
-    nameEn: 'MINJU',
-    lastName: '김',
-    firstName: '민준',
+    name: '한지훈',
+    nameEn: 'JIHUN',
+    lastName: '한',
+    firstName: '지훈',
     profile: {
       ...ourSampleContent.groom.profile,
       images: ['/sample/movie-groom.png'],
@@ -280,9 +280,9 @@ export const filmSampleContent = {
   },
   bride: {
     ...ourSampleContent.bride,
-    name: '이서연',
+    name: '윤서연',
     nameEn: 'SEOYEON',
-    lastName: '이',
+    lastName: '윤',
     firstName: '서연',
     profile: {
       ...ourSampleContent.bride.profile,
@@ -335,7 +335,7 @@ export const filmSampleContent = {
     thankYou: {
       title: 'SPECIAL THANKS',
       message: '바쁘신 와중에도 저희의 결혼을\n축하해 주셔서 진심으로 감사드립니다.\n\n여러분의 축복을 마음에 새기며\n서로 아끼고 사랑하며 살겠습니다.',
-      sign: '민준 & 서연 올림',
+      sign: '지훈 & 서연 올림',
     },
   },
   gallery: {
@@ -379,14 +379,14 @@ export const recordSampleContent = {
   fontStyle: 'modern' as const,
   groom: {
     ...ourSampleContent.groom,
-    name: '김민준',
-    lastName: '김',
-    firstName: '민준',
+    name: '한지훈',
+    lastName: '한',
+    firstName: '지훈',
   },
   bride: {
     ...ourSampleContent.bride,
-    name: '이서연',
-    lastName: '이',
+    name: '윤서연',
+    lastName: '윤',
     firstName: '서연',
   },
   wedding: {
@@ -433,7 +433,7 @@ export const recordSampleContent = {
     thankYou: {
       title: 'LINER NOTES',
       message: '이 앨범이 완성되기까지\n함께해주신 모든 분들께 감사드립니다.\n\n여러분의 축복이 담긴 이 노래를\n평생 함께 부르며 살겠습니다.',
-      sign: '민준 & 서연 올림',
+      sign: '지훈 & 서연 올림',
     },
   },
   guidance: { ...ourSampleContent.guidance, imageSettings: { scale: 1, positionX: 0, positionY: 35 } },
@@ -466,7 +466,7 @@ export const exhibitSampleContent = {
   templateId: 'exhibit',
   colorTheme: 'exhibit-white' as const,
   fontStyle: 'modern' as const,
-  displayId: 'mj♥sy',
+  displayId: 'jh♥sy',
   wedding: {
     ...ourSampleContent.wedding,
     directions: {
@@ -529,10 +529,10 @@ export const exhibitSampleContent = {
     guestbookQuestions: ['두 사람에게 축하 메시지를 남겨주세요', '결혼생활에서 가장 중요한 건?', '두 사람의 첫인상은 어땠나요?'],
     sampleGuestbook: [
       { id: 'g1', guest_name: '박지영', message: '두 분의 결혼을 진심으로 축하해요! 항상 행복하세요 💕', created_at: '2026-02-19T10:30:00Z' },
-      { id: 'g2', guest_name: '최현우', message: '민준아 결혼 축하한다! 서연님과 행복한 가정 꾸려라 🎉', created_at: '2026-02-19T09:15:00Z' },
+      { id: 'g2', guest_name: '최현우', message: '지훈아 결혼 축하한다! 서연님과 행복한 가정 꾸려라 🎉', created_at: '2026-02-19T09:15:00Z' },
       { id: 'g3', guest_name: '정소희', message: '세상에서 가장 예쁜 커플! 결혼 너무너무 축하드려요 🤍', created_at: '2026-02-18T22:00:00Z' },
       { id: 'g4', guest_name: '김태호', message: '축하축하! 결혼식 날 꼭 갈게요. 행복하게 잘 살아 😊', created_at: '2026-02-18T18:30:00Z' },
-      { id: 'g5', guest_name: '이수진', message: '서연아 결혼 축하해!! 민준님이랑 오래오래 행복해 💐', created_at: '2026-02-18T15:00:00Z' },
+      { id: 'g5', guest_name: '이수진', message: '서연아 결혼 축하해!! 지훈님이랑 오래오래 행복해 💐', created_at: '2026-02-18T15:00:00Z' },
       { id: 'g6', guest_name: '한도윤', message: '두 분 정말 잘 어울려요! 결혼 진심으로 축하합니다 🥂', created_at: '2026-02-17T20:00:00Z' },
     ],
     info: {
@@ -545,7 +545,7 @@ export const exhibitSampleContent = {
     thankYou: {
       title: 'THANK YOU',
       message: '바쁘신 와중에도 저희의 결혼을\n축하해 주셔서 진심으로 감사드립니다.\n\n여러분의 축복을 마음에 새기며\n서로 아끼고 사랑하며 살겠습니다.',
-      sign: '민준 & 서연 올림',
+      sign: '지훈 & 서연 올림',
     },
   },
   design: {
@@ -561,26 +561,26 @@ export const essayStorySampleContent = {
   fontStyle: 'modern' as const,
   bgm: { enabled: true, url: '/api/r2/audio/marigold.mp3', autoplay: true },
   groom: {
-    name: '김민준',
-    nameEn: 'MINJUN',
-    lastName: '김',
-    firstName: '민준',
+    name: '한지훈',
+    nameEn: 'JIHUN',
+    lastName: '한',
+    firstName: '지훈',
     phone: '010-1234-5678',
     phoneEnabled: true,
-    father: { name: '김철수', phone: '010-1111-2222', phoneEnabled: true, deceased: false, bank: { bank: '우리은행', account: '1002-123-456789', holder: '김철수', enabled: true } },
-    mother: { name: '박영희', phone: '010-3333-4444', phoneEnabled: true, deceased: false, bank: { bank: '하나은행', account: '267-910123-45678', holder: '박영희', enabled: true } },
-    bank: { bank: '신한은행', account: '110-123-456789', holder: '김민준', enabled: true },
+    father: { name: '한영수', phone: '010-1111-2222', phoneEnabled: true, deceased: false, bank: { bank: '우리은행', account: '1002-123-456789', holder: '한영수', enabled: true } },
+    mother: { name: '김미경', phone: '010-3333-4444', phoneEnabled: true, deceased: false, bank: { bank: '하나은행', account: '267-910123-45678', holder: '김미경', enabled: true } },
+    bank: { bank: '신한은행', account: '110-123-456789', holder: '한지훈', enabled: true },
   },
   bride: {
-    name: '이서연',
+    name: '윤서연',
     nameEn: 'SEOYEON',
-    lastName: '이',
+    lastName: '윤',
     firstName: '서연',
     phone: '010-5678-1234',
     phoneEnabled: true,
-    father: { name: '이정호', phone: '010-5555-6666', phoneEnabled: true, deceased: false, bank: { bank: 'NH농협', account: '302-1234-5678-91', holder: '이정호', enabled: true } },
-    mother: { name: '최미경', phone: '010-7777-8888', phoneEnabled: true, deceased: false, bank: { bank: '카카오뱅크', account: '3333-12-3456789', holder: '최미경', enabled: true } },
-    bank: { bank: '국민은행', account: '123-45-678901', holder: '이서연', enabled: true },
+    father: { name: '윤정호', phone: '010-5555-6666', phoneEnabled: true, deceased: false, bank: { bank: 'NH농협', account: '302-1234-5678-91', holder: '윤정호', enabled: true } },
+    mother: { name: '이선영', phone: '010-7777-8888', phoneEnabled: true, deceased: false, bank: { bank: '카카오뱅크', account: '3333-12-3456789', holder: '이선영', enabled: true } },
+    bank: { bank: '국민은행', account: '123-45-678901', holder: '윤서연', enabled: true },
   },
   wedding: {
     date: '2026-05-23',
@@ -629,7 +629,7 @@ export const essayStorySampleContent = {
   thankYou: {
     title: '감사 인사',
     message: '바쁘신 와중에도\n저희의 결혼을 축하해 주셔서\n진심으로 감사드립니다.\n\n여러분의 축복을 마음에 새기며\n서로 아끼고 사랑하며 살겠습니다.',
-    sign: '민준 & 서연 올림',
+    sign: '지훈 & 서연 올림',
   },
   sectionVisibility: {
     contacts: true,
@@ -660,7 +660,7 @@ export const essayStorySampleContent = {
     guestbookQuestions: ['두 사람에게 축하 메시지를 남겨주세요'],
     sampleGuestbook: [
       { id: 'g1', guest_name: '박지영', message: '사진 없는 청첩장인데 오히려 더 감동이에요. 진심이 느껴지는 글이 최고입니다 💕', created_at: '2026-02-19T10:30:00Z' },
-      { id: 'g2', guest_name: '최현우', message: '민준아 드디어! 축하한다 형! 행복해라 🎉', created_at: '2026-02-19T09:15:00Z' },
+      { id: 'g2', guest_name: '최현우', message: '지훈아 드디어! 축하한다 형! 행복해라 🎉', created_at: '2026-02-19T09:15:00Z' },
       { id: 'g3', guest_name: '정소희', message: '두 분의 이야기가 정말 아름다워요. 결혼 축하드립니다 🤍', created_at: '2026-02-18T22:00:00Z' },
     ],
     bonusInterviews: [
@@ -692,8 +692,8 @@ const tsGalleryImg = (filename: string, idx: number) => ({
 })
 
 export const theSimpleSampleContent = {
-  groom: { name: '김민준', phone: '010-1234-5678', nameEn: 'Minjun' },
-  bride: { name: '이서연', phone: '010-5678-1234', nameEn: 'Seoyeon' },
+  groom: { name: '한지훈', phone: '010-1234-5678', nameEn: 'Jihun' },
+  bride: { name: '윤서연', phone: '010-5678-1234', nameEn: 'Seoyeon' },
   wedding: {
     date: '2026-05-16',
     time: '13:00',
@@ -787,8 +787,8 @@ export const theSimpleSampleContent = {
     account: {
       eyebrow: 'Account',
       guide: '참석이 어려우신 분들을 위해 기재했습니다.\n너그러운 마음으로 양해 부탁드립니다.',
-      groom: [{ bank: '신한은행', number: '110-123-456789', holder: '김민준' }],
-      bride: [{ bank: '국민은행', number: '123-45-678901', holder: '이서연' }],
+      groom: [{ bank: '신한은행', number: '110-123-456789', holder: '한지훈' }],
+      bride: [{ bank: '국민은행', number: '123-45-678901', holder: '윤서연' }],
     },
     thanks: {
       mark: 'Thank You',
@@ -864,7 +864,7 @@ export const theSimpleSampleContent = {
     autoplay: true,
   },
   meta: {
-    title: 'THE SIMPLE · 민준 ♥ 서연 결혼합니다',
+    title: 'THE SIMPLE · 지훈 ♥ 서연 결혼합니다',
     description: '2026년 5월 16일 토요일 오후 1시\n그랜드 하얏트 서울 그랜드 볼룸',
     ogImage: '',
   },

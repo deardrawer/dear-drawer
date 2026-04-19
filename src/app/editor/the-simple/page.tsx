@@ -321,7 +321,7 @@ const DEFAULT_SECTION_ORDER = [
 ]
 
 const defaultData: TheSimpleInvitationData = {
-  groom: { name: '', phone: '', nameEn: 'Minjun' },
+  groom: { name: '', phone: '', nameEn: 'Jihun' },
   bride: { name: '', phone: '', nameEn: 'Seoyeon' },
   wedding: {
     date: '2026-05-16',
@@ -1488,7 +1488,7 @@ function TheSimpleEditorContent() {
                           value={data.groom.name}
                           onChange={(e) => updateNested('groom', { ...data.groom, name: e.target.value })}
                           className="mt-1 w-full border border-stone-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-stone-600"
-                          placeholder="예: 김민준"
+                          placeholder="예: 한지훈"
                         />
                       </label>
                       <label className="block">
@@ -1498,7 +1498,7 @@ function TheSimpleEditorContent() {
                           value={data.bride.name}
                           onChange={(e) => updateNested('bride', { ...data.bride, name: e.target.value })}
                           className="mt-1 w-full border border-stone-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-stone-600"
-                          placeholder="예: 이서연"
+                          placeholder="예: 윤서연"
                         />
                       </label>
                     </div>
@@ -1511,7 +1511,7 @@ function TheSimpleEditorContent() {
                           value={data.groom.nameEn ?? ''}
                           onChange={(e) => updateNested('groom', { ...data.groom, nameEn: e.target.value })}
                           className="mt-1 w-full border border-stone-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-stone-600"
-                          placeholder="예: Minjun"
+                          placeholder="예: Jihun"
                         />
                       </label>
                       <label className="block">

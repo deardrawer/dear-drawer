@@ -96,7 +96,7 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
             <div className="aspect-[4/3] bg-[#0A0A0A] flex flex-col items-center justify-center p-1.5 relative">
               <div className="w-5 h-0.5 bg-rose-400 mb-1 rounded-full" style={{ boxShadow: '0 0 4px rgba(212,131,143,0.4)' }} />
               <div className="text-[5px] tracking-[2px] text-rose-400 mb-1 uppercase">A Wedding Movie</div>
-              <div className="text-white text-[11px] tracking-[2px] font-light leading-tight">MJ</div>
+              <div className="text-white text-[11px] tracking-[2px] font-light leading-tight">JH</div>
               <div className="text-rose-400 text-[6px]">&amp;</div>
               <div className="text-white text-[11px] tracking-[2px] font-light leading-tight">SY</div>
               <div className="w-6 h-px bg-gradient-to-r from-transparent via-rose-400/40 to-transparent mt-1 mb-0.5" />
@@ -126,7 +126,7 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
                 <span className="text-[5px] tracking-[2px] text-white/50 uppercase">A Film</span>
               </div>
               <div className="absolute bottom-1.5 left-0 right-0 text-center px-2">
-                <div className="text-white text-[11px] tracking-[1px] font-light" style={{ fontStyle: 'italic' }}>Minjun</div>
+                <div className="text-white text-[11px] tracking-[1px] font-light" style={{ fontStyle: 'italic' }}>Jihun</div>
                 <div className="text-rose-400 text-[6px] -my-0.5">&amp;</div>
                 <div className="text-white text-[11px] tracking-[1px] font-light" style={{ fontStyle: 'italic' }}>Seoyeon</div>
                 <div className="w-5 h-px bg-rose-400/60 mx-auto mt-0.5 mb-0.5" />
@@ -240,7 +240,7 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
               autoFocus
               value={invitation.groom.name}
               onChange={(e) => updateNestedField('groom.name', e.target.value)}
-              placeholder="김민준"
+              placeholder="한지훈"
               className={validationError?.tab === 'names' && !invitation.groom.name?.trim() ? 'border-red-500 ring-2 ring-red-200' : ''}
             />
           </div>
@@ -262,7 +262,7 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
             <Input
               value={invitation.bride.name}
               onChange={(e) => updateNestedField('bride.name', e.target.value)}
-              placeholder="이서연"
+              placeholder="윤서연"
               className={validationError?.tab === 'names' && !invitation.bride.name?.trim() ? 'border-red-500 ring-2 ring-red-200' : ''}
             />
           </div>

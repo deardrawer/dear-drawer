@@ -24,15 +24,15 @@ export default function EnvelopeSamplePage() {
       {isOpened && (
         <div className="animate-fade-in">
           <InvitationContent
-            groomName="민준"
+            groomName="지훈"
             brideName="서연"
             groomParents={{
-              fatherName: '김철수',
-              motherName: '이영희',
+              fatherName: '한영수',
+              motherName: '김미경',
             }}
             brideParents={{
-              fatherName: '박정호',
-              motherName: '최수진',
+              fatherName: '윤정호',
+              motherName: '이선영',
             }}
             date="2026년 3월 28일 토요일 오후 2시"
             time="오후 2시"

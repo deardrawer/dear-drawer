@@ -33,15 +33,15 @@ export default function ImageZoomEditor({
   const dragStart = useRef({ x: 0, y: 0, px: 0, py: 0 })
 
   const containerHeight = containerWidth * aspectRatio
-  const maxOffset = (scale - 1) * 50
+  // cover 모드에서도 세로가 긴 사진의 위치 조정 허용 (기본 ±40)
+  const maxOffset = Math.max((scale - 1) * 50, 40)
 
-  // 배경 스타일 계산 (cover 기반)
+  // 배경 스타일 계산 (cover 기반 — 위치는 항상 적용)
   const bgSize = scale > 1 ? `${scale * 100}%` : 'cover'
-  const bgPos = scale > 1 ? `${50 - positionX}% ${50 - positionY}%` : 'center'
+  const bgPos = `${50 - positionX}% ${50 - positionY}%`
 
   // 드래그 시작
   const handlePointerDown = (e: React.PointerEvent) => {
-    if (scale <= 1) return // 줌 안 했으면 이동 불필요
     e.preventDefault()
     setDragging(true)
     dragStart.current = { x: e.clientX, y: e.clientY, px: positionX, py: positionY }
@@ -54,8 +54,8 @@ export default function ImageZoomEditor({
     const dx = (e.clientX - dragStart.current.x) / containerWidth * 50
     const dy = (e.clientY - dragStart.current.y) / containerHeight * 50
 
-    // 이동 범위 제한: scale에 비례
-    const mo = (scale - 1) * 50
+    // 이동 범위 제한: cover 모드에서도 기본 ±40 허용
+    const mo = Math.max((scale - 1) * 50, 40)
     const nextX = Math.max(-mo, Math.min(mo, dragStart.current.px + dx))
     const nextY = Math.max(-mo, Math.min(mo, dragStart.current.py + dy))
 
@@ -69,7 +69,7 @@ export default function ImageZoomEditor({
 
   // 줌 변경 시 위치 범위 보정
   const handleZoomChange = (newScale: number) => {
-    const maxOffset = (newScale - 1) * 50
+    const maxOffset = Math.max((newScale - 1) * 50, 40)
     const clampedX = Math.max(-maxOffset, Math.min(maxOffset, positionX))
     const clampedY = Math.max(-maxOffset, Math.min(maxOffset, positionY))
     onUpdate({ scale: newScale, positionX: clampedX, positionY: clampedY })
@@ -94,7 +94,7 @@ export default function ImageZoomEditor({
           height: containerHeight,
           overflow: 'hidden',
           borderRadius: 4,
-          cursor: scale > 1 ? (dragging ? 'grabbing' : 'grab') : 'default',
+          cursor: dragging ? 'grabbing' : 'grab',
           backgroundImage: `url(${imageUrl})`,
           backgroundSize: bgSize,
           backgroundPosition: bgPos,
@@ -123,7 +123,7 @@ export default function ImageZoomEditor({
         </div>
 
         {/* X 위치 */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, opacity: scale > 1 ? 1 : 0.35 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ fontSize: 10, color: '#78716c', flexShrink: 0, width: 28 }}>좌우</span>
           <input
             type="range"
@@ -132,7 +132,6 @@ export default function ImageZoomEditor({
             step={1}
             value={Math.round(positionX * 100)}
             onChange={(e) => onUpdate({ positionX: Number(e.target.value) / 100 })}
-            disabled={scale <= 1}
             style={{ flex: 1, height: 4, accentColor: '#57534e' }}
           />
           <span style={{ fontSize: 10, color: '#a8a29e', flexShrink: 0, width: 28, textAlign: 'right' }}>
@@ -141,7 +140,7 @@ export default function ImageZoomEditor({
         </div>
 
         {/* Y 위치 */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, opacity: scale > 1 ? 1 : 0.35 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ fontSize: 10, color: '#78716c', flexShrink: 0, width: 28 }}>상하</span>
           <input
             type="range"
@@ -150,7 +149,6 @@ export default function ImageZoomEditor({
             step={1}
             value={Math.round(positionY * 100)}
             onChange={(e) => onUpdate({ positionY: Number(e.target.value) / 100 })}
-            disabled={scale <= 1}
             style={{ flex: 1, height: 4, accentColor: '#57534e' }}
           />
           <span style={{ fontSize: 10, color: '#a8a29e', flexShrink: 0, width: 28, textAlign: 'right' }}>

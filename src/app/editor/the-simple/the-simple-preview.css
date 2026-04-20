@@ -2780,22 +2780,22 @@
 
 /* V1 · fade-up stagger (label → title → body → rule) */
 .ts-preview .ts-anim-greet-v1 .ts-anim-item { opacity: 0; transform: translateY(8px); }
-.ts-preview .ts-anim-greet-v1.in-view .ts-anim-item:nth-child(1) { animation: tsFadeUp 0.7s var(--ts-ease) 80ms both; }
-.ts-preview .ts-anim-greet-v1.in-view .ts-anim-item:nth-child(2) { animation: tsFadeUp 0.8s var(--ts-ease) 220ms both; }
-.ts-preview .ts-anim-greet-v1.in-view .ts-anim-item:nth-child(3) { animation: tsFadeUp 0.8s var(--ts-ease) 380ms both; }
+.ts-preview .ts-anim-greet-v1.in-view .ts-anim-item:nth-child(1) { animation: tsFadeUp 1.1s var(--ts-ease) 100ms both; }
+.ts-preview .ts-anim-greet-v1.in-view .ts-anim-item:nth-child(2) { animation: tsFadeUp 1.2s var(--ts-ease) 350ms both; }
+.ts-preview .ts-anim-greet-v1.in-view .ts-anim-item:nth-child(3) { animation: tsFadeUp 1.2s var(--ts-ease) 600ms both; }
 .ts-preview .ts-anim-greet-v1.in-view .ts-anim-item:nth-child(4) {
   transform-origin: center;
-  animation: tsLineDraw 0.6s var(--ts-ease) 560ms both;
+  animation: tsLineDraw 0.9s var(--ts-ease) 900ms both;
 }
 
 /* V2 · Karaoke Fill (label/title fade-up → 본문 줄 단위 회색→검정 채우기) */
 .ts-preview .ts-anim-greet-v2 .ts-anim-item { opacity: 0; transform: translateY(6px); }
-.ts-preview .ts-anim-greet-v2.in-view .ts-anim-item:nth-child(1) { animation: tsFadeUp 0.6s var(--ts-ease) 80ms both; }
-.ts-preview .ts-anim-greet-v2.in-view .ts-anim-item:nth-child(2) { animation: tsFadeUp 0.7s var(--ts-ease) 200ms both; }
+.ts-preview .ts-anim-greet-v2.in-view .ts-anim-item:nth-child(1) { animation: tsFadeUp 1.0s var(--ts-ease) 100ms both; }
+.ts-preview .ts-anim-greet-v2.in-view .ts-anim-item:nth-child(2) { animation: tsFadeUp 1.1s var(--ts-ease) 300ms both; }
 .ts-preview .ts-anim-greet-v2 .ts-g2-karaoke { background-position: 100% 0; }
 .ts-preview .ts-anim-greet-v2.in-view .ts-g2-karaoke {
   animation-name: tsKaraokeFill;
-  animation-duration: 1.4s;
+  animation-duration: 2.0s;
   animation-timing-function: cubic-bezier(.25,.1,.25,1);
   animation-fill-mode: both;
   /* animation-delay는 인라인 style로 줄 단위 stagger 제어 */
@@ -2808,7 +2808,7 @@
 }
 .ts-preview .ts-anim-greet-v2.in-view .ts-anim-rule {
   animation-name: tsLineDraw;
-  animation-duration: 0.5s;
+  animation-duration: 0.8s;
   animation-timing-function: var(--ts-ease);
   animation-fill-mode: both;
 }
@@ -2817,37 +2817,37 @@
 .ts-preview .ts-anim-greet-v3 .ts-anim-item { opacity: 0; }
 .ts-preview .ts-anim-greet-v3.in-view .ts-g3-rule-top {
   transform-origin: center;
-  animation: tsLineDraw 0.6s var(--ts-ease) 80ms both;
+  animation: tsLineDraw 0.9s var(--ts-ease) 100ms both;
 }
 .ts-preview .ts-anim-greet-v3.in-view .ts-g3-quote {
-  animation: tsMaskReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) 400ms both;
+  animation: tsMaskReveal 1.8s cubic-bezier(0.16, 1, 0.3, 1) 500ms both;
 }
 .ts-preview .ts-anim-greet-v3.in-view .ts-g3-attr {
-  animation: tsLetterSpread 0.9s var(--ts-ease) 1100ms both;
+  animation: tsLetterSpread 1.3s var(--ts-ease) 1500ms both;
 }
 .ts-preview .ts-anim-greet-v3.in-view .ts-g3-rule-bot {
   transform-origin: center;
-  animation: tsLineDraw 0.6s var(--ts-ease) 1500ms both;
+  animation: tsLineDraw 0.9s var(--ts-ease) 2100ms both;
 }
 
 /* V4 · card scale-in + 내부 stagger */
 .ts-preview .ts-anim-greet-v4 .ts-anim-card { opacity: 0; transform: scale(0.92); }
 .ts-preview .ts-anim-greet-v4 .ts-anim-item { opacity: 0; transform: translateY(6px); }
-.ts-preview .ts-anim-greet-v4.in-view .ts-anim-card { animation: tsScaleIn 0.7s var(--ts-ease) 60ms both; }
-.ts-preview .ts-anim-greet-v4.in-view .ts-anim-item:nth-child(1) { animation: tsFadeUp 0.7s var(--ts-ease) 300ms both; }
-.ts-preview .ts-anim-greet-v4.in-view .ts-anim-item:nth-child(2) { animation: tsFadeUp 0.7s var(--ts-ease) 440ms both; }
-.ts-preview .ts-anim-greet-v4.in-view .ts-anim-item:nth-child(3) { animation: tsFadeUp 0.7s var(--ts-ease) 580ms both; }
+.ts-preview .ts-anim-greet-v4.in-view .ts-anim-card { animation: tsScaleIn 1.0s var(--ts-ease) 80ms both; }
+.ts-preview .ts-anim-greet-v4.in-view .ts-anim-item:nth-child(1) { animation: tsFadeUp 1.0s var(--ts-ease) 400ms both; }
+.ts-preview .ts-anim-greet-v4.in-view .ts-anim-item:nth-child(2) { animation: tsFadeUp 1.0s var(--ts-ease) 600ms both; }
+.ts-preview .ts-anim-greet-v4.in-view .ts-anim-item:nth-child(3) { animation: tsFadeUp 1.0s var(--ts-ease) 800ms both; }
 
 /* V5 · vertical line draw + text slide-right stagger */
 .ts-preview .ts-anim-greet-v5 .ts-anim-vline { opacity: 0; }
 .ts-preview .ts-anim-greet-v5 .ts-anim-item { opacity: 0; transform: translateX(-8px); }
 .ts-preview .ts-anim-greet-v5.in-view .ts-anim-vline {
   transform-origin: top center;
-  animation: tsLineDraw 0.8s var(--ts-ease) 60ms both;
+  animation: tsLineDraw 1.2s var(--ts-ease) 80ms both;
 }
-.ts-preview .ts-anim-greet-v5.in-view .ts-anim-item:nth-child(1) { animation: tsSlideRight 0.7s var(--ts-ease) 300ms both; }
-.ts-preview .ts-anim-greet-v5.in-view .ts-anim-item:nth-child(2) { animation: tsSlideRight 0.8s var(--ts-ease) 440ms both; }
-.ts-preview .ts-anim-greet-v5.in-view .ts-anim-item:nth-child(3) { animation: tsSlideRight 0.8s var(--ts-ease) 580ms both; }
+.ts-preview .ts-anim-greet-v5.in-view .ts-anim-item:nth-child(1) { animation: tsSlideRight 1.0s var(--ts-ease) 400ms both; }
+.ts-preview .ts-anim-greet-v5.in-view .ts-anim-item:nth-child(2) { animation: tsSlideRight 1.2s var(--ts-ease) 600ms both; }
+.ts-preview .ts-anim-greet-v5.in-view .ts-anim-item:nth-child(3) { animation: tsSlideRight 1.2s var(--ts-ease) 800ms both; }
 
 /* ---------- COUPLE ---------- */
 /* V1: 아래에서 순차 fade-up + 블러 */

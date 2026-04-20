@@ -2023,7 +2023,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         }
         if (showNames === 'custom') {
           const custom = intro.customNames || `${groomName} & ${brideName}`
-          return <>{custom}</>
+          const lines = custom.split('\n')
+          return <>{lines.map((l, i) => <span key={i}>{i > 0 && <br />}{l}</span>)}</>
         }
         // korean (기본)
         return mode === 'stack' ? <>{groomName}<br />&amp; {brideName}</> : <>{groomName} &amp; {brideName}</>
@@ -2332,8 +2333,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
     greeting: (v) => {
       // V2 · Karaoke Fill (회색→검정 채워지기, 줄 단위 stagger)
       if (v === 2) {
-        const bodyLines = (greeting.body || '').split('\n').filter((l) => l.trim())
-        const ruleDelay = 600 + bodyLines.length * 400
+        const bodyLines = (greeting.body || '').split('\n')
+        const ruleDelay = 800 + bodyLines.length * 550
         return (
           <AnimatedSection className="ts-sec ts-greet ts-greet--v2 ts-anim-greet-v2" key={`greeting-${v}`} style={{ textAlign: 'left' }}>
             <div className="ts-greet-label ts-anim-item">{greeting.label}</div>
@@ -2344,7 +2345,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <div
                 className="ts-g2-karaoke"
                 key={i}
-                style={{ animationDelay: `${600 + i * 400}ms` }}
+                style={{ animationDelay: `${800 + i * 550}ms`, minHeight: line.trim() ? undefined : '0.5em' }}
               >
                 {line}
               </div>
@@ -2430,9 +2431,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       return (
         <AnimatedSection className="ts-sec ts-greet ts-anim-greet-v1" key={`greeting-${v}`}>
           <div className="ts-greet-label ts-anim-item">{greeting.label}</div>
-          <div className="ts-greet-title ts-anim-item">{greeting.title}</div>
-          <p className="ts-greet-body ts-anim-item">{greeting.body}</p>
-          <div className="ts-greet-rule ts-anim-item" />
+          <div className="ts-greet-title ts-anim-item" style={{ margin: '14px 0 18px' }}>{greeting.title}</div>
+          <p className="ts-greet-body ts-anim-item" style={{ marginBottom: 12 }}>{greeting.body}</p>
         </AnimatedSection>
       )
     },

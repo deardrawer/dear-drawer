@@ -46,13 +46,14 @@ export function useCroppedImageStyle(
 
     if (!hasCrop) {
       // 크롭 없으면 기존 scale/position 방식
+      // cover 모드에서도 position 적용 — 세로가 긴 사진의 위치 조정 가능
       const s = crop?.scale || 1
       const px = crop?.positionX || 0
       const py = crop?.positionY || 0
       setStyle({
         backgroundImage: `url(${src})`,
         backgroundSize: s > 1 ? `${s * 100}%` : 'cover',
-        backgroundPosition: s > 1 ? `${50 - px}% ${50 - py}%` : 'center',
+        backgroundPosition: `${50 - px}% ${50 - py}%`,
         backgroundRepeat: 'no-repeat',
       })
       return
@@ -114,7 +115,7 @@ export function useCroppedImageStyle(
 
   useEffect(() => {
     // 키 생성하여 불필요한 재계산 방지
-    const key = `${src}-${crop?.cropX}-${crop?.cropY}-${crop?.cropWidth}-${crop?.cropHeight}`
+    const key = `${src}-${crop?.cropX}-${crop?.cropY}-${crop?.cropWidth}-${crop?.cropHeight}-${crop?.positionX}-${crop?.positionY}-${crop?.scale}`
     if (key === prevKey.current) return
     prevKey.current = key
 
@@ -170,6 +171,6 @@ export function getImageCropStyleFallback(
   return {
     backgroundImage: `url(${img})`,
     backgroundSize: sc > 1 ? `${sc * 100}%` : 'cover',
-    backgroundPosition: sc > 1 ? `${50 - px}% ${50 - py}%` : 'center',
+    backgroundPosition: `${50 - px}% ${50 - py}%`,
   }
 }

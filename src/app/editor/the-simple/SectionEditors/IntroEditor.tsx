@@ -94,12 +94,12 @@ export default function IntroEditor({ value, onChange }: IntroEditorProps) {
           ))}
         </div>
         {value.showNames === 'custom' && (
-          <input
-            type="text"
+          <textarea
             value={value.customNames ?? ''}
             onChange={(e) => update({ customNames: e.target.value })}
-            placeholder="예: Jihun & Seoyeon"
-            className="mt-1.5 w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white"
+            rows={2}
+            placeholder={'예: Jihun\n    & Seoyeon'}
+            className="mt-1.5 w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white leading-relaxed resize-none"
           />
         )}
       </div>

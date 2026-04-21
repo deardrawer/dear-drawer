@@ -31,6 +31,9 @@ export default function CoupleEditor({ value, onChange }: CoupleEditorProps) {
   const [uploading, setUploading] = useState<'groom' | 'bride' | null>(null)
   // 선택된 사진 인덱스 (크롭 편집용)
   const [selectedIdx, setSelectedIdx] = useState<Record<'groom' | 'bride', number>>({ groom: 0, bride: 0 })
+  // 태그 입력 로컬 state (blur 시에만 배열로 변환)
+  const [groomTagsRaw, setGroomTagsRaw] = useState((value.groom.tags || []).join(', '))
+  const [brideTagsRaw, setBrideTagsRaw] = useState((value.bride.tags || []).join(', '))
 
   const handleFileUpload = async (side: 'groom' | 'bride', file: File) => {
     const currentPhotos = getPhotosArray(value[side])
@@ -238,6 +241,8 @@ export default function CoupleEditor({ value, onChange }: CoupleEditorProps) {
     )
   }
 
+  const isBrideFirst = value.order === 'bride-first'
+
   return (
     <div className="space-y-3">
       <label className="block">
@@ -250,6 +255,21 @@ export default function CoupleEditor({ value, onChange }: CoupleEditorProps) {
           className="mt-0.5 w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white"
         />
       </label>
+
+      {/* 순서 변경 */}
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] uppercase tracking-wider text-stone-400">순서</span>
+        <button
+          type="button"
+          onClick={() => onChange({ ...value, order: isBrideFirst ? 'groom-first' : 'bride-first' })}
+          className="flex items-center gap-1.5 text-[11px] text-stone-600 border border-stone-200 rounded-md px-2.5 py-1 hover:bg-stone-50 transition-colors"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4" />
+          </svg>
+          {isBrideFirst ? '신부 → 신랑' : '신랑 → 신부'}
+        </button>
+      </div>
 
       {/* 신랑 */}
       <div className="rounded-md border border-stone-200 p-2.5 bg-white space-y-2.5">
@@ -275,13 +295,15 @@ export default function CoupleEditor({ value, onChange }: CoupleEditorProps) {
           />
         </label>
         <label className="block">
-          <span className="text-[10px] text-stone-400">태그 (V5용, 쉼표로 구분)</span>
+          <span className="text-[10px] text-stone-400">태그 (쉼표로 구분)</span>
           <input
             type="text"
-            value={(value.groom.tags || []).join(', ')}
-            onChange={(e) => {
-              const tags = e.target.value.split(',').map((t) => t.trim()).filter(Boolean)
+            value={groomTagsRaw}
+            onChange={(e) => setGroomTagsRaw(e.target.value)}
+            onBlur={() => {
+              const tags = groomTagsRaw.split(',').map((t) => t.trim()).filter(Boolean)
               onChange({ ...value, groom: { ...value.groom, tags } })
+              setGroomTagsRaw(tags.join(', '))
             }}
             placeholder="#건축가, #고양이집사, #캠핑"
             className="mt-0.5 w-full border border-stone-200 rounded px-2 py-1 text-xs focus:outline-none focus:border-stone-600"
@@ -314,13 +336,15 @@ export default function CoupleEditor({ value, onChange }: CoupleEditorProps) {
           />
         </label>
         <label className="block">
-          <span className="text-[10px] text-stone-400">태그 (V5용, 쉼표로 구분)</span>
+          <span className="text-[10px] text-stone-400">태그 (쉼표로 구분)</span>
           <input
             type="text"
-            value={(value.bride.tags || []).join(', ')}
-            onChange={(e) => {
-              const tags = e.target.value.split(',').map((t) => t.trim()).filter(Boolean)
+            value={brideTagsRaw}
+            onChange={(e) => setBrideTagsRaw(e.target.value)}
+            onBlur={() => {
+              const tags = brideTagsRaw.split(',').map((t) => t.trim()).filter(Boolean)
               onChange({ ...value, bride: { ...value.bride, tags } })
+              setBrideTagsRaw(tags.join(', '))
             }}
             placeholder="#에디터, #오래된책, #커피"
             className="mt-0.5 w-full border border-stone-200 rounded px-2 py-1 text-xs focus:outline-none focus:border-stone-600"

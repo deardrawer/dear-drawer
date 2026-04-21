@@ -2438,6 +2438,12 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
     },
 
     couple: (v) => {
+      // 순서 변경 지원 — bride-first이면 신부/신랑 순
+      const bf = couple.order === 'bride-first'
+      const first = bf ? { side: 'bride' as const, role: couple.bride.role, name: brideName, bio: couple.bride.bio, photos: getPhotos(couple.bride), tags: couple.bride.tags } : { side: 'groom' as const, role: couple.groom.role, name: groomName, bio: couple.groom.bio, photos: getPhotos(couple.groom), tags: couple.groom.tags }
+      const second = bf ? { side: 'groom' as const, role: couple.groom.role, name: groomName, bio: couple.groom.bio, photos: getPhotos(couple.groom), tags: couple.groom.tags } : { side: 'bride' as const, role: couple.bride.role, name: brideName, bio: couple.bride.bio, photos: getPhotos(couple.bride), tags: couple.bride.tags }
+      const pair = [first, second]
+
       // 태그 렌더 헬퍼 (V3 제외 모든 variant에서 사용)
       const renderTags = (tags?: string[], variant?: string, align?: 'left' | 'right' | 'center') => {
         if (!tags || tags.length === 0) return null
@@ -2458,10 +2464,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
           <AnimatedSection className="ts-sec ts-couple ts-couple--v2 ts-anim-couple-v2" key={`couple-${v}`}>
             <div className="ts-eyebrow">{couple.eyebrow}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
-              {[
-                { role: couple.groom.role, name: groomName, bio: couple.groom.bio, photos: getPhotos(couple.groom), tags: couple.groom.tags },
-                { role: couple.bride.role, name: brideName, bio: couple.bride.bio, photos: getPhotos(couple.bride), tags: couple.bride.tags },
-              ].map((p, i) => (
+              {pair.map((p, i) => (
                 <div
                   key={i}
                   className={`ts-anim-row ts-anim-delay-${i + 1}`}
@@ -2492,21 +2495,21 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
             <div className="ts-eyebrow">{couple.eyebrow}</div>
             <div className="ts-c3-photos">
               <div className="ts-c3-photo ts-c3-photo--left ts-anim-photo-l">
-                <PhotoSlideBox photos={getPhotos(couple.groom)} shape="portrait" size="100%" rounded={4} delay={0} />
+                <PhotoSlideBox photos={first.photos} shape="portrait" size="100%" rounded={4} delay={0} />
               </div>
               <div className="ts-c3-photo ts-c3-photo--right ts-anim-photo-r">
-                <PhotoSlideBox photos={getPhotos(couple.bride)} shape="portrait" size="100%" rounded={4} delay={500} />
+                <PhotoSlideBox photos={second.photos} shape="portrait" size="100%" rounded={4} delay={500} />
               </div>
             </div>
             <div className="ts-c3-names ts-anim-item">
-              <span className="ts-c3-name">{groomName}</span>
+              <span className="ts-c3-name">{first.name}</span>
               <span className="ts-c3-amp">&amp;</span>
-              <span className="ts-c3-name">{brideName}</span>
+              <span className="ts-c3-name">{second.name}</span>
             </div>
-            {(couple.groom.bio || couple.bride.bio) && (
+            {(first.bio || second.bio) && (
               <div className="ts-c3-bio ts-anim-item">
-                {couple.groom.bio && <p>{couple.groom.bio}</p>}
-                {couple.bride.bio && <p>{couple.bride.bio}</p>}
+                {first.bio && <p>{first.bio}</p>}
+                {second.bio && <p>{second.bio}</p>}
               </div>
             )}
           </AnimatedSection>
@@ -2518,10 +2521,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
           <AnimatedSection className="ts-sec ts-couple ts-couple--v4 ts-anim-couple-v4" key={`couple-${v}`}>
             <div className="ts-eyebrow">{couple.eyebrow}</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              {[
-                { role: couple.groom.role, name: groomName, bio: couple.groom.bio, photos: getPhotos(couple.groom), tags: couple.groom.tags },
-                { role: couple.bride.role, name: brideName, bio: couple.bride.bio, photos: getPhotos(couple.bride), tags: couple.bride.tags },
-              ].map((p, i) => (
+              {pair.map((p, i) => (
                 <div
                   key={i}
                   className={`ts-anim-card ts-anim-delay-${i + 1}`}
@@ -2546,27 +2546,27 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
           <AnimatedSection className="ts-sec ts-couple ts-couple--v5 ts-anim-couple-v5" key={`couple-${v}`}>
             <div className="ts-eyebrow">{couple.eyebrow}</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1px 1fr', alignItems: 'start', gap: 18 }}>
-              {/* 신랑 */}
+              {/* 좌측 */}
               <div className="ts-anim-left" style={{ textAlign: 'right', paddingRight: 4 }}>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}>
-                  <PhotoSlideBox photos={getPhotos(couple.groom)} shape="square" size={100} delay={0} />
+                  <PhotoSlideBox photos={first.photos} shape="square" size={100} delay={0} />
                 </div>
-                <div className="ts-couple-role">{couple.groom.role}</div>
-                <div style={{ fontFamily: 'var(--font-display)', fontSize: 20, lineHeight: 1.2, margin: '4px 0' }}>{groomName}</div>
-                <p className="ts-couple-bio" style={{ textAlign: 'right', maxWidth: '100%', marginLeft: 'auto', fontSize: 11 }}>{couple.groom.bio}</p>
-                {renderTags(couple.groom.tags, 'v5', 'right')}
+                <div className="ts-couple-role">{first.role}</div>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: 20, lineHeight: 1.2, margin: '4px 0' }}>{first.name}</div>
+                <p className="ts-couple-bio" style={{ textAlign: 'right', maxWidth: '100%', marginLeft: 'auto', fontSize: 11 }}>{first.bio}</p>
+                {renderTags(first.tags, 'v5', 'right')}
               </div>
               {/* 세로선 */}
               <div className="ts-anim-vline" style={{ background: 'var(--ink)', width: 1, minHeight: 180, opacity: 0.3 }} />
-              {/* 신부 */}
+              {/* 우측 */}
               <div className="ts-anim-right" style={{ textAlign: 'left', paddingLeft: 4 }}>
                 <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 10 }}>
-                  <PhotoSlideBox photos={getPhotos(couple.bride)} shape="square" size={100} delay={500} />
+                  <PhotoSlideBox photos={second.photos} shape="square" size={100} delay={500} />
                 </div>
-                <div className="ts-couple-role">{couple.bride.role}</div>
-                <div style={{ fontFamily: 'var(--font-display)', fontSize: 20, lineHeight: 1.2, margin: '4px 0' }}>{brideName}</div>
-                <p className="ts-couple-bio" style={{ textAlign: 'left', maxWidth: '100%', fontSize: 11 }}>{couple.bride.bio}</p>
-                {renderTags(couple.bride.tags, 'v5', 'left')}
+                <div className="ts-couple-role">{second.role}</div>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: 20, lineHeight: 1.2, margin: '4px 0' }}>{second.name}</div>
+                <p className="ts-couple-bio" style={{ textAlign: 'left', maxWidth: '100%', fontSize: 11 }}>{second.bio}</p>
+                {renderTags(second.tags, 'v5', 'left')}
               </div>
             </div>
           </AnimatedSection>
@@ -2578,19 +2578,19 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
           <div className="ts-eyebrow">{couple.eyebrow}</div>
           <div className="ts-couple-grid">
             <div className="ts-couple-cell ts-anim-left">
-              <PhotoSlideBox photos={getPhotos(couple.groom)} shape="arch" size={120} className="ts-couple-avatar" delay={0} />
-              <div className="ts-couple-role">{couple.groom.role}</div>
-              <div className="ts-couple-name">{groomName}</div>
-              <p className="ts-couple-bio">{couple.groom.bio}</p>
-              {renderTags(couple.groom.tags, 'v1', 'center')}
+              <PhotoSlideBox photos={first.photos} shape="arch" size={120} className="ts-couple-avatar" delay={0} />
+              <div className="ts-couple-role">{first.role}</div>
+              <div className="ts-couple-name">{first.name}</div>
+              <p className="ts-couple-bio">{first.bio}</p>
+              {renderTags(first.tags, 'v1', 'center')}
             </div>
             <div className="ts-couple-amp ts-anim-amp">&amp;</div>
             <div className="ts-couple-cell ts-anim-right">
-              <PhotoSlideBox photos={getPhotos(couple.bride)} shape="arch" size={120} className="ts-couple-avatar" delay={500} />
-              <div className="ts-couple-role">{couple.bride.role}</div>
-              <div className="ts-couple-name">{brideName}</div>
-              <p className="ts-couple-bio">{couple.bride.bio}</p>
-              {renderTags(couple.bride.tags, 'v1', 'center')}
+              <PhotoSlideBox photos={second.photos} shape="arch" size={120} className="ts-couple-avatar" delay={500} />
+              <div className="ts-couple-role">{second.role}</div>
+              <div className="ts-couple-name">{second.name}</div>
+              <p className="ts-couple-bio">{second.bio}</p>
+              {renderTags(second.tags, 'v1', 'center')}
             </div>
           </div>
         </AnimatedSection>
@@ -2842,7 +2842,10 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               </div>
               <div className="ts-i3-foot ts-anim-item">
                 <b>{weddingMeta.weekday} · {timeDisplay}</b>
-                <div className="ts-i3-venue">{venueName}{venueHall && <><br />{venueHall}</>}</div>
+                <div className="ts-i3-venue">
+                  <span className="ts-venue-name">{venueName}</span>
+                  {venueHall && <><br /><span className="ts-venue-hall">{venueHall}</span></>}
+                </div>
               </div>
               {data.sections.info.showCountdown && (
                 <div className="ts-countdown-inline ts-cd-v3 ts-anim-item">
@@ -2982,7 +2985,10 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               </div>
             ))}
           </div>
-          <div className="ts-i1-venue ts-anim-item">{venueName}{venueHall && <><br />{venueHall}</>}</div>
+          <div className="ts-i1-venue ts-anim-item">
+            <span className="ts-venue-name">{venueName}</span>
+            {venueHall && <><br /><span className="ts-venue-hall">{venueHall}</span></>}
+          </div>
           {data.sections.info.showCountdown && (
             <div className="ts-countdown-inline ts-cd-v1 ts-anim-item">
               <LiveCountdown

@@ -1364,6 +1364,18 @@
   line-height: 1.8;
   color: var(--ink-2, #2c2c2c);
 }
+.ts-preview .ts-venue-name {
+  font-size: calc(15px * var(--ts-font-scale, 1));
+  font-weight: 600;
+  color: var(--ink, #1a1a1a);
+  letter-spacing: 0.02em;
+}
+.ts-preview .ts-venue-hall {
+  font-size: calc(12px * var(--ts-font-scale, 1));
+  font-weight: 400;
+  color: var(--mute, #888);
+  letter-spacing: 0.01em;
+}
 
 /* --- V2 · Big Date --- */
 .ts-preview .ts-i2 { text-align: center; }

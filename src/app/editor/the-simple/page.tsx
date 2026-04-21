@@ -119,6 +119,7 @@ export interface SectionContents {
   greeting: { label: string; title: string; body: string }
   couple: {
     eyebrow: string
+    order?: 'groom-first' | 'bride-first'
     groom: { role: string; bio: string; photo?: ImageWithSettings; photos?: ImageWithSettings[]; tags?: string[] }
     bride: { role: string; bio: string; photo?: ImageWithSettings; photos?: ImageWithSettings[]; tags?: string[] }
   }

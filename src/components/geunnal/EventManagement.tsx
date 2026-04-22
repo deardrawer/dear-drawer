@@ -26,6 +26,7 @@ interface EventManagementProps {
   onSessionExpired?: () => void
   invitationSlug?: string | null
   ogImage?: string
+  kakaoShareData?: { thumbnailUrl?: string; shareTitle?: string; shareDescription?: string }
 }
 
 interface EventWithGuests {
@@ -93,6 +94,7 @@ export default function EventManagement({
   onSessionExpired,
   invitationSlug,
   ogImage,
+  kakaoShareData,
 }: EventManagementProps) {
   const [eventsWithGuests, setEventsWithGuests] = useState<EventWithGuests[]>([])
   const [loading, setLoading] = useState(true)
@@ -292,7 +294,10 @@ export default function EventManagement({
               <button
                 onClick={() => {
                   const invitationUrl = `https://invite.deardrawer.com/i/${invitationSlug}`
-                  const imageUrl = ogImage || 'https://invite.deardrawer.com/og-image.png'
+                  // 에디터 설정과 동일: kakaoThumbnail > ogImage > 기본이미지
+                  const imageUrl = kakaoShareData?.thumbnailUrl || ogImage || 'https://invite.deardrawer.com/og-image.png'
+                  const displayTitle = kakaoShareData?.shareTitle || `${groomName} ❤️ ${brideName}의 결혼식`
+                  const displayDescription = kakaoShareData?.shareDescription || (weddingDate ? formatDate(weddingDate) : '모바일 청첩장을 확인해주세요')
                   try {
                     const win = window as unknown as { Kakao?: { isInitialized: () => boolean; Share: { sendDefault: (opts: Record<string, unknown>) => void } } }
                     if (!win.Kakao?.isInitialized?.()) {
@@ -303,8 +308,8 @@ export default function EventManagement({
                     win.Kakao.Share.sendDefault({
                       objectType: 'feed',
                       content: {
-                        title: `${groomName} ❤️ ${brideName}의 결혼식에 초대합니다`,
-                        description: weddingDate ? formatDate(weddingDate) : '모바일 청첩장을 확인해주세요',
+                        title: displayTitle,
+                        description: displayDescription,
                         imageUrl,
                         link: { mobileWebUrl: invitationUrl, webUrl: invitationUrl },
                       },
@@ -349,6 +354,7 @@ export default function EventManagement({
           onPasswordChange={onPasswordChange}
           onNotificationEdit={onNotificationEdit}
           onLogout={onLogout}
+          ogImage={ogImage}
         />
       )}
 
@@ -621,7 +627,7 @@ export default function EventManagement({
 }
 
 /* ─── Settings Sheet ─── */
-function SettingsSheet({ open, onClose, slug, groomName, brideName, onPasswordChange, onNotificationEdit, onLogout }: {
+function SettingsSheet({ open, onClose, slug, groomName, brideName, onPasswordChange, onNotificationEdit, onLogout, ogImage }: {
   open: boolean
   onClose: () => void
   slug: string
@@ -630,6 +636,7 @@ function SettingsSheet({ open, onClose, slug, groomName, brideName, onPasswordCh
   onPasswordChange?: () => void
   onNotificationEdit?: () => void
   onLogout?: () => void
+  ogImage?: string
 }) {
   return (
     <BottomSheet open={open} onClose={onClose} title="설정">

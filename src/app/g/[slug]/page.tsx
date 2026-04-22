@@ -58,9 +58,10 @@ export default async function GeunnalPage({ params }: PageProps) {
     notFound();
   }
 
-  // Get invitation OG image and slug
+  // Get invitation data for share
   let ogImage = 'https://invite.deardrawer.com/og-image.png'
   let invitationSlug: string | null = null
+  let kakaoShareData: { thumbnailUrl?: string; shareTitle?: string; shareDescription?: string } = {}
   if (page.invitation_id) {
     try {
       const invitation = await getInvitationById(page.invitation_id)
@@ -71,6 +72,22 @@ export default async function GeunnalPage({ params }: PageProps) {
       }
       if (invitation?.slug) {
         invitationSlug = invitation.slug
+      }
+      // content JSON에서 카카오 공유 설정 추출
+      if (invitation?.content) {
+        try {
+          const content = JSON.parse(invitation.content)
+          if (content?.meta) {
+            const thumb = content.meta.kakaoThumbnail
+            if (thumb) {
+              kakaoShareData.thumbnailUrl = thumb.startsWith('https://')
+                ? thumb
+                : `https://invite.deardrawer.com${thumb}`
+            }
+            if (content.meta.title) kakaoShareData.shareTitle = content.meta.title
+            if (content.meta.description) kakaoShareData.shareDescription = content.meta.description
+          }
+        } catch { /* content parse error */ }
       }
     } catch { /* fallback to default */ }
   }
@@ -88,6 +105,7 @@ export default async function GeunnalPage({ params }: PageProps) {
       hasPassword={!!page.password_hash}
       ogImage={ogImage}
       invitationSlug={invitationSlug}
+      kakaoShareData={kakaoShareData}
     />
   );
 }

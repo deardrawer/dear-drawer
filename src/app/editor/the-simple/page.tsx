@@ -1068,46 +1068,73 @@ function TheSimpleEditorContent() {
 
     setIsSaving(true)
     try {
-      // OG/카카오 이미지 크롭 처리 (크롭 설정이 있으면 실제 크롭 파일 생성)
+      // OG/카카오 이미지 크롭 처리
+      // InlineCropEditor는 사용자가 드래그해야만 값이 저장됨.
+      // 크롭 값이 없으면 해당 비율로 기본 크롭을 자동 계산하여 적용.
       const saveData = { ...data, meta: { ...data.meta } }
       const cropTasks: Promise<void>[] = []
 
-      // OG 이미지 크롭
+      // 비율에 맞는 기본 크롭 계산 (InlineCropEditor 초기 로직과 동일)
+      const calcDefaultCrop = (imgUrl: string, targetAspect: number): Promise<{ cropX: number; cropY: number; cropWidth: number; cropHeight: number }> =>
+        new Promise((resolve) => {
+          const el = new Image()
+          el.onload = () => {
+            const imgAspect = el.naturalWidth / el.naturalHeight
+            const max = 0.98
+            let cW: number, cH: number
+            if (imgAspect > targetAspect) {
+              cH = max
+              cW = Math.min(max, cH * targetAspect / imgAspect)
+            } else {
+              cW = max
+              cH = Math.min(max, cW * imgAspect / targetAspect)
+            }
+            resolve({ cropX: (1 - cW) / 2, cropY: (1 - cH) / 2, cropWidth: cW, cropHeight: cH })
+          }
+          el.onerror = () => resolve({ cropX: 0, cropY: 0, cropWidth: 1, cropHeight: 1 })
+          el.src = imgUrl
+        })
+
+      // OG 이미지 크롭 (비율 1.91:1)
       const ogImg = data.meta.ogImage
-      if (typeof ogImg === 'object' && ogImg.url && ogImg.settings) {
-        const s = ogImg.settings
+      if (typeof ogImg === 'object' && ogImg.url) {
+        const s = ogImg.settings || { scale: 1, positionX: 0, positionY: 0 }
         const hasCrop = (s.cropWidth !== undefined && s.cropWidth < 1) || (s.cropHeight !== undefined && s.cropHeight < 1)
-        if (hasCrop) {
-          cropTasks.push(
-            cropAndUploadImage(ogImg.url, {
-              cropX: s.cropX || 0, cropY: s.cropY || 0,
-              cropWidth: s.cropWidth || 1, cropHeight: s.cropHeight || 1,
-            }, { invitationId: invitationId || undefined, outputWidth: 1200, suffix: 'og-cropped' })
-              .then(res => {
-                if (res.success && res.url) saveData.meta.ogImageCropped = res.url
-                else console.error('OG 크롭 업로드 실패:', res.error)
-              })
-          )
-        }
+        const cropValues = hasCrop
+          ? Promise.resolve({ cropX: s.cropX || 0, cropY: s.cropY || 0, cropWidth: s.cropWidth || 1, cropHeight: s.cropHeight || 1 })
+          : calcDefaultCrop(ogImg.url, 1.91)
+
+        cropTasks.push(
+          cropValues.then(crop =>
+            cropAndUploadImage(ogImg.url, crop, {
+              invitationId: invitationId || undefined, outputWidth: 1200, suffix: 'og-cropped',
+            })
+          ).then(res => {
+            if (res.success && res.url) saveData.meta.ogImageCropped = res.url
+            else console.error('OG 크롭 업로드 실패:', res.error)
+          })
+        )
       }
 
-      // 카카오 썸네일 크롭
+      // 카카오 썸네일 크롭 (비율 1:1)
       const kakaoImg = data.meta.kakaoThumbnail
-      if (kakaoImg?.url && kakaoImg.settings) {
-        const s = kakaoImg.settings
+      if (kakaoImg?.url) {
+        const s = kakaoImg.settings || { scale: 1, positionX: 0, positionY: 0 }
         const hasCrop = (s.cropWidth !== undefined && s.cropWidth < 1) || (s.cropHeight !== undefined && s.cropHeight < 1)
-        if (hasCrop) {
-          cropTasks.push(
-            cropAndUploadImage(kakaoImg.url, {
-              cropX: s.cropX || 0, cropY: s.cropY || 0,
-              cropWidth: s.cropWidth || 1, cropHeight: s.cropHeight || 1,
-            }, { invitationId: invitationId || undefined, outputWidth: 800, suffix: 'kakao-cropped' })
-              .then(res => {
-                if (res.success && res.url) saveData.meta.kakaoThumbnailCropped = res.url
-                else console.error('카카오 크롭 업로드 실패:', res.error)
-              })
-          )
-        }
+        const cropValues = hasCrop
+          ? Promise.resolve({ cropX: s.cropX || 0, cropY: s.cropY || 0, cropWidth: s.cropWidth || 1, cropHeight: s.cropHeight || 1 })
+          : calcDefaultCrop(kakaoImg.url, 1)
+
+        cropTasks.push(
+          cropValues.then(crop =>
+            cropAndUploadImage(kakaoImg.url, crop, {
+              invitationId: invitationId || undefined, outputWidth: 800, suffix: 'kakao-cropped',
+            })
+          ).then(res => {
+            if (res.success && res.url) saveData.meta.kakaoThumbnailCropped = res.url
+            else console.error('카카오 크롭 업로드 실패:', res.error)
+          })
+        )
       }
 
       if (cropTasks.length > 0) await Promise.all(cropTasks)

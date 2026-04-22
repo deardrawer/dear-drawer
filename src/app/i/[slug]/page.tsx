@@ -212,6 +212,10 @@ export async function generateMetadata({ params }: PageProps) {
       const ts = theSimpleSampleContent;
       const title = ts.meta.title || `${ts.groom.name} ♥ ${ts.bride.name} 결혼합니다`;
       const description = ts.meta.description || ts.sections.greeting.body;
+      const tsThumb = toAbsoluteImageUrl(
+        (ts.sections.intro.photo as { url: string })?.url || '',
+        baseUrl
+      );
       return {
         title,
         description,
@@ -222,8 +226,16 @@ export async function generateMetadata({ params }: PageProps) {
           url: `${baseUrl}/i/${slug}`,
           siteName: "dear drawer - 모바일 청첩장",
           locale: "ko_KR",
+          ...(tsThumb && {
+            images: [{ url: tsThumb, width: 800, height: 400, alt: title }],
+          }),
         },
-        twitter: { card: "summary_large_image", title, description },
+        twitter: {
+          card: "summary_large_image",
+          title,
+          description,
+          ...(tsThumb && { images: [tsThumb] }),
+        },
       };
     }
     const sampleType = (slug === 'sample-essay' || slug === 'sample-essay-paper' || slug === 'sample-essay-book') ? 'essay' : (slug === 'sample-exhibit' || slug === 'sample-feed') ? 'exhibit' : slug === 'sample-record' ? 'record' : slug === 'sample-film' ? 'film' : slug === 'sample-magazine' ? 'magazine' : slug === 'sample-our' ? 'our' : 'family';
@@ -295,13 +307,30 @@ export async function generateMetadata({ params }: PageProps) {
         if (typeof img === "object" && img !== null && "url" in img) return (img as { url: string }).url || "";
         return "";
       };
-      // OG 썸네일 우선순위: ogImage > coverImage > heroImage(감사장) > mainImage > gallery 첫번째 이미지 > kakaoThumbnail
+      // THE SIMPLE 갤러리 첫 번째 이미지 추출
+      let theSimpleGalleryFirst = "";
+      if (content?.galleries) {
+        const galleryKeys = Object.keys(content.galleries);
+        for (const key of galleryKeys) {
+          const imgs = content.galleries[key];
+          if (Array.isArray(imgs) && imgs.length > 0) {
+            theSimpleGalleryFirst = imgs[0]?.webUrl || imgs[0]?.url || "";
+            if (theSimpleGalleryFirst) break;
+          }
+        }
+      }
+      // OG 썸네일 우선순위: 크롭된 OG > ogImage > coverImage > heroImage > mainImage >
+      //   THE SIMPLE 인트로 사진 > gallery(구형) > THE SIMPLE galleries > 크롭된 카카오 > kakaoThumbnail
       rawThumbnailImage =
+        (content?.meta?.ogImageCropped as string) ||
         extractImageUrl(content?.meta?.ogImage) ||
         extractImageUrl(content?.media?.coverImage) ||
         extractImageUrl(content?.heroImage) ||
         extractImageUrl(content?.mainImage) ||
+        extractImageUrl(content?.sections?.intro?.photo) ||
         extractImageUrl(content?.gallery?.images?.[0]) ||
+        theSimpleGalleryFirst ||
+        (content?.meta?.kakaoThumbnailCropped as string) ||
         extractImageUrl(content?.meta?.kakaoThumbnail) ||
         "";
     } catch (e) {

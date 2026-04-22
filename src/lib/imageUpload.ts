@@ -310,6 +310,89 @@ export async function uploadImages(
 }
 
 /**
+ * 이미지를 URL에서 로드 → 크롭 → WebP 변환 → R2 업로드
+ * OG 이미지 / 카카오 썸네일의 크롭 결과를 실제 파일로 생성하여
+ * 외부 서비스(카카오, 페이스북 등)가 바로 사용 가능한 URL을 반환
+ */
+export async function cropAndUploadImage(
+  imageUrl: string,
+  crop: { cropX: number; cropY: number; cropWidth: number; cropHeight: number },
+  options: {
+    invitationId?: string;
+    outputWidth?: number;
+    quality?: number;
+    suffix?: string;
+  } = {}
+): Promise<{ success: boolean; url?: string; error?: string }> {
+  const { outputWidth = 1200, quality = 0.85, suffix = 'og', invitationId } = options;
+
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const el = new Image();
+      el.crossOrigin = 'anonymous';
+      el.onload = () => resolve(el);
+      el.onerror = () => reject(new Error('이미지를 로드할 수 없습니다.'));
+      el.src = imageUrl;
+    });
+
+    const sx = Math.round(crop.cropX * img.naturalWidth);
+    const sy = Math.round(crop.cropY * img.naturalHeight);
+    const sw = Math.round(crop.cropWidth * img.naturalWidth);
+    const sh = Math.round(crop.cropHeight * img.naturalHeight);
+
+    if (sw <= 0 || sh <= 0) {
+      return { success: false, error: '크롭 영역이 올바르지 않습니다.' };
+    }
+
+    let dw = sw;
+    let dh = sh;
+    if (dw > outputWidth) {
+      dh = Math.round(dh * (outputWidth / dw));
+      dw = outputWidth;
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = dw;
+    canvas.height = dh;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return { success: false, error: 'Canvas를 생성할 수 없습니다.' };
+
+    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, dw, dh);
+
+    const blob = await new Promise<Blob | null>((resolve) => {
+      canvas.toBlob(resolve, 'image/webp', quality);
+    });
+
+    if (!blob) return { success: false, error: '이미지 변환에 실패했습니다.' };
+
+    const formData = new FormData();
+    formData.append('web', new File([blob], `${suffix}.webp`, { type: 'image/webp' }));
+    formData.append('thumb', new File([blob], `${suffix}-thumb.webp`, { type: 'image/webp' }));
+    formData.append('width', dw.toString());
+    formData.append('height', dh.toString());
+    if (invitationId) formData.append('invitationId', invitationId);
+
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    const data = await response.json() as { webUrl?: string; error?: string };
+    if (!response.ok) {
+      return { success: false, error: data.error || '업로드에 실패했습니다.' };
+    }
+
+    return { success: true, url: data.webUrl };
+  } catch (error) {
+    console.error('Crop and upload error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : '크롭 업로드 중 오류가 발생했습니다.',
+    };
+  }
+}
+
+/**
  * base64 문자열인지 확인
  */
 export function isBase64(str: string): boolean {

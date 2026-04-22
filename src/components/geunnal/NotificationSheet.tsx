@@ -12,6 +12,29 @@ interface NotificationSheetProps {
   onSessionExpired?: () => void
 }
 
+// 브라우저/환경 감지 헬퍼
+function isIOS(): boolean {
+  if (typeof navigator === 'undefined') return false
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+}
+
+function isInAppBrowser(): boolean {
+  if (typeof navigator === 'undefined') return false
+  const ua = navigator.userAgent
+  return /KAKAOTALK|NAVER|Line|Instagram|FBAN|FBAV/i.test(ua)
+}
+
+function isPWAInstalled(): boolean {
+  if (typeof window === 'undefined') return false
+  return (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    (window.navigator as unknown as { standalone?: boolean }).standalone === true
+  )
+}
+
+type EnvWarning = 'inapp' | 'ios-not-pwa' | null
+
 const DAY_OPTIONS = [
   { value: 'none', label: '알림 없음' },
   { value: '0d', label: '당일' },
@@ -54,6 +77,8 @@ export default function NotificationSheet({
   const [permissionDenied, setPermissionDenied] = useState(false)
   const [saving, setSaving] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [pushError, setPushError] = useState<string | null>(null)
+  const [envWarning, setEnvWarning] = useState<EnvWarning>(null)
   const loadedRef = useRef(false)
 
   // 열릴 때: 서버 설정 로드 (fallback: localStorage)
@@ -68,6 +93,16 @@ export default function NotificationSheet({
     setPermissionDenied(
       typeof Notification !== 'undefined' && Notification.permission === 'denied'
     )
+    setPushError(null)
+
+    // 환경 감지: 인앱 브라우저 또는 iOS 비-PWA
+    if (isInAppBrowser()) {
+      setEnvWarning('inapp')
+    } else if (isIOS() && !isPWAInstalled()) {
+      setEnvWarning('ios-not-pwa')
+    } else {
+      setEnvWarning(null)
+    }
 
     // Try loading from server first
     if (token) {
@@ -121,6 +156,8 @@ export default function NotificationSheet({
 
   const handleSave = async () => {
     setSaving(true)
+    setPushError(null)
+    let failed = false
 
     try {
       if (selectedDay === 'none') {
@@ -172,13 +209,14 @@ export default function NotificationSheet({
             }, onSessionExpired)
           } catch (err) {
             console.error('Push subscription failed:', err)
-            // Still saved in localStorage as fallback
+            setPushError('알림 등록에 실패했습니다. 잠시 후 다시 시도해주세요.')
+            failed = true
           }
         }
       }
     } finally {
       setSaving(false)
-      onClose()
+      if (!failed) onClose()
     }
   }
 
@@ -255,15 +293,45 @@ export default function NotificationSheet({
               </div>
             )}
 
+            {envWarning === 'inapp' && (
+              <div className="rounded-xl bg-[#FFF8E7] border border-[#F0DFA0] px-4 py-3">
+                <p className="text-[12px] text-[#8B6914] font-medium mb-1">
+                  외부 브라우저에서 열어주세요
+                </p>
+                <p className="text-[11px] text-[#A68A3E] leading-relaxed">
+                  카카오톡/네이버 등 앱 내 브라우저에서는 알림을 설정할 수 없습니다.
+                  우측 상단 메뉴에서 &quot;Safari로 열기&quot; 또는 &quot;Chrome으로 열기&quot;를 선택해주세요.
+                </p>
+              </div>
+            )}
+
+            {envWarning === 'ios-not-pwa' && (
+              <div className="rounded-xl bg-[#F0F4FF] border border-[#C7D4F0] px-4 py-3">
+                <p className="text-[12px] text-[#3B5998] font-medium mb-1">
+                  홈 화면에 추가해주세요
+                </p>
+                <p className="text-[11px] text-[#5B7DB8] leading-relaxed">
+                  iPhone에서 알림을 받으려면 먼저 이 페이지를 홈 화면에 추가해야 합니다.
+                  Safari 하단의 공유 버튼(&#x2191;)을 누른 후 &quot;홈 화면에 추가&quot;를 선택해주세요.
+                </p>
+              </div>
+            )}
+
             {permissionDenied && (
               <p className="text-[12px] text-[#D4899A] px-1">
                 알림 권한이 차단되어 있습니다. 브라우저 설정에서 알림을 허용해주세요.
               </p>
             )}
 
+            {pushError && (
+              <p className="text-[12px] text-[#D4899A] px-1">
+                {pushError}
+              </p>
+            )}
+
             <button
               onClick={handleSave}
-              disabled={saving}
+              disabled={saving || envWarning === 'inapp'}
               className="w-full py-3 text-[14px] font-medium text-white rounded-xl transition-colors disabled:opacity-60"
               style={{ background: 'linear-gradient(135deg, #8B75D0, #B87AAB)' }}
             >

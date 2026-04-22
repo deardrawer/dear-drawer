@@ -26,7 +26,7 @@ import MetaEditor from './SectionEditors/MetaEditor'
 import TapToOpenCover, { COVER_VARIANTS } from './TapToOpenCover'
 import InlineCropEditor from '@/components/editor/InlineCropEditor'
 import ImageZoomEditor from '@/components/editor/ImageZoomEditor'
-import { uploadImages, deleteImage } from '@/lib/imageUpload'
+import { uploadImages, deleteImage, cropAndUploadImage } from '@/lib/imageUpload'
 import { bgmPresets, getBgmPresetByUrl } from '@/lib/bgmPresets'
 import { loadKakaoMapSDK } from '@/lib/geunnalKakaoMap'
 import { createSectionInstanceId, getSectionType } from './utils'
@@ -300,6 +300,8 @@ export interface TheSimpleInvitationData {
     description: string
     ogImage: string | ImageWithSettings
     kakaoThumbnail?: ImageWithSettings
+    ogImageCropped?: string
+    kakaoThumbnailCropped?: string
   }
 }
 
@@ -1066,6 +1068,44 @@ function TheSimpleEditorContent() {
 
     setIsSaving(true)
     try {
+      // OG/카카오 이미지 크롭 처리 (크롭 설정이 있으면 실제 크롭 파일 생성)
+      const saveData = { ...data, meta: { ...data.meta } }
+      const cropTasks: Promise<void>[] = []
+
+      // OG 이미지 크롭
+      const ogImg = data.meta.ogImage
+      if (typeof ogImg === 'object' && ogImg.url && ogImg.settings) {
+        const s = ogImg.settings
+        const hasCrop = (s.cropWidth !== undefined && s.cropWidth < 1) || (s.cropHeight !== undefined && s.cropHeight < 1)
+        if (hasCrop) {
+          cropTasks.push(
+            cropAndUploadImage(ogImg.url, {
+              cropX: s.cropX || 0, cropY: s.cropY || 0,
+              cropWidth: s.cropWidth || 1, cropHeight: s.cropHeight || 1,
+            }, { invitationId: invitationId || undefined, outputWidth: 1200, suffix: 'og-cropped' })
+              .then(res => { if (res.success && res.url) saveData.meta.ogImageCropped = res.url })
+          )
+        }
+      }
+
+      // 카카오 썸네일 크롭
+      const kakaoImg = data.meta.kakaoThumbnail
+      if (kakaoImg?.url && kakaoImg.settings) {
+        const s = kakaoImg.settings
+        const hasCrop = (s.cropWidth !== undefined && s.cropWidth < 1) || (s.cropHeight !== undefined && s.cropHeight < 1)
+        if (hasCrop) {
+          cropTasks.push(
+            cropAndUploadImage(kakaoImg.url, {
+              cropX: s.cropX || 0, cropY: s.cropY || 0,
+              cropWidth: s.cropWidth || 1, cropHeight: s.cropHeight || 1,
+            }, { invitationId: invitationId || undefined, outputWidth: 800, suffix: 'kakao-cropped' })
+              .then(res => { if (res.success && res.url) saveData.meta.kakaoThumbnailCropped = res.url })
+          )
+        }
+      }
+
+      if (cropTasks.length > 0) await Promise.all(cropTasks)
+
       const payload: Record<string, unknown> = {
         template_id: 'narrative-the-simple',
         groom_name: data.groom.name,
@@ -1075,7 +1115,7 @@ function TheSimpleEditorContent() {
         venue_name: data.wedding.venue.name,
         venue_address: data.wedding.venue.address,
         venue_hall: data.wedding.venue.hall,
-        content: JSON.stringify(data),
+        content: JSON.stringify(saveData),
       }
       if (!invitationId && urlSlug) payload.slug = urlSlug
 
@@ -2386,7 +2426,7 @@ function TheSimpleEditorContent() {
           venueAddress={data.wedding.venue.address}
           currentSlug={savedSlug || undefined}
           onSlugChange={setSavedSlug}
-          thumbnailUrl={typeof data.meta.ogImage === 'string' ? data.meta.ogImage : data.meta.ogImage?.url}
+          thumbnailUrl={data.meta.ogImageCropped || (typeof data.meta.ogImage === 'string' ? data.meta.ogImage : data.meta.ogImage?.url)}
           shareTitle={data.meta.title}
           shareDescription={data.meta.description}
         />

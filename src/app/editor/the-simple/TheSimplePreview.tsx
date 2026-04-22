@@ -1794,11 +1794,13 @@ function RsvpModal({
       onClick={(e) => { if (e.target === overlayRef.current) handleClose() }}
     >
       <div ref={contentRef} className={`ts-rsvp-modal ${closing ? 'ts-rsvp-modal--closing' : ''}`}>
-        <button type="button" className="ts-rsvp-modal-close" onClick={handleClose}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
+        <div className="ts-rsvp-modal-header">
+          <button type="button" className="ts-rsvp-modal-close" onClick={handleClose}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
 
         {done ? (
           <div className="ts-rsvp-modal-done">
@@ -5349,13 +5351,23 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               const url = typeof window !== 'undefined' ? window.location.href : ''
               const gN = data.groom?.name || '신랑'
               const bN = data.bride?.name || '신부'
+
+              // 크롭된 카카오 > 카카오 원본 > 크롭된 OG > OG 원본 > 폴백
+              const kakaoImg = data.meta?.kakaoThumbnailCropped
+                || data.meta?.kakaoThumbnail?.url
+                || data.meta?.ogImageCropped
+                || (typeof data.meta?.ogImage === 'string' ? data.meta.ogImage : data.meta?.ogImage?.url)
+                || ''
+              const shareTitle = data.meta?.title || `${gN} ♥ ${bN} 결혼합니다`
+              const shareDesc = data.meta?.description || data.wedding?.venue?.name || ''
+
               if (kakaoWindow.Kakao?.Share && kakaoWindow.Kakao.isInitialized?.()) {
                 kakaoWindow.Kakao.Share.sendDefault({
                   objectType: 'feed',
                   content: {
-                    title: `${gN} ♥ ${bN}의 결혼식에 초대합니다`,
-                    description: data.wedding?.venue?.name || '',
-                    imageUrl: 'https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png',
+                    title: shareTitle,
+                    description: shareDesc,
+                    imageUrl: kakaoImg || 'https://invite.deardrawer.com/og-image.png',
                     link: { mobileWebUrl: url, webUrl: url },
                   },
                   buttons: [{ title: '청첩장 보기', link: { mobileWebUrl: url, webUrl: url } }],

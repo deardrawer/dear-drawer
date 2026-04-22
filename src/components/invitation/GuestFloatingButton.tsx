@@ -83,35 +83,76 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
   const [isSubmitting, setIsSubmitting] = useState(false)
   const scrollPositionRef = useRef(0)
   const modalContentRef = useRef<HTMLDivElement>(null)
+  const modalContainerRef = useRef<HTMLDivElement>(null)
   const navVisible = !navHidden
 
-  // 모바일 키보드 열릴 때: 스크롤 영역에 하단 패딩 추가 + 포커스된 필드로 자동 스크롤
+  // 모바일 키보드 열릴 때: 모달 높이 조절 + 포커스된 필드로 자동 스크롤
   useEffect(() => {
     if (activeModal === 'none') return
-    const vv = window.visualViewport
-    if (!vv) return
 
-    const handleViewportChange = () => {
+    const scrollFocusedIntoView = () => {
       const contentEl = modalContentRef.current
       if (!contentEl) return
+      const focused = document.activeElement as HTMLElement
+      if (focused && (focused.tagName === 'INPUT' || focused.tagName === 'TEXTAREA') && contentEl.contains(focused)) {
+        setTimeout(() => {
+          focused.scrollIntoView({ block: 'center', behavior: 'smooth' })
+        }, 100)
+      }
+    }
+
+    // 방법 1: visualViewport API (지원하는 브라우저)
+    const vv = window.visualViewport
+    const handleViewportChange = () => {
+      if (!vv) return
+      const container = modalContainerRef.current
+      const contentEl = modalContentRef.current
+      if (!container || !contentEl) return
+
       const keyboardHeight = window.innerHeight - vv.height - vv.offsetTop
       if (keyboardHeight > 50) {
-        contentEl.style.paddingBottom = `${keyboardHeight}px`
-        // 포커스된 input/textarea를 스크롤 영역 내에서 보이도록
-        const focused = document.activeElement as HTMLElement
-        if (focused && (focused.tagName === 'INPUT' || focused.tagName === 'TEXTAREA') && contentEl.contains(focused)) {
-          setTimeout(() => focused.scrollIntoView({ block: 'center', behavior: 'smooth' }), 50)
-        }
+        // 모달 자체를 보이는 영역에 맞춤
+        container.style.top = `${vv.offsetTop + 16}px`
+        container.style.bottom = 'auto'
+        container.style.maxHeight = `${vv.height - 32}px`
+        contentEl.style.paddingBottom = '16px'
+        scrollFocusedIntoView()
       } else {
+        container.style.top = ''
+        container.style.bottom = ''
+        container.style.maxHeight = ''
         contentEl.style.paddingBottom = ''
       }
     }
 
-    vv.addEventListener('resize', handleViewportChange)
-    vv.addEventListener('scroll', handleViewportChange)
+    if (vv) {
+      vv.addEventListener('resize', handleViewportChange)
+      vv.addEventListener('scroll', handleViewportChange)
+    }
+
+    // 방법 2: focus/blur fallback (삼성 인터넷 등 visualViewport 이벤트 불안정 대응)
+    const handleFocusIn = (e: FocusEvent) => {
+      const target = e.target as HTMLElement
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+        // 키보드 올라오는 시간 대기 후 스크롤
+        setTimeout(scrollFocusedIntoView, 300)
+        setTimeout(scrollFocusedIntoView, 600)
+      }
+    }
+
+    document.addEventListener('focusin', handleFocusIn)
+
     return () => {
-      vv.removeEventListener('resize', handleViewportChange)
-      vv.removeEventListener('scroll', handleViewportChange)
+      if (vv) {
+        vv.removeEventListener('resize', handleViewportChange)
+        vv.removeEventListener('scroll', handleViewportChange)
+      }
+      document.removeEventListener('focusin', handleFocusIn)
+      if (modalContainerRef.current) {
+        modalContainerRef.current.style.top = ''
+        modalContainerRef.current.style.bottom = ''
+        modalContainerRef.current.style.maxHeight = ''
+      }
       if (modalContentRef.current) modalContentRef.current.style.paddingBottom = ''
     }
   }, [activeModal])
@@ -500,9 +541,11 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
         <>
           <div className="fixed inset-0 bg-black/50 z-50" onClick={closeModal} />
           <div
+            ref={modalContainerRef}
             className="fixed inset-4 z-[55] bg-white rounded-2xl max-h-[80vh] m-auto overflow-hidden flex flex-col"
             style={{
               animation: 'centerModalOpen 0.25s ease-out',
+              transition: 'top 0.2s ease, max-height 0.2s ease',
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -577,7 +620,7 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
                   {invitation.rsvpNotice && (
                     <p className="text-xs text-center mb-3 whitespace-pre-line leading-relaxed" style={{ color: themeColors.gray }}>{invitation.rsvpNotice}</p>
                   )}
-                  <input type="text" placeholder="이름" value={rsvpForm.name} onChange={(e) => setRsvpForm({ ...rsvpForm, name: e.target.value })} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} className="w-full p-3 rounded-xl mb-3 text-sm outline-none" style={{ background: themeColors.sectionBg, color: themeColors.text }} />
+                  <input type="text" placeholder="이름" value={rsvpForm.name} onChange={(e) => setRsvpForm({ ...rsvpForm, name: e.target.value })} className="w-full p-3 rounded-xl mb-3 text-sm outline-none" style={{ background: themeColors.sectionBg, color: themeColors.text }} />
                   <div className="grid grid-cols-2 gap-2 mb-3">
                     <button onClick={() => setRsvpForm({ ...rsvpForm, side: rsvpForm.side === 'groom' ? '' : 'groom' })} className="py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.side === 'groom' ? '#3B82F6' : themeColors.sectionBg, color: rsvpForm.side === 'groom' ? 'white' : themeColors.text }}>신랑측</button>
                     <button onClick={() => setRsvpForm({ ...rsvpForm, side: rsvpForm.side === 'bride' ? '' : 'bride' })} className="py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.side === 'bride' ? '#EC4899' : themeColors.sectionBg, color: rsvpForm.side === 'bride' ? 'white' : themeColors.text }}>신부측</button>
@@ -611,7 +654,7 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
                       </div>
                     </div>
                   )}
-                  <textarea placeholder="메시지 (선택)" value={rsvpForm.message} onChange={(e) => setRsvpForm({ ...rsvpForm, message: e.target.value })} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} className="w-full p-3 rounded-xl mb-4 text-sm outline-none resize-none h-16" style={{ background: themeColors.sectionBg, color: themeColors.text }} />
+                  <textarea placeholder="메시지 (선택)" value={rsvpForm.message} onChange={(e) => setRsvpForm({ ...rsvpForm, message: e.target.value })} className="w-full p-3 rounded-xl mb-4 text-sm outline-none resize-none h-16" style={{ background: themeColors.sectionBg, color: themeColors.text }} />
                   <button onClick={handleRsvpSubmit} disabled={isSubmitting || !rsvpForm.name.trim() || !rsvpForm.attendance} className="w-full py-3 rounded-xl text-sm text-white transition-opacity" style={{ background: themeColors.primary, opacity: (!rsvpForm.name.trim() || !rsvpForm.attendance) ? 0.4 : 1 }}>{isSubmitting ? '전송중...' : '제출하기'}</button>
                 </>
               )}

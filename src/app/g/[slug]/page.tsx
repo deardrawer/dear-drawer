@@ -26,10 +26,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (page.invitation_id) {
     try {
       const invitation = await getInvitationById(page.invitation_id);
-      if (invitation?.main_image) {
-        ogImage = invitation.main_image.startsWith('https://')
-          ? invitation.main_image
-          : `https://invite.deardrawer.com${invitation.main_image}`;
+      // main_image 또는 content JSON에서 이미지 추출
+      let foundImage = invitation?.main_image || '';
+      if (!foundImage && invitation?.content) {
+        try {
+          const c = JSON.parse(invitation.content);
+          foundImage = c?.meta?.kakaoThumbnail || c?.meta?.ogImage || c?.media?.coverImage || c?.gallery?.images?.[0] || '';
+        } catch { /* */ }
+      }
+      if (foundImage) {
+        ogImage = foundImage.startsWith('https://') ? foundImage : `https://invite.deardrawer.com${foundImage}`;
       }
     } catch { /* fallback */ }
   }
@@ -65,29 +71,36 @@ export default async function GeunnalPage({ params }: PageProps) {
   if (page.invitation_id) {
     try {
       const invitation = await getInvitationById(page.invitation_id)
-      if (invitation?.main_image) {
-        ogImage = invitation.main_image.startsWith('https://')
-          ? invitation.main_image
-          : `https://invite.deardrawer.com${invitation.main_image}`
-      }
+      // main_image 또는 content JSON에서 이미지 추출
+      let foundImg = invitation?.main_image || ''
       if (invitation?.slug) {
         invitationSlug = invitation.slug
       }
-      // content JSON에서 카카오 공유 설정 추출
+      // content JSON에서 카카오 공유 설정 추출 (에디터 ShareModal과 동일한 폴백 순서)
       if (invitation?.content) {
         try {
           const content = JSON.parse(invitation.content)
-          if (content?.meta) {
-            const thumb = content.meta.kakaoThumbnail
-            if (thumb) {
-              kakaoShareData.thumbnailUrl = thumb.startsWith('https://')
-                ? thumb
-                : `https://invite.deardrawer.com${thumb}`
-            }
-            if (content.meta.title) kakaoShareData.shareTitle = content.meta.title
-            if (content.meta.description) kakaoShareData.shareDescription = content.meta.description
+          // 이미지: kakaoThumbnail > ogImage > coverImage > gallery 첫번째
+          const thumb = content?.meta?.kakaoThumbnail
+            || content?.meta?.ogImage
+            || content?.media?.coverImage
+            || content?.gallery?.images?.[0]
+          if (thumb) {
+            kakaoShareData.thumbnailUrl = thumb.startsWith('https://')
+              ? thumb
+              : `https://invite.deardrawer.com${thumb}`
+          }
+          if (content?.meta?.title) kakaoShareData.shareTitle = content.meta.title
+          if (content?.meta?.description) kakaoShareData.shareDescription = content.meta.description
+          // content에서 찾은 이미지로 foundImg 보강
+          if (!foundImg) {
+            foundImg = content?.meta?.ogImage || content?.media?.coverImage || content?.gallery?.images?.[0] || ''
           }
         } catch { /* content parse error */ }
+      }
+      // ogImage 설정
+      if (foundImg) {
+        ogImage = foundImg.startsWith('https://') ? foundImg : `https://invite.deardrawer.com${foundImg}`
       }
     } catch { /* fallback to default */ }
   }

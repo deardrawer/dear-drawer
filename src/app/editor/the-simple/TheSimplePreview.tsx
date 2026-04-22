@@ -5353,13 +5353,31 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               const bN = data.bride?.name || '신부'
 
               // 크롭된 카카오 > 카카오 원본 > 크롭된 OG > OG 원본 > 폴백
-              const kakaoImg = data.meta?.kakaoThumbnailCropped
+              const rawImg = data.meta?.kakaoThumbnailCropped
                 || data.meta?.kakaoThumbnail?.url
                 || data.meta?.ogImageCropped
                 || (typeof data.meta?.ogImage === 'string' ? data.meta.ogImage : data.meta?.ogImage?.url)
                 || ''
+              // 카카오는 절대 URL만 인식 - 상대경로를 절대경로로 변환
+              const toAbsolute = (u: string) => {
+                if (!u) return ''
+                if (u.startsWith('https://') || u.startsWith('http://')) return u
+                return `https://invite.deardrawer.com${u.startsWith('/') ? '' : '/'}${u}`
+              }
+              const kakaoImg = toAbsolute(rawImg)
               const shareTitle = data.meta?.title || `${gN} ♥ ${bN} 결혼합니다`
-              const shareDesc = data.meta?.description || data.wedding?.venue?.name || ''
+              // 설명: 커스텀 설명 > 날짜+시간+장소 자동생성 > 장소명만
+              let shareDesc = data.meta?.description || ''
+              if (!shareDesc && data.wedding?.date) {
+                const d = new Date(data.wedding.date + 'T00:00:00')
+                if (!isNaN(d.getTime())) {
+                  const wd = ['일','월','화','수','목','금','토']
+                  shareDesc = `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 ${wd[d.getDay()]}요일`
+                  if (data.wedding.timeDisplay) shareDesc += ` ${data.wedding.timeDisplay}`
+                  if (data.wedding.venue?.name) shareDesc += `\n${data.wedding.venue.name}`
+                }
+              }
+              if (!shareDesc) shareDesc = data.wedding?.venue?.name || ''
 
               if (kakaoWindow.Kakao?.Share && kakaoWindow.Kakao.isInitialized?.()) {
                 kakaoWindow.Kakao.Share.sendDefault({

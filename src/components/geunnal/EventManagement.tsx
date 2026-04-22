@@ -651,6 +651,7 @@ function SettingsSheet({ open, onClose, slug, groomName, brideName, onPasswordCh
                 title: `${groomName} & ${brideName} 청첩장 모임에 초대합니다`,
                 description: '함께 모임을 관리해요',
                 url: `https://invite.deardrawer.com/g/${slug}`,
+                imageUrl: ogImage || 'https://invite.deardrawer.com/og-image.png',
               })
             } catch {
               // Kakao SDK not loaded fallback

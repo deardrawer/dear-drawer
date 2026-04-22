@@ -464,6 +464,8 @@ function normalizeTheSimpleData(
       description: c.meta?.description || '',
       ogImage: c.meta?.ogImage || '',
       ...(c.meta?.kakaoThumbnail && { kakaoThumbnail: c.meta.kakaoThumbnail }),
+      ...(c.meta?.ogImageCropped && { ogImageCropped: c.meta.ogImageCropped }),
+      ...(c.meta?.kakaoThumbnailCropped && { kakaoThumbnailCropped: c.meta.kakaoThumbnailCropped }),
     },
   }
 }

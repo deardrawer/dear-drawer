@@ -327,12 +327,17 @@ export async function cropAndUploadImage(
   const { outputWidth = 1200, quality = 0.85, suffix = 'og', invitationId } = options;
 
   try {
+    // fetch → Object URL 방식으로 Canvas 오염(tainted) 문제 회피
+    const imgResponse = await fetch(imageUrl);
+    if (!imgResponse.ok) return { success: false, error: `이미지 로드 실패: ${imgResponse.status}` };
+    const imgBlob = await imgResponse.blob();
+    const objectUrl = URL.createObjectURL(imgBlob);
+
     const img = await new Promise<HTMLImageElement>((resolve, reject) => {
       const el = new Image();
-      el.crossOrigin = 'anonymous';
       el.onload = () => resolve(el);
       el.onerror = () => reject(new Error('이미지를 로드할 수 없습니다.'));
-      el.src = imageUrl;
+      el.src = objectUrl;
     });
 
     const sx = Math.round(crop.cropX * img.naturalWidth);
@@ -358,6 +363,7 @@ export async function cropAndUploadImage(
     if (!ctx) return { success: false, error: 'Canvas를 생성할 수 없습니다.' };
 
     ctx.drawImage(img, sx, sy, sw, sh, 0, 0, dw, dh);
+    URL.revokeObjectURL(objectUrl);
 
     const blob = await new Promise<Blob | null>((resolve) => {
       canvas.toBlob(resolve, 'image/webp', quality);

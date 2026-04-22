@@ -1083,7 +1083,10 @@ function TheSimpleEditorContent() {
               cropX: s.cropX || 0, cropY: s.cropY || 0,
               cropWidth: s.cropWidth || 1, cropHeight: s.cropHeight || 1,
             }, { invitationId: invitationId || undefined, outputWidth: 1200, suffix: 'og-cropped' })
-              .then(res => { if (res.success && res.url) saveData.meta.ogImageCropped = res.url })
+              .then(res => {
+                if (res.success && res.url) saveData.meta.ogImageCropped = res.url
+                else console.error('OG 크롭 업로드 실패:', res.error)
+              })
           )
         }
       }
@@ -1099,7 +1102,10 @@ function TheSimpleEditorContent() {
               cropX: s.cropX || 0, cropY: s.cropY || 0,
               cropWidth: s.cropWidth || 1, cropHeight: s.cropHeight || 1,
             }, { invitationId: invitationId || undefined, outputWidth: 800, suffix: 'kakao-cropped' })
-              .then(res => { if (res.success && res.url) saveData.meta.kakaoThumbnailCropped = res.url })
+              .then(res => {
+                if (res.success && res.url) saveData.meta.kakaoThumbnailCropped = res.url
+                else console.error('카카오 크롭 업로드 실패:', res.error)
+              })
           )
         }
       }

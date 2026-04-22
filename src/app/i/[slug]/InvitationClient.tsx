@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef, useCallback, createContext, useContext } from 'react'
 import { createPortal } from 'react-dom'
 import GuestFloatingButton from '@/components/invitation/GuestFloatingButton'
 import ProfileImageSlider from '@/components/editor/ProfileImageSlider'
@@ -1154,7 +1154,17 @@ function useScrollAnimation() {
       { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
     )
 
-    if (ref.current) observer.observe(ref.current)
+    if (ref.current) {
+      observer.observe(ref.current)
+      // Fallback: 스크롤 컨테이너 안에서 IntersectionObserver가 viewport root로
+      // 제대로 감지하지 못하는 경우를 대비한 수동 체크
+      const rect = ref.current.getBoundingClientRect()
+      const viewH = window.innerHeight || document.documentElement.clientHeight
+      if (rect.top < viewH + 50 && rect.bottom > -50) {
+        setIsVisible(true)
+        observer.unobserve(ref.current)
+      }
+    }
     return () => observer.disconnect()
   }, [isMounted])
 
@@ -1363,18 +1373,21 @@ function GalleryLightbox({
 }) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex + 1) // +1 for clone
   const [isTransitioning, setIsTransitioning] = useState(false)
+  const [isActive, setIsActive] = useState(false) // CSS 페이드인 트리거용
   const slidesRef = useRef<HTMLDivElement>(null)
   const touchStartX = useRef(0)
 
-  // Reset to initial index when opening (no transition to jump instantly)
-  useEffect(() => {
+  // useLayoutEffect: paint 전에 올바른 슬라이드로 이동 → 깜빡임 방지
+  useLayoutEffect(() => {
     if (isOpen) {
+      // 슬라이드 트랜지션 제거 후 올바른 위치로 즉시 점프
       if (slidesRef.current) {
         slidesRef.current.style.transition = 'none'
       }
       setCurrentIndex(initialIndex + 1)
-      // Re-enable transition after the jump
+      // 한 프레임 뒤에 active 클래스 추가 → CSS opacity 트랜지션 활성화
       requestAnimationFrame(() => {
+        setIsActive(true)
         requestAnimationFrame(() => {
           if (slidesRef.current) {
             slidesRef.current.style.transition = ''
@@ -1383,6 +1396,7 @@ function GalleryLightbox({
       })
       document.body.classList.add('lightbox-open')
     } else {
+      setIsActive(false)
       document.body.classList.remove('lightbox-open')
     }
   }, [isOpen, initialIndex])
@@ -1460,7 +1474,7 @@ function GalleryLightbox({
   if (!isOpen || images.length === 0) return null
 
   return (
-    <div className={`gallery-lightbox ${isOpen ? 'active' : ''}`}>
+    <div className={`gallery-lightbox ${isActive ? 'active' : ''}`}>
       <div className="gallery-lightbox-container" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
         {/* Close Button */}
         <button className="gallery-lightbox-close" onClick={onClose}>

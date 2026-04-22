@@ -1096,17 +1096,33 @@ function TheSimpleEditorContent() {
         })
 
       // OG 이미지 크롭 (비율 1.91:1)
+      // 우선순위: 명시적 OG 이미지 > 인트로 사진 > 갤러리 첫 번째
       const ogImg = data.meta.ogImage
-      if (typeof ogImg === 'object' && ogImg.url) {
-        const s = ogImg.settings || { scale: 1, positionX: 0, positionY: 0 }
+      const ogImgUrl = typeof ogImg === 'object' && ogImg.url ? ogImg.url
+        : typeof ogImg === 'string' && ogImg ? ogImg : ''
+      const ogImgSettings = typeof ogImg === 'object' ? ogImg.settings : undefined
+      const fallbackImgUrl = !ogImgUrl
+        ? (data.sections?.intro?.photo?.url || (() => {
+            if (!data.galleries) return ''
+            for (const key of Object.keys(data.galleries)) {
+              const imgs = data.galleries[key]
+              if (Array.isArray(imgs) && imgs.length > 0) return (imgs[0] as GalleryImage)?.webUrl || ''
+            }
+            return ''
+          })())
+        : ''
+      const cropSourceUrl = ogImgUrl || fallbackImgUrl
+
+      if (cropSourceUrl) {
+        const s = ogImgSettings || { scale: 1, positionX: 0, positionY: 0 }
         const hasCrop = (s.cropWidth !== undefined && s.cropWidth < 1) || (s.cropHeight !== undefined && s.cropHeight < 1)
         const cropValues = hasCrop
           ? Promise.resolve({ cropX: s.cropX || 0, cropY: s.cropY || 0, cropWidth: s.cropWidth || 1, cropHeight: s.cropHeight || 1 })
-          : calcDefaultCrop(ogImg.url, 1.91)
+          : calcDefaultCrop(cropSourceUrl, 1.91)
 
         cropTasks.push(
           cropValues.then(crop =>
-            cropAndUploadImage(ogImg.url, crop, {
+            cropAndUploadImage(cropSourceUrl, crop, {
               invitationId: invitationId || undefined, outputWidth: 1200, suffix: 'og-cropped',
             })
           ).then(res => {

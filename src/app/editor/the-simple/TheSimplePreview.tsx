@@ -5352,11 +5352,21 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               const gN = data.groom?.name || '신랑'
               const bN = data.bride?.name || '신부'
 
-              // 크롭된 카카오 > 카카오 원본 > 크롭된 OG > OG 원본 > 폴백
+              // 크롭된 카카오 > 카카오 원본 > 크롭된 OG > OG 원본 > 인트로 사진 > 갤러리 첫 번째
+              const firstGalleryUrl = (() => {
+                if (!data.galleries) return ''
+                for (const key of Object.keys(data.galleries)) {
+                  const imgs = data.galleries[key]
+                  if (Array.isArray(imgs) && imgs.length > 0) return (imgs[0] as { webUrl?: string })?.webUrl || ''
+                }
+                return ''
+              })()
               const rawImg = data.meta?.kakaoThumbnailCropped
                 || data.meta?.kakaoThumbnail?.url
                 || data.meta?.ogImageCropped
-                || (typeof data.meta?.ogImage === 'string' ? data.meta.ogImage : data.meta?.ogImage?.url)
+                || (typeof data.meta?.ogImage === 'string' && data.meta.ogImage ? data.meta.ogImage : data.meta?.ogImage && typeof data.meta.ogImage === 'object' ? data.meta.ogImage.url : '')
+                || data.sections?.intro?.photo?.url
+                || firstGalleryUrl
                 || ''
               // 카카오는 절대 URL만 인식 - 상대경로를 절대경로로 변환
               const toAbsolute = (u: string) => {

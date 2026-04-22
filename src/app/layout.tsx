@@ -179,7 +179,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  interactiveWidget: "overlays-content", // 키보드가 콘텐츠를 resize하지 않고 overlay
+  interactiveWidget: "resizes-visual", // visual viewport만 리사이즈 → 키보드 높이 감지 가능
 };
 
 const fontVariables = [

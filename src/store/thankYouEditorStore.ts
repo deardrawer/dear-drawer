@@ -11,6 +11,7 @@ export interface ThankYouMeta {
   ogImageSettings?: { scale: number; positionX: number; positionY: number; cropX?: number; cropY?: number; cropWidth?: number; cropHeight?: number }
   kakaoThumbnail: string
   kakaoThumbnailSettings?: { scale: number; positionX: number; positionY: number }
+  kakaoThumbnailRatio?: '3:4' | '1:1' | '3:2'
 }
 
 export interface ThankYouEditorState {
@@ -179,6 +180,7 @@ export const useThankYouEditorStore = create<ThankYouEditorState>((set, get) => 
         ogImageSettings: parsedMeta.ogImageSettings,
         kakaoThumbnail: parsedMeta.kakaoThumbnail || '',
         kakaoThumbnailSettings: parsedMeta.kakaoThumbnailSettings,
+        kakaoThumbnailRatio: parsedMeta.kakaoThumbnailRatio,
       },
       isDirty: false,
     })

@@ -221,7 +221,7 @@ export default function MetaEditor({
         </label>
 
         {/* OG 미리보기 카드 (축소) */}
-        <div className="max-w-[220px] rounded-lg border border-stone-200 bg-white shadow-sm overflow-hidden mb-2">
+        <div className="max-w-[220px] mx-auto rounded-lg border border-stone-200 bg-white shadow-sm overflow-hidden mb-2">
           {ogUrl ? (
             <div className="w-full bg-stone-100" style={{ aspectRatio: '1.91/1' }}>
               <img
@@ -307,7 +307,7 @@ export default function MetaEditor({
         </label>
 
         {/* 카카오 미리보기 카드 (축소) */}
-        <div className="max-w-[200px] rounded-lg border border-stone-200 bg-white shadow-sm overflow-hidden mb-2">
+        <div className="max-w-[200px] mx-auto rounded-lg border border-stone-200 bg-white shadow-sm overflow-hidden mb-2">
           {kakaoUrl ? (
             <div className="w-full bg-stone-100" style={{ aspectRatio: kakaoAspectStyle }}>
               <img

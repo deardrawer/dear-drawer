@@ -4,8 +4,6 @@ import { useState } from 'react'
 import { useThankYouEditorStore } from '@/store/thankYouEditorStore'
 import { Loader2, ExternalLink, Copy, Check } from 'lucide-react'
 import ImageUploader from '@/components/editor/ImageUploader'
-import InlineCropEditor from '@/components/editor/InlineCropEditor'
-import ImageCropEditor, { CropData } from '@/components/parents/ImageCropEditor'
 
 interface ThankYouStep5PublishProps {
   invitationId: string | null
@@ -20,6 +18,8 @@ export default function ThankYouStep5Publish({
   onSave,
   onSlugChange,
 }: ThankYouStep5PublishProps) {
+  const kakaoAspectMap: Record<string, string> = { '3:4': '3/4', '1:1': '1/1', '3:2': '3/2' }
+
   const { isSaving, meta, updateMeta, data } = useThankYouEditorStore()
   const [newSlug, setNewSlug] = useState(slug || '')
   const [isChangingSlug, setIsChangingSlug] = useState(false)
@@ -248,33 +248,62 @@ export default function ThankYouStep5Publish({
             {/* 썸네일 */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">공유 썸네일</label>
-              <p className="text-xs text-gray-400">권장 사이즈: 600 x 600px (1:1 정사각형)</p>
-              {meta.kakaoThumbnail ? (
-                <div className="space-y-3">
-                  <InlineCropEditor
-                    imageUrl={meta.kakaoThumbnail}
-                    settings={meta.kakaoThumbnailSettings || { scale: 1.0, positionX: 0, positionY: 0 }}
-                    onUpdate={(s) => {
-                      const current = meta.kakaoThumbnailSettings || { scale: 1.0, positionX: 0, positionY: 0 }
-                      updateMeta('kakaoThumbnailSettings', { ...current, ...s })
-                    }}
-                    aspectRatio={1}
-                    containerWidth={180}
-                    colorClass="amber"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      updateMeta('kakaoThumbnail', '')
-                      updateMeta('kakaoThumbnailSettings', undefined)
-                    }}
-                    className="text-xs text-red-500 hover:text-red-600"
+
+              {/* Kakao Ratio Selector */}
+              <div className="flex gap-2">
+                {(['3:4', '1:1', '3:2'] as const).map((ratio) => (
+                  <label
+                    key={ratio}
+                    className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 border border-gray-200 rounded-lg cursor-pointer hover:bg-white transition-colors has-[:checked]:bg-white has-[:checked]:border-gray-400"
                   >
-                    이미지 삭제
-                  </button>
-                </div>
-              ) : (
-                <div className="max-w-[150px]">
+                    <input
+                      type="radio"
+                      name="kakaoRatio"
+                      value={ratio}
+                      checked={(meta.kakaoThumbnailRatio || '1:1') === ratio}
+                      onChange={(e) => updateMeta('kakaoThumbnailRatio', e.target.value)}
+                      className="sr-only"
+                    />
+                    <span className="text-xs text-gray-600">
+                      {ratio === '3:4' ? '세로형' : ratio === '1:1' ? '정사각형' : '가로형'}
+                    </span>
+                    <span className="text-[10px] text-gray-400">({ratio})</span>
+                  </label>
+                ))}
+              </div>
+
+              {/* Kakao Preview Card */}
+              <div className="max-w-[200px] mx-auto">
+                {meta.kakaoThumbnail ? (
+                  <div className="space-y-2">
+                    <div
+                      className="relative w-full overflow-hidden rounded-lg border border-gray-200 bg-gray-100"
+                      style={{ aspectRatio: kakaoAspectMap[meta.kakaoThumbnailRatio || '1:1'] }}
+                    >
+                      <img
+                        src={meta.kakaoThumbnail}
+                        alt="카카오톡 썸네일"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <ImageUploader
+                        value=""
+                        onChange={(url) => updateMeta('kakaoThumbnail', url)}
+                        invitationId={invitationId || undefined}
+                        placeholder="교체"
+                        aspectRatio="aspect-square"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => updateMeta('kakaoThumbnail', '')}
+                        className="flex-1 px-3 py-2 text-xs text-red-500 hover:text-red-600 border border-red-200 hover:border-red-300 rounded-lg transition-colors"
+                      >
+                        삭제
+                      </button>
+                    </div>
+                  </div>
+                ) : (
                   <ImageUploader
                     value={meta.kakaoThumbnail}
                     onChange={(url) => updateMeta('kakaoThumbnail', url)}
@@ -282,8 +311,8 @@ export default function ThankYouStep5Publish({
                     placeholder="썸네일 업로드"
                     aspectRatio="aspect-square"
                   />
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
             {/* 공유 제목 */}
@@ -331,29 +360,51 @@ export default function ThankYouStep5Publish({
           </div>
 
           <div className="space-y-3">
-            <ImageCropEditor
-              value={{
-                url: meta.ogImage || '',
-                cropX: meta.ogImageSettings?.cropX ?? 0,
-                cropY: meta.ogImageSettings?.cropY ?? 0,
-                cropWidth: meta.ogImageSettings?.cropWidth ?? 1,
-                cropHeight: meta.ogImageSettings?.cropHeight ?? 1,
-              }}
-              onChange={(cropData: CropData) => {
-                updateMeta('ogImage', cropData.url)
-                updateMeta('ogImageSettings', {
-                  ...(meta.ogImageSettings || { scale: 1, positionX: 0, positionY: 0 }),
-                  cropX: cropData.cropX,
-                  cropY: cropData.cropY,
-                  cropWidth: cropData.cropWidth,
-                  cropHeight: cropData.cropHeight,
-                })
-              }}
-              aspectRatio={1200 / 630}
-              containerWidth={280}
-              invitationId={invitationId || undefined}
-              label="공유 미리보기 이미지"
-            />
+            {/* OG Preview Card */}
+            <div className="max-w-[220px] mx-auto">
+              {meta.ogImage ? (
+                <div className="space-y-2">
+                  <div
+                    className="relative w-full overflow-hidden rounded-lg border border-gray-200 bg-gray-100"
+                    style={{ aspectRatio: '1.91/1' }}
+                  >
+                    <img
+                      src={meta.ogImage}
+                      alt="OG 이미지"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-400 text-center">이미지는 1.91:1 비율로 자동 잘립니다</p>
+                  <div className="flex gap-2">
+                    <ImageUploader
+                      value=""
+                      onChange={(url) => updateMeta('ogImage', url)}
+                      invitationId={invitationId || undefined}
+                      placeholder="교체"
+                      aspectRatio="aspect-square"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => updateMeta('ogImage', '')}
+                      className="flex-1 px-3 py-2 text-xs text-red-500 hover:text-red-600 border border-red-200 hover:border-red-300 rounded-lg transition-colors"
+                    >
+                      삭제
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <ImageUploader
+                    value={meta.ogImage}
+                    onChange={(url) => updateMeta('ogImage', url)}
+                    invitationId={invitationId || undefined}
+                    placeholder="OG 이미지 업로드"
+                    aspectRatio="aspect-square"
+                  />
+                  <p className="text-xs text-gray-400 text-center">이미지는 1.91:1 비율로 자동 잘립니다</p>
+                </div>
+              )}
+            </div>
 
             {!meta.ogImage && meta.kakaoThumbnail && (
               <div className="p-3 bg-amber-50 rounded-lg">

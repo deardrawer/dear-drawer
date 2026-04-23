@@ -245,6 +245,7 @@ export interface ParentsInvitationData {
     title: string
     description: string
     kakaoThumbnail: string | ImageCropData
+    kakaoThumbnailRatio?: '3:4' | '1:1' | '3:2'
     ogImage: string
     ogImageSettings?: {
       scale: number

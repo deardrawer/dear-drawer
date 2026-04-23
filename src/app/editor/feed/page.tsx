@@ -152,6 +152,7 @@ export interface FeedInvitationData {
     description: string
     kakaoThumbnail: string
     kakaoThumbnailSettings?: { scale: number; positionX: number; positionY: number; cropX?: number; cropY?: number; cropWidth?: number; cropHeight?: number }
+    kakaoThumbnailRatio?: '3:4' | '1:1' | '3:2'
     ogImage?: string
     ogImageSettings?: { scale: number; positionX: number; positionY: number; cropX?: number; cropY?: number; cropWidth?: number; cropHeight?: number }
   }

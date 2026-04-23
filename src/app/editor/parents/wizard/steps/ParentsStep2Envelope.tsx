@@ -8,8 +8,6 @@ import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Mail, Heart, Share2, Upload, X } from 'lucide-react'
 import { uploadImage } from '@/lib/imageUpload'
-import InlineCropEditor from '@/components/editor/InlineCropEditor'
-import ImageCropEditor from '@/components/parents/ImageCropEditor'
 import type { ParentsInvitationData } from '../../page'
 
 interface ParentsStep2EnvelopeProps {
@@ -25,6 +23,7 @@ export default function ParentsStep2Envelope({
   updateNestedData,
   invitationId,
 }: ParentsStep2EnvelopeProps) {
+  const kakaoAspectMap: Record<string, string> = { '3:4': '3/4', '1:1': '1/1', '3:2': '3/2' }
   const [uploadingImages, setUploadingImages] = useState<Set<string>>(new Set())
 
   // 이미지 업로드 핸들러
@@ -313,22 +312,112 @@ export default function ParentsStep2Envelope({
         {/* 카카오톡 공유 썸네일 */}
         <div className="space-y-2 pt-3 border-t">
           <Label className="text-xs font-medium">카카오톡 공유 썸네일</Label>
-          <p className="text-xs text-blue-600">💙 권장 사이즈: 800 x 800px (1:1 정사각형)</p>
+          <p className="text-xs text-blue-600">💙 카카오톡에서 공유할 때 표시되는 이미지입니다.</p>
         </div>
 
+        {/* Kakao 비율 선택 */}
+        <div className="space-y-2">
+          <Label className="text-xs font-medium">썸네일 비율</Label>
+          <div className="grid grid-cols-3 gap-2">
+            {(['3:4', '1:1', '3:2'] as const).map((ratio) => (
+              <button
+                key={ratio}
+                type="button"
+                onClick={() => updateNestedData('meta.kakaoThumbnailRatio', ratio)}
+                className={`p-2 rounded-lg border-2 text-center transition-all ${
+                  (data.meta?.kakaoThumbnailRatio || '1:1') === ratio
+                    ? 'border-gray-800 bg-gray-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className="text-xs font-medium">
+                  {ratio === '3:4' ? '세로형' : ratio === '1:1' ? '정사각형' : '가로형'}
+                </div>
+                <div className="text-[10px] text-gray-500">{ratio}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Kakao 썸네일 미리보기 */}
         <div className="space-y-3">
-          <ImageCropEditor
-            value={
-              typeof data.meta?.kakaoThumbnail === 'string'
-                ? { url: data.meta.kakaoThumbnail, cropX: 0, cropY: 0, cropWidth: 1, cropHeight: 1 }
-                : data.meta?.kakaoThumbnail || { url: '', cropX: 0, cropY: 0, cropWidth: 1, cropHeight: 1 }
-            }
-            onChange={(cropData) => updateNestedData('meta.kakaoThumbnail', cropData)}
-            aspectRatio={1}
-            containerWidth={280}
-            invitationId={invitationId || undefined}
-            label=""
-          />
+          {(() => {
+            const thumbnailUrl = typeof data.meta?.kakaoThumbnail === 'string'
+              ? data.meta.kakaoThumbnail
+              : data.meta?.kakaoThumbnail?.url || ''
+            const selectedRatio = data.meta?.kakaoThumbnailRatio || '1:1'
+            const aspectRatio = kakaoAspectMap[selectedRatio]
+
+            return thumbnailUrl ? (
+              <div className="max-w-[200px] mx-auto space-y-2">
+                <div
+                  className="relative rounded-lg overflow-hidden border-2 border-gray-200"
+                  style={{ aspectRatio }}
+                >
+                  <img
+                    src={thumbnailUrl}
+                    alt="카카오 썸네일"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <label className="flex-1 text-center text-xs py-1.5 px-3 bg-gray-100 hover:bg-gray-200 rounded-md cursor-pointer transition-colors">
+                    교체
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) {
+                          handleImageUpload(file, 'kakao-thumbnail', (url) => {
+                            updateNestedData('meta.kakaoThumbnail', url)
+                          })
+                          e.target.value = ''
+                        }
+                      }}
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => updateNestedData('meta.kakaoThumbnail', '')}
+                    className="text-xs py-1.5 px-3 bg-red-50 text-red-600 hover:bg-red-100 rounded-md transition-colors"
+                  >
+                    삭제
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <label className="flex flex-col items-center justify-center max-w-[200px] mx-auto border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 relative"
+                style={{ aspectRatio }}
+              >
+                <div className="flex flex-col items-center justify-center p-4">
+                  <Upload className="w-6 h-6 mb-1 text-gray-400" />
+                  <p className="text-xs text-gray-500 text-center">클릭하여 업로드</p>
+                  <p className="text-[10px] text-gray-400 mt-1">{selectedRatio}</p>
+                </div>
+                <input
+                  type="file"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) {
+                      handleImageUpload(file, 'kakao-thumbnail', (url) => {
+                        updateNestedData('meta.kakaoThumbnail', url)
+                      })
+                      e.target.value = ''
+                    }
+                  }}
+                />
+                {uploadingImages.has('kakao-thumbnail') && (
+                  <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-lg">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900" />
+                  </div>
+                )}
+              </label>
+            )
+          })()}
         </div>
 
         <p className="text-xs text-gray-400">
@@ -339,30 +428,29 @@ export default function ParentsStep2Envelope({
         <div className="space-y-2 pt-4 border-t">
           <Label className="text-xs font-medium">링크 공유 썸네일 (OG 이미지)</Label>
           <p className="text-xs text-blue-600">
-            💙 권장 크기: 1200 x 630 픽셀 (가로형)<br />
-            카카오톡 이외의 플랫폼(문자, 인스타그램, 페이스북 등)에서 공유할 때 표시되는 이미지입니다.<br />
-            카카오톡 썸네일과 다른 이미지를 사용하면 플랫폼별로 다른 미리보기를 보여줄 수 있어요.
+            💙 카카오톡 이외의 플랫폼(문자, 인스타그램, 페이스북 등)에서 공유할 때 표시되는 이미지입니다.
+          </p>
+          <p className="text-xs text-gray-500">
+            이미지는 1.91:1 비율로 자동 잘립니다
           </p>
         </div>
 
         {/* OG 이미지 미리보기 및 업로드 */}
         <div className="space-y-3">
           {data.meta?.ogImage ? (
-            <div className="max-w-[300px] space-y-2">
-              <InlineCropEditor
-                imageUrl={data.meta.ogImage}
-                settings={data.meta.ogImageSettings || { scale: 1.0, positionX: 0, positionY: 0 }}
-                onUpdate={(s) => {
-                  const current = data.meta?.ogImageSettings || { scale: 1.0, positionX: 0, positionY: 0 }
-                  updateNestedData('meta.ogImageSettings', { ...current, ...s })
-                }}
-                aspectRatio={1200 / 630}
-                containerWidth={300}
-                colorClass="gray"
-              />
+            <div className="max-w-[220px] mx-auto space-y-2">
+              <div className="relative rounded-lg overflow-hidden border-2 border-gray-200"
+                style={{ aspectRatio: '1.91/1' }}
+              >
+                <img
+                  src={data.meta.ogImage}
+                  alt="OG 썸네일"
+                  className="w-full h-full object-cover"
+                />
+              </div>
               <div className="flex gap-2">
                 <label className="flex-1 text-center text-xs py-1.5 px-3 bg-gray-100 hover:bg-gray-200 rounded-md cursor-pointer transition-colors">
-                  이미지 교체
+                  교체
                   <input
                     type="file"
                     className="hidden"
@@ -372,7 +460,6 @@ export default function ParentsStep2Envelope({
                       if (file) {
                         handleImageUpload(file, 'og-image', (url) => {
                           updateNestedData('meta.ogImage', url)
-                          updateNestedData('meta.ogImageSettings', { scale: 1.0, positionX: 0, positionY: 0 })
                         })
                         e.target.value = ''
                       }
@@ -381,10 +468,7 @@ export default function ParentsStep2Envelope({
                 </label>
                 <button
                   type="button"
-                  onClick={() => {
-                    updateNestedData('meta.ogImage', '')
-                    updateNestedData('meta.ogImageSettings', undefined)
-                  }}
+                  onClick={() => updateNestedData('meta.ogImage', '')}
                   className="text-xs py-1.5 px-3 bg-red-50 text-red-600 hover:bg-red-100 rounded-md transition-colors"
                 >
                   삭제
@@ -392,13 +476,13 @@ export default function ParentsStep2Envelope({
               </div>
             </div>
           ) : (
-            <label className="flex flex-col items-center justify-center max-w-[300px] aspect-[1200/630] border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 relative">
+            <label className="flex flex-col items-center justify-center max-w-[220px] mx-auto border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 relative"
+              style={{ aspectRatio: '1.91/1' }}
+            >
               <div className="flex flex-col items-center justify-center p-4">
-                <svg className="w-8 h-8 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
+                <Upload className="w-6 h-6 mb-1 text-gray-400" />
                 <p className="text-xs text-gray-500 text-center">클릭하여 업로드</p>
-                <p className="text-xs text-gray-400 mt-1">1200 x 630px</p>
+                <p className="text-[10px] text-gray-400 mt-1">1200 x 630px</p>
               </div>
               <input
                 type="file"
@@ -414,7 +498,7 @@ export default function ParentsStep2Envelope({
               />
               {uploadingImages.has('og-image') && (
                 <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-lg">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900" />
                 </div>
               )}
             </label>

@@ -5,10 +5,8 @@ import type { EssayInvitationData } from '../../page'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import InlineCropEditor from '@/components/editor/InlineCropEditor'
-import ImageCropEditor, { CropData } from '@/components/parents/ImageCropEditor'
 import { uploadImage } from '@/lib/imageUpload'
-import { X, Plus } from 'lucide-react'
+import { X, Plus, Upload } from 'lucide-react'
 
 interface StepProps {
   data: EssayInvitationData
@@ -31,6 +29,7 @@ function generateKakaoDescription(date: string, timeDisplay: string, venueName: 
 }
 
 export default function EssayStep1BasicInfo({ data, updateData, updateNestedData, invitationId }: StepProps) {
+  const kakaoAspectMap: Record<string, string> = { '3:4': '3/4', '1:1': '1/1', '3:2': '3/2' }
   const [uploadingImages, setUploadingImages] = useState<Set<string>>(new Set())
 
   const updateKakaoDescriptionIfAuto = useCallback((newDate?: string, newTimeDisplay?: string, newVenueName?: string) => {
@@ -411,34 +410,91 @@ export default function EssayStep1BasicInfo({ data, updateData, updateNestedData
           {/* 썸네일 */}
           <div className="space-y-2">
             <Label className="text-sm font-medium">공유 썸네일</Label>
-            <p className="text-xs text-gray-400">권장 사이즈: 600 x 600px (1:1 정사각형)</p>
+
+            {/* 비율 선택 */}
+            <div className="space-y-2">
+              <p className="text-xs text-gray-500">비율 선택</p>
+              <div className="flex gap-2">
+                {Object.entries({ '3:4': '세로형 3:4', '1:1': '정사각형 1:1', '3:2': '가로형 3:2' }).map(([ratio, label]) => (
+                  <label key={ratio} className="flex items-center gap-1.5 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="kakaoRatio"
+                      value={ratio}
+                      checked={(data.meta.kakaoThumbnailRatio || '1:1') === ratio}
+                      onChange={(e) => updateNestedData('meta.kakaoThumbnailRatio', e.target.value)}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-xs text-gray-700">{label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
             {data.meta.kakaoThumbnail ? (
               <div className="space-y-3">
-                <InlineCropEditor
-                  imageUrl={data.meta.kakaoThumbnail}
-                  settings={data.meta.kakaoThumbnailSettings || { scale: 1.0, positionX: 0, positionY: 0 }}
-                  onUpdate={(s) => {
-                    const current = data.meta.kakaoThumbnailSettings || { scale: 1.0, positionX: 0, positionY: 0 }
-                    updateNestedData('meta.kakaoThumbnailSettings', { ...current, ...s })
-                  }}
-                  aspectRatio={1}
-                  containerWidth={180}
-                  colorClass="amber"
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    updateNestedData('meta.kakaoThumbnail', '')
-                    updateNestedData('meta.kakaoThumbnailSettings', undefined)
-                  }}
-                  className="text-xs text-red-500 hover:text-red-600"
-                >
-                  이미지 삭제
-                </button>
+                {/* Kakao 미리보기 카드 */}
+                <div className="max-w-[200px] mx-auto p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
+                  <div
+                    className="w-full bg-gray-100 rounded overflow-hidden mb-2"
+                    style={{ aspectRatio: kakaoAspectMap[data.meta.kakaoThumbnailRatio || '1:1'] }}
+                  >
+                    <img
+                      src={data.meta.kakaoThumbnail}
+                      alt="카카오톡 썸네일"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 text-center">카카오톡 미리보기</p>
+                </div>
+
+                {/* 버튼 그룹 */}
+                <div className="flex gap-2 justify-center">
+                  <label className="cursor-pointer">
+                    <div className="px-3 py-1.5 text-xs bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors">
+                      {uploadingImages.has('kakaoThumb') ? (
+                        <span className="flex items-center gap-1">
+                          <div className="animate-spin w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full" />
+                          업로드 중...
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1">
+                          <Upload className="w-3 h-3" />
+                          교체
+                        </span>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      disabled={uploadingImages.has('kakaoThumb')}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) {
+                          handleImageUpload(file, 'kakaoThumb', (url) => {
+                            updateNestedData('meta.kakaoThumbnail', url)
+                          })
+                          e.target.value = ''
+                        }
+                      }}
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updateNestedData('meta.kakaoThumbnail', '')
+                      updateNestedData('meta.kakaoThumbnailSettings', undefined)
+                    }}
+                    className="px-3 py-1.5 text-xs text-red-500 bg-white border border-red-200 rounded hover:bg-red-50 transition-colors"
+                  >
+                    삭제
+                  </button>
+                </div>
               </div>
             ) : (
               <label className="block cursor-pointer">
-                <div className="w-[150px] h-[150px] border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-gray-400 hover:bg-gray-50 transition-colors">
+                <div className="w-[150px] h-[150px] mx-auto border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-gray-400 hover:bg-gray-50 transition-colors">
                   {uploadingImages.has('kakaoThumb') ? (
                     <div className="animate-spin w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full" />
                   ) : (
@@ -506,29 +562,97 @@ export default function EssayStep1BasicInfo({ data, updateData, updateNestedData
         </div>
 
         <div className="space-y-3">
-          <ImageCropEditor
-            value={{
-              url: data.meta.ogImage || '',
-              cropX: data.meta.ogImageSettings?.cropX ?? 0,
-              cropY: data.meta.ogImageSettings?.cropY ?? 0,
-              cropWidth: data.meta.ogImageSettings?.cropWidth ?? 1,
-              cropHeight: data.meta.ogImageSettings?.cropHeight ?? 1,
-            }}
-            onChange={(cropData: CropData) => {
-              updateNestedData('meta.ogImage', cropData.url)
-              updateNestedData('meta.ogImageSettings', {
-                ...(data.meta.ogImageSettings || { scale: 1, positionX: 0, positionY: 0 }),
-                cropX: cropData.cropX,
-                cropY: cropData.cropY,
-                cropWidth: cropData.cropWidth,
-                cropHeight: cropData.cropHeight,
-              })
-            }}
-            aspectRatio={1200 / 630}
-            containerWidth={280}
-            invitationId={invitationId || undefined}
-            label="공유 미리보기 이미지"
-          />
+          {data.meta.ogImage ? (
+            <div className="space-y-3">
+              {/* OG 미리보기 카드 */}
+              <div className="max-w-[220px] mx-auto p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
+                <div
+                  className="w-full bg-gray-100 rounded overflow-hidden mb-2"
+                  style={{ aspectRatio: '1.91/1' }}
+                >
+                  <img
+                    src={data.meta.ogImage}
+                    alt="OG 이미지"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 text-center">1.91:1 비율</p>
+              </div>
+
+              {/* 버튼 그룹 */}
+              <div className="flex gap-2 justify-center">
+                <label className="cursor-pointer">
+                  <div className="px-3 py-1.5 text-xs bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors">
+                    {uploadingImages.has('ogImage') ? (
+                      <span className="flex items-center gap-1">
+                        <div className="animate-spin w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full" />
+                        업로드 중...
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1">
+                        <Upload className="w-3 h-3" />
+                        교체
+                      </span>
+                    )}
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={uploadingImages.has('ogImage')}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        handleImageUpload(file, 'ogImage', (url) => {
+                          updateNestedData('meta.ogImage', url)
+                        })
+                        e.target.value = ''
+                      }
+                    }}
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    updateNestedData('meta.ogImage', '')
+                    updateNestedData('meta.ogImageSettings', undefined)
+                  }}
+                  className="px-3 py-1.5 text-xs text-red-500 bg-white border border-red-200 rounded hover:bg-red-50 transition-colors"
+                >
+                  삭제
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 text-center">이미지는 1.91:1 비율로 자동 잘립니다</p>
+            </div>
+          ) : (
+            <label className="block cursor-pointer">
+              <div className="max-w-[220px] mx-auto border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-gray-400 hover:bg-gray-50 transition-colors" style={{ aspectRatio: '1.91/1', minHeight: '115px' }}>
+                {uploadingImages.has('ogImage') ? (
+                  <div className="animate-spin w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full" />
+                ) : (
+                  <>
+                    <Plus className="w-6 h-6 text-gray-400" />
+                    <span className="text-xs text-gray-400">OG 이미지 업로드</span>
+                  </>
+                )}
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                disabled={uploadingImages.has('ogImage')}
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) {
+                    handleImageUpload(file, 'ogImage', (url) => {
+                      updateNestedData('meta.ogImage', url)
+                    })
+                    e.target.value = ''
+                  }
+                }}
+              />
+            </label>
+          )}
 
           {!data.meta.ogImage && data.meta.kakaoThumbnail && (
             <div className="p-3 bg-amber-50 rounded-lg">

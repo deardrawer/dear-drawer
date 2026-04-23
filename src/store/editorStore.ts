@@ -380,6 +380,7 @@ export interface InvitationContent {
     ogImageSettings?: ImageSettings
     kakaoThumbnail: string
     kakaoThumbnailSettings?: ImageSettings
+    kakaoThumbnailRatio?: '3:4' | '1:1' | '3:2'
     kakaoTitle: string        // 카카오톡 공유 제목
     kakaoDescription: string  // 카카오톡 공유 설명
   }

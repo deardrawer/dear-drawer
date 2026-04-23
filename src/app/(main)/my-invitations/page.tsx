@@ -1607,6 +1607,16 @@ export default function MyInvitationsPage() {
               </>
             )}
           </Tabs>
+
+          <Link
+            href={`/dashboard/${manageInvitation?.id}`}
+            className="flex items-center justify-center gap-2 w-full py-3 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors mt-3"
+          >
+            상세보기
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
         </DialogContent>
       </Dialog>
 

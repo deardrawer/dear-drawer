@@ -1127,7 +1127,9 @@ function TheSimpleEditorContent() {
             })
           ).then(res => {
             if (res.success && res.url) saveData.meta.ogImageCropped = res.url
-            else console.error('OG 크롭 업로드 실패:', res.error)
+            else console.warn('OG 크롭 업로드 실패 (원본 이미지로 대체):', res.error)
+          }).catch(err => {
+            console.warn('OG 크롭 처리 오류:', err)
           })
         )
       }
@@ -1148,7 +1150,9 @@ function TheSimpleEditorContent() {
             })
           ).then(res => {
             if (res.success && res.url) saveData.meta.kakaoThumbnailCropped = res.url
-            else console.error('카카오 크롭 업로드 실패:', res.error)
+            else console.warn('카카오 크롭 업로드 실패 (원본 이미지로 대체):', res.error)
+          }).catch(err => {
+            console.warn('카카오 크롭 처리 오류:', err)
           })
         )
       }
@@ -1187,6 +1191,15 @@ function TheSimpleEditorContent() {
         const adminParam = isAdminMode ? '&admin=true' : ''
         window.history.replaceState({}, '', `/editor/the-simple?id=${result.invitation.id}${adminParam}`)
       }
+      // 크롭 결과를 data state에 반영 (ShareModal 등에서 최신 URL 사용)
+      setData(prev => ({
+        ...prev,
+        meta: {
+          ...prev.meta,
+          ...(saveData.meta.ogImageCropped && { ogImageCropped: saveData.meta.ogImageCropped }),
+          ...(saveData.meta.kakaoThumbnailCropped && { kakaoThumbnailCropped: saveData.meta.kakaoThumbnailCropped }),
+        },
+      }))
       setIsDirty(false)
       if (!silent) alert('저장되었습니다!')
     } catch (error) {
@@ -2475,7 +2488,7 @@ function TheSimpleEditorContent() {
           venueAddress={data.wedding.venue.address}
           currentSlug={savedSlug || undefined}
           onSlugChange={setSavedSlug}
-          thumbnailUrl={data.meta.ogImageCropped || (typeof data.meta.ogImage === 'string' ? data.meta.ogImage : data.meta.ogImage?.url)}
+          thumbnailUrl={data.meta.kakaoThumbnailCropped || data.meta.ogImageCropped || data.meta.kakaoThumbnail?.url || (typeof data.meta.ogImage === 'string' ? data.meta.ogImage : data.meta.ogImage?.url)}
           shareTitle={data.meta.title}
           shareDescription={data.meta.description}
         />

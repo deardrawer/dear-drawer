@@ -1,14 +1,14 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import QRCode from 'qrcode'
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import SlugSettings from '@/components/dashboard/SlugSettings'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
+import { cn } from '@/lib/utils'
 
 type RSVPData = {
   id: string
@@ -47,17 +47,6 @@ type GuestbookMessage = {
   created_at: string
 }
 
-type InvitationInfo = {
-  groom_name: string
-  bride_name: string
-  wedding_date: string
-  wedding_time: string
-  venue_name: string
-  venue_address: string
-  slug: string | null
-  thumbnail_url: string | null
-}
-
 const COLORS = ['#10B981', '#EF4444', '#F59E0B']
 
 export default function DashboardPage() {
@@ -82,9 +71,12 @@ export default function DashboardPage() {
   })
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
-  const [filterStatus, setFilterStatus] = useState<string>('all')
-  const [filterSide, setFilterSide] = useState<string>('all')
+  const [filterStatus, setFilterStatus] = useState<string | null>(null)
+  const [filterSides, setFilterSides] = useState<Set<string>>(new Set())
+  const [filterMeal, setFilterMeal] = useState<string | null>(null)
+  const [filterShuttle, setFilterShuttle] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const [deletingRsvpId, setDeletingRsvpId] = useState<string | null>(null)
   const itemsPerPage = 10
 
   // 방명록 상태
@@ -92,43 +84,24 @@ export default function DashboardPage() {
   const [guestbookSearchQuery, setGuestbookSearchQuery] = useState('')
   const [guestbookPage, setGuestbookPage] = useState(1)
   const [deletingMessageId, setDeletingMessageId] = useState<string | null>(null)
-
-  // 공유 상태
-  const [invitationInfo, setInvitationInfo] = useState<InvitationInfo | null>(null)
-  const [copied, setCopied] = useState(false)
-  const [qrCodeUrl, setQrCodeUrl] = useState('')
-  const qrCanvasRef = useRef<HTMLCanvasElement>(null)
-
-  // 공유 URL
-  const baseUrl = 'https://invite.deardrawer.com'
-  const invitationUrl = invitationInfo?.slug
-    ? `${baseUrl}/i/${invitationInfo.slug}`
-    : `${baseUrl}/i/${invitationId}`
+  const [templateId, setTemplateId] = useState<string | null>(null)
 
   useEffect(() => {
     fetchRSVPData()
     fetchGuestbookData()
-    fetchInvitationInfo()
+    fetchTemplateId()
   }, [invitationId])
 
-  // QR 코드 생성
-  useEffect(() => {
-    if (invitationUrl && qrCanvasRef.current) {
-      QRCode.toCanvas(qrCanvasRef.current, invitationUrl, {
-        width: 150,
-        margin: 2,
-        color: {
-          dark: '#000000',
-          light: '#FFFFFF',
-        },
-      })
-
-      QRCode.toDataURL(invitationUrl, {
-        width: 1024,
-        margin: 2,
-      }).then(setQrCodeUrl)
-    }
-  }, [invitationUrl])
+  const fetchTemplateId = async () => {
+    try {
+      const response = await fetch(`/api/invitations/${invitationId}`)
+      const result = await response.json() as Record<string, unknown>
+      const data = (result.invitation || result) as Record<string, unknown>
+      if (data?.template_id) {
+        setTemplateId(data.template_id as string)
+      }
+    } catch { /* ignore */ }
+  }
 
   const fetchRSVPData = async () => {
     try {
@@ -163,16 +136,50 @@ export default function DashboardPage() {
     { name: '미정', value: summary.pending, color: '#F59E0B' },
   ].filter(item => item.value > 0)
 
-  const filteredResponses = responses
-    .filter((r) => {
-      if (filterStatus !== 'all' && r.attendance !== filterStatus) return false
-      if (filterSide !== 'all') {
-        if (filterSide === 'none' && r.side !== null) return false
-        if (filterSide !== 'none' && r.side !== filterSide) return false
-      }
-      if (searchQuery && !r.guest_name.toLowerCase().includes(searchQuery.toLowerCase())) return false
-      return true
+  // Filter helpers
+  const hasActiveFilters = filterStatus !== null || filterSides.size > 0 || filterMeal !== null || filterShuttle !== null
+  const resetFilters = () => {
+    setFilterStatus(null)
+    setFilterSides(new Set())
+    setFilterMeal(null)
+    setFilterShuttle(null)
+    setCurrentPage(1)
+  }
+  const toggleSideFilter = (value: string) => {
+    setFilterSides(prev => {
+      const next = new Set(prev)
+      if (next.has(value)) next.delete(value)
+      else next.add(value)
+      return next
     })
+    setCurrentPage(1)
+  }
+
+  // Counts for chip badges
+  const counts = {
+    attending: summary.attending,
+    not_attending: summary.notAttending,
+    pending: summary.pending,
+    groom: summary.groomSide,
+    bride: summary.brideSide,
+    noSide: summary.total - summary.groomSide - summary.brideSide,
+    mealYes: summary.mealYes,
+    mealNo: summary.mealNo,
+    shuttleYes: summary.shuttleYes,
+    shuttleNo: summary.shuttleNo,
+  }
+
+  const filteredResponses = responses.filter((r) => {
+    if (filterStatus !== null && r.attendance !== filterStatus) return false
+    if (filterSides.size > 0) {
+      const sideValue = r.side === null ? 'none' : r.side
+      if (!filterSides.has(sideValue)) return false
+    }
+    if (filterMeal !== null && r.meal_attendance !== filterMeal) return false
+    if (filterShuttle !== null && r.shuttle_bus !== filterShuttle) return false
+    if (searchQuery && !r.guest_name.toLowerCase().includes(searchQuery.toLowerCase())) return false
+    return true
+  })
 
   const totalPages = Math.ceil(filteredResponses.length / itemsPerPage)
   const paginatedResponses = filteredResponses.slice(
@@ -190,150 +197,25 @@ export default function DashboardPage() {
     }
   }
 
-  const fetchInvitationInfo = async () => {
-    try {
-      const response = await fetch(`/api/invitations/${invitationId}`)
-      const result = await response.json() as Record<string, unknown>
-      const data = (result.invitation || result) as Record<string, unknown>
-      if (data) {
-        // 썸네일 URL 추출: content JSON에서 meta.kakaoThumbnail 또는 gallery 첫번째 이미지
-        let thumbnailUrl: string | null = null
-        try {
-          const rawContent = data.content
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const content: any = typeof rawContent === 'string' ? JSON.parse(rawContent) : rawContent
-          if (content) {
-            const kakaoThumb = content.meta?.kakaoThumbnail
-            const ogImage = content.meta?.ogImage
-            const galleryFirstUrl = content.gallery?.images?.[0]?.url || content.gallery?.images?.[0]
-            thumbnailUrl = (typeof kakaoThumb === 'string' ? kakaoThumb : kakaoThumb?.url) || ogImage || galleryFirstUrl || (data.main_image as string) || null
-          }
-        } catch { /* content parsing failed */ }
-
-        setInvitationInfo({
-          groom_name: (data.groom_name as string) || '',
-          bride_name: (data.bride_name as string) || '',
-          wedding_date: (data.wedding_date as string) || '',
-          wedding_time: (data.wedding_time as string) || '',
-          venue_name: (data.venue_name as string) || '',
-          venue_address: (data.venue_address as string) || '',
-          slug: (data.slug as string) || null,
-          thumbnail_url: thumbnailUrl,
-        })
-      }
-    } catch (error) {
-      console.error('Failed to fetch invitation info:', error)
-    }
-  }
-
   const handleExportCSV = () => {
     window.open(`/api/rsvp/export?invitationId=${invitationId}`, '_blank')
   }
 
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(invitationUrl)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  const handleDownloadQR = () => {
-    if (qrCodeUrl) {
-      const link = document.createElement('a')
-      link.download = `qrcode-${invitationInfo?.slug || invitationId}.png`
-      link.href = qrCodeUrl
-      link.click()
-    }
-  }
-
-  const handleKakaoShare = () => {
-    const kakaoWindow = window as typeof window & {
-      Kakao?: {
-        isInitialized?: () => boolean
-        init?: (key: string) => void
-        Share?: { sendDefault: (config: object) => void }
-      }
-    }
-
-    if (typeof window === 'undefined' || !kakaoWindow.Kakao) {
-      navigator.clipboard.writeText(invitationUrl)
-      alert('카카오톡 공유를 사용할 수 없어 링크가 복사되었습니다.')
-      return
-    }
-
+  const handleDeleteRsvp = async (rsvpId: string) => {
+    setDeletingRsvpId(null)
     try {
-      // SDK 초기화 확인 및 재초기화
-      if (!kakaoWindow.Kakao.isInitialized?.()) {
-        const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY || '0890847927f3189d845391481ead8ecc'
-        kakaoWindow.Kakao.init?.(kakaoKey)
-      }
-
-      if (!kakaoWindow.Kakao.Share?.sendDefault) {
-        navigator.clipboard.writeText(invitationUrl)
-        alert('카카오톡 공유 준비 중입니다. 링크가 복사되었습니다.')
-        return
-      }
-
-      const formattedDate = invitationInfo?.wedding_date
-        ? new Date(invitationInfo.wedding_date).toLocaleDateString('ko-KR', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            weekday: 'long'
-          })
-        : '날짜 미정'
-
-      // 이미지 URL 결정
-      let imageUrl = 'https://invite.deardrawer.com/og-image.png'
-      const thumbUrl = invitationInfo?.thumbnail_url
-      if (thumbUrl) {
-        if (thumbUrl.startsWith('https://')) {
-          imageUrl = thumbUrl
-        } else if (thumbUrl.startsWith('/')) {
-          imageUrl = `https://invite.deardrawer.com${thumbUrl}`
-        }
-      }
-
-      kakaoWindow.Kakao.Share.sendDefault({
-        objectType: 'feed',
-        content: {
-          title: `${invitationInfo?.groom_name || '신랑'} ❤️ ${invitationInfo?.bride_name || '신부'}의 결혼식`,
-          description: `${formattedDate}\n${invitationInfo?.venue_name || ''}`,
-          imageUrl,
-          link: {
-            mobileWebUrl: invitationUrl,
-            webUrl: invitationUrl,
-          },
-        },
-        buttons: [
-          {
-            title: '모바일 청첩장 보기',
-            link: {
-              mobileWebUrl: invitationUrl,
-              webUrl: invitationUrl,
-            },
-          },
-        ],
+      const response = await fetch(`/api/rsvp?id=${rsvpId}&invitationId=${invitationId}`, {
+        method: 'DELETE',
       })
+      if (response.ok) {
+        fetchRSVPData()
+      } else {
+        alert('삭제에 실패했습니다.')
+      }
     } catch (error) {
-      console.error('Kakao share error:', error)
-      navigator.clipboard.writeText(invitationUrl)
-      alert('카카오톡 공유에 실패했습니다. 링크가 복사되었습니다.')
+      console.error('Failed to delete RSVP:', error)
+      alert('삭제에 실패했습니다.')
     }
-  }
-
-  const handleSMSShare = () => {
-    const formattedDate = invitationInfo?.wedding_date
-      ? new Date(invitationInfo.wedding_date).toLocaleDateString('ko-KR', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-          weekday: 'long'
-        })
-      : ''
-
-    const details = [formattedDate, invitationInfo?.wedding_time, invitationInfo?.venue_name].filter(Boolean).join(' / ')
-    const message = `${invitationInfo?.groom_name || '신랑'} ♥ ${invitationInfo?.bride_name || '신부'} 결혼합니다\n\n${details || '저희 결혼식에 초대합니다.'}\n\n청첩장 보기: ${invitationUrl}`
-    window.open(`sms:?body=${encodeURIComponent(message)}`)
   }
 
   const handleExportGuestbookCSV = () => {
@@ -390,6 +272,28 @@ export default function DashboardPage() {
     }
   }
 
+  // FilterChip inline component
+  const FilterChip = ({ label, count, isActive, activeClass, onClick }: {
+    label: string; count: number; isActive: boolean; activeClass: string; onClick: () => void
+  }) => (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors active:scale-95',
+        isActive ? activeClass : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+      )}
+    >
+      {label}
+      <span className={cn(
+        'inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full text-[10px] font-semibold',
+        isActive ? 'bg-white/30 text-inherit' : 'bg-gray-100 text-gray-500'
+      )}>
+        {count}
+      </span>
+    </button>
+  )
+
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-12 flex items-center justify-center">
@@ -406,7 +310,21 @@ export default function DashboardPage() {
           <p className="text-gray-500 mt-1">참석 응답을 확인하고 관리하세요</p>
         </div>
         <div className="flex gap-2">
-          <Link href={`/editor?id=${invitationId}`}>
+          <Link href={
+            templateId === 'narrative-parents' || templateId === 'parents'
+              ? `/editor/parents?id=${invitationId}`
+              : templateId === 'narrative-exhibit' || templateId === 'exhibit'
+              ? `/editor/feed?id=${invitationId}`
+              : templateId === 'narrative-thankyou'
+              ? `/editor/thank-you?id=${invitationId}`
+              : templateId === 'narrative-the-simple'
+              ? `/editor/the-simple?id=${invitationId}`
+              : templateId === 'narrative-essay'
+              ? `/editor/essay?id=${invitationId}`
+              : templateId === 'narrative-magazine' || templateId === 'narrative-film' || templateId === 'narrative-record'
+              ? `/editor/feed?id=${invitationId}`
+              : `/editor?id=${invitationId}`
+          }>
             <Button variant="outline">에디터로 돌아가기</Button>
           </Link>
           <Button onClick={handleExportCSV}>
@@ -494,73 +412,63 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Slug Settings */}
-      <div className="mb-8">
-        <SlugSettings invitationId={invitationId} />
-      </div>
-
-      {/* Share Section */}
+      {/* Filter Bar */}
       <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>청첩장 공유</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* 링크 공유 */}
-            <div className="space-y-4">
-              <div>
-                <p className="text-sm font-medium text-gray-700 mb-2">청첩장 링크</p>
-                <div className="flex gap-2">
-                  <Input value={invitationUrl} readOnly className="flex-1 text-sm" />
-                  <Button onClick={handleCopyLink} variant="outline">
-                    {copied ? '복사됨!' : '복사'}
-                  </Button>
-                </div>
-              </div>
-
-              {/* 공유 버튼들 */}
-              <div>
-                <p className="text-sm font-medium text-gray-700 mb-2">공유하기</p>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={handleKakaoShare}
-                    className="flex-1 h-12"
-                  >
-                    <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="#3C1E1E">
-                      <path d="M12 3C6.477 3 2 6.463 2 10.691c0 2.643 1.765 4.966 4.412 6.286l-.893 3.27a.3.3 0 00.455.334l3.862-2.552c.67.097 1.357.148 2.055.148 5.523 0 10-3.463 10-7.777C22 6.463 17.523 3 12 3z" />
-                    </svg>
-                    카카오톡
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={handleSMSShare}
-                    className="flex-1 h-12"
-                  >
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                    </svg>
-                    문자
-                  </Button>
-                </div>
-              </div>
+        <CardContent className="pt-5 pb-4 px-4">
+          {/* Search + Reset row */}
+          <div className="flex items-center gap-3 mb-3">
+            <div className="relative flex-1 max-w-xs">
+              <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <Input
+                placeholder="이름 검색..."
+                value={searchQuery}
+                onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1) }}
+                className="pl-8 h-9 text-sm"
+              />
             </div>
+            <div className="flex items-center gap-2 ml-auto">
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="text-xs text-gray-500 hover:text-gray-700 underline underline-offset-2"
+                >
+                  필터 초기화
+                </button>
+              )}
+              <span className="text-xs text-gray-400 tabular-nums">{filteredResponses.length}건</span>
+            </div>
+          </div>
 
-            {/* QR 코드 */}
-            <div className="flex flex-col items-center">
-              <p className="text-sm font-medium text-gray-700 mb-2">QR 코드</p>
-              <canvas ref={qrCanvasRef} className="rounded-lg border" />
-              <Button
-                variant="outline"
-                onClick={handleDownloadQR}
-                className="mt-3"
-                size="sm"
-              >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                QR 다운로드
-              </Button>
+          {/* Filter chip rows */}
+          <div className="space-y-2">
+            {/* 참석여부 */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="w-14 text-xs font-medium text-gray-500 shrink-0">참석</span>
+              <FilterChip label="참석" count={counts.attending} isActive={filterStatus === 'attending'} activeClass="bg-green-100 text-green-700 border-green-300" onClick={() => { setFilterStatus(prev => prev === 'attending' ? null : 'attending'); setCurrentPage(1) }} />
+              <FilterChip label="불참" count={counts.not_attending} isActive={filterStatus === 'not_attending'} activeClass="bg-red-100 text-red-700 border-red-300" onClick={() => { setFilterStatus(prev => prev === 'not_attending' ? null : 'not_attending'); setCurrentPage(1) }} />
+              <FilterChip label="미정" count={counts.pending} isActive={filterStatus === 'pending'} activeClass="bg-yellow-100 text-yellow-700 border-yellow-300" onClick={() => { setFilterStatus(prev => prev === 'pending' ? null : 'pending'); setCurrentPage(1) }} />
+            </div>
+            {/* 소속 (multi-select) */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="w-14 text-xs font-medium text-gray-500 shrink-0">소속</span>
+              <FilterChip label="신랑측" count={counts.groom} isActive={filterSides.has('groom')} activeClass="bg-blue-100 text-blue-700 border-blue-300" onClick={() => toggleSideFilter('groom')} />
+              <FilterChip label="신부측" count={counts.bride} isActive={filterSides.has('bride')} activeClass="bg-pink-100 text-pink-700 border-pink-300" onClick={() => toggleSideFilter('bride')} />
+              <FilterChip label="미지정" count={counts.noSide} isActive={filterSides.has('none')} activeClass="bg-gray-200 text-gray-700 border-gray-400" onClick={() => toggleSideFilter('none')} />
+            </div>
+            {/* 식사 */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="w-14 text-xs font-medium text-gray-500 shrink-0">식사</span>
+              <FilterChip label="식사" count={counts.mealYes} isActive={filterMeal === 'yes'} activeClass="bg-orange-100 text-orange-700 border-orange-300" onClick={() => { setFilterMeal(prev => prev === 'yes' ? null : 'yes'); setCurrentPage(1) }} />
+              <FilterChip label="식사안함" count={counts.mealNo} isActive={filterMeal === 'no'} activeClass="bg-orange-50 text-orange-600 border-orange-200" onClick={() => { setFilterMeal(prev => prev === 'no' ? null : 'no'); setCurrentPage(1) }} />
+            </div>
+            {/* 대절버스 */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="w-14 text-xs font-medium text-gray-500 shrink-0">버스</span>
+              <FilterChip label="이용" count={counts.shuttleYes} isActive={filterShuttle === 'yes'} activeClass="bg-purple-100 text-purple-700 border-purple-300" onClick={() => { setFilterShuttle(prev => prev === 'yes' ? null : 'yes'); setCurrentPage(1) }} />
+              <FilterChip label="미이용" count={counts.shuttleNo} isActive={filterShuttle === 'no'} activeClass="bg-purple-50 text-purple-600 border-purple-200" onClick={() => { setFilterShuttle(prev => prev === 'no' ? null : 'no'); setCurrentPage(1) }} />
             </div>
           </div>
         </CardContent>
@@ -607,43 +515,9 @@ export default function DashboardPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>응답 목록</CardTitle>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="이름 검색..."
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value)
-                    setCurrentPage(1)
-                  }}
-                  className="w-40"
-                />
-                <select
-                  value={filterSide}
-                  onChange={(e) => {
-                    setFilterSide(e.target.value)
-                    setCurrentPage(1)
-                  }}
-                  className="px-3 py-2 border rounded-md text-sm"
-                >
-                  <option value="all">전체 소속</option>
-                  <option value="groom">신랑측</option>
-                  <option value="bride">신부측</option>
-                  <option value="none">미지정</option>
-                </select>
-                <select
-                  value={filterStatus}
-                  onChange={(e) => {
-                    setFilterStatus(e.target.value)
-                    setCurrentPage(1)
-                  }}
-                  className="px-3 py-2 border rounded-md text-sm"
-                >
-                  <option value="all">전체</option>
-                  <option value="attending">참석</option>
-                  <option value="not_attending">불참</option>
-                  <option value="pending">미정</option>
-                </select>
-              </div>
+              {hasActiveFilters && (
+                <span className="text-sm text-gray-500">필터 적용: {filteredResponses.length}건</span>
+              )}
             </div>
           </CardHeader>
           <CardContent>
@@ -662,6 +536,7 @@ export default function DashboardPage() {
                         <th className="text-left py-3 px-2 font-medium">인원</th>
                         <th className="text-left py-3 px-2 font-medium">메시지</th>
                         <th className="text-left py-3 px-2 font-medium">응답일</th>
+                        <th className="text-left py-3 px-2 font-medium">관리</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -716,6 +591,19 @@ export default function DashboardPage() {
                           <td className="py-3 px-2 text-gray-500">
                             {new Date(r.created_at).toLocaleDateString('ko-KR')}
                           </td>
+                          <td className="py-3 px-2">
+                            <button
+                              type="button"
+                              onClick={() => setDeletingRsvpId(r.id)}
+                              className="p-1 text-gray-300 hover:text-red-500 transition-colors"
+                              title="삭제"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                <polyline points="3 6 5 6 21 6" />
+                                <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                              </svg>
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -752,7 +640,7 @@ export default function DashboardPage() {
               </>
             ) : (
               <div className="py-12 text-center text-gray-400">
-                {searchQuery || filterStatus !== 'all'
+                {searchQuery || hasActiveFilters
                   ? '검색 결과가 없습니다'
                   : '아직 응답이 없습니다'}
               </div>
@@ -871,6 +759,22 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* RSVP 삭제 확인 Dialog */}
+      <Dialog open={!!deletingRsvpId} onOpenChange={() => setDeletingRsvpId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>RSVP 응답 삭제</DialogTitle>
+            <DialogDescription>
+              이 RSVP 응답을 삭제하시겠습니까?<br />삭제된 응답은 복구할 수 없습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeletingRsvpId(null)}>취소</Button>
+            <Button variant="destructive" onClick={() => deletingRsvpId && handleDeleteRsvp(deletingRsvpId)}>삭제</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

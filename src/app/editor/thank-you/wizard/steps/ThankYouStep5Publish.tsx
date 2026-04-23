@@ -99,12 +99,17 @@ export default function ThankYouStep5Publish({
       }
 
       const names = data.coupleNames || '감사장'
+      const kakaoRatioSizes: Record<string, { w: number; h: number }> = { '3:4': { w: 900, h: 1200 }, '1:1': { w: 800, h: 800 }, '3:2': { w: 1200, h: 800 } }
+      const kakaoImgSize = kakaoRatioSizes[meta.kakaoThumbnailRatio || '1:1']
+
       kakaoWindow.Kakao.Share.sendDefault({
         objectType: 'feed',
         content: {
           title: meta.title || `${names}의 감사 인사`,
           description: meta.description || '감사장이 도착했습니다',
           imageUrl,
+          imageWidth: kakaoImgSize.w,
+          imageHeight: kakaoImgSize.h,
           link: { mobileWebUrl: currentUrl, webUrl: currentUrl },
         },
         buttons: [{ title: '감사장 보기', link: { mobileWebUrl: currentUrl, webUrl: currentUrl } }],
@@ -276,15 +281,30 @@ export default function ThankYouStep5Publish({
               <div className="max-w-[200px] mx-auto">
                 {meta.kakaoThumbnail ? (
                   <div className="space-y-2">
-                    <div
-                      className="relative w-full overflow-hidden rounded-lg border border-gray-200 bg-gray-100"
-                      style={{ aspectRatio: kakaoAspectMap[meta.kakaoThumbnailRatio || '1:1'] }}
-                    >
-                      <img
-                        src={meta.kakaoThumbnail}
-                        alt="카카오톡 썸네일"
-                        className="w-full h-full object-cover"
-                      />
+                    <div className="rounded-lg border border-stone-200 bg-white shadow-sm overflow-hidden">
+                      <div
+                        className="w-full bg-stone-100"
+                        style={{ aspectRatio: kakaoAspectMap[meta.kakaoThumbnailRatio || '1:1'] }}
+                      >
+                        <img
+                          src={meta.kakaoThumbnail}
+                          alt="카카오톡 썸네일"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="px-2 py-1 border-t border-stone-100">
+                        <p className="text-[10px] font-medium text-stone-800 leading-tight truncate">
+                          {meta.title || `${data.coupleNames || ''}의 감사 인사`}
+                        </p>
+                        <p className="text-[9px] text-stone-500 leading-tight mt-0.5">{meta.description || '감사장이 도착했습니다'}</p>
+                      </div>
+                      <div className="flex border-t border-stone-100">
+                        <div className="flex-1 text-center py-1 text-[9px] text-stone-500">감사장 보기</div>
+                      </div>
+                      <div className="flex items-center justify-between px-2 py-1 border-t border-stone-100 bg-stone-50">
+                        <span className="text-[9px] text-stone-400">dear drawer</span>
+                        <span className="text-[9px] text-stone-300">&gt;</span>
+                      </div>
                     </div>
                     <div className="flex gap-2">
                       <ImageUploader
@@ -364,15 +384,23 @@ export default function ThankYouStep5Publish({
             <div className="max-w-[220px] mx-auto">
               {meta.ogImage ? (
                 <div className="space-y-2">
-                  <div
-                    className="relative w-full overflow-hidden rounded-lg border border-gray-200 bg-gray-100"
-                    style={{ aspectRatio: '1.91/1' }}
-                  >
-                    <img
-                      src={meta.ogImage}
-                      alt="OG 이미지"
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="rounded-lg border border-stone-200 bg-white shadow-sm overflow-hidden">
+                    <div
+                      className="w-full bg-stone-100"
+                      style={{ aspectRatio: '1.91/1' }}
+                    >
+                      <img
+                        src={meta.ogImage}
+                        alt="OG 이미지"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="px-2 py-1.5 border-t border-stone-100">
+                      <p className="text-[9px] text-stone-400 leading-tight">invite.deardrawer.com</p>
+                      <p className="text-[10px] font-medium text-stone-800 leading-tight mt-0.5 truncate">
+                        {meta.title || `${data.coupleNames || ''}의 감사 인사`}
+                      </p>
+                    </div>
                   </div>
                   <p className="text-xs text-gray-400 text-center">이미지는 1.91:1 비율로 자동 잘립니다</p>
                   <div className="flex gap-2">

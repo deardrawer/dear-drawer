@@ -570,6 +570,7 @@ export default function ParentsInvitationView({
                 || data.gallery?.images?.[0]?.url
                 || data.mainImage?.url
               }
+              kakaoThumbnailRatio={data.meta?.kakaoThumbnailRatio}
             />
             {data.rsvpEnabled !== false && (
               <RsvpModal isPreview={isPreview} invitationId={invitationId} rsvpMealOption={data.rsvpMealOption} rsvpShuttleOption={data.rsvpShuttleOption} rsvpNotice={data.rsvpNotice} />

@@ -3213,7 +3213,7 @@ function InvitationClientFilmContent({
                     invitationId: dbInvitation.id, groomName: invitation.groom?.name || '', brideName: invitation.bride?.name || '',
                     weddingDate: invitation.wedding?.date || '', weddingTime: invitation.wedding?.timeDisplay || invitation.wedding?.time || '',
                     thumbnailUrl: content?.meta?.kakaoThumbnail || content?.meta?.ogImage || extractImageUrl(invitation.media?.coverImage) || '',
-                    shareTitle: content?.meta?.title, shareDescription: content?.meta?.description }} />
+                    shareTitle: content?.meta?.title, shareDescription: content?.meta?.description, kakaoThumbnailRatio: content?.meta?.kakaoThumbnailRatio }} />
               )}
               {invitation.bgm?.enabled && invitation.bgm?.url && (
                 <MusicToggle audioRef={audioRef} isVisible={currentPage === 'main'} shouldAutoPlay={currentPage === 'main' && invitation.bgm?.autoplay === true} tc={tc} />

@@ -2632,6 +2632,7 @@ function InvitationClientMagazineContent({
                     thumbnailUrl: content?.meta?.kakaoThumbnail || content?.meta?.ogImage || extractImageUrl(invitation.media?.coverImage) || '',
                     shareTitle: content?.meta?.title,
                     shareDescription: content?.meta?.description,
+                    kakaoThumbnailRatio: content?.meta?.kakaoThumbnailRatio,
                   }}
                 />
               )}

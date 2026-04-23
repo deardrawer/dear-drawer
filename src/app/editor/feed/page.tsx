@@ -655,6 +655,7 @@ function FeedEditorContent() {
           shareTitle={data.meta.title}
           shareDescription={data.meta.description}
           templateType="our"
+          kakaoImageRatio={data.meta.kakaoThumbnailRatio}
         />
       )}
 

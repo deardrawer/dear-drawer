@@ -2539,7 +2539,9 @@ function BookFullscreenModal({ type, onChangeType, onClose, data, invitationId, 
   const handleKakaoShare = () => {
     const w = window as any; const url = window.location.href
     if (w.Kakao?.Share && w.Kakao.isInitialized?.()) {
-      w.Kakao.Share.sendDefault({ objectType: 'feed', content: { title: `${data.groom?.name || '신랑'} ❤️ ${data.bride?.name || '신부'}의 결혼식`, description: `${data.wedding?.date || ''}\n${data.wedding?.venue?.name || ''}`, imageUrl: data.media?.coverImage || 'https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png', link: { mobileWebUrl: url, webUrl: url } }, buttons: [{ title: '청첩장 보기', link: { mobileWebUrl: url, webUrl: url } }] })
+      const ratioSizes: Record<string, { w: number; h: number }> = { '3:4': { w: 900, h: 1200 }, '1:1': { w: 800, h: 800 }, '3:2': { w: 1200, h: 800 } }
+      const imgSize = ratioSizes[data.meta?.kakaoThumbnailRatio || '1:1']
+      w.Kakao.Share.sendDefault({ objectType: 'feed', content: { title: `${data.groom?.name || '신랑'} ❤️ ${data.bride?.name || '신부'}의 결혼식`, description: `${data.wedding?.date || ''}\n${data.wedding?.venue?.name || ''}`, imageUrl: data.media?.coverImage || 'https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png', imageWidth: imgSize.w, imageHeight: imgSize.h, link: { mobileWebUrl: url, webUrl: url } }, buttons: [{ title: '청첩장 보기', link: { mobileWebUrl: url, webUrl: url } }] })
       onClose()
     } else { navigator.clipboard.writeText(url); alert('링크가 복사되었습니다!') }
   }

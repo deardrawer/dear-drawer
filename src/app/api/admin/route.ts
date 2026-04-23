@@ -5,6 +5,7 @@ import {
   forceDeleteInvitation,
   deleteExpiredInvitations,
 } from "@/lib/db";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 // 관리자 인증 확인 (Cloudflare에서는 요청 핸들러 내부에서 env 읽어야 함)
 function verifyAdmin(request: NextRequest): boolean {
@@ -36,6 +37,49 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Admin GET error:", error);
     return NextResponse.json({ error: "Failed to fetch data" }, { status: 500 });
+  }
+}
+
+// PATCH: 워터마크(is_paid) 토글
+export async function PATCH(request: NextRequest) {
+  if (!verifyAdmin(request)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const { id, is_paid } = (await request.json()) as {
+      id: string;
+      is_paid: 0 | 1;
+    };
+
+    if (!id || (is_paid !== 0 && is_paid !== 1)) {
+      return NextResponse.json(
+        { error: "id and is_paid (0 or 1) required" },
+        { status: 400 }
+      );
+    }
+
+    const { env } = (await getCloudflareContext()) as {
+      env: { DB?: import("@cloudflare/workers-types").D1Database };
+    };
+    if (!env.DB) {
+      return NextResponse.json(
+        { error: "Database not available" },
+        { status: 500 }
+      );
+    }
+
+    await env.DB.prepare("UPDATE invitations SET is_paid = ? WHERE id = ?")
+      .bind(is_paid, id)
+      .run();
+
+    return NextResponse.json({ success: true, is_paid });
+  } catch (error) {
+    console.error("Admin PATCH error:", error);
+    return NextResponse.json(
+      { error: "Failed to update" },
+      { status: 500 }
+    );
   }
 }
 

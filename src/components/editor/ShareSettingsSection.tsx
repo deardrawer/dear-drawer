@@ -1,12 +1,12 @@
 'use client'
 
+import { useState } from 'react'
 import { useEditorStore } from '@/store/editorStore'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import ImageUploader from '@/components/editor/ImageUploader'
-import InlineCropEditor from '@/components/editor/InlineCropEditor'
-import ImageCropEditor, { CropData } from '@/components/parents/ImageCropEditor'
+import { uploadImage } from '@/lib/imageUpload'
 
 function generateKakaoDescription(date: string, time: string, venueName: string): string {
   if (!date) return ''
@@ -27,14 +27,63 @@ function generateKakaoDescription(date: string, time: string, venueName: string)
   return venueLine ? `${dateLine}\n${venueLine}` : dateLine
 }
 
+const kakaoAspectMap: Record<string, string> = { '3:4': '3/4', '1:1': '1/1', '3:2': '3/2' }
+
 interface ShareSettingsSectionProps {
   invitationId?: string | null
 }
 
 export default function ShareSettingsSection({ invitationId }: ShareSettingsSectionProps) {
   const { invitation, updateNestedField } = useEditorStore()
+  const [ogUploading, setOgUploading] = useState(false)
+  const [kakaoUploading, setKakaoUploading] = useState(false)
 
   if (!invitation) return null
+
+  const kakaoRatio = invitation.meta.kakaoThumbnailRatio || '1:1'
+  const kakaoAspectStyle = kakaoAspectMap[kakaoRatio]
+
+  // 날짜 포맷 (미리보기용)
+  const previewDateLine = (() => {
+    if (!invitation.wedding.date) return ''
+    const d = new Date(invitation.wedding.date + 'T00:00:00')
+    if (isNaN(d.getTime())) return ''
+    const wd = ['일', '월', '화', '수', '목', '금', '토']
+    const yr = String(d.getFullYear()).slice(2)
+    const timePart = invitation.wedding.time
+      ? (() => {
+          const [h, m] = invitation.wedding.time.split(':').map(Number)
+          const p = h < 12 ? '오전' : '오후'
+          const dh = h === 0 ? 12 : h > 12 ? h - 12 : h
+          return m === 0 ? ` ${p} ${dh}시` : ` ${p} ${dh}시 ${m}분`
+        })()
+      : ''
+    return `${yr}년 ${d.getMonth() + 1}월 ${d.getDate()}일 ${wd[d.getDay()]}요일${timePart}`
+  })()
+
+  const displayTitle = invitation.meta.title || `${invitation.groom.name || '신랑'} ♥ ${invitation.bride.name || '신부'} 결혼합니다`
+
+  // 이미지 업로드 핸들러
+  const handleUpload = async (file: File, target: 'kakao' | 'og') => {
+    const setUploading = target === 'kakao' ? setKakaoUploading : setOgUploading
+    setUploading(true)
+    try {
+      const result = await uploadImage(file, { invitationId: invitationId || undefined })
+      if (result.success && result.webUrl) {
+        if (target === 'kakao') {
+          updateNestedField('meta.kakaoThumbnail', result.webUrl)
+        } else {
+          updateNestedField('meta.ogImage', result.webUrl)
+        }
+      } else {
+        alert(result.error || '업로드에 실패했습니다.')
+      }
+    } catch {
+      alert('업로드 중 오류가 발생했습니다.')
+    } finally {
+      setUploading(false)
+    }
+  }
 
   return (
     <>
@@ -80,42 +129,104 @@ export default function ShareSettingsSection({ invitationId }: ShareSettingsSect
           {/* 썸네일 */}
           <div className="space-y-2">
             <Label className="text-sm font-medium">공유 썸네일</Label>
-            <p className="text-xs text-gray-400">권장 사이즈: 600 x 600px (1:1 정사각형)</p>
+
+            {/* 카카오 미리보기 카드 */}
+            <div className="max-w-[200px] mx-auto rounded-lg border border-stone-200 bg-white shadow-sm overflow-hidden">
+              {invitation.meta.kakaoThumbnail ? (
+                <div className="w-full bg-stone-100" style={{ aspectRatio: kakaoAspectStyle }}>
+                  <img src={invitation.meta.kakaoThumbnail} alt="카카오 preview" className="w-full h-full object-cover" />
+                </div>
+              ) : (
+                <div className="w-full bg-stone-100 flex items-center justify-center min-h-[80px]" style={{ aspectRatio: kakaoAspectStyle }}>
+                  <span className="text-[10px] text-stone-400">이미지 미설정</span>
+                </div>
+              )}
+              <div className="px-2 py-1 border-t border-stone-100">
+                <p className="text-[10px] font-medium text-stone-800 leading-tight truncate">❤ 결혼합니다.</p>
+                <p className="text-[9px] text-stone-500 leading-tight mt-0.5">{previewDateLine}</p>
+              </div>
+              <div className="flex border-t border-stone-100">
+                <div className="flex-1 text-center py-1 text-[9px] text-stone-500 border-r border-stone-100">청첩장 보기</div>
+                <div className="flex-1 text-center py-1 text-[9px] text-stone-500">위치보기</div>
+              </div>
+              <div className="flex items-center justify-between px-2 py-1 border-t border-stone-100 bg-stone-50">
+                <span className="text-[9px] text-stone-400">dear drawer</span>
+                <span className="text-[9px] text-stone-300">&gt;</span>
+              </div>
+            </div>
+
+            <p className="text-[10px] text-stone-400 text-center">기기나 앱 버전에 따라 모양이 다를 수 있습니다.</p>
+
+            {/* 업로드/교체/삭제 버튼 */}
             {invitation.meta.kakaoThumbnail ? (
-              <div className="space-y-3">
-                <InlineCropEditor
-                  imageUrl={invitation.meta.kakaoThumbnail}
-                  settings={invitation.meta.kakaoThumbnailSettings || { scale: 1.0, positionX: 0, positionY: 0 }}
-                  onUpdate={(s) => {
-                    const current = invitation.meta.kakaoThumbnailSettings || { scale: 1.0, positionX: 0, positionY: 0 }
-                    updateNestedField('meta.kakaoThumbnailSettings', { ...current, ...s })
-                  }}
-                  aspectRatio={1}
-                  containerWidth={180}
-                  colorClass="amber"
-                />
+              <div className="flex gap-2 justify-center">
+                <label className="text-xs text-stone-500 border border-stone-200 rounded px-2 py-1 cursor-pointer hover:bg-stone-50">
+                  교체
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0]
+                      if (f) handleUpload(f, 'kakao')
+                      e.target.value = ''
+                    }}
+                  />
+                </label>
                 <button
                   type="button"
                   onClick={() => {
                     updateNestedField('meta.kakaoThumbnail', '')
                     updateNestedField('meta.kakaoThumbnailSettings', undefined)
                   }}
-                  className="text-xs text-red-500 hover:text-red-600"
+                  className="text-xs text-red-400 border border-red-200 rounded px-2 py-1 hover:bg-red-50"
                 >
-                  이미지 삭제
+                  삭제
                 </button>
               </div>
             ) : (
-              <div className="max-w-[150px]">
-                <ImageUploader
-                  value={invitation.meta.kakaoThumbnail}
-                  onChange={(url) => updateNestedField('meta.kakaoThumbnail', url)}
-                  invitationId={invitationId || undefined}
-                  placeholder="썸네일 업로드"
-                  aspectRatio="aspect-square"
+              <label className="flex items-center justify-center w-full h-10 border-2 border-dashed border-stone-200 rounded-lg cursor-pointer hover:border-stone-300 transition-colors">
+                <span className="text-[11px] text-stone-400">
+                  {kakaoUploading ? '업로드 중...' : '이미지 업로드 (클릭)'}
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  disabled={kakaoUploading}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0]
+                    if (f) handleUpload(f, 'kakao')
+                    e.target.value = ''
+                  }}
                 />
-              </div>
+              </label>
             )}
+
+            {/* 비율 선택 */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">썸네일 비율</label>
+              <div className="flex gap-1">
+                {([
+                  { value: '3:4' as const, label: '세로형' },
+                  { value: '1:1' as const, label: '정사각형' },
+                  { value: '3:2' as const, label: '가로형' },
+                ]).map(opt => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => updateNestedField('meta.kakaoThumbnailRatio', opt.value)}
+                    className={`flex-1 text-center py-1.5 rounded-md border text-xs transition-colors ${
+                      kakaoRatio === opt.value
+                        ? 'bg-stone-800 text-white border-stone-800'
+                        : 'bg-white text-stone-500 border-stone-200 hover:bg-stone-50'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* 공유 제목 */}
@@ -157,36 +268,75 @@ export default function ShareSettingsSection({ invitationId }: ShareSettingsSect
         </div>
 
         <div className="space-y-3">
-          <ImageCropEditor
-            value={{
-              url: invitation.meta.ogImage || '',
-              cropX: invitation.meta.ogImageSettings?.cropX ?? 0,
-              cropY: invitation.meta.ogImageSettings?.cropY ?? 0,
-              cropWidth: invitation.meta.ogImageSettings?.cropWidth ?? 1,
-              cropHeight: invitation.meta.ogImageSettings?.cropHeight ?? 1,
-            }}
-            onChange={(data: CropData) => {
-              updateNestedField('meta.ogImage', data.url)
-              updateNestedField('meta.ogImageSettings', {
-                ...(invitation.meta.ogImageSettings || { scale: 1, positionX: 0, positionY: 0 }),
-                cropX: data.cropX,
-                cropY: data.cropY,
-                cropWidth: data.cropWidth,
-                cropHeight: data.cropHeight,
-              })
-            }}
-            aspectRatio={1200 / 630}
-            containerWidth={280}
-            invitationId={invitationId || undefined}
-            label="공유 미리보기 이미지"
-          />
+          {/* OG 미리보기 카드 */}
+          <div className="max-w-[220px] mx-auto rounded-lg border border-stone-200 bg-white shadow-sm overflow-hidden">
+            {invitation.meta.ogImage ? (
+              <div className="w-full bg-stone-100" style={{ aspectRatio: '1.91/1' }}>
+                <img src={invitation.meta.ogImage} alt="OG preview" className="w-full h-full object-cover" />
+              </div>
+            ) : (
+              <div className="w-full bg-stone-100 flex items-center justify-center" style={{ aspectRatio: '1.91/1' }}>
+                <span className="text-[10px] text-stone-400">이미지 미설정</span>
+              </div>
+            )}
+            <div className="px-2 py-1.5 border-t border-stone-100">
+              <p className="text-[9px] text-stone-400 leading-tight">invite.deardrawer.com</p>
+              <p className="text-[10px] font-medium text-stone-800 leading-tight mt-0.5 truncate">{displayTitle}</p>
+            </div>
+          </div>
+
+          <p className="text-[10px] text-stone-400 text-center">이미지는 1.91:1 비율로 자동 잘립니다.</p>
+
+          {/* 업로드/교체/삭제 버튼 */}
+          {invitation.meta.ogImage ? (
+            <div className="flex gap-2 justify-center">
+              <label className="text-xs text-stone-500 border border-stone-200 rounded px-2 py-1 cursor-pointer hover:bg-stone-50">
+                교체
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0]
+                    if (f) handleUpload(f, 'og')
+                    e.target.value = ''
+                  }}
+                />
+              </label>
+              <button
+                type="button"
+                onClick={() => {
+                  updateNestedField('meta.ogImage', '')
+                  updateNestedField('meta.ogImageSettings', undefined)
+                }}
+                className="text-xs text-red-400 border border-red-200 rounded px-2 py-1 hover:bg-red-50"
+              >
+                삭제
+              </button>
+            </div>
+          ) : (
+            <label className="flex items-center justify-center w-full h-10 border-2 border-dashed border-stone-200 rounded-lg cursor-pointer hover:border-stone-300 transition-colors">
+              <span className="text-[11px] text-stone-400">
+                {ogUploading ? '업로드 중...' : '이미지 업로드 (클릭)'}
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                disabled={ogUploading}
+                onChange={(e) => {
+                  const f = e.target.files?.[0]
+                  if (f) handleUpload(f, 'og')
+                  e.target.value = ''
+                }}
+              />
+            </label>
+          )}
 
           {!invitation.meta.ogImage && invitation.meta.kakaoThumbnail && (
-            <div className="p-3 bg-amber-50 rounded-lg">
-              <p className="text-xs text-amber-700">
-                <svg className="w-3 h-3 text-amber-600 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg> OG 이미지를 설정하지 않으면 카카오톡 썸네일이 기본으로 사용됩니다.
-              </p>
-            </div>
+            <p className="text-[10px] text-amber-600 bg-amber-50 rounded px-2 py-1.5">
+              OG 이미지를 설정하지 않으면 카카오톡 썸네일이 기본으로 사용됩니다.
+            </p>
           )}
         </div>
       </section>

@@ -10,6 +10,7 @@ interface ShareSectionProps {
   shareTitle?: string
   shareDescription?: string
   thumbnailUrl?: string
+  kakaoThumbnailRatio?: '3:4' | '1:1' | '3:2'
 }
 
 const stagger = (hasAppeared: boolean, delay: number) => ({
@@ -26,6 +27,7 @@ export default function ShareSection({
   shareTitle,
   shareDescription,
   thumbnailUrl,
+  kakaoThumbnailRatio,
 }: ShareSectionProps) {
   const { ref, isActive, hasAppeared } = useSectionHighlight('share')
   const theme = useTheme()
@@ -95,12 +97,17 @@ export default function ShareSection({
                       }
                     }
 
+                    const kakaoRatioSizes: Record<string, { w: number; h: number }> = { '3:4': { w: 900, h: 1200 }, '1:1': { w: 800, h: 800 }, '3:2': { w: 1200, h: 800 } }
+                    const kakaoImgSize = kakaoRatioSizes[kakaoThumbnailRatio || '1:1']
+
                     kakaoWindow.Kakao.Share.sendDefault({
                       objectType: 'feed',
                       content: {
                         title: shareTitle || '결혼식에 초대합니다',
                         description: shareDescription || '소중한 분들을 결혼식에 초대합니다.',
                         imageUrl,
+                        imageWidth: kakaoImgSize.w,
+                        imageHeight: kakaoImgSize.h,
                         link: {
                           mobileWebUrl: window.location.href,
                           webUrl: window.location.href,

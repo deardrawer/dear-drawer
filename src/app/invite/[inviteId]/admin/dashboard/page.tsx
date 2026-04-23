@@ -103,7 +103,7 @@ export default function AdminDashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [token, setToken] = useState<string | null>(null)
-  const [invitationInfo, setInvitationInfo] = useState<{ kakaoThumbnail?: string; groomName?: string; brideName?: string; themeColor?: string; accentColor?: string } | null>(null)
+  const [invitationInfo, setInvitationInfo] = useState<{ kakaoThumbnail?: string; kakaoThumbnailRatio?: '3:4' | '1:1' | '3:2'; groomName?: string; brideName?: string; themeColor?: string; accentColor?: string } | null>(null)
 
   // RSVP 응답
   const [rsvpResponses, setRsvpResponses] = useState<RsvpResponse[]>([])
@@ -260,6 +260,7 @@ export default function AdminDashboardPage() {
 
         setInvitationInfo({
           kakaoThumbnail: validThumbnail || '',
+          kakaoThumbnailRatio: content?.meta?.kakaoThumbnailRatio || '1:1',
           groomName: inviteData.invitation.groom_name,
           brideName: inviteData.invitation.bride_name,
           themeColor: themeColors.primary,
@@ -914,6 +915,7 @@ export default function AdminDashboardPage() {
                 onAdd={openAddGuestModal}
                 onShowToast={(msg) => showToastMsg(msg, 'info')}
                 kakaoThumbnail={invitationInfo?.kakaoThumbnail}
+                kakaoThumbnailRatio={invitationInfo?.kakaoThumbnailRatio}
                 groomName={invitationInfo?.groomName}
                 brideName={invitationInfo?.brideName}
               />

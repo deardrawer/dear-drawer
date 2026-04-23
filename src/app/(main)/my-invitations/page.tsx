@@ -87,13 +87,14 @@ function parseInvitationContent(content?: string) {
     return {
       coverImage,
       kakaoThumbnail,
+      kakaoThumbnailRatio: (parsed.meta?.kakaoThumbnailRatio as '3:4' | '1:1' | '3:2') || '1:1',
       introTitle: parsed.intro?.mainTitle || parsed.design?.coverTitle || '',
       introSubTitle: parsed.intro?.subTitle || '',
       senderSide: parsed.sender?.side || '', // groom or bride (혼주용 템플릿)
       envelopeTheme, // 혼주용 봉투 테마 컬러 (hex)
     }
   } catch {
-    return { coverImage: '', kakaoThumbnail: '', introTitle: '', introSubTitle: '', senderSide: '', envelopeTheme: '' }
+    return { coverImage: '', kakaoThumbnail: '', kakaoThumbnailRatio: '1:1' as const, introTitle: '', introSubTitle: '', senderSide: '', envelopeTheme: '' }
   }
 }
 
@@ -461,7 +462,7 @@ export default function MyInvitationsPage() {
   const handleKakaoShare = () => {
     if (!shareInvitation) return
     const url = getInvitationUrl(shareInvitation)
-    const { kakaoThumbnail } = parseInvitationContent(shareInvitation.content)
+    const { kakaoThumbnail, kakaoThumbnailRatio } = parseInvitationContent(shareInvitation.content)
 
     const kakaoWindow = window as typeof window & {
       Kakao?: {
@@ -490,12 +491,17 @@ export default function MyInvitationsPage() {
         }
       }
 
+      const kakaoRatioSizes: Record<string, { w: number; h: number }> = { '3:4': { w: 900, h: 1200 }, '1:1': { w: 800, h: 800 }, '3:2': { w: 1200, h: 800 } }
+      const kakaoImgSize = kakaoRatioSizes[kakaoThumbnailRatio || '1:1']
+
       kakaoWindow.Kakao.Share.sendDefault({
         objectType: 'feed',
         content: {
           title: `${shareInvitation.groom_name || '신랑'} ❤️ ${shareInvitation.bride_name || '신부'}의 결혼식`,
           description: `${formattedDate}\n${shareInvitation.venue_name || ''}`,
           imageUrl,
+          imageWidth: kakaoImgSize.w,
+          imageHeight: kakaoImgSize.h,
           link: { mobileWebUrl: url, webUrl: url },
         },
         buttons: [{ title: '모바일 청첩장 보기', link: { mobileWebUrl: url, webUrl: url } }],

@@ -717,6 +717,7 @@ export default function InvitationView({ invitation, content, isPaid }: Invitati
           thumbnailUrl: displayData.meta?.kakaoThumbnail || displayData.meta?.ogImage || displayData.media?.coverImage || displayData.gallery?.images?.[0] || '',
           shareTitle: displayData.meta?.title,
           shareDescription: displayData.meta?.description,
+          kakaoThumbnailRatio: displayData.meta?.kakaoThumbnailRatio,
         }}
       />
     </div>

@@ -826,6 +826,15 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
                   </div>
                   <div className="px-2 py-1 border-t border-stone-100">
                     <p className="text-[10px] font-medium text-stone-800 leading-tight truncate">❤ 결혼합니다.</p>
+                    <p className="text-[9px] text-stone-500 leading-tight mt-0.5">{invitation.wedding.date ? (() => { const d = new Date(invitation.wedding.date + 'T00:00:00'); const wd = ['일','월','화','수','목','금','토']; return isNaN(d.getTime()) ? '' : `${String(d.getFullYear()).slice(2)}년 ${d.getMonth()+1}월 ${d.getDate()}일 ${wd[d.getDay()]}요일${invitation.wedding.time ? ` ${invitation.wedding.time}` : ''}` })() : ''}</p>
+                  </div>
+                  <div className="flex border-t border-stone-100">
+                    <div className="flex-1 text-center py-1 text-[9px] text-stone-500 border-r border-stone-100">청첩장 보기</div>
+                    <div className="flex-1 text-center py-1 text-[9px] text-stone-500">위치보기</div>
+                  </div>
+                  <div className="flex items-center justify-between px-2 py-1 border-t border-stone-100 bg-stone-50">
+                    <span className="text-[9px] text-stone-400">dear drawer</span>
+                    <span className="text-[9px] text-stone-300">&gt;</span>
                   </div>
                 </div>
                 <div className="flex gap-2 justify-center">

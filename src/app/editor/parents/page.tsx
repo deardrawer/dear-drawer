@@ -961,6 +961,7 @@ function ParentsEditorContent() {
           shareTitle={data.meta.title}
           shareDescription={data.meta.description}
           templateType="parents"
+          kakaoImageRatio={data.meta?.kakaoThumbnailRatio}
         />
       )}
 

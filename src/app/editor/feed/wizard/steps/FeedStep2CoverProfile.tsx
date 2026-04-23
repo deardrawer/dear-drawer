@@ -325,9 +325,9 @@ export default function FeedStep2CoverProfile({
             {/* 썸네일 미리보기 */}
             {data.meta.kakaoThumbnail ? (
               <div className="space-y-2">
-                <div className="max-w-[200px] mx-auto">
+                <div className="max-w-[200px] mx-auto rounded-lg border border-stone-200 bg-white shadow-sm overflow-hidden">
                   <div
-                    className="relative bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm"
+                    className="w-full bg-stone-100"
                     style={{ aspectRatio: kakaoAspectMap[data.meta.kakaoThumbnailRatio || '1:1'] }}
                   >
                     <img
@@ -336,10 +336,18 @@ export default function FeedStep2CoverProfile({
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <p className="text-xs text-gray-400 text-center mt-1">
-                    {data.meta.kakaoThumbnailRatio === '3:4' ? '세로형 (3:4)' :
-                     data.meta.kakaoThumbnailRatio === '3:2' ? '가로형 (3:2)' : '정사각형 (1:1)'}
-                  </p>
+                  <div className="px-2 py-1 border-t border-stone-100">
+                    <p className="text-[10px] font-medium text-stone-800 leading-tight truncate">❤ 결혼합니다.</p>
+                    <p className="text-[9px] text-stone-500 leading-tight mt-0.5">{data.wedding.date ? (() => { const d = new Date(data.wedding.date + 'T00:00:00'); const wd = ['일','월','화','수','목','금','토']; return isNaN(d.getTime()) ? '' : `${String(d.getFullYear()).slice(2)}년 ${d.getMonth()+1}월 ${d.getDate()}일 ${wd[d.getDay()]}요일${data.wedding.timeDisplay ? ` ${data.wedding.timeDisplay}` : ''}` })() : ''}</p>
+                  </div>
+                  <div className="flex border-t border-stone-100">
+                    <div className="flex-1 text-center py-1 text-[9px] text-stone-500 border-r border-stone-100">청첩장 보기</div>
+                    <div className="flex-1 text-center py-1 text-[9px] text-stone-500">위치보기</div>
+                  </div>
+                  <div className="flex items-center justify-between px-2 py-1 border-t border-stone-100 bg-stone-50">
+                    <span className="text-[9px] text-stone-400">dear drawer</span>
+                    <span className="text-[9px] text-stone-300">&gt;</span>
+                  </div>
                 </div>
 
                 <div className="flex gap-2 justify-center">
@@ -453,15 +461,20 @@ export default function FeedStep2CoverProfile({
         <div className="space-y-3">
           {data.meta.ogImage ? (
             <div className="space-y-2">
-              <div className="max-w-[220px] mx-auto">
-                <div className="relative bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm" style={{ aspectRatio: '1.91/1' }}>
+              <div className="max-w-[220px] mx-auto rounded-lg border border-stone-200 bg-white shadow-sm overflow-hidden">
+                <div className="w-full bg-stone-100" style={{ aspectRatio: '1.91/1' }}>
                   <img
                     src={data.meta.ogImage}
                     alt="OG 이미지"
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <p className="text-xs text-gray-400 text-center mt-1">1.91:1 (1200x630 권장)</p>
+                <div className="px-2 py-1.5 border-t border-stone-100">
+                  <p className="text-[9px] text-stone-400 leading-tight">invite.deardrawer.com</p>
+                  <p className="text-[10px] font-medium text-stone-800 leading-tight mt-0.5 truncate">
+                    {data.meta.title || `${data.groom.name || '신랑'} ♥ ${data.bride.name || '신부'} 결혼합니다`}
+                  </p>
+                </div>
               </div>
 
               <div className="flex gap-2 justify-center">

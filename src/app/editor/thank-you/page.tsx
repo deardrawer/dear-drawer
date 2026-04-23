@@ -32,6 +32,7 @@ function ThankYouEditorContent() {
   const {
     data, fontStyle, accentColor, sealColor, bgm, isDirty, isSaving,
     setIsDirty, setIsSaving, loadFromContent, toSavePayload, reset, wizardStep,
+    meta: thankYouMeta,
   } = useThankYouEditorStore()
   const fontStyleValue = fontStyle
 
@@ -376,6 +377,7 @@ function ThankYouEditorContent() {
           shareTitle={`${data.coupleNames} 감사장`}
           shareDescription="결혼식에 와주셔서 감사합니다"
           templateType="thankyou"
+          kakaoImageRatio={thankYouMeta?.kakaoThumbnailRatio}
         />
       )}
 

@@ -24,6 +24,7 @@ interface GuestListProps {
   onAdd: () => void
   onShowToast: (message: string) => void
   kakaoThumbnail?: string
+  kakaoThumbnailRatio?: '3:4' | '1:1' | '3:2'
   groomName?: string
   brideName?: string
 }
@@ -36,6 +37,7 @@ export default function GuestList({
   onAdd,
   onShowToast,
   kakaoThumbnail,
+  kakaoThumbnailRatio,
   groomName,
   brideName,
 }: GuestListProps) {
@@ -130,12 +132,17 @@ export default function GuestList({
             ? kakaoThumbnail
             : defaultImage
 
+          const kakaoRatioSizes: Record<string, { w: number; h: number }> = { '3:4': { w: 900, h: 1200 }, '1:1': { w: 800, h: 800 }, '3:2': { w: 1200, h: 800 } }
+          const kakaoImgSize = kakaoRatioSizes[kakaoThumbnailRatio || '1:1']
+
           kakaoWindow.Kakao.Share.sendDefault({
             objectType: 'feed',
             content: {
               title: shareTitle,
               description: `${displayName}께 전하는 청첩장입니다 💌`,
               imageUrl: validImageUrl,
+              imageWidth: kakaoImgSize.w,
+              imageHeight: kakaoImgSize.h,
               link: {
                 mobileWebUrl: link,
                 webUrl: link,

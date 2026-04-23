@@ -868,6 +868,7 @@ function EditorContent() {
           }
           shareTitle={invitation.meta.title}
           shareDescription={invitation.meta.description}
+          kakaoImageRatio={invitation.meta.kakaoThumbnailRatio}
           templateType={template?.id === 'narrative-family' ? 'family' : template?.id === 'narrative-magazine' ? 'magazine' : 'our'}
         />
       )}

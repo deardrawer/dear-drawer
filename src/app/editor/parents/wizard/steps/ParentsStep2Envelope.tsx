@@ -350,15 +350,29 @@ export default function ParentsStep2Envelope({
 
             return thumbnailUrl ? (
               <div className="max-w-[200px] mx-auto space-y-2">
-                <div
-                  className="relative rounded-lg overflow-hidden border-2 border-gray-200"
-                  style={{ aspectRatio }}
-                >
-                  <img
-                    src={thumbnailUrl}
-                    alt="카카오 썸네일"
-                    className="w-full h-full object-cover"
-                  />
+                <div className="rounded-lg border border-stone-200 bg-white shadow-sm overflow-hidden">
+                  <div
+                    className="w-full bg-stone-100"
+                    style={{ aspectRatio }}
+                  >
+                    <img
+                      src={thumbnailUrl}
+                      alt="카카오 썸네일"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="px-2 py-1 border-t border-stone-100">
+                    <p className="text-[10px] font-medium text-stone-800 leading-tight truncate">❤ 결혼합니다.</p>
+                    <p className="text-[9px] text-stone-500 leading-tight mt-0.5">{data.wedding.date ? (() => { const d = new Date(data.wedding.date + 'T00:00:00'); const wd = ['일','월','화','수','목','금','토']; return isNaN(d.getTime()) ? '' : `${String(d.getFullYear()).slice(2)}년 ${d.getMonth()+1}월 ${d.getDate()}일 ${wd[d.getDay()]}요일${data.wedding.timeDisplay ? ` ${data.wedding.timeDisplay}` : ''}` })() : ''}</p>
+                  </div>
+                  <div className="flex border-t border-stone-100">
+                    <div className="flex-1 text-center py-1 text-[9px] text-stone-500 border-r border-stone-100">청첩장 보기</div>
+                    <div className="flex-1 text-center py-1 text-[9px] text-stone-500">위치보기</div>
+                  </div>
+                  <div className="flex items-center justify-between px-2 py-1 border-t border-stone-100 bg-stone-50">
+                    <span className="text-[9px] text-stone-400">dear drawer</span>
+                    <span className="text-[9px] text-stone-300">&gt;</span>
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   <label className="flex-1 text-center text-xs py-1.5 px-3 bg-gray-100 hover:bg-gray-200 rounded-md cursor-pointer transition-colors">
@@ -439,14 +453,20 @@ export default function ParentsStep2Envelope({
         <div className="space-y-3">
           {data.meta?.ogImage ? (
             <div className="max-w-[220px] mx-auto space-y-2">
-              <div className="relative rounded-lg overflow-hidden border-2 border-gray-200"
-                style={{ aspectRatio: '1.91/1' }}
-              >
-                <img
-                  src={data.meta.ogImage}
-                  alt="OG 썸네일"
-                  className="w-full h-full object-cover"
-                />
+              <div className="rounded-lg border border-stone-200 bg-white shadow-sm overflow-hidden">
+                <div className="w-full bg-stone-100" style={{ aspectRatio: '1.91/1' }}>
+                  <img
+                    src={data.meta.ogImage}
+                    alt="OG 썸네일"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="px-2 py-1.5 border-t border-stone-100">
+                  <p className="text-[9px] text-stone-400 leading-tight">invite.deardrawer.com</p>
+                  <p className="text-[10px] font-medium text-stone-800 leading-tight mt-0.5 truncate">
+                    {data.meta?.title || `${data.groom.firstName || '신랑'} ♥ ${data.bride.firstName || '신부'} 결혼합니다`}
+                  </p>
+                </div>
               </div>
               <div className="flex gap-2">
                 <label className="flex-1 text-center text-xs py-1.5 px-3 bg-gray-100 hover:bg-gray-200 rounded-md cursor-pointer transition-colors">

@@ -166,6 +166,38 @@ export default function AdminPage() {
     }
   }
 
+  const handleToggleWatermark = async (invId: string, currentIsPaid: number) => {
+    const newIsPaid = currentIsPaid === 1 ? 0 : 1
+    const message = newIsPaid === 1
+      ? '워터마크를 제거하시겠습니까? (is_paid → 1)'
+      : '워터마크를 복원하시겠습니까? (is_paid → 0)'
+    if (!confirm(message)) return
+
+    try {
+      const res = await fetch('/api/admin', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-password': password,
+        },
+        body: JSON.stringify({ id: invId, is_paid: newIsPaid }),
+      })
+
+      if (res.ok) {
+        setInvitations(prev =>
+          prev.map(inv =>
+            inv.id === invId ? { ...inv, is_paid: newIsPaid } : inv
+          )
+        )
+      } else {
+        alert('업데이트에 실패했습니다.')
+      }
+    } catch (err) {
+      console.error(err)
+      alert('업데이트에 실패했습니다.')
+    }
+  }
+
   // ===== Payment Functions =====
   const fetchPayments = useCallback(async () => {
     try {
@@ -660,6 +692,16 @@ export default function AdminPage() {
                             >
                               커스텀
                             </a>
+                            <button
+                              onClick={() => handleToggleWatermark(inv.id, inv.is_paid)}
+                              className="px-3 py-1 rounded text-xs font-medium"
+                              style={{
+                                backgroundColor: inv.is_paid === 1 ? '#DBEAFE' : '#F3F4F6',
+                                color: inv.is_paid === 1 ? '#1D4ED8' : '#374151',
+                              }}
+                            >
+                              {inv.is_paid === 1 ? '워터마크OFF' : '워터마크ON'}
+                            </button>
                             <button
                               onClick={() => handleDelete(inv.id)}
                               className="px-3 py-1 rounded text-xs text-white"

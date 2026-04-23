@@ -157,12 +157,17 @@ export default function EssayStep4Publish({ data, invitationId, slug, onSave, on
         if (coverImage.startsWith('https://')) imageUrl = coverImage
         else if (coverImage.startsWith('/uploads/') || coverImage.startsWith('/api/r2/') || coverImage.startsWith('/sample/')) imageUrl = `${productionUrl}${coverImage}`
       }
+      const kakaoRatioSizes: Record<string, { w: number; h: number }> = { '3:4': { w: 900, h: 1200 }, '1:1': { w: 800, h: 800 }, '3:2': { w: 1200, h: 800 } }
+      const kakaoImgSize = kakaoRatioSizes[data.meta?.kakaoThumbnailRatio || '1:1']
+
       kakaoWindow.Kakao.Share.sendDefault({
         objectType: 'feed',
         content: {
           title: `${data.groom.name || '신랑'} ❤️ ${data.bride.name || '신부'}의 결혼식`,
           description: '모바일 청첩장이 도착했습니다',
           imageUrl,
+          imageWidth: kakaoImgSize.w,
+          imageHeight: kakaoImgSize.h,
           link: { mobileWebUrl: invitationUrl, webUrl: invitationUrl },
         },
         buttons: [{ title: '청첩장 보기', link: { mobileWebUrl: invitationUrl, webUrl: invitationUrl } }],

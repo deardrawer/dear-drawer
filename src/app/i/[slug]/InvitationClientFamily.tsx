@@ -4560,6 +4560,7 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
                     thumbnailUrl: content?.meta?.kakaoThumbnail || content?.meta?.ogImage || invitation.media?.coverImage || invitation.gallery?.images?.[0] || '',
                     shareTitle: content?.meta?.title,
                     shareDescription: content?.meta?.description,
+                    kakaoThumbnailRatio: content?.meta?.kakaoThumbnailRatio,
                   }}
                 />
               )}

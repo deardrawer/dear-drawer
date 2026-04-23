@@ -420,6 +420,7 @@ export interface ParentsInvitationContent {
     description: string
     kakaoThumbnail: string | ImageCropData
     ogImage: string
+    kakaoThumbnailRatio?: '3:4' | '1:1' | '3:2'
   }
 }
 

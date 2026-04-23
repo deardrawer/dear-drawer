@@ -72,6 +72,7 @@ interface GuestFloatingButtonProps {
     thumbnailUrl?: string
     shareTitle?: string
     shareDescription?: string
+    kakaoThumbnailRatio?: '3:4' | '1:1' | '3:2'
   }
 }
 
@@ -322,12 +323,17 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
         `${formattedDate} ${formattedTime}\n${venueDisplay}${venueDetail}`
 
       // 피드형 템플릿 (objectType: 'feed')
+      const kakaoRatioSizes: Record<string, { w: number; h: number }> = { '3:4': { w: 900, h: 1200 }, '1:1': { w: 800, h: 800 }, '3:2': { w: 1200, h: 800 } }
+      const kakaoImgSize = kakaoRatioSizes[invitation.kakaoThumbnailRatio || '1:1']
+
       kakaoWindow.Kakao.Share.sendDefault({
         objectType: 'feed',
         content: {
           title: displayTitle,
           description: displayDescription,
           imageUrl,
+          imageWidth: kakaoImgSize.w,
+          imageHeight: kakaoImgSize.h,
           link: {
             mobileWebUrl: invitationUrl,
             webUrl: invitationUrl,

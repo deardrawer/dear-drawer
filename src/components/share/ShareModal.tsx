@@ -29,6 +29,7 @@ interface ShareModalProps {
   shareTitle?: string
   shareDescription?: string
   templateType?: 'our' | 'family' | 'parents' | 'magazine' | 'film' | 'record' | 'exhibit' | 'thankyou'
+  kakaoImageRatio?: '3:4' | '1:1' | '3:2'
 }
 
 export default function ShareModal({
@@ -47,6 +48,7 @@ export default function ShareModal({
   shareTitle,
   shareDescription,
   templateType,
+  kakaoImageRatio,
 }: ShareModalProps) {
   const [slug, setSlug] = useState(currentSlug || '')
   const [slugError, setSlugError] = useState('')
@@ -238,12 +240,22 @@ export default function ShareModal({
       const displayDescription = shareDescription ||
         `${formattedDate} ${formattedTime}\n${venueDisplay}${venueDetail}`
 
+      // 카카오 이미지 비율별 크기
+      const ratioSizes: Record<string, { w: number; h: number }> = {
+        '3:4': { w: 900, h: 1200 },
+        '1:1': { w: 800, h: 800 },
+        '3:2': { w: 1200, h: 800 },
+      }
+      const imgSize = ratioSizes[kakaoImageRatio || '1:1']
+
       kakaoWindow.Kakao.Share.sendDefault({
         objectType: 'feed',
         content: {
           title: displayTitle,
           description: displayDescription,
           imageUrl,
+          imageWidth: imgSize.w,
+          imageHeight: imgSize.h,
           link: {
             mobileWebUrl: invitationUrl,
             webUrl: invitationUrl,

@@ -24,7 +24,6 @@ import InfoEditor from './SectionEditors/InfoEditor'
 import DirectionEditor from './SectionEditors/DirectionEditor'
 import MetaEditor from './SectionEditors/MetaEditor'
 import TapToOpenCover, { COVER_VARIANTS } from './TapToOpenCover'
-import InlineCropEditor from '@/components/editor/InlineCropEditor'
 import ImageZoomEditor from '@/components/editor/ImageZoomEditor'
 import { uploadImages, deleteImage, cropAndUploadImage } from '@/lib/imageUpload'
 import { bgmPresets, getBgmPresetByUrl } from '@/lib/bgmPresets'
@@ -302,6 +301,7 @@ export interface TheSimpleInvitationData {
     kakaoThumbnail?: ImageWithSettings
     ogImageCropped?: string
     kakaoThumbnailCropped?: string
+    kakaoThumbnailRatio?: '3:4' | '1:1' | '3:2'
   }
 }
 
@@ -1068,26 +1068,21 @@ function TheSimpleEditorContent() {
 
     setIsSaving(true)
     try {
-      // OG/카카오 이미지 크롭 처리
-      // InlineCropEditor는 사용자가 드래그해야만 값이 저장됨.
-      // 크롭 값이 없으면 해당 비율로 기본 크롭을 자동 계산하여 적용.
+      // OG/카카오 이미지 크롭 처리 — 비율 기반 센터 크롭
       const saveData = { ...data, meta: { ...data.meta } }
       const cropTasks: Promise<void>[] = []
 
-      // 비율에 맞는 기본 크롭 계산 (InlineCropEditor 초기 로직과 동일)
-      const calcDefaultCrop = (imgUrl: string, targetAspect: number): Promise<{ cropX: number; cropY: number; cropWidth: number; cropHeight: number }> =>
+      // 센터 크롭 계산 (이미지 로드 후 비율에 맞게 중앙 잘라내기)
+      const calcCenterCrop = (imgUrl: string, targetAspect: number): Promise<{ cropX: number; cropY: number; cropWidth: number; cropHeight: number }> =>
         new Promise((resolve) => {
           const el = new Image()
           el.onload = () => {
             const imgAspect = el.naturalWidth / el.naturalHeight
-            const max = 0.98
             let cW: number, cH: number
             if (imgAspect > targetAspect) {
-              cH = max
-              cW = Math.min(max, cH * targetAspect / imgAspect)
+              cH = 1; cW = targetAspect / imgAspect
             } else {
-              cW = max
-              cH = Math.min(max, cW * imgAspect / targetAspect)
+              cW = 1; cH = imgAspect / targetAspect
             }
             resolve({ cropX: (1 - cW) / 2, cropY: (1 - cH) / 2, cropWidth: cW, cropHeight: cH })
           }
@@ -1095,12 +1090,11 @@ function TheSimpleEditorContent() {
           el.src = imgUrl
         })
 
-      // OG 이미지 크롭 (비율 1.91:1)
+      // OG 이미지 크롭 (항상 1.91:1)
       // 우선순위: 명시적 OG 이미지 > 인트로 사진 > 갤러리 첫 번째
       const ogImg = data.meta.ogImage
       const ogImgUrl = typeof ogImg === 'object' && ogImg.url ? ogImg.url
         : typeof ogImg === 'string' && ogImg ? ogImg : ''
-      const ogImgSettings = typeof ogImg === 'object' ? ogImg.settings : undefined
       const fallbackImgUrl = !ogImgUrl
         ? (data.sections?.intro?.photo?.url || (() => {
             if (!data.galleries) return ''
@@ -1114,14 +1108,8 @@ function TheSimpleEditorContent() {
       const cropSourceUrl = ogImgUrl || fallbackImgUrl
 
       if (cropSourceUrl) {
-        const s = ogImgSettings || { scale: 1, positionX: 0, positionY: 0 }
-        const hasCrop = (s.cropWidth !== undefined && s.cropWidth < 1) || (s.cropHeight !== undefined && s.cropHeight < 1)
-        const cropValues = hasCrop
-          ? Promise.resolve({ cropX: s.cropX || 0, cropY: s.cropY || 0, cropWidth: s.cropWidth || 1, cropHeight: s.cropHeight || 1 })
-          : calcDefaultCrop(cropSourceUrl, 1.91)
-
         cropTasks.push(
-          cropValues.then(crop =>
+          calcCenterCrop(cropSourceUrl, 1.91).then(crop =>
             cropAndUploadImage(cropSourceUrl, crop, {
               invitationId: invitationId || undefined, outputWidth: 1200, suffix: 'og-cropped',
             })
@@ -1134,17 +1122,14 @@ function TheSimpleEditorContent() {
         )
       }
 
-      // 카카오 썸네일 크롭 (비율 1:1)
+      // 카카오 썸네일 크롭 (선택된 비율)
       const kakaoImg = data.meta.kakaoThumbnail
       if (kakaoImg?.url) {
-        const s = kakaoImg.settings || { scale: 1, positionX: 0, positionY: 0 }
-        const hasCrop = (s.cropWidth !== undefined && s.cropWidth < 1) || (s.cropHeight !== undefined && s.cropHeight < 1)
-        const cropValues = hasCrop
-          ? Promise.resolve({ cropX: s.cropX || 0, cropY: s.cropY || 0, cropWidth: s.cropWidth || 1, cropHeight: s.cropHeight || 1 })
-          : calcDefaultCrop(kakaoImg.url, 1)
+        const ratioMap: Record<string, number> = { '3:4': 3 / 4, '1:1': 1, '3:2': 3 / 2 }
+        const kakaoAspect = ratioMap[data.meta.kakaoThumbnailRatio || '1:1']
 
         cropTasks.push(
-          cropValues.then(crop =>
+          calcCenterCrop(kakaoImg.url, kakaoAspect).then(crop =>
             cropAndUploadImage(kakaoImg.url, crop, {
               invitationId: invitationId || undefined, outputWidth: 800, suffix: 'kakao-cropped',
             })
@@ -2491,6 +2476,7 @@ function TheSimpleEditorContent() {
           thumbnailUrl={data.meta.kakaoThumbnailCropped || data.meta.ogImageCropped || data.meta.kakaoThumbnail?.url || (typeof data.meta.ogImage === 'string' ? data.meta.ogImage : data.meta.ogImage?.url)}
           shareTitle={data.meta.title}
           shareDescription={data.meta.description}
+          kakaoImageRatio={data.meta.kakaoThumbnailRatio}
         />
       )}
     </div>

@@ -2,8 +2,6 @@
 
 import { useState, useRef, useCallback } from 'react'
 import type { TheSimpleInvitationData, ImageWithSettings, TheSimpleImageSettings } from '../page'
-import InlineCropEditor from '@/components/editor/InlineCropEditor'
-import ImageZoomEditor from '@/components/editor/ImageZoomEditor'
 import { uploadImage } from '@/lib/imageUpload'
 
 const DEFAULT_SETTINGS: TheSimpleImageSettings = {
@@ -11,6 +9,14 @@ const DEFAULT_SETTINGS: TheSimpleImageSettings = {
   positionX: 0,
   positionY: 0,
 }
+
+type KakaoRatio = '3:4' | '1:1' | '3:2'
+
+const RATIO_OPTIONS: { value: KakaoRatio; label: string; desc: string; aspect: string }[] = [
+  { value: '3:4', label: '세로형', desc: '900×1200 권장', aspect: '3/4' },
+  { value: '1:1', label: '정사각형', desc: '1080×1080 권장', aspect: '1/1' },
+  { value: '3:2', label: '가로형', desc: '1500×1000 권장', aspect: '3/2' },
+]
 
 interface MetaEditorProps {
   value: TheSimpleInvitationData['meta']
@@ -41,11 +47,6 @@ function extractOgUrl(ogImage: string | ImageWithSettings): string {
   return ogImage.url
 }
 
-function extractOgSettings(ogImage: string | ImageWithSettings): TheSimpleImageSettings {
-  if (typeof ogImage === 'string') return { ...DEFAULT_SETTINGS }
-  return ogImage.settings
-}
-
 export default function MetaEditor({
   value,
   onChange,
@@ -71,9 +72,8 @@ export default function MetaEditor({
   const checkTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   const ogUrl = extractOgUrl(value.ogImage)
-  const ogSettings = extractOgSettings(value.ogImage)
   const kakaoUrl = value.kakaoThumbnail?.url || ''
-  const kakaoSettings = value.kakaoThumbnail?.settings || { ...DEFAULT_SETTINGS }
+  const kakaoRatio: KakaoRatio = value.kakaoThumbnailRatio || '1:1'
 
   // ── OG 이미지 업로드 ──
   const handleOgUpload = async (file: File) => {
@@ -98,14 +98,6 @@ export default function MetaEditor({
     onChange({ ogImage: '' })
   }
 
-  const handleOgSettings = (patch: Partial<TheSimpleImageSettings>) => {
-    const currentUrl = extractOgUrl(value.ogImage)
-    const currentSettings = extractOgSettings(value.ogImage)
-    onChange({
-      ogImage: { url: currentUrl, settings: { ...currentSettings, ...patch } },
-    })
-  }
-
   // ── 카카오 썸네일 업로드 ──
   const handleKakaoUpload = async (file: File) => {
     setKakaoUploading(true)
@@ -127,16 +119,6 @@ export default function MetaEditor({
 
   const handleKakaoRemove = () => {
     onChange({ kakaoThumbnail: undefined })
-  }
-
-  const handleKakaoSettings = (patch: Partial<TheSimpleImageSettings>) => {
-    if (!value.kakaoThumbnail) return
-    onChange({
-      kakaoThumbnail: {
-        url: value.kakaoThumbnail.url,
-        settings: { ...value.kakaoThumbnail.settings, ...patch },
-      },
-    })
   }
 
   // ── 슬러그 유효성 + 중복 검사 ──
@@ -214,50 +196,85 @@ export default function MetaEditor({
     }
   }
 
+  // 날짜 포맷 (미리보기용)
+  const previewDateLine = (() => {
+    if (!weddingDate) return '2026년 5월 16일 토요일 오후 1시'
+    const d = new Date(weddingDate + 'T00:00:00')
+    if (isNaN(d.getTime())) return ''
+    const weekdays = ['일', '월', '화', '수', '목', '금', '토']
+    const yr = String(d.getFullYear()).slice(2)
+    return `${yr}년 ${d.getMonth() + 1}월 ${d.getDate()}일 ${weekdays[d.getDay()]}요일${weddingTime ? ` ${weddingTime}` : ''}`
+  })()
+
+  const displayTitle = value.title || autoTitle
+  const displayDescription = value.description || autoDescription || `${previewDateLine}`
+
+  // 카카오 비율에 따른 CSS aspect-ratio
+  const kakaoAspectStyle = RATIO_OPTIONS.find(r => r.value === kakaoRatio)?.aspect || '1/1'
+
   return (
     <div className="space-y-5">
-      {/* OG 이미지 (1.91:1) */}
+      {/* ═══ OG 이미지 (1.91:1) ═══ */}
       <div>
-        <label className="block text-[11px] font-medium text-stone-600 mb-1">
+        <label className="block text-[11px] font-medium text-stone-600 mb-1.5">
           공유 미리보기 이미지 (OG)
         </label>
-        <p className="text-[10px] text-stone-400 mb-1.5">
-          문자, 인스타그램, 페이스북 등에서 링크 공유 시 표시됩니다. 권장: 1200 x 630px (1.91:1)
-        </p>
-        {ogUrl ? (
-          <div className="space-y-2">
-            <InlineCropEditor
-              imageUrl={ogUrl}
-              settings={ogSettings}
-              onUpdate={handleOgSettings}
-              aspectRatio={1.91}
-              containerWidth={260}
-            />
-            <div className="flex gap-2">
-              <label className="text-[11px] text-stone-500 border border-stone-200 rounded px-2 py-1 cursor-pointer hover:bg-stone-50">
-                교체
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0]
-                    if (f) handleOgUpload(f)
-                    e.target.value = ''
-                  }}
-                />
-              </label>
-              <button
-                type="button"
-                onClick={handleOgRemove}
-                className="text-[11px] text-red-400 border border-red-200 rounded px-2 py-1 hover:bg-red-50"
-              >
-                삭제
-              </button>
+
+        {/* OG 미리보기 카드 (축소) */}
+        <div className="max-w-[220px] rounded-lg border border-stone-200 bg-white shadow-sm overflow-hidden mb-2">
+          {ogUrl ? (
+            <div className="w-full bg-stone-100" style={{ aspectRatio: '1.91/1' }}>
+              <img
+                src={ogUrl}
+                alt="OG preview"
+                className="w-full h-full object-cover"
+              />
             </div>
+          ) : (
+            <div
+              className="w-full bg-stone-100 flex items-center justify-center"
+              style={{ aspectRatio: '1.91/1' }}
+            >
+              <span className="text-[10px] text-stone-400">이미지 미설정</span>
+            </div>
+          )}
+          <div className="px-2 py-1.5 border-t border-stone-100">
+            <p className="text-[9px] text-stone-400 leading-tight">invite.deardrawer.com</p>
+            <p className="text-[10px] font-medium text-stone-800 leading-tight mt-0.5 truncate">{displayTitle}</p>
+            <p className="text-[9px] text-stone-500 leading-tight mt-0.5 line-clamp-1">{displayDescription.split('\n')[0]}</p>
+          </div>
+        </div>
+
+        <p className="text-[10px] text-stone-400 mb-1.5">
+          이미지는 1.91:1 비율로 자동 잘립니다.
+        </p>
+
+        {/* 업로드/교체/삭제 버튼 */}
+        {ogUrl ? (
+          <div className="flex gap-2">
+            <label className="text-[11px] text-stone-500 border border-stone-200 rounded px-2 py-1 cursor-pointer hover:bg-stone-50">
+              교체
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0]
+                  if (f) handleOgUpload(f)
+                  e.target.value = ''
+                }}
+              />
+            </label>
+            <button
+              type="button"
+              onClick={handleOgRemove}
+              className="text-[11px] text-red-400 border border-red-200 rounded px-2 py-1 hover:bg-red-50"
+            >
+              삭제
+            </button>
           </div>
         ) : (
-          <label className="flex items-center justify-center w-full h-24 border-2 border-dashed border-stone-200 rounded-lg cursor-pointer hover:border-stone-300 transition-colors">
+          <label className="flex items-center justify-center w-full h-10 border-2 border-dashed border-stone-200 rounded-lg cursor-pointer hover:border-stone-300 transition-colors">
             <span className="text-[11px] text-stone-400">
               {ogUploading ? '업로드 중...' : '이미지 업로드 (클릭)'}
             </span>
@@ -283,48 +300,90 @@ export default function MetaEditor({
         </p>
       )}
 
-      {/* 카카오 썸네일 (1:1) */}
+      {/* ═══ 카카오톡 공유 썸네일 ═══ */}
       <div>
-        <label className="block text-[11px] font-medium text-stone-600 mb-1">
+        <label className="block text-[11px] font-medium text-stone-600 mb-1.5">
           카카오톡 공유 썸네일
         </label>
-        <p className="text-[10px] text-stone-400 mb-1.5">
-          카카오톡으로 공유할 때 표시되는 이미지입니다. 권장: 600 x 600px (1:1)
-        </p>
-        {kakaoUrl ? (
-          <div className="space-y-2">
-            <InlineCropEditor
-              imageUrl={kakaoUrl}
-              settings={kakaoSettings}
-              onUpdate={handleKakaoSettings}
-              aspectRatio={1}
-              containerWidth={200}
-            />
-            <div className="flex gap-2">
-              <label className="text-[11px] text-stone-500 border border-stone-200 rounded px-2 py-1 cursor-pointer hover:bg-stone-50">
-                교체
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0]
-                    if (f) handleKakaoUpload(f)
-                    e.target.value = ''
-                  }}
-                />
-              </label>
-              <button
-                type="button"
-                onClick={handleKakaoRemove}
-                className="text-[11px] text-red-400 border border-red-200 rounded px-2 py-1 hover:bg-red-50"
-              >
-                삭제
-              </button>
+
+        {/* 카카오 미리보기 카드 (축소) */}
+        <div className="max-w-[200px] rounded-lg border border-stone-200 bg-white shadow-sm overflow-hidden mb-2">
+          {kakaoUrl ? (
+            <div className="w-full bg-stone-100" style={{ aspectRatio: kakaoAspectStyle }}>
+              <img
+                src={kakaoUrl}
+                alt="카카오 preview"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ) : (
+            <div
+              className="w-full bg-stone-100 flex items-center justify-center min-h-[80px]"
+              style={{ aspectRatio: kakaoAspectStyle }}
+            >
+              <span className="text-[10px] text-stone-400">이미지 미설정</span>
+            </div>
+          )}
+          <div className="px-2 py-1 border-t border-stone-100">
+            <p className="text-[10px] font-medium text-stone-800 leading-tight truncate">
+              ❤ 결혼합니다.
+            </p>
+            <p className="text-[9px] text-stone-500 leading-tight mt-0.5">{previewDateLine}</p>
+          </div>
+          <div className="flex border-t border-stone-100">
+            <div className="flex-1 text-center py-1 text-[9px] text-stone-500 border-r border-stone-100">
+              청첩장 보기
+            </div>
+            <div className="flex-1 text-center py-1 text-[9px] text-stone-500">
+              위치보기
             </div>
           </div>
+          <div className="flex items-center justify-between px-2 py-1 border-t border-stone-100 bg-stone-50">
+            <span className="text-[9px] text-stone-400">dear drawer</span>
+            <span className="text-[9px] text-stone-300">&gt;</span>
+          </div>
+        </div>
+
+        <p className="text-[10px] text-stone-400 mb-2">
+          기기나 앱 버전에 따라 모양이 다를 수 있습니다.
+        </p>
+
+        {/* 썸네일 이미지 사이즈 안내 */}
+        <div className="bg-stone-50 rounded-lg px-3 py-2 mb-2">
+          <p className="text-[10px] font-medium text-stone-500 mb-1">썸네일 이미지 사이즈 안내</p>
+          {RATIO_OPTIONS.map(opt => (
+            <p key={opt.value} className="text-[10px] text-stone-400 leading-relaxed">
+              {opt.label} – {opt.value}비율, {opt.desc}
+            </p>
+          ))}
+        </div>
+
+        {/* 업로드/교체/삭제 버튼 */}
+        {kakaoUrl ? (
+          <div className="flex gap-2 mb-2">
+            <label className="text-[11px] text-stone-500 border border-stone-200 rounded px-2 py-1 cursor-pointer hover:bg-stone-50">
+              교체
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0]
+                  if (f) handleKakaoUpload(f)
+                  e.target.value = ''
+                }}
+              />
+            </label>
+            <button
+              type="button"
+              onClick={handleKakaoRemove}
+              className="text-[11px] text-red-400 border border-red-200 rounded px-2 py-1 hover:bg-red-50"
+            >
+              삭제
+            </button>
+          </div>
         ) : (
-          <label className="flex items-center justify-center w-full h-24 border-2 border-dashed border-stone-200 rounded-lg cursor-pointer hover:border-stone-300 transition-colors">
+          <label className="flex items-center justify-center w-full h-10 border-2 border-dashed border-stone-200 rounded-lg cursor-pointer hover:border-stone-300 transition-colors mb-2">
             <span className="text-[11px] text-stone-400">
               {kakaoUploading ? '업로드 중...' : '이미지 업로드 (클릭)'}
             </span>
@@ -341,6 +400,27 @@ export default function MetaEditor({
             />
           </label>
         )}
+
+        {/* 비율 선택 라디오 */}
+        <div>
+          <label className="block text-[11px] font-medium text-stone-600 mb-1.5">썸네일 비율</label>
+          <div className="flex gap-1">
+            {RATIO_OPTIONS.map(opt => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => onChange({ kakaoThumbnailRatio: opt.value })}
+                className={`flex-1 text-center py-1.5 rounded-md border text-[11px] transition-colors ${
+                  kakaoRatio === opt.value
+                    ? 'bg-stone-800 text-white border-stone-800'
+                    : 'bg-white text-stone-500 border-stone-200 hover:bg-stone-50'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* 공유 제목 / 설명 */}

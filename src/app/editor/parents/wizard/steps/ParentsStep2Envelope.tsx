@@ -555,7 +555,6 @@ export default function ParentsStep2Envelope({
               </>
             )
           })()}
-          )}
         </div>
 
         <p className="text-xs text-gray-400">

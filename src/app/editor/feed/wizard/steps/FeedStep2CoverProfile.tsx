@@ -459,58 +459,87 @@ export default function FeedStep2CoverProfile({
         </div>
 
         <div className="space-y-3">
-          {data.meta.ogImage ? (
-            <div className="space-y-2">
-              <div className="max-w-[220px] mx-auto rounded-lg border border-stone-200 bg-white shadow-sm overflow-hidden">
-                <div className="w-full bg-stone-100" style={{ aspectRatio: '1.91/1' }}>
-                  <img
-                    src={data.meta.ogImage}
-                    alt="OG 이미지"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="px-2 py-1.5 border-t border-stone-100">
-                  <p className="text-[9px] text-stone-400 leading-tight">invite.deardrawer.com</p>
-                  <p className="text-[10px] font-medium text-stone-800 leading-tight mt-0.5 truncate">
-                    {data.meta.title || `${data.groom.name || '신랑'} ♥ ${data.bride.name || '신부'} 결혼합니다`}
-                  </p>
-                </div>
+          {/* OG 미리보기 카드 */}
+          <div className="max-w-[220px] mx-auto rounded-lg border border-stone-200 bg-white shadow-sm overflow-hidden">
+            {(data.meta.ogImage || data.meta.kakaoThumbnail) ? (
+              <div className="relative w-full bg-stone-100" style={{ aspectRatio: '1.91/1' }}>
+                <img src={data.meta.ogImage || data.meta.kakaoThumbnail} alt="OG 이미지" className="w-full h-full object-cover" />
+                {!data.meta.ogImage && data.meta.kakaoThumbnail && (
+                  <div className="absolute bottom-0 left-0 right-0 bg-amber-500/80 px-1 py-0.5">
+                    <p className="text-[8px] text-white text-center font-medium">카카오 썸네일 사용 중</p>
+                  </div>
+                )}
               </div>
-
-              <div className="flex gap-2 justify-center">
-                <label className="cursor-pointer">
-                  <span className="inline-block px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                    {uploadingImages.has('og-image') ? '업로드 중...' : '변경'}
-                  </span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    disabled={uploadingImages.has('og-image')}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0]
-                      if (file) {
-                        handleImageUpload(file, 'og-image', (url) => {
-                          updateNestedData('meta.ogImage', url)
-                          updateNestedData('meta.ogImageSettings', undefined)
-                        })
-                        e.target.value = ''
-                      }
-                    }}
-                  />
-                </label>
-                <button
-                  type="button"
-                  onClick={() => {
-                    updateNestedData('meta.ogImage', '')
-                    updateNestedData('meta.ogImageSettings', undefined)
-                  }}
-                  className="px-3 py-1.5 text-xs font-medium text-red-600 bg-white border border-red-300 rounded-lg hover:bg-red-50 transition-colors"
-                >
-                  삭제
-                </button>
+            ) : (
+              <div className="w-full bg-stone-100 flex items-center justify-center" style={{ aspectRatio: '1.91/1' }}>
+                <span className="text-[10px] text-stone-400">이미지 미설정</span>
               </div>
+            )}
+            <div className="px-2 py-1.5 border-t border-stone-100">
+              <p className="text-[9px] text-stone-400 leading-tight">invite.deardrawer.com</p>
+              <p className="text-[10px] font-medium text-stone-800 leading-tight mt-0.5 truncate">
+                {data.meta.title || `${data.groom.name || '신랑'} ♥ ${data.bride.name || '신부'} 결혼합니다`}
+              </p>
             </div>
+          </div>
+          <p className="text-[10px] text-stone-400 text-center">1.91:1 비율로 자동 크롭</p>
+
+          {data.meta.ogImage ? (
+            <div className="flex gap-2 justify-center">
+              <label className="cursor-pointer">
+                <span className="inline-block px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                  {uploadingImages.has('og-image') ? '업로드 중...' : '변경'}
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  disabled={uploadingImages.has('og-image')}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) {
+                      handleImageUpload(file, 'og-image', (url) => {
+                        updateNestedData('meta.ogImage', url)
+                        updateNestedData('meta.ogImageSettings', undefined)
+                      })
+                      e.target.value = ''
+                    }
+                  }}
+                />
+              </label>
+              <button
+                type="button"
+                onClick={() => {
+                  updateNestedData('meta.ogImage', '')
+                  updateNestedData('meta.ogImageSettings', undefined)
+                }}
+                className="px-3 py-1.5 text-xs font-medium text-red-600 bg-white border border-red-300 rounded-lg hover:bg-red-50 transition-colors"
+              >
+                삭제
+              </button>
+            </div>
+          ) : data.meta.kakaoThumbnail ? (
+            <label className="flex items-center justify-center w-full h-10 border border-amber-300 bg-amber-50 rounded-lg cursor-pointer hover:bg-amber-100 transition-colors">
+              <span className="text-[11px] text-amber-700 font-medium">
+                {uploadingImages.has('og-image') ? '업로드 중...' : '별도 OG 이미지로 교체하기'}
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                disabled={uploadingImages.has('og-image')}
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) {
+                    handleImageUpload(file, 'og-image', (url) => {
+                      updateNestedData('meta.ogImage', url)
+                      updateNestedData('meta.ogImageSettings', undefined)
+                    })
+                    e.target.value = ''
+                  }
+                }}
+              />
+            </label>
           ) : (
             <div className="max-w-[220px] mx-auto">
               <label className="cursor-pointer block">
@@ -521,7 +550,6 @@ export default function FeedStep2CoverProfile({
                     <div className="text-center p-4">
                       <Plus className="w-6 h-6 text-gray-400 mx-auto mb-1" />
                       <p className="text-xs text-gray-500">OG 이미지 업로드</p>
-                      <p className="text-[10px] text-gray-400 mt-1">1.91:1 비율로 자동 크롭</p>
                     </div>
                   )}
                 </div>
@@ -542,14 +570,6 @@ export default function FeedStep2CoverProfile({
                   }}
                 />
               </label>
-            </div>
-          )}
-
-          {!data.meta.ogImage && data.meta.kakaoThumbnail && (
-            <div className="p-3 bg-amber-50 rounded-lg">
-              <p className="text-xs text-amber-700">
-                ⚠️ OG 이미지를 설정하지 않으면 카카오톡 썸네일이 기본으로 사용됩니다.
-              </p>
             </div>
           )}
         </div>

@@ -381,65 +381,66 @@ export default function ThankYouStep5Publish({
 
           <div className="space-y-3">
             {/* OG Preview Card */}
-            <div className="max-w-[220px] mx-auto">
-              {meta.ogImage ? (
-                <div className="space-y-2">
-                  <div className="rounded-lg border border-stone-200 bg-white shadow-sm overflow-hidden">
-                    <div
-                      className="w-full bg-stone-100"
-                      style={{ aspectRatio: '1.91/1' }}
-                    >
-                      <img
-                        src={meta.ogImage}
-                        alt="OG 이미지"
-                        className="w-full h-full object-cover"
-                      />
+            <div className="max-w-[220px] mx-auto rounded-lg border border-stone-200 bg-white shadow-sm overflow-hidden">
+              {(meta.ogImage || meta.kakaoThumbnail) ? (
+                <div className="relative w-full bg-stone-100" style={{ aspectRatio: '1.91/1' }}>
+                  <img src={meta.ogImage || meta.kakaoThumbnail} alt="OG 이미지" className="w-full h-full object-cover" />
+                  {!meta.ogImage && meta.kakaoThumbnail && (
+                    <div className="absolute bottom-0 left-0 right-0 bg-amber-500/80 px-1 py-0.5">
+                      <p className="text-[8px] text-white text-center font-medium">카카오 썸네일 사용 중</p>
                     </div>
-                    <div className="px-2 py-1.5 border-t border-stone-100">
-                      <p className="text-[9px] text-stone-400 leading-tight">invite.deardrawer.com</p>
-                      <p className="text-[10px] font-medium text-stone-800 leading-tight mt-0.5 truncate">
-                        {meta.title || `${data.coupleNames || ''}의 감사 인사`}
-                      </p>
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-400 text-center">이미지는 1.91:1 비율로 자동 잘립니다</p>
-                  <div className="flex gap-2">
-                    <ImageUploader
-                      value=""
-                      onChange={(url) => updateMeta('ogImage', url)}
-                      invitationId={invitationId || undefined}
-                      placeholder="교체"
-                      aspectRatio="aspect-square"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => updateMeta('ogImage', '')}
-                      className="flex-1 px-3 py-2 text-xs text-red-500 hover:text-red-600 border border-red-200 hover:border-red-300 rounded-lg transition-colors"
-                    >
-                      삭제
-                    </button>
-                  </div>
+                  )}
                 </div>
               ) : (
-                <div className="space-y-2">
-                  <ImageUploader
-                    value={meta.ogImage}
-                    onChange={(url) => updateMeta('ogImage', url)}
-                    invitationId={invitationId || undefined}
-                    placeholder="OG 이미지 업로드"
-                    aspectRatio="aspect-square"
-                  />
-                  <p className="text-xs text-gray-400 text-center">이미지는 1.91:1 비율로 자동 잘립니다</p>
+                <div className="w-full bg-stone-100 flex items-center justify-center" style={{ aspectRatio: '1.91/1' }}>
+                  <span className="text-[10px] text-stone-400">이미지 미설정</span>
                 </div>
               )}
-            </div>
-
-            {!meta.ogImage && meta.kakaoThumbnail && (
-              <div className="p-3 bg-amber-50 rounded-lg">
-                <p className="text-xs text-amber-700">
-                  <svg className="w-3 h-3 text-amber-600 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
-                  OG 이미지를 설정하지 않으면 카카오톡 썸네일이 기본으로 사용됩니다.
+              <div className="px-2 py-1.5 border-t border-stone-100">
+                <p className="text-[9px] text-stone-400 leading-tight">invite.deardrawer.com</p>
+                <p className="text-[10px] font-medium text-stone-800 leading-tight mt-0.5 truncate">
+                  {meta.title || `${data.coupleNames || ''}의 감사 인사`}
                 </p>
+              </div>
+            </div>
+            <p className="text-xs text-gray-400 text-center">이미지는 1.91:1 비율로 자동 잘립니다</p>
+
+            {meta.ogImage ? (
+              <div className="flex gap-2 max-w-[220px] mx-auto">
+                <ImageUploader
+                  value=""
+                  onChange={(url) => updateMeta('ogImage', url)}
+                  invitationId={invitationId || undefined}
+                  placeholder="교체"
+                  aspectRatio="aspect-square"
+                />
+                <button
+                  type="button"
+                  onClick={() => updateMeta('ogImage', '')}
+                  className="flex-1 px-3 py-2 text-xs text-red-500 hover:text-red-600 border border-red-200 hover:border-red-300 rounded-lg transition-colors"
+                >
+                  삭제
+                </button>
+              </div>
+            ) : meta.kakaoThumbnail ? (
+              <div className="max-w-[220px] mx-auto">
+                <ImageUploader
+                  value=""
+                  onChange={(url) => updateMeta('ogImage', url)}
+                  invitationId={invitationId || undefined}
+                  placeholder="별도 OG 이미지로 교체하기"
+                  aspectRatio="aspect-square"
+                />
+              </div>
+            ) : (
+              <div className="max-w-[220px] mx-auto">
+                <ImageUploader
+                  value={meta.ogImage}
+                  onChange={(url) => updateMeta('ogImage', url)}
+                  invitationId={invitationId || undefined}
+                  placeholder="OG 이미지 업로드"
+                  aspectRatio="aspect-square"
+                />
               </div>
             )}
           </div>

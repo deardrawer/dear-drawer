@@ -451,77 +451,110 @@ export default function ParentsStep2Envelope({
 
         {/* OG 이미지 미리보기 및 업로드 */}
         <div className="space-y-3">
-          {data.meta?.ogImage ? (
-            <div className="max-w-[220px] mx-auto space-y-2">
-              <div className="rounded-lg border border-stone-200 bg-white shadow-sm overflow-hidden">
-                <div className="w-full bg-stone-100" style={{ aspectRatio: '1.91/1' }}>
-                  <img
-                    src={data.meta.ogImage}
-                    alt="OG 썸네일"
-                    className="w-full h-full object-cover"
-                  />
+          {(() => {
+            const kakaoThumb = typeof data.meta?.kakaoThumbnail === 'string' ? data.meta.kakaoThumbnail : (data.meta?.kakaoThumbnail as { url?: string })?.url || ''
+            return (
+              <>
+                <div className="max-w-[220px] mx-auto rounded-lg border border-stone-200 bg-white shadow-sm overflow-hidden">
+                  {(data.meta?.ogImage || kakaoThumb) ? (
+                    <div className="relative w-full bg-stone-100" style={{ aspectRatio: '1.91/1' }}>
+                      <img src={data.meta?.ogImage || kakaoThumb} alt="OG 썸네일" className="w-full h-full object-cover" />
+                      {!data.meta?.ogImage && kakaoThumb && (
+                        <div className="absolute bottom-0 left-0 right-0 bg-amber-500/80 px-1 py-0.5">
+                          <p className="text-[8px] text-white text-center font-medium">카카오 썸네일 사용 중</p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="w-full bg-stone-100 flex items-center justify-center" style={{ aspectRatio: '1.91/1' }}>
+                      <span className="text-[10px] text-stone-400">이미지 미설정</span>
+                    </div>
+                  )}
+                  <div className="px-2 py-1.5 border-t border-stone-100">
+                    <p className="text-[9px] text-stone-400 leading-tight">invite.deardrawer.com</p>
+                    <p className="text-[10px] font-medium text-stone-800 leading-tight mt-0.5 truncate">
+                      {data.meta?.title || `${data.groom.firstName || '신랑'} ♥ ${data.bride.firstName || '신부'} 결혼합니다`}
+                    </p>
+                  </div>
                 </div>
-                <div className="px-2 py-1.5 border-t border-stone-100">
-                  <p className="text-[9px] text-stone-400 leading-tight">invite.deardrawer.com</p>
-                  <p className="text-[10px] font-medium text-stone-800 leading-tight mt-0.5 truncate">
-                    {data.meta?.title || `${data.groom.firstName || '신랑'} ♥ ${data.bride.firstName || '신부'} 결혼합니다`}
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <label className="flex-1 text-center text-xs py-1.5 px-3 bg-gray-100 hover:bg-gray-200 rounded-md cursor-pointer transition-colors">
-                  교체
-                  <input
-                    type="file"
-                    className="hidden"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0]
-                      if (file) {
-                        handleImageUpload(file, 'og-image', (url) => {
-                          updateNestedData('meta.ogImage', url)
-                        })
-                        e.target.value = ''
-                      }
-                    }}
-                  />
-                </label>
-                <button
-                  type="button"
-                  onClick={() => updateNestedData('meta.ogImage', '')}
-                  className="text-xs py-1.5 px-3 bg-red-50 text-red-600 hover:bg-red-100 rounded-md transition-colors"
-                >
-                  삭제
-                </button>
-              </div>
-            </div>
-          ) : (
-            <label className="flex flex-col items-center justify-center max-w-[220px] mx-auto border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 relative"
-              style={{ aspectRatio: '1.91/1' }}
-            >
-              <div className="flex flex-col items-center justify-center p-4">
-                <Upload className="w-6 h-6 mb-1 text-gray-400" />
-                <p className="text-xs text-gray-500 text-center">클릭하여 업로드</p>
-                <p className="text-[10px] text-gray-400 mt-1">1200 x 630px</p>
-              </div>
-              <input
-                type="file"
-                className="hidden"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (file) {
-                    handleImageUpload(file, 'og-image', (url) => updateNestedData('meta.ogImage', url))
-                    e.target.value = ''
-                  }
-                }}
-              />
-              {uploadingImages.has('og-image') && (
-                <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-lg">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900" />
-                </div>
-              )}
-            </label>
+
+                {data.meta?.ogImage ? (
+                  <div className="flex gap-2 justify-center">
+                    <label className="text-center text-xs py-1.5 px-3 bg-gray-100 hover:bg-gray-200 rounded-md cursor-pointer transition-colors">
+                      교체
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) {
+                            handleImageUpload(file, 'og-image', (url) => {
+                              updateNestedData('meta.ogImage', url)
+                            })
+                            e.target.value = ''
+                          }
+                        }}
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => updateNestedData('meta.ogImage', '')}
+                      className="text-xs py-1.5 px-3 bg-red-50 text-red-600 hover:bg-red-100 rounded-md transition-colors"
+                    >
+                      삭제
+                    </button>
+                  </div>
+                ) : kakaoThumb ? (
+                  <label className="flex items-center justify-center w-full h-10 border border-amber-300 bg-amber-50 rounded-lg cursor-pointer hover:bg-amber-100 transition-colors relative">
+                    <span className="text-[11px] text-amber-700 font-medium">
+                      {uploadingImages.has('og-image') ? '업로드 중...' : '별도 OG 이미지로 교체하기'}
+                    </span>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      disabled={uploadingImages.has('og-image')}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) {
+                          handleImageUpload(file, 'og-image', (url) => updateNestedData('meta.ogImage', url))
+                          e.target.value = ''
+                        }
+                      }}
+                    />
+                  </label>
+                ) : (
+                  <label className="flex flex-col items-center justify-center max-w-[220px] mx-auto border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 relative"
+                    style={{ aspectRatio: '1.91/1' }}
+                  >
+                    <div className="flex flex-col items-center justify-center p-4">
+                      <Upload className="w-6 h-6 mb-1 text-gray-400" />
+                      <p className="text-xs text-gray-500 text-center">클릭하여 업로드</p>
+                      <p className="text-[10px] text-gray-400 mt-1">1200 x 630px</p>
+                    </div>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) {
+                          handleImageUpload(file, 'og-image', (url) => updateNestedData('meta.ogImage', url))
+                          e.target.value = ''
+                        }
+                      }}
+                    />
+                    {uploadingImages.has('og-image') && (
+                      <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-lg">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900" />
+                      </div>
+                    )}
+                  </label>
+                )}
+              </>
+            )
+          })()}
           )}
         </div>
 

@@ -2900,7 +2900,7 @@ function InvitationClientRecordContent({
                       rsvpMealOption: invitation.rsvpMealOption, rsvpShuttleOption: invitation.rsvpShuttleOption, rsvpNotice: invitation.rsvpNotice,
                       invitationId: dbInvitation.id, groomName: invitation.groom?.name || '', brideName: invitation.bride?.name || '',
                       weddingDate: invitation.wedding?.date || '', weddingTime: invitation.wedding?.timeDisplay || invitation.wedding?.time || '',
-                      thumbnailUrl: content?.meta?.kakaoThumbnail || content?.meta?.ogImage || extractImageUrl(invitation.media?.coverImage) || '',
+                      thumbnailUrl: content?.meta?.kakaoThumbnail || content?.meta?.ogImage || extractImageUrl(invitation.media?.coverImage) || extractImageUrl(invitation.gallery?.images?.[0]) || '',
                       shareTitle: content?.meta?.title, shareDescription: content?.meta?.description, kakaoThumbnailRatio: content?.meta?.kakaoThumbnailRatio }} />
                   <MiniPlayerBar currentTrack={currentTrack} progress={progress} isAudioPlaying={isAudioPlaying} fonts={fonts} tc={tc} />
                 </>

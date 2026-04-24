@@ -2629,7 +2629,7 @@ function InvitationClientMagazineContent({
                     brideName: invitation.bride?.name || '',
                     weddingDate: invitation.wedding?.date || '',
                     weddingTime: invitation.wedding?.timeDisplay || invitation.wedding?.time || '',
-                    thumbnailUrl: content?.meta?.kakaoThumbnail || content?.meta?.ogImage || extractImageUrl(invitation.media?.coverImage) || '',
+                    thumbnailUrl: content?.meta?.kakaoThumbnail || content?.meta?.ogImage || extractImageUrl(invitation.media?.coverImage) || extractImageUrl(invitation.gallery?.images?.[0]) || '',
                     shareTitle: content?.meta?.title,
                     shareDescription: content?.meta?.description,
                     kakaoThumbnailRatio: content?.meta?.kakaoThumbnailRatio,

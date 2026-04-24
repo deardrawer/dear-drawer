@@ -172,6 +172,11 @@ function EditorContent() {
               router.push(`/editor/thank-you?id=${editId}${adminParam}`)
               return
             }
+            // THE-SIMPLE 템플릿이면 the-simple 에디터로 리다이렉트
+            if (inv.template_id === 'narrative-the-simple') {
+              router.push(`/editor/the-simple?id=${editId}${adminParam}`)
+              return
+            }
             // RECORD 템플릿은 공유 에디터 사용 (리다이렉트 불필요)
             // content 필드에서 전체 데이터 파싱
             if (inv.content) {

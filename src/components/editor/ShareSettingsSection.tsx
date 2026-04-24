@@ -270,9 +270,14 @@ export default function ShareSettingsSection({ invitationId }: ShareSettingsSect
         <div className="space-y-3">
           {/* OG 미리보기 카드 */}
           <div className="max-w-[220px] mx-auto rounded-lg border border-stone-200 bg-white shadow-sm overflow-hidden">
-            {invitation.meta.ogImage ? (
-              <div className="w-full bg-stone-100" style={{ aspectRatio: '1.91/1' }}>
-                <img src={invitation.meta.ogImage} alt="OG preview" className="w-full h-full object-cover" />
+            {(invitation.meta.ogImage || invitation.meta.kakaoThumbnail) ? (
+              <div className="relative w-full bg-stone-100" style={{ aspectRatio: '1.91/1' }}>
+                <img src={invitation.meta.ogImage || invitation.meta.kakaoThumbnail} alt="OG preview" className="w-full h-full object-cover" />
+                {!invitation.meta.ogImage && invitation.meta.kakaoThumbnail && (
+                  <div className="absolute bottom-0 left-0 right-0 bg-amber-500/80 px-1 py-0.5">
+                    <p className="text-[8px] text-white text-center font-medium">카카오 썸네일 사용 중</p>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="w-full bg-stone-100 flex items-center justify-center" style={{ aspectRatio: '1.91/1' }}>
@@ -314,6 +319,23 @@ export default function ShareSettingsSection({ invitationId }: ShareSettingsSect
                 삭제
               </button>
             </div>
+          ) : invitation.meta.kakaoThumbnail ? (
+            <label className="flex items-center justify-center w-full h-10 border border-amber-300 bg-amber-50 rounded-lg cursor-pointer hover:bg-amber-100 transition-colors">
+              <span className="text-[11px] text-amber-700 font-medium">
+                {ogUploading ? '업로드 중...' : '별도 OG 이미지로 교체하기'}
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                disabled={ogUploading}
+                onChange={(e) => {
+                  const f = e.target.files?.[0]
+                  if (f) handleUpload(f, 'og')
+                  e.target.value = ''
+                }}
+              />
+            </label>
           ) : (
             <label className="flex items-center justify-center w-full h-10 border-2 border-dashed border-stone-200 rounded-lg cursor-pointer hover:border-stone-300 transition-colors">
               <span className="text-[11px] text-stone-400">
@@ -331,12 +353,6 @@ export default function ShareSettingsSection({ invitationId }: ShareSettingsSect
                 }}
               />
             </label>
-          )}
-
-          {!invitation.meta.ogImage && invitation.meta.kakaoThumbnail && (
-            <p className="text-[10px] text-amber-600 bg-amber-50 rounded px-2 py-1.5">
-              OG 이미지를 설정하지 않으면 카카오톡 썸네일이 기본으로 사용됩니다.
-            </p>
           )}
         </div>
       </section>

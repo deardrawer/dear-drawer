@@ -45,6 +45,28 @@ export default function DirectionEditor({ value, onChange }: DirectionEditorProp
       </label>
 
       <div className="pt-2 border-t border-stone-100">
+        <p className="text-[10px] uppercase tracking-wider text-stone-400 mb-2">표시 옵션</p>
+        <label className="flex items-center gap-2 mb-1.5 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={value.showMap !== false}
+            onChange={(e) => onChange({ ...value, showMap: e.target.checked })}
+            className="accent-stone-600 w-3.5 h-3.5"
+          />
+          <span className="text-[11px] text-stone-600">지도 표시</span>
+        </label>
+        <label className="flex items-center gap-2 mb-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={value.showNavButtons !== false}
+            onChange={(e) => onChange({ ...value, showNavButtons: e.target.checked })}
+            className="accent-stone-600 w-3.5 h-3.5"
+          />
+          <span className="text-[11px] text-stone-600">길찾기 버튼 표시</span>
+        </label>
+      </div>
+
+      <div className="pt-2 border-t border-stone-100">
         <p className="text-[10px] uppercase tracking-wider text-stone-400 mb-2">교통편 안내</p>
         <p className="text-[10px] text-stone-400 mb-3">입력한 항목만 청첩장에 표시됩니다.</p>
         {TRANSPORT_FIELDS.map((field) => (

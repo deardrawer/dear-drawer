@@ -126,6 +126,7 @@ export interface SectionContents {
     eyebrow: string
     timeLabel: string
     placeLabel: string
+    showVenue?: boolean
     showCountdown?: boolean
     countdownBeforeMsg?: string
     countdownTodayMsg?: string
@@ -133,6 +134,8 @@ export interface SectionContents {
   }
   direction: {
     eyebrow: string
+    showMap?: boolean
+    showNavButtons?: boolean
     transport?: {
       car?: string
       bus?: string
@@ -374,13 +377,16 @@ const defaultData: TheSimpleInvitationData = {
       eyebrow: 'Wedding Date',
       timeLabel: 'Time',
       placeLabel: 'Place',
-      showCountdown: false,
+      showVenue: false,
+      showCountdown: true,
       countdownBeforeMsg: '결혼식이 {d}일 남았습니다.',
       countdownTodayMsg: '오늘 결혼합니다.',
       countdownAfterMsg: '행복하고 따뜻하게 살겠습니다.',
     },
     direction: {
       eyebrow: 'Direction',
+      showMap: true,
+      showNavButtons: true,
       transport: {
         car: '내비게이션 "그랜드 하얏트 서울" 검색\n주차장 2시간 무료 (웨딩홀 도장 지참)',
         bus: '강남역 2번 출구 앞 472번, 741번\n그랜드 하얏트 정류장 하차 도보 3분',

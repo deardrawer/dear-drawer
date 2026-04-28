@@ -53,6 +53,16 @@ export default function InfoEditor({ value, onChange }: InfoEditorProps) {
           />
         </label>
       </div>
+      {/* 예식장 정보 표시 */}
+      <label className="flex items-center gap-2 cursor-pointer pt-1">
+        <input
+          type="checkbox"
+          checked={value.showVenue ?? false}
+          onChange={(e) => update({ showVenue: e.target.checked })}
+          className="rounded border-stone-300"
+        />
+        <span className="text-[10px] uppercase tracking-wider text-stone-500">예식장 정보 표시</span>
+      </label>
       {/* D-Day 카운트다운 옵션 */}
       <label className="flex items-center gap-2 cursor-pointer pt-1">
         <input

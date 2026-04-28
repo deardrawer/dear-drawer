@@ -59,7 +59,7 @@ export const SECTION_META: Record<string, SectionMetaItem> = {
     variantLabels: { 1: '클래식', 2: '카드', 3: '가로사진' },
   },
   info: {
-    label: '예식 정보',
+    label: '예식일정',
     variantCount: 5,
     optional: false,
     variantLabels: { 1: '캘린더', 2: '빅데이트', 3: '주간', 4: '티켓', 5: '카운트다운' },

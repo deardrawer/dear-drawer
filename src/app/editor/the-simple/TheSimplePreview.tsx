@@ -907,6 +907,41 @@ function TransportInfo({ transport }: { transport?: Record<string, string | unde
   )
 }
 
+function NavButtons({ address }: { address: string }) {
+  const encoded = encodeURIComponent(address)
+  const links = [
+    { label: '카카오맵', url: `https://map.kakao.com/link/search/${encoded}` },
+    { label: '네이버지도', url: `https://map.naver.com/v5/search/${encoded}` },
+    { label: '티맵', url: `https://tmap.life/search?query=${encoded}` },
+  ]
+  return (
+    <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+      {links.map((l) => (
+        <a
+          key={l.label}
+          href={l.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            flex: 1,
+            textAlign: 'center',
+            padding: '8px 0',
+            border: 'none',
+            background: 'var(--point)',
+            fontFamily: 'var(--font-ko)',
+            fontSize: 11,
+            color: '#fff',
+            textDecoration: 'none',
+            letterSpacing: '0.02em',
+          }}
+        >
+          {l.label}
+        </a>
+      ))}
+    </div>
+  )
+}
+
 /* ==========================================================================
  * GalleryV1Feature — 피처+썸네일 자동 슬라이드 (V1)
  * 메인 이미지 자동 페이드 전환 + 하단 썸네일 클릭 네비게이션.
@@ -2805,8 +2840,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <div className="ts-i2-divider ts-anim-item" />
               <div className="ts-i2-meta ts-anim-item">
                 <div><b>TIME</b>{timeDisplay}</div>
-                <div><b>PLACE</b>{venueName}</div>
-                {venueHall && <div><b>HALL</b>{venueHall}</div>}
+                {data.sections.info.showVenue && <div><b>PLACE</b>{venueName}</div>}
+                {data.sections.info.showVenue && venueHall && <div><b>HALL</b>{venueHall}</div>}
               </div>
               {data.sections.info.showCountdown && (
                 <div className="ts-countdown-inline ts-cd-v2 ts-anim-item">
@@ -2854,10 +2889,12 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               </div>
               <div className="ts-i3-foot ts-anim-item">
                 <b>{weddingMeta.weekday} · {timeDisplay}</b>
-                <div className="ts-i3-venue">
-                  <span className="ts-venue-name">{venueName}</span>
-                  {venueHall && <><br /><span className="ts-venue-hall">{venueHall}</span></>}
-                </div>
+                {data.sections.info.showVenue && (
+                  <div className="ts-i3-venue">
+                    <span className="ts-venue-name">{venueName}</span>
+                    {venueHall && <><br /><span className="ts-venue-hall">{venueHall}</span></>}
+                  </div>
+                )}
               </div>
               {data.sections.info.showCountdown && (
                 <div className="ts-countdown-inline ts-cd-v3 ts-anim-item">
@@ -2887,8 +2924,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 <div className="ts-i4-bot ts-anim-item">
                   <div><b>Date</b>{weddingMeta.y}.{String(weddingMeta.m).padStart(2, '0')}.{String(weddingMeta.d).padStart(2, '0')} {weddingMeta.weekday}</div>
                   <div><b>Time</b>{timeDisplay}</div>
-                  <div><b>Venue</b>{venueName}</div>
-                  {venueHall && <div><b>Hall</b>{venueHall}</div>}
+                  {data.sections.info.showVenue && <div><b>Venue</b>{venueName}</div>}
+                  {data.sections.info.showVenue && venueHall && <div><b>Hall</b>{venueHall}</div>}
                 </div>
               </div>
               {data.sections.info.showCountdown && (
@@ -2946,8 +2983,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <div className="ts-i5-rows ts-anim-item">
                 <div className="ts-i5-row"><b>DATE</b><span>{weddingMeta.m}월 {weddingMeta.d}일 {weddingMeta.weekday}</span></div>
                 <div className="ts-i5-row"><b>TIME</b><span>{timeDisplay}</span></div>
-                <div className="ts-i5-row"><b>VENUE</b><span>{venueName}</span></div>
-                {venueHall && <div className="ts-i5-row"><b>HALL</b><span>{venueHall}</span></div>}
+                {data.sections.info.showVenue && <div className="ts-i5-row"><b>VENUE</b><span>{venueName}</span></div>}
+                {data.sections.info.showVenue && venueHall && <div className="ts-i5-row"><b>HALL</b><span>{venueHall}</span></div>}
               </div>
               {data.sections.info.showCountdown && (
                 <div className="ts-countdown-inline ts-cd-v5 ts-anim-item">
@@ -2997,10 +3034,12 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               </div>
             ))}
           </div>
-          <div className="ts-i1-venue ts-anim-item">
-            <span className="ts-venue-name">{venueName}</span>
-            {venueHall && <><br /><span className="ts-venue-hall">{venueHall}</span></>}
-          </div>
+          {data.sections.info.showVenue && (
+            <div className="ts-i1-venue ts-anim-item">
+              <span className="ts-venue-name">{venueName}</span>
+              {venueHall && <><br /><span className="ts-venue-hall">{venueHall}</span></>}
+            </div>
+          )}
           {data.sections.info.showCountdown && (
             <div className="ts-countdown-inline ts-cd-v1 ts-anim-item">
               <LiveCountdown
@@ -3022,10 +3061,12 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         return (
           <AnimatedSection className="ts-sec ts-dir ts-anim-dir-v2" key={`direction-${v}`}>
             <div className="ts-eyebrow">{direction.eyebrow}</div>
-            <div className="ts-anim-item" style={{ marginBottom: 10 }}>
-              <KakaoMapBox address={venueAddress} venueName={venueName} aspectRatio="4 / 3" />
-            </div>
-            <div className="ts-anim-item" style={{ background: 'var(--card)', padding: '18px 16px', textAlign: 'center' }}>
+            {direction.showMap !== false && (
+              <div className="ts-anim-item" style={{ marginBottom: 10 }}>
+                <KakaoMapBox address={venueAddress} venueName={venueName} aspectRatio="4 / 3" />
+              </div>
+            )}
+            <div className="ts-anim-item" style={{ border: '1px solid var(--line)', padding: '18px 16px', textAlign: 'center' }}>
               <div style={{ fontFamily: 'var(--font-display)', fontSize: 16, letterSpacing: '0.08em', color: 'var(--ink)', marginBottom: 4 }}>
                 {venueName}
               </div>
@@ -3035,6 +3076,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <div style={{ width: 24, height: 1, background: 'var(--line)', margin: '0 auto 10px' }} />
               <AddressCopy address={venueAddress} />
             </div>
+            {direction.showNavButtons !== false && <NavButtons address={venueAddress} />}
             <TransportInfo transport={direction.transport} />
           </AnimatedSection>
         )
@@ -3046,18 +3088,21 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
           <AnimatedSection className="ts-sec ts-dir ts-anim-dir-v3" key={`direction-${v}`}>
             <div className="ts-eyebrow">{direction.eyebrow}</div>
             <div className="ts-anim-item" style={{ textAlign: 'center', padding: '12px 0 18px' }}>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, letterSpacing: '0.06em', color: 'var(--point)', marginBottom: 6 }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, letterSpacing: '0.06em', color: 'var(--point)', marginBottom: venueHall ? 4 : 6 }}>
                 {venueName}
               </div>
-              <div style={{ width: 30, height: 1, background: 'var(--line)', margin: '0 auto 10px' }} />
-              <AddressCopy address={venueAddress} />
-              {venueHall && <p style={{ fontFamily: 'var(--font-display)', fontSize: 10, letterSpacing: '0.2em', color: 'var(--accent)', textTransform: 'uppercase', marginTop: 6 }}>
+              {venueHall && <p style={{ fontFamily: 'var(--font-display)', fontSize: 10, letterSpacing: '0.2em', color: 'var(--accent)', textTransform: 'uppercase', marginBottom: 6 }}>
                 {venueHall}
               </p>}
+              <div style={{ width: 30, height: 1, background: 'var(--line)', margin: '0 auto 10px' }} />
+              <AddressCopy address={venueAddress} />
             </div>
-            <div className="ts-anim-item">
-              <KakaoMapBox address={venueAddress} venueName={venueName} aspectRatio="16 / 9" />
-            </div>
+            {direction.showMap !== false && (
+              <div className="ts-anim-item">
+                <KakaoMapBox address={venueAddress} venueName={venueName} aspectRatio="16 / 9" />
+              </div>
+            )}
+            {direction.showNavButtons !== false && <NavButtons address={venueAddress} />}
             <TransportInfo transport={direction.transport} />
           </AnimatedSection>
         )
@@ -3069,9 +3114,11 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
           <AnimatedSection className="ts-sec ts-dir ts-anim-dir-v4" key={`direction-${v}`}>
             <div className="ts-eyebrow">{direction.eyebrow}</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12, marginTop: 8 }}>
-              <div className="ts-anim-item">
-                <KakaoMapBox address={venueAddress} venueName={venueName} aspectRatio="3 / 2" />
-              </div>
+              {direction.showMap !== false && (
+                <div className="ts-anim-item">
+                  <KakaoMapBox address={venueAddress} venueName={venueName} aspectRatio="3 / 2" />
+                </div>
+              )}
               <div className="ts-anim-card" style={{ border: '1px solid var(--line)', padding: '16px 14px', background: 'var(--card)' }}>
                 <div style={{ fontFamily: 'var(--font-display)', fontSize: 9, letterSpacing: '0.2em', color: 'var(--point)', textTransform: 'uppercase', marginBottom: 4 }}>
                   Venue
@@ -3088,6 +3135,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 <AddressCopy address={venueAddress} />
               </div>
             </div>
+            {direction.showNavButtons !== false && <NavButtons address={venueAddress} />}
             <TransportInfo transport={direction.transport} />
           </AnimatedSection>
         )
@@ -3098,9 +3146,11 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         return (
           <AnimatedSection className="ts-sec ts-dir ts-anim-dir-v5" key={`direction-${v}`}>
             <div className="ts-eyebrow">{direction.eyebrow}</div>
-            <div className="ts-anim-item" style={{ marginBottom: 14 }}>
-              <KakaoMapBox address={venueAddress} venueName={venueName} aspectRatio="16 / 10" />
-            </div>
+            {direction.showMap !== false && (
+              <div className="ts-anim-item" style={{ marginBottom: 14 }}>
+                <KakaoMapBox address={venueAddress} venueName={venueName} aspectRatio="16 / 10" />
+              </div>
+            )}
             <div className="ts-anim-item" style={{ display: 'flex', alignItems: 'baseline', gap: 16, padding: '14px 0', borderTop: '1px solid var(--line)', borderBottom: '1px solid var(--line)' }}>
               <div style={{ fontFamily: 'var(--font-display)', fontSize: 10, letterSpacing: '0.2em', color: 'var(--mute)', textTransform: 'uppercase', flexShrink: 0, width: 70 }}>
                 Venue
@@ -3115,6 +3165,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               </div>
               <AddressCopy address={venueAddress} />
             </div>
+            {direction.showNavButtons !== false && <NavButtons address={venueAddress} />}
             <TransportInfo transport={direction.transport} />
           </AnimatedSection>
         )
@@ -3124,13 +3175,19 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       return (
         <AnimatedSection className="ts-sec ts-dir ts-anim-dir-v1" key={`direction-${v}`}>
           <div className="ts-eyebrow">{direction.eyebrow}</div>
-          <div className="ts-dir-name ts-anim-item">{venueName}</div>
-          <div className="ts-anim-item">
-            <KakaoMapBox address={venueAddress} venueName={venueName} className="ts-dir-map" />
+          {direction.showMap !== false && (
+            <div className="ts-anim-item">
+              <KakaoMapBox address={venueAddress} venueName={venueName} className="ts-dir-map" />
+            </div>
+          )}
+          <div className="ts-dir-name ts-anim-item">
+            {venueName}
+            {venueHall && <div style={{ fontFamily: 'var(--font-ko)', fontSize: 13, fontStyle: 'normal', color: 'var(--mute)', marginTop: 2 }}>{venueHall}</div>}
           </div>
           <div className="ts-dir-addr ts-anim-item">
             <AddressCopy address={venueAddress} />
           </div>
+          {direction.showNavButtons !== false && <NavButtons address={venueAddress} />}
           <TransportInfo transport={direction.transport} />
         </AnimatedSection>
       )

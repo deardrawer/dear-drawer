@@ -915,7 +915,7 @@ function NavButtons({ address }: { address: string }) {
     { label: '티맵', url: `https://tmap.life/search?query=${encoded}` },
   ]
   return (
-    <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+    <div className="ts-nav-buttons" style={{ display: 'flex', gap: 8, marginTop: 12 }}>
       {links.map((l) => (
         <a
           key={l.label}

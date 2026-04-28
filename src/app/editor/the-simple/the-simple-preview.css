@@ -1302,7 +1302,8 @@
   color: var(--point);
 }
 .ts-preview .ts-i1-sub {
-  font-size: calc(12px * var(--ts-font-scale, 1));
+  font-size: calc(14px * var(--ts-font-scale, 1));
+  font-weight: 600;
   color: var(--mute);
   letter-spacing: 0.2em;
   line-height: 1.4;
@@ -3189,9 +3190,13 @@
 .ts-preview .ts-anim-dir-v5.in-view .ts-anim-item:nth-child(3) { animation: tsFadeUp 0.7s var(--ts-ease) 400ms both; }
 .ts-preview .ts-anim-dir-v5.in-view .ts-anim-item:nth-child(4) { animation: tsFadeUp 0.7s var(--ts-ease) 550ms both; }
 
+/* NavButtons — 길찾기 버튼 공통 */
+.ts-preview [class*="ts-anim-dir-"] .ts-nav-buttons { opacity: 0; }
+.ts-preview [class*="ts-anim-dir-"].in-view .ts-nav-buttons { animation: tsFadeUp 0.6s var(--ts-ease) 600ms both; }
+
 /* Transport Info — 교통편 공통 */
 .ts-preview [class*="ts-anim-dir-"] .ts-transport { opacity: 0; }
-.ts-preview [class*="ts-anim-dir-"].in-view .ts-transport { animation: tsFadeUp 0.7s var(--ts-ease) 700ms both; }
+.ts-preview [class*="ts-anim-dir-"].in-view .ts-transport { animation: tsFadeUp 0.7s var(--ts-ease) 800ms both; }
 
 /* ---------- INTERVIEW ---------- */
 /* V1 기존 */

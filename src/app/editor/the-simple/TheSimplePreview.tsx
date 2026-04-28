@@ -165,6 +165,7 @@ function PhotoSlideBox({
 }) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [started, setStarted] = useState(delay === 0)
+  const resetKey = useRef(0)
 
   // 초기 지연 타이머
   useEffect(() => {
@@ -173,14 +174,20 @@ function PhotoSlideBox({
     return () => clearTimeout(t)
   }, [delay])
 
-  // 자동 전환 (5초 간격)
+  // 자동 전환 (5초 간격) — resetKey 변경 시 타이머 재시작
   useEffect(() => {
     if (!started || photos.length <= 1) return
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % photos.length)
     }, 5000)
     return () => clearInterval(interval)
-  }, [started, photos.length])
+  }, [started, photos.length, resetKey.current]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 클릭 시 다음 사진으로 전환 + 자동 슬라이드 타이머 리셋
+  const handleClick = () => {
+    setCurrentIndex((prev) => (prev + 1) % photos.length)
+    resetKey.current += 1
+  }
 
   // 1장 이하: 기존 PhotoBox와 동일
   if (photos.length <= 1) {
@@ -194,12 +201,14 @@ function PhotoSlideBox({
   return (
     <div className={className} style={{ position: 'relative', width: widthStyle, flexShrink: 0 }}>
       <div
+        onClick={handleClick}
         style={{
           position: 'relative',
           width: '100%',
           aspectRatio: aspect,
           borderRadius: radius,
           overflow: 'hidden',
+          cursor: 'pointer',
         }}
       >
         {photos.map((photo, i) => (

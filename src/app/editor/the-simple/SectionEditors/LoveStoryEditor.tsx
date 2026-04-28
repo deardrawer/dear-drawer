@@ -243,6 +243,15 @@ export default function LoveStoryEditor({ value, onChange }: LoveStoryEditorProp
             )}
           </div>
 
+          {/* 타이틀 (V5 타임라인용) */}
+          <input
+            type="text"
+            value={item.title || ''}
+            onChange={(e) => updateItem(i, { title: e.target.value })}
+            placeholder="타이틀 (예: First Meet)"
+            className="w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white"
+          />
+
           {/* 본문 */}
           <textarea
             value={item.body}

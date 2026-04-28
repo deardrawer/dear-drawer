@@ -144,6 +144,11 @@ interface SectionListPanelProps {
   onRemoveInstance?: (sectionId: string) => void
   /** 복제 가능한 타입을 추가하는 핸들러 */
   onAddInstance?: (type: string) => void
+  /** 섹션 배경 토글 관련 props */
+  sectionBgMode?: 'plain' | 'tinted'
+  tintedColor?: string
+  sectionBgMap?: Record<string, 'default' | 'tinted'>
+  onToggleSectionBg?: (sectionId: string) => void
 }
 
 export default function SectionListPanel({
@@ -157,6 +162,10 @@ export default function SectionListPanel({
   onToggleVisibility,
   onRemoveInstance,
   onAddInstance,
+  sectionBgMode,
+  tintedColor,
+  sectionBgMap,
+  onToggleSectionBg,
 }: SectionListPanelProps) {
   // 아코디언 펼침 상태 (섹션 인스턴스 ID 집합)
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
@@ -211,6 +220,9 @@ export default function SectionListPanel({
               typeCounts[type] > 1 ? `${meta.label} ${typeProgress[type]}` : meta.label
             // 복제 가능한 타입 && 콜백 존재 시 삭제 버튼 활성화
             const canRemove = duplicableTypes.includes(type) && !!onRemoveInstance
+            // 섹션 배경 상태 결정
+            const bgOverride = sectionBgMap?.[id]
+            const isTinted = bgOverride === 'tinted' || (bgOverride === undefined && sectionBgMode === 'tinted' && index % 2 === 1)
             return (
               <SortableSection
                 key={id}
@@ -232,6 +244,9 @@ export default function SectionListPanel({
                 }
                 onRemove={canRemove ? () => onRemoveInstance!(id) : undefined}
                 content={renderSectionContent?.(id)}
+                isTinted={sectionBgMode === 'tinted' ? isTinted : undefined}
+                tintedColor={tintedColor}
+                onToggleSectionBg={sectionBgMode === 'tinted' && onToggleSectionBg ? () => onToggleSectionBg(id) : undefined}
               />
             )
           })}
@@ -282,6 +297,10 @@ interface SortableSectionProps {
   onToggleVisibility?: () => void
   onRemove?: () => void
   content?: React.ReactNode
+  /** tinted 모드일 때 이 섹션이 틴트 배경인지 */
+  isTinted?: boolean
+  tintedColor?: string
+  onToggleSectionBg?: () => void
 }
 
 function SortableSection({
@@ -300,6 +319,9 @@ function SortableSection({
   onToggleVisibility,
   onRemove,
   content,
+  isTinted,
+  tintedColor,
+  onToggleSectionBg,
 }: SortableSectionProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
 
@@ -344,6 +366,21 @@ function SortableSection({
 
         {/* Label */}
         <span className="flex-1 text-sm text-stone-800 truncate">{label}</span>
+
+        {/* Section background toggle (tinted mode) */}
+        {onToggleSectionBg && (
+          <button
+            type="button"
+            onClick={onToggleSectionBg}
+            aria-label={isTinted ? '배경 끄기' : '배경 켜기'}
+            title={isTinted ? '틴트 배경 ON' : '기본 배경'}
+            className="w-5 h-5 rounded-full border-2 transition-all hover:scale-110 flex-shrink-0"
+            style={{
+              background: isTinted ? (tintedColor || '#FAF8F5') : '#ffffff',
+              borderColor: isTinted ? '#999' : '#d4d4d4',
+            }}
+          />
+        )}
 
         {/* Visibility toggle (optional only) */}
         {onToggleVisibility && (

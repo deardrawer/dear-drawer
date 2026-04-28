@@ -203,6 +203,7 @@ export interface SectionContents {
  * 러브스토리 개별 아이템
  */
 export interface LoveStoryItem {
+  title?: string
   body: string
   photo1?: ImageWithSettings
   photo2?: ImageWithSettings
@@ -257,6 +258,17 @@ export interface TheSimpleInvitationData {
   // 구분선 스타일 (1~5)
   // 1=line, 2=dots, 3=dashed, 4=double, 5=ornament
   dividerVariant: number
+
+  // 포인트 컬러 (디바이더, eyebrow, 달력 등에 적용)
+  pointColor?: string
+  // 카드/박스 배경색 (인터뷰, 안내, 감사인사 등 박스형 UI)
+  cardBg?: string
+  // 섹션 배경 모드 ('plain' = 전체 흰색, 'tinted' = 짝수 섹션에 틴트 배경)
+  sectionBgMode?: 'plain' | 'tinted'
+  // 틴트 배경 색상 (sectionBgMode === 'tinted' 일 때 사용)
+  tintedColor?: string
+  // 섹션별 배경 오버라이드 (기본 규칙 대신 개별 설정)
+  sectionBgMap?: Record<string, 'default' | 'tinted'>
 
   // 폰트 설정 (매거진 에디터와 동일 목록)
   displayFont?: string // 영문 디스플레이 폰트 id (fontOptions.DISPLAY_FONTS)
@@ -452,6 +464,11 @@ const defaultData: TheSimpleInvitationData = {
   lightboxVariant: 1,
   coverVariant: 0,
   dividerVariant: 1,
+  pointColor: '#B8A88A',
+  cardBg: '#f5f5f5',
+  sectionBgMode: 'plain',
+  tintedColor: '#FAF8F5',
+  sectionBgMap: {},
   displayFont: DEFAULT_DISPLAY_FONT_ID,
   fontStyle: DEFAULT_KOREAN_FONT_ID,
   fontScale: 1,
@@ -1519,6 +1536,158 @@ function TheSimpleEditorContent() {
                       </div>
                     </div>
 
+                    {/* 포인트 컬러 */}
+                    <div className="space-y-2">
+                      <span className="text-xs text-stone-500">포인트 컬러</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {[
+                          { label: '골드', value: '#B8A88A' },
+                          { label: '로즈', value: '#C4A0A0' },
+                          { label: '라벤더', value: '#A8A0C0' },
+                          { label: '민트', value: '#8CB8A8' },
+                          { label: '코랄', value: '#C8968C' },
+                          { label: '스카이', value: '#8CACC8' },
+                          { label: '그레이', value: '#999999' },
+                          { label: '블랙', value: '#333333' },
+                        ].map(({ label, value }) => {
+                          const active = (data.pointColor || '#B8A88A') === value
+                          return (
+                            <button
+                              key={value}
+                              type="button"
+                              onClick={() => updateData({ pointColor: value })}
+                              title={label}
+                              className={`w-7 h-7 rounded-full border-2 transition-all ${
+                                active ? 'border-stone-900 scale-110' : 'border-stone-200 hover:border-stone-400'
+                              }`}
+                              style={{ background: value }}
+                            />
+                          )
+                        })}
+                        <label
+                          className="w-7 h-7 rounded-full border-2 border-dashed border-stone-300 flex items-center justify-center cursor-pointer hover:border-stone-500 overflow-hidden"
+                          title="커스텀 컬러"
+                        >
+                          <input
+                            type="color"
+                            value={data.pointColor || '#B8A88A'}
+                            onChange={(e) => updateData({ pointColor: e.target.value })}
+                            className="absolute w-0 h-0 opacity-0"
+                          />
+                          <span className="text-[9px] text-stone-400">+</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* 카드 배경 */}
+                    <div className="space-y-2">
+                      <span className="text-xs text-stone-500">카드 배경</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {[
+                          { label: '라이트그레이', value: '#f5f5f5' },
+                          { label: '웜그레이', value: '#f0eeeb' },
+                          { label: '화이트', value: '#ffffff' },
+                          { label: '베이지', value: '#f5f0eb' },
+                          { label: '라벤더', value: '#f0edf5' },
+                          { label: '민트', value: '#edf5f2' },
+                          { label: '피치', value: '#f5edea' },
+                          { label: '스카이', value: '#edf2f5' },
+                        ].map(({ label, value }) => {
+                          const active = (data.cardBg || '#f5f5f5') === value
+                          return (
+                            <button
+                              key={value}
+                              type="button"
+                              onClick={() => updateData({ cardBg: value })}
+                              title={label}
+                              className={`w-7 h-7 rounded-full border-2 transition-all ${
+                                active ? 'border-stone-900 scale-110' : 'border-stone-200 hover:border-stone-400'
+                              }`}
+                              style={{ background: value }}
+                            />
+                          )
+                        })}
+                        <label
+                          className="w-7 h-7 rounded-full border-2 border-dashed border-stone-300 flex items-center justify-center cursor-pointer hover:border-stone-500 overflow-hidden"
+                          title="커스텀 컬러"
+                        >
+                          <input
+                            type="color"
+                            value={data.cardBg || '#f5f5f5'}
+                            onChange={(e) => updateData({ cardBg: e.target.value })}
+                            className="absolute w-0 h-0 opacity-0"
+                          />
+                          <span className="text-[9px] text-stone-400">+</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* 섹션 배경 */}
+                    <div className="space-y-2">
+                      <span className="text-xs text-stone-500">섹션 배경</span>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => updateData({ sectionBgMode: 'plain', sectionBgMap: {} })}
+                          className={`flex-1 py-2 rounded-md border text-xs transition-colors ${
+                            (data.sectionBgMode || 'plain') === 'plain'
+                              ? 'border-stone-900 bg-stone-50 text-stone-900'
+                              : 'border-stone-200 bg-white text-stone-500 hover:border-stone-400'
+                          }`}
+                        >
+                          원색 배경
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => updateData({ sectionBgMode: 'tinted', sectionBgMap: {}, dividerVariant: 0 })}
+                          className={`flex-1 py-2 rounded-md border text-xs transition-colors ${
+                            data.sectionBgMode === 'tinted'
+                              ? 'border-stone-900 bg-stone-50 text-stone-900'
+                              : 'border-stone-200 bg-white text-stone-500 hover:border-stone-400'
+                          }`}
+                        >
+                          틴티드 배경
+                        </button>
+                      </div>
+                      {data.sectionBgMode === 'tinted' && (
+                        <div className="flex flex-wrap gap-1.5 mt-1">
+                          {[
+                            { label: '웜화이트', value: '#FAF8F5' },
+                            { label: '그레이쉬', value: '#F5F5F3' },
+                            { label: '피치', value: '#FBF5F3' },
+                            { label: '라벤더', value: '#F6F4F9' },
+                            { label: '민트', value: '#F3F8F6' },
+                          ].map(({ label, value }) => {
+                            const active = (data.tintedColor || '#FAF8F5') === value
+                            return (
+                              <button
+                                key={value}
+                                type="button"
+                                onClick={() => updateData({ tintedColor: value })}
+                                title={label}
+                                className={`w-7 h-7 rounded-full border-2 transition-all ${
+                                  active ? 'border-stone-900 scale-110' : 'border-stone-200 hover:border-stone-400'
+                                }`}
+                                style={{ background: value }}
+                              />
+                            )
+                          })}
+                          <label
+                            className="w-7 h-7 rounded-full border-2 border-dashed border-stone-300 flex items-center justify-center cursor-pointer hover:border-stone-500 overflow-hidden"
+                            title="커스텀 틴트"
+                          >
+                            <input
+                              type="color"
+                              value={data.tintedColor || '#FAF8F5'}
+                              onChange={(e) => updateData({ tintedColor: e.target.value })}
+                              className="absolute w-0 h-0 opacity-0"
+                            />
+                            <span className="text-[9px] text-stone-400">+</span>
+                          </label>
+                        </div>
+                      )}
+                    </div>
+
                     {/* 섹션 간격 */}
                     <label className="block">
                       <div className="flex items-center justify-between">
@@ -1764,9 +1933,12 @@ function TheSimpleEditorContent() {
                     <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-stone-800 border-b border-stone-300 pb-2">
                       섹션 순서 · UI 대안
                     </h2>
-                    <p className="text-[11px] text-stone-400 leading-relaxed">
+                    <p className="text-[11px] text-stone-600 leading-relaxed">
                       각 섹션을 눌러 펼치면 UI 대안과 상세 설정(갤러리 이미지 등)이 나타납니다.
                       손잡이를 잡아 드래그하면 순서를 변경할 수 있습니다.
+                      {data.sectionBgMode === 'tinted' && (
+                        <> 틴티드 배경 모드에서는 각 섹션의 <span className="inline-block w-3 h-3 rounded-full border border-stone-400 align-text-bottom" style={{ background: data.tintedColor || '#FAF8F5' }} /> 버튼으로 배경을 개별 전환할 수 있습니다.</>
+                      )}
                     </p>
                     <SectionListPanel
                       sectionOrder={data.sectionOrder}
@@ -2226,6 +2398,19 @@ function TheSimpleEditorContent() {
                       onRemoveInstance={handleRemoveSectionInstance}
                       onAddInstance={(type) => {
                         if (type === 'gallery') handleAddGallery()
+                      }}
+                      sectionBgMode={data.sectionBgMode}
+                      tintedColor={data.tintedColor}
+                      sectionBgMap={data.sectionBgMap}
+                      onToggleSectionBg={(id) => {
+                        const current = data.sectionBgMap?.[id]
+                        const isCurrentlyTinted = current === 'tinted' || (current === undefined && data.sectionBgMode === 'tinted' && data.sectionOrder.indexOf(id) % 2 === 1)
+                        updateData({
+                          sectionBgMap: {
+                            ...(data.sectionBgMap || {}),
+                            [id]: isCurrentlyTinted ? 'default' : 'tinted',
+                          },
+                        })
                       }}
                     />
                   </section>

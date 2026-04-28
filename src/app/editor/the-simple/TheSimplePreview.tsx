@@ -45,13 +45,16 @@ function useContainedOverlay(
     ) {
       const top = scrollParent.scrollTop
       const height = scrollParent.clientHeight
+      // 에디터 폰 프레임의 둥근 모서리(border-radius) 안쪽으로 오프셋
+      const frameRadius = parseFloat(getComputedStyle(scrollParent.parentElement || scrollParent).borderRadius) || 0
+      const inset = Math.ceil(frameRadius)
 
       el.style.position = 'absolute'
-      el.style.top = `${top}px`
+      el.style.top = `${top + inset}px`
       el.style.left = '0'
       el.style.right = '0'
       el.style.bottom = 'auto'
-      el.style.height = `${height}px`
+      el.style.height = `${height - inset}px`
       el.style.width = '100%'
 
       const prev = scrollParent.style.overflowY
@@ -80,7 +83,7 @@ function useInView<T extends HTMLElement>(
           io.disconnect()
         }
       },
-      { threshold: 0.05, rootMargin: '0px 0px -40% 0px', ...options }
+      { threshold: 0.05, rootMargin: '0px 0px -20% 0px', ...options }
     )
     io.observe(el)
     return () => io.disconnect()
@@ -331,7 +334,7 @@ function SectionToggle({
       case 3:
         return { ...base, background: 'transparent', color: 'var(--mute)', border: 'none', padding: '6px 0', textDecoration: 'underline', textUnderlineOffset: '3px' }
       case 4:
-        return { ...base, background: 'var(--ink)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px' }
+        return { ...base, background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px' }
       default:
         return { ...base, color: 'var(--mute)', border: '1px solid var(--line)', borderRadius: 20, padding: '8px 24px', background: 'transparent' }
     }
@@ -653,7 +656,7 @@ function AccountTabbed({
         borderRadius: isRight ? '0 20px 20px 0' : '20px 0 0 20px',
         border: '1px solid var(--line)',
         borderLeft: isRight ? 'none' : '1px solid var(--line)',
-        background: active ? 'var(--ink)' : 'transparent',
+        background: active ? 'var(--accent)' : 'transparent',
         color: active ? '#fff' : 'var(--mute)',
       }
     }
@@ -666,9 +669,9 @@ function AccountTabbed({
         letterSpacing: '0.2em',
         padding: '8px 0 10px',
         border: 'none',
-        borderBottom: active ? '2px solid var(--ink)' : '1px solid var(--line)',
+        borderBottom: active ? '2px solid var(--accent)' : '1px solid var(--line)',
         background: 'transparent',
-        color: active ? 'var(--ink)' : 'var(--mute)',
+        color: active ? 'var(--accent)' : 'var(--mute)',
       }
     }
 
@@ -680,7 +683,7 @@ function AccountTabbed({
         letterSpacing: '0.25em',
         padding: '8px 0',
         border: 'none',
-        background: active ? 'var(--ink)' : 'var(--bg, #f5f5f0)',
+        background: active ? 'var(--accent)' : 'var(--bg, #f5f5f0)',
         color: active ? '#fff' : 'var(--mute)',
         borderRadius: isRight ? '0 4px 4px 0' : '4px 0 0 4px',
       }
@@ -692,10 +695,10 @@ function AccountTabbed({
       fontSize: 12,
       letterSpacing: '0.15em',
       padding: '10px 0',
-      border: '1px solid var(--ink)',
-      borderLeft: isRight ? 'none' : '1px solid var(--ink)',
-      background: active ? 'var(--ink)' : 'transparent',
-      color: active ? '#fff' : 'var(--ink)',
+      border: '1px solid var(--accent)',
+      borderLeft: isRight ? 'none' : '1px solid var(--accent)',
+      background: active ? 'var(--accent)' : 'transparent',
+      color: active ? '#fff' : 'var(--accent)',
     }
   }
 
@@ -738,10 +741,10 @@ function AccountTabbed({
         fontFamily: 'var(--font-display)',
         fontSize: 10,
         letterSpacing: '0.08em',
-        color: done ? 'var(--accent)' : 'var(--ink)',
+        color: done ? 'var(--accent)' : 'var(--accent)',
         background: 'transparent',
         border: 'none',
-        borderBottom: '1px solid var(--ink)',
+        borderBottom: '1px solid var(--accent)',
         padding: '2px 0',
         cursor: 'pointer',
         flexShrink: 0,
@@ -755,7 +758,7 @@ function AccountTabbed({
         fontSize: 9,
         letterSpacing: '0.15em',
         color: done ? 'var(--accent)' : '#fff',
-        background: done ? 'transparent' : 'var(--ink)',
+        background: done ? 'transparent' : 'var(--accent)',
         border: done ? '1px solid var(--accent)' : 'none',
         borderRadius: 2,
         padding: '5px 14px',
@@ -769,7 +772,7 @@ function AccountTabbed({
       fontFamily: 'var(--font-display)',
       fontSize: 10,
       letterSpacing: '0.1em',
-      color: done ? 'var(--accent)' : 'var(--ink)',
+      color: done ? 'var(--accent)' : 'var(--accent)',
       background: 'transparent',
       border: '1px solid var(--line)',
       padding: '5px 12px',
@@ -1796,7 +1799,7 @@ function RsvpModal({
       <div ref={contentRef} className={`ts-rsvp-modal ${closing ? 'ts-rsvp-modal--closing' : ''}`}>
         <div className="ts-rsvp-modal-header">
           <button type="button" className="ts-rsvp-modal-close" onClick={handleClose}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
@@ -2359,16 +2362,14 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
           </AnimatedSection>
         )
       }
-      // V3 · 인용 블록 (상하 라인 + 이탤릭)
+      // V3 · 인용 블록 (이탤릭 quote + attribution)
       if (v === 3) {
         return (
           <AnimatedSection className="ts-sec ts-greet ts-greet--v3 ts-anim-greet-v3" key={`greeting-${v}`}>
-            <div className="ts-g3-rule-top ts-anim-item" />
             <blockquote className="ts-g3-quote ts-anim-item">
               {greeting.body}
-              <span className="ts-g3-attr ts-anim-item">— {greeting.label || 'INVITATION'} —</span>
+              <span className="ts-g3-attr">— {greeting.label || 'INVITATION'} —</span>
             </blockquote>
-            <div className="ts-g3-rule-bot ts-anim-item" />
           </AnimatedSection>
         )
       }
@@ -2559,7 +2560,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 {renderTags(first.tags, 'v5', 'right')}
               </div>
               {/* 세로선 */}
-              <div className="ts-anim-vline" style={{ background: 'var(--ink)', width: 1, minHeight: 180, opacity: 0.3 }} />
+              <div className="ts-anim-vline" style={{ background: 'var(--accent)', width: 1, minHeight: 180, opacity: 0.3 }} />
               {/* 우측 */}
               <div className="ts-anim-right" style={{ textAlign: 'left', paddingLeft: 4 }}>
                 <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 10 }}>
@@ -2979,7 +2980,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     {cell.day ?? ''}
                     {cell.pick && (
                       <svg className="ts-circle-draw" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="20" cy="20" r="15" fill="none" stroke="var(--ink)" strokeWidth="1.5" />
+                        <circle cx="20" cy="20" r="15" fill="none" stroke="var(--point)" strokeWidth="1.5" />
                       </svg>
                     )}
                   </span>
@@ -3015,7 +3016,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
             <div className="ts-anim-item" style={{ marginBottom: 10 }}>
               <KakaoMapBox address={venueAddress} venueName={venueName} aspectRatio="4 / 3" />
             </div>
-            <div className="ts-anim-item" style={{ background: '#f3f3f3', padding: '18px 16px', textAlign: 'center' }}>
+            <div className="ts-anim-item" style={{ background: 'var(--card)', padding: '18px 16px', textAlign: 'center' }}>
               <div style={{ fontFamily: 'var(--font-display)', fontSize: 16, letterSpacing: '0.08em', color: 'var(--ink)', marginBottom: 4 }}>
                 {venueName}
               </div>
@@ -3036,7 +3037,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
           <AnimatedSection className="ts-sec ts-dir ts-anim-dir-v3" key={`direction-${v}`}>
             <div className="ts-eyebrow">{direction.eyebrow}</div>
             <div className="ts-anim-item" style={{ textAlign: 'center', padding: '12px 0 18px' }}>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, letterSpacing: '0.06em', color: 'var(--ink)', marginBottom: 6 }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, letterSpacing: '0.06em', color: 'var(--point)', marginBottom: 6 }}>
                 {venueName}
               </div>
               <div style={{ width: 30, height: 1, background: 'var(--line)', margin: '0 auto 10px' }} />
@@ -3062,8 +3063,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <div className="ts-anim-item">
                 <KakaoMapBox address={venueAddress} venueName={venueName} aspectRatio="3 / 2" />
               </div>
-              <div className="ts-anim-card" style={{ border: '1px solid var(--line)', padding: '16px 14px' }}>
-                <div style={{ fontFamily: 'var(--font-display)', fontSize: 9, letterSpacing: '0.2em', color: 'var(--accent)', textTransform: 'uppercase', marginBottom: 4 }}>
+              <div className="ts-anim-card" style={{ border: '1px solid var(--line)', padding: '16px 14px', background: 'var(--card)' }}>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: 9, letterSpacing: '0.2em', color: 'var(--point)', textTransform: 'uppercase', marginBottom: 4 }}>
                   Venue
                 </div>
                 <div style={{ fontFamily: 'var(--font-ko)', fontSize: 15, fontWeight: 600, color: 'var(--ink)', marginBottom: 2 }}>
@@ -3072,7 +3073,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 {venueHall && <div style={{ fontFamily: 'var(--font-ko)', fontSize: 12, color: 'var(--mute)', marginBottom: 10, paddingBottom: 10, borderBottom: '1px solid var(--line)' }}>
                   {venueHall}
                 </div>}
-                <div style={{ fontFamily: 'var(--font-display)', fontSize: 9, letterSpacing: '0.2em', color: 'var(--accent)', textTransform: 'uppercase', marginBottom: 4 }}>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: 9, letterSpacing: '0.2em', color: 'var(--point)', textTransform: 'uppercase', marginBottom: 4 }}>
                   Address
                 </div>
                 <AddressCopy address={venueAddress} />
@@ -3197,7 +3198,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 <div key={i} style={{ marginBottom: 24 }}>
                   <div
                     style={{
-                      background: '#f5f5f5',
+                      background: 'var(--card)',
                       border: '1px solid var(--line)',
                       borderRadius: 16,
                       padding: '12px 16px',
@@ -3327,7 +3328,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   style={{
                     border: '1px solid var(--line)',
                     padding: '16px 14px',
-                    background: '#f3f3f3',
+                    background: 'var(--card)',
                   }}
                 >
                   <div
@@ -3775,7 +3776,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 <div
                   key={i}
                   style={{
-                    background: '#f5f5f5',
+                    background: 'var(--card)',
                     padding: '20px 14px',
                     textAlign: 'center',
                   }}
@@ -3840,7 +3841,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 marginTop: 10,
                 padding: '20px 18px',
                 border: '1px solid var(--line)',
-                background: '#f3f3f3',
+                background: 'var(--card)',
               }}
             >
               {guide.items.map((item, i) => (
@@ -3958,7 +3959,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         return (
           <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key={`account-${v}`}>
             <div className="ts-eyebrow">{account.eyebrow}</div>
-            <div style={{ background: '#f5f5f0', padding: '20px 16px', marginTop: 8 }}>
+            <div style={{ background: 'var(--card)', padding: '20px 16px', marginTop: 8 }}>
               {accountGuideEl}
               <AccountTabbed {...tabbedProps} />
             </div>
@@ -4110,7 +4111,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
           <AnimatedSection className={`ts-sec ts-rsvp ts-anim-rsvp-v${v}`} key={`rsvp-${v}`}>
             <div
               style={{
-                background: '#f5f5f5',
+                background: 'var(--card)',
                 padding: '36px 24px',
                 textAlign: 'center',
               }}
@@ -4159,7 +4160,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   fontSize: 10,
                   letterSpacing: '0.3em',
                   color: '#fff',
-                  background: 'var(--ink)',
+                  background: 'var(--accent)',
                   padding: '10px 24px',
                   textTransform: 'uppercase',
                   cursor: 'pointer',
@@ -4216,8 +4217,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   fontFamily: 'var(--font-display)',
                   fontSize: 11,
                   letterSpacing: '0.2em',
-                  color: 'var(--ink)',
-                  borderBottom: '1px solid var(--ink)',
+                  color: 'var(--accent)',
+                  borderBottom: '1px solid var(--accent)',
                   padding: '2px 4px 4px',
                   textTransform: 'uppercase',
                   cursor: 'pointer',
@@ -4254,11 +4255,11 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   fontFamily: 'var(--font-display)',
                   fontSize: 22,
                   letterSpacing: '0.2em',
-                  color: 'var(--ink)',
+                  color: 'var(--point)',
                   marginBottom: 6,
                 }}
               >
-                R.S.V.P.
+                {rsvp.title || 'R.S.V.P.'}
               </div>
               <p
                 style={{
@@ -4286,7 +4287,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     fontSize: 11,
                     letterSpacing: '0.2em',
                     color: '#fff',
-                    background: 'var(--ink)',
+                    background: 'var(--accent)',
                     padding: '12px 0',
                     textTransform: 'uppercase',
                     cursor: 'pointer',
@@ -4300,9 +4301,9 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     fontFamily: 'var(--font-display)',
                     fontSize: 11,
                     letterSpacing: '0.2em',
-                    color: 'var(--ink)',
+                    color: 'var(--accent)',
                     background: 'transparent',
-                    border: '1px solid var(--ink)',
+                    border: '1px solid var(--accent)',
                     padding: '11px 0',
                     textTransform: 'uppercase',
                     cursor: 'pointer',
@@ -4340,7 +4341,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               </div>
               <div
                 style={{
-                  border: '1px solid var(--ink)',
+                  border: '1px solid var(--accent)',
                   padding: '32px 20px 28px',
                   textAlign: 'center',
                 }}
@@ -4350,7 +4351,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     fontFamily: 'var(--font-serif)',
                     fontSize: 28,
                     fontStyle: 'italic',
-                    color: 'var(--ink)',
+                    color: 'var(--point)',
                     marginBottom: 14,
                   }}
                 >
@@ -4394,7 +4395,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       return (
         <AnimatedSection className={`ts-sec ts-rsvp ts-anim-rsvp-v${v}`} key={`rsvp-${v}`}>
           <div className="ts-rsvp-box">
-            <div className="ts-rsvp-title">R.S.V.P.</div>
+            <div className="ts-rsvp-title">{rsvp.title || 'R.S.V.P.'}</div>
             <p className="ts-rsvp-sub" style={{ whiteSpace: 'pre-line' }}>
               {rsvp.body}
             </p>
@@ -4421,7 +4422,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   fontFamily: 'var(--font-display)',
                   fontSize: 22,
                   letterSpacing: '0.08em',
-                  color: 'var(--ink)',
+                  color: 'var(--point)',
                   marginBottom: 4,
                 }}
               >
@@ -4448,7 +4449,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 <div
                   key={i}
                   style={{
-                    background: '#f5f5f5',
+                    background: 'var(--card)',
                     padding: '14px 14px',
                     borderLeft: '3px solid var(--accent)',
                   }}
@@ -4614,6 +4615,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 border: '1px solid var(--line)',
                 padding: '24px 20px',
                 textAlign: 'center',
+                background: 'var(--card)',
               }}
             >
               <div
@@ -4687,7 +4689,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 alignItems: 'baseline',
                 marginBottom: 10,
                 paddingBottom: 10,
-                borderBottom: '1px solid var(--ink)',
+                borderBottom: '1px solid var(--accent)',
               }}
             >
               <div
@@ -4695,7 +4697,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   fontFamily: 'var(--font-display)',
                   fontSize: 16,
                   letterSpacing: '0.1em',
-                  color: 'var(--ink)',
+                  color: 'var(--point)',
                 }}
               >
                 Guestbook
@@ -4800,14 +4802,13 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       const renderItemV1 = (item: typeof items[number], idx: number) => {
         const photos = getPhotos(item)
         return (
-          <div key={idx} style={{ marginTop: idx > 0 ? 28 : 0 }}>
+          <div key={idx} className="ts-ls-stagger" style={{ '--ls-i': idx, marginTop: idx > 0 ? 28 : 0 } as React.CSSProperties}>
             {photos.length > 0 && (
               <div
                 style={{
                   display: 'flex',
                   gap: 8,
                   marginBottom: 12,
-                  justifyContent: photos.length === 1 ? 'center' : 'space-between',
                 }}
               >
                 {photos.map((p, i) => (
@@ -4816,8 +4817,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     src={p.url}
                     settings={p.settings}
                     style={{
-                      flex: photos.length === 1 ? '0 0 70%' : 1,
-                      aspectRatio: '4/3',
+                      flex: 1,
+                      aspectRatio: photos.length === 1 ? '16/9' : '4/3',
                       borderRadius: 4,
                       overflow: 'hidden',
                     }}
@@ -4834,7 +4835,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         )
       }
 
-      // V2 · 좌 사진 + 우 텍스트 (아이템별)
+      // V2 · 좌우 교차 레이아웃 (홀수: 좌 사진 + 우 텍스트, 짝수: 좌 텍스트 + 우 사진)
       if (v === 2) {
         return (
           <AnimatedSection className={`ts-sec ts-anim-ls-v2`} key={`lovestory-${v}`}>
@@ -4842,27 +4843,28 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
             <SectionToggle enabled={lsToggle?.enabled ?? false} label={lsToggle?.label || '스토리 보기'} btnStyle={lsToggle?.style}>
             {items.map((item, idx) => {
               const photos = getPhotos(item)
+              const isReversed = idx % 2 === 1
               return (
                 <div
                   key={idx}
+                  className="ts-ls-stagger"
                   style={{
+                    '--ls-i': idx,
                     display: photos.length > 0 ? 'flex' : 'block',
+                    flexDirection: isReversed ? 'row-reverse' : 'row',
                     gap: 16,
                     marginTop: idx === 0 ? 16 : 28,
-                  }}
+                  } as React.CSSProperties}
                 >
                   {photos.length > 0 && (
-                    <div style={{ width: '40%', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      {photos.map((p, i) => (
-                        <CropBg
-                          key={i}
-                          src={p.url}
-                          settings={p.settings}
-                          style={{
-                            width: '100%', aspectRatio: '3/4', borderRadius: 4, overflow: 'hidden',
-                          }}
-                        />
-                      ))}
+                    <div style={{ width: 140, flexShrink: 0 }}>
+                      <CropBg
+                        src={photos[0].url}
+                        settings={photos[0].settings}
+                        style={{
+                          width: '100%', aspectRatio: '3/4', borderRadius: 4, overflow: 'hidden',
+                        }}
+                      />
                     </div>
                   )}
                   {item.body && (
@@ -4878,45 +4880,51 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         )
       }
 
-      // V3 · 풀폭 사진 배경 + 오버레이 (첫 아이템 사진 사용, 나머지는 V1 fallback)
+      // V3 · 풀폭 사진 배경 + 오버레이 (모든 아이템 각각 배경)
       if (v === 3) {
-        const firstPhotos = getPhotos(items[0])
-        if (firstPhotos.length > 0) {
-          const photo = firstPhotos[0]
-          return (
-            <AnimatedSection className={`ts-sec ts-anim-ls-v3`} key={`lovestory-${v}`} style={{ padding: 0 }}>
-              <SectionToggle enabled={lsToggle?.enabled ?? false} label={lsToggle?.label || '스토리 보기'} btnStyle={lsToggle?.style}>
-              {/* 첫 번째 아이템: 풀폭 배경 */}
-              <div style={{ position: 'relative', width: '100%', minHeight: 320, overflow: 'hidden' }}>
-                <CropBg src={photo.url} settings={photo.settings} style={{ position: 'absolute', inset: 0 }} />
-                <div
-                  style={{
-                    position: 'relative', zIndex: 1, background: 'rgba(0,0,0,0.35)',
-                    minHeight: 320, display: 'flex', flexDirection: 'column', justifyContent: 'center',
-                    padding: '40px 28px', color: '#fff',
-                  }}
-                >
-                  <div style={{ fontFamily: 'var(--font-display)', fontSize: 10, letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: 16, opacity: 0.85 }}>
-                    {ls.eyebrow}
+        return (
+          <AnimatedSection className={`ts-sec ts-anim-ls-v3`} key={`lovestory-${v}`} style={{ padding: 0 }}>
+            <SectionToggle enabled={lsToggle?.enabled ?? false} label={lsToggle?.label || '스토리 보기'} btnStyle={lsToggle?.style}>
+            {items.map((item, idx) => {
+              const photos = getPhotos(item)
+              const photo = photos[0]
+              if (photo) {
+                return (
+                  <div key={idx} className="ts-ls-stagger" style={{ '--ls-i': idx, position: 'relative', width: '100%', minHeight: 320, overflow: 'hidden' } as React.CSSProperties}>
+                    <CropBg src={photo.url} settings={photo.settings} style={{ position: 'absolute', inset: 0 }} />
+                    <div
+                      style={{
+                        position: 'relative', zIndex: 1, background: 'rgba(0,0,0,0.35)',
+                        minHeight: 320, display: 'flex', flexDirection: 'column', justifyContent: 'center',
+                        padding: '40px 28px', color: '#fff',
+                      }}
+                    >
+                      {idx === 0 && (
+                        <div style={{ fontFamily: 'var(--font-display)', fontSize: 10, letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: 16, opacity: 0.85 }}>
+                          {ls.eyebrow}
+                        </div>
+                      )}
+                      {item.body && (
+                        <p style={{ fontFamily: 'var(--font-ko)', fontSize: 13, lineHeight: 2, whiteSpace: 'pre-line', opacity: 0.92 }}>
+                          {item.body}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  {items[0].body && (
-                    <p style={{ fontFamily: 'var(--font-ko)', fontSize: 13, lineHeight: 2, whiteSpace: 'pre-line', opacity: 0.92 }}>
-                      {items[0].body}
-                    </p>
-                  )}
+                )
+              }
+              // 사진 없는 아이템: 텍스트만
+              return item.body ? (
+                <div key={idx} className="ts-ls-stagger" style={{ '--ls-i': idx, padding: '24px 28px' } as React.CSSProperties}>
+                  <p style={{ fontFamily: 'var(--font-ko)', fontSize: 13, lineHeight: 2, color: '#5d5850', whiteSpace: 'pre-line' }}>
+                    {item.body}
+                  </p>
                 </div>
-              </div>
-              {/* 나머지 아이템: V1 스타일 */}
-              {items.length > 1 && (
-                <div style={{ padding: '0 24px 32px' }}>
-                  {items.slice(1).map((item, idx) => renderItemV1(item, idx))}
-                </div>
-              )}
-              </SectionToggle>
-            </AnimatedSection>
-          )
-        }
-        // no photo → fall through to V1
+              ) : null
+            })}
+            </SectionToggle>
+          </AnimatedSection>
+        )
       }
 
       // V4 · 카드 레이아웃 (아이템별 카드)
@@ -4930,12 +4938,14 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               return (
                 <div
                   key={idx}
+                  className="ts-ls-stagger"
                   style={{
+                    '--ls-i': idx,
                     marginTop: idx === 0 ? 16 : 16,
                     border: '1px solid var(--line)',
                     borderRadius: 4,
                     overflow: 'hidden',
-                  }}
+                  } as React.CSSProperties}
                 >
                   {photos.length > 0 && (
                     <div style={{ display: 'flex', gap: 0 }}>
@@ -4945,7 +4955,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     </div>
                   )}
                   {item.body && (
-                    <div style={{ padding: '20px 20px' }}>
+                    <div style={{ padding: '20px 20px', background: 'var(--card)' }}>
                       <p style={{ fontFamily: 'var(--font-ko)', fontSize: 13, lineHeight: 2, color: '#5d5850', whiteSpace: 'pre-line' }}>
                         {item.body}
                       </p>
@@ -4959,42 +4969,71 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         )
       }
 
-      // V5 · 타임라인 스타일 (아이템별 타임라인 노드)
+      // V5 · 타임라인 스타일 (dot + vertical line + 타이틀 라벨 + 사진)
       if (v === 5) {
         return (
           <AnimatedSection className={`ts-sec ts-anim-ls-v5`} key={`lovestory-${v}`}>
             <div className="ts-eyebrow ts-anim-item">{ls.eyebrow}</div>
             <SectionToggle enabled={lsToggle?.enabled ?? false} label={lsToggle?.label || '스토리 보기'} btnStyle={lsToggle?.style}>
-            <div style={{ display: 'flex', gap: 20, marginTop: 16 }}>
-              <div style={{ width: 1, background: 'var(--line)', flexShrink: 0, alignSelf: 'stretch' }} />
-              <div style={{ flex: 1 }}>
-                {items.map((item, idx) => {
-                  const photos = getPhotos(item)
-                  return (
-                    <div key={idx} style={{ marginTop: idx > 0 ? 28 : 0 }}>
-                      {photos.length > 0 && (
-                        <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-                          {photos.map((p, i) => (
-                            <CropBg
-                              key={i}
-                              src={p.url}
-                              settings={p.settings}
-                              style={{
-                                flex: 1, aspectRatio: '4/3', borderRadius: 4, overflow: 'hidden',
-                              }}
-                            />
-                          ))}
-                        </div>
-                      )}
-                      {item.body && (
-                        <p style={{ fontFamily: 'var(--font-ko)', fontSize: 13, lineHeight: 2, color: '#5d5850', whiteSpace: 'pre-line' }}>
-                          {item.body}
-                        </p>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
+            <div style={{ marginTop: 24, textAlign: 'left' }}>
+              {items.map((item, idx) => {
+                const isLast = idx === items.length - 1
+                const photos = getPhotos(item)
+                return (
+                  <div
+                    key={idx}
+                    className="ts-ls-stagger"
+                    style={{
+                      '--ls-i': idx,
+                      position: 'relative',
+                      paddingLeft: 28,
+                      paddingBottom: isLast ? 0 : 32,
+                    } as React.CSSProperties}
+                  >
+                    {/* 타임라인 세로선 */}
+                    {!isLast && (
+                      <div style={{
+                        position: 'absolute', left: 6, top: 10, bottom: 0, width: 1,
+                        background: 'color-mix(in srgb, var(--point) 30%, transparent)',
+                      }} />
+                    )}
+                    {/* 타임라인 dot */}
+                    <div style={{
+                      position: 'absolute', left: 1, top: 6,
+                      width: 11, height: 11, borderRadius: '50%',
+                      border: '2px solid var(--point)',
+                      background: 'var(--bg, #fff)',
+                    }} />
+                    {/* 타이틀 라벨 */}
+                    {item.title && (
+                      <div style={{
+                        fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 500,
+                        letterSpacing: '0.1em', textTransform: 'uppercase',
+                        color: 'var(--point)', marginBottom: 8,
+                      }}>
+                        {item.title}
+                      </div>
+                    )}
+                    {item.body && (
+                      <p style={{ fontFamily: 'var(--font-ko)', fontSize: 13, lineHeight: 2, color: '#5d5850', whiteSpace: 'pre-line' }}>
+                        {item.body}
+                      </p>
+                    )}
+                    {photos.length > 0 && (
+                      <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                        {photos.map((p, i) => (
+                          <CropBg
+                            key={i}
+                            src={p.url}
+                            settings={p.settings}
+                            style={{ flex: 1, aspectRatio: '4/3', borderRadius: 4, overflow: 'hidden' }}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
             </SectionToggle>
           </AnimatedSection>
@@ -5111,7 +5150,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
           <AnimatedSection className={`ts-thanks ts-anim-thx-v${v}`} key={`thanks-${v}`} style={{ padding: '32px 20px' }}>
             <div
               style={{
-                background: '#f5f5f5',
+                background: 'var(--card)',
                 border: '1px solid var(--line)',
                 padding: '36px 24px',
                 textAlign: 'center',
@@ -5156,7 +5195,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 style={{
                   width: 24,
                   height: 1,
-                  background: 'var(--ink)',
+                  background: 'var(--accent)',
                   margin: '0 auto 12px',
                 }}
               />
@@ -5182,7 +5221,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
             <div
               style={{
                 display: 'inline-block',
-                border: '1px double var(--ink)',
+                border: '1px double var(--accent)',
                 padding: '28px 32px',
                 minWidth: 220,
               }}
@@ -5271,6 +5310,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
   const fontScale = typeof data.fontScale === 'number' ? data.fontScale : 1
   const spacingScale = typeof data.sectionSpacing === 'number' ? data.sectionSpacing : 1
   const dividerV = data.dividerVariant ?? 1
+  const pointColor = data.pointColor || '#B8A88A'
+  const cardBg = data.cardBg || '#f5f5f5'
   const previewFontStyle = {
     ['--font-display' as string]: displayFontFamily,
     ['--font-ko' as string]: koreanFontFamily,
@@ -5278,6 +5319,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
     ['--font-serif' as string]: koreanFontFamily,
     ['--ts-font-scale' as string]: String(fontScale),
     ['--ts-spacing-scale' as string]: String(spacingScale),
+    ['--point' as string]: pointColor,
+    ['--card' as string]: cardBg,
   } as React.CSSProperties
 
   return (
@@ -5304,25 +5347,50 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       </div>
       {/* 본문 래퍼 — 인트로 위로 겹쳐 올라오는 오버랩 */}
       <div className="ts-body-wrap">
-      {visibleSections
-        .filter((id) => getSectionType(id) !== 'intro')
-        .map((id, index) => {
-        const type = getSectionType(id)
-        const renderer = renderers[type]
-        if (!renderer) return null
-        const variant = data.sectionVariants[id] ?? 1
-        return (
-          <div key={id}>
-            {index > 0 && (
-              <div className="ts-sec ts-sec--compact" aria-hidden="true">
-                <Divider variant={dividerV} />
+      {(() => {
+        const bodySections = visibleSections.filter((id) => getSectionType(id) !== 'intro')
+        // 각 섹션의 틴트 여부를 미리 계산
+        const tintedColor = data.tintedColor || '#FAF8F5'
+        const isSectionTinted = (sId: string) => {
+          const override = data.sectionBgMap?.[sId]
+          if (override === 'tinted') return true
+          if (override === 'default') return false
+          return data.sectionBgMode === 'tinted' && data.sectionOrder.indexOf(sId) % 2 === 1
+        }
+        return bodySections.map((id, _filteredIndex) => {
+          const type = getSectionType(id)
+          const renderer = renderers[type]
+          if (!renderer) return null
+          const variant = data.sectionVariants[id] ?? 1
+          const isTinted = isSectionTinted(id)
+          const sectionBg = isTinted ? tintedColor : '#ffffff'
+          // 디바이더 배경: 위쪽 절반은 이전 섹션 색, 아래쪽 절반은 현재 섹션 색
+          // → 디바이더 라인이 정확히 배경색 전환 경계가 됨
+          const prevId = _filteredIndex > 0 ? bodySections[_filteredIndex - 1] : null
+          const prevTinted = prevId ? isSectionTinted(prevId) : false
+          const topColor = prevTinted ? tintedColor : '#ffffff'
+          const bottomColor = isTinted ? tintedColor : '#ffffff'
+          const needsDividerGradient = topColor !== bottomColor
+          const dividerStyle = needsDividerGradient
+            ? { background: `linear-gradient(to bottom, ${topColor} 50%, ${bottomColor} 50%)` }
+            : topColor !== '#ffffff' ? { background: topColor } : undefined
+          return (
+            <div key={id}>
+              {_filteredIndex > 0 && (
+                <div style={dividerStyle}>
+                  <div className="ts-sec ts-sec--compact" aria-hidden="true">
+                    <Divider variant={dividerV} />
+                  </div>
+                </div>
+              )}
+              <div style={isTinted ? { background: tintedColor } : undefined}>
+                {renderer(variant, id)}
               </div>
-            )}
-            {renderer(variant, id)}
-          </div>
-        )
-      })}
-      {/* 공유 버튼 + 푸��� */}
+            </div>
+          )
+        })
+      })()}
+      {/* 공유 버튼 + 푸터 */}
       <div
         style={{
           textAlign: 'center',

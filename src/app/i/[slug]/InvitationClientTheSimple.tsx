@@ -353,6 +353,7 @@ function normalizeTheSimpleData(
     ? lovestoryRaw.items.map((raw: unknown) => {
         const item = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>
         return {
+          title: typeof item.title === 'string' ? item.title : undefined,
           body: typeof item.body === 'string' ? item.body : '',
           photo1: normalizePhoto(item.photo1),
           photo2: normalizePhoto(item.photo2),
@@ -449,6 +450,11 @@ function normalizeTheSimpleData(
     galleryEyebrows: (c as Record<string, unknown>).galleryEyebrows as Record<string, string> | undefined,
     coverVariant: typeof c.coverVariant === 'number' ? c.coverVariant : 0,
     dividerVariant: c.dividerVariant ?? 1,
+    pointColor: c.pointColor,
+    cardBg: typeof c.cardBg === 'string' ? c.cardBg : undefined,
+    sectionBgMode: c.sectionBgMode || 'plain',
+    tintedColor: c.tintedColor,
+    sectionBgMap: (c as Record<string, unknown>).sectionBgMap as Record<string, 'default' | 'tinted'> | undefined,
     lightboxVariant: typeof c.lightboxVariant === 'number' ? c.lightboxVariant : 1,
     displayFont: c.displayFont,
     fontStyle: c.fontStyle,

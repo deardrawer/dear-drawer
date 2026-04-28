@@ -57,7 +57,7 @@ export const KOREAN_FONTS: readonly KoreanFontOption[] = [
   { id: 'myungjo', name: '조선일보명조', fontFamily: "'ChosunIlboMyungjo', serif", sample: '우리 결혼합니다' },
 ] as const
 
-export const DEFAULT_DISPLAY_FONT_ID = 'cormorant'
+export const DEFAULT_DISPLAY_FONT_ID = 'lora'
 export const DEFAULT_KOREAN_FONT_ID = 'modern'
 
 export function resolveDisplayFontFamily(id: string | undefined): string {

@@ -8,10 +8,11 @@
   --ink: #111111;
   --mute: #777777;
   --mute-2: #b0b0b0;
-  --accent: #555555;
+  --accent: var(--point);
   --line: #e0e0e0;
   --bg: #ffffff;
-  --bg-2: #f5f5f5;
+  --bg-2: var(--card, #f5f5f5);
+  --point: #B8A88A;
   /* OUR 템플릿과 동일 폰트 패밀리 */
   --font-display: var(--font-cormorant), 'Cormorant Garamond', serif;
   --font-serif: var(--font-noto-serif-kr), 'Noto Serif KR', serif;
@@ -73,7 +74,7 @@
   font-family: var(--font-display);
   font-size: calc(11px * var(--ts-font-scale));
   letter-spacing: 0.32em;
-  color: var(--mute);
+  color: var(--point);
   text-transform: uppercase;
   text-align: center;
   margin-bottom: 14px;
@@ -98,15 +99,17 @@
 /* ---------- Dividers (5 variants) ---------- */
 .ts-preview .ts-divider-line {
   height: 1px;
-  background: var(--ink);
+  background: var(--point);
   opacity: 0.9;
 }
 
 /* V1 · Single line (default) */
 .ts-preview .ts-divider--v1 {
   height: 0;
-  border-top: 1px solid var(--ink);
+  border-top: 1px solid var(--point);
   opacity: 0.9;
+  max-width: 50px;
+  margin: 0 auto;
 }
 
 /* V2 · Dots */
@@ -121,7 +124,7 @@
   width: 3px;
   height: 3px;
   border-radius: 50%;
-  background: var(--ink);
+  background: var(--point);
   opacity: 0.75;
 }
 
@@ -130,8 +133,8 @@
   height: 1px;
   background-image: linear-gradient(
     to right,
-    var(--ink) 0,
-    var(--ink) 6px,
+    var(--point) 0,
+    var(--point) 6px,
     transparent 6px,
     transparent 12px
   );
@@ -143,8 +146,8 @@
 /* V4 · Double line */
 .ts-preview .ts-divider--v4 {
   height: 5px;
-  border-top: 1px solid var(--ink);
-  border-bottom: 1px solid var(--ink);
+  border-top: 1px solid var(--point);
+  border-bottom: 1px solid var(--point);
   opacity: 0.85;
 }
 
@@ -154,20 +157,23 @@
   align-items: center;
   gap: 12px;
   height: 12px;
+  max-width: 120px;
+  margin: 0 auto;
 }
 .ts-preview .ts-divider--v5::before,
 .ts-preview .ts-divider--v5::after {
   content: '';
   flex: 1;
+  max-width: 40px;
   height: 1px;
-  background: var(--ink);
+  background: var(--point);
   opacity: 0.75;
 }
 .ts-preview .ts-divider--v5 i {
   display: block;
   width: 6px;
   height: 6px;
-  background: var(--ink);
+  background: var(--point);
   transform: rotate(45deg);
   opacity: 0.85;
 }
@@ -1016,7 +1022,7 @@
   font-family: var(--font-display);
   font-size: calc(11px * var(--ts-font-scale, 1));
   letter-spacing: 0.32em;
-  color: var(--mute);
+  color: var(--point);
   text-transform: uppercase;
 }
 .ts-preview .ts-greet .ts-greet-title {
@@ -1025,6 +1031,7 @@
   font-size: calc(26px * var(--ts-font-scale, 1));
   margin: 16px 0 20px;
   line-height: 1.35;
+  color: var(--point);
 }
 .ts-preview .ts-greet .ts-greet-body {
   font-family: var(--font-ko);
@@ -1036,7 +1043,7 @@
 .ts-preview .ts-greet .ts-greet-rule {
   width: 32px;
   height: 1px;
-  background: var(--ink);
+  background: var(--point);
   margin: 28px auto 0;
 }
 
@@ -1063,13 +1070,6 @@
   flex-direction: column;
   align-items: center;
 }
-.ts-preview .ts-g3-rule-top,
-.ts-preview .ts-g3-rule-bot {
-  width: 40%;
-  height: 1px;
-  background: var(--line);
-  margin: 0 auto;
-}
 .ts-preview .ts-g3-quote {
   font-family: var(--font-serif);
   font-style: italic;
@@ -1094,9 +1094,9 @@
 
 /* V4 · Boxed Frame */
 .ts-preview .ts-g4-frame {
-  border: 1px solid var(--line);
   padding: 36px 28px;
   text-align: center;
+  background: var(--card, #f5f5f5);
 }
 
 /* V5 · Vertical Rule (left bar + right text) */
@@ -1108,7 +1108,7 @@
 }
 .ts-preview .ts-g5-bar {
   width: 1px;
-  background: var(--line);
+  background: var(--point);
   flex-shrink: 0;
   align-self: stretch;
 }
@@ -1169,8 +1169,8 @@
   font-size: calc(24px * var(--ts-font-scale, 1));
   font-weight: 300;
   font-style: italic;
-  color: var(--mute);
-  opacity: 0.5;
+  color: var(--point);
+  opacity: 0.7;
   align-self: center;
   padding-top: 0;
 }
@@ -1224,6 +1224,11 @@
   color: var(--accent);
 }
 
+/* V2 · 세로 스택 */
+.ts-preview .ts-couple--v2 .ts-couple-role {
+  color: var(--point);
+}
+
 /* V3 · 오버랩 포트레이트 */
 .ts-preview .ts-c3-photos {
   position: relative;
@@ -1265,7 +1270,7 @@
 .ts-preview .ts-c3-amp {
   font-family: var(--font-display);
   font-size: calc(18px * var(--ts-font-scale, 1));
-  color: var(--mute);
+  color: var(--point);
 }
 .ts-preview .ts-c3-bio {
   text-align: center;
@@ -1294,6 +1299,7 @@
   letter-spacing: 0.14em;
   line-height: 1.2;
   margin: 0 0 24px;
+  color: var(--point);
 }
 .ts-preview .ts-i1-sub {
   font-size: calc(12px * var(--ts-font-scale, 1));
@@ -1323,7 +1329,7 @@
   font-size: calc(11px * var(--ts-font-scale, 1));
 }
 .ts-preview .ts-cal-head {
-  border-top: 1px solid var(--ink);
+  border-top: 1px solid var(--point);
   border-bottom: 1px solid var(--line);
   color: var(--mute);
   padding: 8px 0;
@@ -1367,7 +1373,7 @@
 .ts-preview .ts-venue-name {
   font-size: calc(15px * var(--ts-font-scale, 1));
   font-weight: 600;
-  color: var(--ink, #1a1a1a);
+  color: var(--point);
   letter-spacing: 0.02em;
 }
 .ts-preview .ts-venue-hall {
@@ -1393,7 +1399,7 @@
   font-size: calc(96px * var(--ts-font-scale, 1));
   line-height: 1;
   letter-spacing: 0.02em;
-  color: var(--ink);
+  color: var(--point);
   margin: 0;
 }
 .ts-preview .ts-i2-bot {
@@ -1408,7 +1414,7 @@
 .ts-preview .ts-i2-divider {
   width: 32px;
   height: 1px;
-  background: var(--ink);
+  background: var(--point);
   margin: 0 auto 20px;
 }
 .ts-preview .ts-i2-meta {
@@ -1427,7 +1433,7 @@
   font-family: var(--font-display);
   font-size: calc(10px * var(--ts-font-scale, 1));
   letter-spacing: 0.26em;
-  color: var(--mute);
+  color: var(--point);
   text-transform: uppercase;
   margin-bottom: 4px;
   font-weight: 500;
@@ -1442,7 +1448,7 @@
   letter-spacing: 0.1em;
   line-height: 1.2;
   margin: 0;
-  color: var(--ink);
+  color: var(--point);
 }
 .ts-preview .ts-i3-year {
   font-family: var(--font-display);
@@ -1458,8 +1464,8 @@
   grid-template-columns: repeat(7, 1fr);
   row-gap: 6px;
   text-align: center;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
+  border-top: 1px solid var(--point);
+  border-bottom: 1px solid var(--point);
   padding: 8px 0 12px;
 }
 .ts-preview .ts-i3-dow {
@@ -1489,12 +1495,12 @@
   justify-content: center;
   width: 36px;
   height: 36px;
-  border: 1px solid var(--ink);
+  border: 1px solid var(--point);
   border-radius: 50%;
   font-family: var(--font-display);
   font-size: calc(18px * var(--ts-font-scale, 1));
-  color: var(--ink);
-  background: #fff;
+  color: #fff;
+  background: var(--point);
 }
 .ts-preview .ts-i3-foot {
   text-align: center;
@@ -1520,14 +1526,14 @@
 /* --- V4 · Ticket --- */
 .ts-preview .ts-i4 { }
 .ts-preview .ts-i4-ticket {
-  background: #fff;
-  border: 1px solid var(--ink);
+  background: var(--card, #f5f5f5);
+  border: 1px solid var(--point);
   padding: 0;
   position: relative;
 }
 .ts-preview .ts-i4-top {
   padding: 20px 22px;
-  border-bottom: 1px dashed var(--ink);
+  border-bottom: 1px dashed var(--point);
 }
 .ts-preview .ts-i4-cap {
   font-size: calc(10px * var(--ts-font-scale, 1));
@@ -1574,7 +1580,7 @@
   height: 14px;
   border-radius: 50%;
   background: var(--bg, #fff);
-  border: 1px solid var(--ink);
+  border: 1px solid var(--point);
   top: 50px;
 }
 .ts-preview .ts-i4-ticket::before { left: -8px; }
@@ -1586,13 +1592,13 @@
   font-family: var(--font-display);
   font-size: calc(11px * var(--ts-font-scale, 1));
   letter-spacing: 0.3em;
-  color: var(--mute);
+  color: var(--point);
   text-transform: uppercase;
   line-height: 1.4;
   margin-bottom: 16px;
 }
 .ts-preview .ts-i5-box {
-  border: 1px solid var(--line);
+  border: 1px solid var(--point);
   padding: 28px 20px 22px;
   margin: 0 auto 20px;
   max-width: 220px;
@@ -1627,7 +1633,7 @@
 .ts-preview .ts-i5-rule {
   width: 24px;
   height: 1px;
-  background: var(--ink);
+  background: var(--point);
   margin: 0 auto 20px;
 }
 .ts-preview .ts-i5-rows {
@@ -1716,7 +1722,7 @@
 .ts-preview .ts-lcd-sep {
   font-family: var(--font-ko);
   font-size: calc(20px * var(--ts-font-scale, 1));
-  color: var(--mute);
+  color: var(--point);
   font-weight: 300;
   line-height: 1;
   margin: 0 -2px;
@@ -1819,6 +1825,7 @@
   font-family: var(--font-serif);
   font-style: italic;
   font-size: calc(18px * var(--ts-font-scale, 1));
+  color: var(--point);
   margin-bottom: 6px;
 }
 
@@ -1870,12 +1877,12 @@
   font-family: var(--font-display);
   font-size: calc(11px * var(--ts-font-scale, 1));
   letter-spacing: 0.22em;
-  color: var(--mute);
+  color: var(--point);
   text-transform: uppercase;
   margin-bottom: 8px;
 }
 .ts-preview .ts-interview .ts-q b {
-  color: var(--accent);
+  color: var(--point);
   font-weight: 400;
 }
 .ts-preview .ts-interview .ts-a {
@@ -1910,7 +1917,7 @@
   font-family: var(--font-display);
   font-size: calc(10px * var(--ts-font-scale, 1));
   letter-spacing: 0.24em;
-  color: var(--accent);
+  color: var(--point);
   text-transform: uppercase;
   margin-bottom: 6px;
 }
@@ -1972,12 +1979,13 @@
   text-align: center;
 }
 .ts-preview .ts-rsvp .ts-rsvp-box {
-  border: 1px solid var(--ink);
+  border: 1px solid var(--point);
   padding: 24px 20px;
 }
 .ts-preview .ts-rsvp .ts-rsvp-title {
   font-family: var(--font-display);
   font-size: calc(22px * var(--ts-font-scale, 1));
+  color: var(--point);
   margin-bottom: 6px;
 }
 .ts-preview .ts-rsvp .ts-rsvp-sub {
@@ -1988,13 +1996,12 @@
 }
 .ts-preview .ts-rsvp .ts-rsvp-btn {
   display: inline-block;
-  background: var(--ink);
+  background: var(--point);
   color: #ffffff;
   padding: 12px 32px;
-  font-family: var(--font-display);
-  font-size: calc(11px * var(--ts-font-scale, 1));
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
+  font-family: var(--font-ko);
+  font-size: calc(12px * var(--ts-font-scale, 1));
+  letter-spacing: 0.08em;
 }
 
 /* ---------- RSVP Modal ---------- */
@@ -2044,7 +2051,8 @@
   flex-shrink: 0;
   display: flex;
   justify-content: flex-end;
-  padding: 12px 12px 0;
+  padding: 16px 16px 0;
+  padding-top: max(16px, env(safe-area-inset-top, 16px));
 }
 .ts-rsvp-modal-body {
   flex: 1;
@@ -2054,13 +2062,13 @@
   padding-top: 8px;
 }
 .ts-rsvp-modal-close {
-  background: rgba(0, 0, 0, 0.06);
+  background: rgba(0, 0, 0, 0.08);
   border: none;
   border-radius: 50%;
-  color: #555;
+  color: #333;
   cursor: pointer;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2068,8 +2076,8 @@
   flex-shrink: 0;
 }
 .ts-rsvp-modal-close:hover {
-  background: rgba(0, 0, 0, 0.1);
-  color: #222;
+  background: rgba(0, 0, 0, 0.14);
+  color: #111;
 }
 .ts-rsvp-modal-title {
   font-family: var(--font-ko, sans-serif);
@@ -2095,7 +2103,7 @@
   color: #1a1a1a;
 }
 .ts-rsvp-modal-input:focus {
-  border-color: #999;
+  border-color: var(--accent, #999);
 }
 .ts-rsvp-modal-toggle {
   display: grid;
@@ -2117,8 +2125,8 @@
   transition: all 0.2s;
 }
 .ts-rsvp-modal-opt.active {
-  border-color: #1a1a1a;
-  background: #1a1a1a;
+  border-color: var(--accent, #1a1a1a);
+  background: var(--accent, #1a1a1a);
   color: #fff;
 }
 .ts-rsvp-modal-count {
@@ -2157,7 +2165,7 @@
   color: #1a1a1a;
 }
 .ts-rsvp-modal-textarea:focus {
-  border-color: #999;
+  border-color: var(--accent, #999);
 }
 .ts-rsvp-modal-submit {
   width: calc(100% - 48px);
@@ -2168,7 +2176,7 @@
   padding: 16px 0;
   border: none;
   border-radius: 8px;
-  background: #1a1a1a;
+  background: var(--accent, #1a1a1a);
   color: #fff;
   cursor: pointer;
   transition: opacity 0.2s;
@@ -2201,6 +2209,7 @@
 .ts-preview .ts-guestbook .ts-gb-title {
   font-family: var(--font-display);
   font-size: calc(22px * var(--ts-font-scale, 1));
+  color: var(--point);
   margin-bottom: 4px;
 }
 .ts-preview .ts-guestbook .ts-gb-sub {
@@ -2271,8 +2280,8 @@
   font-size: 12px;
   font-weight: 500;
   padding: 8px 20px;
-  border: 1px solid var(--ink);
-  background: var(--ink);
+  border: 1px solid var(--point);
+  background: var(--point);
   color: #fff;
   border-radius: 4px;
   cursor: pointer;
@@ -2303,12 +2312,13 @@
   font-family: var(--font-serif);
   font-style: italic;
   font-size: calc(18px * var(--ts-font-scale, 1));
+  color: var(--point);
   margin-bottom: 20px;
 }
 .ts-preview .ts-thanks .ts-thanks-rule {
   width: 24px;
   height: 1px;
-  background: var(--ink);
+  background: var(--point);
   margin: 0 auto 22px;
 }
 .ts-preview .ts-thanks .ts-thanks-body {
@@ -2369,9 +2379,21 @@
   from { transform: scaleX(0); }
   to { transform: scaleX(1); }
 }
+@keyframes tsLineDrawFade {
+  from { transform: scaleX(0); opacity: 0; }
+  to { transform: scaleX(1); opacity: 1; }
+}
+@keyframes tsLetterOnly {
+  from { letter-spacing: -0.04em; }
+  to { letter-spacing: inherit; }
+}
 @keyframes tsLineDrawY {
   from { transform: scaleY(0); }
   to { transform: scaleY(1); }
+}
+@keyframes tsLineDrawYFade {
+  from { transform: scaleY(0); opacity: 0; }
+  to { transform: scaleY(1); opacity: 1; }
 }
 @keyframes tsMaskReveal {
   from { clip-path: inset(100% 0 0 0); opacity: 0; }
@@ -2801,17 +2823,17 @@
 /* ---------- GREETING ---------- */
 
 /* V1 · fade-up stagger (label → title → body → rule) */
-.ts-preview .ts-anim-greet-v1 .ts-anim-item { opacity: 0; transform: translateY(8px); }
+.ts-preview .ts-anim-greet-v1 .ts-anim-item { opacity: 0; }
 .ts-preview .ts-anim-greet-v1.in-view .ts-anim-item:nth-child(1) { animation: tsFadeUp 1.1s var(--ts-ease) 100ms both; }
 .ts-preview .ts-anim-greet-v1.in-view .ts-anim-item:nth-child(2) { animation: tsFadeUp 1.2s var(--ts-ease) 350ms both; }
 .ts-preview .ts-anim-greet-v1.in-view .ts-anim-item:nth-child(3) { animation: tsFadeUp 1.2s var(--ts-ease) 600ms both; }
 .ts-preview .ts-anim-greet-v1.in-view .ts-anim-item:nth-child(4) {
   transform-origin: center;
-  animation: tsLineDraw 0.9s var(--ts-ease) 900ms both;
+  animation: tsLineDrawFade 0.9s var(--ts-ease) 900ms both;
 }
 
 /* V2 · Karaoke Fill (label/title fade-up → 본문 줄 단위 회색→검정 채우기) */
-.ts-preview .ts-anim-greet-v2 .ts-anim-item { opacity: 0; transform: translateY(6px); }
+.ts-preview .ts-anim-greet-v2 .ts-anim-item { opacity: 0; }
 .ts-preview .ts-anim-greet-v2.in-view .ts-anim-item:nth-child(1) { animation: tsFadeUp 1.0s var(--ts-ease) 100ms both; }
 .ts-preview .ts-anim-greet-v2.in-view .ts-anim-item:nth-child(2) { animation: tsFadeUp 1.1s var(--ts-ease) 300ms both; }
 .ts-preview .ts-anim-greet-v2 .ts-g2-karaoke { background-position: 100% 0; }
@@ -2829,32 +2851,24 @@
   transform-origin: left center;
 }
 .ts-preview .ts-anim-greet-v2.in-view .ts-anim-rule {
-  animation-name: tsLineDraw;
+  animation-name: tsLineDrawFade;
   animation-duration: 0.8s;
   animation-timing-function: var(--ts-ease);
   animation-fill-mode: both;
 }
 
-/* V3 · quote 커튼 라이즈 (라인 wipe → 본문 mask-reveal ↑ → 속성 letter-spread) */
+/* V3 · quote mask-reveal + attr letter-spread */
 .ts-preview .ts-anim-greet-v3 .ts-anim-item { opacity: 0; }
-.ts-preview .ts-anim-greet-v3.in-view .ts-g3-rule-top {
-  transform-origin: center;
-  animation: tsLineDraw 0.9s var(--ts-ease) 100ms both;
-}
 .ts-preview .ts-anim-greet-v3.in-view .ts-g3-quote {
-  animation: tsMaskReveal 1.8s cubic-bezier(0.16, 1, 0.3, 1) 500ms both;
+  animation: tsMaskReveal 1.8s cubic-bezier(0.16, 1, 0.3, 1) 200ms both;
 }
 .ts-preview .ts-anim-greet-v3.in-view .ts-g3-attr {
-  animation: tsLetterSpread 1.3s var(--ts-ease) 1500ms both;
-}
-.ts-preview .ts-anim-greet-v3.in-view .ts-g3-rule-bot {
-  transform-origin: center;
-  animation: tsLineDraw 0.9s var(--ts-ease) 2100ms both;
+  animation: tsLetterOnly 1.3s var(--ts-ease) 1600ms both;
 }
 
 /* V4 · card scale-in + 내부 stagger */
 .ts-preview .ts-anim-greet-v4 .ts-anim-card { opacity: 0; transform: scale(0.92); }
-.ts-preview .ts-anim-greet-v4 .ts-anim-item { opacity: 0; transform: translateY(6px); }
+.ts-preview .ts-anim-greet-v4 .ts-anim-item { opacity: 0; }
 .ts-preview .ts-anim-greet-v4.in-view .ts-anim-card { animation: tsScaleIn 1.0s var(--ts-ease) 80ms both; }
 .ts-preview .ts-anim-greet-v4.in-view .ts-anim-item:nth-child(1) { animation: tsFadeUp 1.0s var(--ts-ease) 400ms both; }
 .ts-preview .ts-anim-greet-v4.in-view .ts-anim-item:nth-child(2) { animation: tsFadeUp 1.0s var(--ts-ease) 600ms both; }
@@ -2862,10 +2876,10 @@
 
 /* V5 · vertical line draw + text slide-right stagger */
 .ts-preview .ts-anim-greet-v5 .ts-anim-vline { opacity: 0; }
-.ts-preview .ts-anim-greet-v5 .ts-anim-item { opacity: 0; transform: translateX(-8px); }
+.ts-preview .ts-anim-greet-v5 .ts-anim-item { opacity: 0; }
 .ts-preview .ts-anim-greet-v5.in-view .ts-anim-vline {
   transform-origin: top center;
-  animation: tsLineDraw 1.2s var(--ts-ease) 80ms both;
+  animation: tsLineDrawYFade 1.4s cubic-bezier(0.16, 1, 0.3, 1) 80ms both;
 }
 .ts-preview .ts-anim-greet-v5.in-view .ts-anim-item:nth-child(1) { animation: tsSlideRight 1.0s var(--ts-ease) 400ms both; }
 .ts-preview .ts-anim-greet-v5.in-view .ts-anim-item:nth-child(2) { animation: tsSlideRight 1.2s var(--ts-ease) 600ms both; }
@@ -2921,7 +2935,6 @@
 }
 .ts-preview .ts-anim-couple-v3 .ts-anim-item {
   opacity: 0;
-  transform: translateY(8px);
 }
 .ts-preview .ts-anim-couple-v3.in-view .ts-anim-photo-l {
   animation: tsSlideRight 1.6s var(--ts-ease) 200ms both;
@@ -2964,7 +2977,6 @@
 /* 날짜 자릿수 개별 롤업 + 캘린더 pick 원형 팝 */
 .ts-preview .ts-anim-info-v1 .ts-anim-item {
   opacity: 0;
-  transform: translateY(8px);
 }
 /* 각 숫자 초기 상태 */
 .ts-preview .ts-anim-info-v1 .ts-digit,
@@ -3006,7 +3018,6 @@
 /* 96px 큰 날짜 자릿수 개별 롤업 */
 .ts-preview .ts-anim-info-v2 .ts-anim-item {
   opacity: 0;
-  transform: translateY(6px);
 }
 .ts-preview .ts-anim-info-v2 .ts-digit {
   display: inline-block;
@@ -3026,9 +3037,8 @@
 }
 .ts-preview .ts-anim-info-v2.in-view .ts-anim-item:nth-child(3) { animation: tsFadeIn 0.6s var(--ts-ease) 600ms both; }
 .ts-preview .ts-anim-info-v2.in-view .ts-anim-item:nth-child(4) {
-  transform: scaleX(0);
   transform-origin: center;
-  animation: tsLineDraw 0.5s var(--ts-ease) 720ms both;
+  animation: tsLineDrawFade 0.5s var(--ts-ease) 720ms both;
 }
 .ts-preview .ts-anim-info-v2.in-view .ts-anim-item:nth-child(5) { animation: tsFadeUp 0.8s var(--ts-ease) 840ms both; }
 
@@ -3036,7 +3046,6 @@
 /* 요일/날짜 셀 좌→우 물결 + 선택날짜 원형 팝 */
 .ts-preview .ts-anim-info-v3 .ts-anim-item {
   opacity: 0;
-  transform: translateY(8px);
 }
 /* 셀 초기 상태 */
 .ts-preview .ts-anim-info-v3 .ts-i3-cell {
@@ -3092,7 +3101,6 @@
 /* D— 롤업 + CountingNumber 카운터 + 나머지 stagger */
 .ts-preview .ts-anim-info-v5 .ts-anim-item {
   opacity: 0;
-  transform: translateY(6px);
 }
 /* D— 초기 숨김 */
 .ts-preview .ts-anim-info-v5 .ts-i5-dash.ts-digit {
@@ -3120,16 +3128,14 @@
 }
 /* rule */
 .ts-preview .ts-anim-info-v5.in-view .ts-anim-item:nth-child(3) {
-  transform: scaleX(0);
   transform-origin: center;
-  animation: tsLineDraw 0.4s var(--ts-ease) 1800ms both;
+  animation: tsLineDrawFade 0.4s var(--ts-ease) 1800ms both;
 }
 /* rows */
 .ts-preview .ts-anim-info-v5.in-view .ts-anim-item:nth-child(4) { animation: tsFadeUp 0.8s var(--ts-ease) 2040ms both; }
 /* V5 개별 row stagger */
 .ts-preview .ts-anim-info-v5 .ts-i5-row {
   opacity: 0;
-  transform: translateX(-12px);
 }
 .ts-preview .ts-anim-info-v5.in-view .ts-i5-row:nth-child(1) { animation: tsSlideRight 0.5s var(--ts-ease) 2080ms both; }
 .ts-preview .ts-anim-info-v5.in-view .ts-i5-row:nth-child(2) { animation: tsSlideRight 0.5s var(--ts-ease) 2160ms both; }
@@ -3140,7 +3146,6 @@
 /* 초기 숨김 */
 .ts-preview .ts-countdown-inline.ts-anim-item {
   opacity: 0;
-  transform: translateY(8px);
 }
 /* V1: 캘린더 뒤에 등장 */
 .ts-preview .ts-anim-info-v1.in-view .ts-countdown-inline.ts-anim-item { animation: tsFadeUp 0.8s var(--ts-ease) 1500ms both; }
@@ -3155,40 +3160,37 @@
 
 /* ---------- DIRECTION ---------- */
 /* V1 · Map Card: name fade → map kenburns → addr fade-up */
-.ts-preview .ts-anim-dir-v1 .ts-anim-item { opacity: 0; transform: translateY(8px); }
+/* V1 · Map Card */
+.ts-preview .ts-anim-dir-v1 .ts-anim-item { opacity: 0; }
 .ts-preview .ts-anim-dir-v1.in-view .ts-eyebrow { animation: tsFadeUp 0.7s var(--ts-ease) 60ms both; }
 .ts-preview .ts-anim-dir-v1.in-view .ts-anim-item:nth-child(2) { animation: tsFadeUp 0.7s var(--ts-ease) 180ms both; }
-.ts-preview .ts-anim-dir-v1.in-view .ts-anim-item:nth-child(3) { animation: tsKenburns 1.1s var(--ts-ease) 340ms both; }
+.ts-preview .ts-anim-dir-v1.in-view .ts-anim-item:nth-child(3) { animation: tsFadeIn 1s var(--ts-ease) 340ms both; }
 .ts-preview .ts-anim-dir-v1.in-view .ts-anim-item:nth-child(4) { animation: tsFadeUp 0.8s var(--ts-ease) 600ms both; }
 
-/* V2 · Full Map: map kenburns → info box slide-up */
-.ts-preview .ts-anim-dir-v2 .ts-anim-item { opacity: 0; transform: translateY(8px); }
-.ts-preview .ts-anim-dir-v2.in-view .ts-anim-item:nth-child(2) { animation: tsKenburns 1.1s var(--ts-ease) 100ms both; }
+/* V2 · Full Map */
+.ts-preview .ts-anim-dir-v2 .ts-anim-item { opacity: 0; }
+.ts-preview .ts-anim-dir-v2.in-view .ts-anim-item:nth-child(2) { animation: tsFadeIn 1s var(--ts-ease) 100ms both; }
 .ts-preview .ts-anim-dir-v2.in-view .ts-anim-item:nth-child(3) { animation: tsFadeUp 0.8s var(--ts-ease) 400ms both; }
 
-/* V3 · Info Top + Map Bottom: info fade-down → map wipe-in */
+/* V3 · Info Top + Map Bottom */
 .ts-preview .ts-anim-dir-v3 .ts-anim-item { opacity: 0; }
-.ts-preview .ts-anim-dir-v3.in-view .ts-anim-item:nth-child(2) {
-  animation: tsFadeUp 0.8s var(--ts-ease) 100ms both;
-}
-.ts-preview .ts-anim-dir-v3.in-view .ts-anim-item:nth-child(3) {
-  animation: tsKenburns 1.1s var(--ts-ease) 400ms both;
-}
+.ts-preview .ts-anim-dir-v3.in-view .ts-anim-item:nth-child(2) { animation: tsFadeUp 0.8s var(--ts-ease) 100ms both; }
+.ts-preview .ts-anim-dir-v3.in-view .ts-anim-item:nth-child(3) { animation: tsFadeIn 1s var(--ts-ease) 400ms both; }
 
-/* V4 · Map + Card: map kenburns → card scale-in */
+/* V4 · Map + Card */
 .ts-preview .ts-anim-dir-v4 .ts-anim-item { opacity: 0; }
-.ts-preview .ts-anim-dir-v4 .ts-anim-card { opacity: 0; transform: scale(0.94); }
-.ts-preview .ts-anim-dir-v4.in-view .ts-anim-item { animation: tsKenburns 1s var(--ts-ease) 100ms both; }
+.ts-preview .ts-anim-dir-v4 .ts-anim-card { opacity: 0; transform: scale(0.97); }
+.ts-preview .ts-anim-dir-v4.in-view .ts-anim-item { animation: tsFadeIn 1s var(--ts-ease) 100ms both; }
 .ts-preview .ts-anim-dir-v4.in-view .ts-anim-card { animation: tsScaleIn 0.8s var(--ts-ease) 400ms both; }
 
-/* V5 · Label Grid: map kenburns → rows stagger slide-right */
-.ts-preview .ts-anim-dir-v5 .ts-anim-item { opacity: 0; transform: translateY(6px); }
-.ts-preview .ts-anim-dir-v5.in-view .ts-anim-item:nth-child(2) { animation: tsKenburns 1.1s var(--ts-ease) 100ms both; }
-.ts-preview .ts-anim-dir-v5.in-view .ts-anim-item:nth-child(3) { animation: tsSlideRight 0.7s var(--ts-ease) 400ms both; }
-.ts-preview .ts-anim-dir-v5.in-view .ts-anim-item:nth-child(4) { animation: tsSlideRight 0.7s var(--ts-ease) 550ms both; }
+/* V5 · Label Grid */
+.ts-preview .ts-anim-dir-v5 .ts-anim-item { opacity: 0; }
+.ts-preview .ts-anim-dir-v5.in-view .ts-anim-item:nth-child(2) { animation: tsFadeIn 1s var(--ts-ease) 100ms both; }
+.ts-preview .ts-anim-dir-v5.in-view .ts-anim-item:nth-child(3) { animation: tsFadeUp 0.7s var(--ts-ease) 400ms both; }
+.ts-preview .ts-anim-dir-v5.in-view .ts-anim-item:nth-child(4) { animation: tsFadeUp 0.7s var(--ts-ease) 550ms both; }
 
 /* Transport Info — 교통편 공통 */
-.ts-preview [class*="ts-anim-dir-"] .ts-transport { opacity: 0; transform: translateY(6px); }
+.ts-preview [class*="ts-anim-dir-"] .ts-transport { opacity: 0; }
 .ts-preview [class*="ts-anim-dir-"].in-view .ts-transport { animation: tsFadeUp 0.7s var(--ts-ease) 700ms both; }
 
 /* ---------- INTERVIEW ---------- */
@@ -3406,15 +3408,15 @@
 .ts-preview .ts-thanks.in-view .ts-thanks-body { animation: tsFadeUp 0.9s var(--ts-ease) 460ms both; }
 .ts-preview .ts-thanks.in-view .ts-thanks-sign { animation: tsFadeIn 0.7s var(--ts-ease) 620ms both; }
 /* V2 미니멀 — body fade → line draw → names fade */
-.ts-preview .ts-anim-thx-v2 > * { opacity: 0; transform: translateY(8px); }
+.ts-preview .ts-anim-thx-v2 > * { opacity: 0; }
 .ts-preview .ts-anim-thx-v2.in-view > :nth-child(1) { animation: tsFadeUp 0.9s var(--ts-ease) 80ms both; }
-.ts-preview .ts-anim-thx-v2.in-view > :nth-child(2) { transform: translateY(0) scaleX(0); transform-origin: center; animation: tsLineDraw 0.5s var(--ts-ease) 500ms both; }
+.ts-preview .ts-anim-thx-v2.in-view > :nth-child(2) { transform-origin: center; animation: tsLineDrawFade 0.5s var(--ts-ease) 500ms both; }
 .ts-preview .ts-anim-thx-v2.in-view > :nth-child(3) { animation: tsFadeUp 0.8s var(--ts-ease) 650ms both; }
 /* V3 스크립트 마크 — mark fade → title → body → names */
 .ts-preview .ts-anim-thx-v3 > * { opacity: 0; }
 .ts-preview .ts-anim-thx-v3.in-view > :nth-child(1) { animation: tsFadeIn 1s var(--ts-ease) 80ms both; }
-.ts-preview .ts-anim-thx-v3.in-view > :nth-child(2) { animation: tsFadeUp 0.8s var(--ts-ease) 300ms both; transform: translateY(8px); }
-.ts-preview .ts-anim-thx-v3.in-view > :nth-child(3) { animation: tsFadeUp 0.9s var(--ts-ease) 500ms both; transform: translateY(8px); }
+.ts-preview .ts-anim-thx-v3.in-view > :nth-child(2) { animation: tsFadeUp 0.8s var(--ts-ease) 300ms both; }
+.ts-preview .ts-anim-thx-v3.in-view > :nth-child(3) { animation: tsFadeUp 0.9s var(--ts-ease) 500ms both; }
 .ts-preview .ts-anim-thx-v3.in-view > :nth-child(4) { animation: tsFadeIn 0.8s var(--ts-ease) 700ms both; }
 /* V4 카드 프레임 — scale in */
 .ts-preview .ts-anim-thx-v4 > * { opacity: 0; transform: scale(0.94); }
@@ -3439,35 +3441,54 @@
 .ts-preview .ts-anim-gallery-v4.in-view .ts-anim-item { animation-name: tsGallerySlideUp; animation-duration: 0.8s; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
 .ts-preview .ts-anim-gallery-v5.in-view .ts-anim-item { animation-name: tsGalleryReveal; }
 
-/* ---- Love Story V1 기본 — fade up ---- */
-.ts-preview .ts-anim-ls-v1 > * { opacity: 0; transform: translateY(8px); }
-.ts-preview .ts-anim-ls-v1.in-view > :nth-child(1) { animation: tsFadeUp 0.7s var(--ts-ease) 80ms both; }
-.ts-preview .ts-anim-ls-v1.in-view > :nth-child(2) { animation: tsFadeUp 0.8s var(--ts-ease) 200ms both; }
-.ts-preview .ts-anim-ls-v1.in-view > :nth-child(3) { animation: tsFadeUp 0.8s var(--ts-ease) 350ms both; }
+/* ---- Love Story 공통: eyebrow 먼저 + 스토리별 순차 등장 (--ls-i) ---- */
 
-/* ---- Love Story V2 좌사진우텍스트 ---- */
-.ts-preview .ts-anim-ls-v2 > * { opacity: 0; transform: translateX(-8px); }
-.ts-preview .ts-anim-ls-v2.in-view > :nth-child(1) { animation: tsFadeUp 0.7s var(--ts-ease) 80ms both; }
-.ts-preview .ts-anim-ls-v2.in-view > :nth-child(2) { animation: tsSlideRight 0.9s var(--ts-ease) 240ms both; }
+/* 모든 variant 공통: eyebrow + stagger 아이템 초기 숨김 */
+.ts-preview [class*="ts-anim-ls-"] .ts-eyebrow { opacity: 0; transform: translateY(8px); }
+.ts-preview [class*="ts-anim-ls-"] .ts-ls-stagger { opacity: 0; transform: translateY(8px); }
 
-/* ---- Love Story V3 풀폭배경 ---- */
-.ts-preview .ts-anim-ls-v3 > * { opacity: 0; }
-.ts-preview .ts-anim-ls-v3.in-view > :nth-child(1) { animation: tsFadeIn 1s var(--ts-ease) 100ms both; }
+/* in-view: eyebrow 먼저 등장 */
+.ts-preview [class*="ts-anim-ls-"].in-view .ts-eyebrow {
+  animation: tsFadeUp 0.7s var(--ts-ease) 80ms both;
+}
 
-/* ---- Love Story V4 카드 ---- */
-.ts-preview .ts-anim-ls-v4 > * { opacity: 0; transform: translateY(8px); }
-.ts-preview .ts-anim-ls-v4.in-view > :nth-child(1) { animation: tsFadeUp 0.7s var(--ts-ease) 80ms both; }
-.ts-preview .ts-anim-ls-v4.in-view > :nth-child(2) { animation: tsFadeUp 0.9s var(--ts-ease) 250ms both; }
+/* V1 기본 — fade up */
+.ts-preview .ts-anim-ls-v1.in-view .ts-ls-stagger {
+  animation: tsFadeUp 0.8s var(--ts-ease) both;
+  animation-delay: calc(300ms + var(--ls-i, 0) * 300ms);
+}
 
-/* ---- Love Story V5 타임라인 ---- */
-.ts-preview .ts-anim-ls-v5 > * { opacity: 0; transform: translateY(6px); }
-.ts-preview .ts-anim-ls-v5.in-view > :nth-child(1) { animation: tsFadeUp 0.7s var(--ts-ease) 80ms both; }
-.ts-preview .ts-anim-ls-v5.in-view > :nth-child(2) { animation: tsFadeUp 0.8s var(--ts-ease) 200ms both; }
+/* V2 좌우교차 — slide right */
+.ts-preview .ts-anim-ls-v2 .ts-ls-stagger { transform: translateX(-8px); }
+.ts-preview .ts-anim-ls-v2.in-view .ts-ls-stagger {
+  animation: tsSlideRight 0.9s var(--ts-ease) both;
+  animation-delay: calc(300ms + var(--ls-i, 0) * 300ms);
+}
+
+/* V3 풀폭배경 — fade in */
+.ts-preview .ts-anim-ls-v3 .ts-ls-stagger { transform: none; }
+.ts-preview .ts-anim-ls-v3.in-view .ts-ls-stagger {
+  animation: tsFadeIn 1s var(--ts-ease) both;
+  animation-delay: calc(100ms + var(--ls-i, 0) * 400ms);
+}
+
+/* V4 카드 — fade up */
+.ts-preview .ts-anim-ls-v4.in-view .ts-ls-stagger {
+  animation: tsFadeUp 0.9s var(--ts-ease) both;
+  animation-delay: calc(300ms + var(--ls-i, 0) * 300ms);
+}
+
+/* V5 타임라인 — fade up */
+.ts-preview .ts-anim-ls-v5.in-view .ts-ls-stagger {
+  animation: tsFadeUp 0.8s var(--ts-ease) both;
+  animation-delay: calc(300ms + var(--ls-i, 0) * 300ms);
+}
 
 /* IntersectionObserver 미트리거 시 콘텐츠 손실 방지 (reduced motion) */
 @media (prefers-reduced-motion: reduce) {
   .ts-preview [class*="ts-anim-"] > *,
   .ts-preview [class*="ts-anim-"] > .ts-anim-item,
+  .ts-preview [class*="ts-anim-"] .ts-ls-stagger,
   .ts-preview [class*="ts-anim-"] .ts-anim-row,
   .ts-preview [class*="ts-anim-"] .ts-anim-card,
   .ts-preview [class*="ts-anim-"] .ts-anim-left,
@@ -4205,6 +4226,7 @@
 }
 .ts-preview .ts-fam-card-body {
   padding: 28px 20px;
+  background: var(--card, #f5f5f5);
 }
 .ts-preview .ts-fam-card-grid {
   display: grid; grid-template-columns: 1fr auto 1fr;
@@ -4214,7 +4236,7 @@
   text-align: center;
 }
 .ts-preview .ts-fam-card-heart {
-  color: var(--ink); font-size: 12px; opacity: 0.5;
+  color: var(--point); font-size: 12px; opacity: 0.7;
   line-height: 1; padding-top: 14px;
 }
 .ts-preview .ts-fam-card-parents {
@@ -4275,7 +4297,7 @@
   margin-bottom: 6px;
 }
 .ts-preview .ts-fam--v3 .ts-fam-v3-heart {
-  color: var(--ink); font-size: 16px; opacity: 0.7;
+  color: var(--point); font-size: 16px; opacity: 0.7;
   line-height: 1; padding-top: 16px;
 }
 

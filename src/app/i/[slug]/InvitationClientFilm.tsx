@@ -685,7 +685,7 @@ function FilmCinematicCover({ invitation, fonts, tc, onEnter, isPreview }: {
 function FilmHeader({ invitation, fonts, tc }: { invitation: any; fonts: FontConfig; tc: ColorConfig }) {
   const dfs = (px: number) => `${Math.round(px * (fonts.ds || 1))}px`
   return (
-    <div className="absolute top-0 left-0 right-0 z-40 px-5 py-3 flex items-center justify-between"
+    <div className="relative z-10 px-5 py-3 flex items-center justify-between"
       style={{ backgroundColor: tc.background, borderBottom: `1px solid ${tc.divider}40` }}>
       <div style={{ fontFamily: fonts.displayKr, fontSize: '11px', fontWeight: 400, letterSpacing: '4px', color: tc.gray }}>
         {invitation.groom?.name || ''} & {invitation.bride?.name || ''}
@@ -3141,6 +3141,7 @@ function InvitationClientFilmContent({
                       : <FilmPosterCover invitation={invitation} fonts={fonts} tc={tc} onEnter={() => setCurrentPage('main')} isPreview={isPreview} />
                   ) : (
                     <>
+                      <FilmHeader invitation={invitation} fonts={fonts} tc={tc} />
                       <div className="snap-section" style={{ backgroundColor: tc.background }}><ChapterOne invitation={invitation} fonts={fonts} tc={tc} /></div>
                       {(() => {
                         const sectionBgMap: Record<string, 'background' | 'sectionBg'> = invitation.magazineSectionBgMap || FILM_DEFAULT_BG
@@ -3201,9 +3202,6 @@ function InvitationClientFilmContent({
               </WatermarkOverlay>
             </div>
             <div className="mobile-frame-fixed-ui">
-              {currentPage === 'main' && (
-                <FilmHeader invitation={invitation} fonts={fonts} tc={tc} />
-              )}
               {currentPage === 'main' && !isPreview && (
                 <GuestFloatingButton themeColors={{...tc, primary: tc.cardText ? tc.accent : tc.primary, sectionBg: getAccentTint(tc.accent, 0.85), text: tc.cardText || tc.text, gray: tc.cardGray || tc.gray, background: getAccentTint(tc.accent, 0.82)}} fonts={fonts} openModal="none" onModalClose={() => {}} showTooltip={false} scrollContainerRef={scrollContainerRef}
                   navStyle={content?.navStyle || 'hamburger'}

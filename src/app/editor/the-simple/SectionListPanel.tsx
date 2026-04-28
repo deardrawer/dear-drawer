@@ -18,7 +18,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { GripVertical, Eye, EyeOff, X, ChevronDown, Plus } from 'lucide-react'
+import { GripVertical, Eye, EyeOff, X, ChevronDown, Plus, Minus } from 'lucide-react'
 import { getSectionType } from './utils'
 import VariantThumbnail from './VariantThumbnail'
 
@@ -134,6 +134,8 @@ interface SectionListPanelProps {
   sectionOrder: string[]
   sectionVariants: Record<string, number>
   hiddenSections?: string[]
+  /** 디바이더 숨김 처리된 섹션 id 목록 (해당 섹션 위의 디바이더를 숨김) */
+  hiddenDividers?: string[]
   /** 복제 가능한 섹션 타입 (예: ['gallery']). 복제된 인스턴스에 삭제 버튼이 노출됩니다. */
   duplicableTypes?: string[]
   /** 펼쳤을 때 variant 칩 아래에 렌더링할 섹션별 콘텐츠 (예: 갤러리 이미지 관리 UI) */
@@ -141,6 +143,8 @@ interface SectionListPanelProps {
   onReorder: (next: string[]) => void
   onVariantChange: (sectionId: string, variant: number) => void
   onToggleVisibility?: (sectionId: string) => void
+  /** 디바이더 토글 핸들러 */
+  onToggleDivider?: (sectionId: string) => void
   onRemoveInstance?: (sectionId: string) => void
   /** 복제 가능한 타입을 추가하는 핸들러 */
   onAddInstance?: (type: string) => void
@@ -155,11 +159,13 @@ export default function SectionListPanel({
   sectionOrder,
   sectionVariants,
   hiddenSections = [],
+  hiddenDividers = [],
   duplicableTypes = [],
   renderSectionContent,
   onReorder,
   onVariantChange,
   onToggleVisibility,
+  onToggleDivider,
   onRemoveInstance,
   onAddInstance,
   sectionBgMode,
@@ -223,6 +229,11 @@ export default function SectionListPanel({
             // 섹션 배경 상태 결정
             const bgOverride = sectionBgMap?.[id]
             const isTinted = bgOverride === 'tinted' || (bgOverride === undefined && sectionBgMode === 'tinted' && index % 2 === 1)
+            // 디바이더 토글: intro가 아니고, 첫 번째 body 섹션도 아닌 경우에만 표시
+            const isIntro = type === 'intro'
+            const firstBodyIndex = sectionOrder.findIndex((s) => getSectionType(s) !== 'intro')
+            const isFirstBody = index === firstBodyIndex
+            const showDividerToggle = !isIntro && !isFirstBody && !!onToggleDivider
             return (
               <SortableSection
                 key={id}
@@ -247,6 +258,8 @@ export default function SectionListPanel({
                 isTinted={sectionBgMode === 'tinted' ? isTinted : undefined}
                 tintedColor={tintedColor}
                 onToggleSectionBg={sectionBgMode === 'tinted' && onToggleSectionBg ? () => onToggleSectionBg(id) : undefined}
+                dividerHidden={hiddenDividers.includes(id)}
+                onToggleDivider={showDividerToggle ? () => onToggleDivider(id) : undefined}
               />
             )
           })}
@@ -301,6 +314,10 @@ interface SortableSectionProps {
   isTinted?: boolean
   tintedColor?: string
   onToggleSectionBg?: () => void
+  /** 이 섹션 위의 디바이더가 숨겨져 있는지 */
+  dividerHidden?: boolean
+  /** 디바이더 토글 핸들러 */
+  onToggleDivider?: () => void
 }
 
 function SortableSection({
@@ -322,6 +339,8 @@ function SortableSection({
   isTinted,
   tintedColor,
   onToggleSectionBg,
+  dividerHidden,
+  onToggleDivider,
 }: SortableSectionProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
 
@@ -366,6 +385,28 @@ function SortableSection({
 
         {/* Label */}
         <span className="flex-1 text-sm text-stone-800 truncate">{label}</span>
+
+        {/* Divider toggle — 이 섹션 위의 디바이더 on/off */}
+        {onToggleDivider && (
+          <button
+            type="button"
+            onClick={onToggleDivider}
+            aria-label={dividerHidden ? '디바이더 표시' : '디바이더 숨김'}
+            title={dividerHidden ? '디바이더 OFF' : '디바이더 ON'}
+            className={`relative p-1 transition-colors ${
+              dividerHidden
+                ? 'text-stone-300 hover:text-stone-500'
+                : 'text-stone-400 hover:text-stone-700'
+            }`}
+          >
+            <Minus size={13} />
+            {dividerHidden && (
+              <span className="absolute inset-0 flex items-center justify-center">
+                <span className="block w-[15px] h-[1.5px] bg-current rotate-45" />
+              </span>
+            )}
+          </button>
+        )}
 
         {/* Section background toggle (tinted mode) */}
         {onToggleSectionBg && (

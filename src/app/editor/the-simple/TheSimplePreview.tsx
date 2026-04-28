@@ -5376,7 +5376,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
             : topColor !== '#ffffff' ? { background: topColor } : undefined
           return (
             <div key={id}>
-              {_filteredIndex > 0 && (
+              {_filteredIndex > 0 && !(data.hiddenDividers || []).includes(id) && (
                 <div style={dividerStyle}>
                   <div className="ts-sec ts-sec--compact" aria-hidden="true">
                     <Divider variant={dividerV} />

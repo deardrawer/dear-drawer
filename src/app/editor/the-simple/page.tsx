@@ -252,6 +252,9 @@ export interface TheSimpleInvitationData {
   // 숨김 처리된 섹션 id 목록 (optional 섹션만 대상)
   hiddenSections: string[]
 
+  // 디바이더 숨김 처리된 섹션 id 목록 (해당 섹션 위의 디바이더를 숨김)
+  hiddenDividers?: string[]
+
   // 섹션 인스턴스별 갤러리 이미지 (예: { gallery: [...], 'gallery-1734567890': [...] })
   galleries: Record<string, GalleryImage[]>
 
@@ -453,6 +456,7 @@ const defaultData: TheSimpleInvitationData = {
   sectionOrder: DEFAULT_SECTION_ORDER,
   sectionVariants: Object.fromEntries(DEFAULT_SECTION_ORDER.map((id) => [id, 1])),
   hiddenSections: ['family'],
+  hiddenDividers: [],
   galleries: {
     gallery: [],
   },
@@ -847,6 +851,7 @@ function TheSimpleEditorContent() {
               if (!parsed.galleries) parsed.galleries = { gallery: [] }
               if (!parsed.galleryRowPatterns) parsed.galleryRowPatterns = {}
               if (!parsed.galleryShowMoreRow) parsed.galleryShowMoreRow = {}
+              if (!parsed.hiddenDividers) parsed.hiddenDividers = []
 
               // 구(舊) 최상위 `intro` / `greeting` → `sections.*` 마이그레이션
               const migratedSections: SectionContents = {
@@ -1058,6 +1063,7 @@ function TheSimpleEditorContent() {
         sectionVariants: nextVariants,
         galleries: nextGalleries,
         hiddenSections: prev.hiddenSections.filter((id) => id !== instanceId),
+        hiddenDividers: (prev.hiddenDividers || []).filter((id) => id !== instanceId),
       }
     })
     setIsDirty(true)
@@ -1936,6 +1942,7 @@ function TheSimpleEditorContent() {
                     <p className="text-[11px] text-stone-600 leading-relaxed">
                       각 섹션을 눌러 펼치면 UI 대안과 상세 설정(갤러리 이미지 등)이 나타납니다.
                       손잡이를 잡아 드래그하면 순서를 변경할 수 있습니다.
+                      {' '}<span className="inline-flex items-center align-text-bottom"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12" /></svg></span> 버튼으로 섹션 사이 디바이더를 개별적으로 끄거나 켤 수 있습니다.
                       {data.sectionBgMode === 'tinted' && (
                         <> 틴티드 배경 모드에서는 각 섹션의 <span className="inline-block w-3 h-3 rounded-full border border-stone-400 align-text-bottom" style={{ background: data.tintedColor || '#FAF8F5' }} /> 버튼으로 배경을 개별 전환할 수 있습니다.</>
                       )}
@@ -1944,6 +1951,14 @@ function TheSimpleEditorContent() {
                       sectionOrder={data.sectionOrder}
                       sectionVariants={data.sectionVariants}
                       hiddenSections={data.hiddenSections}
+                      hiddenDividers={data.hiddenDividers}
+                      onToggleDivider={(id) =>
+                        updateData({
+                          hiddenDividers: (data.hiddenDividers || []).includes(id)
+                            ? (data.hiddenDividers || []).filter((s) => s !== id)
+                            : [...(data.hiddenDividers || []), id],
+                        })
+                      }
                       duplicableTypes={['gallery']}
                       renderSectionContent={(id) => {
                         const type = getSectionType(id)

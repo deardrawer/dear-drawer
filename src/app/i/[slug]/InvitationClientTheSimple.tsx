@@ -444,6 +444,7 @@ function normalizeTheSimpleData(
       return raw
     })(),
     hiddenSections: c.hiddenSections || [],
+    hiddenDividers: c.hiddenDividers || [],
     galleries,
     galleryRowPatterns: (c as Record<string, unknown>).galleryRowPatterns as Record<string, number[]> | undefined,
     galleryShowMoreRow: (c as Record<string, unknown>).galleryShowMoreRow as Record<string, number> | undefined,

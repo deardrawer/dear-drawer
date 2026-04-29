@@ -2061,6 +2061,7 @@
   -webkit-overflow-scrolling: touch;
   padding: 0 24px;
   padding-top: 8px;
+  padding-bottom: max(24px, env(safe-area-inset-bottom, 24px));
 }
 .ts-rsvp-modal-close {
   background: rgba(0, 0, 0, 0.08);
@@ -2170,7 +2171,7 @@
 }
 .ts-rsvp-modal-submit {
   width: calc(100% - 48px);
-  margin: 20px auto 0;
+  margin: 16px auto 0;
   font-family: var(--font-ko, sans-serif);
   font-size: 15px;
   font-weight: 600;
@@ -4026,14 +4027,14 @@
   display: inline-flex; align-items: center; gap: 6px;
   font-family: var(--font-ko);
   font-size: calc(13px * var(--ts-font-scale, 1));
-  color: var(--ink); background: var(--bg-2);
-  border: 1px solid var(--bg-2);
+  color: #fff; background: var(--accent, #1a1a1a);
+  border: 1px solid var(--accent, #1a1a1a);
   border-radius: 24px; padding: 8px 28px;
   cursor: pointer; letter-spacing: 0.04em;
-  transition: background 0.2s, border-color 0.2s;
+  transition: background 0.2s, border-color 0.2s, opacity 0.2s;
 }
 .ts-preview .ts-fam-contact-btn:hover {
-  background: var(--bg-2); border-color: var(--mute-2);
+  opacity: 0.85;
 }
 /* V1 네모 버튼 */
 .ts-preview .ts-fam--v1 .ts-fam-contact-btn {
@@ -4268,12 +4269,10 @@
   letter-spacing: 0.06em;
 }
 
-/* V2 연락하기 버튼 — 블랙 */
+/* V2 연락하기 버튼 */
 .ts-preview .ts-fam--v2 .ts-fam-contact-btn {
   border-radius: 6px; width: 100%; justify-content: center;
   padding: 10px 28px;
-  background: var(--bg-2); color: var(--ink);
-  border-color: var(--bg-2);
 }
 
 /* V3 하트 구분자 */

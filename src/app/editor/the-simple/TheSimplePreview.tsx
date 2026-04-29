@@ -1121,7 +1121,7 @@ function GalleryShowMore({
             }}
           >
             {row.items.map((item) => {
-              const delay = imgCounter * 100
+              const delay = imgCounter * (v === 5 ? 180 : 100)
               imgCounter++
               return (
                 <div key={keyFor(item.idx)} className="ts-anim-item" style={{ animationDelay: `${delay}ms` }}>

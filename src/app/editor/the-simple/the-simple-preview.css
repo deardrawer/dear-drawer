@@ -3268,17 +3268,17 @@
 
 /* V3 커스텀 행 패턴 — 3D 플립 등장 */
 .ts-preview .ts-anim-gallery-v3.in-view .ts-anim-item {
-  animation: tsGalleryFlipIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: tsGalleryFlipIn 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* V4 커스텀 행 패턴 — 아래에서 스케일업 */
 .ts-preview .ts-anim-gallery-v4.in-view .ts-anim-item {
-  animation: tsGallerySlideUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: tsGallerySlideUp 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* V5 커스텀 행 패턴 — 스태거 리빌 */
 .ts-preview .ts-anim-gallery-v5.in-view .ts-anim-item {
-  animation: tsGalleryReveal 0.8s var(--ts-ease) both;
+  animation: tsGalleryReveal 1.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* ---------- VIDEO ---------- */
@@ -3442,9 +3442,9 @@
 }
 .ts-preview .ts-anim-gallery-v1.in-view .ts-anim-item { animation-name: tsGalleryCurtain; animation-duration: 1s; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
 .ts-preview .ts-anim-gallery-v2.in-view .ts-anim-item { animation-name: tsGalleryZoomBlur; animation-duration: 1.2s; animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
-.ts-preview .ts-anim-gallery-v3.in-view .ts-anim-item { animation-name: tsGalleryFlipIn; animation-duration: 0.9s; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
-.ts-preview .ts-anim-gallery-v4.in-view .ts-anim-item { animation-name: tsGallerySlideUp; animation-duration: 0.8s; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
-.ts-preview .ts-anim-gallery-v5.in-view .ts-anim-item { animation-name: tsGalleryReveal; }
+.ts-preview .ts-anim-gallery-v3.in-view .ts-anim-item { animation-name: tsGalleryFlipIn; animation-duration: 1.2s; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+.ts-preview .ts-anim-gallery-v4.in-view .ts-anim-item { animation-name: tsGallerySlideUp; animation-duration: 1.1s; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+.ts-preview .ts-anim-gallery-v5.in-view .ts-anim-item { animation-name: tsGalleryReveal; animation-duration: 1.4s; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
 
 /* ---- Love Story 공통: eyebrow 먼저 + 스토리별 순차 등장 (--ls-i) ---- */
 

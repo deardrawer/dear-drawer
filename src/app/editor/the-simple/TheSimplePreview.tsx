@@ -1736,6 +1736,7 @@ function RsvpModal({
   invitationId,
   showMealOption,
   showShuttleOption,
+  showSideOption,
   rsvpNotice,
 }: {
   open: boolean
@@ -1743,6 +1744,7 @@ function RsvpModal({
   invitationId?: string
   showMealOption?: boolean
   showShuttleOption?: boolean
+  showSideOption?: boolean
   rsvpNotice?: string
 }) {
   const [name, setName] = useState('')
@@ -1750,6 +1752,7 @@ function RsvpModal({
   const [count, setCount] = useState(1)
   const [mealAttendance, setMealAttendance] = useState<'yes' | 'no'>('yes')
   const [shuttleBus, setShuttleBus] = useState<'yes' | 'no'>('no')
+  const [side, setSide] = useState<'groom' | 'bride'>('groom')
   const [message, setMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
@@ -1800,6 +1803,7 @@ function RsvpModal({
           message: message.trim() || undefined,
           ...(showMealOption && attendance === 'attending' ? { mealAttendance } : {}),
           ...(showShuttleOption && attendance === 'attending' ? { shuttleBus } : {}),
+          ...(showSideOption ? { side } : {}),
         }),
       })
       if (res.ok) {
@@ -1812,6 +1816,7 @@ function RsvpModal({
           setCount(1)
           setMealAttendance('yes')
           setShuttleBus('no')
+          setSide('groom')
           setMessage('')
         }, 1500)
       }
@@ -1820,7 +1825,7 @@ function RsvpModal({
     } finally {
       setSubmitting(false)
     }
-  }, [name, attendance, count, mealAttendance, shuttleBus, message, invitationId, submitting, onClose, showMealOption, showShuttleOption])
+  }, [name, attendance, count, mealAttendance, shuttleBus, side, message, invitationId, submitting, onClose, showMealOption, showShuttleOption, showSideOption])
 
   const [closing, setClosing] = useState(false)
 
@@ -1883,6 +1888,15 @@ function RsvpModal({
                 maxLength={50}
                 className="ts-rsvp-modal-input"
               />
+              {showSideOption && (
+                <div>
+                  <span style={{ fontFamily: 'var(--font-ko)', fontSize: 13, color: 'var(--ink)', display: 'block', marginBottom: 6 }}>하객 구분</span>
+                  <div className="ts-rsvp-modal-toggle">
+                    <button type="button" className={`ts-rsvp-modal-opt ${side === 'groom' ? 'active' : ''}`} onClick={() => setSide('groom')}>신랑측</button>
+                    <button type="button" className={`ts-rsvp-modal-opt ${side === 'bride' ? 'active' : ''}`} onClick={() => setSide('bride')}>신부측</button>
+                  </div>
+                </div>
+              )}
               <div className="ts-rsvp-modal-toggle ts-rsvp-modal-toggle--3">
                 <button
                   type="button"
@@ -1982,6 +1996,36 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
   const [lightboxImages, setLightboxImages] = useState<string[]>([])
+
+  // 게스트북 메시지 fetch (실제 청첩장에서만)
+  const [guestbookMessages, setGuestbookMessages] = useState<{ name: string; date: string; text: string }[]>([])
+  const [gbFetchKey, setGbFetchKey] = useState(0)
+
+  useEffect(() => {
+    if (!data.id) return
+    let cancelled = false
+    fetch(`/api/guestbook?invitationId=${data.id}`)
+      .then((r) => r.ok ? r.json() as Promise<{ data: { guest_name: string; message: string; created_at: string }[] }> : null)
+      .then((json) => {
+        if (cancelled || !json?.data) return
+        setGuestbookMessages(
+          json.data.map((m) => {
+            const d = new Date(m.created_at)
+            return {
+              name: m.guest_name,
+              date: `${d.getMonth() + 1}.${String(d.getDate()).padStart(2, '0')}`,
+              text: m.message,
+            }
+          }),
+        )
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [data.id, gbFetchKey])
+
+  const handleGuestbookSubmitted = useCallback(() => {
+    setGbFetchKey((k) => k + 1)
+  }, [])
 
   const openLightbox = useCallback((images: string[], index: number) => {
     setLightboxImages(images)
@@ -4477,6 +4521,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         { name: '지훈', date: '5.13', text: '결혼 축하드립니다. 늘 행복한 일만 가득하길 바랍니다.' },
         { name: '수현', date: '5.14', text: '아름다운 두 분, 앞으로도 서로를 아끼며 살아가시길!' },
       ]
+      const entries = data.id && guestbookMessages.length > 0 ? guestbookMessages : !data.id ? samples : guestbookMessages
 
       // V2 · 카드 그리드 · 베이지 톤
       if (v === 2) {
@@ -4511,7 +4556,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 gap: 8,
               }}
             >
-              {samples.slice(0, 2).map((s, i) => (
+              {entries.slice(0, 2).map((s, i) => (
                 <div
                   key={i}
                   style={{
@@ -4574,7 +4619,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
             >
               + Write a Message
             </div>
-            <GuestbookForm invitationId={data.id} />
+            <GuestbookForm invitationId={data.id} onSubmitted={handleGuestbookSubmitted} />
           </AnimatedSection>
         )
       }
@@ -4606,12 +4651,12 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   background: 'var(--line)',
                 }}
               />
-              {samples.map((s, i) => (
+              {entries.map((s, i) => (
                 <div
                   key={i}
                   style={{
                     position: 'relative',
-                    marginBottom: i === samples.length - 1 ? 0 : 18,
+                    marginBottom: i === entries.length - 1 ? 0 : 18,
                   }}
                 >
                   <div
@@ -4667,7 +4712,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 </div>
               ))}
             </div>
-            <GuestbookForm invitationId={data.id} />
+            <GuestbookForm invitationId={data.id} onSubmitted={handleGuestbookSubmitted} />
           </AnimatedSection>
         )
       }
@@ -4676,56 +4721,58 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       if (v === 4) {
         return (
           <AnimatedSection className={`ts-sec ts-guestbook ts-anim-gb-v${v}`} key={`guestbook-${v}`}>
-            <div
-              style={{
-                border: '1px solid var(--line)',
-                padding: '24px 20px',
-                textAlign: 'center',
-                background: 'var(--card)',
-              }}
-            >
+            {entries.length > 0 && (
               <div
                 style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 28,
-                  fontStyle: 'italic',
-                  color: 'var(--accent)',
-                  lineHeight: 0.5,
-                  marginBottom: 14,
+                  border: '1px solid var(--line)',
+                  padding: '24px 20px',
+                  textAlign: 'center',
+                  background: 'var(--card)',
                 }}
               >
-                &ldquo;
+                <div
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 28,
+                    fontStyle: 'italic',
+                    color: 'var(--accent)',
+                    lineHeight: 0.5,
+                    marginBottom: 14,
+                  }}
+                >
+                  &ldquo;
+                </div>
+                <p
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 14,
+                    fontStyle: 'italic',
+                    color: 'var(--ink)',
+                    lineHeight: 1.8,
+                    marginBottom: 12,
+                  }}
+                >
+                  {entries[0].text}
+                </p>
+                <div
+                  style={{
+                    width: 20,
+                    height: 1,
+                    background: 'var(--line)',
+                    margin: '0 auto 8px',
+                  }}
+                />
+                <div
+                  style={{
+                    fontFamily: 'var(--font-ko)',
+                    fontSize: 11,
+                    color: 'var(--mute)',
+                  }}
+                >
+                  {entries[0].name} · {entries[0].date}
+                </div>
               </div>
-              <p
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 14,
-                  fontStyle: 'italic',
-                  color: 'var(--ink)',
-                  lineHeight: 1.8,
-                  marginBottom: 12,
-                }}
-              >
-                {samples[0].text}
-              </p>
-              <div
-                style={{
-                  width: 20,
-                  height: 1,
-                  background: 'var(--line)',
-                  margin: '0 auto 8px',
-                }}
-              />
-              <div
-                style={{
-                  fontFamily: 'var(--font-ko)',
-                  fontSize: 11,
-                  color: 'var(--mute)',
-                }}
-              >
-                {samples[0].name} · {samples[0].date}
-              </div>
-            </div>
+            )}
             <div
               style={{
                 textAlign: 'center',
@@ -4739,7 +4786,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
             >
               View All Messages
             </div>
-            <GuestbookForm invitationId={data.id} />
+            <GuestbookForm invitationId={data.id} onSubmitted={handleGuestbookSubmitted} />
           </AnimatedSection>
         )
       }
@@ -4780,13 +4827,13 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 + New
               </div>
             </div>
-            {samples.map((s, i) => (
+            {entries.map((s, i) => (
               <div
                 key={i}
                 style={{
                   padding: '14px 0',
                   borderBottom:
-                    i === samples.length - 1 ? 'none' : '1px solid var(--line)',
+                    i === entries.length - 1 ? 'none' : '1px solid var(--line)',
                 }}
               >
                 <div
@@ -4829,7 +4876,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 </p>
               </div>
             ))}
-            <GuestbookForm invitationId={data.id} />
+            <GuestbookForm invitationId={data.id} onSubmitted={handleGuestbookSubmitted} />
           </AnimatedSection>
         )
       }
@@ -4841,15 +4888,13 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
             <div className="ts-gb-title">Guestbook</div>
             <div className="ts-gb-sub">따뜻한 한 마디를 남겨주세요</div>
           </div>
-          <div className="ts-gb-entry">
-            <div className="ts-gb-meta">민지 · 5.12</div>
-            <p className="ts-gb-text">두 분의 시작을 진심으로 축하드려요. 행복하세요!</p>
-          </div>
-          <div className="ts-gb-entry">
-            <div className="ts-gb-meta">지훈 · 5.13</div>
-            <p className="ts-gb-text">결혼 축하드립니다. 늘 행복한 일만 가득하길 바랍니다.</p>
-          </div>
-          <GuestbookForm invitationId={data.id} />
+          {entries.map((s, i) => (
+            <div key={i} className="ts-gb-entry">
+              <div className="ts-gb-meta">{s.name} · {s.date}</div>
+              <p className="ts-gb-text">{s.text}</p>
+            </div>
+          ))}
+          <GuestbookForm invitationId={data.id} onSubmitted={handleGuestbookSubmitted} />
         </AnimatedSection>
       )
     },
@@ -5603,7 +5648,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         </div>
       </div>
       </div>{/* /ts-body-wrap */}
-      <RsvpModal open={rsvpOpen} onClose={() => setRsvpOpen(false)} invitationId={data.id} showMealOption={data.sections.rsvp.showMealOption} showShuttleOption={data.sections.rsvp.showShuttleOption} rsvpNotice={data.sections.rsvp.rsvpNotice} />
+      <RsvpModal open={rsvpOpen} onClose={() => setRsvpOpen(false)} invitationId={data.id} showMealOption={data.sections.rsvp.showMealOption} showShuttleOption={data.sections.rsvp.showShuttleOption} showSideOption={data.sections.rsvp.showSideOption} rsvpNotice={data.sections.rsvp.rsvpNotice} />
       <GalleryLightbox images={lightboxImages} isOpen={lightboxOpen} initialIndex={lightboxIndex} onClose={() => setLightboxOpen(false)} variant={data.lightboxVariant ?? 1} />
     </div>
   )

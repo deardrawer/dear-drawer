@@ -71,6 +71,24 @@ export default function RsvpEditor({ value, onChange }: RsvpEditorProps) {
               />
             </button>
           </label>
+          <label className="flex items-center justify-between">
+            <span className="text-xs text-stone-600">신랑측/신부측 선택 허용</span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={value.showSideOption ?? false}
+              onClick={() => onChange({ ...value, showSideOption: !(value.showSideOption ?? false) })}
+              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                value.showSideOption ? 'bg-stone-800' : 'bg-stone-200'
+              }`}
+            >
+              <span
+                className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                  value.showSideOption ? 'translate-x-[18px]' : 'translate-x-[3px]'
+                }`}
+              />
+            </button>
+          </label>
         </div>
       </div>
 

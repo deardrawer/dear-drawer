@@ -183,6 +183,7 @@ export interface SectionContents {
     body: string
     showMealOption?: boolean
     showShuttleOption?: boolean
+    showSideOption?: boolean
     rsvpNotice?: string
   }
   thanks: {

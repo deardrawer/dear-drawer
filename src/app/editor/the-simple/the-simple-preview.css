@@ -2013,6 +2013,7 @@
   z-index: 9999;
   background: rgba(0, 0, 0, 0);
   animation: tsModalOverlayIn 0.35s ease forwards;
+  overflow: hidden;
 }
 .ts-rsvp-modal-overlay--closing {
   animation: tsModalOverlayOut 0.35s ease forwards;
@@ -2057,11 +2058,12 @@
 }
 .ts-rsvp-modal-body {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding: 0 24px;
   padding-top: 8px;
-  padding-bottom: max(24px, env(safe-area-inset-bottom, 24px));
+  padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
 }
 .ts-rsvp-modal-close {
   background: rgba(0, 0, 0, 0.08);
@@ -2170,8 +2172,8 @@
   border-color: var(--accent, #999);
 }
 .ts-rsvp-modal-submit {
-  width: calc(100% - 48px);
-  margin: 16px auto 0;
+  width: 100%;
+  margin: 16px 0 0;
   font-family: var(--font-ko, sans-serif);
   font-size: 15px;
   font-weight: 600;

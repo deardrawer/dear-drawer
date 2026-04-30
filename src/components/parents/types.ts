@@ -404,6 +404,7 @@ export interface ParentsInvitationContent {
   rsvpEnabled?: boolean
   rsvpMealOption?: boolean
   rsvpShuttleOption?: boolean
+  rsvpSideOption?: boolean
   rsvpNotice?: string
 
   // 디자인

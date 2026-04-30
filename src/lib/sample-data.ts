@@ -640,6 +640,7 @@ export const essayStorySampleContent = {
   },
   rsvpEnabled: true,
   rsvpDeadline: '2026-05-16',
+  rsvpSideOption: true,
   info: {
     dressCode: { title: '드레스코드', content: '', enabled: false },
     photoShare: { title: '사진 공유', content: '식장에서 찍으신 사진을\n공유 앨범에 올려주세요.\n소중한 순간을 함께 나눠요.', buttonText: '사진 올리기', url: '', enabled: false },
@@ -783,6 +784,7 @@ export const theSimpleSampleContent = {
     rsvp: {
       title: 'R.S.V.P.',
       body: '본 예식은 동시 예식으로 진행되어\n소중한 하루를 더 잘 준비하고자\n참석 여부와 식사 여부를\n미리 여쭙고자 합니다.\n\n부담없이 편하신 마음으로 알려주시면\n감사한 마음으로 정성껏 준비하겠습니다.',
+      showSideOption: true,
     },
     account: {
       eyebrow: 'Account',

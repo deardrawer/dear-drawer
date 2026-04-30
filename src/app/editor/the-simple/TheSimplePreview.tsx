@@ -43,23 +43,35 @@ function useContainedOverlay(
       scrollParent !== document.documentElement &&
       scrollParent !== document.body
     ) {
-      const top = scrollParent.scrollTop
-      const height = scrollParent.clientHeight
-      // 에디터 폰 프레임의 둥근 모서리(border-radius) 안쪽으로 오프셋
-      const frameRadius = parseFloat(getComputedStyle(scrollParent.parentElement || scrollParent).borderRadius) || 0
-      const inset = Math.ceil(frameRadius)
+      // transform 조상이 있는지 확인
+      let hasTransform = false
+      let tp: HTMLElement | null = scrollParent
+      while (tp) {
+        if (getComputedStyle(tp).transform !== 'none') { hasTransform = true; break }
+        tp = tp.parentElement
+      }
 
-      el.style.position = 'absolute'
-      el.style.top = `${top + inset}px`
-      el.style.left = '0'
-      el.style.right = '0'
-      el.style.bottom = 'auto'
-      el.style.height = `${height - inset}px`
-      el.style.width = '100%'
+      if (hasTransform) {
+        // 모바일: transform이 있으면 CSS position:fixed + inset:0 이 transform 컨테이너를 채움
+        // 스타일 오버라이드 하지 않고 스크롤만 잠금
+      } else {
+        // 데스크톱: transform 없으므로 스크롤 컨테이너의 뷰포트 좌표로 fixed 배치
+        const rect = scrollParent.getBoundingClientRect()
+        el.style.position = 'fixed'
+        el.style.top = `${rect.top}px`
+        el.style.left = `${rect.left}px`
+        el.style.width = `${rect.width}px`
+        el.style.height = `${rect.height}px`
+        el.style.zIndex = '9999'
+        el.style.bottom = 'auto'
+        el.style.right = 'auto'
+      }
 
       const prev = scrollParent.style.overflowY
       scrollParent.style.overflowY = 'hidden'
-      return () => { scrollParent!.style.overflowY = prev }
+      return () => {
+        scrollParent!.style.overflowY = prev
+      }
     }
     // 게스트 뷰: CSS의 position:fixed 그대로 사용
   }, [isOpen, ref])
@@ -1736,7 +1748,6 @@ function RsvpModal({
   invitationId,
   showMealOption,
   showShuttleOption,
-  showSideOption,
   rsvpNotice,
 }: {
   open: boolean
@@ -1744,7 +1755,6 @@ function RsvpModal({
   invitationId?: string
   showMealOption?: boolean
   showShuttleOption?: boolean
-  showSideOption?: boolean
   rsvpNotice?: string
 }) {
   const [name, setName] = useState('')
@@ -1772,7 +1782,13 @@ function RsvpModal({
     if (vv) {
       const handleVVResize = () => {
         if (!contentRef.current) return
-        contentRef.current.style.maxHeight = `${(vv.height ?? window.innerHeight) - 40}px`
+        // 키보드가 올라왔을 때만 maxHeight 제한 (뷰포트가 100px 이상 줄어든 경우)
+        const keyboardOpen = vv.height < window.innerHeight - 100
+        if (keyboardOpen) {
+          contentRef.current.style.maxHeight = `${vv.height - 40}px`
+        } else {
+          contentRef.current.style.maxHeight = ''
+        }
       }
       vv.addEventListener('resize', handleVVResize)
       handleVVResize()
@@ -1803,7 +1819,7 @@ function RsvpModal({
           message: message.trim() || undefined,
           ...(showMealOption && attendance === 'attending' ? { mealAttendance } : {}),
           ...(showShuttleOption && attendance === 'attending' ? { shuttleBus } : {}),
-          ...(showSideOption ? { side } : {}),
+          side,
         }),
       })
       if (res.ok) {
@@ -1825,7 +1841,7 @@ function RsvpModal({
     } finally {
       setSubmitting(false)
     }
-  }, [name, attendance, count, mealAttendance, shuttleBus, side, message, invitationId, submitting, onClose, showMealOption, showShuttleOption, showSideOption])
+  }, [name, attendance, count, mealAttendance, shuttleBus, side, message, invitationId, submitting, onClose, showMealOption, showShuttleOption])
 
   const [closing, setClosing] = useState(false)
 
@@ -1888,15 +1904,13 @@ function RsvpModal({
                 maxLength={50}
                 className="ts-rsvp-modal-input"
               />
-              {showSideOption && (
-                <div>
-                  <span style={{ fontFamily: 'var(--font-ko)', fontSize: 13, color: 'var(--ink)', display: 'block', marginBottom: 6 }}>하객 구분</span>
-                  <div className="ts-rsvp-modal-toggle">
-                    <button type="button" className={`ts-rsvp-modal-opt ${side === 'groom' ? 'active' : ''}`} onClick={() => setSide('groom')}>신랑측</button>
-                    <button type="button" className={`ts-rsvp-modal-opt ${side === 'bride' ? 'active' : ''}`} onClick={() => setSide('bride')}>신부측</button>
-                  </div>
+              <div>
+                <span style={{ fontFamily: 'var(--font-ko)', fontSize: 13, color: 'var(--ink)', display: 'block', marginBottom: 6 }}>하객 구분</span>
+                <div className="ts-rsvp-modal-toggle">
+                  <button type="button" className={`ts-rsvp-modal-opt ${side === 'groom' ? 'active' : ''}`} onClick={() => setSide('groom')}>신랑측</button>
+                  <button type="button" className={`ts-rsvp-modal-opt ${side === 'bride' ? 'active' : ''}`} onClick={() => setSide('bride')}>신부측</button>
                 </div>
-              )}
+              </div>
               <div className="ts-rsvp-modal-toggle ts-rsvp-modal-toggle--3">
                 <button
                   type="button"
@@ -5648,7 +5662,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         </div>
       </div>
       </div>{/* /ts-body-wrap */}
-      <RsvpModal open={rsvpOpen} onClose={() => setRsvpOpen(false)} invitationId={data.id} showMealOption={data.sections.rsvp.showMealOption} showShuttleOption={data.sections.rsvp.showShuttleOption} showSideOption={data.sections.rsvp.showSideOption} rsvpNotice={data.sections.rsvp.rsvpNotice} />
+      <RsvpModal open={rsvpOpen} onClose={() => setRsvpOpen(false)} invitationId={data.id} showMealOption={data.sections.rsvp.showMealOption} showShuttleOption={data.sections.rsvp.showShuttleOption} rsvpNotice={data.sections.rsvp.rsvpNotice} />
       <GalleryLightbox images={lightboxImages} isOpen={lightboxOpen} initialIndex={lightboxIndex} onClose={() => setLightboxOpen(false)} variant={data.lightboxVariant ?? 1} />
     </div>
   )

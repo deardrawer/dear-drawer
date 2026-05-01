@@ -303,121 +303,108 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">RSVP 대시보드</h1>
-          <p className="text-gray-500 mt-1">참석 응답을 확인하고 관리하세요</p>
-        </div>
-        <div className="flex gap-2">
-          <Link href={
-            templateId === 'narrative-parents' || templateId === 'parents'
-              ? `/editor/parents?id=${invitationId}`
-              : templateId === 'narrative-exhibit' || templateId === 'exhibit'
-              ? `/editor/feed?id=${invitationId}`
-              : templateId === 'narrative-thankyou'
-              ? `/editor/thank-you?id=${invitationId}`
-              : templateId === 'narrative-the-simple'
-              ? `/editor/the-simple?id=${invitationId}`
-              : templateId === 'narrative-essay'
-              ? `/editor/essay?id=${invitationId}`
-              : templateId === 'narrative-magazine' || templateId === 'narrative-film' || templateId === 'narrative-record'
-              ? `/editor/feed?id=${invitationId}`
-              : `/editor?id=${invitationId}`
-          }>
-            <Button variant="outline">에디터로 돌아가기</Button>
-          </Link>
-          <Button onClick={handleExportCSV}>
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            CSV 내보내기
-          </Button>
+    <div className="container mx-auto px-4 py-6 md:py-8">
+      {/* Header */}
+      <div className="mb-6 md:mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">RSVP 대시보드</h1>
+            <p className="text-sm text-gray-500 mt-1">참석 응답을 확인하고 관리하세요</p>
+          </div>
+          <div className="flex gap-2">
+            <Link href={
+              templateId === 'narrative-parents' || templateId === 'parents'
+                ? `/editor/parents?id=${invitationId}`
+                : templateId === 'narrative-exhibit' || templateId === 'exhibit'
+                ? `/editor/feed?id=${invitationId}`
+                : templateId === 'narrative-thankyou'
+                ? `/editor/thank-you?id=${invitationId}`
+                : templateId === 'narrative-the-simple'
+                ? `/editor/the-simple?id=${invitationId}`
+                : templateId === 'narrative-essay'
+                ? `/editor/essay?id=${invitationId}`
+                : templateId === 'narrative-magazine' || templateId === 'narrative-film' || templateId === 'narrative-record'
+                ? `/editor/feed?id=${invitationId}`
+                : `/editor?id=${invitationId}`
+            }>
+              <Button variant="outline" size="sm" className="text-xs sm:text-sm">에디터로 돌아가기</Button>
+            </Link>
+            <Button onClick={handleExportCSV} size="sm" className="text-xs sm:text-sm">
+              <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              CSV
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">총 응답</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{summary.total}</div>
+      {/* Stats Cards — compact on mobile */}
+      <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-6 gap-2 sm:gap-4 mb-4 md:mb-8">
+        <Card className="p-0">
+          <CardContent className="p-3 sm:p-4">
+            <p className="text-[10px] sm:text-sm font-medium text-gray-500 truncate">총 응답</p>
+            <div className="text-xl sm:text-3xl font-bold mt-1">{summary.total}</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-green-600">참석</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-green-600">{summary.attending}</div>
+        <Card className="p-0">
+          <CardContent className="p-3 sm:p-4">
+            <p className="text-[10px] sm:text-sm font-medium text-green-600 truncate">참석</p>
+            <div className="text-xl sm:text-3xl font-bold text-green-600 mt-1">{summary.attending}</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-red-600">불참</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-red-600">{summary.notAttending}</div>
+        <Card className="p-0">
+          <CardContent className="p-3 sm:p-4">
+            <p className="text-[10px] sm:text-sm font-medium text-red-600 truncate">불참</p>
+            <div className="text-xl sm:text-3xl font-bold text-red-600 mt-1">{summary.notAttending}</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">예상 참석 인원</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-rose-600">{summary.totalGuests}명</div>
+        <Card className="p-0">
+          <CardContent className="p-3 sm:p-4">
+            <p className="text-[10px] sm:text-sm font-medium text-gray-500 truncate">예상 참석</p>
+            <div className="text-xl sm:text-3xl font-bold text-rose-600 mt-1">{summary.totalGuests}<span className="text-sm sm:text-lg font-normal text-gray-400">명</span></div>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-orange-600">식사 인원</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-orange-600">{summary.mealYes}<span className="text-lg font-normal text-gray-400 ml-1">명</span></div>
-            <p className="text-xs text-gray-400 mt-1">식사안함 {summary.mealNo}명</p>
+        <Card className="p-0">
+          <CardContent className="p-3 sm:p-4">
+            <p className="text-[10px] sm:text-sm font-medium text-orange-600 truncate">식사</p>
+            <div className="text-xl sm:text-3xl font-bold text-orange-600 mt-1">{summary.mealYes}<span className="text-sm sm:text-lg font-normal text-gray-400">명</span></div>
+            <p className="text-[10px] text-gray-400 mt-0.5 hidden sm:block">안함 {summary.mealNo}명</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-purple-600">대절버스 이용</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-purple-600">{summary.shuttleYes}<span className="text-lg font-normal text-gray-400 ml-1">명</span></div>
-            <p className="text-xs text-gray-400 mt-1">미이용 {summary.shuttleNo}명</p>
+        <Card className="p-0">
+          <CardContent className="p-3 sm:p-4">
+            <p className="text-[10px] sm:text-sm font-medium text-purple-600 truncate">버스</p>
+            <div className="text-xl sm:text-3xl font-bold text-purple-600 mt-1">{summary.shuttleYes}<span className="text-sm sm:text-lg font-normal text-gray-400">명</span></div>
+            <p className="text-[10px] text-gray-400 mt-0.5 hidden sm:block">미이용 {summary.shuttleNo}명</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Side Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-blue-600">신랑측 참석 인원</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-blue-600">{summary.groomSideGuests}<span className="text-lg font-normal text-gray-400 ml-1">명</span></div>
-            <p className="text-xs text-gray-400 mt-1">응답 {summary.groomSide}건</p>
+      <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-6 md:mb-8">
+        <Card className="p-0">
+          <CardContent className="p-3 sm:p-4">
+            <p className="text-[10px] sm:text-sm font-medium text-blue-600">신랑측 참석</p>
+            <div className="text-xl sm:text-3xl font-bold text-blue-600 mt-1">{summary.groomSideGuests}<span className="text-sm sm:text-lg font-normal text-gray-400 ml-0.5">명</span></div>
+            <p className="text-[10px] text-gray-400 mt-0.5">응답 {summary.groomSide}건</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-pink-600">신부측 참석 인원</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-pink-600">{summary.brideSideGuests}<span className="text-lg font-normal text-gray-400 ml-1">명</span></div>
-            <p className="text-xs text-gray-400 mt-1">응답 {summary.brideSide}건</p>
+        <Card className="p-0">
+          <CardContent className="p-3 sm:p-4">
+            <p className="text-[10px] sm:text-sm font-medium text-pink-600">신부측 참석</p>
+            <div className="text-xl sm:text-3xl font-bold text-pink-600 mt-1">{summary.brideSideGuests}<span className="text-sm sm:text-lg font-normal text-gray-400 ml-0.5">명</span></div>
+            <p className="text-[10px] text-gray-400 mt-0.5">응답 {summary.brideSide}건</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Filter Bar */}
-      <Card className="mb-8">
-        <CardContent className="pt-5 pb-4 px-4">
+      <Card className="mb-6 md:mb-8">
+        <CardContent className="pt-4 pb-3 px-3 sm:pt-5 sm:pb-4 sm:px-4">
           {/* Search + Reset row */}
-          <div className="flex items-center gap-3 mb-3">
-            <div className="relative flex-1 max-w-xs">
+          <div className="flex items-center gap-2 sm:gap-3 mb-3">
+            <div className="relative flex-1">
               <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
@@ -428,14 +415,14 @@ export default function DashboardPage() {
                 className="pl-8 h-9 text-sm"
               />
             </div>
-            <div className="flex items-center gap-2 ml-auto">
+            <div className="flex items-center gap-2 shrink-0">
               {hasActiveFilters && (
                 <button
                   type="button"
                   onClick={resetFilters}
                   className="text-xs text-gray-500 hover:text-gray-700 underline underline-offset-2"
                 >
-                  필터 초기화
+                  초기화
                 </button>
               )}
               <span className="text-xs text-gray-400 tabular-nums">{filteredResponses.length}건</span>
@@ -443,30 +430,26 @@ export default function DashboardPage() {
           </div>
 
           {/* Filter chip rows */}
-          <div className="space-y-2">
-            {/* 참석여부 */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="w-14 text-xs font-medium text-gray-500 shrink-0">참석</span>
+          <div className="space-y-1.5 sm:space-y-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+              <span className="w-8 sm:w-14 text-[10px] sm:text-xs font-medium text-gray-500 shrink-0">참석</span>
               <FilterChip label="참석" count={counts.attending} isActive={filterStatus === 'attending'} activeClass="bg-green-100 text-green-700 border-green-300" onClick={() => { setFilterStatus(prev => prev === 'attending' ? null : 'attending'); setCurrentPage(1) }} />
               <FilterChip label="불참" count={counts.not_attending} isActive={filterStatus === 'not_attending'} activeClass="bg-red-100 text-red-700 border-red-300" onClick={() => { setFilterStatus(prev => prev === 'not_attending' ? null : 'not_attending'); setCurrentPage(1) }} />
               <FilterChip label="미정" count={counts.pending} isActive={filterStatus === 'pending'} activeClass="bg-yellow-100 text-yellow-700 border-yellow-300" onClick={() => { setFilterStatus(prev => prev === 'pending' ? null : 'pending'); setCurrentPage(1) }} />
             </div>
-            {/* 소속 (multi-select) */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="w-14 text-xs font-medium text-gray-500 shrink-0">소속</span>
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+              <span className="w-8 sm:w-14 text-[10px] sm:text-xs font-medium text-gray-500 shrink-0">소속</span>
               <FilterChip label="신랑측" count={counts.groom} isActive={filterSides.has('groom')} activeClass="bg-blue-100 text-blue-700 border-blue-300" onClick={() => toggleSideFilter('groom')} />
               <FilterChip label="신부측" count={counts.bride} isActive={filterSides.has('bride')} activeClass="bg-pink-100 text-pink-700 border-pink-300" onClick={() => toggleSideFilter('bride')} />
               <FilterChip label="미지정" count={counts.noSide} isActive={filterSides.has('none')} activeClass="bg-gray-200 text-gray-700 border-gray-400" onClick={() => toggleSideFilter('none')} />
             </div>
-            {/* 식사 */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="w-14 text-xs font-medium text-gray-500 shrink-0">식사</span>
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+              <span className="w-8 sm:w-14 text-[10px] sm:text-xs font-medium text-gray-500 shrink-0">식사</span>
               <FilterChip label="식사" count={counts.mealYes} isActive={filterMeal === 'yes'} activeClass="bg-orange-100 text-orange-700 border-orange-300" onClick={() => { setFilterMeal(prev => prev === 'yes' ? null : 'yes'); setCurrentPage(1) }} />
-              <FilterChip label="식사안함" count={counts.mealNo} isActive={filterMeal === 'no'} activeClass="bg-orange-50 text-orange-600 border-orange-200" onClick={() => { setFilterMeal(prev => prev === 'no' ? null : 'no'); setCurrentPage(1) }} />
+              <FilterChip label="안함" count={counts.mealNo} isActive={filterMeal === 'no'} activeClass="bg-orange-50 text-orange-600 border-orange-200" onClick={() => { setFilterMeal(prev => prev === 'no' ? null : 'no'); setCurrentPage(1) }} />
             </div>
-            {/* 대절버스 */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="w-14 text-xs font-medium text-gray-500 shrink-0">버스</span>
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+              <span className="w-8 sm:w-14 text-[10px] sm:text-xs font-medium text-gray-500 shrink-0">버스</span>
               <FilterChip label="이용" count={counts.shuttleYes} isActive={filterShuttle === 'yes'} activeClass="bg-purple-100 text-purple-700 border-purple-300" onClick={() => { setFilterShuttle(prev => prev === 'yes' ? null : 'yes'); setCurrentPage(1) }} />
               <FilterChip label="미이용" count={counts.shuttleNo} isActive={filterShuttle === 'no'} activeClass="bg-purple-50 text-purple-600 border-purple-200" onClick={() => { setFilterShuttle(prev => prev === 'no' ? null : 'no'); setCurrentPage(1) }} />
             </div>
@@ -475,22 +458,22 @@ export default function DashboardPage() {
       </Card>
 
       {/* Chart and Table */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
         {/* Pie Chart */}
         <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle>참석 현황</CardTitle>
+          <CardHeader className="pb-2 sm:pb-4">
+            <CardTitle className="text-base sm:text-lg">참석 현황</CardTitle>
           </CardHeader>
           <CardContent>
             {chartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={250}>
+              <ResponsiveContainer width="100%" height={200}>
                 <PieChart>
                   <Pie
                     data={chartData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
+                    innerRadius={50}
+                    outerRadius={70}
                     paddingAngle={5}
                     dataKey="value"
                   >
@@ -503,27 +486,80 @@ export default function DashboardPage() {
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-[250px] flex items-center justify-center text-gray-400">
+              <div className="h-[200px] flex items-center justify-center text-gray-400 text-sm">
                 아직 응답이 없습니다
               </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Response Table */}
+        {/* Response List */}
         <Card className="lg:col-span-2">
-          <CardHeader>
+          <CardHeader className="pb-2 sm:pb-4">
             <div className="flex items-center justify-between">
-              <CardTitle>응답 목록</CardTitle>
+              <CardTitle className="text-base sm:text-lg">응답 목록</CardTitle>
               {hasActiveFilters && (
-                <span className="text-sm text-gray-500">필터 적용: {filteredResponses.length}건</span>
+                <span className="text-xs sm:text-sm text-gray-500">필터 적용: {filteredResponses.length}건</span>
               )}
             </div>
           </CardHeader>
           <CardContent>
             {paginatedResponses.length > 0 ? (
               <>
-                <div className="overflow-x-auto">
+                {/* Mobile: Card layout */}
+                <div className="md:hidden space-y-3">
+                  {paginatedResponses.map((r) => (
+                    <div key={r.id} className="border border-gray-100 rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-sm">{r.guest_name}</span>
+                          {r.side === 'groom' ? (
+                            <span className="px-1.5 py-0.5 rounded text-[10px] bg-blue-100 text-blue-700">신랑</span>
+                          ) : r.side === 'bride' ? (
+                            <span className="px-1.5 py-0.5 rounded text-[10px] bg-pink-100 text-pink-700">신부</span>
+                          ) : null}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] ${getAttendanceColor(r.attendance)}`}>
+                            {getAttendanceLabel(r.attendance)}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setDeletingRsvpId(r.id)}
+                            className="p-1 text-gray-300 hover:text-red-500 transition-colors"
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                              <polyline points="3 6 5 6 21 6" />
+                              <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+                        {r.attendance === 'attending' && (
+                          <span className="text-gray-600">{r.guest_count}명</span>
+                        )}
+                        {r.attendance === 'attending' && r.meal_attendance && (
+                          <span className={`px-1.5 py-0.5 rounded ${r.meal_attendance === 'yes' ? 'bg-orange-50 text-orange-600' : 'bg-gray-50 text-gray-500'}`}>
+                            {r.meal_attendance === 'yes' ? '식사' : '식사안함'}
+                          </span>
+                        )}
+                        {r.attendance === 'attending' && r.shuttle_bus && (
+                          <span className={`px-1.5 py-0.5 rounded ${r.shuttle_bus === 'yes' ? 'bg-purple-50 text-purple-600' : 'bg-gray-50 text-gray-500'}`}>
+                            {r.shuttle_bus === 'yes' ? '버스이용' : '버스미이용'}
+                          </span>
+                        )}
+                        <span className="text-gray-400 ml-auto">{new Date(r.created_at).toLocaleDateString('ko-KR')}</span>
+                      </div>
+                      {r.message && (
+                        <p className="text-xs text-gray-500 mt-2 line-clamp-2">{r.message}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop: Table layout */}
+                <div className="hidden md:block overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b">
@@ -613,7 +649,7 @@ export default function DashboardPage() {
                 {/* Pagination */}
                 {totalPages > 1 && (
                   <div className="flex items-center justify-between mt-4">
-                    <p className="text-sm text-gray-500">
+                    <p className="text-xs sm:text-sm text-gray-500">
                       {filteredResponses.length}개 중 {(currentPage - 1) * itemsPerPage + 1}-
                       {Math.min(currentPage * itemsPerPage, filteredResponses.length)}
                     </p>
@@ -639,7 +675,7 @@ export default function DashboardPage() {
                 )}
               </>
             ) : (
-              <div className="py-12 text-center text-gray-400">
+              <div className="py-12 text-center text-gray-400 text-sm">
                 {searchQuery || hasActiveFilters
                   ? '검색 결과가 없습니다'
                   : '아직 응답이 없습니다'}
@@ -650,13 +686,13 @@ export default function DashboardPage() {
       </div>
 
       {/* Guestbook Section */}
-      <div className="mt-8">
+      <div className="mt-6 md:mt-8">
         <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
+          <CardHeader className="pb-2 sm:pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
-                <CardTitle>방명록 관리</CardTitle>
-                <p className="text-sm text-gray-500 mt-1">총 {guestbookMessages.length}개의 메시지</p>
+                <CardTitle className="text-base sm:text-lg">방명록 관리</CardTitle>
+                <p className="text-xs sm:text-sm text-gray-500 mt-0.5">총 {guestbookMessages.length}개의 메시지</p>
               </div>
               <div className="flex gap-2">
                 <Input
@@ -666,13 +702,13 @@ export default function DashboardPage() {
                     setGuestbookSearchQuery(e.target.value)
                     setGuestbookPage(1)
                   }}
-                  className="w-40"
+                  className="flex-1 sm:w-40 h-9 text-sm"
                 />
-                <Button onClick={handleExportGuestbookCSV} variant="outline">
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <Button onClick={handleExportGuestbookCSV} variant="outline" size="sm" className="shrink-0 text-xs sm:text-sm">
+                  <svg className="w-4 h-4 sm:mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
-                  CSV 내보내기
+                  <span className="hidden sm:inline">CSV</span>
                 </Button>
               </div>
             </div>
@@ -680,7 +716,34 @@ export default function DashboardPage() {
           <CardContent>
             {paginatedGuestbookMessages.length > 0 ? (
               <>
-                <div className="overflow-x-auto">
+                {/* Mobile: Card layout */}
+                <div className="md:hidden space-y-3">
+                  {paginatedGuestbookMessages.map((msg) => (
+                    <div key={msg.id} className="border border-gray-100 rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="font-medium text-sm">{msg.guest_name}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-gray-400">{new Date(msg.created_at).toLocaleDateString('ko-KR')}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteGuestbookMessage(msg.id)}
+                            disabled={deletingMessageId === msg.id}
+                            className="text-xs text-gray-300 hover:text-red-500 transition-colors"
+                          >
+                            {deletingMessageId === msg.id ? '...' : '삭제'}
+                          </button>
+                        </div>
+                      </div>
+                      {msg.question && (
+                        <p className="text-[11px] text-gray-400 mb-1">Q. {msg.question}</p>
+                      )}
+                      <p className="text-xs text-gray-700 leading-relaxed">{msg.message}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop: Table layout */}
+                <div className="hidden md:block overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b">
@@ -724,7 +787,7 @@ export default function DashboardPage() {
                 {/* Pagination */}
                 {guestbookTotalPages > 1 && (
                   <div className="flex items-center justify-between mt-4">
-                    <p className="text-sm text-gray-500">
+                    <p className="text-xs sm:text-sm text-gray-500">
                       {filteredGuestbookMessages.length}개 중 {(guestbookPage - 1) * itemsPerPage + 1}-
                       {Math.min(guestbookPage * itemsPerPage, filteredGuestbookMessages.length)}
                     </p>
@@ -750,7 +813,7 @@ export default function DashboardPage() {
                 )}
               </>
             ) : (
-              <div className="py-12 text-center text-gray-400">
+              <div className="py-12 text-center text-gray-400 text-sm">
                 {guestbookSearchQuery
                   ? '검색 결과가 없습니다'
                   : '아직 방명록 메시지가 없습니다'}

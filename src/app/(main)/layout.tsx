@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import HeaderAuth from '@/components/layout/HeaderAuth'
+import { useAuth } from '@/components/providers/AuthProvider'
 import { Menu, X } from 'lucide-react'
 
 export default function MainLayout({
@@ -15,7 +16,9 @@ export default function MainLayout({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [showBanner, setShowBanner] = useState(true)
+  const [invitationCount, setInvitationCount] = useState<number | null>(null)
   const pathname = usePathname()
+  const { status } = useAuth()
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
@@ -29,6 +32,17 @@ export default function MainLayout({
       setShowBanner(false)
     }
   }, [])
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      fetch('/api/invitations')
+        .then(res => res.ok ? res.json() : Promise.reject())
+        .then(data => setInvitationCount(Array.isArray(data) ? data.length : 0))
+        .catch(() => setInvitationCount(0))
+    } else if (status === 'unauthenticated') {
+      setInvitationCount(0)
+    }
+  }, [status])
 
   const closeBanner = () => {
     setShowBanner(false)
@@ -47,10 +61,10 @@ export default function MainLayout({
       {showBanner && (
         <div className="bg-[#F4A7B0] text-center py-2.5 sm:py-3 px-4 sm:px-10 relative">
           <p className="text-xs sm:text-sm font-semibold text-gray-900 tracking-wide">
-            [The simple 오픈기념 EVENT 🎉] 결재 후 후기 남기면, The simple 청첩장 or 혼주용 모바일 청첩장 무료!
+            결재 후 후기 남기면, The simple 청첩장 or 혼주용 모바일 청첩장 무료!
           </p>
           <p className="text-[10px] sm:text-xs text-gray-800/80 mt-0.5">
-            선착순 10쌍 한정 · 4월 이벤트
+            선착순 10쌍 한정 · 5월 이벤트
           </p>
           <button
             onClick={closeBanner}
@@ -101,18 +115,21 @@ export default function MainLayout({
               >
                 문의하기
               </a>
-              <Link
-                href="/my-invitations"
-                className="text-sm font-medium px-4 py-2 bg-rose-50 text-rose-600 rounded-full hover:bg-rose-100 transition-colors"
-              >
-                내 청첩장 보기
-              </Link>
-              <Link
-                href="/templates"
-                className="text-sm font-medium px-4 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
-              >
-                무료로 시작하기
-              </Link>
+              {invitationCount != null && invitationCount > 0 ? (
+                <Link
+                  href="/my-invitations"
+                  className="text-sm font-medium px-4 py-2 bg-rose-50 text-rose-600 rounded-full hover:bg-rose-100 transition-colors"
+                >
+                  내 청첩장 보기
+                </Link>
+              ) : (
+                <Link
+                  href="/templates"
+                  className="text-sm font-medium px-4 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
+                >
+                  무료로 시작하기
+                </Link>
+              )}
               <HeaderAuth />
             </nav>
           )}
@@ -162,22 +179,25 @@ export default function MainLayout({
               >
                 문의하기
               </a>
-              <Link
-                href="/my-invitations"
-                className="px-4 py-3 text-sm rounded-lg transition-colors text-gray-500 hover:bg-gray-50"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                제작내역
-              </Link>
-              <div className="px-4 my-2">
+              {invitationCount != null && invitationCount > 0 ? (
                 <Link
-                  href="/templates"
-                  className="block w-full py-3 text-sm font-medium text-center bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
+                  href="/my-invitations"
+                  className="px-4 py-3 text-sm rounded-lg transition-colors text-gray-500 hover:bg-gray-50"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  무료로 시작하기
+                  제작내역
                 </Link>
-              </div>
+              ) : (
+                <div className="px-4 my-2">
+                  <Link
+                    href="/templates"
+                    className="block w-full py-3 text-sm font-medium text-center bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    무료로 시작하기
+                  </Link>
+                </div>
+              )}
               <div className="px-4 py-3 border-t border-gray-100 mt-2">
                 <HeaderAuth />
               </div>

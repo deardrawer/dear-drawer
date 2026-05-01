@@ -897,7 +897,7 @@ export default function MyInvitationsPage() {
 
           {/* CTA 버튼 */}
           <div className="text-center">
-            <Link href="/editor?step=4">
+            <Link href="/templates">
               <Button size="lg" className="bg-black hover:bg-gray-800 px-8 shadow-lg hover:shadow-xl transition-all hover:scale-105">
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -1646,7 +1646,7 @@ export default function MyInvitationsPage() {
 
       {/* 모바일 플로팅 버튼 */}
       <div className="fixed bottom-6 right-6 md:hidden z-40">
-        <Link href="/editor?step=4">
+        <Link href="/templates">
           <Button
             size="lg"
             className="rounded-full w-14 h-14 p-0 bg-black hover:bg-gray-800 shadow-2xl hover:scale-110 transition-all"

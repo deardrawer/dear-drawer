@@ -473,6 +473,7 @@ function normalizeTheSimpleData(
       ...(c.meta?.kakaoThumbnail && { kakaoThumbnail: c.meta.kakaoThumbnail }),
       ...(c.meta?.ogImageCropped && { ogImageCropped: c.meta.ogImageCropped }),
       ...(c.meta?.kakaoThumbnailCropped && { kakaoThumbnailCropped: c.meta.kakaoThumbnailCropped }),
+      ...(c.meta?.kakaoThumbnailRatio && { kakaoThumbnailRatio: c.meta.kakaoThumbnailRatio }),
     },
   }
 }

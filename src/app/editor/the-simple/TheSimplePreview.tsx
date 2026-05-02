@@ -922,9 +922,9 @@ function TransportInfo({ transport }: { transport?: Record<string, string | unde
 function NavButtons({ address }: { address: string }) {
   const encoded = encodeURIComponent(address)
   const links = [
-    { label: '카카오맵', url: `https://map.kakao.com/link/search/${encoded}` },
-    { label: '네이버지도', url: `https://map.naver.com/v5/search/${encoded}` },
-    { label: '티맵', url: `https://tmap.life/search?query=${encoded}` },
+    { label: '카카오맵', url: `https://map.kakao.com/link/search/${encoded}`, external: true },
+    { label: '네이버지도', url: `https://map.naver.com/v5/search/${encoded}`, external: true },
+    { label: '티맵', url: `tmap://search?name=${encoded}`, external: false },
   ]
   return (
     <div className="ts-nav-buttons" style={{ display: 'flex', gap: 8, marginTop: 12 }}>
@@ -932,8 +932,7 @@ function NavButtons({ address }: { address: string }) {
         <a
           key={l.label}
           href={l.url}
-          target="_blank"
-          rel="noopener noreferrer"
+          {...(l.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
           style={{
             flex: 1,
             textAlign: 'center',

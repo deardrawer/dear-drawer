@@ -1560,9 +1560,7 @@ function WeddingInfoPost({
                         네이버맵
                       </a>
                       <a
-                        href={`https://tmap.life/search?query=${encodeURIComponent(venueAddress || venueName)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        href={`tmap://search?name=${encodeURIComponent(venueName || venueAddress)}`}
                         className="flex-1 py-2 rounded-lg text-[11px] font-semibold text-center flex items-center justify-center gap-1"
                         style={{ background: '#F0F7FF', color: '#4285F4' }}
                         onClick={(e) => e.stopPropagation()}

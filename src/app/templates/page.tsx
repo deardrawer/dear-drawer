@@ -13,7 +13,7 @@ const generateRandomSlug = () => {
   return `invitation-${randomPart}`
 }
 
-type TemplateCategory = null | 'story' | 'mini' | 'parents' | 'thankyou'
+type TemplateCategory = null | 'story' | 'mini' | 'parents' | 'thankyou' | 'simple'
 type QuizStep = 'q1' | 'q2a' | 'q2b' | 'q3a' | 'q3b' | 'result' | null
 type ShowcaseFilter = 'all' | 'story' | 'mini' | 'parents' | 'thankyou'
 
@@ -343,6 +343,8 @@ function TemplatesContent() {
     setQuizStep(null)
     if (category) {
       window.history.pushState({ category }, '', `/templates?category=${category}`)
+    } else {
+      window.history.pushState({}, '', '/templates')
     }
   }, [])
 
@@ -946,6 +948,7 @@ function TemplatesContent() {
                     </svg>
                   </div>
                 </button>
+
               </div>
 
 
@@ -955,7 +958,7 @@ function TemplatesContent() {
           {/* Step 2: 스토리형 → OUR, FAMILY */}
           {selectedCategory === 'story' && (
             <div>
-              <button onClick={() => window.history.back()} className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-600 mb-6 transition-colors">
+              <button onClick={() => selectCategory(null)} className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-600 mb-6 transition-colors">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
                 다른 스타일 보기
               </button>
@@ -1033,7 +1036,7 @@ function TemplatesContent() {
           {/* Step 2: 미니 스토리형 → MAGAZINE, MOVIE, RECORD */}
           {selectedCategory === 'mini' && (
             <div>
-              <button onClick={() => window.history.back()} className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-600 mb-6 transition-colors">
+              <button onClick={() => selectCategory(null)} className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-600 mb-6 transition-colors">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
                 다른 스타일 보기
               </button>
@@ -1044,6 +1047,45 @@ function TemplatesContent() {
               </div>
 
               <div className="flex flex-col gap-4 sm:gap-5 max-w-2xl mx-auto">
+                {/* THE SIMPLE */}
+                <div className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-gray-300 transition-all duration-300 overflow-hidden">
+                  <div className="flex flex-col sm:flex-row">
+                    <div className="sm:w-40 flex-shrink-0 flex flex-col items-center justify-center p-5 sm:p-6 border-b sm:border-b-0 sm:border-r" style={{ background: '#F4F4F5' }}>
+                      <div className="relative w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-2">
+                        <div className="absolute -inset-1 rounded-full opacity-[0.1] blur-[10px]" style={{ background: '#52525B' }} />
+                        <div className="relative w-full h-full rounded-full flex items-center justify-center" style={{ background: '#ffffff' }}>
+                          <svg className="w-5 h-5 sm:w-7 sm:h-7" style={{ color: '#52525B' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="rgba(82,82,91,0.08)" />
+                          </svg>
+                        </div>
+                      </div>
+                      <h2 className="text-lg font-bold text-gray-900">THE SIMPLE</h2>
+                      <p className="text-[10px] text-gray-400 mt-0.5">프리미엄 미니멀</p>
+                    </div>
+                    <div className="flex-1 p-5 sm:p-6">
+                      <span className="inline-block px-2.5 py-1 text-[11px] font-medium text-white rounded-full mb-3" style={{ background: '#52525B' }}>미니멀을 추구하는 커플에게 추천</span>
+                      <div className="flex flex-wrap gap-1.5 mb-3">
+                        <span className="text-[11px] text-gray-400">#미니멀</span>
+                        <span className="text-[11px] text-gray-400">#프리미엄</span>
+                        <span className="text-[11px] text-gray-400">#커스텀</span>
+                      </div>
+                      <div className="space-y-1.5 mb-4 text-[13px] text-gray-600">
+                        <p className="flex items-start gap-2"><span style={{ color: '#52525B' }} className="mt-0.5 text-xs">&#10003;</span> 에디토리얼 타이포그래피와 고급스러운 여백</p>
+                        <p className="flex items-start gap-2"><span style={{ color: '#52525B' }} className="mt-0.5 text-xs">&#10003;</span> 모든 섹션에 5~12가지 UI 대안 제공</p>
+                        <p className="flex items-start gap-2"><span style={{ color: '#52525B' }} className="mt-0.5 text-xs">&#10003;</span> 섹션 순서·폰트·구분선까지 자유 커스텀</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button onClick={() => handleTemplateSelect('narrative-the-simple')} className="px-5 py-2.5 text-white text-sm font-medium rounded-xl transition-colors" style={{ background: '#52525B' }}>
+                          시작하기
+                        </button>
+                        <a href="/i/sample-the-simple" target="_blank" rel="noopener noreferrer" className="px-4 py-2.5 border border-gray-200 hover:border-gray-300 text-gray-500 text-sm rounded-xl transition-colors">
+                          샘플 보기
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 {/* MAGAZINE */}
                 <div className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-gray-300 transition-all duration-300 overflow-hidden">
                   <div className="flex flex-col sm:flex-row">
@@ -1109,7 +1151,7 @@ function TemplatesContent() {
                     </div>
                     {/* 오른쪽: 추천 정보 */}
                     <div className="flex-1 p-5 sm:p-6">
-                      <span className="inline-block px-2.5 py-1 text-[11px] font-medium bg-gray-500 text-white rounded-full mb-3">감성적인 커플에게 추천</span>
+                      <span className="inline-block px-2.5 py-1 text-[11px] font-medium text-white rounded-full mb-3" style={{ background: '#7BA4D4' }}>감성적인 커플에게 추천</span>
                       <div className="flex flex-wrap gap-1.5 mb-3">
                         <span className="text-[11px] text-gray-400">#시네마틱</span>
                         <span className="text-[11px] text-gray-400">#무드있는</span>
@@ -1121,7 +1163,7 @@ function TemplatesContent() {
                         <p className="flex items-start gap-2"><span className="text-gray-500 mt-0.5 text-xs">&#10003;</span> 남들과 다른 독특한 연출을 원할 때</p>
                       </div>
                       <div className="flex items-center gap-3">
-                        <button onClick={() => handleTemplateSelect('narrative-film')} className="px-5 py-2.5 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded-xl transition-colors">
+                        <button onClick={() => handleTemplateSelect('narrative-film')} className="px-5 py-2.5 text-white text-sm font-medium rounded-xl transition-colors" style={{ background: '#7BA4D4' }}>
                           시작하기
                         </button>
                         <a href="/i/sample-film" target="_blank" rel="noopener noreferrer" className="px-4 py-2.5 border border-gray-200 hover:border-gray-300 text-gray-500 text-sm rounded-xl transition-colors">
@@ -1262,7 +1304,7 @@ function TemplatesContent() {
           {/* Step 2: 혼주용 → PARENTS */}
           {selectedCategory === 'parents' && (
             <div>
-              <button onClick={() => window.history.back()} className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-600 mb-6 transition-colors">
+              <button onClick={() => selectCategory(null)} className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-600 mb-6 transition-colors">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
                 다른 스타일 보기
               </button>
@@ -1303,6 +1345,62 @@ function TemplatesContent() {
                       <a href="/sample/parents" target="_blank" rel="noopener noreferrer" className="px-4 py-3 border border-gray-200 hover:border-gray-300 text-gray-600 text-sm rounded-xl transition-colors">
                         샘플
                       </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 2: 심플형 → THE SIMPLE */}
+          {/* Step 2: 심플형 → THE SIMPLE */}
+          {selectedCategory === 'simple' && (
+            <div>
+              <button onClick={() => selectCategory(null)} className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-600 mb-6 transition-colors">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                다른 스타일 보기
+              </button>
+              <div className="text-center mb-8">
+                <p className="text-xs tracking-widest uppercase mb-2" style={{ color: '#52525B' }}>Simple Type</p>
+                <h1 className="text-xl sm:text-3xl font-bold text-gray-900 mb-2">심플형 청첩장</h1>
+                <p className="text-xs sm:text-base text-gray-500">감각적인 디자인으로 완성하는 미니멀 청첩장</p>
+              </div>
+
+              <div className="max-w-2xl mx-auto">
+                <div className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-gray-300 transition-all duration-300 overflow-hidden">
+                  <div className="flex flex-col sm:flex-row">
+                    <div className="sm:w-40 flex-shrink-0 flex flex-col items-center justify-center p-5 sm:p-6 border-b sm:border-b-0 sm:border-r" style={{ background: '#F4F4F5' }}>
+                      <div className="relative w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-2">
+                        <div className="absolute -inset-1 rounded-full opacity-[0.1] blur-[10px]" style={{ background: '#52525B' }} />
+                        <div className="relative w-full h-full rounded-full flex items-center justify-center" style={{ background: '#ffffff' }}>
+                          <svg className="w-5 h-5 sm:w-7 sm:h-7" style={{ color: '#52525B' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="rgba(82,82,91,0.08)" />
+                          </svg>
+                        </div>
+                      </div>
+                      <h2 className="text-lg font-bold text-gray-900">THE SIMPLE</h2>
+                      <p className="text-[10px] text-gray-400 mt-0.5">프리미엄 미니멀</p>
+                    </div>
+                    <div className="flex-1 p-5 sm:p-6">
+                      <span className="inline-block px-2.5 py-1 text-[11px] font-medium text-white rounded-full mb-3" style={{ background: '#52525B' }}>미니멀을 추구하는 커플에게 추천</span>
+                      <div className="flex flex-wrap gap-1.5 mb-3">
+                        <span className="text-[11px] text-gray-400">#미니멀</span>
+                        <span className="text-[11px] text-gray-400">#프리미엄</span>
+                        <span className="text-[11px] text-gray-400">#커스텀</span>
+                      </div>
+                      <div className="space-y-1.5 mb-4 text-[13px] text-gray-600">
+                        <p className="flex items-start gap-2"><span style={{ color: '#52525B' }} className="mt-0.5 text-xs">&#10003;</span> 에디토리얼 타이포그래피와 고급스러운 여백</p>
+                        <p className="flex items-start gap-2"><span style={{ color: '#52525B' }} className="mt-0.5 text-xs">&#10003;</span> 모든 섹션에 5~12가지 UI 대안 제공</p>
+                        <p className="flex items-start gap-2"><span style={{ color: '#52525B' }} className="mt-0.5 text-xs">&#10003;</span> 섹션 순서·폰트·구분선까지 자유 커스텀</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button onClick={() => handleTemplateSelect('narrative-the-simple')} className="px-5 py-2.5 text-white text-sm font-medium rounded-xl transition-colors" style={{ background: '#52525B' }}>
+                          시작하기
+                        </button>
+                        <a href="/i/sample-the-simple" target="_blank" rel="noopener noreferrer" className="px-4 py-2.5 border border-gray-200 hover:border-gray-300 text-gray-500 text-sm rounded-xl transition-colors">
+                          샘플 보기
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -37,7 +37,10 @@ export default function MainLayout({
     if (status === 'authenticated') {
       fetch('/api/invitations')
         .then(res => res.ok ? res.json() : Promise.reject())
-        .then(data => setInvitationCount(Array.isArray(data) ? data.length : 0))
+        .then(data => {
+          const list = data.invitations || data
+          setInvitationCount(Array.isArray(list) ? list.length : 0)
+        })
         .catch(() => setInvitationCount(0))
     } else if (status === 'unauthenticated') {
       setInvitationCount(0)
@@ -179,16 +182,16 @@ export default function MainLayout({
               >
                 문의하기
               </a>
-              {invitationCount != null && invitationCount > 0 ? (
-                <Link
-                  href="/my-invitations"
-                  className="px-4 py-3 text-sm rounded-lg transition-colors text-gray-500 hover:bg-gray-50"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  제작내역
-                </Link>
-              ) : (
-                <div className="px-4 my-2">
+              <div className="px-4 my-2">
+                {invitationCount != null && invitationCount > 0 ? (
+                  <Link
+                    href="/my-invitations"
+                    className="block w-full py-3 text-sm font-medium text-center bg-rose-50 text-rose-600 rounded-full hover:bg-rose-100 transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    내 청첩장 보기
+                  </Link>
+                ) : (
                   <Link
                     href="/templates"
                     className="block w-full py-3 text-sm font-medium text-center bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
@@ -196,8 +199,8 @@ export default function MainLayout({
                   >
                     무료로 시작하기
                   </Link>
-                </div>
-              )}
+                )}
+              </div>
               <div className="px-4 py-3 border-t border-gray-100 mt-2">
                 <HeaderAuth />
               </div>

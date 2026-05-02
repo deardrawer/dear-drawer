@@ -130,7 +130,7 @@ export default function VenueSection({
   }
 
   const openTmap = () => {
-    window.open(`https://tmap.life/search?keyword=${encodeURIComponent(venue.address)}`, '_blank')
+    window.location.href = `tmap://search?name=${encodeURIComponent(venue.name || venue.address)}`
   }
 
   const hasDirections = directions && (directions.bus || directions.subway || directions.expressBus || directions.train || directions.parking || (directions.extraInfoEnabled && directions.extraInfoText))

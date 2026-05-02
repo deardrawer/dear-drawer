@@ -37,7 +37,7 @@ export default function MainLayout({
     if (status === 'authenticated') {
       fetch('/api/invitations')
         .then(res => res.ok ? res.json() : Promise.reject())
-        .then(data => {
+        .then((data: any) => {
           const list = data.invitations || data
           setInvitationCount(Array.isArray(list) ? list.length : 0)
         })

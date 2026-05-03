@@ -96,7 +96,7 @@ function useInView<T extends HTMLElement>(
           io.disconnect()
         }
       },
-      { threshold: 0.05, rootMargin: '0px 0px -20% 0px', ...options }
+      { threshold: 0.05, rootMargin: '0px 0px -40% 0px', ...options }
     )
     io.observe(el)
     return () => io.disconnect()

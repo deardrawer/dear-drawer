@@ -12,7 +12,7 @@ import InlineCropEditor from '@/components/editor/InlineCropEditor'
 import { uploadImage } from '@/lib/imageUpload'
 import { X, Plus, ChevronUp, ChevronDown } from 'lucide-react'
 
-const SAMPLE_RECORD_GREETING = '두 사람의 하모니가\n하나의 멜로디가 되어\n평생을 함께 연주합니다.\n\n이 특별한 무대에\n여러분을 초대합니다.'
+const SAMPLE_RECORD_GREETING = '서로 다른 길을 걷던 두 사람이\n같은 방향을 바라보게 되었습니다.\n\n저희의 새로운 시작을\n함께 축하해 주시겠어요?'
 
 interface Step3RecordProps {
   templateId?: string
@@ -61,9 +61,9 @@ export default function Step3Record({}: Step3RecordProps) {
 
   const applySampleInterviews = () => {
     const samples = [
-      { question: '첫 만남', answer: '친구 소개로 만난 우리,\n첫눈에 반했다고 하면 거짓말이지만\n두 번째 만남부터는 확실했어요.' },
-      { question: '사랑에 빠진 순간', answer: '같은 노래를 좋아한다는 걸 알았을 때,\n이 사람이다 싶었어요.' },
-      { question: '프로포즈', answer: '특별한 건 없었어요.\n평범한 일상 속에서\n"평생 같이 있자"라는 한마디.' },
+      { question: '우리의 첫 만남', answer: '친구의 소개로 처음 만났어요.\n어색할 줄 알았는데 대화가 끊이질 않았고\n헤어지는 게 아쉬웠던 그날,\n다음 만남을 기약하며 돌아왔습니다.' },
+      { question: '사랑을 확신한 순간', answer: '아무 말 없이 옆에 있어도\n편안했던 어느 날,\n이 사람이라면 평생을 함께해도\n좋겠다는 확신이 들었습니다.' },
+      { question: '함께 걸어갈 내일', answer: '서로의 손을 잡고\n같은 방향을 바라보기로 했습니다.\n앞으로의 모든 날들을\n함께 만들어 가겠습니다.' },
     ]
     samples.forEach((item, index) => {
       if (index < invitation.content.interviews.length) {
@@ -79,7 +79,7 @@ export default function Step3Record({}: Step3RecordProps) {
       <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
         <p className="text-base text-orange-800 font-medium mb-1">Record 콘텐츠 작성</p>
         <p className="text-sm text-orange-700">
-          인사말, 프로필, 러브스토리 등 레코드 앨범 스타일의 콘텐츠를 작성해주세요.
+          인사말, 프로필, 러브스토리 등 청첩장 콘텐츠를 작성해주세요.
         </p>
       </div>
 
@@ -166,6 +166,16 @@ export default function Step3Record({}: Step3RecordProps) {
               />
             </label>
           ) : null}
+        </div>
+
+        <div className="space-y-1.5">
+          <Label className="text-xs font-medium">섹션 제목</Label>
+          <Input
+            value={invitation.greetingTitle ?? ''}
+            onChange={(e) => updateField('greetingTitle', e.target.value)}
+            placeholder="THE BEGINNING"
+          />
+          <p className="text-xs text-gray-500">비워두면 제목이 표시되지 않습니다.</p>
         </div>
 
         <div className="space-y-1.5">
@@ -427,6 +437,16 @@ export default function Step3Record({}: Step3RecordProps) {
 
         {invitation.sectionVisibility.interview && (
           <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium">섹션 제목</Label>
+              <Input
+                value={invitation.journeyTitle ?? ''}
+                onChange={(e) => updateField('journeyTitle', e.target.value)}
+                placeholder="OUR JOURNEY"
+              />
+              <p className="text-xs text-gray-500">비워두면 제목이 표시되지 않습니다.</p>
+            </div>
+
             <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
               <p className="text-sm text-blue-800">두 사람의 이야기를 앨범 트랙처럼 담아보세요.</p>
             </div>
@@ -1057,20 +1077,20 @@ export default function Step3Record({}: Step3RecordProps) {
         )}
       </section>
 
-      {/* LINER NOTES (감사인사) */}
+      {/* THANK YOU (감사인사) */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
           <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
-          감사인사 (LINER NOTES)
+          감사인사 (THANK YOU)
         </h3>
 
         <div className="p-4 bg-gray-50 rounded-lg space-y-3">
           <div className="space-y-1.5">
             <Label className="text-sm font-medium">제목</Label>
             <DebouncedInput
-              value={invitation.content.thankYou.title || 'LINER NOTES'}
+              value={invitation.content.thankYou.title || 'THANK YOU'}
               onChange={(value) => updateNestedField('content.thankYou.title', value)}
-              placeholder="LINER NOTES"
+              placeholder="THANK YOU"
             />
           </div>
           <div className="space-y-1.5">
@@ -1078,7 +1098,7 @@ export default function Step3Record({}: Step3RecordProps) {
             <Textarea
               value={invitation.content.thankYou.message}
               onChange={(e) => updateNestedField('content.thankYou.message', e.target.value)}
-              placeholder={'저희의 첫 앨범 발매에\n함께해 주셔서 감사합니다.\n\n여러분의 축하와 응원이\n가장 아름다운 반주가 되어줄 거예요.'}
+              placeholder={'바쁘신 와중에도 저희의 결혼을\n축하해 주셔서 진심으로 감사드립니다.\n\n여러분의 축복을 마음에 새기며\n서로 아끼고 사랑하며 살겠습니다.'}
               rows={4}
             />
           </div>
@@ -1093,12 +1113,12 @@ export default function Step3Record({}: Step3RecordProps) {
         </div>
       </section>
 
-      {/* FAN MAIL (방명록) */}
+      {/* GUESTBOOK (방명록) */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
             <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>
-            방명록 (FAN MAIL)
+            방명록 (GUESTBOOK)
           </h3>
           <Switch
             checked={invitation.sectionVisibility.guestbook}

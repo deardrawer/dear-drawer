@@ -406,6 +406,9 @@ export interface InvitationContent {
   rsvpMealOption?: boolean       // 식사 여부 옵션 표시 (기본 false)
   rsvpShuttleOption?: boolean    // 대절버스 옵션 표시 (기본 false)
   rsvpNotice?: string            // RSVP 안내 문구 (빈 문자열이면 미표시)
+  giftNotice?: string            // 마음 전하실 곳 안내 문구 (빈 문자열이면 미표시)
+  greetingTitle?: string         // Record 인사말 섹션 제목 (빈 문자열이면 미표시)
+  journeyTitle?: string          // Record OUR JOURNEY 섹션 제목 (빈 문자열이면 미표시)
 
   // ===== 고인 표시 스타일 =====
   deceasedDisplayStyle: DeceasedDisplayStyle
@@ -702,7 +705,7 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
       : template.id === 'narrative-film'
       ? '솔직히 말하면,\n처음엔 그냥 밥 한번 먹자는 거였는데\n어쩌다 보니 평생 같이 먹게 됐습니다.'
       : template.id === 'narrative-record'
-      ? '두 사람의 하모니가 하나의 멜로디가 되어\n평생의 노래를 함께 부르려 합니다.\n\n저희의 첫 번째 합주에\n귀 기울여 주시겠어요?'
+      ? '서로 다른 길을 걷던 두 사람이\n같은 방향을 바라보게 되었습니다.\n\n저희의 새로운 시작을\n함께 축하해 주시겠어요?'
       : template.id === 'narrative-magazine'
       ? '서로 다른 두 사람이\n같은 방향을 바라보며\n하나의 길을 걸어가려 합니다.\n\n소중한 분들을 초대합니다.'
       : '',
@@ -727,7 +730,7 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
       : template.id === 'narrative-film'
       ? { title: 'SPECIAL THANKS', message: '바쁘신 와중에도 저희의 결혼을\n축하해 주셔서 진심으로 감사드립니다.\n\n여러분의 축복을 마음에 새기며\n서로 아끼고 사랑하며 살겠습니다.', sign: '민준 & 서연 올림' }
       : template.id === 'narrative-record'
-      ? { title: 'LINER NOTES', message: '이 앨범이 완성되기까지\n함께해주신 모든 분들께 감사드립니다.\n\n여러분의 축복이 담긴 이 노래를\n평생 함께 부르며 살겠습니다.', sign: '민준 & 서연 올림' }
+      ? { title: 'THANK YOU', message: '바쁘신 와중에도 저희의 결혼을\n축하해 주셔서 진심으로 감사드립니다.\n\n여러분의 축복을 마음에 새기며\n서로 아끼고 사랑하며 살겠습니다.', sign: '민준 & 서연 올림' }
       : template.id === 'narrative-magazine'
       ? { title: 'THANK YOU', message: '바쁘신 가운데\n저희의 새로운 시작을\n축하해 주셔서 감사합니다.\n\n여러분의 따뜻한 마음을 담아\n행복하게 살겠습니다.', sign: '민준 & 서연 올림' }
       : { title: 'THANK YOU', message: '', sign: '' },
@@ -758,9 +761,9 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
         ]
       : template.id === 'narrative-record'
       ? [
-          { question: '첫 만남의 멜로디', answer: '우연히 같은 카페에서 흘러나온 노래에\n동시에 흥얼거리기 시작했어요.\n서로를 바라보며 웃었던 그 순간,\n우리만의 첫 번째 곡이 시작되었습니다.', images: [], imageSettings: [], bgClass: 'pink-bg' },
-          { question: '함께 만든 하모니', answer: '서로 다른 음색이 만나\n더 아름다운 화음이 되었어요.\n때로는 불협화음도 있었지만\n그마저도 우리만의 음악이 되었습니다.', images: [], imageSettings: [], bgClass: 'white-bg' },
-          { question: '영원한 듀엣', answer: '"평생 너와 듀엣을 하고 싶어."\n떨리는 목소리로 건넨 프로포즈에\n그녀는 눈물을 글썽이며 고개를 끄덕였습니다.\n우리의 가장 아름다운 곡이 시작되는 순간이었어요.', images: [], imageSettings: [], bgClass: 'pink-bg' },
+          { question: '우리의 첫 만남', answer: '친구의 소개로 처음 만났어요.\n어색할 줄 알았는데 대화가 끊이질 않았고\n헤어지는 게 아쉬웠던 그날,\n다음 만남을 기약하며 돌아왔습니다.', images: [], imageSettings: [], bgClass: 'pink-bg' },
+          { question: '사랑을 확신한 순간', answer: '아무 말 없이 옆에 있어도\n편안했던 어느 날,\n이 사람이라면 평생을 함께해도\n좋겠다는 확신이 들었습니다.', images: [], imageSettings: [], bgClass: 'white-bg' },
+          { question: '함께 걸어갈 내일', answer: '서로의 손을 잡고\n같은 방향을 바라보기로 했습니다.\n앞으로의 모든 날들을\n함께 만들어 가겠습니다.', images: [], imageSettings: [], bgClass: 'pink-bg' },
         ]
       : template.id === 'narrative-magazine'
       ? [
@@ -824,6 +827,9 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
   rsvpMealOption: false,
   rsvpShuttleOption: false,
   rsvpNotice: '',
+  giftNotice: '참석이 어려우신 분들을 위해 기재했습니다.\n너그러운 마음으로 양해 부탁드립니다.',
+  greetingTitle: 'THE BEGINNING',
+  journeyTitle: 'OUR JOURNEY',
 
   // 고인 표시 스타일
   deceasedDisplayStyle: 'flower',
@@ -860,8 +866,8 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
       information: 'INFORMATION',
       location: 'TRACK 05',
       rsvp: 'RSVP',
-      thankYou: 'BONUS TRACK',
-      guestbook: 'FAN MAIL',
+      thankYou: 'EPILOGUE',
+      guestbook: 'GUESTBOOK',
     } : {
       invitation: 'INVITATION',
       ourStory: 'OUR STORY',

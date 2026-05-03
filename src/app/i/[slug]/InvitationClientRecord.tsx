@@ -429,9 +429,9 @@ function RecordHeader({ invitation, fonts, tc, currentTrack, progress, isCrossfa
   invitation: any; fonts: FontConfig; tc: ColorConfig; currentTrack: number; progress: number; isCrossfade?: boolean
 }) {
   const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
-  const trackNames = ['THE BEGINNING', 'THE COUPLE', 'OUR JOURNEY', 'GALLERY', 'THE WEDDING DAY', 'INFORMATION', 'LINER NOTES']
+  const trackNames = ['THE BEGINNING', 'THE COUPLE', 'OUR JOURNEY', 'GALLERY', 'THE WEDDING DAY', 'INFORMATION', 'THANK YOU']
   const trackName = trackNames[Math.min(currentTrack - 1, trackNames.length - 1)] || ''
-  const trackNum = currentTrack <= 5 ? String(currentTrack).padStart(2, '0') : currentTrack === 6 ? 'INFO' : 'B+'
+  const trackNum = currentTrack <= 5 ? String(currentTrack).padStart(2, '0') : currentTrack === 6 ? 'INFO' : 'EP'
 
   if (isCrossfade) {
     // Crossfade mode: compact header, no progress bar (progress in mini player)
@@ -1645,7 +1645,7 @@ function GuidanceSection({ invitation, fonts, tc, trackRef, bgOverride }: {
   )
 }
 
-// ===== BONUS TRACK: Album Liner Notes =====
+// ===== EPILOGUE: Thank You =====
 function BonusTrack({ invitation, fonts, tc, trackRef, bgOverride }: {
   invitation: any; fonts: FontConfig; tc: ColorConfig; trackRef: (el: HTMLDivElement | null) => void; bgOverride?: string
 }) {
@@ -1685,10 +1685,10 @@ function BonusTrack({ invitation, fonts, tc, trackRef, bgOverride }: {
                 fontFamily: fonts.display, fontSize: '7px', letterSpacing: '2px', color: '#FFFFFF',
                 background: 'rgba(255,255,255,0.2)', padding: '2px 8px', borderRadius: '10px',
               }}>
-                B+
+                EP
               </span>
               <span style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '3px', color: '#FFFFFF', fontWeight: 600 }}>
-                {dt('BONUS TRACK')}
+                {dt('EPILOGUE')}
               </span>
             </div>
             <span style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '2px', color: 'rgba(255,255,255,0.7)' }}>
@@ -1702,7 +1702,7 @@ function BonusTrack({ invitation, fonts, tc, trackRef, bgOverride }: {
               fontFamily: fonts.display, fontSize: '13px', letterSpacing: '5px', color: tc.text, marginBottom: '16px',
               fontStyle: 'italic',
             }}>
-              {thankYou.title ? (fonts.isScript ? thankYou.title : thankYou.title) : dt('LINER NOTES')}
+              {thankYou.title ? (fonts.isScript ? thankYou.title : thankYou.title) : dt('THANK YOU')}
             </h3>
 
             {/* Musical note divider */}
@@ -1779,12 +1779,12 @@ function GiftSection({ invitation, fonts, tc, bgOverride }: { invitation: any; f
 
   return (
     <div className="px-5 py-10" style={{ backgroundColor: bgOverride || 'transparent' }}>
-      <div className="text-center mb-6 record-track-label">
-        <span style={{ fontFamily: fonts.display, fontSize: '7px', letterSpacing: '3px', color: tc.gray, opacity: 0.4, display: 'block', marginBottom: '6px' }}>
-          &#9834; A-SIDE
-        </span>
+      <div className="text-center mb-6">
         <h3 style={{ fontFamily: fonts.displayKr, fontSize: '14px', color: tc.text, fontWeight: 400 }}>마음 전하실 곳</h3>
         <div style={{ width: '20px', height: '1px', background: tc.primary, margin: '10px auto 0', opacity: 0.5 }} />
+        {invitation.giftNotice && (
+          <p style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.gray, lineHeight: 1.6, marginTop: '10px', whiteSpace: 'pre-line' }}>{invitation.giftNotice}</p>
+        )}
       </div>
       <div className="grid grid-cols-2 gap-3 mb-4">
         {(['groom', 'bride'] as const).map(side => (
@@ -1857,9 +1857,9 @@ function FanMailSection({ invitation, invitationId, fonts, tc, isSample, bgOverr
       <div className="transition-all duration-700" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(40px)' }}>
         <div className="text-center mb-6 record-track-label">
           <span style={{ fontFamily: fonts.display, fontSize: '7px', letterSpacing: '3px', color: tc.gray, opacity: 0.4, display: 'block', marginBottom: '6px' }}>
-            &#9835; {dt('B-SIDE')}
+            &#9835; {dt('MESSAGES')}
           </span>
-          <h3 style={{ fontFamily: fonts.display, fontSize: '13px', fontWeight: 500, letterSpacing: '5px', color: tc.text }}>{dt('FAN MAIL')}</h3>
+          <h3 style={{ fontFamily: fonts.display, fontSize: '13px', fontWeight: 500, letterSpacing: '5px', color: tc.text }}>{dt('GUESTBOOK')}</h3>
           <div style={{ width: '20px', height: '1px', background: tc.primary, margin: '10px auto 0', opacity: 0.5 }} />
         </div>
         <div className="text-center mb-6">
@@ -1970,6 +1970,9 @@ function RsvpSection({ invitation, invitationId, fonts, tc, bgOverride }: {
         </div>
         <div style={{ background: tc.cardBg, borderRadius: '12px', padding: '20px', border: `1px solid ${tc.divider}60` }}>
           <div className="space-y-3">
+            {invitation.rsvpNotice && (
+              <p style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.gray, textAlign: 'center', lineHeight: 1.6, whiteSpace: 'pre-line', margin: '0 0 4px 0' }}>{invitation.rsvpNotice}</p>
+            )}
             <input value={name} onChange={e => setName(e.target.value)} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} placeholder="성함" style={inputStyle} />
             <div className="grid grid-cols-2 gap-2">
               {([{ value: 'groom' as const, label: '신랑측' }, { value: 'bride' as const, label: '신부측' }]).map(opt => (
@@ -2057,12 +2060,12 @@ function MiniPlayerBar({ currentTrack, progress, isAudioPlaying, fonts, tc, onPr
   onPrev?: () => void; onNext?: () => void; totalSections?: number; currentSection?: number; trackName?: string; trackLabel?: string; artistName?: string
 }) {
   const dt = (text: string) => fonts.isScript ? text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : text
-  const trackNames = ['THE BEGINNING', 'THE COUPLE', 'OUR JOURNEY', 'GALLERY', 'THE WEDDING DAY', 'INFORMATION', 'LINER NOTES']
+  const trackNames = ['THE BEGINNING', 'THE COUPLE', 'OUR JOURNEY', 'GALLERY', 'THE WEDDING DAY', 'INFORMATION', 'THANK YOU']
   const trackKeys = ['01', '02', '03', '04', '05', 'bonus', 'bonus']
   const displayName = overrideTrackName || trackNames[Math.min(currentTrack - 1, trackNames.length - 1)] || ''
   const trackKey = trackKeys[Math.min(currentTrack - 1, trackKeys.length - 1)] || '01'
   const duration = TRACK_CONFIG[trackKey]?.duration || '3:42'
-  const trackNum = currentTrack <= 5 ? String(currentTrack).padStart(2, '0') : 'B+'
+  const trackNum = currentTrack <= 5 ? String(currentTrack).padStart(2, '0') : 'EP'
   const hasCrossfade = onPrev && onNext
 
   if (hasCrossfade) {
@@ -2513,7 +2516,7 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     content: content.content || {}, gallery: content.gallery || {},
     media: content.media || {}, rsvpEnabled: content.rsvpEnabled ?? true,
     rsvpDeadline: content.rsvpDeadline || '', rsvpAllowGuestCount: content.rsvpAllowGuestCount ?? true,
-    rsvpMealOption: content.rsvpMealOption ?? false, rsvpShuttleOption: content.rsvpShuttleOption ?? false, rsvpNotice: content.rsvpNotice ?? '',
+    rsvpMealOption: content.rsvpMealOption ?? false, rsvpShuttleOption: content.rsvpShuttleOption ?? false, rsvpNotice: content.rsvpNotice ?? '', giftNotice: (content as any).giftNotice ?? '', greetingTitle: (content as any).greetingTitle, journeyTitle: (content as any).journeyTitle,
     sectionVisibility: content.sectionVisibility || {},
     design: content.design || {}, bgm: content.bgm || {},
     guidance: content.guidance || {}, intro: content.intro,
@@ -2693,19 +2696,19 @@ function InvitationClientRecordContent({
   }
 
   const sectionTrackNames: Record<string, string> = {
-    trackCouple: 'THE COUPLE', trackOurJourney: 'OUR JOURNEY', trackGallery: 'GALLERY',
+    trackCouple: 'THE COUPLE', trackOurJourney: invitation.journeyTitle ?? 'OUR JOURNEY', trackGallery: 'GALLERY',
     video: 'VIDEO', trackWeddingDay: 'THE WEDDING DAY', guidance: 'INFORMATION',
-    bonusTrack: 'LINER NOTES', gift: 'GIFT', fanMail: 'FAN MAIL', rsvp: 'RSVP',
+    gift: 'GIFT', fanMail: 'GUESTBOOK', rsvp: 'RSVP',
   }
 
   // Greeting section = first item
   const sectionList: SectionListItem[] = [
-    { id: 'greeting', trackNum: 1, trackLabel: 'TRACK 01', name: 'THE BEGINNING', duration: SECTION_DURATIONS['greeting'], divider: null, component: <TrackGreeting invitation={invitation} fonts={fonts} tc={tc} trackRef={setTrackRef(0)} /> },
+    { id: 'greeting', trackNum: 1, trackLabel: invitation.greetingTitle !== undefined ? (invitation.greetingTitle ? 'TRACK 01' : '') : 'TRACK 01', name: invitation.greetingTitle ?? 'THE BEGINNING', duration: SECTION_DURATIONS['greeting'], divider: null, component: <TrackGreeting invitation={invitation} fonts={fonts} tc={tc} trackRef={setTrackRef(0)} /> },
   ]
 
   // Special track labels for non-numbered sections
   const specialTrackLabels: Record<string, string> = {
-    guidance: 'INFO', bonusTrack: 'B+', gift: 'SIDE B', fanMail: 'SIDE B', rsvp: 'ENCORE', video: 'MV',
+    guidance: 'INFO', gift: 'SIDE B', fanMail: 'SIDE B', rsvp: 'ENCORE', video: 'MV',
   }
 
   // Build from order
@@ -2772,7 +2775,9 @@ function InvitationClientRecordContent({
     const wrappedComponent = hasSpacing
       ? <div style={padStyle}>{component}</div>
       : component
-    sectionList.push({ id: sectionId, trackNum: curTrackNum, trackLabel, name: sectionTrackNames[sectionId] || sectionId, duration, divider, component: wrappedComponent })
+    const sectionName = sectionTrackNames[sectionId] || sectionId
+    const finalTrackLabel = sectionName === '' ? '' : trackLabel
+    sectionList.push({ id: sectionId, trackNum: curTrackNum, trackLabel: finalTrackLabel, name: sectionName, duration, divider, component: wrappedComponent })
   })
 
   // Footer section = last item

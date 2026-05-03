@@ -851,10 +851,10 @@ function ChapterTwo({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
           {/* Chapter label */}
           <div className="text-center mb-6">
             <div className="flex items-center justify-center gap-3 mb-3">
-              <span style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '6px', color: tc.gray, textTransform: 'uppercase' as const }}>STARRING</span>
+              <span style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '6px', color: tc.gray, textTransform: 'uppercase' as const }}>INTRODUCE</span>
             </div>
             <h2 style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '2px', color: tc.accent }}>
-              Cast
+              The Couple
             </h2>
           </div>
 
@@ -1202,7 +1202,7 @@ function FilmScenes({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
           OUR STORY
         </div>
         <h2 style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '2px', color: tc.accent }}>
-          Scenes
+          Our Story
         </h2>
       </div>
 
@@ -1233,7 +1233,7 @@ function FilmScenes({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
               >
                 <div className="flex items-center gap-2.5">
                   <span style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 500, letterSpacing: '4px', color: tc.accent, transition: 'opacity 0.6s ease' }}>
-                    SCENE {String(idx + 1).padStart(2, '0')}
+                    STORY {String(idx + 1).padStart(2, '0')}
                   </span>
                   <span style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '2px', color: tc.gray, transition: 'opacity 0.6s ease' }}>
                     TAKE 1
@@ -1375,7 +1375,7 @@ function ChapterThree({ invitation, fonts, tc, onOpenLightbox, bgOverride }: {
             GALLERY
           </div>
           <h2 style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '2px', color: tc.accent }}>
-            Movie Stills
+            Gallery
           </h2>
         </div>
 
@@ -1844,7 +1844,7 @@ function GuidanceSection({ invitation, fonts, tc, bgOverride }: { invitation: an
             <span style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '6px', color: tc.gray, textTransform: 'uppercase' as const }}>NOTICE</span>
             <div style={{ height: '1px', width: '20px', background: tc.divider }} />
           </div>
-          <div style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '2px', color: tc.accent }}>Information</div>
+          <div style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '2px', color: tc.accent }}>Notice</div>
         </div>
 
         {invitation.guidance?.image && (
@@ -2144,7 +2144,7 @@ function AudienceReviews({ invitation, invitationId, fonts, tc, isSample, bgOver
         <div className="flex items-center justify-center gap-3" style={{ marginBottom: '8px' }}>
           <span style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '6px', color: tc.gray, textTransform: 'uppercase' as const }}>MESSAGES</span>
         </div>
-        <div style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '2px', color: tc.accent }}>Reviews</div>
+        <div style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '2px', color: tc.accent }}>Guestbook</div>
       </div>
       <div className="text-center mb-6">
         <p className={`gb-question-highlight ${isVisible ? 'highlight-visible' : ''}`}
@@ -2317,11 +2317,11 @@ function TicketRsvp({ invitation, invitationId, fonts, tc, bgOverride }: {
       {/* Phase 1: "NOW SHOWING" / "YOUR RESERVATION" intro text */}
       <div className="rsvp-intro">
         <div style={{ fontFamily: fonts.display, fontSize: dfs(11), fontWeight: 400, letterSpacing: '10px', color: tc.accent, }}>
-          Now Showing
+          R.S.V.P
         </div>
         <div className="rsvp-intro-line" style={{ background: tc.accent, margin: '12px auto', height: '0.5px' }} />
         <div style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '4px', color: tc.gray }}>
-          YOUR RESERVATION
+          YOUR ATTENDANCE
         </div>
       </div>
 

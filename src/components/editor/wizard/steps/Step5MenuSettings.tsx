@@ -908,8 +908,21 @@ export default function Step5MenuSettings() {
         )}
 
         {invitation.sectionVisibility.bankAccounts && isRecord && (
-          <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-xs text-blue-700">ON/OFF로 청첩장 본문에서 마음 전하실 곳 섹션을 표시하거나 숨길 수 있습니다.</p>
+          <div className="space-y-3">
+            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <p className="text-xs text-blue-700">ON/OFF로 청첩장 본문에서 마음 전하실 곳 섹션을 표시하거나 숨길 수 있습니다.</p>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">안내 문구</Label>
+              <Textarea
+                value={invitation.giftNotice ?? ''}
+                onChange={(e) => updateField('giftNotice', e.target.value)}
+                placeholder="예) 참석이 어려우신 분들을 위해 기재했습니다.&#10;너그러운 마음으로 양해 부탁드립니다."
+                rows={2}
+                className="resize-none"
+              />
+              <p className="text-xs text-gray-500">마음 전하실 곳 하단에 표시됩니다. 비워두면 표시되지 않습니다.</p>
+            </div>
           </div>
         )}
 

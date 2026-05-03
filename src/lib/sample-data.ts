@@ -269,7 +269,7 @@ export const filmSampleContent = {
   groom: {
     ...ourSampleContent.groom,
     name: '한지훈',
-    nameEn: 'JIHUN',
+    nameEn: 'Jihun',
     lastName: '한',
     firstName: '지훈',
     profile: {
@@ -281,7 +281,7 @@ export const filmSampleContent = {
   bride: {
     ...ourSampleContent.bride,
     name: '윤서연',
-    nameEn: 'SEOYEON',
+    nameEn: 'Seoyeon',
     lastName: '윤',
     firstName: '서연',
     profile: {

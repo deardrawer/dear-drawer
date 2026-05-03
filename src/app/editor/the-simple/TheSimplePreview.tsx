@@ -5754,6 +5754,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
           publicTransport: [transport.bus, transport.subway].filter(Boolean).join('\n'),
           train: transport.train,
           expressBus: transport.expressBus,
+          extraInfoEnabled: !!transport.custom,
+          extraInfoText: transport.custom,
         } : undefined
 
         const rsvpEnabled = !data.hiddenSections.includes('rsvp')
@@ -5782,6 +5784,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               rsvpMealOption: data.sections.rsvp?.showMealOption,
               rsvpShuttleOption: data.sections.rsvp?.showShuttleOption,
               rsvpNotice: data.sections.rsvp?.rsvpNotice,
+              accountNotice: data.sections.account?.guide,
               invitationId: data.id,
               groomName: data.groom.name,
               brideName: data.bride.name,

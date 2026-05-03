@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 
 type ModalType = 'none' | 'contact' | 'rsvp' | 'location' | 'account' | 'share'
-type DirectionsTab = 'car' | 'publicTransport' | 'train' | 'expressBus'
+type DirectionsTab = 'car' | 'publicTransport' | 'train' | 'expressBus' | 'extraInfo'
 
 interface BankAccount {
   bank: string
@@ -64,6 +64,7 @@ interface GuestFloatingButtonProps {
     rsvpMealOption?: boolean
     rsvpShuttleOption?: boolean
     rsvpNotice?: string
+    accountNotice?: string
     invitationId?: string
     groomName?: string
     brideName?: string
@@ -694,6 +695,7 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
                       { key: 'publicTransport' as DirectionsTab, label: '버스/지하철', show: !!invitation.directions?.publicTransport },
                       { key: 'train' as DirectionsTab, label: '기차', show: !!invitation.directions?.train },
                       { key: 'expressBus' as DirectionsTab, label: '고속버스', show: !!invitation.directions?.expressBus },
+                      { key: 'extraInfo' as DirectionsTab, label: '추가 안내', show: !!(invitation.directions?.extraInfoEnabled && invitation.directions?.extraInfoText) },
                     ].filter(t => t.show)
 
                     return tabs.length > 1 ? (
@@ -720,13 +722,10 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
                     {directionsTab === 'expressBus' && invitation.directions?.expressBus && (
                       <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: themeColors.text }}>{invitation.directions.expressBus}</p>
                     )}
-                  </div>
-                  {/* 추가 안내사항 */}
-                  {invitation.directions?.extraInfoEnabled && invitation.directions?.extraInfoText && (
-                    <div className="mt-3 p-3 rounded-xl border" style={{ background: `${themeColors.primary}10`, borderColor: `${themeColors.primary}30` }}>
+                    {directionsTab === 'extraInfo' && invitation.directions?.extraInfoText && (
                       <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: themeColors.text }}>{invitation.directions.extraInfoText}</p>
-                    </div>
-                  )}
+                    )}
+                  </div>
 
                   <button onClick={() => copyToClipboard(invitation.venue_address || '')} className="w-full mt-4 py-2 rounded-xl text-xs" style={{ background: themeColors.sectionBg, color: themeColors.text }}>주소 복사</button>
                 </>
@@ -735,6 +734,9 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
               {/* Account Content */}
               {activeModal === 'account' && (
                 <>
+                  {invitation.accountNotice && (
+                    <p className="text-xs text-center mb-3 whitespace-pre-line leading-relaxed" style={{ color: themeColors.gray }}>{invitation.accountNotice}</p>
+                  )}
                   {groomAccounts.length > 0 && (
                     <div className="mb-4">
                       <div className="flex items-center gap-2 mb-2"><span className="w-1.5 h-1.5 rounded-full bg-blue-500" /><p className="text-xs font-medium text-blue-700">신랑측</p></div>

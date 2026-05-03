@@ -811,9 +811,9 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
   backgroundColor: template.colors.background,
   textColor: template.colors.text,
   fontStyle: template.id === 'narrative-magazine' ? 'modern'
-    : template.id === 'narrative-film' ? 'contemporary'
+    : template.id === 'narrative-film' ? 'roundgothic'
     : template.id === 'narrative-record' ? 'modern' : 'classic',
-  displayFont: template.id === 'narrative-film' ? 'italiana'
+  displayFont: template.id === 'narrative-film' ? 'italianno'
     : template.id === 'narrative-record' ? 'montserrat'
     : template.id === 'narrative-magazine' ? 'montserrat' : undefined,
   colorTheme: template.id === 'narrative-magazine' ? 'modern-black'

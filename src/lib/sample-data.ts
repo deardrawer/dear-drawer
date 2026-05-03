@@ -264,8 +264,8 @@ export const filmSampleContent = {
   ...ourSampleContent,
   templateId: 'film',
   colorTheme: 'film-dark' as const,
-  fontStyle: 'contemporary' as const,
-  displayFont: 'italiana',
+  fontStyle: 'roundgothic' as const,
+  displayFont: 'italianno',
   groom: {
     ...ourSampleContent.groom,
     name: '한지훈',

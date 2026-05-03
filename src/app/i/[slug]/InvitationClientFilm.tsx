@@ -342,7 +342,7 @@ function FilmPosterCover({ invitation, fonts, tc, onEnter, isPreview }: {
           marginBottom: '32px',
         }}>
           <span style={{
-            fontFamily: fonts.display,
+            fontFamily: fonts.body,
             fontSize: '9px',
             fontWeight: 500,
             letterSpacing: '8px',
@@ -429,7 +429,7 @@ function FilmPosterCover({ invitation, fonts, tc, onEnter, isPreview }: {
           textAlign: 'center',
         }}>
           <div style={{
-            fontFamily: fonts.display,
+            fontFamily: fonts.body,
             fontSize: '13px',
             fontWeight: 300,
             color: coverGray,
@@ -463,7 +463,7 @@ function FilmPosterCover({ invitation, fonts, tc, onEnter, isPreview }: {
         zIndex: 25,
       }}>
         <button onClick={onEnter} style={{
-          fontFamily: fonts.display,
+          fontFamily: fonts.body,
           fontSize: '9px',
           letterSpacing: '4px',
           color: coverGrayDim,
@@ -657,7 +657,7 @@ function FilmCinematicCover({ invitation, fonts, tc, onEnter, isPreview }: {
         zIndex: 25,
       }}>
         <button onClick={onEnter} style={{
-          fontFamily: fonts.display,
+          fontFamily: fonts.body,
           fontSize: dfs(9),
           letterSpacing: '4px',
           color: coverGrayDim,
@@ -907,9 +907,6 @@ function ChapterTwo({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
                     {groomProfile.tag}
                   </p>
                 )}
-                <div style={{ fontFamily: fonts.display, fontSize: dfs(9), letterSpacing: '4px', color: tc.gray, marginTop: '8px', opacity: 0.6 }}>
-                  As Groom
-                </div>
               </div>
             </div>
             {/* Bride */}
@@ -959,9 +956,6 @@ function ChapterTwo({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
                     {brideProfile.tag}
                   </p>
                 )}
-                <div style={{ fontFamily: fonts.display, fontSize: dfs(9), letterSpacing: '4px', color: tc.gray, marginTop: '8px', opacity: 0.6 }}>
-                  As Bride
-                </div>
               </div>
             </div>
           </div>
@@ -1165,34 +1159,13 @@ function FilmScenes({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
   const [activeScene, setActiveScene] = useState(0)
   const { ref, isVisible } = useScrollReveal()
 
-  // Swipe gesture handling
-  const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null)
-
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStartRef.current = {
-      x: e.touches[0].clientX,
-      y: e.touches[0].clientY,
-      time: Date.now(),
-    }
-  }, [])
-
-  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-    if (!touchStartRef.current) return
-    const dx = e.changedTouches[0].clientX - touchStartRef.current.x
-    const dy = e.changedTouches[0].clientY - touchStartRef.current.y
-    const dt = Date.now() - touchStartRef.current.time
-    touchStartRef.current = null
-
-    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.2 && dt < 500) {
-      if (dx < 0 && activeScene < interviews.length - 1) {
-        setActiveScene(prev => prev + 1)
-      } else if (dx > 0 && activeScene > 0) {
-        setActiveScene(prev => prev - 1)
-      }
-    }
-  }, [activeScene, interviews.length])
+  const handleTap = useCallback(() => {
+    setActiveScene(prev => (prev + 1) % interviews.length)
+  }, [interviews.length])
 
   if (interviews.length === 0) return null
+
+  const item = interviews[activeScene]
 
   return (
     <div ref={ref} style={{ backgroundColor: bgOverride || tc.sectionBg, display: 'flex', flexDirection: 'column', minHeight: 'auto', padding: '20px 0' }}>
@@ -1206,89 +1179,62 @@ function FilmScenes({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
         </h2>
       </div>
 
-      {/* Scene cards */}
+      {/* Progress bar */}
+      <div className="flex items-center gap-1.5 px-6 mb-4" style={{ opacity: 0, ...(isVisible ? { animation: 'film-fadeSlideUp 0.8s ease 0.2s both' } : {}) }}>
+        {interviews.map((_: any, idx: number) => (
+          <div key={idx} style={{ flex: 1, height: '2px', borderRadius: '1px', background: `${tc.gray}30`, overflow: 'hidden', cursor: 'pointer' }} onClick={() => setActiveScene(idx)}>
+            <div style={{
+              width: idx < activeScene ? '100%' : idx === activeScene ? '100%' : '0%',
+              height: '100%',
+              background: tc.accent,
+              borderRadius: '1px',
+              transition: 'width 0.4s ease',
+              opacity: idx <= activeScene ? 1 : 0,
+            }} />
+          </div>
+        ))}
+      </div>
+
+      {/* Current story card */}
       <div
-        style={{ display: 'flex', flexDirection: 'column', padding: '0 16px', gap: '4px', opacity: 0, ...(isVisible ? { animation: 'film-fadeSlideUp 0.8s ease 0.3s both' } : {}) }}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
+        onClick={handleTap}
+        style={{ padding: '0 16px', cursor: 'pointer', opacity: 0, ...(isVisible ? { animation: 'film-fadeSlideUp 0.8s ease 0.3s both' } : {}) }}
       >
-        {interviews.map((item: any, idx: number) => {
-          const isActive = idx === activeScene
-          const isBeforeActive = idx < activeScene
-          return (
-            <div key={idx} style={{ borderRadius: '4px', position: 'relative' }}>
-              {/* Collapsed header - always visible */}
-              <div
-                onClick={() => setActiveScene(idx)}
-                style={{
-                  padding: '12px 20px',
-                  borderLeft: `3px solid ${isActive ? tc.accent : tc.accent + '08'}`,
-                  cursor: 'pointer',
-                  transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-                  background: isActive
-                    ? `rgba(${parseInt(tc.accent.slice(1,3),16)},${parseInt(tc.accent.slice(3,5),16)},${parseInt(tc.accent.slice(5,7),16)},0.35)`
-                    : 'transparent',
-                  opacity: isActive ? 1 : 0.3,
-                }}
-              >
-                <div className="flex items-center gap-2.5">
-                  <span style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 500, letterSpacing: '4px', color: tc.accent, transition: 'opacity 0.6s ease' }}>
-                    STORY {String(idx + 1).padStart(2, '0')}
-                  </span>
-                  <span style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '2px', color: tc.gray, transition: 'opacity 0.6s ease' }}>
-                    TAKE 1
-                  </span>
-                  {!isActive && (
-                    <span style={{
-                      fontFamily: fonts.displayKr, fontSize: '11px', fontWeight: 400, color: tc.text,
-                      marginLeft: '4px',
-                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1,
-                      transition: 'opacity 0.6s ease',
-                    }}>
-                      {item.question}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Expandable content area */}
-              <div style={{
-                display: 'grid',
-                gridTemplateRows: isActive ? '1fr' : '0fr',
-                transition: 'grid-template-rows 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-              }}>
-                <div style={{ overflow: 'hidden' }}>
-                  <div style={{
-                    opacity: isActive ? 1 : 0,
-                    transition: 'opacity 0.5s ease 0.1s',
-                  }}>
-                    <FilmSceneCard item={item} idx={idx} total={interviews.length} groomName={groomName} brideName={brideName} fonts={fonts} tc={tc} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          )
-        })}
-
-        {/* Page indicator - dots */}
-        <div className="flex items-center justify-center gap-2.5" style={{ marginTop: '20px' }}>
-          {interviews.map((_: any, idx: number) => (
-            <button
-              key={idx}
-              onClick={() => setActiveScene(idx)}
-              style={{
-                width: idx === activeScene ? '20px' : '6px',
-                height: '6px',
-                borderRadius: '3px',
-                background: idx === activeScene ? tc.accent : `${tc.gray}50`,
-                border: 'none',
-                padding: 0,
-                cursor: 'pointer',
-                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-              }}
-            />
-          ))}
+        <div key={activeScene} style={{ animation: 'film-fadeSlideUp 0.4s ease both' }}>
+          <div style={{ padding: '8px 20px 4px', marginBottom: '4px' }}>
+            <span style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 500, letterSpacing: '4px', color: tc.accent }}>
+              {String(activeScene + 1).padStart(2, '0')} / {String(interviews.length).padStart(2, '0')}
+            </span>
+          </div>
+          <FilmSceneCard item={item} idx={activeScene} total={interviews.length} groomName={groomName} brideName={brideName} fonts={fonts} tc={tc} />
         </div>
+
+        {/* Tap hint */}
+        <div className="text-center" style={{ marginTop: '16px' }}>
+          <span style={{ fontFamily: fonts.body, fontSize: '10px', letterSpacing: '2px', color: `${tc.gray}80` }}>
+            TAP TO NEXT
+          </span>
+        </div>
+      </div>
+
+      {/* Dot indicator */}
+      <div className="flex items-center justify-center gap-2" style={{ marginTop: '16px' }}>
+        {interviews.map((_: any, idx: number) => (
+          <button
+            key={idx}
+            onClick={(e) => { e.stopPropagation(); setActiveScene(idx) }}
+            style={{
+              width: idx === activeScene ? '18px' : '5px',
+              height: '5px',
+              borderRadius: '3px',
+              background: idx === activeScene ? tc.accent : `${tc.gray}40`,
+              border: 'none',
+              padding: 0,
+              cursor: 'pointer',
+              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+            }}
+          />
+        ))}
       </div>
     </div>
   )
@@ -1841,7 +1787,7 @@ function GuidanceSection({ invitation, fonts, tc, bgOverride }: { invitation: an
         <div className="text-center mb-8 px-6">
           <div className="flex items-center justify-center gap-3" style={{ marginBottom: '12px' }}>
             <div style={{ height: '1px', width: '20px', background: tc.divider }} />
-            <span style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '6px', color: tc.gray, textTransform: 'uppercase' as const }}>NOTICE</span>
+            <span style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '6px', color: tc.gray, textTransform: 'uppercase' as const }}>INFORMATION</span>
             <div style={{ height: '1px', width: '20px', background: tc.divider }} />
           </div>
           <div style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '2px', color: tc.accent }}>Notice</div>
@@ -2490,8 +2436,8 @@ function FilmFooter({ invitation, fonts, tc }: { invitation: any; fonts: FontCon
       {/* Spotlight cone */}
       <div className={`fin-spotlight ${vis}`} style={{ background: `radial-gradient(ellipse at 50% 0%, ${tc.accent}1F 0%, transparent 70%)` }} />
       {/* FIN. text with letter-spacing reveal */}
-      <div className={`fin-text-anim ${vis}`} style={{ fontFamily: fonts.display, fontSize: dfs(52), fontWeight: 400, fontStyle: 'italic', letterSpacing: '16px', color: tc.text, position: 'relative', zIndex: 1 }}>
-        Fin.
+      <div className={`fin-text-anim ${vis}`} style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '2px', color: tc.text, position: 'relative', zIndex: 1 }}>
+        Thank You
       </div>
       {/* Expanding accent line */}
       <div className={`fin-line-anim ${vis}`} style={{ background: tc.accent, margin: '24px auto', position: 'relative', zIndex: 1 }} />
@@ -2757,9 +2703,9 @@ const globalStyles = `
     100% { opacity: 1; width: 260px; }
   }
   @keyframes finReveal {
-    0% { opacity: 0; letter-spacing: 40px; filter: blur(8px); }
+    0% { opacity: 0; letter-spacing: 12px; filter: blur(4px); }
     60% { opacity: 1; filter: blur(0); }
-    100% { opacity: 0.6; letter-spacing: 20px; filter: blur(0); }
+    100% { opacity: 0.6; letter-spacing: 2px; filter: blur(0); }
   }
   @keyframes fadeUp {
     0% { opacity: 0; transform: translateY(10px); }

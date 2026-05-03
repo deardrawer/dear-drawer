@@ -36,9 +36,9 @@ interface SectionMetaItem {
 export const SECTION_META: Record<string, SectionMetaItem> = {
   intro: {
     label: '인트로',
-    variantCount: 9,
+    variantCount: 10,
     optional: false,
-    variantLabels: { 1: '풀커버', 2: '시네마', 3: '프레임', 4: '아치', 5: '에디토리얼', 6: '티켓', 7: '그리드', 8: '실', 9: '룰스택' },
+    variantLabels: { 1: '풀커버', 2: '심플', 3: '프레임', 4: '아치', 5: '에디토리얼', 6: '티켓', 7: '그리드', 8: '실', 9: '룰스택', 10: '크림' },
   },
   greeting: {
     label: '인사말',

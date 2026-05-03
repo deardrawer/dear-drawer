@@ -200,14 +200,23 @@ function introShapes(v: number, r: R, l: L, d: D, s: SA): React.ReactNode {
       </>
     )
   // V9: 룰스택 (horizontal rule stack)
+  if (v === 9)
+    return (
+      <>
+        {l(6, 5, 30, 5)}
+        {l(12, 8, 24, 8)}
+        {l(6, 11, 30, 11)}
+        {r(8, 13, 20, 3, { filled: true, outline: false })}
+        {l(6, 18, 30, 18)}
+        {l(10, 21, 26, 21)}
+      </>
+    )
+  // V10: 크림 (라벨 + 정사각형 사진 프레임 + 하단 텍스트)
   return (
     <>
-      {l(6, 5, 30, 5)}
-      {l(12, 8, 24, 8)}
-      {l(6, 11, 30, 11)}
-      {r(8, 13, 20, 3, { filled: true, outline: false })}
-      {l(6, 18, 30, 18)}
-      {l(10, 21, 26, 21)}
+      {l(12, 5, 24, 5)}
+      {r(11, 8, 14, 10, { outline: true })}
+      {l(12, 21, 24, 21)}
     </>
   )
 }

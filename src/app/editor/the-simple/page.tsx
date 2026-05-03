@@ -114,6 +114,12 @@ export interface SectionContents {
     customNames?: string
     // 텍스트 위치 (배경 이미지 위 텍스트 가독성 조절)
     textPosition?: 'top' | 'center' | 'bottom'
+    // 사진 없을 때 배경색 (기본 #000000)
+    bgColor?: string
+    // 사진 위 오버레이 rgba (기본 rgba(0,0,0,0.4))
+    overlayColor?: string
+    // 글자 색상 (V10 크림 등 라이트 배경에서 사용, 기본 dark)
+    textColor?: 'dark' | 'light'
   }
   greeting: { label: string; title: string; body: string }
   couple: {
@@ -1975,6 +1981,7 @@ function TheSimpleEditorContent() {
                           return (
                             <IntroEditor
                               value={data.sections.intro}
+                              variant={data.sectionVariants[id] ?? 1}
                               onChange={(next) =>
                                 updateData({
                                   sections: { ...data.sections, intro: next },

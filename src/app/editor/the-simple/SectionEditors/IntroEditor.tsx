@@ -7,15 +7,36 @@ import { uploadImage } from '@/lib/imageUpload'
 
 interface IntroEditorProps {
   value: SectionContents['intro']
+  variant?: number
   onChange: (next: SectionContents['intro']) => void
 }
 
 const DEFAULT_SETTINGS: TheSimpleImageSettings = { scale: 1, positionX: 0, positionY: 0 }
 
+/** hex → {r, g, b} */
+function hexToRgb(hex: string): { r: number; g: number; b: number } {
+  const h = hex.replace('#', '')
+  return {
+    r: parseInt(h.substring(0, 2), 16),
+    g: parseInt(h.substring(2, 4), 16),
+    b: parseInt(h.substring(4, 6), 16),
+  }
+}
+
+/** rgba(r,g,b,a) 문자열에서 hex + opacity 추출 */
+function parseRgba(rgba: string): { hex: string; opacity: number } {
+  const m = rgba.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+))?\s*\)/)
+  if (!m) return { hex: '#000000', opacity: 40 }
+  const r = parseInt(m[1]), g = parseInt(m[2]), b = parseInt(m[3])
+  const a = m[4] !== undefined ? parseFloat(m[4]) : 1
+  const toHex = (n: number) => n.toString(16).padStart(2, '0')
+  return { hex: `#${toHex(r)}${toHex(g)}${toHex(b)}`, opacity: Math.round(a * 100) }
+}
+
 /**
  * 인트로 섹션 에디터 — 커버 / 타이틀 / 본문 + 배경 이미지(V1 Full Cover용) 편집
  */
-export default function IntroEditor({ value, onChange }: IntroEditorProps) {
+export default function IntroEditor({ value, variant, onChange }: IntroEditorProps) {
   const [uploading, setUploading] = useState(false)
 
   const update = (patch: Partial<SectionContents['intro']>) => {
@@ -207,6 +228,100 @@ export default function IntroEditor({ value, onChange }: IntroEditorProps) {
           </>
         )}
       </div>
+
+      {/* 배경 색상 — 항상 표시 */}
+      <div className="space-y-2 pt-1">
+        <div className="text-[10px] uppercase tracking-wider text-stone-500">배경 색상</div>
+        <p className="text-[10px] text-stone-400 leading-relaxed">
+          인트로 영역의 기본 배경색을 변경합니다
+        </p>
+        <div className="flex items-center gap-2">
+          <input
+            type="color"
+            value={value.bgColor || '#000000'}
+            onChange={(e) => update({ bgColor: e.target.value })}
+            className="w-7 h-7 rounded border border-stone-200 cursor-pointer p-0.5"
+          />
+          <span className="text-[10px] text-stone-400">{value.bgColor || '#000000'}</span>
+        </div>
+      </div>
+
+      {/* 글자 색상 — 블랙 / 화이트 */}
+      <div className="space-y-1.5 pt-1">
+        <div className="text-[10px] uppercase tracking-wider text-stone-500">글자 색상</div>
+        <div className="flex gap-1.5">
+          {([
+            { key: 'dark' as const, label: '블랙', swatch: '#1a1a1a' },
+            { key: 'light' as const, label: '화이트', swatch: '#ffffff' },
+          ]).map(({ key, label, swatch }) => {
+            const defaultColor = variant === 10 ? 'dark' : 'light'
+            const active = (value.textColor || defaultColor) === key
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => update({ textColor: key })}
+                className={`flex-1 flex items-center justify-center gap-1.5 text-[11px] py-1.5 rounded-md border transition-colors ${
+                  active
+                    ? 'border-stone-800 bg-stone-800 text-white'
+                    : 'border-stone-200 text-stone-500 hover:border-stone-400'
+                }`}
+              >
+                <span
+                  className="w-3 h-3 rounded-full border shrink-0"
+                  style={{ background: swatch, borderColor: active ? 'rgba(255,255,255,0.4)' : '#d6d3d1' }}
+                />
+                {label}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* 오버레이 — 사진 있을 때만 */}
+      {value.photo && (
+        <div className="space-y-2 pt-1">
+          <div className="text-[10px] uppercase tracking-wider text-stone-500">오버레이</div>
+          <p className="text-[10px] text-stone-400 leading-relaxed">
+            사진 위에 색상을 덧씌워 텍스트 가독성을 조절합니다
+          </p>
+          {(() => {
+            const parsed = parseRgba(value.overlayColor || 'rgba(0,0,0,0.4)')
+            return (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={parsed.hex}
+                    onChange={(e) => {
+                      const { r, g, b } = hexToRgb(e.target.value)
+                      update({ overlayColor: `rgba(${r},${g},${b},${parsed.opacity / 100})` })
+                    }}
+                    className="w-7 h-7 rounded border border-stone-200 cursor-pointer p-0.5"
+                  />
+                  <span className="text-[10px] text-stone-400">{parsed.hex}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-stone-400 shrink-0 w-10">투명도</span>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    value={parsed.opacity}
+                    onChange={(e) => {
+                      const { r, g, b } = hexToRgb(parsed.hex)
+                      const a = parseInt(e.target.value) / 100
+                      update({ overlayColor: `rgba(${r},${g},${b},${a})` })
+                    }}
+                    className="flex-1 h-1 accent-stone-600"
+                  />
+                  <span className="text-[10px] text-stone-400 w-8 text-right">{parsed.opacity}%</span>
+                </div>
+              </div>
+            )
+          })()}
+        </div>
+      )}
     </div>
   )
 }

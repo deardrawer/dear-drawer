@@ -2110,13 +2110,20 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       const textPos = intro.textPosition || 'center'
       const textPosCls = textPos !== 'center' ? ` ts-text-${textPos}` : ''
 
-      // IntroBg 헬퍼 — 사진 or 블랙 배경 렌더링 (V1~V5 공통)
+      // IntroBg 헬퍼 — 사진 or 배경색 렌더링 + 오버레이 (V2~V9 공통)
       const introBg = () => {
         const photo = intro.photo
         if (photo?.url) {
-          return <CropBg src={photo.url} settings={photo.settings} className="ts-in-bg" style={{ position: 'absolute', inset: 0 }} />
+          return (
+            <>
+              <CropBg src={photo.url} settings={photo.settings} className="ts-in-bg" style={{ position: 'absolute', inset: 0 }} />
+              {intro.overlayColor && (
+                <div style={{ position: 'absolute', inset: 0, background: intro.overlayColor, pointerEvents: 'none', zIndex: 1 }} />
+              )}
+            </>
+          )
         }
-        return <div className="ts-in-bg ts-in-bg--black" />
+        return <div className="ts-in-bg ts-in-bg--black" style={intro.bgColor ? { background: intro.bgColor } : undefined} />
       }
 
       // 이름 렌더링 헬퍼 — showNames 값에 따라 렌더
@@ -2139,15 +2146,26 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // 한글 이름일 때 폰트 크기 축소용 클래스
       const namesCls = showNames === 'english' ? '' : ' ts-names-ko'
 
+      // 텍스트 색상 클래스 (V1-V9: 기본 light, V10: 기본 dark)
+      const introTextCls = (() => {
+        if (v === 10) return intro.textColor === 'light' ? ' ts-in10--light' : ''
+        return intro.textColor === 'dark' ? ' ts-intro-dark' : ''
+      })()
+
       // V1 · Editorial Cover (photo background)
       if (v === 1) {
         const photo = intro.photo
         return (
           <AnimatedSection className="ts-sec" key={`intro-${v}`} style={{ padding: 0 }}>
-            <div className={`ts-in1${textPosCls}`}>
+            <div className={`ts-in1${textPosCls}${introTextCls}`}>
               {photo?.url
-                ? <CropBg src={photo.url} settings={photo.settings} className={`bg ${skipIntroBgFade ? 'ts-in-anim-cover' : 'ts-in-anim'}`} style={{ position: 'absolute', inset: 0 }} />
-                : <div className={`bg ${skipIntroBgFade ? 'ts-in-anim-cover' : 'ts-in-anim'}`} />
+                ? <>
+                    <CropBg src={photo.url} settings={photo.settings} className={`bg ${skipIntroBgFade ? 'ts-in-anim-cover' : 'ts-in-anim'}`} style={{ position: 'absolute', inset: 0 }} />
+                    {intro.overlayColor && (
+                      <div style={{ position: 'absolute', inset: 0, background: intro.overlayColor, pointerEvents: 'none', zIndex: 1 }} />
+                    )}
+                  </>
+                : <div className={`bg ${skipIntroBgFade ? 'ts-in-anim-cover' : 'ts-in-anim'}`} style={intro.bgColor ? { background: intro.bgColor } : undefined} />
               }
               <div className="content">
                 <div className="top ts-in-anim">
@@ -2192,7 +2210,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         const splitBottom = textPos === 'top'
         return (
           <AnimatedSection className="ts-sec" key={`intro-${v}`} style={{ padding: 0 }}>
-            <div className={`ts-in2${textPosCls}`}>
+            <div className={`ts-in2${textPosCls}${introTextCls}`}>
               {introBg()}
               <div className="ts-in2-content">
                 <div className="eng ts-in-anim">{intro.eyebrow || 'We Invite You'}</div>
@@ -2222,7 +2240,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       if (v === 3) {
         return (
           <AnimatedSection className="ts-sec" key={`intro-${v}`} style={{ padding: 0 }}>
-            <div className={`ts-in3${textPosCls}`}>
+            <div className={`ts-in3${textPosCls}${introTextCls}`}>
               {introBg()}
               <div className="ts-in3-frame ts-in-anim">
                 <div className="ts-in3-inner">
@@ -2244,9 +2262,17 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       if (v === 4) {
         return (
           <AnimatedSection className="ts-sec" key={`intro-${v}`} style={{ padding: 0 }}>
-            <div className="ts-in4">
+            <div className={`ts-in4${introTextCls}`} style={intro.bgColor ? { background: intro.bgColor } : undefined}>
               <div className="ts-in4-gate ts-in-anim">
-                {introBg()}
+                {intro.photo?.url
+                  ? <>
+                      <CropBg src={intro.photo.url} settings={intro.photo.settings} className="ts-in-bg" style={{ position: 'absolute', inset: 0 }} />
+                      {intro.overlayColor && (
+                        <div style={{ position: 'absolute', inset: 0, background: intro.overlayColor, pointerEvents: 'none', zIndex: 1 }} />
+                      )}
+                    </>
+                  : <div className="ts-in-bg ts-in-bg--black" />
+                }
                 <div className="ts-in4-gate-overlay" />
                 <div className="ts-in4-gate-text">
                   <div className="eyebrow ts-in-anim">{intro.eyebrow || 'Save the Date'}</div>
@@ -2272,7 +2298,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         const splitBottom5 = textPos === 'top'
         return (
           <AnimatedSection className="ts-sec" key={`intro-${v}`} style={{ padding: 0 }}>
-            <div className={`ts-in5${textPosCls}`}>
+            <div className={`ts-in5${textPosCls}${introTextCls}`}>
               {introBg()}
               <div className="ts-in5-top-bar ts-in-anim">
                 <span>청첩장 &mdash; No. 001</span>
@@ -2334,7 +2360,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         ]
         return (
           <AnimatedSection className="ts-sec" key={`intro-${v}`} style={{ padding: 0 }}>
-            <div className="ts-in6">
+            <div className={`ts-in6${introTextCls}`}>
               {introBg()}
               <div className="ts-in6-band ts-in-anim">
                 <div className="ts-in6-band-inner">
@@ -2365,7 +2391,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       if (v === 7) {
         return (
           <AnimatedSection className="ts-sec" key={`intro-${v}`} style={{ padding: 0 }}>
-            <div className={`ts-in7${textPosCls}`}>
+            <div className={`ts-in7${textPosCls}${introTextCls}`}>
               {introBg()}
               <div className="h-line ts-in-anim" />
               <div className="h-line ts-in-anim" />
@@ -2392,7 +2418,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         const enInitials = `${gEn.slice(0, 1).toUpperCase()}&${bEn.slice(0, 1).toUpperCase()}`
         return (
           <AnimatedSection className="ts-sec" key={`intro-${v}`} style={{ padding: 0 }}>
-            <div className="ts-in8">
+            <div className={`ts-in8${introTextCls}`} style={intro.bgColor ? { background: intro.bgColor } : undefined}>
               <div className="seal ts-in-anim">
                 <div className="monogram">{enInitials}</div>
               </div>
@@ -2411,7 +2437,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       if (v === 9) {
         return (
           <AnimatedSection className="ts-sec" key={`intro-${v}`} style={{ padding: 0 }}>
-            <div className={`ts-in9${textPosCls}`}>
+            <div className={`ts-in9${textPosCls}${introTextCls}`}>
               {introBg()}
               <div className="ts-in9-stack">
                 <div className="h-line ts-in-anim" />
@@ -2426,6 +2452,34 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   <span>{venueName}{venueHall && ` · ${venueHall}`}</span>
                 </div>
                 <div className="h-line ts-in-anim" />
+              </div>
+            </div>
+          </AnimatedSection>
+        )
+      }
+
+      // V10 · Cream Card (크림)
+      if (v === 10) {
+        return (
+          <AnimatedSection className="ts-sec" key={`intro-${v}`} style={{ padding: 0 }}>
+            <div className={`ts-in10${introTextCls}`} style={intro.bgColor ? { background: intro.bgColor } : undefined}>
+              {/* 라벨 */}
+              <div className="eyebrow ts-in-anim">{intro.eyebrow || 'Wedding Day'}</div>
+              {/* 이름 — 필기체 */}
+              <div className={`names ts-in-anim${namesCls}`}>{renderNames('inline')}</div>
+              {/* 사진 — 정사각형 프레임 */}
+              {intro.photo?.url && (
+                <div className="ts-in10-photo ts-in-anim">
+                  <CropBg src={intro.photo.url} settings={intro.photo.settings} className="ts-in10-img" style={{ position: 'absolute', inset: 0 }} />
+                  {intro.overlayColor && (
+                    <div style={{ position: 'absolute', inset: 0, background: intro.overlayColor, pointerEvents: 'none', zIndex: 1 }} />
+                  )}
+                </div>
+              )}
+              {/* 하단 날짜 + 장소 */}
+              <div className="meta ts-in-anim">
+                <span>{yy}. {mm}. {dd}</span>
+                <span>{venueName}{venueHall && ` ${venueHall}`}</span>
               </div>
             </div>
           </AnimatedSection>

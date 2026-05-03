@@ -353,7 +353,8 @@
 .ts-preview .ts-in6 .ts-in-anim,
 .ts-preview .ts-in7 .ts-in-anim,
 .ts-preview .ts-in8 .ts-in-anim,
-.ts-preview .ts-in9 .ts-in-anim { opacity: 0; }
+.ts-preview .ts-in9 .ts-in-anim,
+.ts-preview .ts-in10 .ts-in-anim { opacity: 0; }
 
 /* V2 · Cinematic Fade (다크) */
 .ts-preview .ts-in2 {
@@ -1007,6 +1008,177 @@
   font-family: var(--font-ko);
   font-size: calc(9px * var(--ts-font-scale, 1));
 }
+
+/* V10 · Cream Card (크림) */
+.ts-preview .ts-in10 {
+  position: relative;
+  min-height: var(--ts-intro-vh, 100dvh);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #f5f2ed;
+  color: #1a1a1a;
+  gap: 20px;
+  padding: 24px 32px 40px;
+}
+.ts-preview .ts-in10 .eyebrow {
+  font-family: var(--font-display);
+  font-size: calc(10px * var(--ts-font-scale, 1));
+  letter-spacing: 0.45em;
+  text-transform: uppercase;
+  color: #8a7e72;
+  z-index: 2;
+}
+.ts-preview .ts-in10 .names {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: calc(28px * var(--ts-font-scale, 1));
+  line-height: 1.15;
+  font-weight: 300;
+  color: #1a1a1a;
+  z-index: 2;
+  text-align: center;
+}
+.ts-preview .ts-in10-photo {
+  position: relative;
+  width: 65%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  z-index: 2;
+}
+.ts-preview .ts-in10 .meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-display);
+  font-size: calc(12px * var(--ts-font-scale, 1));
+  letter-spacing: 0.15em;
+  color: #8a7e72;
+  text-align: center;
+  z-index: 2;
+}
+.ts-preview .ts-in10 .meta span:last-child {
+  font-family: var(--font-ko);
+  font-size: calc(11px * var(--ts-font-scale, 1));
+  letter-spacing: 0.05em;
+  color: #a09890;
+}
+/* V10 light (화이트 글자) */
+.ts-preview .ts-in10--light { color: #fff; }
+.ts-preview .ts-in10--light .eyebrow { color: rgba(255,255,255,0.6); }
+.ts-preview .ts-in10--light .names { color: #fff; }
+.ts-preview .ts-in10--light .meta { color: rgba(255,255,255,0.7); }
+.ts-preview .ts-in10--light .meta span:last-child { color: rgba(255,255,255,0.5); }
+
+/* ==========================================================================
+ * V1~V9 Dark text override (블랙 글자)
+ * 기존 variant CSS의 specificity가 높으므로 variant별로 정확히 매칭
+ * ========================================================================== */
+/* 공통 — ::after 다크 오버레이 제거, 배경 필터 해제 */
+.ts-preview .ts-in1.ts-intro-dark::after,
+.ts-preview .ts-in2.ts-intro-dark::after,
+.ts-preview .ts-in3.ts-intro-dark::after,
+.ts-preview .ts-in4.ts-intro-dark::after,
+.ts-preview .ts-in5.ts-intro-dark::after,
+.ts-preview .ts-in6.ts-intro-dark::after,
+.ts-preview .ts-in7.ts-intro-dark::after,
+.ts-preview .ts-in8.ts-intro-dark::after,
+.ts-preview .ts-in9.ts-intro-dark::after { background: none !important; }
+.ts-preview .ts-intro-dark .ts-in-bg { filter: brightness(1) saturate(1) !important; }
+.ts-preview .ts-in1.ts-intro-dark .bg { filter: brightness(1) saturate(1) !important; }
+
+/* V1 · Editorial Cover */
+.ts-preview .ts-in1.ts-intro-dark { color: #1a1a1a; }
+.ts-preview .ts-in1.ts-intro-dark .content .top { color: rgba(0,0,0,0.6); }
+.ts-preview .ts-in1.ts-intro-dark .content .top b { color: #1a1a1a; }
+.ts-preview .ts-in1.ts-intro-dark .center .kicker { color: rgba(0,0,0,0.5); }
+.ts-preview .ts-in1.ts-intro-dark .center .rule { background: rgba(0,0,0,0.2); }
+.ts-preview .ts-in1.ts-intro-dark .center h3 { color: #1a1a1a; }
+.ts-preview .ts-in1.ts-intro-dark .center .sub { color: rgba(0,0,0,0.6); }
+.ts-preview .ts-in1.ts-intro-dark .content .bottom { color: rgba(0,0,0,0.5); }
+.ts-preview .ts-in1.ts-intro-dark .content .bottom b { color: #1a1a1a; }
+
+/* V2 · Cinematic Fade */
+.ts-preview .ts-in2.ts-intro-dark { color: #1a1a1a; }
+.ts-preview .ts-in2.ts-intro-dark h3 { color: #1a1a1a; }
+.ts-preview .ts-in2.ts-intro-dark .eng { color: rgba(0,0,0,0.5); }
+.ts-preview .ts-in2.ts-intro-dark .rule { background: rgba(0,0,0,0.2); }
+.ts-preview .ts-in2.ts-intro-dark .date { color: rgba(0,0,0,0.5); }
+.ts-preview .ts-in2.ts-intro-dark .day { color: rgba(0,0,0,0.7); }
+
+/* V3 · Frame */
+.ts-preview .ts-in3.ts-intro-dark { color: #1a1a1a; }
+.ts-preview .ts-in3.ts-intro-dark .ts-in3-frame { border-color: rgba(0,0,0,0.2); }
+.ts-preview .ts-in3.ts-intro-dark h3 { color: #1a1a1a; }
+.ts-preview .ts-in3.ts-intro-dark .eng { color: rgba(0,0,0,0.45); }
+.ts-preview .ts-in3.ts-intro-dark .date { color: rgba(0,0,0,0.45); }
+
+/* V4 · Arch */
+.ts-preview .ts-in4.ts-intro-dark { color: #1a1a1a; background: #f5f2ed; }
+.ts-preview .ts-in4.ts-intro-dark .ts-in4-gate-overlay { background: none; }
+.ts-preview .ts-in4.ts-intro-dark .eyebrow { color: rgba(0,0,0,0.4); }
+.ts-preview .ts-in4.ts-intro-dark .names { color: #1a1a1a; }
+.ts-preview .ts-in4.ts-intro-dark .date { color: rgba(0,0,0,0.4); }
+.ts-preview .ts-in4.ts-intro-dark .venue { color: rgba(0,0,0,0.3); }
+
+/* V5 · Editorial */
+.ts-preview .ts-in5.ts-intro-dark { color: #1a1a1a; }
+.ts-preview .ts-in5.ts-intro-dark .ts-in5-top-bar span { color: rgba(0,0,0,0.3); }
+.ts-preview .ts-in5.ts-intro-dark .big-number { color: rgba(0,0,0,0.1); }
+.ts-preview .ts-in5.ts-intro-dark .eyebrow { color: rgba(0,0,0,0.3); }
+.ts-preview .ts-in5.ts-intro-dark .names { color: #1a1a1a; }
+.ts-preview .ts-in5.ts-intro-dark .names .et { color: rgba(0,0,0,0.25); }
+.ts-preview .ts-in5.ts-intro-dark .divider { background: rgba(0,0,0,0.12); }
+.ts-preview .ts-in5.ts-intro-dark .venue-info { color: rgba(0,0,0,0.4); }
+.ts-preview .ts-in5.ts-intro-dark .ts-in5-bottom-info .venue-info { color: rgba(0,0,0,0.5); }
+.ts-preview .ts-in5.ts-intro-dark .ts-in5-bottom-info .venue-name { color: rgba(0,0,0,0.35); }
+.ts-preview .ts-in5.ts-intro-dark .open-label { color: rgba(0,0,0,0.3); }
+.ts-preview .ts-in5.ts-intro-dark .open-label .arrow-line { background: rgba(0,0,0,0.15); }
+.ts-preview .ts-in5.ts-intro-dark .open-label .arrow-line::after { border-color: rgba(0,0,0,0.3); }
+.ts-preview .ts-in5.ts-intro-dark .page-num { color: rgba(0,0,0,0.15); }
+.ts-preview .ts-in5.ts-intro-dark .ts-in5-bottom-bar span { color: rgba(0,0,0,0.3); }
+
+/* V6 · Ticker */
+.ts-preview .ts-in6.ts-intro-dark { color: #1a1a1a; background: #f5f2ed; }
+.ts-preview .ts-in6.ts-intro-dark .ts-in6-band { border-color: rgba(0,0,0,0.06); }
+.ts-preview .ts-in6.ts-intro-dark .ts-in6-band-inner { color: rgba(0,0,0,0.08); }
+.ts-preview .ts-in6.ts-intro-dark .eyebrow { color: rgba(0,0,0,0.35); }
+.ts-preview .ts-in6.ts-intro-dark .names { color: #1a1a1a; }
+.ts-preview .ts-in6.ts-intro-dark .rule { background: rgba(0,0,0,0.15); }
+.ts-preview .ts-in6.ts-intro-dark .date { color: rgba(0,0,0,0.45); }
+
+/* V7 · Grid */
+.ts-preview .ts-in7.ts-intro-dark { color: #1a1a1a; background: #f5f2ed; }
+.ts-preview .ts-in7.ts-intro-dark .h-line { background: rgba(0,0,0,0.06); }
+.ts-preview .ts-in7.ts-intro-dark .v-line { background: rgba(0,0,0,0.04); }
+.ts-preview .ts-in7.ts-intro-dark .corner::before,
+.ts-preview .ts-in7.ts-intro-dark .corner::after { background: rgba(0,0,0,0.12); }
+.ts-preview .ts-in7.ts-intro-dark .tag { color: rgba(0,0,0,0.25); }
+.ts-preview .ts-in7.ts-intro-dark .names { color: #1a1a1a; }
+.ts-preview .ts-in7.ts-intro-dark .ko { color: rgba(0,0,0,0.35); }
+.ts-preview .ts-in7.ts-intro-dark .date { color: rgba(0,0,0,0.3); }
+
+/* V8 · Seal */
+.ts-preview .ts-in8.ts-intro-dark { color: #1a1a1a; background: #f5f2ed; }
+.ts-preview .ts-in8.ts-intro-dark .seal { border-color: rgba(0,0,0,0.15); }
+.ts-preview .ts-in8.ts-intro-dark .seal::before { border-color: rgba(0,0,0,0.08); }
+.ts-preview .ts-in8.ts-intro-dark .monogram { color: rgba(0,0,0,0.7); }
+.ts-preview .ts-in8.ts-intro-dark .names { color: rgba(0,0,0,0.6); }
+.ts-preview .ts-in8.ts-intro-dark .rule { background: rgba(0,0,0,0.12); }
+.ts-preview .ts-in8.ts-intro-dark .date { color: rgba(0,0,0,0.4); }
+.ts-preview .ts-in8.ts-intro-dark .venue { color: rgba(0,0,0,0.3); }
+
+/* V9 · Rule Stack */
+.ts-preview .ts-in9.ts-intro-dark { color: #1a1a1a; }
+.ts-preview .ts-in9.ts-intro-dark .eyebrow { color: rgba(0,0,0,0.4); }
+.ts-preview .ts-in9.ts-intro-dark .names { color: #1a1a1a; }
+.ts-preview .ts-in9.ts-intro-dark .meta { color: rgba(0,0,0,0.45); }
+.ts-preview .ts-in9.ts-intro-dark .meta span { color: rgba(0,0,0,0.3); }
+.ts-preview .ts-in9.ts-intro-dark .h-line { background: rgba(0,0,0,0.12); }
 
 /* Ticker scroll keyframe */
 @keyframes tsTickerScroll {
@@ -2823,6 +2995,21 @@
 .ts-preview .ts-in6 .names.ts-names-ko { font-size: calc(38px * var(--ts-font-scale, 1)); font-style: normal; line-height: 1.2; }
 .ts-preview .ts-in7 .names.ts-names-ko { font-size: calc(32px * var(--ts-font-scale, 1)); font-style: normal; line-height: 1.25; }
 .ts-preview .ts-in9 .names.ts-names-ko { font-size: calc(30px * var(--ts-font-scale, 1)); font-style: normal; line-height: 1.3; }
+.ts-preview .ts-in10 .names.ts-names-ko { font-size: calc(30px * var(--ts-font-scale, 1)); font-style: normal; line-height: 1.3; }
+
+/* V10 · Cream Card — 순차 등장 */
+.ts-preview .ts-sec.in-view .ts-in10 .eyebrow.ts-in-anim {
+  animation: tsFadeIn 1s var(--ts-ease) 400ms both;
+}
+.ts-preview .ts-sec.in-view .ts-in10 .names.ts-in-anim {
+  animation: tsBlurReveal 1.6s var(--ts-ease) 800ms both;
+}
+.ts-preview .ts-sec.in-view .ts-in10 .ts-in10-photo.ts-in-anim {
+  animation: tsFadeIn 1.4s var(--ts-ease) 1400ms both;
+}
+.ts-preview .ts-sec.in-view .ts-in10 .meta.ts-in-anim {
+  animation: tsFadeIn 1.2s var(--ts-ease) 2200ms both;
+}
 
 /* ---------- GREETING ---------- */
 

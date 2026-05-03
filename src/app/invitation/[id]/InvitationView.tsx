@@ -313,7 +313,7 @@ const colorThemes: Record<ColorTheme, ColorConfig> = {
 }
 
 // 폰트 스타일 정의
-type FontStyle = 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury'
+type FontStyle = 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury' | 'roundgothic'
 interface FontConfig { display: string; displayKr: string; body: string }
 
 const fontStyles: Record<FontStyle, FontConfig> = {
@@ -322,6 +322,7 @@ const fontStyles: Record<FontStyle, FontConfig> = {
   romantic: { display: "'Montserrat', sans-serif", displayKr: "'Okticon', serif", body: "'Okticon', serif" },
   contemporary: { display: "'Cinzel', serif", displayKr: "'JeonnamEducationBarun', sans-serif", body: "'JeonnamEducationBarun', sans-serif" },
   luxury: { display: "'EB Garamond', serif", displayKr: "'ELandChoice', serif", body: "'ELandChoice', serif" },
+  roundgothic: { display: "'Montserrat', sans-serif", displayKr: "'NanumSquareRound', sans-serif", body: "'NanumSquareRound', sans-serif" },
 }
 
 // 날짜 포맷

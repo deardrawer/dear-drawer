@@ -236,7 +236,7 @@ export default function InvitationClientTheSimple({
             pointerEvents: coverOpen ? 'none' : 'auto',
           }}
         >
-          <div style={{ width: '100%', maxWidth: 430 }}>
+          <div style={{ width: '100%', maxWidth: 430, height: '100%' }}>
             <TapToOpenCover
               variant={data.coverVariant!}
               data={coverData}

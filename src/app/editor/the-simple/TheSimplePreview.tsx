@@ -5509,11 +5509,13 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
           const introId = visibleSections.find((id) => getSectionType(id) === 'intro')
           if (!introId) return null
           const introVariant = data.sectionVariants[introId] ?? 1
+          const intro = data.sections.intro
+          const isIntroDark = introVariant === 10 ? intro.textColor !== 'light' : intro.textColor === 'dark'
           return (
             <>
               {renderers.intro(introVariant, introId)}
               {/* 스크롤 유도 인디케이터 — 인트로 애니메이션 완료 후 등장 */}
-              <div className="ts-scroll-hint" aria-hidden="true">
+              <div className={`ts-scroll-hint${isIntroDark ? ' ts-scroll-hint--dark' : ''}`} aria-hidden="true">
                 <span className="ts-scroll-hint-label">SCROLL</span>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="7 10 12 15 17 10" />

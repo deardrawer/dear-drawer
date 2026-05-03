@@ -5751,11 +5751,13 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         const transport = data.sections.direction?.transport
         const directions = transport ? {
           car: transport.car || '',
-          publicTransport: [transport.bus, transport.subway].filter(Boolean).join('\n'),
+          bus: transport.bus,
+          subway: transport.subway,
           train: transport.train,
           expressBus: transport.expressBus,
           extraInfoEnabled: !!transport.custom,
           extraInfoText: transport.custom,
+          extraInfoTitle: transport.customLabel,
         } : undefined
 
         const rsvpEnabled = !data.hiddenSections.includes('rsvp')

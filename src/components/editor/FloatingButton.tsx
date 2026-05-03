@@ -550,6 +550,11 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
                       style={{ background: rsvpForm.attendance === 'yes' ? sheetColors.primary : sheetColors.sectionBg, color: rsvpForm.attendance === 'yes' ? 'white' : sheetColors.text }}
                     >참석</button>
                     <button
+                      onClick={() => setRsvpForm({ ...rsvpForm, attendance: 'maybe' })}
+                      className="flex-1 py-3 rounded-xl text-sm transition-all"
+                      style={{ background: rsvpForm.attendance === 'maybe' ? sheetColors.primary : sheetColors.sectionBg, color: rsvpForm.attendance === 'maybe' ? 'white' : sheetColors.text }}
+                    >미정</button>
+                    <button
                       onClick={() => setRsvpForm({ ...rsvpForm, attendance: 'no' })}
                       className="flex-1 py-3 rounded-xl text-sm transition-all"
                       style={{ background: rsvpForm.attendance === 'no' ? sheetColors.primary : sheetColors.sectionBg, color: rsvpForm.attendance === 'no' ? 'white' : sheetColors.text }}

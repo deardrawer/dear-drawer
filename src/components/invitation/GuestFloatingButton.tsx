@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 
 type ModalType = 'none' | 'contact' | 'rsvp' | 'location' | 'account' | 'share'
-type DirectionsTab = 'car' | 'publicTransport' | 'train' | 'expressBus' | 'extraInfo'
+type DirectionsTab = 'car' | 'publicTransport' | 'bus' | 'subway' | 'train' | 'expressBus' | 'extraInfo'
 
 interface BankAccount {
   bank: string
@@ -14,11 +14,14 @@ interface BankAccount {
 
 interface DirectionsInfo {
   car: string
-  publicTransport: string
+  publicTransport?: string
+  bus?: string
+  subway?: string
   train?: string
   expressBus?: string
   extraInfoEnabled?: boolean
   extraInfoText?: string
+  extraInfoTitle?: string
 }
 
 interface ContactInfo {
@@ -532,8 +535,8 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
             <h3 className="text-center text-sm mb-6" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 500 }}>결혼식 정보</h3>
             <div className={`grid gap-3 ${menuItems.length <= 2 ? 'grid-cols-' + menuItems.length : 'grid-cols-2'}`}>
               {menuItems.map((item) => (
-                <button key={item.key} className="flex flex-col items-center justify-center p-5 rounded-2xl" style={{ background: themeColors.sectionBg, color: themeColors.primary }} onClick={() => openModal(item.key as ModalType)}>
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3" style={{ background: themeColors.cardBg }}>{item.icon}</div>
+                <button key={item.key} className="flex flex-col items-center justify-center p-5 rounded-2xl" style={{ background: themeColors.cardBg, color: themeColors.primary }} onClick={() => openModal(item.key as ModalType)}>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3" style={{ background: '#ffffff' }}>{item.icon}</div>
                   <span className="text-[11px]" style={{ color: themeColors.text }}>{item.label}</span>
                 </button>
               ))}
@@ -625,44 +628,46 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
               {activeModal === 'rsvp' && (
                 <>
                   {invitation.rsvpNotice && (
-                    <p className="text-xs text-center mb-3 whitespace-pre-line leading-relaxed" style={{ color: themeColors.gray }}>{invitation.rsvpNotice}</p>
+                    <p className="text-xs text-center mb-4 whitespace-pre-line leading-relaxed" style={{ color: themeColors.gray }}>{invitation.rsvpNotice}</p>
                   )}
-                  <input type="text" placeholder="이름" value={rsvpForm.name} onChange={(e) => setRsvpForm({ ...rsvpForm, name: e.target.value })} className="w-full p-3 rounded-xl mb-3 text-sm outline-none" style={{ background: themeColors.sectionBg, color: themeColors.text }} />
-                  <div className="grid grid-cols-2 gap-2 mb-3">
-                    <button onClick={() => setRsvpForm({ ...rsvpForm, side: rsvpForm.side === 'groom' ? '' : 'groom' })} className="py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.side === 'groom' ? '#3B82F6' : themeColors.sectionBg, color: rsvpForm.side === 'groom' ? 'white' : themeColors.text }}>신랑측</button>
-                    <button onClick={() => setRsvpForm({ ...rsvpForm, side: rsvpForm.side === 'bride' ? '' : 'bride' })} className="py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.side === 'bride' ? '#EC4899' : themeColors.sectionBg, color: rsvpForm.side === 'bride' ? 'white' : themeColors.text }}>신부측</button>
+                  <input type="text" placeholder="이름" value={rsvpForm.name} onChange={(e) => setRsvpForm({ ...rsvpForm, name: e.target.value })} className="w-full p-3 rounded-xl mb-4 text-sm outline-none" style={{ background: themeColors.sectionBg, color: themeColors.text, border: '1px solid #e5e5e5' }} />
+                  <p className="text-xs font-medium mb-2" style={{ color: themeColors.text }}>하객 구분</p>
+                  <div className="grid grid-cols-2 gap-2 mb-4">
+                    <button onClick={() => setRsvpForm({ ...rsvpForm, side: rsvpForm.side === 'groom' ? '' : 'groom' })} className="py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.side === 'groom' ? themeColors.primary : themeColors.sectionBg, color: rsvpForm.side === 'groom' ? 'white' : themeColors.text }}>신랑측</button>
+                    <button onClick={() => setRsvpForm({ ...rsvpForm, side: rsvpForm.side === 'bride' ? '' : 'bride' })} className="py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.side === 'bride' ? themeColors.primary : themeColors.sectionBg, color: rsvpForm.side === 'bride' ? 'white' : themeColors.text }}>신부측</button>
                   </div>
-                  <div className="flex gap-2 mb-3">
+                  <div className="flex gap-2 mb-4">
                     <button onClick={() => setRsvpForm({ ...rsvpForm, attendance: 'yes' })} className="flex-1 py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.attendance === 'yes' ? themeColors.primary : themeColors.sectionBg, color: rsvpForm.attendance === 'yes' ? 'white' : themeColors.text }}>참석</button>
+                    <button onClick={() => setRsvpForm({ ...rsvpForm, attendance: 'maybe' })} className="flex-1 py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.attendance === 'maybe' ? themeColors.primary : themeColors.sectionBg, color: rsvpForm.attendance === 'maybe' ? 'white' : themeColors.text }}>미정</button>
                     <button onClick={() => setRsvpForm({ ...rsvpForm, attendance: 'no' })} className="flex-1 py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.attendance === 'no' ? themeColors.primary : themeColors.sectionBg, color: rsvpForm.attendance === 'no' ? 'white' : themeColors.text }}>불참</button>
                   </div>
                   {invitation.rsvpAllowGuestCount !== false && rsvpForm.attendance === 'yes' && (
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-sm" style={{ color: themeColors.text }}>참석 인원</span>
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="text-xs font-medium" style={{ color: themeColors.text }}>참석 인원</span>
                       <div className="flex items-center gap-2 ml-auto">
                         <button onClick={() => setRsvpForm({ ...rsvpForm, guestCount: Math.max(1, rsvpForm.guestCount - 1) })} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: themeColors.sectionBg }}>-</button>
-                        <span className="w-8 text-center text-sm" style={{ color: themeColors.text }}>{rsvpForm.guestCount}</span>
+                        <span className="w-8 text-center text-sm font-medium" style={{ color: themeColors.text }}>{rsvpForm.guestCount}</span>
                         <button onClick={() => setRsvpForm({ ...rsvpForm, guestCount: rsvpForm.guestCount + 1 })} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: themeColors.sectionBg }}>+</button>
                       </div>
                     </div>
                   )}
                   {invitation.rsvpMealOption && rsvpForm.attendance === 'yes' && (
-                    <div className="flex gap-2 mb-3">
+                    <div className="flex gap-2 mb-4">
                       <button onClick={() => setRsvpForm({ ...rsvpForm, mealAttendance: 'yes' })} className="flex-1 py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.mealAttendance === 'yes' ? themeColors.primary : themeColors.sectionBg, color: rsvpForm.mealAttendance === 'yes' ? 'white' : themeColors.text }}>식사 예정</button>
                       <button onClick={() => setRsvpForm({ ...rsvpForm, mealAttendance: 'no' })} className="flex-1 py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.mealAttendance === 'no' ? themeColors.primary : themeColors.sectionBg, color: rsvpForm.mealAttendance === 'no' ? 'white' : themeColors.text }}>식사 안 함</button>
                     </div>
                   )}
                   {invitation.rsvpShuttleOption && rsvpForm.attendance === 'yes' && (
-                    <div className="mb-3">
-                      <p className="text-xs mb-2" style={{ color: themeColors.gray }}>대절버스 이용 여부</p>
+                    <div className="mb-4">
+                      <p className="text-xs font-medium mb-2" style={{ color: themeColors.text }}>대절버스 이용 여부</p>
                       <div className="flex gap-2">
                         <button onClick={() => setRsvpForm({ ...rsvpForm, shuttleBus: 'yes' })} className="flex-1 py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.shuttleBus === 'yes' ? themeColors.primary : themeColors.sectionBg, color: rsvpForm.shuttleBus === 'yes' ? 'white' : themeColors.text }}>이용 예정</button>
                         <button onClick={() => setRsvpForm({ ...rsvpForm, shuttleBus: 'no' })} className="flex-1 py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.shuttleBus === 'no' ? themeColors.primary : themeColors.sectionBg, color: rsvpForm.shuttleBus === 'no' ? 'white' : themeColors.text }}>이용 안 함</button>
                       </div>
                     </div>
                   )}
-                  <textarea placeholder="메시지 (선택)" value={rsvpForm.message} onChange={(e) => setRsvpForm({ ...rsvpForm, message: e.target.value })} className="w-full p-3 rounded-xl mb-4 text-sm outline-none resize-none h-16" style={{ background: themeColors.sectionBg, color: themeColors.text }} />
-                  <button onClick={handleRsvpSubmit} disabled={isSubmitting || !rsvpForm.name.trim() || !rsvpForm.attendance} className="w-full py-3 rounded-xl text-sm text-white transition-opacity" style={{ background: themeColors.primary, opacity: (!rsvpForm.name.trim() || !rsvpForm.attendance) ? 0.4 : 1 }}>{isSubmitting ? '전송중...' : '제출하기'}</button>
+                  <textarea placeholder="축하 메시지 (선택)" value={rsvpForm.message} onChange={(e) => setRsvpForm({ ...rsvpForm, message: e.target.value })} className="w-full p-3 rounded-xl mb-4 text-sm outline-none resize-none h-20" style={{ background: themeColors.sectionBg, color: themeColors.text, border: '1px solid #e5e5e5' }} />
+                  <button onClick={handleRsvpSubmit} disabled={isSubmitting || !rsvpForm.name.trim() || !rsvpForm.attendance} className="w-full py-3 rounded-xl text-sm text-white transition-opacity" style={{ background: themeColors.primary, opacity: (!rsvpForm.name.trim() || !rsvpForm.attendance) ? 0.4 : 1 }}>{isSubmitting ? '전송중...' : '전송하기'}</button>
                 </>
               )}
 
@@ -690,12 +695,19 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
 
                   {/* Transportation Tabs */}
                   {(() => {
+                    const d = invitation.directions
+                    const hasBusSeparate = !!(d?.bus || d?.subway)
                     const tabs = [
-                      { key: 'car' as DirectionsTab, label: '자가용', show: !!invitation.directions?.car },
-                      { key: 'publicTransport' as DirectionsTab, label: '버스/지하철', show: !!invitation.directions?.publicTransport },
-                      { key: 'train' as DirectionsTab, label: '기차', show: !!invitation.directions?.train },
-                      { key: 'expressBus' as DirectionsTab, label: '고속버스', show: !!invitation.directions?.expressBus },
-                      { key: 'extraInfo' as DirectionsTab, label: '추가 안내', show: !!(invitation.directions?.extraInfoEnabled && invitation.directions?.extraInfoText) },
+                      { key: 'car' as DirectionsTab, label: '자가용', show: !!d?.car },
+                      ...(hasBusSeparate ? [
+                        { key: 'bus' as DirectionsTab, label: '버스', show: !!d?.bus },
+                        { key: 'subway' as DirectionsTab, label: '지하철', show: !!d?.subway },
+                      ] : [
+                        { key: 'publicTransport' as DirectionsTab, label: '버스/지하철', show: !!d?.publicTransport },
+                      ]),
+                      { key: 'train' as DirectionsTab, label: '기차', show: !!d?.train },
+                      { key: 'expressBus' as DirectionsTab, label: '고속버스', show: !!d?.expressBus },
+                      { key: 'extraInfo' as DirectionsTab, label: d?.extraInfoTitle || '추가 안내', show: !!(d?.extraInfoEnabled && d?.extraInfoText) },
                     ].filter(t => t.show)
 
                     return tabs.length > 1 ? (
@@ -715,6 +727,12 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
                     )}
                     {directionsTab === 'publicTransport' && invitation.directions?.publicTransport && (
                       <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: themeColors.text }}>{invitation.directions.publicTransport}</p>
+                    )}
+                    {directionsTab === 'bus' && invitation.directions?.bus && (
+                      <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: themeColors.text }}>{invitation.directions.bus}</p>
+                    )}
+                    {directionsTab === 'subway' && invitation.directions?.subway && (
+                      <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: themeColors.text }}>{invitation.directions.subway}</p>
                     )}
                     {directionsTab === 'train' && invitation.directions?.train && (
                       <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: themeColors.text }}>{invitation.directions.train}</p>

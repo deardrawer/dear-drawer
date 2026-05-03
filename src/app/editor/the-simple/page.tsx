@@ -311,6 +311,9 @@ export interface TheSimpleInvitationData {
   // 커버 (Tap to Open) variant (0=없음, 1~10)
   coverVariant?: number
 
+  // 네비게이션 스타일
+  navStyle?: 'hamburger' | 'bottom-nav' | 'bottom-mini'
+
   // 배경음악
   bgm?: {
     enabled: boolean
@@ -490,6 +493,7 @@ const defaultData: TheSimpleInvitationData = {
   fontStyle: DEFAULT_KOREAN_FONT_ID,
   fontScale: 1,
   sectionSpacing: 1,
+  navStyle: 'hamburger',
   bgm: {
     enabled: false,
     url: '',
@@ -1413,7 +1417,7 @@ function TheSimpleEditorContent() {
             <div className="w-[460px] min-w-[460px] sticky top-0 flex justify-center items-center p-4">
               <div
                 className="w-[390px] shadow-2xl bg-white overflow-hidden border border-stone-200 rounded-[22px]"
-                style={{ height: 'calc(100vh - 88px)' }}
+                style={{ height: 'calc(100vh - 88px)', transform: 'translateZ(0)' }}
               >
                 <div className="w-full h-full overflow-y-auto relative" style={{ WebkitOverflowScrolling: 'touch', ['--ts-intro-vh' as string]: 'calc(100vh - 88px)' } as React.CSSProperties}>
                   {(data.coverVariant ?? 0) > 0 && !coverOverlayGone && (
@@ -1941,6 +1945,68 @@ function TheSimpleEditorContent() {
                           >
                             {cv.value === 0 ? cv.label : `V${cv.value}`}
                             <span className="ml-1 text-[9px] opacity-70">{cv.value === 0 ? '' : cv.label}</span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </section>
+
+                  {/* 네비게이션 스타일 */}
+                  <section className="space-y-3">
+                    <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-stone-800 border-b border-stone-300 pb-2">
+                      네비게이션 스타일
+                    </h2>
+                    <p className="text-[11px] text-stone-400 leading-relaxed">
+                      게스트 뷰에서 표시되는 플로팅 메뉴 버튼의 스타일입니다.
+                    </p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {([
+                        { value: 'hamburger' as const, label: '햄버거 버튼', desc: '우측 하단 원형 메뉴' },
+                        { value: 'bottom-nav' as const, label: '하단 네비바', desc: '아이콘+텍스트 고정 바' },
+                        { value: 'bottom-mini' as const, label: '미니 네비바', desc: '아이콘만, 반투명' },
+                      ]).map((opt) => {
+                        const isActive = (data.navStyle || 'hamburger') === opt.value
+                        return (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            onClick={() => updateData({ navStyle: opt.value })}
+                            className={`flex flex-col items-center p-2.5 rounded-lg border transition-colors ${
+                              isActive
+                                ? 'bg-stone-900 border-stone-900 text-white'
+                                : 'bg-white border-stone-200 text-stone-600 hover:border-stone-400'
+                            }`}
+                          >
+                            <div className="mb-1.5">
+                              {opt.value === 'hamburger' && (
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isActive ? 'bg-stone-700' : 'bg-stone-100'}`}>
+                                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                                    <line x1="4" y1="6" x2="20" y2="6" strokeLinecap="round" />
+                                    <line x1="4" y1="12" x2="20" y2="12" strokeLinecap="round" />
+                                    <line x1="4" y1="18" x2="14" y2="18" strokeLinecap="round" />
+                                  </svg>
+                                </div>
+                              )}
+                              {opt.value === 'bottom-nav' && (
+                                <div className={`w-full h-7 rounded flex items-center justify-center gap-2 px-1 ${isActive ? 'bg-stone-700' : 'bg-stone-100'}`}>
+                                  {['축하', '참석', '길'].map((t) => (
+                                    <div key={t} className="flex flex-col items-center">
+                                      <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-stone-400' : 'bg-stone-300'}`} />
+                                      <span className="text-[7px] mt-0.5 opacity-70">{t}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                              {opt.value === 'bottom-mini' && (
+                                <div className={`w-full h-6 rounded-full flex items-center justify-center gap-2 px-1 ${isActive ? 'bg-stone-700/70' : 'bg-stone-100/70'}`}>
+                                  {[1, 2, 3].map((i) => (
+                                    <div key={i} className={`w-2.5 h-2.5 rounded-full ${isActive ? 'bg-stone-400' : 'bg-stone-300'}`} />
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            <p className="text-[10px] font-medium">{opt.label}</p>
+                            <p className={`text-[9px] mt-0.5 ${isActive ? 'text-stone-300' : 'text-stone-400'}`}>{opt.desc}</p>
                           </button>
                         )
                       })}

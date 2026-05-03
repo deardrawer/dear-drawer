@@ -860,6 +860,7 @@ export const theSimpleSampleContent = {
   },
   coverVariant: 5,
   dividerVariant: 1,
+  navStyle: 'hamburger',
   bgm: {
     enabled: true,
     url: '/api/r2/audio/wedding-bgm.mp3',

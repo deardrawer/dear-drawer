@@ -11,6 +11,7 @@ import type {
 } from '@/app/editor/the-simple/page'
 import type { Invitation } from '@/types/invitation'
 import { WatermarkOverlay } from '@/components/ui/WatermarkOverlay'
+import GuestFloatingButton from '@/components/invitation/GuestFloatingButton'
 
 function MusicToggle({ audioRef, shouldAutoPlay }: { audioRef: React.RefObject<HTMLAudioElement | null>; shouldAutoPlay: boolean }) {
   const [isPlaying, setIsPlaying] = useState(false)
@@ -259,6 +260,94 @@ export default function InvitationClientTheSimple({
         {(!hasCover || coverOpen || curtainRevealed) && <TheSimplePreview data={data} skipIntroBgFade={hasCover} />}
       </WatermarkOverlay>
 
+      {/* 네비게이션 (GuestFloatingButton) */}
+      {(!hasCover || coverOpen) && !isPreview && (() => {
+        const contacts = [
+          data.groom.phone && { name: data.groom.name, phone: data.groom.phone, role: '신랑', side: 'groom' as const },
+          data.bride.phone && { name: data.bride.name, phone: data.bride.phone, role: '신부', side: 'bride' as const },
+          data.sections.family?.groomFather?.phone && { name: data.sections.family.groomFather.name, phone: data.sections.family.groomFather.phone, role: '아버지', side: 'groom' as const },
+          data.sections.family?.groomMother?.phone && { name: data.sections.family.groomMother.name, phone: data.sections.family.groomMother.phone, role: '어머니', side: 'groom' as const },
+          data.sections.family?.brideFather?.phone && { name: data.sections.family.brideFather.name, phone: data.sections.family.brideFather.phone, role: '아버지', side: 'bride' as const },
+          data.sections.family?.brideMother?.phone && { name: data.sections.family.brideMother.name, phone: data.sections.family.brideMother.phone, role: '어머니', side: 'bride' as const },
+        ].filter(Boolean) as { name: string; phone: string; role: string; side: 'groom' | 'bride' }[]
+
+        const mapAccounts = (arr: { bank: string; number: string; holder: string }[] | undefined, name: string, role: string, side: 'groom' | 'bride') =>
+          (arr || []).filter(a => a.bank && a.number).map(a => ({
+            name: a.holder || name,
+            bank: { bank: a.bank, account: a.number, holder: a.holder, enabled: true },
+            role,
+            side,
+          }))
+
+        const accounts = [
+          ...mapAccounts(data.sections.account?.groom, data.groom.name, '신랑', 'groom'),
+          ...mapAccounts(data.sections.account?.bride, data.bride.name, '신부', 'bride'),
+          ...mapAccounts(data.sections.account?.groomFather, data.sections.account?.groomFatherName || '아버지', '아버지', 'groom'),
+          ...mapAccounts(data.sections.account?.groomMother, data.sections.account?.groomMotherName || '어머니', '어머니', 'groom'),
+          ...mapAccounts(data.sections.account?.brideFather, data.sections.account?.brideFatherName || '아버지', '아버지', 'bride'),
+          ...mapAccounts(data.sections.account?.brideMother, data.sections.account?.brideMotherName || '어머니', '어머니', 'bride'),
+        ]
+
+        const transport = data.sections.direction?.transport
+        const directions = transport ? {
+          car: transport.car || '',
+          publicTransport: [transport.bus, transport.subway].filter(Boolean).join('\n'),
+          train: transport.train,
+          expressBus: transport.expressBus,
+        } : undefined
+
+        const rsvpEnabled = !data.hiddenSections.includes('rsvp')
+
+        const themeColors = {
+          primary: data.pointColor || '#B8A88A',
+          cardBg: data.cardBg || '#f5f5f5',
+          sectionBg: data.tintedColor || '#FAF8F5',
+          text: '#1a1a1a',
+          gray: '#6b7280',
+          background: '#ffffff',
+        }
+
+        // thumbnail for share
+        const thumbUrl = (() => {
+          const meta = data.meta
+          if (meta?.kakaoThumbnail) {
+            return typeof meta.kakaoThumbnail === 'string' ? meta.kakaoThumbnail : meta.kakaoThumbnail.url
+          }
+          if (meta?.ogImage) {
+            return typeof meta.ogImage === 'string' ? meta.ogImage : meta.ogImage.url
+          }
+          return ''
+        })()
+
+        return (
+          <GuestFloatingButton
+            themeColors={themeColors}
+            fonts={{ displayKr: data.fontStyle || 'Pretendard' }}
+            navStyle={data.navStyle || 'hamburger'}
+            invitation={{
+              venue_name: data.wedding.venue.name,
+              venue_address: data.wedding.venue.address,
+              contacts,
+              accounts,
+              directions,
+              rsvpEnabled,
+              rsvpMealOption: data.sections.rsvp?.showMealOption,
+              rsvpShuttleOption: data.sections.rsvp?.showShuttleOption,
+              rsvpNotice: data.sections.rsvp?.rsvpNotice,
+              invitationId: data.id,
+              groomName: data.groom.name,
+              brideName: data.bride.name,
+              weddingDate: data.wedding.date,
+              weddingTime: data.wedding.timeDisplay || data.wedding.time,
+              thumbnailUrl: thumbUrl,
+              shareTitle: data.meta?.title,
+              shareDescription: data.meta?.description,
+              kakaoThumbnailRatio: data.meta?.kakaoThumbnailRatio,
+            }}
+          />
+        )
+      })()}
+
       {/* BGM */}
       {hasBgm && (
         <>
@@ -461,6 +550,7 @@ function normalizeTheSimpleData(
     fontStyle: c.fontStyle,
     fontScale: typeof c.fontScale === 'number' ? c.fontScale : 1,
     sectionSpacing: typeof c.sectionSpacing === 'number' ? c.sectionSpacing : 1,
+    navStyle: ((c as Record<string, unknown>).navStyle as 'hamburger' | 'bottom-nav' | 'bottom-mini') || 'hamburger',
     bgm: c.bgm ? {
       enabled: !!c.bgm.enabled,
       url: c.bgm.url || '',

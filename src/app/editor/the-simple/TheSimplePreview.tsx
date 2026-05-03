@@ -7,6 +7,7 @@ import { useCroppedImageStyle, getImageCropStyleFallback } from '@/hooks/useCrop
 import { resolveDisplayFontFamily, resolveKoreanFontFamily } from './fontOptions'
 import { loadKakaoMapSDK } from '@/lib/geunnalKakaoMap'
 import { ParkingIcon, BusIcon, SubwayIcon, TrainIcon, ExpressBusIcon, InfoIcon } from '@/components/parents/icons'
+import GuestFloatingButton from '@/components/invitation/GuestFloatingButton'
 import './the-simple-preview.css'
 
 interface TheSimplePreviewProps {
@@ -5719,6 +5720,77 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       </div>{/* /ts-body-wrap */}
       <RsvpModal open={rsvpOpen} onClose={() => setRsvpOpen(false)} invitationId={data.id} showMealOption={data.sections.rsvp.showMealOption} showShuttleOption={data.sections.rsvp.showShuttleOption} rsvpNotice={data.sections.rsvp.rsvpNotice} />
       <GalleryLightbox images={lightboxImages} isOpen={lightboxOpen} initialIndex={lightboxIndex} onClose={() => setLightboxOpen(false)} variant={data.lightboxVariant ?? 1} />
+      {/* 네비게이션 프리뷰 */}
+      {(() => {
+        const contacts = [
+          data.groom.phone && { name: data.groom.name, phone: data.groom.phone, role: '신랑', side: 'groom' as const },
+          data.bride.phone && { name: data.bride.name, phone: data.bride.phone, role: '신부', side: 'bride' as const },
+          data.sections.family?.groomFather?.phone && { name: data.sections.family.groomFather.name, phone: data.sections.family.groomFather.phone, role: '아버지', side: 'groom' as const },
+          data.sections.family?.groomMother?.phone && { name: data.sections.family.groomMother.name, phone: data.sections.family.groomMother.phone, role: '어머니', side: 'groom' as const },
+          data.sections.family?.brideFather?.phone && { name: data.sections.family.brideFather.name, phone: data.sections.family.brideFather.phone, role: '아버지', side: 'bride' as const },
+          data.sections.family?.brideMother?.phone && { name: data.sections.family.brideMother.name, phone: data.sections.family.brideMother.phone, role: '어머니', side: 'bride' as const },
+        ].filter(Boolean) as { name: string; phone: string; role: string; side: 'groom' | 'bride' }[]
+
+        const mapAccounts = (arr: { bank: string; number: string; holder: string }[] | undefined, name: string, role: string, side: 'groom' | 'bride') =>
+          (arr || []).filter(a => a.bank && a.number).map(a => ({
+            name: a.holder || name,
+            bank: { bank: a.bank, account: a.number, holder: a.holder, enabled: true },
+            role,
+            side,
+          }))
+
+        const accounts = [
+          ...mapAccounts(data.sections.account?.groom, data.groom.name, '신랑', 'groom'),
+          ...mapAccounts(data.sections.account?.bride, data.bride.name, '신부', 'bride'),
+          ...mapAccounts(data.sections.account?.groomFather, data.sections.account?.groomFatherName || '아버지', '아버지', 'groom'),
+          ...mapAccounts(data.sections.account?.groomMother, data.sections.account?.groomMotherName || '어머니', '어머니', 'groom'),
+          ...mapAccounts(data.sections.account?.brideFather, data.sections.account?.brideFatherName || '아버지', '아버지', 'bride'),
+          ...mapAccounts(data.sections.account?.brideMother, data.sections.account?.brideMotherName || '어머니', '어머니', 'bride'),
+        ]
+
+        const transport = data.sections.direction?.transport
+        const directions = transport ? {
+          car: transport.car || '',
+          publicTransport: [transport.bus, transport.subway].filter(Boolean).join('\n'),
+          train: transport.train,
+          expressBus: transport.expressBus,
+        } : undefined
+
+        const rsvpEnabled = !data.hiddenSections.includes('rsvp')
+
+        const themeColors = {
+          primary: pointColor,
+          cardBg,
+          sectionBg: data.tintedColor || '#FAF8F5',
+          text: '#1a1a1a',
+          gray: '#6b7280',
+          background: '#ffffff',
+        }
+
+        return (
+          <GuestFloatingButton
+            themeColors={themeColors}
+            fonts={{ displayKr: koreanFontFamily }}
+            navStyle={data.navStyle || 'hamburger'}
+            invitation={{
+              venue_name: data.wedding.venue.name,
+              venue_address: data.wedding.venue.address,
+              contacts,
+              accounts,
+              directions,
+              rsvpEnabled,
+              rsvpMealOption: data.sections.rsvp?.showMealOption,
+              rsvpShuttleOption: data.sections.rsvp?.showShuttleOption,
+              rsvpNotice: data.sections.rsvp?.rsvpNotice,
+              invitationId: data.id,
+              groomName: data.groom.name,
+              brideName: data.bride.name,
+              weddingDate: data.wedding.date,
+              weddingTime: data.wedding.timeDisplay || data.wedding.time,
+            }}
+          />
+        )
+      })()}
     </div>
   )
 }

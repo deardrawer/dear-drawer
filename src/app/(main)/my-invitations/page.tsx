@@ -500,7 +500,7 @@ export default function MyInvitationsPage() {
         objectType: 'feed',
         content: {
           title: shareTitle || `${shareInvitation.groom_name || '신랑'} ❤️ ${shareInvitation.bride_name || '신부'}의 결혼식`,
-          description: shareDescription || `${formattedDate}\n${shareInvitation.venue_name || ''}`,
+          description: shareDescription || [formattedDate, shareInvitation.wedding_time, shareInvitation.venue_name].filter(Boolean).join('\n'),
           imageUrl,
           imageWidth: kakaoImgSize.w,
           imageHeight: kakaoImgSize.h,

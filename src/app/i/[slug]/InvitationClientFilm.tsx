@@ -1172,7 +1172,7 @@ function FilmScenes({ invitation, fonts, tc, bgOverride }: { invitation: any; fo
       {/* Section label */}
       <div className="text-center pt-10 pb-8 px-6" style={{ opacity: 0, ...(isVisible ? { animation: 'film-fadeSlideUp 0.8s ease both' } : {}) }}>
         <div style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '6px', color: tc.gray, textTransform: 'uppercase' as const, marginBottom: '6px' }}>
-          OUR STORY
+          THE BEGINNING
         </div>
         <h2 style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '2px', color: tc.accent }}>
           Our Story
@@ -1318,7 +1318,7 @@ function ChapterThree({ invitation, fonts, tc, onOpenLightbox, bgOverride }: {
         {/* Chapter label */}
         <div className="text-center mb-8 px-6">
           <div style={{ fontFamily: fonts.body, fontSize: '9px', fontWeight: 300, letterSpacing: '6px', color: tc.gray, textTransform: 'uppercase' as const, marginBottom: '6px' }}>
-            GALLERY
+            FILMSTRIP
           </div>
           <h2 style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '2px', color: tc.accent }}>
             Gallery

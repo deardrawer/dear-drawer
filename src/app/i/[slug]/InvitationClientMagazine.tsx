@@ -304,7 +304,7 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
         <style dangerouslySetInnerHTML={{ __html: magazineIntroStyles }} />
         {/* WEDDING INVITATION — letter-spacing condense */}
         <span style={{
-          fontFamily: fonts.display, fontSize: '10px', color: themeColors.gray,
+          fontFamily: fonts.display, fontSize: '10px', color: themeColors.primary,
           display: 'block', width: '100%', textAlign: 'center', marginBottom: '40px',
           opacity: 0, letterSpacing: '12px',
           ...(loaded ? { animation: 'mag-spacingCondense 1.2s cubic-bezier(0.22,1,0.36,1) 0.3s both' } : {}),
@@ -330,7 +330,7 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
         </div>
         {/* Ampersand */}
         <span style={{
-          fontFamily: fonts.display, fontSize: '12px', letterSpacing: '5px', color: themeColors.gray,
+          fontFamily: fonts.display, fontSize: '12px', letterSpacing: '5px', color: themeColors.primary,
           opacity: 0,
           ...(loaded ? { animation: 'mag-fadeIn 0.4s ease 1.6s both' } : {}),
         }}>&amp;</span>
@@ -548,7 +548,7 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
             style={{ fontFamily: fonts.displayKr || fonts.display, fontSize: '22px', fontWeight: 300, letterSpacing: '6px', color: themeColors.primary }}
           />
           <span style={{
-            fontSize: '14px', letterSpacing: '4px', color: themeColors.gray, fontWeight: 300,
+            fontSize: '14px', letterSpacing: '4px', color: themeColors.primary, fontWeight: 300,
             display: 'inline-block', margin: '0 8px',
             opacity: 0,
             ...(loaded ? { animation: `mag-fadeIn 0.4s ease ${ampDelay}s both` } : {}),

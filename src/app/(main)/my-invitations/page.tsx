@@ -92,9 +92,11 @@ function parseInvitationContent(content?: string) {
       introSubTitle: parsed.intro?.subTitle || '',
       senderSide: parsed.sender?.side || '', // groom or bride (혼주용 템플릿)
       envelopeTheme, // 혼주용 봉투 테마 컬러 (hex)
+      shareTitle: parsed.meta?.title || '',
+      shareDescription: parsed.meta?.description || '',
     }
   } catch {
-    return { coverImage: '', kakaoThumbnail: '', kakaoThumbnailRatio: '1:1' as const, introTitle: '', introSubTitle: '', senderSide: '', envelopeTheme: '' }
+    return { coverImage: '', kakaoThumbnail: '', kakaoThumbnailRatio: '1:1' as const, introTitle: '', introSubTitle: '', senderSide: '', envelopeTheme: '', shareTitle: '', shareDescription: '' }
   }
 }
 
@@ -462,7 +464,7 @@ export default function MyInvitationsPage() {
   const handleKakaoShare = () => {
     if (!shareInvitation) return
     const url = getInvitationUrl(shareInvitation)
-    const { kakaoThumbnail, kakaoThumbnailRatio } = parseInvitationContent(shareInvitation.content)
+    const { kakaoThumbnail, kakaoThumbnailRatio, shareTitle, shareDescription } = parseInvitationContent(shareInvitation.content)
 
     const kakaoWindow = window as typeof window & {
       Kakao?: {
@@ -497,8 +499,8 @@ export default function MyInvitationsPage() {
       kakaoWindow.Kakao.Share.sendDefault({
         objectType: 'feed',
         content: {
-          title: `${shareInvitation.groom_name || '신랑'} ❤️ ${shareInvitation.bride_name || '신부'}의 결혼식`,
-          description: `${formattedDate}\n${shareInvitation.venue_name || ''}`,
+          title: shareTitle || `${shareInvitation.groom_name || '신랑'} ❤️ ${shareInvitation.bride_name || '신부'}의 결혼식`,
+          description: shareDescription || `${formattedDate}\n${shareInvitation.venue_name || ''}`,
           imageUrl,
           imageWidth: kakaoImgSize.w,
           imageHeight: kakaoImgSize.h,
@@ -515,13 +517,15 @@ export default function MyInvitationsPage() {
   const handleSMSShare = () => {
     if (!shareInvitation) return
     const url = getInvitationUrl(shareInvitation)
+    const { shareTitle, shareDescription } = parseInvitationContent(shareInvitation.content)
     const formattedDate = shareInvitation.wedding_date
       ? new Date(shareInvitation.wedding_date).toLocaleDateString('ko-KR', {
           year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'
         })
       : ''
+    const defaultTitle = `${shareInvitation.groom_name || '신랑'} ♥ ${shareInvitation.bride_name || '신부'} 결혼합니다`
     const details = [formattedDate, shareInvitation.wedding_time, shareInvitation.venue_name].filter(Boolean).join(' / ')
-    const message = `${shareInvitation.groom_name || '신랑'} ♥ ${shareInvitation.bride_name || '신부'} 결혼합니다\n\n${details || '저희 결혼식에 초대합니다.'}\n\n청첩장 보기: ${url}`
+    const message = `${shareTitle || defaultTitle}\n\n${shareDescription || details || '저희 결혼식에 초대합니다.'}\n\n청첩장 보기: ${url}`
     window.open(`sms:?body=${encodeURIComponent(message)}`)
   }
 

@@ -71,6 +71,7 @@ export interface FeedInvitationData {
       extraInfoEnabled?: boolean
       extraInfoTitle?: string
       extraInfoText?: string
+      extraItems?: { id: string; emoji?: string; title: string; text: string; enabled: boolean }[]
     }
   }
 
@@ -87,7 +88,13 @@ export interface FeedInvitationData {
   // Greeting (Bio)
   content: {
     greeting: string
-    stories: { image: string; imageSettings?: ImageSettings; caption: string }[]
+    stories: {
+      image: string                        // 레거시 (첫 번째 이미지)
+      images?: string[]                    // 멀티 이미지 배열
+      imageSettings?: ImageSettings        // 레거시 (첫 번째 이미지 설정)
+      imageSettingsArray?: ImageSettings[]  // 멀티 이미지 설정
+      caption: string
+    }[]
     info: {
       dressCode: { title: string; content: string; enabled: boolean }
       photoShare: { title: string; content: string; buttonText: string; url: string; enabled: boolean }
@@ -140,8 +147,17 @@ export interface FeedInvitationData {
   rsvpShuttleOption?: boolean
   rsvpNotice?: string
 
+  // Post captions (인스타그램 포스트 하단 캡션)
+  postCaptions?: {
+    weddingInfo: string   // 오시는길 포스트
+    guidance: string      // 안내사항 포스트
+    account: string       // 마음전하실곳 포스트
+  }
+
   // Section visibility
   sectionVisibility: {
+    profile: boolean
+    loveStory: boolean
     guestbook: boolean
     guidance: boolean
   }
@@ -214,7 +230,12 @@ const defaultData: FeedInvitationData = {
   rsvpEnabled: true,
   rsvpDeadline: '',
   rsvpAllowGuestCount: true,
-  sectionVisibility: { guestbook: true, guidance: true },
+  postCaptions: {
+    weddingInfo: '우리의 특별한 날에 초대합니다 💌',
+    guidance: '결혼식 안내사항을 알려드립니다 ✨',
+    account: '전해주시는 축하와 응원, 오래도록 기억하겠습니다. 💛',
+  },
+  sectionVisibility: { profile: true, loveStory: true, guestbook: true, guidance: true },
   meta: { title: '', description: '', kakaoThumbnail: '' },
 }
 

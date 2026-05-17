@@ -237,6 +237,18 @@ export default function FeedStep5Details({
               )}
             </div>
           </div>
+
+          {/* 마음전하실곳 포스트 캡션 */}
+          <div className="space-y-1.5 pt-3 border-t border-gray-200">
+            <label className={labelClass}>포스트 캡션</label>
+            <input
+              className={inputClass}
+              value={data.postCaptions?.account ?? '전해주시는 축하와 응원, 오래도록 기억하겠습니다. 💛'}
+              onChange={(e) => updateNestedData('postCaptions.account', e.target.value)}
+              placeholder="전해주시는 축하와 응원, 오래도록 기억하겠습니다. 💛"
+            />
+            <p className="text-xs text-gray-400">게스트뷰에서 마음전하실곳 포스트 하단에 표시됩니다.</p>
+          </div>
         </div>
       </section>
 

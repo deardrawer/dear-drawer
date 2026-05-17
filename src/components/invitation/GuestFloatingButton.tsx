@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 
 type ModalType = 'none' | 'contact' | 'rsvp' | 'location' | 'account' | 'share'
-type DirectionsTab = 'car' | 'publicTransport' | 'bus' | 'subway' | 'train' | 'expressBus' | 'extraInfo'
+type DirectionsTab = 'car' | 'publicTransport' | 'bus' | 'subway' | 'train' | 'expressBus' | 'extraInfo' | `extraInfo-${number}`
 
 interface BankAccount {
   bank: string
@@ -22,6 +22,7 @@ interface DirectionsInfo {
   extraInfoEnabled?: boolean
   extraInfoText?: string
   extraInfoTitle?: string
+  extraItems?: { id: string; emoji?: string; title: string; text: string; enabled: boolean }[]
 }
 
 interface ContactInfo {
@@ -697,7 +698,9 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
                   {(() => {
                     const d = invitation.directions
                     const hasBusSeparate = !!(d?.bus || d?.subway)
-                    const tabs = [
+                    const enabledExtraItems = (d?.extraItems || []).filter(item => item.enabled && item.text)
+                    const hasLegacyExtra = !!(d?.extraInfoEnabled && d?.extraInfoText) && enabledExtraItems.length === 0
+                    const tabs: { key: DirectionsTab; label: string; show: boolean }[] = [
                       { key: 'car' as DirectionsTab, label: '자가용', show: !!d?.car },
                       ...(hasBusSeparate ? [
                         { key: 'bus' as DirectionsTab, label: '버스', show: !!d?.bus },
@@ -707,7 +710,14 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
                       ]),
                       { key: 'train' as DirectionsTab, label: '기차', show: !!d?.train },
                       { key: 'expressBus' as DirectionsTab, label: '고속버스', show: !!d?.expressBus },
-                      { key: 'extraInfo' as DirectionsTab, label: d?.extraInfoTitle || '추가 안내', show: !!(d?.extraInfoEnabled && d?.extraInfoText) },
+                      // Legacy single extra info
+                      ...(hasLegacyExtra ? [{ key: 'extraInfo' as DirectionsTab, label: d?.extraInfoTitle || '추가 안내', show: true }] : []),
+                      // New multi extra items
+                      ...enabledExtraItems.map((item, i) => ({
+                        key: `extraInfo-${i}` as DirectionsTab,
+                        label: item.title || '추가 안내',
+                        show: true,
+                      })),
                     ].filter(t => t.show)
 
                     return tabs.length > 1 ? (
@@ -743,6 +753,16 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
                     {directionsTab === 'extraInfo' && invitation.directions?.extraInfoText && (
                       <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: themeColors.text }}>{invitation.directions.extraInfoText}</p>
                     )}
+                    {/* Multi extra items */}
+                    {(() => {
+                      const match = directionsTab.match(/^extraInfo-(\d+)$/)
+                      if (!match) return null
+                      const idx = parseInt(match[1], 10)
+                      const enabledItems = (invitation.directions?.extraItems || []).filter(item => item.enabled && item.text)
+                      const item = enabledItems[idx]
+                      if (!item) return null
+                      return <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: themeColors.text }}>{item.text}</p>
+                    })()}
                   </div>
 
                   <button onClick={() => copyToClipboard(invitation.venue_address || '')} className="w-full mt-4 py-2 rounded-xl text-xs" style={{ background: themeColors.sectionBg, color: themeColors.text }}>주소 복사</button>

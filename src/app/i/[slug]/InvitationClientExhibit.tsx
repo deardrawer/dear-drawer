@@ -827,7 +827,7 @@ function StoryHighlights({
 // === 5. Tab Bar (게시물/사람/러브스토리) ===
 type ContentTab = 'grid' | 'people' | 'story'
 
-function TabBar({ activeTab, onTabChange, visitedTabs }: { activeTab: ContentTab; onTabChange: (tab: ContentTab) => void; visitedTabs: Set<ContentTab> }) {
+function TabBar({ activeTab, onTabChange, visitedTabs, hiddenTabs = [] }: { activeTab: ContentTab; onTabChange: (tab: ContentTab) => void; visitedTabs: Set<ContentTab>; hiddenTabs?: ContentTab[] }) {
   const getIconColor = (tabId: ContentTab, isActive: boolean) => {
     if (isActive) return '#262626'
     if (tabId !== 'grid' && !visitedTabs.has(tabId)) return '#3B82F6'
@@ -875,7 +875,7 @@ function TabBar({ activeTab, onTabChange, visitedTabs }: { activeTab: ContentTab
 
   return (
     <div className="sticky top-0 z-30 border-b flex" style={{ borderColor: '#DBDBDB', background: '#FFFFFF' }}>
-      {tabs.map((tab) => {
+      {tabs.filter(tab => !hiddenTabs.includes(tab.id)).map((tab) => {
         const isActive = activeTab === tab.id
         return (
           <button
@@ -1047,6 +1047,82 @@ function PeopleTab({ content, profileImage, username }: { content: any; profileI
 }
 
 // === 5-2. Love Story Tab (러브스토리) ===
+function StoryCarousel({ images }: { images: string[] }) {
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const handleScroll = () => {
+      const scrollLeft = el.scrollLeft
+      const width = el.clientWidth
+      const idx = Math.round(scrollLeft / width)
+      setCurrentIndex(idx)
+    }
+    el.addEventListener('scroll', handleScroll, { passive: true })
+    return () => el.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  return (
+    <div className="relative">
+      <div
+        ref={scrollRef}
+        className="flex overflow-x-auto"
+        style={{
+          scrollSnapType: 'x mandatory',
+          WebkitOverflowScrolling: 'touch',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+        }}
+      >
+        <style>{`
+          .story-carousel::-webkit-scrollbar { display: none; }
+        `}</style>
+        {images.map((img, idx) => (
+          <div
+            key={idx}
+            className="w-full flex-shrink-0"
+            style={{
+              scrollSnapAlign: 'start',
+              aspectRatio: '4/5',
+              background: '#FAFAFA',
+              backgroundImage: `url(${img})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          />
+        ))}
+      </div>
+      {images.length > 1 && (
+        <>
+          {/* 상단 카운터 */}
+          <div
+            className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[11px] font-medium"
+            style={{ background: 'rgba(0,0,0,0.6)', color: '#FFFFFF' }}
+          >
+            {currentIndex + 1}/{images.length}
+          </div>
+          {/* 하단 dots */}
+          <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-[5px]">
+            {images.map((_, idx) => (
+              <div
+                key={idx}
+                className="rounded-full transition-all duration-200"
+                style={{
+                  width: idx === currentIndex ? 6 : 5,
+                  height: idx === currentIndex ? 6 : 5,
+                  background: idx === currentIndex ? '#3897F0' : 'rgba(255,255,255,0.6)',
+                }}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 function LoveStoryTab({ content, profileImage, username }: { content: any; profileImage: string; username: string }) {
   const avatarSettings = content?.media?.profileAvatarSettings || null
   const stories = content?.content?.stories || []
@@ -1054,49 +1130,53 @@ function LoveStoryTab({ content, profileImage, username }: { content: any; profi
   return (
     <div style={{ background: '#FFFFFF' }}>
       {stories.length > 0 ? (
-        stories.map((story: any, i: number) => (
-          <InstagramPost
-            key={i}
-            username={username}
-            profileImage={profileImage}
-            profileImageSettings={avatarSettings}
-            caption={
-              <div className="pb-3">
-                <p className="text-[13px] leading-[1.7] whitespace-pre-line" style={{ color: '#262626' }}>
-                  <span className="font-semibold">{username}</span>{' '}
-                  {story.caption || story.content || ''}
-                </p>
-              </div>
-            }
-          >
-            {story.image ? (
-              <div
-                className="w-full overflow-hidden"
-                style={{
-                  aspectRatio: '4/5',
-                  background: '#FAFAFA',
-                  ...(() => {
-                    const s = story.imageSettings
-                    if (!s) return { backgroundImage: `url(${story.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-                    const hasCrop = s.cropWidth !== undefined && s.cropHeight !== undefined && (s.cropWidth < 1 || s.cropHeight < 1)
-                    if (hasCrop) {
-                      const cw = s.cropWidth || 1, ch = s.cropHeight || 1, cx = s.cropX || 0, cy = s.cropY || 0
-                      return { backgroundImage: `url(${story.image})`, backgroundSize: `${100/cw}% ${100/ch}%`, backgroundPosition: `${cw>=1?0:(cx/(1-cw))*100}% ${ch>=1?0:(cy/(1-ch))*100}%`, backgroundRepeat: 'no-repeat' }
-                    }
-                    return { backgroundImage: `url(${story.image})`, backgroundSize: 'cover', backgroundPosition: 'center', transform: `scale(${s.scale||1}) translate(${s.positionX||0}%,${s.positionY||0}%)` }
-                  })(),
-                }}
-              />
-            ) : (
-              <div
-                className="w-full flex items-center justify-center"
-                style={{ aspectRatio: '4/5', background: '#FAFAFA' }}
-              >
-                <p className="text-[14px]" style={{ color: '#8E8E8E' }}>No photo</p>
-              </div>
-            )}
-          </InstagramPost>
-        ))
+        stories.map((story: any, i: number) => {
+          // 레거시 호환: images 배열이 없으면 단일 image 사용
+          const storyImages: string[] = (story.images && story.images.length > 0)
+            ? story.images
+            : (story.image ? [story.image] : [])
+
+          return (
+            <InstagramPost
+              key={i}
+              username={username}
+              profileImage={profileImage}
+              profileImageSettings={avatarSettings}
+              caption={
+                <div className="pb-3">
+                  <p className="text-[13px] leading-[1.7] whitespace-pre-line" style={{ color: '#262626' }}>
+                    <span className="font-semibold">{username}</span>{' '}
+                    {story.caption || story.content || ''}
+                  </p>
+                </div>
+              }
+            >
+              {storyImages.length > 0 ? (
+                storyImages.length === 1 ? (
+                  <div
+                    className="w-full overflow-hidden"
+                    style={{
+                      aspectRatio: '4/5',
+                      background: '#FAFAFA',
+                      backgroundImage: `url(${storyImages[0]})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                    }}
+                  />
+                ) : (
+                  <StoryCarousel images={storyImages} />
+                )
+              ) : (
+                <div
+                  className="w-full flex items-center justify-center"
+                  style={{ aspectRatio: '4/5', background: '#FAFAFA' }}
+                >
+                  <p className="text-[14px]" style={{ color: '#8E8E8E' }}>No photo</p>
+                </div>
+              )}
+            </InstagramPost>
+          )
+        })
       ) : (
         <div className="py-16 text-center">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#DBDBDB" strokeWidth="1" className="mx-auto mb-4">
@@ -1396,7 +1476,7 @@ function WeddingInfoPost({
           <div className="pb-3">
             <p className="text-[13px] mb-3" style={{ color: '#262626' }}>
               <span className="font-semibold">{username}</span>{' '}
-              우리의 특별한 날에 초대합니다 💌
+              {content?.postCaptions?.weddingInfo || '우리의 특별한 날에 초대합니다 💌'}
             </p>
 
             {/* Compact info row */}
@@ -1453,14 +1533,30 @@ function WeddingInfoPost({
                       </div>
                     </div>
                   )}
-                  {(directions as any)?.extraInfoEnabled && (directions as any)?.extraInfoText && (
-                    <div className="flex gap-2">
-                      <span className="text-[13px] flex-shrink-0">📌</span>
-                      <div>
-                        <p className="text-[11px] font-semibold mb-0.5" style={{ color: '#262626' }}>{(directions as any)?.extraInfoTitle || '추가 안내사항'}</p>
-                        <p className="text-[11px] leading-[1.6] whitespace-pre-line" style={{ color: '#8E8E8E' }}>{(directions as any)?.extraInfoText}</p>
+                  {/* Multi extra items */}
+                  {(directions as any)?.extraItems?.length > 0 ? (
+                    (directions as any).extraItems
+                      .filter((item: { enabled: boolean; text: string }) => item.enabled && item.text)
+                      .map((item: { id: string; emoji?: string; title: string; text: string }) => (
+                        <div key={item.id} className="flex gap-2">
+                          <span className="text-[13px] flex-shrink-0">{item.emoji || '📌'}</span>
+                          <div>
+                            <p className="text-[11px] font-semibold mb-0.5" style={{ color: '#262626' }}>{item.title}</p>
+                            <p className="text-[11px] leading-[1.6] whitespace-pre-line" style={{ color: '#8E8E8E' }}>{item.text}</p>
+                          </div>
+                        </div>
+                      ))
+                  ) : (
+                    /* Legacy single extra info backward compat */
+                    (directions as any)?.extraInfoEnabled && (directions as any)?.extraInfoText && (
+                      <div className="flex gap-2">
+                        <span className="text-[13px] flex-shrink-0">📌</span>
+                        <div>
+                          <p className="text-[11px] font-semibold mb-0.5" style={{ color: '#262626' }}>{(directions as any)?.extraInfoTitle || '추가 안내사항'}</p>
+                          <p className="text-[11px] leading-[1.6] whitespace-pre-line" style={{ color: '#8E8E8E' }}>{(directions as any)?.extraInfoText}</p>
+                        </div>
                       </div>
-                    </div>
+                    )
                   )}
                 </div>
               </div>
@@ -1666,7 +1762,7 @@ function GuidancePost({
         <div className="pb-3">
           <p className="text-[13px]" style={{ color: '#262626' }}>
             <span className="font-semibold">{username}</span>{' '}
-            결혼식 안내사항을 알려드립니다 ✨
+            {content?.postCaptions?.guidance || '결혼식 안내사항을 알려드립니다 ✨'}
           </p>
         </div>
       }
@@ -2087,7 +2183,7 @@ function AccountPost({
         <div className="pb-3">
           <p className="text-[13px]" style={{ color: '#262626' }}>
             <span className="font-semibold">{username}</span>{' '}
-            전해주시는 축하와 응원, 오래도록 기억하겠습니다. 💛
+            {content?.postCaptions?.account || '전해주시는 축하와 응원, 오래도록 기억하겠습니다. 💛'}
           </p>
         </div>
       }
@@ -2934,7 +3030,15 @@ function InvitationClientExhibitContent({
               <StoryHighlights rooms={rooms} activeRoom={activeRoom} onHighlightClick={handleHighlightClick} />
 
               {/* 4. Tab Bar */}
-              <TabBar activeTab={contentTab} onTabChange={handleTabChange} visitedTabs={visitedTabs} />
+              <TabBar
+                activeTab={contentTab}
+                onTabChange={handleTabChange}
+                visitedTabs={visitedTabs}
+                hiddenTabs={[
+                  ...(content?.sectionVisibility?.profile === false ? ['people' as ContentTab] : []),
+                  ...(content?.sectionVisibility?.loveStory === false ? ['story' as ContentTab] : []),
+                ]}
+              />
 
               {/* 5. Tab Content */}
               {contentTab === 'grid' && (
@@ -2946,10 +3050,10 @@ function InvitationClientExhibitContent({
                   galleryPreviewCount={content?.galleryPreviewCount || 3}
                 />
               )}
-              {contentTab === 'people' && (
+              {contentTab === 'people' && content?.sectionVisibility?.profile !== false && (
                 <PeopleTab content={content} profileImage={profileImage} username={username} />
               )}
-              {contentTab === 'story' && (
+              {contentTab === 'story' && content?.sectionVisibility?.loveStory !== false && (
                 <LoveStoryTab content={content} profileImage={profileImage} username={username} />
               )}
 

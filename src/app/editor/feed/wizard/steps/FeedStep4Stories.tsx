@@ -2,9 +2,7 @@
 
 import { useState } from 'react'
 import { Plus, Trash2, ChevronUp, ChevronDown, X, Smile } from 'lucide-react'
-import ImageUploader, { MultiImageUploader } from '@/components/editor/ImageUploader'
-import InlineCropEditor from '@/components/editor/InlineCropEditor'
-import type { ImageSettings } from '@/store/editorStore'
+import { MultiImageUploader } from '@/components/editor/ImageUploader'
 import type { FeedInvitationData } from '../../page'
 
 interface StepProps {
@@ -50,17 +48,34 @@ function EmojiPicker({ value, onChange }: { value: string; onChange: (emoji: str
         {value || <Smile className="w-4 h-4 text-gray-400" />}
       </button>
       {open && (
-        <div className="absolute top-9 left-0 z-10 bg-white border border-gray-200 rounded-xl shadow-lg p-2 grid grid-cols-6 gap-1 w-[200px]">
-          {INFO_EMOJIS.map((emoji) => (
-            <button
-              key={emoji}
-              type="button"
-              onClick={() => { onChange(emoji); setOpen(false) }}
-              className={`w-7 h-7 rounded-md flex items-center justify-center text-base hover:bg-gray-100 transition-colors ${value === emoji ? 'bg-blue-50 ring-1 ring-blue-300' : ''}`}
-            >
-              {emoji}
-            </button>
-          ))}
+        <div className="absolute top-9 left-0 z-10 bg-white border border-gray-200 rounded-xl shadow-lg p-2 w-[200px]">
+          <input
+            type="text"
+            className="w-full px-2 py-1.5 mb-2 border border-gray-200 rounded-lg text-sm text-center focus:outline-none focus:ring-1 focus:ring-black focus:border-black"
+            placeholder="이모지 붙여넣기"
+            value=""
+            onChange={(e) => {
+              const v = e.target.value.trim()
+              if (v) { onChange(v); setOpen(false) }
+            }}
+            onPaste={(e) => {
+              e.preventDefault()
+              const pasted = e.clipboardData.getData('text').trim()
+              if (pasted) { onChange(pasted); setOpen(false) }
+            }}
+          />
+          <div className="grid grid-cols-6 gap-1">
+            {INFO_EMOJIS.map((emoji) => (
+              <button
+                key={emoji}
+                type="button"
+                onClick={() => { onChange(emoji); setOpen(false) }}
+                className={`w-7 h-7 rounded-md flex items-center justify-center text-base hover:bg-gray-100 transition-colors ${value === emoji ? 'bg-blue-50 ring-1 ring-blue-300' : ''}`}
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -84,19 +99,19 @@ export default function FeedStep4Stories({
     updateNestedData('content.stories', newStories)
   }
 
-  const updateStoryImageSettings = (index: number, settings: Partial<ImageSettings>) => {
+  const updateStoryImages = (index: number, newImages: string[]) => {
     const newStories = [...stories]
-    const existing = newStories[index].imageSettings || { scale: 1, positionX: 0, positionY: 0 }
     newStories[index] = {
       ...newStories[index],
-      imageSettings: { ...existing, ...settings },
+      images: newImages,
+      image: newImages[0] || '',
     }
     updateNestedData('content.stories', newStories)
   }
 
   const addStory = () => {
     if (stories.length >= 10) return
-    updateNestedData('content.stories', [...stories, { image: '', imageSettings: undefined, caption: '' }])
+    updateNestedData('content.stories', [...stories, { image: '', images: [], caption: '' }])
   }
 
   const deleteStory = (index: number) => {
@@ -165,9 +180,16 @@ export default function FeedStep4Stories({
 
       {/* 프로필 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          👫 프로필
-        </h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+            👫 프로필
+          </h3>
+          <ToggleSwitch
+            checked={data.sectionVisibility?.profile !== false}
+            onChange={(checked) => updateNestedData('sectionVisibility.profile', checked)}
+          />
+        </div>
+        {data.sectionVisibility?.profile !== false && <>
         <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
           <p className="text-sm text-blue-800">프로필 사진과 소개 글을 입력하면 인트로 섹션에 표시됩니다.</p>
         </div>
@@ -245,13 +267,21 @@ export default function FeedStep4Stories({
             />
           </div>
         </div>
+        </>}
       </section>
 
       {/* 러브스토리 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          💕 러브스토리
-        </h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+            💕 러브스토리
+          </h3>
+          <ToggleSwitch
+            checked={data.sectionVisibility?.loveStory !== false}
+            onChange={(checked) => updateNestedData('sectionVisibility.loveStory', checked)}
+          />
+        </div>
+        {data.sectionVisibility?.loveStory !== false && <>
         <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
           <p className="text-sm text-blue-800">인스타그램 포스트처럼 사진과 캡션으로 두 사람의 이야기를 들려주세요. 최대 10개까지 추가할 수 있어요.</p>
         </div>
@@ -301,45 +331,32 @@ export default function FeedStep4Stories({
             </div>
 
             {/* Story content */}
-            <div className="flex gap-4">
-              <div className="w-[120px] flex-shrink-0">
-                <ImageUploader
-                  value={story.image}
-                  onChange={(url) => updateStory(index, 'image', url)}
+            <div className="space-y-3">
+              <div>
+                <p className="text-xs text-gray-400 mb-1.5">최대 5장까지 추가 가능합니다.</p>
+                <MultiImageUploader
+                  images={story.images || (story.image ? [story.image] : [])}
+                  onChange={(newImages) => updateStoryImages(index, newImages)}
                   invitationId={invitationId || undefined}
-                  placeholder="사진"
+                  maxImages={5}
+                  placeholder="사진 추가"
                   aspectRatio="aspect-[4/5]"
+                  sortable
                 />
               </div>
-              <div className="flex-1">
+              <div>
                 <label className={labelClass}>캡션</label>
                 <textarea
                   value={story.caption}
                   onChange={(e) => updateStory(index, 'caption', e.target.value)}
                   placeholder="첫 만남 그 날 ☕ 세 시간이 어떻게 갔는지 모르겠어"
                   rows={3}
-                  maxLength={100}
+                  maxLength={200}
                   className={`${inputClass} resize-none`}
                 />
-                <p className="text-xs text-gray-400 mt-1">{story.caption.length}/100자</p>
+                <p className="text-xs text-gray-400 mt-1">{story.caption.length}/200자</p>
               </div>
             </div>
-
-            {/* Crop editor */}
-            {story.image && (
-              <div className="p-3 bg-white/70 rounded-lg space-y-2">
-                <p className="text-[10px] font-medium text-gray-600">이미지 크롭 조정</p>
-                <InlineCropEditor
-                  imageUrl={story.image}
-                  settings={story.imageSettings || {}}
-                  onUpdate={(settings: Partial<ImageSettings>) =>
-                    updateStoryImageSettings(index, settings)
-                  }
-                  aspectRatio={4 / 5}
-                  containerWidth={120}
-                />
-              </div>
-            )}
           </div>
         ))}
 
@@ -354,6 +371,7 @@ export default function FeedStep4Stories({
             새 스토리 추가 ({stories.length}/10)
           </button>
         )}
+        </>}
       </section>
 
       {/* 영상 */}
@@ -444,33 +462,104 @@ export default function FeedStep4Stories({
             />
           </div>
 
-          {/* 추가 안내사항 */}
-          <div className="border-t border-gray-200 pt-4 space-y-2">
-            <div className="flex items-center justify-between">
-              <label className={labelClass}>추가 안내사항</label>
-              <ToggleSwitch
-                checked={data.wedding.directions.extraInfoEnabled || false}
-                onChange={(checked) => updateNestedData('wedding.directions.extraInfoEnabled', checked)}
-              />
-            </div>
-            {data.wedding.directions.extraInfoEnabled && (
-              <div className="space-y-2">
-                <input
-                  className={inputClass}
-                  value={data.wedding.directions.extraInfoTitle || ''}
-                  onChange={(e) => updateNestedData('wedding.directions.extraInfoTitle', e.target.value)}
-                  placeholder="제목 (기본: 추가 안내사항)"
-                />
-                <textarea
-                  className={`${inputClass} resize-none`}
-                  rows={3}
-                  value={data.wedding.directions.extraInfoText || ''}
-                  onChange={(e) => updateNestedData('wedding.directions.extraInfoText', e.target.value)}
-                  placeholder="예: 주차권은 안내데스크에서 수령 / 혼잡 시간대는 대중교통 추천 / 예식장 입구는 ○○문입니다"
-                />
+          {/* 추가 안내사항 (멀티 아이템) */}
+          <div className="border-t border-gray-200 pt-4 space-y-3">
+            <label className={labelClass}>추가 안내사항</label>
+
+            {(() => {
+              // 레거시 데이터 마이그레이션: extraItems가 없고 old 필드가 있으면 자동 생성
+              const extraItems = data.wedding.directions.extraItems || []
+              if (extraItems.length === 0 && data.wedding.directions.extraInfoEnabled && data.wedding.directions.extraInfoText) {
+                const migrated = [{
+                  id: `extra-migrated`,
+                  emoji: '📌',
+                  title: data.wedding.directions.extraInfoTitle || '추가 안내사항',
+                  text: data.wedding.directions.extraInfoText,
+                  enabled: true,
+                }]
+                // 마이그레이션 실행
+                setTimeout(() => updateNestedData('wedding.directions.extraItems', migrated), 0)
+                return migrated
+              }
+              return extraItems
+            })().map((item, index) => (
+              <div key={item.id} className="p-4 bg-white rounded-lg border border-gray-100 space-y-2">
+                <div className="flex items-center gap-2">
+                  <EmojiPicker
+                    value={item.emoji || '📌'}
+                    onChange={(emoji) => {
+                      const newItems = [...(data.wedding.directions.extraItems || [])]
+                      newItems[index] = { ...newItems[index], emoji }
+                      updateNestedData('wedding.directions.extraItems', newItems)
+                    }}
+                  />
+                  <input
+                    value={item.title}
+                    onChange={(e) => {
+                      const newItems = [...(data.wedding.directions.extraItems || [])]
+                      newItems[index] = { ...newItems[index], title: e.target.value }
+                      updateNestedData('wedding.directions.extraItems', newItems)
+                    }}
+                    placeholder="제목을 입력하세요"
+                    className="flex-1 text-sm font-medium px-2.5 py-1.5 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-black focus:border-black"
+                  />
+                  <ToggleSwitch
+                    checked={item.enabled}
+                    onChange={(checked) => {
+                      const newItems = [...(data.wedding.directions.extraItems || [])]
+                      newItems[index] = { ...newItems[index], enabled: checked }
+                      updateNestedData('wedding.directions.extraItems', newItems)
+                    }}
+                  />
+                  <button
+                    onClick={() => {
+                      const newItems = (data.wedding.directions.extraItems || []).filter((_, i) => i !== index)
+                      updateNestedData('wedding.directions.extraItems', newItems)
+                    }}
+                    className="text-gray-400 hover:text-red-500 transition-colors flex-shrink-0"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                {item.enabled && (
+                  <textarea
+                    value={item.text}
+                    onChange={(e) => {
+                      const newItems = [...(data.wedding.directions.extraItems || [])]
+                      newItems[index] = { ...newItems[index], text: e.target.value }
+                      updateNestedData('wedding.directions.extraItems', newItems)
+                    }}
+                    rows={3}
+                    placeholder="예: 주차권은 안내데스크에서 수령 / 혼잡 시간대는 대중교통 추천"
+                    className={`${inputClass} resize-none`}
+                  />
+                )}
               </div>
-            )}
+            ))}
+
+            <button
+              onClick={() => {
+                const newItem = { id: `extra-${Date.now()}`, emoji: '📌', title: '추가 안내사항', text: '', enabled: true }
+                const newItems = [...(data.wedding.directions.extraItems || []), newItem]
+                updateNestedData('wedding.directions.extraItems', newItems)
+              }}
+              className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors"
+            >
+              + 추가 안내사항 추가
+            </button>
           </div>
+        </div>
+
+        {/* 오시는길 포스트 캡션 */}
+        <div className="space-y-1.5">
+          <label className={labelClass}>포스트 캡션</label>
+          <input
+            className={inputClass}
+            value={data.postCaptions?.weddingInfo ?? '우리의 특별한 날에 초대합니다 💌'}
+            onChange={(e) => updateNestedData('postCaptions.weddingInfo', e.target.value)}
+            placeholder="우리의 특별한 날에 초대합니다 💌"
+          />
+          <p className="text-xs text-gray-400">게스트뷰에서 오시는길 포스트 하단에 표시됩니다.</p>
         </div>
       </section>
 
@@ -592,6 +681,18 @@ export default function FeedStep4Stories({
           >
             + 안내사항 추가
           </button>
+
+          {/* 안내사항 포스트 캡션 */}
+          <div className="space-y-1.5 pt-3 border-t border-gray-200">
+            <label className={labelClass}>포스트 캡션</label>
+            <input
+              className={inputClass}
+              value={data.postCaptions?.guidance ?? '결혼식 안내사항을 알려드립니다 ✨'}
+              onChange={(e) => updateNestedData('postCaptions.guidance', e.target.value)}
+              placeholder="결혼식 안내사항을 알려드립니다 ✨"
+            />
+            <p className="text-xs text-gray-400">게스트뷰에서 안내사항 포스트 하단에 표시됩니다.</p>
+          </div>
         </div>
       </section>
 

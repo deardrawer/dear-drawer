@@ -35,6 +35,7 @@ export default function FeedPreview({ data, fullscreen: _fullscreen }: FeedPrevi
     displayId: data.displayId,
     galleryPreviewCount: data.galleryPreviewCount,
     meta: data.meta,
+    postCaptions: data.postCaptions,
     design: {},
     templateId: 'exhibit',
     colorTheme: 'exhibit-white',

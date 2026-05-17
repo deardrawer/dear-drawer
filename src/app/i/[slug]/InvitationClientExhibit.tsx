@@ -54,9 +54,16 @@ function extractImageUrl(img: unknown): string {
   return ''
 }
 
-function getAvatarCropStyle(settings: { scale?: number; positionX?: number; positionY?: number } | null | undefined): React.CSSProperties | undefined {
-  if (!settings) return undefined
-  return { transform: `scale(${settings.scale || 1}) translate(${settings.positionX || 0}%, ${settings.positionY || 0}%)` }
+function AvatarImage({ src, settings, className }: { src: string; settings: any; className?: string }) {
+  const hasCrop = settings?.cropWidth !== undefined && settings?.cropHeight !== undefined &&
+    (settings.cropWidth < 1 || settings.cropHeight < 1)
+  if (hasCrop) {
+    return <CroppedImageDiv src={src} crop={settings} className={className} />
+  }
+  const transformStyle = settings
+    ? { transform: `scale(${settings.scale || 1}) translate(${settings.positionX || 0}%, ${settings.positionY || 0}%)` }
+    : undefined
+  return <img src={src} alt="" className={`${className || ''} object-cover`} style={transformStyle} />
 }
 
 function timeAgo(dateStr: string): string {
@@ -541,7 +548,7 @@ function CoverSection({ content, invitation, displayId, audioRef, bgmEnabled, fo
       <div className="absolute top-8 left-3 z-20 flex items-center gap-2">
         <div className="ig-rainbow-border">
           <div className="w-8 h-8 rounded-full overflow-hidden bg-white">
-            <img src={miniAvatarImage} alt="" className="w-full h-full object-cover" style={getAvatarCropStyle(miniAvatarSettings)} />
+            <AvatarImage src={miniAvatarImage} settings={miniAvatarSettings} className="w-full h-full" />
           </div>
         </div>
         <span className="text-[13px] text-white font-medium" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
@@ -671,7 +678,7 @@ function ProfileSection({
         {/* Profile pic */}
         <div className="ig-rainbow-border flex-shrink-0">
           <div className="w-[80px] h-[80px] rounded-full overflow-hidden bg-white p-[2px]">
-            <img src={avatarImage} alt="" className="w-full h-full rounded-full object-cover" style={getAvatarCropStyle(avatarSettings)} />
+            <AvatarImage src={avatarImage} settings={avatarSettings} className="w-full h-full rounded-full" />
           </div>
         </div>
 
@@ -906,7 +913,7 @@ function ProfileCarousel({ images, imageSettings }: { images: string[]; imageSet
         src={images[0]}
         crop={imageSettings}
         className="w-full overflow-hidden"
-        style={{ aspectRatio: '4/5', background: '#FAFAFA' }}
+        style={{ aspectRatio: '4/5', backgroundColor: '#FAFAFA' }}
       />
     )
   }
@@ -1276,7 +1283,7 @@ function InstagramPost({
       {/* Post header */}
       <div className="flex items-center gap-3 px-3 py-2.5">
         <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
-          <img src={profileImage} alt="" className="w-full h-full object-cover" style={getAvatarCropStyle(profileImageSettings)} />
+          <AvatarImage src={profileImage} settings={profileImageSettings} className="w-full h-full" />
         </div>
         <span className="text-[13px] font-semibold" style={{ color: '#262626' }}>{username}</span>
       </div>
@@ -1945,7 +1952,7 @@ function VideoPost({
       {/* Post header */}
       <div className="flex items-center gap-3 px-3 py-2.5">
         <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
-          <img src={profileImage} alt="" className="w-full h-full object-cover" style={getAvatarCropStyle(avatarSettings)} />
+          <AvatarImage src={profileImage} settings={avatarSettings} className="w-full h-full" />
         </div>
         <span className="text-[13px] font-semibold" style={{ color: '#262626' }}>{username}</span>
       </div>

@@ -3001,7 +3001,7 @@ function InvitationClientExhibitContent({
     })
     // 탭 콘텐츠 시작점으로 스크롤
     requestAnimationFrame(() => {
-      tabAnchorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      tabAnchorRef.current?.scrollIntoView({ behavior: 'instant', block: 'start' })
     })
   }
 

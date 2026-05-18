@@ -825,19 +825,19 @@ function StoryHighlights({
 }
 
 // === 5. Tab Bar (게시물/사람/러브스토리) ===
-type ContentTab = 'grid' | 'people' | 'story'
+type ContentTab = 'all' | 'people' | 'story'
 
-function TabBar({ activeTab, onTabChange, visitedTabs, hiddenTabs = [] }: { activeTab: ContentTab; onTabChange: (tab: ContentTab) => void; visitedTabs: Set<ContentTab>; hiddenTabs?: ContentTab[] }) {
+function TabBar({ activeTab, onTabChange, visitedTabs, hiddenTabs = [], stickyTop = 0 }: { activeTab: ContentTab; onTabChange: (tab: ContentTab) => void; visitedTabs: Set<ContentTab>; hiddenTabs?: ContentTab[]; stickyTop?: number }) {
   const getIconColor = (tabId: ContentTab, isActive: boolean) => {
     if (isActive) return '#262626'
-    if (tabId !== 'grid' && !visitedTabs.has(tabId)) return '#3B82F6'
+    if (tabId !== 'all' && !visitedTabs.has(tabId)) return '#3B82F6'
     return '#8E8E8E'
   }
 
   const tabs: { id: ContentTab; label: string; icon: (color: string, active: boolean) => React.ReactNode }[] = [
     {
-      id: 'grid',
-      label: '갤러리',
+      id: 'all',
+      label: 'All',
       icon: (color, active) => (
         <svg width="18" height="18" viewBox="0 0 24 24" fill={active ? '#262626' : 'none'} stroke={active ? 'none' : color} strokeWidth="1.5">
           <rect x="1" y="1" width="6.5" height="6.5" rx="0.5" />
@@ -874,7 +874,7 @@ function TabBar({ activeTab, onTabChange, visitedTabs, hiddenTabs = [] }: { acti
   ]
 
   return (
-    <div className="sticky top-0 z-30 border-b flex" style={{ borderColor: '#DBDBDB', background: '#FFFFFF' }}>
+    <div className="sticky z-30 border-b flex transition-all duration-300" style={{ top: stickyTop, borderColor: '#DBDBDB', background: '#FFFFFF' }}>
       {tabs.filter(tab => !hiddenTabs.includes(tab.id)).map((tab) => {
         const isActive = activeTab === tab.id
         return (
@@ -886,13 +886,13 @@ function TabBar({ activeTab, onTabChange, visitedTabs, hiddenTabs = [] }: { acti
           >
             <div className="relative">
               {tab.icon(getIconColor(tab.id, isActive), isActive)}
-              {tab.id !== 'grid' && !visitedTabs.has(tab.id) && (
+              {tab.id !== 'all' && !visitedTabs.has(tab.id) && (
                 <span className="absolute -top-0.5 -right-1.5 w-[6px] h-[6px] bg-[#FF3040] rounded-full" />
               )}
             </div>
             <span
-              className={`text-[10px] ${tab.id !== 'grid' && !visitedTabs.has(tab.id) && !isActive ? 'tab-neon-blue' : ''}`}
-              style={tab.id !== 'grid' && !visitedTabs.has(tab.id) && !isActive ? undefined : { color: isActive ? '#262626' : '#8E8E8E' }}
+              className={`text-[10px] ${tab.id !== 'all' && !visitedTabs.has(tab.id) && !isActive ? 'tab-neon-blue' : ''}`}
+              style={tab.id !== 'all' && !visitedTabs.has(tab.id) && !isActive ? undefined : { color: isActive ? '#262626' : '#8E8E8E' }}
             >
               {tab.label}
             </span>
@@ -1204,6 +1204,23 @@ function PhotoGrid({
   onHighlightClick: (index: number) => void
   galleryPreviewCount?: number
 }) {
+  // 각 룸별 펼침 상태 관리
+  const [expandedRooms, setExpandedRooms] = useState<Set<number>>(new Set())
+
+  const toggleExpand = useCallback((roomIdx: number) => {
+    setExpandedRooms(prev => {
+      const next = new Set(prev)
+      if (next.has(roomIdx)) next.delete(roomIdx)
+      else next.add(roomIdx)
+      return next
+    })
+  }, [])
+
+  // 특정 룸 탭 선택 시 펼침 상태 초기화
+  useEffect(() => {
+    if (activeRoom !== -1) setExpandedRooms(new Set())
+  }, [activeRoom])
+
   // Filter rooms based on active tab
   const visibleRooms = activeRoom === -1 ? rooms : [rooms[activeRoom]].filter(Boolean)
   const visibleRoomIndices = activeRoom === -1 ? rooms.map((_, i) => i) : [activeRoom]
@@ -1215,10 +1232,11 @@ function PhotoGrid({
         const allImages = room.images.map(extractImageUrl).filter(Boolean)
         if (allImages.length === 0) return null
 
-        // In "All" mode, limit images per room (per-room or global galleryPreviewCount)
+        // In "All" mode, limit images per room unless expanded
         const isAllMode = activeRoom === -1
+        const isExpanded = expandedRooms.has(roomIdx)
         const maxInAll = room.galleryPreviewCount || galleryPreviewCount
-        const images = isAllMode ? allImages.slice(0, maxInAll) : allImages
+        const images = (isAllMode && !isExpanded) ? allImages.slice(0, maxInAll) : allImages
         const hasMore = isAllMode && allImages.length > maxInAll
 
         // Build rows of 3
@@ -1241,19 +1259,30 @@ function PhotoGrid({
             )}
 
             {/* 3-col grid, portrait aspect */}
-            <PhotoGridRows rows={rows} roomIdx={roomIdx} onPhotoClick={onPhotoClick} key={`grid-${roomIdx}-${activeRoom}`} />
+            <PhotoGridRows rows={rows} roomIdx={roomIdx} onPhotoClick={onPhotoClick} key={`grid-${roomIdx}-${activeRoom}-${isExpanded}`} />
 
-            {/* "사진 더보기" button — only in All mode when room has more images */}
+            {/* 접기/펼치기 버튼 */}
             {hasMore && (
               <button
-                onClick={() => onHighlightClick(roomIdx)}
+                onClick={() => toggleExpand(roomIdx)}
                 className="w-full py-3 text-center text-[12px] font-medium flex items-center justify-center gap-1"
                 style={{ color: '#262626', background: '#FAFAFA', borderBottom: '1px solid #EFEFEF' }}
               >
-                사진 더보기 ({allImages.length - maxInAll}+)
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#262626" strokeWidth="2">
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
+                {isExpanded ? (
+                  <>
+                    접기
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#262626" strokeWidth="2">
+                      <polyline points="18 15 12 9 6 15" />
+                    </svg>
+                  </>
+                ) : (
+                  <>
+                    사진 더보기 ({allImages.length - maxInAll}+)
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#262626" strokeWidth="2">
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                  </>
+                )}
               </button>
             )}
           </div>
@@ -2737,6 +2766,122 @@ function InstagramFooter() {
   )
 }
 
+// === Highlight Story Viewer (Instagram-style) ===
+function HighlightStoryViewer({
+  images,
+  title,
+  thumbnail,
+  isOpen,
+  onClose,
+}: {
+  images: string[]
+  title: string
+  thumbnail: string
+  isOpen: boolean
+  onClose: () => void
+}) {
+  const [idx, setIdx] = useState(0)
+  const [progress, setProgress] = useState(0)
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const DURATION = 5000 // 5초 per image
+
+  // Reset on open
+  useEffect(() => {
+    if (isOpen) { setIdx(0); setProgress(0) }
+  }, [isOpen])
+
+  // Auto-advance timer
+  useEffect(() => {
+    if (!isOpen) return
+    setProgress(0)
+    const start = Date.now()
+    timerRef.current = setInterval(() => {
+      const elapsed = Date.now() - start
+      const pct = Math.min(elapsed / DURATION, 1)
+      setProgress(pct)
+      if (pct >= 1) {
+        if (timerRef.current) clearInterval(timerRef.current)
+        setIdx(prev => {
+          if (prev >= images.length - 1) { onClose(); return prev }
+          return prev + 1
+        })
+      }
+    }, 30)
+    return () => { if (timerRef.current) clearInterval(timerRef.current) }
+  }, [isOpen, idx, images.length, onClose])
+
+  if (!isOpen || images.length === 0) return null
+
+  const handleTap = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    const x = e.clientX - rect.left
+    if (x < rect.width / 3) {
+      // Left tap: prev
+      if (idx > 0) setIdx(idx - 1)
+    } else {
+      // Right tap: next
+      if (idx < images.length - 1) setIdx(idx + 1)
+      else onClose()
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-[9999] bg-black flex flex-col" onClick={onClose}>
+      <div
+        className="relative flex-1 flex flex-col max-w-[500px] w-full mx-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Progress bars */}
+        <div className="absolute top-0 left-0 right-0 z-20 flex gap-[3px] px-3 pt-3">
+          {images.map((_, i) => (
+            <div key={i} className="flex-1 h-[2px] rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.3)' }}>
+              <div
+                className="h-full rounded-full"
+                style={{
+                  background: '#FFFFFF',
+                  width: i < idx ? '100%' : i === idx ? `${progress * 100}%` : '0%',
+                  transition: i === idx ? 'none' : 'width 0.2s',
+                }}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Header */}
+        <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-3 pt-6 pb-2">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-full overflow-hidden border border-white/30">
+              <img src={thumbnail} alt="" className="w-full h-full object-cover" />
+            </div>
+            <span className="text-[13px] font-semibold text-white">{title}</span>
+            <span className="text-[12px] text-white/50">{idx + 1}/{images.length}</span>
+          </div>
+          <button onClick={onClose} className="p-1">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Image — full screen, tap zones */}
+        <div className="flex-1 relative" onClick={handleTap}>
+          {/* Gradient top */}
+          <div className="absolute top-0 left-0 right-0 h-24 z-10" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.4), transparent)' }} />
+          <img
+            src={images[idx]}
+            alt=""
+            className="w-full h-full object-contain"
+            draggable={false}
+          />
+          {/* Gradient bottom */}
+          <div className="absolute bottom-0 left-0 right-0 h-20 z-10" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.3), transparent)' }} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // === Gallery Lightbox ===
 function GalleryLightbox({
   images,
@@ -2843,15 +2988,20 @@ function InvitationClientExhibitContent({
   // Active room tab (-1 = show all rooms)
   const [activeRoom, setActiveRoom] = useState(-1)
 
-  // Content tab (grid/people/story)
-  const [contentTab, setContentTab] = useState<ContentTab>('grid')
-  const [visitedTabs, setVisitedTabs] = useState<Set<ContentTab>>(new Set(['grid']))
+  // Content tab (all/people/story)
+  const [contentTab, setContentTab] = useState<ContentTab>('all')
+  const [visitedTabs, setVisitedTabs] = useState<Set<ContentTab>>(new Set(['all']))
+  const tabAnchorRef = useRef<HTMLDivElement>(null)
   const handleTabChange = (tab: ContentTab) => {
     setContentTab(tab)
     setVisitedTabs(prev => {
       const next = new Set(prev)
       next.add(tab)
       return next
+    })
+    // 탭 콘텐츠 시작점으로 스크롤
+    requestAnimationFrame(() => {
+      tabAnchorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     })
   }
 
@@ -2939,6 +3089,10 @@ function InvitationClientExhibitContent({
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
 
+  // Room story viewer (for highlight clicks)
+  const [roomStoryOpen, setRoomStoryOpen] = useState(false)
+  const [roomStoryData, setRoomStoryData] = useState<{ images: string[]; title: string; thumbnail: string }>({ images: [], title: '', thumbnail: '' })
+
   const handlePhotoClick = useCallback(
     (roomIndex: number, localIdx: number) => {
       const globalIdx = roomOffsets[roomIndex] + localIdx
@@ -2948,10 +3102,25 @@ function InvitationClientExhibitContent({
     [roomOffsets]
   )
 
-  // Handle highlight click -> switch tab (not scroll)
+  // Handle highlight click -> All: filter reset, Room: open story viewer
   const handleHighlightClick = useCallback((index: number) => {
-    setActiveRoom(index)
-  }, [])
+    if (index === -1) {
+      setActiveRoom(-1)
+    } else {
+      const room = rooms[index]
+      if (room) {
+        const imgs = room.images.map(extractImageUrl).filter(Boolean)
+        if (imgs.length > 0) {
+          setRoomStoryData({
+            images: imgs,
+            title: room.title || '',
+            thumbnail: extractImageUrl(room.images[0]) || '',
+          })
+          setRoomStoryOpen(true)
+        }
+      }
+    }
+  }, [rooms])
 
   // Profile data
   const coverImage = extractImageUrl(content?.media?.coverImage) || '/sample/cover.png'
@@ -3029,11 +3198,13 @@ function InvitationClientExhibitContent({
               {/* 3. Story Highlights (탭 전환) */}
               <StoryHighlights rooms={rooms} activeRoom={activeRoom} onHighlightClick={handleHighlightClick} />
 
-              {/* 4. Tab Bar */}
+              {/* 4. Tab Bar (sticky — 스크롤 시 상단 고정) */}
+              <div ref={tabAnchorRef} />
               <TabBar
                 activeTab={contentTab}
                 onTabChange={handleTabChange}
                 visitedTabs={visitedTabs}
+                stickyTop={showHeader ? 44 : 0}
                 hiddenTabs={[
                   ...(content?.sectionVisibility?.profile === false ? ['people' as ContentTab] : []),
                   ...(content?.sectionVisibility?.loveStory === false ? ['story' as ContentTab] : []),
@@ -3041,81 +3212,84 @@ function InvitationClientExhibitContent({
               />
 
               {/* 5. Tab Content */}
-              {contentTab === 'grid' && (
-                <PhotoGrid
-                  rooms={rooms}
-                  activeRoom={activeRoom}
-                  onPhotoClick={handlePhotoClick}
-                  onHighlightClick={handleHighlightClick}
-                  galleryPreviewCount={content?.galleryPreviewCount || 3}
-                />
+              {contentTab === 'all' && (
+                <>
+                  <PhotoGrid
+                    rooms={rooms}
+                    activeRoom={activeRoom}
+                    onPhotoClick={handlePhotoClick}
+                    onHighlightClick={handleHighlightClick}
+                    galleryPreviewCount={content?.galleryPreviewCount || 3}
+                  />
+
+                  {/* 6. Video Post (영상) - 오시는길 상단 */}
+                  <VideoPost
+                    content={content}
+                    profileImage={profileImage}
+                    username={username}
+                  />
+
+                  {/* 7. Wedding Info Post */}
+                  <WeddingInfoPost
+                    content={content}
+                    invitation={invitation}
+                    profileImage={profileImage}
+                    username={username}
+                  />
+
+                  {/* 8. Guidance Post */}
+                  {showGuidance && (
+                    <GuidancePost
+                      content={content}
+                      profileImage={profileImage}
+                      username={username}
+                    />
+                  )}
+
+                  {/* 8. Account Post (계좌번호 안내) */}
+                  <AccountPost
+                    content={content}
+                    profileImage={profileImage}
+                    username={username}
+                  />
+
+                  {/* 9. Thank You Post */}
+                  <ThankYouPost
+                    content={content}
+                    profileImage={profileImage}
+                    username={username}
+                  />
+
+                  {/* 9. Guestbook (Comments) */}
+                  {showGuestbook && (
+                    <GuestbookSection
+                      invitationId={invitation?.id || ''}
+                      isSample={!!isSample}
+                      guestbookQuestions={guestbookQuestions}
+                      sectionRef={guestbookRef}
+                      sampleMessages={content?.content?.sampleGuestbook}
+                    />
+                  )}
+
+                  {/* 10. RSVP */}
+                  {content?.rsvpEnabled !== false && (
+                    <RsvpSection
+                      onRsvpClick={handleRsvpClick}
+                      rsvpDeadline={content?.rsvpDeadline}
+                    />
+                  )}
+
+                  {/* 11. Footer */}
+                  <InstagramFooter />
+                </>
               )}
+
               {contentTab === 'people' && content?.sectionVisibility?.profile !== false && (
                 <PeopleTab content={content} profileImage={profileImage} username={username} />
               )}
               {contentTab === 'story' && content?.sectionVisibility?.loveStory !== false && (
                 <LoveStoryTab content={content} profileImage={profileImage} username={username} />
               )}
-
-              {/* 6. Video Post (영상) - 오시는길 상단 */}
-              <VideoPost
-                content={content}
-                profileImage={profileImage}
-                username={username}
-              />
-
-              {/* 7. Wedding Info Post */}
-              <WeddingInfoPost
-                content={content}
-                invitation={invitation}
-                profileImage={profileImage}
-                username={username}
-              />
-
-              {/* 8. Guidance Post */}
-              {showGuidance && (
-                <GuidancePost
-                  content={content}
-                  profileImage={profileImage}
-                  username={username}
-                />
-              )}
-
-              {/* 8. Account Post (계좌번호 안내) */}
-              <AccountPost
-                content={content}
-                profileImage={profileImage}
-                username={username}
-              />
-
-              {/* 9. Thank You Post */}
-              <ThankYouPost
-                content={content}
-                profileImage={profileImage}
-                username={username}
-              />
-
-              {/* 9. Guestbook (Comments) */}
-              {showGuestbook && (
-                <GuestbookSection
-                  invitationId={invitation?.id || ''}
-                  isSample={!!isSample}
-                  guestbookQuestions={guestbookQuestions}
-                  sectionRef={guestbookRef}
-                  sampleMessages={content?.content?.sampleGuestbook}
-                />
-              )}
-
-              {/* 10. RSVP */}
-              {content?.rsvpEnabled !== false && (
-                <RsvpSection
-                  onRsvpClick={handleRsvpClick}
-                  rsvpDeadline={content?.rsvpDeadline}
-                />
-              )}
-
-              {/* 11. Footer */}
-              <InstagramFooter />
 
               {/* Bottom padding */}
               <div className="h-12" />
@@ -3137,6 +3311,15 @@ function InvitationClientExhibitContent({
           isOpen={lightboxOpen}
           initialIndex={lightboxIndex}
           onClose={() => setLightboxOpen(false)}
+        />
+
+        {/* Room Story Viewer (highlight click) */}
+        <HighlightStoryViewer
+          images={roomStoryData.images}
+          title={roomStoryData.title}
+          thumbnail={roomStoryData.thumbnail}
+          isOpen={roomStoryOpen}
+          onClose={() => setRoomStoryOpen(false)}
         />
 
         {/* RSVP DM Modal */}

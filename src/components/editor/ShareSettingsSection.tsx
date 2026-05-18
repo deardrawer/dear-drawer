@@ -142,8 +142,8 @@ export default function ShareSettingsSection({ invitationId }: ShareSettingsSect
                 </div>
               )}
               <div className="px-2 py-1 border-t border-stone-100">
-                <p className="text-[10px] font-medium text-stone-800 leading-tight truncate">❤ 결혼합니다.</p>
-                <p className="text-[9px] text-stone-500 leading-tight mt-0.5">{previewDateLine}</p>
+                <p className="text-[10px] font-medium text-stone-800 leading-tight truncate">{displayTitle}</p>
+                <p className="text-[9px] text-stone-500 leading-tight mt-0.5">{invitation.meta.description || previewDateLine}</p>
               </div>
               <div className="flex border-t border-stone-100">
                 <div className="flex-1 text-center py-1 text-[9px] text-stone-500 border-r border-stone-100">청첩장 보기</div>

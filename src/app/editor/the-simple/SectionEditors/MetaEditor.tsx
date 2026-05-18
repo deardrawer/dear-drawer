@@ -326,9 +326,9 @@ export default function MetaEditor({
           )}
           <div className="px-2 py-1 border-t border-stone-100">
             <p className="text-[10px] font-medium text-stone-800 leading-tight truncate">
-              ❤ 결혼합니다.
+              {displayTitle}
             </p>
-            <p className="text-[9px] text-stone-500 leading-tight mt-0.5">{previewDateLine}</p>
+            <p className="text-[9px] text-stone-500 leading-tight mt-0.5">{displayDescription}</p>
           </div>
           <div className="flex border-t border-stone-100">
             <div className="flex-1 text-center py-1 text-[9px] text-stone-500 border-r border-stone-100">

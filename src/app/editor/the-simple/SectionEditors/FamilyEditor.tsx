@@ -18,6 +18,7 @@ const DEFAULT_SETTINGS: TheSimpleImageSettings = { scale: 1, positionX: 0, posit
 
 export default function FamilyEditor({ value, groomName, brideName, onChange }: FamilyEditorProps) {
   const [uploading, setUploading] = useState(false)
+  const isBrideFirst = value.order === 'bride-first'
 
   const handlePhotoUpload = async (file: File) => {
     setUploading(true)
@@ -105,6 +106,21 @@ export default function FamilyEditor({ value, groomName, brideName, onChange }: 
         />
       </label>
 
+      {/* 순서 변경 */}
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] uppercase tracking-wider text-stone-400">순서</span>
+        <button
+          type="button"
+          onClick={() => onChange({ ...value, order: isBrideFirst ? 'groom-first' : 'bride-first' })}
+          className="flex items-center gap-1.5 text-[11px] text-stone-600 border border-stone-200 rounded-md px-2.5 py-1 hover:bg-stone-50 transition-colors"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4" />
+          </svg>
+          {isBrideFirst ? '신부 → 신랑' : '신랑 → 신부'}
+        </button>
+      </div>
+
       {/* 사진 업로드 */}
       <div className="space-y-2">
         <div className="text-[10px] uppercase tracking-wider text-stone-500">사진</div>
@@ -167,23 +183,16 @@ export default function FamilyEditor({ value, groomName, brideName, onChange }: 
         )}
       </div>
 
-      {/* 신랑 측 */}
-      <div className="rounded-md border border-stone-200 p-2.5 bg-white space-y-2">
-        <div className="text-[10px] uppercase tracking-wider text-stone-500">
-          신랑 측 ({groomName || '신랑'})
+      {/* 신랑/신부 측 — order에 따라 순서 변경 */}
+      {(isBrideFirst ? ['bride', 'groom'] as const : ['groom', 'bride'] as const).map((side) => (
+        <div key={side} className="rounded-md border border-stone-200 p-2.5 bg-white space-y-2">
+          <div className="text-[10px] uppercase tracking-wider text-stone-500">
+            {side === 'groom' ? `신랑 측 (${groomName || '신랑'})` : `신부 측 (${brideName || '신부'})`}
+          </div>
+          {renderParentRow(side === 'groom' ? 'groomFather' : 'brideFather', '아버지')}
+          {renderParentRow(side === 'groom' ? 'groomMother' : 'brideMother', '어머니')}
         </div>
-        {renderParentRow('groomFather', '아버지')}
-        {renderParentRow('groomMother', '어머니')}
-      </div>
-
-      {/* 신부 측 */}
-      <div className="rounded-md border border-stone-200 p-2.5 bg-white space-y-2">
-        <div className="text-[10px] uppercase tracking-wider text-stone-500">
-          신부 측 ({brideName || '신부'})
-        </div>
-        {renderParentRow('brideFather', '아버지')}
-        {renderParentRow('brideMother', '어머니')}
-      </div>
+      ))}
 
       {/* 고인 표시 스타일 */}
       <div className="space-y-1">
@@ -221,10 +230,21 @@ export default function FamilyEditor({ value, groomName, brideName, onChange }: 
         {value.showContact && (
           <div className="rounded-md border border-stone-200 p-2.5 bg-white space-y-2">
             <div className="text-[10px] text-stone-400">전화번호 입력</div>
-            {renderPhoneRow('groomFather', '신랑父')}
-            {renderPhoneRow('groomMother', '신랑母')}
-            {renderPhoneRow('brideFather', '신부父')}
-            {renderPhoneRow('brideMother', '신부母')}
+            {isBrideFirst ? (
+              <>
+                {renderPhoneRow('brideFather', '신부父')}
+                {renderPhoneRow('brideMother', '신부母')}
+                {renderPhoneRow('groomFather', '신랑父')}
+                {renderPhoneRow('groomMother', '신랑母')}
+              </>
+            ) : (
+              <>
+                {renderPhoneRow('groomFather', '신랑父')}
+                {renderPhoneRow('groomMother', '신랑母')}
+                {renderPhoneRow('brideFather', '신부父')}
+                {renderPhoneRow('brideMother', '신부母')}
+              </>
+            )}
           </div>
         )}
       </div>

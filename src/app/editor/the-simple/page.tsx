@@ -132,6 +132,9 @@ export interface SectionContents {
     eyebrow: string
     timeLabel: string
     placeLabel: string
+    dateShape?: 'empty-circle' | 'filled-circle' | 'diamond' | 'heart'
+    dateShapeColor?: string
+    datePointColor?: string
     showVenue?: boolean
     showCountdown?: boolean
     countdownBeforeMsg?: string
@@ -163,6 +166,7 @@ export interface SectionContents {
   }
   account: {
     eyebrow: string
+    order?: 'groom-first' | 'bride-first'
     guide?: string
     groom: Array<{ bank: string; number: string; holder: string }>
     bride: Array<{ bank: string; number: string; holder: string }>
@@ -199,6 +203,7 @@ export interface SectionContents {
   }
   family: {
     eyebrow: string
+    order?: 'groom-first' | 'bride-first'
     photo?: ImageWithSettings
     deceasedStyle?: 'hanja' | 'flower'
     showContact?: boolean

@@ -449,10 +449,12 @@ interface ContactPerson { role: string; name: string; phone: string }
 
 function FamilyContactSheet({
   variant = 1,
+  order,
   groomName, brideName, groomPhone, bridePhone,
   groomFather, groomMother, brideFather, brideMother,
 }: {
   variant?: number
+  order?: 'groom-first' | 'bride-first'
   groomName: string; brideName: string
   groomPhone?: string; bridePhone?: string
   groomFather?: { name: string; phone?: string }
@@ -498,10 +500,9 @@ function FamilyContactSheet({
       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
     </svg>
   )
-  const allV1 = [
-    ...groom.map((c) => ({ ...c, group: '신랑측' })),
-    ...bride.map((c) => ({ ...c, group: '신부측' })),
-  ]
+  const allV1 = order === 'bride-first'
+    ? [...bride.map((c) => ({ ...c, group: '신부측' })), ...groom.map((c) => ({ ...c, group: '신랑측' }))]
+    : [...groom.map((c) => ({ ...c, group: '신랑측' })), ...bride.map((c) => ({ ...c, group: '신부측' }))]
   const renderV1 = () => (
     <div className="ts-fcs-panel ts-fcs-panel--v1">
       {allV1.map((c, i) => {
@@ -530,9 +531,12 @@ function FamilyContactSheet({
   )
 
   /* V2 — 심플 리스트 (신랑측/신부측 구분) */
+  const v2Sides = order === 'bride-first'
+    ? [{ label: '신부측', list: bride }, { label: '신랑측', list: groom }]
+    : [{ label: '신랑측', list: groom }, { label: '신부측', list: bride }]
   const renderV2 = () => (
     <div className="ts-fcs-panel ts-fcs-panel--v2">
-      {[{ label: '신랑측', list: groom }, { label: '신부측', list: bride }].map((side) =>
+      {v2Sides.map((side) =>
         side.list.length > 0 ? (
           <div key={side.label} className="ts-fcs-simple-group">
             <div className="ts-fcs-simple-label">{side.label}</div>
@@ -555,10 +559,13 @@ function FamilyContactSheet({
   )
 
   /* V3 — 좌우 2열 (신랑측 · 신부측 미러링) */
+  const v3Sides = order === 'bride-first'
+    ? [{ list: bride }, { list: groom }]
+    : [{ list: groom }, { list: bride }]
   const renderV3 = () => (
     <div className="ts-fcs-panel ts-fcs-panel--v3">
       <div className="ts-fcs-grid3">
-        {[{ list: groom }, { list: bride }].map((side, si) =>
+        {v3Sides.map((side, si) =>
           side.list.length > 0 ? (
             <div key={si} className="ts-fcs-col3">
               {side.list.map((c) => (
@@ -617,6 +624,7 @@ function AccountTabbed({
   brideFatherName,
   brideMotherName,
   variant = 1,
+  order,
 }: {
   groomRole: string
   brideRole: string
@@ -631,8 +639,10 @@ function AccountTabbed({
   brideFatherName?: string
   brideMotherName?: string
   variant?: number
+  order?: 'groom-first' | 'bride-first'
 }) {
   const [tab, setTab] = useState<'groom' | 'bride' | null>(null)
+  const isAccBrideFirst = order === 'bride-first'
   const [copied, setCopied] = useState<string | null>(null)
 
   const copyAccount = (text: string) => {
@@ -666,7 +676,7 @@ function AccountTabbed({
 
   const getTabStyle = (side: 'groom' | 'bride'): React.CSSProperties => {
     const active = tab === side
-    const isRight = side === 'bride'
+    const isRight = isAccBrideFirst ? side === 'groom' : side === 'bride'
 
     // V2 · 둥근 필 탭
     if (variant === 2) {
@@ -809,12 +819,25 @@ function AccountTabbed({
     <div>
       {/* 탭 */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', marginBottom: 16 }}>
-        <button type="button" onClick={() => setTab('groom')} style={getTabStyle('groom')}>
-          {groomRole || 'Groom'}
-        </button>
-        <button type="button" onClick={() => setTab('bride')} style={getTabStyle('bride')}>
-          {brideRole || 'Bride'}
-        </button>
+        {isAccBrideFirst ? (
+          <>
+            <button type="button" onClick={() => setTab('bride')} style={getTabStyle('bride')}>
+              {brideRole || 'Bride'}
+            </button>
+            <button type="button" onClick={() => setTab('groom')} style={getTabStyle('groom')}>
+              {groomRole || 'Groom'}
+            </button>
+          </>
+        ) : (
+          <>
+            <button type="button" onClick={() => setTab('groom')} style={getTabStyle('groom')}>
+              {groomRole || 'Groom'}
+            </button>
+            <button type="button" onClick={() => setTab('bride')} style={getTabStyle('bride')}>
+              {brideRole || 'Bride'}
+            </button>
+          </>
+        )}
       </div>
 
       {/* 계좌 목록 */}
@@ -2807,9 +2830,12 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         )
       }
 
+      const familyOrder = family.order
+      const isFamBrideFirst = familyOrder === 'bride-first'
       const contactSheet = family.showContact ? (
         <FamilyContactSheet
           variant={v}
+          order={familyOrder}
           groomName={groomName || '신랑'}
           brideName={brideName || '신부'}
           groomPhone={data.groom.phone}
@@ -2841,6 +2867,12 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         const groomParent = renderParentLine(family.groomFather, family.groomMother)
         const brideParent = renderParentLine(family.brideFather, family.brideMother)
         const hasPhoto = !!family.photo?.url
+        const v2First = isFamBrideFirst
+          ? { parent: brideParent, relation: '의 딸', name: brideName || '신부' }
+          : { parent: groomParent, relation: '의 아들', name: groomName || '신랑' }
+        const v2Second = isFamBrideFirst
+          ? { parent: groomParent, relation: '의 아들', name: groomName || '신랑' }
+          : { parent: brideParent, relation: '의 딸', name: brideName || '신부' }
         return (
           <AnimatedSection className="ts-sec ts-fam ts-fam--v2 ts-anim-fam-v2" key={`family-${v}`}>
             <div className="ts-eyebrow ts-anim-item">{family.eyebrow}</div>
@@ -2861,21 +2893,21 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <div className="ts-fam-card-body">
                 <div className="ts-fam-card-grid">
                   <div className="ts-fam-card-cell">
-                    {groomParent && (
+                    {v2First.parent && (
                       <div className="ts-fam-card-parents">
-                        {groomParent}<span className="ts-fam-relation">의 아들</span>
+                        {v2First.parent}<span className="ts-fam-relation">{v2First.relation}</span>
                       </div>
                     )}
-                    <div className="ts-fam-card-name">{groomName || '신랑'}</div>
+                    <div className="ts-fam-card-name">{v2First.name}</div>
                   </div>
                   <div className="ts-fam-card-heart">&#9829;</div>
                   <div className="ts-fam-card-cell">
-                    {brideParent && (
+                    {v2Second.parent && (
                       <div className="ts-fam-card-parents">
-                        {brideParent}<span className="ts-fam-relation">의 딸</span>
+                        {v2Second.parent}<span className="ts-fam-relation">{v2Second.relation}</span>
                       </div>
                     )}
-                    <div className="ts-fam-card-name">{brideName || '신부'}</div>
+                    <div className="ts-fam-card-name">{v2Second.name}</div>
                   </div>
                 </div>
               </div>
@@ -2889,27 +2921,33 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       if (v === 3) {
         const groomParent = renderParentLine(family.groomFather, family.groomMother)
         const brideParent = renderParentLine(family.brideFather, family.brideMother)
+        const v3First = isFamBrideFirst
+          ? { parent: brideParent, relation: '의 딸', name: brideName || '신부' }
+          : { parent: groomParent, relation: '의 아들', name: groomName || '신랑' }
+        const v3Second = isFamBrideFirst
+          ? { parent: groomParent, relation: '의 아들', name: groomName || '신랑' }
+          : { parent: brideParent, relation: '의 딸', name: brideName || '신부' }
         return (
           <AnimatedSection className="ts-sec ts-fam ts-fam--v3 ts-anim-fam-v3" key={`family-${v}`}>
             <div className="ts-eyebrow ts-anim-item">{family.eyebrow}</div>
             {famPhoto('ts-fam-photo--landscape')}
             <div className="ts-fam-v3-grid ts-anim-item">
               <div className="ts-fam-v3-cell">
-                {groomParent && (
+                {v3First.parent && (
                   <div className="ts-fam-v3-role">
-                    {groomParent}<span className="ts-fam-relation">의 아들</span>
+                    {v3First.parent}<span className="ts-fam-relation">{v3First.relation}</span>
                   </div>
                 )}
-                <div className="ts-fam-child">{groomName || '신랑'}</div>
+                <div className="ts-fam-child">{v3First.name}</div>
               </div>
               <div className="ts-fam-v3-heart">&#9829;</div>
               <div className="ts-fam-v3-cell">
-                {brideParent && (
+                {v3Second.parent && (
                   <div className="ts-fam-v3-role">
-                    {brideParent}<span className="ts-fam-relation">의 딸</span>
+                    {v3Second.parent}<span className="ts-fam-relation">{v3Second.relation}</span>
                   </div>
                 )}
-                <div className="ts-fam-child">{brideName || '신부'}</div>
+                <div className="ts-fam-child">{v3Second.name}</div>
               </div>
             </div>
             {contactSheet}
@@ -2918,19 +2956,29 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       }
 
       // V1 · 클래식 (default) — 세로사진 + 세로나열
-      return (
-        <AnimatedSection className="ts-sec ts-fam ts-fam--v1 ts-anim-fam-v1" key={`family-${v}`}>
-          <div className="ts-eyebrow ts-anim-item">{family.eyebrow}</div>
-          {famPhoto('ts-fam-photo--portrait')}
-          <div className="ts-fam-row ts-anim-item">
-            {renderRelation(family.groomFather, family.groomMother, groomName || '신랑', 'son')}
-          </div>
-          <div className="ts-fam-row ts-anim-item">
-            {renderRelation(family.brideFather, family.brideMother, brideName || '신부', 'daughter')}
-          </div>
-          {contactSheet}
-        </AnimatedSection>
-      )
+      {
+        const v1Rows = isFamBrideFirst
+          ? [
+              { father: family.brideFather, mother: family.brideMother, name: brideName || '신부', gender: 'daughter' as const },
+              { father: family.groomFather, mother: family.groomMother, name: groomName || '신랑', gender: 'son' as const },
+            ]
+          : [
+              { father: family.groomFather, mother: family.groomMother, name: groomName || '신랑', gender: 'son' as const },
+              { father: family.brideFather, mother: family.brideMother, name: brideName || '신부', gender: 'daughter' as const },
+            ]
+        return (
+          <AnimatedSection className="ts-sec ts-fam ts-fam--v1 ts-anim-fam-v1" key={`family-${v}`}>
+            <div className="ts-eyebrow ts-anim-item">{family.eyebrow}</div>
+            {famPhoto('ts-fam-photo--portrait')}
+            {v1Rows.map((row, i) => (
+              <div className="ts-fam-row ts-anim-item" key={i}>
+                {renderRelation(row.father, row.mother, row.name, row.gender)}
+              </div>
+            ))}
+            {contactSheet}
+          </AnimatedSection>
+        )
+      }
     },
 
     info: (v) => {
@@ -2983,6 +3031,21 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
           return { day: d.getDate(), isTarget: d.getDate() === wDate.getDate() && d.getMonth() === wDate.getMonth() }
         })
         const dows = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
+        const v3Shape = info.dateShape || 'filled-circle'
+        const v3ShapeColor = info.dateShapeColor
+        const v3PointColor = info.datePointColor
+        const getV3MarkClass = () => {
+          if (v3Shape === 'diamond') return ' mark ts-mark-diamond'
+          if (v3Shape === 'heart') return ' mark ts-mark-heart'
+          if (v3Shape === 'empty-circle') return ' mark ts-mark-empty'
+          return ' mark'
+        }
+        const getV3MarkStyle = (): React.CSSProperties | undefined => {
+          const style: Record<string, string> = {}
+          if (v3ShapeColor) style['--ts-shape-color'] = v3ShapeColor
+          if (v3PointColor) style['--ts-text-color'] = v3PointColor
+          return Object.keys(style).length > 0 ? style as unknown as React.CSSProperties : undefined
+        }
         return (
           <AnimatedSection className="ts-sec ts-info ts-anim-info-v3" key={`info-${v}`}>
             <div className="ts-i3">
@@ -2994,8 +3057,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   <div className="ts-i3-dow ts-i3-cell" key={dow} style={{ animationDelay: `${350 + i * 50}ms` }}>{dow}</div>
                 ))}
                 {weekDays.map((wd, i) => (
-                  <div className={`ts-i3-dd ts-i3-cell${wd.isTarget ? ' mark' : ''}`} key={i} style={{ animationDelay: `${700 + i * 70}ms` }}>
-                    {wd.isTarget ? <span>{wd.day}</span> : wd.day}
+                  <div className={`ts-i3-dd ts-i3-cell${wd.isTarget ? getV3MarkClass() : ''}`} key={i} style={{ animationDelay: `${700 + i * 70}ms`, ...(wd.isTarget ? getV3MarkStyle() : {}) }}>
+                    {wd.isTarget ? <span><i className="ts-mark-text">{wd.day}</i></span> : wd.day}
                   </div>
                 ))}
               </div>
@@ -3116,6 +3179,38 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V1 · Calendar (기본 — 풀 캘린더)
       {
         const dateStr = `${weddingMeta.y}.${String(weddingMeta.m).padStart(2, '0')}.${String(weddingMeta.d).padStart(2, '0')}`
+        const v1Shape = info.dateShape || 'empty-circle'
+        const v1ShapeColor = info.dateShapeColor || 'var(--point)'
+        const v1PointColor = info.datePointColor
+        const renderV1DateShape = () => {
+          if (v1Shape === 'filled-circle') {
+            return (
+              <svg className="ts-circle-draw ts-shape-filled" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="20" cy="20" r="15" fill={v1ShapeColor} stroke={v1ShapeColor} strokeWidth="1.5" />
+              </svg>
+            )
+          }
+          if (v1Shape === 'diamond') {
+            return (
+              <svg className="ts-circle-draw ts-shape-diamond" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="20,4 36,20 20,36 4,20" fill={v1ShapeColor} stroke={v1ShapeColor} strokeWidth="0.5" strokeLinejoin="round" />
+              </svg>
+            )
+          }
+          if (v1Shape === 'heart') {
+            return (
+              <svg className="ts-circle-draw ts-shape-heart" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20,35 C8,24 2,18 2,12 C2,5.5 6.5,2 12,2 C15.5,2 18,4.5 20,8 C22,4.5 24.5,2 28,2 C33.5,2 38,5.5 38,12 C38,18 32,24 20,35Z" fill={v1ShapeColor} stroke={v1ShapeColor} strokeWidth="0.5" />
+              </svg>
+            )
+          }
+          // empty-circle (default)
+          return (
+            <svg className="ts-circle-draw" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="20" cy="20" r="15" fill="none" stroke={v1ShapeColor} strokeWidth="1.5" />
+            </svg>
+          )
+        }
         return (
         <AnimatedSection className="ts-sec ts-info ts-anim-info-v1" key={`info-${v}`}>
           <div className="ts-eyebrow">{info.eyebrow}</div>
@@ -3133,16 +3228,16 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
             </div>
             {calendar.map((row, i) => (
               <div className="ts-cal-row" key={i}>
-                {row.map((cell, j) => (
-                  <span key={j} className={cell.day === null ? 'mute' : cell.pick ? 'pick' : ''}>
-                    {cell.day ?? ''}
-                    {cell.pick && (
-                      <svg className="ts-circle-draw" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="20" cy="20" r="15" fill="none" stroke="var(--point)" strokeWidth="1.5" />
-                      </svg>
-                    )}
-                  </span>
-                ))}
+                {row.map((cell, j) => {
+                  const isFilled = cell.pick && (v1Shape === 'filled-circle' || v1Shape === 'heart' || v1Shape === 'diamond')
+                  const pickTextColor = cell.pick ? (v1PointColor || (isFilled ? '#fff' : undefined)) : undefined
+                  return (
+                    <span key={j} className={`${cell.day === null ? 'mute' : cell.pick ? 'pick' : ''}${isFilled ? ' ts-pick-filled' : ''}`}>
+                      {cell.pick ? <span style={{ position: 'relative', zIndex: 1, ...(pickTextColor ? { color: pickTextColor } : {}) }}>{cell.day ?? ''}</span> : (cell.day ?? '')}
+                      {cell.pick && renderV1DateShape()}
+                    </span>
+                  )
+                })}
               </div>
             ))}
           </div>
@@ -4130,6 +4225,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         brideFatherName: account.brideFatherName,
         brideMotherName: account.brideMotherName,
         variant: v,
+        order: account.order,
       }
 
       // V2 · 베이지 카드
@@ -4147,24 +4243,22 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
 
       // V3 · 전체 펼침 · 계좌번호 바로 표시 (탭 없이)
       if (v === 3) {
-        const allList: Array<{
-          side: string
-          role: string
-          name: string
-          accounts: typeof account.groom
-        }> = []
+        const isV3BrideFirst = account.order === 'bride-first'
+        const groomItems: Array<{ side: string; role: string; name: string; accounts: typeof account.groom }> = []
         if (account.groom.length > 0)
-          allList.push({ side: 'groom', role: couple.groom.role, name: groomName, accounts: account.groom })
+          groomItems.push({ side: 'groom', role: couple.groom.role, name: groomName, accounts: account.groom })
         if ((account.groomFather || []).length > 0)
-          allList.push({ side: 'groomFather', role: '아버지', name: account.groomFatherName || '', accounts: account.groomFather || [] })
+          groomItems.push({ side: 'groomFather', role: '아버지', name: account.groomFatherName || '', accounts: account.groomFather || [] })
         if ((account.groomMother || []).length > 0)
-          allList.push({ side: 'groomMother', role: '어머니', name: account.groomMotherName || '', accounts: account.groomMother || [] })
+          groomItems.push({ side: 'groomMother', role: '어머니', name: account.groomMotherName || '', accounts: account.groomMother || [] })
+        const brideItems: Array<{ side: string; role: string; name: string; accounts: typeof account.groom }> = []
         if (account.bride.length > 0)
-          allList.push({ side: 'bride', role: couple.bride.role, name: brideName, accounts: account.bride })
+          brideItems.push({ side: 'bride', role: couple.bride.role, name: brideName, accounts: account.bride })
         if ((account.brideFather || []).length > 0)
-          allList.push({ side: 'brideFather', role: '아버지', name: account.brideFatherName || '', accounts: account.brideFather || [] })
+          brideItems.push({ side: 'brideFather', role: '아버지', name: account.brideFatherName || '', accounts: account.brideFather || [] })
         if ((account.brideMother || []).length > 0)
-          allList.push({ side: 'brideMother', role: '어머니', name: account.brideMotherName || '', accounts: account.brideMother || [] })
+          brideItems.push({ side: 'brideMother', role: '어머니', name: account.brideMotherName || '', accounts: account.brideMother || [] })
+        const allList = isV3BrideFirst ? [...brideItems, ...groomItems] : [...groomItems, ...brideItems]
         return (
           <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key={`account-${v}`}>
             <div className="ts-eyebrow">{account.eyebrow}</div>

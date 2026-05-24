@@ -14,6 +14,7 @@ interface AccountEditorProps {
  * 마음 전하실 곳 섹션 에디터 — 신랑/신부 + 아버지/어머니 별도 계좌
  */
 export default function AccountEditor({ value, onChange }: AccountEditorProps) {
+  const isBrideFirst = value.order === 'bride-first'
   type SideKey = 'groom' | 'bride' | 'groomFather' | 'groomMother' | 'brideFather' | 'brideMother'
 
   const updateSide = (
@@ -120,55 +121,67 @@ export default function AccountEditor({ value, onChange }: AccountEditorProps) {
         />
       </label>
 
-      <div className="text-xs font-semibold text-stone-700 pt-2">신랑측</div>
-      {renderSide('groom', '신랑')}
-      <div className="space-y-1.5">
-        <div className="text-[10px] uppercase tracking-wider text-stone-500">신랑 아버지</div>
-        <input
-          type="text"
-          value={value.groomFatherName || ''}
-          onChange={(e) => onChange({ ...value, groomFatherName: e.target.value })}
-          placeholder="성함 (예: 홍길동)"
-          className="w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white"
-        />
+      {/* 순서 변경 */}
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] uppercase tracking-wider text-stone-400">순서</span>
+        <button
+          type="button"
+          onClick={() => onChange({ ...value, order: isBrideFirst ? 'groom-first' : 'bride-first' })}
+          className="flex items-center gap-1.5 text-[11px] text-stone-600 border border-stone-200 rounded-md px-2.5 py-1 hover:bg-stone-50 transition-colors"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4" />
+          </svg>
+          {isBrideFirst ? '신부 → 신랑' : '신랑 → 신부'}
+        </button>
       </div>
-      {renderSide('groomFather', '신랑 아버지')}
-      <div className="space-y-1.5">
-        <div className="text-[10px] uppercase tracking-wider text-stone-500">신랑 어머니</div>
-        <input
-          type="text"
-          value={value.groomMotherName || ''}
-          onChange={(e) => onChange({ ...value, groomMotherName: e.target.value })}
-          placeholder="성함 (예: 김순이)"
-          className="w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white"
-        />
-      </div>
-      {renderSide('groomMother', '신랑 어머니')}
 
-      <div className="text-xs font-semibold text-stone-700 pt-2 border-t border-stone-200 mt-2">신부측</div>
-      {renderSide('bride', '신부')}
-      <div className="space-y-1.5">
-        <div className="text-[10px] uppercase tracking-wider text-stone-500">신부 아버지</div>
-        <input
-          type="text"
-          value={value.brideFatherName || ''}
-          onChange={(e) => onChange({ ...value, brideFatherName: e.target.value })}
-          placeholder="성함 (예: 박철수)"
-          className="w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white"
-        />
-      </div>
-      {renderSide('brideFather', '신부 아버지')}
-      <div className="space-y-1.5">
-        <div className="text-[10px] uppercase tracking-wider text-stone-500">신부 어머니</div>
-        <input
-          type="text"
-          value={value.brideMotherName || ''}
-          onChange={(e) => onChange({ ...value, brideMotherName: e.target.value })}
-          placeholder="성함 (예: 이영희)"
-          className="w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white"
-        />
-      </div>
-      {renderSide('brideMother', '신부 어머니')}
+      {(isBrideFirst ? [
+        { sectionLabel: '신부측', sideKey: 'bride' as SideKey, sideLabel: '신부',
+          fatherKey: 'brideFather' as SideKey, motherKey: 'brideMother' as SideKey,
+          fatherNameKey: 'brideFatherName' as const, motherNameKey: 'brideMotherName' as const,
+          fatherPlaceholder: '성함 (예: 박철수)', motherPlaceholder: '성함 (예: 이영희)' },
+        { sectionLabel: '신랑측', sideKey: 'groom' as SideKey, sideLabel: '신랑',
+          fatherKey: 'groomFather' as SideKey, motherKey: 'groomMother' as SideKey,
+          fatherNameKey: 'groomFatherName' as const, motherNameKey: 'groomMotherName' as const,
+          fatherPlaceholder: '성함 (예: 홍길동)', motherPlaceholder: '성함 (예: 김순이)' },
+      ] : [
+        { sectionLabel: '신랑측', sideKey: 'groom' as SideKey, sideLabel: '신랑',
+          fatherKey: 'groomFather' as SideKey, motherKey: 'groomMother' as SideKey,
+          fatherNameKey: 'groomFatherName' as const, motherNameKey: 'groomMotherName' as const,
+          fatherPlaceholder: '성함 (예: 홍길동)', motherPlaceholder: '성함 (예: 김순이)' },
+        { sectionLabel: '신부측', sideKey: 'bride' as SideKey, sideLabel: '신부',
+          fatherKey: 'brideFather' as SideKey, motherKey: 'brideMother' as SideKey,
+          fatherNameKey: 'brideFatherName' as const, motherNameKey: 'brideMotherName' as const,
+          fatherPlaceholder: '성함 (예: 박철수)', motherPlaceholder: '성함 (예: 이영희)' },
+      ]).map((section, idx) => (
+        <div key={section.sideKey}>
+          <div className={`text-xs font-semibold text-stone-700 pt-2${idx > 0 ? ' border-t border-stone-200 mt-2' : ''}`}>{section.sectionLabel}</div>
+          {renderSide(section.sideKey, section.sideLabel)}
+          <div className="space-y-1.5">
+            <div className="text-[10px] uppercase tracking-wider text-stone-500">{section.sideLabel} 아버지</div>
+            <input
+              type="text"
+              value={value[section.fatherNameKey] || ''}
+              onChange={(e) => onChange({ ...value, [section.fatherNameKey]: e.target.value })}
+              placeholder={section.fatherPlaceholder}
+              className="w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white"
+            />
+          </div>
+          {renderSide(section.fatherKey, `${section.sideLabel} 아버지`)}
+          <div className="space-y-1.5">
+            <div className="text-[10px] uppercase tracking-wider text-stone-500">{section.sideLabel} 어머니</div>
+            <input
+              type="text"
+              value={value[section.motherNameKey] || ''}
+              onChange={(e) => onChange({ ...value, [section.motherNameKey]: e.target.value })}
+              placeholder={section.motherPlaceholder}
+              className="w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white"
+            />
+          </div>
+          {renderSide(section.motherKey, `${section.sideLabel} 어머니`)}
+        </div>
+      ))}
     </div>
   )
 }

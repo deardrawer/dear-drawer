@@ -2811,6 +2811,9 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         return <span className="ts-fam-parents">{parts}</span>
       }
 
+      const groomRelLabel = family.groomRelation || '아들'
+      const brideRelLabel = family.brideRelation || '딸'
+
       const renderRelation = (
         father: { name: string; deceased?: boolean } | undefined,
         mother: { name: string; deceased?: boolean } | undefined,
@@ -2823,7 +2826,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
           <span className="ts-fam-line">
             <span className="ts-fam-parents">
               {parentLine}
-              <span className="ts-fam-relation">의 {gender === 'son' ? '아들' : '딸'}</span>
+              <span className="ts-fam-relation">의 {gender === 'son' ? groomRelLabel : brideRelLabel}</span>
             </span>
             <span className="ts-fam-child">{childName}</span>
           </span>
@@ -2868,11 +2871,11 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         const brideParent = renderParentLine(family.brideFather, family.brideMother)
         const hasPhoto = !!family.photo?.url
         const v2First = isFamBrideFirst
-          ? { parent: brideParent, relation: '의 딸', name: brideName || '신부' }
-          : { parent: groomParent, relation: '의 아들', name: groomName || '신랑' }
+          ? { parent: brideParent, relation: `의 ${brideRelLabel}`, name: brideName || '신부' }
+          : { parent: groomParent, relation: `의 ${groomRelLabel}`, name: groomName || '신랑' }
         const v2Second = isFamBrideFirst
-          ? { parent: groomParent, relation: '의 아들', name: groomName || '신랑' }
-          : { parent: brideParent, relation: '의 딸', name: brideName || '신부' }
+          ? { parent: groomParent, relation: `의 ${groomRelLabel}`, name: groomName || '신랑' }
+          : { parent: brideParent, relation: `의 ${brideRelLabel}`, name: brideName || '신부' }
         return (
           <AnimatedSection className="ts-sec ts-fam ts-fam--v2 ts-anim-fam-v2" key={`family-${v}`}>
             <div className="ts-eyebrow ts-anim-item">{family.eyebrow}</div>
@@ -2922,11 +2925,11 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         const groomParent = renderParentLine(family.groomFather, family.groomMother)
         const brideParent = renderParentLine(family.brideFather, family.brideMother)
         const v3First = isFamBrideFirst
-          ? { parent: brideParent, relation: '의 딸', name: brideName || '신부' }
-          : { parent: groomParent, relation: '의 아들', name: groomName || '신랑' }
+          ? { parent: brideParent, relation: `의 ${brideRelLabel}`, name: brideName || '신부' }
+          : { parent: groomParent, relation: `의 ${groomRelLabel}`, name: groomName || '신랑' }
         const v3Second = isFamBrideFirst
-          ? { parent: groomParent, relation: '의 아들', name: groomName || '신랑' }
-          : { parent: brideParent, relation: '의 딸', name: brideName || '신부' }
+          ? { parent: groomParent, relation: `의 ${groomRelLabel}`, name: groomName || '신랑' }
+          : { parent: brideParent, relation: `의 ${brideRelLabel}`, name: brideName || '신부' }
         return (
           <AnimatedSection className="ts-sec ts-fam ts-fam--v3 ts-anim-fam-v3" key={`family-${v}`}>
             <div className="ts-eyebrow ts-anim-item">{family.eyebrow}</div>

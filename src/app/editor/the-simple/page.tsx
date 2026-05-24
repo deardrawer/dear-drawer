@@ -204,6 +204,8 @@ export interface SectionContents {
   family: {
     eyebrow: string
     order?: 'groom-first' | 'bride-first'
+    groomRelation?: string
+    brideRelation?: string
     photo?: ImageWithSettings
     deceasedStyle?: 'hanja' | 'flower'
     showContact?: boolean

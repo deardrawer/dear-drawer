@@ -191,6 +191,16 @@ export default function FamilyEditor({ value, groomName, brideName, onChange }: 
           </div>
           {renderParentRow(side === 'groom' ? 'groomFather' : 'brideFather', '아버지')}
           {renderParentRow(side === 'groom' ? 'groomMother' : 'brideMother', '어머니')}
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-stone-400 w-10 shrink-0">호칭</span>
+            <input
+              type="text"
+              value={(side === 'groom' ? value.groomRelation : value.brideRelation) || ''}
+              onChange={(e) => onChange({ ...value, [side === 'groom' ? 'groomRelation' : 'brideRelation']: e.target.value })}
+              placeholder={side === 'groom' ? '아들' : '딸'}
+              className="flex-1 border border-stone-200 rounded px-2 py-1 text-xs focus:outline-none focus:border-stone-600"
+            />
+          </div>
         </div>
       ))}
 

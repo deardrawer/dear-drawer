@@ -4453,6 +4453,9 @@
   padding: 10px 12px;
   border-bottom: 1px solid var(--line);
 }
+.ts-preview .ts-fcs-row3 .ts-fcs-actions-sm {
+  margin-top: 0; gap: 3px; flex-shrink: 0;
+}
 .ts-preview .ts-fcs-row3:last-child { border-bottom: none; }
 .ts-preview .ts-fcs-row3-info {
   display: flex; align-items: baseline; gap: 4px;
@@ -4460,9 +4463,11 @@
 .ts-preview .ts-fcs-row3-name {
   font-family: var(--font-ko);
   font-size: 12px; font-weight: 600; color: var(--ink);
+  white-space: nowrap;
 }
 .ts-preview .ts-fcs-row3-role {
   font-size: 10px; color: var(--mute);
+  white-space: nowrap;
 }
 /* V3 풀폭 버튼 */
 .ts-preview .ts-fam--v3 .ts-fam-contact-btn {

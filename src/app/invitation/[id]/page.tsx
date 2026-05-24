@@ -7,6 +7,10 @@ import InvitationClientFamily from "@/app/i/[slug]/InvitationClientFamily";
 import InvitationClientFilm from "@/app/i/[slug]/InvitationClientFilm";
 import InvitationClientMagazine from "@/app/i/[slug]/InvitationClientMagazine";
 import InvitationClientRecord from "@/app/i/[slug]/InvitationClientRecord";
+import InvitationClientExhibit from "@/app/i/[slug]/InvitationClientExhibit";
+import InvitationClientEssay from "@/app/i/[slug]/InvitationClientEssay";
+import InvitationClientThankYou from "@/app/i/[slug]/InvitationClientThankYou";
+import InvitationClientTheSimple from "@/app/i/[slug]/InvitationClientTheSimple";
 import type { Invitation } from "@/types/invitation";
 
 interface PageProps {
@@ -129,6 +133,18 @@ export default async function InvitationPage({ params, searchParams }: PageProps
 
   const isPaid = invitation.is_paid === 1;
 
+  // 감사장은 별도 렌더링 (props가 다름)
+  if (invitation.template_id === 'narrative-thankyou') {
+    return (
+      <InvitationClientThankYou
+        invitation={invitation}
+        content={invitationContent}
+        isPaid={isPaid}
+        isPreview={isPreview}
+      />
+    );
+  }
+
   // 템플릿에 따라 적절한 컴포넌트 렌더링
   const ClientComponent = (() => {
     switch (invitation.template_id) {
@@ -136,6 +152,9 @@ export default async function InvitationPage({ params, searchParams }: PageProps
       case 'narrative-film': return InvitationClientFilm;
       case 'narrative-magazine': return InvitationClientMagazine;
       case 'narrative-record': return InvitationClientRecord;
+      case 'narrative-exhibit': return InvitationClientExhibit;
+      case 'narrative-essay': return InvitationClientEssay;
+      case 'narrative-the-simple': return InvitationClientTheSimple;
       default: return InvitationClient;
     }
   })();

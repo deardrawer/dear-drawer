@@ -613,6 +613,8 @@ function FamilyContactSheet({
 function AccountTabbed({
   groomRole,
   brideRole,
+  groomTitle,
+  brideTitle,
   groomAccounts,
   brideAccounts,
   groomFather,
@@ -628,6 +630,8 @@ function AccountTabbed({
 }: {
   groomRole: string
   brideRole: string
+  groomTitle?: string
+  brideTitle?: string
   groomAccounts: Array<{ bank: string; number: string; holder: string }>
   brideAccounts: Array<{ bank: string; number: string; holder: string }>
   groomFather: Array<{ bank: string; number: string; holder: string }>
@@ -657,11 +661,11 @@ function AccountTabbed({
 
   const rows: Array<{ role: string; name?: string; accounts: Array<{ bank: string; number: string; holder: string }> }> = []
   if (tab === 'groom') {
-    if (groomAccounts.length > 0) rows.push({ role: groomRole || '신랑', accounts: groomAccounts })
+    if (groomAccounts.length > 0) rows.push({ role: groomTitle || groomRole || '신랑', accounts: groomAccounts })
     if (groomFather.length > 0) rows.push({ role: '아버지', name: groomFatherName, accounts: groomFather })
     if (groomMother.length > 0) rows.push({ role: '어머니', name: groomMotherName, accounts: groomMother })
   } else if (tab === 'bride') {
-    if (brideAccounts.length > 0) rows.push({ role: brideRole || '신부', accounts: brideAccounts })
+    if (brideAccounts.length > 0) rows.push({ role: brideTitle || brideRole || '신부', accounts: brideAccounts })
     if (brideFather.length > 0) rows.push({ role: '아버지', name: brideFatherName, accounts: brideFather })
     if (brideMother.length > 0) rows.push({ role: '어머니', name: brideMotherName, accounts: brideMother })
   }
@@ -1772,6 +1776,7 @@ function RsvpModal({
   showMealOption,
   showShuttleOption,
   rsvpNotice,
+  initialAttendance,
 }: {
   open: boolean
   onClose: () => void
@@ -1779,6 +1784,7 @@ function RsvpModal({
   showMealOption?: boolean
   showShuttleOption?: boolean
   rsvpNotice?: string
+  initialAttendance?: 'attending' | 'not_attending'
 }) {
   const [name, setName] = useState('')
   const [attendance, setAttendance] = useState<'attending' | 'not_attending' | 'undecided'>('attending')
@@ -1793,6 +1799,13 @@ function RsvpModal({
   const contentRef = useRef<HTMLDivElement>(null)
 
   useContainedOverlay(overlayRef, open)
+
+  // initialAttendance가 전달되면 모달 열릴 때 반영
+  useEffect(() => {
+    if (open && initialAttendance) {
+      setAttendance(initialAttendance)
+    }
+  }, [open, initialAttendance])
 
   // 모바일 키보드 대응 + body 스크롤 잠금
   useEffect(() => {
@@ -2029,6 +2042,7 @@ function RsvpModal({
  */
 export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePreviewProps) {
   const [rsvpOpen, setRsvpOpen] = useState(false)
+  const [rsvpInitAttendance, setRsvpInitAttendance] = useState<'attending' | 'not_attending' | undefined>(undefined)
   const [linkCopied, setLinkCopied] = useState(false)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
@@ -4215,8 +4229,10 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         </p>
       ) : null
       const tabbedProps = {
-        groomRole: couple.groom.role,
-        brideRole: couple.bride.role,
+        groomRole: account.groomLabel || couple.groom.role,
+        brideRole: account.brideLabel || couple.bride.role,
+        groomTitle: account.groomTitle,
+        brideTitle: account.brideTitle,
         groomAccounts: account.groom,
         brideAccounts: account.bride,
         groomFather: account.groomFather || [],
@@ -4249,14 +4265,14 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         const isV3BrideFirst = account.order === 'bride-first'
         const groomItems: Array<{ side: string; role: string; name: string; accounts: typeof account.groom }> = []
         if (account.groom.length > 0)
-          groomItems.push({ side: 'groom', role: couple.groom.role, name: groomName, accounts: account.groom })
+          groomItems.push({ side: 'groom', role: account.groomTitle || account.groomLabel || couple.groom.role, name: groomName, accounts: account.groom })
         if ((account.groomFather || []).length > 0)
           groomItems.push({ side: 'groomFather', role: '아버지', name: account.groomFatherName || '', accounts: account.groomFather || [] })
         if ((account.groomMother || []).length > 0)
           groomItems.push({ side: 'groomMother', role: '어머니', name: account.groomMotherName || '', accounts: account.groomMother || [] })
         const brideItems: Array<{ side: string; role: string; name: string; accounts: typeof account.groom }> = []
         if (account.bride.length > 0)
-          brideItems.push({ side: 'bride', role: couple.bride.role, name: brideName, accounts: account.bride })
+          brideItems.push({ side: 'bride', role: account.brideTitle || account.brideLabel || couple.bride.role, name: brideName, accounts: account.bride })
         if ((account.brideFather || []).length > 0)
           brideItems.push({ side: 'brideFather', role: '아버지', name: account.brideFatherName || '', accounts: account.brideFather || [] })
         if ((account.brideMother || []).length > 0)
@@ -4556,7 +4572,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 }}
               >
                 <span
-                  onClick={() => setRsvpOpen(true)}
+                  onClick={() => { setRsvpInitAttendance('attending'); setRsvpOpen(true) }}
                   style={{
                     fontFamily: 'var(--font-display)',
                     fontSize: 11,
@@ -4571,7 +4587,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   Attending
                 </span>
                 <span
-                  onClick={() => setRsvpOpen(true)}
+                  onClick={() => { setRsvpInitAttendance('not_attending'); setRsvpOpen(true) }}
                   style={{
                     fontFamily: 'var(--font-display)',
                     fontSize: 11,
@@ -5815,7 +5831,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         </div>
       </div>
       </div>{/* /ts-body-wrap */}
-      <RsvpModal open={rsvpOpen} onClose={() => setRsvpOpen(false)} invitationId={data.id} showMealOption={data.sections.rsvp.showMealOption} showShuttleOption={data.sections.rsvp.showShuttleOption} rsvpNotice={data.sections.rsvp.rsvpNotice} />
+      <RsvpModal open={rsvpOpen} onClose={() => { setRsvpOpen(false); setRsvpInitAttendance(undefined) }} invitationId={data.id} showMealOption={data.sections.rsvp.showMealOption} showShuttleOption={data.sections.rsvp.showShuttleOption} rsvpNotice={data.sections.rsvp.rsvpNotice} initialAttendance={rsvpInitAttendance} />
       <GalleryLightbox images={lightboxImages} isOpen={lightboxOpen} initialIndex={lightboxIndex} onClose={() => setLightboxOpen(false)} variant={data.lightboxVariant ?? 1} />
       {/* 네비게이션 프리뷰 */}
       {(() => {

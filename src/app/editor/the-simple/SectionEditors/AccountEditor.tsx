@@ -121,6 +121,53 @@ export default function AccountEditor({ value, onChange }: AccountEditorProps) {
         />
       </label>
 
+      {/* 탭 버튼 라벨 */}
+      <div className="grid grid-cols-2 gap-2">
+        <label className="block">
+          <span className="text-[10px] uppercase tracking-wider text-stone-400">신랑측 버튼</span>
+          <input
+            type="text"
+            value={value.groomLabel || ''}
+            onChange={(e) => onChange({ ...value, groomLabel: e.target.value })}
+            placeholder="Groom"
+            className="mt-0.5 w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white"
+          />
+        </label>
+        <label className="block">
+          <span className="text-[10px] uppercase tracking-wider text-stone-400">신부측 버튼</span>
+          <input
+            type="text"
+            value={value.brideLabel || ''}
+            onChange={(e) => onChange({ ...value, brideLabel: e.target.value })}
+            placeholder="Bride"
+            className="mt-0.5 w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white"
+          />
+        </label>
+      </div>
+      {/* 신랑/신부 호칭 */}
+      <div className="grid grid-cols-2 gap-2">
+        <label className="block">
+          <span className="text-[10px] uppercase tracking-wider text-stone-400">신랑 호칭</span>
+          <input
+            type="text"
+            value={value.groomTitle || ''}
+            onChange={(e) => onChange({ ...value, groomTitle: e.target.value })}
+            placeholder="Groom"
+            className="mt-0.5 w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white"
+          />
+        </label>
+        <label className="block">
+          <span className="text-[10px] uppercase tracking-wider text-stone-400">신부 호칭</span>
+          <input
+            type="text"
+            value={value.brideTitle || ''}
+            onChange={(e) => onChange({ ...value, brideTitle: e.target.value })}
+            placeholder="Bride"
+            className="mt-0.5 w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white"
+          />
+        </label>
+      </div>
+
       {/* 순서 변경 */}
       <div className="flex items-center gap-2">
         <span className="text-[10px] uppercase tracking-wider text-stone-400">순서</span>

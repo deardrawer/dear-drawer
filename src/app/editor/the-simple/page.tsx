@@ -167,6 +167,10 @@ export interface SectionContents {
   account: {
     eyebrow: string
     order?: 'groom-first' | 'bride-first'
+    groomLabel?: string
+    brideLabel?: string
+    groomTitle?: string
+    brideTitle?: string
     guide?: string
     groom: Array<{ bank: string; number: string; holder: string }>
     bride: Array<{ bank: string; number: string; holder: string }>

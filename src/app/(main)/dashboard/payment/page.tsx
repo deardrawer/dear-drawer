@@ -22,9 +22,11 @@ function PaymentForm() {
     'narrative-magazine', 'narrative-film', 'narrative-record', 'narrative-exhibit', 'narrative-essay',
     'magazine', 'film', 'record', 'exhibit', 'essay',
   ]
+  const THE_SIMPLE_TEMPLATES = ['narrative-the-simple', 'the-simple']
+  const isTheSimple = THE_SIMPLE_TEMPLATES.includes(templateId)
   const isMiniStory = MINI_STORY_TEMPLATES.includes(templateId)
-  const paymentIdx = isMiniStory ? 14 : 8
-  const productName = isMiniStory ? '미니스토리형' : '스토리형'
+  const paymentIdx = isTheSimple ? 15 : isMiniStory ? 14 : 8
+  const productName = isTheSimple ? 'THE SIMPLE' : isMiniStory ? '미니스토리형' : '스토리형'
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
@@ -131,7 +133,7 @@ function PaymentForm() {
               </p>
 
               <a
-                href={`https://www.deardrawer.com/invitation/?idx=${paymentIdx}`}
+                href={`https://www.deardrawer.com/product/?idx=${paymentIdx}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block w-full mb-6"

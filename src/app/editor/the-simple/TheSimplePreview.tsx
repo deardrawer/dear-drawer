@@ -89,17 +89,31 @@ function useInView<T extends HTMLElement>(
   useEffect(() => {
     const el = ref.current
     if (!el) return
+    let done = false
+    let ioFallback: IntersectionObserver | null = null
+    const markInView = () => {
+      if (done) return
+      done = true
+      setInView(true)
+      io.disconnect()
+      ioFallback?.disconnect()
+    }
+    // 주 옵저버: rootMargin -40%로 화면 중상단 진입 시 트리거
     const io = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setInView(true)
-          io.disconnect()
-        }
-      },
+      ([entry]) => { if (entry.isIntersecting) markInView() },
       { threshold: 0.05, rootMargin: '0px 0px -40% 0px', ...options }
     )
     io.observe(el)
-    return () => io.disconnect()
+    // 지연 보조 옵저버: 페이지 하단 섹션이 rootMargin 데드존에 갇히는 경우 대비
+    const fallbackTimer = setTimeout(() => {
+      if (done) return
+      ioFallback = new IntersectionObserver(
+        ([entry]) => { if (entry.isIntersecting) markInView() },
+        { threshold: 0.05 }
+      )
+      ioFallback.observe(el)
+    }, 1200)
+    return () => { clearTimeout(fallbackTimer); io.disconnect(); ioFallback?.disconnect() }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   return [ref, inView]
@@ -5619,6 +5633,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
   const displayFontFamily = resolveDisplayFontFamily(data.displayFont)
   const koreanFontFamily = resolveKoreanFontFamily(data.fontStyle)
   const fontScale = typeof data.fontScale === 'number' ? data.fontScale : 1
+  const eyebrowScale = typeof data.eyebrowScale === 'number' ? data.eyebrowScale : 1
   const spacingScale = typeof data.sectionSpacing === 'number' ? data.sectionSpacing : 1
   const dividerV = data.dividerVariant ?? 1
   const pointColor = data.pointColor || '#B8A88A'
@@ -5629,6 +5644,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
     ['--font-sans' as string]: koreanFontFamily,
     ['--font-serif' as string]: koreanFontFamily,
     ['--ts-font-scale' as string]: String(fontScale),
+    ['--ts-eyebrow-scale' as string]: String(eyebrowScale),
     ['--ts-spacing-scale' as string]: String(spacingScale),
     ['--point' as string]: pointColor,
     ['--card' as string]: cardBg,
@@ -5848,6 +5864,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         >
           dear drawer
         </div>
+        {/* 네비게이션바 여유 공간 */}
+        <div style={{ height: 72 }} />
       </div>
       </div>{/* /ts-body-wrap */}
       <RsvpModal open={rsvpOpen} onClose={() => { setRsvpOpen(false); setRsvpInitAttendance(undefined) }} invitationId={data.id} showMealOption={data.sections.rsvp.showMealOption} showShuttleOption={data.sections.rsvp.showShuttleOption} rsvpNotice={data.sections.rsvp.rsvpNotice} initialAttendance={rsvpInitAttendance} />

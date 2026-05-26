@@ -301,6 +301,8 @@ export interface TheSimpleInvitationData {
 
   // 글자 크기 스케일 (0.85 ~ 1.2, 기본 1)
   fontScale?: number
+  // 상단문구(eyebrow) 크기 스케일 (0.85 ~ 1.2, 기본 1)
+  eyebrowScale?: number
   // 섹션 상하 여백 스케일 (0.6 ~ 1.5, 기본 1)
   sectionSpacing?: number
 
@@ -1760,6 +1762,27 @@ function TheSimpleEditorContent() {
                         value={Math.round((data.fontScale ?? 1) * 100)}
                         onChange={(e) =>
                           updateData({ fontScale: parseInt(e.target.value, 10) / 100 })
+                        }
+                        className="mt-2 w-full h-1.5 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-stone-800"
+                      />
+                    </label>
+
+                    {/* 상단문구 크기 */}
+                    <label className="block">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-stone-500">상단문구 크기</span>
+                        <span className="text-[10px] text-stone-400">
+                          {Math.round((data.eyebrowScale ?? 1) * 100)}%
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min={85}
+                        max={150}
+                        step={5}
+                        value={Math.round((data.eyebrowScale ?? 1) * 100)}
+                        onChange={(e) =>
+                          updateData({ eyebrowScale: parseInt(e.target.value, 10) / 100 })
                         }
                         className="mt-2 w-full h-1.5 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-stone-800"
                       />

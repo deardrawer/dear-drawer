@@ -72,7 +72,7 @@
 
 .ts-preview .ts-eyebrow {
   font-family: var(--font-display);
-  font-size: calc(11px * var(--ts-font-scale));
+  font-size: calc(11px * var(--ts-eyebrow-scale, 1));
   letter-spacing: 0.32em;
   color: var(--point);
   text-transform: uppercase;
@@ -1192,7 +1192,7 @@
 }
 .ts-preview .ts-greet .ts-greet-label {
   font-family: var(--font-display);
-  font-size: calc(11px * var(--ts-font-scale, 1));
+  font-size: calc(11px * var(--ts-eyebrow-scale, 1));
   letter-spacing: 0.32em;
   color: var(--point);
   text-transform: uppercase;
@@ -1209,7 +1209,7 @@
   font-family: var(--font-ko);
   font-size: calc(13px * var(--ts-font-scale, 1));
   line-height: 1.9;
-  color: #3d3d3d;
+  color: #5d5850;
   white-space: pre-line;
 }
 .ts-preview .ts-greet .ts-greet-rule {
@@ -1957,7 +1957,7 @@
 .ts-preview .ts-lcd-msg {
   font-family: var(--font-ko);
   font-size: calc(12px * var(--ts-font-scale, 1));
-  color: var(--ink-2, #2c2c2c);
+  color: #5d5850;
   line-height: 1.6;
   margin: 0;
 }

@@ -2221,7 +2221,7 @@
 .ts-preview .ts-rsvp .ts-rsvp-sub {
   font-family: var(--font-ko);
   font-size: calc(12px * var(--ts-font-scale, 1));
-  color: var(--mute);
+  color: #5d5850;
   margin-bottom: 18px;
 }
 .ts-preview .ts-rsvp .ts-rsvp-btn {

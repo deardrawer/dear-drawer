@@ -4236,7 +4236,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         <p style={{
           fontFamily: 'var(--font-ko)',
           fontSize: 'calc(12px * var(--ts-font-scale, 1))',
-          color: 'var(--mute)',
+          color: '#5d5850',
           textAlign: 'center',
           lineHeight: 1.55,
           marginBottom: 16,
@@ -4510,7 +4510,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 style={{
                   fontFamily: 'var(--font-ko)',
                   fontSize: 'calc(12px * var(--ts-font-scale, 1))',
-                  color: 'var(--mute)',
+                  color: '#5d5850',
                   lineHeight: 1.8,
                   marginBottom: 20,
                   whiteSpace: 'pre-line',
@@ -4573,7 +4573,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 style={{
                   fontFamily: 'var(--font-ko)',
                   fontSize: 'calc(12px * var(--ts-font-scale, 1))',
-                  color: 'var(--mute)',
+                  color: '#5d5850',
                   lineHeight: 1.75,
                   marginBottom: 20,
                   whiteSpace: 'pre-line',
@@ -4669,7 +4669,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   style={{
                     fontFamily: 'var(--font-ko)',
                     fontSize: 'calc(12px * var(--ts-font-scale, 1))',
-                    color: 'var(--mute)',
+                    color: '#5d5850',
                     lineHeight: 1.8,
                     marginBottom: 20,
                     whiteSpace: 'pre-line',

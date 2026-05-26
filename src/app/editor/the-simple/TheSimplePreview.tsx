@@ -4007,7 +4007,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   key={i}
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: '80px 1fr',
+                    gridTemplateColumns: '78px 1fr',
                     gap: 14,
                     padding: '18px 0',
                     borderBottom: '1px solid var(--line)',

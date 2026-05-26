@@ -346,7 +346,7 @@ function SectionToggle({
   const getButtonStyle = (): React.CSSProperties => {
     const base: React.CSSProperties = {
       fontFamily: 'var(--font-ko)',
-      fontSize: 12,
+      fontSize: 'calc(12px * var(--ts-font-scale, 1))',
       cursor: 'pointer',
       transition: 'all 0.2s',
     }
@@ -686,7 +686,7 @@ function AccountTabbed({
     if (variant === 2) {
       return {
         ...tabBase,
-        fontSize: 11,
+        fontSize: 'calc(11px * var(--ts-font-scale, 1))',
         letterSpacing: '0.12em',
         padding: '9px 0',
         borderRadius: isRight ? '0 20px 20px 0' : '20px 0 0 20px',
@@ -701,7 +701,7 @@ function AccountTabbed({
     if (variant === 4) {
       return {
         ...tabBase,
-        fontSize: 11,
+        fontSize: 'calc(11px * var(--ts-font-scale, 1))',
         letterSpacing: '0.2em',
         padding: '8px 0 10px',
         border: 'none',
@@ -715,7 +715,7 @@ function AccountTabbed({
     if (variant === 5) {
       return {
         ...tabBase,
-        fontSize: 10,
+        fontSize: 'calc(10px * var(--ts-font-scale, 1))',
         letterSpacing: '0.25em',
         padding: '8px 0',
         border: 'none',
@@ -728,7 +728,7 @@ function AccountTabbed({
     // V1 · 기본 (직각 보더)
     return {
       ...tabBase,
-      fontSize: 12,
+      fontSize: 'calc(12px * var(--ts-font-scale, 1))',
       letterSpacing: '0.15em',
       padding: '10px 0',
       border: '1px solid var(--accent)',
@@ -759,7 +759,7 @@ function AccountTabbed({
     if (variant === 2) {
       return {
         fontFamily: 'var(--font-display)',
-        fontSize: 9,
+        fontSize: 'calc(9px * var(--ts-font-scale, 1))',
         letterSpacing: '0.1em',
         color: done ? 'var(--accent)' : 'var(--mute)',
         background: 'transparent',
@@ -775,7 +775,7 @@ function AccountTabbed({
     if (variant === 4) {
       return {
         fontFamily: 'var(--font-display)',
-        fontSize: 10,
+        fontSize: 'calc(10px * var(--ts-font-scale, 1))',
         letterSpacing: '0.08em',
         color: done ? 'var(--accent)' : 'var(--accent)',
         background: 'transparent',
@@ -791,7 +791,7 @@ function AccountTabbed({
     if (variant === 5) {
       return {
         fontFamily: 'var(--font-display)',
-        fontSize: 9,
+        fontSize: 'calc(9px * var(--ts-font-scale, 1))',
         letterSpacing: '0.15em',
         color: done ? 'var(--accent)' : '#fff',
         background: done ? 'transparent' : 'var(--accent)',
@@ -806,7 +806,7 @@ function AccountTabbed({
     }
     return {
       fontFamily: 'var(--font-display)',
-      fontSize: 10,
+      fontSize: 'calc(10px * var(--ts-font-scale, 1))',
       letterSpacing: '0.1em',
       color: done ? 'var(--accent)' : 'var(--accent)',
       background: 'transparent',
@@ -862,10 +862,10 @@ function AccountTabbed({
                   }}
                 >
                   <div style={{ textAlign: 'left' }}>
-                    <div style={{ fontFamily: 'var(--font-ko)', fontSize: 12, color: 'var(--mute)', marginBottom: 2 }}>
+                    <div style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(12px * var(--ts-font-scale, 1))', color: 'var(--mute)', marginBottom: 2 }}>
                       {group.role}{group.name ? ` · ${group.name}` : ''}
                     </div>
-                    <div style={{ fontFamily: 'var(--font-ko)', fontSize: 12, color: 'var(--ink)', lineHeight: 1.5 }}>
+                    <div style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(12px * var(--ts-font-scale, 1))', color: 'var(--ink)', lineHeight: 1.5 }}>
                       <span style={{ color: 'var(--mute)' }}>{acc.bank}</span>
                       <span style={{ marginLeft: 4 }}>{acc.number}</span>
                       {acc.holder && <span style={{ color: 'var(--mute)', marginLeft: 4 }}>({acc.holder})</span>}
@@ -880,7 +880,7 @@ function AccountTabbed({
           )}
         </div>
       ) : tab !== null ? (
-        <p style={{ textAlign: 'center', fontSize: 11, color: '#b8b0a6', marginTop: 8 }}>
+        <p style={{ textAlign: 'center', fontSize: 'calc(11px * var(--ts-font-scale, 1))', color: '#b8b0a6', marginTop: 8 }}>
           계좌를 추가하면 여기에 표시됩니다
         </p>
       ) : null}
@@ -932,10 +932,10 @@ function TransportInfo({ transport }: { transport?: Record<string, string | unde
                 <Icon size={16} color="var(--accent)" />
               </div>
               <div>
-                <div style={{ fontFamily: 'var(--font-display)', fontSize: 10, letterSpacing: '0.15em', color: 'var(--accent)', marginBottom: 3 }}>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: 'calc(10px * var(--ts-font-scale, 1))', letterSpacing: '0.15em', color: 'var(--accent)', marginBottom: 3 }}>
                   {item.label}
                 </div>
-                <div style={{ fontFamily: 'var(--font-ko)', fontSize: 12, color: '#5d5850', lineHeight: 1.7, whiteSpace: 'pre-line' }}>
+                <div style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(12px * var(--ts-font-scale, 1))', color: '#5d5850', lineHeight: 1.7, whiteSpace: 'pre-line' }}>
                   {transport[item.key]}
                 </div>
               </div>
@@ -968,7 +968,7 @@ function NavButtons({ address }: { address: string }) {
             border: 'none',
             background: 'var(--point)',
             fontFamily: 'var(--font-ko)',
-            fontSize: 11,
+            fontSize: 'calc(11px * var(--ts-font-scale, 1))',
             color: '#fff',
             textDecoration: 'none',
             letterSpacing: '0.02em',
@@ -1064,7 +1064,7 @@ function GalleryV1Feature({ images, galleryEyebrow, onOpenLightbox }: GalleryAut
           <div style={{
             position: 'absolute', bottom: 8, right: 10, zIndex: 2,
             background: 'rgba(0,0,0,0.45)', borderRadius: 10,
-            padding: '2px 8px', fontSize: 10, color: '#fff',
+            padding: '2px 8px', fontSize: 'calc(10px * var(--ts-font-scale, 1))', color: '#fff',
             letterSpacing: '0.05em',
           }}>
             {activeIdx + 1} / {total}
@@ -1234,7 +1234,7 @@ function GalleryShowMore({
               background: 'transparent',
               color: 'var(--point, #B8A88A)',
               fontFamily: 'var(--font-ko)',
-              fontSize: 12,
+              fontSize: 'calc(12px * var(--ts-font-scale, 1))',
               letterSpacing: '0.03em',
               cursor: 'pointer',
               opacity: 0.7,
@@ -1246,7 +1246,7 @@ function GalleryShowMore({
               display: 'inline-block',
               transition: 'transform 0.3s',
               transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
-              fontSize: 10,
+              fontSize: 'calc(10px * var(--ts-font-scale, 1))',
             }}>
               ▼
             </span>
@@ -1348,7 +1348,7 @@ function GalleryV2Slideshow({ images, galleryEyebrow, onOpenLightbox }: GalleryA
                 width: 28, height: 28, borderRadius: '50%',
                 background: 'rgba(255,255,255,0.65)', border: 'none',
                 cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 14, color: '#333', zIndex: 2,
+                fontSize: 'calc(14px * var(--ts-font-scale, 1))', color: '#333', zIndex: 2,
               }}
             >
               ‹
@@ -1362,7 +1362,7 @@ function GalleryV2Slideshow({ images, galleryEyebrow, onOpenLightbox }: GalleryA
                 width: 28, height: 28, borderRadius: '50%',
                 background: 'rgba(255,255,255,0.65)', border: 'none',
                 cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 14, color: '#333', zIndex: 2,
+                fontSize: 'calc(14px * var(--ts-font-scale, 1))', color: '#333', zIndex: 2,
               }}
             >
               ›
@@ -1911,7 +1911,7 @@ function RsvpModal({
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent, #888)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="20 6 9 17 4 12" />
             </svg>
-            <div style={{ marginTop: 12, fontFamily: 'var(--font-ko)', fontSize: 14, color: 'var(--ink)' }}>
+            <div style={{ marginTop: 12, fontFamily: 'var(--font-ko)', fontSize: 'calc(14px * var(--ts-font-scale, 1))', color: 'var(--ink)' }}>
               감사합니다!
             </div>
           </div>
@@ -1921,7 +1921,7 @@ function RsvpModal({
             {rsvpNotice && (
               <p style={{
                 fontFamily: 'var(--font-ko)',
-                fontSize: 11,
+                fontSize: 'calc(11px * var(--ts-font-scale, 1))',
                 color: 'var(--mute)',
                 lineHeight: 1.6,
                 marginBottom: 12,
@@ -1941,7 +1941,7 @@ function RsvpModal({
                 className="ts-rsvp-modal-input"
               />
               <div>
-                <span style={{ fontFamily: 'var(--font-ko)', fontSize: 13, color: 'var(--ink)', display: 'block', marginBottom: 6 }}>하객 구분</span>
+                <span style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', color: 'var(--ink)', display: 'block', marginBottom: 6 }}>하객 구분</span>
                 <div className="ts-rsvp-modal-toggle">
                   <button type="button" className={`ts-rsvp-modal-opt ${side === 'groom' ? 'active' : ''}`} onClick={() => setSide('groom')}>신랑측</button>
                   <button type="button" className={`ts-rsvp-modal-opt ${side === 'bride' ? 'active' : ''}`} onClick={() => setSide('bride')}>신부측</button>
@@ -1972,7 +1972,7 @@ function RsvpModal({
               </div>
               {attendance === 'attending' && (
                 <div className="ts-rsvp-modal-count">
-                  <span style={{ fontFamily: 'var(--font-ko)', fontSize: 13, color: 'var(--ink)' }}>참석 인원</span>
+                  <span style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', color: 'var(--ink)' }}>참석 인원</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <button
                       type="button"
@@ -1981,7 +1981,7 @@ function RsvpModal({
                     >
                       -
                     </button>
-                    <span style={{ fontFamily: 'var(--font-ko)', fontSize: 16, fontWeight: 600, minWidth: 20, textAlign: 'center' }}>{count}</span>
+                    <span style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(16px * var(--ts-font-scale, 1))', fontWeight: 600, minWidth: 20, textAlign: 'center' }}>{count}</span>
                     <button
                       type="button"
                       className="ts-rsvp-modal-cnt-btn"
@@ -1994,7 +1994,7 @@ function RsvpModal({
               )}
               {showMealOption && attendance === 'attending' && (
                 <div>
-                  <span style={{ fontFamily: 'var(--font-ko)', fontSize: 13, color: 'var(--ink)', display: 'block', marginBottom: 6 }}>식사 여부</span>
+                  <span style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', color: 'var(--ink)', display: 'block', marginBottom: 6 }}>식사 여부</span>
                   <div className="ts-rsvp-modal-toggle">
                     <button type="button" className={`ts-rsvp-modal-opt ${mealAttendance === 'yes' ? 'active' : ''}`} onClick={() => setMealAttendance('yes')}>식사 예정</button>
                     <button type="button" className={`ts-rsvp-modal-opt ${mealAttendance === 'no' ? 'active' : ''}`} onClick={() => setMealAttendance('no')}>식사 안 함</button>
@@ -2003,7 +2003,7 @@ function RsvpModal({
               )}
               {showShuttleOption && attendance === 'attending' && (
                 <div>
-                  <span style={{ fontFamily: 'var(--font-ko)', fontSize: 13, color: 'var(--ink)', display: 'block', marginBottom: 6 }}>대절버스 이용</span>
+                  <span style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', color: 'var(--ink)', display: 'block', marginBottom: 6 }}>대절버스 이용</span>
                   <div className="ts-rsvp-modal-toggle">
                     <button type="button" className={`ts-rsvp-modal-opt ${shuttleBus === 'yes' ? 'active' : ''}`} onClick={() => setShuttleBus('yes')}>이용 예정</button>
                     <button type="button" className={`ts-rsvp-modal-opt ${shuttleBus === 'no' ? 'active' : ''}`} onClick={() => setShuttleBus('no')}>이용 안 함</button>
@@ -2573,11 +2573,11 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
             <div className="ts-g4-frame ts-anim-card">
               <div
                 className="ts-greet-title ts-anim-item"
-                style={{ fontFamily: 'var(--font-display)', fontSize: 22, letterSpacing: '0.12em', marginBottom: 14 }}
+                style={{ fontFamily: 'var(--font-display)', fontSize: 'calc(22px * var(--ts-font-scale, 1))', letterSpacing: '0.12em', marginBottom: 14 }}
               >
                 {greeting.title || 'SAVE THE DATE'}
               </div>
-              <p className="ts-greet-body ts-anim-item" style={{ fontSize: 13, lineHeight: 2 }}>
+              <p className="ts-greet-body ts-anim-item" style={{ fontSize: 'calc(13px * var(--ts-font-scale, 1))', lineHeight: 2 }}>
                 {greeting.body}
               </p>
               <div
@@ -2585,7 +2585,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 style={{
                   marginTop: 18,
                   fontFamily: 'var(--font-ko)',
-                  fontSize: 13,
+                  fontSize: 'calc(13px * var(--ts-font-scale, 1))',
                   color: 'var(--mute)',
                 }}
               >
@@ -2609,13 +2609,13 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               </div>
               <div
                 className="ts-greet-title ts-anim-item"
-                style={{ textAlign: 'left', fontSize: 17, lineHeight: 1.9, margin: '10px 0 14px' }}
+                style={{ textAlign: 'left', fontSize: 'calc(17px * var(--ts-font-scale, 1))', lineHeight: 1.9, margin: '10px 0 14px' }}
               >
                 {greeting.title}
               </div>
               <p
                 className="ts-greet-body ts-anim-item"
-                style={{ textAlign: 'left', fontSize: 13, lineHeight: 2 }}
+                style={{ textAlign: 'left', fontSize: 'calc(13px * var(--ts-font-scale, 1))', lineHeight: 2 }}
               >
                 {greeting.body}
               </p>
@@ -2674,7 +2674,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   <PhotoSlideBox photos={p.photos} shape="circle" size={88} delay={i * 500} />
                   <div style={{ textAlign: 'left' }}>
                     <div className="ts-couple-role" style={{ marginBottom: 4 }}>{p.role}</div>
-                    <div className="ts-couple-name" style={{ fontSize: 18 }}>{p.name}</div>
+                    <div className="ts-couple-name" style={{ fontSize: 'calc(18px * var(--ts-font-scale, 1))' }}>{p.name}</div>
                     <p className="ts-couple-bio" style={{ textAlign: 'left', maxWidth: '100%', marginTop: 6 }}>{p.bio}</p>
                     {renderTags(p.tags, 'v2', 'left')}
                   </div>
@@ -2727,7 +2727,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   <div style={{ padding: '14px 12px 18px' }}>
                     <div className="ts-couple-role">{p.role}</div>
                     <div className="ts-couple-name" style={{ marginTop: 2 }}>{p.name}</div>
-                    <p className="ts-couple-bio" style={{ margin: '8px auto 0', fontSize: 11 }}>{p.bio}</p>
+                    <p className="ts-couple-bio" style={{ margin: '8px auto 0', fontSize: 'calc(11px * var(--ts-font-scale, 1))' }}>{p.bio}</p>
                     {renderTags(p.tags, 'v4', 'center')}
                   </div>
                 </div>
@@ -2748,8 +2748,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   <PhotoSlideBox photos={first.photos} shape="square" size={100} delay={0} />
                 </div>
                 <div className="ts-couple-role">{first.role}</div>
-                <div style={{ fontFamily: 'var(--font-display)', fontSize: 20, lineHeight: 1.2, margin: '4px 0' }}>{first.name}</div>
-                <p className="ts-couple-bio" style={{ textAlign: 'right', maxWidth: '100%', marginLeft: 'auto', fontSize: 11 }}>{first.bio}</p>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: 'calc(20px * var(--ts-font-scale, 1))', lineHeight: 1.2, margin: '4px 0' }}>{first.name}</div>
+                <p className="ts-couple-bio" style={{ textAlign: 'right', maxWidth: '100%', marginLeft: 'auto', fontSize: 'calc(11px * var(--ts-font-scale, 1))' }}>{first.bio}</p>
                 {renderTags(first.tags, 'v5', 'right')}
               </div>
               {/* 세로선 */}
@@ -2760,8 +2760,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   <PhotoSlideBox photos={second.photos} shape="square" size={100} delay={500} />
                 </div>
                 <div className="ts-couple-role">{second.role}</div>
-                <div style={{ fontFamily: 'var(--font-display)', fontSize: 20, lineHeight: 1.2, margin: '4px 0' }}>{second.name}</div>
-                <p className="ts-couple-bio" style={{ textAlign: 'left', maxWidth: '100%', fontSize: 11 }}>{second.bio}</p>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: 'calc(20px * var(--ts-font-scale, 1))', lineHeight: 1.2, margin: '4px 0' }}>{second.name}</div>
+                <p className="ts-couple-bio" style={{ textAlign: 'left', maxWidth: '100%', fontSize: 'calc(11px * var(--ts-font-scale, 1))' }}>{second.bio}</p>
                 {renderTags(second.tags, 'v5', 'left')}
               </div>
             </div>
@@ -2885,11 +2885,11 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         const brideParent = renderParentLine(family.brideFather, family.brideMother)
         const hasPhoto = !!family.photo?.url
         const v2First = isFamBrideFirst
-          ? { parent: brideParent, relation: `의 ${brideRelLabel}`, name: brideName || '신부' }
-          : { parent: groomParent, relation: `의 ${groomRelLabel}`, name: groomName || '신랑' }
+          ? { parent: brideParent, relSuffix: '의', relLabel: brideRelLabel, name: brideName || '신부' }
+          : { parent: groomParent, relSuffix: '의', relLabel: groomRelLabel, name: groomName || '신랑' }
         const v2Second = isFamBrideFirst
-          ? { parent: groomParent, relation: `의 ${groomRelLabel}`, name: groomName || '신랑' }
-          : { parent: brideParent, relation: `의 ${brideRelLabel}`, name: brideName || '신부' }
+          ? { parent: groomParent, relSuffix: '의', relLabel: groomRelLabel, name: groomName || '신랑' }
+          : { parent: brideParent, relSuffix: '의', relLabel: brideRelLabel, name: brideName || '신부' }
         return (
           <AnimatedSection className="ts-sec ts-fam ts-fam--v2 ts-anim-fam-v2" key={`family-${v}`}>
             <div className="ts-eyebrow ts-anim-item">{family.eyebrow}</div>
@@ -2912,7 +2912,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   <div className="ts-fam-card-cell">
                     {v2First.parent && (
                       <div className="ts-fam-card-parents">
-                        {v2First.parent}<span className="ts-fam-relation">{v2First.relation}</span>
+                        <span style={{ whiteSpace: 'nowrap' }}>{v2First.parent}<span className="ts-fam-relation">{v2First.relSuffix}</span></span>{' '}<span className="ts-fam-relation">{v2First.relLabel}</span>
                       </div>
                     )}
                     <div className="ts-fam-card-name">{v2First.name}</div>
@@ -2921,7 +2921,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   <div className="ts-fam-card-cell">
                     {v2Second.parent && (
                       <div className="ts-fam-card-parents">
-                        {v2Second.parent}<span className="ts-fam-relation">{v2Second.relation}</span>
+                        <span style={{ whiteSpace: 'nowrap' }}>{v2Second.parent}<span className="ts-fam-relation">{v2Second.relSuffix}</span></span>{' '}<span className="ts-fam-relation">{v2Second.relLabel}</span>
                       </div>
                     )}
                     <div className="ts-fam-card-name">{v2Second.name}</div>
@@ -2939,11 +2939,11 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         const groomParent = renderParentLine(family.groomFather, family.groomMother)
         const brideParent = renderParentLine(family.brideFather, family.brideMother)
         const v3First = isFamBrideFirst
-          ? { parent: brideParent, relation: `의 ${brideRelLabel}`, name: brideName || '신부' }
-          : { parent: groomParent, relation: `의 ${groomRelLabel}`, name: groomName || '신랑' }
+          ? { parent: brideParent, relSuffix: '의', relLabel: brideRelLabel, name: brideName || '신부' }
+          : { parent: groomParent, relSuffix: '의', relLabel: groomRelLabel, name: groomName || '신랑' }
         const v3Second = isFamBrideFirst
-          ? { parent: groomParent, relation: `의 ${groomRelLabel}`, name: groomName || '신랑' }
-          : { parent: brideParent, relation: `의 ${brideRelLabel}`, name: brideName || '신부' }
+          ? { parent: groomParent, relSuffix: '의', relLabel: groomRelLabel, name: groomName || '신랑' }
+          : { parent: brideParent, relSuffix: '의', relLabel: brideRelLabel, name: brideName || '신부' }
         return (
           <AnimatedSection className="ts-sec ts-fam ts-fam--v3 ts-anim-fam-v3" key={`family-${v}`}>
             <div className="ts-eyebrow ts-anim-item">{family.eyebrow}</div>
@@ -2952,7 +2952,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <div className="ts-fam-v3-cell">
                 {v3First.parent && (
                   <div className="ts-fam-v3-role">
-                    {v3First.parent}<span className="ts-fam-relation">{v3First.relation}</span>
+                    <span style={{ whiteSpace: 'nowrap' }}>{v3First.parent}<span className="ts-fam-relation">{v3First.relSuffix}</span></span>{' '}<span className="ts-fam-relation">{v3First.relLabel}</span>
                   </div>
                 )}
                 <div className="ts-fam-child">{v3First.name}</div>
@@ -2961,7 +2961,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <div className="ts-fam-v3-cell">
                 {v3Second.parent && (
                   <div className="ts-fam-v3-role">
-                    {v3Second.parent}<span className="ts-fam-relation">{v3Second.relation}</span>
+                    <span style={{ whiteSpace: 'nowrap' }}>{v3Second.parent}<span className="ts-fam-relation">{v3Second.relSuffix}</span></span>{' '}<span className="ts-fam-relation">{v3Second.relLabel}</span>
                   </div>
                 )}
                 <div className="ts-fam-child">{v3Second.name}</div>
@@ -3291,10 +3291,10 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               </div>
             )}
             <div className="ts-anim-item" style={{ border: '1px solid var(--line)', padding: '18px 16px', textAlign: 'center' }}>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: 16, letterSpacing: '0.08em', color: 'var(--ink)', marginBottom: 4 }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: 'calc(16px * var(--ts-font-scale, 1))', letterSpacing: '0.08em', color: 'var(--ink)', marginBottom: 4 }}>
                 {venueName}
               </div>
-              {venueHall && <div style={{ fontFamily: 'var(--font-ko)', fontSize: 12, color: 'var(--mute)', marginBottom: 10 }}>
+              {venueHall && <div style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(12px * var(--ts-font-scale, 1))', color: 'var(--mute)', marginBottom: 10 }}>
                 {venueHall}
               </div>}
               <div style={{ width: 24, height: 1, background: 'var(--line)', margin: '0 auto 10px' }} />
@@ -3312,10 +3312,10 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
           <AnimatedSection className="ts-sec ts-dir ts-anim-dir-v3" key={`direction-${v}`}>
             <div className="ts-eyebrow">{direction.eyebrow}</div>
             <div className="ts-anim-item" style={{ textAlign: 'center', padding: '12px 0 18px' }}>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, letterSpacing: '0.06em', color: 'var(--point)', marginBottom: venueHall ? 4 : 6 }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: 'calc(22px * var(--ts-font-scale, 1))', letterSpacing: '0.06em', color: 'var(--point)', marginBottom: venueHall ? 4 : 6 }}>
                 {venueName}
               </div>
-              {venueHall && <p style={{ fontFamily: 'var(--font-display)', fontSize: 10, letterSpacing: '0.2em', color: 'var(--accent)', textTransform: 'uppercase', marginBottom: 6 }}>
+              {venueHall && <p style={{ fontFamily: 'var(--font-display)', fontSize: 'calc(10px * var(--ts-font-scale, 1))', letterSpacing: '0.2em', color: 'var(--accent)', textTransform: 'uppercase', marginBottom: 6 }}>
                 {venueHall}
               </p>}
               <div style={{ width: 30, height: 1, background: 'var(--line)', margin: '0 auto 10px' }} />
@@ -3344,16 +3344,16 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 </div>
               )}
               <div className="ts-anim-card" style={{ border: '1px solid var(--line)', padding: '16px 14px', background: 'var(--card)' }}>
-                <div style={{ fontFamily: 'var(--font-display)', fontSize: 9, letterSpacing: '0.2em', color: 'var(--point)', textTransform: 'uppercase', marginBottom: 4 }}>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: 'calc(10px * var(--ts-font-scale, 1))', letterSpacing: '0.2em', color: 'var(--point)', textTransform: 'uppercase', marginBottom: 4 }}>
                   Venue
                 </div>
-                <div style={{ fontFamily: 'var(--font-ko)', fontSize: 15, fontWeight: 600, color: 'var(--ink)', marginBottom: 2 }}>
+                <div style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(15px * var(--ts-font-scale, 1))', fontWeight: 600, color: 'var(--ink)', marginBottom: 2 }}>
                   {venueName}
                 </div>
-                {venueHall && <div style={{ fontFamily: 'var(--font-ko)', fontSize: 12, color: 'var(--mute)', marginBottom: 10, paddingBottom: 10, borderBottom: '1px solid var(--line)' }}>
+                {venueHall && <div style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(12px * var(--ts-font-scale, 1))', color: 'var(--mute)', marginBottom: 10, paddingBottom: 10, borderBottom: '1px solid var(--line)' }}>
                   {venueHall}
                 </div>}
-                <div style={{ fontFamily: 'var(--font-display)', fontSize: 9, letterSpacing: '0.2em', color: 'var(--point)', textTransform: 'uppercase', marginBottom: 4 }}>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: 'calc(10px * var(--ts-font-scale, 1))', letterSpacing: '0.2em', color: 'var(--point)', textTransform: 'uppercase', marginBottom: 4 }}>
                   Address
                 </div>
                 <AddressCopy address={venueAddress} />
@@ -3376,15 +3376,15 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               </div>
             )}
             <div className="ts-anim-item" style={{ display: 'flex', alignItems: 'baseline', gap: 16, padding: '14px 0', borderTop: '1px solid var(--line)', borderBottom: '1px solid var(--line)' }}>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: 10, letterSpacing: '0.2em', color: 'var(--mute)', textTransform: 'uppercase', flexShrink: 0, width: 70 }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: 'calc(10px * var(--ts-font-scale, 1))', letterSpacing: '0.2em', color: 'var(--mute)', textTransform: 'uppercase', flexShrink: 0, width: 70 }}>
                 Venue
               </div>
-              <div style={{ fontFamily: 'var(--font-ko)', fontSize: 13, fontWeight: 500, color: 'var(--ink)', lineHeight: 1.5 }}>
+              <div style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', fontWeight: 500, color: 'var(--ink)', lineHeight: 1.5 }}>
                 {venueName}{venueHall && ` · ${venueHall}`}
               </div>
             </div>
             <div className="ts-anim-item" style={{ display: 'flex', alignItems: 'baseline', gap: 16, padding: '14px 0', borderBottom: '1px solid var(--line)' }}>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: 10, letterSpacing: '0.2em', color: 'var(--mute)', textTransform: 'uppercase', flexShrink: 0, width: 70 }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: 'calc(10px * var(--ts-font-scale, 1))', letterSpacing: '0.2em', color: 'var(--mute)', textTransform: 'uppercase', flexShrink: 0, width: 70 }}>
                 Address
               </div>
               <AddressCopy address={venueAddress} />
@@ -3406,7 +3406,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
           )}
           <div className="ts-dir-name ts-anim-item">
             {venueName}
-            {venueHall && <div style={{ fontFamily: 'var(--font-ko)', fontSize: 13, fontStyle: 'normal', color: 'var(--mute)', marginTop: 2 }}>{venueHall}</div>}
+            {venueHall && <div style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', fontStyle: 'normal', color: 'var(--mute)', marginTop: 2 }}>{venueHall}</div>}
           </div>
           <div className="ts-dir-addr ts-anim-item">
             <AddressCopy address={venueAddress} />
@@ -3439,7 +3439,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     <span
                       style={{
                         fontFamily: 'var(--font-display)',
-                        fontSize: 22,
+                        fontSize: 'calc(22px * var(--ts-font-scale, 1))',
                         color: 'var(--accent)',
                         lineHeight: 1,
                       }}
@@ -3449,7 +3449,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     <span
                       style={{
                         fontFamily: 'var(--font-ko)',
-                        fontSize: 14,
+                        fontSize: 'calc(14px * var(--ts-font-scale, 1))',
                         fontWeight: 500,
                         color: 'var(--ink)',
                       }}
@@ -3460,7 +3460,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   <p
                     style={{
                       fontFamily: 'var(--font-ko)',
-                      fontSize: 13,
+                      fontSize: 'calc(12px * var(--ts-font-scale, 1))',
                       color: '#5d5850',
                       lineHeight: 1.85,
                       paddingLeft: 34,
@@ -3500,7 +3500,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     <div
                       style={{
                         fontFamily: 'var(--font-display)',
-                        fontSize: 10,
+                        fontSize: 'calc(10px * var(--ts-font-scale, 1))',
                         letterSpacing: '0.2em',
                         color: 'var(--accent)',
                         marginBottom: 4,
@@ -3511,7 +3511,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     <div
                       style={{
                         fontFamily: 'var(--font-ko)',
-                        fontSize: 13,
+                        fontSize: 'calc(13px * var(--ts-font-scale, 1))',
                         color: 'var(--ink)',
                       }}
                     >
@@ -3530,7 +3530,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     <div
                       style={{
                         fontFamily: 'var(--font-display)',
-                        fontSize: 10,
+                        fontSize: 'calc(10px * var(--ts-font-scale, 1))',
                         letterSpacing: '0.2em',
                         color: 'var(--mute)',
                         marginBottom: 4,
@@ -3541,7 +3541,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     <div
                       style={{
                         fontFamily: 'var(--font-ko)',
-                        fontSize: 13,
+                        fontSize: 'calc(12px * var(--ts-font-scale, 1))',
                         color: '#3d3d3d',
                         lineHeight: 1.75,
                         whiteSpace: 'pre-line',
@@ -3577,7 +3577,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   <div
                     style={{
                       fontFamily: 'var(--font-serif)',
-                      fontSize: 14,
+                      fontSize: 'calc(14px * var(--ts-font-scale, 1))',
                       fontStyle: 'italic',
                       color: 'var(--mute)',
                       marginBottom: 10,
@@ -3588,7 +3588,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   <p
                     style={{
                       fontFamily: 'var(--font-ko)',
-                      fontSize: 14,
+                      fontSize: 'calc(12px * var(--ts-font-scale, 1))',
                       color: 'var(--ink)',
                       lineHeight: 1.85,
                       fontWeight: 500,
@@ -3632,7 +3632,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     <span
                       style={{
                         fontFamily: 'var(--font-display)',
-                        fontSize: 10,
+                        fontSize: 'calc(10px * var(--ts-font-scale, 1))',
                         letterSpacing: '0.2em',
                         color: 'var(--accent)',
                         paddingTop: 2,
@@ -3643,7 +3643,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     <span
                       style={{
                         fontFamily: 'var(--font-ko)',
-                        fontSize: 13,
+                        fontSize: 'calc(13px * var(--ts-font-scale, 1))',
                         color: 'var(--ink)',
                         fontWeight: 500,
                       }}
@@ -3653,7 +3653,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     <span
                       style={{
                         fontFamily: 'var(--font-display)',
-                        fontSize: 10,
+                        fontSize: 'calc(10px * var(--ts-font-scale, 1))',
                         letterSpacing: '0.2em',
                         color: 'var(--mute)',
                         borderTop: '1px solid var(--line)',
@@ -3666,7 +3666,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     <span
                       style={{
                         fontFamily: 'var(--font-ko)',
-                        fontSize: 13,
+                        fontSize: 'calc(12px * var(--ts-font-scale, 1))',
                         color: '#5d5850',
                         lineHeight: 1.75,
                         borderTop: '1px solid var(--line)',
@@ -3813,7 +3813,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 justifyContent: 'center',
                 color: '#aaa',
                 fontFamily: 'var(--font-ko)',
-                fontSize: 12,
+                fontSize: 'calc(12px * var(--ts-font-scale, 1))',
               }}
             >
               유튜브 URL을 입력하세요
@@ -3852,7 +3852,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <div
                 style={{
                   fontFamily: 'var(--font-display)',
-                  fontSize: 11,
+                  fontSize: 'calc(11px * var(--ts-font-scale, 1))',
                   letterSpacing: '0.32em',
                   color: 'rgba(255,255,255,0.5)',
                   textTransform: 'uppercase',
@@ -3896,7 +3896,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               display: 'inline-block',
               marginTop: 8,
               fontFamily: 'var(--font-display)',
-              fontSize: small ? 10 : 11,
+              fontSize: small ? 'calc(10px * var(--ts-font-scale, 1))' : 'calc(11px * var(--ts-font-scale, 1))',
               letterSpacing: '0.12em',
               color: 'var(--accent)',
               borderBottom: '1px solid var(--accent)',
@@ -3937,7 +3937,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                       alignItems: 'center',
                       justifyContent: 'center',
                       fontFamily: 'var(--font-display)',
-                      fontSize: 14,
+                      fontSize: 'calc(14px * var(--ts-font-scale, 1))',
                       color: 'var(--accent)',
                     }}
                   >
@@ -3947,7 +3947,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     <div
                       style={{
                         fontFamily: 'var(--font-display)',
-                        fontSize: 9,
+                        fontSize: 'calc(10px * var(--ts-font-scale, 1))',
                         letterSpacing: '0.2em',
                         color: 'var(--mute)',
                         textTransform: 'uppercase',
@@ -3959,7 +3959,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     <div
                       style={{
                         fontFamily: 'var(--font-ko)',
-                        fontSize: 14,
+                        fontSize: 'calc(14px * var(--ts-font-scale, 1))',
                         fontWeight: 600,
                         color: 'var(--ink)',
                         marginBottom: 4,
@@ -3970,7 +3970,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     <p
                       style={{
                         fontFamily: 'var(--font-ko)',
-                        fontSize: 12,
+                        fontSize: 'calc(12px * var(--ts-font-scale, 1))',
                         color: '#5d5850',
                         lineHeight: 1.75,
                         whiteSpace: 'pre-line',
@@ -4008,7 +4008,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     <div
                       style={{
                         fontFamily: 'var(--font-display)',
-                        fontSize: 10,
+                        fontSize: 'calc(10px * var(--ts-font-scale, 1))',
                         letterSpacing: '0.2em',
                         color: 'var(--accent)',
                         textTransform: 'uppercase',
@@ -4020,7 +4020,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     <div
                       style={{
                         fontFamily: 'var(--font-ko)',
-                        fontSize: 13,
+                        fontSize: 'calc(14px * var(--ts-font-scale, 1))',
                         fontWeight: 600,
                         color: 'var(--ink)',
                       }}
@@ -4032,7 +4032,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     <p
                       style={{
                         fontFamily: 'var(--font-ko)',
-                        fontSize: 12,
+                        fontSize: 'calc(12px * var(--ts-font-scale, 1))',
                         color: '#5d5850',
                         lineHeight: 1.85,
                         whiteSpace: 'pre-line',
@@ -4074,7 +4074,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   <div
                     style={{
                       fontFamily: 'var(--font-display)',
-                      fontSize: 9,
+                      fontSize: 'calc(10px * var(--ts-font-scale, 1))',
                       letterSpacing: '0.2em',
                       color: 'var(--accent)',
                       textTransform: 'uppercase',
@@ -4086,7 +4086,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   <div
                     style={{
                       fontFamily: 'var(--font-ko)',
-                      fontSize: 14,
+                      fontSize: 'calc(14px * var(--ts-font-scale, 1))',
                       fontWeight: 600,
                       color: 'var(--ink)',
                       marginBottom: 8,
@@ -4105,7 +4105,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   <p
                     style={{
                       fontFamily: 'var(--font-ko)',
-                      fontSize: 11,
+                      fontSize: 'calc(12px * var(--ts-font-scale, 1))',
                       color: '#5d5850',
                       lineHeight: 1.75,
                       whiteSpace: 'pre-line',
@@ -4155,7 +4155,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     <span
                       style={{
                         fontFamily: 'var(--font-display)',
-                        fontSize: 11,
+                        fontSize: 'calc(10px * var(--ts-font-scale, 1))',
                         color: 'var(--accent)',
                         letterSpacing: '0.15em',
                         textTransform: 'uppercase',
@@ -4167,7 +4167,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   <div
                     style={{
                       fontFamily: 'var(--font-ko)',
-                      fontSize: 14,
+                      fontSize: 'calc(14px * var(--ts-font-scale, 1))',
                       fontWeight: 600,
                       color: 'var(--ink)',
                       marginBottom: 4,
@@ -4178,7 +4178,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   <p
                     style={{
                       fontFamily: 'var(--font-ko)',
-                      fontSize: 12,
+                      fontSize: 'calc(12px * var(--ts-font-scale, 1))',
                       color: '#5d5850',
                       lineHeight: 1.75,
                       whiteSpace: 'pre-line',
@@ -4217,12 +4217,11 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       const accountGuideEl = guideText ? (
         <p style={{
           fontFamily: 'var(--font-ko)',
-          fontSize: 11,
+          fontSize: 'calc(12px * var(--ts-font-scale, 1))',
           color: 'var(--mute)',
           textAlign: 'center',
-          lineHeight: 1.8,
+          lineHeight: 1.55,
           marginBottom: 16,
-          opacity: 0.8,
           whiteSpace: 'pre-line',
         }}>
           {guideText}
@@ -4284,7 +4283,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
             <div style={{ marginTop: 8 }}>
               {accountGuideEl}
               {allList.length === 0 ? (
-                <p style={{ textAlign: 'center', fontSize: 11, color: '#b8b0a6', marginTop: 8 }}>
+                <p style={{ textAlign: 'center', fontSize: 'calc(11px * var(--ts-font-scale, 1))', color: '#b8b0a6', marginTop: 8 }}>
                   계좌를 추가하면 여기에 표시됩니다
                 </p>
               ) : (
@@ -4309,7 +4308,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                         <span
                           style={{
                             fontFamily: 'var(--font-display)',
-                            fontSize: 10,
+                            fontSize: 'calc(10px * var(--ts-font-scale, 1))',
                             letterSpacing: '0.2em',
                             color: 'var(--accent)',
                             textTransform: 'uppercase',
@@ -4321,7 +4320,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                           <span
                             style={{
                               fontFamily: 'var(--font-ko)',
-                              fontSize: 14,
+                              fontSize: 'calc(14px * var(--ts-font-scale, 1))',
                               fontWeight: 600,
                               color: 'var(--ink)',
                             }}
@@ -4335,7 +4334,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                           key={i}
                           style={{
                             fontFamily: 'var(--font-ko)',
-                            fontSize: 12,
+                            fontSize: 'calc(12px * var(--ts-font-scale, 1))',
                             color: '#5d5850',
                             lineHeight: 1.9,
                             paddingLeft: 2,
@@ -4410,7 +4409,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <div
                 style={{
                   fontFamily: 'var(--font-serif)',
-                  fontSize: 40,
+                  fontSize: 'calc(40px * var(--ts-font-scale, 1))',
                   fontStyle: 'italic',
                   color: 'var(--accent)',
                   lineHeight: 1,
@@ -4422,7 +4421,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <div
                 style={{
                   fontFamily: 'var(--font-display)',
-                  fontSize: 11,
+                  fontSize: 'calc(11px * var(--ts-font-scale, 1))',
                   letterSpacing: '0.25em',
                   color: 'var(--mute)',
                   textTransform: 'uppercase',
@@ -4434,7 +4433,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <p
                 style={{
                   fontFamily: 'var(--font-ko)',
-                  fontSize: 12,
+                  fontSize: 'calc(12px * var(--ts-font-scale, 1))',
                   color: '#5d5850',
                   lineHeight: 1.8,
                   marginBottom: 18,
@@ -4448,7 +4447,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 style={{
                   display: 'inline-block',
                   fontFamily: 'var(--font-display)',
-                  fontSize: 10,
+                  fontSize: 'calc(10px * var(--ts-font-scale, 1))',
                   letterSpacing: '0.3em',
                   color: '#fff',
                   background: 'var(--accent)',
@@ -4480,7 +4479,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <div
                 style={{
                   fontFamily: 'var(--font-display)',
-                  fontSize: 14,
+                  fontSize: 'calc(14px * var(--ts-font-scale, 1))',
                   letterSpacing: '0.4em',
                   color: 'var(--ink)',
                   textTransform: 'uppercase',
@@ -4492,7 +4491,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <p
                 style={{
                   fontFamily: 'var(--font-ko)',
-                  fontSize: 12,
+                  fontSize: 'calc(12px * var(--ts-font-scale, 1))',
                   color: 'var(--mute)',
                   lineHeight: 1.8,
                   marginBottom: 20,
@@ -4506,7 +4505,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 style={{
                   display: 'inline-block',
                   fontFamily: 'var(--font-display)',
-                  fontSize: 11,
+                  fontSize: 'calc(11px * var(--ts-font-scale, 1))',
                   letterSpacing: '0.2em',
                   color: 'var(--accent)',
                   borderBottom: '1px solid var(--accent)',
@@ -4544,7 +4543,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <div
                 style={{
                   fontFamily: 'var(--font-display)',
-                  fontSize: 22,
+                  fontSize: 'calc(22px * var(--ts-font-scale, 1))',
                   letterSpacing: '0.2em',
                   color: 'var(--point)',
                   marginBottom: 6,
@@ -4555,7 +4554,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <p
                 style={{
                   fontFamily: 'var(--font-ko)',
-                  fontSize: 12,
+                  fontSize: 'calc(12px * var(--ts-font-scale, 1))',
                   color: 'var(--mute)',
                   lineHeight: 1.75,
                   marginBottom: 20,
@@ -4575,7 +4574,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   onClick={() => { setRsvpInitAttendance('attending'); setRsvpOpen(true) }}
                   style={{
                     fontFamily: 'var(--font-display)',
-                    fontSize: 11,
+                    fontSize: 'calc(11px * var(--ts-font-scale, 1))',
                     letterSpacing: '0.2em',
                     color: '#fff',
                     background: 'var(--accent)',
@@ -4590,7 +4589,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   onClick={() => { setRsvpInitAttendance('not_attending'); setRsvpOpen(true) }}
                   style={{
                     fontFamily: 'var(--font-display)',
-                    fontSize: 11,
+                    fontSize: 'calc(11px * var(--ts-font-scale, 1))',
                     letterSpacing: '0.2em',
                     color: 'var(--accent)',
                     background: 'transparent',
@@ -4622,7 +4621,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   background: '#fff',
                   padding: '0 14px',
                   fontFamily: 'var(--font-display)',
-                  fontSize: 10,
+                  fontSize: 'calc(10px * var(--ts-font-scale, 1))',
                   letterSpacing: '0.3em',
                   color: 'var(--accent)',
                   textTransform: 'uppercase',
@@ -4640,7 +4639,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 <div
                   style={{
                     fontFamily: 'var(--font-serif)',
-                    fontSize: 28,
+                    fontSize: 'calc(28px * var(--ts-font-scale, 1))',
                     fontStyle: 'italic',
                     color: 'var(--point)',
                     marginBottom: 14,
@@ -4651,7 +4650,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 <p
                   style={{
                     fontFamily: 'var(--font-ko)',
-                    fontSize: 12,
+                    fontSize: 'calc(12px * var(--ts-font-scale, 1))',
                     color: 'var(--mute)',
                     lineHeight: 1.8,
                     marginBottom: 20,
@@ -4665,7 +4664,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   style={{
                     display: 'inline-block',
                     fontFamily: 'var(--font-display)',
-                    fontSize: 11,
+                    fontSize: 'calc(11px * var(--ts-font-scale, 1))',
                     letterSpacing: '0.25em',
                     color: 'var(--accent)',
                     border: '1px solid var(--accent)',
@@ -4712,10 +4711,11 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <div
                 style={{
                   fontFamily: 'var(--font-display)',
-                  fontSize: 22,
-                  letterSpacing: '0.08em',
+                  fontSize: 'calc(11px * var(--ts-font-scale, 1))',
+                  letterSpacing: '0.32em',
                   color: 'var(--point)',
-                  marginBottom: 4,
+                  textTransform: 'uppercase',
+                  marginBottom: 14,
                 }}
               >
                 Guestbook
@@ -4723,7 +4723,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <div
                 style={{
                   fontFamily: 'var(--font-ko)',
-                  fontSize: 11,
+                  fontSize: 'calc(11px * var(--ts-font-scale, 1))',
                   color: 'var(--mute)',
                 }}
               >
@@ -4757,7 +4757,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     <span
                       style={{
                         fontFamily: 'var(--font-ko)',
-                        fontSize: 12,
+                        fontSize: 'calc(12px * var(--ts-font-scale, 1))',
                         fontWeight: 600,
                         color: 'var(--ink)',
                       }}
@@ -4767,7 +4767,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     <span
                       style={{
                         fontFamily: 'var(--font-display)',
-                        fontSize: 10,
+                        fontSize: 'calc(10px * var(--ts-font-scale, 1))',
                         color: 'var(--mute)',
                       }}
                     >
@@ -4777,7 +4777,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   <p
                     style={{
                       fontFamily: 'var(--font-ko)',
-                      fontSize: 12,
+                      fontSize: 'calc(12px * var(--ts-font-scale, 1))',
                       color: '#5d5850',
                       lineHeight: 1.75,
                     }}
@@ -4792,7 +4792,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 textAlign: 'center',
                 marginTop: 14,
                 fontFamily: 'var(--font-display)',
-                fontSize: 10,
+                fontSize: 'calc(10px * var(--ts-font-scale, 1))',
                 letterSpacing: '0.25em',
                 color: 'var(--accent)',
                 textTransform: 'uppercase',
@@ -4812,7 +4812,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
             <div
               style={{
                 fontFamily: 'var(--font-display)',
-                fontSize: 10,
+                fontSize: 'calc(10px * var(--ts-font-scale, 1))',
                 letterSpacing: '0.25em',
                 color: 'var(--accent)',
                 textTransform: 'uppercase',
@@ -4863,7 +4863,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     <span
                       style={{
                         fontFamily: 'var(--font-ko)',
-                        fontSize: 13,
+                        fontSize: 'calc(13px * var(--ts-font-scale, 1))',
                         fontWeight: 600,
                         color: 'var(--ink)',
                       }}
@@ -4873,7 +4873,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     <span
                       style={{
                         fontFamily: 'var(--font-display)',
-                        fontSize: 10,
+                        fontSize: 'calc(10px * var(--ts-font-scale, 1))',
                         color: 'var(--mute)',
                       }}
                     >
@@ -4883,7 +4883,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   <p
                     style={{
                       fontFamily: 'var(--font-ko)',
-                      fontSize: 12,
+                      fontSize: 'calc(12px * var(--ts-font-scale, 1))',
                       color: '#5d5850',
                       lineHeight: 1.75,
                     }}
@@ -4914,7 +4914,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 <div
                   style={{
                     fontFamily: 'var(--font-serif)',
-                    fontSize: 28,
+                    fontSize: 'calc(28px * var(--ts-font-scale, 1))',
                     fontStyle: 'italic',
                     color: 'var(--accent)',
                     lineHeight: 0.5,
@@ -4926,7 +4926,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 <p
                   style={{
                     fontFamily: 'var(--font-serif)',
-                    fontSize: 14,
+                    fontSize: 'calc(14px * var(--ts-font-scale, 1))',
                     fontStyle: 'italic',
                     color: 'var(--ink)',
                     lineHeight: 1.8,
@@ -4946,7 +4946,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 <div
                   style={{
                     fontFamily: 'var(--font-ko)',
-                    fontSize: 11,
+                    fontSize: 'calc(11px * var(--ts-font-scale, 1))',
                     color: 'var(--mute)',
                   }}
                 >
@@ -4959,7 +4959,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 textAlign: 'center',
                 marginTop: 14,
                 fontFamily: 'var(--font-display)',
-                fontSize: 10,
+                fontSize: 'calc(10px * var(--ts-font-scale, 1))',
                 letterSpacing: '0.25em',
                 color: 'var(--accent)',
                 textTransform: 'uppercase',
@@ -4989,9 +4989,10 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <div
                 style={{
                   fontFamily: 'var(--font-display)',
-                  fontSize: 16,
-                  letterSpacing: '0.1em',
+                  fontSize: 'calc(11px * var(--ts-font-scale, 1))',
+                  letterSpacing: '0.32em',
                   color: 'var(--point)',
+                  textTransform: 'uppercase',
                 }}
               >
                 Guestbook
@@ -4999,7 +5000,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <div
                 style={{
                   fontFamily: 'var(--font-display)',
-                  fontSize: 10,
+                  fontSize: 'calc(10px * var(--ts-font-scale, 1))',
                   letterSpacing: '0.2em',
                   color: 'var(--accent)',
                   textTransform: 'uppercase',
@@ -5028,7 +5029,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   <span
                     style={{
                       fontFamily: 'var(--font-ko)',
-                      fontSize: 13,
+                      fontSize: 'calc(13px * var(--ts-font-scale, 1))',
                       fontWeight: 600,
                       color: 'var(--ink)',
                     }}
@@ -5038,7 +5039,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   <span
                     style={{
                       fontFamily: 'var(--font-display)',
-                      fontSize: 10,
+                      fontSize: 'calc(10px * var(--ts-font-scale, 1))',
                       color: 'var(--mute)',
                     }}
                   >
@@ -5048,7 +5049,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 <p
                   style={{
                     fontFamily: 'var(--font-ko)',
-                    fontSize: 12,
+                    fontSize: 'calc(12px * var(--ts-font-scale, 1))',
                     color: '#5d5850',
                     lineHeight: 1.7,
                   }}
@@ -5119,7 +5120,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               </div>
             )}
             {item.body && (
-              <p style={{ fontFamily: 'var(--font-ko)', fontSize: 13, lineHeight: 2, color: '#5d5850', whiteSpace: 'pre-line' }}>
+              <p style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', lineHeight: 2, color: '#5d5850', whiteSpace: 'pre-line' }}>
                 {item.body}
               </p>
             )}
@@ -5160,7 +5161,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     </div>
                   )}
                   {item.body && (
-                    <p style={{ fontFamily: 'var(--font-ko)', fontSize: 13, lineHeight: 2, color: '#5d5850', whiteSpace: 'pre-line', flex: 1 }}>
+                    <p style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', lineHeight: 2, color: '#5d5850', whiteSpace: 'pre-line', flex: 1 }}>
                       {item.body}
                     </p>
                   )}
@@ -5192,12 +5193,12 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                       }}
                     >
                       {idx === 0 && (
-                        <div style={{ fontFamily: 'var(--font-display)', fontSize: 10, letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: 16, opacity: 0.85 }}>
+                        <div style={{ fontFamily: 'var(--font-display)', fontSize: 'calc(10px * var(--ts-font-scale, 1))', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: 16, opacity: 0.85 }}>
                           {ls.eyebrow}
                         </div>
                       )}
                       {item.body && (
-                        <p style={{ fontFamily: 'var(--font-ko)', fontSize: 13, lineHeight: 2, whiteSpace: 'pre-line', opacity: 0.92 }}>
+                        <p style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', lineHeight: 2, whiteSpace: 'pre-line', opacity: 0.92 }}>
                           {item.body}
                         </p>
                       )}
@@ -5208,7 +5209,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               // 사진 없는 아이템: 텍스트만
               return item.body ? (
                 <div key={idx} className="ts-ls-stagger" style={{ '--ls-i': idx, padding: '24px 28px' } as React.CSSProperties}>
-                  <p style={{ fontFamily: 'var(--font-ko)', fontSize: 13, lineHeight: 2, color: '#5d5850', whiteSpace: 'pre-line' }}>
+                  <p style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', lineHeight: 2, color: '#5d5850', whiteSpace: 'pre-line' }}>
                     {item.body}
                   </p>
                 </div>
@@ -5248,7 +5249,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   )}
                   {item.body && (
                     <div style={{ padding: '20px 20px', background: 'var(--card)' }}>
-                      <p style={{ fontFamily: 'var(--font-ko)', fontSize: 13, lineHeight: 2, color: '#5d5850', whiteSpace: 'pre-line' }}>
+                      <p style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', lineHeight: 2, color: '#5d5850', whiteSpace: 'pre-line' }}>
                         {item.body}
                       </p>
                     </div>
@@ -5299,7 +5300,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     {/* 타이틀 라벨 */}
                     {item.title && (
                       <div style={{
-                        fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 500,
+                        fontFamily: 'var(--font-display)', fontSize: 'calc(10px * var(--ts-font-scale, 1))', fontWeight: 500,
                         letterSpacing: '0.1em', textTransform: 'uppercase',
                         color: 'var(--point)', marginBottom: 8,
                       }}>
@@ -5307,7 +5308,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                       </div>
                     )}
                     {item.body && (
-                      <p style={{ fontFamily: 'var(--font-ko)', fontSize: 13, lineHeight: 2, color: '#5d5850', whiteSpace: 'pre-line' }}>
+                      <p style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', lineHeight: 2, color: '#5d5850', whiteSpace: 'pre-line' }}>
                         {item.body}
                       </p>
                     )}
@@ -5351,7 +5352,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
             <div
               style={{
                 fontFamily: 'var(--font-ko)',
-                fontSize: 13,
+                fontSize: 'calc(13px * var(--ts-font-scale, 1))',
                 color: 'var(--mute)',
                 lineHeight: 2,
                 whiteSpace: 'pre-line',
@@ -5371,7 +5372,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
             <div
               style={{
                 fontFamily: 'var(--font-display)',
-                fontSize: 15,
+                fontSize: 'calc(15px * var(--ts-font-scale, 1))',
                 letterSpacing: '0.1em',
                 color: 'var(--ink)',
               }}
@@ -5389,7 +5390,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
             <div
               style={{
                 fontFamily: 'var(--font-serif)',
-                fontSize: 32,
+                fontSize: 'calc(32px * var(--ts-font-scale, 1))',
                 fontStyle: 'italic',
                 color: 'var(--accent)',
                 lineHeight: 1,
@@ -5401,7 +5402,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
             <div
               style={{
                 fontFamily: 'var(--font-display)',
-                fontSize: 13,
+                fontSize: 'calc(13px * var(--ts-font-scale, 1))',
                 letterSpacing: '0.3em',
                 color: 'var(--ink)',
                 textTransform: 'uppercase',
@@ -5413,7 +5414,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
             <p
               style={{
                 fontFamily: 'var(--font-ko)',
-                fontSize: 13,
+                fontSize: 'calc(13px * var(--ts-font-scale, 1))',
                 color: 'var(--mute)',
                 lineHeight: 1.9,
                 whiteSpace: 'pre-line',
@@ -5425,7 +5426,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
             <div
               style={{
                 fontFamily: 'var(--font-serif)',
-                fontSize: 16,
+                fontSize: 'calc(16px * var(--ts-font-scale, 1))',
                 fontStyle: 'italic',
                 color: 'var(--ink)',
               }}
@@ -5451,7 +5452,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <div
                 style={{
                   fontFamily: 'var(--font-display)',
-                  fontSize: 11,
+                  fontSize: 'calc(11px * var(--ts-font-scale, 1))',
                   letterSpacing: '0.3em',
                   color: 'var(--accent)',
                   textTransform: 'uppercase',
@@ -5463,7 +5464,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <div
                 style={{
                   fontFamily: 'var(--font-display)',
-                  fontSize: 20,
+                  fontSize: 'calc(20px * var(--ts-font-scale, 1))',
                   color: 'var(--ink)',
                   letterSpacing: '0.05em',
                   marginBottom: 16,
@@ -5474,7 +5475,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <p
                 style={{
                   fontFamily: 'var(--font-ko)',
-                  fontSize: 13,
+                  fontSize: 'calc(13px * var(--ts-font-scale, 1))',
                   color: '#5d5850',
                   lineHeight: 1.9,
                   whiteSpace: 'pre-line',
@@ -5494,7 +5495,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <div
                 style={{
                   fontFamily: 'var(--font-display)',
-                  fontSize: 18,
+                  fontSize: 'calc(18px * var(--ts-font-scale, 1))',
                   letterSpacing: '0.1em',
                   color: 'var(--ink)',
                 }}
@@ -5521,7 +5522,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <div
                 style={{
                   fontFamily: 'var(--font-display)',
-                  fontSize: 11,
+                  fontSize: 'calc(11px * var(--ts-font-scale, 1))',
                   letterSpacing: '0.4em',
                   color: 'var(--mute)',
                   textTransform: 'uppercase',
@@ -5533,7 +5534,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <div
                 style={{
                   fontFamily: 'var(--font-display)',
-                  fontSize: 18,
+                  fontSize: 'calc(18px * var(--ts-font-scale, 1))',
                   color: 'var(--ink)',
                   letterSpacing: '0.08em',
                   marginBottom: 14,
@@ -5552,7 +5553,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <div
                 style={{
                   fontFamily: 'var(--font-serif)',
-                  fontSize: 14,
+                  fontSize: 'calc(14px * var(--ts-font-scale, 1))',
                   fontStyle: 'italic',
                   color: 'var(--ink)',
                 }}
@@ -5563,7 +5564,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
             <p
               style={{
                 fontFamily: 'var(--font-ko)',
-                fontSize: 12,
+                fontSize: 'calc(12px * var(--ts-font-scale, 1))',
                 color: 'var(--mute)',
                 lineHeight: 1.9,
                 whiteSpace: 'pre-line',
@@ -5777,7 +5778,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               alignItems: 'center',
               gap: 6,
               fontFamily: 'var(--font-ko)',
-              fontSize: 12,
+              fontSize: 'calc(12px * var(--ts-font-scale, 1))',
               color: 'var(--ink)',
               border: '1px solid var(--line)',
               borderRadius: 6,
@@ -5804,7 +5805,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               alignItems: 'center',
               gap: 6,
               fontFamily: 'var(--font-ko)',
-              fontSize: 12,
+              fontSize: 'calc(12px * var(--ts-font-scale, 1))',
               color: 'var(--ink)',
               border: '1px solid var(--line)',
               borderRadius: 6,
@@ -5821,7 +5822,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         <div
           style={{
             fontFamily: 'var(--font-display)',
-            fontSize: 10,
+            fontSize: 'calc(10px * var(--ts-font-scale, 1))',
             letterSpacing: '0.2em',
             color: '#bbb',
             textTransform: 'uppercase',

@@ -1225,7 +1225,7 @@
 }
 .ts-preview .ts-g2-karaoke {
   font-family: var(--font-ko);
-  font-size: calc(14px * var(--ts-font-scale, 1));
+  font-size: calc(13px * var(--ts-font-scale, 1));
   line-height: 2.1;
   color: var(--mute-2);
   background: linear-gradient(to right, var(--ink) 50%, var(--mute-2) 50%);
@@ -1245,7 +1245,7 @@
 .ts-preview .ts-g3-quote {
   font-family: var(--font-serif);
   font-style: italic;
-  font-size: calc(15px * var(--ts-font-scale, 1));
+  font-size: calc(13px * var(--ts-font-scale, 1));
   line-height: 2;
   color: var(--ink);
   text-align: center;
@@ -2114,7 +2114,7 @@
 }
 .ts-preview .ts-interview .ts-a {
   font-family: var(--font-ko);
-  font-size: calc(13px * var(--ts-font-scale, 1));
+  font-size: calc(12px * var(--ts-font-scale, 1));
   line-height: 1.75;
   color: #3d3d3d;
   white-space: pre-line;
@@ -2157,7 +2157,7 @@
 }
 .ts-preview .ts-guide .ts-guide-cell p {
   font-family: var(--font-ko);
-  font-size: calc(11px * var(--ts-font-scale, 1));
+  font-size: calc(12px * var(--ts-font-scale, 1));
   color: var(--mute);
   line-height: 1.55;
   margin: 0;
@@ -2438,9 +2438,11 @@
 }
 .ts-preview .ts-guestbook .ts-gb-title {
   font-family: var(--font-display);
-  font-size: calc(22px * var(--ts-font-scale, 1));
+  font-size: calc(11px * var(--ts-font-scale, 1));
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
   color: var(--point);
-  margin-bottom: 4px;
+  margin-bottom: 14px;
 }
 .ts-preview .ts-guestbook .ts-gb-sub {
   font-family: var(--font-serif);
@@ -4240,7 +4242,7 @@
 
 .ts-preview .ts-scroll-hint-label {
   font-family: var(--font-display);
-  font-size: 10px;
+  font-size: calc(10px * var(--ts-font-scale, 1));
   letter-spacing: 0.2em;
   opacity: 0.8;
 }
@@ -4337,7 +4339,7 @@
 /* V1 리스트 — 오시는 길 스타일 */
 .ts-preview .ts-fcs-v1-group {
   font-family: var(--font-display);
-  font-size: 10px; letter-spacing: 0.15em;
+  font-size: calc(10px * var(--ts-font-scale, 1)); letter-spacing: 0.15em;
   color: var(--accent); padding: 12px 0 4px;
   border-top: 1px solid var(--line);
 }
@@ -4354,16 +4356,16 @@
 .ts-preview .ts-fcs-v1-info { flex: 1; min-width: 0; }
 .ts-preview .ts-fcs-v1-label {
   font-family: var(--font-display);
-  font-size: 10px; letter-spacing: 0.12em;
+  font-size: calc(10px * var(--ts-font-scale, 1)); letter-spacing: 0.12em;
   color: var(--accent); margin-bottom: 1px;
 }
 .ts-preview .ts-fcs-v1-name {
   font-family: var(--font-ko);
-  font-size: 12px; color: var(--mute); line-height: 1.5;
+  font-size: calc(12px * var(--ts-font-scale, 1)); color: var(--mute); line-height: 1.5;
 }
 .ts-fcs-label {
   font-family: var(--font-ko);
-  font-size: 13px; font-weight: 600;
+  font-size: calc(13px * var(--ts-font-scale, 1)); font-weight: 600;
   margin-bottom: 10px; color: var(--ink);
   display: flex; align-items: center; gap: 6px;
 }
@@ -4381,11 +4383,11 @@
 .ts-fcs-info { display: flex; flex-direction: column; gap: 1px; }
 .ts-fcs-role {
   font-family: var(--font-ko);
-  font-size: 13px; font-weight: 600; color: var(--ink);
+  font-size: calc(13px * var(--ts-font-scale, 1)); font-weight: 600; color: var(--ink);
 }
 .ts-fcs-name {
   font-family: var(--font-ko);
-  font-size: 12px; color: var(--mute);
+  font-size: calc(12px * var(--ts-font-scale, 1)); color: var(--mute);
 }
 .ts-fcs-actions { display: flex; gap: 6px; }
 .ts-fcs-btn {
@@ -4405,7 +4407,7 @@
 .ts-preview .ts-fcs-simple-group:last-child { margin-bottom: 0; }
 .ts-preview .ts-fcs-simple-label {
   font-family: var(--font-ko);
-  font-size: 10px; font-weight: 600; color: var(--mute);
+  font-size: calc(10px * var(--ts-font-scale, 1)); font-weight: 600; color: var(--mute);
   letter-spacing: 0.06em;
   padding-bottom: 6px;
 }
@@ -4420,11 +4422,11 @@
 }
 .ts-preview .ts-fcs-simple-name {
   font-family: var(--font-display);
-  font-size: 14px; font-weight: 600; color: var(--ink);
+  font-size: calc(14px * var(--ts-font-scale, 1)); font-weight: 600; color: var(--ink);
 }
 .ts-preview .ts-fcs-simple-role {
   font-family: var(--font-ko);
-  font-size: 11px; color: var(--mute);
+  font-size: calc(11px * var(--ts-font-scale, 1)); color: var(--mute);
 }
 .ts-preview .ts-fcs-actions-sm {
   display: flex; justify-content: center; gap: 6px; margin-top: 10px;
@@ -4462,11 +4464,11 @@
 }
 .ts-preview .ts-fcs-row3-name {
   font-family: var(--font-ko);
-  font-size: 12px; font-weight: 600; color: var(--ink);
+  font-size: calc(12px * var(--ts-font-scale, 1)); font-weight: 600; color: var(--ink);
   white-space: nowrap;
 }
 .ts-preview .ts-fcs-row3-role {
-  font-size: 10px; color: var(--mute);
+  font-size: calc(10px * var(--ts-font-scale, 1)); color: var(--mute);
   white-space: nowrap;
 }
 /* V3 풀폭 버튼 */
@@ -4520,9 +4522,10 @@
 }
 .ts-preview .ts-fam-card-cell {
   text-align: center;
+  min-width: 0;
 }
 .ts-preview .ts-fam-card-heart {
-  color: var(--point); font-size: 12px; opacity: 0.7;
+  color: var(--point); font-size: calc(12px * var(--ts-font-scale, 1)); opacity: 0.7;
   line-height: 1; padding-top: 14px;
 }
 .ts-preview .ts-fam-card-parents {
@@ -4530,6 +4533,7 @@
   font-size: calc(12px * var(--ts-font-scale, 1));
   color: var(--ink);
   line-height: 1.6;
+  word-break: keep-all;
 }
 .ts-preview .ts-fam-card-parents .ts-fam-relation {
   opacity: 0.5;
@@ -4557,7 +4561,7 @@
 
 /* V3 하트 구분자 */
 .ts-preview .ts-fam-heart {
-  color: var(--ink); font-size: 12px; opacity: 0.7;
+  color: var(--ink); font-size: calc(12px * var(--ts-font-scale, 1)); opacity: 0.7;
   flex-shrink: 0; line-height: 1;
 }
 
@@ -4579,9 +4583,10 @@
   font-size: calc(11px * var(--ts-font-scale, 1));
   color: var(--mute); letter-spacing: 0.02em;
   margin-bottom: 6px;
+  word-break: keep-all;
 }
 .ts-preview .ts-fam--v3 .ts-fam-v3-heart {
-  color: var(--point); font-size: 16px; opacity: 0.7;
+  color: var(--point); font-size: calc(16px * var(--ts-font-scale, 1)); opacity: 0.7;
   line-height: 1; padding-top: 16px;
 }
 

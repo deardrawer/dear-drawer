@@ -3458,7 +3458,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     <span
                       style={{
                         fontFamily: 'var(--font-ko)',
-                        fontSize: 'calc(14px * var(--ts-font-scale, 1))',
+                        fontSize: 'calc(13px * var(--ts-font-scale, 1))',
                         fontWeight: 600,
                         color: 'var(--ink)',
                       }}
@@ -3469,7 +3469,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   <p
                     style={{
                       fontFamily: 'var(--font-ko)',
-                      fontSize: 'calc(12px * var(--ts-font-scale, 1))',
+                      fontSize: 'calc(13px * var(--ts-font-scale, 1))',
                       color: '#5d5850',
                       lineHeight: 1.85,
                       paddingLeft: 34,
@@ -3550,7 +3550,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     <div
                       style={{
                         fontFamily: 'var(--font-ko)',
-                        fontSize: 'calc(12px * var(--ts-font-scale, 1))',
+                        fontSize: 'calc(13px * var(--ts-font-scale, 1))',
                         color: '#3d3d3d',
                         lineHeight: 1.75,
                         whiteSpace: 'pre-line',
@@ -3586,7 +3586,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   <div
                     style={{
                       fontFamily: 'var(--font-serif)',
-                      fontSize: 'calc(14px * var(--ts-font-scale, 1))',
+                      fontSize: 'calc(13px * var(--ts-font-scale, 1))',
                       fontStyle: 'italic',
                       color: 'var(--mute)',
                       marginBottom: 10,
@@ -3597,7 +3597,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   <p
                     style={{
                       fontFamily: 'var(--font-ko)',
-                      fontSize: 'calc(12px * var(--ts-font-scale, 1))',
+                      fontSize: 'calc(13px * var(--ts-font-scale, 1))',
                       color: 'var(--ink)',
                       lineHeight: 1.85,
                       fontWeight: 600,
@@ -3675,7 +3675,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     <span
                       style={{
                         fontFamily: 'var(--font-ko)',
-                        fontSize: 'calc(12px * var(--ts-font-scale, 1))',
+                        fontSize: 'calc(13px * var(--ts-font-scale, 1))',
                         color: '#5d5850',
                         lineHeight: 1.75,
                         borderTop: '1px solid var(--line)',

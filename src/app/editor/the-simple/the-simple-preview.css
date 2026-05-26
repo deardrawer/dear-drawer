@@ -2148,13 +2148,15 @@
   color: var(--point);
   text-transform: uppercase;
   margin-bottom: 6px;
+  white-space: pre-line;
 }
 .ts-preview .ts-guide .ts-guide-cell b {
   display: block;
   font-family: var(--font-ko);
   font-size: calc(13px * var(--ts-font-scale, 1));
-  font-weight: 500;
+  font-weight: 600;
   margin-bottom: 4px;
+  white-space: pre-line;
 }
 .ts-preview .ts-guide .ts-guide-cell p {
   font-family: var(--font-ko);

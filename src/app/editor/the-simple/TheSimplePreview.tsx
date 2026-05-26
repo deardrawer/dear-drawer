@@ -3386,7 +3386,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <div style={{ fontFamily: 'var(--font-display)', fontSize: 'calc(10px * var(--ts-font-scale, 1))', letterSpacing: '0.2em', color: 'var(--mute)', textTransform: 'uppercase', flexShrink: 0, width: 70 }}>
                 Venue
               </div>
-              <div style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', fontWeight: 500, color: 'var(--ink)', lineHeight: 1.5 }}>
+              <div style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', fontWeight: 600, color: 'var(--ink)', lineHeight: 1.5 }}>
                 {venueName}{venueHall && ` · ${venueHall}`}
               </div>
             </div>
@@ -3459,7 +3459,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                       style={{
                         fontFamily: 'var(--font-ko)',
                         fontSize: 'calc(14px * var(--ts-font-scale, 1))',
-                        fontWeight: 500,
+                        fontWeight: 600,
                         color: 'var(--ink)',
                       }}
                     >
@@ -3600,7 +3600,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                       fontSize: 'calc(12px * var(--ts-font-scale, 1))',
                       color: 'var(--ink)',
                       lineHeight: 1.85,
-                      fontWeight: 500,
+                      fontWeight: 600,
                       whiteSpace: 'pre-line',
                     }}
                   >
@@ -3654,7 +3654,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                         fontFamily: 'var(--font-ko)',
                         fontSize: 'calc(13px * var(--ts-font-scale, 1))',
                         color: 'var(--ink)',
-                        fontWeight: 500,
+                        fontWeight: 600,
                       }}
                     >
                       {item.question}
@@ -3961,6 +3961,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                         color: 'var(--mute)',
                         textTransform: 'uppercase',
                         marginBottom: 2,
+                        whiteSpace: 'pre-line',
                       }}
                     >
                       {item.label}
@@ -3969,9 +3970,10 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                       style={{
                         fontFamily: 'var(--font-ko)',
                         fontSize: 'calc(14px * var(--ts-font-scale, 1))',
-                        fontWeight: 500,
+                        fontWeight: 600,
                         color: 'var(--ink)',
                         marginBottom: 4,
+                        whiteSpace: 'pre-line',
                       }}
                     >
                       {item.title}
@@ -4023,6 +4025,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                         color: 'var(--accent)',
                         textTransform: 'uppercase',
                         marginBottom: 4,
+                        whiteSpace: 'pre-line',
                       }}
                     >
                       {item.label}
@@ -4031,8 +4034,9 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                       style={{
                         fontFamily: 'var(--font-ko)',
                         fontSize: 'calc(14px * var(--ts-font-scale, 1))',
-                        fontWeight: 500,
+                        fontWeight: 600,
                         color: 'var(--ink)',
+                        whiteSpace: 'pre-line',
                       }}
                     >
                       {item.title}
@@ -4089,6 +4093,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                       color: 'var(--accent)',
                       textTransform: 'uppercase',
                       marginBottom: 8,
+                      whiteSpace: 'pre-line',
                     }}
                   >
                     {item.label}
@@ -4097,9 +4102,10 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     style={{
                       fontFamily: 'var(--font-ko)',
                       fontSize: 'calc(14px * var(--ts-font-scale, 1))',
-                      fontWeight: 500,
+                      fontWeight: 600,
                       color: 'var(--ink)',
                       marginBottom: 8,
+                      whiteSpace: 'pre-line',
                     }}
                   >
                     {item.title}
@@ -4169,6 +4175,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                         color: 'var(--accent)',
                         letterSpacing: '0.15em',
                         textTransform: 'uppercase',
+                        whiteSpace: 'pre-line',
                       }}
                     >
                       — {item.label}
@@ -4178,9 +4185,10 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     style={{
                       fontFamily: 'var(--font-ko)',
                       fontSize: 'calc(14px * var(--ts-font-scale, 1))',
-                      fontWeight: 500,
+                      fontWeight: 600,
                       color: 'var(--ink)',
                       marginBottom: 4,
+                      whiteSpace: 'pre-line',
                     }}
                   >
                     {item.title}
@@ -5310,7 +5318,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     {/* 타이틀 라벨 */}
                     {item.title && (
                       <div style={{
-                        fontFamily: 'var(--font-display)', fontSize: 'calc(10px * var(--ts-font-scale, 1))', fontWeight: 500,
+                        fontFamily: 'var(--font-display)', fontSize: 'calc(10px * var(--ts-font-scale, 1))', fontWeight: 600,
                         letterSpacing: '0.1em', textTransform: 'uppercase',
                         color: 'var(--point)', marginBottom: 8,
                       }}>

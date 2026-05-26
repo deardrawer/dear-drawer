@@ -162,19 +162,19 @@ function SortableGuideItem({ id, index, item, onUpdate, onRemove }: SortableGuid
         </button>
       </div>
       <div className="grid grid-cols-2 gap-2">
-        <input
-          type="text"
+        <textarea
           value={item.label}
           onChange={(e) => onUpdate({ label: e.target.value })}
+          rows={1}
           placeholder="Dress Code"
-          className="w-full border border-stone-200 rounded px-2 py-1 text-xs focus:outline-none focus:border-stone-600"
+          className="w-full border border-stone-200 rounded px-2 py-1 text-xs focus:outline-none focus:border-stone-600 resize-none"
         />
-        <input
-          type="text"
+        <textarea
           value={item.title}
           onChange={(e) => onUpdate({ title: e.target.value })}
+          rows={1}
           placeholder="드레스코드"
-          className="w-full border border-stone-200 rounded px-2 py-1 text-xs focus:outline-none focus:border-stone-600"
+          className="w-full border border-stone-200 rounded px-2 py-1 text-xs focus:outline-none focus:border-stone-600 resize-none"
         />
       </div>
       <textarea

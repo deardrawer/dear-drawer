@@ -200,6 +200,8 @@ export interface SectionContents {
     showSideOption?: boolean
     rsvpNotice?: string
     buttonLabel?: string
+    attendLabel?: string
+    regretLabel?: string
   }
   thanks: {
     mark: string
@@ -2240,6 +2242,7 @@ function TheSimpleEditorContent() {
                           return (
                             <RsvpEditor
                               value={data.sections.rsvp}
+                              variant={data.sectionVariants[id] ?? 1}
                               onChange={(next) =>
                                 updateData({
                                   sections: { ...data.sections, rsvp: next },

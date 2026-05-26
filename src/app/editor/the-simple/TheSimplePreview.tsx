@@ -4615,7 +4615,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     cursor: 'pointer',
                   }}
                 >
-                  Attending
+                  {rsvp.attendLabel || 'Attending'}
                 </span>
                 <span
                   onClick={() => { setRsvpInitAttendance('not_attending'); setRsvpOpen(true) }}
@@ -4631,7 +4631,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     cursor: 'pointer',
                   }}
                 >
-                  Regrets
+                  {rsvp.regretLabel || 'Regrets'}
                 </span>
               </div>
             </div>

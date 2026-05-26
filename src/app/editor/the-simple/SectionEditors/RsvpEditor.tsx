@@ -4,10 +4,11 @@ import type { SectionContents } from '../page'
 
 interface RsvpEditorProps {
   value: SectionContents['rsvp']
+  variant?: number
   onChange: (next: SectionContents['rsvp']) => void
 }
 
-export default function RsvpEditor({ value, onChange }: RsvpEditorProps) {
+export default function RsvpEditor({ value, variant = 1, onChange }: RsvpEditorProps) {
   return (
     <div className="space-y-3">
       <label className="block">
@@ -31,16 +32,38 @@ export default function RsvpEditor({ value, onChange }: RsvpEditorProps) {
         />
       </label>
 
-      <label className="block">
-        <span className="text-[10px] uppercase tracking-wider text-stone-400">버튼 문구 <span className="normal-case text-stone-300">(V4 듀얼 제외)</span></span>
-        <input
-          type="text"
-          value={value.buttonLabel ?? ''}
-          onChange={(e) => onChange({ ...value, buttonLabel: e.target.value || undefined })}
-          placeholder="참석 회신하기"
-          className="mt-0.5 w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white"
-        />
-      </label>
+      {variant === 4 ? (
+        <div className="space-y-2">
+          <span className="text-[10px] uppercase tracking-wider text-stone-400">듀얼 버튼 문구</span>
+          <div className="grid grid-cols-2 gap-2">
+            <input
+              type="text"
+              value={value.attendLabel ?? ''}
+              onChange={(e) => onChange({ ...value, attendLabel: e.target.value || undefined })}
+              placeholder="Attending"
+              className="w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white"
+            />
+            <input
+              type="text"
+              value={value.regretLabel ?? ''}
+              onChange={(e) => onChange({ ...value, regretLabel: e.target.value || undefined })}
+              placeholder="Regrets"
+              className="w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white"
+            />
+          </div>
+        </div>
+      ) : (
+        <label className="block">
+          <span className="text-[10px] uppercase tracking-wider text-stone-400">버튼 문구</span>
+          <input
+            type="text"
+            value={value.buttonLabel ?? ''}
+            onChange={(e) => onChange({ ...value, buttonLabel: e.target.value || undefined })}
+            placeholder="참석 회신하기"
+            className="mt-0.5 w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white"
+          />
+        </label>
+      )}
 
       {/* RSVP 옵션 토글 */}
       <div className="pt-2 border-t border-stone-100">

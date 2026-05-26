@@ -2067,6 +2067,7 @@
   font-size: calc(12px * var(--ts-font-scale, 1));
   color: #5d5850;
   line-height: 1.75;
+  word-break: keep-all;
 }
 .ts-preview .ts-addr-btn {
   display: inline-flex;

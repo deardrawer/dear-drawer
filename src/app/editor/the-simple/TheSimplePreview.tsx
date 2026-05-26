@@ -3394,7 +3394,9 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <div style={{ fontFamily: 'var(--font-display)', fontSize: 'calc(10px * var(--ts-font-scale, 1))', letterSpacing: '0.2em', color: 'var(--mute)', textTransform: 'uppercase', flexShrink: 0, width: 70 }}>
                 Address
               </div>
-              <AddressCopy address={venueAddress} />
+              <div style={{ flex: 1, textAlign: 'left', wordBreak: 'keep-all' }}>
+                <AddressCopy address={venueAddress} />
+              </div>
             </div>
             {direction.showNavButtons !== false && <NavButtons address={venueAddress} />}
             <TransportInfo transport={direction.transport} />

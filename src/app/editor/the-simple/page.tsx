@@ -199,6 +199,7 @@ export interface SectionContents {
     showShuttleOption?: boolean
     showSideOption?: boolean
     rsvpNotice?: string
+    buttonLabel?: string
   }
   thanks: {
     mark: string

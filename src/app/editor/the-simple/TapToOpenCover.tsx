@@ -277,7 +277,7 @@ function V6Cover({ data }: { data: CoverData }) {
             <path d="M4 4 L10 10 L16 4" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
-        <span>Unfold</span>
+        <span>Tap to Open</span>
       </div>
     </>
   )
@@ -304,7 +304,7 @@ function V7Cover({ data }: { data: CoverData }) {
       </div>
       <div className="press-tap">
         <div className="ring" />
-        <span>Open</span>
+        <span>Tap to Open</span>
       </div>
     </>
   )

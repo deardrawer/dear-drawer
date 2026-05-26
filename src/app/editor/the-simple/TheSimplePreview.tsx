@@ -4488,7 +4488,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   cursor: 'pointer',
                 }}
               >
-                Reply
+                {rsvp.buttonLabel || 'Reply'}
               </span>
             </div>
           </AnimatedSection>
@@ -4546,7 +4546,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   cursor: 'pointer',
                 }}
               >
-                Reply Here
+                {rsvp.buttonLabel || 'Reply Here'}
               </span>
               <div
                 style={{
@@ -4705,7 +4705,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     cursor: 'pointer',
                   }}
                 >
-                  Reply
+                  {rsvp.buttonLabel || 'Reply'}
                 </span>
               </div>
             </div>
@@ -4721,7 +4721,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
             <p className="ts-rsvp-sub" style={{ whiteSpace: 'pre-line' }}>
               {rsvp.body}
             </p>
-            <span className="ts-rsvp-btn" onClick={() => setRsvpOpen(true)} style={{ cursor: 'pointer' }}>참석 회신하기</span>
+            <span className="ts-rsvp-btn" onClick={() => setRsvpOpen(true)} style={{ cursor: 'pointer' }}>{rsvp.buttonLabel || '참석 회신하기'}</span>
           </div>
         </AnimatedSection>
       )

@@ -171,7 +171,7 @@ function V2Cover({ data }: { data: CoverData }) {
       </div>
       <div className="tap-area">
         <div className="line" />
-        <span>Open invitation</span>
+        <span>TAP TO OPEN</span>
       </div>
     </>
   )

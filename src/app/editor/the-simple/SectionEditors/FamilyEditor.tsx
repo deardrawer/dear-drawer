@@ -204,6 +204,27 @@ export default function FamilyEditor({ value, groomName, brideName, onChange }: 
         </div>
       ))}
 
+      {/* 부모님 성함 텍스트 크기 */}
+      <label className="block">
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-stone-500">부모님 성함 텍스트 크기 <span className="text-[10px] text-stone-400">(카드, 가로사진에만 적용)</span></span>
+          <span className="text-[10px] text-stone-400">
+            {Math.round((value.familyFontScale ?? 1) * 100)}%
+          </span>
+        </div>
+        <input
+          type="range"
+          min={85}
+          max={120}
+          step={5}
+          value={Math.round((value.familyFontScale ?? 1) * 100)}
+          onChange={(e) =>
+            onChange({ ...value, familyFontScale: parseInt(e.target.value, 10) / 100 })
+          }
+          className="mt-2 w-full h-1.5 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-stone-800"
+        />
+      </label>
+
       {/* 고인 표시 스타일 */}
       <div className="space-y-1">
         <div className="text-[10px] uppercase tracking-wider text-stone-500">고인 표시 스타일</div>

@@ -217,6 +217,7 @@ export interface SectionContents {
     groomMother?: { name: string; phone?: string; deceased?: boolean }
     brideFather?: { name: string; phone?: string; deceased?: boolean }
     brideMother?: { name: string; phone?: string; deceased?: boolean }
+    familyFontScale?: number  // 부모님 이름 영역 스케일 (0.85~1.2, 기본 1)
   }
 }
 

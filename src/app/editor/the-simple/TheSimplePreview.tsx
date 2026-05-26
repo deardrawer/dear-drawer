@@ -2812,6 +2812,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       const renderParentLine = (
         father: { name: string; phone?: string; deceased?: boolean } | undefined,
         mother: { name: string; phone?: string; deceased?: boolean } | undefined,
+        style?: React.CSSProperties,
       ) => {
         const parts: React.ReactNode[] = []
         if (father?.name) {
@@ -2822,7 +2823,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
           parts.push(<span key="m">{decIcon(mother.deceased)}{mother.name}</span>)
         }
         if (parts.length === 0) return null
-        return <span className="ts-fam-parents">{parts}</span>
+        return <span className="ts-fam-parents" style={style}>{parts}</span>
       }
 
       const groomRelLabel = family.groomRelation || '아들'
@@ -2879,10 +2880,16 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         )
       }
 
+      // 부모님 이름 영역 커스텀 스케일
+      const famScale = family.familyFontScale && family.familyFontScale !== 1 ? family.familyFontScale : null
+      const famNameStyle = famScale ? { fontSize: `calc(13px * var(--ts-font-scale, 1) * ${famScale})` } as React.CSSProperties : undefined
+      const famParentStyle = famScale ? { fontSize: `calc(12px * var(--ts-font-scale, 1) * ${famScale})` } as React.CSSProperties : undefined
+      const famRelStyle = famScale ? { fontSize: `calc(11px * var(--ts-font-scale, 1) * ${famScale})` } as React.CSSProperties : undefined
+
       // V2 · 카드 — 사진 + 양가 정보 하나의 카드
       if (v === 2) {
-        const groomParent = renderParentLine(family.groomFather, family.groomMother)
-        const brideParent = renderParentLine(family.brideFather, family.brideMother)
+        const groomParent = renderParentLine(family.groomFather, family.groomMother, famNameStyle)
+        const brideParent = renderParentLine(family.brideFather, family.brideMother, famNameStyle)
         const hasPhoto = !!family.photo?.url
         const v2First = isFamBrideFirst
           ? { parent: brideParent, relSuffix: '의', relLabel: brideRelLabel, name: brideName || '신부' }
@@ -2911,8 +2918,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 <div className="ts-fam-card-grid">
                   <div className="ts-fam-card-cell">
                     {v2First.parent && (
-                      <div className="ts-fam-card-parents">
-                        <span style={{ whiteSpace: 'nowrap' }}>{v2First.parent}<span className="ts-fam-relation">{v2First.relSuffix}</span></span>{' '}<span className="ts-fam-relation">{v2First.relLabel}</span>
+                      <div className="ts-fam-card-parents" style={{ whiteSpace: 'nowrap', ...famParentStyle }}>
+                        {v2First.parent}<span className="ts-fam-relation" style={famRelStyle}>{v2First.relSuffix}</span>{' '}<span className="ts-fam-relation" style={famRelStyle}>{v2First.relLabel}</span>
                       </div>
                     )}
                     <div className="ts-fam-card-name">{v2First.name}</div>
@@ -2920,8 +2927,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   <div className="ts-fam-card-heart">&#9829;</div>
                   <div className="ts-fam-card-cell">
                     {v2Second.parent && (
-                      <div className="ts-fam-card-parents">
-                        <span style={{ whiteSpace: 'nowrap' }}>{v2Second.parent}<span className="ts-fam-relation">{v2Second.relSuffix}</span></span>{' '}<span className="ts-fam-relation">{v2Second.relLabel}</span>
+                      <div className="ts-fam-card-parents" style={{ whiteSpace: 'nowrap', ...famParentStyle }}>
+                        {v2Second.parent}<span className="ts-fam-relation" style={famRelStyle}>{v2Second.relSuffix}</span>{' '}<span className="ts-fam-relation" style={famRelStyle}>{v2Second.relLabel}</span>
                       </div>
                     )}
                     <div className="ts-fam-card-name">{v2Second.name}</div>
@@ -2936,8 +2943,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
 
       // V3 · 가로사진 + 좌우 하트
       if (v === 3) {
-        const groomParent = renderParentLine(family.groomFather, family.groomMother)
-        const brideParent = renderParentLine(family.brideFather, family.brideMother)
+        const groomParent = renderParentLine(family.groomFather, family.groomMother, famNameStyle)
+        const brideParent = renderParentLine(family.brideFather, family.brideMother, famNameStyle)
         const v3First = isFamBrideFirst
           ? { parent: brideParent, relSuffix: '의', relLabel: brideRelLabel, name: brideName || '신부' }
           : { parent: groomParent, relSuffix: '의', relLabel: groomRelLabel, name: groomName || '신랑' }
@@ -2951,8 +2958,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
             <div className="ts-fam-v3-grid ts-anim-item">
               <div className="ts-fam-v3-cell">
                 {v3First.parent && (
-                  <div className="ts-fam-v3-role">
-                    <span style={{ whiteSpace: 'nowrap' }}>{v3First.parent}<span className="ts-fam-relation">{v3First.relSuffix}</span></span>{' '}<span className="ts-fam-relation">{v3First.relLabel}</span>
+                  <div className="ts-fam-v3-role" style={{ whiteSpace: 'nowrap', ...famRelStyle }}>
+                    {v3First.parent}<span className="ts-fam-relation" style={famRelStyle}>{v3First.relSuffix}</span>{' '}<span className="ts-fam-relation" style={famRelStyle}>{v3First.relLabel}</span>
                   </div>
                 )}
                 <div className="ts-fam-child">{v3First.name}</div>
@@ -2960,8 +2967,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <div className="ts-fam-v3-heart">&#9829;</div>
               <div className="ts-fam-v3-cell">
                 {v3Second.parent && (
-                  <div className="ts-fam-v3-role">
-                    <span style={{ whiteSpace: 'nowrap' }}>{v3Second.parent}<span className="ts-fam-relation">{v3Second.relSuffix}</span></span>{' '}<span className="ts-fam-relation">{v3Second.relLabel}</span>
+                  <div className="ts-fam-v3-role" style={{ whiteSpace: 'nowrap', ...famRelStyle }}>
+                    {v3Second.parent}<span className="ts-fam-relation" style={famRelStyle}>{v3Second.relSuffix}</span>{' '}<span className="ts-fam-relation" style={famRelStyle}>{v3Second.relLabel}</span>
                   </div>
                 )}
                 <div className="ts-fam-child">{v3Second.name}</div>
@@ -3999,6 +4006,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   style={{
                     display: 'grid',
                     gridTemplateColumns: '90px 1fr',
+                    gap: 14,
                     padding: '18px 0',
                     borderBottom: '1px solid var(--line)',
                     borderTop: i === 0 ? '1px solid var(--line)' : 'none',

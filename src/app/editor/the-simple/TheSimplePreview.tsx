@@ -3969,7 +3969,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                       style={{
                         fontFamily: 'var(--font-ko)',
                         fontSize: 'calc(14px * var(--ts-font-scale, 1))',
-                        fontWeight: 600,
+                        fontWeight: 500,
                         color: 'var(--ink)',
                         marginBottom: 4,
                       }}
@@ -4007,7 +4007,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   key={i}
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: '90px 1fr',
+                    gridTemplateColumns: '80px 1fr',
                     gap: 14,
                     padding: '18px 0',
                     borderBottom: '1px solid var(--line)',
@@ -4031,7 +4031,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                       style={{
                         fontFamily: 'var(--font-ko)',
                         fontSize: 'calc(14px * var(--ts-font-scale, 1))',
-                        fontWeight: 600,
+                        fontWeight: 500,
                         color: 'var(--ink)',
                       }}
                     >
@@ -4097,7 +4097,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     style={{
                       fontFamily: 'var(--font-ko)',
                       fontSize: 'calc(14px * var(--ts-font-scale, 1))',
-                      fontWeight: 600,
+                      fontWeight: 500,
                       color: 'var(--ink)',
                       marginBottom: 8,
                     }}
@@ -4178,7 +4178,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     style={{
                       fontFamily: 'var(--font-ko)',
                       fontSize: 'calc(14px * var(--ts-font-scale, 1))',
-                      fontWeight: 600,
+                      fontWeight: 500,
                       color: 'var(--ink)',
                       marginBottom: 4,
                     }}

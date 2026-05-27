@@ -23,6 +23,8 @@ import VideoEditor from './SectionEditors/VideoEditor'
 import InfoEditor from './SectionEditors/InfoEditor'
 import DirectionEditor from './SectionEditors/DirectionEditor'
 import MetaEditor from './SectionEditors/MetaEditor'
+import DdayPopupEditor from './SectionEditors/DdayPopupEditor'
+import DdayPopupOverlay from './DdayPopupOverlay'
 import TapToOpenCover, { COVER_VARIANTS } from './TapToOpenCover'
 import ImageZoomEditor from '@/components/editor/ImageZoomEditor'
 import { uploadImages, deleteImage, cropAndUploadImage } from '@/lib/imageUpload'
@@ -236,6 +238,36 @@ export interface LoveStoryItem {
 }
 
 /**
+ * D-Day 팝업 페이지 (스와이프 단위)
+ */
+export interface DdayPopupLink {
+  url: string
+  label: string
+}
+
+export interface DdayPopupPage {
+  title: string
+  body: string
+  images?: ImageWithSettings[]   // 최대 3장
+  links?: DdayPopupLink[]
+}
+
+/**
+ * D-Day 팝업 데이터
+ */
+export interface DdayPopupData {
+  enabled: boolean
+  startDays?: number              // deprecated, backward compat
+  displayStart?: string           // ISO date (YYYY-MM-DD)
+  displayEnd?: string             // ISO date (YYYY-MM-DD)
+  title?: string
+  pages: DdayPopupPage[]
+  buttonLabel?: string
+  showDday?: boolean
+  textAlign?: 'left' | 'center'
+}
+
+/**
  * THE SIMPLE 에디터 데이터 타입
  */
 export interface TheSimpleInvitationData {
@@ -338,6 +370,9 @@ export interface TheSimpleInvitationData {
     url: string
     autoplay: boolean
   }
+
+  // D-Day 팝업 (결혼식 근접일 당일 안내)
+  ddayPopup?: DdayPopupData
 
   // 메타
   meta: {
@@ -516,6 +551,13 @@ const defaultData: TheSimpleInvitationData = {
     enabled: false,
     url: '',
     autoplay: true,
+  },
+  ddayPopup: {
+    enabled: false,
+    title: '결혼식 당일 안내',
+    pages: [],
+    buttonLabel: '확인했습니다',
+    showDday: true,
   },
   meta: {
     title: '',
@@ -739,6 +781,7 @@ function TheSimpleEditorContent() {
   const [coverOverlayFading, setCoverOverlayFading] = useState(false)
   const [coverOverlayGone, setCoverOverlayGone] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
+  const [ddayPreviewOpen, setDdayPreviewOpen] = useState(false)
   const [playingBgm, setPlayingBgm] = useState<string | null>(null)
   const bgmAudioRef = useRef<HTMLAudioElement>(null)
   const [curtainRevealed, setCurtainRevealed] = useState(false)
@@ -1385,6 +1428,17 @@ function TheSimpleEditorContent() {
                   )}
                   {showPreview && <TheSimplePreview data={data} />}
                 </div>
+                {/* D-Day 팝업 미리보기 (모바일) — 스크롤 영역 바깥 */}
+                {ddayPreviewOpen && data.ddayPopup?.enabled && (
+                  <DdayPopupOverlay
+                    data={data.ddayPopup}
+                    weddingDate={data.wedding.date}
+                    isPreview
+                    onDismiss={() => setDdayPreviewOpen(false)}
+                    style={{ position: 'absolute', inset: 0, zIndex: 60 }}
+                    pointColor={data.pointColor}
+                  />
+                )}
               </div>
               </div>
             </div>
@@ -1434,7 +1488,7 @@ function TheSimpleEditorContent() {
           {!isMobile && (
             <div className="w-[460px] min-w-[460px] sticky top-0 flex justify-center items-center p-4">
               <div
-                className="w-[390px] shadow-2xl bg-white overflow-hidden border border-stone-200 rounded-[22px]"
+                className="w-[390px] shadow-2xl bg-white overflow-hidden border border-stone-200 rounded-[22px] relative"
                 style={{ height: 'calc(100vh - 88px)', transform: 'translateZ(0)' }}
               >
                 <div className="w-full h-full overflow-y-auto relative" style={{ WebkitOverflowScrolling: 'touch', ['--ts-intro-vh' as string]: 'calc(100vh - 88px)' } as React.CSSProperties}>
@@ -1479,6 +1533,17 @@ function TheSimpleEditorContent() {
                   )}
                   {showPreview && <TheSimplePreview data={data} />}
                 </div>
+                {/* D-Day 팝업 미리보기 — 스크롤 영역 바깥 */}
+                {ddayPreviewOpen && data.ddayPopup?.enabled && (
+                  <DdayPopupOverlay
+                    data={data.ddayPopup}
+                    weddingDate={data.wedding.date}
+                    isPreview
+                    onDismiss={() => setDdayPreviewOpen(false)}
+                    style={{ position: 'absolute', inset: 0, zIndex: 60 }}
+                    pointColor={data.pointColor}
+                  />
+                )}
               </div>
             </div>
           )}
@@ -2773,6 +2838,31 @@ function TheSimpleEditorContent() {
                       venueName={data.wedding.venue.name}
                     />
                   </section>
+
+                  {/* D-Day 팝업 (결혼식 근접일 당일 안내) */}
+                  <section className="border-t border-stone-100 pt-4 mt-4">
+                    <h3 className="text-[10px] uppercase tracking-widest text-stone-400 mb-3">
+                      D-Day Popup
+                    </h3>
+                    <DdayPopupEditor
+                      value={data.ddayPopup || { enabled: false, pages: [], buttonLabel: '확인했습니다', showDday: true, title: '결혼식 당일 안내' }}
+                      weddingDate={data.wedding.date}
+                      onChange={(patch) => {
+                        setData((prev) => ({ ...prev, ddayPopup: { ...prev.ddayPopup!, ...patch } }))
+                        setIsDirty(true)
+                      }}
+                    />
+                    {data.ddayPopup?.enabled && (data.ddayPopup?.pages?.length ?? 0) > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setDdayPreviewOpen(true)}
+                        className="mt-3 w-full flex items-center justify-center gap-1.5 border border-stone-300 rounded-md py-2 text-xs text-stone-600 hover:border-stone-500 hover:text-stone-800 transition-colors"
+                      >
+                        <span style={{ fontSize: 14 }}>🔔</span>
+                        팝업 미리보기
+                      </button>
+                    )}
+                  </section>
                 </div>
               </div>
             </div>
@@ -2799,6 +2889,8 @@ function TheSimpleEditorContent() {
           kakaoImageRatio={data.meta.kakaoThumbnailRatio}
         />
       )}
+
+      {/* D-Day 팝업 미리보기는 폰 프레임 내부에서 렌더링 */}
     </div>
   )
 }

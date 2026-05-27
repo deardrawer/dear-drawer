@@ -2182,6 +2182,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
   const [lightboxIndex, setLightboxIndex] = useState(0)
   const [lightboxImages, setLightboxImages] = useState<string[]>([])
 
+
   // 게스트북 메시지 fetch (실제 청첩장에서만)
   const [guestbookMessages, setGuestbookMessages] = useState<{ name: string; date: string; text: string }[]>([])
   const [gbFetchKey, setGbFetchKey] = useState(0)

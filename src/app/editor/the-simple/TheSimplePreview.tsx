@@ -91,12 +91,14 @@ function useInView<T extends HTMLElement>(
     if (!el) return
     let done = false
     let ioFallback: IntersectionObserver | null = null
+    let ioScroll: IntersectionObserver | null = null
     const markInView = () => {
       if (done) return
       done = true
       setInView(true)
       io.disconnect()
       ioFallback?.disconnect()
+      ioScroll?.disconnect()
     }
     // 주 옵저버: rootMargin -40%로 화면 중상단 진입 시 트리거
     const io = new IntersectionObserver(
@@ -113,7 +115,28 @@ function useInView<T extends HTMLElement>(
       )
       ioFallback.observe(el)
     }, 1200)
-    return () => { clearTimeout(fallbackTimer); io.disconnect(); ioFallback?.disconnect() }
+    // 스크롤 컨테이너 root 옵저버: 에디터 프리뷰(overflow-y:auto) 안에서 viewport 기준 IO가 실패하는 Edge 대비
+    const scrollFallbackTimer = setTimeout(() => {
+      if (done) return
+      let scrollParent: HTMLElement | null = el.parentElement
+      while (scrollParent) {
+        if (/(auto|scroll)/.test(getComputedStyle(scrollParent).overflowY)) break
+        scrollParent = scrollParent.parentElement
+      }
+      if (scrollParent) {
+        ioScroll = new IntersectionObserver(
+          ([entry]) => { if (entry.isIntersecting) markInView() },
+          { root: scrollParent, threshold: 0.05 }
+        )
+        ioScroll.observe(el)
+      }
+    }, 2000)
+    // 최종 안전장치: 3초 후에도 감지 실패 시 강제 표시
+    const safetyTimer = setTimeout(() => markInView(), 3500)
+    return () => {
+      clearTimeout(fallbackTimer); clearTimeout(scrollFallbackTimer); clearTimeout(safetyTimer)
+      io.disconnect(); ioFallback?.disconnect(); ioScroll?.disconnect()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   return [ref, inView]
@@ -354,6 +377,11 @@ function SectionToggle({
   btnStyle?: number
 }) {
   const [open, setOpen] = useState(!enabled) // 토글 비활성이면 항상 열림
+  const btnRef = useRef<HTMLDivElement>(null)
+  const rafId = useRef(0)
+  const scrollCtx = useRef<{ targetY: number; container: HTMLElement | null } | null>(null)
+
+  useEffect(() => () => { if (rafId.current) cancelAnimationFrame(rafId.current) }, [])
 
   if (!enabled) return <>{children}</>
 
@@ -376,17 +404,71 @@ function SectionToggle({
     }
   }
 
+  // 매 프레임 버튼 위치 보정
+  const tick = () => {
+    const el = btnRef.current
+    const ctx = scrollCtx.current
+    if (!el || !ctx) return
+    const diff = el.getBoundingClientRect().top - ctx.targetY
+    if (Math.abs(diff) > 0.5) {
+      if (ctx.container) ctx.container.scrollTop += diff
+      else window.scrollBy(0, diff)
+    }
+    rafId.current = requestAnimationFrame(tick)
+  }
+
+  const handleToggle = () => {
+    if (open && btnRef.current) {
+      // 접기: 버튼 화면 Y 고정 시작
+      const targetY = btnRef.current.getBoundingClientRect().top
+      let container: HTMLElement | null = null
+      let node: HTMLElement | null = btnRef.current.parentElement
+      while (node) {
+        if (/(auto|scroll)/.test(getComputedStyle(node).overflowY)) { container = node; break }
+        node = node.parentElement
+      }
+      scrollCtx.current = { targetY, container }
+      rafId.current = requestAnimationFrame(tick)
+    }
+    setOpen(prev => !prev)
+  }
+
+  const handleTransitionEnd = (e: React.TransitionEvent) => {
+    if (e.propertyName === 'grid-template-rows') {
+      if (rafId.current) { cancelAnimationFrame(rafId.current); rafId.current = 0 }
+      scrollCtx.current = null
+    }
+  }
+
   const buttonLabel = open
     ? (btnStyle === 3 ? '접기 ▲' : '접기')
     : (btnStyle === 3 ? `${label} ▼` : label)
 
   return (
     <div>
-      {open && children}
-      <div style={{ textAlign: 'center', padding: open ? '8px 0 0' : '0' }}>
+      <div
+        onTransitionEnd={handleTransitionEnd}
+        style={{
+          display: 'grid',
+          gridTemplateRows: open ? '1fr' : '0fr',
+          transition: 'grid-template-rows 0.7s cubic-bezier(0.4, 0, 0.2, 1)',
+        }}
+      >
+        <div style={{
+          overflow: 'hidden',
+          opacity: open ? 1 : 0,
+          transform: open ? 'translateY(0)' : 'translateY(-12px)',
+          transition: open
+            ? 'opacity 0.5s ease 0.15s, transform 0.6s ease 0.1s'
+            : 'opacity 0.35s ease, transform 0.35s ease',
+        }}>
+          {children}
+        </div>
+      </div>
+      <div ref={btnRef} style={{ textAlign: 'center', paddingTop: 8 }}>
         <button
           type="button"
-          onClick={() => setOpen((p) => !p)}
+          onClick={handleToggle}
           style={getButtonStyle()}
         >
           {buttonLabel}
@@ -1137,10 +1219,28 @@ function GalleryShowMore({
 }) {
   const [expanded, setExpanded] = useState(false)
   const expandRef = useRef<HTMLDivElement>(null)
+  const btnAreaRef = useRef<HTMLButtonElement>(null)
+  const rafId = useRef(0)
+  const scrollCtx = useRef<{ targetY: number; container: HTMLElement | null } | null>(null)
   const hasFold = showMoreRow > 0 && rows.length > showMoreRow
   const initialRows = hasFold ? rows.slice(0, showMoreRow) : rows
   const hiddenRows = hasFold ? rows.slice(showMoreRow) : []
   const hiddenCount = hasFold ? hiddenRows.reduce((sum, r) => sum + r.items.filter(i => i.src).length, 0) : 0
+
+  useEffect(() => () => { if (rafId.current) cancelAnimationFrame(rafId.current) }, [])
+
+  // 매 프레임 버튼 위치 보정 (접기 시)
+  const tick = useCallback(() => {
+    const el = btnAreaRef.current
+    const ctx = scrollCtx.current
+    if (!el || !ctx) return
+    const diff = el.getBoundingClientRect().top - ctx.targetY
+    if (Math.abs(diff) > 0.5) {
+      if (ctx.container) ctx.container.scrollTop += diff
+      else window.scrollBy(0, diff)
+    }
+    rafId.current = requestAnimationFrame(tick)
+  }, [])
 
   // Animate expand/collapse height
   useEffect(() => {
@@ -1194,10 +1294,16 @@ function GalleryShowMore({
         <>
           <div
             ref={expandRef}
+            onTransitionEnd={(e) => {
+              if (e.propertyName === 'height') {
+                if (rafId.current) { cancelAnimationFrame(rafId.current); rafId.current = 0 }
+                scrollCtx.current = null
+              }
+            }}
             style={{
               height: 0,
               overflow: 'hidden',
-              transition: 'height 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+              transition: 'height 0.7s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap, paddingTop: gap }}>
@@ -1211,7 +1317,7 @@ function GalleryShowMore({
                       gap,
                       opacity: expanded ? 1 : 0,
                       transform: expanded ? 'translateY(0)' : 'translateY(12px)',
-                      transition: `opacity 0.4s ease ${rowIdx * 0.08}s, transform 0.4s ease ${rowIdx * 0.08}s`,
+                      transition: `opacity 0.5s ease ${rowIdx * 0.1}s, transform 0.6s ease ${rowIdx * 0.1}s`,
                     }}
                   >
                     {row.items.map((item) => {
@@ -1233,8 +1339,22 @@ function GalleryShowMore({
             </div>
           </div>
           <button
+            ref={btnAreaRef}
             type="button"
-            onClick={() => setExpanded(!expanded)}
+            onClick={() => {
+              if (expanded && btnAreaRef.current) {
+                const targetY = btnAreaRef.current.getBoundingClientRect().top
+                let container: HTMLElement | null = null
+                let node: HTMLElement | null = btnAreaRef.current.parentElement
+                while (node) {
+                  if (/(auto|scroll)/.test(getComputedStyle(node).overflowY)) { container = node; break }
+                  node = node.parentElement
+                }
+                scrollCtx.current = { targetY, container }
+                rafId.current = requestAnimationFrame(tick)
+              }
+              setExpanded(!expanded)
+            }}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -4245,6 +4365,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
     },
 
     account: (v) => {
+      const accToggle = account.toggle
       const guideText = account.guide || ''
       const accountGuideEl = guideText ? (
         <p style={{
@@ -4283,10 +4404,12 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         return (
           <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key={`account-${v}`}>
             <div className="ts-eyebrow">{account.eyebrow}</div>
+            <SectionToggle enabled={accToggle?.enabled ?? false} label={accToggle?.label || '마음 전하실 곳'} btnStyle={accToggle?.style}>
             <div style={{ background: 'var(--card)', padding: '20px 16px', marginTop: 8 }}>
               {accountGuideEl}
               <AccountTabbed {...tabbedProps} />
             </div>
+            </SectionToggle>
           </AnimatedSection>
         )
       }
@@ -4312,6 +4435,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         return (
           <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key={`account-${v}`}>
             <div className="ts-eyebrow">{account.eyebrow}</div>
+            <SectionToggle enabled={accToggle?.enabled ?? false} label={accToggle?.label || '마음 전하실 곳'} btnStyle={accToggle?.style}>
             <div style={{ marginTop: 8 }}>
               {accountGuideEl}
               {allList.length === 0 ? (
@@ -4384,6 +4508,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 </div>
               )}
             </div>
+            </SectionToggle>
           </AnimatedSection>
         )
       }
@@ -4393,10 +4518,12 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         return (
           <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key={`account-${v}`}>
             <div className="ts-eyebrow">{account.eyebrow}</div>
+            <SectionToggle enabled={accToggle?.enabled ?? false} label={accToggle?.label || '마음 전하실 곳'} btnStyle={accToggle?.style}>
             <div style={{ border: '1px solid var(--line)', padding: '20px 16px', marginTop: 8 }}>
               {accountGuideEl}
               <AccountTabbed {...tabbedProps} />
             </div>
+            </SectionToggle>
           </AnimatedSection>
         )
       }
@@ -4406,10 +4533,12 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         return (
           <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key={`account-${v}`}>
             <div className="ts-eyebrow">{account.eyebrow}</div>
+            <SectionToggle enabled={accToggle?.enabled ?? false} label={accToggle?.label || '마음 전하실 곳'} btnStyle={accToggle?.style}>
             <div style={{ textAlign: 'center', padding: '16px 0' }}>
               {accountGuideEl}
               <AccountTabbed {...tabbedProps} />
             </div>
+            </SectionToggle>
           </AnimatedSection>
         )
       }
@@ -4418,10 +4547,12 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       return (
         <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key={`account-${v}`}>
           <div className="ts-eyebrow">{account.eyebrow}</div>
+          <SectionToggle enabled={accToggle?.enabled ?? false} label={accToggle?.label || '마음 전하실 곳'} btnStyle={accToggle?.style}>
           <div style={{ marginTop: 8 }}>
             {accountGuideEl}
             <AccountTabbed {...tabbedProps} />
           </div>
+          </SectionToggle>
         </AnimatedSection>
       )
     },

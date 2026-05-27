@@ -99,6 +99,69 @@ export default function AccountEditor({ value, onChange }: AccountEditorProps) {
 
   return (
     <div className="space-y-3">
+      {/* 토글 옵션 */}
+      <div className="rounded-md border border-stone-200 p-2.5 bg-white space-y-2">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={value.toggle?.enabled ?? false}
+            onChange={(e) =>
+              onChange({
+                ...value,
+                toggle: {
+                  enabled: e.target.checked,
+                  label: value.toggle?.label || '마음 전하실 곳',
+                },
+              })
+            }
+            className="rounded border-stone-300"
+          />
+          <span className="text-[10px] uppercase tracking-wider text-stone-500">토글 (접기/펼치기)</span>
+        </label>
+        {value.toggle?.enabled && (
+          <>
+            <input
+              type="text"
+              value={value.toggle.label}
+              onChange={(e) =>
+                onChange({
+                  ...value,
+                  toggle: { ...value.toggle!, label: e.target.value },
+                })
+              }
+              placeholder="버튼 텍스트"
+              className="w-full border border-stone-200 rounded px-2 py-1 text-xs focus:outline-none focus:border-stone-600"
+            />
+            <div>
+              <span className="text-[10px] uppercase tracking-wider text-stone-400">버튼 스타일</span>
+              <div className="flex gap-2 mt-1">
+                {([
+                  { s: 1, label: '아웃라인', style: { color: '#78716c', border: '1px solid #d6d3d1', borderRadius: 20, padding: '4px 12px', background: 'transparent', fontSize: 9 } },
+                  { s: 2, label: '채움', style: { background: '#78716c', color: '#fff', border: 'none', borderRadius: 20, padding: '4px 12px', fontSize: 9 } },
+                  { s: 3, label: '밑줄 ▼', style: { background: 'transparent', color: '#78716c', border: 'none', padding: '4px 4px', textDecoration: 'underline', textUnderlineOffset: '3px', fontSize: 9 } },
+                  { s: 4, label: '둥근 채움', style: { background: '#44403c', color: '#fff', border: 'none', borderRadius: 8, padding: '4px 12px', fontSize: 9 } },
+                ] as const).map(({ s, label: btnLabel, style }) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() =>
+                      onChange({
+                        ...value,
+                        toggle: { ...value.toggle!, style: s },
+                      })
+                    }
+                    className={`transition-all ${(value.toggle?.style ?? 1) === s ? 'ring-2 ring-stone-500 ring-offset-1' : 'opacity-60 hover:opacity-100'}`}
+                    style={style as React.CSSProperties}
+                  >
+                    {btnLabel}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+
       <label className="block">
         <span className="text-[10px] uppercase tracking-wider text-stone-400">Eyebrow</span>
         <input

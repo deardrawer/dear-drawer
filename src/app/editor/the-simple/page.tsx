@@ -182,6 +182,7 @@ export interface SectionContents {
     groomMotherName?: string
     brideFatherName?: string
     brideMotherName?: string
+    toggle?: { enabled: boolean; label: string; style?: number }
   }
   lovestory: {
     eyebrow: string

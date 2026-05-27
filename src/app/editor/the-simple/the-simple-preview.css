@@ -2786,7 +2786,16 @@
 .ts-preview .ts-settled:not(.ts-intro) .ts-anim-right,
 .ts-preview .ts-settled:not(.ts-intro) .ts-anim-amp,
 .ts-preview .ts-settled:not(.ts-intro) .ts-anim-vline,
-.ts-preview .ts-settled:not(.ts-intro) .ts-anim-cinematic {
+.ts-preview .ts-settled:not(.ts-intro) .ts-anim-cinematic,
+.ts-preview .ts-settled:not(.ts-intro) .ts-in-anim,
+.ts-preview .ts-settled:not(.ts-intro) .ts-in-child,
+.ts-preview .ts-settled:not(.ts-intro) .ts-guide-cell,
+.ts-preview .ts-settled:not(.ts-intro) .ts-nav-buttons,
+.ts-preview .ts-settled:not(.ts-intro) .ts-transport,
+.ts-preview .ts-settled:not(.ts-intro) .ts-eyebrow,
+.ts-preview .ts-settled:not(.ts-intro) .ts-ls-stagger,
+.ts-preview .ts-settled:not(.ts-intro) .ts-i5-counter,
+.ts-preview .ts-settled:not(.ts-intro)[class*="ts-anim-"] > * {
   animation: none !important;
   opacity: 1 !important;
   transform: none !important;

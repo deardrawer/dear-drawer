@@ -4667,7 +4667,7 @@
   padding: 24px 0;
 }
 .dday-popup--open {
-  animation: ddayFadeIn 0.3s ease-out forwards;
+  animation: ddayFadeIn 0.5s ease-out forwards;
 }
 .dday-popup--closing {
   animation: ddayFadeOut 0.3s ease-out forwards;
@@ -4704,7 +4704,7 @@
   border-radius: 16px;
   padding: 28px 24px 24px;
   text-align: center;
-  animation: ddayScaleIn 0.3s ease-out forwards;
+  animation: ddayScaleIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
   margin: auto;
   flex-shrink: 0;
 }

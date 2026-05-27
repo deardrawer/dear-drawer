@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import type { DdayPopupData, ImageWithSettings } from './page'
 
 interface DdayPopupOverlayProps {
@@ -169,31 +169,15 @@ export default function DdayPopupOverlay({
         </button>
       </div>
 
-      {/* 이미지 확대 모달 */}
+      {/* 이미지 확대 모달 (핀치 줌) */}
       {zoomedImage && (
-        <div
-          className="dday-popup-zoom-overlay"
-          onClick={(e) => { e.stopPropagation(); setZoomedImage(null) }}
-        >
-          <img
-            src={zoomedImage}
-            alt=""
-            className="dday-popup-zoom-img"
-            onClick={(e) => e.stopPropagation()}
-          />
-          <button
-            className="dday-popup-zoom-close"
-            onClick={(e) => { e.stopPropagation(); setZoomedImage(null) }}
-          >
-            &times;
-          </button>
-        </div>
+        <ZoomModal src={zoomedImage} onClose={() => setZoomedImage(null)} />
       )}
     </div>
   )
 }
 
-/** 이미지 슬라이더 (최대 3장, 좌우 버튼 네비게이션) */
+/** 이미지 슬라이더 (최대 3장, 스와이프 + 버튼 네비게이션) */
 function ImageSlider({
   images,
   onImageClick,
@@ -203,34 +187,39 @@ function ImageSlider({
 }) {
   const [current, setCurrent] = useState(0)
   const count = images.length
+  const touchRef = useRef<{ startX: number; startY: number; swiped: boolean } | null>(null)
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const t = e.touches[0]
+    touchRef.current = { startX: t.clientX, startY: t.clientY, swiped: false }
+  }
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!touchRef.current || touchRef.current.swiped) return
+    const dx = e.touches[0].clientX - touchRef.current.startX
+    const dy = e.touches[0].clientY - touchRef.current.startY
+    if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy)) {
+      touchRef.current.swiped = true
+      if (dx < 0 && current < count - 1) setCurrent((c) => c + 1)
+      else if (dx > 0 && current > 0) setCurrent((c) => c - 1)
+    }
+  }
+  const handleTouchEnd = () => { touchRef.current = null }
+
+  const handleClick = () => {
+    if (touchRef.current?.swiped) return
+    onImageClick(images[current].url)
+  }
 
   return (
     <div className="dday-popup-img-slider">
       <div
         className="dday-popup-img-slider-image"
-        onClick={() => onImageClick(images[current].url)}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onClick={handleClick}
       >
-        <img src={images[current].url} alt="" />
-        {count > 1 && (
-          <>
-            <button
-              type="button"
-              className="dday-popup-img-nav dday-popup-img-nav--prev"
-              onClick={(e) => { e.stopPropagation(); setCurrent((c) => (c - 1 + count) % count) }}
-              aria-label="이전 이미지"
-            >
-              &#8249;
-            </button>
-            <button
-              type="button"
-              className="dday-popup-img-nav dday-popup-img-nav--next"
-              onClick={(e) => { e.stopPropagation(); setCurrent((c) => (c + 1) % count) }}
-              aria-label="다음 이미지"
-            >
-              &#8250;
-            </button>
-          </>
-        )}
+        <img src={images[current].url} alt="" draggable={false} />
       </div>
       {count > 1 && (
         <div className="dday-popup-img-dots">
@@ -243,7 +232,7 @@ function ImageSlider({
           ))}
         </div>
       )}
-      <p className="dday-popup-img-hint">이미지를 클릭하면 확대할 수 있습니다</p>
+      <p className="dday-popup-img-hint">이미지를 밀어서 넘기거나 클릭하면 확대할 수 있습니다</p>
     </div>
   )
 }
@@ -286,6 +275,100 @@ function PageContent({
           ))}
         </div>
       )}
+    </div>
+  )
+}
+
+/** 핀치 줌 지원 이미지 확대 모달 */
+function ZoomModal({ src, onClose }: { src: string; onClose: () => void }) {
+  const [scale, setScale] = useState(1)
+  const [translate, setTranslate] = useState({ x: 0, y: 0 })
+  const pinchRef = useRef<{ dist: number; scale: number } | null>(null)
+  const panRef = useRef<{ startX: number; startY: number; tx: number; ty: number } | null>(null)
+  const lastTapRef = useRef(0)
+
+  const getPinchDist = (touches: React.TouchList) => {
+    const dx = touches[0].clientX - touches[1].clientX
+    const dy = touches[0].clientY - touches[1].clientY
+    return Math.sqrt(dx * dx + dy * dy)
+  }
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      e.preventDefault()
+      pinchRef.current = { dist: getPinchDist(e.touches), scale }
+    } else if (e.touches.length === 1 && scale > 1) {
+      panRef.current = { startX: e.touches[0].clientX, startY: e.touches[0].clientY, tx: translate.x, ty: translate.y }
+    }
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2 && pinchRef.current) {
+      e.preventDefault()
+      const newDist = getPinchDist(e.touches)
+      const newScale = Math.min(4, Math.max(1, pinchRef.current.scale * (newDist / pinchRef.current.dist)))
+      setScale(newScale)
+      if (newScale <= 1) setTranslate({ x: 0, y: 0 })
+    } else if (e.touches.length === 1 && panRef.current && scale > 1) {
+      const dx = e.touches[0].clientX - panRef.current.startX
+      const dy = e.touches[0].clientY - panRef.current.startY
+      setTranslate({ x: panRef.current.tx + dx, y: panRef.current.ty + dy })
+    }
+  }
+
+  const handleTouchEnd = () => {
+    pinchRef.current = null
+    panRef.current = null
+    if (scale <= 1.05) {
+      setScale(1)
+      setTranslate({ x: 0, y: 0 })
+    }
+  }
+
+  const handleDoubleTap = () => {
+    const now = Date.now()
+    if (now - lastTapRef.current < 300) {
+      if (scale > 1) {
+        setScale(1)
+        setTranslate({ x: 0, y: 0 })
+      } else {
+        setScale(2.5)
+      }
+    }
+    lastTapRef.current = now
+  }
+
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (scale <= 1) onClose()
+  }
+
+  return (
+    <div
+      className="dday-popup-zoom-overlay"
+      onClick={handleOverlayClick}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      style={{ touchAction: 'none' }}
+    >
+      <img
+        src={src}
+        alt=""
+        className="dday-popup-zoom-img"
+        draggable={false}
+        onClick={(e) => { e.stopPropagation(); handleDoubleTap() }}
+        style={{
+          transform: `translate(${translate.x}px, ${translate.y}px) scale(${scale})`,
+          transition: scale === 1 && translate.x === 0 && translate.y === 0 ? 'transform 0.2s ease-out' : 'none',
+        }}
+      />
+      <button
+        className="dday-popup-zoom-close"
+        onClick={(e) => { e.stopPropagation(); onClose() }}
+      >
+        &times;
+      </button>
     </div>
   )
 }

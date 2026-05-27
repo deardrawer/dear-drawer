@@ -4838,34 +4838,6 @@
   display: block;
   object-fit: cover;
 }
-.dday-popup-img-nav {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 26px;
-  height: 26px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.35);
-  border: none;
-  border-radius: 50%;
-  color: #fff;
-  font-size: 16px;
-  line-height: 1;
-  cursor: pointer;
-  transition: background 0.15s;
-  z-index: 1;
-}
-.dday-popup-img-nav:hover {
-  background: rgba(0, 0, 0, 0.55);
-}
-.dday-popup-img-nav--prev {
-  left: 6px;
-}
-.dday-popup-img-nav--next {
-  right: 6px;
-}
 .dday-popup-img-dots {
   display: flex;
   justify-content: center;

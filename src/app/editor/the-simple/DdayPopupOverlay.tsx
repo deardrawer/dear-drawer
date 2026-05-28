@@ -44,7 +44,7 @@ export default function DdayPopupOverlay({
     return false
   })
   const [closing, setClosing] = useState(false)
-  const [zoomedImage, setZoomedImage] = useState<string | null>(null)
+  const [zoomState, setZoomState] = useState<{ urls: string[]; index: number } | null>(null)
   const [currentPage, setCurrentPage] = useState(0)
   const [slideDir, setSlideDir] = useState<'next' | 'prev' | null>(null)
   const [pageKey, setPageKey] = useState(0)
@@ -136,7 +136,7 @@ export default function DdayPopupOverlay({
             >
               <PageContent
                 page={pages[currentPage]}
-                onImageClick={setZoomedImage}
+                onImageClick={(urls, index) => setZoomState({ urls, index })}
                 textAlign={data.textAlign || 'left'}
               />
             </div>
@@ -169,9 +169,13 @@ export default function DdayPopupOverlay({
         </button>
       </div>
 
-      {/* 이미지 확대 모달 (핀치 줌) */}
-      {zoomedImage && (
-        <ZoomModal src={zoomedImage} onClose={() => setZoomedImage(null)} />
+      {/* 이미지 확대 모달 (핀치 줌 + 네비게이션) */}
+      {zoomState && (
+        <ZoomModal
+          urls={zoomState.urls}
+          initialIndex={zoomState.index}
+          onClose={() => setZoomState(null)}
+        />
       )}
     </div>
   )
@@ -183,7 +187,7 @@ function ImageSlider({
   onImageClick,
 }: {
   images: ImageWithSettings[]
-  onImageClick: (url: string) => void
+  onImageClick: (urls: string[], index: number) => void
 }) {
   const [current, setCurrent] = useState(0)
   const count = images.length
@@ -207,7 +211,7 @@ function ImageSlider({
 
   const handleClick = () => {
     if (touchRef.current?.swiped) return
-    onImageClick(images[current].url)
+    onImageClick(images.map((img) => img.url), current)
   }
 
   return (
@@ -244,7 +248,7 @@ function PageContent({
   textAlign = 'left',
 }: {
   page: DdayPopupData['pages'][number]
-  onImageClick: (url: string) => void
+  onImageClick: (urls: string[], index: number) => void
   textAlign?: 'left' | 'center'
 }) {
   const images = page.images?.filter((img) => img.url) || []
@@ -279,13 +283,22 @@ function PageContent({
   )
 }
 
-/** 핀치 줌 지원 이미지 확대 모달 */
-function ZoomModal({ src, onClose }: { src: string; onClose: () => void }) {
+/** 핀치 줌 + 네비게이션 이미지 확대 모달 */
+function ZoomModal({ urls, initialIndex, onClose }: { urls: string[]; initialIndex: number; onClose: () => void }) {
+  const [current, setCurrent] = useState(initialIndex)
   const [scale, setScale] = useState(1)
   const [translate, setTranslate] = useState({ x: 0, y: 0 })
   const pinchRef = useRef<{ dist: number; scale: number } | null>(null)
   const panRef = useRef<{ startX: number; startY: number; tx: number; ty: number } | null>(null)
   const lastTapRef = useRef(0)
+  const count = urls.length
+
+  const resetZoom = () => { setScale(1); setTranslate({ x: 0, y: 0 }) }
+
+  const goTo = (idx: number) => {
+    resetZoom()
+    setCurrent(idx)
+  }
 
   const getPinchDist = (touches: React.TouchList) => {
     const dx = touches[0].clientX - touches[1].clientX
@@ -319,21 +332,14 @@ function ZoomModal({ src, onClose }: { src: string; onClose: () => void }) {
   const handleTouchEnd = () => {
     pinchRef.current = null
     panRef.current = null
-    if (scale <= 1.05) {
-      setScale(1)
-      setTranslate({ x: 0, y: 0 })
-    }
+    if (scale <= 1.05) resetZoom()
   }
 
   const handleDoubleTap = () => {
     const now = Date.now()
     if (now - lastTapRef.current < 300) {
-      if (scale > 1) {
-        setScale(1)
-        setTranslate({ x: 0, y: 0 })
-      } else {
-        setScale(2.5)
-      }
+      if (scale > 1) resetZoom()
+      else setScale(2.5)
     }
     lastTapRef.current = now
   }
@@ -353,7 +359,7 @@ function ZoomModal({ src, onClose }: { src: string; onClose: () => void }) {
       style={{ touchAction: 'none' }}
     >
       <img
-        src={src}
+        src={urls[current]}
         alt=""
         className="dday-popup-zoom-img"
         draggable={false}
@@ -363,6 +369,30 @@ function ZoomModal({ src, onClose }: { src: string; onClose: () => void }) {
           transition: scale === 1 && translate.x === 0 && translate.y === 0 ? 'transform 0.2s ease-out' : 'none',
         }}
       />
+      {/* 좌우 버튼 (중앙) + 카운터 (하단) */}
+      {count > 1 && scale <= 1 && (
+        <>
+          <div className="dday-popup-zoom-nav">
+            <button
+              type="button"
+              disabled={current === 0}
+              onClick={(e) => { e.stopPropagation(); goTo(current - 1) }}
+              className="dday-popup-zoom-nav-btn"
+            >
+              &#8249;
+            </button>
+            <button
+              type="button"
+              disabled={current === count - 1}
+              onClick={(e) => { e.stopPropagation(); goTo(current + 1) }}
+              className="dday-popup-zoom-nav-btn"
+            >
+              &#8250;
+            </button>
+          </div>
+          <span className="dday-popup-zoom-nav-counter">{current + 1} / {count}</span>
+        </>
+      )}
       <button
         className="dday-popup-zoom-close"
         onClick={(e) => { e.stopPropagation(); onClose() }}

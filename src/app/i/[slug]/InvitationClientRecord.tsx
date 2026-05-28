@@ -8,6 +8,9 @@ import CroppedImageDiv from '@/components/ui/CroppedImageDiv'
 import type { Invitation } from '@/types/invitation'
 import type { InvitationContent } from '@/store/editorStore'
 import { getSectionPaddingStyle, isHidden, type StyleOverrides } from '@/lib/styleOverrides'
+import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
+import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
+import '@/components/dday/dday-popup.css'
 
 // Preview context - skip scroll reveal animations in editor preview
 const PreviewModeContext = createContext(false)
@@ -2531,6 +2534,7 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     magazineSectionBgMap: (content as any).magazineSectionBgMap,
     styleOverrides: (content as any).styleOverrides,
     mapButtons: (content as any).mapButtons,
+    ddayPopup: normalizeDdayPopup(content.ddayPopup),
   }
 }
 
@@ -2618,6 +2622,16 @@ function InvitationClientRecordContent({
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
   const [isAudioPlaying, setIsAudioPlaying] = useState(false)
+
+  // D-Day popup state
+  const [showDdayPopup, setShowDdayPopup] = useState(false)
+  useEffect(() => {
+    if (isPreview) return
+    if (invitation?.ddayPopup?.enabled) {
+      const t = setTimeout(() => setShowDdayPopup(true), 800)
+      return () => clearTimeout(t)
+    }
+  }, [invitation?.ddayPopup?.enabled, isPreview])
 
   const baseTc = colorThemes[effectiveColorTheme]
   // 사용자 커스텀 색상 오버라이드
@@ -2921,6 +2935,14 @@ function InvitationClientRecordContent({
           </div>
         </div>
       </div>
+      {showDdayPopup && invitation?.ddayPopup?.enabled && (
+        <DdayPopupOverlay
+          data={invitation.ddayPopup}
+          weddingDate={invitation.wedding?.date}
+          isPreview={isPreview}
+          onDismiss={() => setShowDdayPopup(false)}
+        />
+      )}
     </>
     </PreviewModeContext.Provider>
   )

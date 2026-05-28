@@ -15,6 +15,9 @@ import ShareSection from './ShareSection'
 import RsvpModal from './RsvpModal'
 import { COLOR_THEMES, FONT_STYLES, type ParentsInvitationContent, type GuestInfo } from './types'
 import { ThemeProvider } from './ThemeContext'
+import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
+import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
+import '@/components/dday/dday-popup.css'
 
 // 국화 아이콘 (고인 표시 - 꽃 스타일)
 const ChrysanthemumIcon = () => (
@@ -91,6 +94,16 @@ export default function ParentsInvitationView({
   const [showFontSizeToast, setShowFontSizeToast] = useState(false)
   const [fontSizeToastMessage, setFontSizeToastMessage] = useState('')
   const audioRef = useRef<HTMLAudioElement>(null)
+
+  // D-Day popup
+  const ddayPopup = normalizeDdayPopup(data.ddayPopup)
+  const [showDdayPopup, setShowDdayPopup] = useState(false)
+  useEffect(() => {
+    if (ddayPopup?.enabled) {
+      const t = setTimeout(() => setShowDdayPopup(true), 800)
+      return () => clearTimeout(t)
+    }
+  }, [ddayPopup?.enabled])
 
   // localStorage에서 글자 크기 설정 불러오기 + 첫 방문 안내
   useEffect(() => {
@@ -581,6 +594,13 @@ export default function ParentsInvitationView({
 
       </div>
       </div>
+      {showDdayPopup && ddayPopup?.enabled && (
+        <DdayPopupOverlay
+          data={ddayPopup}
+          weddingDate={data.wedding?.date}
+          onDismiss={() => setShowDdayPopup(false)}
+        />
+      )}
     </ThemeProvider>
   )
 }

@@ -3,6 +3,9 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { WatermarkOverlay } from '@/components/ui/WatermarkOverlay'
 import CroppedImageDiv from '@/components/ui/CroppedImageDiv'
+import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
+import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
+import '@/components/dday/dday-popup.css'
 
 // ============================================================
 // Types
@@ -3085,6 +3088,17 @@ function InvitationClientExhibitContent({
     return offsets
   }, [rooms])
 
+  // D-Day popup
+  const ddayPopup = normalizeDdayPopup(content?.ddayPopup)
+  const [showDdayPopup, setShowDdayPopup] = useState(false)
+  useEffect(() => {
+    if (isPreview) return
+    if (ddayPopup?.enabled) {
+      const t = setTimeout(() => setShowDdayPopup(true), 800)
+      return () => clearTimeout(t)
+    }
+  }, [ddayPopup?.enabled, isPreview])
+
   // Lightbox state
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
@@ -3337,6 +3351,13 @@ function InvitationClientExhibitContent({
           isPreview={isPreview}
         />
       </div>
+      {showDdayPopup && ddayPopup?.enabled && (
+        <DdayPopupOverlay
+          data={ddayPopup}
+          weddingDate={content?.wedding?.date}
+          onDismiss={() => setShowDdayPopup(false)}
+        />
+      )}
     </>
   )
 }

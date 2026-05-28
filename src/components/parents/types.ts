@@ -1,4 +1,5 @@
 // Parents 청첩장 공통 타입
+import type { DdayPopupData } from '@/lib/ddayPopupTypes'
 
 // 이미지 크롭 데이터 타입
 export interface ImageCropData {
@@ -414,6 +415,9 @@ export interface ParentsInvitationContent {
   customAccentColor?: string
   customBackgroundColor?: string
   sealColor?: string  // 실링스티커 색상 (hex)
+
+  // D-Day 팝업
+  ddayPopup?: DdayPopupData
 
   // 공유 메타 정보
   meta?: {

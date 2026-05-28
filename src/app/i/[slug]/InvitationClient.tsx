@@ -12,6 +12,9 @@ import type { InvitationContent } from '@/store/editorStore'
 import IntroAnimation from '@/components/invitation/IntroAnimation'
 import { IntroSettings, getDefaultIntroSettings } from '@/lib/introPresets'
 import { parseHighlight } from '@/lib/textUtils'
+import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
+import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
+import '@/components/dday/dday-popup.css'
 
 // Music Toggle Component
 function MusicToggle({
@@ -2395,6 +2398,7 @@ const mockInvitation = {
     image: '/sample/info.png',
     imageSettings: { scale: 1, positionX: 0, positionY: 0 },
   },
+  ddayPopup: undefined as import('@/lib/ddayPopupTypes').DdayPopupData | undefined,
 }
 
 // Guest info type
@@ -2465,6 +2469,7 @@ function transformToDisplayData(dbInvitation: Invitation, content: InvitationCon
     deceasedDisplayStyle: content.deceasedDisplayStyle || mockInvitation.deceasedDisplayStyle,
     profileOrder: (content as any).profileOrder || 'groom-first',
     styleOverrides: (content as any).styleOverrides,
+    ddayPopup: normalizeDdayPopup(content.ddayPopup),
   } as unknown as DisplayInvitation
 }
 
@@ -4075,6 +4080,16 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
 
+  // D-Day popup state
+  const [showDdayPopup, setShowDdayPopup] = useState(false)
+  useEffect(() => {
+    if (isPreview) return
+    if (invitation.ddayPopup?.enabled) {
+      const t = setTimeout(() => setShowDdayPopup(true), 800)
+      return () => clearTimeout(t)
+    }
+  }, [invitation.ddayPopup?.enabled, isPreview])
+
   // Guestbook modal state (lifted from MainPage for proper positioning)
   const [guestbookModalOpen, setGuestbookModalOpen] = useState(false)
   const guestbookModalIndexRef = useRef(0)
@@ -4317,6 +4332,14 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
           </div>
         </div>
       </div>
+      {showDdayPopup && invitation.ddayPopup?.enabled && (
+        <DdayPopupOverlay
+          data={invitation.ddayPopup}
+          weddingDate={invitation.wedding.date}
+          isPreview={isPreview}
+          onDismiss={() => setShowDdayPopup(false)}
+        />
+      )}
     </>
   )
 }

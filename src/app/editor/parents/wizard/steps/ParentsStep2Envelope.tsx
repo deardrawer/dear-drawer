@@ -9,12 +9,15 @@ import { Switch } from '@/components/ui/switch'
 import { Mail, Heart, Share2, Upload, X } from 'lucide-react'
 import { uploadImage } from '@/lib/imageUpload'
 import type { ParentsInvitationData } from '../../page'
+import DdayPopupEditor from '@/components/dday/DdayPopupEditor'
+import { DEFAULT_DDAY_POPUP } from '@/lib/ddayPopupTypes'
 
 interface ParentsStep2EnvelopeProps {
   data: ParentsInvitationData
   updateData: (updates: Partial<ParentsInvitationData>) => void
   updateNestedData: (path: string, value: unknown) => void
   invitationId: string | null
+  onDdayPreview?: () => void
 }
 
 export default function ParentsStep2Envelope({
@@ -22,6 +25,7 @@ export default function ParentsStep2Envelope({
   updateData,
   updateNestedData,
   invitationId,
+  onDdayPreview,
 }: ParentsStep2EnvelopeProps) {
   const kakaoAspectMap: Record<string, string> = { '3:4': '3/4', '1:1': '1/1', '3:2': '3/2' }
   const [uploadingImages, setUploadingImages] = useState<Set<string>>(new Set())
@@ -560,6 +564,23 @@ export default function ParentsStep2Envelope({
         <p className="text-xs text-gray-400">
           * 문자/SNS 링크 공유 시 표시되는 이미지입니다. 미설정 시 카카오 썸네일 또는 갤러리 첫 번째 이미지가 사용됩니다.
         </p>
+      </section>
+
+      {/* D-Day 팝업 설정 */}
+      <section className="space-y-4">
+        <div>
+          <h3 className="text-sm font-semibold text-gray-900">D-Day 팝업</h3>
+          <p className="text-xs text-gray-500 mt-0.5">결혼식 당일 안내 팝업을 설정합니다</p>
+        </div>
+        <DdayPopupEditor
+          value={data.ddayPopup || DEFAULT_DDAY_POPUP}
+          weddingDate={data.wedding.date}
+          onChange={(patch) => {
+            const current = data.ddayPopup || DEFAULT_DDAY_POPUP
+            updateNestedData('ddayPopup', { ...current, ...patch })
+          }}
+          onPreview={onDdayPreview}
+        />
       </section>
     </div>
   )

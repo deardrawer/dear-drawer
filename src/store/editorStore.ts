@@ -3,6 +3,7 @@ import { Template } from '@/lib/templates'
 import { GeneratedStory, FamilyWhyWeChoseStory } from '@/app/api/ai/generate-story/route'
 import { IntroSettings, IntroPresetId, getDefaultIntroSettings, mergeIntroSettings } from '@/lib/introPresets'
 import { StyleOverrides } from '@/lib/styleOverrides'
+import type { DdayPopupData } from '@/lib/ddayPopupTypes'
 
 // 계좌 정보
 export interface BankInfo {
@@ -501,6 +502,9 @@ export interface InvitationContent {
   // ===== 매거진 인터뷰 표시 방식 (옵션) =====
   interviewDisplay?: 'inline' | 'popup'
 
+  // ===== D-Day 팝업 =====
+  ddayPopup?: DdayPopupData
+
   // ===== 레거시 필드 (AI 스토리용) =====
   ourStory: string
   decision: string
@@ -522,6 +526,9 @@ interface EditorStore {
   activeSection: PreviewSectionId  // 현재 편집 중인 섹션
   editorActiveTab: string  // 에디터 탭 제어
   validationError: { tab: string; message: string } | null
+
+  // D-Day 팝업 미리보기
+  ddayPreviewOpen: boolean
 
   // 위자드 모드 관련
   wizardMode: boolean  // true면 위자드, false면 자유 편집
@@ -555,6 +562,8 @@ interface EditorStore {
   updateIntroField: <K extends keyof IntroSettings>(field: K, value: IntroSettings[K]) => void
   setEditorActiveTab: (tab: string) => void
   setValidationError: (error: { tab: string; message: string } | null) => void
+  // D-Day 팝업 미리보기 액션
+  setDdayPreviewOpen: (open: boolean) => void
   // 위자드 모드 액션
   setWizardMode: (mode: boolean) => void
   setWizardStep: (step: WizardStep) => void
@@ -1016,6 +1025,9 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   editorActiveTab: 'design',
   validationError: null,
 
+  // D-Day 팝업 미리보기
+  ddayPreviewOpen: false,
+
   // 위자드 모드 상태
   wizardMode: true,  // 기본값: 위자드 모드
   wizardStep: 1 as WizardStep,
@@ -1038,6 +1050,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
     }),
 
   setActiveSection: (section) => set({ activeSection: section }),
+  setDdayPreviewOpen: (open) => set({ ddayPreviewOpen: open }),
 
   updateField: (field, value) =>
     set((state) => ({

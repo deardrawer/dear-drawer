@@ -23,6 +23,7 @@ interface FeedWizardEditorProps {
   onStepChange?: (step: FeedWizardStep) => void
   onSlugChange?: (newSlug: string) => void
   initialStep?: FeedWizardStep
+  onDdayPreview?: () => void
 }
 
 export default function FeedWizardEditor({
@@ -35,6 +36,7 @@ export default function FeedWizardEditor({
   onStepChange,
   onSlugChange,
   initialStep = 1,
+  onDdayPreview,
 }: FeedWizardEditorProps) {
   const [currentStep, setCurrentStep] = useState<FeedWizardStep>(initialStep)
   const [completedSteps, setCompletedSteps] = useState<FeedWizardStep[]>([])
@@ -108,6 +110,7 @@ export default function FeedWizardEditor({
       updateData,
       updateNestedData,
       invitationId,
+      onDdayPreview,
     }
 
     switch (currentStep) {

@@ -9,6 +9,9 @@ import EssayPreview from './EssayPreview'
 import EssayWizardEditor from './wizard/EssayWizardEditor'
 import ShareModal from '@/components/share/ShareModal'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import type { DdayPopupData } from '@/lib/ddayPopupTypes'
+import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
+import '@/components/dday/dday-popup.css'
 
 // Essay 에디터용 데이터 타입
 export interface EssayInvitationData {
@@ -120,6 +123,9 @@ export interface EssayInvitationData {
     itemOrder?: string[]
   }
 
+  // D-Day 팝업
+  ddayPopup?: DdayPopupData
+
   // Meta
   meta: {
     title: string; description: string
@@ -230,6 +236,7 @@ const defaultData: EssayInvitationData = {
     reception: { title: '피로연 안내', content: '', enabled: false },
     customItems: [],
   },
+  ddayPopup: { enabled: false, pages: [] },
   meta: { title: '', description: '', kakaoThumbnail: '' },
   deceasedDisplayStyle: 'hidden',
 }
@@ -267,6 +274,7 @@ function EssayEditorContent() {
   const [previewKey, setPreviewKey] = useState(0)
   const [isExitModalOpen, setIsExitModalOpen] = useState(false)
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
+  const [ddayPreviewOpen, setDdayPreviewOpen] = useState(false)
 
   // 모바일 감지
   useEffect(() => {
@@ -469,10 +477,19 @@ function EssayEditorContent() {
             {/* Preview - 왼쪽 sticky 고정, 카드형 디바이스 프리뷰 (데스크탑) */}
             {!isMobile && (
               <div className="w-[460px] min-w-[460px] sticky top-0 overflow-hidden editor-panel m-4 mr-0 flex justify-center items-center" style={{ height: 'calc(100vh - 88px)' }}>
-                <div className="w-[390px] shadow-2xl bg-white overflow-hidden border border-gray-200" style={{ height: '710px' }}>
+                <div className="w-[390px] shadow-2xl bg-white overflow-hidden border border-gray-200 relative" style={{ height: '710px' }}>
                   <div className="h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                     <EssayPreview data={data} />
                   </div>
+                  {ddayPreviewOpen && data.ddayPopup?.enabled && (
+                    <DdayPopupOverlay
+                      data={data.ddayPopup}
+                      weddingDate={data.wedding.date}
+                      isPreview
+                      onDismiss={() => setDdayPreviewOpen(false)}
+                      style={{ position: 'absolute', inset: 0, zIndex: 60 }}
+                    />
+                  )}
                 </div>
               </div>
             )}
@@ -489,10 +506,19 @@ function EssayEditorContent() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
                 </button>
-                <div className="w-[320px] shadow-2xl bg-white overflow-hidden border border-gray-200 flex-1" style={{ maxHeight: '630px' }}>
+                <div className="w-[320px] shadow-2xl bg-white overflow-hidden border border-gray-200 flex-1 relative" style={{ maxHeight: '630px' }}>
                   <div className="h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                     <EssayPreview key={previewKey} data={data} />
                   </div>
+                  {ddayPreviewOpen && data.ddayPopup?.enabled && (
+                    <DdayPopupOverlay
+                      data={data.ddayPopup}
+                      weddingDate={data.wedding.date}
+                      isPreview
+                      onDismiss={() => setDdayPreviewOpen(false)}
+                      style={{ position: 'absolute', inset: 0, zIndex: 60 }}
+                    />
+                  )}
                 </div>
               </div>
             )}
@@ -509,6 +535,7 @@ function EssayEditorContent() {
                   onSlugChange={handleSlugChange}
                   initialStep={wizardStepRef.current as 1 | 2 | 3 | 4 | 5}
                   onStepChange={(step) => { setCurrentWizardStep(step); wizardStepRef.current = step }}
+                  onDdayPreview={() => setDdayPreviewOpen(true)}
                 />
               </div>
           </div>

@@ -8,6 +8,9 @@ import CroppedImageDiv from '@/components/ui/CroppedImageDiv'
 import type { Invitation } from '@/types/invitation'
 import type { InvitationContent } from '@/store/editorStore'
 import { getSectionPaddingStyle, isHidden, type StyleOverrides } from '@/lib/styleOverrides'
+import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
+import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
+import '@/components/dday/dday-popup.css'
 
 // ===== Types =====
 type ColorTheme = 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-green' | 'luxury-navy' | 'sunset-coral' | 'film-dark' | 'film-light'
@@ -2943,6 +2946,7 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     magazineSectionBgMap: (content as any).magazineSectionBgMap,
     styleOverrides: (content as any).styleOverrides,
     mapButtons: (content as any).mapButtons,
+    ddayPopup: normalizeDdayPopup(content.ddayPopup),
   }
 }
 
@@ -3001,6 +3005,15 @@ function InvitationClientFilmContent({
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
 
+  // D-Day popup state
+  const [showDdayPopup, setShowDdayPopup] = useState(false)
+  useEffect(() => {
+    if (isPreview) return
+    if (invitation?.ddayPopup?.enabled) {
+      const t = setTimeout(() => setShowDdayPopup(true), 800)
+      return () => clearTimeout(t)
+    }
+  }, [invitation?.ddayPopup?.enabled, isPreview])
 
   // skipIntro prop 변경 시 페이지 전환 (에디터 미리보기용)
   useEffect(() => {
@@ -3167,6 +3180,14 @@ function InvitationClientFilmContent({
           </div>
         </div>
       </div>
+      {showDdayPopup && invitation?.ddayPopup?.enabled && (
+        <DdayPopupOverlay
+          data={invitation.ddayPopup}
+          weddingDate={invitation.wedding?.date}
+          isPreview={isPreview}
+          onDismiss={() => setShowDdayPopup(false)}
+        />
+      )}
     </>
   )
 }

@@ -7,12 +7,15 @@ import InlineCropEditor from '@/components/editor/InlineCropEditor'
 import type { ImageSettings } from '@/store/editorStore'
 import { uploadImage } from '@/lib/imageUpload'
 import type { FeedInvitationData } from '../../page'
+import DdayPopupEditor from '@/components/dday/DdayPopupEditor'
+import { DEFAULT_DDAY_POPUP } from '@/lib/ddayPopupTypes'
 
 interface StepProps {
   data: FeedInvitationData
   updateData: (updates: Partial<FeedInvitationData>) => void
   updateNestedData: (path: string, value: unknown) => void
   invitationId: string | null
+  onDdayPreview?: () => void
 }
 
 function formatTimeDisplay(time: string): string {
@@ -31,6 +34,7 @@ export default function FeedStep2CoverProfile({
   data,
   updateNestedData,
   invitationId,
+  onDdayPreview,
 }: StepProps) {
   const kakaoAspectMap: Record<string, string> = { '3:4': '3/4', '1:1': '1/1', '3:2': '3/2' }
   const [uploadingImages, setUploadingImages] = useState<Set<string>>(new Set())
@@ -573,6 +577,23 @@ export default function FeedStep2CoverProfile({
             </div>
           )}
         </div>
+      </section>
+
+      {/* D-Day 팝업 설정 */}
+      <section className="space-y-4">
+        <div>
+          <h3 className="text-sm font-semibold text-gray-900">D-Day 팝업</h3>
+          <p className="text-xs text-gray-500 mt-0.5">결혼식 당일 안내 팝업을 설정합니다</p>
+        </div>
+        <DdayPopupEditor
+          value={data.ddayPopup || DEFAULT_DDAY_POPUP}
+          weddingDate={data.wedding.date}
+          onChange={(patch) => {
+            const current = data.ddayPopup || DEFAULT_DDAY_POPUP
+            updateNestedData('ddayPopup', { ...current, ...patch })
+          }}
+          onPreview={onDdayPreview}
+        />
       </section>
     </div>
   )

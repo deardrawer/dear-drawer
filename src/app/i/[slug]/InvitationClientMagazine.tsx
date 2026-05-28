@@ -10,6 +10,9 @@ import type { InvitationContent } from '@/store/editorStore'
 import IntroAnimation from '@/components/invitation/IntroAnimation'
 import { IntroSettings, getDefaultIntroSettings } from '@/lib/introPresets'
 import { getSectionPaddingStyle, isHidden, getFontSize, type StyleOverrides } from '@/lib/styleOverrides'
+import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
+import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
+import '@/components/dday/dday-popup.css'
 
 // ===== Types =====
 type ColorTheme = 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-green' | 'luxury-navy' | 'sunset-coral'
@@ -2353,6 +2356,7 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     interviewDisplay: (content as any).interviewDisplay,
     mapButtons: (content as any).mapButtons,
     magazineSectionTitles: (content as any).magazineSectionTitles,
+    ddayPopup: normalizeDdayPopup(content.ddayPopup),
   }
 }
 
@@ -2425,6 +2429,16 @@ function InvitationClientMagazineContent({
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
   const [interviewPopupOpen, setInterviewPopupOpen] = useState(false)
+
+  // D-Day popup state
+  const [showDdayPopup, setShowDdayPopup] = useState(false)
+  useEffect(() => {
+    if (isPreview) return
+    if (invitation?.ddayPopup?.enabled) {
+      const t = setTimeout(() => setShowDdayPopup(true), 800)
+      return () => clearTimeout(t)
+    }
+  }, [invitation?.ddayPopup?.enabled, isPreview])
 
   // skipIntro prop 변경 시 페이지 전환 (에디터 미리보기용)
   useEffect(() => {
@@ -2656,6 +2670,14 @@ function InvitationClientMagazineContent({
           </div>
         </div>
       </div>
+      {showDdayPopup && invitation?.ddayPopup?.enabled && (
+        <DdayPopupOverlay
+          data={invitation.ddayPopup}
+          weddingDate={invitation.wedding?.date}
+          isPreview={isPreview}
+          onDismiss={() => setShowDdayPopup(false)}
+        />
+      )}
     </>
   )
 }

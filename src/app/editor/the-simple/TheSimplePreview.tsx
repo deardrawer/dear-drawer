@@ -9,6 +9,7 @@ import { loadKakaoMapSDK } from '@/lib/geunnalKakaoMap'
 import { ParkingIcon, BusIcon, SubwayIcon, TrainIcon, ExpressBusIcon, InfoIcon } from '@/components/parents/icons'
 import GuestFloatingButton from '@/components/invitation/GuestFloatingButton'
 import './the-simple-preview.css'
+import '@/components/dday/dday-popup.css'
 
 interface TheSimplePreviewProps {
   data: TheSimpleInvitationData

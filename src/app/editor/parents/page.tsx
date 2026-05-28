@@ -10,6 +10,9 @@ import ParentsWizardEditor from './wizard/ParentsWizardEditor'
 import ShareModal from '@/components/share/ShareModal'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { COLOR_THEMES, type ColorThemeId } from '@/components/parents/types'
+import type { DdayPopupData } from '@/lib/ddayPopupTypes'
+import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
+import '@/components/dday/dday-popup.css'
 
 // 타임라인 아이템 타입
 export interface TimelineItem {
@@ -240,6 +243,9 @@ export interface ParentsInvitationData {
     autoplay: boolean
   }
 
+  // D-Day 팝업
+  ddayPopup?: DdayPopupData
+
   // 공유 메타 정보
   meta: {
     title: string
@@ -427,6 +433,7 @@ const defaultData: ParentsInvitationData = {
     url: '',
     autoplay: false,
   },
+  ddayPopup: { enabled: false, pages: [] },
   meta: {
     title: '',
     description: '',
@@ -463,6 +470,7 @@ function ParentsEditorContent() {
   const [isDirty, setIsDirty] = useState(false)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
     const [isShareModalOpen, setIsShareModalOpen] = useState(false)
+  const [ddayPreviewOpen, setDdayPreviewOpen] = useState(false)
   const [previewTab, setPreviewTab] = useState<'intro' | 'main'>('intro')
   const [fullscreenTab, setFullscreenTab] = useState<'intro' | 'main'>('intro')
   const [currentWizardStep, setCurrentWizardStep] = useState<number>(1)
@@ -829,10 +837,19 @@ function ParentsEditorContent() {
                           </button>
                         </div>
                       )}
-                      <div className="w-[360px] shadow-2xl bg-white overflow-hidden border border-gray-200" style={{ height: '710px' }}>
+                      <div className="w-[360px] relative shadow-2xl bg-white overflow-hidden border border-gray-200" style={{ height: '710px' }}>
                         <div className="h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                           <ParentsPreview data={data} activeTab={previewTab} onTabChange={setPreviewTab} selectedGuest={selectedGuest} activeSection={activeSection} />
                         </div>
+                        {ddayPreviewOpen && data.ddayPopup?.enabled && (
+                          <DdayPopupOverlay
+                            data={data.ddayPopup}
+                            weddingDate={data.wedding.date}
+                            isPreview
+                            onDismiss={() => setDdayPreviewOpen(false)}
+                            style={{ position: 'absolute', inset: 0, zIndex: 60 }}
+                          />
+                        )}
                       </div>
                     </>
                   )
@@ -876,10 +893,19 @@ function ParentsEditorContent() {
                       본문
                     </button>
                   </div>
-                  <div className="w-[320px] shadow-2xl bg-white overflow-hidden border border-gray-200 flex-1" style={{ maxHeight: '630px' }}>
+                  <div className="w-[320px] relative shadow-2xl bg-white overflow-hidden border border-gray-200 flex-1" style={{ maxHeight: '630px' }}>
                     <div className="h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                       <ParentsPreview key={previewKey} data={data} activeTab={previewTab} onTabChange={setPreviewTab} selectedGuest={selectedGuest} activeSection={activeSection} />
                     </div>
+                    {ddayPreviewOpen && data.ddayPopup?.enabled && (
+                      <DdayPopupOverlay
+                        data={data.ddayPopup}
+                        weddingDate={data.wedding.date}
+                        isPreview
+                        onDismiss={() => setDdayPreviewOpen(false)}
+                        style={{ position: 'absolute', inset: 0, zIndex: 60 }}
+                      />
+                    )}
                   </div>
                 </div>
               )
@@ -898,6 +924,7 @@ function ParentsEditorContent() {
                   slug={savedSlug || urlSlug || (invitationId ? invitationId : null)}
                   onSave={() => handleSave(true)}
                   onSlugChange={handleSlugChange}
+                  onDdayPreview={() => setDdayPreviewOpen(true)}
                   initialStep={wizardStepRef.current as 1 | 2 | 3 | 4 | 5}
                   onStepChange={(step) => {
                     setCurrentWizardStep(step)

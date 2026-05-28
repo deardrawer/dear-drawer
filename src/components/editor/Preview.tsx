@@ -12,6 +12,8 @@ const romanticFontStyles = `
 `
 import { useEditorStore, InvitationContent, PreviewSectionId } from '@/store/editorStore'
 import FloatingButton from './FloatingButton'
+import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
+import '@/components/dday/dday-popup.css'
 
 const InvitationClientRecord = dynamic(() => import('@/app/i/[slug]/InvitationClientRecord'), { ssr: false })
 const InvitationClient = dynamic(() => import('@/app/i/[slug]/InvitationClient'), { ssr: false })
@@ -107,6 +109,7 @@ function RecordPreviewWrapper({ invitation, skipIntro }: { invitation: Invitatio
     highlightColor: invitation.highlightColor,
     displayFont: (invitation as any).displayFont,
     styleOverrides: (invitation as any).styleOverrides,
+    ddayPopup: invitation.ddayPopup,
   }), [invitation])
 
   const invitationData = useMemo(() => ({
@@ -193,6 +196,7 @@ function InvitationPreviewWrapper({ invitation, skipIntro, onIntroScreenChange }
     interviewDisplay: (invitation as any).interviewDisplay,
     mapButtons: (invitation as any).mapButtons,
     magazineSectionTitles: (invitation as any).magazineSectionTitles,
+    ddayPopup: invitation.ddayPopup,
   }), [invitation])
 
   const invitationData = useMemo(() => ({
@@ -237,7 +241,7 @@ export interface PreviewHandle {
 }
 
 const Preview = forwardRef<PreviewHandle, object>(function Preview(_, ref) {
-  const { invitation: rawInvitation, template, activeSection, wizardStep } = useEditorStore()
+  const { invitation: rawInvitation, template, activeSection, wizardStep, ddayPreviewOpen, setDdayPreviewOpen } = useEditorStore()
   // useDeferredValue: 타이핑 시 입력이 먼저 처리되고 Preview 리렌더링은 낮은 우선순위로 지연
   const invitation = useDeferredValue(rawInvitation)
   const [currentPage, setCurrentPage] = useState<PageType>('intro')
@@ -460,6 +464,16 @@ const Preview = forwardRef<PreviewHandle, object>(function Preview(_, ref) {
                 rsvpShuttleOption: invitation.rsvpShuttleOption,
                 rsvpNotice: invitation.rsvpNotice,
               }} />}
+            {/* D-Day 팝업 미리보기 오버레이 */}
+            {ddayPreviewOpen && invitation.ddayPopup?.enabled && (
+              <DdayPopupOverlay
+                data={invitation.ddayPopup}
+                weddingDate={invitation.wedding.date}
+                isPreview
+                onDismiss={() => setDdayPreviewOpen(false)}
+                style={{ position: 'absolute', inset: 0, zIndex: 60 }}
+              />
+            )}
           </div>
         </div>
       </div>

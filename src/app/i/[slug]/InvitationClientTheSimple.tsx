@@ -8,9 +8,10 @@ import type {
   GalleryImage,
   ImageWithSettings,
   TheSimpleImageSettings,
-  DdayPopupData,
 } from '@/app/editor/the-simple/page'
-import DdayPopupOverlay from '@/app/editor/the-simple/DdayPopupOverlay'
+import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
+import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
+import '@/components/dday/dday-popup.css'
 import type { Invitation } from '@/types/invitation'
 import { WatermarkOverlay } from '@/components/ui/WatermarkOverlay'
 import GuestFloatingButton from '@/components/invitation/GuestFloatingButton'
@@ -586,58 +587,7 @@ function normalizeTheSimpleData(
       url: c.bgm.url || '',
       autoplay: c.bgm.autoplay !== false,
     } : undefined,
-    ddayPopup: c.ddayPopup ? (() => {
-      const raw = c.ddayPopup as unknown as Record<string, unknown>
-      // backward compatibility: items → pages 마이그레이션
-      const rawPages = Array.isArray(raw.pages)
-        ? raw.pages
-        : Array.isArray(raw.items)
-          ? raw.items
-          : []
-      return {
-        enabled: !!c.ddayPopup.enabled,
-        ...(typeof raw.displayStart === 'string' && { displayStart: raw.displayStart }),
-        ...(typeof raw.displayEnd === 'string' && { displayEnd: raw.displayEnd }),
-        // backward compat: startDays 폴백
-        ...(typeof c.ddayPopup.startDays === 'number' && { startDays: Math.min(c.ddayPopup.startDays, 10) }),
-        title: c.ddayPopup.title || '결혼식 당일 안내',
-        pages: (rawPages as unknown[]).map((r) => {
-          const p = (r && typeof r === 'object' ? r : {}) as Record<string, unknown>
-          // backward compat: 단일 linkUrl/linkLabel → links 배열로 변환
-          let links: { url: string; label: string }[] | undefined
-          if (Array.isArray(p.links)) {
-            links = (p.links as unknown[])
-              .map((l) => {
-                const lo = (l && typeof l === 'object' ? l : {}) as Record<string, unknown>
-                return {
-                  url: typeof lo.url === 'string' ? lo.url : '',
-                  label: typeof lo.label === 'string' ? lo.label : '',
-                }
-              })
-              .filter((l) => l.url)
-          } else if (typeof p.linkUrl === 'string' && p.linkUrl) {
-            links = [{ url: p.linkUrl, label: typeof p.linkLabel === 'string' ? p.linkLabel : '' }]
-          }
-          // backward compat: 단일 image → images 배열로 변환
-          let images: ImageWithSettings[] | undefined
-          if (Array.isArray(p.images)) {
-            images = (p.images as unknown[]).map((img) => normalizePhoto(img)).filter((x): x is ImageWithSettings => !!x)
-          } else if (p.image) {
-            const single = normalizePhoto(p.image)
-            images = single ? [single] : undefined
-          }
-          return {
-            title: typeof p.title === 'string' ? p.title : '',
-            body: typeof p.body === 'string' ? p.body : '',
-            images: images && images.length > 0 ? images : undefined,
-            links,
-          }
-        }),
-        buttonLabel: c.ddayPopup.buttonLabel || '확인했습니다',
-        showDday: c.ddayPopup.showDday !== false,
-        textAlign: (c.ddayPopup as unknown as Record<string, unknown>).textAlign === 'center' ? 'center' : 'left',
-      }
-    })() : undefined,
+    ddayPopup: normalizeDdayPopup(c.ddayPopup),
     meta: {
       title: c.meta?.title || '',
       description: c.meta?.description || '',

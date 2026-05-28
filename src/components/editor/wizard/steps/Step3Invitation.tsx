@@ -11,6 +11,8 @@ import CroppedImageDiv from '@/components/ui/CroppedImageDiv'
 import { getPresetById } from '@/lib/introPresets'
 import { SAMPLE_GREETING, SAMPLE_QUOTE } from '@/lib/sampleData'
 import { Sparkles, X, Loader2 } from 'lucide-react'
+import DdayPopupEditor from '@/components/dday/DdayPopupEditor'
+import { DEFAULT_DDAY_POPUP } from '@/lib/ddayPopupTypes'
 
 // 공유 설명 자동 생성 헬퍼 함수
 function generateKakaoDescription(date: string, time: string, venueName: string): string {
@@ -1054,6 +1056,23 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
             />
           )}
         </div>
+      </section>
+
+      {/* D-Day 팝업 설정 */}
+      <section className="space-y-4">
+        <div>
+          <h3 className="text-sm font-semibold text-gray-900">D-Day 팝업</h3>
+          <p className="text-xs text-gray-500 mt-0.5">결혼식 당일 안내 팝업을 설정합니다</p>
+        </div>
+        <DdayPopupEditor
+          value={invitation.ddayPopup || DEFAULT_DDAY_POPUP}
+          weddingDate={invitation.wedding.date}
+          onChange={(patch) => {
+            const current = invitation.ddayPopup || DEFAULT_DDAY_POPUP
+            updateNestedField('ddayPopup', { ...current, ...patch })
+          }}
+          onPreview={() => useEditorStore.getState().setDdayPreviewOpen(true)}
+        />
       </section>
 
       {/* 인사말 작성 모달 */}

@@ -5,6 +5,9 @@ import RsvpForm from '@/components/invitation/RsvpForm'
 import GuestFloatingButton from '@/components/invitation/GuestFloatingButton'
 import { parseHighlight } from '@/lib/textUtils'
 import type { Invitation } from '@/types/invitation'
+import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
+import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
+import '@/components/dday/dday-popup.css'
 
 // ===== Types =====
 type EssayColorTheme = 'essay-ivory' | 'essay-blush' | 'essay-sage' | 'essay-mono' | 'essay-sky' | 'essay-coral'
@@ -4047,6 +4050,17 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
   const fontStyleKey = (data.fontStyle && data.fontStyle in essayFontStyles) ? data.fontStyle as EssayFontStyle : 'modern'
   const fonts = essayFontStyles[fontStyleKey]
 
+  // D-Day popup
+  const ddayPopup = normalizeDdayPopup(data.ddayPopup)
+  const [showDdayPopup, setShowDdayPopup] = useState(false)
+  useEffect(() => {
+    if (isPreview) return
+    if (ddayPopup?.enabled) {
+      const t = setTimeout(() => setShowDdayPopup(true), 800)
+      return () => clearTimeout(t)
+    }
+  }, [ddayPopup?.enabled, isPreview])
+
   // BGM
   const audioRef = useRef<HTMLAudioElement>(null)
   const bgm = data.bgm || {}
@@ -4136,6 +4150,13 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
         {hasBgm && <audio ref={audioRef} loop preload="auto"><source src={bgm.url} type="audio/mpeg" /></audio>}
         {hasBgm && <EssayMusicToggle audioRef={audioRef} theme={theme} />}
         </div>
+        {showDdayPopup && ddayPopup?.enabled && (
+          <DdayPopupOverlay
+            data={ddayPopup}
+            weddingDate={data.wedding?.date}
+            onDismiss={() => setShowDdayPopup(false)}
+          />
+        )}
       </>
     )
   }
@@ -4174,6 +4195,13 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
         {hasBgm && <audio ref={audioRef} loop preload="auto"><source src={bgm.url} type="audio/mpeg" /></audio>}
         {hasBgm && <EssayMusicToggle audioRef={audioRef} theme={theme} />}
         </div>
+        {showDdayPopup && ddayPopup?.enabled && (
+          <DdayPopupOverlay
+            data={ddayPopup}
+            weddingDate={data.wedding?.date}
+            onDismiss={() => setShowDdayPopup(false)}
+          />
+        )}
       </>
     )
   }
@@ -4211,6 +4239,13 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
       {hasBgm && <audio ref={audioRef} loop preload="auto"><source src={bgm.url} type="audio/mpeg" /></audio>}
       {hasBgm && <EssayMusicToggle audioRef={audioRef} theme={theme} />}
       </div>
+      {showDdayPopup && ddayPopup?.enabled && (
+        <DdayPopupOverlay
+          data={ddayPopup}
+          weddingDate={data.wedding?.date}
+          onDismiss={() => setShowDdayPopup(false)}
+        />
+      )}
     </>
   )
 }

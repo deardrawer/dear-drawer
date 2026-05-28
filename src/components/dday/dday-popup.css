@@ -1,0 +1,321 @@
+/* ── D-Day Popup Shared Styles ── */
+
+@keyframes ddayFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes ddayFadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+@keyframes ddayScaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.dday-popup-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: safe center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  overflow-y: auto;
+  padding: 24px 0;
+}
+.dday-popup--open {
+  animation: ddayFadeIn 0.5s ease-out forwards;
+}
+.dday-popup--closing {
+  animation: ddayFadeOut 0.3s ease-out forwards;
+}
+
+.dday-popup-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.dday-popup-badge {
+  display: inline-block;
+  background: #1a1a1a;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 3px 10px;
+  border-radius: 100px;
+  margin-bottom: 10px;
+}
+
+/* ── Minimal Card ── */
+
+.dday-popup-v1-card {
+  position: relative;
+  width: calc(100% - 48px);
+  max-width: 340px;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px 24px 24px;
+  text-align: center;
+  animation: ddayScaleIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+  margin: auto;
+  flex-shrink: 0;
+}
+
+/* ── Close button ── */
+
+.dday-popup-close-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+  background: #1a1a1a;
+  color: #fff;
+  margin-top: 16px;
+}
+.dday-popup-close-btn:hover {
+  background: #333;
+}
+
+/* ── Header + page counter ── */
+
+.dday-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.dday-popup-header--center {
+  justify-content: center;
+}
+.dday-popup-page-counter {
+  font-size: 11px;
+  font-weight: 500;
+  color: #999;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+/* ── Pages wrapper + nav ── */
+
+.dday-popup-pages-wrap {
+  text-align: left;
+  overflow: hidden;
+}
+
+/* ── Page transition animation ── */
+.dday-popup-page-animate {
+  will-change: opacity, transform;
+}
+.dday-page-enter-initial {
+  animation: ddayPageFadeIn 0.35s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+}
+.dday-page-enter-next {
+  animation: ddayPageSlideFromRight 0.3s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+}
+.dday-page-enter-prev {
+  animation: ddayPageSlideFromLeft 0.3s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+}
+@keyframes ddayPageFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes ddayPageSlideFromRight {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes ddayPageSlideFromLeft {
+  from { opacity: 0; transform: translateX(-24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.dday-popup-page-nav {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  gap: 8px;
+}
+.dday-popup-page-nav-btn {
+  flex: 1;
+  padding: 6px 0;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 11px;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.dday-popup-page-nav-btn:hover:not(:disabled) {
+  border-color: #999;
+  color: #333;
+}
+.dday-popup-page-nav-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+/* ── Page content ── */
+
+.dday-popup-page {
+  text-align: left;
+}
+.dday-popup-page-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 6px;
+}
+.dday-popup-page-body {
+  font-size: 12px;
+  color: #6b6b6b;
+  line-height: 1.7;
+  margin: 0 0 10px;
+  white-space: pre-line;
+}
+/* ── Image slider ── */
+
+.dday-popup-img-slider {
+  margin-bottom: 10px;
+}
+.dday-popup-img-slider-image {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+}
+.dday-popup-img-slider-image img {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+}
+.dday-popup-img-dots {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 8px;
+}
+.dday-popup-img-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ccc;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.dday-popup-img-dot--active {
+  background: #1a1a1a;
+}
+.dday-popup-img-hint {
+  font-size: 10px;
+  color: #aaa;
+  text-align: center;
+  margin: 6px 0 0;
+}
+.dday-popup-page-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.dday-popup-page-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #1a1a1a;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ── Image zoom modal ── */
+
+.dday-popup-zoom-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 1;
+  animation: ddayFadeIn 0.2s ease-out forwards;
+}
+.dday-popup-zoom-img {
+  max-width: 90%;
+  max-height: 85vh;
+  object-fit: contain;
+  border-radius: 4px;
+}
+.dday-popup-zoom-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(4px);
+  border: none;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+}
+.dday-popup-zoom-nav {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  z-index: 2;
+  pointer-events: none;
+}
+.dday-popup-zoom-nav > * {
+  pointer-events: auto;
+}
+.dday-popup-zoom-nav-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(4px);
+  border: none;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 20px;
+  line-height: 1;
+  padding: 0 0 2px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.dday-popup-zoom-nav-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.3);
+}
+.dday-popup-zoom-nav-btn:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+.dday-popup-zoom-nav-counter {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  letter-spacing: 0.05em;
+}

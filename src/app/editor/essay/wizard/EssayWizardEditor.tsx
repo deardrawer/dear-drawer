@@ -21,9 +21,10 @@ interface Props {
   onStepChange?: (step: EssayWizardStep) => void
   onSlugChange?: (newSlug: string) => void
   initialStep?: EssayWizardStep
+  onDdayPreview?: () => void
 }
 
-export default function EssayWizardEditor({ data, updateData, updateNestedData, invitationId, slug, onSave, onStepChange, onSlugChange, initialStep = 1 }: Props) {
+export default function EssayWizardEditor({ data, updateData, updateNestedData, invitationId, slug, onSave, onStepChange, onSlugChange, initialStep = 1, onDdayPreview }: Props) {
   const [currentStep, setCurrentStep] = useState<EssayWizardStep>(initialStep)
   const [completedSteps, setCompletedSteps] = useState<EssayWizardStep[]>([])
   const [visitedSteps, setVisitedSteps] = useState<EssayWizardStep[]>([1])
@@ -64,7 +65,7 @@ export default function EssayWizardEditor({ data, updateData, updateNestedData, 
     setValidationError(null); setCurrentStep(step); scrollToTop()
   }, [scrollToTop])
 
-  const commonProps = { data, updateData, updateNestedData, invitationId }
+  const commonProps = { data, updateData, updateNestedData, invitationId, onDdayPreview }
 
   const renderStep = () => {
     switch (currentStep) {

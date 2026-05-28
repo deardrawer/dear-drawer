@@ -7,12 +7,15 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { uploadImage } from '@/lib/imageUpload'
 import { X, Plus, Upload } from 'lucide-react'
+import DdayPopupEditor from '@/components/dday/DdayPopupEditor'
+import { DEFAULT_DDAY_POPUP } from '@/lib/ddayPopupTypes'
 
 interface StepProps {
   data: EssayInvitationData
   updateData: (updates: Partial<EssayInvitationData>) => void
   updateNestedData: (path: string, value: unknown) => void
   invitationId: string | null
+  onDdayPreview?: () => void
 }
 
 function generateKakaoDescription(date: string, timeDisplay: string, venueName: string): string {
@@ -28,7 +31,7 @@ function generateKakaoDescription(date: string, timeDisplay: string, venueName: 
   return venueLine ? `${dateLine}\n${venueLine}` : dateLine
 }
 
-export default function EssayStep1BasicInfo({ data, updateData, updateNestedData, invitationId }: StepProps) {
+export default function EssayStep1BasicInfo({ data, updateData, updateNestedData, invitationId, onDdayPreview }: StepProps) {
   const kakaoAspectMap: Record<string, string> = { '3:4': '3/4', '1:1': '1/1', '3:2': '3/2' }
   const [uploadingImages, setUploadingImages] = useState<Set<string>>(new Set())
 
@@ -692,6 +695,23 @@ export default function EssayStep1BasicInfo({ data, updateData, updateNestedData
             </label>
           )}
         </div>
+      </section>
+
+      {/* D-Day 팝업 설정 */}
+      <section className="space-y-4">
+        <div>
+          <h3 className="text-sm font-semibold text-gray-900">D-Day 팝업</h3>
+          <p className="text-xs text-gray-500 mt-0.5">결혼식 당일 안내 팝업을 설정합니다</p>
+        </div>
+        <DdayPopupEditor
+          value={data.ddayPopup || DEFAULT_DDAY_POPUP}
+          weddingDate={data.wedding.date}
+          onChange={(patch) => {
+            const current = data.ddayPopup || DEFAULT_DDAY_POPUP
+            updateNestedData('ddayPopup', { ...current, ...patch })
+          }}
+          onPreview={onDdayPreview}
+        />
       </section>
     </div>
   )

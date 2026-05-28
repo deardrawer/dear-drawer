@@ -10,6 +10,9 @@ import FeedWizardEditor from './wizard/FeedWizardEditor'
 import ShareModal from '@/components/share/ShareModal'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import type { ImageSettings } from '@/store/editorStore'
+import type { DdayPopupData } from '@/lib/ddayPopupTypes'
+import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
+import '@/components/dday/dday-popup.css'
 
 // Feed 에디터용 데이터 타입
 export interface FeedInvitationData {
@@ -162,6 +165,9 @@ export interface FeedInvitationData {
     guidance: boolean
   }
 
+  // D-Day 팝업
+  ddayPopup?: DdayPopupData
+
   // Share meta
   meta: {
     title: string
@@ -236,6 +242,7 @@ const defaultData: FeedInvitationData = {
     account: '전해주시는 축하와 응원, 오래도록 기억하겠습니다. 💛',
   },
   sectionVisibility: { profile: true, loveStory: true, guestbook: true, guidance: true },
+  ddayPopup: { enabled: false, pages: [] },
   meta: { title: '', description: '', kakaoThumbnail: '' },
 }
 
@@ -272,6 +279,7 @@ function FeedEditorContent() {
   const [previewKey, setPreviewKey] = useState(0)
   const [isExitModalOpen, setIsExitModalOpen] = useState(false)
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
+  const [ddayPreviewOpen, setDdayPreviewOpen] = useState(false)
 
   // 나가기 방지 (미저장 변경사항이 있을 때)
   useEffect(() => {
@@ -589,10 +597,19 @@ function FeedEditorContent() {
             {/* Preview - 왼쪽 sticky 고정, 카드형 디바이스 프리뷰 (데스크탑) */}
             {!isMobile && (
               <div className="w-[440px] min-w-[440px] sticky top-0 overflow-hidden editor-panel m-4 mr-0 flex justify-center items-center" style={{ height: 'calc(100vh - 88px)' }}>
-                <div className="w-[360px] shadow-2xl bg-white overflow-hidden border border-gray-200" style={{ height: '710px', transform: 'translateZ(0)' }}>
+                <div className="relative w-[360px] shadow-2xl bg-white overflow-hidden border border-gray-200" style={{ height: '710px', transform: 'translateZ(0)' }}>
                   <div className="h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                     <FeedPreview data={data} />
                   </div>
+                  {ddayPreviewOpen && data.ddayPopup?.enabled && (
+                    <DdayPopupOverlay
+                      data={data.ddayPopup}
+                      weddingDate={data.wedding.date}
+                      isPreview
+                      onDismiss={() => setDdayPreviewOpen(false)}
+                      style={{ position: 'absolute', inset: 0, zIndex: 60 }}
+                    />
+                  )}
                 </div>
               </div>
             )}
@@ -609,10 +626,19 @@ function FeedEditorContent() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
                 </button>
-                <div className="w-[320px] shadow-2xl bg-white overflow-hidden border border-gray-200 flex-1" style={{ maxHeight: '630px', transform: 'translateZ(0)' }}>
+                <div className="relative w-[320px] shadow-2xl bg-white overflow-hidden border border-gray-200 flex-1" style={{ maxHeight: '630px', transform: 'translateZ(0)' }}>
                   <div className="h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                     <FeedPreview key={previewKey} data={data} />
                   </div>
+                  {ddayPreviewOpen && data.ddayPopup?.enabled && (
+                    <DdayPopupOverlay
+                      data={data.ddayPopup}
+                      weddingDate={data.wedding.date}
+                      isPreview
+                      onDismiss={() => setDdayPreviewOpen(false)}
+                      style={{ position: 'absolute', inset: 0, zIndex: 60 }}
+                    />
+                  )}
                 </div>
               </div>
             )}
@@ -632,6 +658,7 @@ function FeedEditorContent() {
                     setCurrentWizardStep(step)
                     wizardStepRef.current = step
                   }}
+                  onDdayPreview={() => setDdayPreviewOpen(true)}
                 />
               </div>
           </div>

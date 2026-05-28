@@ -238,34 +238,10 @@ export interface LoveStoryItem {
 }
 
 /**
- * D-Day 팝업 페이지 (스와이프 단위)
+ * D-Day 팝업 타입 — 공유 모듈에서 re-export
  */
-export interface DdayPopupLink {
-  url: string
-  label: string
-}
-
-export interface DdayPopupPage {
-  title: string
-  body: string
-  images?: ImageWithSettings[]   // 최대 3장
-  links?: DdayPopupLink[]
-}
-
-/**
- * D-Day 팝업 데이터
- */
-export interface DdayPopupData {
-  enabled: boolean
-  startDays?: number              // deprecated, backward compat
-  displayStart?: string           // ISO date (YYYY-MM-DD)
-  displayEnd?: string             // ISO date (YYYY-MM-DD)
-  title?: string
-  pages: DdayPopupPage[]
-  buttonLabel?: string
-  showDday?: boolean
-  textAlign?: 'left' | 'center'
-}
+export type { DdayPopupLink, DdayPopupPage, DdayPopupData } from '@/lib/ddayPopupTypes'
+import type { DdayPopupData } from '@/lib/ddayPopupTypes'
 
 /**
  * THE SIMPLE 에디터 데이터 타입

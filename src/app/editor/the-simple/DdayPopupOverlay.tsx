@@ -290,6 +290,7 @@ function ZoomModal({ urls, initialIndex, onClose }: { urls: string[]; initialInd
   const [translate, setTranslate] = useState({ x: 0, y: 0 })
   const pinchRef = useRef<{ dist: number; scale: number } | null>(null)
   const panRef = useRef<{ startX: number; startY: number; tx: number; ty: number } | null>(null)
+  const swipeRef = useRef<{ startX: number; swiped: boolean } | null>(null)
   const lastTapRef = useRef(0)
   const count = urls.length
 
@@ -309,9 +310,14 @@ function ZoomModal({ urls, initialIndex, onClose }: { urls: string[]; initialInd
   const handleTouchStart = (e: React.TouchEvent) => {
     if (e.touches.length === 2) {
       e.preventDefault()
+      swipeRef.current = null
       pinchRef.current = { dist: getPinchDist(e.touches), scale }
-    } else if (e.touches.length === 1 && scale > 1) {
-      panRef.current = { startX: e.touches[0].clientX, startY: e.touches[0].clientY, tx: translate.x, ty: translate.y }
+    } else if (e.touches.length === 1) {
+      if (scale > 1) {
+        panRef.current = { startX: e.touches[0].clientX, startY: e.touches[0].clientY, tx: translate.x, ty: translate.y }
+      } else if (count > 1) {
+        swipeRef.current = { startX: e.touches[0].clientX, swiped: false }
+      }
     }
   }
 
@@ -326,12 +332,20 @@ function ZoomModal({ urls, initialIndex, onClose }: { urls: string[]; initialInd
       const dx = e.touches[0].clientX - panRef.current.startX
       const dy = e.touches[0].clientY - panRef.current.startY
       setTranslate({ x: panRef.current.tx + dx, y: panRef.current.ty + dy })
+    } else if (e.touches.length === 1 && swipeRef.current && !swipeRef.current.swiped && scale <= 1) {
+      const dx = e.touches[0].clientX - swipeRef.current.startX
+      if (Math.abs(dx) > 40) {
+        swipeRef.current.swiped = true
+        if (dx < 0 && current < count - 1) goTo(current + 1)
+        else if (dx > 0 && current > 0) goTo(current - 1)
+      }
     }
   }
 
   const handleTouchEnd = () => {
     pinchRef.current = null
     panRef.current = null
+    swipeRef.current = null
     if (scale <= 1.05) resetZoom()
   }
 

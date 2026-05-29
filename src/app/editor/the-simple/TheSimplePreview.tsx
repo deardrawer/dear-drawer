@@ -183,7 +183,7 @@ function useInView(): [(node: HTMLElement | null) => void, boolean] {
     // 주 옵저버 (뷰포트)
     const io = new IntersectionObserver(
       ([entry]) => { if (entry.isIntersecting) markInView() },
-      { threshold: 0.15, rootMargin: '0px 0px -50% 0px' }
+      { threshold: 0.1, rootMargin: '0px 0px -50% 0px' }
     )
     io.observe(node)
     ioRef.current = io
@@ -192,7 +192,7 @@ function useInView(): [(node: HTMLElement | null) => void, boolean] {
     if (scrollRoot) {
       const ioScroll = new IntersectionObserver(
         ([entry]) => { if (entry.isIntersecting) markInView() },
-        { root: scrollRoot, threshold: 0.15, rootMargin: '0px 0px -50% 0px' }
+        { root: scrollRoot, threshold: 0.1, rootMargin: '0px 0px -50% 0px' }
       )
       ioScroll.observe(node)
       ioScrollRef.current = ioScroll

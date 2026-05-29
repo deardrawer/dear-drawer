@@ -4,7 +4,11 @@
    Fonts are injected by next/font in src/app/layout.tsx.
    ========================================================================== */
 
+/* 에디터 미리보기 스크롤바 숨김 — 게스트 뷰(모바일 overlay)와 동일한 콘텐츠 너비 확보 */
+.ts-editor-scroll::-webkit-scrollbar { display: none; }
+
 .ts-preview {
+  text-wrap: pretty;
   --ink: #111111;
   --mute: #777777;
   --mute-2: #b0b0b0;

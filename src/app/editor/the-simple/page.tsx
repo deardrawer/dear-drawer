@@ -1475,10 +1475,10 @@ function TheSimpleEditorContent() {
           {!isMobile && (
             <div className="w-[460px] min-w-[460px] sticky top-0 flex justify-center items-center p-4">
               <div
-                className="w-[390px] shadow-2xl bg-white overflow-hidden border border-stone-200 rounded-[22px] relative"
+                className="w-[390px] shadow-2xl bg-white overflow-hidden rounded-[22px] relative"
                 style={{ height: 'calc(100vh - 88px)', transform: 'translateZ(0)' }}
               >
-                <div className="w-full h-full overflow-y-auto relative" style={{ WebkitOverflowScrolling: 'touch', ['--ts-intro-vh' as string]: 'calc(100vh - 88px)' } as React.CSSProperties}>
+                <div className="ts-editor-scroll w-full h-full overflow-y-auto relative" style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', ['--ts-intro-vh' as string]: 'calc(100vh - 88px)' } as React.CSSProperties}>
                   {(data.coverVariant ?? 0) > 0 && !coverOverlayGone && (
                     <div style={{
                       position: 'absolute', inset: 0, zIndex: 50,

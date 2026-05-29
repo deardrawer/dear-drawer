@@ -2975,7 +2975,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   <PhotoSlideBox photos={p.photos} shape="circle" size={88} delay={i * 500} />
                   <div style={{ textAlign: 'left' }}>
                     <div className="ts-couple-role" style={{ marginBottom: 4 }}>{p.role}</div>
-                    <div className="ts-couple-name" style={{ fontSize: 'calc(18px * var(--ts-font-scale, 1))' }}>{p.name}</div>
+                    <div className="ts-couple-name" style={{ fontFamily: koreanFontFamily, fontSize: 'calc(18px * var(--ts-font-scale, 1))' }}>{p.name}</div>
                     <p className="ts-couple-bio" style={{ textAlign: 'left', maxWidth: '100%', marginTop: 6 }}>{p.bio}</p>
                     {renderTags(p.tags, 'v2', 'left')}
                   </div>
@@ -3027,7 +3027,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   <PhotoSlideBox photos={p.photos} shape="portrait" size="100%" rounded={0} delay={i * 500} />
                   <div style={{ padding: '14px 12px 18px' }}>
                     <div className="ts-couple-role">{p.role}</div>
-                    <div className="ts-couple-name" style={{ marginTop: 2 }}>{p.name}</div>
+                    <div className="ts-couple-name" style={{ fontFamily: koreanFontFamily, marginTop: 2 }}>{p.name}</div>
                     <p className="ts-couple-bio" style={{ margin: '8px auto 0', fontSize: 'calc(11px * var(--ts-font-scale, 1))' }}>{p.bio}</p>
                     {renderTags(p.tags, 'v4', 'center')}
                   </div>
@@ -3077,7 +3077,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
             <div className="ts-couple-cell ts-anim-left">
               <PhotoSlideBox photos={first.photos} shape="arch" size={120} className="ts-couple-avatar" delay={0} />
               <div className="ts-couple-role">{first.role}</div>
-              <div className="ts-couple-name">{first.name}</div>
+              <div className="ts-couple-name" style={{ fontFamily: koreanFontFamily }}>{first.name}</div>
               <p className="ts-couple-bio">{first.bio}</p>
               {renderTags(first.tags, 'v1', 'center')}
             </div>
@@ -3085,7 +3085,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
             <div className="ts-couple-cell ts-anim-right">
               <PhotoSlideBox photos={second.photos} shape="arch" size={120} className="ts-couple-avatar" delay={500} />
               <div className="ts-couple-role">{second.role}</div>
-              <div className="ts-couple-name">{second.name}</div>
+              <div className="ts-couple-name" style={{ fontFamily: koreanFontFamily }}>{second.name}</div>
               <p className="ts-couple-bio">{second.bio}</p>
               {renderTags(second.tags, 'v1', 'center')}
             </div>
@@ -3224,7 +3224,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                         {v2First.parent}<span className="ts-fam-relation" style={famRelStyle}>{v2First.relSuffix}</span>{' '}<span className="ts-fam-relation" style={famRelStyle}>{v2First.relLabel}</span>
                       </AutoFitText>
                     )}
-                    <div className="ts-fam-card-name">{v2First.name}</div>
+                    <div className="ts-fam-card-name" style={{ fontFamily: koreanFontFamily }}>{v2First.name}</div>
                   </div>
                   <div className="ts-fam-card-heart">&#9829;</div>
                   <div className="ts-fam-card-cell">
@@ -3233,7 +3233,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                         {v2Second.parent}<span className="ts-fam-relation" style={famRelStyle}>{v2Second.relSuffix}</span>{' '}<span className="ts-fam-relation" style={famRelStyle}>{v2Second.relLabel}</span>
                       </AutoFitText>
                     )}
-                    <div className="ts-fam-card-name">{v2Second.name}</div>
+                    <div className="ts-fam-card-name" style={{ fontFamily: koreanFontFamily }}>{v2Second.name}</div>
                   </div>
                 </AutoFitGroup>
               </div>
@@ -3264,7 +3264,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     {v3First.parent}<span className="ts-fam-relation" style={famRelStyle}>{v3First.relSuffix}</span>{' '}<span className="ts-fam-relation" style={famRelStyle}>{v3First.relLabel}</span>
                   </AutoFitText>
                 )}
-                <div className="ts-fam-child">{v3First.name}</div>
+                <div className="ts-fam-child" style={{ fontFamily: koreanFontFamily }}>{v3First.name}</div>
               </div>
               <div className="ts-fam-v3-heart">&#9829;</div>
               <div className="ts-fam-v3-cell">
@@ -3273,7 +3273,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     {v3Second.parent}<span className="ts-fam-relation" style={famRelStyle}>{v3Second.relSuffix}</span>{' '}<span className="ts-fam-relation" style={famRelStyle}>{v3Second.relLabel}</span>
                   </AutoFitText>
                 )}
-                <div className="ts-fam-child">{v3Second.name}</div>
+                <div className="ts-fam-child" style={{ fontFamily: koreanFontFamily }}>{v3Second.name}</div>
               </div>
             </AutoFitGroup>
             {contactSheet}

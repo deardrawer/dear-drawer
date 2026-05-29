@@ -50,6 +50,25 @@ export default function GreetingEditor({ value, onChange }: GreetingEditorProps)
           className="mt-0.5 w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white leading-relaxed resize-none"
         />
       </label>
+
+      <div>
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] uppercase tracking-wider text-stone-400">본문 글자 크기</span>
+          <span className="text-[10px] tabular-nums text-stone-500">{Math.round((value.bodyScale ?? 1) * 100)}%</span>
+        </div>
+        <input
+          type="range"
+          min={0.7}
+          max={1.3}
+          step={0.05}
+          value={value.bodyScale ?? 1}
+          onChange={(e) => update({ bodyScale: parseFloat(e.target.value) })}
+          className="mt-1 w-full accent-stone-600 h-1"
+        />
+        <p className="mt-1 text-[10px] text-stone-400 leading-relaxed">
+          기기마다 줄바꿈이 다를 수 있습니다. 본문이 길 경우 크기를 줄여 보세요.
+        </p>
+      </div>
     </div>
   )
 }

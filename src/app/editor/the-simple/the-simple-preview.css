@@ -9,6 +9,8 @@
 
 .ts-preview {
   text-wrap: pretty;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
   --ink: #111111;
   --mute: #777777;
   --mute-2: #b0b0b0;
@@ -1215,8 +1217,6 @@
   line-height: 1.9;
   color: #5d5850;
   white-space: pre-line;
-  text-wrap: pretty;
-  padding-inline: 10px;
 }
 .ts-preview .ts-greet .ts-greet-rule {
   width: 32px;
@@ -1240,8 +1240,6 @@
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-wrap: pretty;
-  padding-inline: 10px;
 }
 
 /* V3 · Quote Ornament */
@@ -1259,7 +1257,6 @@
   text-align: center;
   padding: 28px 12px;
   white-space: pre-line;
-  text-wrap: pretty;
   margin: 0;
 }
 .ts-preview .ts-g3-attr {
@@ -1343,7 +1340,6 @@
   line-height: 1.6;
   max-width: 130px;
   white-space: pre-line;
-  word-break: keep-all;
 }
 .ts-preview .ts-couple .ts-couple-amp {
   font-family: var(--font-display);
@@ -2076,7 +2072,6 @@
   font-size: calc(12px * var(--ts-font-scale, 1));
   color: #5d5850;
   line-height: 1.75;
-  word-break: keep-all;
 }
 .ts-preview .ts-addr-btn {
   display: inline-flex;
@@ -2128,7 +2123,6 @@
   line-height: 1.75;
   color: #3d3d3d;
   white-space: pre-line;
-  word-break: keep-all;
 }
 
 /* ---------- Gallery (V1 · Portrait Stacked) ---------- */
@@ -2579,7 +2573,6 @@
   font-size: calc(12px * var(--ts-font-scale, 1));
   letter-spacing: 0.28em;
   color: var(--ink);
-  text-transform: uppercase;
 }
 
 /* ==========================================================================
@@ -4596,7 +4589,6 @@
   font-size: calc(12px * var(--ts-font-scale, 1));
   color: var(--ink);
   line-height: 1.6;
-  word-break: keep-all;
 }
 .ts-preview .ts-fam-card-parents .ts-fam-relation {
   opacity: 0.5;
@@ -4646,7 +4638,6 @@
   font-size: calc(11px * var(--ts-font-scale, 1));
   color: var(--mute); letter-spacing: 0.02em;
   margin-bottom: 6px;
-  word-break: keep-all;
 }
 .ts-preview .ts-fam--v3 .ts-fam-v3-heart {
   color: var(--point); font-size: calc(16px * var(--ts-font-scale, 1)); opacity: 0.7;

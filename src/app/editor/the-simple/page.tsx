@@ -124,7 +124,7 @@ export interface SectionContents {
     // 글자 색상 (V10 크림 등 라이트 배경에서 사용, 기본 dark)
     textColor?: 'dark' | 'light'
   }
-  greeting: { label: string; title: string; body: string }
+  greeting: { label: string; title: string; body: string; bodyScale?: number }
   couple: {
     eyebrow: string
     order?: 'groom-first' | 'bride-first'
@@ -406,6 +406,7 @@ const defaultData: TheSimpleInvitationData = {
       label: 'Invitation',
       title: '초대합니다',
       body: '서로 다른 시간을 걸어온 두 사람이\n같은 길 위에서 만났습니다.\n귀한 걸음으로 축복해 주세요.',
+      bodyScale: 1,
     },
     couple: {
       eyebrow: 'The Couple',

@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useRef, useEffect, useState, useCallback } from 'react'
+import { Fragment, useMemo, useRef, useEffect, useState, useCallback } from 'react'
 import type { TheSimpleInvitationData, ImageWithSettings, TheSimpleImageSettings, GalleryImage } from './page'
 import { getSectionType } from './utils'
 import { useCroppedImageStyle, getImageCropStyleFallback } from '@/hooks/useCroppedImageStyle'
@@ -2827,6 +2827,9 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
     },
 
     greeting: (v) => {
+      const greetBodyScale = greeting.bodyScale ?? 1
+      const greetBodyFs = `calc(13px * var(--ts-font-scale, 1) * ${greetBodyScale})`
+
       // V2 · Karaoke Fill (회색→검정 채워지기, 줄 단위 stagger)
       if (v === 2) {
         const bodyLines = (greeting.body || '').split('\n')
@@ -2841,7 +2844,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <div
                 className="ts-g2-karaoke"
                 key={i}
-                style={{ animationDelay: `${800 + i * 550}ms`, minHeight: line.trim() ? undefined : '0.5em' }}
+                style={{ fontSize: greetBodyFs, animationDelay: `${800 + i * 550}ms`, minHeight: line.trim() ? undefined : '0.5em' }}
               >
                 {line}
               </div>
@@ -2857,7 +2860,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       if (v === 3) {
         return (
           <AnimatedSection className="ts-sec ts-greet ts-greet--v3 ts-anim-greet-v3" key={`greeting-${v}`}>
-            <blockquote className="ts-g3-quote ts-anim-item">
+            <blockquote className="ts-g3-quote ts-anim-item" style={{ fontSize: greetBodyFs }}>
               {greeting.body}
               <span className="ts-g3-attr">— {greeting.label || 'INVITATION'} —</span>
             </blockquote>
@@ -2875,7 +2878,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               >
                 {greeting.title || 'SAVE THE DATE'}
               </div>
-              <p className="ts-greet-body ts-anim-item" style={{ fontSize: 'calc(13px * var(--ts-font-scale, 1))', lineHeight: 2 }}>
+              <p className="ts-greet-body ts-anim-item" style={{ fontSize: greetBodyFs, lineHeight: 2 }}>
                 {greeting.body}
               </p>
               <div
@@ -2913,7 +2916,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               </div>
               <p
                 className="ts-greet-body ts-anim-item"
-                style={{ textAlign: 'left', fontSize: 'calc(13px * var(--ts-font-scale, 1))', lineHeight: 2 }}
+                style={{ textAlign: 'left', fontSize: greetBodyFs, lineHeight: 2 }}
               >
                 {greeting.body}
               </p>
@@ -2926,7 +2929,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         <AnimatedSection className="ts-sec ts-greet ts-anim-greet-v1" key={`greeting-${v}`}>
           <div className="ts-greet-label ts-anim-item">{greeting.label}</div>
           <div className="ts-greet-title ts-anim-item" style={{ margin: '14px 0 18px' }}>{greeting.title}</div>
-          <p className="ts-greet-body ts-anim-item" style={{ marginBottom: 12 }}>{greeting.body}</p>
+          <p className="ts-greet-body ts-anim-item" style={{ fontSize: greetBodyFs, marginBottom: 12 }}>{greeting.body}</p>
         </AnimatedSection>
       )
     },
@@ -4304,20 +4307,22 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         return (
           <AnimatedSection className={`ts-sec ts-guide ts-anim-guide-v${v}`} key={`guide-${v}`}>
             <div className="ts-eyebrow">{guide.eyebrow}</div>
-            <div style={{ marginTop: 8 }}>
-              {guide.items.map((item, i) => (
-                <div
-                  key={i}
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: '78px 1fr',
-                    gap: 14,
-                    padding: '18px 0',
-                    borderBottom: '1px solid var(--line)',
-                    borderTop: i === 0 ? '1px solid var(--line)' : 'none',
-                  }}
-                >
-                  <div>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'max-content 1fr',
+                gap: 0,
+                marginTop: 8,
+              }}
+            >
+              {guide.items.map((item, i) => {
+                const cellBorder = {
+                  padding: '18px 0',
+                  borderBottom: '1px solid var(--line)',
+                  borderTop: i === 0 ? '1px solid var(--line)' : undefined,
+                } as const
+                return (<Fragment key={i}>
+                  <div style={cellBorder}>
                     <div
                       style={{
                         fontFamily: 'var(--font-display)',
@@ -4343,7 +4348,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                       {item.title}
                     </div>
                   </div>
-                  <div>
+                  <div style={{ ...cellBorder, paddingLeft: 14 }}>
                     <p
                       style={{
                         fontFamily: 'var(--font-ko)',
@@ -4357,8 +4362,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                     </p>
                     {renderLink(item.link)}
                   </div>
-                </div>
-              ))}
+                </Fragment>)
+              })}
             </div>
           </AnimatedSection>
         )

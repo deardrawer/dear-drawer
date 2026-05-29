@@ -2130,12 +2130,14 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose }: { images: st
         {currentIndex + 1} / {resolvedImages.length}
       </div>
       {resolvedImages[currentIndex] && (
-        <img
-          src={resolvedImages[currentIndex]}
-          alt=""
-          className="max-w-full max-h-full object-contain"
-          onClick={e => { e.stopPropagation(); if (resolvedImages.length > 1) setCurrentIndex((currentIndex + 1) % resolvedImages.length) }}
-        />
+        <div className="flex items-center justify-center w-full h-full p-4" style={{ cursor: 'pointer' }} onClick={e => { e.stopPropagation(); if (resolvedImages.length > 1) setCurrentIndex((currentIndex + 1) % resolvedImages.length) }}>
+          <img
+            src={resolvedImages[currentIndex]}
+            alt=""
+            className="max-w-full max-h-full object-contain"
+            style={{ pointerEvents: 'none', WebkitTouchCallout: 'none', userSelect: 'none', WebkitUserSelect: 'none' } as React.CSSProperties}
+          />
+        </div>
       )}
     </div>
   )
@@ -2285,6 +2287,8 @@ const globalStyles = `
   .mobile-frame-content {
     width: 100%;
     min-height: 100vh;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
   }
   .mobile-frame-fixed-ui {
     position: fixed;

@@ -2268,7 +2268,7 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose }: { images: st
     <div className="fixed inset-0 z-[9999] bg-black flex items-center justify-center" onClick={onClose}>
       <button onClick={onClose} className="absolute top-4 right-4 text-white text-2xl z-10 w-10 h-10 flex items-center justify-center">&times;</button>
       <div className="absolute bottom-4 left-0 right-0 text-center text-white text-sm opacity-60">{idx + 1} / {resolved.length}</div>
-      {resolved[idx] && <img src={resolved[idx]} alt="" className="max-w-full max-h-full object-contain" onClick={e => { e.stopPropagation(); setIdx((idx + 1) % resolved.length) }} />}
+      {resolved[idx] && <div className="flex items-center justify-center w-full h-full p-4" style={{ cursor: 'pointer' }} onClick={e => { e.stopPropagation(); setIdx((idx + 1) % resolved.length) }}><img src={resolved[idx]} alt="" className="max-w-full max-h-full object-contain" style={{ pointerEvents: 'none', WebkitTouchCallout: 'none', userSelect: 'none', WebkitUserSelect: 'none' } as React.CSSProperties} /></div>}
     </div>
   )
 }
@@ -2283,7 +2283,7 @@ const globalStyles = `
     background: #FFFFFF; box-shadow: 0 0 40px rgba(0,0,0,0.08);
   }
   .mobile-frame-screen { position: relative; width: 100%; min-height: 100vh; }
-  .mobile-frame-content { width: 100%; min-height: 100vh; }
+  .mobile-frame-content { width: 100%; min-height: 100vh; word-break: keep-all; overflow-wrap: anywhere; }
   .mobile-frame-fixed-ui {
     position: fixed; top: 0; left: 50%; transform: translateX(-50%);
     width: 100%; max-width: 430px; height: 100vh; pointer-events: none; z-index: 100;

@@ -540,6 +540,10 @@ const globalStyles = `
     object-fit: contain;
     border-radius: 8px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    pointer-events: none;
+    -webkit-touch-callout: none;
+    user-select: none;
+    -webkit-user-select: none;
   }
 
   .gallery-lightbox-close {
@@ -839,6 +843,8 @@ const globalStyles = `
       -webkit-overflow-scrolling: touch;
       position: relative;
       transform: translateZ(0);
+      word-break: keep-all;
+      overflow-wrap: anywhere;
     }
 
     .mobile-frame-content::-webkit-scrollbar {

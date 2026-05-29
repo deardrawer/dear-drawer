@@ -216,7 +216,7 @@ const globalStyles = `
 
   /* Smooth scrollbar hide */
   .ig-scroll::-webkit-scrollbar { display: none; }
-  .ig-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+  .ig-scroll { -ms-overflow-style: none; scrollbar-width: none; word-break: keep-all; overflow-wrap: anywhere; }
 
   /* Rainbow gradient border for profile/highlights */
   .ig-rainbow-border {
@@ -2925,8 +2925,8 @@ function GalleryLightbox({
       </div>
 
       {/* Image */}
-      <div className="w-full h-full flex items-center justify-center p-4" onClick={(e) => e.stopPropagation()}>
-        <img src={images[idx]} alt="" className="max-w-full max-h-full object-contain" />
+      <div className="w-full h-full flex items-center justify-center p-4" onClick={(e) => { e.stopPropagation(); if (images.length > 1) setIdx((idx + 1) % images.length) }}>
+        <img src={images[idx]} alt="" className="max-w-full max-h-full object-contain" style={{ pointerEvents: 'none', WebkitTouchCallout: 'none', userSelect: 'none', WebkitUserSelect: 'none' } as React.CSSProperties} />
       </div>
 
       {/* Prev */}

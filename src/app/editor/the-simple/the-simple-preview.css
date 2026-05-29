@@ -1330,7 +1330,7 @@
 .ts-preview .ts-couple .ts-couple-name {
   font-family: var(--font-ko);
   font-size: calc(16px * var(--ts-font-scale, 1));
-  font-weight: 500;
+  font-weight: normal;
 }
 .ts-preview .ts-couple .ts-couple-bio {
   font-family: var(--font-serif);
@@ -4602,7 +4602,7 @@
 .ts-preview .ts-fam-card-name {
   font-family: var(--font-ko);
   font-size: calc(18px * var(--ts-font-scale, 1));
-  font-weight: 500;
+  font-weight: normal;
   color: var(--ink);
   margin-top: 6px;
   letter-spacing: 0.06em;

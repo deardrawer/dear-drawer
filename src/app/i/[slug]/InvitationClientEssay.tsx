@@ -4145,7 +4145,7 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
             <span style={{ color: 'rgba(255,255,255,0.95)', fontSize: '13px', fontWeight: 500 }}>결제 후 워터마크가 제거됩니다</span>
           </div>
         )}
-        <div className={`essay-font-container theme-${themeKey}`} style={customHighlightStyle}>
+        <div className={`essay-font-container theme-${themeKey}`} style={{ wordBreak: 'keep-all', overflowWrap: 'anywhere', ...customHighlightStyle }}>
           <BookConcept data={data} invitationId={invitationId} isSample={isSample} />
         </div>
         {hasBgm && <audio ref={audioRef} loop preload="auto"><source src={bgm.url} type="audio/mpeg" /></audio>}
@@ -4192,7 +4192,7 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
             <span style={{ color: 'rgba(255,255,255,0.95)', fontSize: '13px', fontWeight: 500 }}>결제 후 워터마크가 제거됩니다</span>
           </div>
         )}
-        <div className={`essay-font-container theme-${themeKey}`} style={customHighlightStyle}>
+        <div className={`essay-font-container theme-${themeKey}`} style={{ wordBreak: 'keep-all', overflowWrap: 'anywhere', ...customHighlightStyle }}>
           <PaperConcept data={data} invitationId={invitationId} isSample={isSample} />
         </div>
         {hasBgm && <audio ref={audioRef} loop preload="auto"><source src={bgm.url} type="audio/mpeg" /></audio>}
@@ -4222,7 +4222,7 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
           <span style={{ color: 'rgba(255,255,255,0.95)', fontSize: '13px', fontWeight: 500 }}>결제 후 워터마크가 제거됩니다</span>
         </div>
       )}
-      <div className={`essay-font-container theme-${themeKey}`} style={{ backgroundColor: theme.background, minHeight: '100vh', ...customHighlightStyle }}>
+      <div className={`essay-font-container theme-${themeKey}`} style={{ backgroundColor: theme.background, minHeight: '100vh', wordBreak: 'keep-all', overflowWrap: 'anywhere', ...customHighlightStyle }}>
         <CoverSection data={data} theme={theme} />
         {data.greeting && <GreetingSection data={data} theme={theme} />}
         {contentMode === 'interview' && data.interviews?.length > 0 ? (

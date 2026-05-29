@@ -94,7 +94,8 @@
 
 @font-face {
   font-family: 'ChosunIlboMyungjo';
-  src: url('/fonts/Chosunilbo_myungjo.woff') format('woff');
+  src: url('/fonts/Chosunilbo_myungjo.woff') format('woff'),
+       url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/Chosunilbo_myungjo.woff') format('woff');
   font-weight: 100 900;
   font-display: swap;
 }

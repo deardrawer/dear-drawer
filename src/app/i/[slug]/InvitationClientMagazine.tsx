@@ -78,7 +78,7 @@ function extractImageUrl(img: unknown): string {
 function useScrollReveal(options?: { rootMargin?: string }) {
   const [isVisible, setIsVisible] = useState(false)
   const observerRef = useRef<IntersectionObserver | null>(null)
-  const rootMargin = options?.rootMargin || '0px 0px -40% 0px'
+  const rootMargin = options?.rootMargin || '0px 0px -50% 0px'
 
   useEffect(() => {
     return () => { observerRef.current?.disconnect() }
@@ -89,7 +89,7 @@ function useScrollReveal(options?: { rootMargin?: string }) {
     if (!node) return
     const observer = new IntersectionObserver(
       ([entry]) => { if (entry.isIntersecting) { setIsVisible(true); observer.disconnect() } },
-      { threshold: 0.05, rootMargin }
+      { threshold: 0.1, rootMargin }
     )
     observer.observe(node)
     observerRef.current = observer

@@ -6,6 +6,7 @@ import GuestFloatingButton from '@/components/invitation/GuestFloatingButton'
 import { parseHighlight } from '@/lib/textUtils'
 import type { Invitation } from '@/types/invitation'
 import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
+import { resolveKoreanFontFamily } from '@/app/editor/the-simple/fontOptions'
 import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
 import '@/components/dday/dday-popup.css'
 
@@ -4155,6 +4156,8 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
             data={ddayPopup}
             weddingDate={data.wedding?.date}
             onDismiss={() => setShowDdayPopup(false)}
+            pointColor={theme.accent}
+            fontFamily={resolveKoreanFontFamily(data.fontStyle)}
           />
         )}
       </>
@@ -4200,6 +4203,8 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
             data={ddayPopup}
             weddingDate={data.wedding?.date}
             onDismiss={() => setShowDdayPopup(false)}
+            pointColor={theme.accent}
+            fontFamily={resolveKoreanFontFamily(data.fontStyle)}
           />
         )}
       </>
@@ -4244,6 +4249,8 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
           data={ddayPopup}
           weddingDate={data.wedding?.date}
           onDismiss={() => setShowDdayPopup(false)}
+          pointColor={theme.accent}
+          fontFamily={resolveKoreanFontFamily(data.fontStyle)}
         />
       )}
     </>

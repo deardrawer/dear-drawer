@@ -10,6 +10,7 @@ interface DdayPopupOverlayProps {
   onDismiss?: () => void
   style?: React.CSSProperties
   pointColor?: string
+  fontFamily?: string
 }
 
 function calcDday(weddingDate: string): number {
@@ -35,6 +36,7 @@ export default function DdayPopupOverlay({
   onDismiss,
   style: styleOverride,
   pointColor,
+  fontFamily,
 }: DdayPopupOverlayProps) {
   const dday = calcDday(weddingDate)
 
@@ -102,6 +104,7 @@ export default function DdayPopupOverlay({
   const title = data.title || '결혼식 당일 안내'
   const buttonLabel = data.buttonLabel || '확인했습니다'
   const ddayLabel = getDdayLabel(dday)
+  const ddayStyle = data.ddayStyle || 'pill'
   const totalPages = pages.length
 
   return (
@@ -113,11 +116,17 @@ export default function DdayPopupOverlay({
       <div
         className="dday-popup-v1-card"
         onClick={(e) => e.stopPropagation()}
+        style={fontFamily ? { fontFamily } : undefined}
       >
         {/* 헤더: D-Day 뱃지 + 페이지 카운터 */}
         <div className={`dday-popup-header ${totalPages <= 1 ? 'dday-popup-header--center' : ''}`}>
           {data.showDday && (
-            <span className="dday-popup-badge" style={pointColor ? { background: pointColor } : undefined}>{ddayLabel}</span>
+            <span
+              className={`dday-popup-badge dday-popup-badge--${ddayStyle}`}
+              style={pointColor ? (ddayStyle === 'outline' || ddayStyle === 'minimal' || ddayStyle === 'elegant' ? { color: pointColor, borderColor: pointColor } : { background: pointColor }) : undefined}
+            >
+              {ddayLabel}
+            </span>
           )}
           {totalPages > 1 && (
             <span className="dday-popup-page-counter">
@@ -138,6 +147,7 @@ export default function DdayPopupOverlay({
                 page={pages[currentPage]}
                 onImageClick={(urls, index) => setZoomState({ urls, index })}
                 textAlign={data.textAlign || 'left'}
+                linkAlign={data.linkAlign || data.textAlign || 'left'}
               />
             </div>
             {/* 페이지 좌우 버튼 */}
@@ -164,7 +174,17 @@ export default function DdayPopupOverlay({
           </div>
         )}
 
-        <button onClick={dismiss} className="dday-popup-close-btn" style={pointColor ? { background: pointColor } : undefined}>
+        <button
+          onClick={dismiss}
+          className={`dday-popup-close-btn dday-popup-close-btn--${data.buttonStyle || 'solid'}`}
+          style={pointColor ? (
+            (data.buttonStyle === 'outline' || data.buttonStyle === 'minimal')
+              ? { color: pointColor, borderColor: pointColor }
+              : (data.buttonStyle === 'soft')
+                ? { color: pointColor, backgroundColor: `${pointColor}15` }
+                : { background: pointColor }
+          ) : undefined}
+        >
           {buttonLabel}
         </button>
       </div>
@@ -246,12 +266,16 @@ function PageContent({
   page,
   onImageClick,
   textAlign = 'left',
+  linkAlign,
 }: {
   page: DdayPopupData['pages'][number]
   onImageClick: (urls: string[], index: number) => void
-  textAlign?: 'left' | 'center'
+  textAlign?: 'left' | 'center' | 'right'
+  linkAlign?: 'left' | 'center' | 'right'
 }) {
   const images = page.images?.filter((img) => img.url) || []
+  const effectiveLinkAlign = linkAlign || textAlign
+  const linkJustify = effectiveLinkAlign === 'center' ? 'center' : effectiveLinkAlign === 'right' ? 'flex-end' : 'flex-start'
 
   return (
     <div className="dday-popup-page" style={{ textAlign }}>
@@ -265,7 +289,7 @@ function PageContent({
         <ImageSlider images={images} onImageClick={onImageClick} />
       )}
       {page.links && page.links.length > 0 && (
-        <div className="dday-popup-page-links">
+        <div className="dday-popup-page-links" style={{ justifyContent: linkJustify }}>
           {page.links.filter(l => l.url).map((link, i) => (
             <a
               key={i}

@@ -10,6 +10,7 @@ import type {
   TheSimpleImageSettings,
 } from '@/app/editor/the-simple/page'
 import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
+import { resolveKoreanFontFamily } from '@/app/editor/the-simple/fontOptions'
 import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
 import '@/components/dday/dday-popup.css'
 import type { Invitation } from '@/types/invitation'
@@ -389,6 +390,7 @@ export default function InvitationClientTheSimple({
           weddingDate={data.wedding.date}
           onDismiss={() => setShowDdayPopup(false)}
           pointColor={data.pointColor}
+          fontFamily={resolveKoreanFontFamily(data.fontStyle)}
         />
       )}
     </div>

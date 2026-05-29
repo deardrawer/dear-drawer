@@ -12,6 +12,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary'
 import type { ImageSettings } from '@/store/editorStore'
 import type { DdayPopupData } from '@/lib/ddayPopupTypes'
 import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
+import { resolveKoreanFontFamily } from '@/app/editor/the-simple/fontOptions'
 import '@/components/dday/dday-popup.css'
 
 // Feed 에디터용 데이터 타입
@@ -608,6 +609,7 @@ function FeedEditorContent() {
                       isPreview
                       onDismiss={() => setDdayPreviewOpen(false)}
                       style={{ position: 'absolute', inset: 0, zIndex: 60 }}
+                      fontFamily={resolveKoreanFontFamily(data.fontStyle)}
                     />
                   )}
                 </div>
@@ -637,6 +639,7 @@ function FeedEditorContent() {
                       isPreview
                       onDismiss={() => setDdayPreviewOpen(false)}
                       style={{ position: 'absolute', inset: 0, zIndex: 60 }}
+                      fontFamily={resolveKoreanFontFamily(data.fontStyle)}
                     />
                   )}
                 </div>

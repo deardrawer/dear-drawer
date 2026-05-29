@@ -16,6 +16,7 @@ import RsvpModal from './RsvpModal'
 import { COLOR_THEMES, FONT_STYLES, type ParentsInvitationContent, type GuestInfo } from './types'
 import { ThemeProvider } from './ThemeContext'
 import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
+import { resolveKoreanFontFamily } from '@/app/editor/the-simple/fontOptions'
 import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
 import '@/components/dday/dday-popup.css'
 
@@ -599,6 +600,8 @@ export default function ParentsInvitationView({
           data={ddayPopup}
           weddingDate={data.wedding?.date}
           onDismiss={() => setShowDdayPopup(false)}
+          pointColor={theme.accent}
+          fontFamily={resolveKoreanFontFamily(data.fontStyle)}
         />
       )}
     </ThemeProvider>

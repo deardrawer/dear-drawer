@@ -38,7 +38,10 @@ export interface DdayPopupData {
   pages: DdayPopupPage[]
   buttonLabel?: string
   showDday?: boolean
-  textAlign?: 'left' | 'center'
+  textAlign?: 'left' | 'center' | 'right'
+  linkAlign?: 'left' | 'center' | 'right'
+  ddayStyle?: 'pill' | 'outline' | 'circle' | 'minimal' | 'elegant'
+  buttonStyle?: 'solid' | 'outline' | 'pill' | 'minimal' | 'soft'
 }
 
 export const DEFAULT_DDAY_POPUP: DdayPopupData = {

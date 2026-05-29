@@ -11,6 +11,7 @@ import IntroAnimation from '@/components/invitation/IntroAnimation'
 import { IntroSettings, getDefaultIntroSettings } from '@/lib/introPresets'
 import { getSectionPaddingStyle, isHidden, getFontSize, type StyleOverrides } from '@/lib/styleOverrides'
 import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
+import { resolveKoreanFontFamily } from '@/app/editor/the-simple/fontOptions'
 import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
 import '@/components/dday/dday-popup.css'
 
@@ -2676,6 +2677,8 @@ function InvitationClientMagazineContent({
           weddingDate={invitation.wedding?.date}
           isPreview={isPreview}
           onDismiss={() => setShowDdayPopup(false)}
+          pointColor={themeColors.accent}
+          fontFamily={resolveKoreanFontFamily(invitation.fontStyle)}
         />
       )}
     </>

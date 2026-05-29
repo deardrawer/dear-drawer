@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { WatermarkOverlay } from '@/components/ui/WatermarkOverlay'
 import CroppedImageDiv from '@/components/ui/CroppedImageDiv'
 import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
+import { resolveKoreanFontFamily } from '@/app/editor/the-simple/fontOptions'
 import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
 import '@/components/dday/dday-popup.css'
 
@@ -3356,6 +3357,7 @@ function InvitationClientExhibitContent({
           data={ddayPopup}
           weddingDate={content?.wedding?.date}
           onDismiss={() => setShowDdayPopup(false)}
+          fontFamily={resolveKoreanFontFamily(content?.fontStyle)}
         />
       )}
     </>

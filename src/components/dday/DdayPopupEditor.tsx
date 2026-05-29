@@ -145,13 +145,34 @@ export default function DdayPopupEditor({ value, weddingDate, onChange, onPrevie
           <div>
             <span className="text-[10px] uppercase tracking-wider text-stone-400">텍스트 정렬</span>
             <div className="mt-1 flex gap-1.5">
-              {([['left', '왼쪽'], ['center', '가운데']] as const).map(([id, label]) => (
+              {([['left', '왼쪽'], ['center', '가운데'], ['right', '오른쪽']] as const).map(([id, label]) => (
                 <button
                   key={id}
                   type="button"
                   onClick={() => onChange({ textAlign: id })}
                   className={`flex-1 px-2 py-1.5 rounded-md border text-[10px] transition-colors ${
                     (value.textAlign || 'left') === id
+                      ? 'border-stone-900 bg-stone-900 text-white'
+                      : 'border-stone-200 text-stone-600 hover:border-stone-400'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 링크 정렬 */}
+          <div>
+            <span className="text-[10px] uppercase tracking-wider text-stone-400">링크 정렬</span>
+            <div className="mt-1 flex gap-1.5">
+              {([['left', '왼쪽'], ['center', '가운데'], ['right', '오른쪽']] as const).map(([id, label]) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => onChange({ linkAlign: id })}
+                  className={`flex-1 px-2 py-1.5 rounded-md border text-[10px] transition-colors ${
+                    (value.linkAlign || value.textAlign || 'left') === id
                       ? 'border-stone-900 bg-stone-900 text-white'
                       : 'border-stone-200 text-stone-600 hover:border-stone-400'
                   }`}
@@ -355,6 +376,34 @@ export default function DdayPopupEditor({ value, weddingDate, onChange, onPrevie
             />
           </label>
 
+          {/* 확인 버튼 스타일 */}
+          <div>
+            <span className="text-[10px] uppercase tracking-wider text-stone-400">버튼 스타일</span>
+            <div className="mt-1 grid grid-cols-5 gap-1.5">
+              {([
+                ['solid', '채움'],
+                ['outline', '라인'],
+                ['pill', '둥근'],
+                ['minimal', '텍스트'],
+                ['soft', '연한'],
+              ] as const).map(([id, label]) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => onChange({ buttonStyle: id })}
+                  className={`flex flex-col items-center gap-1 px-1 py-2 rounded-md border text-[9px] transition-colors ${
+                    (value.buttonStyle || 'solid') === id
+                      ? 'border-stone-900 bg-stone-900 text-white'
+                      : 'border-stone-200 text-stone-600 hover:border-stone-400'
+                  }`}
+                >
+                  <ButtonStylePreview style={id} active={(value.buttonStyle || 'solid') === id} />
+                  <span>{label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* D-day 표시 토글 */}
           <label className="flex items-center justify-between">
             <div>
@@ -369,6 +418,36 @@ export default function DdayPopupEditor({ value, weddingDate, onChange, onPrevie
               <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform shadow-sm ${value.showDday ? 'translate-x-4' : ''}`} />
             </button>
           </label>
+
+          {/* D-Day 카운터 스타일 */}
+          {value.showDday && (
+            <div>
+              <span className="text-[10px] uppercase tracking-wider text-stone-400">카운터 스타일</span>
+              <div className="mt-1 grid grid-cols-5 gap-1.5">
+                {([
+                  ['pill', '필'],
+                  ['outline', '라인'],
+                  ['circle', '원형'],
+                  ['minimal', '텍스트'],
+                  ['elegant', '장식'],
+                ] as const).map(([id, label]) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => onChange({ ddayStyle: id })}
+                    className={`flex flex-col items-center gap-1 px-1 py-2 rounded-md border text-[9px] transition-colors ${
+                      (value.ddayStyle || 'pill') === id
+                        ? 'border-stone-900 bg-stone-900 text-white'
+                        : 'border-stone-200 text-stone-600 hover:border-stone-400'
+                    }`}
+                  >
+                    <DdayStylePreview style={id} active={(value.ddayStyle || 'pill') === id} />
+                    <span>{label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* 팝업 미리보기 버튼 */}
           {onPreview && value.pages.length > 0 && (
@@ -385,4 +464,67 @@ export default function DdayPopupEditor({ value, weddingDate, onChange, onPrevie
       )}
     </div>
   )
+}
+
+/** D-Day 스타일 미니 미리보기 아이콘 */
+function DdayStylePreview({ style, active }: { style: string; active: boolean }) {
+  const fg = active ? '#fff' : '#1a1a1a'
+  const muted = active ? 'rgba(255,255,255,0.5)' : '#999'
+  switch (style) {
+    case 'pill':
+      return (
+        <span style={{ display: 'inline-block', background: fg, color: active ? '#1a1a1a' : '#fff', fontSize: 7, fontWeight: 700, padding: '1px 5px', borderRadius: 20, lineHeight: '12px' }}>
+          D-3
+        </span>
+      )
+    case 'outline':
+      return (
+        <span style={{ display: 'inline-block', border: `1px solid ${fg}`, color: fg, fontSize: 7, fontWeight: 600, padding: '1px 5px', borderRadius: 20, lineHeight: '12px' }}>
+          D-3
+        </span>
+      )
+    case 'circle':
+      return (
+        <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 18, height: 18, borderRadius: '50%', background: fg, color: active ? '#1a1a1a' : '#fff', fontSize: 6, fontWeight: 700, lineHeight: 1 }}>
+          D-3
+        </span>
+      )
+    case 'minimal':
+      return (
+        <span style={{ fontSize: 8, fontWeight: 800, color: fg, lineHeight: '14px' }}>
+          D-3
+        </span>
+      )
+    case 'elegant':
+      return (
+        <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+          <span style={{ width: 12, height: 1, background: muted }} />
+          <span style={{ fontSize: 7, fontWeight: 600, color: fg, lineHeight: '10px', letterSpacing: '0.05em' }}>D-3</span>
+          <span style={{ width: 12, height: 1, background: muted }} />
+        </span>
+      )
+    default:
+      return null
+  }
+}
+
+/** 확인 버튼 스타일 미니 미리보기 */
+function ButtonStylePreview({ style, active }: { style: string; active: boolean }) {
+  const fg = active ? '#fff' : '#1a1a1a'
+  const bg = active ? '#1a1a1a' : '#fff'
+  const base: React.CSSProperties = { width: 28, height: 10, fontSize: 5, fontWeight: 600, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }
+  switch (style) {
+    case 'solid':
+      return <span style={{ ...base, background: fg, color: bg, borderRadius: 2 }}>확인</span>
+    case 'outline':
+      return <span style={{ ...base, background: 'transparent', color: fg, border: `1px solid ${fg}`, borderRadius: 2 }}>확인</span>
+    case 'pill':
+      return <span style={{ ...base, background: fg, color: bg, borderRadius: 20 }}>확인</span>
+    case 'minimal':
+      return <span style={{ ...base, background: 'transparent', color: fg, textDecoration: 'underline', textUnderlineOffset: 1 }}>확인</span>
+    case 'soft':
+      return <span style={{ ...base, background: active ? 'rgba(255,255,255,0.15)' : 'rgba(26,26,26,0.08)', color: fg, borderRadius: 2 }}>확인</span>
+    default:
+      return null
+  }
 }

@@ -13,6 +13,7 @@ const romanticFontStyles = `
 import { useEditorStore, InvitationContent, PreviewSectionId } from '@/store/editorStore'
 import FloatingButton from './FloatingButton'
 import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
+import { resolveKoreanFontFamily } from '@/app/editor/the-simple/fontOptions'
 import '@/components/dday/dday-popup.css'
 
 const InvitationClientRecord = dynamic(() => import('@/app/i/[slug]/InvitationClientRecord'), { ssr: false })
@@ -472,6 +473,7 @@ const Preview = forwardRef<PreviewHandle, object>(function Preview(_, ref) {
                 isPreview
                 onDismiss={() => setDdayPreviewOpen(false)}
                 style={{ position: 'absolute', inset: 0, zIndex: 60 }}
+                fontFamily={resolveKoreanFontFamily(invitation.fontStyle)}
               />
             )}
           </div>

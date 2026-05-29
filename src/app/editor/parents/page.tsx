@@ -12,6 +12,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { COLOR_THEMES, type ColorThemeId } from '@/components/parents/types'
 import type { DdayPopupData } from '@/lib/ddayPopupTypes'
 import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
+import { resolveKoreanFontFamily } from '@/app/editor/the-simple/fontOptions'
 import '@/components/dday/dday-popup.css'
 
 // 타임라인 아이템 타입
@@ -848,6 +849,7 @@ function ParentsEditorContent() {
                             isPreview
                             onDismiss={() => setDdayPreviewOpen(false)}
                             style={{ position: 'absolute', inset: 0, zIndex: 60 }}
+                            fontFamily={resolveKoreanFontFamily(data.fontStyle)}
                           />
                         )}
                       </div>
@@ -904,6 +906,7 @@ function ParentsEditorContent() {
                         isPreview
                         onDismiss={() => setDdayPreviewOpen(false)}
                         style={{ position: 'absolute', inset: 0, zIndex: 60 }}
+                        fontFamily={resolveKoreanFontFamily(data.fontStyle)}
                       />
                     )}
                   </div>

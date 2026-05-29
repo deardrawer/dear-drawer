@@ -51,6 +51,7 @@ import {
   KOREAN_FONTS,
   DEFAULT_DISPLAY_FONT_ID,
   DEFAULT_KOREAN_FONT_ID,
+  resolveKoreanFontFamily,
 } from './fontOptions'
 
 /** 갤러리 V3~V5 기본 행 패턴 */
@@ -1413,6 +1414,7 @@ function TheSimpleEditorContent() {
                     onDismiss={() => setDdayPreviewOpen(false)}
                     style={{ position: 'absolute', inset: 0, zIndex: 60 }}
                     pointColor={data.pointColor}
+                    fontFamily={resolveKoreanFontFamily(data.fontStyle)}
                   />
                 )}
               </div>
@@ -1518,6 +1520,7 @@ function TheSimpleEditorContent() {
                     onDismiss={() => setDdayPreviewOpen(false)}
                     style={{ position: 'absolute', inset: 0, zIndex: 60 }}
                     pointColor={data.pointColor}
+                    fontFamily={resolveKoreanFontFamily(data.fontStyle)}
                   />
                 )}
               </div>

@@ -11,6 +11,7 @@ import ShareModal from '@/components/share/ShareModal'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import type { DdayPopupData } from '@/lib/ddayPopupTypes'
 import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
+import { resolveKoreanFontFamily } from '@/app/editor/the-simple/fontOptions'
 import '@/components/dday/dday-popup.css'
 
 // Essay 에디터용 데이터 타입
@@ -488,6 +489,7 @@ function EssayEditorContent() {
                       isPreview
                       onDismiss={() => setDdayPreviewOpen(false)}
                       style={{ position: 'absolute', inset: 0, zIndex: 60 }}
+                      fontFamily={resolveKoreanFontFamily(data.fontStyle)}
                     />
                   )}
                 </div>
@@ -517,6 +519,7 @@ function EssayEditorContent() {
                       isPreview
                       onDismiss={() => setDdayPreviewOpen(false)}
                       style={{ position: 'absolute', inset: 0, zIndex: 60 }}
+                      fontFamily={resolveKoreanFontFamily(data.fontStyle)}
                     />
                   )}
                 </div>

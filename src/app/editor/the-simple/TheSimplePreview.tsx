@@ -2931,6 +2931,70 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
 
     family: (v) => {
       if (!family) return null
+
+      /* ── AutoFitGroup + AutoFitText: 양가 부모님 이름이 넘치면 양쪽 동일 비율로 축소 ── */
+      function AutoFitGroup({ children, className, style }: {
+        children: React.ReactNode
+        className?: string
+        style?: React.CSSProperties
+      }) {
+        const groupRef = useRef<HTMLDivElement>(null)
+
+        useEffect(() => {
+          const el = groupRef.current
+          if (!el) return
+
+          const fit = () => {
+            const outers = el.querySelectorAll<HTMLDivElement>('[data-autofit]')
+            if (outers.length === 0) return
+
+            outers.forEach(outer => {
+              const inner = outer.querySelector<HTMLSpanElement>(':scope > span')
+              if (inner) inner.style.transform = 'none'
+            })
+
+            let minScale = 1
+            outers.forEach(outer => {
+              const inner = outer.querySelector<HTMLSpanElement>(':scope > span')
+              if (!inner) return
+              const ow = outer.clientWidth
+              const iw = inner.scrollWidth
+              if (iw > ow && iw > 0) {
+                minScale = Math.min(minScale, ow / iw)
+              }
+            })
+
+            if (minScale < 1) {
+              outers.forEach(outer => {
+                const inner = outer.querySelector<HTMLSpanElement>(':scope > span')
+                if (inner) inner.style.transform = `scale(${minScale})`
+              })
+            }
+          }
+          fit()
+
+          const ro = new ResizeObserver(fit)
+          ro.observe(el)
+          return () => ro.disconnect()
+        })
+
+        return <div ref={groupRef} className={className} style={style}>{children}</div>
+      }
+
+      function AutoFitText({ children, className, style }: {
+        children: React.ReactNode
+        className?: string
+        style?: React.CSSProperties
+      }) {
+        return (
+          <div data-autofit className={className} style={{ ...style, overflow: 'hidden' }}>
+            <span style={{ display: 'inline-block', whiteSpace: 'nowrap', transformOrigin: 'left center' }}>
+              {children}
+            </span>
+          </div>
+        )
+      }
+
       const decStyle = family.deceasedStyle || 'flower'
 
       const decIcon = (deceased?: boolean) => {
@@ -2975,10 +3039,10 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         if (!parentLine) return null
         return (
           <span className="ts-fam-line">
-            <span className="ts-fam-parents">
+            <AutoFitText className="ts-fam-parents" style={{ flex: 1, minWidth: 0 }}>
               {parentLine}
               <span className="ts-fam-relation">의 {gender === 'son' ? groomRelLabel : brideRelLabel}</span>
-            </span>
+            </AutoFitText>
             <span className="ts-fam-child">{childName}</span>
           </span>
         )
@@ -3051,25 +3115,25 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               )}
               {/* 텍스트 영역 — 좌우 그리드 */}
               <div className="ts-fam-card-body">
-                <div className="ts-fam-card-grid">
+                <AutoFitGroup className="ts-fam-card-grid">
                   <div className="ts-fam-card-cell">
                     {v2First.parent && (
-                      <div className="ts-fam-card-parents" style={{ whiteSpace: 'nowrap', ...famParentStyle }}>
+                      <AutoFitText className="ts-fam-card-parents" style={famParentStyle}>
                         {v2First.parent}<span className="ts-fam-relation" style={famRelStyle}>{v2First.relSuffix}</span>{' '}<span className="ts-fam-relation" style={famRelStyle}>{v2First.relLabel}</span>
-                      </div>
+                      </AutoFitText>
                     )}
                     <div className="ts-fam-card-name">{v2First.name}</div>
                   </div>
                   <div className="ts-fam-card-heart">&#9829;</div>
                   <div className="ts-fam-card-cell">
                     {v2Second.parent && (
-                      <div className="ts-fam-card-parents" style={{ whiteSpace: 'nowrap', ...famParentStyle }}>
+                      <AutoFitText className="ts-fam-card-parents" style={famParentStyle}>
                         {v2Second.parent}<span className="ts-fam-relation" style={famRelStyle}>{v2Second.relSuffix}</span>{' '}<span className="ts-fam-relation" style={famRelStyle}>{v2Second.relLabel}</span>
-                      </div>
+                      </AutoFitText>
                     )}
                     <div className="ts-fam-card-name">{v2Second.name}</div>
                   </div>
-                </div>
+                </AutoFitGroup>
               </div>
             </div>
             {contactSheet}
@@ -3091,25 +3155,25 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
           <AnimatedSection className="ts-sec ts-fam ts-fam--v3 ts-anim-fam-v3" key={`family-${v}`}>
             <div className="ts-eyebrow ts-anim-item">{family.eyebrow}</div>
             {famPhoto('ts-fam-photo--landscape')}
-            <div className="ts-fam-v3-grid ts-anim-item">
+            <AutoFitGroup className="ts-fam-v3-grid ts-anim-item">
               <div className="ts-fam-v3-cell">
                 {v3First.parent && (
-                  <div className="ts-fam-v3-role" style={{ whiteSpace: 'nowrap', ...famRelStyle }}>
+                  <AutoFitText className="ts-fam-v3-role" style={famRelStyle}>
                     {v3First.parent}<span className="ts-fam-relation" style={famRelStyle}>{v3First.relSuffix}</span>{' '}<span className="ts-fam-relation" style={famRelStyle}>{v3First.relLabel}</span>
-                  </div>
+                  </AutoFitText>
                 )}
                 <div className="ts-fam-child">{v3First.name}</div>
               </div>
               <div className="ts-fam-v3-heart">&#9829;</div>
               <div className="ts-fam-v3-cell">
                 {v3Second.parent && (
-                  <div className="ts-fam-v3-role" style={{ whiteSpace: 'nowrap', ...famRelStyle }}>
+                  <AutoFitText className="ts-fam-v3-role" style={famRelStyle}>
                     {v3Second.parent}<span className="ts-fam-relation" style={famRelStyle}>{v3Second.relSuffix}</span>{' '}<span className="ts-fam-relation" style={famRelStyle}>{v3Second.relLabel}</span>
-                  </div>
+                  </AutoFitText>
                 )}
                 <div className="ts-fam-child">{v3Second.name}</div>
               </div>
-            </div>
+            </AutoFitGroup>
             {contactSheet}
           </AnimatedSection>
         )
@@ -3130,11 +3194,13 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
           <AnimatedSection className="ts-sec ts-fam ts-fam--v1 ts-anim-fam-v1" key={`family-${v}`}>
             <div className="ts-eyebrow ts-anim-item">{family.eyebrow}</div>
             {famPhoto('ts-fam-photo--portrait')}
-            {v1Rows.map((row, i) => (
-              <div className="ts-fam-row ts-anim-item" key={i}>
-                {renderRelation(row.father, row.mother, row.name, row.gender)}
-              </div>
-            ))}
+            <AutoFitGroup>
+              {v1Rows.map((row, i) => (
+                <div className="ts-fam-row ts-anim-item" key={i}>
+                  {renderRelation(row.father, row.mother, row.name, row.gender)}
+                </div>
+              ))}
+            </AutoFitGroup>
             {contactSheet}
           </AnimatedSection>
         )

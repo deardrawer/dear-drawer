@@ -103,8 +103,8 @@ function extractImageUrl(img: unknown): string {
 }
 
 function useScrollReveal(options?: { threshold?: number; rootMargin?: string }) {
-  const threshold = options?.threshold ?? 0.05
-  const rootMargin = options?.rootMargin ?? '0px 0px -40% 0px'
+  const threshold = options?.threshold ?? 0.1
+  const rootMargin = options?.rootMargin ?? '0px 0px -50% 0px'
   const ref = useRef<HTMLDivElement>(null)
   const [isVisible, setIsVisible] = useState(false)
   useEffect(() => {

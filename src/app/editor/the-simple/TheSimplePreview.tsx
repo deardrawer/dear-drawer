@@ -183,7 +183,7 @@ function useInView(): [(node: HTMLElement | null) => void, boolean] {
     // 주 옵저버 (뷰포트)
     const io = new IntersectionObserver(
       ([entry]) => { if (entry.isIntersecting) markInView() },
-      { threshold: 0.05, rootMargin: '0px 0px -40% 0px' }
+      { threshold: 0.15, rootMargin: '0px 0px -50% 0px' }
     )
     io.observe(node)
     ioRef.current = io
@@ -192,7 +192,7 @@ function useInView(): [(node: HTMLElement | null) => void, boolean] {
     if (scrollRoot) {
       const ioScroll = new IntersectionObserver(
         ([entry]) => { if (entry.isIntersecting) markInView() },
-        { root: scrollRoot, threshold: 0.05, rootMargin: '0px 0px -40% 0px' }
+        { root: scrollRoot, threshold: 0.15, rootMargin: '0px 0px -50% 0px' }
       )
       ioScroll.observe(node)
       ioScrollRef.current = ioScroll
@@ -997,7 +997,7 @@ function AccountTabbed({
       {rows.map((group, gi) => (
         <div key={gi} style={{ padding: '16px 0', borderBottom: gi < rows.length - 1 ? '1px solid var(--line)' : 'none' }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 10 }}>
-            <span style={{ fontFamily: 'var(--font-display)', fontSize: 'calc(10px * var(--ts-font-scale, 1))', letterSpacing: '0.2em', color: 'var(--accent)', textTransform: 'uppercase' as const }}>{group.role}</span>
+            <span style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(10px * var(--ts-font-scale, 1))', letterSpacing: '0.2em', color: 'var(--accent)', textTransform: 'uppercase' as const }}>{group.role}</span>
             {group.name && <span style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(14px * var(--ts-font-scale, 1))', fontWeight: 600, color: 'var(--ink)' }}>{group.name}</span>}
           </div>
           {group.accounts.map((acc, i) => (
@@ -2999,9 +2999,9 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               </div>
             </div>
             <div className="ts-c3-names ts-anim-item">
-              <span className="ts-c3-name" style={{ fontFamily: koreanFontFamily, fontWeight: 400, fontSynthesis: 'none', WebkitFontSmoothing: 'antialiased' }}>{first.name}</span>
+              <span className="ts-c3-name" style={{ fontFamily: koreanFontFamily, fontSynthesis: 'none', WebkitFontSmoothing: 'antialiased' }}>{first.name}</span>
               <span className="ts-c3-amp">&amp;</span>
-              <span className="ts-c3-name" style={{ fontFamily: koreanFontFamily, fontWeight: 400, fontSynthesis: 'none', WebkitFontSmoothing: 'antialiased' }}>{second.name}</span>
+              <span className="ts-c3-name" style={{ fontFamily: koreanFontFamily, fontSynthesis: 'none', WebkitFontSmoothing: 'antialiased' }}>{second.name}</span>
             </div>
             {(first.bio || second.bio) && (
               <div className="ts-c3-bio ts-anim-item">
@@ -3049,7 +3049,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   <PhotoSlideBox photos={first.photos} shape="square" size={100} delay={0} />
                 </div>
                 <div className="ts-couple-role">{first.role}</div>
-                <div style={{ fontFamily: koreanFontFamily, fontSize: 'calc(20px * var(--ts-font-scale, 1))', lineHeight: 1.2, margin: '4px 0', fontWeight: 400, fontSynthesis: 'none', WebkitFontSmoothing: 'antialiased' }}>{first.name}</div>
+                <div style={{ fontFamily: koreanFontFamily, fontSize: 'calc(20px * var(--ts-font-scale, 1))', lineHeight: 1.2, margin: '4px 0', fontSynthesis: 'none', WebkitFontSmoothing: 'antialiased' }}>{first.name}</div>
                 <p className="ts-couple-bio" style={{ textAlign: 'right', maxWidth: '100%', marginLeft: 'auto', fontSize: 'calc(11px * var(--ts-font-scale, 1))' }}>{first.bio}</p>
                 {renderTags(first.tags, 'v5', 'right')}
               </div>
@@ -3061,7 +3061,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   <PhotoSlideBox photos={second.photos} shape="square" size={100} delay={500} />
                 </div>
                 <div className="ts-couple-role">{second.role}</div>
-                <div style={{ fontFamily: koreanFontFamily, fontSize: 'calc(20px * var(--ts-font-scale, 1))', lineHeight: 1.2, margin: '4px 0', fontWeight: 400, fontSynthesis: 'none', WebkitFontSmoothing: 'antialiased' }}>{second.name}</div>
+                <div style={{ fontFamily: koreanFontFamily, fontSize: 'calc(20px * var(--ts-font-scale, 1))', lineHeight: 1.2, margin: '4px 0', fontSynthesis: 'none', WebkitFontSmoothing: 'antialiased' }}>{second.name}</div>
                 <p className="ts-couple-bio" style={{ textAlign: 'left', maxWidth: '100%', fontSize: 'calc(11px * var(--ts-font-scale, 1))' }}>{second.bio}</p>
                 {renderTags(second.tags, 'v5', 'left')}
               </div>

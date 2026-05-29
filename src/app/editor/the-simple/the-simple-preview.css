@@ -1440,7 +1440,6 @@
 .ts-preview .ts-c3-name {
   font-family: var(--font-ko);
   font-size: calc(22px * var(--ts-font-scale, 1));
-  font-weight: 400;
   font-synthesis: none;
   -webkit-font-smoothing: antialiased;
   letter-spacing: 0.06em;
@@ -2192,7 +2191,7 @@
 }
 .ts-preview .ts-account .ts-acc-role {
   display: block;
-  font-family: var(--font-display);
+  font-family: var(--font-ko);
   font-size: calc(9px * var(--ts-font-scale, 1));
   color: var(--mute);
   letter-spacing: 0.22em;
@@ -3059,6 +3058,8 @@
 
 /* ---------- 한글 이름 크기·행간 조정 ---------- */
 /* 한글은 영문 display font 대비 시각적으로 크게 보이므로 축소 + 이탤릭 제거 + 행간 확보 */
+/* 한글 이름일 때 선택한 한글 폰트 적용 */
+.ts-preview .ts-names-ko { font-family: var(--font-ko); font-synthesis: none; -webkit-font-smoothing: antialiased; }
 .ts-preview .ts-in1 h3.ts-names-ko,
 .ts-preview .ts-in2 h3.ts-names-ko { font-size: calc(34px * var(--ts-font-scale, 1)); font-style: normal; line-height: 1.35; }
 .ts-preview .ts-in3 h3.ts-names-ko { font-size: calc(26px * var(--ts-font-scale, 1)); font-style: normal; line-height: 1.3; }
@@ -4338,7 +4339,7 @@
 .ts-preview .ts-fam-relation { opacity: 0.6; font-size: calc(12px * var(--ts-font-scale, 1)); }
 .ts-preview .ts-fam-line { display: block; }
 .ts-preview .ts-fam-child {
-  font-family: var(--font-display);
+  font-family: var(--font-ko);
   font-size: calc(16px * var(--ts-font-scale, 1));
   font-weight: 500;
   display: block;

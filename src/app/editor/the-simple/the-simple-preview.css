@@ -2448,8 +2448,7 @@
   margin-bottom: 14px;
 }
 .ts-preview .ts-guestbook .ts-gb-sub {
-  font-family: var(--font-serif);
-  font-style: italic;
+  font-family: var(--font-ko);
   font-size: calc(12px * var(--ts-font-scale, 1));
   color: var(--mute);
 }
@@ -2620,7 +2619,6 @@
 }
 @keyframes tsLetterOnly {
   from { letter-spacing: -0.04em; }
-  to { letter-spacing: inherit; }
 }
 @keyframes tsLineDrawY {
   from { transform: scaleY(0); }
@@ -2636,7 +2634,7 @@
 }
 @keyframes tsLetterSpread {
   from { opacity: 0; letter-spacing: -0.04em; }
-  to { opacity: 1; letter-spacing: inherit; }
+  to { opacity: 1; }
 }
 @keyframes tsKenburns {
   from { transform: scale(1.1); opacity: 0; }
@@ -2658,7 +2656,7 @@
 /* 인트로 전용 — 블러에서 선명하게 + 부드러운 등장 */
 @keyframes tsBlurReveal {
   from { opacity: 0; filter: blur(6px); transform: translateY(12px); }
-  to   { opacity: 1; filter: blur(0);   transform: none; }
+  to   { opacity: 1; filter: none;      transform: none; }
 }
 /* 커플소개 전용 — V1 아래에서 부드러운 상승 */
 @keyframes tsCoupleRiseUp {
@@ -3577,6 +3575,10 @@
 
 /* ---------- GUIDE ---------- */
 /* V1 기존 */
+.ts-preview .ts-anim-guide-v1 > .ts-eyebrow { opacity: 0; transform: translateY(8px); }
+.ts-preview .ts-anim-guide-v1.in-view > .ts-eyebrow { animation: tsFadeUp 0.7s var(--ts-ease) 80ms both; }
+.ts-preview .ts-anim-guide-v1 > .ts-guide-grid { opacity: 0; }
+.ts-preview .ts-anim-guide-v1.in-view > .ts-guide-grid { animation: tsFadeIn 0.5s var(--ts-ease) 180ms both; }
 .ts-preview .ts-guide.in-view .ts-guide-cell {
   animation: tsFadeUp 0.7s var(--ts-ease) both;
 }
@@ -3737,36 +3739,61 @@
   animation: tsFadeUp 0.7s var(--ts-ease) 80ms both;
 }
 
+/* ── 토글 OFF (직접 자식): in-view에서 바로 애니메이션 ── */
+
 /* V1 기본 — fade up */
-.ts-preview .ts-anim-ls-v1.in-view .ts-ls-stagger {
+.ts-preview .ts-anim-ls-v1.in-view > .ts-ls-stagger {
   animation: tsFadeUp 0.8s var(--ts-ease) both;
   animation-delay: calc(300ms + var(--ls-i, 0) * 300ms);
 }
 
 /* V2 좌우교차 — slide right */
 .ts-preview .ts-anim-ls-v2 .ts-ls-stagger { transform: translateX(-8px); }
-.ts-preview .ts-anim-ls-v2.in-view .ts-ls-stagger {
+.ts-preview .ts-anim-ls-v2.in-view > .ts-ls-stagger {
   animation: tsSlideRight 0.9s var(--ts-ease) both;
   animation-delay: calc(300ms + var(--ls-i, 0) * 300ms);
 }
 
 /* V3 풀폭배경 — fade in */
 .ts-preview .ts-anim-ls-v3 .ts-ls-stagger { transform: none; }
-.ts-preview .ts-anim-ls-v3.in-view .ts-ls-stagger {
+.ts-preview .ts-anim-ls-v3.in-view > .ts-ls-stagger {
   animation: tsFadeIn 1s var(--ts-ease) both;
   animation-delay: calc(100ms + var(--ls-i, 0) * 400ms);
 }
 
 /* V4 카드 — fade up */
-.ts-preview .ts-anim-ls-v4.in-view .ts-ls-stagger {
+.ts-preview .ts-anim-ls-v4.in-view > .ts-ls-stagger {
   animation: tsFadeUp 0.9s var(--ts-ease) both;
   animation-delay: calc(300ms + var(--ls-i, 0) * 300ms);
 }
 
 /* V5 타임라인 — fade up */
-.ts-preview .ts-anim-ls-v5.in-view .ts-ls-stagger {
+.ts-preview .ts-anim-ls-v5.in-view > .ts-ls-stagger {
   animation: tsFadeUp 0.8s var(--ts-ease) both;
   animation-delay: calc(300ms + var(--ls-i, 0) * 300ms);
+}
+
+/* ── 토글 ON: in-view + 토글 열림 시 애니메이션 ── */
+
+.ts-preview .ts-anim-ls-v1.in-view .ts-toggle-revealed .ts-ls-stagger {
+  animation: tsFadeUp 0.8s var(--ts-ease) both;
+  animation-delay: calc(100ms + var(--ls-i, 0) * 250ms);
+}
+.ts-preview .ts-anim-ls-v2.in-view .ts-toggle-revealed .ts-ls-stagger {
+  animation: tsSlideRight 0.9s var(--ts-ease) both;
+  animation-delay: calc(100ms + var(--ls-i, 0) * 250ms);
+}
+.ts-preview .ts-anim-ls-v3.in-view .ts-toggle-revealed .ts-ls-stagger {
+  animation: tsFadeIn 1s var(--ts-ease) both;
+  animation-delay: calc(50ms + var(--ls-i, 0) * 300ms);
+}
+.ts-preview .ts-anim-ls-v4.in-view .ts-toggle-revealed .ts-ls-stagger {
+  animation: tsFadeUp 0.9s var(--ts-ease) both;
+  animation-delay: calc(100ms + var(--ls-i, 0) * 250ms);
+}
+.ts-preview .ts-anim-ls-v5.in-view .ts-toggle-revealed .ts-ls-stagger {
+  animation: tsFadeUp 0.8s var(--ts-ease) both;
+  animation-delay: calc(100ms + var(--ls-i, 0) * 250ms);
 }
 
 /* IntersectionObserver 미트리거 시 콘텐츠 손실 방지 (reduced motion) */
@@ -3829,6 +3856,7 @@
   touch-action: pan-x pan-y;
   -webkit-user-select: none;
   user-select: none;
+  -webkit-touch-callout: none;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -4617,6 +4645,9 @@
 .ts-anim-fam-v1.in-view .ts-anim-item:nth-child(4),
 .ts-anim-fam-v2.in-view .ts-anim-item:nth-child(4),
 .ts-anim-fam-v3.in-view .ts-anim-item:nth-child(4) { animation-delay: 600ms; }
+/* V1 AutoFitGroup 래퍼 안의 rows — nth-child 딜레이 복원 */
+.ts-anim-fam-v1.in-view > :nth-child(3) .ts-anim-item:nth-child(1) { animation-delay: 400ms; }
+.ts-anim-fam-v1.in-view > :nth-child(3) .ts-anim-item:nth-child(2) { animation-delay: 600ms; }
 
 /* 인트로 in-view 후 3.5초 지연 등장 (컨테이너 페이드인).
    body-wrap(z-index:2)이 스크롤 시 자연스럽게 덮으므로 별도 퇴장 로직 불필요. */

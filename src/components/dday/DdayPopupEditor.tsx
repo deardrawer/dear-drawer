@@ -449,6 +449,26 @@ export default function DdayPopupEditor({ value, weddingDate, onChange, onPrevie
             </div>
           )}
 
+          {/* 오늘 다시 보지 않기 */}
+          <label className="flex items-center justify-between gap-2 mt-3 py-2">
+            <span className="text-[11px] text-stone-600">오늘 다시 보지 않기 표시</span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={!!value.showDismissToday}
+              onClick={() => onChange({ showDismissToday: !value.showDismissToday })}
+              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                value.showDismissToday ? 'bg-stone-800' : 'bg-stone-300'
+              }`}
+            >
+              <span
+                className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${
+                  value.showDismissToday ? 'translate-x-[18px]' : 'translate-x-[3px]'
+                }`}
+              />
+            </button>
+          </label>
+
           {/* 팝업 미리보기 버튼 */}
           {onPreview && value.pages.length > 0 && (
             <button

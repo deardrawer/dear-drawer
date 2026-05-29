@@ -42,6 +42,7 @@ export interface DdayPopupData {
   linkAlign?: 'left' | 'center' | 'right'
   ddayStyle?: 'pill' | 'outline' | 'circle' | 'minimal' | 'elegant'
   buttonStyle?: 'solid' | 'outline' | 'pill' | 'minimal' | 'soft'
+  showDismissToday?: boolean
 }
 
 export const DEFAULT_DDAY_POPUP: DdayPopupData = {

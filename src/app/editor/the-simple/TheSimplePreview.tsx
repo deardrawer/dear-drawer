@@ -11,6 +11,69 @@ import GuestFloatingButton from '@/components/invitation/GuestFloatingButton'
 import './the-simple-preview.css'
 import '@/components/dday/dday-popup.css'
 
+/* ── AutoFitGroup + AutoFitText: 양가 부모님 이름 넘침 방지 (모듈 레벨) ── */
+function AutoFitGroup({ children, className, style }: {
+  children: React.ReactNode
+  className?: string
+  style?: React.CSSProperties
+}) {
+  const groupRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const el = groupRef.current
+    if (!el) return
+
+    const fit = () => {
+      const outers = el.querySelectorAll<HTMLDivElement>('[data-autofit]')
+      if (outers.length === 0) return
+
+      outers.forEach(outer => {
+        const inner = outer.querySelector<HTMLSpanElement>(':scope > span')
+        if (inner) inner.style.transform = 'none'
+      })
+
+      let minScale = 1
+      outers.forEach(outer => {
+        const inner = outer.querySelector<HTMLSpanElement>(':scope > span')
+        if (!inner) return
+        const ow = outer.clientWidth
+        const iw = inner.scrollWidth
+        if (iw > ow && iw > 0) {
+          minScale = Math.min(minScale, ow / iw)
+        }
+      })
+
+      if (minScale < 1) {
+        outers.forEach(outer => {
+          const inner = outer.querySelector<HTMLSpanElement>(':scope > span')
+          if (inner) inner.style.transform = `scale(${minScale})`
+        })
+      }
+    }
+    fit()
+
+    const ro = new ResizeObserver(fit)
+    ro.observe(el)
+    return () => ro.disconnect()
+  })
+
+  return <div ref={groupRef} className={className} style={style}>{children}</div>
+}
+
+function AutoFitText({ children, className, style }: {
+  children: React.ReactNode
+  className?: string
+  style?: React.CSSProperties
+}) {
+  return (
+    <div data-autofit className={className} style={{ ...style, overflow: 'hidden' }}>
+      <span style={{ display: 'inline-block', whiteSpace: 'nowrap', transformOrigin: 'left center' }}>
+        {children}
+      </span>
+    </div>
+  )
+}
+
 interface TheSimplePreviewProps {
   data: TheSimpleInvitationData
   fullscreen?: boolean
@@ -82,64 +145,61 @@ function useContainedOverlay(
 /* ==========================================================================
  * IntersectionObserver 훅 — 한 번 화면에 들어오면 inView=true
  * ========================================================================== */
-function useInView<T extends HTMLElement>(
-  options?: IntersectionObserverInit
-): [React.RefObject<T | null>, boolean] {
-  const ref = useRef<T | null>(null)
+function useInView(): [(node: HTMLElement | null) => void, boolean] {
   const [inView, setInView] = useState(false)
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    let done = false
-    let ioFallback: IntersectionObserver | null = null
-    let ioScroll: IntersectionObserver | null = null
+  const ioRef = useRef<IntersectionObserver | null>(null)
+  const ioScrollRef = useRef<IntersectionObserver | null>(null)
+
+  // 언마운트 시 정리
+  useEffect(() => () => {
+    ioRef.current?.disconnect()
+    ioScrollRef.current?.disconnect()
+  }, [])
+
+  // callback ref: 노드가 DOM에 붙는 순간 옵저버 생성
+  const ref = useCallback((node: HTMLElement | null) => {
+    ioRef.current?.disconnect()
+    ioScrollRef.current?.disconnect()
+    if (!node) return
+
     const markInView = () => {
-      if (done) return
-      done = true
       setInView(true)
-      io.disconnect()
-      ioFallback?.disconnect()
-      ioScroll?.disconnect()
+      ioRef.current?.disconnect()
+      ioScrollRef.current?.disconnect()
     }
-    // 주 옵저버: rootMargin -40%로 화면 중상단 진입 시 트리거
+
+    // 에디터 스크롤 컨테이너 찾기
+    let scrollRoot: HTMLElement | null = null
+    let sp: HTMLElement | null = node.parentElement
+    while (sp) {
+      if (sp !== document.documentElement && sp !== document.body &&
+          /(auto|scroll)/.test(getComputedStyle(sp).overflowY)) {
+        scrollRoot = sp
+        break
+      }
+      sp = sp.parentElement
+    }
+
+    // 주 옵저버 (뷰포트)
     const io = new IntersectionObserver(
       ([entry]) => { if (entry.isIntersecting) markInView() },
-      { threshold: 0.05, rootMargin: '0px 0px -40% 0px', ...options }
+      { threshold: 0.05, rootMargin: '0px 0px -40% 0px' }
     )
-    io.observe(el)
-    // 지연 보조 옵저버: 페이지 하단 섹션이 rootMargin 데드존에 갇히는 경우 대비
-    const fallbackTimer = setTimeout(() => {
-      if (done) return
-      ioFallback = new IntersectionObserver(
+    io.observe(node)
+    ioRef.current = io
+
+    // 에디터 스크롤 컨테이너용 옵저버
+    if (scrollRoot) {
+      const ioScroll = new IntersectionObserver(
         ([entry]) => { if (entry.isIntersecting) markInView() },
-        { threshold: 0.05 }
+        { root: scrollRoot, threshold: 0.05, rootMargin: '0px 0px -40% 0px' }
       )
-      ioFallback.observe(el)
-    }, 1200)
-    // 스크롤 컨테이너 root 옵저버: 에디터 프리뷰(overflow-y:auto) 안에서 viewport 기준 IO가 실패하는 Edge 대비
-    const scrollFallbackTimer = setTimeout(() => {
-      if (done) return
-      let scrollParent: HTMLElement | null = el.parentElement
-      while (scrollParent) {
-        if (/(auto|scroll)/.test(getComputedStyle(scrollParent).overflowY)) break
-        scrollParent = scrollParent.parentElement
-      }
-      if (scrollParent) {
-        ioScroll = new IntersectionObserver(
-          ([entry]) => { if (entry.isIntersecting) markInView() },
-          { root: scrollParent, threshold: 0.05 }
-        )
-        ioScroll.observe(el)
-      }
-    }, 2000)
-    // 최종 안전장치: 3초 후에도 감지 실패 시 강제 표시
-    const safetyTimer = setTimeout(() => markInView(), 3500)
-    return () => {
-      clearTimeout(fallbackTimer); clearTimeout(scrollFallbackTimer); clearTimeout(safetyTimer)
-      io.disconnect(); ioFallback?.disconnect(); ioScroll?.disconnect()
+      ioScroll.observe(node)
+      ioScrollRef.current = ioScroll
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
   return [ref, inView]
 }
 
@@ -378,6 +438,8 @@ function SectionToggle({
   btnStyle?: number
 }) {
   const [open, setOpen] = useState(!enabled) // 토글 비활성이면 항상 열림
+  // 토글이 한 번이라도 열렸는지 추적 → CSS 애니메이션 트리거용
+  const [revealed, setRevealed] = useState(!enabled)
   const btnRef = useRef<HTMLDivElement>(null)
   const rafId = useRef(0)
   const scrollCtx = useRef<{ targetY: number; container: HTMLElement | null } | null>(null)
@@ -431,6 +493,7 @@ function SectionToggle({
       scrollCtx.current = { targetY, container }
       rafId.current = requestAnimationFrame(tick)
     }
+    if (!open) setRevealed(true)
     setOpen(prev => !prev)
   }
 
@@ -448,6 +511,7 @@ function SectionToggle({
   return (
     <div>
       <div
+        className={revealed ? 'ts-toggle-revealed' : ''}
         onTransitionEnd={handleTransitionEnd}
         style={{
           display: 'grid',
@@ -489,7 +553,7 @@ interface AnimatedSectionProps {
 }
 
 function AnimatedSection({ className = '', style, children }: AnimatedSectionProps) {
-  const [ref, inView] = useInView<HTMLElement>()
+  const [ioRef, inView] = useInView()
   const [settled, setSettled] = useState(false)
   const settledRef = useRef(false)
   const sectionRef = useRef<HTMLElement | null>(null)
@@ -499,31 +563,47 @@ function AnimatedSection({ className = '', style, children }: AnimatedSectionPro
     if (!inView || settledRef.current) return
     const el = sectionRef.current
     if (!el) return
-    const pending = new Set<HTMLElement>()
-    el.querySelectorAll<HTMLElement>('[class*="ts-anim-"], [class*="ts-in-anim"]').forEach((child) => {
-      if (getComputedStyle(child).animationName !== 'none') pending.add(child)
-    })
-    if (pending.size === 0) { settledRef.current = true; setSettled(true); return }
-    const onEnd = (e: AnimationEvent) => {
-      pending.delete(e.target as HTMLElement)
-      if (pending.size === 0) {
-        settledRef.current = true
-        setSettled(true)
-        el.removeEventListener('animationend', onEnd)
+
+    // 한 프레임 대기: CSS 애니메이션이 적용된 후 검사
+    const raf = requestAnimationFrame(() => {
+      const pending = new Set<HTMLElement>()
+
+      // 1) 이름 기반 타겟 (ts-anim-*, ts-in-anim 등)
+      el.querySelectorAll<HTMLElement>('[class*="ts-anim-"], [class*="ts-in-anim"]').forEach((child) => {
+        if (getComputedStyle(child).animationName !== 'none') pending.add(child)
+      })
+      // 2) 직접 자식도 검사 (> :nth-child() 셀렉터로 애니메이션 받는 경우)
+      Array.from(el.children).forEach((child) => {
+        if (child instanceof HTMLElement && getComputedStyle(child).animationName !== 'none') {
+          pending.add(child)
+        }
+      })
+
+      if (pending.size === 0) { settledRef.current = true; setSettled(true); return }
+
+      const onEnd = (e: AnimationEvent) => {
+        pending.delete(e.target as HTMLElement)
+        if (pending.size === 0) {
+          settledRef.current = true
+          setSettled(true)
+          el.removeEventListener('animationend', onEnd)
+        }
       }
-    }
-    el.addEventListener('animationend', onEnd)
-    // 안전장치: 4초 후 강제 settled (카운트다운 등 3s+ delay 애니메이션 보호)
-    const t = setTimeout(() => { if (!settledRef.current) { settledRef.current = true; setSettled(true); el.removeEventListener('animationend', onEnd) } }, 4000)
-    return () => { clearTimeout(t); el.removeEventListener('animationend', onEnd) }
+      el.addEventListener('animationend', onEnd)
+      const t = setTimeout(() => { if (!settledRef.current) { settledRef.current = true; setSettled(true); el.removeEventListener('animationend', onEnd) } }, 4000)
+      // cleanup 시 timeout + listener 해제
+      cleanupRef.current = () => { clearTimeout(t); el.removeEventListener('animationend', onEnd) }
+    })
+
+    const cleanupRef = { current: () => {} }
+    return () => { cancelAnimationFrame(raf); cleanupRef.current() }
   }, [inView])
 
   const setRefs = useCallback((el: HTMLElement | null) => {
     sectionRef.current = el
-    ;(ref as React.MutableRefObject<HTMLElement | null>).current = el
-  }, [ref])
+    ioRef(el)
+  }, [ioRef])
 
-  // inView 전까지 인라인 opacity:0 으로 확실히 숨김 (CSS 로딩 타이밍 무관)
   const mergedStyle: React.CSSProperties = {
     ...style,
     ...(!inView ? { opacity: 0 } : {}),
@@ -705,7 +785,7 @@ function FamilyContactSheet({
 }
 
 /* ==========================================================================
- * AccountTabbed — GROOM/BRIDE 탭 전환 + 역할별 계좌 목록 + 복사
+ * AccountTabbed — GROOM/BRIDE 아코디언 (각각 접기/펼치기) + 역할별 계좌 목록 + 복사
  * ========================================================================== */
 function AccountTabbed({
   groomRole,
@@ -722,6 +802,8 @@ function AccountTabbed({
   groomMotherName,
   brideFatherName,
   brideMotherName,
+  groomName,
+  brideName,
   variant = 1,
   order,
 }: {
@@ -739,10 +821,13 @@ function AccountTabbed({
   groomMotherName?: string
   brideFatherName?: string
   brideMotherName?: string
+  groomName?: string
+  brideName?: string
   variant?: number
   order?: 'groom-first' | 'bride-first'
 }) {
-  const [tab, setTab] = useState<'groom' | 'bride' | null>(null)
+  const [groomOpen, setGroomOpen] = useState(false)
+  const [brideOpen, setBrideOpen] = useState(false)
   const isAccBrideFirst = order === 'bride-first'
   const [copied, setCopied] = useState<string | null>(null)
 
@@ -756,88 +841,21 @@ function AccountTabbed({
   const hasGroom = groomAccounts.length > 0 || groomFather.length > 0 || groomMother.length > 0
   const hasBride = brideAccounts.length > 0 || brideFather.length > 0 || brideMother.length > 0
 
-  const rows: Array<{ role: string; name?: string; accounts: Array<{ bank: string; number: string; holder: string }> }> = []
-  if (tab === 'groom') {
-    if (groomAccounts.length > 0) rows.push({ role: groomTitle || groomRole || '신랑', accounts: groomAccounts })
-    if (groomFather.length > 0) rows.push({ role: '아버지', name: groomFatherName, accounts: groomFather })
-    if (groomMother.length > 0) rows.push({ role: '어머니', name: groomMotherName, accounts: groomMother })
-  } else if (tab === 'bride') {
-    if (brideAccounts.length > 0) rows.push({ role: brideTitle || brideRole || '신부', accounts: brideAccounts })
-    if (brideFather.length > 0) rows.push({ role: '아버지', name: brideFatherName, accounts: brideFather })
-    if (brideMother.length > 0) rows.push({ role: '어머니', name: brideMotherName, accounts: brideMother })
-  }
+  type AccRow = { role: string; name?: string; accounts: Array<{ bank: string; number: string; holder: string }> }
+  const groomRows: AccRow[] = []
+  if (groomAccounts.length > 0) groomRows.push({ role: groomTitle || groomRole || '신랑', name: variant === 3 ? groomName : undefined, accounts: groomAccounts })
+  if (groomFather.length > 0) groomRows.push({ role: '아버지', name: groomFatherName, accounts: groomFather })
+  if (groomMother.length > 0) groomRows.push({ role: '어머니', name: groomMotherName, accounts: groomMother })
 
-  /* ── 탭 버튼 스타일 (variant별) ── */
-  const tabBase: React.CSSProperties = {
-    fontFamily: 'var(--font-display)',
-    cursor: 'pointer',
-    textTransform: 'uppercase',
-    transition: 'all 0.2s',
-  }
-
-  const getTabStyle = (side: 'groom' | 'bride'): React.CSSProperties => {
-    const active = tab === side
-    const isRight = isAccBrideFirst ? side === 'groom' : side === 'bride'
-
-    // V2 · 둥근 필 탭
-    if (variant === 2) {
-      return {
-        ...tabBase,
-        fontSize: 'calc(11px * var(--ts-font-scale, 1))',
-        letterSpacing: '0.12em',
-        padding: '9px 0',
-        borderRadius: isRight ? '0 20px 20px 0' : '20px 0 0 20px',
-        border: '1px solid var(--line)',
-        borderLeft: isRight ? 'none' : '1px solid var(--line)',
-        background: active ? 'var(--accent)' : 'transparent',
-        color: active ? '#fff' : 'var(--mute)',
-      }
-    }
-
-    // V4 · 언더라인 탭
-    if (variant === 4) {
-      return {
-        ...tabBase,
-        fontSize: 'calc(11px * var(--ts-font-scale, 1))',
-        letterSpacing: '0.2em',
-        padding: '8px 0 10px',
-        border: 'none',
-        borderBottom: active ? '2px solid var(--accent)' : '1px solid var(--line)',
-        background: 'transparent',
-        color: active ? 'var(--accent)' : 'var(--mute)',
-      }
-    }
-
-    // V5 · 중앙 필 캡슐
-    if (variant === 5) {
-      return {
-        ...tabBase,
-        fontSize: 'calc(10px * var(--ts-font-scale, 1))',
-        letterSpacing: '0.25em',
-        padding: '8px 0',
-        border: 'none',
-        background: active ? 'var(--accent)' : 'var(--bg, #f5f5f0)',
-        color: active ? '#fff' : 'var(--mute)',
-        borderRadius: isRight ? '0 4px 4px 0' : '4px 0 0 4px',
-      }
-    }
-
-    // V1 · 기본 (직각 보더)
-    return {
-      ...tabBase,
-      fontSize: 'calc(12px * var(--ts-font-scale, 1))',
-      letterSpacing: '0.15em',
-      padding: '10px 0',
-      border: '1px solid var(--accent)',
-      borderLeft: isRight ? 'none' : '1px solid var(--accent)',
-      background: active ? 'var(--accent)' : 'transparent',
-      color: active ? '#fff' : 'var(--accent)',
-    }
-  }
+  const brideRows: AccRow[] = []
+  if (brideAccounts.length > 0) brideRows.push({ role: brideTitle || brideRole || '신부', name: variant === 3 ? brideName : undefined, accounts: brideAccounts })
+  if (brideFather.length > 0) brideRows.push({ role: '아버지', name: brideFatherName, accounts: brideFather })
+  if (brideMother.length > 0) brideRows.push({ role: '어머니', name: brideMotherName, accounts: brideMother })
 
   /* ── 리스트 래퍼 스타일 (variant별) ── */
   const getListStyle = (): React.CSSProperties => {
     if (variant === 2) return { padding: '0 4px' }
+    if (variant === 3) return {}
     if (variant === 4) return {}
     if (variant === 5) return {}
     return { border: '1px solid var(--line)', padding: '0 14px' }
@@ -916,71 +934,209 @@ function AccountTabbed({
     }
   }
 
+  /* ── 듀얼 헤더 스타일 (variant별, 좌/우 위치 인식) ── */
+  const getDualHeaderStyle = (side: 'groom' | 'bride', open: boolean): React.CSSProperties => {
+    const isRight = isAccBrideFirst ? side === 'groom' : side === 'bride'
+    const base: React.CSSProperties = {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 5,
+      fontFamily: 'var(--font-display)',
+      cursor: 'pointer',
+      textTransform: 'uppercase',
+      transition: 'all 0.25s ease',
+      background: 'transparent',
+    }
+    if (variant === 2) return { ...base, fontSize: 'calc(11px * var(--ts-font-scale, 1))', letterSpacing: '0.12em', padding: '9px 0', borderRadius: isRight ? '0 20px 20px 0' : '20px 0 0 20px', border: '1px solid var(--line)', borderLeft: isRight ? 'none' : '1px solid var(--line)', background: open ? 'var(--accent)' : 'transparent', color: open ? '#fff' : 'var(--mute)' }
+    if (variant === 4) return { ...base, fontSize: 'calc(11px * var(--ts-font-scale, 1))', letterSpacing: '0.2em', padding: '8px 0 10px', border: 'none', borderBottom: open ? '2px solid var(--accent)' : '1px solid var(--line)', background: 'transparent', color: open ? 'var(--accent)' : 'var(--mute)' }
+    if (variant === 5) return { ...base, fontSize: 'calc(10px * var(--ts-font-scale, 1))', letterSpacing: '0.25em', padding: '8px 0', border: 'none', background: open ? 'var(--accent)' : 'var(--bg, #f5f5f0)', color: open ? '#fff' : 'var(--mute)', borderRadius: isRight ? '0 4px 4px 0' : '4px 0 0 4px' }
+    // V1 기본
+    return { ...base, fontSize: 'calc(12px * var(--ts-font-scale, 1))', letterSpacing: '0.15em', padding: '10px 0', border: '1px solid var(--accent)', borderLeft: isRight ? 'none' : '1px solid var(--accent)', background: open ? 'var(--accent)' : 'transparent', color: open ? '#fff' : 'var(--accent)' }
+  }
+
+  /* ── V3 전용 세로 헤더 스타일 ── */
+  const getV3HeaderStyle = (): React.CSSProperties => ({
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    fontFamily: 'var(--font-display)',
+    cursor: 'pointer',
+    textTransform: 'uppercase',
+    transition: 'all 0.25s ease',
+    background: 'transparent',
+    fontSize: 'calc(11px * var(--ts-font-scale, 1))',
+    letterSpacing: '0.2em',
+    padding: '10px 0',
+    border: 'none',
+    borderBottom: '1px solid var(--line)',
+    color: 'var(--accent)',
+  })
+
+  /* ── 셰브론 화살표 ── */
+  const Chevron = ({ open, size = 12 }: { open: boolean; size?: number }) => (
+    <svg
+      width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+      style={{
+        transition: 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
+        transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
+        flexShrink: 0,
+        opacity: 0.55,
+      }}
+    >
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  )
+
+  /* ── V3 전용 행 렌더링 ── */
+  const renderV3Rows = (rows: AccRow[]) => (
+    <div style={{ paddingTop: 8 }}>
+      {rows.map((group, gi) => (
+        <div key={gi} style={{ padding: '16px 0', borderBottom: gi < rows.length - 1 ? '1px solid var(--line)' : 'none' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 10 }}>
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: 'calc(10px * var(--ts-font-scale, 1))', letterSpacing: '0.2em', color: 'var(--accent)', textTransform: 'uppercase' as const }}>{group.role}</span>
+            {group.name && <span style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(14px * var(--ts-font-scale, 1))', fontWeight: 600, color: 'var(--ink)' }}>{group.name}</span>}
+          </div>
+          {group.accounts.map((acc, i) => (
+            <div key={i} style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(12px * var(--ts-font-scale, 1))', color: '#5d5850', lineHeight: 1.9, paddingLeft: 2 }}>
+              <span style={{ color: 'var(--mute)', marginRight: 6 }}>{acc.bank}</span>
+              <span style={{ fontFamily: 'var(--font-mono, monospace)' }}>{acc.number}</span>
+              {acc.holder && <span style={{ color: 'var(--mute)', marginLeft: 6 }}>· {acc.holder}</span>}
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  )
+
+  /* ── 기본 행 렌더링 (V1/V2/V4/V5) ── */
+  const renderDefaultRows = (rows: AccRow[]) => (
+    <div style={{ ...getListStyle(), marginTop: 8 }}>
+      {rows.map((group, gi) =>
+        group.accounts.map((acc, ai) => {
+          const isLast = gi === rows.length - 1 && ai === group.accounts.length - 1
+          return (
+            <div
+              key={`${gi}-${ai}`}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '14px 0',
+                ...getRowBorder(isLast),
+              }}
+            >
+              <div style={{ textAlign: 'left' }}>
+                <div style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(12px * var(--ts-font-scale, 1))', color: 'var(--mute)', marginBottom: 2 }}>
+                  {group.role}{group.name ? ` · ${group.name}` : ''}
+                </div>
+                <div style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(12px * var(--ts-font-scale, 1))', color: 'var(--ink)', lineHeight: 1.5 }}>
+                  <span style={{ color: 'var(--mute)' }}>{acc.bank}</span>
+                  <span style={{ marginLeft: 4 }}>{acc.number}</span>
+                  {acc.holder && <span style={{ color: 'var(--mute)', marginLeft: 4 }}>({acc.holder})</span>}
+                </div>
+              </div>
+              <button type="button" onClick={() => copyAccount(acc.number)} style={getCopyStyle(acc.number)}>
+                {copied === acc.number ? 'DONE' : 'COPY'}
+              </button>
+            </div>
+          )
+        })
+      )}
+    </div>
+  )
+
+  /* ── 콘텐츠 접기/펼치기 래퍼 ── */
+  const renderContent = (side: 'groom' | 'bride') => {
+    const isGroom = side === 'groom'
+    const open = isGroom ? groomOpen : brideOpen
+    const rows = isGroom ? groomRows : brideRows
+
+    return (
+      <div key={`content-${side}`} style={{
+        display: 'grid',
+        gridTemplateRows: open ? '1fr' : '0fr',
+        transition: 'grid-template-rows 0.45s cubic-bezier(0.4, 0, 0.2, 1)',
+      }}>
+        <div style={{
+          overflow: 'hidden',
+          opacity: open ? 1 : 0,
+          transition: open ? 'opacity 0.35s ease 0.1s' : 'opacity 0.2s ease',
+        }}>
+          {rows.length > 0
+            ? (variant === 3 ? renderV3Rows(rows) : renderDefaultRows(rows))
+            : <p style={{ textAlign: 'center', fontSize: 'calc(11px * var(--ts-font-scale, 1))', color: '#b8b0a6', marginTop: 12, marginBottom: 4 }}>계좌를 추가하면 여기에 표시됩니다</p>
+          }
+        </div>
+      </div>
+    )
+  }
+
+  /* ── V3: 세로 아코디언 ── */
+  if (variant === 3) {
+    const renderV3Side = (side: 'groom' | 'bride') => {
+      const isGroom = side === 'groom'
+      const open = isGroom ? groomOpen : brideOpen
+      const toggle = () => {
+        if (isGroom) setGroomOpen(p => { if (!p) setBrideOpen(false); return !p })
+        else setBrideOpen(p => { if (!p) setGroomOpen(false); return !p })
+      }
+      const label = isGroom ? (groomRole || 'Groom') : (brideRole || 'Bride')
+      return (
+        <div key={side}>
+          <button type="button" onClick={toggle} style={getV3HeaderStyle()}>
+            <span>{label}</span>
+            <Chevron open={open} size={14} />
+          </button>
+          {renderContent(side)}
+        </div>
+      )
+    }
+    const v3sides = isAccBrideFirst
+      ? [renderV3Side('bride'), renderV3Side('groom')]
+      : [renderV3Side('groom'), renderV3Side('bride')]
+    return <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{v3sides}</div>
+  }
+
+  /* ── V1/V2/V4/V5: 듀얼 (나란히) 헤더 + 아래 콘텐츠 ── */
+  const toggleSide = (side: 'groom' | 'bride') => {
+    if (side === 'groom') {
+      setGroomOpen(p => { if (!p) setBrideOpen(false); return !p })
+    } else {
+      setBrideOpen(p => { if (!p) setGroomOpen(false); return !p })
+    }
+  }
+
+  const firstSide: 'groom' | 'bride' = isAccBrideFirst ? 'bride' : 'groom'
+  const secondSide: 'groom' | 'bride' = isAccBrideFirst ? 'groom' : 'bride'
+
   return (
     <div>
-      {/* 탭 */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', marginBottom: 16 }}>
-        {isAccBrideFirst ? (
-          <>
-            <button type="button" onClick={() => setTab('bride')} style={getTabStyle('bride')}>
-              {brideRole || 'Bride'}
-            </button>
-            <button type="button" onClick={() => setTab('groom')} style={getTabStyle('groom')}>
-              {groomRole || 'Groom'}
-            </button>
-          </>
-        ) : (
-          <>
-            <button type="button" onClick={() => setTab('groom')} style={getTabStyle('groom')}>
-              {groomRole || 'Groom'}
-            </button>
-            <button type="button" onClick={() => setTab('bride')} style={getTabStyle('bride')}>
-              {brideRole || 'Bride'}
-            </button>
-          </>
-        )}
+      {/* 듀얼 헤더 */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', marginBottom: 0 }}>
+        <button
+          type="button"
+          onClick={() => toggleSide(firstSide)}
+          style={getDualHeaderStyle(firstSide, firstSide === 'groom' ? groomOpen : brideOpen)}
+        >
+          <span>{firstSide === 'groom' ? (groomRole || 'Groom') : (brideRole || 'Bride')}</span>
+          <Chevron open={firstSide === 'groom' ? groomOpen : brideOpen} />
+        </button>
+        <button
+          type="button"
+          onClick={() => toggleSide(secondSide)}
+          style={getDualHeaderStyle(secondSide, secondSide === 'groom' ? groomOpen : brideOpen)}
+        >
+          <span>{secondSide === 'groom' ? (groomRole || 'Groom') : (brideRole || 'Bride')}</span>
+          <Chevron open={secondSide === 'groom' ? groomOpen : brideOpen} />
+        </button>
       </div>
-
-      {/* 계좌 목록 */}
-      {tab !== null && (tab === 'groom' ? hasGroom : hasBride) && rows.length > 0 ? (
-        <div style={getListStyle()}>
-          {rows.map((group, gi) =>
-            group.accounts.map((acc, ai) => {
-              const isLast = gi === rows.length - 1 && ai === group.accounts.length - 1
-              return (
-                <div
-                  key={`${gi}-${ai}`}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '14px 0',
-                    ...getRowBorder(isLast),
-                  }}
-                >
-                  <div style={{ textAlign: 'left' }}>
-                    <div style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(12px * var(--ts-font-scale, 1))', color: 'var(--mute)', marginBottom: 2 }}>
-                      {group.role}{group.name ? ` · ${group.name}` : ''}
-                    </div>
-                    <div style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(12px * var(--ts-font-scale, 1))', color: 'var(--ink)', lineHeight: 1.5 }}>
-                      <span style={{ color: 'var(--mute)' }}>{acc.bank}</span>
-                      <span style={{ marginLeft: 4 }}>{acc.number}</span>
-                      {acc.holder && <span style={{ color: 'var(--mute)', marginLeft: 4 }}>({acc.holder})</span>}
-                    </div>
-                  </div>
-                  <button type="button" onClick={() => copyAccount(acc.number)} style={getCopyStyle(acc.number)}>
-                    {copied === acc.number ? 'DONE' : 'COPY'}
-                  </button>
-                </div>
-              )
-            })
-          )}
-        </div>
-      ) : tab !== null ? (
-        <p style={{ textAlign: 'center', fontSize: 'calc(11px * var(--ts-font-scale, 1))', color: '#b8b0a6', marginTop: 8 }}>
-          계좌를 추가하면 여기에 표시됩니다
-        </p>
-      ) : null}
+      {/* 콘텐츠 — 열려 있는 쪽만 표시 */}
+      {renderContent(firstSide)}
+      {renderContent(secondSide)}
     </div>
   )
 }
@@ -1535,10 +1691,16 @@ function GalleryV2Slideshow({ images, galleryEyebrow, onOpenLightbox }: GalleryA
  * easeOutCubic 으로 처음 빠르게, 끝에서 천천히.
  * ========================================================================== */
 function CountingNumber({ target, className }: { target: number; className?: string }) {
-  const [ref, inView] = useInView<HTMLSpanElement>()
+  const [ioRef, inView] = useInView()
+  const spanRef = useRef<HTMLSpanElement | null>(null)
   const [current, setCurrent] = useState(0)
   const hasAnimated = useRef(false)
   const prevTarget = useRef(target)
+
+  const setRefs = useCallback((el: HTMLSpanElement | null) => {
+    spanRef.current = el
+    ioRef(el)
+  }, [ioRef])
 
   useEffect(() => {
     // target 변경 시 재애니메이션 허용
@@ -1567,7 +1729,7 @@ function CountingNumber({ target, className }: { target: number; className?: str
   const digits = String(current).padStart(targetLen, '0').split('')
 
   return (
-    <span ref={ref} className={className}>
+    <span ref={setRefs} className={className}>
       {digits.map((d, i) => (
         <span key={i} className="ts-i5-n ts-count-digit">{d}</span>
       ))}
@@ -2330,7 +2492,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       if (v === 1) {
         const photo = intro.photo
         return (
-          <AnimatedSection className="ts-sec" key={`intro-${v}`} style={{ padding: 0 }}>
+          <AnimatedSection className="ts-sec ts-intro" key={`intro-${v}`} style={{ padding: 0 }}>
             <div className={`ts-in1${textPosCls}${introTextCls}`}>
               {photo?.url
                 ? <>
@@ -2383,7 +2545,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       if (v === 2) {
         const splitBottom = textPos === 'top'
         return (
-          <AnimatedSection className="ts-sec" key={`intro-${v}`} style={{ padding: 0 }}>
+          <AnimatedSection className="ts-sec ts-intro" key={`intro-${v}`} style={{ padding: 0 }}>
             <div className={`ts-in2${textPosCls}${introTextCls}`}>
               {introBg()}
               <div className="ts-in2-content">
@@ -2413,7 +2575,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V3 · Minimal Frame (다크 배경 + 화이트 프레임)
       if (v === 3) {
         return (
-          <AnimatedSection className="ts-sec" key={`intro-${v}`} style={{ padding: 0 }}>
+          <AnimatedSection className="ts-sec ts-intro" key={`intro-${v}`} style={{ padding: 0 }}>
             <div className={`ts-in3${textPosCls}${introTextCls}`}>
               {introBg()}
               <div className="ts-in3-frame ts-in-anim">
@@ -2435,7 +2597,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V4 · Arch Doorway (아치 문)
       if (v === 4) {
         return (
-          <AnimatedSection className="ts-sec" key={`intro-${v}`} style={{ padding: 0 }}>
+          <AnimatedSection className="ts-sec ts-intro" key={`intro-${v}`} style={{ padding: 0 }}>
             <div className={`ts-in4${introTextCls}`} style={intro.bgColor ? { background: intro.bgColor } : undefined}>
               <div className="ts-in4-gate ts-in-anim">
                 {intro.photo?.url
@@ -2471,7 +2633,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         const digits = dd.split('')
         const splitBottom5 = textPos === 'top'
         return (
-          <AnimatedSection className="ts-sec" key={`intro-${v}`} style={{ padding: 0 }}>
+          <AnimatedSection className="ts-sec ts-intro" key={`intro-${v}`} style={{ padding: 0 }}>
             <div className={`ts-in5${textPosCls}${introTextCls}`}>
               {introBg()}
               <div className="ts-in5-top-bar ts-in-anim">
@@ -2533,7 +2695,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
           `${groomName} & ${brideName}`,
         ]
         return (
-          <AnimatedSection className="ts-sec" key={`intro-${v}`} style={{ padding: 0 }}>
+          <AnimatedSection className="ts-sec ts-intro" key={`intro-${v}`} style={{ padding: 0 }}>
             <div className={`ts-in6${introTextCls}`}>
               {introBg()}
               <div className="ts-in6-band ts-in-anim">
@@ -2564,7 +2726,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V7 · Crosshair Grid (그리드)
       if (v === 7) {
         return (
-          <AnimatedSection className="ts-sec" key={`intro-${v}`} style={{ padding: 0 }}>
+          <AnimatedSection className="ts-sec ts-intro" key={`intro-${v}`} style={{ padding: 0 }}>
             <div className={`ts-in7${textPosCls}${introTextCls}`}>
               {introBg()}
               <div className="h-line ts-in-anim" />
@@ -2591,7 +2753,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         const bEn = brideNameEn || brideName
         const enInitials = `${gEn.slice(0, 1).toUpperCase()}&${bEn.slice(0, 1).toUpperCase()}`
         return (
-          <AnimatedSection className="ts-sec" key={`intro-${v}`} style={{ padding: 0 }}>
+          <AnimatedSection className="ts-sec ts-intro" key={`intro-${v}`} style={{ padding: 0 }}>
             <div className={`ts-in8${introTextCls}`} style={intro.bgColor ? { background: intro.bgColor } : undefined}>
               <div className="seal ts-in-anim">
                 <div className="monogram">{enInitials}</div>
@@ -2610,7 +2772,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V9 · Horizontal Rule Stack (룰스택)
       if (v === 9) {
         return (
-          <AnimatedSection className="ts-sec" key={`intro-${v}`} style={{ padding: 0 }}>
+          <AnimatedSection className="ts-sec ts-intro" key={`intro-${v}`} style={{ padding: 0 }}>
             <div className={`ts-in9${textPosCls}${introTextCls}`}>
               {introBg()}
               <div className="ts-in9-stack">
@@ -2635,7 +2797,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V10 · Cream Card (크림)
       if (v === 10) {
         return (
-          <AnimatedSection className="ts-sec" key={`intro-${v}`} style={{ padding: 0 }}>
+          <AnimatedSection className="ts-sec ts-intro" key={`intro-${v}`} style={{ padding: 0 }}>
             <div className={`ts-in10${introTextCls}`} style={intro.bgColor ? { background: intro.bgColor } : undefined}>
               {/* 라벨 */}
               <div className="eyebrow ts-in-anim">{intro.eyebrow || 'Wedding Day'}</div>
@@ -2931,69 +3093,6 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
 
     family: (v) => {
       if (!family) return null
-
-      /* ── AutoFitGroup + AutoFitText: 양가 부모님 이름이 넘치면 양쪽 동일 비율로 축소 ── */
-      function AutoFitGroup({ children, className, style }: {
-        children: React.ReactNode
-        className?: string
-        style?: React.CSSProperties
-      }) {
-        const groupRef = useRef<HTMLDivElement>(null)
-
-        useEffect(() => {
-          const el = groupRef.current
-          if (!el) return
-
-          const fit = () => {
-            const outers = el.querySelectorAll<HTMLDivElement>('[data-autofit]')
-            if (outers.length === 0) return
-
-            outers.forEach(outer => {
-              const inner = outer.querySelector<HTMLSpanElement>(':scope > span')
-              if (inner) inner.style.transform = 'none'
-            })
-
-            let minScale = 1
-            outers.forEach(outer => {
-              const inner = outer.querySelector<HTMLSpanElement>(':scope > span')
-              if (!inner) return
-              const ow = outer.clientWidth
-              const iw = inner.scrollWidth
-              if (iw > ow && iw > 0) {
-                minScale = Math.min(minScale, ow / iw)
-              }
-            })
-
-            if (minScale < 1) {
-              outers.forEach(outer => {
-                const inner = outer.querySelector<HTMLSpanElement>(':scope > span')
-                if (inner) inner.style.transform = `scale(${minScale})`
-              })
-            }
-          }
-          fit()
-
-          const ro = new ResizeObserver(fit)
-          ro.observe(el)
-          return () => ro.disconnect()
-        })
-
-        return <div ref={groupRef} className={className} style={style}>{children}</div>
-      }
-
-      function AutoFitText({ children, className, style }: {
-        children: React.ReactNode
-        className?: string
-        style?: React.CSSProperties
-      }) {
-        return (
-          <div data-autofit className={className} style={{ ...style, overflow: 'hidden' }}>
-            <span style={{ display: 'inline-block', whiteSpace: 'nowrap', transformOrigin: 'left center' }}>
-              {children}
-            </span>
-          </div>
-        )
-      }
 
       const decStyle = family.deceasedStyle || 'flower'
 
@@ -4433,7 +4532,6 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
     },
 
     account: (v) => {
-      const accToggle = account.toggle
       const guideText = account.guide || ''
       const accountGuideEl = guideText ? (
         <p style={{
@@ -4463,6 +4561,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         groomMotherName: account.groomMotherName,
         brideFatherName: account.brideFatherName,
         brideMotherName: account.brideMotherName,
+        groomName,
+        brideName,
         variant: v,
         order: account.order,
       }
@@ -4472,111 +4572,23 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         return (
           <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key={`account-${v}`}>
             <div className="ts-eyebrow">{account.eyebrow}</div>
-            <SectionToggle enabled={accToggle?.enabled ?? false} label={accToggle?.label || '마음 전하실 곳'} btnStyle={accToggle?.style}>
             <div style={{ background: 'var(--card)', padding: '20px 16px', marginTop: 8 }}>
               {accountGuideEl}
               <AccountTabbed {...tabbedProps} />
             </div>
-            </SectionToggle>
           </AnimatedSection>
         )
       }
 
-      // V3 · 전체 펼침 · 계좌번호 바로 표시 (탭 없이)
+      // V3 · 전체 펼침
       if (v === 3) {
-        const isV3BrideFirst = account.order === 'bride-first'
-        const groomItems: Array<{ side: string; role: string; name: string; accounts: typeof account.groom }> = []
-        if (account.groom.length > 0)
-          groomItems.push({ side: 'groom', role: account.groomTitle || account.groomLabel || couple.groom.role, name: groomName, accounts: account.groom })
-        if ((account.groomFather || []).length > 0)
-          groomItems.push({ side: 'groomFather', role: '아버지', name: account.groomFatherName || '', accounts: account.groomFather || [] })
-        if ((account.groomMother || []).length > 0)
-          groomItems.push({ side: 'groomMother', role: '어머니', name: account.groomMotherName || '', accounts: account.groomMother || [] })
-        const brideItems: Array<{ side: string; role: string; name: string; accounts: typeof account.groom }> = []
-        if (account.bride.length > 0)
-          brideItems.push({ side: 'bride', role: account.brideTitle || account.brideLabel || couple.bride.role, name: brideName, accounts: account.bride })
-        if ((account.brideFather || []).length > 0)
-          brideItems.push({ side: 'brideFather', role: '아버지', name: account.brideFatherName || '', accounts: account.brideFather || [] })
-        if ((account.brideMother || []).length > 0)
-          brideItems.push({ side: 'brideMother', role: '어머니', name: account.brideMotherName || '', accounts: account.brideMother || [] })
-        const allList = isV3BrideFirst ? [...brideItems, ...groomItems] : [...groomItems, ...brideItems]
         return (
           <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key={`account-${v}`}>
             <div className="ts-eyebrow">{account.eyebrow}</div>
-            <SectionToggle enabled={accToggle?.enabled ?? false} label={accToggle?.label || '마음 전하실 곳'} btnStyle={accToggle?.style}>
             <div style={{ marginTop: 8 }}>
               {accountGuideEl}
-              {allList.length === 0 ? (
-                <p style={{ textAlign: 'center', fontSize: 'calc(11px * var(--ts-font-scale, 1))', color: '#b8b0a6', marginTop: 8 }}>
-                  계좌를 추가하면 여기에 표시됩니다
-                </p>
-              ) : (
-                <div>
-                  {allList.map((group, gi) => (
-                    <div
-                      key={gi}
-                      style={{
-                        padding: '16px 0',
-                        borderBottom:
-                          gi === allList.length - 1 ? 'none' : '1px solid var(--line)',
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'baseline',
-                          gap: 8,
-                          marginBottom: 10,
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontFamily: 'var(--font-display)',
-                            fontSize: 'calc(10px * var(--ts-font-scale, 1))',
-                            letterSpacing: '0.2em',
-                            color: 'var(--accent)',
-                            textTransform: 'uppercase',
-                          }}
-                        >
-                          {group.role}
-                        </span>
-                        {group.name && (
-                          <span
-                            style={{
-                              fontFamily: 'var(--font-ko)',
-                              fontSize: 'calc(14px * var(--ts-font-scale, 1))',
-                              fontWeight: 600,
-                              color: 'var(--ink)',
-                            }}
-                          >
-                            {group.name}
-                          </span>
-                        )}
-                      </div>
-                      {group.accounts.map((acc, i) => (
-                        <div
-                          key={i}
-                          style={{
-                            fontFamily: 'var(--font-ko)',
-                            fontSize: 'calc(12px * var(--ts-font-scale, 1))',
-                            color: '#5d5850',
-                            lineHeight: 1.9,
-                            paddingLeft: 2,
-                          }}
-                        >
-                          <span style={{ color: 'var(--mute)', marginRight: 6 }}>{acc.bank}</span>
-                          <span style={{ fontFamily: 'var(--font-mono), monospace' }}>{acc.number}</span>
-                          {acc.holder && (
-                            <span style={{ color: 'var(--mute)', marginLeft: 6 }}>· {acc.holder}</span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              )}
+              <AccountTabbed {...tabbedProps} />
             </div>
-            </SectionToggle>
           </AnimatedSection>
         )
       }
@@ -4586,12 +4598,10 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         return (
           <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key={`account-${v}`}>
             <div className="ts-eyebrow">{account.eyebrow}</div>
-            <SectionToggle enabled={accToggle?.enabled ?? false} label={accToggle?.label || '마음 전하실 곳'} btnStyle={accToggle?.style}>
             <div style={{ border: '1px solid var(--line)', padding: '20px 16px', marginTop: 8 }}>
               {accountGuideEl}
               <AccountTabbed {...tabbedProps} />
             </div>
-            </SectionToggle>
           </AnimatedSection>
         )
       }
@@ -4601,12 +4611,10 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         return (
           <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key={`account-${v}`}>
             <div className="ts-eyebrow">{account.eyebrow}</div>
-            <SectionToggle enabled={accToggle?.enabled ?? false} label={accToggle?.label || '마음 전하실 곳'} btnStyle={accToggle?.style}>
             <div style={{ textAlign: 'center', padding: '16px 0' }}>
               {accountGuideEl}
               <AccountTabbed {...tabbedProps} />
             </div>
-            </SectionToggle>
           </AnimatedSection>
         )
       }
@@ -4615,12 +4623,10 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       return (
         <AnimatedSection className={`ts-sec ts-account ts-anim-acc-v${v}`} key={`account-${v}`}>
           <div className="ts-eyebrow">{account.eyebrow}</div>
-          <SectionToggle enabled={accToggle?.enabled ?? false} label={accToggle?.label || '마음 전하실 곳'} btnStyle={accToggle?.style}>
           <div style={{ marginTop: 8 }}>
             {accountGuideEl}
             <AccountTabbed {...tabbedProps} />
           </div>
-          </SectionToggle>
         </AnimatedSection>
       )
     },
@@ -4927,6 +4933,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
     },
 
     guestbook: (v) => {
+      const gbSubtitle = data.sections.guestbook?.subtitle || '따뜻한 한 마디를 남겨주세요'
       const samples = [
         { name: '민지', date: '5.12', text: '두 분의 시작을 진심으로 축하드려요. 행복하세요!' },
         { name: '지훈', date: '5.13', text: '결혼 축하드립니다. 늘 행복한 일만 가득하길 바랍니다.' },
@@ -4958,7 +4965,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   color: 'var(--mute)',
                 }}
               >
-                따뜻한 한 마디를 남겨주세요
+                {gbSubtitle}
               </div>
             </div>
             <div
@@ -5299,7 +5306,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         <AnimatedSection className={`ts-sec ts-guestbook ts-anim-gb-v${v}`} key={`guestbook-${v}`}>
           <div className="ts-gb-head">
             <div className="ts-gb-title">Guestbook</div>
-            <div className="ts-gb-sub">따뜻한 한 마디를 남겨주세요</div>
+            <div className="ts-gb-sub">{gbSubtitle}</div>
           </div>
           {entries.map((s, i) => (
             <div key={i} className="ts-gb-entry">
@@ -5576,8 +5583,14 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
     },
 
     thanks: (v) => {
+      const thanksNameScale = thanks.nameScale ?? 1
+      const defaultNames = <>{groomName} &amp; {brideName}</>
+      const thanksNames = thanks.names || defaultNames
+
       // V2 · 미니멀 · 이름 + 얇은 라인
       if (v === 2) {
+        const v2DefaultNames = <>{groomName} &middot; {brideName}</>
+        const v2Names = thanks.names || v2DefaultNames
         return (
           <AnimatedSection className={`ts-thanks ts-anim-thx-v${v}`} key={`thanks-${v}`} style={{ textAlign: 'center', padding: '40px 24px' }}>
             <div
@@ -5603,12 +5616,12 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
             <div
               style={{
                 fontFamily: 'var(--font-display)',
-                fontSize: 'calc(15px * var(--ts-font-scale, 1))',
+                fontSize: `calc(15px * ${thanksNameScale})`,
                 letterSpacing: '0.1em',
                 color: 'var(--ink)',
               }}
             >
-              {groomName} &middot; {brideName}
+              {v2Names}
             </div>
           </AnimatedSection>
         )
@@ -5657,12 +5670,12 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
             <div
               style={{
                 fontFamily: 'var(--font-serif)',
-                fontSize: 'calc(16px * var(--ts-font-scale, 1))',
+                fontSize: `calc(16px * ${thanksNameScale})`,
                 fontStyle: 'italic',
                 color: 'var(--ink)',
               }}
             >
-              {groomName} &amp; {brideName}
+              {thanksNames}
             </div>
           </AnimatedSection>
         )
@@ -5726,12 +5739,12 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <div
                 style={{
                   fontFamily: 'var(--font-display)',
-                  fontSize: 'calc(18px * var(--ts-font-scale, 1))',
+                  fontSize: `calc(18px * ${thanksNameScale})`,
                   letterSpacing: '0.1em',
                   color: 'var(--ink)',
                 }}
               >
-                {groomName} &amp; {brideName}
+                {thanksNames}
               </div>
             </div>
           </AnimatedSection>
@@ -5784,12 +5797,12 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               <div
                 style={{
                   fontFamily: 'var(--font-serif)',
-                  fontSize: 'calc(14px * var(--ts-font-scale, 1))',
+                  fontSize: `calc(14px * ${thanksNameScale})`,
                   fontStyle: 'italic',
                   color: 'var(--ink)',
                 }}
               >
-                {groomName} &amp; {brideName}
+                {thanksNames}
               </div>
             </div>
             <p
@@ -5817,8 +5830,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
           <p className="ts-thanks-body" style={{ whiteSpace: 'pre-line' }}>
             {thanks.body}
           </p>
-          <div className="ts-thanks-sign">
-            {groomName} &amp; {brideName}
+          <div className="ts-thanks-sign" style={{ fontSize: `calc(12px * ${thanksNameScale})` }}>
+            {thanksNames}
           </div>
         </AnimatedSection>
       )
@@ -6247,10 +6260,13 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1 }:
   const pad = (n: number) => String(n).padStart(2, '0')
   const v = variant
 
+  // 길게누르기 / 우클릭 방지 (이미지 저장 차단)
+  const preventContext = (e: React.MouseEvent | React.TouchEvent) => e.preventDefault()
+
   // === V4: 룩북 스크롤 (전체 이미지 세로 나열) ===
   if (v === 4) {
     return (
-      <div ref={overlayRef} className="ts-lightbox ts-lb--v4" onClick={onClose}>
+      <div ref={overlayRef} className="ts-lightbox ts-lb--v4" onContextMenu={preventContext} onClick={onClose}>
         <button className="ts-lb-v4-close" onClick={onClose}>&times;</button>
         <div ref={scrollRef} className="ts-lb-v4-scroll" onClick={e => e.stopPropagation()}>
           {images.map((src, i) => (
@@ -6275,7 +6291,7 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1 }:
     const prevIdx = (idx - 1 + images.length) % images.length
     const nextIdx = (idx + 1) % images.length
     return (
-      <div ref={overlayRef} className="ts-lightbox ts-lb--v9" onClick={onClose}>
+      <div ref={overlayRef} className="ts-lightbox ts-lb--v9" onContextMenu={preventContext} onClick={onClose}>
         <button className="ts-lb-topbar-close ts-lb-v9-close" onClick={onClose}>&times;</button>
         <div className="ts-lb-v9-carousel" onClick={e => e.stopPropagation()} {...touchProps}>
           <div className="ts-lb-v9-side ts-lb-v9-side--prev" onClick={goPrev}>
@@ -6299,7 +6315,7 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1 }:
   // === V1: 에디토리얼 (기존) ===
   if (v === 1) {
     return (
-      <div ref={overlayRef} className="ts-lightbox ts-lb--v1" onClick={onClose}>
+      <div ref={overlayRef} className="ts-lightbox ts-lb--v1" onContextMenu={preventContext} onClick={onClose}>
         <div className="ts-lb-topbar">
           <span className="ts-lb-topbar-title">Gallery</span>
           <button className="ts-lb-topbar-close" onClick={onClose}>&times;</button>
@@ -6318,7 +6334,7 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1 }:
   // === V2: 글라스모피즘 ===
   if (v === 2) {
     return (
-      <div ref={overlayRef} className="ts-lightbox ts-lb--v2" onClick={onClose}>
+      <div ref={overlayRef} className="ts-lightbox ts-lb--v2" onContextMenu={preventContext} onClick={onClose}>
         <button className="ts-lb-topbar-close ts-lb-v2-close" onClick={onClose}>&times;</button>
         <div className="ts-lb-image-wrap ts-lb-v2-wrap" onClick={e => e.stopPropagation()} {...touchProps}>
           {images[idx] && <img src={images[idx]} alt="" className={`ts-lb-img ts-lb-v2-img ${animClass}`} onClick={goNext} draggable={false} />}
@@ -6335,7 +6351,7 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1 }:
   // === V5: 시네마틱 페이드 ===
   if (v === 5) {
     return (
-      <div ref={overlayRef} className="ts-lightbox ts-lb--v5" onClick={onClose}>
+      <div ref={overlayRef} className="ts-lightbox ts-lb--v5" onContextMenu={preventContext} onClick={onClose}>
         <div className="ts-lb-image-wrap ts-lb-v5-wrap" onClick={e => e.stopPropagation()} {...touchProps}>
           {images[idx] && <img src={images[idx]} alt="" className={`ts-lb-img ts-lb-v5-img ${animClass}`} onClick={goNext} draggable={false} />}
         </div>
@@ -6346,7 +6362,7 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1 }:
   // === V6: 미니멀 화이트 ===
   if (v === 6) {
     return (
-      <div ref={overlayRef} className="ts-lightbox ts-lb--v6" onClick={onClose}>
+      <div ref={overlayRef} className="ts-lightbox ts-lb--v6" onContextMenu={preventContext} onClick={onClose}>
         <button className="ts-lb-topbar-close ts-lb-v6-close" onClick={onClose}>&times;</button>
         <div className="ts-lb-image-wrap ts-lb-v6-wrap" onClick={e => e.stopPropagation()} {...touchProps}>
           <button className="ts-lb-v6-arrow ts-lb-v6-arrow--prev" onClick={e => { e.stopPropagation(); goPrev() }} aria-label="이전">&#8249;</button>
@@ -6361,7 +6377,7 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1 }:
   // === V7: 매거진 (썸네일 스트립) ===
   if (v === 7) {
     return (
-      <div ref={overlayRef} className="ts-lightbox ts-lb--v7" onClick={onClose}>
+      <div ref={overlayRef} className="ts-lightbox ts-lb--v7" onContextMenu={preventContext} onClick={onClose}>
         <button className="ts-lb-topbar-close ts-lb-v7-close" onClick={onClose}>&times;</button>
         <div className="ts-lb-image-wrap ts-lb-v7-wrap" onClick={e => e.stopPropagation()} {...touchProps}>
           <button className="ts-lb-v7-arrow ts-lb-v7-arrow--prev" onClick={e => { e.stopPropagation(); goPrev() }} aria-label="이전">&#8249;</button>
@@ -6388,7 +6404,7 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1 }:
 
   // fallback → V1
   return (
-    <div ref={overlayRef} className="ts-lightbox ts-lb--v1" onClick={onClose}>
+    <div ref={overlayRef} className="ts-lightbox ts-lb--v1" onContextMenu={preventContext} onClick={onClose}>
       <div className="ts-lb-topbar">
         <span className="ts-lb-topbar-title">Gallery</span>
         <button className="ts-lb-topbar-close" onClick={onClose}>&times;</button>

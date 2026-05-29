@@ -254,7 +254,7 @@ export default function InvitationClientTheSimple({
             pointerEvents: coverOpen ? 'none' : 'auto',
           }}
         >
-          <div style={{ width: '100%', maxWidth: 430, height: '100%' }}>
+          <div style={{ width: '390px', zoom: 'min(calc(100vw / 390), 1.103)', height: '100%' }}>
             <TapToOpenCover
               variant={data.coverVariant!}
               data={coverData}
@@ -268,8 +268,8 @@ export default function InvitationClientTheSimple({
       <WatermarkOverlay
         isPaid={isPaid || !!isPreview}
         style={{
-          width: '100%',
-          maxWidth: 430,
+          width: '390px',
+          zoom: 'min(calc(100vw / 390), 1.103)',
           background: '#fff',
           position: 'relative',
         }}

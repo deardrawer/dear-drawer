@@ -28,6 +28,13 @@ function getDdayLabel(dday: number): string {
 }
 
 const SESSION_KEY_PREFIX = 'dday-popup-dismissed-'
+const TODAY_KEY_PREFIX = 'dday-popup-today-'
+
+function getTodayKey(weddingDate: string): string {
+  const today = new Date()
+  const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+  return TODAY_KEY_PREFIX + weddingDate + '-' + dateStr
+}
 
 export default function DdayPopupOverlay({
   data,
@@ -76,8 +83,24 @@ export default function DdayPopupOverlay({
     if (today < start || today > end) return
     const key = SESSION_KEY_PREFIX + weddingDate
     if (sessionStorage.getItem(key)) return
+    // "오늘 다시 보지 않기" 체크
+    if (data.showDismissToday) {
+      try { if (localStorage.getItem(getTodayKey(weddingDate))) return } catch {}
+    }
     setVisible(true)
-  }, [data.enabled, data.displayStart, data.displayEnd, data.startDays, weddingDate, isPreview])
+  }, [data.enabled, data.showDismissToday, data.displayStart, data.displayEnd, data.startDays, weddingDate, isPreview])
+
+  const dismissToday = useCallback(() => {
+    setClosing(true)
+    setTimeout(() => {
+      setVisible(false)
+      setClosing(false)
+      if (!isPreview) {
+        try { localStorage.setItem(getTodayKey(weddingDate), '1') } catch {}
+      }
+      onDismiss?.()
+    }, 300)
+  }, [weddingDate, isPreview, onDismiss])
 
   const dismiss = useCallback(() => {
     setClosing(true)
@@ -187,6 +210,15 @@ export default function DdayPopupOverlay({
         >
           {buttonLabel}
         </button>
+        {data.showDismissToday && (
+          <button
+            type="button"
+            onClick={dismissToday}
+            className="dday-popup-dismiss-today"
+          >
+            오늘 다시 보지 않기
+          </button>
+        )}
       </div>
 
       {/* 이미지 확대 모달 (핀치 줌 + 네비게이션) */}

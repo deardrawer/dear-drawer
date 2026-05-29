@@ -207,10 +207,15 @@ export interface SectionContents {
     attendLabel?: string
     regretLabel?: string
   }
+  guestbook?: {
+    subtitle?: string
+  }
   thanks: {
     mark: string
     title: string
     body: string
+    names?: string
+    nameScale?: number
   }
   family: {
     eyebrow: string
@@ -483,10 +488,14 @@ const defaultData: TheSimpleInvitationData = {
       brideFather: [],
       brideMother: [],
     },
+    guestbook: {
+      subtitle: '따뜻한 한 마디를 남겨주세요',
+    },
     thanks: {
       mark: 'Thank You',
       title: '소중한 걸음에 감사드립니다',
       body: '귀한 시간 내어 축복해 주신 마음,\n오래도록 간직하겠습니다.',
+      nameScale: 1,
     },
     family: {
       eyebrow: 'The Couple',
@@ -2254,7 +2263,7 @@ function TheSimpleEditorContent() {
                           )
                         }
 
-                        // 마음 전하실 곳 에디터
+                        // 계좌번호 안내 에디터
                         if (type === 'account') {
                           return (
                             <AccountEditor
@@ -2294,6 +2303,29 @@ function TheSimpleEditorContent() {
                                 })
                               }
                             />
+                          )
+                        }
+
+                        // 방명록 에디터
+                        if (type === 'guestbook') {
+                          const gb = data.sections.guestbook || { subtitle: '따뜻한 한 마디를 남겨주세요' }
+                          return (
+                            <div className="space-y-3">
+                              <label className="block">
+                                <span className="text-[10px] uppercase tracking-wider text-stone-400">안내 문구</span>
+                                <input
+                                  type="text"
+                                  value={gb.subtitle || ''}
+                                  onChange={(e) =>
+                                    updateData({
+                                      sections: { ...data.sections, guestbook: { ...gb, subtitle: e.target.value } },
+                                    })
+                                  }
+                                  placeholder="따뜻한 한 마디를 남겨주세요"
+                                  className="mt-0.5 w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white"
+                                />
+                              </label>
+                            </div>
                           )
                         }
 

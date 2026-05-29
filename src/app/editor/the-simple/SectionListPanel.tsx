@@ -105,7 +105,7 @@ export const SECTION_META: Record<string, SectionMetaItem> = {
     variantLabels: { 1: '기본', 2: '리스트', 3: '아코디언', 4: '카드2열', 5: '노트' },
   },
   account: {
-    label: '마음 전하실 곳',
+    label: '계좌번호 안내',
     variantCount: 5,
     optional: true,
     variantLabels: { 1: '기본', 2: '베이지', 3: '펼침', 4: '보더', 5: '세로' },

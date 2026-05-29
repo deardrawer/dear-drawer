@@ -191,6 +191,25 @@
   background: rgba(26, 26, 26, 0.12);
 }
 
+/* 오늘 다시 보지 않기 */
+.dday-popup-dismiss-today {
+  display: block;
+  width: 100%;
+  margin-top: 25px;
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 11px;
+  color: #999;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+}
+.dday-popup-dismiss-today:hover {
+  color: #666;
+}
+
 /* ── Header + page counter ── */
 
 .dday-popup-header {
@@ -245,7 +264,7 @@
 .dday-popup-page-nav {
   display: flex;
   justify-content: space-between;
-  margin-top: 10px;
+  margin-top: 18px;
   gap: 8px;
 }
 .dday-popup-page-nav-btn {
@@ -329,6 +348,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  margin-top: 6px;
 }
 .dday-popup-page-link {
   display: inline-flex;

@@ -942,7 +942,7 @@ function AccountTabbed({
       alignItems: 'center',
       justifyContent: 'center',
       gap: 5,
-      fontFamily: 'var(--font-display), var(--font-ko)',
+      fontFamily: 'var(--font-ko)',
       cursor: 'pointer',
       textTransform: 'uppercase',
       transition: 'all 0.25s ease',
@@ -962,7 +962,7 @@ function AccountTabbed({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    fontFamily: 'var(--font-display), var(--font-ko)',
+    fontFamily: 'var(--font-ko)',
     cursor: 'pointer',
     textTransform: 'uppercase',
     transition: 'all 0.25s ease',
@@ -3049,7 +3049,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   <PhotoSlideBox photos={first.photos} shape="square" size={100} delay={0} />
                 </div>
                 <div className="ts-couple-role">{first.role}</div>
-                <div style={{ fontFamily: 'var(--font-display)', fontSize: 'calc(20px * var(--ts-font-scale, 1))', lineHeight: 1.2, margin: '4px 0' }}>{first.name}</div>
+                <div style={{ fontFamily: koreanFontFamily, fontSize: 'calc(20px * var(--ts-font-scale, 1))', lineHeight: 1.2, margin: '4px 0', fontWeight: 400, fontSynthesis: 'none', WebkitFontSmoothing: 'antialiased' }}>{first.name}</div>
                 <p className="ts-couple-bio" style={{ textAlign: 'right', maxWidth: '100%', marginLeft: 'auto', fontSize: 'calc(11px * var(--ts-font-scale, 1))' }}>{first.bio}</p>
                 {renderTags(first.tags, 'v5', 'right')}
               </div>
@@ -3061,7 +3061,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   <PhotoSlideBox photos={second.photos} shape="square" size={100} delay={500} />
                 </div>
                 <div className="ts-couple-role">{second.role}</div>
-                <div style={{ fontFamily: 'var(--font-display)', fontSize: 'calc(20px * var(--ts-font-scale, 1))', lineHeight: 1.2, margin: '4px 0' }}>{second.name}</div>
+                <div style={{ fontFamily: koreanFontFamily, fontSize: 'calc(20px * var(--ts-font-scale, 1))', lineHeight: 1.2, margin: '4px 0', fontWeight: 400, fontSynthesis: 'none', WebkitFontSmoothing: 'antialiased' }}>{second.name}</div>
                 <p className="ts-couple-bio" style={{ textAlign: 'left', maxWidth: '100%', fontSize: 'calc(11px * var(--ts-font-scale, 1))' }}>{second.bio}</p>
                 {renderTags(second.tags, 'v5', 'left')}
               </div>
@@ -5622,7 +5622,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
             />
             <div
               style={{
-                fontFamily: 'var(--font-display)',
+                fontFamily: 'var(--font-ko)',
                 fontSize: `calc(15px * ${thanksNameScale})`,
                 letterSpacing: '0.1em',
                 color: 'var(--ink)',
@@ -5678,9 +5678,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
             </p>
             <div
               style={{
-                fontFamily: 'var(--font-serif)',
+                fontFamily: 'var(--font-ko)',
                 fontSize: `calc(16px * ${thanksNameScale})`,
-                fontStyle: 'italic',
                 color: 'var(--ink)',
               }}
             >
@@ -5749,7 +5748,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               />
               <div
                 style={{
-                  fontFamily: 'var(--font-display)',
+                  fontFamily: 'var(--font-ko)',
                   fontSize: `calc(18px * ${thanksNameScale})`,
                   letterSpacing: '0.1em',
                   color: 'var(--ink)',
@@ -5807,9 +5806,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               />
               <div
                 style={{
-                  fontFamily: 'var(--font-serif)',
+                  fontFamily: 'var(--font-ko)',
                   fontSize: `calc(14px * ${thanksNameScale})`,
-                  fontStyle: 'italic',
                   color: 'var(--ink)',
                 }}
               >

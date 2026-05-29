@@ -2571,7 +2571,7 @@
 }
 .ts-preview .ts-thanks .ts-thanks-sign {
   margin-top: 22px;
-  font-family: var(--font-display);
+  font-family: var(--font-ko);
   font-size: calc(12px * var(--ts-font-scale, 1));
   letter-spacing: 0.28em;
   color: var(--ink);

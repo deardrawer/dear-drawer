@@ -5600,6 +5600,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 color: 'var(--mute)',
                 lineHeight: 2,
                 whiteSpace: 'pre-line',
+                textWrap: 'pretty',
+                paddingInline: 10,
                 marginBottom: 24,
               }}
             >
@@ -5662,6 +5664,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 color: 'var(--mute)',
                 lineHeight: 1.9,
                 whiteSpace: 'pre-line',
+                textWrap: 'pretty',
+                paddingInline: 10,
                 marginBottom: 24,
               }}
             >
@@ -5723,6 +5727,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                   color: '#5d5850',
                   lineHeight: 1.9,
                   whiteSpace: 'pre-line',
+                  textWrap: 'pretty',
+                  paddingInline: 10,
                   marginBottom: 20,
                 }}
               >
@@ -5812,6 +5818,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
                 color: 'var(--mute)',
                 lineHeight: 1.9,
                 whiteSpace: 'pre-line',
+                textWrap: 'pretty',
+                paddingInline: 10,
                 marginTop: 20,
               }}
             >
@@ -5827,7 +5835,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
           <div className="ts-thanks-mark">{thanks.mark}</div>
           <div className="ts-thanks-title">{thanks.title}</div>
           <div className="ts-thanks-rule" />
-          <p className="ts-thanks-body" style={{ whiteSpace: 'pre-line' }}>
+          <p className="ts-thanks-body">
             {thanks.body}
           </p>
           <div className="ts-thanks-sign" style={{ fontSize: `calc(12px * ${thanksNameScale})` }}>
@@ -6320,8 +6328,8 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1 }:
           <span className="ts-lb-topbar-title">Gallery</span>
           <button className="ts-lb-topbar-close" onClick={onClose}>&times;</button>
         </div>
-        <div className="ts-lb-image-wrap" onClick={e => e.stopPropagation()} {...touchProps}>
-          {images[idx] && <img src={images[idx]} alt="" className={`ts-lb-img ${animClass}`} onClick={goNext} draggable={false} />}
+        <div className="ts-lb-image-wrap" onClick={e => { e.stopPropagation(); goNext() }} {...touchProps}>
+          {images[idx] && <img src={images[idx]} alt="" className={`ts-lb-img ${animClass}`} draggable={false} />}
         </div>
         <div className="ts-lb-counter">{pad(idx + 1)} / {pad(images.length)}</div>
         <div className="ts-lb-progress">
@@ -6336,8 +6344,8 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1 }:
     return (
       <div ref={overlayRef} className="ts-lightbox ts-lb--v2" onContextMenu={preventContext} onClick={onClose}>
         <button className="ts-lb-topbar-close ts-lb-v2-close" onClick={onClose}>&times;</button>
-        <div className="ts-lb-image-wrap ts-lb-v2-wrap" onClick={e => e.stopPropagation()} {...touchProps}>
-          {images[idx] && <img src={images[idx]} alt="" className={`ts-lb-img ts-lb-v2-img ${animClass}`} onClick={goNext} draggable={false} />}
+        <div className="ts-lb-image-wrap ts-lb-v2-wrap" onClick={e => { e.stopPropagation(); goNext() }} {...touchProps}>
+          {images[idx] && <img src={images[idx]} alt="" className={`ts-lb-img ts-lb-v2-img ${animClass}`} draggable={false} />}
         </div>
         <div className="ts-lb-v2-dots">
           {images.map((_, i) => (
@@ -6352,8 +6360,8 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1 }:
   if (v === 5) {
     return (
       <div ref={overlayRef} className="ts-lightbox ts-lb--v5" onContextMenu={preventContext} onClick={onClose}>
-        <div className="ts-lb-image-wrap ts-lb-v5-wrap" onClick={e => e.stopPropagation()} {...touchProps}>
-          {images[idx] && <img src={images[idx]} alt="" className={`ts-lb-img ts-lb-v5-img ${animClass}`} onClick={goNext} draggable={false} />}
+        <div className="ts-lb-image-wrap ts-lb-v5-wrap" onClick={e => { e.stopPropagation(); goNext() }} {...touchProps}>
+          {images[idx] && <img src={images[idx]} alt="" className={`ts-lb-img ts-lb-v5-img ${animClass}`} draggable={false} />}
         </div>
       </div>
     )
@@ -6409,8 +6417,8 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1 }:
         <span className="ts-lb-topbar-title">Gallery</span>
         <button className="ts-lb-topbar-close" onClick={onClose}>&times;</button>
       </div>
-      <div className="ts-lb-image-wrap" onClick={e => e.stopPropagation()} {...touchProps}>
-        {images[idx] && <img src={images[idx]} alt="" className={`ts-lb-img ${animClass}`} onClick={goNext} draggable={false} />}
+      <div className="ts-lb-image-wrap" onClick={e => { e.stopPropagation(); goNext() }} {...touchProps}>
+        {images[idx] && <img src={images[idx]} alt="" className={`ts-lb-img ${animClass}`} draggable={false} />}
       </div>
       <div className="ts-lb-counter">{pad(idx + 1)} / {pad(images.length)}</div>
       <div className="ts-lb-progress">

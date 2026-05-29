@@ -145,7 +145,7 @@ function useContainedOverlay(
 /* ==========================================================================
  * IntersectionObserver 훅 — 한 번 화면에 들어오면 inView=true
  * ========================================================================== */
-function useInView(): [(node: HTMLElement | null) => void, boolean] {
+function useInView(threshold = 0.1): [(node: HTMLElement | null) => void, boolean] {
   const [inView, setInView] = useState(false)
   const ioRef = useRef<IntersectionObserver | null>(null)
   const ioScrollRef = useRef<IntersectionObserver | null>(null)
@@ -183,7 +183,7 @@ function useInView(): [(node: HTMLElement | null) => void, boolean] {
     // 주 옵저버 (뷰포트)
     const io = new IntersectionObserver(
       ([entry]) => { if (entry.isIntersecting) markInView() },
-      { threshold: 0.1, rootMargin: '0px 0px -50% 0px' }
+      { threshold, rootMargin: '0px 0px -50% 0px' }
     )
     io.observe(node)
     ioRef.current = io
@@ -192,7 +192,7 @@ function useInView(): [(node: HTMLElement | null) => void, boolean] {
     if (scrollRoot) {
       const ioScroll = new IntersectionObserver(
         ([entry]) => { if (entry.isIntersecting) markInView() },
-        { root: scrollRoot, threshold: 0.1, rootMargin: '0px 0px -50% 0px' }
+        { root: scrollRoot, threshold, rootMargin: '0px 0px -50% 0px' }
       )
       ioScroll.observe(node)
       ioScrollRef.current = ioScroll
@@ -550,10 +550,11 @@ interface AnimatedSectionProps {
   className?: string
   style?: React.CSSProperties
   children: React.ReactNode
+  threshold?: number
 }
 
-function AnimatedSection({ className = '', style, children }: AnimatedSectionProps) {
-  const [ioRef, inView] = useInView()
+function AnimatedSection({ className = '', style, children, threshold }: AnimatedSectionProps) {
+  const [ioRef, inView] = useInView(threshold)
   const [settled, setSettled] = useState(false)
   const settledRef = useRef(false)
   const sectionRef = useRef<HTMLElement | null>(null)
@@ -2835,7 +2836,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         const bodyLines = (greeting.body || '').split('\n')
         const ruleDelay = 800 + bodyLines.length * 550
         return (
-          <AnimatedSection className="ts-sec ts-greet ts-greet--v2 ts-anim-greet-v2" key={`greeting-${v}`} style={{ textAlign: 'left' }}>
+          <AnimatedSection className="ts-sec ts-greet ts-greet--v2 ts-anim-greet-v2" key={`greeting-${v}`} style={{ textAlign: 'left' }} threshold={0.15}>
             <div className="ts-greet-label ts-anim-item">{greeting.label}</div>
             <div className="ts-greet-title ts-anim-item" style={{ marginTop: 14, marginBottom: 24 }}>
               {greeting.title}
@@ -2859,7 +2860,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V3 · 인용 블록 (이탤릭 quote + attribution)
       if (v === 3) {
         return (
-          <AnimatedSection className="ts-sec ts-greet ts-greet--v3 ts-anim-greet-v3" key={`greeting-${v}`}>
+          <AnimatedSection className="ts-sec ts-greet ts-greet--v3 ts-anim-greet-v3" key={`greeting-${v}`} threshold={0.15}>
             <blockquote className="ts-g3-quote ts-anim-item" style={{ fontSize: greetBodyFs }}>
               {greeting.body}
               <span className="ts-g3-attr">— {greeting.label || 'INVITATION'} —</span>
@@ -2870,7 +2871,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       // V4 · 프레임 박스
       if (v === 4) {
         return (
-          <AnimatedSection className="ts-sec ts-greet ts-greet--v4 ts-anim-greet-v4" key={`greeting-${v}`}>
+          <AnimatedSection className="ts-sec ts-greet ts-greet--v4 ts-anim-greet-v4" key={`greeting-${v}`} threshold={0.15}>
             <div className="ts-g4-frame ts-anim-card">
               <div
                 className="ts-greet-title ts-anim-item"
@@ -2902,6 +2903,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
           <AnimatedSection
             className="ts-sec ts-greet ts-greet--v5 ts-anim-greet-v5"
             key={`greeting-${v}`}
+            threshold={0.15}
           >
             <div className="ts-g5-bar ts-anim-vline" />
             <div className="ts-g5-txt">
@@ -2926,7 +2928,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
       }
       // V1 (default · classic centered)
       return (
-        <AnimatedSection className="ts-sec ts-greet ts-anim-greet-v1" key={`greeting-${v}`}>
+        <AnimatedSection className="ts-sec ts-greet ts-anim-greet-v1" key={`greeting-${v}`} threshold={0.15}>
           <div className="ts-greet-label ts-anim-item">{greeting.label}</div>
           <div className="ts-greet-title ts-anim-item" style={{ margin: '14px 0 18px' }}>{greeting.title}</div>
           <p className="ts-greet-body ts-anim-item" style={{ fontSize: greetBodyFs, marginBottom: 12 }}>{greeting.body}</p>

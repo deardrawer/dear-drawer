@@ -2999,9 +2999,9 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               </div>
             </div>
             <div className="ts-c3-names ts-anim-item">
-              <span className="ts-c3-name">{first.name}</span>
+              <span className="ts-c3-name" style={{ fontFamily: koreanFontFamily, fontWeight: 400, fontSynthesis: 'none', WebkitFontSmoothing: 'antialiased' }}>{first.name}</span>
               <span className="ts-c3-amp">&amp;</span>
-              <span className="ts-c3-name">{second.name}</span>
+              <span className="ts-c3-name" style={{ fontFamily: koreanFontFamily, fontWeight: 400, fontSynthesis: 'none', WebkitFontSmoothing: 'antialiased' }}>{second.name}</span>
             </div>
             {(first.bio || second.bio) && (
               <div className="ts-c3-bio ts-anim-item">

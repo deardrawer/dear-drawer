@@ -1438,8 +1438,11 @@
   margin-bottom: 16px;
 }
 .ts-preview .ts-c3-name {
-  font-family: var(--font-display);
+  font-family: var(--font-ko);
   font-size: calc(22px * var(--ts-font-scale, 1));
+  font-weight: 400;
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
   letter-spacing: 0.06em;
   color: var(--ink);
 }

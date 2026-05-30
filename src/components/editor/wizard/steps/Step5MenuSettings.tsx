@@ -863,6 +863,86 @@ export default function Step5MenuSettings() {
               <span className="text-sm text-gray-700">대절버스 이용 여부 입력 허용</span>
             </div>
 
+            <div className="flex items-center gap-3">
+              <Switch
+                checked={invitation.rsvpPhoneOption ?? false}
+                onCheckedChange={(checked) => updateField('rsvpPhoneOption', checked)}
+              />
+              <span className="text-sm text-gray-700">연락처 뒷자리 4자리 입력</span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Switch
+                checked={invitation.rsvpSideDetail ?? false}
+                onCheckedChange={(checked) => updateField('rsvpSideDetail', checked)}
+              />
+              <span className="text-sm text-gray-700">부모님 하객 구분 (아버지/어머니 지인)</span>
+            </div>
+
+            {invitation.rsvpSideDetail && (
+              <div className="ml-4 p-3 bg-white rounded-lg border space-y-2">
+                <p className="text-xs text-gray-500 mb-2">표시할 구분 항목을 선택하세요</p>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={invitation.rsvpSideDetailOptions?.groomFather ?? true}
+                    onChange={(e) => updateField('rsvpSideDetailOptions', {
+                      ...invitation.rsvpSideDetailOptions,
+                      groomFather: e.target.checked,
+                    })}
+                    className="rounded border-gray-300"
+                  />
+                  <span className="text-sm text-gray-700">신랑 아버지 지인</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={invitation.rsvpSideDetailOptions?.groomMother ?? true}
+                    onChange={(e) => updateField('rsvpSideDetailOptions', {
+                      ...invitation.rsvpSideDetailOptions,
+                      groomMother: e.target.checked,
+                    })}
+                    className="rounded border-gray-300"
+                  />
+                  <span className="text-sm text-gray-700">신랑 어머니 지인</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={invitation.rsvpSideDetailOptions?.brideFather ?? true}
+                    onChange={(e) => updateField('rsvpSideDetailOptions', {
+                      ...invitation.rsvpSideDetailOptions,
+                      brideFather: e.target.checked,
+                    })}
+                    className="rounded border-gray-300"
+                  />
+                  <span className="text-sm text-gray-700">신부 아버지 지인</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={invitation.rsvpSideDetailOptions?.brideMother ?? true}
+                    onChange={(e) => updateField('rsvpSideDetailOptions', {
+                      ...invitation.rsvpSideDetailOptions,
+                      brideMother: e.target.checked,
+                    })}
+                    className="rounded border-gray-300"
+                  />
+                  <span className="text-sm text-gray-700">신부 어머니 지인</span>
+                </label>
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">축하 메시지 placeholder</Label>
+              <Input
+                value={invitation.rsvpMessagePlaceholder ?? ''}
+                onChange={(e) => updateField('rsvpMessagePlaceholder', e.target.value)}
+                placeholder="신랑 신부에게 전할 축하 메시지를 남겨주세요"
+              />
+              <p className="text-xs text-gray-500">축하 메시지 입력란에 표시되는 안내 문구입니다. 비워두면 기본 문구가 표시됩니다.</p>
+            </div>
+
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">안내 문구</Label>
               <Textarea

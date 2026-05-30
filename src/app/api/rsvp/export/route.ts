@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     const data = await getRSVPsByInvitationId(invitationId);
 
     // Create CSV content
-    const headers = ["이름", "연락처", "소속", "참석여부", "식사여부", "대절버스", "동반인원", "메시지", "응답일시"];
+    const headers = ["이름", "연락처", "소속", "세부소속", "참석여부", "식사여부", "대절버스", "동반인원", "메시지", "응답일시"];
 
     const getAttendanceLabel = (attendance: string) => {
       switch (attendance) {
@@ -80,10 +80,24 @@ export async function GET(request: NextRequest) {
       }
     };
 
+    const getSideDetailLabel = (sideDetail: string | null) => {
+      switch (sideDetail) {
+        case "self":
+          return "지인";
+        case "father":
+          return "아버님 지인";
+        case "mother":
+          return "어머님 지인";
+        default:
+          return "";
+      }
+    };
+
     const rows = data.map((r) => [
       r.guest_name,
       r.guest_phone || "",
       getSideLabel(r.side),
+      getSideDetailLabel((r as any).side_detail),
       getAttendanceLabel(r.attendance),
       r.attendance === "attending" ? getMealLabel(r.meal_attendance) : "",
       r.attendance === "attending" ? getShuttleLabel((r as any).shuttle_bus) : "",

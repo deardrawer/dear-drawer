@@ -337,6 +337,7 @@ export interface RSVPResponse {
   guest_count: number;
   message: string | null;
   side: "groom" | "bride" | null;
+  side_detail: "self" | "father" | "mother" | null;
   meal_attendance: "yes" | "no" | null;
   shuttle_bus: "yes" | "no" | null;
   created_at: string;
@@ -350,6 +351,7 @@ export interface RSVPInput {
   guest_count: number;
   message?: string;
   side?: "groom" | "bride";
+  side_detail?: "self" | "father" | "mother";
   meal_attendance?: "yes" | "no";
   shuttle_bus?: "yes" | "no";
 }
@@ -363,8 +365,8 @@ export async function createRSVP(input: RSVPInput): Promise<RSVPResponse> {
   const result = await db
     .prepare(
       `INSERT INTO rsvp_responses (
-        id, invitation_id, guest_name, guest_phone, attendance, guest_count, message, side, meal_attendance, shuttle_bus, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        id, invitation_id, guest_name, guest_phone, attendance, guest_count, message, side, side_detail, meal_attendance, shuttle_bus, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       RETURNING *`
     )
     .bind(
@@ -376,6 +378,7 @@ export async function createRSVP(input: RSVPInput): Promise<RSVPResponse> {
       input.guest_count,
       input.message || null,
       input.side || null,
+      input.side_detail || null,
       input.meal_attendance || null,
       input.shuttle_bus || null,
       now
@@ -410,10 +413,26 @@ export async function updateRSVP(
   const db = await getDB();
   const result = await db
     .prepare(
-      `UPDATE rsvp_responses SET attendance = ?, guest_count = ?, message = ?, side = ?, guest_phone = ?, meal_attendance = ?, shuttle_bus = ?
+      `UPDATE rsvp_responses SET attendance = ?, guest_count = ?, message = ?, side = ?, side_detail = ?, guest_phone = ?, meal_attendance = ?, shuttle_bus = ?
        WHERE id = ? RETURNING *`
     )
-    .bind(input.attendance, input.guest_count, input.message || null, input.side || null, input.guest_phone || null, input.meal_attendance || null, input.shuttle_bus || null, id)
+    .bind(input.attendance, input.guest_count, input.message || null, input.side || null, input.side_detail || null, input.guest_phone || null, input.meal_attendance || null, input.shuttle_bus || null, id)
+    .first<RSVPResponse>();
+  return result || null;
+}
+
+// RSVP 관리자 수정 (이름 포함 전체 필드)
+export async function updateRSVPAdmin(
+  id: string,
+  input: Omit<RSVPInput, "invitation_id">
+): Promise<RSVPResponse | null> {
+  const db = await getDB();
+  const result = await db
+    .prepare(
+      `UPDATE rsvp_responses SET guest_name = ?, attendance = ?, guest_count = ?, message = ?, side = ?, side_detail = ?, guest_phone = ?, meal_attendance = ?, shuttle_bus = ?, updated_at = datetime('now')
+       WHERE id = ? RETURNING *`
+    )
+    .bind(input.guest_name, input.attendance, input.guest_count, input.message || null, input.side || null, input.side_detail || null, input.guest_phone || null, input.meal_attendance || null, input.shuttle_bus || null, id)
     .first<RSVPResponse>();
   return result || null;
 }

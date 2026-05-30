@@ -18,6 +18,7 @@ type RSVPData = {
   guest_count: number
   message: string | null
   side: 'groom' | 'bride' | null
+  side_detail: 'self' | 'father' | 'mother' | null
   meal_attendance: 'yes' | 'no' | null
   shuttle_bus: 'yes' | 'no' | null
   created_at: string
@@ -77,6 +78,20 @@ export default function DashboardPage() {
   const [filterShuttle, setFilterShuttle] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [deletingRsvpId, setDeletingRsvpId] = useState<string | null>(null)
+  const [editingRsvp, setEditingRsvp] = useState<RSVPData | null>(null)
+  const [editForm, setEditForm] = useState({
+    guestName: '',
+    guestPhone: '',
+    side: '' as '' | 'groom' | 'bride',
+    sideDetail: '' as '' | 'self' | 'father' | 'mother',
+    attendance: '' as '' | 'attending' | 'not_attending' | 'pending',
+    mealAttendance: '' as '' | 'yes' | 'no',
+    shuttleBus: '' as '' | 'yes' | 'no',
+    guestCount: 1,
+    message: '',
+  })
+  const [isEditSaving, setIsEditSaving] = useState(false)
+  const [editToast, setEditToast] = useState(false)
   const itemsPerPage = 10
 
   // 방명록 상태
@@ -155,6 +170,33 @@ export default function DashboardPage() {
     setCurrentPage(1)
   }
 
+  const getSideFilterKey = (side: string | null, sideDetail: string | null): string => {
+    if (!side) return 'none'
+    if (sideDetail) return `${side}_${sideDetail}`
+    return side
+  }
+
+  const getSideFilterLabel = (key: string): string => {
+    switch (key) {
+      case 'groom': return '신랑측'
+      case 'bride': return '신부측'
+      case 'groom_self': return '신랑 지인'
+      case 'groom_father': return '신랑 아버님'
+      case 'groom_mother': return '신랑 어머님'
+      case 'bride_self': return '신부 지인'
+      case 'bride_father': return '신부 아버님'
+      case 'bride_mother': return '신부 어머님'
+      case 'none': return '미지정'
+      default: return key
+    }
+  }
+
+  const getSideFilterColor = (key: string): string => {
+    if (key.startsWith('groom')) return 'bg-blue-100 text-blue-700 border-blue-300'
+    if (key.startsWith('bride')) return 'bg-pink-100 text-pink-700 border-pink-300'
+    return 'bg-gray-200 text-gray-700 border-gray-400'
+  }
+
   // Counts for chip badges
   const counts = {
     attending: summary.attending,
@@ -169,11 +211,19 @@ export default function DashboardPage() {
     shuttleNo: summary.shuttleNo,
   }
 
+  // Side filter counts (computed from responses for side_detail support)
+  const sideFilterCounts: Record<string, number> = {}
+  responses.forEach(r => {
+    const key = getSideFilterKey(r.side, r.side_detail)
+    sideFilterCounts[key] = (sideFilterCounts[key] || 0) + 1
+  })
+  const sideFilterOrder = ['groom', 'groom_self', 'groom_father', 'groom_mother', 'bride', 'bride_self', 'bride_father', 'bride_mother', 'none']
+
   const filteredResponses = responses.filter((r) => {
     if (filterStatus !== null && r.attendance !== filterStatus) return false
     if (filterSides.size > 0) {
-      const sideValue = r.side === null ? 'none' : r.side
-      if (!filterSides.has(sideValue)) return false
+      const sideKey = getSideFilterKey(r.side, r.side_detail)
+      if (!filterSides.has(sideKey)) return false
     }
     if (filterMeal !== null && r.meal_attendance !== filterMeal) return false
     if (filterShuttle !== null && r.shuttle_bus !== filterShuttle) return false
@@ -216,6 +266,66 @@ export default function DashboardPage() {
       console.error('Failed to delete RSVP:', error)
       alert('삭제에 실패했습니다.')
     }
+  }
+
+  const handleEditClick = (r: RSVPData) => {
+    setEditingRsvp(r)
+    setEditForm({
+      guestName: r.guest_name,
+      guestPhone: r.guest_phone || '',
+      side: r.side || '',
+      sideDetail: r.side_detail || '',
+      attendance: r.attendance,
+      mealAttendance: r.meal_attendance || '',
+      shuttleBus: r.shuttle_bus || '',
+      guestCount: r.guest_count,
+      message: r.message || '',
+    })
+  }
+
+  const handleEditSave = async () => {
+    if (!editingRsvp || !editForm.guestName.trim() || !editForm.attendance) return
+    setIsEditSaving(true)
+    try {
+      const res = await fetch('/api/rsvp', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editingRsvp.id,
+          invitationId,
+          guestName: editForm.guestName.trim(),
+          guestPhone: editForm.guestPhone || undefined,
+          attendance: editForm.attendance,
+          guestCount: editForm.guestCount,
+          message: editForm.message || undefined,
+          side: editForm.side || undefined,
+          sideDetail: editForm.sideDetail || undefined,
+          mealAttendance: editForm.attendance === 'attending' ? (editForm.mealAttendance || undefined) : undefined,
+          shuttleBus: editForm.attendance === 'attending' ? (editForm.shuttleBus || undefined) : undefined,
+        }),
+      })
+      if (res.ok) {
+        setEditingRsvp(null)
+        setEditToast(true)
+        setTimeout(() => setEditToast(false), 2500)
+        fetchRSVPData()
+      } else {
+        const data: { error?: string } = await res.json()
+        alert(data.error || '수정에 실패했습니다.')
+      }
+    } catch {
+      alert('수정에 실패했습니다.')
+    } finally {
+      setIsEditSaving(false)
+    }
+  }
+
+  const handleEditSideChange = (newSide: '' | 'groom' | 'bride') => {
+    setEditForm(prev => ({
+      ...prev,
+      side: prev.side === newSide ? '' : newSide,
+      sideDetail: prev.side === newSide ? prev.sideDetail : '',
+    }))
   }
 
   const handleExportGuestbookCSV = () => {
@@ -261,6 +371,22 @@ export default function DashboardPage() {
       case 'pending': return '미정'
       default: return attendance
     }
+  }
+
+  const getSideDetailLabel = (sideDetail: string | null) => {
+    switch (sideDetail) {
+      case 'self': return '지인'
+      case 'father': return '아버님'
+      case 'mother': return '어머님'
+      default: return ''
+    }
+  }
+
+  const getSideWithDetail = (side: string | null, sideDetail: string | null) => {
+    const sideLabel = side === 'groom' ? '신랑측' : side === 'bride' ? '신부측' : ''
+    const detailLabel = getSideDetailLabel(sideDetail)
+    if (sideLabel && detailLabel) return `${sideLabel} (${detailLabel})`
+    return sideLabel
   }
 
   const getAttendanceColor = (attendance: string) => {
@@ -439,9 +565,19 @@ export default function DashboardPage() {
             </div>
             <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
               <span className="w-8 sm:w-14 text-[10px] sm:text-xs font-medium text-gray-500 shrink-0">소속</span>
-              <FilterChip label="신랑측" count={counts.groom} isActive={filterSides.has('groom')} activeClass="bg-blue-100 text-blue-700 border-blue-300" onClick={() => toggleSideFilter('groom')} />
-              <FilterChip label="신부측" count={counts.bride} isActive={filterSides.has('bride')} activeClass="bg-pink-100 text-pink-700 border-pink-300" onClick={() => toggleSideFilter('bride')} />
-              <FilterChip label="미지정" count={counts.noSide} isActive={filterSides.has('none')} activeClass="bg-gray-200 text-gray-700 border-gray-400" onClick={() => toggleSideFilter('none')} />
+              {sideFilterOrder
+                .filter(key => (sideFilterCounts[key] || 0) > 0)
+                .map(key => (
+                  <FilterChip
+                    key={key}
+                    label={getSideFilterLabel(key)}
+                    count={sideFilterCounts[key]}
+                    isActive={filterSides.has(key)}
+                    activeClass={getSideFilterColor(key)}
+                    onClick={() => toggleSideFilter(key)}
+                  />
+                ))
+              }
             </div>
             <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
               <span className="w-8 sm:w-14 text-[10px] sm:text-xs font-medium text-gray-500 shrink-0">식사</span>
@@ -514,15 +650,24 @@ export default function DashboardPage() {
                         <div className="flex items-center gap-2">
                           <span className="font-medium text-sm">{r.guest_name}</span>
                           {r.side === 'groom' ? (
-                            <span className="px-1.5 py-0.5 rounded text-[10px] bg-blue-100 text-blue-700">신랑</span>
+                            <span className="px-1.5 py-0.5 rounded text-[10px] bg-blue-100 text-blue-700">{r.side_detail ? getSideWithDetail(r.side, r.side_detail).replace('신랑측 ', '') : '신랑'}</span>
                           ) : r.side === 'bride' ? (
-                            <span className="px-1.5 py-0.5 rounded text-[10px] bg-pink-100 text-pink-700">신부</span>
+                            <span className="px-1.5 py-0.5 rounded text-[10px] bg-pink-100 text-pink-700">{r.side_detail ? getSideWithDetail(r.side, r.side_detail).replace('신부측 ', '') : '신부'}</span>
                           ) : null}
                         </div>
                         <div className="flex items-center gap-2">
                           <span className={`px-2 py-0.5 rounded-full text-[10px] ${getAttendanceColor(r.attendance)}`}>
                             {getAttendanceLabel(r.attendance)}
                           </span>
+                          <button
+                            type="button"
+                            onClick={() => handleEditClick(r)}
+                            className="p-1 text-gray-300 hover:text-blue-500 transition-colors"
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                              <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
                           <button
                             type="button"
                             onClick={() => setDeletingRsvpId(r.id)}
@@ -582,9 +727,9 @@ export default function DashboardPage() {
                           <td className="py-3 px-2 text-gray-500">{r.guest_phone || '-'}</td>
                           <td className="py-3 px-2">
                             {r.side === 'groom' ? (
-                              <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-700">신랑측</span>
+                              <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-700">{getSideWithDetail(r.side, r.side_detail)}</span>
                             ) : r.side === 'bride' ? (
-                              <span className="px-2 py-1 rounded-full text-xs bg-pink-100 text-pink-700">신부측</span>
+                              <span className="px-2 py-1 rounded-full text-xs bg-pink-100 text-pink-700">{getSideWithDetail(r.side, r.side_detail)}</span>
                             ) : (
                               <span className="text-gray-400">-</span>
                             )}
@@ -628,17 +773,29 @@ export default function DashboardPage() {
                             {new Date(r.created_at).toLocaleDateString('ko-KR')}
                           </td>
                           <td className="py-3 px-2">
-                            <button
-                              type="button"
-                              onClick={() => setDeletingRsvpId(r.id)}
-                              className="p-1 text-gray-300 hover:text-red-500 transition-colors"
-                              title="삭제"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                                <polyline points="3 6 5 6 21 6" />
-                                <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
-                              </svg>
-                            </button>
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => handleEditClick(r)}
+                                className="p-1 text-gray-300 hover:text-blue-500 transition-colors"
+                                title="수정"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                  <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setDeletingRsvpId(r.id)}
+                                className="p-1 text-gray-300 hover:text-red-500 transition-colors"
+                                title="삭제"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                  <polyline points="3 6 5 6 21 6" />
+                                  <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                                </svg>
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -823,6 +980,87 @@ export default function DashboardPage() {
         </Card>
       </div>
 
+      {/* RSVP 수정 Dialog */}
+      <Dialog open={!!editingRsvp} onOpenChange={() => setEditingRsvp(null)}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>RSVP 응답 수정</DialogTitle>
+            <DialogDescription>하객 정보를 수정합니다.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <label className="text-sm font-medium text-gray-700 block mb-1">이름</label>
+              <Input value={editForm.guestName} onChange={(e) => setEditForm(prev => ({ ...prev, guestName: e.target.value }))} />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700 block mb-1">연락처</label>
+              <Input value={editForm.guestPhone} onChange={(e) => setEditForm(prev => ({ ...prev, guestPhone: e.target.value }))} placeholder="뒷자리 4자리 또는 전체번호" />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700 block mb-1">소속</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button type="button" onClick={() => handleEditSideChange('groom')} className={cn('py-2 rounded-lg text-sm font-medium border transition-colors', editForm.side === 'groom' ? 'bg-blue-100 text-blue-700 border-blue-300' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50')}>신랑측</button>
+                <button type="button" onClick={() => handleEditSideChange('bride')} className={cn('py-2 rounded-lg text-sm font-medium border transition-colors', editForm.side === 'bride' ? 'bg-pink-100 text-pink-700 border-pink-300' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50')}>신부측</button>
+              </div>
+            </div>
+            {editForm.side && (
+              <div>
+                <label className="text-sm font-medium text-gray-700 block mb-1">초대 경로</label>
+                <div className="flex gap-2">
+                  <button type="button" onClick={() => setEditForm(prev => ({ ...prev, sideDetail: 'self' }))} className={cn('flex-1 py-2 rounded-lg text-sm font-medium border transition-colors', editForm.sideDetail === 'self' ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50')}>{editForm.side === 'groom' ? '신랑' : '신부'} 지인</button>
+                  <button type="button" onClick={() => setEditForm(prev => ({ ...prev, sideDetail: 'father' }))} className={cn('flex-1 py-2 rounded-lg text-sm font-medium border transition-colors', editForm.sideDetail === 'father' ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50')}>{editForm.side === 'groom' ? '신랑' : '신부'} 아버님</button>
+                  <button type="button" onClick={() => setEditForm(prev => ({ ...prev, sideDetail: 'mother' }))} className={cn('flex-1 py-2 rounded-lg text-sm font-medium border transition-colors', editForm.sideDetail === 'mother' ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50')}>{editForm.side === 'groom' ? '신랑' : '신부'} 어머님</button>
+                </div>
+              </div>
+            )}
+            <div>
+              <label className="text-sm font-medium text-gray-700 block mb-1">참석 여부</label>
+              <div className="grid grid-cols-3 gap-2">
+                <button type="button" onClick={() => setEditForm(prev => ({ ...prev, attendance: 'attending' }))} className={cn('py-2 rounded-lg text-sm font-medium border transition-colors', editForm.attendance === 'attending' ? 'bg-green-100 text-green-700 border-green-300' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50')}>참석</button>
+                <button type="button" onClick={() => setEditForm(prev => ({ ...prev, attendance: 'pending' }))} className={cn('py-2 rounded-lg text-sm font-medium border transition-colors', editForm.attendance === 'pending' ? 'bg-yellow-100 text-yellow-700 border-yellow-300' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50')}>미정</button>
+                <button type="button" onClick={() => setEditForm(prev => ({ ...prev, attendance: 'not_attending' }))} className={cn('py-2 rounded-lg text-sm font-medium border transition-colors', editForm.attendance === 'not_attending' ? 'bg-red-100 text-red-700 border-red-300' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50')}>불참</button>
+              </div>
+            </div>
+            {editForm.attendance === 'attending' && (
+              <>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 block mb-1">식사 여부</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button type="button" onClick={() => setEditForm(prev => ({ ...prev, mealAttendance: 'yes' }))} className={cn('py-2 rounded-lg text-sm font-medium border transition-colors', editForm.mealAttendance === 'yes' ? 'bg-orange-100 text-orange-700 border-orange-300' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50')}>식사</button>
+                    <button type="button" onClick={() => setEditForm(prev => ({ ...prev, mealAttendance: 'no' }))} className={cn('py-2 rounded-lg text-sm font-medium border transition-colors', editForm.mealAttendance === 'no' ? 'bg-gray-200 text-gray-700 border-gray-400' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50')}>안 함</button>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 block mb-1">대절버스</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button type="button" onClick={() => setEditForm(prev => ({ ...prev, shuttleBus: 'yes' }))} className={cn('py-2 rounded-lg text-sm font-medium border transition-colors', editForm.shuttleBus === 'yes' ? 'bg-purple-100 text-purple-700 border-purple-300' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50')}>이용</button>
+                    <button type="button" onClick={() => setEditForm(prev => ({ ...prev, shuttleBus: 'no' }))} className={cn('py-2 rounded-lg text-sm font-medium border transition-colors', editForm.shuttleBus === 'no' ? 'bg-gray-200 text-gray-700 border-gray-400' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50')}>미이용</button>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 block mb-1">참석 인원</label>
+                  <div className="flex items-center gap-3">
+                    <button type="button" onClick={() => setEditForm(prev => ({ ...prev, guestCount: Math.max(1, prev.guestCount - 1) }))} className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-50">-</button>
+                    <span className="text-lg font-semibold w-8 text-center">{editForm.guestCount}</span>
+                    <button type="button" onClick={() => setEditForm(prev => ({ ...prev, guestCount: Math.min(100, prev.guestCount + 1) }))} className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-50">+</button>
+                  </div>
+                </div>
+              </>
+            )}
+            <div>
+              <label className="text-sm font-medium text-gray-700 block mb-1">메시지</label>
+              <textarea value={editForm.message} onChange={(e) => setEditForm(prev => ({ ...prev, message: e.target.value }))} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-rose-200" rows={3} maxLength={500} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingRsvp(null)}>취소</Button>
+            <Button onClick={handleEditSave} disabled={isEditSaving || !editForm.guestName.trim() || !editForm.attendance}>
+              {isEditSaving ? '저장 중...' : '저장'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* RSVP 삭제 확인 Dialog */}
       <Dialog open={!!deletingRsvpId} onOpenChange={() => setDeletingRsvpId(null)}>
         <DialogContent>
@@ -838,6 +1076,13 @@ export default function DashboardPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit success toast */}
+      {editToast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gray-900 text-white px-4 py-2.5 rounded-lg shadow-lg text-sm">
+          응답이 수정되었습니다.
+        </div>
+      )}
     </div>
   )
 }

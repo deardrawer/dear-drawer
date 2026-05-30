@@ -16,8 +16,8 @@ CREATE TABLE IF NOT EXISTS geunnal_pages (
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
-CREATE INDEX idx_geunnal_pages_slug ON geunnal_pages(slug);
-CREATE INDEX idx_geunnal_pages_invitation ON geunnal_pages(invitation_id);
+CREATE INDEX IF NOT EXISTS idx_geunnal_pages_slug ON geunnal_pages(slug);
+CREATE INDEX IF NOT EXISTS idx_geunnal_pages_invitation ON geunnal_pages(invitation_id);
 
 CREATE TABLE IF NOT EXISTS geunnal_events (
   id TEXT PRIMARY KEY,
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS geunnal_events (
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
-CREATE INDEX idx_geunnal_events_page ON geunnal_events(page_id);
+CREATE INDEX IF NOT EXISTS idx_geunnal_events_page ON geunnal_events(page_id);
 
 CREATE TABLE IF NOT EXISTS geunnal_event_guests (
   id TEXT PRIMARY KEY,
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS geunnal_event_guests (
   contacted INTEGER DEFAULT 0,
   created_at TEXT NOT NULL
 );
-CREATE INDEX idx_geunnal_event_guests_event ON geunnal_event_guests(event_id);
+CREATE INDEX IF NOT EXISTS idx_geunnal_event_guests_event ON geunnal_event_guests(event_id);
 
 CREATE TABLE IF NOT EXISTS geunnal_submissions (
   id TEXT PRIMARY KEY,
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS geunnal_submissions (
   photo_url TEXT,
   created_at TEXT NOT NULL
 );
-CREATE INDEX idx_geunnal_submissions_event ON geunnal_submissions(event_id);
+CREATE INDEX IF NOT EXISTS idx_geunnal_submissions_event ON geunnal_submissions(event_id);
 
 CREATE TABLE IF NOT EXISTS geunnal_venues (
   id TEXT PRIMARY KEY,
@@ -77,4 +77,4 @@ CREATE TABLE IF NOT EXISTS geunnal_venues (
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
-CREATE INDEX idx_geunnal_venues_page ON geunnal_venues(page_id);
+CREATE INDEX IF NOT EXISTS idx_geunnal_venues_page ON geunnal_venues(page_id);

@@ -202,7 +202,16 @@ export interface SectionContents {
     showMealOption?: boolean
     showShuttleOption?: boolean
     showSideOption?: boolean
+    showPhoneOption?: boolean
+    showSideDetail?: boolean
+    sideDetailOptions?: {
+      groomFather?: boolean
+      groomMother?: boolean
+      brideFather?: boolean
+      brideMother?: boolean
+    }
     rsvpNotice?: string
+    messagePlaceholder?: string
     buttonLabel?: string
     attendLabel?: string
     regretLabel?: string

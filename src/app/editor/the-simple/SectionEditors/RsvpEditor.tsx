@@ -105,8 +105,96 @@ export default function RsvpEditor({ value, variant = 1, onChange }: RsvpEditorP
               />
             </button>
           </label>
+          <label className="flex items-center justify-between">
+            <span className="text-xs text-stone-600">연락처 뒷자리 4자리 입력</span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={value.showPhoneOption ?? false}
+              onClick={() => onChange({ ...value, showPhoneOption: !(value.showPhoneOption ?? false) })}
+              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                value.showPhoneOption ? 'bg-stone-800' : 'bg-stone-200'
+              }`}
+            >
+              <span
+                className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                  value.showPhoneOption ? 'translate-x-[18px]' : 'translate-x-[3px]'
+                }`}
+              />
+            </button>
+          </label>
+          <label className="flex items-center justify-between">
+            <span className="text-xs text-stone-600">부모님 하객 구분</span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={value.showSideDetail ?? false}
+              onClick={() => onChange({ ...value, showSideDetail: !(value.showSideDetail ?? false), ...( !(value.showSideDetail ?? false) && !value.sideDetailOptions ? { sideDetailOptions: { groomFather: true, groomMother: true, brideFather: true, brideMother: true } } : {}) })}
+              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                value.showSideDetail ? 'bg-stone-800' : 'bg-stone-200'
+              }`}
+            >
+              <span
+                className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                  value.showSideDetail ? 'translate-x-[18px]' : 'translate-x-[3px]'
+                }`}
+              />
+            </button>
+          </label>
+          {value.showSideDetail && (
+            <div className="ml-4 space-y-1.5 pt-1">
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={value.sideDetailOptions?.groomFather ?? true}
+                  onChange={(e) => onChange({ ...value, sideDetailOptions: { ...value.sideDetailOptions, groomFather: e.target.checked } })}
+                  className="w-3.5 h-3.5 rounded border-stone-300 text-stone-800 focus:ring-stone-500"
+                />
+                <span className="text-xs text-stone-600">신랑 아버님 지인</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={value.sideDetailOptions?.groomMother ?? true}
+                  onChange={(e) => onChange({ ...value, sideDetailOptions: { ...value.sideDetailOptions, groomMother: e.target.checked } })}
+                  className="w-3.5 h-3.5 rounded border-stone-300 text-stone-800 focus:ring-stone-500"
+                />
+                <span className="text-xs text-stone-600">신랑 어머님 지인</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={value.sideDetailOptions?.brideFather ?? true}
+                  onChange={(e) => onChange({ ...value, sideDetailOptions: { ...value.sideDetailOptions, brideFather: e.target.checked } })}
+                  className="w-3.5 h-3.5 rounded border-stone-300 text-stone-800 focus:ring-stone-500"
+                />
+                <span className="text-xs text-stone-600">신부 아버님 지인</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={value.sideDetailOptions?.brideMother ?? true}
+                  onChange={(e) => onChange({ ...value, sideDetailOptions: { ...value.sideDetailOptions, brideMother: e.target.checked } })}
+                  className="w-3.5 h-3.5 rounded border-stone-300 text-stone-800 focus:ring-stone-500"
+                />
+                <span className="text-xs text-stone-600">신부 어머님 지인</span>
+              </label>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* 메시지 입력란 안내 */}
+      <label className="block">
+        <span className="text-[10px] uppercase tracking-wider text-stone-400">메시지 입력란 안내</span>
+        <input
+          type="text"
+          value={value.messagePlaceholder ?? ''}
+          onChange={(e) => onChange({ ...value, messagePlaceholder: e.target.value || undefined })}
+          placeholder="축하 메시지 (선택)"
+          className="mt-0.5 w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white"
+        />
+      </label>
 
       {/* 안내 문구 */}
       <label className="block">

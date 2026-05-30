@@ -2073,7 +2073,11 @@ function RsvpModal({
   invitationId,
   showMealOption,
   showShuttleOption,
+  showPhoneOption,
+  showSideDetail,
+  sideDetailOptions,
   rsvpNotice,
+  messagePlaceholder,
   initialAttendance,
 }: {
   open: boolean
@@ -2081,15 +2085,21 @@ function RsvpModal({
   invitationId?: string
   showMealOption?: boolean
   showShuttleOption?: boolean
+  showPhoneOption?: boolean
+  showSideDetail?: boolean
+  sideDetailOptions?: { groomFather?: boolean; groomMother?: boolean; brideFather?: boolean; brideMother?: boolean }
   rsvpNotice?: string
+  messagePlaceholder?: string
   initialAttendance?: 'attending' | 'not_attending'
 }) {
   const [name, setName] = useState('')
-  const [attendance, setAttendance] = useState<'attending' | 'not_attending' | 'undecided'>('attending')
+  const [phone, setPhone] = useState('')
+  const [attendance, setAttendance] = useState<'attending' | 'not_attending' | 'undecided' | ''>('')
   const [count, setCount] = useState(1)
-  const [mealAttendance, setMealAttendance] = useState<'yes' | 'no'>('yes')
-  const [shuttleBus, setShuttleBus] = useState<'yes' | 'no'>('no')
-  const [side, setSide] = useState<'groom' | 'bride'>('groom')
+  const [mealAttendance, setMealAttendance] = useState<'yes' | 'no' | ''>('')
+  const [shuttleBus, setShuttleBus] = useState<'yes' | 'no' | ''>('')
+  const [side, setSide] = useState<'groom' | 'bride' | ''>('')
+  const [sideDetail, setSideDetail] = useState<'self' | 'father' | 'mother' | ''>('')
   const [message, setMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
@@ -2140,6 +2150,9 @@ function RsvpModal({
   const handleSubmit = useCallback(async () => {
     if (!name.trim() || submitting) return
     if (!invitationId) return
+    if (!attendance) return
+    if (showPhoneOption && phone.length > 0 && phone.length < 4) return
+    if (showSideDetail && side && !sideDetail) return
     setSubmitting(true)
     try {
       const res = await fetch('/api/rsvp', {
@@ -2148,12 +2161,14 @@ function RsvpModal({
         body: JSON.stringify({
           invitationId,
           guestName: name.trim(),
+          guestPhone: phone || undefined,
           attendance,
           guestCount: attendance === 'attending' ? count : 0,
           message: message.trim() || undefined,
-          ...(showMealOption && attendance === 'attending' ? { mealAttendance } : {}),
-          ...(showShuttleOption && attendance === 'attending' ? { shuttleBus } : {}),
-          side,
+          ...(showMealOption && attendance === 'attending' && mealAttendance ? { mealAttendance } : {}),
+          ...(showShuttleOption && attendance === 'attending' && shuttleBus ? { shuttleBus } : {}),
+          side: side || undefined,
+          sideDetail: sideDetail || undefined,
         }),
       })
       if (res.ok) {
@@ -2162,11 +2177,13 @@ function RsvpModal({
           onClose()
           setDone(false)
           setName('')
-          setAttendance('attending')
+          setPhone('')
+          setAttendance('')
           setCount(1)
-          setMealAttendance('yes')
-          setShuttleBus('no')
-          setSide('groom')
+          setMealAttendance('')
+          setShuttleBus('')
+          setSide('')
+          setSideDetail('')
           setMessage('')
         }, 1500)
       }
@@ -2175,7 +2192,7 @@ function RsvpModal({
     } finally {
       setSubmitting(false)
     }
-  }, [name, attendance, count, mealAttendance, shuttleBus, side, message, invitationId, submitting, onClose, showMealOption, showShuttleOption])
+  }, [name, phone, attendance, count, mealAttendance, shuttleBus, side, sideDetail, message, invitationId, submitting, onClose, showMealOption, showShuttleOption, showPhoneOption, showSideDetail])
 
   const [closing, setClosing] = useState(false)
 
@@ -2238,13 +2255,38 @@ function RsvpModal({
                 maxLength={50}
                 className="ts-rsvp-modal-input"
               />
+              {showPhoneOption && (
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={4}
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                  placeholder="연락처 뒷자리 4자리"
+                  className="ts-rsvp-modal-input"
+                />
+              )}
               <div>
                 <span style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', color: 'var(--ink)', display: 'block', marginBottom: 6 }}>하객 구분</span>
                 <div className="ts-rsvp-modal-toggle">
-                  <button type="button" className={`ts-rsvp-modal-opt ${side === 'groom' ? 'active' : ''}`} onClick={() => setSide('groom')}>신랑측</button>
-                  <button type="button" className={`ts-rsvp-modal-opt ${side === 'bride' ? 'active' : ''}`} onClick={() => setSide('bride')}>신부측</button>
+                  <button type="button" className={`ts-rsvp-modal-opt ${side === 'groom' ? 'active' : ''}`} onClick={() => { setSide('groom'); setSideDetail('') }}>신랑측</button>
+                  <button type="button" className={`ts-rsvp-modal-opt ${side === 'bride' ? 'active' : ''}`} onClick={() => { setSide('bride'); setSideDetail('') }}>신부측</button>
                 </div>
               </div>
+              {showSideDetail && side && (
+                <div>
+                  <span style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', color: 'var(--ink)', display: 'block', marginBottom: 6 }}>초대 경로</span>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <button type="button" className={`ts-rsvp-modal-opt ${sideDetail === 'self' ? 'active' : ''}`} onClick={() => setSideDetail('self')} style={{ flex: 1, minWidth: 0, padding: '6px 4px', fontSize: 'calc(12px * var(--ts-font-scale, 1))', textAlign: 'center' }}>{side === 'groom' ? '신랑' : '신부'} 지인</button>
+                    {((side === 'groom' && (sideDetailOptions?.groomFather ?? true)) || (side === 'bride' && (sideDetailOptions?.brideFather ?? true))) && (
+                      <button type="button" className={`ts-rsvp-modal-opt ${sideDetail === 'father' ? 'active' : ''}`} onClick={() => setSideDetail('father')} style={{ flex: 1, minWidth: 0, padding: '6px 4px', fontSize: 'calc(12px * var(--ts-font-scale, 1))', textAlign: 'center' }}>{side === 'groom' ? '신랑' : '신부'} 아버님 지인</button>
+                    )}
+                    {((side === 'groom' && (sideDetailOptions?.groomMother ?? true)) || (side === 'bride' && (sideDetailOptions?.brideMother ?? true))) && (
+                      <button type="button" className={`ts-rsvp-modal-opt ${sideDetail === 'mother' ? 'active' : ''}`} onClick={() => setSideDetail('mother')} style={{ flex: 1, minWidth: 0, padding: '6px 4px', fontSize: 'calc(12px * var(--ts-font-scale, 1))', textAlign: 'center' }}>{side === 'groom' ? '신랑' : '신부'} 어머님 지인</button>
+                    )}
+                  </div>
+                </div>
+              )}
               <div className="ts-rsvp-modal-toggle ts-rsvp-modal-toggle--3">
                 <button
                   type="button"
@@ -2311,7 +2353,7 @@ function RsvpModal({
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="축하 메시지 (선택)"
+                placeholder={messagePlaceholder || "축하 메시지 (선택)"}
                 maxLength={500}
                 rows={2}
                 className="ts-rsvp-modal-textarea"
@@ -2320,7 +2362,7 @@ function RsvpModal({
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={submitting || !name.trim()}
+              disabled={submitting || !name.trim() || !attendance || (showPhoneOption && phone.length > 0 && phone.length < 4) || !!(showSideDetail && side && !sideDetail)}
               className="ts-rsvp-modal-submit"
             >
               {submitting ? '전송 중...' : '전송하기'}
@@ -6093,7 +6135,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         <div style={{ height: 72 }} />
       </div>
       </div>{/* /ts-body-wrap */}
-      <RsvpModal open={rsvpOpen} onClose={() => { setRsvpOpen(false); setRsvpInitAttendance(undefined) }} invitationId={data.id} showMealOption={data.sections.rsvp.showMealOption} showShuttleOption={data.sections.rsvp.showShuttleOption} rsvpNotice={data.sections.rsvp.rsvpNotice} initialAttendance={rsvpInitAttendance} />
+      <RsvpModal open={rsvpOpen} onClose={() => { setRsvpOpen(false); setRsvpInitAttendance(undefined) }} invitationId={data.id} showMealOption={data.sections.rsvp.showMealOption} showShuttleOption={data.sections.rsvp.showShuttleOption} showPhoneOption={data.sections.rsvp.showPhoneOption} showSideDetail={data.sections.rsvp.showSideDetail} sideDetailOptions={data.sections.rsvp.sideDetailOptions} rsvpNotice={data.sections.rsvp.rsvpNotice} messagePlaceholder={data.sections.rsvp.messagePlaceholder} initialAttendance={rsvpInitAttendance} />
       <GalleryLightbox images={lightboxImages} isOpen={lightboxOpen} initialIndex={lightboxIndex} onClose={() => setLightboxOpen(false)} variant={data.lightboxVariant ?? 1} />
       {/* 네비게이션 프리뷰 */}
       {(() => {
@@ -6160,7 +6202,11 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
               rsvpEnabled,
               rsvpMealOption: data.sections.rsvp?.showMealOption,
               rsvpShuttleOption: data.sections.rsvp?.showShuttleOption,
+              rsvpPhoneOption: data.sections.rsvp?.showPhoneOption,
+              rsvpSideDetail: data.sections.rsvp?.showSideDetail,
+              rsvpSideDetailOptions: data.sections.rsvp?.sideDetailOptions,
               rsvpNotice: data.sections.rsvp?.rsvpNotice,
+              rsvpMessagePlaceholder: data.sections.rsvp?.messagePlaceholder,
               accountNotice: data.sections.account?.guide,
               invitationId: data.id,
               groomName: data.groom.name,

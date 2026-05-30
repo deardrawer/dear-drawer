@@ -15,6 +15,14 @@ interface RsvpFormProps {
   allowGuestCount?: boolean
   showMealOption?: boolean
   showShuttleOption?: boolean
+  showPhoneOption?: boolean
+  showSideDetail?: boolean
+  sideDetailOptions?: {
+    groomFather?: boolean
+    groomMother?: boolean
+    brideFather?: boolean
+    brideMother?: boolean
+  }
   notice?: string
 }
 
@@ -25,11 +33,15 @@ export default function RsvpForm({
   allowGuestCount = true,
   showMealOption = false,
   showShuttleOption = false,
+  showPhoneOption = false,
+  showSideDetail = false,
+  sideDetailOptions,
   notice,
 }: RsvpFormProps) {
   const [guestName, setGuestName] = useState('')
   const [guestPhone, setGuestPhone] = useState('')
   const [side, setSide] = useState<'groom' | 'bride' | null>(null)
+  const [sideDetail, setSideDetail] = useState<'self' | 'father' | 'mother' | ''>('')
   const [attendance, setAttendance] = useState<Attendance | null>(null)
   const [mealAttendance, setMealAttendance] = useState<'yes' | 'no' | null>(null)
   const [shuttleBus, setShuttleBus] = useState<'yes' | 'no' | null>(null)
@@ -53,6 +65,16 @@ export default function RsvpForm({
       return
     }
 
+    if (showPhoneOption && guestPhone.length > 0 && guestPhone.length < 4) {
+      setError('연락처 뒷자리 4자리를 입력해 주세요.')
+      return
+    }
+
+    if (showSideDetail && side && !sideDetail) {
+      setError('초대 경로를 선택해 주세요.')
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
@@ -67,6 +89,7 @@ export default function RsvpForm({
           guestCount: attendance === 'attending' ? guestCount : 0,
           message: message.trim() || undefined,
           side: side || undefined,
+          sideDetail: sideDetail || undefined,
           mealAttendance: attendance === 'attending' ? mealAttendance : undefined,
           shuttleBus: attendance === 'attending' ? shuttleBus : undefined,
         }),
@@ -151,18 +174,21 @@ export default function RsvpForm({
         />
       </div>
 
-      {/* 연락처 */}
-      <div className="space-y-2">
-        <Label htmlFor="guestPhone">연락처</Label>
-        <Input
-          id="guestPhone"
-          type="tel"
-          value={guestPhone}
-          onChange={(e) => setGuestPhone(e.target.value)}
-          placeholder="010-1234-5678"
-          onFocus={(e) => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 350)}
-        />
-      </div>
+      {/* 연락처 뒷자리 4자리 (showPhoneOption일 때만) */}
+      {showPhoneOption && (
+        <div className="space-y-2">
+          <Label htmlFor="guestPhone">연락처 뒷자리 4자리</Label>
+          <Input
+            id="guestPhone"
+            inputMode="numeric"
+            maxLength={4}
+            value={guestPhone}
+            onChange={(e) => setGuestPhone(e.target.value.replace(/\D/g, '').slice(0, 4))}
+            placeholder="1234"
+            onFocus={(e) => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 350)}
+          />
+        </div>
+      )}
 
       {/* 소속 (신랑측/신부측) */}
       <div className="space-y-2">
@@ -170,7 +196,7 @@ export default function RsvpForm({
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
-            onClick={() => setSide(side === 'groom' ? null : 'groom')}
+            onClick={() => { setSide(side === 'groom' ? null : 'groom'); setSideDetail('') }}
             className={`py-3 px-4 rounded-lg border-2 text-sm font-medium transition-all ${
               side === 'groom'
                 ? 'bg-blue-500 text-white border-blue-500'
@@ -181,7 +207,7 @@ export default function RsvpForm({
           </button>
           <button
             type="button"
-            onClick={() => setSide(side === 'bride' ? null : 'bride')}
+            onClick={() => { setSide(side === 'bride' ? null : 'bride'); setSideDetail('') }}
             className={`py-3 px-4 rounded-lg border-2 text-sm font-medium transition-all ${
               side === 'bride'
                 ? 'bg-pink-500 text-white border-pink-500'
@@ -192,6 +218,57 @@ export default function RsvpForm({
           </button>
         </div>
       </div>
+
+      {/* 초대 경로 (showSideDetail && side 선택 시) */}
+      {showSideDetail && side && (
+        <div className="space-y-2">
+          <Label>초대 경로</Label>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setSideDetail('self')}
+              className={`flex-1 min-w-0 py-2 px-1 rounded-lg border-2 text-sm font-medium transition-all text-center ${
+                sideDetail === 'self'
+                  ? 'text-white'
+                  : 'border-gray-200 text-gray-700 hover:border-gray-300'
+              }`}
+              style={sideDetail === 'self' ? { backgroundColor: primaryColor, borderColor: primaryColor } : {}}
+            >
+              {side === 'groom' ? '신랑' : '신부'} 지인
+            </button>
+            {((side === 'groom' && (sideDetailOptions?.groomFather ?? true)) ||
+              (side === 'bride' && (sideDetailOptions?.brideFather ?? true))) && (
+              <button
+                type="button"
+                onClick={() => setSideDetail('father')}
+                className={`flex-1 min-w-0 py-2 px-1 rounded-lg border-2 text-sm font-medium transition-all text-center ${
+                  sideDetail === 'father'
+                    ? 'text-white'
+                    : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                }`}
+                style={sideDetail === 'father' ? { backgroundColor: primaryColor, borderColor: primaryColor } : {}}
+              >
+                {side === 'groom' ? '신랑' : '신부'} 아버님 지인
+              </button>
+            )}
+            {((side === 'groom' && (sideDetailOptions?.groomMother ?? true)) ||
+              (side === 'bride' && (sideDetailOptions?.brideMother ?? true))) && (
+              <button
+                type="button"
+                onClick={() => setSideDetail('mother')}
+                className={`flex-1 min-w-0 py-2 px-1 rounded-lg border-2 text-sm font-medium transition-all text-center ${
+                  sideDetail === 'mother'
+                    ? 'text-white'
+                    : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                }`}
+                style={sideDetail === 'mother' ? { backgroundColor: primaryColor, borderColor: primaryColor } : {}}
+              >
+                {side === 'groom' ? '신랑' : '신부'} 어머님 지인
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* 참석 여부 */}
       <div className="space-y-2">
@@ -355,7 +432,7 @@ export default function RsvpForm({
       <Button
         type="submit"
         className="w-full py-6 text-base"
-        disabled={isSubmitting || !guestName.trim() || !attendance}
+        disabled={isSubmitting || !guestName.trim() || !attendance || (showPhoneOption && guestPhone.length > 0 && guestPhone.length < 4) || (showSideDetail && !!side && !sideDetail)}
         style={{ backgroundColor: primaryColor }}
       >
         {isSubmitting ? (

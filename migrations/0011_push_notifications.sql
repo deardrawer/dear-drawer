@@ -8,8 +8,8 @@ CREATE TABLE IF NOT EXISTS geunnal_push_subscriptions (
   auth TEXT NOT NULL,
   created_at TEXT NOT NULL
 );
-CREATE UNIQUE INDEX idx_push_subs_endpoint ON geunnal_push_subscriptions(endpoint);
-CREATE INDEX idx_push_subs_page ON geunnal_push_subscriptions(page_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_push_subs_endpoint ON geunnal_push_subscriptions(endpoint);
+CREATE INDEX IF NOT EXISTS idx_push_subs_page ON geunnal_push_subscriptions(page_id);
 
 CREATE TABLE IF NOT EXISTS geunnal_notification_settings (
   id TEXT PRIMARY KEY,

@@ -277,7 +277,7 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
         <label className="block text-xs mb-2" style={{ color: '#999' }}>
           초대 경로
         </label>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap" style={{ wordBreak: 'keep-all' as const }}>
           <button
             type="button"
             onClick={() => setFormData(prev => ({ ...prev, sideDetail: 'self' }))}

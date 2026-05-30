@@ -2413,12 +2413,12 @@ function RsvpDmModal({
 
       {/* DM Modal */}
       <div
-        className="relative w-full max-w-[430px] rounded-t-2xl overflow-hidden"
-        style={{ background: '#FFFFFF', maxHeight: '92vh', animation: 'slideUp 0.3s ease-out' }}
+        className="relative w-full max-w-[430px] rounded-t-2xl overflow-hidden flex flex-col"
+        style={{ background: '#FFFFFF', maxHeight: 'min(92vh, calc(100% - 16px))', animation: 'slideUp 0.3s ease-out' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* DM Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: '#DBDBDB' }}>
+        <div className="flex items-center justify-between px-4 py-3 border-b shrink-0" style={{ borderColor: '#DBDBDB' }}>
           <button onClick={handleClose} className="text-[14px] font-medium" style={{ color: '#262626' }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#262626" strokeWidth="2">
               <path d="M19 12H5M12 19l-7-7 7-7" />
@@ -2434,7 +2434,7 @@ function RsvpDmModal({
         </div>
 
         {step === 0 ? (
-          <div className="overflow-y-auto" style={{ maxHeight: 'calc(92vh - 56px)', WebkitOverflowScrolling: 'touch' as const }}>
+          <div className="flex-1 min-h-0 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' as const }}>
             {/* Chat area */}
             <div className="px-4 py-4 space-y-3">
               {/* Received message bubble */}
@@ -2509,7 +2509,7 @@ function RsvpDmModal({
               {rsvpSideDetail && side && (
               <div>
                 <label className="text-[11px] font-medium mb-1.5 block" style={{ color: '#8E8E8E' }}>초대 경로</label>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap" style={{ wordBreak: 'keep-all' }}>
                   <button onClick={() => setSideDetail('self')} className="flex-1 py-2.5 rounded-2xl text-[13px] font-medium transition-colors" style={{ background: sideDetail === 'self' ? '#262626' : '#FAFAFA', color: sideDetail === 'self' ? '#FFFFFF' : '#8E8E8E', border: `1px solid ${sideDetail === 'self' ? '#262626' : '#DBDBDB'}` }}>{side === 'groom' ? '신랑' : '신부'} 지인</button>
                   {((side === 'groom' && (rsvpSideDetailOptions?.groomFather ?? true)) || (side === 'bride' && (rsvpSideDetailOptions?.brideFather ?? true))) && (
                     <button onClick={() => setSideDetail('father')} className="flex-1 py-2.5 rounded-2xl text-[13px] font-medium transition-colors" style={{ background: sideDetail === 'father' ? '#262626' : '#FAFAFA', color: sideDetail === 'father' ? '#FFFFFF' : '#8E8E8E', border: `1px solid ${sideDetail === 'father' ? '#262626' : '#DBDBDB'}` }}>{side === 'groom' ? '신랑' : '신부'} 아버지 지인</button>

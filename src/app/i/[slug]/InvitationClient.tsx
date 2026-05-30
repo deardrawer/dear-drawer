@@ -4266,7 +4266,7 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
                       fonts={fonts}
                       themeColors={themeColors}
                       onNavigate={setCurrentPage}
-                      onOpenRsvp={() => setOpenModalType('rsvp')}
+                      onOpenRsvp={() => { setOpenModalType('rsvp'); if (isPreview) window.dispatchEvent(new CustomEvent('editor-open-rsvp')) }}
                       onOpenLightbox={(index) => {
                         setLightboxIndex(index)
                         setLightboxOpen(true)

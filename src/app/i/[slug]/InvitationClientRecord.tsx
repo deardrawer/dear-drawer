@@ -1926,6 +1926,8 @@ function RsvpSection({ invitation, invitationId, fonts, tc, bgOverride }: {
   const [submitting, setSubmitting] = useState(false)
   const [mealAttendance, setMealAttendance] = useState<'' | 'yes' | 'no'>('')
   const [shuttleBus, setShuttleBus] = useState<'' | 'yes' | 'no'>('')
+  const [phone, setPhone] = useState('')
+  const [sideDetail, setSideDetail] = useState<'' | 'self' | 'father' | 'mother'>('')
 
   if (!invitation.rsvpEnabled) return null
 
@@ -1935,8 +1937,14 @@ function RsvpSection({ invitation, invitationId, fonts, tc, bgOverride }: {
     try {
       const attendanceMap: Record<string, string> = { yes: 'attending', no: 'not_attending', maybe: 'pending' }
       const res = await fetch('/api/rsvp', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ invitationId, guestName: name, attendance: attendanceMap[attendance] || attendance, guestCount: attendance === 'yes' ? guestCount : 0, message: rsvpMessage, side: side || undefined, mealAttendance: attendance === 'yes' && mealAttendance ? mealAttendance : undefined, shuttleBus: attendance === 'yes' && shuttleBus ? shuttleBus : undefined }) })
-      if (res.ok) setSubmitted(true)
+        body: JSON.stringify({ invitationId, guestName: name, attendance: attendanceMap[attendance] || attendance, guestCount: attendance === 'yes' ? guestCount : 0, message: rsvpMessage, side: side || undefined, mealAttendance: attendance === 'yes' && mealAttendance ? mealAttendance : undefined, shuttleBus: attendance === 'yes' && shuttleBus ? shuttleBus : undefined, ...(phone ? { phone } : {}), ...(sideDetail ? { side_detail: sideDetail } : {}) }) })
+      if (res.ok) {
+        setSubmitted(true)
+        setName('')
+        setRsvpMessage('')
+        setPhone('')
+        setSideDetail('')
+      }
     } catch {} setSubmitting(false)
   }
 
@@ -1978,9 +1986,19 @@ function RsvpSection({ invitation, invitationId, fonts, tc, bgOverride }: {
               <p style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.gray, textAlign: 'center', lineHeight: 1.6, whiteSpace: 'pre-line', margin: '0 0 4px 0' }}>{invitation.rsvpNotice}</p>
             )}
             <input value={name} onChange={e => setName(e.target.value)} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} placeholder="성함" style={inputStyle} />
+            {invitation.rsvpPhoneOption && (
+              <input
+                value={phone}
+                onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                inputMode="numeric"
+                maxLength={4}
+                placeholder="연락처 뒷자리 4자리"
+                style={inputStyle}
+              />
+            )}
             <div className="grid grid-cols-2 gap-2">
               {([{ value: 'groom' as const, label: '신랑측' }, { value: 'bride' as const, label: '신부측' }]).map(opt => (
-                <button key={opt.value} onClick={() => setSide(side === opt.value ? null : opt.value)}
+                <button key={opt.value} onClick={() => { setSide(side === opt.value ? null : opt.value); setSideDetail('') }}
                   style={{
                     fontFamily: fonts.display, fontSize: '10px', letterSpacing: '2px', padding: '11px',
                     borderRadius: '8px',
@@ -1992,6 +2010,26 @@ function RsvpSection({ invitation, invitationId, fonts, tc, bgOverride }: {
                 </button>
               ))}
             </div>
+            {invitation.rsvpSideDetail && side && (
+              <div>
+                <span style={{ fontFamily: fonts.body, fontSize: '12px', color: tc.gray, display: 'block', marginBottom: '6px' }}>초대 경로</span>
+                <div className="flex gap-2 flex-wrap" style={{ wordBreak: 'keep-all' }}>
+                  <button onClick={() => setSideDetail('self')} style={{ flex: 1, fontFamily: fonts.body, fontSize: '10px', padding: '10px', borderRadius: '8px', border: `1px solid ${sideDetail === 'self' ? tc.primary : tc.divider}`, background: sideDetail === 'self' ? tc.primary : 'transparent', color: sideDetail === 'self' ? '#FFFFFF' : tc.text, cursor: 'pointer', transition: 'all 0.3s' }}>
+                    {side === 'groom' ? '신랑' : '신부'} 지인
+                  </button>
+                  {((side === 'groom' && (invitation.rsvpSideDetailOptions?.groomFather ?? true)) || (side === 'bride' && (invitation.rsvpSideDetailOptions?.brideFather ?? true))) && (
+                    <button onClick={() => setSideDetail('father')} style={{ flex: 1, fontFamily: fonts.body, fontSize: '10px', padding: '10px', borderRadius: '8px', border: `1px solid ${sideDetail === 'father' ? tc.primary : tc.divider}`, background: sideDetail === 'father' ? tc.primary : 'transparent', color: sideDetail === 'father' ? '#FFFFFF' : tc.text, cursor: 'pointer', transition: 'all 0.3s' }}>
+                      {side === 'groom' ? '신랑' : '신부'} 아버지 지인
+                    </button>
+                  )}
+                  {((side === 'groom' && (invitation.rsvpSideDetailOptions?.groomMother ?? true)) || (side === 'bride' && (invitation.rsvpSideDetailOptions?.brideMother ?? true))) && (
+                    <button onClick={() => setSideDetail('mother')} style={{ flex: 1, fontFamily: fonts.body, fontSize: '10px', padding: '10px', borderRadius: '8px', border: `1px solid ${sideDetail === 'mother' ? tc.primary : tc.divider}`, background: sideDetail === 'mother' ? tc.primary : 'transparent', color: sideDetail === 'mother' ? '#FFFFFF' : tc.text, cursor: 'pointer', transition: 'all 0.3s' }}>
+                      {side === 'groom' ? '신랑' : '신부'} 어머니 지인
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
             <div className="grid grid-cols-3 gap-2">
               {(['yes', 'maybe', 'no'] as const).map(opt => (
                 <button key={opt} onClick={() => setAttendance(opt)}
@@ -2044,11 +2082,11 @@ function RsvpSection({ invitation, invitationId, fonts, tc, bgOverride }: {
                 </div>
               </div>
             )}
-            <textarea value={rsvpMessage} onChange={e => setRsvpMessage(e.target.value)} placeholder="전하고 싶은 말 (선택)" rows={2}
+            <textarea value={rsvpMessage} onChange={e => setRsvpMessage(e.target.value)} placeholder={invitation.rsvpMessagePlaceholder || "전하고 싶은 말 (선택)"} rows={2}
               onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
               style={{ ...inputStyle, resize: 'none' as const }} />
-            <button onClick={handleSubmit} disabled={submitting}
-              style={{ width: '100%', fontFamily: fonts.display, fontSize: '10px', letterSpacing: '3px', padding: '13px', background: tc.primary, color: '#FFFFFF', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: submitting ? 0.5 : 1 }}>
+            <button onClick={handleSubmit} disabled={submitting || !name.trim() || !attendance || (invitation.rsvpPhoneOption && phone.length > 0 && phone.length < 4) || (invitation.rsvpSideDetail && !!side && !sideDetail)}
+              style={{ width: '100%', fontFamily: fonts.display, fontSize: '10px', letterSpacing: '3px', padding: '13px', background: tc.primary, color: '#FFFFFF', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: (submitting || !name.trim() || !attendance || (invitation.rsvpSideDetail && !!side && !sideDetail)) ? 0.4 : 1 }}>
               {dt('CONFIRM')}
             </button>
           </div>

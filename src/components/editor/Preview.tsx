@@ -407,9 +407,9 @@ const Preview = forwardRef<PreviewHandle, object>(function Preview(_, ref) {
           </button>
         </div>
       </div>
-      <div className="flex-1 overflow-hidden flex justify-center px-6 pb-6">
-        <div className="relative">
-          <div className="w-[360px] shadow-2xl bg-white flex flex-col relative border border-gray-200" style={{ height: '710px', containerType: 'size' as any }}>
+      <div className="flex-1 min-h-0 flex justify-center px-6 pb-6">
+        <div className="relative h-full max-h-[710px]">
+          <div className="w-[360px] shadow-2xl bg-white flex flex-col relative border border-gray-200 h-full" style={{ containerType: 'size' as any }}>
             <style>{`
               #preview-content .full-height-divider,
               #preview-content .divider-section { min-height: 100cqh !important; }
@@ -471,6 +471,10 @@ const Preview = forwardRef<PreviewHandle, object>(function Preview(_, ref) {
                 rsvpAllowGuestCount: invitation.rsvpAllowGuestCount,
                 rsvpMealOption: invitation.rsvpMealOption,
                 rsvpShuttleOption: invitation.rsvpShuttleOption,
+                rsvpPhoneOption: invitation.rsvpPhoneOption,
+                rsvpSideDetail: invitation.rsvpSideDetail,
+                rsvpSideDetailOptions: invitation.rsvpSideDetailOptions,
+                rsvpMessagePlaceholder: invitation.rsvpMessagePlaceholder,
                 rsvpNotice: invitation.rsvpNotice,
               }} />}
             {/* D-Day 팝업 미리보기 오버레이 */}

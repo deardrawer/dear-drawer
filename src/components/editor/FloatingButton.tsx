@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 // 툴팁 애니메이션 스타일
 const tooltipAnimationStyles = `
@@ -90,6 +90,10 @@ interface FloatingButtonProps {
     rsvpAllowGuestCount?: boolean
     rsvpMealOption?: boolean
     rsvpShuttleOption?: boolean
+    rsvpPhoneOption?: boolean
+    rsvpSideDetail?: boolean
+    rsvpSideDetailOptions?: { groomFather?: boolean; groomMother?: boolean; brideFather?: boolean; brideMother?: boolean }
+    rsvpMessagePlaceholder?: string
     rsvpNotice?: string
   }
 }
@@ -98,7 +102,14 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false)
   const [activeModal, setActiveModal] = useState<ModalType>('none')
   const [directionsTab, setDirectionsTab] = useState<DirectionsTab>('car')
-  const [rsvpForm, setRsvpForm] = useState({ name: '', side: '' as '' | 'groom' | 'bride', attendance: '', mealAttendance: '' as '' | 'yes' | 'no', shuttleBus: '' as '' | 'yes' | 'no', guestCount: 1, message: '' })
+  const [rsvpForm, setRsvpForm] = useState({ name: '', phone: '', side: '' as '' | 'groom' | 'bride', sideDetail: '' as '' | 'self' | 'father' | 'mother', attendance: '', mealAttendance: '' as '' | 'yes' | 'no', shuttleBus: '' as '' | 'yes' | 'no', guestCount: 1, message: '' })
+
+  // 미리보기 내부의 "참석 여부 전달하기" 버튼 클릭 시 모달 열기
+  useEffect(() => {
+    const handler = () => setActiveModal('rsvp')
+    window.addEventListener('editor-open-rsvp', handler)
+    return () => window.removeEventListener('editor-open-rsvp', handler)
+  }, [])
 
   // Bottom sheet/modal always use light colors (since they have white backgrounds)
   const isDarkTheme = themeColors.background === '#111111' || themeColors.sectionBg === '#111111'
@@ -539,10 +550,36 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
                     className="w-full p-3 rounded-xl mb-3 text-sm outline-none"
                     style={{ background: sheetColors.sectionBg, color: sheetColors.text }}
                   />
+                  {invitation?.rsvpPhoneOption && (
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={4}
+                      placeholder="연락처 뒷자리 4자리"
+                      value={rsvpForm.phone}
+                      onChange={(e) => setRsvpForm({ ...rsvpForm, phone: e.target.value.replace(/\D/g, '').slice(0, 4) })}
+                      className="w-full p-3 rounded-xl mb-3 text-sm outline-none"
+                      style={{ background: sheetColors.sectionBg, color: sheetColors.text }}
+                    />
+                  )}
                   <div className="grid grid-cols-2 gap-2 mb-3">
-                    <button onClick={() => setRsvpForm({ ...rsvpForm, side: rsvpForm.side === 'groom' ? '' : 'groom' })} className="py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.side === 'groom' ? '#3B82F6' : sheetColors.sectionBg, color: rsvpForm.side === 'groom' ? 'white' : sheetColors.text }}>신랑측</button>
-                    <button onClick={() => setRsvpForm({ ...rsvpForm, side: rsvpForm.side === 'bride' ? '' : 'bride' })} className="py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.side === 'bride' ? '#EC4899' : sheetColors.sectionBg, color: rsvpForm.side === 'bride' ? 'white' : sheetColors.text }}>신부측</button>
+                    <button onClick={() => setRsvpForm({ ...rsvpForm, side: rsvpForm.side === 'groom' ? '' : 'groom', sideDetail: '' })} className="py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.side === 'groom' ? '#3B82F6' : sheetColors.sectionBg, color: rsvpForm.side === 'groom' ? 'white' : sheetColors.text }}>신랑측</button>
+                    <button onClick={() => setRsvpForm({ ...rsvpForm, side: rsvpForm.side === 'bride' ? '' : 'bride', sideDetail: '' })} className="py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.side === 'bride' ? '#EC4899' : sheetColors.sectionBg, color: rsvpForm.side === 'bride' ? 'white' : sheetColors.text }}>신부측</button>
                   </div>
+                  {invitation?.rsvpSideDetail && rsvpForm.side && (
+                    <div className="mb-3">
+                      <p className="text-xs mb-2" style={{ color: sheetColors.gray }}>초대 경로</p>
+                      <div className="flex gap-2 flex-wrap" style={{ wordBreak: 'keep-all' }}>
+                        <button onClick={() => setRsvpForm({ ...rsvpForm, sideDetail: 'self' })} className="flex-1 min-w-0 py-2 px-1 rounded-xl text-xs text-center transition-all" style={{ background: rsvpForm.sideDetail === 'self' ? sheetColors.primary : sheetColors.sectionBg, color: rsvpForm.sideDetail === 'self' ? 'white' : sheetColors.text }}>{rsvpForm.side === 'groom' ? '신랑' : '신부'} 지인</button>
+                        {((rsvpForm.side === 'groom' && (invitation?.rsvpSideDetailOptions?.groomFather ?? true)) || (rsvpForm.side === 'bride' && (invitation?.rsvpSideDetailOptions?.brideFather ?? true))) && (
+                          <button onClick={() => setRsvpForm({ ...rsvpForm, sideDetail: 'father' })} className="flex-1 min-w-0 py-2 px-1 rounded-xl text-xs text-center transition-all" style={{ background: rsvpForm.sideDetail === 'father' ? sheetColors.primary : sheetColors.sectionBg, color: rsvpForm.sideDetail === 'father' ? 'white' : sheetColors.text }}>{rsvpForm.side === 'groom' ? '신랑' : '신부'} 아버지 지인</button>
+                        )}
+                        {((rsvpForm.side === 'groom' && (invitation?.rsvpSideDetailOptions?.groomMother ?? true)) || (rsvpForm.side === 'bride' && (invitation?.rsvpSideDetailOptions?.brideMother ?? true))) && (
+                          <button onClick={() => setRsvpForm({ ...rsvpForm, sideDetail: 'mother' })} className="flex-1 min-w-0 py-2 px-1 rounded-xl text-xs text-center transition-all" style={{ background: rsvpForm.sideDetail === 'mother' ? sheetColors.primary : sheetColors.sectionBg, color: rsvpForm.sideDetail === 'mother' ? 'white' : sheetColors.text }}>{rsvpForm.side === 'groom' ? '신랑' : '신부'} 어머니 지인</button>
+                        )}
+                      </div>
+                    </div>
+                  )}
                   <div className="flex gap-2 mb-3">
                     <button
                       onClick={() => setRsvpForm({ ...rsvpForm, attendance: 'yes' })}
@@ -594,7 +631,7 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
                     </div>
                   )}
                   <textarea
-                    placeholder="메시지 (선택)"
+                    placeholder={invitation?.rsvpMessagePlaceholder || "메시지 (선택)"}
                     value={rsvpForm.message}
                     onChange={(e) => setRsvpForm({ ...rsvpForm, message: e.target.value })}
                     className="w-full p-3 rounded-xl mb-4 text-sm outline-none resize-none h-16"

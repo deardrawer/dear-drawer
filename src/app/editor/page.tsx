@@ -815,7 +815,7 @@ function EditorContent() {
                 )}
 
                 {/* Edit Panel - 오른쪽 (데스크탑) / 전체 (모바일 편집 모드) */}
-                <div className={`${isMobile ? 'w-full' : 'flex-1 flex flex-col overflow-hidden'} ${isOurTemplate && !isMobile ? 'editor-panel m-4 ml-3.5' : ''}`} style={isMobile ? { paddingBottom: '56px', display: mobileView === 'editor' ? 'block' : 'none' } : { height: isOurTemplate ? 'calc(100vh - 88px)' : 'calc(100vh - 56px)' }}>
+                <div className={`${isMobile ? 'w-full' : 'flex-1 flex flex-col overflow-hidden'} ${isOurTemplate && !isMobile ? 'editor-panel m-4 ml-3.5' : ''}`} style={isMobile ? { paddingBottom: '56px', display: mobileView === 'editor' ? 'flex' : 'none', flexDirection: 'column' as const, height: 'calc(100vh - 48px)', overflow: 'hidden' } : { height: isOurTemplate ? 'calc(100vh - 88px)' : 'calc(100vh - 56px)' }}>
                     <WizardEditor
                       onOpenIntroSelector={() => setIsIntroSelectorOpen(true)}
                       onOpenAIStoryGenerator={() => setIsAIStoryGeneratorOpen(true)}

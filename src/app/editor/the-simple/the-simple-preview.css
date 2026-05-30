@@ -10,7 +10,7 @@
 .ts-preview {
   text-wrap: pretty;
   word-break: keep-all;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
   --ink: #111111;
   --mute: #777777;
   --mute-2: #b0b0b0;

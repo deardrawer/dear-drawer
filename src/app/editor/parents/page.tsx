@@ -919,7 +919,7 @@ function ParentsEditorContent() {
             })()}
 
             {/* Edit Panel - 오른쪽 (데스크탑) / 전체 (모바일 편집 모드) */}
-            <div className={`${isMobile ? 'w-full' : 'flex-1 flex flex-col overflow-hidden editor-panel m-4'}`} style={isMobile ? { paddingBottom: '56px', display: mobileView === 'editor' ? 'block' : 'none' } : { height: 'calc(100vh - 88px)' }}>
+            <div className={`${isMobile ? 'w-full' : 'flex-1 flex flex-col overflow-hidden editor-panel m-4'}`} style={isMobile ? { paddingBottom: '56px', display: mobileView === 'editor' ? 'flex' : 'none', flexDirection: 'column' as const, height: 'calc(100vh - 48px)', overflow: 'hidden' } : { height: 'calc(100vh - 88px)' }}>
                 <ParentsWizardEditor
                   data={data}
                   updateData={updateData}

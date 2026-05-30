@@ -327,7 +327,7 @@ function ThankYouEditorContent() {
             )}
 
             {/* Edit Panel */}
-            <div className={`${isMobile ? 'w-full' : 'flex-1 flex flex-col overflow-hidden editor-panel m-4'}`} style={isMobile ? { paddingBottom: '56px', display: mobileView === 'editor' ? 'block' : 'none' } : { height: 'calc(100vh - 88px)' }}>
+            <div className={`${isMobile ? 'w-full' : 'flex-1 flex flex-col overflow-hidden editor-panel m-4'}`} style={isMobile ? { paddingBottom: '56px', display: mobileView === 'editor' ? 'flex' : 'none', flexDirection: 'column' as const, height: 'calc(100vh - 48px)', overflow: 'hidden' } : { height: 'calc(100vh - 88px)' }}>
                 <ThankYouWizardEditor
                   invitationId={invitationId}
                   slug={savedSlug || urlSlug || (invitationId ? invitationId : null)}

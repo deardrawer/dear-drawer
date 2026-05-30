@@ -7,6 +7,7 @@ import { useCroppedImageStyle, getImageCropStyleFallback } from '@/hooks/useCrop
 import { resolveDisplayFontFamily, resolveKoreanFontFamily } from './fontOptions'
 import { loadKakaoMapSDK } from '@/lib/geunnalKakaoMap'
 import { ParkingIcon, BusIcon, SubwayIcon, TrainIcon, ExpressBusIcon, InfoIcon } from '@/components/parents/icons'
+import { sanitizeTextForRender } from '@/lib/utils'
 import GuestFloatingButton from '@/components/invitation/GuestFloatingButton'
 import './the-simple-preview.css'
 import '@/components/dday/dday-popup.css'
@@ -1189,8 +1190,8 @@ function TransportInfo({ transport }: { transport?: Record<string, string | unde
                 <div style={{ fontFamily: 'var(--font-display)', fontSize: 'calc(10px * var(--ts-font-scale, 1))', letterSpacing: '0.15em', color: 'var(--accent)', marginBottom: 3 }}>
                   {item.label}
                 </div>
-                <div style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(12px * var(--ts-font-scale, 1))', color: '#5d5850', lineHeight: 1.7, whiteSpace: 'pre-line' }}>
-                  {transport[item.key]}
+                <div style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(12px * var(--ts-font-scale, 1))', color: '#5d5850', lineHeight: 1.7, whiteSpace: 'pre-line', wordBreak: 'keep-all', overflowWrap: 'break-word', lineBreak: 'strict' }}>
+                  {sanitizeTextForRender(transport[item.key])}
                 </div>
               </div>
             </div>
@@ -1976,7 +1977,7 @@ function AddressCopy({ address, className = '' }: { address: string; className?:
 
   return (
     <span className={`ts-addr-copy ${className}`}>
-      <span className="ts-addr-text">{address}</span>
+      <span className="ts-addr-text">{sanitizeTextForRender(address)}</span>
       <button type="button" className="ts-addr-btn" onClick={handleCopy} title="주소 복사">
         {copied ? (
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>

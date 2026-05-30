@@ -295,10 +295,65 @@ export default function EssayStep3Details({ data, updateData, updateNestedData }
           <Switch checked={data.rsvpEnabled} onCheckedChange={v => updateData({ rsvpEnabled: v })} />
         </div>
         {data.rsvpEnabled && (
-          <div className="space-y-1.5 p-4 bg-gray-50 rounded-lg">
-            <Label className="text-sm font-medium">마감일</Label>
-            <Input type="date" value={data.rsvpDeadline || getDefaultRsvpDeadline()} onChange={e => updateData({ rsvpDeadline: e.target.value })} />
-            <p className="text-xs text-gray-500">마감일이 지나면 참석 여부 응답이 불가합니다.</p>
+          <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">마감일</Label>
+              <Input type="date" value={data.rsvpDeadline || getDefaultRsvpDeadline()} onChange={e => updateData({ rsvpDeadline: e.target.value })} />
+              <p className="text-xs text-gray-500">마감일이 지나면 참석 여부 응답이 불가합니다.</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <Switch checked={data.rsvpMealOption ?? false} onCheckedChange={v => updateData({ rsvpMealOption: v })} />
+              <span className="text-sm text-gray-700">식사 여부 입력 허용</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Switch checked={data.rsvpShuttleOption ?? false} onCheckedChange={v => updateData({ rsvpShuttleOption: v })} />
+              <span className="text-sm text-gray-700">대절버스 이용 여부 입력 허용</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Switch checked={data.rsvpPhoneOption ?? false} onCheckedChange={v => updateData({ rsvpPhoneOption: v })} />
+              <span className="text-sm text-gray-700">연락처 뒷자리 4자리 입력</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Switch checked={data.rsvpSideDetail ?? false} onCheckedChange={v => updateData({ rsvpSideDetail: v })} />
+              <span className="text-sm text-gray-700">부모님 하객 구분 (아버지/어머니 지인)</span>
+            </div>
+            {data.rsvpSideDetail && (
+              <div className="pl-4 space-y-2 border-l-2 border-gray-200">
+                <p className="text-xs text-gray-500">표시할 항목 선택</p>
+                {[
+                  { key: 'groomFather' as const, label: '신랑 아버지 지인' },
+                  { key: 'groomMother' as const, label: '신랑 어머니 지인' },
+                  { key: 'brideFather' as const, label: '신부 아버지 지인' },
+                  { key: 'brideMother' as const, label: '신부 어머니 지인' },
+                ].map(item => (
+                  <label key={item.key} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={data.rsvpSideDetailOptions?.[item.key] ?? true}
+                      onChange={(e) => updateData({ rsvpSideDetailOptions: { ...data.rsvpSideDetailOptions, [item.key]: e.target.checked } })}
+                      className="w-3.5 h-3.5 rounded border-gray-300"
+                    />
+                    <span className="text-xs text-gray-600">{item.label}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">축하 메시지 안내 문구</Label>
+              <Input
+                value={data.rsvpMessagePlaceholder ?? ''}
+                onChange={e => updateData({ rsvpMessagePlaceholder: e.target.value })}
+                placeholder="기본: 메시지 (선택)"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">안내 문구</Label>
+              <Input
+                value={data.rsvpNotice ?? ''}
+                onChange={e => updateData({ rsvpNotice: e.target.value })}
+                placeholder="예) 소규모로 진행되는 예식입니다."
+              />
+            </div>
           </div>
         )}
       </section>

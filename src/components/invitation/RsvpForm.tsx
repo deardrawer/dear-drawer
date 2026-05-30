@@ -24,6 +24,7 @@ interface RsvpFormProps {
     brideMother?: boolean
   }
   notice?: string
+  messagePlaceholder?: string
 }
 
 export default function RsvpForm({
@@ -37,6 +38,7 @@ export default function RsvpForm({
   showSideDetail = false,
   sideDetailOptions,
   notice,
+  messagePlaceholder,
 }: RsvpFormProps) {
   const [guestName, setGuestName] = useState('')
   const [guestPhone, setGuestPhone] = useState('')
@@ -248,7 +250,7 @@ export default function RsvpForm({
                 }`}
                 style={sideDetail === 'father' ? { backgroundColor: primaryColor, borderColor: primaryColor } : {}}
               >
-                {side === 'groom' ? '신랑' : '신부'} 아버님 지인
+                {side === 'groom' ? '신랑' : '신부'} 아버지 지인
               </button>
             )}
             {((side === 'groom' && (sideDetailOptions?.groomMother ?? true)) ||
@@ -263,7 +265,7 @@ export default function RsvpForm({
                 }`}
                 style={sideDetail === 'mother' ? { backgroundColor: primaryColor, borderColor: primaryColor } : {}}
               >
-                {side === 'groom' ? '신랑' : '신부'} 어머님 지인
+                {side === 'groom' ? '신랑' : '신부'} 어머니 지인
               </button>
             )}
           </div>
@@ -421,7 +423,7 @@ export default function RsvpForm({
           id="message"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder="신랑 신부에게 전할 축하 메시지를 남겨주세요"
+          placeholder={messagePlaceholder || "신랑 신부에게 전할 축하 메시지를 남겨주세요"}
           rows={3}
           className="resize-none"
           onFocus={(e) => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 350)}

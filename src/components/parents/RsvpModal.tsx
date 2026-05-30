@@ -16,9 +16,13 @@ interface RsvpModalProps {
   rsvpMealOption?: boolean
   rsvpShuttleOption?: boolean
   rsvpNotice?: string
+  rsvpPhoneOption?: boolean
+  rsvpSideDetail?: boolean
+  rsvpSideDetailOptions?: { groomFather?: boolean; groomMother?: boolean; brideFather?: boolean; brideMother?: boolean }
+  rsvpMessagePlaceholder?: string
 }
 
-export default function RsvpModal({ onSubmit, isPreview = false, invitationId, rsvpMealOption = false, rsvpShuttleOption = false, rsvpNotice }: RsvpModalProps) {
+export default function RsvpModal({ onSubmit, isPreview = false, invitationId, rsvpMealOption = false, rsvpShuttleOption = false, rsvpNotice, rsvpPhoneOption = false, rsvpSideDetail = false, rsvpSideDetailOptions, rsvpMessagePlaceholder }: RsvpModalProps) {
   const ref = useRef<HTMLDivElement>(null)
   const formRef = useRef<HTMLDivElement>(null)
   const theme = useTheme()
@@ -26,7 +30,9 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
+    phone: '',
     side: null as 'groom' | 'bride' | null,
+    sideDetail: '' as '' | 'self' | 'father' | 'mother',
     attendance: 'yes' as 'yes' | 'no' | 'maybe',
     mealAttendance: null as 'yes' | 'no' | null,
     shuttleBus: null as 'yes' | 'no' | null,
@@ -112,10 +118,12 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
         body: JSON.stringify({
           invitationId,
           guestName: formData.name.trim(),
+          guestPhone: formData.phone.trim() || undefined,
           attendance: attendanceMap[formData.attendance],
           guestCount: formData.attendance === 'yes' ? formData.guestCount : 0,
           message: formData.message.trim() || undefined,
           side: formData.side || undefined,
+          sideDetail: formData.sideDetail || undefined,
           mealAttendance: formData.attendance === 'yes' ? formData.mealAttendance : undefined,
           shuttleBus: formData.attendance === 'yes' ? formData.shuttleBus : undefined,
         }),
@@ -205,6 +213,33 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
         />
       </div>
 
+      {rsvpPhoneOption && (
+      <div>
+        <label className="block text-xs mb-2" style={{ color: '#999' }}>
+          연락처 뒷자리
+        </label>
+        <input
+          type="text"
+          inputMode="numeric"
+          maxLength={4}
+          value={formData.phone}
+          onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value.replace(/\D/g, '').slice(0, 4) }))}
+          placeholder="뒷자리 4자리"
+          className="w-full px-4 py-3 rounded-lg border text-sm outline-none transition-all"
+          style={{ borderColor: '#E8E4DC', color: theme.text }}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = theme.primary
+            if (!isFullscreen) enterFullscreen()
+            const el = e.currentTarget
+            setTimeout(() => {
+              el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            }, 350)
+          }}
+          onBlur={(e) => { e.currentTarget.style.borderColor = '#E8E4DC' }}
+        />
+      </div>
+      )}
+
       <div>
         <label className="block text-xs mb-2" style={{ color: '#999' }}>
           소속
@@ -212,7 +247,7 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
-            onClick={() => setFormData(prev => ({ ...prev, side: prev.side === 'groom' ? null : 'groom' }))}
+            onClick={() => setFormData(prev => ({ ...prev, side: prev.side === 'groom' ? null : 'groom', sideDetail: '' }))}
             className="py-3 rounded-lg border text-sm transition-all"
             style={{
               borderColor: formData.side === 'groom' ? '#3B82F6' : '#E8E4DC',
@@ -224,7 +259,7 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
           </button>
           <button
             type="button"
-            onClick={() => setFormData(prev => ({ ...prev, side: prev.side === 'bride' ? null : 'bride' }))}
+            onClick={() => setFormData(prev => ({ ...prev, side: prev.side === 'bride' ? null : 'bride', sideDetail: '' }))}
             className="py-3 rounded-lg border text-sm transition-all"
             style={{
               borderColor: formData.side === 'bride' ? '#EC4899' : '#E8E4DC',
@@ -236,6 +271,56 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
           </button>
         </div>
       </div>
+
+      {rsvpSideDetail && formData.side && (
+      <div>
+        <label className="block text-xs mb-2" style={{ color: '#999' }}>
+          초대 경로
+        </label>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setFormData(prev => ({ ...prev, sideDetail: 'self' }))}
+            className="flex-1 py-3 rounded-lg border text-sm transition-all"
+            style={{
+              borderColor: formData.sideDetail === 'self' ? theme.primary : '#E8E4DC',
+              backgroundColor: formData.sideDetail === 'self' ? `${theme.primary}10` : '#FFFFFF',
+              color: formData.sideDetail === 'self' ? theme.primary : '#666',
+            }}
+          >
+            {formData.side === 'groom' ? '신랑' : '신부'} 지인
+          </button>
+          {((formData.side === 'groom' && (rsvpSideDetailOptions?.groomFather ?? true)) || (formData.side === 'bride' && (rsvpSideDetailOptions?.brideFather ?? true))) && (
+          <button
+            type="button"
+            onClick={() => setFormData(prev => ({ ...prev, sideDetail: 'father' }))}
+            className="flex-1 py-3 rounded-lg border text-sm transition-all"
+            style={{
+              borderColor: formData.sideDetail === 'father' ? theme.primary : '#E8E4DC',
+              backgroundColor: formData.sideDetail === 'father' ? `${theme.primary}10` : '#FFFFFF',
+              color: formData.sideDetail === 'father' ? theme.primary : '#666',
+            }}
+          >
+            {formData.side === 'groom' ? '신랑' : '신부'} 아버지 지인
+          </button>
+          )}
+          {((formData.side === 'groom' && (rsvpSideDetailOptions?.groomMother ?? true)) || (formData.side === 'bride' && (rsvpSideDetailOptions?.brideMother ?? true))) && (
+          <button
+            type="button"
+            onClick={() => setFormData(prev => ({ ...prev, sideDetail: 'mother' }))}
+            className="flex-1 py-3 rounded-lg border text-sm transition-all"
+            style={{
+              borderColor: formData.sideDetail === 'mother' ? theme.primary : '#E8E4DC',
+              backgroundColor: formData.sideDetail === 'mother' ? `${theme.primary}10` : '#FFFFFF',
+              color: formData.sideDetail === 'mother' ? theme.primary : '#666',
+            }}
+          >
+            {formData.side === 'groom' ? '신랑' : '신부'} 어머니 지인
+          </button>
+          )}
+        </div>
+      </div>
+      )}
 
       <div>
         <label className="block text-xs mb-2" style={{ color: '#999' }}>
@@ -360,7 +445,7 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
         <textarea
           value={formData.message}
           onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
-          placeholder="신랑신부에게 전할 메시지를 남겨주세요"
+          placeholder={rsvpMessagePlaceholder || "신랑신부에게 전할 메시지를 남겨주세요"}
           rows={3}
           className="w-full px-4 py-3 rounded-lg border text-sm outline-none transition-all resize-none"
           style={{ borderColor: '#E8E4DC', color: theme.text }}

@@ -407,6 +407,10 @@ export interface InvitationContent {
   rsvpAllowGuestCount: boolean
   rsvpMealOption?: boolean       // 식사 여부 옵션 표시 (기본 false)
   rsvpShuttleOption?: boolean    // 대절버스 옵션 표시 (기본 false)
+  rsvpPhoneOption?: boolean      // 연락처 뒷자리 4자리 입력 (기본 false)
+  rsvpSideDetail?: boolean       // 부모님 하객 구분 (기본 false)
+  rsvpSideDetailOptions?: { groomFather?: boolean; groomMother?: boolean; brideFather?: boolean; brideMother?: boolean }
+  rsvpMessagePlaceholder?: string // 축하 메시지 placeholder 커스텀
   rsvpNotice?: string            // RSVP 안내 문구 (빈 문자열이면 미표시)
   giftNotice?: string            // 마음 전하실 곳 안내 문구 (빈 문자열이면 미표시)
   greetingTitle?: string         // Record 인사말 섹션 제목 (빈 문자열이면 미표시)
@@ -836,6 +840,10 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
   rsvpAllowGuestCount: true,
   rsvpMealOption: false,
   rsvpShuttleOption: false,
+  rsvpPhoneOption: false,
+  rsvpSideDetail: false,
+  rsvpSideDetailOptions: undefined,
+  rsvpMessagePlaceholder: '',
   rsvpNotice: '',
   giftNotice: '참석이 어려우신 분들을 위해 기재했습니다.\n너그러운 마음으로 양해 부탁드립니다.',
   greetingTitle: 'THE BEGINNING',

@@ -270,6 +270,10 @@ export interface ParentsInvitationData {
   rsvpMealOption?: boolean
   rsvpShuttleOption?: boolean
   rsvpSideOption?: boolean
+  rsvpPhoneOption?: boolean
+  rsvpSideDetail?: boolean
+  rsvpSideDetailOptions?: { groomFather?: boolean; groomMother?: boolean; brideFather?: boolean; brideMother?: boolean }
+  rsvpMessagePlaceholder?: string
   rsvpNotice?: string
 
   // 디자인

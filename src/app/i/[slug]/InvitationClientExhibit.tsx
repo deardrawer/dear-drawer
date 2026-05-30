@@ -2310,6 +2310,10 @@ function RsvpDmModal({
   rsvpMealOption,
   rsvpShuttleOption,
   rsvpNotice,
+  rsvpPhoneOption,
+  rsvpSideDetail,
+  rsvpSideDetailOptions,
+  rsvpMessagePlaceholder,
   isSample,
   isPreview,
 }: {
@@ -2322,6 +2326,10 @@ function RsvpDmModal({
   rsvpMealOption?: boolean
   rsvpShuttleOption?: boolean
   rsvpNotice?: string
+  rsvpPhoneOption?: boolean
+  rsvpSideDetail?: boolean
+  rsvpSideDetailOptions?: { groomFather?: boolean; groomMother?: boolean; brideFather?: boolean; brideMother?: boolean }
+  rsvpMessagePlaceholder?: string
   isSample?: boolean
   isPreview?: boolean
 }) {
@@ -2329,6 +2337,7 @@ function RsvpDmModal({
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [side, setSide] = useState<'groom' | 'bride' | null>(null)
+  const [sideDetail, setSideDetail] = useState<'' | 'self' | 'father' | 'mother'>('')
   const [attendance, setAttendance] = useState<'attending' | 'not_attending' | 'pending' | null>(null)
   const [guestCount, setGuestCount] = useState(1)
   const [message, setMessage] = useState('')
@@ -2360,6 +2369,7 @@ function RsvpDmModal({
           guestCount: attendance === 'attending' ? guestCount : 0,
           message: message.trim() || undefined,
           side: side || undefined,
+          sideDetail: sideDetail || undefined,
           mealAttendance: attendance === 'attending' && mealAttendance ? mealAttendance : undefined,
           shuttleBus: attendance === 'attending' && shuttleBus ? shuttleBus : undefined,
         }),
@@ -2384,6 +2394,7 @@ function RsvpDmModal({
       setName('')
       setPhone('')
       setSide(null)
+      setSideDetail('')
       setAttendance(null)
       setGuestCount(1)
       setMessage('')
@@ -2456,6 +2467,7 @@ function RsvpDmModal({
               </div>
 
               {/* Phone */}
+              {rsvpPhoneOption && (
               <div>
                 <label className="text-[11px] font-medium mb-1.5 block" style={{ color: '#8E8E8E' }}>연락처 뒷자리</label>
                 <input
@@ -2470,6 +2482,7 @@ function RsvpDmModal({
                   onFocus={(e) => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 350)}
                 />
               </div>
+              )}
 
               {/* Side */}
               <div>
@@ -2478,7 +2491,7 @@ function RsvpDmModal({
                   {[{ value: 'groom' as const, label: '신랑측' }, { value: 'bride' as const, label: '신부측' }].map((opt) => (
                     <button
                       key={opt.value}
-                      onClick={() => setSide(side === opt.value ? null : opt.value)}
+                      onClick={() => { setSide(side === opt.value ? null : opt.value); setSideDetail('') }}
                       className="flex-1 py-2.5 rounded-2xl text-[13px] font-medium transition-colors"
                       style={{
                         background: side === opt.value ? '#262626' : '#FAFAFA',
@@ -2491,6 +2504,22 @@ function RsvpDmModal({
                   ))}
                 </div>
               </div>
+
+              {/* Side Detail */}
+              {rsvpSideDetail && side && (
+              <div>
+                <label className="text-[11px] font-medium mb-1.5 block" style={{ color: '#8E8E8E' }}>초대 경로</label>
+                <div className="flex gap-2">
+                  <button onClick={() => setSideDetail('self')} className="flex-1 py-2.5 rounded-2xl text-[13px] font-medium transition-colors" style={{ background: sideDetail === 'self' ? '#262626' : '#FAFAFA', color: sideDetail === 'self' ? '#FFFFFF' : '#8E8E8E', border: `1px solid ${sideDetail === 'self' ? '#262626' : '#DBDBDB'}` }}>{side === 'groom' ? '신랑' : '신부'} 지인</button>
+                  {((side === 'groom' && (rsvpSideDetailOptions?.groomFather ?? true)) || (side === 'bride' && (rsvpSideDetailOptions?.brideFather ?? true))) && (
+                    <button onClick={() => setSideDetail('father')} className="flex-1 py-2.5 rounded-2xl text-[13px] font-medium transition-colors" style={{ background: sideDetail === 'father' ? '#262626' : '#FAFAFA', color: sideDetail === 'father' ? '#FFFFFF' : '#8E8E8E', border: `1px solid ${sideDetail === 'father' ? '#262626' : '#DBDBDB'}` }}>{side === 'groom' ? '신랑' : '신부'} 아버지 지인</button>
+                  )}
+                  {((side === 'groom' && (rsvpSideDetailOptions?.groomMother ?? true)) || (side === 'bride' && (rsvpSideDetailOptions?.brideMother ?? true))) && (
+                    <button onClick={() => setSideDetail('mother')} className="flex-1 py-2.5 rounded-2xl text-[13px] font-medium transition-colors" style={{ background: sideDetail === 'mother' ? '#262626' : '#FAFAFA', color: sideDetail === 'mother' ? '#FFFFFF' : '#8E8E8E', border: `1px solid ${sideDetail === 'mother' ? '#262626' : '#DBDBDB'}` }}>{side === 'groom' ? '신랑' : '신부'} 어머니 지인</button>
+                  )}
+                </div>
+              </div>
+              )}
 
               {/* Attendance */}
               <div>
@@ -2579,7 +2608,7 @@ function RsvpDmModal({
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="축하 메시지를 남겨주세요..."
+                  placeholder={rsvpMessagePlaceholder || "축하 메시지를 남겨주세요..."}
                   rows={3}
                   className="w-full text-[14px] py-2.5 px-4 rounded-2xl outline-none resize-none"
                   style={{ background: '#FAFAFA', border: '1px solid #DBDBDB', color: '#262626' }}
@@ -3348,6 +3377,10 @@ function InvitationClientExhibitContent({
           rsvpMealOption={content?.rsvpMealOption}
           rsvpShuttleOption={content?.rsvpShuttleOption}
           rsvpNotice={content?.rsvpNotice}
+          rsvpPhoneOption={content?.rsvpPhoneOption}
+          rsvpSideDetail={content?.rsvpSideDetail}
+          rsvpSideDetailOptions={content?.rsvpSideDetailOptions}
+          rsvpMessagePlaceholder={content?.rsvpMessagePlaceholder}
           isSample={!!isSample}
           isPreview={isPreview}
         />

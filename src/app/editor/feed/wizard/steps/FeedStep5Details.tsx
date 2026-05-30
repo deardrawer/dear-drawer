@@ -301,6 +301,54 @@ export default function FeedStep5Details({
               <span className="text-sm text-gray-700">대절버스 이용 여부 입력 허용</span>
             </div>
 
+            <div className="flex items-center gap-3">
+              <ToggleSwitch
+                checked={data.rsvpPhoneOption ?? false}
+                onChange={(checked) => updateData({ rsvpPhoneOption: checked })}
+              />
+              <span className="text-sm text-gray-700">연락처 뒷자리 4자리 입력</span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <ToggleSwitch
+                checked={data.rsvpSideDetail ?? false}
+                onChange={(checked) => updateData({ rsvpSideDetail: checked })}
+              />
+              <span className="text-sm text-gray-700">부모님 하객 구분 (아버지/어머니 지인)</span>
+            </div>
+
+            {data.rsvpSideDetail && (
+              <div className="pl-4 space-y-2 border-l-2 border-gray-200">
+                <p className="text-xs text-gray-500">표시할 항목 선택</p>
+                {[
+                  { key: 'groomFather' as const, label: '신랑 아버지 지인' },
+                  { key: 'groomMother' as const, label: '신랑 어머니 지인' },
+                  { key: 'brideFather' as const, label: '신부 아버지 지인' },
+                  { key: 'brideMother' as const, label: '신부 어머니 지인' },
+                ].map(item => (
+                  <label key={item.key} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={data.rsvpSideDetailOptions?.[item.key] ?? true}
+                      onChange={(e) => updateData({ rsvpSideDetailOptions: { ...data.rsvpSideDetailOptions, [item.key]: e.target.checked } })}
+                      className="w-3.5 h-3.5 rounded border-gray-300"
+                    />
+                    <span className="text-xs text-gray-600">{item.label}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <label className={labelClass}>축하 메시지 안내 문구</label>
+              <input
+                className={inputClass}
+                value={data.rsvpMessagePlaceholder ?? ''}
+                onChange={(e) => updateData({ rsvpMessagePlaceholder: e.target.value })}
+                placeholder="기본: 축하 메시지를 남겨주세요..."
+              />
+            </div>
+
             <div className="space-y-1.5">
               <label className={labelClass}>안내 문구</label>
               <textarea

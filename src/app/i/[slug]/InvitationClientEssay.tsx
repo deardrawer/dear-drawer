@@ -917,7 +917,7 @@ function RsvpSection({ data, invitationId, theme }: { data: any; invitationId: s
             <h3 style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '15px', color: theme.heading }}>참석 여부</h3>
             {data.rsvpDeadline && <p style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '12px', color: theme.gray, marginTop: '8px' }}>{new Date(data.rsvpDeadline).toLocaleDateString('ko-KR')}까지 알려주세요</p>}
           </div>
-          <RsvpForm invitationId={invitationId} primaryColor={theme.accent} showMealOption={data.rsvpMealOption} showShuttleOption={data.rsvpShuttleOption} notice={data.rsvpNotice} />
+          <RsvpForm invitationId={invitationId} primaryColor={theme.accent} showMealOption={data.rsvpMealOption} showShuttleOption={data.rsvpShuttleOption} showPhoneOption={data.rsvpPhoneOption} showSideDetail={data.rsvpSideDetail} sideDetailOptions={data.rsvpSideDetailOptions} notice={data.rsvpNotice} messagePlaceholder={data.rsvpMessagePlaceholder} />
         </div>
       </div>
     </ScrollSection>
@@ -2512,7 +2512,7 @@ function BookFullscreenModal({ type, onChangeType, onClose, data, invitationId, 
   accounts: { name: string; bank: { bank: string; account: string; holder: string; enabled: boolean }; role: string; side: 'groom' | 'bride' }[]
   bookColors: BookColorConfig
 }) {
-  const [rsvpForm, setRsvpForm] = useState({ name: '', side: '' as '' | 'groom' | 'bride', attendance: '', guestCount: 1, message: '', mealAttendance: '' as '' | 'yes' | 'no', shuttleBus: '' as '' | 'yes' | 'no' })
+  const [rsvpForm, setRsvpForm] = useState({ name: '', phone: '', side: '' as '' | 'groom' | 'bride', sideDetail: '' as '' | 'self' | 'father' | 'mother', attendance: '', guestCount: 1, message: '', mealAttendance: '' as '' | 'yes' | 'no', shuttleBus: '' as '' | 'yes' | 'no' })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const accent = bookColors.accent
 
@@ -2533,9 +2533,9 @@ function BookFullscreenModal({ type, onChangeType, onClose, data, invitationId, 
       const attendanceMap: Record<string, string> = { yes: 'attending', no: 'not_attending', maybe: 'pending' }
       const res = await fetch('/api/rsvp', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ invitationId, guestName: rsvpForm.name, attendance: attendanceMap[rsvpForm.attendance] || rsvpForm.attendance, guestCount: rsvpForm.attendance === 'yes' ? rsvpForm.guestCount : 0, message: rsvpForm.message, side: rsvpForm.side || undefined, mealAttendance: rsvpForm.attendance === 'yes' && rsvpForm.mealAttendance ? rsvpForm.mealAttendance : undefined, shuttleBus: rsvpForm.attendance === 'yes' && rsvpForm.shuttleBus ? rsvpForm.shuttleBus : undefined }),
+        body: JSON.stringify({ invitationId, guestName: rsvpForm.name, guestPhone: rsvpForm.phone.trim() || undefined, attendance: attendanceMap[rsvpForm.attendance] || rsvpForm.attendance, guestCount: rsvpForm.attendance === 'yes' ? rsvpForm.guestCount : 0, message: rsvpForm.message, side: rsvpForm.side || undefined, sideDetail: rsvpForm.sideDetail || undefined, mealAttendance: rsvpForm.attendance === 'yes' && rsvpForm.mealAttendance ? rsvpForm.mealAttendance : undefined, shuttleBus: rsvpForm.attendance === 'yes' && rsvpForm.shuttleBus ? rsvpForm.shuttleBus : undefined }),
       })
-      if (res.ok) { alert('참석 여부가 전달되었습니다. 감사합니다!'); onClose(); setRsvpForm({ name: '', side: '', attendance: '', guestCount: 1, message: '', mealAttendance: '', shuttleBus: '' }) }
+      if (res.ok) { alert('참석 여부가 전달되었습니다. 감사합니다!'); onClose(); setRsvpForm({ name: '', phone: '', side: '', sideDetail: '', attendance: '', guestCount: 1, message: '', mealAttendance: '', shuttleBus: '' }) }
       else { const d = (await res.json().catch(() => ({}))) as { error?: string }; alert(d.error || '전송에 실패했습니다.') }
     } catch { alert('전송에 실패했습니다.') } finally { setIsSubmitting(false) }
   }
@@ -2647,10 +2647,27 @@ function BookFullscreenModal({ type, onChangeType, onClose, data, invitationId, 
                 <p className="text-xs text-center mb-3 whitespace-pre-line leading-relaxed" style={{ color: bookColors.muted, lineHeight: 1.6 }}>{data.rsvpNotice}</p>
               )}
               <input type="text" placeholder="이름" value={rsvpForm.name} onChange={(e) => setRsvpForm({ ...rsvpForm, name: e.target.value })} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} className="w-full p-3 rounded-xl mb-3 text-sm outline-none" style={{ background: `${accent}08`, color: bookColors.text }} />
+              {data.rsvpPhoneOption && (
+                <input type="text" inputMode="numeric" maxLength={4} placeholder="연락처 뒷자리 4자리" value={rsvpForm.phone} onChange={(e) => setRsvpForm({ ...rsvpForm, phone: e.target.value.replace(/\D/g, '').slice(0, 4) })} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} className="w-full p-3 rounded-xl mb-3 text-sm outline-none" style={{ background: `${accent}08`, color: bookColors.text }} />
+              )}
               <div className="grid grid-cols-2 gap-2 mb-3">
-                <button onClick={() => setRsvpForm({ ...rsvpForm, side: rsvpForm.side === 'groom' ? '' : 'groom' })} className="py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.side === 'groom' ? accent : `${accent}08`, color: rsvpForm.side === 'groom' ? '#fff' : bookColors.text }}>신랑측</button>
-                <button onClick={() => setRsvpForm({ ...rsvpForm, side: rsvpForm.side === 'bride' ? '' : 'bride' })} className="py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.side === 'bride' ? accent : `${accent}08`, color: rsvpForm.side === 'bride' ? '#fff' : bookColors.text }}>신부측</button>
+                <button onClick={() => setRsvpForm({ ...rsvpForm, side: rsvpForm.side === 'groom' ? '' : 'groom', sideDetail: '' })} className="py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.side === 'groom' ? accent : `${accent}08`, color: rsvpForm.side === 'groom' ? '#fff' : bookColors.text }}>신랑측</button>
+                <button onClick={() => setRsvpForm({ ...rsvpForm, side: rsvpForm.side === 'bride' ? '' : 'bride', sideDetail: '' })} className="py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.side === 'bride' ? accent : `${accent}08`, color: rsvpForm.side === 'bride' ? '#fff' : bookColors.text }}>신부측</button>
               </div>
+              {data.rsvpSideDetail && rsvpForm.side && (
+                <div className="mb-3">
+                  <p className="text-xs font-medium mb-2" style={{ color: bookColors.text }}>초대 경로</p>
+                  <div className="flex gap-2">
+                    <button onClick={() => setRsvpForm({ ...rsvpForm, sideDetail: 'self' })} className="flex-1 min-w-0 py-2 px-1 rounded-xl text-xs text-center transition-all" style={{ background: rsvpForm.sideDetail === 'self' ? accent : `${accent}08`, color: rsvpForm.sideDetail === 'self' ? '#fff' : bookColors.text }}>{rsvpForm.side === 'groom' ? '신랑' : '신부'} 지인</button>
+                    {((rsvpForm.side === 'groom' && (data.rsvpSideDetailOptions?.groomFather ?? true)) || (rsvpForm.side === 'bride' && (data.rsvpSideDetailOptions?.brideFather ?? true))) && (
+                      <button onClick={() => setRsvpForm({ ...rsvpForm, sideDetail: 'father' })} className="flex-1 min-w-0 py-2 px-1 rounded-xl text-xs text-center transition-all" style={{ background: rsvpForm.sideDetail === 'father' ? accent : `${accent}08`, color: rsvpForm.sideDetail === 'father' ? '#fff' : bookColors.text }}>{rsvpForm.side === 'groom' ? '신랑' : '신부'} 아버지 지인</button>
+                    )}
+                    {((rsvpForm.side === 'groom' && (data.rsvpSideDetailOptions?.groomMother ?? true)) || (rsvpForm.side === 'bride' && (data.rsvpSideDetailOptions?.brideMother ?? true))) && (
+                      <button onClick={() => setRsvpForm({ ...rsvpForm, sideDetail: 'mother' })} className="flex-1 min-w-0 py-2 px-1 rounded-xl text-xs text-center transition-all" style={{ background: rsvpForm.sideDetail === 'mother' ? accent : `${accent}08`, color: rsvpForm.sideDetail === 'mother' ? '#fff' : bookColors.text }}>{rsvpForm.side === 'groom' ? '신랑' : '신부'} 어머니 지인</button>
+                    )}
+                  </div>
+                </div>
+              )}
               <div className="flex gap-2 mb-3">
                 <button onClick={() => setRsvpForm({ ...rsvpForm, attendance: 'yes' })} className="flex-1 py-3 rounded-xl text-sm" style={{ background: rsvpForm.attendance === 'yes' ? accent : `${accent}08`, color: rsvpForm.attendance === 'yes' ? '#fff' : bookColors.text }}>참석</button>
                 <button onClick={() => setRsvpForm({ ...rsvpForm, attendance: 'no' })} className="flex-1 py-3 rounded-xl text-sm" style={{ background: rsvpForm.attendance === 'no' ? accent : `${accent}08`, color: rsvpForm.attendance === 'no' ? '#fff' : bookColors.text }}>불참</button>
@@ -2689,7 +2706,7 @@ function BookFullscreenModal({ type, onChangeType, onClose, data, invitationId, 
                   </div>
                 </div>
               )}
-              <textarea placeholder="메시지 (선택)" value={rsvpForm.message} onChange={(e) => setRsvpForm({ ...rsvpForm, message: e.target.value })} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} className="w-full p-3 rounded-xl mb-4 text-sm outline-none resize-none h-20" style={{ background: `${accent}08`, color: bookColors.text }} />
+              <textarea placeholder={data.rsvpMessagePlaceholder || "메시지 (선택)"} value={rsvpForm.message} onChange={(e) => setRsvpForm({ ...rsvpForm, message: e.target.value })} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} className="w-full p-3 rounded-xl mb-4 text-sm outline-none resize-none h-20" style={{ background: `${accent}08`, color: bookColors.text }} />
               <button onClick={handleRsvpSubmit} disabled={isSubmitting || !rsvpForm.name.trim() || !rsvpForm.attendance} className="w-full py-3 rounded-xl text-sm text-white" style={{ background: accent, opacity: (!rsvpForm.name.trim() || !rsvpForm.attendance) ? 0.4 : 1 }}>{isSubmitting ? '전송중...' : '제출하기'}</button>
             </div>
           )}

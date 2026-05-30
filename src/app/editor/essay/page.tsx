@@ -108,6 +108,10 @@ export interface EssayInvitationData {
   rsvpDeadline: string
   rsvpMealOption?: boolean
   rsvpShuttleOption?: boolean
+  rsvpPhoneOption?: boolean
+  rsvpSideDetail?: boolean
+  rsvpSideDetailOptions?: { groomFather?: boolean; groomMother?: boolean; brideFather?: boolean; brideMother?: boolean }
+  rsvpMessagePlaceholder?: string
   rsvpNotice?: string
 
   // Info items

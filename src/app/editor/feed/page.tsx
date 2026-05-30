@@ -149,6 +149,10 @@ export interface FeedInvitationData {
   rsvpAllowGuestCount: boolean
   rsvpMealOption?: boolean
   rsvpShuttleOption?: boolean
+  rsvpPhoneOption?: boolean
+  rsvpSideDetail?: boolean
+  rsvpSideDetailOptions?: { groomFather?: boolean; groomMother?: boolean; brideFather?: boolean; brideMother?: boolean }
+  rsvpMessagePlaceholder?: string
   rsvpNotice?: string
 
   // Post captions (인스타그램 포스트 하단 캡션)

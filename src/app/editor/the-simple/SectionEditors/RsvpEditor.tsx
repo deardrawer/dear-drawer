@@ -150,7 +150,7 @@ export default function RsvpEditor({ value, variant = 1, onChange }: RsvpEditorP
                   onChange={(e) => onChange({ ...value, sideDetailOptions: { ...value.sideDetailOptions, groomFather: e.target.checked } })}
                   className="w-3.5 h-3.5 rounded border-stone-300 text-stone-800 focus:ring-stone-500"
                 />
-                <span className="text-xs text-stone-600">신랑 아버님 지인</span>
+                <span className="text-xs text-stone-600">신랑 아버지 지인</span>
               </label>
               <label className="flex items-center gap-2">
                 <input
@@ -159,7 +159,7 @@ export default function RsvpEditor({ value, variant = 1, onChange }: RsvpEditorP
                   onChange={(e) => onChange({ ...value, sideDetailOptions: { ...value.sideDetailOptions, groomMother: e.target.checked } })}
                   className="w-3.5 h-3.5 rounded border-stone-300 text-stone-800 focus:ring-stone-500"
                 />
-                <span className="text-xs text-stone-600">신랑 어머님 지인</span>
+                <span className="text-xs text-stone-600">신랑 어머니 지인</span>
               </label>
               <label className="flex items-center gap-2">
                 <input
@@ -168,7 +168,7 @@ export default function RsvpEditor({ value, variant = 1, onChange }: RsvpEditorP
                   onChange={(e) => onChange({ ...value, sideDetailOptions: { ...value.sideDetailOptions, brideFather: e.target.checked } })}
                   className="w-3.5 h-3.5 rounded border-stone-300 text-stone-800 focus:ring-stone-500"
                 />
-                <span className="text-xs text-stone-600">신부 아버님 지인</span>
+                <span className="text-xs text-stone-600">신부 아버지 지인</span>
               </label>
               <label className="flex items-center gap-2">
                 <input
@@ -177,7 +177,7 @@ export default function RsvpEditor({ value, variant = 1, onChange }: RsvpEditorP
                   onChange={(e) => onChange({ ...value, sideDetailOptions: { ...value.sideDetailOptions, brideMother: e.target.checked } })}
                   className="w-3.5 h-3.5 rounded border-stone-300 text-stone-800 focus:ring-stone-500"
                 />
-                <span className="text-xs text-stone-600">신부 어머님 지인</span>
+                <span className="text-xs text-stone-600">신부 어머니 지인</span>
               </label>
             </div>
           )}

@@ -2141,6 +2141,7 @@ function InfoBlock({
   buttonUrl,
   fonts,
   themeColors,
+  textAlign = 'left',
 }: {
   title: string
   content: string
@@ -2148,6 +2149,7 @@ function InfoBlock({
   buttonUrl?: string
   fonts: FontConfig
   themeColors: ColorConfig
+  textAlign?: 'left' | 'center' | 'right'
 }) {
   const { ref, isVisible } = useScrollAnimation()
   const [titleRevealed, setTitleRevealed] = useState(false)
@@ -2171,37 +2173,46 @@ function InfoBlock({
         transition: 'opacity 0.6s ease, transform 0.6s ease',
       }}
     >
-      {/* Title with accent bar and animated underline */}
-      <h4
-        className={`profile-label-animated typo-body mb-4 flex items-center gap-2 ${titleRevealed ? 'revealed' : ''}`}
-        style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 600 }}
-      >
-        <span
-          className="w-[3px] h-[14px] rounded-sm flex-shrink-0"
-          style={{ background: themeColors.accent }}
+      {/* Title with divider */}
+      <div className="mb-4" style={{ textAlign }}>
+        <h4
+          className="typo-body"
+          style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 600 }}
+        >
+          {title}
+        </h4>
+        <div
+          className="mt-2"
+          style={{
+            width: '100%',
+            height: 1,
+            background: themeColors.accent,
+            opacity: 0.4,
+          }}
         />
-        {title}
-      </h4>
+      </div>
 
       {/* Content */}
       <p
         className="typo-body leading-[1.8]"
-        style={{ color: '#666' }}
+        style={{ color: '#666', textAlign }}
         dangerouslySetInnerHTML={{ __html: parseHighlight(content) }}
       />
 
       {/* Optional Button */}
       {buttonText && buttonUrl && (
-        <button
-          onClick={() => window.open(buttonUrl, '_blank')}
-          className="mt-4 px-5 py-2.5 typo-caption transition-all hover:opacity-80"
-          style={{
-            background: themeColors.primary,
-            color: '#fff',
-          }}
-        >
-          {buttonText}
-        </button>
+        <div style={{ textAlign: 'center' }}>
+          <button
+            onClick={() => window.open(buttonUrl, '_blank')}
+            className="mt-4 px-5 py-2.5 typo-caption transition-all hover:opacity-80"
+            style={{
+              background: themeColors.primary,
+              color: '#fff',
+            }}
+          >
+            {buttonText}
+          </button>
+        </div>
       )}
     </div>
   )
@@ -2683,6 +2694,7 @@ const mockInvitation = {
       reception: { title: '피로연 안내', content: '', enabled: false },
       customItems: [] as { id: string; title: string; content: string; enabled: boolean }[],
       itemOrder: ['dressCode', 'photoBooth', 'photoShare', 'flowerGift', 'flowerChild', 'wreath', 'shuttle', 'reception'],
+      textAlign: 'left' as 'left' | 'center' | 'right' | undefined,
     },
   },
 
@@ -3806,6 +3818,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
             content={invitation.content.info.dressCode.content}
             fonts={fonts}
             themeColors={themeColors}
+            textAlign={invitation.content.info.textAlign}
           />
         )}
 
@@ -3818,6 +3831,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
             buttonUrl={invitation.content.info.photoShare.url}
             fonts={fonts}
             themeColors={themeColors}
+            textAlign={invitation.content.info.textAlign}
           />
         )}
 
@@ -3828,6 +3842,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
             content={invitation.content.info.flowerChild.content}
             fonts={fonts}
             themeColors={themeColors}
+            textAlign={invitation.content.info.textAlign}
           />
         )}
 
@@ -3838,6 +3853,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
             content={invitation.content.info.flowerGift.content}
             fonts={fonts}
             themeColors={themeColors}
+            textAlign={invitation.content.info.textAlign}
           />
         )}
 
@@ -3848,6 +3864,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
             content={invitation.content.info.photoBooth.content}
             fonts={fonts}
             themeColors={themeColors}
+            textAlign={invitation.content.info.textAlign}
           />
         )}
 
@@ -3858,6 +3875,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
             content={invitation.content.info.wreath.content}
             fonts={fonts}
             themeColors={themeColors}
+            textAlign={invitation.content.info.textAlign}
           />
         )}
 
@@ -3868,6 +3886,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
             content={invitation.content.info.shuttle.content}
             fonts={fonts}
             themeColors={themeColors}
+            textAlign={invitation.content.info.textAlign}
           />
         )}
 
@@ -3878,6 +3897,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
             content={invitation.content.info.reception.content}
             fonts={fonts}
             themeColors={themeColors}
+            textAlign={invitation.content.info.textAlign}
           />
         )}
 
@@ -3889,6 +3909,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
             content={item.content}
             fonts={fonts}
             themeColors={themeColors}
+            textAlign={invitation.content.info.textAlign}
           />
         ))}
       </section>

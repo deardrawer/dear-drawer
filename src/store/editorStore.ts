@@ -179,6 +179,7 @@ export interface InfoSettings {
   }
   customItems: CustomInfoItem[]
   itemOrder: string[]  // 안내 항목 순서
+  textAlign?: 'left' | 'center' | 'right'
 }
 
 // ===== 새로운 타입들 =====

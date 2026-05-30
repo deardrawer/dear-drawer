@@ -1701,6 +1701,29 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
           {invitation.sectionVisibility.guidance && (<div className="space-y-4">
             <p className="text-sm text-blue-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> 하객분들께 전달할 안내사항을 작성해주세요. 필요한 항목만 켜서 사용하세요.</p>
 
+              {/* 텍스트 정렬 */}
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-gray-400">정렬</span>
+                {([
+                  { value: 'left' as const, icon: AlignLeft },
+                  { value: 'center' as const, icon: AlignCenter },
+                  { value: 'right' as const, icon: AlignRight },
+                ]).map(({ value, icon: Icon }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => updateNestedField('content.info.textAlign', value)}
+                    className={`p-1 rounded transition-colors ${
+                      (invitation.content.info.textAlign ?? 'left') === value
+                        ? 'bg-gray-800 text-white'
+                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                  </button>
+                ))}
+              </div>
+
               {/* 웨딩사진 */}
               <div className="p-4 bg-gradient-to-br from-rose-50 to-pink-50 rounded-lg space-y-3">
                 <Label className="text-sm font-medium text-rose-800">웨딩사진</Label>

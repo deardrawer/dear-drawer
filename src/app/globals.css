@@ -1194,13 +1194,13 @@
     background: transparent !important;
   }
 
-  /* 외부 스크롤바 숨김 — preview 옆 이중 스크롤바 방지 */
-  #editor-scroll-container {
-    scrollbar-width: none;          /* Firefox */
-    -ms-overflow-style: none;       /* IE/Edge */
+  /* 에디터 미리보기 스크롤바 숨김 */
+  #preview-content {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
-  #editor-scroll-container::-webkit-scrollbar {
-    display: none;                  /* Chrome/Safari */
+  #preview-content::-webkit-scrollbar {
+    display: none;
   }
 
   .theme-neu .editor-panel {

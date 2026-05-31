@@ -118,6 +118,7 @@ export default async function GeunnalPage({ params }: PageProps) {
       hasPassword={!!page.password_hash}
       ogImage={ogImage}
       invitationSlug={invitationSlug}
+      invitationId={page.invitation_id || null}
       kakaoShareData={kakaoShareData}
     />
   );

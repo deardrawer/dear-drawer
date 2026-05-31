@@ -676,7 +676,7 @@ function SettingsSheet({ open, onClose, slug, groomName, brideName, onPasswordCh
             className="flex items-center gap-3 px-1 py-3.5 border-b border-[#F3F0FA]"
           >
             <Bell size={20} strokeWidth={1.5} className="text-[#9B8CC4]" />
-            <span className="flex-1 text-left text-[14px] text-[#2A2240]">모임 알림 시간</span>
+            <span className="flex-1 text-left text-[14px] text-[#2A2240]">알림 설정</span>
             <ChevronRight size={16} strokeWidth={1.5} className="text-[#C5BAE8]" />
           </button>
         )}

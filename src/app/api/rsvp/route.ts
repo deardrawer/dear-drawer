@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createRSVP, findExistingRSVP, updateRSVP, updateRSVPAdmin, getRSVPsByInvitationId, getRSVPSummary, deleteRSVP, getInvitationById } from "@/lib/db";
 import { verifyToken, getAuthCookieName } from "@/lib/auth";
+import { getPageByInvitationId, getRsvpNotifySubscriptions } from "@/lib/geunnalDb";
+import { sendPushNotification } from "@/lib/webPush";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 // RSVP POST Rate Limiter (IP별 분당 10회)
 const rsvpRateLimitMap = new Map<string, { count: number; resetAt: number }>();
@@ -140,11 +143,69 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       message: existing ? "참석 여부가 수정되었습니다." : "참석 여부가 저장되었습니다.",
       data,
     });
+
+    // Send push notification to Geunnal PWA
+    const sendRsvpPushNotification = async () => {
+      try {
+        const page = await getPageByInvitationId(body.invitationId);
+        if (!page) return;
+
+        const subscriptions = await getRsvpNotifySubscriptions(page.id);
+        if (subscriptions.length === 0) return;
+
+        const attendLabel = body.attendance === 'attending' ? '참석' : body.attendance === 'not_attending' ? '불참' : '미정';
+        const guestInfo = body.attendance === 'attending' && guestCount > 1 ? ` (${guestCount}명)` : '';
+        const payload = {
+          title: '새 참석 응답',
+          body: `${body.guestName}님이 ${attendLabel}으로 응답했습니다.${guestInfo}`,
+          url: `/g/${page.slug}#dashboard`,
+        };
+
+        // Cloudflare env에서 먼저, 없으면 process.env fallback
+        let vapidPublicKey = process.env.VAPID_PUBLIC_KEY || '';
+        let vapidPrivateKey = process.env.VAPID_PRIVATE_KEY || '';
+        let vapidSubject = process.env.VAPID_SUBJECT || 'mailto:hello@deardrawer.com';
+
+        try {
+          const { env } = (await getCloudflareContext()) as unknown as { env: Record<string, string> };
+          vapidPublicKey = env.VAPID_PUBLIC_KEY || vapidPublicKey;
+          vapidPrivateKey = env.VAPID_PRIVATE_KEY || vapidPrivateKey;
+          vapidSubject = env.VAPID_SUBJECT || vapidSubject;
+        } catch {
+          // Non-CF environment, use process.env values
+        }
+
+        for (const sub of subscriptions) {
+          try {
+            await sendPushNotification(sub, payload, vapidPublicKey, vapidPrivateKey, vapidSubject);
+          } catch (e) {
+            if (process.env.NODE_ENV === 'development') {
+              console.warn('Push notification failed for subscription:', sub.endpoint, e);
+            }
+          }
+        }
+      } catch (e) {
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('RSVP push notification failed:', e);
+        }
+      }
+    };
+
+    // Cloudflare: ctx.waitUntil()로 백그라운드 실행, 로컬: await 직접 실행
+    try {
+      const { ctx } = (await getCloudflareContext()) as unknown as { ctx: { waitUntil: (p: Promise<void>) => void } };
+      ctx.waitUntil(sendRsvpPushNotification());
+    } catch {
+      // Non-CF environment (local dev) — run directly
+      await sendRsvpPushNotification();
+    }
+
+    return response;
   } catch (error) {
     console.error("RSVP API 오류:", error);
     return NextResponse.json(

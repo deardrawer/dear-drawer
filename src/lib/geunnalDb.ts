@@ -445,13 +445,27 @@ export async function getSubscriptionsByPageId(pageId: string): Promise<GeunnalP
   return result.results || [];
 }
 
+export async function getRsvpNotifySubscriptions(pageId: string): Promise<GeunnalPushSubscription[]> {
+  const db = await getDB();
+  const result = await db
+    .prepare(
+      `SELECT s.* FROM geunnal_push_subscriptions s
+       JOIN geunnal_notification_settings ns ON s.page_id = ns.page_id
+       WHERE s.page_id = ? AND ns.rsvp_notify = 1`
+    )
+    .bind(pageId)
+    .all<GeunnalPushSubscription>();
+  return result.results || [];
+}
+
 // ── Notification Settings ──
 
 export async function upsertNotificationSettings(
-  pageId: string, dayBefore: NotificationDayBefore, notifyTime: string
+  pageId: string, dayBefore: NotificationDayBefore, notifyTime: string, rsvpNotify?: boolean
 ): Promise<GeunnalNotificationSettings> {
   const db = await getDB();
   const now = new Date().toISOString();
+  const rsvpNotifyVal = rsvpNotify !== undefined ? (rsvpNotify ? 1 : 0) : undefined;
 
   const existing = await db
     .prepare("SELECT id FROM geunnal_notification_settings WHERE page_id = ?")
@@ -461,11 +475,17 @@ export async function upsertNotificationSettings(
   if (existing) {
     const result = await db
       .prepare(
-        `UPDATE geunnal_notification_settings
-         SET day_before = ?, notify_time = ?, updated_at = ?
-         WHERE page_id = ? RETURNING *`
+        rsvpNotifyVal !== undefined
+          ? `UPDATE geunnal_notification_settings
+             SET day_before = ?, notify_time = ?, rsvp_notify = ?, updated_at = ?
+             WHERE page_id = ? RETURNING *`
+          : `UPDATE geunnal_notification_settings
+             SET day_before = ?, notify_time = ?, updated_at = ?
+             WHERE page_id = ? RETURNING *`
       )
-      .bind(dayBefore, notifyTime, now, pageId)
+      .bind(...(rsvpNotifyVal !== undefined
+        ? [dayBefore, notifyTime, rsvpNotifyVal, now, pageId]
+        : [dayBefore, notifyTime, now, pageId]))
       .first<GeunnalNotificationSettings>();
     if (!result) throw new Error("Failed to update notification settings");
     return result;
@@ -474,10 +494,10 @@ export async function upsertNotificationSettings(
   const id = generateId();
   const result = await db
     .prepare(
-      `INSERT INTO geunnal_notification_settings (id, page_id, day_before, notify_time, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?) RETURNING *`
+      `INSERT INTO geunnal_notification_settings (id, page_id, day_before, notify_time, rsvp_notify, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING *`
     )
-    .bind(id, pageId, dayBefore, notifyTime, now, now)
+    .bind(id, pageId, dayBefore, notifyTime, rsvpNotifyVal ?? 0, now, now)
     .first<GeunnalNotificationSettings>();
 
   if (!result) throw new Error("Failed to create notification settings");

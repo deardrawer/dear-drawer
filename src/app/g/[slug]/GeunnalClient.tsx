@@ -23,6 +23,7 @@ interface GeunnalClientProps {
   hasPassword: boolean
   ogImage?: string
   invitationSlug?: string | null
+  invitationId?: string | null
   kakaoShareData?: { thumbnailUrl?: string; shareTitle?: string; shareDescription?: string }
 }
 
@@ -61,6 +62,7 @@ export default function GeunnalClient({
   hasPassword: initialHasPassword,
   ogImage,
   invitationSlug,
+  invitationId,
   kakaoShareData,
 }: GeunnalClientProps) {
   const [token, setToken] = useState<string | null>(null)
@@ -304,6 +306,7 @@ export default function GeunnalClient({
           <Dashboard
             pageId={pageId}
             token={token || ''}
+            invitationId={invitationId}
             onEventClick={(eventId) => handleEventClick(eventId, 'dashboard')}
             onSessionExpired={handleSessionExpired}
           />

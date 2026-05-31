@@ -74,6 +74,7 @@ export default function NotificationSheet({
 }: NotificationSheetProps) {
   const [selectedDay, setSelectedDay] = useState<DayValue>('none')
   const [selectedTime, setSelectedTime] = useState('09:00')
+  const [rsvpNotify, setRsvpNotify] = useState(false)
   const [permissionDenied, setPermissionDenied] = useState(false)
   const [saving, setSaving] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -108,11 +109,12 @@ export default function NotificationSheet({
     if (token) {
       setLoading(true)
       geunnalFetch('/api/geunnal/push/subscribe', { token, pageId }, onSessionExpired)
-        .then(res => res.ok ? res.json() as Promise<{ dayBefore?: string; notifyTime?: string }> : null)
+        .then(res => res.ok ? res.json() as Promise<{ dayBefore?: string; notifyTime?: string; rsvpNotify?: boolean }> : null)
         .then(data => {
           if (data) {
             setSelectedDay((data.dayBefore as DayValue) || 'none')
             setSelectedTime(data.notifyTime || '09:00')
+            setRsvpNotify(data.rsvpNotify ?? false)
           } else {
             loadFromLocalStorage()
           }
@@ -154,18 +156,38 @@ export default function NotificationSheet({
     setPermissionDenied(false)
   }
 
+  const handleRsvpToggle = async () => {
+    const newVal = !rsvpNotify
+    if (newVal && typeof Notification !== 'undefined') {
+      if (Notification.permission === 'denied') {
+        setPermissionDenied(true)
+        return
+      }
+      if (Notification.permission === 'default') {
+        const result = await Notification.requestPermission()
+        if (result === 'denied') {
+          setPermissionDenied(true)
+          return
+        }
+      }
+    }
+    setRsvpNotify(newVal)
+    setPermissionDenied(false)
+  }
+
+  const needsPush = selectedDay !== 'none' || rsvpNotify
+
   const handleSave = async () => {
     setSaving(true)
     setPushError(null)
     let failed = false
 
     try {
-      if (selectedDay === 'none') {
-        // 알림 해제
+      if (!needsPush) {
+        // 모든 알림 해제
         localStorage.setItem(`geunnal-notify-${pageId}`, 'none|')
 
         if (token) {
-          // Unsubscribe from push on server
           let endpoint = ''
           try {
             const sw = await navigator.serviceWorker?.ready
@@ -205,6 +227,7 @@ export default function NotificationSheet({
                 auth: subJson.keys?.auth || '',
                 dayBefore: selectedDay,
                 notifyTime: selectedTime,
+                rsvpNotify,
               }),
             }, onSessionExpired)
           } catch (err) {
@@ -223,9 +246,33 @@ export default function NotificationSheet({
   const needsTime = selectedDay !== 'none'
 
   return (
-    <BottomSheet open={open} onClose={onClose} title="모임 알림 시간">
+    <BottomSheet open={open} onClose={onClose} title="알림 설정">
       <div className="flex flex-col gap-4">
-        <p className="text-[13px] text-[#9B8CC4]">
+        {/* RSVP 알림 */}
+        <div>
+          <p className="text-[13px] font-medium text-[#2A2240] mb-2">참석 응답 알림</p>
+          <button
+            onClick={handleRsvpToggle}
+            disabled={saving}
+            className={`flex items-center justify-between w-full px-4 py-3 rounded-xl text-[14px] transition-colors ${
+              rsvpNotify
+                ? 'bg-[#EDE9FA] text-[#8B75D0] font-medium'
+                : 'text-[#2A2240] hover:bg-[#F9F7FD]'
+            }`}
+          >
+            <span>새 RSVP 응답 시 알림 받기</span>
+            {rsvpNotify && <Check size={18} strokeWidth={2} className="text-[#8B75D0]" />}
+          </button>
+          <p className="text-[11px] text-[#C5BAE8] px-1 mt-1">
+            하객이 참석 여부를 응답하면 푸시 알림을 받습니다.
+          </p>
+        </div>
+
+        <div className="h-px bg-[#E8E4F0]" />
+
+        {/* 모임 알림 */}
+        <p className="text-[13px] font-medium text-[#2A2240]">모임 알림</p>
+        <p className="text-[13px] text-[#9B8CC4] -mt-2">
           모임 시작 전 알림을 받을 시간을 선택하세요.
         </p>
 

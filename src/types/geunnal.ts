@@ -98,6 +98,7 @@ export interface GeunnalNotificationSettings {
   page_id: string
   day_before: NotificationDayBefore
   notify_time: string
+  rsvp_notify: number
   last_sent_date: string | null
   created_at: string
   updated_at: string

@@ -22,11 +22,18 @@ const ESSAY_THEMES = [
 
 // 폰트 스타일 옵션
 const FONT_STYLES = [
-  { id: 'classic' as const, name: '클래식', sample: '우리 결혼합니다', fontFamily: "'Ridibatang', serif", desc: '정갈한 바탕체' },
-  { id: 'modern' as const, name: '모던', sample: '우리 결혼합니다', fontFamily: "'Pretendard', sans-serif", desc: '세련된 산세리프체', recommended: true },
-  { id: 'romantic' as const, name: '손글씨', sample: '우리 결혼합니다', fontFamily: "'Okticon', serif", desc: 'okticon' },
-  { id: 'contemporary' as const, name: '컨템포러리', sample: '우리 결혼합니다', fontFamily: "'JeonnamEducationBarun', sans-serif", desc: '깔끔한 바른체' },
-  { id: 'luxury' as const, name: '포멀', sample: '우리 결혼합니다', fontFamily: "'ELandChoice', serif", desc: '고급스러운 명조체' },
+  { id: 'classic' as const, name: '클래식', sample: '우리 결혼합니다', fontFamily: "'Ridibatang', serif", desc: '리디바탕', recommended: false },
+  { id: 'modern' as const, name: '모던', sample: '우리 결혼합니다', fontFamily: "'Pretendard', sans-serif", desc: '프리텐다드', recommended: true },
+  { id: 'romantic' as const, name: '손글씨', sample: '우리 결혼합니다', fontFamily: "'Okticon', serif", desc: '오케이티콘체', recommended: false },
+  { id: 'contemporary' as const, name: '컨템포러리', sample: '우리 결혼합니다', fontFamily: "'JeonnamEducationBarun', sans-serif", desc: '전남교육바른체', recommended: false },
+  { id: 'luxury' as const, name: '포멀', sample: '우리 결혼합니다', fontFamily: "'ELandChoice', serif", desc: '이랜드초이스체', recommended: false },
+  { id: 'gulim' as const, name: '굴림', sample: '우리 결혼합니다', fontFamily: "'JoseonGulim', serif", desc: '조선굴림체', recommended: false },
+  { id: 'adulthand' as const, name: '어른손글씨', sample: '우리 결혼합니다', fontFamily: "'GangwonEducationModuche', sans-serif", desc: '강원교육모두체', recommended: false },
+  { id: 'neathand' as const, name: '또박또박', sample: '우리 결혼합니다', fontFamily: "'OmuDaye', sans-serif", desc: '오무다예체', recommended: false },
+  { id: 'roundhand' as const, name: '둥근손글씨', sample: '우리 결혼합니다', fontFamily: "'OngleipKonkon', sans-serif", desc: '온글잎 콘콘체', recommended: false },
+  { id: 'roundgothic' as const, name: '둥근고딕', sample: '우리 결혼합니다', fontFamily: "'NanumSquareRound', sans-serif", desc: '나눔스퀘어라운드', recommended: false },
+  { id: 'suit' as const, name: 'SUIT', sample: '우리 결혼합니다', fontFamily: "'Suit', sans-serif", desc: 'SUIT', recommended: false },
+  { id: 'myungjo' as const, name: '명조', sample: '우리 결혼합니다', fontFamily: "'ChosunIlboMyungjo', serif", desc: '조선일보명조체', recommended: false },
 ]
 
 interface Props {
@@ -373,32 +380,32 @@ export default function EssayStepDesign({ data, updateData, updateNestedData, in
           텍스트의 글꼴을 선택해주세요.
         </p>
 
-        <div className="grid grid-cols-1 gap-3">
+        <div className="grid grid-cols-1 gap-2">
           {FONT_STYLES.map((font) => {
             const isSelected = fontStyle === font.id
             return (
               <button
                 key={font.id}
                 onClick={() => updateData({ fontStyle: font.id })}
-                className={`flex items-center justify-between p-4 transition-all neu-card ${isSelected ? 'neu-card-selected' : ''}`}
+                className={`flex items-center justify-between py-2.5 px-3.5 transition-all neu-card ${isSelected ? 'neu-card-selected' : ''}`}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2.5">
                   {isSelected && (
-                    <div className="w-5 h-5 bg-black rounded-full flex items-center justify-center shrink-0">
-                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-4 h-4 bg-black rounded-full flex items-center justify-center shrink-0">
+                      <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
                   )}
-                  <div className="text-left">
-                    <span className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
-                      {font.name}
-                      {font.recommended && <span className="text-[10px] text-white bg-black px-1.5 py-0.5 rounded-full font-normal">추천</span>}
-                    </span>
-                    <span className="text-xs text-gray-400">{font.desc}</span>
-                  </div>
+                  <span className="text-xs text-gray-500 flex items-center gap-1.5">
+                    {font.desc}
+                    {font.recommended && <span className="text-[10px] text-white bg-black px-1.5 py-0.5 rounded-full font-normal">추천</span>}
+                  </span>
                 </div>
-                <span className="text-lg text-gray-800" style={{ fontFamily: font.fontFamily }}>
+                <span
+                  className="text-base text-gray-800"
+                  style={{ fontFamily: font.fontFamily }}
+                >
                   {font.sample}
                 </span>
               </button>

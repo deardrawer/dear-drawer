@@ -145,7 +145,7 @@ export interface EssayInvitationData {
   deceasedDisplayStyle: 'hidden' | 'flower' | 'text'
 
   // Design
-  fontStyle: 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury'
+  fontStyle: 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury' | 'gulim' | 'adulthand' | 'neathand' | 'roundhand' | 'roundgothic' | 'suit' | 'myungjo'
   fontSizeLevel: number // -2 ~ +2 (0=기본)
   colorTheme: 'essay-ivory' | 'essay-blush' | 'essay-sage' | 'essay-mono' | 'essay-sky' | 'essay-coral'
   highlightColor?: string // 커스텀 하이라이트 색상

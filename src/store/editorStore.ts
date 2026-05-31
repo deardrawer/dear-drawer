@@ -409,7 +409,7 @@ export interface InvitationContent {
   rsvpShuttleOption?: boolean    // 대절버스 옵션 표시 (기본 false)
   rsvpPhoneOption?: boolean      // 연락처 뒷자리 4자리 입력 (기본 false)
   rsvpSideDetail?: boolean       // 부모님 하객 구분 (기본 false)
-  rsvpSideDetailOptions?: { groomFather?: boolean; groomMother?: boolean; brideFather?: boolean; brideMother?: boolean }
+  rsvpSideDetailOptions?: { groomSelf?: boolean; groomFather?: boolean; groomMother?: boolean; brideSelf?: boolean; brideFather?: boolean; brideMother?: boolean }
   rsvpMessagePlaceholder?: string // 축하 메시지 placeholder 커스텀
   rsvpNotice?: string            // RSVP 안내 문구 (빈 문자열이면 미표시)
   giftNotice?: string            // 마음 전하실 곳 안내 문구 (빈 문자열이면 미표시)

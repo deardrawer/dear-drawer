@@ -2724,7 +2724,7 @@ const mockInvitation = {
   rsvpNotice: '',
   rsvpPhoneOption: false,
   rsvpSideDetail: false,
-  rsvpSideDetailOptions: undefined as { groomFather?: boolean; groomMother?: boolean; brideFather?: boolean; brideMother?: boolean } | undefined,
+  rsvpSideDetailOptions: undefined as { groomSelf?: boolean; groomFather?: boolean; groomMother?: boolean; brideSelf?: boolean; brideFather?: boolean; brideMother?: boolean } | undefined,
   rsvpMessagePlaceholder: '',
 
   // 고인 표시 스타일

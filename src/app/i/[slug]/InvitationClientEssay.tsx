@@ -2658,7 +2658,9 @@ function BookFullscreenModal({ type, onChangeType, onClose, data, invitationId, 
                 <div className="mb-3">
                   <p className="text-xs font-medium mb-2" style={{ color: bookColors.text }}>초대 경로</p>
                   <div className="flex gap-2 flex-wrap" style={{ wordBreak: 'keep-all' }}>
-                    <button onClick={() => setRsvpForm({ ...rsvpForm, sideDetail: 'self' })} className="flex-1 min-w-0 py-2 px-1 rounded-xl text-xs text-center transition-all" style={{ background: rsvpForm.sideDetail === 'self' ? accent : `${accent}08`, color: rsvpForm.sideDetail === 'self' ? '#fff' : bookColors.text }}>{rsvpForm.side === 'groom' ? '신랑' : '신부'} 지인</button>
+                    {((rsvpForm.side === 'groom' && (data.rsvpSideDetailOptions?.groomSelf ?? true)) || (rsvpForm.side === 'bride' && (data.rsvpSideDetailOptions?.brideSelf ?? true))) && (
+                      <button onClick={() => setRsvpForm({ ...rsvpForm, sideDetail: 'self' })} className="flex-1 min-w-0 py-2 px-1 rounded-xl text-xs text-center transition-all" style={{ background: rsvpForm.sideDetail === 'self' ? accent : `${accent}08`, color: rsvpForm.sideDetail === 'self' ? '#fff' : bookColors.text }}>{rsvpForm.side === 'groom' ? '신랑' : '신부'} 지인</button>
+                    )}
                     {((rsvpForm.side === 'groom' && (data.rsvpSideDetailOptions?.groomFather ?? true)) || (rsvpForm.side === 'bride' && (data.rsvpSideDetailOptions?.brideFather ?? true))) && (
                       <button onClick={() => setRsvpForm({ ...rsvpForm, sideDetail: 'father' })} className="flex-1 min-w-0 py-2 px-1 rounded-xl text-xs text-center transition-all" style={{ background: rsvpForm.sideDetail === 'father' ? accent : `${accent}08`, color: rsvpForm.sideDetail === 'father' ? '#fff' : bookColors.text }}>{rsvpForm.side === 'groom' ? '신랑' : '신부'} 아버지 지인</button>
                     )}

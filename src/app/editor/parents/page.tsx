@@ -272,7 +272,7 @@ export interface ParentsInvitationData {
   rsvpSideOption?: boolean
   rsvpPhoneOption?: boolean
   rsvpSideDetail?: boolean
-  rsvpSideDetailOptions?: { groomFather?: boolean; groomMother?: boolean; brideFather?: boolean; brideMother?: boolean }
+  rsvpSideDetailOptions?: { groomSelf?: boolean; groomFather?: boolean; groomMother?: boolean; brideSelf?: boolean; brideFather?: boolean; brideMother?: boolean }
   rsvpMessagePlaceholder?: string
   rsvpNotice?: string
 

@@ -1186,7 +1186,7 @@ function TransportInfo({ transport }: { transport?: Record<string, string | unde
               <div style={{ flexShrink: 0, paddingTop: 1 }}>
                 <Icon size={16} color="var(--accent)" />
               </div>
-              <div>
+              <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontFamily: 'var(--font-display)', fontSize: 'calc(10px * var(--ts-font-scale, 1))', letterSpacing: '0.15em', color: 'var(--accent)', marginBottom: 3 }}>
                   {item.label}
                 </div>
@@ -2088,7 +2088,7 @@ function RsvpModal({
   showShuttleOption?: boolean
   showPhoneOption?: boolean
   showSideDetail?: boolean
-  sideDetailOptions?: { groomFather?: boolean; groomMother?: boolean; brideFather?: boolean; brideMother?: boolean }
+  sideDetailOptions?: { groomSelf?: boolean; groomFather?: boolean; groomMother?: boolean; brideSelf?: boolean; brideFather?: boolean; brideMother?: boolean }
   rsvpNotice?: string
   messagePlaceholder?: string
   initialAttendance?: 'attending' | 'not_attending'
@@ -2278,7 +2278,9 @@ function RsvpModal({
                 <div>
                   <span style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', color: 'var(--ink)', display: 'block', marginBottom: 6 }}>초대 경로</span>
                   <div style={{ display: 'flex', gap: 6 }}>
-                    <button type="button" className={`ts-rsvp-modal-opt ${sideDetail === 'self' ? 'active' : ''}`} onClick={() => setSideDetail('self')} style={{ flex: 1, minWidth: 0, padding: '6px 4px', fontSize: 'calc(12px * var(--ts-font-scale, 1))', textAlign: 'center' }}>{side === 'groom' ? '신랑' : '신부'} 지인</button>
+                    {((side === 'groom' && (sideDetailOptions?.groomSelf ?? true)) || (side === 'bride' && (sideDetailOptions?.brideSelf ?? true))) && (
+                      <button type="button" className={`ts-rsvp-modal-opt ${sideDetail === 'self' ? 'active' : ''}`} onClick={() => setSideDetail('self')} style={{ flex: 1, minWidth: 0, padding: '6px 4px', fontSize: 'calc(12px * var(--ts-font-scale, 1))', textAlign: 'center' }}>{side === 'groom' ? '신랑' : '신부'} 지인</button>
+                    )}
                     {((side === 'groom' && (sideDetailOptions?.groomFather ?? true)) || (side === 'bride' && (sideDetailOptions?.brideFather ?? true))) && (
                       <button type="button" className={`ts-rsvp-modal-opt ${sideDetail === 'father' ? 'active' : ''}`} onClick={() => setSideDetail('father')} style={{ flex: 1, minWidth: 0, padding: '6px 4px', fontSize: 'calc(12px * var(--ts-font-scale, 1))', textAlign: 'center' }}>{side === 'groom' ? '신랑' : '신부'} 아버지 지인</button>
                     )}

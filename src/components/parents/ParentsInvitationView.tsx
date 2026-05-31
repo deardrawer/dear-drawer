@@ -587,7 +587,7 @@ export default function ParentsInvitationView({
               kakaoThumbnailRatio={data.meta?.kakaoThumbnailRatio}
             />
             {data.rsvpEnabled !== false && (
-              <RsvpModal isPreview={isPreview} invitationId={invitationId} rsvpMealOption={data.rsvpMealOption} rsvpShuttleOption={data.rsvpShuttleOption} rsvpNotice={data.rsvpNotice} rsvpPhoneOption={data.rsvpPhoneOption} rsvpSideDetail={data.rsvpSideDetail} rsvpSideDetailOptions={data.rsvpSideDetailOptions} rsvpMessagePlaceholder={data.rsvpMessagePlaceholder} />
+              <RsvpModal isPreview={isPreview} invitationId={invitationId} rsvpMealOption={data.rsvpMealOption} rsvpShuttleOption={data.rsvpShuttleOption} rsvpNotice={data.rsvpNotice} rsvpPhoneOption={data.rsvpPhoneOption} rsvpSideDetail={data.rsvpSideDetail} rsvpSideDetailOptions={data.rsvpSideDetailOptions} rsvpMessagePlaceholder={data.rsvpMessagePlaceholder} senderSide={data.sender?.side} />
             )}
           </main>
         </SectionHighlightProvider>

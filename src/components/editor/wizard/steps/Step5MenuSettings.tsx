@@ -885,6 +885,18 @@ export default function Step5MenuSettings() {
                 <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
+                    checked={invitation.rsvpSideDetailOptions?.groomSelf ?? true}
+                    onChange={(e) => updateField('rsvpSideDetailOptions', {
+                      ...invitation.rsvpSideDetailOptions,
+                      groomSelf: e.target.checked,
+                    })}
+                    className="rounded border-gray-300"
+                  />
+                  <span className="text-sm text-gray-700">신랑 지인</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
                     checked={invitation.rsvpSideDetailOptions?.groomFather ?? true}
                     onChange={(e) => updateField('rsvpSideDetailOptions', {
                       ...invitation.rsvpSideDetailOptions,
@@ -905,6 +917,18 @@ export default function Step5MenuSettings() {
                     className="rounded border-gray-300"
                   />
                   <span className="text-sm text-gray-700">신랑 어머니 지인</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={invitation.rsvpSideDetailOptions?.brideSelf ?? true}
+                    onChange={(e) => updateField('rsvpSideDetailOptions', {
+                      ...invitation.rsvpSideDetailOptions,
+                      brideSelf: e.target.checked,
+                    })}
+                    className="rounded border-gray-300"
+                  />
+                  <span className="text-sm text-gray-700">신부 지인</span>
                 </label>
                 <label className="flex items-center gap-2">
                   <input

@@ -70,8 +70,10 @@ interface GuestFloatingButtonProps {
     rsvpPhoneOption?: boolean
     rsvpSideDetail?: boolean
     rsvpSideDetailOptions?: {
+      groomSelf?: boolean
       groomFather?: boolean
       groomMother?: boolean
+      brideSelf?: boolean
       brideFather?: boolean
       brideMother?: boolean
     }
@@ -663,7 +665,9 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
                     <div className="mb-4">
                       <p className="text-xs font-medium mb-2" style={{ color: themeColors.text }}>초대 경로</p>
                       <div className="flex gap-2 flex-wrap" style={{ wordBreak: 'keep-all' }}>
-                        <button onClick={() => setRsvpForm({ ...rsvpForm, sideDetail: 'self' })} className="flex-1 min-w-0 py-2 px-1 rounded-xl text-xs text-center transition-all" style={{ background: rsvpForm.sideDetail === 'self' ? themeColors.primary : themeColors.sectionBg, color: rsvpForm.sideDetail === 'self' ? 'white' : themeColors.text }}>{rsvpForm.side === 'groom' ? '신랑' : '신부'} 지인</button>
+                        {((rsvpForm.side === 'groom' && (invitation.rsvpSideDetailOptions?.groomSelf ?? true)) || (rsvpForm.side === 'bride' && (invitation.rsvpSideDetailOptions?.brideSelf ?? true))) && (
+                          <button onClick={() => setRsvpForm({ ...rsvpForm, sideDetail: 'self' })} className="flex-1 min-w-0 py-2 px-1 rounded-xl text-xs text-center transition-all" style={{ background: rsvpForm.sideDetail === 'self' ? themeColors.primary : themeColors.sectionBg, color: rsvpForm.sideDetail === 'self' ? 'white' : themeColors.text }}>{rsvpForm.side === 'groom' ? '신랑' : '신부'} 지인</button>
+                        )}
                         {((rsvpForm.side === 'groom' && (invitation.rsvpSideDetailOptions?.groomFather ?? true)) || (rsvpForm.side === 'bride' && (invitation.rsvpSideDetailOptions?.brideFather ?? true))) && (
                           <button onClick={() => setRsvpForm({ ...rsvpForm, sideDetail: 'father' })} className="flex-1 min-w-0 py-2 px-1 rounded-xl text-xs text-center transition-all" style={{ background: rsvpForm.sideDetail === 'father' ? themeColors.primary : themeColors.sectionBg, color: rsvpForm.sideDetail === 'father' ? 'white' : themeColors.text }}>{rsvpForm.side === 'groom' ? '신랑' : '신부'} 아버지 지인</button>
                         )}

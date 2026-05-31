@@ -18,11 +18,12 @@ interface RsvpModalProps {
   rsvpNotice?: string
   rsvpPhoneOption?: boolean
   rsvpSideDetail?: boolean
-  rsvpSideDetailOptions?: { groomFather?: boolean; groomMother?: boolean; brideFather?: boolean; brideMother?: boolean }
+  rsvpSideDetailOptions?: { groomSelf?: boolean; groomFather?: boolean; groomMother?: boolean; brideSelf?: boolean; brideFather?: boolean; brideMother?: boolean }
   rsvpMessagePlaceholder?: string
+  senderSide?: 'groom' | 'bride'
 }
 
-export default function RsvpModal({ onSubmit, isPreview = false, invitationId, rsvpMealOption = false, rsvpShuttleOption = false, rsvpNotice, rsvpPhoneOption = false, rsvpSideDetail = false, rsvpSideDetailOptions, rsvpMessagePlaceholder }: RsvpModalProps) {
+export default function RsvpModal({ onSubmit, isPreview = false, invitationId, rsvpMealOption = false, rsvpShuttleOption = false, rsvpNotice, rsvpPhoneOption = false, rsvpSideDetail = false, rsvpSideDetailOptions, rsvpMessagePlaceholder, senderSide }: RsvpModalProps) {
   const ref = useRef<HTMLDivElement>(null)
   const formRef = useRef<HTMLDivElement>(null)
   const theme = useTheme()
@@ -31,9 +32,9 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
-    side: null as 'groom' | 'bride' | null,
+    side: (senderSide || null) as 'groom' | 'bride' | null,
     sideDetail: '' as '' | 'self' | 'father' | 'mother',
-    attendance: 'yes' as 'yes' | 'no' | 'maybe',
+    attendance: null as 'yes' | 'no' | 'maybe' | null,
     mealAttendance: null as 'yes' | 'no' | null,
     shuttleBus: null as 'yes' | 'no' | null,
     guestCount: 1,
@@ -88,9 +89,15 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
       return
     }
 
+    // 참석 여부 필수 체크
+    if (!formData.attendance) {
+      setSubmitError('참석 여부를 선택해 주세요.')
+      return
+    }
+
     // 커스텀 onSubmit이 있으면 사용
     if (onSubmit) {
-      onSubmit(formData)
+      onSubmit({ ...formData, attendance: formData.attendance! })
       exitFullscreen()
       return
     }
@@ -119,7 +126,7 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
           invitationId,
           guestName: formData.name.trim(),
           guestPhone: formData.phone.trim() || undefined,
-          attendance: attendanceMap[formData.attendance],
+          attendance: attendanceMap[formData.attendance!],
           guestCount: formData.attendance === 'yes' ? formData.guestCount : 0,
           message: formData.message.trim() || undefined,
           side: formData.side || undefined,
@@ -240,6 +247,7 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
       </div>
       )}
 
+      {!senderSide && (
       <div>
         <label className="block text-xs mb-2" style={{ color: '#999' }}>
           소속
@@ -271,6 +279,7 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
           </button>
         </div>
       </div>
+      )}
 
       {rsvpSideDetail && formData.side && (
       <div>
@@ -278,6 +287,7 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
           초대 경로
         </label>
         <div className="flex gap-2 flex-wrap" style={{ wordBreak: 'keep-all' as const }}>
+          {((formData.side === 'groom' && (rsvpSideDetailOptions?.groomSelf ?? true)) || (formData.side === 'bride' && (rsvpSideDetailOptions?.brideSelf ?? true))) && (
           <button
             type="button"
             onClick={() => setFormData(prev => ({ ...prev, sideDetail: 'self' }))}
@@ -290,6 +300,7 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
           >
             {formData.side === 'groom' ? '신랑' : '신부'} 지인
           </button>
+          )}
           {((formData.side === 'groom' && (rsvpSideDetailOptions?.groomFather ?? true)) || (formData.side === 'bride' && (rsvpSideDetailOptions?.brideFather ?? true))) && (
           <button
             type="button"
@@ -464,7 +475,7 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
 
       <button
         type="submit"
-        disabled={isSubmitting || !formData.name.trim()}
+        disabled={isSubmitting || !formData.name.trim() || !formData.attendance}
         className="w-full py-4 rounded-lg text-sm tracking-wider transition-all disabled:opacity-50"
         style={{
           backgroundColor: theme.primary,

@@ -18,8 +18,10 @@ interface RsvpFormProps {
   showPhoneOption?: boolean
   showSideDetail?: boolean
   sideDetailOptions?: {
+    groomSelf?: boolean
     groomFather?: boolean
     groomMother?: boolean
+    brideSelf?: boolean
     brideFather?: boolean
     brideMother?: boolean
   }
@@ -226,18 +228,21 @@ export default function RsvpForm({
         <div className="space-y-2">
           <Label>초대 경로</Label>
           <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setSideDetail('self')}
-              className={`flex-1 min-w-0 py-2 px-1 rounded-lg border-2 text-sm font-medium transition-all text-center ${
-                sideDetail === 'self'
-                  ? 'text-white'
-                  : 'border-gray-200 text-gray-700 hover:border-gray-300'
-              }`}
-              style={sideDetail === 'self' ? { backgroundColor: primaryColor, borderColor: primaryColor } : {}}
-            >
-              {side === 'groom' ? '신랑' : '신부'} 지인
-            </button>
+            {((side === 'groom' && (sideDetailOptions?.groomSelf ?? true)) ||
+              (side === 'bride' && (sideDetailOptions?.brideSelf ?? true))) && (
+              <button
+                type="button"
+                onClick={() => setSideDetail('self')}
+                className={`flex-1 min-w-0 py-2 px-1 rounded-lg border-2 text-sm font-medium transition-all text-center ${
+                  sideDetail === 'self'
+                    ? 'text-white'
+                    : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                }`}
+                style={sideDetail === 'self' ? { backgroundColor: primaryColor, borderColor: primaryColor } : {}}
+              >
+                {side === 'groom' ? '신랑' : '신부'} 지인
+              </button>
+            )}
             {((side === 'groom' && (sideDetailOptions?.groomFather ?? true)) ||
               (side === 'bride' && (sideDetailOptions?.brideFather ?? true))) && (
               <button

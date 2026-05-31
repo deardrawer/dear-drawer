@@ -1508,8 +1508,10 @@ export default function ParentsStep3Content({
               <div className="pl-4 space-y-2 border-l-2 border-gray-200">
                 <p className="text-xs text-gray-500">표시할 항목 선택</p>
                 {[
+                  { key: 'groomSelf' as const, label: '신랑 지인' },
                   { key: 'groomFather' as const, label: '신랑 아버지 지인' },
                   { key: 'groomMother' as const, label: '신랑 어머니 지인' },
+                  { key: 'brideSelf' as const, label: '신부 지인' },
                   { key: 'brideFather' as const, label: '신부 아버지 지인' },
                   { key: 'brideMother' as const, label: '신부 어머니 지인' },
                 ].map(item => (

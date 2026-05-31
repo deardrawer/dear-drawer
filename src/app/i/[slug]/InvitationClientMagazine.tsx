@@ -2012,9 +2012,11 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
           <div>
             <span style={{ fontFamily: fonts.body, fontSize: '13px', color: themeColors.gray, display: 'block', marginBottom: '6px' }}>초대 경로</span>
             <div className="flex gap-2 flex-wrap" style={{ wordBreak: 'keep-all' }}>
-              <button onClick={() => setSideDetail('self')} style={{ flex: 1, fontFamily: fonts.body, fontSize: '12px', padding: '10px', border: `0.5px solid ${sideDetail === 'self' ? themeColors.primary : themeColors.divider}`, background: sideDetail === 'self' ? themeColors.primary : themeColors.cardBg, color: sideDetail === 'self' ? '#FFFFFF' : (themeColors.buttonText || themeColors.text), cursor: 'pointer', transition: 'all 0.3s' }}>
-                {side === 'groom' ? '신랑' : '신부'} 지인
-              </button>
+              {((side === 'groom' && (invitation.rsvpSideDetailOptions?.groomSelf ?? true)) || (side === 'bride' && (invitation.rsvpSideDetailOptions?.brideSelf ?? true))) && (
+                <button onClick={() => setSideDetail('self')} style={{ flex: 1, fontFamily: fonts.body, fontSize: '12px', padding: '10px', border: `0.5px solid ${sideDetail === 'self' ? themeColors.primary : themeColors.divider}`, background: sideDetail === 'self' ? themeColors.primary : themeColors.cardBg, color: sideDetail === 'self' ? '#FFFFFF' : (themeColors.buttonText || themeColors.text), cursor: 'pointer', transition: 'all 0.3s' }}>
+                  {side === 'groom' ? '신랑' : '신부'} 지인
+                </button>
+              )}
               {((side === 'groom' && (invitation.rsvpSideDetailOptions?.groomFather ?? true)) || (side === 'bride' && (invitation.rsvpSideDetailOptions?.brideFather ?? true))) && (
                 <button onClick={() => setSideDetail('father')} style={{ flex: 1, fontFamily: fonts.body, fontSize: '12px', padding: '10px', border: `0.5px solid ${sideDetail === 'father' ? themeColors.primary : themeColors.divider}`, background: sideDetail === 'father' ? themeColors.primary : themeColors.cardBg, color: sideDetail === 'father' ? '#FFFFFF' : (themeColors.buttonText || themeColors.text), cursor: 'pointer', transition: 'all 0.3s' }}>
                   {side === 'groom' ? '신랑' : '신부'} 아버지 지인

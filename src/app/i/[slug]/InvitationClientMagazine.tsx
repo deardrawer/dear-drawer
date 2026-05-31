@@ -2014,17 +2014,17 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
             <div className="flex gap-2 flex-wrap" style={{ wordBreak: 'keep-all' }}>
               {((side === 'groom' && (invitation.rsvpSideDetailOptions?.groomSelf ?? true)) || (side === 'bride' && (invitation.rsvpSideDetailOptions?.brideSelf ?? true))) && (
                 <button onClick={() => setSideDetail('self')} style={{ flex: 1, fontFamily: fonts.body, fontSize: '12px', padding: '10px', border: `0.5px solid ${sideDetail === 'self' ? themeColors.primary : themeColors.divider}`, background: sideDetail === 'self' ? themeColors.primary : themeColors.cardBg, color: sideDetail === 'self' ? '#FFFFFF' : (themeColors.buttonText || themeColors.text), cursor: 'pointer', transition: 'all 0.3s' }}>
-                  {side === 'groom' ? '신랑' : '신부'} 지인
+                  {side === 'groom' ? '신랑' : '신부'}
                 </button>
               )}
               {((side === 'groom' && (invitation.rsvpSideDetailOptions?.groomFather ?? true)) || (side === 'bride' && (invitation.rsvpSideDetailOptions?.brideFather ?? true))) && (
                 <button onClick={() => setSideDetail('father')} style={{ flex: 1, fontFamily: fonts.body, fontSize: '12px', padding: '10px', border: `0.5px solid ${sideDetail === 'father' ? themeColors.primary : themeColors.divider}`, background: sideDetail === 'father' ? themeColors.primary : themeColors.cardBg, color: sideDetail === 'father' ? '#FFFFFF' : (themeColors.buttonText || themeColors.text), cursor: 'pointer', transition: 'all 0.3s' }}>
-                  {side === 'groom' ? '신랑' : '신부'} 아버지 지인
+                  {side === 'groom' ? '신랑' : '신부'} 아버지
                 </button>
               )}
               {((side === 'groom' && (invitation.rsvpSideDetailOptions?.groomMother ?? true)) || (side === 'bride' && (invitation.rsvpSideDetailOptions?.brideMother ?? true))) && (
                 <button onClick={() => setSideDetail('mother')} style={{ flex: 1, fontFamily: fonts.body, fontSize: '12px', padding: '10px', border: `0.5px solid ${sideDetail === 'mother' ? themeColors.primary : themeColors.divider}`, background: sideDetail === 'mother' ? themeColors.primary : themeColors.cardBg, color: sideDetail === 'mother' ? '#FFFFFF' : (themeColors.buttonText || themeColors.text), cursor: 'pointer', transition: 'all 0.3s' }}>
-                  {side === 'groom' ? '신랑' : '신부'} 어머니 지인
+                  {side === 'groom' ? '신랑' : '신부'} 어머니
                 </button>
               )}
             </div>

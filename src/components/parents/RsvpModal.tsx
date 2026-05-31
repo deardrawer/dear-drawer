@@ -298,7 +298,7 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
               color: formData.sideDetail === 'self' ? theme.primary : '#666',
             }}
           >
-            {formData.side === 'groom' ? '신랑' : '신부'} 지인
+            {formData.side === 'groom' ? '신랑' : '신부'}
           </button>
           )}
           {((formData.side === 'groom' && (rsvpSideDetailOptions?.groomFather ?? true)) || (formData.side === 'bride' && (rsvpSideDetailOptions?.brideFather ?? true))) && (
@@ -312,7 +312,7 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
               color: formData.sideDetail === 'father' ? theme.primary : '#666',
             }}
           >
-            {formData.side === 'groom' ? '신랑' : '신부'} 아버지 지인
+            {formData.side === 'groom' ? '신랑' : '신부'} 아버지
           </button>
           )}
           {((formData.side === 'groom' && (rsvpSideDetailOptions?.groomMother ?? true)) || (formData.side === 'bride' && (rsvpSideDetailOptions?.brideMother ?? true))) && (
@@ -326,7 +326,7 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
               color: formData.sideDetail === 'mother' ? theme.primary : '#666',
             }}
           >
-            {formData.side === 'groom' ? '신랑' : '신부'} 어머니 지인
+            {formData.side === 'groom' ? '신랑' : '신부'} 어머니
           </button>
           )}
         </div>

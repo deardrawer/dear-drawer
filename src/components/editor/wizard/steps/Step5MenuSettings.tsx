@@ -876,7 +876,7 @@ export default function Step5MenuSettings() {
                 checked={invitation.rsvpSideDetail ?? false}
                 onCheckedChange={(checked) => updateField('rsvpSideDetail', checked)}
               />
-              <span className="text-sm text-gray-700">부모님 하객 구분 (아버지/어머니 지인)</span>
+              <span className="text-sm text-gray-700">부모님 하객 구분 (아버지/어머니)</span>
             </div>
 
             {invitation.rsvpSideDetail && (
@@ -892,7 +892,7 @@ export default function Step5MenuSettings() {
                     })}
                     className="rounded border-gray-300"
                   />
-                  <span className="text-sm text-gray-700">신랑 지인</span>
+                  <span className="text-sm text-gray-700">신랑</span>
                 </label>
                 <label className="flex items-center gap-2">
                   <input
@@ -904,7 +904,7 @@ export default function Step5MenuSettings() {
                     })}
                     className="rounded border-gray-300"
                   />
-                  <span className="text-sm text-gray-700">신랑 아버지 지인</span>
+                  <span className="text-sm text-gray-700">신랑 아버지</span>
                 </label>
                 <label className="flex items-center gap-2">
                   <input
@@ -916,7 +916,7 @@ export default function Step5MenuSettings() {
                     })}
                     className="rounded border-gray-300"
                   />
-                  <span className="text-sm text-gray-700">신랑 어머니 지인</span>
+                  <span className="text-sm text-gray-700">신랑 어머니</span>
                 </label>
                 <label className="flex items-center gap-2">
                   <input
@@ -928,7 +928,7 @@ export default function Step5MenuSettings() {
                     })}
                     className="rounded border-gray-300"
                   />
-                  <span className="text-sm text-gray-700">신부 지인</span>
+                  <span className="text-sm text-gray-700">신부</span>
                 </label>
                 <label className="flex items-center gap-2">
                   <input
@@ -940,7 +940,7 @@ export default function Step5MenuSettings() {
                     })}
                     className="rounded border-gray-300"
                   />
-                  <span className="text-sm text-gray-700">신부 아버지 지인</span>
+                  <span className="text-sm text-gray-700">신부 아버지</span>
                 </label>
                 <label className="flex items-center gap-2">
                   <input
@@ -952,7 +952,7 @@ export default function Step5MenuSettings() {
                     })}
                     className="rounded border-gray-300"
                   />
-                  <span className="text-sm text-gray-700">신부 어머니 지인</span>
+                  <span className="text-sm text-gray-700">신부 어머니</span>
                 </label>
               </div>
             )}

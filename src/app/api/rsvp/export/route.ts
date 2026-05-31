@@ -83,11 +83,11 @@ export async function GET(request: NextRequest) {
     const getSideDetailLabel = (sideDetail: string | null) => {
       switch (sideDetail) {
         case "self":
-          return "지인";
+          return "";
         case "father":
-          return "아버지 지인";
+          return "아버지";
         case "mother":
-          return "어머니 지인";
+          return "어머니";
         default:
           return "";
       }

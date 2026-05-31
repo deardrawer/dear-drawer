@@ -2511,13 +2511,13 @@ function RsvpDmModal({
                 <label className="text-[11px] font-medium mb-1.5 block" style={{ color: '#8E8E8E' }}>초대 경로</label>
                 <div className="flex gap-2 flex-wrap" style={{ wordBreak: 'keep-all' }}>
                   {((side === 'groom' && (rsvpSideDetailOptions?.groomSelf ?? true)) || (side === 'bride' && (rsvpSideDetailOptions?.brideSelf ?? true))) && (
-                    <button onClick={() => setSideDetail('self')} className="flex-1 py-2.5 rounded-2xl text-[13px] font-medium transition-colors" style={{ background: sideDetail === 'self' ? '#262626' : '#FAFAFA', color: sideDetail === 'self' ? '#FFFFFF' : '#8E8E8E', border: `1px solid ${sideDetail === 'self' ? '#262626' : '#DBDBDB'}` }}>{side === 'groom' ? '신랑' : '신부'} 지인</button>
+                    <button onClick={() => setSideDetail('self')} className="flex-1 py-2.5 rounded-2xl text-[13px] font-medium transition-colors" style={{ background: sideDetail === 'self' ? '#262626' : '#FAFAFA', color: sideDetail === 'self' ? '#FFFFFF' : '#8E8E8E', border: `1px solid ${sideDetail === 'self' ? '#262626' : '#DBDBDB'}` }}>{side === 'groom' ? '신랑' : '신부'}</button>
                   )}
                   {((side === 'groom' && (rsvpSideDetailOptions?.groomFather ?? true)) || (side === 'bride' && (rsvpSideDetailOptions?.brideFather ?? true))) && (
-                    <button onClick={() => setSideDetail('father')} className="flex-1 py-2.5 rounded-2xl text-[13px] font-medium transition-colors" style={{ background: sideDetail === 'father' ? '#262626' : '#FAFAFA', color: sideDetail === 'father' ? '#FFFFFF' : '#8E8E8E', border: `1px solid ${sideDetail === 'father' ? '#262626' : '#DBDBDB'}` }}>{side === 'groom' ? '신랑' : '신부'} 아버지 지인</button>
+                    <button onClick={() => setSideDetail('father')} className="flex-1 py-2.5 rounded-2xl text-[13px] font-medium transition-colors" style={{ background: sideDetail === 'father' ? '#262626' : '#FAFAFA', color: sideDetail === 'father' ? '#FFFFFF' : '#8E8E8E', border: `1px solid ${sideDetail === 'father' ? '#262626' : '#DBDBDB'}` }}>{side === 'groom' ? '신랑' : '신부'} 아버지</button>
                   )}
                   {((side === 'groom' && (rsvpSideDetailOptions?.groomMother ?? true)) || (side === 'bride' && (rsvpSideDetailOptions?.brideMother ?? true))) && (
-                    <button onClick={() => setSideDetail('mother')} className="flex-1 py-2.5 rounded-2xl text-[13px] font-medium transition-colors" style={{ background: sideDetail === 'mother' ? '#262626' : '#FAFAFA', color: sideDetail === 'mother' ? '#FFFFFF' : '#8E8E8E', border: `1px solid ${sideDetail === 'mother' ? '#262626' : '#DBDBDB'}` }}>{side === 'groom' ? '신랑' : '신부'} 어머니 지인</button>
+                    <button onClick={() => setSideDetail('mother')} className="flex-1 py-2.5 rounded-2xl text-[13px] font-medium transition-colors" style={{ background: sideDetail === 'mother' ? '#262626' : '#FAFAFA', color: sideDetail === 'mother' ? '#FFFFFF' : '#8E8E8E', border: `1px solid ${sideDetail === 'mother' ? '#262626' : '#DBDBDB'}` }}>{side === 'groom' ? '신랑' : '신부'} 어머니</button>
                   )}
                 </div>
               </div>

@@ -2279,13 +2279,13 @@ function RsvpModal({
                   <span style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', color: 'var(--ink)', display: 'block', marginBottom: 6 }}>초대 경로</span>
                   <div style={{ display: 'flex', gap: 6 }}>
                     {((side === 'groom' && (sideDetailOptions?.groomSelf ?? true)) || (side === 'bride' && (sideDetailOptions?.brideSelf ?? true))) && (
-                      <button type="button" className={`ts-rsvp-modal-opt ${sideDetail === 'self' ? 'active' : ''}`} onClick={() => setSideDetail('self')} style={{ flex: 1, minWidth: 0, padding: '6px 4px', fontSize: 'calc(12px * var(--ts-font-scale, 1))', textAlign: 'center' }}>{side === 'groom' ? '신랑' : '신부'} 지인</button>
+                      <button type="button" className={`ts-rsvp-modal-opt ${sideDetail === 'self' ? 'active' : ''}`} onClick={() => setSideDetail('self')} style={{ flex: 1, minWidth: 0, padding: '6px 4px', fontSize: 'calc(12px * var(--ts-font-scale, 1))', textAlign: 'center' }}>{side === 'groom' ? '신랑' : '신부'}</button>
                     )}
                     {((side === 'groom' && (sideDetailOptions?.groomFather ?? true)) || (side === 'bride' && (sideDetailOptions?.brideFather ?? true))) && (
-                      <button type="button" className={`ts-rsvp-modal-opt ${sideDetail === 'father' ? 'active' : ''}`} onClick={() => setSideDetail('father')} style={{ flex: 1, minWidth: 0, padding: '6px 4px', fontSize: 'calc(12px * var(--ts-font-scale, 1))', textAlign: 'center' }}>{side === 'groom' ? '신랑' : '신부'} 아버지 지인</button>
+                      <button type="button" className={`ts-rsvp-modal-opt ${sideDetail === 'father' ? 'active' : ''}`} onClick={() => setSideDetail('father')} style={{ flex: 1, minWidth: 0, padding: '6px 4px', fontSize: 'calc(12px * var(--ts-font-scale, 1))', textAlign: 'center' }}>{side === 'groom' ? '신랑' : '신부'} 아버지</button>
                     )}
                     {((side === 'groom' && (sideDetailOptions?.groomMother ?? true)) || (side === 'bride' && (sideDetailOptions?.brideMother ?? true))) && (
-                      <button type="button" className={`ts-rsvp-modal-opt ${sideDetail === 'mother' ? 'active' : ''}`} onClick={() => setSideDetail('mother')} style={{ flex: 1, minWidth: 0, padding: '6px 4px', fontSize: 'calc(12px * var(--ts-font-scale, 1))', textAlign: 'center' }}>{side === 'groom' ? '신랑' : '신부'} 어머니 지인</button>
+                      <button type="button" className={`ts-rsvp-modal-opt ${sideDetail === 'mother' ? 'active' : ''}`} onClick={() => setSideDetail('mother')} style={{ flex: 1, minWidth: 0, padding: '6px 4px', fontSize: 'calc(12px * var(--ts-font-scale, 1))', textAlign: 'center' }}>{side === 'groom' ? '신랑' : '신부'} 어머니</button>
                     )}
                   </div>
                 </div>

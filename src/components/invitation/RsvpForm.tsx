@@ -240,7 +240,7 @@ export default function RsvpForm({
                 }`}
                 style={sideDetail === 'self' ? { backgroundColor: primaryColor, borderColor: primaryColor } : {}}
               >
-                {side === 'groom' ? '신랑' : '신부'} 지인
+                {side === 'groom' ? '신랑' : '신부'}
               </button>
             )}
             {((side === 'groom' && (sideDetailOptions?.groomFather ?? true)) ||
@@ -255,7 +255,7 @@ export default function RsvpForm({
                 }`}
                 style={sideDetail === 'father' ? { backgroundColor: primaryColor, borderColor: primaryColor } : {}}
               >
-                {side === 'groom' ? '신랑' : '신부'} 아버지 지인
+                {side === 'groom' ? '신랑' : '신부'} 아버지
               </button>
             )}
             {((side === 'groom' && (sideDetailOptions?.groomMother ?? true)) ||
@@ -270,7 +270,7 @@ export default function RsvpForm({
                 }`}
                 style={sideDetail === 'mother' ? { backgroundColor: primaryColor, borderColor: primaryColor } : {}}
               >
-                {side === 'groom' ? '신랑' : '신부'} 어머니 지인
+                {side === 'groom' ? '신랑' : '신부'} 어머니
               </button>
             )}
           </div>

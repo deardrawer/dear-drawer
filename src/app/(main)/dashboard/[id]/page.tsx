@@ -180,10 +180,10 @@ export default function DashboardPage() {
     switch (key) {
       case 'groom': return '신랑측'
       case 'bride': return '신부측'
-      case 'groom_self': return '신랑 지인'
+      case 'groom_self': return '신랑'
       case 'groom_father': return '신랑 아버지'
       case 'groom_mother': return '신랑 어머니'
-      case 'bride_self': return '신부 지인'
+      case 'bride_self': return '신부'
       case 'bride_father': return '신부 아버지'
       case 'bride_mother': return '신부 어머니'
       case 'none': return '미지정'
@@ -375,7 +375,7 @@ export default function DashboardPage() {
 
   const getSideDetailLabel = (sideDetail: string | null) => {
     switch (sideDetail) {
-      case 'self': return '지인'
+      case 'self': return ''
       case 'father': return '아버지'
       case 'mother': return '어머니'
       default: return ''
@@ -1007,7 +1007,7 @@ export default function DashboardPage() {
               <div>
                 <label className="text-sm font-medium text-gray-700 block mb-1">초대 경로</label>
                 <div className="flex gap-2">
-                  <button type="button" onClick={() => setEditForm(prev => ({ ...prev, sideDetail: 'self' }))} className={cn('flex-1 py-2 rounded-lg text-sm font-medium border transition-colors', editForm.sideDetail === 'self' ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50')}>{editForm.side === 'groom' ? '신랑' : '신부'} 지인</button>
+                  <button type="button" onClick={() => setEditForm(prev => ({ ...prev, sideDetail: 'self' }))} className={cn('flex-1 py-2 rounded-lg text-sm font-medium border transition-colors', editForm.sideDetail === 'self' ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50')}>{editForm.side === 'groom' ? '신랑' : '신부'}</button>
                   <button type="button" onClick={() => setEditForm(prev => ({ ...prev, sideDetail: 'father' }))} className={cn('flex-1 py-2 rounded-lg text-sm font-medium border transition-colors', editForm.sideDetail === 'father' ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50')}>{editForm.side === 'groom' ? '신랑' : '신부'} 아버지</button>
                   <button type="button" onClick={() => setEditForm(prev => ({ ...prev, sideDetail: 'mother' }))} className={cn('flex-1 py-2 rounded-lg text-sm font-medium border transition-colors', editForm.sideDetail === 'mother' ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50')}>{editForm.side === 'groom' ? '신랑' : '신부'} 어머니</button>
                 </div>

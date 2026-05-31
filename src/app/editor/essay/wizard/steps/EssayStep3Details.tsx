@@ -315,18 +315,18 @@ export default function EssayStep3Details({ data, updateData, updateNestedData }
             </div>
             <div className="flex items-center gap-3">
               <Switch checked={data.rsvpSideDetail ?? false} onCheckedChange={v => updateData({ rsvpSideDetail: v })} />
-              <span className="text-sm text-gray-700">부모님 하객 구분 (아버지/어머니 지인)</span>
+              <span className="text-sm text-gray-700">부모님 하객 구분 (아버지/어머니)</span>
             </div>
             {data.rsvpSideDetail && (
               <div className="pl-4 space-y-2 border-l-2 border-gray-200">
                 <p className="text-xs text-gray-500">표시할 항목 선택</p>
                 {[
-                  { key: 'groomSelf' as const, label: '신랑 지인' },
-                  { key: 'groomFather' as const, label: '신랑 아버지 지인' },
-                  { key: 'groomMother' as const, label: '신랑 어머니 지인' },
-                  { key: 'brideSelf' as const, label: '신부 지인' },
-                  { key: 'brideFather' as const, label: '신부 아버지 지인' },
-                  { key: 'brideMother' as const, label: '신부 어머니 지인' },
+                  { key: 'groomSelf' as const, label: '신랑' },
+                  { key: 'groomFather' as const, label: '신랑 아버지' },
+                  { key: 'groomMother' as const, label: '신랑 어머니' },
+                  { key: 'brideSelf' as const, label: '신부' },
+                  { key: 'brideFather' as const, label: '신부 아버지' },
+                  { key: 'brideMother' as const, label: '신부 어머니' },
                 ].map(item => (
                   <label key={item.key} className="flex items-center gap-2">
                     <input

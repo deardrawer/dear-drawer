@@ -2349,17 +2349,17 @@ function TicketRsvp({ invitation, invitationId, fonts, tc, bgOverride }: {
                 <div className="flex gap-2 flex-wrap" style={{ wordBreak: 'keep-all' }}>
                   {((side === 'groom' && (invitation.rsvpSideDetailOptions?.groomSelf ?? true)) || (side === 'bride' && (invitation.rsvpSideDetailOptions?.brideSelf ?? true))) && (
                     <button onClick={() => setSideDetail('self')} style={{ flex: 1, fontFamily: fonts.body, fontSize: '10px', padding: '10px', border: `1px solid ${sideDetail === 'self' ? tc.accent : cdiv}`, background: sideDetail === 'self' ? tc.accent : 'transparent', color: sideDetail === 'self' ? '#FFFFFF' : (tc.cardText || tc.text), cursor: 'pointer', transition: 'all 0.3s' }}>
-                      {side === 'groom' ? '신랑' : '신부'} 지인
+                      {side === 'groom' ? '신랑' : '신부'}
                     </button>
                   )}
                   {((side === 'groom' && (invitation.rsvpSideDetailOptions?.groomFather ?? true)) || (side === 'bride' && (invitation.rsvpSideDetailOptions?.brideFather ?? true))) && (
                     <button onClick={() => setSideDetail('father')} style={{ flex: 1, fontFamily: fonts.body, fontSize: '10px', padding: '10px', border: `1px solid ${sideDetail === 'father' ? tc.accent : cdiv}`, background: sideDetail === 'father' ? tc.accent : 'transparent', color: sideDetail === 'father' ? '#FFFFFF' : (tc.cardText || tc.text), cursor: 'pointer', transition: 'all 0.3s' }}>
-                      {side === 'groom' ? '신랑' : '신부'} 아버지 지인
+                      {side === 'groom' ? '신랑' : '신부'} 아버지
                     </button>
                   )}
                   {((side === 'groom' && (invitation.rsvpSideDetailOptions?.groomMother ?? true)) || (side === 'bride' && (invitation.rsvpSideDetailOptions?.brideMother ?? true))) && (
                     <button onClick={() => setSideDetail('mother')} style={{ flex: 1, fontFamily: fonts.body, fontSize: '10px', padding: '10px', border: `1px solid ${sideDetail === 'mother' ? tc.accent : cdiv}`, background: sideDetail === 'mother' ? tc.accent : 'transparent', color: sideDetail === 'mother' ? '#FFFFFF' : (tc.cardText || tc.text), cursor: 'pointer', transition: 'all 0.3s' }}>
-                      {side === 'groom' ? '신랑' : '신부'} 어머니 지인
+                      {side === 'groom' ? '신랑' : '신부'} 어머니
                     </button>
                   )}
                 </div>

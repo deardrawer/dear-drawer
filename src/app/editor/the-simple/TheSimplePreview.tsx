@@ -1848,7 +1848,7 @@ function YouTubeLite({ videoId, onPlay, onStop }: { videoId: string; onPlay?: ()
   const containerRef = useRef<HTMLDivElement>(null)
   const playerRef = useRef<any>(null)
   const stoppedRef = useRef(false)
-  const playerDivId = useRef(`yt-${videoId}-${Math.random().toString(36).slice(2, 8)}`).current
+  const iframeId = useRef(`yt-${videoId}-${Math.random().toString(36).slice(2, 8)}`).current
 
   // 영상이 화면 밖으로 벗어나면 정지 + BGM 복구
   useEffect(() => {
@@ -1858,7 +1858,6 @@ function YouTubeLite({ videoId, onPlay, onStop }: { videoId: string; onPlay?: ()
       ([entry]) => {
         if (!entry.isIntersecting && !stoppedRef.current) {
           stoppedRef.current = true
-          playerRef.current?.destroy?.()
           playerRef.current = null
           setActive(false)
           onStop?.()
@@ -1870,41 +1869,42 @@ function YouTubeLite({ videoId, onPlay, onStop }: { videoId: string; onPlay?: ()
     return () => observer.disconnect()
   }, [active, onStop])
 
-  // YouTube IFrame API 플레이어 생성
+  // iframe 렌더링 후 YT API로 이벤트 감지 연결 (영상은 iframe이 즉시 재생)
   useEffect(() => {
     if (!active) return
     stoppedRef.current = false
     let destroyed = false
 
     const init = () => {
-      if (destroyed || !document.getElementById(playerDivId)) return
-      const YT = (window as any).YT
-      playerRef.current = new YT.Player(playerDivId, {
-        videoId,
-        width: '100%',
-        height: '100%',
-        playerVars: { autoplay: 1, playsinline: 1, rel: 0 },
-        events: {
-          onStateChange: (e: any) => {
-            // ENDED(0) → 영상 종료 시 BGM 복구
-            if (e.data === YT.PlayerState.ENDED && !stoppedRef.current) {
-              stoppedRef.current = true
-              setActive(false)
-              onStop?.()
-            }
-            // PAUSED(2) → BGM 복구하지 않음 (요구사항 3)
+      if (destroyed) return
+      const el = document.getElementById(iframeId)
+      if (!el) return
+      try {
+        const YT = (window as any).YT
+        playerRef.current = new YT.Player(iframeId, {
+          events: {
+            onStateChange: (e: any) => {
+              // ENDED(0) → 영상 종료 시 BGM 복구
+              if (e.data === YT.PlayerState.ENDED && !stoppedRef.current) {
+                stoppedRef.current = true
+                setActive(false)
+                onStop?.()
+              }
+              // PAUSED(2) → BGM 복구하지 않음
+            },
           },
-        },
-      })
+        })
+      } catch {
+        // YT API 래핑 실패 시 영상은 계속 재생 (이벤트 감지만 불가)
+      }
     }
 
     loadYouTubeApi(init)
     return () => {
       destroyed = true
-      playerRef.current?.destroy?.()
       playerRef.current = null
     }
-  }, [active, videoId, playerDivId, onStop])
+  }, [active, videoId, iframeId, onStop])
 
   const handleClick = () => {
     setActive(true)
@@ -1914,7 +1914,6 @@ function YouTubeLite({ videoId, onPlay, onStop }: { videoId: string; onPlay?: ()
   const handleClose = () => {
     if (stoppedRef.current) return
     stoppedRef.current = true
-    playerRef.current?.destroy?.()
     playerRef.current = null
     setActive(false)
     onStop?.()
@@ -1924,7 +1923,14 @@ function YouTubeLite({ videoId, onPlay, onStop }: { videoId: string; onPlay?: ()
     <div ref={containerRef} style={{ aspectRatio: '16/9', width: '100%', position: 'relative', background: '#000' }}>
       {active ? (
         <>
-          <div id={playerDivId} style={{ width: '100%', height: '100%' }} />
+          <iframe
+            id={iframeId}
+            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1&playsinline=1&rel=0`}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            style={{ width: '100%', height: '100%', border: 'none' }}
+            title="YouTube video"
+          />
           {/* 닫기 버튼 */}
           <button
             onClick={handleClose}

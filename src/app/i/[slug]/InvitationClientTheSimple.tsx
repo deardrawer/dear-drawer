@@ -182,26 +182,52 @@ export default function InvitationClientTheSimple({
   const [curtainRevealed, setCurtainRevealed] = useState(false)
   const audioRef = useRef<HTMLAudioElement>(null)
   const bgmWasPlayingRef = useRef(false)
+  const bgmFadeTimer = useRef<ReturnType<typeof setInterval> | null>(null)
   const hasBgm = data.bgm?.enabled && !!data.bgm?.url
   const [showDdayPopup, setShowDdayPopup] = useState(false)
 
-  // 동영상 재생 시: BGM 상태 저장 → 일시정지
+  // 동영상 재생 시: BGM 상태 저장 → 페이드아웃 → 일시정지
   const handleVideoPlay = useCallback(() => {
     const audio = audioRef.current
     if (!audio) return
     bgmWasPlayingRef.current = !audio.paused
-    if (!audio.paused) audio.pause()
+    if (audio.paused) return
+    if (bgmFadeTimer.current) { clearInterval(bgmFadeTimer.current); bgmFadeTimer.current = null }
+    const startVol = audio.volume
+    const steps = 10
+    let step = 0
+    bgmFadeTimer.current = setInterval(() => {
+      step++
+      audio.volume = Math.max(0, startVol * (1 - step / steps))
+      if (step >= steps) {
+        if (bgmFadeTimer.current) clearInterval(bgmFadeTimer.current)
+        bgmFadeTimer.current = null
+        audio.pause()
+        audio.volume = startVol
+      }
+    }, 50)
   }, [])
 
-  // 동영상 종료/닫기/화면이탈 시: 저장된 상태가 재생 중이었으면 BGM 복구
+  // 동영상 종료/닫기/화면이탈 시: 저장된 상태가 재생 중이었으면 페이드인 복구
   const handleVideoStop = useCallback(() => {
     const audio = audioRef.current
     if (!audio) return
-    // 사용자가 수동으로 음악을 꺼둔 경우 복구하지 않음
+    if (bgmFadeTimer.current) { clearInterval(bgmFadeTimer.current); bgmFadeTimer.current = null }
     const saved = localStorage.getItem('musicEnabled')
     if (saved === 'false') { bgmWasPlayingRef.current = false; return }
     if (bgmWasPlayingRef.current) {
+      audio.volume = 0
       audio.play().catch(() => {})
+      const steps = 15
+      let step = 0
+      bgmFadeTimer.current = setInterval(() => {
+        step++
+        audio.volume = Math.min(1, step / steps)
+        if (step >= steps) {
+          if (bgmFadeTimer.current) clearInterval(bgmFadeTimer.current)
+          bgmFadeTimer.current = null
+        }
+      }, 47)
       bgmWasPlayingRef.current = false
     }
   }, [])

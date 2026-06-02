@@ -7,6 +7,7 @@ import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
 import { resolveKoreanFontFamily } from '@/app/editor/the-simple/fontOptions'
 import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
 import '@/components/dday/dday-popup.css'
+import { YouTubeLite } from '@/components/invitation/YouTubeLite'
 
 // ============================================================
 // Types
@@ -2060,20 +2061,21 @@ function VideoPost({
   content,
   profileImage,
   username,
+  onPlay,
+  onStop,
 }: {
   content: any
   profileImage: string
   username: string
+  onPlay?: () => void
+  onStop?: () => void
 }) {
-  const [playing, setPlaying] = useState(false)
-  const [thumbSrc, setThumbSrc] = useState('')
   const youtube = content?.youtube
   if (!youtube?.enabled || !youtube?.url) return null
 
   const match = youtube.url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/|youtube\.com\/live\/)([a-zA-Z0-9_-]+)/)
   const videoId = match?.[1]
   if (!videoId) return null
-  if (!thumbSrc) setThumbSrc(`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`)
   const avatarSettings = content?.media?.profileAvatarSettings || null
 
   return (
@@ -2087,23 +2089,7 @@ function VideoPost({
       </div>
 
       {/* Video embed */}
-      <div style={{ aspectRatio: '16/9', background: '#000' }}>
-        {playing ? (
-          <iframe
-            src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
-            className="w-full h-full"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-        ) : (
-          <div onClick={() => setPlaying(true)} style={{ cursor: 'pointer', position: 'relative', width: '100%', height: '100%' }}>
-            <img src={thumbSrc} onError={() => setThumbSrc(`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="60" height="60" viewBox="0 0 60 60" fill="none"><circle cx="30" cy="30" r="30" fill="rgba(0,0,0,0.6)"/><polygon points="24,18 24,42 44,30" fill="white"/></svg>
-            </div>
-          </div>
-        )}
-      </div>
+      <YouTubeLite videoId={videoId} onPlay={onPlay} onStop={onStop} />
 
       {/* Caption */}
       {youtube.title && (
@@ -3020,6 +3006,44 @@ function InvitationClientExhibitContent({
   const audioRef = useRef<HTMLAudioElement>(null)
   const guestbookRef = useRef<HTMLDivElement>(null)
 
+  // BGM fade out/in when video plays
+  const bgmWasPlayingRef = useRef(false)
+  const bgmFadeTimer = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const handleVideoPlay = useCallback(() => {
+    const audio = audioRef.current
+    if (!audio) return
+    if (bgmFadeTimer.current) { clearInterval(bgmFadeTimer.current); bgmFadeTimer.current = null }
+    bgmWasPlayingRef.current = !audio.paused
+    if (audio.paused) return
+    const startVol = audio.volume
+    let step = 0
+    bgmFadeTimer.current = setInterval(() => {
+      step++
+      audio.volume = Math.max(0, startVol * (1 - step / 10))
+      if (step >= 10) {
+        clearInterval(bgmFadeTimer.current!); bgmFadeTimer.current = null
+        audio.pause(); audio.volume = startVol
+      }
+    }, 50)
+  }, [])
+
+  const handleVideoStop = useCallback(() => {
+    const audio = audioRef.current
+    if (!audio) return
+    if (bgmFadeTimer.current) { clearInterval(bgmFadeTimer.current); bgmFadeTimer.current = null }
+    if (localStorage.getItem('musicEnabled') === 'false') return
+    if (bgmWasPlayingRef.current) {
+      audio.volume = 0; audio.play()
+      let step = 0
+      bgmFadeTimer.current = setInterval(() => {
+        step++
+        audio.volume = Math.min(1, step / 15)
+        if (step >= 15) { clearInterval(bgmFadeTimer.current!); bgmFadeTimer.current = null }
+      }, 47)
+    }
+  }, [])
+
   // Active room tab (-1 = show all rooms)
   const [activeRoom, setActiveRoom] = useState(-1)
 
@@ -3273,6 +3297,8 @@ function InvitationClientExhibitContent({
                     content={content}
                     profileImage={profileImage}
                     username={username}
+                    onPlay={handleVideoPlay}
+                    onStop={handleVideoStop}
                   />
 
                   {/* 7. Wedding Info Post */}

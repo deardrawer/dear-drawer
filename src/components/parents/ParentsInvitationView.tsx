@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { SectionHighlightProvider } from './SectionHighlightContext'
 import EnvelopeScreen from './EnvelopeScreen'
 import SectionDivider from './SectionDivider'
@@ -19,6 +19,7 @@ import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
 import { resolveKoreanFontFamily } from '@/app/editor/the-simple/fontOptions'
 import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
 import '@/components/dday/dday-popup.css'
+import { YouTubeLite } from '@/components/invitation/YouTubeLite'
 
 // 국화 아이콘 (고인 표시 - 꽃 스타일)
 const ChrysanthemumIcon = () => (
@@ -64,22 +65,6 @@ interface ParentsInvitationViewProps {
   invitationId?: string  // RSVP 저장을 위한 청첩장 ID
 }
 
-// YouTube Lite: thumbnail + click to play
-function YouTubeLiteEmbed({ videoId }: { videoId: string }) {
-  const [playing, setPlaying] = useState(false)
-  const [thumbSrc, setThumbSrc] = useState(`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`)
-  if (playing) {
-    return <iframe src={`https://www.youtube.com/embed/${videoId}?autoplay=1`} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
-  }
-  return (
-    <div onClick={() => setPlaying(true)} style={{ cursor: 'pointer', position: 'relative', width: '100%', height: '100%' }}>
-      <img src={thumbSrc} onError={() => setThumbSrc(`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <svg width="60" height="60" viewBox="0 0 60 60" fill="none"><circle cx="30" cy="30" r="30" fill="rgba(0,0,0,0.6)"/><polygon points="24,18 24,42 44,30" fill="white"/></svg>
-      </div>
-    </div>
-  )
-}
 
 export default function ParentsInvitationView({
   data,
@@ -95,6 +80,44 @@ export default function ParentsInvitationView({
   const [showFontSizeToast, setShowFontSizeToast] = useState(false)
   const [fontSizeToastMessage, setFontSizeToastMessage] = useState('')
   const audioRef = useRef<HTMLAudioElement>(null)
+
+  // BGM fade out/in when video plays
+  const bgmWasPlayingRef = useRef(false)
+  const bgmFadeTimer = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const handleVideoPlay = useCallback(() => {
+    const audio = audioRef.current
+    if (!audio) return
+    if (bgmFadeTimer.current) { clearInterval(bgmFadeTimer.current); bgmFadeTimer.current = null }
+    bgmWasPlayingRef.current = !audio.paused
+    if (audio.paused) return
+    const startVol = audio.volume
+    let step = 0
+    bgmFadeTimer.current = setInterval(() => {
+      step++
+      audio.volume = Math.max(0, startVol * (1 - step / 10))
+      if (step >= 10) {
+        clearInterval(bgmFadeTimer.current!); bgmFadeTimer.current = null
+        audio.pause(); audio.volume = startVol
+      }
+    }, 50)
+  }, [])
+
+  const handleVideoStop = useCallback(() => {
+    const audio = audioRef.current
+    if (!audio) return
+    if (bgmFadeTimer.current) { clearInterval(bgmFadeTimer.current); bgmFadeTimer.current = null }
+    if (localStorage.getItem('musicEnabled') === 'false') return
+    if (bgmWasPlayingRef.current) {
+      audio.volume = 0; audio.play()
+      let step = 0
+      bgmFadeTimer.current = setInterval(() => {
+        step++
+        audio.volume = Math.min(1, step / 15)
+        if (step >= 15) { clearInterval(bgmFadeTimer.current!); bgmFadeTimer.current = null }
+      }, 47)
+    }
+  }, [])
 
   // D-Day popup
   const ddayPopup = normalizeDdayPopup(data.ddayPopup)
@@ -487,7 +510,7 @@ export default function ParentsInvitationView({
                       </h2>
                     )}
                     <div className="w-full max-w-[400px] aspect-video rounded-lg overflow-hidden shadow-md">
-                      <YouTubeLiteEmbed videoId={videoId} />
+                      <YouTubeLite videoId={videoId} onPlay={handleVideoPlay} onStop={handleVideoStop} />
                     </div>
                   </section>
                 </div>

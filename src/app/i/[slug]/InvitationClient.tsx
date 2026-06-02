@@ -3,6 +3,7 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback, createContext, useContext } from 'react'
 import { createPortal } from 'react-dom'
 import GuestFloatingButton from '@/components/invitation/GuestFloatingButton'
+import { YouTubeLite } from '@/components/invitation/YouTubeLite'
 import ProfileImageSlider from '@/components/editor/ProfileImageSlider'
 import CroppedImageDiv from '@/components/ui/CroppedImageDiv'
 import { WatermarkOverlay } from '@/components/ui/WatermarkOverlay'
@@ -2054,15 +2055,12 @@ function StorySection({
 }
 
 // ===== YouTube Lite Section (thumbnail + click to play) =====
-function YouTubeLiteSection({ youtube, themeColors, cardBg }: { youtube: any; themeColors: any; cardBg: string }) {
-  const [playing, setPlaying] = useState(false)
-  const [thumbSrc, setThumbSrc] = useState('')
+function YouTubeLiteSection({ youtube, themeColors, cardBg, onPlay, onStop }: { youtube: any; themeColors: any; cardBg: string; onPlay?: () => void; onStop?: () => void }) {
   if (!youtube?.enabled || !youtube?.url) return null
 
   const match = youtube.url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/|youtube\.com\/live\/)([a-zA-Z0-9_-]+)/)
   const videoId = match?.[1]
   if (!videoId) return null
-  if (!thumbSrc) setThumbSrc(`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`)
 
   return (
     <AnimatedSection className="px-5 py-12" style={{ background: cardBg }}>
@@ -2070,16 +2068,7 @@ function YouTubeLiteSection({ youtube, themeColors, cardBg }: { youtube: any; th
         <p className="text-[10px] font-light text-center mb-6" style={{ color: themeColors.gray, letterSpacing: '4px' }}>{(youtube.title as string).toUpperCase()}</p>
       )}
       <div className="aspect-video rounded-lg overflow-hidden">
-        {playing ? (
-          <iframe src={`https://www.youtube.com/embed/${videoId}?autoplay=1`} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
-        ) : (
-          <div onClick={() => setPlaying(true)} style={{ cursor: 'pointer', position: 'relative', width: '100%', height: '100%' }}>
-            <img src={thumbSrc} onError={() => setThumbSrc(`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="60" height="60" viewBox="0 0 60 60" fill="none"><circle cx="30" cy="30" r="30" fill="rgba(0,0,0,0.6)"/><polygon points="24,18 24,42 44,30" fill="white"/></svg>
-            </div>
-          </div>
-        )}
+        <YouTubeLite videoId={videoId} onPlay={onPlay} onStop={onStop} />
       </div>
     </AnimatedSection>
   )
@@ -3263,6 +3252,43 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
   const [guestMessage, setGuestMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  // BGM fade out/in when video plays
+  const bgmWasPlayingRef = useRef(false)
+  const bgmFadeTimer = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const handleVideoPlay = useCallback(() => {
+    const audio = audioRef?.current
+    if (!audio) return
+    if (bgmFadeTimer.current) { clearInterval(bgmFadeTimer.current); bgmFadeTimer.current = null }
+    bgmWasPlayingRef.current = !audio.paused
+    if (audio.paused) return
+    const startVol = audio.volume
+    let step = 0
+    bgmFadeTimer.current = setInterval(() => {
+      step++
+      audio.volume = Math.max(0, startVol * (1 - step / 10))
+      if (step >= 10) {
+        clearInterval(bgmFadeTimer.current!); bgmFadeTimer.current = null
+        audio.pause(); audio.volume = startVol
+      }
+    }, 50)
+  }, [audioRef])
+
+  const handleVideoStop = useCallback(() => {
+    const audio = audioRef?.current
+    if (!audio) return
+    if (bgmFadeTimer.current) { clearInterval(bgmFadeTimer.current); bgmFadeTimer.current = null }
+    if (localStorage.getItem('musicEnabled') === 'false') return
+    if (bgmWasPlayingRef.current) {
+      audio.volume = 0; audio.play()
+      let step = 0
+      bgmFadeTimer.current = setInterval(() => {
+        step++
+        audio.volume = Math.min(1, step / 15)
+        if (step >= 15) { clearInterval(bgmFadeTimer.current!); bgmFadeTimer.current = null }
+      }, 47)
+    }
+  }, [audioRef])
 
   // 방명록 메시지 불러오기 (샘플이 아닌 경우에만)
   useEffect(() => {
@@ -3477,7 +3503,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
       />
 
       {/* YouTube Section - OUR */}
-      <YouTubeLiteSection youtube={(invitation as any).youtube} themeColors={themeColors} cardBg={themeColors.cardBg} />
+      <YouTubeLiteSection youtube={(invitation as any).youtube} themeColors={themeColors} cardBg={themeColors.cardBg} onPlay={handleVideoPlay} onStop={handleVideoStop} />
 
       {/* Interview Title Section - OUR 템플릿: DividerSection 사용 */}
       {invitation.sectionVisibility?.interview !== false && invitation.content.interviews.some(i => i.question || i.answer) && (

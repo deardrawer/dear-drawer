@@ -12,6 +12,7 @@ import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
 import { resolveKoreanFontFamily } from '@/app/editor/the-simple/fontOptions'
 import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
 import '@/components/dday/dday-popup.css'
+import { YouTubeLite } from '@/components/invitation/YouTubeLite'
 
 // ===== Types =====
 type ColorTheme = 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-green' | 'luxury-navy' | 'sunset-coral' | 'film-dark' | 'film-light'
@@ -1414,17 +1415,14 @@ function ChapterThree({ invitation, fonts, tc, onOpenLightbox, bgOverride }: {
 }
 
 // ===== YouTube Video Section =====
-function FilmVideoSection({ invitation, fonts, tc, bgOverride }: { invitation: any; fonts: FontConfig; tc: ColorConfig; bgOverride?: string }) {
+function FilmVideoSection({ invitation, fonts, tc, bgOverride, onPlay, onStop }: { invitation: any; fonts: FontConfig; tc: ColorConfig; bgOverride?: string; onPlay?: () => void; onStop?: () => void }) {
   const dfs = (px: number) => `${Math.round(px * (fonts.ds || 1))}px`
-  const [playing, setPlaying] = useState(false)
-  const [thumbSrc, setThumbSrc] = useState('')
   const youtube = invitation.youtube
   if (!youtube?.enabled || !youtube?.url) return null
 
   const match = youtube.url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/|youtube\.com\/live\/)([a-zA-Z0-9_-]+)/)
   const videoId = match?.[1]
   if (!videoId) return null
-  if (!thumbSrc) setThumbSrc(`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`)
 
   return (
     <div className="py-8 px-5" style={{ backgroundColor: bgOverride || tc.background }}>
@@ -1437,17 +1435,8 @@ function FilmVideoSection({ invitation, fonts, tc, bgOverride }: { invitation: a
           {youtube.title || 'Featured Film'}
         </h2>
       </div>
-      <div style={{ aspectRatio: '16/9', borderRadius: '4px', overflow: 'hidden', background: '#000' }}>
-        {playing ? (
-          <iframe src={`https://www.youtube.com/embed/${videoId}?autoplay=1`} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
-        ) : (
-          <div onClick={() => setPlaying(true)} style={{ cursor: 'pointer', position: 'relative', width: '100%', height: '100%' }}>
-            <img src={thumbSrc} onError={() => setThumbSrc(`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="60" height="60" viewBox="0 0 60 60" fill="none"><circle cx="30" cy="30" r="30" fill="rgba(0,0,0,0.6)"/><polygon points="24,18 24,42 44,30" fill="white"/></svg>
-            </div>
-          </div>
-        )}
+      <div style={{ borderRadius: '4px', overflow: 'hidden' }}>
+        <YouTubeLite videoId={videoId} onPlay={onPlay} onStop={onStop} />
       </div>
     </div>
   )
@@ -1683,6 +1672,45 @@ function MapSection({ invitation, fonts, tc }: { invitation: any; fonts: FontCon
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const { ref, isVisible } = useScrollReveal()
   const [mapError, setMapError] = useState(false)
+  // 3-state touch lock: locked → hint → active
+  const [mapState, setMapState] = useState<'locked' | 'hint' | 'active'>('locked')
+  const mapActive = mapState === 'active'
+  const deactivateTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const hintTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleOverlayTap = useCallback(() => {
+    if (mapState === 'locked') {
+      setMapState('hint')
+      if (hintTimer.current) clearTimeout(hintTimer.current)
+      hintTimer.current = setTimeout(() => {
+        setMapState(prev => prev === 'hint' ? 'locked' : prev)
+      }, 3000)
+    } else if (mapState === 'hint') {
+      if (hintTimer.current) clearTimeout(hintTimer.current)
+      setMapState('active')
+    }
+  }, [mapState])
+
+  useEffect(() => {
+    if (mapState === 'locked') return
+    const handler = (e: TouchEvent | MouseEvent) => {
+      if (mapContainerRef.current && !mapContainerRef.current.parentElement?.contains(e.target as Node)) {
+        setMapState('locked')
+        if (deactivateTimer.current) clearTimeout(deactivateTimer.current)
+        if (hintTimer.current) clearTimeout(hintTimer.current)
+      }
+    }
+    document.addEventListener('touchstart', handler, { passive: true })
+    return () => { document.removeEventListener('touchstart', handler) }
+  }, [mapState])
+
+  useEffect(() => {
+    return () => {
+      if (deactivateTimer.current) clearTimeout(deactivateTimer.current)
+      if (hintTimer.current) clearTimeout(hintTimer.current)
+    }
+  }, [])
+
   const w = invitation.wedding || {}
   const address = w.venue?.address
   const venueName = w.venue?.name || ''
@@ -1739,12 +1767,35 @@ function MapSection({ invitation, fonts, tc }: { invitation: any; fonts: FontCon
           </div>
         </div>
 
-        {/* Map container */}
+        {/* Map container with touch lock overlay */}
         {!mapError ? (
-          <div ref={mapContainerRef} style={{
-            width: '100%', height: '240px', borderRadius: '8px', overflow: 'hidden',
-            border: `1px solid ${tc.divider}`, background: tc.sectionBg,
-          }} />
+          <div style={{ position: 'relative' }}>
+            <div ref={mapContainerRef} style={{
+              width: '100%', height: '240px', borderRadius: '8px', overflow: 'hidden',
+              border: `1px solid ${tc.divider}`, background: tc.sectionBg,
+            }} />
+            {!mapActive && (
+              <div
+                onClick={handleOverlayTap}
+                style={{
+                  position: 'absolute', inset: 0, zIndex: 1, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'rgba(255,255,255,0.01)', borderRadius: '8px',
+                }}
+              >
+                {mapState === 'hint' && (
+                  <span style={{
+                    padding: '6px 14px', borderRadius: 20,
+                    background: 'rgba(0,0,0,0.45)', color: '#fff',
+                    fontSize: 11, letterSpacing: '0.02em',
+                    pointerEvents: 'none',
+                  }}>
+                    지도를 한 번 더 터치하면 이동할 수 있어요
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
         ) : (
           <div className="text-center py-8" style={{ background: tc.sectionBg, borderRadius: '8px' }}>
             <p style={{ fontFamily: fonts.body, fontSize: '12px', color: tc.gray }}>지도를 불러올 수 없습니다</p>
@@ -3045,6 +3096,44 @@ function InvitationClientFilmContent({
   const [currentPage, setCurrentPage] = useState<'cover' | 'main'>(skipIntro ? 'main' : 'cover')
   const audioRef = useRef<HTMLAudioElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
+
+  // BGM fade out/in when video plays
+  const bgmWasPlayingRef = useRef(false)
+  const bgmFadeTimer = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const handleVideoPlay = useCallback(() => {
+    const audio = audioRef.current
+    if (!audio) return
+    if (bgmFadeTimer.current) { clearInterval(bgmFadeTimer.current); bgmFadeTimer.current = null }
+    bgmWasPlayingRef.current = !audio.paused
+    if (audio.paused) return
+    const startVol = audio.volume
+    let step = 0
+    bgmFadeTimer.current = setInterval(() => {
+      step++
+      audio.volume = Math.max(0, startVol * (1 - step / 10))
+      if (step >= 10) {
+        clearInterval(bgmFadeTimer.current!); bgmFadeTimer.current = null
+        audio.pause(); audio.volume = startVol
+      }
+    }, 50)
+  }, [])
+
+  const handleVideoStop = useCallback(() => {
+    const audio = audioRef.current
+    if (!audio) return
+    if (bgmFadeTimer.current) { clearInterval(bgmFadeTimer.current); bgmFadeTimer.current = null }
+    if (localStorage.getItem('musicEnabled') === 'false') return
+    if (bgmWasPlayingRef.current) {
+      audio.volume = 0; audio.play()
+      let step = 0
+      bgmFadeTimer.current = setInterval(() => {
+        step++
+        audio.volume = Math.min(1, step / 15)
+        if (step >= 15) { clearInterval(bgmFadeTimer.current!); bgmFadeTimer.current = null }
+      }, 47)
+    }
+  }, [])
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
 
@@ -3173,7 +3262,7 @@ function InvitationClientFilmContent({
                               return <RevealSection key={sectionId} sectionKey={sectionId} className={snapClass} style={secStyle}>{sceneCut}<ChapterThree invitation={invitation} fonts={fonts} tc={tc} onOpenLightbox={(i) => { setLightboxIndex(i); setLightboxOpen(true) }} bgOverride={curBg} /></RevealSection>
                             case 'video':
                               if (!(invitation as any).youtube?.enabled) return null
-                              return <RevealSection key={sectionId} sectionKey={sectionId} className={snapClass} style={secStyle}>{sceneCut}<FilmVideoSection invitation={invitation} fonts={fonts} tc={tc} bgOverride={curBg} /></RevealSection>
+                              return <RevealSection key={sectionId} sectionKey={sectionId} className={snapClass} style={secStyle}>{sceneCut}<FilmVideoSection invitation={invitation} fonts={fonts} tc={tc} bgOverride={curBg} onPlay={handleVideoPlay} onStop={handleVideoStop} /></RevealSection>
                             case 'premiere':
                               return <RevealSection key={sectionId} sectionKey={sectionId} className={snapClass} style={secStyle}>{sceneCut}<ThePremiere invitation={invitation} fonts={fonts} tc={tc} bgOverride={curBg} /></RevealSection>
                             case 'guidance':

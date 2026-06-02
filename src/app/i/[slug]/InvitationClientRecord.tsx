@@ -9,6 +9,7 @@ import type { Invitation } from '@/types/invitation'
 import type { InvitationContent } from '@/store/editorStore'
 import { getSectionPaddingStyle, isHidden, type StyleOverrides } from '@/lib/styleOverrides'
 import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
+import { YouTubeLite } from '@/components/invitation/YouTubeLite'
 import { resolveKoreanFontFamily } from '@/app/editor/the-simple/fontOptions'
 import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
 import '@/components/dday/dday-popup.css'
@@ -1298,33 +1299,21 @@ function TrackGallery({ invitation, fonts, tc, onOpenLightbox, trackRef, bgOverr
 }
 
 // ===== YouTube Video Section =====
-function RecordVideoSection({ invitation, fonts, tc, bgOverride }: { invitation: any; fonts: FontConfig; tc: ColorConfig; bgOverride?: string }) {
-  const [playing, setPlaying] = useState(false)
-  const [thumbSrc, setThumbSrc] = useState('')
+function RecordVideoSection({ invitation, fonts, tc, bgOverride, onPlay, onStop }: { invitation: any; fonts: FontConfig; tc: ColorConfig; bgOverride?: string; onPlay?: () => void; onStop?: () => void }) {
   const youtube = invitation.youtube
   if (!youtube?.enabled || !youtube?.url) return null
 
   const match = youtube.url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/|youtube\.com\/live\/)([a-zA-Z0-9_-]+)/)
   const videoId = match?.[1]
   if (!videoId) return null
-  if (!thumbSrc) setThumbSrc(`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`)
 
   return (
     <div className="py-8 px-5" style={{ backgroundColor: bgOverride || 'transparent' }}>
       {youtube.title && (
         <p className="text-center mb-3" style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '3px', color: tc.gray }}>{fonts.isScript ? youtube.title : youtube.title.toUpperCase()}</p>
       )}
-      <div style={{ aspectRatio: '16/9', borderRadius: '8px', overflow: 'hidden', background: '#000' }}>
-        {playing ? (
-          <iframe src={`https://www.youtube.com/embed/${videoId}?autoplay=1`} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
-        ) : (
-          <div onClick={() => setPlaying(true)} style={{ cursor: 'pointer', position: 'relative', width: '100%', height: '100%' }}>
-            <img src={thumbSrc} onError={() => setThumbSrc(`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="60" height="60" viewBox="0 0 60 60" fill="none"><circle cx="30" cy="30" r="30" fill="rgba(0,0,0,0.6)"/><polygon points="24,18 24,42 44,30" fill="white"/></svg>
-            </div>
-          </div>
-        )}
+      <div style={{ borderRadius: '8px', overflow: 'hidden' }}>
+        <YouTubeLite videoId={videoId} onPlay={onPlay} onStop={onStop} />
       </div>
     </div>
   )
@@ -2662,6 +2651,45 @@ function InvitationClientRecordContent({
   }, [skipIntro])
 
   const audioRef = useRef<HTMLAudioElement>(null)
+
+  // BGM fade out/in when video plays
+  const bgmWasPlayingRef = useRef(false)
+  const bgmFadeTimer = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const handleVideoPlay = useCallback(() => {
+    const audio = audioRef.current
+    if (!audio) return
+    if (bgmFadeTimer.current) { clearInterval(bgmFadeTimer.current); bgmFadeTimer.current = null }
+    bgmWasPlayingRef.current = !audio.paused
+    if (audio.paused) return
+    const startVol = audio.volume
+    let step = 0
+    bgmFadeTimer.current = setInterval(() => {
+      step++
+      audio.volume = Math.max(0, startVol * (1 - step / 10))
+      if (step >= 10) {
+        clearInterval(bgmFadeTimer.current!); bgmFadeTimer.current = null
+        audio.pause(); audio.volume = startVol
+      }
+    }, 50)
+  }, [])
+
+  const handleVideoStop = useCallback(() => {
+    const audio = audioRef.current
+    if (!audio) return
+    if (bgmFadeTimer.current) { clearInterval(bgmFadeTimer.current); bgmFadeTimer.current = null }
+    if (localStorage.getItem('musicEnabled') === 'false') return
+    if (bgmWasPlayingRef.current) {
+      audio.volume = 0; audio.play()
+      let step = 0
+      bgmFadeTimer.current = setInterval(() => {
+        step++
+        audio.volume = Math.min(1, step / 15)
+        if (step >= 15) { clearInterval(bgmFadeTimer.current!); bgmFadeTimer.current = null }
+      }, 47)
+    }
+  }, [])
+
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
@@ -2801,7 +2829,7 @@ function InvitationClientRecordContent({
       case 'video': {
         const yt = invitation.youtube
         if (!yt?.enabled || !yt?.url) return
-        component = <RecordVideoSection invitation={invitation} fonts={fonts} tc={tc} bgOverride={curBg} />
+        component = <RecordVideoSection invitation={invitation} fonts={fonts} tc={tc} bgOverride={curBg} onPlay={handleVideoPlay} onStop={handleVideoStop} />
         break
       }
       case 'trackWeddingDay':

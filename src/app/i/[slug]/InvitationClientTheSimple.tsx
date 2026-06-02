@@ -181,51 +181,29 @@ export default function InvitationClientTheSimple({
   const [overlayGone, setOverlayGone] = useState(false)
   const [curtainRevealed, setCurtainRevealed] = useState(false)
   const audioRef = useRef<HTMLAudioElement>(null)
-  const bgmFadeTimer = useRef<ReturnType<typeof setInterval> | null>(null)
+  const bgmWasPlayingRef = useRef(false)
   const hasBgm = data.bgm?.enabled && !!data.bgm?.url
   const [showDdayPopup, setShowDdayPopup] = useState(false)
 
-  // 동영상 재생 시 BGM 페이드아웃 → 일시정지
+  // 동영상 재생 시: BGM 상태 저장 → 일시정지
   const handleVideoPlay = useCallback(() => {
     const audio = audioRef.current
-    if (!audio || audio.paused) return
-    if (bgmFadeTimer.current) clearInterval(bgmFadeTimer.current)
-    const startVol = audio.volume
-    const steps = 10
-    const interval = 500 / steps
-    let step = 0
-    bgmFadeTimer.current = setInterval(() => {
-      step++
-      audio.volume = Math.max(0, startVol * (1 - step / steps))
-      if (step >= steps) {
-        if (bgmFadeTimer.current) clearInterval(bgmFadeTimer.current)
-        bgmFadeTimer.current = null
-        audio.pause()
-        audio.volume = startVol
-      }
-    }, interval)
+    if (!audio) return
+    bgmWasPlayingRef.current = !audio.paused
+    if (!audio.paused) audio.pause()
   }, [])
 
-  // 동영상 종료/닫기 시 BGM 페이드인 → 재생 재개
+  // 동영상 종료/닫기/화면이탈 시: 저장된 상태가 재생 중이었으면 BGM 복구
   const handleVideoStop = useCallback(() => {
     const audio = audioRef.current
     if (!audio) return
-    if (bgmFadeTimer.current) clearInterval(bgmFadeTimer.current)
+    // 사용자가 수동으로 음악을 꺼둔 경우 복구하지 않음
     const saved = localStorage.getItem('musicEnabled')
-    if (saved === 'false') return
-    audio.volume = 0
-    audio.play().catch(() => { return })
-    const steps = 15
-    const interval = 700 / steps
-    let step = 0
-    bgmFadeTimer.current = setInterval(() => {
-      step++
-      audio.volume = Math.min(1, step / steps)
-      if (step >= steps) {
-        if (bgmFadeTimer.current) clearInterval(bgmFadeTimer.current)
-        bgmFadeTimer.current = null
-      }
-    }, interval)
+    if (saved === 'false') { bgmWasPlayingRef.current = false; return }
+    if (bgmWasPlayingRef.current) {
+      audio.play().catch(() => {})
+      bgmWasPlayingRef.current = false
+    }
   }, [])
 
   const handleCoverOpen = useCallback(() => {

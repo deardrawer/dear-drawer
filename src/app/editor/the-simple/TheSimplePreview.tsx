@@ -1820,88 +1820,150 @@ function LiveCountdown({ targetDate, beforeMsg, todayMsg, afterMsg }: {
 /* ==========================================================================
  * YouTubeLite — 썸네일 클릭 시 재생 (다른 템플릿과 동일 패턴)
  * ========================================================================== */
-function YouTubeLite({ videoId, onPlay, onStop }: { videoId: string; onPlay?: () => void; onStop?: () => void }) {
-  const [playing, setPlaying] = useState(false)
-  const [thumbErr, setThumbErr] = useState(false)
+/* ── YouTube IFrame API 로더 (모듈 레벨 싱글턴) ── */
+let _ytApiReady = false
+const _ytApiQueue: (() => void)[] = []
+function loadYouTubeApi(cb: () => void) {
+  if (_ytApiReady) { cb(); return }
+  if (typeof window === 'undefined') return
+  if ((window as any).YT?.Player) { _ytApiReady = true; cb(); return }
+  _ytApiQueue.push(cb)
+  if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
+    const prev = (window as any).onYouTubeIframeAPIReady
+    ;(window as any).onYouTubeIframeAPIReady = () => {
+      prev?.()
+      _ytApiReady = true
+      _ytApiQueue.forEach(fn => fn())
+      _ytApiQueue.length = 0
+    }
+    const tag = document.createElement('script')
+    tag.src = 'https://www.youtube.com/iframe_api'
+    document.head.appendChild(tag)
+  }
+}
 
-  const handlePlay = () => {
-    setPlaying(true)
+function YouTubeLite({ videoId, onPlay, onStop }: { videoId: string; onPlay?: () => void; onStop?: () => void }) {
+  const [active, setActive] = useState(false)
+  const [thumbErr, setThumbErr] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const playerRef = useRef<any>(null)
+  const stoppedRef = useRef(false)
+  const playerDivId = useRef(`yt-${videoId}-${Math.random().toString(36).slice(2, 8)}`).current
+
+  // 영상이 화면 밖으로 벗어나면 정지 + BGM 복구
+  useEffect(() => {
+    if (!active || !containerRef.current) return
+    const el = containerRef.current
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting && !stoppedRef.current) {
+          stoppedRef.current = true
+          playerRef.current?.destroy?.()
+          playerRef.current = null
+          setActive(false)
+          onStop?.()
+        }
+      },
+      { threshold: 0.3 },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [active, onStop])
+
+  // YouTube IFrame API 플레이어 생성
+  useEffect(() => {
+    if (!active) return
+    stoppedRef.current = false
+    let destroyed = false
+
+    const init = () => {
+      if (destroyed || !document.getElementById(playerDivId)) return
+      const YT = (window as any).YT
+      playerRef.current = new YT.Player(playerDivId, {
+        videoId,
+        width: '100%',
+        height: '100%',
+        playerVars: { autoplay: 1, playsinline: 1, rel: 0 },
+        events: {
+          onStateChange: (e: any) => {
+            // ENDED(0) → 영상 종료 시 BGM 복구
+            if (e.data === YT.PlayerState.ENDED && !stoppedRef.current) {
+              stoppedRef.current = true
+              setActive(false)
+              onStop?.()
+            }
+            // PAUSED(2) → BGM 복구하지 않음 (요구사항 3)
+          },
+        },
+      })
+    }
+
+    loadYouTubeApi(init)
+    return () => {
+      destroyed = true
+      playerRef.current?.destroy?.()
+      playerRef.current = null
+    }
+  }, [active, videoId, playerDivId, onStop])
+
+  const handleClick = () => {
+    setActive(true)
     onPlay?.()
   }
 
-  const handleStop = () => {
-    setPlaying(false)
+  const handleClose = () => {
+    if (stoppedRef.current) return
+    stoppedRef.current = true
+    playerRef.current?.destroy?.()
+    playerRef.current = null
+    setActive(false)
     onStop?.()
   }
 
-  if (playing) {
-    return (
-      <div style={{ aspectRatio: '16/9', width: '100%', position: 'relative' }}>
-        <iframe
-          src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          style={{ width: '100%', height: '100%', border: 'none' }}
-          title="YouTube video"
-        />
-        {/* 닫기 버튼 */}
-        <button
-          onClick={handleStop}
-          style={{
-            position: 'absolute', top: 8, right: 8, width: 32, height: 32,
-            borderRadius: '50%', background: 'rgba(0,0,0,0.6)', border: 'none',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', zIndex: 2,
-          }}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff">
-            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
-          </svg>
-        </button>
-      </div>
-    )
-  }
-
   return (
-    <div
-      onClick={handlePlay}
-      style={{ aspectRatio: '16/9', width: '100%', position: 'relative', cursor: 'pointer', background: '#000' }}
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={thumbErr
-          ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
-          : `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
-        onError={() => setThumbErr(true)}
-        alt=""
-        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-      />
-      {/* 재생 버튼 오버레이 */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
+    <div ref={containerRef} style={{ aspectRatio: '16/9', width: '100%', position: 'relative', background: '#000' }}>
+      {active ? (
+        <>
+          <div id={playerDivId} style={{ width: '100%', height: '100%' }} />
+          {/* 닫기 버튼 */}
+          <button
+            onClick={handleClose}
+            style={{
+              position: 'absolute', top: 8, right: 8, width: 32, height: 32,
+              borderRadius: '50%', background: 'rgba(0,0,0,0.6)', border: 'none',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', zIndex: 2,
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+            </svg>
+          </button>
+        </>
+      ) : (
         <div
-          style={{
-            width: 56,
-            height: 56,
-            borderRadius: '50%',
-            background: 'rgba(0,0,0,0.55)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
+          onClick={handleClick}
+          style={{ width: '100%', height: '100%', cursor: 'pointer', position: 'relative' }}
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff">
-            <path d="M8 5v14l11-7z" />
-          </svg>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={thumbErr
+              ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+              : `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+            onError={() => setThumbErr(true)}
+            alt=""
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          />
+          {/* 재생 버튼 오버레이 */}
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

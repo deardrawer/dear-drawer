@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getButtonBgColor } from '@/lib/colorUtils'
+import { getButtonBgLightColor } from '@/lib/colorUtils'
 
 // 툴팁 애니메이션 스타일
 const tooltipAnimationStyles = `
@@ -122,8 +122,9 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
     closeBg: isDarkTheme ? '#F5F5F5' : themeColors.background,
   }
 
-  // 모달 버튼 배경색 (sectionBg 기반, 흰 배경 위에서 잘 보이도록 조정)
-  const buttonBg = getButtonBgColor(sheetColors.sectionBg)
+  // 모달 버튼 배경색
+  const buttonBg = sheetColors.primary
+  const buttonBgLight = getButtonBgLightColor(sheetColors.primary)
 
   const openModal = (modal: ModalType) => {
     setIsBottomSheetOpen(false)
@@ -348,7 +349,7 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
                 </button>
               ))}
             </div>
-            <button onClick={() => setIsBottomSheetOpen(false)} className="w-full mt-6 py-3 rounded-lg text-xs font-light" style={{ background: buttonBg, color: sheetColors.text }}>닫기</button>
+            <button onClick={() => setIsBottomSheetOpen(false)} className="w-full mt-6 py-3 rounded-lg text-xs font-light" style={{ background: buttonBgLight, color: sheetColors.text }}>닫기</button>
           </div>
         </>
       )}
@@ -575,13 +576,13 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
                       <p className="text-xs mb-2" style={{ color: sheetColors.gray }}>초대 경로</p>
                       <div className="flex gap-2 flex-wrap" style={{ wordBreak: 'keep-all' }}>
                         {((rsvpForm.side === 'groom' && (invitation?.rsvpSideDetailOptions?.groomSelf ?? true)) || (rsvpForm.side === 'bride' && (invitation?.rsvpSideDetailOptions?.brideSelf ?? true))) && (
-                          <button onClick={() => setRsvpForm({ ...rsvpForm, sideDetail: 'self' })} className="flex-1 min-w-0 py-2 px-1 rounded-lg text-xs text-center transition-all" style={{ background: rsvpForm.sideDetail === 'self' ? buttonBg : '#fafafa', color: sheetColors.text }}>{rsvpForm.side === 'groom' ? '신랑' : '신부'}</button>
+                          <button onClick={() => setRsvpForm({ ...rsvpForm, sideDetail: 'self' })} className="flex-1 min-w-0 py-2 px-1 rounded-lg text-xs text-center transition-all" style={{ background: rsvpForm.sideDetail === 'self' ? buttonBg : '#fafafa', color: rsvpForm.sideDetail === 'self' ? '#fff' : sheetColors.text }}>{rsvpForm.side === 'groom' ? '신랑' : '신부'}</button>
                         )}
                         {((rsvpForm.side === 'groom' && (invitation?.rsvpSideDetailOptions?.groomFather ?? true)) || (rsvpForm.side === 'bride' && (invitation?.rsvpSideDetailOptions?.brideFather ?? true))) && (
-                          <button onClick={() => setRsvpForm({ ...rsvpForm, sideDetail: 'father' })} className="flex-1 min-w-0 py-2 px-1 rounded-lg text-xs text-center transition-all" style={{ background: rsvpForm.sideDetail === 'father' ? buttonBg : '#fafafa', color: sheetColors.text }}>{rsvpForm.side === 'groom' ? '신랑' : '신부'} 아버지</button>
+                          <button onClick={() => setRsvpForm({ ...rsvpForm, sideDetail: 'father' })} className="flex-1 min-w-0 py-2 px-1 rounded-lg text-xs text-center transition-all" style={{ background: rsvpForm.sideDetail === 'father' ? buttonBg : '#fafafa', color: rsvpForm.sideDetail === 'father' ? '#fff' : sheetColors.text }}>{rsvpForm.side === 'groom' ? '신랑' : '신부'} 아버지</button>
                         )}
                         {((rsvpForm.side === 'groom' && (invitation?.rsvpSideDetailOptions?.groomMother ?? true)) || (rsvpForm.side === 'bride' && (invitation?.rsvpSideDetailOptions?.brideMother ?? true))) && (
-                          <button onClick={() => setRsvpForm({ ...rsvpForm, sideDetail: 'mother' })} className="flex-1 min-w-0 py-2 px-1 rounded-lg text-xs text-center transition-all" style={{ background: rsvpForm.sideDetail === 'mother' ? buttonBg : '#fafafa', color: sheetColors.text }}>{rsvpForm.side === 'groom' ? '신랑' : '신부'} 어머니</button>
+                          <button onClick={() => setRsvpForm({ ...rsvpForm, sideDetail: 'mother' })} className="flex-1 min-w-0 py-2 px-1 rounded-lg text-xs text-center transition-all" style={{ background: rsvpForm.sideDetail === 'mother' ? buttonBg : '#fafafa', color: rsvpForm.sideDetail === 'mother' ? '#fff' : sheetColors.text }}>{rsvpForm.side === 'groom' ? '신랑' : '신부'} 어머니</button>
                         )}
                       </div>
                     </div>
@@ -590,17 +591,17 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
                     <button
                       onClick={() => setRsvpForm({ ...rsvpForm, attendance: 'yes' })}
                       className="flex-1 py-3 rounded-lg text-sm transition-all"
-                      style={{ background: rsvpForm.attendance === 'yes' ? buttonBg : '#fafafa', color: sheetColors.text }}
+                      style={{ background: rsvpForm.attendance === 'yes' ? buttonBg : '#fafafa', color: rsvpForm.attendance === 'yes' ? '#fff' : sheetColors.text }}
                     >참석</button>
                     <button
                       onClick={() => setRsvpForm({ ...rsvpForm, attendance: 'maybe' })}
                       className="flex-1 py-3 rounded-lg text-sm transition-all"
-                      style={{ background: rsvpForm.attendance === 'maybe' ? buttonBg : '#fafafa', color: sheetColors.text }}
+                      style={{ background: rsvpForm.attendance === 'maybe' ? buttonBg : '#fafafa', color: rsvpForm.attendance === 'maybe' ? '#fff' : sheetColors.text }}
                     >미정</button>
                     <button
                       onClick={() => setRsvpForm({ ...rsvpForm, attendance: 'no' })}
                       className="flex-1 py-3 rounded-lg text-sm transition-all"
-                      style={{ background: rsvpForm.attendance === 'no' ? buttonBg : '#fafafa', color: sheetColors.text }}
+                      style={{ background: rsvpForm.attendance === 'no' ? buttonBg : '#fafafa', color: rsvpForm.attendance === 'no' ? '#fff' : sheetColors.text }}
                     >불참</button>
                   </div>
                   {invitation?.rsvpAllowGuestCount !== false && rsvpForm.attendance === 'yes' && (
@@ -623,16 +624,16 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
                   )}
                   {invitation?.rsvpMealOption && rsvpForm.attendance === 'yes' && (
                     <div className="flex gap-2 mb-3">
-                      <button onClick={() => setRsvpForm({ ...rsvpForm, mealAttendance: 'yes' })} className="flex-1 py-3 rounded-lg text-sm transition-all" style={{ background: rsvpForm.mealAttendance === 'yes' ? buttonBg : '#fafafa', color: sheetColors.text }}>식사 예정</button>
-                      <button onClick={() => setRsvpForm({ ...rsvpForm, mealAttendance: 'no' })} className="flex-1 py-3 rounded-lg text-sm transition-all" style={{ background: rsvpForm.mealAttendance === 'no' ? buttonBg : '#fafafa', color: sheetColors.text }}>식사 안 함</button>
+                      <button onClick={() => setRsvpForm({ ...rsvpForm, mealAttendance: 'yes' })} className="flex-1 py-3 rounded-lg text-sm transition-all" style={{ background: rsvpForm.mealAttendance === 'yes' ? buttonBg : '#fafafa', color: rsvpForm.mealAttendance === 'yes' ? '#fff' : sheetColors.text }}>식사 예정</button>
+                      <button onClick={() => setRsvpForm({ ...rsvpForm, mealAttendance: 'no' })} className="flex-1 py-3 rounded-lg text-sm transition-all" style={{ background: rsvpForm.mealAttendance === 'no' ? buttonBg : '#fafafa', color: rsvpForm.mealAttendance === 'no' ? '#fff' : sheetColors.text }}>식사 안 함</button>
                     </div>
                   )}
                   {invitation?.rsvpShuttleOption && rsvpForm.attendance === 'yes' && (
                     <div className="mb-3">
                       <p className="text-xs mb-2" style={{ color: sheetColors.gray }}>대절버스 이용 여부</p>
                       <div className="flex gap-2">
-                        <button onClick={() => setRsvpForm({ ...rsvpForm, shuttleBus: 'yes' })} className="flex-1 py-3 rounded-lg text-sm transition-all" style={{ background: rsvpForm.shuttleBus === 'yes' ? buttonBg : '#fafafa', color: sheetColors.text }}>이용 예정</button>
-                        <button onClick={() => setRsvpForm({ ...rsvpForm, shuttleBus: 'no' })} className="flex-1 py-3 rounded-lg text-sm transition-all" style={{ background: rsvpForm.shuttleBus === 'no' ? buttonBg : '#fafafa', color: sheetColors.text }}>이용 안 함</button>
+                        <button onClick={() => setRsvpForm({ ...rsvpForm, shuttleBus: 'yes' })} className="flex-1 py-3 rounded-lg text-sm transition-all" style={{ background: rsvpForm.shuttleBus === 'yes' ? buttonBg : '#fafafa', color: rsvpForm.shuttleBus === 'yes' ? '#fff' : sheetColors.text }}>이용 예정</button>
+                        <button onClick={() => setRsvpForm({ ...rsvpForm, shuttleBus: 'no' })} className="flex-1 py-3 rounded-lg text-sm transition-all" style={{ background: rsvpForm.shuttleBus === 'no' ? buttonBg : '#fafafa', color: rsvpForm.shuttleBus === 'no' ? '#fff' : sheetColors.text }}>이용 안 함</button>
                       </div>
                     </div>
                   )}
@@ -646,7 +647,7 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
                   <button
                     onClick={closeModal}
                     className="w-full py-3 rounded-lg text-sm transition-opacity"
-                    style={{ background: buttonBg, color: sheetColors.text, opacity: (!rsvpForm.name.trim() || !rsvpForm.attendance) ? 0.4 : 1 }}
+                    style={{ background: buttonBg, color: '#fff', opacity: (!rsvpForm.name.trim() || !rsvpForm.attendance) ? 0.4 : 1 }}
                     disabled={!rsvpForm.name.trim() || !rsvpForm.attendance}
                   >제출하기</button>
                 </>
@@ -699,8 +700,8 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
                             onClick={() => setDirectionsTab(tab.key)}
                             className="flex-1 py-2.5 text-[10px] transition-all"
                             style={{
-                              background: directionsTab === tab.key ? sheetColors.sectionBg : 'transparent',
-                              color: directionsTab === tab.key ? '#333' : '#777',
+                              background: directionsTab === tab.key ? buttonBg : 'transparent',
+                              color: directionsTab === tab.key ? '#fff' : '#777',
                             }}
                           >
                             {tab.label}
@@ -916,7 +917,7 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
 
             {/* Close Button */}
             <div className="p-4 pt-0 flex-shrink-0">
-              <button onClick={closeModal} className="w-full py-3 rounded-lg text-sm" style={{ background: buttonBg, color: sheetColors.text }}>닫기</button>
+              <button onClick={closeModal} className="w-full py-3 rounded-lg text-sm" style={{ background: buttonBgLight, color: sheetColors.text }}>닫기</button>
             </div>
           </div>
           <style>{`

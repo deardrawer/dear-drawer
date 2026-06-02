@@ -59,11 +59,16 @@ function hslToHex(h: number, s: number, l: number): string {
  * 흰 배경 모달 위에서 확실히 보이도록 lightness를 0.80~0.85 범위로 조정.
  */
 export function getButtonBgColor(sectionBg: string): string {
-  const { h, s, l } = hexToHSL(sectionBg)
-
-  const newL = 0.82
-  // 채도도 살짝 올려서 색감을 더 선명하게
+  const { h, s } = hexToHSL(sectionBg)
   const newS = Math.min(1, s + 0.1)
+  return hslToHex(h, newS, 0.82)
+}
 
-  return hslToHex(h, newS, newL)
+/**
+ * 닫기/제출 버튼용 — buttonBg보다 살짝 연한 톤.
+ */
+export function getButtonBgLightColor(sectionBg: string): string {
+  const { h, s } = hexToHSL(sectionBg)
+  const newS = Math.min(1, s + 0.08)
+  return hslToHex(h, newS, 0.88)
 }

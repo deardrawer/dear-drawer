@@ -181,8 +181,52 @@ export default function InvitationClientTheSimple({
   const [overlayGone, setOverlayGone] = useState(false)
   const [curtainRevealed, setCurtainRevealed] = useState(false)
   const audioRef = useRef<HTMLAudioElement>(null)
+  const bgmFadeTimer = useRef<ReturnType<typeof setInterval> | null>(null)
   const hasBgm = data.bgm?.enabled && !!data.bgm?.url
   const [showDdayPopup, setShowDdayPopup] = useState(false)
+
+  // 동영상 재생 시 BGM 페이드아웃 → 일시정지
+  const handleVideoPlay = useCallback(() => {
+    const audio = audioRef.current
+    if (!audio || audio.paused) return
+    if (bgmFadeTimer.current) clearInterval(bgmFadeTimer.current)
+    const startVol = audio.volume
+    const steps = 10
+    const interval = 500 / steps
+    let step = 0
+    bgmFadeTimer.current = setInterval(() => {
+      step++
+      audio.volume = Math.max(0, startVol * (1 - step / steps))
+      if (step >= steps) {
+        if (bgmFadeTimer.current) clearInterval(bgmFadeTimer.current)
+        bgmFadeTimer.current = null
+        audio.pause()
+        audio.volume = startVol
+      }
+    }, interval)
+  }, [])
+
+  // 동영상 종료/닫기 시 BGM 페이드인 → 재생 재개
+  const handleVideoStop = useCallback(() => {
+    const audio = audioRef.current
+    if (!audio) return
+    if (bgmFadeTimer.current) clearInterval(bgmFadeTimer.current)
+    const saved = localStorage.getItem('musicEnabled')
+    if (saved === 'false') return
+    audio.volume = 0
+    audio.play().catch(() => { return })
+    const steps = 15
+    const interval = 700 / steps
+    let step = 0
+    bgmFadeTimer.current = setInterval(() => {
+      step++
+      audio.volume = Math.min(1, step / steps)
+      if (step >= steps) {
+        if (bgmFadeTimer.current) clearInterval(bgmFadeTimer.current)
+        bgmFadeTimer.current = null
+      }
+    }, interval)
+  }, [])
 
   const handleCoverOpen = useCallback(() => {
     setCoverOpen(true)
@@ -274,7 +318,7 @@ export default function InvitationClientTheSimple({
           position: 'relative',
         }}
       >
-        {(!hasCover || coverOpen || curtainRevealed) && <TheSimplePreview data={data} skipIntroBgFade={hasCover} />}
+        {(!hasCover || coverOpen || curtainRevealed) && <TheSimplePreview data={data} skipIntroBgFade={hasCover} onVideoPlay={handleVideoPlay} onVideoStop={handleVideoStop} />}
       </WatermarkOverlay>
 
       {/* 네비게이션 (GuestFloatingButton) */}

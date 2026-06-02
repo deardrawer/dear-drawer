@@ -2160,16 +2160,17 @@ function AnniversaryCounterSection({
 }
 
 // Color themes
-type ColorTheme = 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-green' | 'luxury-navy' | 'sunset-coral'
+type ColorTheme = 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-green' | 'luxury-navy' | 'sunset-coral' | 'custom'
 interface ColorConfig { primary: string; secondary: string; accent: string; background: string; sectionBg: string; cardBg: string; divider: string; text: string; gray: string; highlight?: string }
 
 const colorThemes: Record<ColorTheme, ColorConfig> = {
   'classic-rose': { primary: '#C41050', secondary: '#B8956A', accent: '#B8956A', background: '#FFF8F5', sectionBg: '#FFE8E8', cardBg: '#FFFFFF', divider: '#d4b896', text: '#3d3d3d', gray: '#555555' },
-  'modern-black': { primary: '#111111', secondary: '#555555', accent: '#111111', background: '#FFFFFF', sectionBg: '#F5F5F5', cardBg: '#FFFFFF', divider: '#CCCCCC', text: '#3d3d3d', gray: '#555555', highlight: '#888888' },
+  'modern-black': { primary: '#111111', secondary: '#555555', accent: '#111111', background: '#FFFFFF', sectionBg: '#D5D8DC', cardBg: '#FFFFFF', divider: '#CCCCCC', text: '#3d3d3d', gray: '#555555', highlight: '#888888' },
   'romantic-blush': { primary: '#A67A7A', secondary: '#8a7068', accent: '#8a7068', background: '#FDF8F6', sectionBg: '#F8EFEC', cardBg: '#FFFFFF', divider: '#D4C4BC', text: '#3d3d3d', gray: '#555555' },
   'nature-green': { primary: '#3A5A3A', secondary: '#6A7A62', accent: '#5A7A52', background: '#F5F7F4', sectionBg: '#EBF0E8', cardBg: '#FFFFFF', divider: '#A8B5A0', text: '#3d3d3d', gray: '#555555', highlight: '#5A8A52' },
   'luxury-navy': { primary: '#0f2035', secondary: '#8A6A3A', accent: '#8A6A3A', background: '#F8F9FA', sectionBg: '#E8ECF0', cardBg: '#FFFFFF', divider: '#C9A96E', text: '#3d3d3d', gray: '#555555', highlight: '#8A6A3A' },
   'sunset-coral': { primary: '#B85040', secondary: '#B88060', accent: '#B8683A', background: '#FFFAF7', sectionBg: '#FFEEE5', cardBg: '#FFFFFF', divider: '#E8A87C', text: '#3d3d3d', gray: '#555555' },
+  'custom': { primary: '#C41050', secondary: '#C41050', accent: '#C41050', background: '#FFFFFF', sectionBg: '#D5D8DC', cardBg: '#FFFFFF', divider: '#E0E0E0', text: '#3d3d3d', gray: '#555555' },
 }
 
 // Font styles
@@ -2496,6 +2497,10 @@ function transformToDisplayData(dbInvitation: Invitation, content: InvitationCon
     deceasedDisplayStyle: content.deceasedDisplayStyle || mockInvitation.deceasedDisplayStyle,
     profileOrder: (content as any).profileOrder || 'groom-first',
     styleOverrides: (content as any).styleOverrides,
+    customAccentColor: (content as any).customAccentColor,
+    customBgColor: (content as any).customBgColor,
+    customSectionBgColor: (content as any).customSectionBgColor,
+    customDividerColor: (content as any).customDividerColor,
     ddayPopup: normalizeDdayPopup(content.ddayPopup),
   } as unknown as DisplayInvitation
 }
@@ -2612,6 +2617,16 @@ type IntroScreen = 'cover' | 'invitation'
 function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors, onNavigate, onScreenChange, onNextStoryVisible, guestGreeting, guestCustomMessage, introSettings }: PageProps) {
   const [showDirections, setShowDirections] = useState(false)
   const nextStoryRef = useRef<HTMLDivElement>(null)
+
+  // 오시는 길 모달 열림 시 body에 data 속성 설정 (에디터 프리뷰에서 네비 숨김용)
+  useEffect(() => {
+    if (showDirections) {
+      document.body.setAttribute('data-preview-modal', 'true')
+    } else {
+      document.body.removeAttribute('data-preview-modal')
+    }
+    return () => { document.body.removeAttribute('data-preview-modal') }
+  }, [showDirections])
 
   // 첫 번째 가능한 탭으로 초기화
   const directions = invitation.wedding.directions
@@ -3721,7 +3736,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
                   onClick={handleSubmitGuestbook}
                   disabled={isSubmitting}
                   className="px-4 py-3 rounded-lg text-[10px] font-light text-white disabled:opacity-50"
-                  style={{ background: themeColors.text }}
+                  style={{ background: themeColors.primary }}
                 >
                   {isSubmitting ? '...' : '등록'}
                 </button>
@@ -3773,8 +3788,8 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
       {/* RSVP Section */}
       {invitation.rsvpEnabled && (
         <AnimatedSection className="px-6 py-14 text-center" style={{ background: themeColors.cardBg }}>
-          <p className="text-[10px] font-light mb-6" style={{ color: themeColors.gray, letterSpacing: '4px' }}>RSVP</p>
-          <p className="text-sm mb-4" style={{ color: '#666' }}>참석 여부를 알려주세요</p>
+          <h3 className="text-sm mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400 }}>RSVP</h3>
+          <p className="text-sm mb-4" style={{ color: themeColors.text }}>참석 여부를 알려주세요</p>
           <button
             onClick={() => onOpenRsvp?.()}
             className="w-full py-3 rounded-lg text-xs"
@@ -4158,10 +4173,19 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
 
   // 커스텀 텍스트 색상을 테마에 오버라이드 (사용자 설정이 있으면 적용)
   const baseThemeColors = colorThemes[effectiveColorTheme]
+  const isCustomTheme = effectiveColorTheme === 'custom'
+  const customAccent = (invitation as any).customAccentColor
+  const customBg = (invitation as any).customBgColor
+  const customSectionBg = (invitation as any).customSectionBgColor
+  const customDivider = (invitation as any).customDividerColor
   const themeColors: ColorConfig = {
     ...baseThemeColors,
+    ...(isCustomTheme && customAccent ? { primary: customAccent, secondary: customAccent, accent: customAccent } : {}),
+    ...(isCustomTheme && customBg ? { background: customBg } : {}),
+    ...(isCustomTheme && customSectionBg ? { sectionBg: customSectionBg } : {}),
+    ...(isCustomTheme && customDivider ? { divider: customDivider } : {}),
     text: invitation.bodyTextColor || baseThemeColors.text,
-    highlight: invitation.accentTextColor || baseThemeColors.highlight || baseThemeColors.primary,
+    highlight: invitation.accentTextColor || (isCustomTheme && customAccent ? customAccent : null) || baseThemeColors.highlight || baseThemeColors.primary,
   }
   const fonts = fontStyles[effectiveFontStyle]
 

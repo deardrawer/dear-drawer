@@ -15,6 +15,7 @@ const COLOR_THEMES = [
   { id: 'nature-green', name: '네이처 그린', primary: '#6B8E6B', preview: 'bg-gradient-to-br from-green-100 to-green-300', recommended: false },
   { id: 'luxury-navy', name: '럭셔리 네이비', primary: '#1E3A5F', preview: 'bg-gradient-to-br from-blue-200 to-indigo-300', recommended: false },
   { id: 'sunset-coral', name: '선셋 코럴', primary: '#E8846B', preview: 'bg-gradient-to-br from-orange-100 to-orange-300', recommended: false },
+  { id: 'custom', name: '커스텀', primary: '#888888', preview: '', recommended: false },
 ] as const
 
 // 테마별 기본 강조 텍스트 색상
@@ -644,13 +645,142 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
                     </svg>
                   </div>
                 )}
-                <div className={`w-full h-12 rounded-lg mb-2 ${theme.preview}`} />
+                {theme.id === 'custom' ? (
+                  <div
+                    className="w-full h-12 rounded-lg mb-2"
+                    style={{
+                      background: (invitation as any).customAccentColor
+                        ? `linear-gradient(135deg, ${(invitation as any).customAccentColor}30 0%, ${(invitation as any).customAccentColor} 50%, ${(invitation as any).customBgColor || '#FFFFFF'} 100%)`
+                        : 'conic-gradient(from 0deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3, #ff6b6b)',
+                    }}
+                  />
+                ) : (
+                  <div className={`w-full h-12 rounded-lg mb-2 ${theme.preview}`} />
+                )}
                 <p className="text-xs text-gray-700 font-medium">{theme.name}</p>
                 {theme.recommended && <span className="text-[9px] text-white bg-black px-1.5 py-0.5 rounded-full">추천</span>}
               </button>
             )
           })}
         </div>
+
+        {/* 커스텀 테마 색상 설정 (OUR/FAMILY) */}
+        {colorTheme === 'custom' && !isFilm && !isRecord && !isMagazine && (
+          <div className="mt-4 space-y-4">
+            <h4 className="text-sm font-medium text-gray-800 flex items-center gap-2">
+              <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
+                <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
+                <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
+                <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
+                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" />
+              </svg>
+              커스텀 테마 색상
+            </h4>
+            <p className="text-sm text-blue-600">각 색상을 자유롭게 설정하여 나만의 테마를 만들어보세요</p>
+
+            {/* 메인 컬러 */}
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-700">메인 컬러</p>
+                <p className="text-xs text-gray-500">포인트, 버튼, 강조 요소</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={(invitation as any).customAccentColor || '#C41050'}
+                  onChange={(e) => updateField('customAccentColor' as any, e.target.value)}
+                  className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300"
+                  style={{ padding: 0 }}
+                />
+                <span className="text-xs text-gray-600 font-mono w-16">{(invitation as any).customAccentColor || '#C41050'}</span>
+              </div>
+            </div>
+
+            {/* 전체 배경 */}
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-700">전체 배경</p>
+                <p className="text-xs text-gray-500">페이지 배경 컬러</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={(invitation as any).customBgColor || '#FFFFFF'}
+                  onChange={(e) => updateField('customBgColor' as any, e.target.value)}
+                  className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300"
+                  style={{ padding: 0 }}
+                />
+                <span className="text-xs text-gray-600 font-mono w-16">{(invitation as any).customBgColor || '#FFFFFF'}</span>
+              </div>
+            </div>
+
+            {/* 섹션 배경 */}
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-700">섹션 배경</p>
+                <p className="text-xs text-gray-500">구분 섹션 배경 컬러</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={(invitation as any).customSectionBgColor || '#F5F5F5'}
+                  onChange={(e) => updateField('customSectionBgColor' as any, e.target.value)}
+                  className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300"
+                  style={{ padding: 0 }}
+                />
+                <span className="text-xs text-gray-600 font-mono w-16">{(invitation as any).customSectionBgColor || '#F5F5F5'}</span>
+              </div>
+            </div>
+
+            {/* 구분선 */}
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-700">구분선</p>
+                <p className="text-xs text-gray-500">섹션 사이 구분선 컬러</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={(invitation as any).customDividerColor || '#E0E0E0'}
+                  onChange={(e) => updateField('customDividerColor' as any, e.target.value)}
+                  className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300"
+                  style={{ padding: 0 }}
+                />
+                <span className="text-xs text-gray-600 font-mono w-16">{(invitation as any).customDividerColor || '#E0E0E0'}</span>
+              </div>
+            </div>
+
+            {/* 미리보기 */}
+            <div className="p-4 rounded-xl border border-gray-200 space-y-2" style={{ backgroundColor: (invitation as any).customBgColor || '#FFFFFF' }}>
+              <p className="text-center text-[11px] font-medium" style={{ color: '#3d3d3d' }}>초대합니다</p>
+              <div className="w-8 h-px mx-auto" style={{ backgroundColor: (invitation as any).customDividerColor || '#E0E0E0' }} />
+              <p className="text-center text-[10px]" style={{ color: (invitation as any).customAccentColor || '#C41050' }}>신랑 &middot; 신부</p>
+              <div className="mx-auto w-full rounded-lg py-2" style={{ backgroundColor: (invitation as any).customSectionBgColor || '#F5F5F5' }}>
+                <p className="text-center text-[10px]" style={{ color: '#555' }}>섹션 배경 영역</p>
+              </div>
+              <div className="flex justify-center">
+                <div className="px-3 py-1 rounded-full text-[9px] text-white" style={{ backgroundColor: (invitation as any).customAccentColor || '#C41050' }}>버튼</div>
+              </div>
+            </div>
+
+            {/* 초기화 */}
+            {((invitation as any).customAccentColor || (invitation as any).customBgColor || (invitation as any).customSectionBgColor || (invitation as any).customDividerColor) && (
+              <button
+                type="button"
+                onClick={() => {
+                  updateField('customAccentColor' as any, undefined as unknown as string)
+                  updateField('customBgColor' as any, undefined as unknown as string)
+                  updateField('customSectionBgColor' as any, undefined as unknown as string)
+                  updateField('customDividerColor' as any, undefined as unknown as string)
+                }}
+                className="text-xs text-blue-600 hover:text-blue-700"
+              >
+                커스텀 색상 초기화
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Magazine 포인트 컬러 */}
         {isMagazine && (

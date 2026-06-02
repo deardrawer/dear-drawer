@@ -395,7 +395,7 @@ export interface InvitationContent {
   backgroundColor: string
   textColor: string
   fontStyle: 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury' | 'roundgothic'
-  colorTheme: 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-green' | 'luxury-navy' | 'sunset-coral' | 'film-dark' | 'film-light' | 'record-coral' | 'record-rose' | 'record-peach' | 'record-bw' | 'record-lilac' | 'record-mint'
+  colorTheme: 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-green' | 'luxury-navy' | 'sunset-coral' | 'custom' | 'film-dark' | 'film-light' | 'record-coral' | 'record-rose' | 'record-peach' | 'record-bw' | 'record-lilac' | 'record-mint'
   customAccentColor?: string  // Movie 템플릿 accent 컬러 커스텀
   accentTextColor?: string  // 강조 텍스트 색상 (사용자 커스텀, 없으면 테마 기본값 사용)
   bodyTextColor?: string    // 본문 텍스트 색상 (사용자 커스텀, 없으면 테마 기본값 사용)

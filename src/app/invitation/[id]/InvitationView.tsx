@@ -292,16 +292,17 @@ function GuestbookModal({ messages, initialIndex, onClose, fonts, themeColors }:
 }
 
 // 테마 색상 정의
-type ColorTheme = 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-green' | 'luxury-navy' | 'sunset-coral' | 'film-dark' | 'film-light' | 'record-coral' | 'record-rose' | 'record-peach' | 'record-bw' | 'record-lilac' | 'record-mint'
+type ColorTheme = 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-green' | 'luxury-navy' | 'sunset-coral' | 'custom' | 'film-dark' | 'film-light' | 'record-coral' | 'record-rose' | 'record-peach' | 'record-bw' | 'record-lilac' | 'record-mint'
 interface ColorConfig { primary: string; secondary: string; accent: string; background: string; sectionBg: string; cardBg: string; divider: string; text: string; gray: string }
 
 const colorThemes: Record<ColorTheme, ColorConfig> = {
   'classic-rose': { primary: '#C41050', secondary: '#B8956A', accent: '#B8956A', background: '#FFF8F5', sectionBg: '#FFE8E8', cardBg: '#FFFFFF', divider: '#d4b896', text: '#2a2a2a', gray: '#444444' },
-  'modern-black': { primary: '#111111', secondary: '#555555', accent: '#111111', background: '#FFFFFF', sectionBg: '#F5F5F5', cardBg: '#FFFFFF', divider: '#CCCCCC', text: '#2a2a2a', gray: '#444444' },
+  'modern-black': { primary: '#111111', secondary: '#555555', accent: '#111111', background: '#FFFFFF', sectionBg: '#D5D8DC', cardBg: '#FFFFFF', divider: '#CCCCCC', text: '#2a2a2a', gray: '#444444' },
   'romantic-blush': { primary: '#A67A7A', secondary: '#8a7068', accent: '#8a7068', background: '#FDF8F6', sectionBg: '#F8EFEC', cardBg: '#FFFFFF', divider: '#D4C4BC', text: '#2a2a2a', gray: '#444444' },
   'nature-green': { primary: '#3A5A3A', secondary: '#6A7A62', accent: '#5A7A52', background: '#F5F7F4', sectionBg: '#EBF0E8', cardBg: '#FFFFFF', divider: '#A8B5A0', text: '#2a2a2a', gray: '#444444' },
   'luxury-navy': { primary: '#0f2035', secondary: '#8A6A3A', accent: '#8A6A3A', background: '#F8F9FA', sectionBg: '#E8ECF0', cardBg: '#FFFFFF', divider: '#C9A96E', text: '#2a2a2a', gray: '#444444' },
   'sunset-coral': { primary: '#B85040', secondary: '#B88060', accent: '#B8683A', background: '#FFFAF7', sectionBg: '#FFEEE5', cardBg: '#FFFFFF', divider: '#E8A87C', text: '#2a2a2a', gray: '#444444' },
+  'custom': { primary: '#C41050', secondary: '#C41050', accent: '#C41050', background: '#FFFFFF', sectionBg: '#D5D8DC', cardBg: '#FFFFFF', divider: '#E0E0E0', text: '#2a2a2a', gray: '#444444' },
   'film-dark': { primary: '#E8E4DF', secondary: '#2C2C2E', accent: '#D4838F', background: '#111111', sectionBg: '#111111', cardBg: '#FFFFFF', divider: '#2A2A2A', text: '#E8E4DF', gray: '#8E8E93' },
   'film-light': { primary: '#1A1A1A', secondary: '#F5F5F5', accent: '#B8977E', background: '#FFFFFF', sectionBg: '#F8F6F3', cardBg: '#FFFFFF', divider: '#E5E0DA', text: '#1A1A1A', gray: '#999999' },
   'record-coral': { primary: '#E89B8F', secondary: '#F5F1ED', accent: '#D4766A', background: '#FAF7F4', sectionBg: '#F5F1ED', cardBg: '#FFFFFF', divider: '#E8DDD5', text: '#3D3D3D', gray: '#888888' },

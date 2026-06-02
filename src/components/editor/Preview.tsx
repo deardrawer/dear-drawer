@@ -22,16 +22,17 @@ const InvitationClientFamily = dynamic(() => import('@/app/i/[slug]/InvitationCl
 const InvitationClientFilm = dynamic(() => import('@/app/i/[slug]/InvitationClientFilm'), { ssr: false })
 const InvitationClientMagazine = dynamic(() => import('@/app/i/[slug]/InvitationClientMagazine'), { ssr: false })
 
-type ColorTheme = 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-green' | 'luxury-navy' | 'sunset-coral' | 'film-dark' | 'film-light' | 'record-coral' | 'record-rose' | 'record-peach' | 'record-bw' | 'record-lilac' | 'record-mint'
+type ColorTheme = 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-green' | 'luxury-navy' | 'sunset-coral' | 'custom' | 'film-dark' | 'film-light' | 'record-coral' | 'record-rose' | 'record-peach' | 'record-bw' | 'record-lilac' | 'record-mint'
 interface ColorConfig { primary: string; secondary: string; accent: string; background: string; sectionBg: string; cardBg: string; divider: string; text: string; gray: string; highlight?: string; cardText?: string; cardGray?: string }
 
 const colorThemes: Record<ColorTheme, ColorConfig> = {
   'classic-rose': { primary: '#C41050', secondary: '#B8956A', accent: '#B8956A', background: '#FFF8F5', sectionBg: '#FFE8E8', cardBg: '#FFFFFF', divider: '#d4b896', text: '#3d3d3d', gray: '#555555' },
-  'modern-black': { primary: '#111111', secondary: '#555555', accent: '#111111', background: '#FFFFFF', sectionBg: '#F5F5F5', cardBg: '#FFFFFF', divider: '#CCCCCC', text: '#3d3d3d', gray: '#555555', highlight: '#888888' },
+  'modern-black': { primary: '#111111', secondary: '#555555', accent: '#111111', background: '#FFFFFF', sectionBg: '#D5D8DC', cardBg: '#FFFFFF', divider: '#CCCCCC', text: '#3d3d3d', gray: '#555555', highlight: '#888888' },
   'romantic-blush': { primary: '#A67A7A', secondary: '#8a7068', accent: '#8a7068', background: '#FDF8F6', sectionBg: '#F8EFEC', cardBg: '#FFFFFF', divider: '#D4C4BC', text: '#3d3d3d', gray: '#555555' },
   'nature-green': { primary: '#3A5A3A', secondary: '#6A7A62', accent: '#5A7A52', background: '#F5F7F4', sectionBg: '#EBF0E8', cardBg: '#FFFFFF', divider: '#A8B5A0', text: '#3d3d3d', gray: '#555555', highlight: '#5A8A52' },
   'luxury-navy': { primary: '#0f2035', secondary: '#8A6A3A', accent: '#8A6A3A', background: '#F8F9FA', sectionBg: '#E8ECF0', cardBg: '#FFFFFF', divider: '#C9A96E', text: '#3d3d3d', gray: '#555555', highlight: '#8A6A3A' },
   'sunset-coral': { primary: '#B85040', secondary: '#B88060', accent: '#B8683A', background: '#FFFAF7', sectionBg: '#FFEEE5', cardBg: '#FFFFFF', divider: '#E8A87C', text: '#3d3d3d', gray: '#555555' },
+  'custom': { primary: '#C41050', secondary: '#C41050', accent: '#C41050', background: '#FFFFFF', sectionBg: '#D5D8DC', cardBg: '#FFFFFF', divider: '#E0E0E0', text: '#3d3d3d', gray: '#555555' },
   'film-dark': { primary: '#E8E4DF', secondary: '#2C2C2E', accent: '#D4838F', background: '#111111', sectionBg: '#111111', cardBg: '#FFFFFF', divider: '#2A2A2A', text: '#E8E4DF', gray: '#8E8E93', cardText: '#2A2A2A', cardGray: '#888888' },
   'film-light': { primary: '#1A1A1A', secondary: '#F5F5F5', accent: '#B8977E', background: '#FFFFFF', sectionBg: '#F8F6F3', cardBg: '#FFFFFF', divider: '#E5E0DA', text: '#1A1A1A', gray: '#999999' },
   'record-coral': { primary: '#E89B8F', secondary: '#F5F1ED', accent: '#D4766A', background: '#FAF7F4', sectionBg: '#F5F1ED', cardBg: '#FFFFFF', divider: '#E8DDD5', text: '#3D3D3D', gray: '#888888' },
@@ -196,6 +197,7 @@ function InvitationPreviewWrapper({ invitation, skipIntro, onIntroScreenChange }
     magazineSectionBgMap: invitation.magazineSectionBgMap,
     customBgColor: (invitation as any).customBgColor,
     customSectionBgColor: (invitation as any).customSectionBgColor,
+    customDividerColor: (invitation as any).customDividerColor,
     sectionTextColor: (invitation as any).sectionTextColor,
     displayFont: (invitation as any).displayFont,
     styleOverrides: (invitation as any).styleOverrides,
@@ -380,51 +382,65 @@ const Preview = forwardRef<PreviewHandle, object>(function Preview(_, ref) {
   const baseThemeColors = colorThemes[invitation.colorTheme || 'classic-rose']
   const isRomantic = invitation.fontStyle === 'romantic'
 
-  // 커스텀 텍스트 색상을 테마에 오버라이드 (사용자 설정이 있으면 적용)
+  // 커스텀 색상을 테마에 오버라이드 (사용자 설정이 있으면 적용)
+  const isCustomTheme = (invitation.colorTheme || 'classic-rose') === 'custom'
+  const customAccent = invitation.customAccentColor
+  const customBg = (invitation as any).customBgColor
+  const customSectionBg = (invitation as any).customSectionBgColor
+  const customDivider = (invitation as any).customDividerColor
   const themeColors: ColorConfig = {
     ...baseThemeColors,
+    ...(isCustomTheme && customAccent ? { primary: customAccent, secondary: customAccent, accent: customAccent } : {}),
+    ...(isCustomTheme && customBg ? { background: customBg } : {}),
+    ...(isCustomTheme && customSectionBg ? { sectionBg: customSectionBg } : {}),
+    ...(isCustomTheme && customDivider ? { divider: customDivider } : {}),
     text: invitation.bodyTextColor || baseThemeColors.text,
-    highlight: invitation.accentTextColor || baseThemeColors.highlight || baseThemeColors.primary,
+    highlight: invitation.accentTextColor || (isCustomTheme && customAccent ? customAccent : null) || baseThemeColors.highlight || baseThemeColors.primary,
   }
   const customAccentTextColor = invitation.accentTextColor
   const customBodyTextColor = invitation.bodyTextColor || baseThemeColors.text
   return (
     <div className="h-full bg-white flex flex-col">
       <style dangerouslySetInnerHTML={{ __html: romanticFontStyles }} />
-      <div className="sticky top-0 z-10 bg-white py-4 flex justify-center shrink-0">
-        <div className="flex bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <button
-            onClick={() => handleTabClick('intro')}
-            className={`px-6 py-2.5 text-sm font-medium transition-all select-none ${currentPage === 'intro' ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
-          >
-            Intro
-          </button>
-          <button
-            onClick={() => handleTabClick('main')}
-            className={`px-6 py-2.5 text-sm font-medium transition-all select-none ${currentPage === 'main' ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
-          >
-            Main
-          </button>
+      {!(currentPage === 'intro' && introScreen === 'cover') && (
+        <div className="sticky top-0 z-10 bg-white py-4 flex justify-center shrink-0 preview-tabs">
+          <div className="flex bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <button
+              onClick={() => handleTabClick('intro')}
+              className={`px-6 py-2.5 text-sm font-medium transition-all select-none ${currentPage === 'intro' ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+            >
+              Intro
+            </button>
+            <button
+              onClick={() => handleTabClick('main')}
+              className={`px-6 py-2.5 text-sm font-medium transition-all select-none ${currentPage === 'main' ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+            >
+              Main
+            </button>
+          </div>
         </div>
-      </div>
+      )}
       <div className="flex-1 min-h-0 flex justify-center px-6 pb-6">
         <div className="relative h-full max-h-[710px]">
           <div className="w-[360px] shadow-2xl bg-white flex flex-col relative border border-gray-200 h-full" style={{ containerType: 'size' as any }}>
             <style>{`
               #preview-content .full-height-divider,
               #preview-content .divider-section { min-height: 100cqh !important; }
+              body[data-preview-modal] .preview-tabs,
+              body[data-preview-modal] .preview-floating-btn,
+              body[data-preview-modal] .mobile-tab-bar { display: none !important; }
             `}</style>
-            <div ref={previewContentRef} className={`flex-1 overflow-y-auto min-h-0 relative theme-${invitation.colorTheme || 'classic-rose'} ${isRomantic ? 'font-romantic' : ''}`} id="preview-content" style={{ fontFamily: fonts.body, color: customBodyTextColor, letterSpacing: '-0.3px', ...(customAccentTextColor ? { '--text-accent': customAccentTextColor } as React.CSSProperties : {}), ...(invitation.highlightColor ? { '--highlight-white': invitation.highlightColor } as React.CSSProperties : {}) }}>
+            <div ref={previewContentRef} className={`flex-1 overflow-y-auto min-h-0 relative z-0 theme-${invitation.colorTheme || 'classic-rose'} ${isRomantic ? 'font-romantic' : ''}`} id="preview-content" style={{ fontFamily: fonts.body, color: customBodyTextColor, letterSpacing: '-0.3px', ...(customAccentTextColor ? { '--text-accent': customAccentTextColor } as React.CSSProperties : {}), ...(invitation.highlightColor ? { '--highlight-white': invitation.highlightColor } as React.CSSProperties : {}) }}>
               {invitation.templateId === 'narrative-record'
                 ? <RecordPreviewWrapper invitation={invitation} skipIntro={currentPage !== 'intro'} />
                 : <InvitationPreviewWrapper invitation={invitation} skipIntro={currentPage !== 'intro'} onIntroScreenChange={setIntroScreen} />
               }
             </div>
-            {/* Floating Button - OUR/FAMILY 인트로 커버에서는 숨김, invitation 화면에서는 bottom-nav */}
+            {/* Floating Button - OUR/FAMILY 인트로 커버에서는 숨김 */}
             {!((() => {
               const isOurOrFamily = invitation.templateId === 'narrative-our' || invitation.templateId === 'narrative-family'
               return isOurOrFamily && currentPage === 'intro' && introScreen === 'cover'
-            })()) && <FloatingButton navStyle={(() => {
+            })()) && <div className="preview-floating-btn"><FloatingButton navStyle={(() => {
               const isOurOrFamily = invitation.templateId === 'narrative-our' || invitation.templateId === 'narrative-family'
               if (isOurOrFamily && currentPage === 'intro') return 'bottom-nav'
               return invitation.navStyle || 'hamburger'
@@ -476,7 +492,7 @@ const Preview = forwardRef<PreviewHandle, object>(function Preview(_, ref) {
                 rsvpSideDetailOptions: invitation.rsvpSideDetailOptions,
                 rsvpMessagePlaceholder: invitation.rsvpMessagePlaceholder,
                 rsvpNotice: invitation.rsvpNotice,
-              }} />}
+              }} /></div>}
             {/* D-Day 팝업 미리보기 오버레이 */}
             {ddayPreviewOpen && invitation.ddayPopup?.enabled && (
               <DdayPopupOverlay

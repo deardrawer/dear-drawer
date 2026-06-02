@@ -80,6 +80,10 @@ interface TheSimplePreviewProps {
   fullscreen?: boolean
   /** 커버가 활성화된 상태 — 인트로 배경 fade-in 생략 (즉시 표시) */
   skipIntroBgFade?: boolean
+  /** 동영상 재생 시작 콜백 (BGM 페이드아웃 등) */
+  onVideoPlay?: () => void
+  /** 동영상 종료/닫기 콜백 (BGM 페이드인 등) */
+  onVideoStop?: () => void
 }
 
 /* ==========================================================================
@@ -1816,13 +1820,23 @@ function LiveCountdown({ targetDate, beforeMsg, todayMsg, afterMsg }: {
 /* ==========================================================================
  * YouTubeLite — 썸네일 클릭 시 재생 (다른 템플릿과 동일 패턴)
  * ========================================================================== */
-function YouTubeLite({ videoId }: { videoId: string }) {
+function YouTubeLite({ videoId, onPlay, onStop }: { videoId: string; onPlay?: () => void; onStop?: () => void }) {
   const [playing, setPlaying] = useState(false)
   const [thumbErr, setThumbErr] = useState(false)
 
+  const handlePlay = () => {
+    setPlaying(true)
+    onPlay?.()
+  }
+
+  const handleStop = () => {
+    setPlaying(false)
+    onStop?.()
+  }
+
   if (playing) {
     return (
-      <div style={{ aspectRatio: '16/9', width: '100%' }}>
+      <div style={{ aspectRatio: '16/9', width: '100%', position: 'relative' }}>
         <iframe
           src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -1830,13 +1844,27 @@ function YouTubeLite({ videoId }: { videoId: string }) {
           style={{ width: '100%', height: '100%', border: 'none' }}
           title="YouTube video"
         />
+        {/* 닫기 버튼 */}
+        <button
+          onClick={handleStop}
+          style={{
+            position: 'absolute', top: 8, right: 8, width: 32, height: 32,
+            borderRadius: '50%', background: 'rgba(0,0,0,0.6)', border: 'none',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', zIndex: 2,
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+          </svg>
+        </button>
       </div>
     )
   }
 
   return (
     <div
-      onClick={() => setPlaying(true)}
+      onClick={handlePlay}
       style={{ aspectRatio: '16/9', width: '100%', position: 'relative', cursor: 'pointer', background: '#000' }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -1892,6 +1920,47 @@ function KakaoMapBox({
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<unknown>(null)
   const [failed, setFailed] = useState(false)
+  // 'locked' = 잠금(메시지 없음), 'hint' = 안내 메시지 표시, 'active' = 지도 활성화
+  const [mapState, setMapState] = useState<'locked' | 'hint' | 'active'>('locked')
+  const mapActive = mapState === 'active'
+  const deactivateTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const hintTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // 오버레이 터치 핸들러: locked → hint → active
+  const handleOverlayTap = useCallback(() => {
+    if (mapState === 'locked') {
+      setMapState('hint')
+      // 3초 후 힌트가 아직 보이면 다시 잠금
+      if (hintTimer.current) clearTimeout(hintTimer.current)
+      hintTimer.current = setTimeout(() => {
+        setMapState(prev => prev === 'hint' ? 'locked' : prev)
+      }, 3000)
+    } else if (mapState === 'hint') {
+      if (hintTimer.current) clearTimeout(hintTimer.current)
+      setMapState('active')
+    }
+  }, [mapState])
+
+  // 지도 외부 터치 시 비활성화
+  useEffect(() => {
+    if (mapState === 'locked') return
+    const handler = (e: TouchEvent | MouseEvent) => {
+      if (containerRef.current && !containerRef.current.parentElement?.contains(e.target as Node)) {
+        setMapState('locked')
+        if (deactivateTimer.current) clearTimeout(deactivateTimer.current)
+        if (hintTimer.current) clearTimeout(hintTimer.current)
+      }
+    }
+    document.addEventListener('touchstart', handler, { passive: true })
+    return () => { document.removeEventListener('touchstart', handler) }
+  }, [mapState])
+
+  useEffect(() => {
+    return () => {
+      if (deactivateTimer.current) clearTimeout(deactivateTimer.current)
+      if (hintTimer.current) clearTimeout(hintTimer.current)
+    }
+  }, [])
 
   useEffect(() => {
     // 주소 변경 시 기존 맵 제거 후 재생성
@@ -1953,11 +2022,35 @@ function KakaoMapBox({
   }
 
   return (
-    <div
-      ref={containerRef}
-      className={className}
-      style={{ aspectRatio, width: '100%', background: '#eee' }}
-    />
+    <div style={{ position: 'relative' }}>
+      <div
+        ref={containerRef}
+        className={className}
+        style={{ aspectRatio, width: '100%', background: '#eee' }}
+      />
+      {/* 지도 스크롤 가로채기 방지 오버레이 — 1차 터치: 안내, 2차 터치: 활성화 */}
+      {!mapActive && (
+        <div
+          onClick={handleOverlayTap}
+          style={{
+            position: 'absolute', inset: 0, zIndex: 1, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'rgba(255,255,255,0.01)',
+          }}
+        >
+          {mapState === 'hint' && (
+            <span style={{
+              padding: '6px 14px', borderRadius: 20,
+              background: 'rgba(0,0,0,0.45)', color: '#fff',
+              fontSize: 11, fontFamily: 'var(--font-ko)', letterSpacing: '0.02em',
+              pointerEvents: 'none',
+            }}>
+              지도를 한 번 더 터치하면 이동할 수 있어요
+            </span>
+          )}
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -2383,7 +2476,7 @@ function RsvpModal({
  * 각 섹션 렌더러는 `variant` 번호를 받아 UI 대안을 분기합니다.
  * 아직 포팅되지 않은 variant는 자동으로 V1 JSX로 폴백합니다.
  */
-export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePreviewProps) {
+export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, onVideoStop }: TheSimplePreviewProps) {
   const [rsvpOpen, setRsvpOpen] = useState(false)
   const [rsvpInitAttendance, setRsvpInitAttendance] = useState<'attending' | 'not_attending' | undefined>(undefined)
   const [linkCopied, setLinkCopied] = useState(false)
@@ -4182,7 +4275,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade }: TheSimplePre
         )
       }
 
-      const thumbEl = <YouTubeLite videoId={videoId} />
+      const thumbEl = <YouTubeLite videoId={videoId} onPlay={onVideoPlay} onStop={onVideoStop} />
 
       // V2 · 풀폭 (패딩 없음)
       if (v === 2) {

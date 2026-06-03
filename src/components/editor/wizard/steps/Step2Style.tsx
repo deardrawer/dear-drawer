@@ -455,10 +455,26 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
             </div>
           </section>
 
-          {/* Record 텍스트 색상 */}
+          {/* Record 색상 설정 */}
           <section className="space-y-4">
             <div className="p-4 bg-gray-50 rounded-xl space-y-4">
-              <h4 className="text-sm font-medium text-gray-800">텍스트 색상 설정</h4>
+              <h4 className="text-sm font-medium text-gray-800">색상 설정</h4>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-700">배경 색상</p>
+                  <p className="text-xs text-gray-500">페이지 전체 배경 컬러</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={(invitation as any).customBgColor || ({ 'record-coral': '#FAF7F4', 'record-rose': '#FDEFEC', 'record-peach': '#ECF4F7', 'record-bw': '#FFFFFF', 'record-lilac': '#F0ECED', 'record-mint': '#F8FAF5' } as Record<string, string>)[currentRecordTheme] || '#FAF7F4'}
+                    onChange={(e) => updateField('customBgColor' as any, e.target.value)}
+                    className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300"
+                    style={{ padding: 0 }}
+                  />
+                  <span className="text-xs text-gray-600 font-mono w-16">{(invitation as any).customBgColor || ({ 'record-coral': '#FAF7F4', 'record-rose': '#FDEFEC', 'record-peach': '#ECF4F7', 'record-bw': '#FFFFFF', 'record-lilac': '#F0ECED', 'record-mint': '#F8FAF5' } as Record<string, string>)[currentRecordTheme] || '#FAF7F4'}</span>
+                </div>
+              </div>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-700">본문 색상</p>
@@ -599,7 +615,7 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
             </div>
 
             {/* 미리보기 */}
-            <div className="p-4 rounded-lg border border-gray-200" style={{ backgroundColor: currentFilmTheme === 'film-dark' ? '#111111' : '#FFFFFF' }}>
+            <div className="p-4 rounded-lg border border-gray-200" style={{ backgroundColor: currentFilmTheme === 'film-dark' ? '#111111' : ((invitation as any).customBgColor || '#FFFFFF') }}>
               <div className="flex items-center gap-3">
                 <div className="w-12 h-0.5" style={{ backgroundColor: currentAccent }} />
                 <span className="text-[10px] tracking-[4px] uppercase" style={{ color: currentAccent }}>Preview</span>
@@ -610,6 +626,31 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
               </p>
             </div>
           </section>
+
+          {/* Movie 라이트 틴티드 배경 색상 */}
+          {currentFilmTheme === 'film-light' && (
+            <section className="space-y-4">
+              <div className="p-4 bg-gray-50 rounded-xl space-y-4">
+                <h4 className="text-sm font-medium text-gray-800">틴티드 배경</h4>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-700">섹션 배경</p>
+                    <p className="text-xs text-gray-500">틴티드 섹션 배경 컬러</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={(invitation as any).customBgColor || '#F8F6F3'}
+                      onChange={(e) => updateField('customBgColor' as any, e.target.value)}
+                      className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300"
+                      style={{ padding: 0 }}
+                    />
+                    <span className="text-xs text-gray-600 font-mono w-16">{(invitation as any).customBgColor || '#F8F6F3'}</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
         </>
       ) : (
       <section className="space-y-4">

@@ -664,13 +664,8 @@ function TrackGreeting({ invitation, fonts, tc, trackRef }: {
             return (
               <p key={i} style={{
                 fontFamily: fonts.body, fontSize: '13px', lineHeight: 2.4,
-                background: `linear-gradient(90deg, ${tc.text} 50%, ${tc.divider} 50%)`,
-                backgroundSize: '200% 100%',
-                backgroundPosition: isVisible ? '0% 0' : '100% 0',
-                WebkitBackgroundClip: 'text',
-                backgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                transition: `background-position 0.9s ease ${0.3 + currentIdx * 0.6}s`,
+                color: isVisible ? tc.text : tc.divider,
+                transition: `color 0.9s ease ${0.3 + currentIdx * 0.6}s`,
               }}>
                 {line}
               </p>
@@ -2558,6 +2553,7 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     guidance: content.guidance || {}, intro: content.intro,
     youtube: content.youtube,
     customAccentColor: (content as any).customAccentColor,
+    customBgColor: (content as any).customBgColor,
     accentTextColor: (content as any).accentTextColor,
     bodyTextColor: (content as any).bodyTextColor,
     displayFont: (content as any).displayFont,
@@ -2710,11 +2706,13 @@ function InvitationClientRecordContent({
   const customAccent = (invitation as any)?.customAccentColor
   const customBodyText = (invitation as any)?.bodyTextColor
   const customAccentText = (invitation as any)?.accentTextColor
+  const customBg = (invitation as any)?.customBgColor
   const tc: ColorConfig = {
     ...baseTc,
     ...(customAccent ? { primary: customAccent, accent: customAccent, divider: customAccent + '60' } : {}),
     ...(customBodyText ? { text: customBodyText, gray: customBodyText + 'CC' } : {}),
     ...(customAccentText ? { highlight: customAccentText } : {}),
+    ...(customBg ? { background: customBg } : {}),
   }
   const baseFonts = fontStyles[effectiveFontStyle]
   const isScriptFont = invitation?.displayFont === 'greatvibes'

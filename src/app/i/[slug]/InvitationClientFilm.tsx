@@ -166,17 +166,9 @@ function useParentReveal(elRef: React.RefObject<HTMLElement | null>) {
 }
 
 // ===== Scene Cut (clean divider) =====
-function SceneCut({ from, to }: { from?: string; to?: string } = {}) {
-  const topColor = from || '#FFFFFF'
-  const bottomColor = to || '#FFFFFF'
-  return (
-    <div style={{ height: '1px', position: 'relative', overflow: 'hidden' }}>
-      <div style={{
-        position: 'absolute', inset: 0,
-        background: `linear-gradient(to bottom, ${topColor}, ${bottomColor})`,
-      }} />
-    </div>
-  )
+function SceneCut({ from: _from, to: _to }: { from?: string; to?: string } = {}) {
+  // 섹션 간 배경색 전환은 각 섹션의 backgroundColor로 처리되므로 별도 구분선 불필요
+  return null
 }
 
 // ===== Music Toggle =====
@@ -3034,6 +3026,7 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     youtube: content.youtube,
     deceasedDisplayStyle: content.deceasedDisplayStyle || 'flower',
     customAccentColor: content.customAccentColor,
+    customBgColor: (content as any).customBgColor,
     displayFont: (content as any).displayFont,
     filmIntroStyle: (content as any).filmIntroStyle,
     magazineSectionOrder: content.magazineSectionOrder,
@@ -3154,10 +3147,12 @@ function InvitationClientFilmContent({
 
   const baseTc = colorThemes[effectiveColorTheme]
   const customAccent = invitation?.customAccentColor
+  const customBg = (invitation as any)?.customBgColor
   // film-light: 베이지(#F8F6F3) 대신 accent 틴트를 sectionBg로 사용
   const tc = (() => {
     const base = customAccent ? { ...baseTc, accent: customAccent } : { ...baseTc }
     if (!base.cardText) base.sectionBg = getAccentTint(base.accent, 0.85)
+    if (effectiveColorTheme === 'film-light' && customBg) base.sectionBg = customBg
     return base
   })()
   const baseFonts = fontStyles[effectiveFontStyle]

@@ -79,6 +79,7 @@ function RecordPreviewWrapper({ invitation, skipIntro }: { invitation: Invitatio
     colorTheme: invitation.colorTheme || 'record-coral',
     fontStyle: invitation.fontStyle || 'modern',
     customAccentColor: invitation.customAccentColor,
+    customBgColor: (invitation as any).customBgColor,
     groom: invitation.groom,
     bride: invitation.bride,
     wedding: invitation.wedding,

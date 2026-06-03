@@ -69,6 +69,5 @@ export function getButtonBgColor(sectionBg: string): string {
  */
 export function getButtonBgLightColor(sectionBg: string): string {
   const { h, s } = hexToHSL(sectionBg)
-  const newS = Math.min(1, s + 0.08)
-  return hslToHex(h, newS, 0.88)
+  return hslToHex(h, s, 0.88)
 }

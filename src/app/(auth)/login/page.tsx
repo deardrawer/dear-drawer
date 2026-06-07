@@ -33,7 +33,7 @@ function LoginContent() {
 
   const handleKakaoLogin = () => {
     const clientId = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID || '45cff9edef371e0e18394dfd5d0f29f7'
-    const redirectUri = `${window.location.origin}/api/auth/callback/kakao`
+    const redirectUri = process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI || `${window.location.origin}/api/auth/kakao/callback`
 
     const params = new URLSearchParams({
       client_id: clientId,

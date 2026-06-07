@@ -73,8 +73,14 @@ export async function GET(request: NextRequest) {
     // Create JWT token
     const jwtToken = await createToken(user);
 
+    // Restore redirect path from state parameter (set during login)
+    const state = searchParams.get("state");
+    const redirectPath = state && state.startsWith("/") && !state.startsWith("//")
+      ? state
+      : "/my-invitations";
+
     // Create response with redirect
-    const redirectUrl = new URL("/my-invitations", request.url);
+    const redirectUrl = new URL(redirectPath, request.url);
     const response = NextResponse.redirect(redirectUrl);
 
     // Set cookie

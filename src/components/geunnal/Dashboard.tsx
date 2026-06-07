@@ -414,34 +414,34 @@ function GuestsTab({ pageId, token, onSessionExpired }: {
         <>
           <div className="grid grid-cols-3 gap-2">
             <div className="bg-[#EDE9FA] rounded-2xl p-3 text-center">
-              <p className="text-xl font-medium text-[#2A2240]">{s.total}</p>
+              <p className="text-xl font-medium text-[#2A2240]">{s.total}<span className="text-sm font-normal text-[#C5BAE8]">건</span></p>
               <p className="text-[11px] text-[#9B8CC4] mt-0.5">총 응답</p>
             </div>
             <div className="bg-[#FAE9F0] rounded-2xl p-3 text-center">
-              <p className="text-xl font-medium text-[#2A2240]">{s.attending}</p>
+              <p className="text-xl font-medium text-[#2A2240]">{s.attending}<span className="text-sm font-normal text-[#C5BAE8]">건</span></p>
               <p className="text-[11px] text-[#9B8CC4] mt-0.5">참석</p>
             </div>
             <div className="bg-[#EDE9FA] rounded-2xl p-3 text-center">
-              <p className="text-xl font-medium text-[#2A2240]">{s.notAttending}</p>
+              <p className="text-xl font-medium text-[#2A2240]">{s.notAttending}<span className="text-sm font-normal text-[#C5BAE8]">건</span></p>
               <p className="text-[11px] text-[#9B8CC4] mt-0.5">불참</p>
             </div>
           </div>
 
           <div className="grid grid-cols-4 gap-2">
             <div className="bg-[#FAE9F0] rounded-2xl p-3 text-center">
-              <p className="text-xl font-medium text-[#2A2240]">{s.totalGuests}</p>
+              <p className="text-xl font-medium text-[#2A2240]">{s.totalGuests}<span className="text-sm font-normal text-[#C5BAE8]">명</span></p>
               <p className="text-[11px] text-[#9B8CC4] mt-0.5">참석 인원</p>
             </div>
             <div className="bg-[#EDE9FA] rounded-2xl p-3 text-center">
-              <p className="text-xl font-medium text-[#2A2240]">{s.mealYes}</p>
+              <p className="text-xl font-medium text-[#2A2240]">{s.mealYes}<span className="text-sm font-normal text-[#C5BAE8]">명</span></p>
               <p className="text-[11px] text-[#9B8CC4] mt-0.5">식사</p>
             </div>
             <div className="bg-[#FAE9F0] rounded-2xl p-3 text-center">
-              <p className="text-xl font-medium text-[#2A2240]">{s.shuttleYes}</p>
+              <p className="text-xl font-medium text-[#2A2240]">{s.shuttleYes}<span className="text-sm font-normal text-[#C5BAE8]">명</span></p>
               <p className="text-[11px] text-[#9B8CC4] mt-0.5">버스</p>
             </div>
             <div className="bg-[#EDE9FA] rounded-2xl p-3 text-center">
-              <p className="text-xl font-medium text-[#2A2240]">{s.pending}</p>
+              <p className="text-xl font-medium text-[#2A2240]">{s.pending}<span className="text-sm font-normal text-[#C5BAE8]">건</span></p>
               <p className="text-[11px] text-[#9B8CC4] mt-0.5">미정</p>
             </div>
           </div>

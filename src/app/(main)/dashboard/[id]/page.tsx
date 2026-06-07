@@ -470,19 +470,19 @@ export default function DashboardPage() {
         <Card className="p-0">
           <CardContent className="p-3 sm:p-4">
             <p className="text-[10px] sm:text-sm font-medium text-gray-500 truncate">총 응답</p>
-            <div className="text-xl sm:text-3xl font-bold mt-1">{summary.total}</div>
+            <div className="text-xl sm:text-3xl font-bold mt-1">{summary.total}<span className="text-sm sm:text-lg font-normal text-gray-400">건</span></div>
           </CardContent>
         </Card>
         <Card className="p-0">
           <CardContent className="p-3 sm:p-4">
             <p className="text-[10px] sm:text-sm font-medium text-green-600 truncate">참석</p>
-            <div className="text-xl sm:text-3xl font-bold text-green-600 mt-1">{summary.attending}</div>
+            <div className="text-xl sm:text-3xl font-bold text-green-600 mt-1">{summary.attending}<span className="text-sm sm:text-lg font-normal text-gray-400">건</span></div>
           </CardContent>
         </Card>
         <Card className="p-0">
           <CardContent className="p-3 sm:p-4">
             <p className="text-[10px] sm:text-sm font-medium text-red-600 truncate">불참</p>
-            <div className="text-xl sm:text-3xl font-bold text-red-600 mt-1">{summary.notAttending}</div>
+            <div className="text-xl sm:text-3xl font-bold text-red-600 mt-1">{summary.notAttending}<span className="text-sm sm:text-lg font-normal text-gray-400">건</span></div>
           </CardContent>
         </Card>
         <Card className="p-0">

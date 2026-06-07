@@ -481,10 +481,18 @@ export async function getRSVPSummary(invitationId: string): Promise<{
     brideSideGuests: attending
       .filter((r) => r.side === "bride")
       .reduce((sum, r) => sum + (r.guest_count || 1), 0),
-    mealYes: attending.filter((r) => r.meal_attendance === "yes").length,
-    mealNo: attending.filter((r) => r.meal_attendance === "no").length,
-    shuttleYes: attending.filter((r) => r.shuttle_bus === "yes").length,
-    shuttleNo: attending.filter((r) => r.shuttle_bus === "no").length,
+    mealYes: attending
+      .filter((r) => r.meal_attendance === "yes")
+      .reduce((sum, r) => sum + (r.guest_count || 1), 0),
+    mealNo: attending
+      .filter((r) => r.meal_attendance === "no")
+      .reduce((sum, r) => sum + (r.guest_count || 1), 0),
+    shuttleYes: attending
+      .filter((r) => r.shuttle_bus === "yes")
+      .reduce((sum, r) => sum + (r.guest_count || 1), 0),
+    shuttleNo: attending
+      .filter((r) => r.shuttle_bus === "no")
+      .reduce((sum, r) => sum + (r.guest_count || 1), 0),
   };
 }
 

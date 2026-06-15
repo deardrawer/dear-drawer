@@ -1132,6 +1132,16 @@ export default function Step3Film({}: Step3FilmProps) {
 
         {invitation.sectionVisibility.guestbook && (
           <div className="space-y-4">
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div>
+                <p className="text-sm font-medium text-gray-800">포스트잇에 질문 표시</p>
+                <p className="text-xs text-gray-500">방명록 카드에 질문을 함께 보여줍니다</p>
+              </div>
+              <Switch
+                checked={invitation.content.guestbookShowQuestion !== false}
+                onCheckedChange={(checked) => updateNestedField('content.guestbookShowQuestion', checked)}
+              />
+            </div>
             <div className="p-4 bg-amber-50 rounded-lg space-y-3">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-medium text-amber-800">질문 설정 (최대 10개)</p>

@@ -1815,8 +1815,10 @@ function FanMailSection({ invitation, invitationId, fonts, tc, isSample, bgOverr
   const [message, setMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [expanded, setExpanded] = useState(false)
-  const [qIdx, setQIdx] = useState(0)
   const questions: string[] = invitation.content?.guestbookQuestions || []
+  const [qIdx, setQIdx] = useState(() =>
+    questions.length > 0 ? Math.floor(Math.random() * questions.length) : 0
+  )
   const currentQ = questions[qIdx] || '두 사람에게 하고 싶은 말을 남겨주세요'
 
   useEffect(() => {
@@ -1852,10 +1854,26 @@ function FanMailSection({ invitation, invitationId, fonts, tc, isSample, bgOverr
           <div style={{ width: '20px', height: '1px', background: tc.primary, margin: '10px auto 0', opacity: 0.5 }} />
         </div>
         <div className="text-center mb-6">
-          <p style={{ fontFamily: fonts.displayKr, fontSize: '14px', fontWeight: 400, lineHeight: 1.7, color: tc.text }}>{currentQ}</p>
+          <p
+            key={qIdx}
+            style={{
+              fontFamily: fonts.displayKr,
+              fontSize: '14px',
+              fontWeight: 400,
+              lineHeight: 1.7,
+              color: tc.text,
+              display: 'inline',
+              backgroundImage: `linear-gradient(${tc.primary}55, ${tc.primary}55)`,
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'left bottom',
+              backgroundSize: '0% 40%',
+              paddingBottom: '2px',
+              ...(isVisible ? { animation: 'rec-highlightDraw 0.8s cubic-bezier(0.22,1,0.36,1) 0.3s both' } : {}),
+            }}
+          >{currentQ}</p>
           {questions.length > 1 && (
             <button onClick={() => setQIdx((qIdx + 1) % questions.length)}
-              style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.gray, background: 'none', border: 'none', cursor: 'pointer', marginTop: '6px' }}>
+              style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.gray, background: 'none', border: 'none', cursor: 'pointer', marginTop: '8px', display: 'block', width: '100%' }}>
               다른 질문 보기 &rarr;
             </button>
           )}
@@ -1875,7 +1893,7 @@ function FanMailSection({ invitation, invitationId, fonts, tc, isSample, bgOverr
           <div className="space-y-3">
             {(expanded ? messages : messages.slice(0, 4)).map((msg: any, i: number) => (
               <div key={msg.id || i} style={{ padding: '14px', borderRadius: '10px', border: `1px solid ${tc.divider}60`, background: tc.cardBg }}>
-                {msg.question && <p style={{ fontFamily: fonts.body, fontSize: '10px', color: tc.gray, marginBottom: '6px', opacity: 0.6 }}>Q. {msg.question}</p>}
+                {invitation.content?.guestbookShowQuestion !== false && msg.question && <p style={{ fontFamily: fonts.body, fontSize: '10px', color: tc.gray, marginBottom: '6px', opacity: 0.6 }}>Q. {msg.question}</p>}
                 <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.text, marginBottom: '8px', whiteSpace: 'pre-line' }}>{msg.message}</p>
                 <div className="flex items-center justify-between">
                   <span style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.gray }}>&mdash; {msg.guest_name}</span>
@@ -2450,6 +2468,11 @@ const globalStyles = `
   @keyframes rec-photoScaleAlt {
     from { opacity: 0; transform: scale(0.75) rotate(-2deg); }
     to { opacity: 1; transform: scale(1) rotate(0deg); }
+  }
+
+  @keyframes rec-highlightDraw {
+    from { background-size: 0% 40%; }
+    to { background-size: 100% 40%; }
   }
 
   /* Push GuestFloatingButton up to avoid mini player overlap */

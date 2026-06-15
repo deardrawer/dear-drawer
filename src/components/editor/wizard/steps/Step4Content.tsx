@@ -2065,6 +2065,18 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
 
         {invitation.sectionVisibility.guestbook && (
           <div className="space-y-4">
+            {/* 질문 표시 토글 */}
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div>
+                <p className="text-sm font-medium text-gray-800">포스트잇에 질문 표시</p>
+                <p className="text-xs text-gray-500">방명록 카드에 질문을 함께 보여줍니다</p>
+              </div>
+              <Switch
+                checked={invitation.content.guestbookShowQuestion !== false}
+                onCheckedChange={(checked) => updateNestedField('content.guestbookShowQuestion', checked)}
+              />
+            </div>
+
             {/* 방명록 질문 설정 */}
             <div className="p-4 bg-amber-50 rounded-lg space-y-3">
               <div className="flex items-center justify-between">

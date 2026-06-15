@@ -1899,7 +1899,10 @@ function GuestbookSection({
   const [guestMessage, setGuestMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showAll, setShowAll] = useState(false)
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(() => {
+    const questions = invitation.content?.guestbookQuestions || []
+    return questions.length > 0 ? Math.floor(Math.random() * questions.length) : 0
+  })
 
   // Fetch guestbook messages (or use sample)
   useEffect(() => {

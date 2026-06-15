@@ -350,6 +350,7 @@ export interface InvitationContent {
     interviews: InterviewItem[]
     interviewIntro: string      // 인터뷰 섹션 소개 문구
     guestbookQuestions: string[]
+    guestbookShowQuestion?: boolean  // 방명록 질문 표시 여부 (기본: true)
     parentsGreeting: string   // 부모님 인사말 (FAMILY 템플릿)
     parentsSign: string       // 부모님 서명 (FAMILY 템플릿)
     filmTitle?: string        // Movie 템플릿 타이틀 (기본: THE WEDDING)
@@ -799,6 +800,8 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
     interviewIntro: '',
     guestbookQuestions: template.id === 'narrative-record'
       ? ['두 사람에게 축하 메시지를 남겨주세요', '결혼생활에서 가장 중요한 건?']
+      : template.id === 'narrative-film'
+      ? ['두 주인공에게 관람평을 남겨주세요', '결혼생활에서 가장 중요한 건?', '두 사람의 첫인상은 어땠나요?']
       : [
       '두 사람에게 해주고 싶은 말은?',
       '결혼생활에서 가장 중요한 건?',

@@ -800,6 +800,11 @@ const globalStyles = `
     50% { transform: translateY(-5px); }
   }
 
+  @keyframes family-highlightDraw {
+    from { background-size: 0% 40%; }
+    to { background-size: 100% 40%; }
+  }
+
   body.guestbook-modal-open {
     overflow: hidden;
   }
@@ -3484,7 +3489,10 @@ const sampleGuestbookMessages: GuestbookMessage[] = [
 
 // Main Page Component - matching template exactly
 function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, onOpenRsvp, onOpenLightbox, onOpenGuestbookModal, audioRef, showMusicToggle, shouldAutoPlay, isSample = false }: PageProps) {
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(() => {
+    const questions = invitation.content.guestbookQuestions
+    return questions?.length > 0 ? Math.floor(Math.random() * questions.length) : 0
+  })
   const [showAllGallery, setShowAllGallery] = useState(false)
 
   // BGM fade out/in when video plays
@@ -4007,7 +4015,34 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
         <AnimatedSection className="px-5 py-10 pb-14 text-center" style={{ background: themeColors.cardBg }}>
           <h3 className="typo-body mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>Guestbook</h3>
           <div className="max-w-[300px] mx-auto mb-9">
-            <p className="typo-body font-medium mb-4 min-h-[40px]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>{invitation.content.guestbookQuestions[currentQuestionIndex] || '두 사람에게 하고 싶은 말을 남겨주세요'}</p>
+            <div className="text-center mb-6">
+              <p
+                key={currentQuestionIndex}
+                className="typo-body font-medium min-h-[24px]"
+                style={{
+                  fontFamily: fonts.displayKr,
+                  color: themeColors.text,
+                  display: 'inline',
+                  backgroundImage: `linear-gradient(${themeColors.primary}25, ${themeColors.primary}25)`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'left bottom',
+                  backgroundSize: '0% 40%',
+                  animation: 'family-highlightDraw 0.8s cubic-bezier(0.22,1,0.36,1) 0.3s both',
+                  paddingBottom: '2px',
+                }}
+              >
+                {invitation.content.guestbookQuestions[currentQuestionIndex] || '두 사람에게 하고 싶은 말을 남겨주세요'}
+              </p>
+              {invitation.content.guestbookQuestions.length > 1 && (
+                <button
+                  onClick={handleNextQuestion}
+                  className="typo-caption cursor-pointer hover:underline active:opacity-70 transition-all block w-full mt-2"
+                  style={{ color: themeColors.primary }}
+                >
+                  다른 질문 보기 →
+                </button>
+              )}
+            </div>
             <div className="space-y-2 mb-2.5">
               <input
                 type="text"
@@ -4040,15 +4075,6 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
                 </button>
               </div>
             </div>
-            {invitation.content.guestbookQuestions.length > 1 && (
-              <button
-                onClick={handleNextQuestion}
-                className="typo-caption cursor-pointer hover:underline active:opacity-70 transition-all"
-                style={{ color: themeColors.primary }}
-              >
-                다른 질문 보기 →
-              </button>
-            )}
           </div>
           {/* 방명록 메시지 표시 */}
           <div className="relative min-h-[200px]">
@@ -4066,7 +4092,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
                     }}
                     onClick={() => openGuestbookModal(index)}
                   >
-                    {msg.question && (
+                    {invitation.content.guestbookShowQuestion !== false && msg.question && (
                       <p className="typo-caption text-gray-400 mb-1.5">{msg.question}</p>
                     )}
                     <p className="typo-caption mb-1" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>{msg.message}</p>
@@ -4117,6 +4143,7 @@ function GuestbookModal({
   cardColors,
   fonts,
   themeColors,
+  showQuestion = true,
 }: {
   messages: GuestbookMessage[]
   isOpen: boolean
@@ -4125,6 +4152,7 @@ function GuestbookModal({
   cardColors: string[]
   fonts: { body: string; displayKr: string; display: string }
   themeColors: { text: string; primary: string; background: string; cardBg: string; gray: string; divider: string }
+  showQuestion?: boolean
 }) {
   const [currentIndex, setCurrentIndex] = useState(startIndex)
   const [swipingDirection, setSwipingDirection] = useState<'none' | 'up' | 'down'>('none')
@@ -4331,7 +4359,7 @@ function GuestbookModal({
                 }
               } : undefined}
             >
-              {msg.question && (
+              {showQuestion && msg.question && (
                 <p className="typo-caption text-gray-400 mb-3">{msg.question}</p>
               )}
               <p className="typo-body mb-4" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>
@@ -4694,6 +4722,7 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
                   cardColors={['#FFF9F0', '#F0F7FF', '#F5FFF0', '#FFF0F5', '#F0FFFF']}
                   fonts={fonts}
                   themeColors={themeColors}
+                  showQuestion={invitation.content.guestbookShowQuestion !== false}
                 />,
                 document.body
               )}

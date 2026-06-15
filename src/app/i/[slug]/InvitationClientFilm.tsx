@@ -2041,7 +2041,10 @@ function AudienceReviews({ invitation, invitationId, fonts, tc, isSample, bgOver
   const [message, setMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [showAllMessages, setShowAllMessages] = useState(false)
-  const [qIdx, setQIdx] = useState(0)
+  const [qIdx, setQIdx] = useState(() => {
+    const q = invitation.content?.guestbookQuestions || []
+    return q.length > 0 ? Math.floor(Math.random() * q.length) : 0
+  })
   const [carouselIdx, setCarouselIdx] = useState(0)
   const [carouselExit, setCarouselExit] = useState(-1)
   const carouselTimer = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -2120,7 +2123,7 @@ function AudienceReviews({ invitation, invitationId, fonts, tc, isSample, bgOver
             }}>&#9733;</span>
         ))}
       </div>
-      {msg.question && <p style={{ fontFamily: fonts.body, fontSize: '10px', color: tc.gray, marginBottom: '6px', opacity: 0.7 }}>Q. {msg.question}</p>}
+      {invitation.content?.guestbookShowQuestion !== false && msg.question && <p style={{ fontFamily: fonts.body, fontSize: '10px', color: tc.gray, marginBottom: '6px', opacity: 0.7 }}>Q. {msg.question}</p>}
       <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: isDark ? tc.text : (tc.cardText || tc.text), marginBottom: '8px', whiteSpace: 'pre-line' }}>{msg.message}</p>
       <div className="flex items-center justify-between">
         <span style={{ fontFamily: fonts.body, fontSize: '11px', fontWeight: 500, color: tc.gray }}>&mdash; {msg.guest_name}</span>
@@ -2140,7 +2143,7 @@ function AudienceReviews({ invitation, invitationId, fonts, tc, isSample, bgOver
         <div style={{ fontFamily: fonts.display, fontSize: dfs(26), fontWeight: 400, fontStyle: 'italic', letterSpacing: '2px', color: tc.accent }}>Guestbook</div>
       </div>
       <div className="text-center mb-6">
-        <p className={`gb-question-highlight ${isVisible ? 'highlight-visible' : ''}`}
+        <p key={qIdx} className={`gb-question-highlight ${isVisible ? 'highlight-visible' : ''}`}
           style={{ fontFamily: fonts.displayKr, fontSize: '14px', fontWeight: 400, lineHeight: 1.7, color: tc.text }}>{currentQ}</p>
         {questions.length > 1 && (
           <button onClick={() => setQIdx((qIdx + 1) % questions.length)}
@@ -2206,7 +2209,7 @@ function AudienceReviews({ invitation, invitationId, fonts, tc, isSample, bgOver
         <div className="space-y-3">
           {(showAllMessages ? messages : messages.slice(0, 5)).map((msg: any, i: number) => (
             <div key={msg.id || i} style={{ padding: '14px', border: `1px solid ${cdiv}`, background: tc.cardBg }}>
-              {msg.question && <p style={{ fontFamily: fonts.body, fontSize: '10px', color: tc.cardGray || tc.gray, marginBottom: '6px', opacity: 0.6 }}>Q. {msg.question}</p>}
+              {invitation.content?.guestbookShowQuestion !== false && msg.question && <p style={{ fontFamily: fonts.body, fontSize: '10px', color: tc.cardGray || tc.gray, marginBottom: '6px', opacity: 0.6 }}>Q. {msg.question}</p>}
               <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.cardText || tc.text, marginBottom: '8px', whiteSpace: 'pre-line' }}>{msg.message}</p>
               <div className="flex items-center justify-between">
                 <span style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.cardGray || tc.gray }}>&mdash; {msg.guest_name}</span>
@@ -2853,7 +2856,7 @@ const globalStyles = `
   }
   .gb-question-highlight {
     display: inline;
-    background-image: linear-gradient(rgba(212,131,143,0.2), rgba(212,131,143,0.2));
+    background-image: linear-gradient(rgba(212,131,143,0.4), rgba(212,131,143,0.4));
     background-repeat: no-repeat;
     background-position: left bottom;
     background-size: 0% 40%;
@@ -3202,7 +3205,7 @@ function InvitationClientFilmContent({
     .scene-card-item { background: rgba(${accentRgb},0.03) !important; }
     .scene-card-item .scene-card-body { border-left-color: rgba(${accentRgb},0.4) !important; }
     .film-preview-mode .scene-card-item .scene-card-body { border-left-color: rgba(${accentRgb},0.4) !important; }
-    .gb-question-highlight { background-image: linear-gradient(rgba(${accentRgb},0.2), rgba(${accentRgb},0.2)) !important; }
+    .gb-question-highlight { background-image: linear-gradient(rgba(${accentRgb},0.4), rgba(${accentRgb},0.4)) !important; }
     .scene-photo-wrap { border: 1px solid rgba(${accentRgb},0.2) !important; }
   `
 

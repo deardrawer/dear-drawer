@@ -1684,9 +1684,10 @@ function GuestbookSection({ invitation, invitationId, fonts, themeColors, isSamp
   const [message, setMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [showAllMessages, setShowAllMessages] = useState(false)
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
-
   const questions: string[] = invitation.content?.guestbookQuestions || []
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(() =>
+    questions.length > 0 ? Math.floor(Math.random() * questions.length) : 0
+  )
   const currentQuestion = questions[currentQuestionIndex] || '두 사람에게 하고 싶은 말을 남겨주세요'
 
   useEffect(() => {
@@ -1842,7 +1843,7 @@ function GuestbookSection({ invitation, invitationId, fonts, themeColors, isSamp
         <div className="space-y-3">
           {(showAllMessages ? messages : messages.slice(0, 5)).map((msg: any, i: number) => (
             <div key={msg.id || i} style={{ padding: '14px 16px', border: `0.5px solid ${themeColors.divider}`, background: themeColors.cardBg, opacity: 0, ...(isVisible ? { animation: `${i % 2 === 0 ? 'mag-msgSlideOdd' : 'mag-msgSlideEven'} 0.6s ease ${0.3 + i * 0.1}s both` } : {}) }}>
-              {msg.question && (
+              {invitation.content?.guestbookShowQuestion !== false && msg.question && (
                 <p style={{ fontFamily: fonts.body, fontSize: '10px', color: themeColors.gray, marginBottom: '6px', opacity: 0.7 }}>
                   Q. {msg.question}
                 </p>

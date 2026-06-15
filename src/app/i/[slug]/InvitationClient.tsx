@@ -2318,6 +2318,7 @@ const mockInvitation = {
       '결혼생활에서 가장 중요한 건?',
       '두 사람의 첫인상은 어땠나요?',
     ],
+    guestbookShowQuestion: true,
     info: {
       dressCode: { title: '드레스코드', content: '단정한 복장으로 와주세요.\n흰색 계열 의상은 피해주시면 감사하겠습니다.', enabled: true },
       photoShare: { title: '사진 공유', content: '결혼식 사진을 공유해주세요!', buttonText: '사진 공유하기', url: '', enabled: false },

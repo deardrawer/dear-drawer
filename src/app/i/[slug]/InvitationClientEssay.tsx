@@ -450,19 +450,9 @@ function GreetingSection({ data, theme }: { data: any; theme: ThemeConfig }) {
           <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '9px', letterSpacing: '5px', color: theme.accent }}>INVITATION</div>
         </div>
 
-        {/* Drop cap - 첫 글자만 크게 */}
+        {/* 인사말 본문 */}
         {lines.length > 0 && (
-          <div className="relative">
-            <span className="transition-all duration-700" style={{
-              fontFamily: "'BonmyeongjoSourceHanSerif', serif",
-              fontSize: '52px', fontWeight: 300, lineHeight: 1,
-              color: theme.accent, float: 'left',
-              marginRight: '8px', marginTop: '4px',
-              opacity: isVisible ? 1 : 0,
-              transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-            }}>
-              {lines[0].trim().charAt(0)}
-            </span>
+          <div>
             {lines.map((line: string, i: number) => (
               <p key={i} className="es-f15 transition-all duration-600 ease-out" style={{
                 fontFamily: "'Pretendard', sans-serif",
@@ -472,7 +462,7 @@ function GreetingSection({ data, theme }: { data: any; theme: ThemeConfig }) {
                 transform: isVisible ? 'translateY(0)' : 'translateY(16px)',
                 transitionDelay: `${200 + i * 80}ms`,
               }}>
-                {i === 0 ? line.trim().substring(1) : (line || '\u00A0')}
+                {line || '\u00A0'}
               </p>
             ))}
           </div>
@@ -2249,10 +2239,17 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
   const bonusPageTypes = new Set(['bonus-intro', 'bonus-interview', 'bonus-end'])
   const isInfoPage = infoPageTypes.has(page?.type || '')
   const isQuoteDark = isEditorial && page?.type === 'quote'
+  const quoteDarkByTheme: Record<string, Partial<BookColorConfig>> = {
+    'essay-ivory':  { bg: '#2C2820', pageBg: '#2C2820', muted: '#A09882', divider: '#5C5444', toolbarText: '#A09882', progressBg: '#5C5444', progressFill: '#A09882' },
+    'essay-blush':  { bg: '#3A2028', pageBg: '#3A2028', muted: '#B08890', divider: '#6C3848', toolbarText: '#B08890', progressBg: '#6C3848', progressFill: '#B08890' },
+    'essay-sage':   { bg: '#1E2A1C', pageBg: '#1E2A1C', muted: '#82A078', divider: '#3E5C34', toolbarText: '#82A078', progressBg: '#3E5C34', progressFill: '#82A078' },
+    'essay-mono':   { bg: '#1A1A1A', pageBg: '#1A1A1A', muted: '#888888', divider: '#444444', toolbarText: '#888888', progressBg: '#444444', progressFill: '#888888' },
+    'essay-sky':    { bg: '#1C2830', pageBg: '#1C2830', muted: '#7A9AB0', divider: '#3A5468', toolbarText: '#7A9AB0', progressBg: '#3A5468', progressFill: '#7A9AB0' },
+    'essay-coral':  { bg: '#2E1E18', pageBg: '#2E1E18', muted: '#B08878', divider: '#6A3E30', toolbarText: '#B08878', progressBg: '#6A3E30', progressFill: '#B08878' },
+  }
   const bookQuoteDarkColors = {
     ...bookColors,
-    bg: '#2C2820', pageBg: '#2C2820', muted: '#A09882', divider: '#5C5444',
-    toolbarText: '#A09882', progressBg: '#5C5444', progressFill: '#A09882',
+    ...(quoteDarkByTheme[data.colorTheme || 'essay-ivory'] || quoteDarkByTheme['essay-ivory']),
   }
   const activeColors = isQuoteDark ? bookQuoteDarkColors : isInfoPage ? bookInfoColors : bookColors
 
@@ -3083,13 +3080,14 @@ function BookIntro({ data, onOpenModal }: { data: any; onOpenModal?: (modal: 'co
   const bodyText = intro?.body || '사진이 없는 이유는 단순합니다.\n우리의 이야기가 더 잘 보이길 바라서입니다.\n\n수많은 이미지 속에서\n스쳐 지나가는 대신,\n한 문장이라도 천천히 읽히고 싶었습니다.\n\n이곳은 우리의 기록이고,\n작은 에세이입니다.'
   const lines = bodyText.split('\n')
 
-  // 하단 네비게이션 아이템 (팝업 모달로 연결)
+  // 하단 네비게이션 아이템 (팝업 모달로 연결, sectionVisibility 반영)
+  const sv = data?.sectionVisibility
   const navItems = [
-    { modal: 'contact' as const, label: '연락하기', icon: <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" /></svg> },
-    { modal: 'rsvp' as const, label: '참석여부', icon: <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
+    sv?.contacts !== false ? { modal: 'contact' as const, label: '연락하기', icon: <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" /></svg> } : null,
+    data?.rsvpEnabled && sv?.rsvp !== false ? { modal: 'rsvp' as const, label: '참석여부', icon: <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> } : null,
     { modal: 'location' as const, label: '오시는길', icon: <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg> },
-    { modal: 'account' as const, label: '마음전하기', icon: <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg> },
-  ]
+    sv?.bankAccounts !== false ? { modal: 'account' as const, label: '마음전하기', icon: <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg> } : null,
+  ].filter(Boolean) as { modal: 'contact' | 'rsvp' | 'location' | 'account'; label: string; icon: React.ReactNode }[]
 
   return (
     <div className="bk-page flex flex-col items-center justify-center" style={{ background: bookColors.accent }}>
@@ -3225,8 +3223,6 @@ function BookChapter({ chapter, index, ed = false, colorTheme }: { chapter: any;
         {/* 본문 */}
         <div className={`theme-${colorTheme || 'essay-ivory'}`} style={{ textAlign: 'left' }}>
           {lines.map((line: string, j: number) => {
-            const isDropCap = j === firstTextIdx && line.trim().length > 0
-
             // >>텍스트<< 강조 문구 (리디바탕체, 여러 줄 지원)
             if (j >= heroLineIdx && j <= heroEndLine && heroLineIdx >= 0) {
               if (j > heroLineIdx) return null // 첫 줄에서 모두 렌더링
@@ -3246,38 +3242,6 @@ function BookChapter({ chapter, index, ed = false, colorTheme }: { chapter: any;
               )
             }
 
-            if (isDropCap) {
-              const trimmedLine = line.trim()
-              // 첫 글자가 마크업 기호(==, ~~, **, >>)이면 드롭캡 건너뛰기
-              if (/^(==|~~|\*\*|>>)/.test(trimmedLine)) {
-                const hasMarkup = /==|~~|\*\*/.test(line)
-                return (
-                  <BA key={j} d={450 + j * 60}>
-                    {hasMarkup ? (
-                      <p className="es-f15" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '15px', lineHeight: 2.2, color: bookColors.text }} dangerouslySetInnerHTML={{ __html: parseHighlight(line) }} />
-                    ) : (
-                      <p className="es-f15" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '15px', lineHeight: 2.2, color: bookColors.text }}>{line || '\u00A0'}</p>
-                    )}
-                  </BA>
-                )
-              }
-              const firstChar = trimmedLine[0]
-              const rest = trimmedLine.slice(1)
-              const hasMarkup = /==|~~|\*\*/.test(rest)
-              return (
-                <BA key={j} d={450 + j * 60}>
-                  <p className="es-f15" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '15px', lineHeight: 2.2, color: bookColors.text }}>
-                    <span style={{
-                      fontFamily: "'BonmyeongjoSourceHanSerif', serif",
-                      fontSize: ed ? '64px' : '48px', fontWeight: 300, lineHeight: 0.8,
-                      float: 'left', marginRight: ed ? '10px' : '8px', marginTop: ed ? '8px' : '6px',
-                      color: bookColors.accent,
-                    }}>{firstChar}</span>
-                    {hasMarkup ? <span dangerouslySetInnerHTML={{ __html: parseHighlight(rest) }} /> : rest}
-                  </p>
-                </BA>
-              )
-            }
             const hasMarkup = /==|~~|\*\*/.test(line)
             return (
               <BA key={j} d={450 + j * 60}>
@@ -3375,16 +3339,21 @@ function BookQuote({ data, ed = false }: { data: any; ed?: boolean }) {
   if (!quote?.text) return null
   const quoteLines = quote.text.split('\n')
 
-  // 에디토리얼: 다크 반전 배경
-  const darkBg = '#2C2820'
-  const darkText = '#F5F0E8'
-  const darkMuted = '#A09882'
-  const darkDivider = '#5C5444'
+  // 에디토리얼: 테마별 다크 반전 배경
+  const darkColorsByTheme: Record<string, { bg: string; text: string; muted: string; divider: string }> = {
+    'essay-ivory':  { bg: '#2C2820', text: '#F5F0E8', muted: '#A09882', divider: '#5C5444' },
+    'essay-blush':  { bg: '#3A2028', text: '#FBE8ED', muted: '#B08890', divider: '#6C3848' },
+    'essay-sage':   { bg: '#1E2A1C', text: '#E8F2E0', muted: '#82A078', divider: '#3E5C34' },
+    'essay-mono':   { bg: '#1A1A1A', text: '#F0F0F0', muted: '#888888', divider: '#444444' },
+    'essay-sky':    { bg: '#1C2830', text: '#E0ECF8', muted: '#7A9AB0', divider: '#3A5468' },
+    'essay-coral':  { bg: '#2E1E18', text: '#FCE8DE', muted: '#B08878', divider: '#6A3E30' },
+  }
+  const darkColors = darkColorsByTheme[data.colorTheme || 'essay-ivory'] || darkColorsByTheme['essay-ivory']
 
-  const bg = ed ? darkBg : bookColors.bg
-  const textColor = ed ? darkText : bookColors.heading
-  const mutedColor = ed ? darkMuted : bookColors.muted
-  const quoteMarkColor = ed ? darkDivider : bookColors.divider
+  const bg = ed ? darkColors.bg : bookColors.bg
+  const textColor = ed ? darkColors.text : bookColors.heading
+  const mutedColor = ed ? darkColors.muted : bookColors.muted
+  const quoteMarkColor = ed ? darkColors.divider : bookColors.divider
 
   return (
     <div className="bk-page flex items-center" style={{ background: bg, transition: 'background 0.4s ease' }}>
@@ -4115,10 +4084,24 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
     .essay-font-container .es-f20 { font-size: ${20 + fsl}px !important; }
   ` : ''
 
+  // Line height level CSS (행 간격 조절, 각 레벨당 ±0.15)
+  const lhl = data.lineHeightLevel || 0
+  const lineHeightCSS = lhl !== 0 ? `
+    .essay-font-container .es-f11,
+    .essay-font-container .es-f12,
+    .essay-font-container .es-f13,
+    .essay-font-container .es-f14,
+    .essay-font-container .es-f15,
+    .essay-font-container .es-f16,
+    .essay-font-container .es-f17,
+    .essay-font-container .es-f18,
+    .essay-font-container .es-f20 { line-height: ${2.2 + lhl * 0.15} !important; }
+  ` : ''
+
   // 커스텀 하이라이트 색상 (CSS 변수로 컨테이너에 직접 설정)
   const customHighlightStyle = data.highlightColor ? { '--custom-highlight-color': data.highlightColor } as React.CSSProperties : {}
 
-  const allCSS = [fontOverrideCSS, fontSizeCSS].filter(Boolean).join('\n')
+  const allCSS = [fontOverrideCSS, fontSizeCSS, lineHeightCSS].filter(Boolean).join('\n')
 
   // Book concept - e-book reader style
   if (concept === 'book') {

@@ -236,10 +236,10 @@ export default function HighlightTextarea({
           size="sm"
           className="h-6 px-2 text-[10px] gap-1"
           onClick={() => applyHighlight('yellow')}
-          title="텍스트를 드래그한 후 클릭하면 노란색 하이라이트가 적용됩니다"
+          title="텍스트를 드래그한 후 클릭하면 형광펜 하이라이트가 적용됩니다"
         >
           <span className="w-3 h-3 rounded-sm" style={{ background: 'linear-gradient(transparent 50%, #FFEB3B 50%)' }} />
-          노란색
+          형광펜
         </Button>
         <Button
           type="button"

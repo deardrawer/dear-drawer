@@ -147,6 +147,7 @@ export interface EssayInvitationData {
   // Design
   fontStyle: 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury' | 'gulim' | 'adulthand' | 'neathand' | 'roundhand' | 'roundgothic' | 'suit' | 'myungjo'
   fontSizeLevel: number // -2 ~ +2 (0=기본)
+  lineHeightLevel: number // -2 ~ +2 (0=기본)
   colorTheme: 'essay-ivory' | 'essay-blush' | 'essay-sage' | 'essay-mono' | 'essay-sky' | 'essay-coral'
   highlightColor?: string // 커스텀 하이라이트 색상
   bgm: { enabled: boolean; url: string; autoplay: boolean }
@@ -163,6 +164,7 @@ const defaultData: EssayInvitationData = {
   designConcept: 'book',
   fontStyle: 'modern',
   fontSizeLevel: 0,
+  lineHeightLevel: 0,
   colorTheme: 'essay-ivory',
   highlightColor: '#FFD700',
   bgm: { enabled: false, url: '', autoplay: true },

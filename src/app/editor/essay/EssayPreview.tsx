@@ -29,6 +29,7 @@ export default function EssayPreview({ data, fullscreen }: EssayPreviewProps) {
     highlightColor: data.highlightColor,
     fontStyle: data.fontStyle || 'modern',
     fontSizeLevel: data.fontSizeLevel || 0,
+    lineHeightLevel: data.lineHeightLevel || 0,
     bgm: data.bgm,
     media: data.media,
     design: data.design,

@@ -44,7 +44,11 @@ export interface EssayInvitationData {
   media: {
     coverImage: string
     coverImageSettings?: { scale: number; positionX: number; positionY: number }
+    endingPhoto?: string
   }
+
+  // Ending
+  endingMessage?: string
 
   // Design (커버)
   design: {
@@ -70,11 +74,13 @@ export interface EssayInvitationData {
     title: string
     subtitle: string
     body: string
+    backgroundColor?: string
+    textColor?: string
   }
 
   // Content
   greeting: string
-  chapters: { title: string; subtitle: string; body: string }[]
+  chapters: { title: string; subtitle: string; body: string; photo?: string; photoStyle?: 'wide' | 'square'; photoCrop?: { x: number; y: number; width: number; height: number }; location?: string; date?: string }[]
   interviews: { question: string; answer: string; answerer: 'groom' | 'bride' | 'both' }[]
   quote: { text: string; author: string }
   thankYou: { title: string; message: string; sign: string }
@@ -101,7 +107,7 @@ export interface EssayInvitationData {
   }
 
   // Section visibility
-  sectionVisibility: { contacts: boolean; bankAccounts: boolean; guestbook: boolean; rsvp: boolean; parentNames: boolean; guidance: boolean }
+  sectionVisibility: { contacts: boolean; bankAccounts: boolean; guestbook: boolean; rsvp: boolean; parentNames: boolean; guidance: boolean; greeting?: boolean; story?: boolean; quote?: boolean; gallery?: boolean; info?: boolean; thankyou?: boolean }
 
   // RSVP
   rsvpEnabled: boolean
@@ -148,9 +154,13 @@ export interface EssayInvitationData {
   fontStyle: 'classic' | 'modern' | 'romantic' | 'contemporary' | 'luxury' | 'gulim' | 'adulthand' | 'neathand' | 'roundhand' | 'roundgothic' | 'suit' | 'myungjo'
   fontSizeLevel: number // -2 ~ +2 (0=기본)
   lineHeightLevel: number // -2 ~ +2 (0=기본)
-  colorTheme: 'essay-ivory' | 'essay-blush' | 'essay-sage' | 'essay-mono' | 'essay-sky' | 'essay-coral'
+  colorTheme: 'essay-ivory' | 'essay-blush' | 'essay-sage' | 'essay-mono' | 'essay-sky' | 'essay-coral' | 'essay-custom'
+  customThemeColors?: { bg: string; pageBg: string; accent: string; text: string; accentText?: string }
   highlightColor?: string // 커스텀 하이라이트 색상
   bgm: { enabled: boolean; url: string; autoplay: boolean }
+
+  // Section order (book concept)
+  sectionOrder?: string[]
 
   // Slug
   slug?: string
@@ -199,9 +209,9 @@ const defaultData: EssayInvitationData = {
   },
   greeting: '서로 다른 길을 걸어온 두 사람이\n같은 산 위에서 멈춰 섰습니다.\n\n오래 기다려온 이 순간,\n당신과 함께하고 싶습니다.\n\n귀한 걸음으로 축복해 주세요.',
   chapters: [
-    { title: '시작', subtitle: 'The Beginning', body: '2020년 가을, 북한산 둘레길에서\n처음 만났습니다.\n\n같은 방향으로 걷고 있던 두 사람.\n길을 물어보는 척 건넨 인사에\n돌아온 건 해맑은 웃음이었습니다.\n\n정상까지 함께 오르며 나눈 대화가\n어찌나 편하던지.\n\n산을 내려오는 길이\n아쉬웠던 건 처음이었습니다.' },
-    { title: '우리의 시간', subtitle: 'Our Days Together', body: '그 뒤로 매주 함께 산에 올랐습니다.\n\n봄에는 진달래가 핀 능선을 걸었고,\n여름에는 계곡에 발을 담갔습니다.\n가을 단풍 아래에서 도시락을 나눠 먹고,\n겨울 설산에서는 서로의 손을 꼭 잡았습니다.\n\n>>"이번 주말 어디 갈까?"가 "이번 주말 어느 산 갈까?"로<<\n\n바뀐 것은 아주 자연스러운 일이었습니다.' },
-    { title: '약속', subtitle: 'The Promise', body: '프로포즈는 북한산 정상에서\n하려고 했습니다.\n\n그런데 반지를 배낭 맨 아래에 넣어둔 걸\n깜빡하고 말았습니다.\n\n정상에서 허겁지겁 짐을 뒤지는 저를 보며\n그녀가 물었습니다.\n>>"혹시 반지 찾는 거야?"<<\n\n들켰지만, 어쨌든 무릎을 꿇었고\n그녀는 웃으면서 울었습니다.\n\n완벽하진 않았지만\n우리다운 약속이었습니다.' },
+    { title: '시작', subtitle: 'The Beginning', body: '2020년 가을, 북한산 둘레길에서\n처음 만났습니다.\n\n같은 방향으로 걷고 있던 두 사람.\n길을 물어보는 척 건넨 인사에\n돌아온 건 해맑은 웃음이었습니다.\n\n정상까지 함께 오르며 나눈 대화가\n어찌나 편하던지.\n\n산을 내려오는 길이\n아쉬웠던 건 처음이었습니다.', photo: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=80', location: '북한산 둘레길', date: '2020. 09' },
+    { title: '우리의 시간', subtitle: 'Our Days Together', body: '그 뒤로 매주 함께 산에 올랐습니다.\n\n봄에는 진달래가 핀 능선을 걸었고,\n여름에는 계곡에 발을 담갔습니다.\n가을 단풍 아래에서 도시락을 나눠 먹고,\n겨울 설산에서는 서로의 손을 꼭 잡았습니다.\n\n"이번 주말 어디 갈까?"가 "이번 주말 어느 산 갈까?"로\n\n바뀐 것은 아주 자연스러운 일이었습니다.', photo: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&q=80', location: '서울숲', date: '2021. 06' },
+    { title: '약속', subtitle: 'The Promise', body: '프로포즈는 북한산 정상에서\n하려고 했습니다.\n\n그런데 반지를 배낭 맨 아래에 넣어둔 걸\n깜빡하고 말았습니다.\n\n정상에서 허겁지겁 짐을 뒤지는 저를 보며\n그녀가 물었습니다.\n"혹시 반지 찾는 거야?"\n\n들켰지만, 어쨌든 무릎을 꿇었고\n그녀는 웃으면서 울었습니다.\n\n완벽하진 않았지만\n우리다운 약속이었습니다.', photo: 'https://images.unsplash.com/photo-1454496522488-7a8e488e8606?w=800&q=80', location: '북한산 정상', date: '2024. 10' },
   ],
   interviews: [
     { question: '상대방의 첫인상은 어땠나요?', answer: '산에서 만나서 그런지, 꾸밈없는 모습이 좋았어요. 등산화 신고 환하게 웃는 얼굴이 아직도 선명합니다.', answerer: 'groom' as const },

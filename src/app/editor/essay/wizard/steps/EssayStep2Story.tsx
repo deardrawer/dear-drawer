@@ -1,8 +1,10 @@
 'use client'
 
-import { useState } from 'react'
-import { Plus, Trash2, GripVertical } from 'lucide-react'
-import HighlightTextarea from '@/components/editor/HighlightTextarea'
+import { useState, useRef, useCallback } from 'react'
+import { Plus, Trash2, ImagePlus, X, Crop } from 'lucide-react'
+import Cropper from 'react-easy-crop'
+import type { Area } from 'react-easy-crop'
+import { uploadImage } from '@/lib/imageUpload'
 import type { EssayInvitationData } from '../../page'
 
 interface StepProps {
@@ -18,11 +20,28 @@ const labelClass = 'block text-xs font-medium text-gray-600 mb-1.5'
 
 export default function EssayStep2Story({ data, updateData, updateNestedData }: StepProps) {
   const isStory = data.contentMode === 'story'
+  const [uploadingPhoto, setUploadingPhoto] = useState<number | null>(null)
+  const [uploadingEndingPhoto, setUploadingEndingPhoto] = useState(false)
+  const fileInputRefs = useRef<(HTMLInputElement | null)[]>([])
+  const endingPhotoRef = useRef<HTMLInputElement>(null)
 
-  // 챕터 업데이트
+  // 크롭 모달 상태
+  const [cropModal, setCropModal] = useState<{ index: number; photo: string; aspect: number } | null>(null)
+  const [cropPosition, setCropPosition] = useState({ x: 0, y: 0 })
+  const [cropZoom, setCropZoom] = useState(1)
+  const [tempCroppedArea, setTempCroppedArea] = useState<Area | null>(null)
+
+  // 챕터 업데이트 (string 필드)
   const updateChapter = (index: number, field: string, value: string) => {
     const chapters = [...data.chapters]
     chapters[index] = { ...chapters[index], [field]: value }
+    updateData({ chapters })
+  }
+
+  // 챕터 업데이트 (복합 필드)
+  const updateChapterFields = (index: number, updates: Record<string, unknown>) => {
+    const chapters = [...data.chapters]
+    chapters[index] = { ...chapters[index], ...updates }
     updateData({ chapters })
   }
 
@@ -30,9 +49,72 @@ export default function EssayStep2Story({ data, updateData, updateNestedData }: 
     updateData({ chapters: [...data.chapters, { title: '', subtitle: '', body: '' }] })
   }
 
+  const handleChapterPhoto = async (index: number, file: File) => {
+    setUploadingPhoto(index)
+    try {
+      const result = await uploadImage(file)
+      if (result.webUrl) {
+        updateChapterFields(index, { photo: result.webUrl, photoCrop: undefined })
+      }
+    } catch (e) {
+      console.error('Photo upload failed:', e)
+    } finally {
+      setUploadingPhoto(null)
+    }
+  }
+
+  const removeChapterPhoto = (index: number) => {
+    updateChapterFields(index, { photo: '', photoCrop: undefined })
+  }
+
+  const handleEndingPhoto = async (file: File) => {
+    setUploadingEndingPhoto(true)
+    try {
+      const result = await uploadImage(file)
+      if (result.webUrl) {
+        updateNestedData('media.endingPhoto', result.webUrl)
+      }
+    } catch (e) {
+      console.error('Ending photo upload failed:', e)
+    } finally {
+      setUploadingEndingPhoto(false)
+    }
+  }
+
   const removeChapter = (index: number) => {
     if (data.chapters.length <= 1) return
     updateData({ chapters: data.chapters.filter((_, i) => i !== index) })
+  }
+
+  // 크롭 모달 열기
+  const openCropModal = (index: number) => {
+    const ch = data.chapters[index]
+    if (!ch.photo) return
+    setCropPosition({ x: 0, y: 0 })
+    setCropZoom(1)
+    setTempCroppedArea(null)
+    setCropModal({
+      index,
+      photo: ch.photo,
+      aspect: ch.photoStyle === 'square' ? 1 : 16 / 9,
+    })
+  }
+
+  const onCropComplete = useCallback((_croppedArea: Area, croppedAreaPixels: Area) => {
+    // croppedArea는 % 단위 (0~100), croppedAreaPixels는 px 단위
+    // 하지만 react-easy-crop의 croppedArea는 실제로 0~100 범위
+    void croppedAreaPixels
+  }, [])
+
+  const onCropChange = useCallback((croppedArea: Area) => {
+    setTempCroppedArea(croppedArea)
+  }, [])
+
+  const confirmCrop = () => {
+    if (cropModal && tempCroppedArea) {
+      updateChapterFields(cropModal.index, { photoCrop: tempCroppedArea })
+    }
+    setCropModal(null)
   }
 
   // 인터뷰 업데이트
@@ -51,20 +133,43 @@ export default function EssayStep2Story({ data, updateData, updateNestedData }: 
     updateData({ interviews: data.interviews.filter((_, i) => i !== index) })
   }
 
+  // 크롭 적용된 이미지 스타일 계산
+  const getCropStyles = (crop: { x: number; y: number; width: number; height: number }) => ({
+    position: 'absolute' as const,
+    width: `${10000 / crop.width}%`,
+    height: `${10000 / crop.height}%`,
+    left: `${-crop.x * 100 / crop.width}%`,
+    top: `${-crop.y * 100 / crop.height}%`,
+    maxWidth: 'none' as const,
+  })
+
   return (
     <div className="p-6 space-y-8">
-      {/* 안내 */}
-      <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
-        <p className="text-base text-emerald-800 font-medium mb-1">
-          {isStory ? '러브스토리 작성' : '인터뷰 작성'}
-        </p>
-        <p className="text-sm text-emerald-700">
-          {isStory
-            ? '챕터별로 두 사람의 이야기를 써내려가세요. 각 챕터가 책의 한 페이지가 됩니다.'
-            : 'Q&A 형식으로 서로에 대한 이야기를 나눠보세요. 각 질문이 한 페이지가 됩니다.'
-          }
-        </p>
-      </div>
+      {/* 이야기 형식 */}
+      <section className="space-y-3">
+        <h3 className="text-base font-semibold text-gray-900">이야기 형식</h3>
+        <p className="text-sm text-gray-500">에세이를 어떤 형식으로 쓸지 선택해주세요.</p>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => updateData({ contentMode: 'story' })}
+            className={`p-4 border rounded-lg text-left transition-all ${
+              data.contentMode === 'story' ? 'border-black bg-gray-50' : 'border-gray-200 hover:border-gray-300'
+            }`}
+          >
+            <div className="text-sm font-medium text-gray-900">러브스토리</div>
+            <div className="text-xs text-gray-500 mt-1">챕터별로 이야기를 풀어가는 서사형</div>
+          </button>
+          <button
+            onClick={() => updateData({ contentMode: 'interview' })}
+            className={`p-4 border rounded-lg text-left transition-all ${
+              data.contentMode === 'interview' ? 'border-black bg-gray-50' : 'border-gray-200 hover:border-gray-300'
+            }`}
+          >
+            <div className="text-sm font-medium text-gray-900">인터뷰</div>
+            <div className="text-xs text-gray-500 mt-1">Q&amp;A로 서로를 소개하는 대화형</div>
+          </button>
+        </div>
+      </section>
 
       {/* Before We Begin (인트로) */}
       <section className="space-y-3">
@@ -159,16 +264,100 @@ export default function EssayStep2Story({ data, updateData, updateNestedData }: 
                   <input className={inputClass} value={ch.subtitle} onChange={e => updateChapter(i, 'subtitle', e.target.value)} placeholder="The Beginning" />
                 </div>
               </div>
+              {/* 사진 */}
+              <div className="space-y-1.5">
+                <label className={labelClass}>사진</label>
+                {ch.photo ? (
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => updateChapterFields(i, { photoStyle: 'wide', photoCrop: undefined })}
+                        className={`px-2 py-1 text-[10px] rounded border transition-colors ${
+                          ch.photoStyle !== 'square' ? 'bg-black text-white border-black' : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                        }`}
+                      >
+                        가로
+                      </button>
+                      <button
+                        onClick={() => updateChapterFields(i, { photoStyle: 'square', photoCrop: undefined })}
+                        className={`px-2 py-1 text-[10px] rounded border transition-colors ${
+                          ch.photoStyle === 'square' ? 'bg-black text-white border-black' : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                        }`}
+                      >
+                        정사각
+                      </button>
+                      <button
+                        onClick={() => openCropModal(i)}
+                        className="px-2 py-1 text-[10px] rounded border border-gray-200 text-gray-500 hover:border-gray-300 transition-colors flex items-center gap-0.5"
+                      >
+                        <Crop className="w-2.5 h-2.5" />
+                        크롭
+                      </button>
+                    </div>
+                    <div
+                      className={`relative overflow-hidden ${ch.photoStyle === 'square' ? 'w-32' : 'w-1/2'}`}
+                      style={{ aspectRatio: ch.photoStyle === 'square' ? '1' : '16/9' }}
+                    >
+                      {ch.photoCrop ? (
+                        <img src={ch.photo} alt="" style={getCropStyles(ch.photoCrop)} />
+                      ) : (
+                        <img src={ch.photo} alt="" className="w-full h-full object-cover" />
+                      )}
+                      <button
+                        onClick={() => removeChapterPhoto(i)}
+                        className="absolute top-1 right-1 w-4 h-4 bg-black/50 rounded-full flex items-center justify-center text-white hover:bg-black/70 z-10"
+                      >
+                        <X className="w-2.5 h-2.5" />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => fileInputRefs.current[i]?.click()}
+                    disabled={uploadingPhoto === i}
+                    className="w-full h-12 border-2 border-dashed border-gray-200 rounded-lg flex items-center justify-center gap-2 text-gray-400 hover:border-gray-300 hover:text-gray-500 transition-colors"
+                  >
+                    {uploadingPhoto === i ? (
+                      <span className="text-xs">업로드 중...</span>
+                    ) : (
+                      <>
+                        <ImagePlus className="w-3.5 h-3.5" />
+                        <span className="text-xs">사진 추가 (선택)</span>
+                      </>
+                    )}
+                  </button>
+                )}
+                <input
+                  ref={el => { fileInputRefs.current[i] = el }}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={e => {
+                    const file = e.target.files?.[0]
+                    if (file) handleChapterPhoto(i, file)
+                    e.target.value = ''
+                  }}
+                />
+              </div>
+              {/* 위치 & 날짜 */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className={labelClass}>위치</label>
+                  <input className={inputClass} value={ch.location || ''} onChange={e => updateChapter(i, 'location', e.target.value)} placeholder="북한산 둘레길" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className={labelClass}>날짜</label>
+                  <input className={inputClass} value={ch.date || ''} onChange={e => updateChapter(i, 'date', e.target.value)} placeholder="2020. 09" />
+                </div>
+              </div>
               <div className="space-y-1.5">
                 <label className={labelClass}>본문</label>
-                <HighlightTextarea
+                <textarea
+                  className={textareaClass}
                   value={ch.body}
-                  onChange={(val) => updateChapter(i, 'body', val)}
-                  placeholder="이 챕터의 이야기를 써주세요...&#10;&#10;줄바꿈으로 단락을 나눌 수 있습니다."
+                  onChange={e => updateChapter(i, 'body', e.target.value)}
+                  placeholder={'이 챕터의 이야기를 써주세요...\n\n줄바꿈으로 단락을 나눌 수 있습니다.'}
                   rows={6}
-                  showHeroButton
-                  externalHighlightColor={data.highlightColor || '#FFD700'}
-                  onHighlightColorChange={(c) => updateData({ highlightColor: c })}
                 />
                 <p className="text-xs text-gray-400 text-right">{ch.body.length}자</p>
               </div>
@@ -311,6 +500,115 @@ export default function EssayStep2Story({ data, updateData, updateNestedData }: 
           placeholder="높은 천장 아래로&#10;따뜻한 빛이 쏟아지던 곳.&#10;&#10;처음 이곳에 왔을 때,&#10;&quot;여기서 우리 결혼식을 하자&quot;&#10;동시에 같은 말을 했습니다."
         />
       </section>
+
+      {/* 엔딩 페이지 */}
+      <section className="space-y-3">
+        <h3 className="text-base font-semibold text-gray-900">엔딩 페이지</h3>
+        <p className="text-xs text-gray-500">책의 마지막 페이지에 표시됩니다.</p>
+        <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
+          <div className="space-y-1.5">
+            <label className={labelClass}>사진</label>
+            {data.media?.endingPhoto ? (
+              <div className="relative w-20 h-20 overflow-hidden rounded">
+                <img src={data.media.endingPhoto} alt="" className="w-full h-full object-cover" />
+                <button
+                  onClick={() => updateNestedData('media.endingPhoto', '')}
+                  className="absolute top-1 right-1 w-4 h-4 bg-black/50 rounded-full flex items-center justify-center text-white hover:bg-black/70"
+                >
+                  <X className="w-2.5 h-2.5" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => endingPhotoRef.current?.click()}
+                disabled={uploadingEndingPhoto}
+                className="w-20 h-20 border-2 border-dashed border-gray-300 rounded flex items-center justify-center text-gray-400 hover:border-gray-400 hover:text-gray-500 transition-colors"
+              >
+                {uploadingEndingPhoto ? (
+                  <span className="text-[10px]">업로드...</span>
+                ) : (
+                  <ImagePlus className="w-4 h-4" />
+                )}
+              </button>
+            )}
+            <input
+              ref={endingPhotoRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={e => {
+                const file = e.target.files?.[0]
+                if (file) handleEndingPhoto(file)
+                e.target.value = ''
+              }}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className={labelClass}>메시지</label>
+            <textarea
+              className={textareaClass}
+              rows={3}
+              value={data.endingMessage ?? ''}
+              onChange={e => updateData({ endingMessage: e.target.value })}
+              placeholder={'이 이야기를\n함께 읽어주셔서\n감사합니다.'}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* 크롭 모달 */}
+      {cropModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={() => setCropModal(null)}>
+          <div className="bg-white rounded-xl w-[90vw] max-w-md overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+              <h4 className="text-sm font-semibold text-gray-900">사진 크롭</h4>
+              <button onClick={() => setCropModal(null)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="relative w-full" style={{ height: '60vw', maxHeight: '360px' }}>
+              <Cropper
+                image={cropModal.photo}
+                crop={cropPosition}
+                zoom={cropZoom}
+                aspect={cropModal.aspect}
+                onCropChange={setCropPosition}
+                onZoomChange={setCropZoom}
+                onCropComplete={(croppedArea) => onCropChange(croppedArea)}
+              />
+            </div>
+            <div className="px-4 py-3 space-y-3">
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-gray-500 w-8 shrink-0">축소</span>
+                <input
+                  type="range"
+                  min={1}
+                  max={3}
+                  step={0.01}
+                  value={cropZoom}
+                  onChange={e => setCropZoom(Number(e.target.value))}
+                  className="flex-1 h-1 accent-black"
+                />
+                <span className="text-xs text-gray-500 w-8 shrink-0">확대</span>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setCropModal(null)}
+                  className="flex-1 py-2 text-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+                >
+                  취소
+                </button>
+                <button
+                  onClick={confirmCrop}
+                  className="flex-1 py-2 text-sm bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+                >
+                  적용
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

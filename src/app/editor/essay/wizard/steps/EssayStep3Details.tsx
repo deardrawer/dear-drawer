@@ -33,6 +33,28 @@ const formatPhone = (value: string) => {
 
 const formatAccount = (value: string) => value.replace(/[^\d-]/g, '')
 
+const defaultSectionOrder = [
+  'intro', 'greeting', 'story', 'quote', 'gallery',
+  'info', 'contacts', 'bank', 'thankyou', 'guestbook', 'rsvp'
+]
+
+// greeting은 항상 최상단 고정이므로 재정렬 대상에서 제외
+const fixedTopSections = ['greeting']
+
+const sectionLabels: Record<string, string> = {
+  intro: '프롤로그',
+  greeting: '초대의 글',
+  story: '이야기',
+  quote: '인용문',
+  gallery: '갤러리',
+  info: '예식 안내',
+  contacts: '축하전하기',
+  bank: '마음 전하기',
+  thankyou: '감사 인사',
+  guestbook: '방명록',
+  rsvp: '참석 여부',
+}
+
 export default function EssayStep3Details({ data, updateData, updateNestedData }: StepProps) {
   const getDefaultRsvpDeadline = () => {
     if (data.wedding.date) {
@@ -41,6 +63,55 @@ export default function EssayStep3Details({ data, updateData, updateNestedData }
       return d.toISOString().split('T')[0]
     }
     return ''
+  }
+
+  const sectionOrder: string[] = data.sectionOrder || defaultSectionOrder
+
+  const moveSectionItem = (sectionId: string, direction: 'up' | 'down') => {
+    if (fixedTopSections.includes(sectionId)) return
+    // 고정 섹션을 제외한 재정렬 가능 항목만 대상
+    const reorderable = sectionOrder.filter(id => !fixedTopSections.includes(id))
+    const currentIndex = reorderable.indexOf(sectionId)
+    if (currentIndex === -1) return
+    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
+    if (newIndex < 0 || newIndex >= reorderable.length) return
+    ;[reorderable[currentIndex], reorderable[newIndex]] = [reorderable[newIndex], reorderable[currentIndex]]
+    // 고정 섹션 + 재정렬된 항목 합치기
+    const fixed = sectionOrder.filter(id => fixedTopSections.includes(id))
+    updateData({ sectionOrder: [...fixed, ...reorderable] })
+  }
+
+  const isSectionEnabled = (sectionId: string): boolean => {
+    switch (sectionId) {
+      case 'intro': return data.intro?.enabled !== false
+      case 'greeting': return data.sectionVisibility?.greeting !== false
+      case 'story': return data.sectionVisibility?.story !== false
+      case 'quote': return data.sectionVisibility?.quote !== false
+      case 'gallery': return data.sectionVisibility?.gallery !== false
+      case 'info': return data.sectionVisibility?.info !== false
+      case 'contacts': return data.sectionVisibility?.contacts !== false
+      case 'bank': return data.sectionVisibility?.bankAccounts !== false
+      case 'thankyou': return data.sectionVisibility?.thankyou !== false
+      case 'guestbook': return data.sectionVisibility?.guestbook !== false
+      case 'rsvp': return data.rsvpEnabled && data.sectionVisibility?.rsvp !== false
+      default: return true
+    }
+  }
+
+  const toggleSection = (sectionId: string, enabled: boolean) => {
+    switch (sectionId) {
+      case 'intro': updateNestedData('intro.enabled', enabled); break
+      case 'greeting': updateNestedData('sectionVisibility.greeting', enabled); break
+      case 'story': updateNestedData('sectionVisibility.story', enabled); break
+      case 'quote': updateNestedData('sectionVisibility.quote', enabled); break
+      case 'gallery': updateNestedData('sectionVisibility.gallery', enabled); break
+      case 'info': updateNestedData('sectionVisibility.info', enabled); break
+      case 'contacts': updateNestedData('sectionVisibility.contacts', enabled); break
+      case 'bank': updateNestedData('sectionVisibility.bankAccounts', enabled); break
+      case 'thankyou': updateNestedData('sectionVisibility.thankyou', enabled); break
+      case 'guestbook': updateNestedData('sectionVisibility.guestbook', enabled); break
+      case 'rsvp': updateData({ rsvpEnabled: enabled }); break
+    }
   }
 
   const applySampleDirections = () => {
@@ -83,6 +154,68 @@ export default function EssayStep3Details({ data, updateData, updateNestedData }
         <p className="text-base text-purple-800 font-medium mb-1">부가 기능 설정</p>
         <p className="text-sm text-purple-700">오시는 길, 연락처, RSVP, 마음 전하실 곳 등을 설정해주세요.</p>
       </div>
+
+      {/* 섹션 순서 (북 컨셉 전용) */}
+      {data.designConcept === 'book' && (() => {
+        const fixedItems = sectionOrder.filter(id => fixedTopSections.includes(id))
+        const reorderableItems = sectionOrder.filter(id => !fixedTopSections.includes(id))
+        return (
+          <section className="space-y-4">
+            <h3 className="text-base font-semibold text-gray-900">섹션 순서</h3>
+            <p className="text-xs text-gray-500">페이지 표시 순서를 변경하고 섹션을 켜고 끌 수 있습니다. 표지, 초대의 글, 마지막 페이지는 항상 고정됩니다.</p>
+            <div className="space-y-1">
+              {/* 고정 섹션 (greeting) */}
+              {fixedItems.map((sectionId) => {
+                const enabled = isSectionEnabled(sectionId)
+                return (
+                  <div key={sectionId} className="flex items-center gap-2 p-2.5 rounded-lg bg-gray-100 border border-gray-200">
+                    <div className="flex flex-col w-[18px]" />
+                    <span className="text-sm text-gray-700 flex-1">
+                      {sectionLabels[sectionId] || sectionId}
+                      <span className="ml-1 text-xs text-gray-400">(고정)</span>
+                    </span>
+                    <Switch
+                      checked={enabled}
+                      onCheckedChange={(checked) => toggleSection(sectionId, checked)}
+                    />
+                  </div>
+                )
+              })}
+              {/* 재정렬 가능한 섹션 */}
+              {reorderableItems.map((sectionId, index) => {
+                const enabled = isSectionEnabled(sectionId)
+                return (
+                  <div key={sectionId} className={`flex items-center gap-2 p-2.5 rounded-lg bg-gray-50 ${!enabled ? 'opacity-50' : ''}`}>
+                    <div className="flex flex-col">
+                      <button
+                        onClick={() => moveSectionItem(sectionId, 'up')}
+                        disabled={index === 0}
+                        className="p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        <ChevronUp className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => moveSectionItem(sectionId, 'down')}
+                        disabled={index === reorderableItems.length - 1}
+                        className="p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        <ChevronDown className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    <span className={`text-sm flex-1 ${!enabled ? 'text-gray-400' : 'text-gray-700'}`}>
+                      {sectionLabels[sectionId] || sectionId}
+                    </span>
+                    <Switch
+                      checked={enabled}
+                      onCheckedChange={(checked) => toggleSection(sectionId, checked)}
+                    />
+                  </div>
+                )
+              })}
+            </div>
+          </section>
+        )
+      })()}
 
       {/* 오시는 길 */}
       <section className="space-y-4">
@@ -571,39 +704,6 @@ export default function EssayStep3Details({ data, updateData, updateNestedData }
         </div>
       </section>
 
-      {/* 보너스 인터뷰 */}
-      <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900">보너스 인터뷰</h3>
-        <p className="text-xs text-gray-500">책의 끝에 추가되는 보너스 챕터입니다. (선택)</p>
-        {(data.content.bonusInterviews || []).map((qa, i) => (
-          <div key={i} className="p-3 border border-gray-200 rounded-lg space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-400">Bonus Q.{i + 1}</span>
-              <button onClick={() => {
-                const updated = [...data.content.bonusInterviews]
-                updated.splice(i, 1)
-                updateNestedData('content.bonusInterviews', updated)
-              }} className="text-gray-400 hover:text-red-500"><Trash2 className="w-3.5 h-3.5" /></button>
-            </div>
-            <Input value={qa.question} onChange={e => {
-              const updated = [...data.content.bonusInterviews]
-              updated[i] = { ...updated[i], question: e.target.value }
-              updateNestedData('content.bonusInterviews', updated)
-            }} placeholder="질문" />
-            <Textarea rows={3} value={qa.answer} onChange={e => {
-              const updated = [...data.content.bonusInterviews]
-              updated[i] = { ...updated[i], answer: e.target.value }
-              updateNestedData('content.bonusInterviews', updated)
-            }} placeholder="답변" className="resize-none" />
-          </div>
-        ))}
-        <button onClick={() => {
-          const updated = [...(data.content.bonusInterviews || []), { question: '', answer: '', answerer: 'both' as const }]
-          updateNestedData('content.bonusInterviews', updated)
-        }} className="flex items-center gap-1 text-xs text-gray-600 hover:text-black transition-colors px-3 py-1.5 border border-gray-200 rounded-lg">
-          <Plus className="w-3.5 h-3.5" />보너스 인터뷰 추가
-        </button>
-      </section>
     </div>
   )
 }

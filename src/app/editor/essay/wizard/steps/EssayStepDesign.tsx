@@ -18,6 +18,7 @@ const ESSAY_THEMES = [
   { id: 'essay-mono' as const, name: '모노톤', bg: '#FFFFFF', accent: '#555555', text: '#1A1A1A' },
   { id: 'essay-sky' as const, name: '스카이', bg: '#F4F8FC', accent: '#5B8CB5', text: '#2A3440' },
   { id: 'essay-coral' as const, name: '코랄', bg: '#FEF6F2', accent: '#D4836B', text: '#3E2E28' },
+  { id: 'essay-custom' as const, name: '커스텀', bg: '#FAF8F3', accent: '#8B7355', text: '#3D3028', custom: true },
 ]
 
 // 폰트 스타일 옵션
@@ -517,11 +518,20 @@ export default function EssayStepDesign({ data, updateData, updateNestedData, in
 
         <div className="grid grid-cols-3 gap-2">
           {ESSAY_THEMES.map((theme) => {
+            const isCustom = 'custom' in theme
             const isSelected = colorTheme === theme.id
+            const displayBg = isCustom ? (data.customThemeColors?.bg || theme.bg) : theme.bg
+            const displayAccent = isCustom ? (data.customThemeColors?.accent || theme.accent) : theme.accent
             return (
               <button
                 key={theme.id}
-                onClick={() => updateData({ colorTheme: theme.id })}
+                onClick={() => {
+                  if (isCustom && !data.customThemeColors) {
+                    updateData({ colorTheme: theme.id, customThemeColors: { bg: '#FAF8F3', pageBg: '#FFFEF9', accent: '#8B7355', text: '#3D3028' } })
+                  } else {
+                    updateData({ colorTheme: theme.id })
+                  }
+                }}
                 className={`relative rounded-lg border-2 overflow-hidden transition-all ${
                   isSelected ? 'border-gray-900 ring-2 ring-gray-900/20' : 'border-gray-200 hover:border-gray-300'
                 }`}
@@ -531,10 +541,22 @@ export default function EssayStepDesign({ data, updateData, updateNestedData, in
                     <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                   </div>
                 )}
-                <div className="aspect-square flex flex-col items-center justify-center p-2 gap-1" style={{ backgroundColor: theme.bg }}>
-                  <div className="w-6 h-0.5" style={{ backgroundColor: theme.accent }} />
-                  <div className="text-[7px] tracking-[2px] uppercase" style={{ color: theme.accent }}>ESSAY</div>
-                  <div className="w-2/3 h-[1.5px] rounded-full mt-0.5" style={{ backgroundColor: `${theme.accent}30` }} />
+                <div className="aspect-square flex flex-col items-center justify-center p-2 gap-1" style={{ backgroundColor: displayBg }}>
+                  {isCustom ? (
+                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke={displayAccent} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="13.5" cy="6.5" r=".5" fill={displayAccent} />
+                      <circle cx="17.5" cy="10.5" r=".5" fill={displayAccent} />
+                      <circle cx="8.5" cy="7.5" r=".5" fill={displayAccent} />
+                      <circle cx="6.5" cy="12.5" r=".5" fill={displayAccent} />
+                      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" />
+                    </svg>
+                  ) : (
+                    <>
+                      <div className="w-6 h-0.5" style={{ backgroundColor: theme.accent }} />
+                      <div className="text-[7px] tracking-[2px] uppercase" style={{ color: theme.accent }}>ESSAY</div>
+                      <div className="w-2/3 h-[1.5px] rounded-full mt-0.5" style={{ backgroundColor: `${theme.accent}30` }} />
+                    </>
+                  )}
                 </div>
                 <p className="text-[10px] text-gray-700 font-medium py-1.5 text-center leading-tight">
                   {theme.name}
@@ -543,7 +565,129 @@ export default function EssayStepDesign({ data, updateData, updateNestedData, in
             )
           })}
         </div>
+
+        {/* 커스텀 테마 색상 선택 */}
+        {colorTheme === 'essay-custom' && (
+          <div className="space-y-3 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
+            <p className="text-xs text-gray-500 font-medium">직접 색상을 선택해보세요</p>
+            {[
+              { key: 'pageBg' as const, label: '배경색', desc: '페이지 배경', defaultVal: '#FFFEF9' },
+              { key: 'bg' as const, label: '테두리', desc: '툴바·프레임', defaultVal: '#FAF8F3' },
+              { key: 'accent' as const, label: '포인트', desc: '강조·장식·인트로 배경', defaultVal: '#8B7355' },
+              { key: 'accentText' as const, label: '포인트 텍스트', desc: '인트로 페이지 글자색', defaultVal: '#FFFFFF' },
+              { key: 'text' as const, label: '텍스트', desc: '본문 글자색', defaultVal: '#3D3028' },
+            ].map(({ key, label, desc, defaultVal }) => (
+              <div key={key} className="flex items-center gap-3">
+                <label
+                  className="relative w-8 h-8 rounded-lg border border-gray-300 cursor-pointer overflow-hidden flex-shrink-0"
+                  style={{ backgroundColor: data.customThemeColors?.[key] || defaultVal }}
+                >
+                  <input
+                    type="color"
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                    value={data.customThemeColors?.[key] || defaultVal}
+                    onChange={(e) => {
+                      const current = data.customThemeColors || { bg: '#FAF8F3', pageBg: '#FFFEF9', accent: '#8B7355', text: '#3D3028' }
+                      updateData({ customThemeColors: { ...current, [key]: e.target.value } })
+                    }}
+                  />
+                </label>
+                <div className="flex flex-col">
+                  <span className="text-sm text-gray-700">{label}</span>
+                  <span className="text-[10px] text-gray-400 leading-tight">{desc}</span>
+                </div>
+                <span className="text-xs text-gray-400 ml-auto font-mono">{(data.customThemeColors?.[key] || defaultVal).toUpperCase()}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
+
+      {/* 인트로 페이지 (커스텀 테마가 아닐 때만 표시) */}
+      {data.intro?.enabled && colorTheme !== 'essay-custom' && (
+        <section className="space-y-4">
+          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
+            </svg>
+            인트로 페이지
+          </h3>
+          <p className="text-sm text-blue-600">
+            <svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
+            인트로 페이지의 배경색과 텍스트 컬러를 설정합니다.
+          </p>
+
+          {/* 인트로 배경색 */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">배경색</Label>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 flex-1">
+                <div
+                  className="w-8 h-8 rounded-lg border border-gray-200 shrink-0"
+                  style={{ background: data.intro?.backgroundColor || (ESSAY_THEMES.find(t => t.id === colorTheme)?.accent || '#8B7355') }}
+                />
+                <span className="text-sm text-gray-600">
+                  {data.intro?.backgroundColor ? '커스텀 색상' : '테마 기본값'}
+                </span>
+              </div>
+              <label className="cursor-pointer">
+                <div className="px-3 py-1.5 text-xs font-medium bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+                  변경
+                </div>
+                <input
+                  type="color"
+                  value={data.intro?.backgroundColor || (ESSAY_THEMES.find(t => t.id === colorTheme)?.accent || '#8B7355')}
+                  onChange={(e) => updateNestedData('intro.backgroundColor', e.target.value)}
+                  className="hidden"
+                />
+              </label>
+              {data.intro?.backgroundColor && (
+                <button
+                  onClick={() => updateNestedData('intro.backgroundColor', undefined)}
+                  className="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+                >
+                  초기화
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* 인트로 텍스트 컬러 */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">텍스트 컬러</Label>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 flex-1">
+                <div
+                  className="w-8 h-8 rounded-lg border border-gray-200 shrink-0"
+                  style={{ background: data.intro?.textColor || '#FFFFFF' }}
+                />
+                <span className="text-sm text-gray-600">
+                  {data.intro?.textColor ? '커스텀 색상' : '기본값 (흰색)'}
+                </span>
+              </div>
+              <label className="cursor-pointer">
+                <div className="px-3 py-1.5 text-xs font-medium bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+                  변경
+                </div>
+                <input
+                  type="color"
+                  value={data.intro?.textColor || '#FFFFFF'}
+                  onChange={(e) => updateNestedData('intro.textColor', e.target.value)}
+                  className="hidden"
+                />
+              </label>
+              {data.intro?.textColor && (
+                <button
+                  onClick={() => updateNestedData('intro.textColor', undefined)}
+                  className="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+                >
+                  초기화
+                </button>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* 배경음악 */}
       <section className="space-y-4">

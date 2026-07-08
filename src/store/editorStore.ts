@@ -508,6 +508,14 @@ export interface InvitationContent {
   // ===== 매거진 인터뷰 표시 방식 (옵션) =====
   interviewDisplay?: 'inline' | 'popup'
 
+  // ===== 갤러리 표시 옵션 =====
+  galleryDisplayStyle?: 'grid' | 'slide' | 'feature' | 'custom'
+  galleryCustomAspect?: 'landscape' | 'portrait' | 'mixed'
+  galleryRowPattern?: number[]
+  galleryShowMoreRow?: number
+  galleryLightboxVariant?: number
+  galleryLightboxEnabled?: boolean
+
   // ===== D-Day 팝업 =====
   ddayPopup?: DdayPopupData
 

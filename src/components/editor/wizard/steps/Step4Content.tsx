@@ -133,7 +133,7 @@ interface Step4ContentProps {
 }
 
 export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Step4ContentProps) {
-  const { invitation, updateNestedField, addStory, removeStory, addInterview, removeInterview, toggleSectionVisibility, setActiveSection } = useEditorStore()
+  const { invitation, updateField, updateNestedField, addStory, removeStory, addInterview, removeInterview, toggleSectionVisibility, setActiveSection } = useEditorStore()
   const [uploadingImages, setUploadingImages] = useState<Set<string>>(new Set())
 
   if (!invitation) return null
@@ -1481,6 +1481,179 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
           </div>
         )}
       </section>
+
+      {/* 갤러리 표시 옵션 - OUR/Family만 */}
+      {invitation.gallery.images.length > 0 && (invitation.templateId === 'narrative-our' || invitation.templateId === 'narrative-family') && (
+        <section className="space-y-4">
+          <h3 className="text-base font-semibold text-gray-900">갤러리 스타일</h3>
+          <div className="grid grid-cols-4 gap-2">
+            {([
+              { value: undefined, label: '그리드' },
+              { value: 'slide' as const, label: '슬라이드' },
+              { value: 'feature' as const, label: '피처' },
+              { value: 'custom' as const, label: '커스텀' },
+            ]).map(({ value, label }) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => updateField('galleryDisplayStyle', value as any)}
+                className={`py-2 px-1 text-xs rounded-lg border transition-colors ${
+                  (invitation.galleryDisplayStyle || undefined) === value
+                    ? 'border-black bg-black text-white'
+                    : 'border-gray-200 bg-white text-gray-700 hover:border-gray-400'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {/* 커스텀 레이아웃 서브옵션 */}
+          {invitation.galleryDisplayStyle === 'custom' && (
+            <div className="p-4 bg-gray-50 rounded-lg space-y-4">
+              {/* 비율 선택 */}
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-gray-600">사진 비율</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  {([
+                    { value: 'landscape' as const, label: '가로 16:9' },
+                    { value: 'portrait' as const, label: '세로 3:4' },
+                    { value: 'mixed' as const, label: '혼합' },
+                  ]).map(({ value, label }) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => updateField('galleryCustomAspect', value)}
+                      className={`py-1.5 text-xs rounded border transition-colors ${
+                        (invitation.galleryCustomAspect || 'mixed') === value
+                          ? 'border-black bg-black text-white'
+                          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-400'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 행 패턴 편집 */}
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-gray-600">행 패턴</Label>
+                <p className="text-[10px] text-gray-400">각 행에 표시할 사진 수를 설정합니다. 사진이 패턴보다 많으면 반복됩니다.</p>
+                <div className="space-y-1.5">
+                  {(invitation.galleryRowPattern || [1, 2, 1]).map((count, rowIdx) => (
+                    <div key={rowIdx} className="flex items-center gap-2">
+                      <span className="text-[10px] text-gray-400 w-8">{rowIdx + 1}행</span>
+                      <div className="flex gap-1">
+                        {[1, 2, 3, 4].map(n => (
+                          <button
+                            key={n}
+                            type="button"
+                            onClick={() => {
+                              const pattern = [...(invitation.galleryRowPattern || [1, 2, 1])]
+                              pattern[rowIdx] = n
+                              updateField('galleryRowPattern', pattern)
+                            }}
+                            className={`w-7 h-7 text-xs rounded ${
+                              count === n ? 'bg-black text-white' : 'bg-white border border-gray-200 text-gray-600'
+                            }`}
+                          >
+                            {n}
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const pattern = [...(invitation.galleryRowPattern || [1, 2, 1])]
+                          if (pattern.length > 1) {
+                            pattern.splice(rowIdx, 1)
+                            updateField('galleryRowPattern', pattern)
+                          }
+                        }}
+                        className="text-gray-400 hover:text-red-500 p-0.5"
+                        disabled={(invitation.galleryRowPattern || [1, 2, 1]).length <= 1}
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const pattern = [...(invitation.galleryRowPattern || [1, 2, 1]), 2]
+                    updateField('galleryRowPattern', pattern)
+                  }}
+                  className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700"
+                >
+                  <Plus className="w-3 h-3" /> 행 추가
+                </button>
+              </div>
+
+              {/* 접기 설정 */}
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-gray-600">더보기 접기</Label>
+                <select
+                  value={invitation.galleryShowMoreRow ?? 0}
+                  onChange={(e) => updateField('galleryShowMoreRow', Number(e.target.value))}
+                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-1.5"
+                >
+                  <option value={0}>전체 표시</option>
+                  {[1, 2, 3, 4, 5, 6].map(n => (
+                    <option key={n} value={n}>{n}행까지 표시 후 접기</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+
+          {/* 라이트박스 활성화 */}
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="text-xs font-medium text-gray-600">사진 확대 보기</Label>
+              <p className="text-[10px] text-gray-400">갤러리 사진을 탭하면 전체화면으로 확대합니다.</p>
+            </div>
+            <Switch
+              checked={invitation.galleryLightboxEnabled !== false}
+              onCheckedChange={(checked) => updateField('galleryLightboxEnabled', checked)}
+            />
+          </div>
+
+          {/* 라이트박스 스타일 */}
+          {invitation.galleryLightboxEnabled !== false && (
+          <div className="space-y-2">
+            <Label className="text-xs font-medium text-gray-600">라이트박스 스타일</Label>
+            <p className="text-[10px] text-gray-400">갤러리 사진을 탭했을 때 열리는 전체화면 뷰어의 스타일입니다.</p>
+            <div className="grid grid-cols-4 gap-1.5">
+              {([
+                { value: 0, label: '기본' },
+                { value: 1, label: 'Editorial' },
+                { value: 2, label: 'Glass' },
+                { value: 4, label: 'Lookbook' },
+                { value: 5, label: 'Cinema' },
+                { value: 6, label: 'Minimal' },
+                { value: 7, label: 'Magazine' },
+                { value: 9, label: 'Film' },
+              ]).map(({ value, label }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => updateField('galleryLightboxVariant', value)}
+                  className={`py-1.5 text-[10px] rounded border transition-colors ${
+                    (invitation.galleryLightboxVariant ?? 0) === value
+                      ? 'border-black bg-black text-white'
+                      : 'border-gray-200 bg-white text-gray-600 hover:border-gray-400'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+          )}
+        </section>
+      )}
 
       {/* 유튜브 영상 */}
       <section className="space-y-4">

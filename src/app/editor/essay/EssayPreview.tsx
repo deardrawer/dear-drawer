@@ -26,6 +26,7 @@ export default function EssayPreview({ data, fullscreen }: EssayPreviewProps) {
     contentMode: data.contentMode,
     designConcept: data.designConcept || 'default',
     colorTheme: data.colorTheme || 'essay-ivory',
+    customThemeColors: data.customThemeColors,
     highlightColor: data.highlightColor,
     fontStyle: data.fontStyle || 'modern',
     fontSizeLevel: data.fontSizeLevel || 0,
@@ -47,6 +48,8 @@ export default function EssayPreview({ data, fullscreen }: EssayPreviewProps) {
     rsvpNotice: data.rsvpNotice,
     deceasedDisplayStyle: data.deceasedDisplayStyle,
     meta: data.meta,
+    endingMessage: data.endingMessage,
+    sectionOrder: data.sectionOrder,
   }), [data, fullscreen])
 
   // InvitationClientEssay가 요구하는 invitation 객체 형식으로 변환
@@ -92,7 +95,8 @@ export default function EssayPreview({ data, fullscreen }: EssayPreviewProps) {
             min-height: 100cqh !important;
           }
           .essay-preview-book-container .bk-page {
-            min-height: calc(100cqh - 80px) !important;
+            min-height: 100cqh !important;
+            padding-top: 44px !important;
           }
           /* 데스크탑 wrapper의 viewport 기준 위치 계산을 컨테이너 기준으로 리셋 */
           .essay-preview-book-container .essay-book-desktop-wrapper {
@@ -139,9 +143,17 @@ export default function EssayPreview({ data, fullscreen }: EssayPreviewProps) {
             right: 6px !important;
             left: auto !important;
           }
+          .essay-preview-book-container.essay-preview-book-container .essay-book-desktop-wrapper .fixed.top-0.left-0.right-0 {
+            left: 0 !important;
+            right: 0 !important;
+            top: 0 !important;
+          }
           .essay-preview-book-container.essay-preview-book-container .essay-book-desktop-wrapper .fixed.bottom-0.left-0.right-0 {
             left: 0 !important;
             right: 0 !important;
+          }
+          .essay-preview-book-container .bk-progress-bar {
+            margin-right: 0 !important;
           }
           /* scroll/paper 컨셉의 데스크탑 wrapper도 프리뷰에서는 리셋 */
           .essay-preview-scroll-container .essay-desktop-wrapper {

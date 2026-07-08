@@ -84,33 +84,6 @@ export default function EssayStep1BasicInfo({ data, updateData, updateNestedData
         </p>
       </div>
 
-      {/* 이야기 형식 */}
-      <section className="space-y-3">
-        <h3 className="text-base font-semibold text-gray-900">이야기 형식</h3>
-        <p className="text-sm text-gray-500">에세이를 어떤 형식으로 쓸지 선택해주세요.</p>
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={() => updateData({ contentMode: 'story' })}
-            className={`p-4 border rounded-lg text-left transition-all ${
-              data.contentMode === 'story' ? 'border-black bg-gray-50' : 'border-gray-200 hover:border-gray-300'
-            }`}
-          >
-            <div className="text-lg mb-1">&#9997;&#65039;</div>
-            <div className="text-sm font-medium text-gray-900">러브스토리</div>
-            <div className="text-xs text-gray-500 mt-1">챕터별로 이야기를 풀어가는 서사형</div>
-          </button>
-          <button
-            onClick={() => updateData({ contentMode: 'interview' })}
-            className={`p-4 border rounded-lg text-left transition-all ${
-              data.contentMode === 'interview' ? 'border-black bg-gray-50' : 'border-gray-200 hover:border-gray-300'
-            }`}
-          >
-            <div className="text-lg mb-1">&#128172;</div>
-            <div className="text-sm font-medium text-gray-900">인터뷰</div>
-            <div className="text-xs text-gray-500 mt-1">Q&amp;A로 서로를 소개하는 대화형</div>
-          </button>
-        </div>
-      </section>
 
       {/* 신랑신부 이름 */}
       <section className="space-y-4">

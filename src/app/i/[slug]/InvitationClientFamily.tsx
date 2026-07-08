@@ -1221,6 +1221,404 @@ function AnimatedSection({ children, className, style, delay = 0 }: {
   )
 }
 
+// Slide Gallery Section - full-width 4:5 slideshow with auto-fade transition (TheSimple V2 adapted)
+function SlideGallerySection({ invitation, themeColors, onOpenLightbox }: {
+  invitation: any
+  themeColors: ColorConfig
+  onOpenLightbox?: (index: number) => void
+}) {
+  const { ref, isVisible } = useScrollAnimation()
+  const images: string[] = invitation.gallery?.images || []
+  const total = images.length
+  const [activeIdx, setActiveIdx] = useState(0)
+  const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined)
+
+  const resetTimer = useCallback(() => {
+    clearInterval(intervalRef.current)
+    if (total > 1) {
+      intervalRef.current = setInterval(() => {
+        setActiveIdx(p => (p + 1) % total)
+      }, 3500)
+    }
+  }, [total])
+
+  useEffect(() => {
+    resetTimer()
+    return () => clearInterval(intervalRef.current)
+  }, [resetTimer])
+
+  useEffect(() => {
+    if (total > 0 && activeIdx >= total) setActiveIdx(0)
+  }, [total, activeIdx])
+
+  if (total === 0) return null
+
+  const goPrev = () => { setActiveIdx(p => (p - 1 + total) % total); resetTimer() }
+  const goNext = () => { setActiveIdx(p => (p + 1) % total); resetTimer() }
+
+  return (
+    <div
+      ref={ref}
+      className="px-5 py-10"
+      style={{
+        background: themeColors.cardBg,
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+        transition: 'opacity 0.8s ease, transform 0.8s ease',
+      }}
+    >
+      <div style={{ position: 'relative' }}>
+        <div
+          className="rounded overflow-hidden cursor-pointer"
+          style={{ position: 'relative', aspectRatio: '4 / 5', background: '#eee' }}
+          onClick={() => onOpenLightbox?.(activeIdx)}
+        >
+          {images.map((img, i) => {
+            const imgSettings = invitation.gallery?.imageSettings?.[i] || { scale: 1, positionX: 0, positionY: 0 }
+            return (
+              <div
+                key={i}
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  opacity: i === activeIdx ? 1 : 0,
+                  transition: 'opacity 0.8s ease',
+                }}
+              >
+                <CroppedImageDiv src={img} crop={imgSettings} className="w-full h-full" />
+              </div>
+            )
+          })}
+        </div>
+        {total > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={goPrev}
+              aria-label="이전 사진"
+              style={{
+                position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)',
+                width: 28, height: 28, borderRadius: '50%',
+                background: 'rgba(255,255,255,0.65)', border: 'none',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 16, color: '#333', zIndex: 2,
+              }}
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              onClick={goNext}
+              aria-label="다음 사진"
+              style={{
+                position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
+                width: 28, height: 28, borderRadius: '50%',
+                background: 'rgba(255,255,255,0.65)', border: 'none',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 16, color: '#333', zIndex: 2,
+              }}
+            >
+              ›
+            </button>
+          </>
+        )}
+      </div>
+      {total > 1 && (
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginTop: 12 }}>
+          {images.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => { setActiveIdx(i); resetTimer() }}
+              aria-label={`${i + 1}번째 사진 보기`}
+              style={{
+                width: 6, height: 6, borderRadius: '50%', padding: 0, border: 'none',
+                background: i === activeIdx ? themeColors.text : '#d4d4d4',
+                transition: 'background 0.3s', cursor: 'pointer',
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Feature Gallery Section - main feature photo with auto-fade + thumbnail row (TheSimple V1 adapted)
+function FeatureGallerySection({ invitation, themeColors, onOpenLightbox }: {
+  invitation: any
+  themeColors: ColorConfig
+  onOpenLightbox?: (index: number) => void
+}) {
+  const { ref, isVisible } = useScrollAnimation()
+  const images: string[] = invitation.gallery?.images || []
+  const total = images.length
+  const [activeIdx, setActiveIdx] = useState(0)
+  const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined)
+
+  const resetTimer = useCallback(() => {
+    clearInterval(intervalRef.current)
+    if (total > 1) {
+      intervalRef.current = setInterval(() => {
+        setActiveIdx(p => (p + 1) % total)
+      }, 3500)
+    }
+  }, [total])
+
+  useEffect(() => {
+    resetTimer()
+    return () => clearInterval(intervalRef.current)
+  }, [resetTimer])
+
+  useEffect(() => {
+    if (total > 0 && activeIdx >= total) setActiveIdx(0)
+  }, [total, activeIdx])
+
+  if (total === 0) return null
+
+  // Thumbnail row: next images after current, wrapping around
+  const thumbIndices: number[] = []
+  for (let t = 1; t <= Math.min(total - 1, 4); t++) {
+    thumbIndices.push((activeIdx + t) % total)
+  }
+
+  return (
+    <div
+      ref={ref}
+      className="px-5 py-10"
+      style={{
+        background: themeColors.cardBg,
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+        transition: 'opacity 0.8s ease, transform 0.8s ease',
+      }}
+    >
+      <div
+        className="rounded overflow-hidden cursor-pointer"
+        style={{ position: 'relative', aspectRatio: '4 / 5', background: '#eee', marginBottom: 6 }}
+        onClick={() => onOpenLightbox?.(activeIdx)}
+      >
+        {images.map((img, i) => {
+          const imgSettings = invitation.gallery?.imageSettings?.[i] || { scale: 1, positionX: 0, positionY: 0 }
+          return (
+            <div
+              key={i}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                opacity: i === activeIdx ? 1 : 0,
+                transition: 'opacity 0.8s ease',
+              }}
+            >
+              <CroppedImageDiv src={img} crop={imgSettings} className="w-full h-full" />
+            </div>
+          )
+        })}
+        {total > 1 && (
+          <div
+            style={{
+              position: 'absolute', bottom: 8, right: 10, zIndex: 2,
+              background: 'rgba(0,0,0,0.45)', borderRadius: 10,
+              padding: '2px 8px', fontSize: 11, color: '#fff', letterSpacing: '0.05em',
+            }}
+          >
+            {activeIdx + 1} / {total}
+          </div>
+        )}
+      </div>
+      {thumbIndices.length > 0 && (
+        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${thumbIndices.length}, 1fr)`, gap: 6 }}>
+          {thumbIndices.map((imgIdx) => {
+            const imgSettings = invitation.gallery?.imageSettings?.[imgIdx] || { scale: 1, positionX: 0, positionY: 0 }
+            return (
+              <div
+                key={imgIdx}
+                className="aspect-square rounded overflow-hidden cursor-pointer"
+                onClick={() => onOpenLightbox?.(imgIdx)}
+              >
+                <CroppedImageDiv src={images[imgIdx]} crop={imgSettings} className="w-full h-full" />
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Custom Layout Gallery Section - row pattern layout with optional fold/expand (TheSimple V3/V4/V5 adapted)
+function CustomLayoutGallerySection({ invitation, themeColors, onOpenLightbox }: {
+  invitation: any
+  themeColors: ColorConfig
+  onOpenLightbox?: (index: number) => void
+}) {
+  const { ref, isVisible } = useScrollAnimation()
+  const images: string[] = invitation.gallery?.images || []
+  const rowPattern: number[] = (invitation.galleryRowPattern && invitation.galleryRowPattern.length > 0)
+    ? invitation.galleryRowPattern
+    : [1, 2, 1]
+  const aspectMode: 'landscape' | 'portrait' | 'mixed' = invitation.galleryCustomAspect || 'mixed'
+  const showMoreRow: number = invitation.galleryShowMoreRow || 0
+  const gap = 4
+
+  const [expanded, setExpanded] = useState(false)
+  const expandRef = useRef<HTMLDivElement>(null)
+
+  const aspectForCount = (n: number): string => {
+    if (aspectMode === 'landscape') return '16 / 9'
+    if (aspectMode === 'portrait') return '3 / 4'
+    // mixed: 1장=16:9, 2장=4:5, 3+장=1:1
+    if (n === 1) return '16 / 9'
+    if (n === 2) return '4 / 5'
+    return '1 / 1'
+  }
+
+  // Distribute images into rows based on the pattern (cycle pattern if more images than pattern slots)
+  const rows: string[][] = []
+  {
+    let imgIdx = 0
+    let patternIdx = 0
+    while (imgIdx < images.length) {
+      const count = rowPattern[patternIdx % rowPattern.length] || 1
+      const rowItems: string[] = []
+      for (let c = 0; c < count && imgIdx < images.length; c++) {
+        rowItems.push(images[imgIdx])
+        imgIdx++
+      }
+      rows.push(rowItems)
+      patternIdx++
+    }
+  }
+
+  const hasFold = showMoreRow > 0 && rows.length > showMoreRow
+  const initialRows = hasFold ? rows.slice(0, showMoreRow) : rows
+  const hiddenRows = hasFold ? rows.slice(showMoreRow) : []
+  const hiddenCount = hiddenRows.reduce((sum, r) => sum + r.length, 0)
+
+  useEffect(() => {
+    const el = expandRef.current
+    if (!el) return
+    if (expanded) {
+      el.style.height = el.scrollHeight + 'px'
+      const onEnd = () => { el.style.height = 'auto' }
+      el.addEventListener('transitionend', onEnd, { once: true })
+    } else {
+      if (el.style.height === 'auto') {
+        el.style.height = el.scrollHeight + 'px'
+        // force reflow so the transition to 0 actually animates
+        void el.offsetHeight
+      }
+      el.style.height = '0px'
+    }
+  }, [expanded])
+
+  if (images.length === 0) return null
+
+  // Running index into the flattened `images` array, matches imageSettings indices
+  let globalIdx = 0
+
+  return (
+    <div
+      ref={ref}
+      className="px-5 py-10"
+      style={{
+        background: themeColors.cardBg,
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+        transition: 'opacity 0.8s ease, transform 0.8s ease',
+      }}
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap }}>
+        {initialRows.map((row, rowIdx) => (
+          <div key={rowIdx} style={{ display: 'grid', gridTemplateColumns: `repeat(${row.length}, 1fr)`, gap }}>
+            {row.map((img) => {
+              const currentIdx = globalIdx
+              globalIdx++
+              const imgSettings = invitation.gallery?.imageSettings?.[currentIdx] || { scale: 1, positionX: 0, positionY: 0 }
+              return (
+                <div
+                  key={currentIdx}
+                  className="overflow-hidden cursor-pointer"
+                  style={{ aspectRatio: aspectForCount(row.length) }}
+                  onClick={() => onOpenLightbox?.(currentIdx)}
+                >
+                  <CroppedImageDiv src={img} crop={imgSettings} className="w-full h-full" />
+                </div>
+              )
+            })}
+          </div>
+        ))}
+      </div>
+      {hasFold && (
+        <>
+          <div
+            ref={expandRef}
+            style={{ height: 0, overflow: 'hidden', transition: 'height 0.7s cubic-bezier(0.4, 0, 0.2, 1)' }}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap, paddingTop: gap }}>
+              {hiddenRows.map((row, rowIdx) => (
+                <div
+                  key={rowIdx}
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: `repeat(${row.length}, 1fr)`,
+                    gap,
+                    opacity: expanded ? 1 : 0,
+                    transform: expanded ? 'translateY(0)' : 'translateY(12px)',
+                    transition: `opacity 0.5s ease ${rowIdx * 0.1}s, transform 0.6s ease ${rowIdx * 0.1}s`,
+                  }}
+                >
+                  {row.map((img) => {
+                    const currentIdx = globalIdx
+                    globalIdx++
+                    const imgSettings = invitation.gallery?.imageSettings?.[currentIdx] || { scale: 1, positionX: 0, positionY: 0 }
+                    return (
+                      <div
+                        key={currentIdx}
+                        className="overflow-hidden cursor-pointer"
+                        style={{ aspectRatio: aspectForCount(row.length) }}
+                        onClick={() => onOpenLightbox?.(currentIdx)}
+                      >
+                        <CroppedImageDiv src={img} crop={imgSettings} className="w-full h-full" />
+                      </div>
+                    )
+                  })}
+                </div>
+              ))}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setExpanded(!expanded)}
+            className="w-full mt-3 py-3 flex items-center justify-center gap-1.5 rounded transition-opacity hover:opacity-100"
+            style={{
+              border: `1px solid ${themeColors.divider}`,
+              background: 'transparent',
+              color: themeColors.text,
+              fontSize: 13,
+              letterSpacing: '0.02em',
+              cursor: 'pointer',
+              opacity: 0.75,
+            }}
+          >
+            {expanded ? '접기' : `사진 더보기 (+${hiddenCount})`}
+            <span
+              style={{
+                display: 'inline-block',
+                transition: 'transform 0.3s',
+                transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                fontSize: 10,
+              }}
+            >
+              ▼
+            </span>
+          </button>
+        </>
+      )}
+    </div>
+  )
+}
+
 // Staggered Gallery Section (Family) - each photo fades in sequentially
 function StaggeredGallerySectionFamily({ invitation, themeColors, showAllGallery, onShowAllGallery, onOpenLightbox }: {
   invitation: any
@@ -1475,6 +1873,660 @@ function GalleryLightbox({
         </div>
       </div>
     </div>
+  )
+}
+
+// Gallery Lightbox Variant - 7 alternate viewer styles (1=Editorial, 2=Glass, 4=Lookbook, 5=Cinema, 6=Minimal, 7=Magazine, 9=Film)
+// Adapted from TheSimple template's lightbox variants; all classes prefixed `our-lb-` to avoid collisions.
+function GalleryLightboxVariant({ images, isOpen, initialIndex, onClose, variant }: {
+  images: string[]
+  isOpen: boolean
+  initialIndex: number
+  onClose: () => void
+  variant: number
+}) {
+  const [idx, setIdx] = useState(initialIndex)
+  const [animClass, setAnimClass] = useState('')
+  const [transitioning, setTransitioning] = useState(false)
+  const [v9Next, setV9Next] = useState<number | null>(null)
+  const [closing, setClosing] = useState(false)
+  const [visible, setVisible] = useState(false)
+  const touchStartX = useRef(0)
+  const overlayRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (isOpen) {
+      setVisible(true)
+      setClosing(false)
+      setIdx(initialIndex)
+      setAnimClass('')
+      setTransitioning(false)
+      document.body.classList.add('lightbox-open')
+    } else if (visible) {
+      setClosing(true)
+      const timer = setTimeout(() => {
+        setClosing(false)
+        setVisible(false)
+        document.body.classList.remove('lightbox-open')
+      }, 350)
+      return () => clearTimeout(timer)
+    }
+    return () => {
+      document.body.classList.remove('lightbox-open')
+    }
+  }, [initialIndex, isOpen, variant])
+
+  const goTo = useCallback((nextIdx: number, dir: 'next' | 'prev') => {
+    if (transitioning || nextIdx === idx) return
+    setTransitioning(true)
+    // V5 (Cinema) - fade transition
+    if (variant === 5) {
+      setAnimClass('our-lb-img--fade-out')
+      setTimeout(() => {
+        setIdx(nextIdx)
+        setAnimClass('our-lb-img--fade-in')
+        setTimeout(() => { setAnimClass(''); setTransitioning(false) }, 500)
+      }, 500)
+      return
+    }
+    // V9 (Film) - new photo overlay fade-in over current
+    if (variant === 9) {
+      setV9Next(nextIdx)
+      setTimeout(() => {
+        setIdx(nextIdx)
+        setV9Next(null)
+        setTransitioning(false)
+      }, 500)
+      return
+    }
+    // Default: slide transition
+    setAnimClass(`our-lb-img--exit-${dir}`)
+    setTimeout(() => {
+      setIdx(nextIdx)
+      setAnimClass(`our-lb-img--enter-${dir}`)
+      setTimeout(() => { setAnimClass(''); setTransitioning(false) }, 350)
+    }, 350)
+  }, [transitioning, idx, variant])
+
+  const goNext = useCallback(() => {
+    goTo((idx + 1) % images.length, 'next')
+  }, [goTo, idx, images.length])
+
+  const goPrev = useCallback(() => {
+    goTo((idx - 1 + images.length) % images.length, 'prev')
+  }, [goTo, idx, images.length])
+
+  // Keyboard navigation
+  useEffect(() => {
+    if (!isOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+      if (variant !== 4) {
+        if (e.key === 'ArrowRight') goNext()
+        if (e.key === 'ArrowLeft') goPrev()
+      }
+    }
+    const onGesture = (e: Event) => e.preventDefault()
+    const onTouchMove = (e: TouchEvent) => { if (e.touches.length > 1) e.preventDefault() }
+    document.addEventListener('keydown', onKey)
+    document.addEventListener('gesturestart', onGesture, { passive: false } as AddEventListenerOptions)
+    document.addEventListener('gesturechange', onGesture, { passive: false } as AddEventListenerOptions)
+    document.addEventListener('touchmove', onTouchMove, { passive: false })
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.removeEventListener('gesturestart', onGesture)
+      document.removeEventListener('gesturechange', onGesture)
+      document.removeEventListener('touchmove', onTouchMove)
+    }
+  }, [isOpen, onClose, goNext, goPrev, variant])
+
+  if ((!isOpen && !visible) || images.length === 0) return null
+
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const v = variant
+
+  // Prevent long-press / right-click image save
+  const preventContext = (e: React.MouseEvent | React.TouchEvent) => e.preventDefault()
+
+  // Shared touch swipe handlers
+  const touchProps = {
+    onTouchStart: (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX },
+    onTouchEnd: (e: React.TouchEvent) => {
+      const diff = e.changedTouches[0].clientX - touchStartX.current
+      if (Math.abs(diff) > 50) { diff < 0 ? goNext() : goPrev() }
+    },
+  }
+
+  let content: React.ReactNode
+
+  // === V4: Lookbook - full vertical scroll of every image ===
+  if (v === 4) {
+    content = (
+      <div ref={overlayRef} className={`our-lightbox our-lb--v4${closing ? ' our-lightbox--closing' : ''}`} onContextMenu={preventContext} onClick={onClose}>
+        <button className="our-lb-v4-close" onClick={onClose} aria-label="닫기">&times;</button>
+        <div className="our-lb-v4-scroll" onClick={e => e.stopPropagation()}>
+          {images.map((src, i) => (
+            <img key={i} src={src} alt="" className="our-lb-v4-img" draggable={false} />
+          ))}
+        </div>
+      </div>
+    )
+  // === V9: Film - 3-image carousel with clickable side previews ===
+  } else if (v === 9) {
+    const prevIdx = (idx - 1 + images.length) % images.length
+    const nextIdx = (idx + 1) % images.length
+    content = (
+      <div ref={overlayRef} className={`our-lightbox our-lb--v9${closing ? ' our-lightbox--closing' : ''}`} onContextMenu={preventContext} onClick={onClose}>
+        <button className="our-lb-topbar-close our-lb-v9-close" onClick={onClose} aria-label="닫기">&times;</button>
+        <div className="our-lb-v9-carousel" onClick={e => e.stopPropagation()} {...touchProps}>
+          <div className="our-lb-v9-side our-lb-v9-side--prev" onClick={goPrev}>
+            <img src={images[prevIdx]} alt="" draggable={false} />
+          </div>
+          <div className="our-lb-v9-current">
+            <img src={images[idx]} alt="" draggable={false} />
+            {v9Next !== null && (
+              <img src={images[v9Next]} alt="" draggable={false} className="our-lb-v9-overlay" />
+            )}
+          </div>
+          <div className="our-lb-v9-side our-lb-v9-side--next" onClick={goNext}>
+            <img src={images[nextIdx]} alt="" draggable={false} />
+          </div>
+        </div>
+        <div className="our-lb-counter">{pad(idx + 1)} / {pad(images.length)}</div>
+      </div>
+    )
+  // === V1: Editorial - top bar + counter + progress bar ===
+  } else if (v === 1) {
+    content = (
+      <div ref={overlayRef} className={`our-lightbox our-lb--v1${closing ? ' our-lightbox--closing' : ''}`} onContextMenu={preventContext} onClick={onClose}>
+        <div className="our-lb-topbar">
+          <span className="our-lb-topbar-title">Gallery</span>
+          <button className="our-lb-topbar-close" onClick={onClose} aria-label="닫기">&times;</button>
+        </div>
+        <div className="our-lb-image-wrap" onClick={e => { e.stopPropagation(); goNext() }} {...touchProps}>
+          {images[idx] && <img src={images[idx]} alt="" className={`our-lb-img ${animClass}`} draggable={false} />}
+        </div>
+        <div className="our-lb-counter">{pad(idx + 1)} / {pad(images.length)}</div>
+        <div className="our-lb-progress">
+          <div className="our-lb-progress-fill" style={{ width: `${((idx + 1) / images.length) * 100}%` }} />
+        </div>
+      </div>
+    )
+  // === V2: Glass - white glassmorphism + dot indicators ===
+  } else if (v === 2) {
+    content = (
+      <div ref={overlayRef} className={`our-lightbox our-lb--v2${closing ? ' our-lightbox--closing' : ''}`} onContextMenu={preventContext} onClick={onClose}>
+        <button className="our-lb-topbar-close our-lb-v2-close" onClick={onClose} aria-label="닫기">&times;</button>
+        <div className="our-lb-image-wrap our-lb-v2-wrap" onClick={e => { e.stopPropagation(); goNext() }} {...touchProps}>
+          {images[idx] && <img src={images[idx]} alt="" className={`our-lb-img our-lb-v2-img ${animClass}`} draggable={false} />}
+        </div>
+        <div className="our-lb-v2-dots">
+          {images.map((_, i) => (
+            <span key={i} className={`our-lb-v2-dot ${i === idx ? 'our-lb-v2-dot--active' : ''}`} onClick={e => { e.stopPropagation(); if (i !== idx) goTo(i, i > idx ? 'next' : 'prev') }} />
+          ))}
+        </div>
+      </div>
+    )
+  // === V5: Cinema - black bg, fade-in/out transition ===
+  } else if (v === 5) {
+    content = (
+      <div ref={overlayRef} className={`our-lightbox our-lb--v5${closing ? ' our-lightbox--closing' : ''}`} onContextMenu={preventContext} onClick={onClose}>
+        <div className="our-lb-image-wrap our-lb-v5-wrap" onClick={e => { e.stopPropagation(); goNext() }} {...touchProps}>
+          {images[idx] && <img src={images[idx]} alt="" className={`our-lb-img our-lb-v5-img ${animClass}`} draggable={false} />}
+        </div>
+      </div>
+    )
+  // === V6: Minimal - white bg + arrow buttons + counter ===
+  } else if (v === 6) {
+    content = (
+      <div ref={overlayRef} className={`our-lightbox our-lb--v6${closing ? ' our-lightbox--closing' : ''}`} onContextMenu={preventContext} onClick={onClose}>
+        <button className="our-lb-topbar-close our-lb-v6-close" onClick={onClose} aria-label="닫기">&times;</button>
+        <div className="our-lb-image-wrap our-lb-v6-wrap" onClick={e => e.stopPropagation()} {...touchProps}>
+          <button className="our-lb-v6-arrow our-lb-v6-arrow--prev" onClick={e => { e.stopPropagation(); goPrev() }} aria-label="이전">&#8249;</button>
+          {images[idx] && <img src={images[idx]} alt="" className={`our-lb-img ${animClass}`} draggable={false} />}
+          <button className="our-lb-v6-arrow our-lb-v6-arrow--next" onClick={e => { e.stopPropagation(); goNext() }} aria-label="다음">&#8250;</button>
+        </div>
+        <div className="our-lb-v6-counter">{idx + 1} / {images.length}</div>
+      </div>
+    )
+  // === V7: Magazine - dark bg + arrows + thumbnail strip ===
+  } else if (v === 7) {
+    content = (
+      <div ref={overlayRef} className={`our-lightbox our-lb--v7${closing ? ' our-lightbox--closing' : ''}`} onContextMenu={preventContext} onClick={onClose}>
+        <button className="our-lb-topbar-close our-lb-v7-close" onClick={onClose} aria-label="닫기">&times;</button>
+        <div className="our-lb-image-wrap our-lb-v7-wrap" onClick={e => e.stopPropagation()} {...touchProps}>
+          <button className="our-lb-v7-arrow our-lb-v7-arrow--prev" onClick={e => { e.stopPropagation(); goPrev() }} aria-label="이전">&#8249;</button>
+          {images[idx] && <img src={images[idx]} alt="" className={`our-lb-img ${animClass}`} draggable={false} />}
+          <button className="our-lb-v7-arrow our-lb-v7-arrow--next" onClick={e => { e.stopPropagation(); goNext() }} aria-label="다음">&#8250;</button>
+        </div>
+        <div className="our-lb-v7-thumbs" onClick={e => e.stopPropagation()}>
+          {(() => {
+            const total = images.length
+            const visible: number[] = []
+            for (let offset = -2; offset <= 2; offset++) {
+              visible.push(((idx + offset) % total + total) % total)
+            }
+            return visible.map((i) => (
+              <div key={i} className={`our-lb-v7-thumb ${i === idx ? 'our-lb-v7-thumb--active' : ''}`} onClick={() => { if (i !== idx) goTo(i, i > idx ? 'next' : 'prev') }}>
+                <img src={images[i]} alt="" draggable={false} />
+              </div>
+            ))
+          })()}
+        </div>
+      </div>
+    )
+  // Fallback -> V1 style
+  } else {
+    content = (
+      <div ref={overlayRef} className={`our-lightbox our-lb--v1${closing ? ' our-lightbox--closing' : ''}`} onContextMenu={preventContext} onClick={onClose}>
+        <div className="our-lb-topbar">
+          <span className="our-lb-topbar-title">Gallery</span>
+          <button className="our-lb-topbar-close" onClick={onClose} aria-label="닫기">&times;</button>
+        </div>
+        <div className="our-lb-image-wrap" onClick={e => { e.stopPropagation(); goNext() }} {...touchProps}>
+          {images[idx] && <img src={images[idx]} alt="" className={`our-lb-img ${animClass}`} draggable={false} />}
+        </div>
+        <div className="our-lb-counter">{pad(idx + 1)} / {pad(images.length)}</div>
+        <div className="our-lb-progress">
+          <div className="our-lb-progress-fill" style={{ width: `${((idx + 1) / images.length) * 100}%` }} />
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <>
+      {content}
+      <style jsx global>{`
+        .our-lightbox {
+          position: fixed;
+          inset: 0;
+          z-index: 9999;
+          background: #0a0a0a;
+          background-image: radial-gradient(ellipse at 50% 40%, rgba(255,255,255,0.03) 0%, transparent 70%);
+          touch-action: pan-x pan-y;
+          -webkit-user-select: none;
+          user-select: none;
+          -webkit-touch-callout: none;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          opacity: 0;
+          transform: scale(0.97);
+          animation: our-lb-open 0.5s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+        }
+
+        @keyframes our-lb-open {
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+
+        /* --- Top bar --- */
+        .our-lb-topbar {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 20px 24px;
+          z-index: 2;
+        }
+
+        .our-lb-topbar-title {
+          font-family: var(--font-display, 'Cormorant Garamond', serif);
+          font-size: 10px;
+          letter-spacing: 0.3em;
+          text-transform: uppercase;
+          color: rgba(255, 255, 255, 0.4);
+          font-weight: 400;
+        }
+
+        .our-lb-topbar-close {
+          background: none;
+          border: none;
+          color: rgba(255, 255, 255, 0.5);
+          font-size: 18px;
+          cursor: pointer;
+          padding: 4px 8px;
+          line-height: 1;
+          transition: color 0.2s ease;
+        }
+
+        .our-lb-topbar-close:hover {
+          color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* --- Image area --- */
+        .our-lb-image-wrap {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          padding: 60px 0 80px;
+          overflow: hidden;
+          touch-action: pan-x pan-y;
+          cursor: pointer;
+        }
+
+        .our-lb-img {
+          max-width: 100%;
+          max-height: 100%;
+          object-fit: contain;
+          -webkit-user-select: none;
+          -webkit-touch-callout: none;
+          touch-action: pan-x pan-y;
+          user-select: none;
+          pointer-events: none;
+          transition: opacity 0.35s cubic-bezier(0.2, 0.8, 0.3, 1),
+                      transform 0.35s cubic-bezier(0.2, 0.8, 0.3, 1);
+        }
+
+        .our-lb-img--exit-next {
+          opacity: 0;
+          transform: translateX(-30px);
+        }
+        .our-lb-img--exit-prev {
+          opacity: 0;
+          transform: translateX(30px);
+        }
+
+        .our-lb-img--enter-next {
+          opacity: 0;
+          transform: translateX(30px);
+          animation: our-lb-img-enter-next 0.35s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+        }
+        .our-lb-img--enter-prev {
+          opacity: 0;
+          transform: translateX(-30px);
+          animation: our-lb-img-enter-prev 0.35s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+        }
+
+        @keyframes our-lb-img-enter-next {
+          to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes our-lb-img-enter-prev {
+          to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* --- Counter --- */
+        .our-lb-counter {
+          position: absolute;
+          bottom: 40px;
+          left: 0;
+          right: 0;
+          text-align: center;
+          font-family: var(--font-body, sans-serif);
+          font-size: 11px;
+          letter-spacing: 0.25em;
+          color: rgba(255, 255, 255, 0.35);
+          font-weight: 400;
+          pointer-events: none;
+        }
+
+        /* --- Progress bar --- */
+        .our-lb-progress {
+          position: absolute;
+          bottom: 20px;
+          left: 40px;
+          right: 40px;
+          height: 1px;
+          background: rgba(255, 255, 255, 0.08);
+          overflow: hidden;
+        }
+
+        .our-lb-progress-fill {
+          height: 2px;
+          margin-top: -0.5px;
+          background: rgba(255, 255, 255, 0.5);
+          transition: width 0.4s cubic-bezier(0.2, 0.8, 0.3, 1);
+        }
+
+        /* ===== V2: Glass ===== */
+        .our-lb--v2 {
+          background: rgba(255, 255, 255, 0.75);
+          backdrop-filter: blur(32px) saturate(1.2);
+          -webkit-backdrop-filter: blur(32px) saturate(1.2);
+        }
+        .our-lb-v2-close {
+          position: absolute; top: 16px; right: 16px; z-index: 3;
+          color: rgba(0,0,0,0.4); font-size: 22px;
+        }
+        .our-lb-v2-wrap {
+          padding: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 100%;
+        }
+        .our-lb-v2-img {
+          width: 100%;
+          max-height: 80vh;
+          object-fit: contain;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+        }
+        .our-lb-v2-dots {
+          position: absolute; bottom: 32px; left: 0; right: 0;
+          display: flex; justify-content: center; gap: 8px;
+          z-index: 2;
+        }
+        .our-lb-v2-dot {
+          width: 8px; height: 8px; border-radius: 50%;
+          background: rgba(0,0,0,0.15);
+          cursor: pointer;
+          transition: background 0.3s, transform 0.3s;
+        }
+        .our-lb-v2-dot--active {
+          background: rgba(0,0,0,0.5);
+          transform: scale(1.3);
+        }
+
+        /* ===== V4: Lookbook ===== */
+        .our-lb--v4 {
+          background: #fff;
+          background-image: none;
+          align-items: stretch;
+          justify-content: flex-start;
+        }
+        .our-lb-v4-close {
+          position: fixed; top: 16px; right: 16px; z-index: 10;
+          background: rgba(0,0,0,0.5); color: #fff;
+          border: none; width: 36px; height: 36px; border-radius: 50%;
+          font-size: 20px; cursor: pointer; line-height: 1;
+          display: flex; align-items: center; justify-content: center;
+          backdrop-filter: blur(8px);
+        }
+        .our-lb-v4-scroll {
+          width: 100%; height: 100%;
+          overflow-y: auto; -webkit-overflow-scrolling: touch;
+          padding: 0;
+        }
+        .our-lb-v4-img {
+          width: 100%; display: block;
+          -webkit-touch-callout: none;
+          -webkit-user-select: none;
+          user-select: none;
+          pointer-events: none;
+        }
+
+        /* ===== V5: Cinema ===== */
+        .our-lb--v5 {
+          background: #000;
+          background-image: none;
+        }
+        .our-lb-v5-wrap { padding: 0; }
+        .our-lb-v5-img {
+          transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        .our-lb-img--fade-out {
+          opacity: 0; transform: scale(0.96);
+        }
+        .our-lb-img--fade-in {
+          opacity: 0; transform: scale(1.04);
+          animation: our-lb-fade-in 0.5s ease forwards;
+        }
+        @keyframes our-lb-fade-in {
+          to { opacity: 1; transform: scale(1); }
+        }
+
+        /* ===== V6: Minimal ===== */
+        .our-lb--v6 {
+          background: #fff;
+          background-image: none;
+        }
+        .our-lb-v6-close {
+          position: absolute; top: 16px; right: 16px; z-index: 3;
+          color: rgba(0,0,0,0.35); font-size: 22px;
+        }
+        .our-lb-v6-wrap {
+          padding: 60px 48px 60px;
+          position: relative;
+        }
+        .our-lb-v6-arrow {
+          position: absolute; top: 50%; transform: translateY(-50%);
+          background: none; border: none;
+          font-size: 32px; color: rgba(0,0,0,0.2);
+          cursor: pointer; padding: 8px;
+          transition: color 0.2s;
+          z-index: 2;
+        }
+        .our-lb-v6-arrow:hover { color: rgba(0,0,0,0.5); }
+        .our-lb-v6-arrow--prev { left: 8px; }
+        .our-lb-v6-arrow--next { right: 8px; }
+        .our-lb-v6-counter {
+          position: absolute; bottom: 24px; left: 0; right: 0;
+          text-align: center;
+          font-family: var(--font-body, sans-serif);
+          font-size: 11px; letter-spacing: 0.2em;
+          color: rgba(0,0,0,0.25); font-weight: 400;
+          pointer-events: none;
+        }
+        .our-lb--v6 .our-lb-img {
+          max-width: 100%; max-height: 100%; object-fit: contain;
+        }
+
+        /* ===== V7: Magazine ===== */
+        .our-lb--v7 {
+          background: #000;
+          background-image: none;
+        }
+        .our-lb-v7-close {
+          position: absolute; top: 16px; right: 16px; z-index: 3;
+          color: rgba(255,255,255,0.5); font-size: 22px;
+        }
+        .our-lb-v7-wrap {
+          flex: 1; padding: 0; position: relative;
+          display: flex; align-items: center; justify-content: center;
+        }
+        .our-lb-v7-arrow {
+          position: absolute; top: 50%; transform: translateY(-50%);
+          background: none; border: none;
+          font-size: 36px; color: rgba(255,255,255,0.3);
+          cursor: pointer; padding: 8px;
+          transition: color 0.2s; z-index: 2;
+        }
+        .our-lb-v7-arrow:hover { color: rgba(255,255,255,0.7); }
+        .our-lb-v7-arrow--prev { left: 4px; }
+        .our-lb-v7-arrow--next { right: 4px; }
+        .our-lb-v7-thumbs {
+          display: flex; gap: 3px;
+          padding: 8px 0 16px;
+          justify-content: center;
+          align-items: center;
+        }
+        .our-lb-v7-thumb {
+          flex: 1; height: 64px;
+          overflow: hidden;
+          cursor: pointer; opacity: 0.4;
+          border: 2px solid transparent;
+          transition: opacity 0.2s, border-color 0.2s;
+        }
+        .our-lb-v7-thumb img {
+          width: 100%; height: 100%; object-fit: cover;
+          -webkit-touch-callout: none;
+          pointer-events: none;
+        }
+        .our-lb-v7-thumb--active {
+          opacity: 1; border-color: rgba(255,255,255,0.8);
+        }
+
+        /* ===== V9: Film ===== */
+        .our-lb--v9 {
+          background: #fff;
+          background-image: none;
+        }
+        .our-lb-v9-close {
+          position: absolute; top: 16px; right: 16px; z-index: 3;
+          color: rgba(0,0,0,0.35); font-size: 22px;
+        }
+        .our-lb-v9-carousel {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          width: 100%;
+          overflow: hidden;
+          gap: 6px;
+          padding: 0;
+          touch-action: pan-x;
+        }
+        .our-lb-v9-side {
+          flex-shrink: 0;
+          width: 80%;
+          overflow: hidden;
+          opacity: 0.3;
+          cursor: pointer;
+          transition: opacity 0.2s;
+        }
+        .our-lb-v9-side:hover { opacity: 0.5; }
+        .our-lb-v9-side img {
+          width: 100%; display: block;
+          -webkit-touch-callout: none;
+          pointer-events: none;
+          transition: opacity 0.35s ease;
+        }
+        .our-lb-v9-side--prev { margin-left: -72%; }
+        .our-lb-v9-side--next { margin-right: -72%; }
+        .our-lb-v9-current {
+          flex-shrink: 0;
+          width: 80%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          position: relative;
+          transition: opacity 0.35s cubic-bezier(0.2, 0.8, 0.3, 1),
+                      transform 0.35s cubic-bezier(0.2, 0.8, 0.3, 1);
+        }
+        .our-lb-v9-current img {
+          width: 100%; display: block;
+          border-radius: 4px;
+          -webkit-touch-callout: none;
+          pointer-events: none;
+        }
+        .our-lb-v9-overlay {
+          position: absolute;
+          inset: 0;
+          width: 100%; height: 100%;
+          object-fit: contain;
+          border-radius: 4px;
+          animation: our-lb-v9-fade-in 0.45s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        @keyframes our-lb-v9-fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .our-lb--v9 .our-lb-counter {
+          bottom: 32px;
+          color: rgba(0,0,0,0.3);
+          pointer-events: none;
+        }
+      `}</style>
+    </>
   )
 }
 
@@ -2779,6 +3831,12 @@ const mockInvitation = {
     imageSettings: { scale: 1, positionX: 0, positionY: 0 },
   },
   ddayPopup: undefined as import('@/lib/ddayPopupTypes').DdayPopupData | undefined,
+  galleryDisplayStyle: undefined as 'grid' | 'slide' | 'feature' | 'custom' | undefined,
+  galleryCustomAspect: undefined as 'landscape' | 'portrait' | 'mixed' | undefined,
+  galleryRowPattern: undefined as number[] | undefined,
+  galleryShowMoreRow: undefined as number | undefined,
+  galleryLightboxVariant: undefined as number | undefined,
+  galleryLightboxEnabled: undefined as boolean | undefined,
 }
 
 // Guest info type
@@ -2862,6 +3920,12 @@ function transformToDisplayData(dbInvitation: Invitation, content: InvitationCon
     customSectionBgColor: (content as any).customSectionBgColor,
     customDividerColor: (content as any).customDividerColor,
     ddayPopup: normalizeDdayPopup(content.ddayPopup),
+    galleryDisplayStyle: content.galleryDisplayStyle,
+    galleryCustomAspect: content.galleryCustomAspect,
+    galleryRowPattern: content.galleryRowPattern,
+    galleryShowMoreRow: content.galleryShowMoreRow,
+    galleryLightboxVariant: content.galleryLightboxVariant,
+    galleryLightboxEnabled: content.galleryLightboxEnabled,
   } as unknown as DisplayInvitation
 }
 
@@ -3777,13 +4841,21 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
       )}
 
       {/* Gallery Section */}
-      <StaggeredGallerySectionFamily
-        invitation={invitation}
-        themeColors={themeColors}
-        showAllGallery={showAllGallery}
-        onShowAllGallery={() => setShowAllGallery(true)}
-        onOpenLightbox={onOpenLightbox}
-      />
+      {(() => {
+        const style = invitation.galleryDisplayStyle
+        if (style === 'slide') return <SlideGallerySection invitation={invitation} themeColors={themeColors} onOpenLightbox={onOpenLightbox} />
+        if (style === 'feature') return <FeatureGallerySection invitation={invitation} themeColors={themeColors} onOpenLightbox={onOpenLightbox} />
+        if (style === 'custom') return <CustomLayoutGallerySection invitation={invitation} themeColors={themeColors} onOpenLightbox={onOpenLightbox} />
+        return (
+          <StaggeredGallerySectionFamily
+            invitation={invitation}
+            themeColors={themeColors}
+            showAllGallery={showAllGallery}
+            onShowAllGallery={() => setShowAllGallery(true)}
+            onOpenLightbox={onOpenLightbox}
+          />
+        )
+      })()}
 
       {/* YouTube Section - FAMILY */}
       <YouTubeLiteSectionFamily youtube={(invitation as any).youtube} themeColors={themeColors} sectionBg={themeColors.sectionBg} onPlay={handleVideoPlay} onStop={handleVideoStop} />
@@ -4617,6 +5689,7 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
                       onNavigate={setCurrentPage}
                       onOpenRsvp={() => { setOpenModalType('rsvp'); if (isPreview) window.dispatchEvent(new CustomEvent('editor-open-rsvp')) }}
                       onOpenLightbox={(index) => {
+                        if (invitation.galleryLightboxEnabled === false) return
                         setLightboxIndex(index)
                         setLightboxOpen(true)
                       }}
@@ -4702,12 +5775,22 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
               )}
 
               {/* Gallery Lightbox */}
-              <GalleryLightbox
-                images={invitation.gallery?.images || []}
-                isOpen={lightboxOpen}
-                initialIndex={lightboxIndex}
-                onClose={() => setLightboxOpen(false)}
-              />
+              {invitation.galleryLightboxVariant && invitation.galleryLightboxVariant > 0 ? (
+                <GalleryLightboxVariant
+                  images={invitation.gallery?.images || []}
+                  isOpen={lightboxOpen}
+                  initialIndex={lightboxIndex}
+                  onClose={() => setLightboxOpen(false)}
+                  variant={invitation.galleryLightboxVariant}
+                />
+              ) : (
+                <GalleryLightbox
+                  images={invitation.gallery?.images || []}
+                  isOpen={lightboxOpen}
+                  initialIndex={lightboxIndex}
+                  onClose={() => setLightboxOpen(false)}
+                />
+              )}
 
               {/* Guestbook Modal - Portal로 body에 직접 렌더링 */}
               {guestbookModalOpen && typeof document !== 'undefined' && createPortal(

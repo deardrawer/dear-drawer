@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import RsvpForm from '@/components/invitation/RsvpForm'
 import GuestFloatingButton from '@/components/invitation/GuestFloatingButton'
-import { parseHighlight } from '@/lib/textUtils'
 import type { Invitation } from '@/types/invitation'
 import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
 import { resolveKoreanFontFamily } from '@/app/editor/the-simple/fontOptions'
@@ -94,6 +93,147 @@ function ScrollSection({ children, delay = 0, className = '' }: { children: Reac
   return (
     <div ref={ref} className={`transition-all duration-700 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'} ${className}`} style={{ transitionDelay: `${delay}ms` }}>
       {children}
+    </div>
+  )
+}
+
+// ===== Shared Gallery Components =====
+
+function EssayGalleryViewer({ images, startIndex, onClose }: { images: string[]; startIndex: number; onClose: () => void }) {
+  const [currentIndex, setCurrentIndex] = useState(startIndex)
+  const [visible, setVisible] = useState(false)
+  const [imgFade, setImgFade] = useState(true)
+  const touchStartX = useRef(0)
+
+  // 열릴 때 fade-in
+  useEffect(() => {
+    requestAnimationFrame(() => setVisible(true))
+  }, [])
+
+  const handleClose = useCallback(() => {
+    setVisible(false)
+    setTimeout(onClose, 350)
+  }, [onClose])
+
+  const goTo = useCallback((idx: number) => {
+    setImgFade(false)
+    setTimeout(() => {
+      setCurrentIndex(idx)
+      setImgFade(true)
+    }, 150)
+  }, [])
+
+  // 순환형 이동
+  const goNext = useCallback(() => goTo((currentIndex + 1) % images.length), [currentIndex, images.length, goTo])
+  const goPrev = useCallback(() => goTo((currentIndex - 1 + images.length) % images.length), [currentIndex, images.length, goTo])
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleClose()
+      if (e.key === 'ArrowLeft') goPrev()
+      if (e.key === 'ArrowRight') goNext()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [handleClose, goNext, goPrev])
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX
+  }
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const dx = e.changedTouches[0].clientX - touchStartX.current
+    if (Math.abs(dx) > 40) { dx < 0 ? goNext() : goPrev() }
+  }
+
+  return (
+    <div
+      style={{
+        position: 'fixed', inset: 0, zIndex: 10002,
+        background: 'rgba(30,27,23,0.95)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        opacity: visible ? 1 : 0,
+        visibility: visible ? 'visible' : 'hidden',
+        transition: 'opacity 0.35s ease, visibility 0.35s',
+      }}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onClick={handleClose}
+    >
+      {/* Close button */}
+      <div
+        onClick={(e) => { e.stopPropagation(); handleClose() }}
+        style={{
+          position: 'absolute', top: 18, right: 18,
+          fontFamily: "'Cormorant Garamond', serif", fontSize: '20px', fontWeight: 200,
+          color: 'rgba(244,241,235,0.6)', cursor: 'pointer', padding: '8px', lineHeight: 1, zIndex: 2,
+        }}
+      >&#10005;</div>
+
+      {/* Prev arrow */}
+      <div
+        onClick={(e) => { e.stopPropagation(); goPrev() }}
+        style={{
+          position: 'absolute', top: '50%', left: 4, transform: 'translateY(-50%)',
+          fontFamily: "'Cormorant Garamond', serif", fontSize: '28px', fontWeight: 200,
+          color: 'rgba(244,241,235,0.45)', cursor: 'pointer', padding: '16px', lineHeight: 1, zIndex: 2,
+        }}
+      >&#8249;</div>
+
+      {/* Image */}
+      <img
+        src={images[currentIndex]}
+        alt=""
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          maxWidth: '92%', maxHeight: '78%', objectFit: 'contain', filter: 'saturate(0.65)',
+          opacity: imgFade ? 1 : 0, transition: 'opacity 0.3s',
+        }}
+      />
+
+      {/* Next arrow */}
+      <div
+        onClick={(e) => { e.stopPropagation(); goNext() }}
+        style={{
+          position: 'absolute', top: '50%', right: 4, transform: 'translateY(-50%)',
+          fontFamily: "'Cormorant Garamond', serif", fontSize: '28px', fontWeight: 200,
+          color: 'rgba(244,241,235,0.45)', cursor: 'pointer', padding: '16px', lineHeight: 1, zIndex: 2,
+        }}
+      >&#8250;</div>
+
+      {/* Counter */}
+      <div style={{
+        position: 'absolute', bottom: 24, left: '50%', transform: 'translateX(-50%)',
+        fontFamily: "'Cormorant Garamond', serif", fontSize: '9px', fontWeight: 400,
+        letterSpacing: '3px', color: 'rgba(244,241,235,0.35)',
+      }}>
+        {currentIndex + 1} / {images.length}
+      </div>
+    </div>
+  )
+}
+
+function EssayGalleryGrid({ images, onImageClick, colors }: {
+  images: string[]; onImageClick: (index: number) => void; colors: { bg: string; muted: string; accent: string }
+}) {
+  if (!images || images.length === 0) return null
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px' }}>
+      {images.map((src: string, i: number) => (
+        <div key={i} style={{ overflow: 'hidden', aspectRatio: '1/1' }}>
+          <img
+            src={src}
+            alt=""
+            onClick={() => onImageClick(i)}
+            style={{
+              width: '100%', height: '100%', objectFit: 'cover', display: 'block',
+              filter: 'saturate(0.55) contrast(1.08)', cursor: 'pointer',
+              WebkitTapHighlightColor: 'transparent',
+              opacity: 0,
+              animation: `bkGalImg 0.8s cubic-bezier(.33,1,.68,1) ${0.4 + i * 0.12}s forwards`,
+            }}
+          />
+        </div>
+      ))}
     </div>
   )
 }
@@ -529,36 +669,14 @@ function ChapterSection({ chapter, index, theme }: { chapter: any; index: number
               }} />
 
               {/* Body text - staggered line reveal */}
-              {lines.map((line: string, j: number) => {
-                const isHero = /^>>.*<<$/.test(line.trim())
-                if (isHero) {
-                  const heroText = line.trim().replace(/^>>/, '').replace(/<<$/, '')
-                  return (
-                    <p key={j} className="transition-all duration-600 ease-out" style={{
-                      fontFamily: "'Ridibatang', serif", fontSize: '17px', fontWeight: 400, fontStyle: 'normal',
-                      lineHeight: 2, color: theme.heading, textAlign: 'center', margin: '16px 0', letterSpacing: '-0.3px',
-                      opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(12px)',
-                      transitionDelay: `${300 + j * 60}ms`,
-                    }}>{heroText}</p>
-                  )
-                }
-                const hasMarkup = /==|~~|\*\*/.test(line)
-                return hasMarkup ? (
-                  <p key={j} className="es-f14 transition-all duration-600 ease-out" style={{
-                    fontFamily: "'Pretendard', sans-serif", fontSize: '14px', lineHeight: 2.4,
-                    color: theme.text,
-                    opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(12px)',
-                    transitionDelay: `${300 + j * 60}ms`,
-                  }} dangerouslySetInnerHTML={{ __html: parseHighlight(line) }} />
-                ) : (
+              {lines.map((line: string, j: number) => (
                   <p key={j} className="es-f14 transition-all duration-600 ease-out" style={{
                     fontFamily: "'Pretendard', sans-serif", fontSize: '14px', lineHeight: 2.4,
                     color: theme.text,
                     opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(12px)',
                     transitionDelay: `${300 + j * 60}ms`,
                   }}>{line || '\u00A0'}</p>
-                )
-              })}
+              ))}
             </div>
           </div>
         </div>
@@ -599,6 +717,42 @@ function QuoteSection({ data, theme }: { data: any; theme: ThemeConfig }) {
           }}>— {quote.author}</div>
         )}
       </div>
+    </div>
+  )
+}
+
+// ====================================================================
+// GALLERY SECTION - Default concept
+// ====================================================================
+function DefaultGallerySection({ data, theme }: { data: any; theme: ThemeConfig }) {
+  const { ref, isVisible } = useScrollReveal(0.15)
+  const images: string[] = data.gallery?.images || []
+  const [viewerOpen, setViewerOpen] = useState(false)
+  const [viewerIndex, setViewerIndex] = useState(0)
+
+  if (images.length === 0) return null
+
+  return (
+    <div ref={ref} style={{ padding: '60px 16px', background: theme.sectionBg }}>
+      <div className="max-w-sm mx-auto" style={{
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+        transition: 'opacity 0.8s ease-out, transform 0.8s ease-out',
+      }}>
+        <div style={{
+          fontFamily: "'Cormorant Garamond', serif", fontSize: '8px', fontWeight: 400,
+          letterSpacing: '4px', color: theme.gray, textTransform: 'uppercase' as const,
+          textAlign: 'center', marginBottom: '18px',
+        }}>Gallery</div>
+        <EssayGalleryGrid
+          images={images}
+          onImageClick={(i) => { setViewerIndex(i); setViewerOpen(true) }}
+          colors={{ bg: theme.sectionBg, muted: theme.gray, accent: theme.accent }}
+        />
+      </div>
+      {viewerOpen && (
+        <EssayGalleryViewer images={images} startIndex={viewerIndex} onClose={() => setViewerOpen(false)} />
+      )}
     </div>
   )
 }
@@ -929,6 +1083,44 @@ function ThankYouSection({ data, theme }: { data: any; theme: ThemeConfig }) {
   )
 }
 
+// 스크롤 힌트 오버레이 (default/paper 컨셉용 - 페이지 스크롤 기반)
+function ScrollHintOverlay({ theme }: { theme: ThemeConfig }) {
+  const [show, setShow] = useState(true)
+
+  useEffect(() => {
+    const onScroll = () => {
+      if (window.scrollY > 80) setShow(false)
+      else setShow(true)
+    }
+    // 초기 체크: 스크롤 가능한지 확인
+    requestAnimationFrame(() => {
+      if (document.documentElement.scrollHeight <= window.innerHeight + 10) {
+        setShow(false)
+      }
+    })
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  return (
+    <div className="essay-scroll-hint-overlay" style={{
+      position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 30,
+      display: 'flex', justifyContent: 'center', alignItems: 'flex-end',
+      paddingBottom: '28px', height: '100px',
+      background: `linear-gradient(transparent 0%, ${theme.background} 50%)`,
+      pointerEvents: 'none',
+      opacity: show ? 1 : 0,
+      transition: 'opacity 0.5s ease',
+    }}>
+      <span style={{
+        fontSize: '18px', fontWeight: 200, color: theme.accent,
+        display: 'inline-block',
+        animation: 'bkScrollBob 2.5s ease-in-out infinite',
+      }}>↓</span>
+    </div>
+  )
+}
+
 function EssayFooter({ theme }: { theme: ThemeConfig }) {
   return (
     <div className="py-8 text-center" style={{ backgroundColor: theme.background }}>
@@ -1119,40 +1311,17 @@ function PaperEssayPage({ chapter, index }: { chapter: any; index: number }) {
           }} />
         </PaperReveal>
 
-        {(chapter.body || '').split('\n').map((line: string, j: number) => {
-          const isHero = /^>>.*<<$/.test(line.trim())
-          if (isHero) {
-            const heroText = line.trim().replace(/^>>/, '').replace(/<<$/, '')
-            return (
-              <PaperReveal key={j} delay={250 + j * 40}>
-                <p style={{
-                  fontFamily: "'Ridibatang', serif", fontSize: '18px', fontWeight: 400, fontStyle: 'normal',
-                  lineHeight: 2, color: paperColors.text, textAlign: 'center', margin: '16px 0', letterSpacing: '-0.3px',
-                }}>{heroText}</p>
-              </PaperReveal>
-            )
-          }
-          const hasMarkup = /==|~~|\*\*/.test(line)
-          return (
+        {(chapter.body || '').split('\n').map((line: string, j: number) => (
           <PaperReveal key={j} delay={250 + j * 40}>
-            {hasMarkup ? (
-              <p className="es-f16" style={{
-                fontFamily: "'Pretendard', sans-serif",
-                fontSize: '16px', lineHeight: 1.8, color: paperColors.text,
-                marginBottom: line.trim() === '' ? '16px' : '0',
-              }} dangerouslySetInnerHTML={{ __html: parseHighlight(line) }} />
-            ) : (
-              <p className="es-f16" style={{
-                fontFamily: "'Pretendard', sans-serif",
-                fontSize: '16px', lineHeight: 1.8, color: paperColors.text,
-                marginBottom: line.trim() === '' ? '16px' : '0',
-              }}>
-                {line || '\u00A0'}
-              </p>
-            )}
+            <p className="es-f16" style={{
+              fontFamily: "'Pretendard', sans-serif",
+              fontSize: '16px', lineHeight: 1.8, color: paperColors.text,
+              marginBottom: line.trim() === '' ? '16px' : '0',
+            }}>
+              {line || '\u00A0'}
+            </p>
           </PaperReveal>
-          )
-        })}
+        ))}
       </div>
     </div>
   )
@@ -1214,6 +1383,39 @@ function PaperQuote({ quote }: { quote: any }) {
           </PaperReveal>
         )}
       </div>
+    </div>
+  )
+}
+
+// -- Paper: Gallery --
+function PaperGallery({ data }: { data: any }) {
+  const images: string[] = data.gallery?.images || []
+  const [viewerOpen, setViewerOpen] = useState(false)
+  const [viewerIndex, setViewerIndex] = useState(0)
+
+  if (images.length === 0) return null
+
+  return (
+    <div style={{ minHeight: '50vh', padding: '60px 16px', background: paperColors.bg }}>
+      <div style={{ maxWidth: '640px', margin: '0 auto' }}>
+        <PaperReveal>
+          <div style={{
+            fontFamily: "'Cormorant Garamond', serif", fontSize: '8px', fontWeight: 400,
+            letterSpacing: '4px', color: paperColors.muted, textTransform: 'uppercase' as const,
+            textAlign: 'center', marginBottom: '18px',
+          }}>Gallery</div>
+        </PaperReveal>
+        <PaperReveal delay={100}>
+          <EssayGalleryGrid
+            images={images}
+            onImageClick={(i) => { setViewerIndex(i); setViewerOpen(true) }}
+            colors={{ bg: paperColors.bg, muted: paperColors.muted, accent: paperColors.accent }}
+          />
+        </PaperReveal>
+      </div>
+      {viewerOpen && (
+        <EssayGalleryViewer images={images} startIndex={viewerIndex} onClose={() => setViewerOpen(false)} />
+      )}
     </div>
   )
 }
@@ -1685,6 +1887,9 @@ function PaperConcept({ data, invitationId, isSample }: { data: any; invitationI
           {/* Quote */}
           <PaperQuote quote={data.quote} />
 
+          {/* Gallery */}
+          {data.gallery?.images?.length > 0 && <PaperGallery data={data} />}
+
           {/* Wedding Info */}
           <PaperInvitationInfo data={data} />
 
@@ -1715,6 +1920,94 @@ function PaperConcept({ data, invitationId, isSample }: { data: any; invitationI
 // BOOK CONCEPT - 전자책 리더 (밀리의서재/킨들 스타일)
 // 페이지 단위 넘김, 진행률 바, 목차 사이드바
 // ====================================================================
+
+// -- Custom theme color generation utilities --
+function parseHex(hex: string): [number, number, number] {
+  const h = hex.replace('#', '')
+  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)]
+}
+function toHex(r: number, g: number, b: number): string {
+  const cl = (v: number) => Math.max(0, Math.min(255, Math.round(v)))
+  return '#' + [cl(r), cl(g), cl(b)].map(v => v.toString(16).padStart(2, '0')).join('')
+}
+function blendColors(c1: string, c2: string, t: number): string {
+  const [r1, g1, b1] = parseHex(c1)
+  const [r2, g2, b2] = parseHex(c2)
+  return toHex(r1 + (r2 - r1) * t, g1 + (g2 - g1) * t, b1 + (b2 - b1) * t)
+}
+function lightenColor(hex: string, amount: number): string {
+  return blendColors(hex, '#FFFFFF', amount)
+}
+function darkenColor(hex: string, amount: number): string {
+  return blendColors(hex, '#000000', amount)
+}
+function desaturateColor(hex: string, amount: number): string {
+  const [r, g, b] = parseHex(hex)
+  const gray = r * 0.299 + g * 0.587 + b * 0.114
+  return toHex(r + (gray - r) * amount, g + (gray - g) * amount, b + (gray - b) * amount)
+}
+
+function generateBookColors(frame: string, accent: string, text: string, pageBg?: string): BookColorConfig {
+  const bg = pageBg || frame
+  return {
+    bg,
+    pageBg: pageBg ? lightenColor(pageBg, 0.02) : lightenColor(frame, 0.02),
+    text,
+    heading: darkenColor(text, 0.1),
+    muted: blendColors(text, bg, 0.45),
+    accent,
+    divider: blendColors(accent, bg, 0.7),
+    highlight: blendColors(accent, bg, 0.85),
+    toolbar: blendColors(frame, accent, 0.08),
+    toolbarText: blendColors(text, frame, 0.4),
+    progressBg: blendColors(accent, frame, 0.7),
+    progressFill: accent,
+  }
+}
+
+function generateBookInfoColors(frame: string, accent: string, text: string, pageBg?: string): BookInfoColorConfig {
+  const bg = pageBg || frame
+  const infoBg = darkenColor(desaturateColor(bg, 0.3), 0.04)
+  const muted = desaturateColor(blendColors(text, bg, 0.45), 0.3)
+  const divider = desaturateColor(blendColors(accent, bg, 0.7), 0.3)
+  const toolbar = desaturateColor(blendColors(frame, accent, 0.08), 0.3)
+  const toolbarText = desaturateColor(blendColors(text, frame, 0.4), 0.3)
+  return {
+    bg: infoBg,
+    pageBg: blendColors(infoBg, '#FFFFFF', 0.05),
+    text: darkenColor(text, 0.05),
+    heading: darkenColor(text, 0.15),
+    muted,
+    accent: darkenColor(accent, 0.1),
+    divider,
+    cardBg: '#FFFFFF',
+    toolbar,
+    toolbarText,
+    progressBg: divider,
+    progressFill: darkenColor(desaturateColor(accent, 0.2), 0.1),
+    frameBg: darkenColor(frame, 0.08),
+  }
+}
+
+function generateQuoteDarkColors(bg: string, accent: string, text: string): Partial<BookColorConfig> {
+  const darkBg = darkenColor(blendColors(text, bg, 0.15), 0.3)
+  const mutedLight = lightenColor(blendColors(text, accent, 0.5), 0.3)
+  const dividerDark = blendColors(darkBg, mutedLight, 0.3)
+  return {
+    bg: darkBg, pageBg: darkBg,
+    muted: mutedLight, divider: dividerDark,
+    toolbarText: mutedLight, progressBg: dividerDark, progressFill: mutedLight,
+  }
+}
+
+function generateDarkColors(bg: string, accent: string, text: string): { bg: string; text: string; muted: string } {
+  const darkBg = darkenColor(blendColors(text, bg, 0.15), 0.3)
+  return {
+    bg: darkBg,
+    text: lightenColor(bg, 0.2),
+    muted: lightenColor(blendColors(text, accent, 0.5), 0.3),
+  }
+}
 
 interface BookColorConfig {
   bg: string; pageBg: string; text: string; heading: string
@@ -1761,6 +2054,7 @@ interface BookInfoColorConfig {
   bg: string; pageBg: string; text: string; heading: string
   muted: string; accent: string; divider: string; cardBg: string
   toolbar: string; toolbarText: string; progressBg: string; progressFill: string
+  frameBg: string
 }
 
 const bookInfoColorsByTheme: Record<string, BookInfoColorConfig> = {
@@ -1768,39 +2062,51 @@ const bookInfoColorsByTheme: Record<string, BookInfoColorConfig> = {
     bg: '#F5F4F1', pageBg: '#F9F8F5', text: '#2C2C2C', heading: '#1A1A1A',
     muted: '#8C8C86', accent: '#6B6355', divider: '#E0DDD8', cardBg: '#FFFFFF',
     toolbar: '#EDECE8', toolbarText: '#5A5A54', progressBg: '#E0DDD8', progressFill: '#6B6355',
+    frameBg: '#E5E1D8',
   },
   'essay-blush': {
     bg: '#F9F2F0', pageBg: '#FBF5F3', text: '#3A2A2E', heading: '#1A1A1A',
     muted: '#9A8488', accent: '#A06070', divider: '#E0D0D4', cardBg: '#FFFFFF',
     toolbar: '#F2EAEA', toolbarText: '#7A6468', progressBg: '#E0D0D4', progressFill: '#A06070',
+    frameBg: '#E8DCDA',
   },
   'essay-sage': {
     bg: '#F0F2EE', pageBg: '#F5F7F3', text: '#2A2E28', heading: '#1A1A1A',
     muted: '#828C7E', accent: '#5A7A4E', divider: '#C8D8BE', cardBg: '#FFFFFF',
     toolbar: '#E8ECE4', toolbarText: '#5A6A52', progressBg: '#C8D8BE', progressFill: '#5A7A4E',
+    frameBg: '#DDE0D8',
   },
   'essay-mono': {
     bg: '#F5F5F5', pageBg: '#FAFAFA', text: '#1A1A1A', heading: '#000000',
     muted: '#888888', accent: '#444444', divider: '#D0D0D0', cardBg: '#FFFFFF',
     toolbar: '#EEEEEE', toolbarText: '#555555', progressBg: '#D0D0D0', progressFill: '#444444',
+    frameBg: '#E2E2E2',
   },
   'essay-sky': {
     bg: '#EEF2F8', pageBg: '#F4F8FC', text: '#2A3440', heading: '#1A2A3A',
     muted: '#7A8E9E', accent: '#4A7A9E', divider: '#B0C8DC', cardBg: '#FFFFFF',
     toolbar: '#E4ECF4', toolbarText: '#5A7080', progressBg: '#B0C8DC', progressFill: '#4A7A9E',
+    frameBg: '#D8DEE6',
   },
   'essay-coral': {
     bg: '#F6EEEA', pageBg: '#FAF4F0', text: '#3A2A24', heading: '#1A1A1A',
     muted: '#9A8078', accent: '#B86A54', divider: '#DCC0B4', cardBg: '#FFFFFF',
     toolbar: '#F0E4DE', toolbarText: '#7A6058', progressBg: '#DCC0B4', progressFill: '#B86A54',
+    frameBg: '#E5DDD8',
   },
 }
 const bookInfoColorsIvory = bookInfoColorsByTheme['essay-ivory']
 
-function getBookColors(theme?: string) {
+function getBookColors(theme?: string, customColors?: { bg: string; pageBg: string; accent: string; text: string }) {
+  if (theme === 'essay-custom' && customColors) {
+    return generateBookColors(customColors.bg, customColors.accent, customColors.text, customColors.pageBg)
+  }
   return bookColorsByTheme[theme || 'essay-ivory'] || bookColorsByTheme['essay-ivory']
 }
-function getBookInfoColors(theme?: string) {
+function getBookInfoColors(theme?: string, customColors?: { bg: string; pageBg: string; accent: string; text: string }) {
+  if (theme === 'essay-custom' && customColors) {
+    return generateBookInfoColors(customColors.bg, customColors.accent, customColors.text, customColors.pageBg)
+  }
   return bookInfoColorsByTheme[theme || 'essay-ivory'] || bookInfoColorsByTheme['essay-ivory']
 }
 
@@ -1820,12 +2126,36 @@ const bookAnimCSS = `
 }
 @keyframes bkFadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes bkFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes bkGalImg { from { opacity: 0; transform: scale(1.06); } to { opacity: 1; transform: scale(1); } }
 @keyframes bkScaleIn { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
 @keyframes bkDrawLine { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 @keyframes bkSlideRight { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; transform: translateX(0); } }
 @keyframes bkHighlight { from { background-size: 0% 100%; } to { background-size: 100% 100%; } }
-.book-page-content .bk-page { min-height: calc(100vh - 80px); }
+@keyframes bkPageInL { from { opacity: 0; transform: translateX(-12%); } to { opacity: 1; transform: none; } }
+@keyframes bkPageInR { from { opacity: 0; transform: translateX(12%); } to { opacity: 1; transform: none; } }
+@keyframes bkPageOutL { to { opacity: 0; transform: translateX(-18%) scale(0.94); } }
+@keyframes bkPageOutR { to { opacity: 0; transform: translateX(18%) scale(0.94); } }
+.book-page-content .bk-page { min-height: 100vh; padding-top: 52px; box-sizing: border-box; }
 .book-page-content .bk-page > .w-full { padding-left: 52px; padding-right: 52px; }
+.book-page-content:has(.bk-card) { display: flex; flex-direction: column; min-height: 100vh; }
+.book-page-content .bk-page.bk-card { min-height: calc(100vh - 20px); margin: 10px; border-radius: 14px; box-shadow: 0 4px 30px rgba(46,42,38,0.08); overflow: hidden; position: relative; padding-top: 0; }
+.bk-scroll-area { scrollbar-width: none; -ms-overflow-style: none; }
+.bk-scroll-area::-webkit-scrollbar { display: none; }
+.bk-scroll-hint {
+  position: absolute; bottom: 0; left: 0; right: 0; z-index: 4;
+  display: flex; justify-content: center; align-items: flex-end;
+  padding-bottom: 28px; height: 100px;
+  pointer-events: none; opacity: 0; transition: opacity 0.5s ease;
+}
+.bk-scroll-hint.show { opacity: 1; }
+.bk-scroll-hint span {
+  font-size: 18px; font-weight: 200; display: inline-block;
+  animation: bkScrollBob 2.5s ease-in-out infinite;
+}
+@keyframes bkScrollBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+@keyframes bkSwipeX { 0%,100% { transform: translateX(0); } 50% { transform: translateX(12px); } }
+@keyframes bkSwipePulse { 0%,100% { opacity: 0.7; } 50% { opacity: 0.35; } }
+@keyframes bkClipCx { from { clip-path: inset(0 50%); } to { clip-path: inset(0); } }
 `
 
 // -- Book: 애니메이션 헬퍼 --
@@ -1855,20 +2185,23 @@ function BLine({ width = '24px', color = bookColorsIvory.accent, d = 0, center =
 // -- Book: Page wrapper (한 화면 = 한 페이지) --
 interface BookPage {
   id: string
-  type: 'cover' | 'intro' | 'toc' | 'greeting' | 'chapter' | 'quote' | 'info-intro' | 'wedding' | 'wedding-date' | 'wedding-venue' | 'guidance' | 'contacts' | 'bank' | 'guestbook' | 'rsvp' | 'thankyou' | 'end' | 'bonus-intro' | 'bonus-interview' | 'bonus-end'
+  type: 'cover' | 'intro' | 'toc' | 'greeting' | 'chapter' | 'quote' | 'gallery' | 'info-intro' | 'wedding' | 'date-essay' | 'wedding-date' | 'venue-essay' | 'wedding-venue' | 'guidance' | 'contacts' | 'bank' | 'guestbook' | 'rsvp' | 'thankyou' | 'end' | 'bonus-intro' | 'bonus-interview' | 'bonus-end'
   title?: string
   data?: any
 }
 
 function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; invitationId: string; isSample?: boolean; skipIntro?: boolean }) {
-  const bookColors = getBookColors(data.colorTheme)
-  const bookInfoColors = getBookInfoColors(data.colorTheme)
+  const bookColors = getBookColors(data.colorTheme, data.customThemeColors)
+  const bookInfoColors = getBookInfoColors(data.colorTheme, data.customThemeColors)
 
   const [currentPage, setCurrentPage] = useState(skipIntro ? 1 : 0)
+  const [showScrollHint, setShowScrollHint] = useState(false)
   const [showToc, setShowToc] = useState(false)
-  const hasBonusContent = (data.content?.bonusInterviews || []).some((bi: any) => bi.question?.trim() && bi.answer?.trim())
-  const [showBonus, setShowBonus] = useState(hasBonusContent)
+  const hasBonusContent = false
+  const [showBonus, setShowBonus] = useState(false)
   const [pageTransition, setPageTransition] = useState<'none' | 'next' | 'prev'>('none')
+  const [leavingPage, setLeavingPage] = useState<number | null>(null)
+  const [leavingDir, setLeavingDir] = useState<'next' | 'prev'>('next')
   const touchStartX = useRef(0)
   const touchStartY = useRef(0)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -1907,25 +2240,7 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
   ].filter(Boolean) as { name: string; bank: { bank: string; account: string; holder: string; enabled: boolean }; role: string; side: 'groom' | 'bride' }[]
 
   // 페이지 목록 생성 (목차는 사이드바로만 접근)
-  const pages: BookPage[] = []
-  pages.push({ id: 'cover', type: 'cover', title: '표지' })
-  if (data.intro?.enabled !== false) pages.push({ id: 'intro', type: 'intro', title: '프롤로그' })
-  if (data.greeting) pages.push({ id: 'greeting', type: 'greeting', title: '초대의 글' })
-  if (contentMode === 'story' && data.chapters?.length) {
-    data.chapters.forEach((ch: any, i: number) => {
-      pages.push({ id: `chapter-${i}`, type: 'chapter', title: ch.title || `Chapter ${i + 1}`, data: { chapter: ch, index: i } })
-    })
-  }
-  if (contentMode === 'interview' && data.interviews?.length) {
-    data.interviews.forEach((qa: any, i: number) => {
-      pages.push({ id: `interview-${i}`, type: 'chapter', title: qa.question?.substring(0, 15) + '...', data: { interview: qa, index: i } })
-    })
-  }
-  if (data.quote?.text) pages.push({ id: 'quote', type: 'quote', title: '인용문' })
-  pages.push({ id: 'info-intro', type: 'info-intro', title: '예식 안내' })
-  pages.push({ id: 'wedding-date', type: 'wedding-date' as any, title: '그 날' })
-  pages.push({ id: 'wedding-venue', type: 'wedding-venue' as any, title: '그 곳' })
-  // 행복한 시간을 위한 안내 (info 항목이 하나라도 있을 때)
+  // info 관련 사전 계산
   const infoObj = data.info || {}
   const defaultItemOrder = ['dressCode', 'photoBooth', 'photoShare', 'flowerGift', 'flowerChild', 'wreath', 'shuttle', 'reception']
   const infoItemOrder = infoObj.itemOrder || defaultItemOrder
@@ -1933,12 +2248,60 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
     ...infoItemOrder.filter((key: string) => infoObj[key]?.enabled && infoObj[key]?.content),
     ...(infoObj.customItems || []).filter((item: any) => item.enabled && item.content).map((_: any, i: number) => `custom-${i}`),
   ]
-  if (enabledInfoItems.length > 0 && data.sectionVisibility?.guidance !== false) pages.push({ id: 'guidance', type: 'guidance' as any, title: '안내' })
-  if (data.sectionVisibility?.contacts !== false) pages.push({ id: 'contacts', type: 'contacts', title: '연락처' })
-  if (data.sectionVisibility?.bankAccounts !== false) pages.push({ id: 'bank', type: 'bank', title: '마음 전하기' })
-  if (data.thankYou?.message) pages.push({ id: 'thankyou', type: 'thankyou', title: '감사 인사' })
-  if (data.sectionVisibility?.guestbook !== false) pages.push({ id: 'guestbook', type: 'guestbook', title: '방명록' })
-  if (data.rsvpEnabled && data.sectionVisibility?.rsvp !== false) pages.push({ id: 'rsvp', type: 'rsvp', title: '참석 여부' })
+
+  const defaultSectionOrder = [
+    'intro', 'greeting', 'story', 'quote', 'gallery',
+    'info', 'contacts', 'bank', 'thankyou', 'guestbook', 'rsvp'
+  ]
+
+  const sectionBuilders: Record<string, () => BookPage[]> = {
+    intro: () => data.intro?.enabled !== false ? [{ id: 'intro', type: 'intro', title: '프롤로그' }] : [],
+    greeting: () => (data.greeting && data.sectionVisibility?.greeting !== false) ? [{ id: 'greeting', type: 'greeting', title: '초대의 글' }] : [],
+    story: () => {
+      if (data.sectionVisibility?.story === false) return []
+      const result: BookPage[] = []
+      if (contentMode === 'story' && data.chapters?.length) {
+        data.chapters.forEach((ch: any, i: number) => {
+          result.push({ id: `chapter-${i}`, type: 'chapter', title: ch.title || `Chapter ${i + 1}`, data: { chapter: ch, index: i } })
+        })
+      }
+      if (contentMode === 'interview' && data.interviews?.length) {
+        data.interviews.forEach((qa: any, i: number) => {
+          result.push({ id: `interview-${i}`, type: 'chapter', title: qa.question?.substring(0, 15) + '...', data: { interview: qa, index: i } })
+        })
+      }
+      return result
+    },
+    quote: () => (data.quote?.text && data.sectionVisibility?.quote !== false) ? [{ id: 'quote', type: 'quote', title: '인용문' }] : [],
+    gallery: () => (data.gallery?.images?.length > 0 && data.sectionVisibility?.gallery !== false) ? [{ id: 'gallery', type: 'gallery', title: '갤러리' }] : [],
+    info: () => {
+      if (data.sectionVisibility?.info === false) return []
+      const result: BookPage[] = [
+        { id: 'info-intro', type: 'info-intro', title: '예식 안내' },
+        { id: 'date-essay', type: 'date-essay' as any, title: '날짜 에세이' },
+        { id: 'wedding-date', type: 'wedding-date' as any, title: '그 날' },
+        { id: 'venue-essay', type: 'venue-essay' as any, title: '장소 에세이' },
+        { id: 'wedding-venue', type: 'wedding-venue' as any, title: '그 곳' },
+      ]
+      if (enabledInfoItems.length > 0 && data.sectionVisibility?.guidance !== false) {
+        result.push({ id: 'guidance', type: 'guidance' as any, title: '안내' })
+      }
+      return result
+    },
+    contacts: () => data.sectionVisibility?.contacts !== false ? [{ id: 'contacts', type: 'contacts', title: '연락처' }] : [],
+    bank: () => data.sectionVisibility?.bankAccounts !== false ? [{ id: 'bank', type: 'bank', title: '마음 전하기' }] : [],
+    thankyou: () => (data.thankYou?.message && data.sectionVisibility?.thankyou !== false) ? [{ id: 'thankyou', type: 'thankyou', title: '감사 인사' }] : [],
+    guestbook: () => data.sectionVisibility?.guestbook !== false ? [{ id: 'guestbook', type: 'guestbook', title: '방명록' }] : [],
+    rsvp: () => (data.rsvpEnabled && data.sectionVisibility?.rsvp !== false) ? [{ id: 'rsvp', type: 'rsvp', title: '참석 여부' }] : [],
+  }
+
+  const pages: BookPage[] = []
+  pages.push({ id: 'cover', type: 'cover', title: '표지' })
+  const sectionOrder = data.sectionOrder || defaultSectionOrder
+  for (const sectionId of sectionOrder) {
+    const builder = sectionBuilders[sectionId]
+    if (builder) pages.push(...builder())
+  }
   pages.push({ id: 'end', type: 'end', title: '끝' })
 
   // 보너스 인터뷰 (더 많은 이야기)
@@ -1966,12 +2329,17 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
 
   const goToPage = useCallback((pageIndex: number) => {
     if (pageIndex < 0 || pageIndex >= totalPages || pageIndex === currentPage) return
-    setPageTransition(pageIndex > currentPage ? 'next' : 'prev')
+    if (pageTransition !== 'none') return // 전환 중 추가 스와이프 방지
+    const dir = pageIndex > currentPage ? 'next' : 'prev'
+    setLeavingPage(currentPage)
+    setLeavingDir(dir)
+    setPageTransition(dir)
+    setCurrentPage(pageIndex)
     setTimeout(() => {
-      setCurrentPage(pageIndex)
       setPageTransition('none')
-    }, 200)
-  }, [currentPage, totalPages])
+      setLeavingPage(null)
+    }, 1150)
+  }, [currentPage, totalPages, pageTransition])
 
   const nextPage = useCallback(() => goToPage(currentPage + 1), [currentPage, goToPage])
   const prevPage = useCallback(() => goToPage(currentPage - 1), [currentPage, goToPage])
@@ -1990,6 +2358,7 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
     const p = pages[currentPage]
     return p?.type === 'guestbook' || p?.type === 'rsvp'
   }, [currentPage, pages])
+
 
   // 슬라이드 페이지 전환 (스냅 애니메이션)
   const slideTo = useCallback((direction: 'next' | 'prev' | 'back') => {
@@ -2029,8 +2398,8 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
       // 폼 페이지면 터치 핸들러 스킵
       const p = pages[currentPage]
       if (p?.type === 'guestbook' || p?.type === 'rsvp') return
-      // 인터랙티브 요소 클릭은 스킵
-      if (e.target instanceof HTMLElement && e.target.closest('a, button, input, textarea, select, [role="button"]')) return
+      // 인터랙티브 요소 클릭은 스킵 (SVG 아이콘 포함 — Element로 체크)
+      if (e.target instanceof Element && e.target.closest('a, button, input, textarea, select, [role="button"]')) return
 
       startX = e.touches[0].clientX
       startY = e.touches[0].clientY
@@ -2049,6 +2418,7 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
       if (isSnapping) return
       const p = pages[currentPage]
       if (p?.type === 'guestbook' || p?.type === 'rsvp') return
+      if (e.target instanceof Element && e.target.closest('a, button, input, textarea, select, [role="button"]')) return
 
       const cx = e.touches[0].clientX
       const cy = e.touches[0].clientY
@@ -2086,35 +2456,26 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
     const onTouchEnd = (e: TouchEvent) => {
       const p = pages[currentPage]
       if (p?.type === 'guestbook' || p?.type === 'rsvp') return
+      // 인터랙티브 요소 탭은 네비게이션 스킵 (touchstart에서 startX 미설정 → stale 값 방지)
+      if (e.target instanceof Element && e.target.closest('a, button, input, textarea, select, [role="button"]')) return
 
       const endX = e.changedTouches[0].clientX
       const endY = e.changedTouches[0].clientY
       const dx = endX - startX
       const dy = endY - startY
-      const elapsed = Date.now() - startTime
-      const velocity = Math.abs(dx) / (elapsed || 1) // px/ms
 
-      if (locked === 'horizontal' && dragging) {
-        const w = containerWidthRef.current || window.innerWidth
-        const threshold = w * 0.2
-
-        if ((Math.abs(dx) > threshold || velocity > 0.3) && !(currentPage === 0 && dx > 0) && !(currentPage >= totalPages - 1 && dx < 0)) {
-          slideTo(dx < 0 ? 'next' : 'prev')
-        } else {
-          slideTo('back')
-        }
-      } else if (!dragging) {
-        // 탭: 거의 이동 없음 (< 10px)
-        if (Math.abs(dx) < 10 && Math.abs(dy) < 10) {
-          if (e.target instanceof HTMLElement && e.target.closest('a, button, input, textarea, select, [role="button"]')) return
-          const rect = el.getBoundingClientRect()
-          const x = startX - rect.left
-          const w = rect.width
-          if (x < w * 0.35) prevPage()
-          else if (x > w * 0.65) nextPage()
-        }
-        setIsDragging(false)
-        setDragOffset(0)
+      // 스와이프 감지 (매거진 방식: 35px 이상 수평 이동)
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 35) {
+        if (dx < 0) nextPage()
+        else prevPage()
+      }
+      // 탭: 거의 이동 없음 (< 10px)
+      else if (Math.abs(dx) < 10 && Math.abs(dy) < 10) {
+        const rect = el.getBoundingClientRect()
+        const x = startX - rect.left
+        const w = rect.width
+        if (x < w * 0.35) prevPage()
+        else if (x > w * 0.65) nextPage()
       }
 
       locked = 'none'
@@ -2129,7 +2490,7 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
       if (isSnapping) return
       const p = pages[currentPage]
       if (p?.type === 'guestbook' || p?.type === 'rsvp') return
-      if (e.target instanceof HTMLElement && e.target.closest('a, button, input, textarea, select, [role="button"]')) return
+      if (e.target instanceof Element && e.target.closest('a, button, input, textarea, select, [role="button"]')) return
 
       mouseDown = true
       startX = e.clientX
@@ -2178,21 +2539,21 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
       if (p?.type === 'guestbook' || p?.type === 'rsvp') return
 
       const dx = e.clientX - startX
-      const elapsed = Date.now() - startTime
-      const velocity = Math.abs(dx) / (elapsed || 1)
+      const dy = e.clientY - startY
 
-      if (locked === 'horizontal' && dragging) {
-        const w = containerWidthRef.current || window.innerWidth
-        const threshold = w * 0.2
-
-        if ((Math.abs(dx) > threshold || velocity > 0.3) && !(currentPage === 0 && dx > 0) && !(currentPage >= totalPages - 1 && dx < 0)) {
-          slideTo(dx < 0 ? 'next' : 'prev')
-        } else {
-          slideTo('back')
-        }
-      } else {
-        setIsDragging(false)
-        setDragOffset(0)
+      // 스와이프 감지 (매거진 방식: 35px 이상 수평 이동)
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 35) {
+        if (dx < 0) nextPage()
+        else prevPage()
+      }
+      // 탭: 거의 이동 없음 (< 10px)
+      else if (Math.abs(dx) < 10 && Math.abs(dy) < 10) {
+        if (e.target instanceof Element && e.target.closest('a, button, input, textarea, select, [role="button"]')) { locked = 'none'; dragging = false; dragDirectionRef.current = 'none'; return }
+        const rect = el.getBoundingClientRect()
+        const x = startX - rect.left
+        const w = rect.width
+        if (x < w * 0.35) prevPage()
+        else if (x > w * 0.65) nextPage()
       }
 
       locked = 'none'
@@ -2231,14 +2592,62 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
     return () => window.removeEventListener('keydown', handler)
   }, [nextPage, prevPage])
 
+  // 스크롤 힌트: 페이지 변경 시 스크롤 리셋 + 오버플로 체크
+  useEffect(() => {
+    const scrollEl = scrollableRef.current
+    if (scrollEl) {
+      scrollEl.scrollTop = 0
+    }
+    // 페이지 전환 애니메이션 후 레이아웃 안정화 시점에 오버플로 체크
+    const timer = setTimeout(() => {
+      const el = scrollableRef.current
+      if (el) {
+        setShowScrollHint(el.scrollHeight > el.clientHeight + 10)
+      }
+    }, 400)
+    return () => clearTimeout(timer)
+  }, [currentPage])
+
+  // 스크롤 힌트: 스크롤 시 숨기기/표시
+  useEffect(() => {
+    const scrollEl = scrollableRef.current
+    if (!scrollEl) return
+    const onScroll = () => {
+      if (scrollEl.scrollTop > 40) setShowScrollHint(false)
+      else if (scrollEl.scrollHeight > scrollEl.clientHeight + 10) setShowScrollHint(true)
+    }
+    scrollEl.addEventListener('scroll', onScroll, { passive: true })
+    return () => scrollEl.removeEventListener('scroll', onScroll)
+  }, [currentPage])
+
+  // 마우스 휠: 탭 오버레이가 wheel 이벤트를 가로채므로 컨테이너에서 직접 스크롤 처리
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    const onWheel = (e: WheelEvent) => {
+      const scrollEl = scrollableRef.current
+      if (!scrollEl) return
+      const maxScroll = scrollEl.scrollHeight - scrollEl.clientHeight
+      if (maxScroll <= 0) return
+      scrollEl.scrollTop = Math.max(0, Math.min(maxScroll, scrollEl.scrollTop + e.deltaY))
+      e.preventDefault()
+    }
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => el.removeEventListener('wheel', onWheel)
+  }, [currentPage])
+
   const page = pages[currentPage]
 
   // 헤더 타이틀: 그룹화된 이름 표시
   const storyPageTypes = new Set(['intro', 'greeting', 'chapter', 'quote'])
-  const infoPageTypes = new Set(['info-intro', 'wedding-date', 'wedding-venue', 'guidance', 'contacts', 'bank', 'thankyou', 'guestbook', 'rsvp'])
+  const infoPageTypes = new Set(['info-intro', 'date-essay', 'wedding-date', 'venue-essay', 'wedding-venue', 'guidance', 'contacts', 'bank', 'thankyou', 'guestbook', 'rsvp'])
   const bonusPageTypes = new Set(['bonus-intro', 'bonus-interview', 'bonus-end'])
   const isInfoPage = infoPageTypes.has(page?.type || '')
+  const isInfoIntroPage = page?.type === 'info-intro'
+  const isWarmEssayPage = page?.type === 'date-essay' || page?.type === 'venue-essay'
+  const isIntroPage = page?.type === 'intro'
   const isQuoteDark = isEditorial && page?.type === 'quote'
+  const isEndPage = page?.type === 'end'
   const quoteDarkByTheme: Record<string, Partial<BookColorConfig>> = {
     'essay-ivory':  { bg: '#2C2820', pageBg: '#2C2820', muted: '#A09882', divider: '#5C5444', toolbarText: '#A09882', progressBg: '#5C5444', progressFill: '#A09882' },
     'essay-blush':  { bg: '#3A2028', pageBg: '#3A2028', muted: '#B08890', divider: '#6C3848', toolbarText: '#B08890', progressBg: '#6C3848', progressFill: '#B08890' },
@@ -2247,11 +2656,38 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
     'essay-sky':    { bg: '#1C2830', pageBg: '#1C2830', muted: '#7A9AB0', divider: '#3A5468', toolbarText: '#7A9AB0', progressBg: '#3A5468', progressFill: '#7A9AB0' },
     'essay-coral':  { bg: '#2E1E18', pageBg: '#2E1E18', muted: '#B08878', divider: '#6A3E30', toolbarText: '#B08878', progressBg: '#6A3E30', progressFill: '#B08878' },
   }
+  const customQuoteDark = data.colorTheme === 'essay-custom' && data.customThemeColors
+    ? generateQuoteDarkColors(data.customThemeColors.pageBg || data.customThemeColors.bg, data.customThemeColors.accent, data.customThemeColors.text)
+    : null
   const bookQuoteDarkColors = {
     ...bookColors,
-    ...(quoteDarkByTheme[data.colorTheme || 'essay-ivory'] || quoteDarkByTheme['essay-ivory']),
+    ...(customQuoteDark || quoteDarkByTheme[data.colorTheme || 'essay-ivory'] || quoteDarkByTheme['essay-ivory']),
   }
-  const activeColors = isQuoteDark ? bookQuoteDarkColors : isInfoPage ? bookInfoColors : bookColors
+  const introAccent = data.intro?.backgroundColor || bookColors.accent
+  const introText = data.colorTheme === 'essay-custom' && data.customThemeColors?.accentText
+    ? data.customThemeColors.accentText
+    : (data.intro?.textColor || '#FFFFFF')
+  const bookIntroColors = {
+    ...bookColors,
+    bg: introAccent, pageBg: introAccent,
+    muted: `${introText}80`, text: `${introText}E6`,
+  }
+  const endDarkForToolbar = (() => {
+    const endDark: Record<string, Partial<BookColorConfig>> = {
+      'essay-ivory':  { bg: '#2C2820', pageBg: '#2C2820', toolbar: '#2C2820', muted: '#9B9088', toolbarText: '#9B9088', progressBg: '#5C5444', progressFill: '#9B9088' },
+      'essay-blush':  { bg: '#3A2028', pageBg: '#3A2028', toolbar: '#3A2028', muted: '#B08890', toolbarText: '#B08890', progressBg: '#6C3848', progressFill: '#B08890' },
+      'essay-sage':   { bg: '#1E2A1C', pageBg: '#1E2A1C', toolbar: '#1E2A1C', muted: '#82A078', toolbarText: '#82A078', progressBg: '#3E5C34', progressFill: '#82A078' },
+      'essay-mono':   { bg: '#1A1A1A', pageBg: '#1A1A1A', toolbar: '#1A1A1A', muted: '#888888', toolbarText: '#888888', progressBg: '#444444', progressFill: '#888888' },
+      'essay-sky':    { bg: '#1C2830', pageBg: '#1C2830', toolbar: '#1C2830', muted: '#7A9AB0', toolbarText: '#7A9AB0', progressBg: '#3A5468', progressFill: '#7A9AB0' },
+      'essay-coral':  { bg: '#2E1E18', pageBg: '#2E1E18', toolbar: '#2E1E18', muted: '#B08878', toolbarText: '#B08878', progressBg: '#6A3E30', progressFill: '#B08878' },
+    }
+    if (data.colorTheme === 'essay-custom' && data.customThemeColors) {
+      const d = generateDarkColors(data.customThemeColors.pageBg || data.customThemeColors.bg, data.customThemeColors.accent, data.customThemeColors.text)
+      return { ...bookColors, bg: d.bg, pageBg: d.bg, toolbar: d.bg, muted: d.muted, toolbarText: d.muted, progressBg: darkenColor(d.bg, 0.1), progressFill: d.muted }
+    }
+    return { ...bookColors, ...(endDark[data.colorTheme || 'essay-ivory'] || endDark['essay-ivory']) }
+  })()
+  const activeColors = isEndPage ? endDarkForToolbar : isIntroPage ? bookIntroColors : isQuoteDark ? bookQuoteDarkColors : isInfoPage ? bookInfoColors : bookColors
 
   // 페이지 콘텐츠 렌더 헬퍼 (현재+인접 페이지에서 재사용)
   const renderPageContent = useCallback((p: BookPage | undefined) => {
@@ -2259,15 +2695,18 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
     switch (p.type) {
       case 'cover': return <BookCover data={data} onNext={nextPage} />
       case 'intro': return <BookIntro data={data} onOpenModal={setOpenModalType} />
-      case 'toc': return <BookToc pages={pages} currentPage={currentPage} onGoTo={(i) => { setShowToc(false); goToPage(i) }} colorTheme={data.colorTheme} />
+      case 'toc': return <BookToc pages={pages} currentPage={currentPage} onGoTo={(i) => { setShowToc(false); goToPage(i) }} colorTheme={data.colorTheme} customThemeColors={data.customThemeColors} />
       case 'greeting': return <BookGreeting data={data} />
       case 'chapter':
-        if (p.data?.chapter) return <BookChapter chapter={p.data.chapter} index={p.data.index} ed={isEditorial} colorTheme={data.colorTheme} />
-        if (p.data?.interview) return <BookInterview qa={p.data.interview} index={p.data.index} ed={isEditorial} colorTheme={data.colorTheme} />
+        if (p.data?.chapter) return <BookChapter chapter={p.data.chapter} index={p.data.index} ed={isEditorial} colorTheme={data.colorTheme} customThemeColors={data.customThemeColors} />
+        if (p.data?.interview) return <BookInterview qa={p.data.interview} index={p.data.index} ed={isEditorial} colorTheme={data.colorTheme} customThemeColors={data.customThemeColors} />
         return null
       case 'quote': return <BookQuote data={data} ed={isEditorial} />
+      case 'gallery': return <BookGallery data={data} />
       case 'info-intro': return <BookInfoIntro data={data} />
+      case 'date-essay': return <BookDateEssay data={data} />
       case 'wedding-date': return <BookWeddingDate data={data} />
+      case 'venue-essay': return <BookVenueEssay data={data} />
       case 'wedding-venue': return <BookWeddingVenue data={data} />
       case 'guidance': return <BookGuidance data={data} />
       case 'contacts': return <BookContacts data={data} />
@@ -2277,7 +2716,7 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
       case 'rsvp': return <BookRsvp data={data} invitationId={invitationId} />
       case 'end': return <BookEnd data={data} onRestart={() => goToPage(0)} showBonus={showBonus} onShowBonus={hasBonusContent ? () => { setShowBonus(true); setPendingBonusNav(true) } : undefined} />
       case 'bonus-intro': return <BookBonusIntro data={data} />
-      case 'bonus-interview': return p.data?.bonusInterview ? <BookBonusInterview interview={p.data.bonusInterview} index={p.data.index} total={p.data.total} colorTheme={data.colorTheme} /> : null
+      case 'bonus-interview': return p.data?.bonusInterview ? <BookBonusInterview interview={p.data.bonusInterview} index={p.data.index} total={p.data.total} colorTheme={data.colorTheme} customThemeColors={data.customThemeColors} /> : null
       case 'bonus-end': return <BookBonusEnd data={data} onRestart={() => goToPage(0)} />
       default: return null
     }
@@ -2287,44 +2726,36 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
     <div
       ref={containerRef}
       className="fixed inset-0 select-none"
-      style={{ background: activeColors.bg, fontFamily: "'Pretendard', sans-serif", transition: 'background 0.4s ease', touchAction: 'none' }}
+      style={{ background: bookColors.bg, fontFamily: "'Pretendard', sans-serif", touchAction: 'none' }}
     >
       {/* 애니메이션 키프레임 */}
       <style dangerouslySetInnerHTML={{ __html: bookAnimCSS }} />
 
 
 
-      {/* 상단 툴바 */}
+      {/* 상단 툴바 (메뉴 + 페이지 번호 + 프로그레스 바) */}
       {currentPage > 0 && (
-        <div className="fixed top-0 left-0 z-40 flex items-center px-4" style={{ height: '44px', background: 'transparent', transition: 'background 0.4s ease' }}>
-          <button onClick={(e) => { e.stopPropagation(); setShowToc(true) }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px' }}>
-            <svg width="18" height="14" viewBox="0 0 18 14" fill="none" stroke={activeColors.muted} strokeWidth="1.2">
-              <line x1="0" y1="1" x2="18" y2="1" /><line x1="0" y1="7" x2="14" y2="7" /><line x1="0" y1="13" x2="10" y2="13" />
-            </svg>
-          </button>
+        <div className="fixed top-0 left-0 right-0 z-40 flex items-center gap-2.5 pointer-events-none" style={{ height: '52px', padding: '20px 20px 8px 20px', background: 'transparent', ...(isInfoPage ? { top: '10px', left: '10px', right: '10px', borderRadius: '14px 14px 0 0' } : {}) }}>
+          <button
+            onClick={(e) => { e.stopPropagation(); setShowToc(true) }}
+            className="pointer-events-auto"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', fontSize: '18px', color: activeColors.muted, opacity: 0.55, letterSpacing: '1px', lineHeight: 1, flexShrink: 0 }}
+          >&#8801;</button>
+          <span style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '9px', fontWeight: 400, letterSpacing: '1.5px', color: activeColors.muted, opacity: 0.6, whiteSpace: 'nowrap', flexShrink: 0 }}>
+            {String(currentPage + 1).padStart(2, '0')} / {String(totalPages).padStart(2, '0')}
+          </span>
+          <div className="flex-1 relative bk-progress-bar" style={{ height: '1.5px', background: `${activeColors.muted}1F`, marginRight: '40px' }}>
+            <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${progress}%`, background: activeColors.muted, opacity: 0.35, transition: 'width 0.9s cubic-bezier(.16,1,.3,1)' }} />
+          </div>
         </div>
       )}
 
-      {/* 좌우 탭 영역 (투명 오버레이) - 폼 페이지가 아닐 때만 */}
-      {currentPage > 0 && !isFormPage() && (
-        <>
-          <div
-            className="fixed left-0 z-30"
-            style={{ top: '44px', bottom: '36px', width: '44px' }}
-            onClick={(e) => { e.stopPropagation(); prevPage() }}
-          />
-          <div
-            className="fixed right-0 z-30"
-            style={{ top: '44px', bottom: '36px', width: '44px' }}
-            onClick={(e) => { e.stopPropagation(); nextPage() }}
-          />
-        </>
-      )}
+      {/* 좌우 탭 네비게이션은 onTouchEnd / onMouseUp 핸들러에서 처리 */}
 
       {/* 메인 콘텐츠 영역 - 슬라이드 방식 */}
       <div className="fixed inset-0 overflow-hidden" style={{
-        paddingTop: currentPage > 0 ? '44px' : '0',
-        paddingBottom: currentPage > 0 ? '36px' : '0',
+        paddingTop: 0,
+        paddingBottom: 0,
         touchAction: 'none',
       }}>
         <div style={{ position: 'relative', width: '100%', height: '100%' }}>
@@ -2332,6 +2763,7 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
           {isDragging && currentPage > 0 && (
             <div style={{
               position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', overflowY: 'auto', touchAction: 'none',
+              background: infoPageTypes.has(pages[currentPage - 1]?.type || '') ? bookInfoColors.frameBg : undefined,
               transform: `translateX(${-((containerWidthRef.current || window.innerWidth)) + dragOffset}px)`,
               transition: isSnapping ? 'transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)' : 'none',
               willChange: 'transform',
@@ -2342,25 +2774,78 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
             </div>
           )}
 
+          {/* 퇴장 페이지 (exit animation) */}
+          {leavingPage !== null && (() => {
+            const isLeavingInfo = infoPageTypes.has(pages[leavingPage]?.type || '')
+            return isLeavingInfo ? (
+              /* info 페이지: frameBg 고정, 카드만 애니메이션 */
+              <div style={{
+                position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+                zIndex: 1, pointerEvents: 'none',
+                background: bookInfoColors.frameBg,
+              }}>
+                <div style={{
+                  animation: leavingDir === 'next'
+                    ? 'bkPageOutL 1.1s cubic-bezier(.33,1,.68,1) forwards'
+                    : 'bkPageOutR 1.1s cubic-bezier(.33,1,.68,1) forwards',
+                  minHeight: '100%',
+                }}>
+                  <div className="book-page-content" style={{ minHeight: '100%' }}>
+                    {renderPageContent(pages[leavingPage])}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* 비-info 페이지: 전체 전환 */
+              <div style={{
+                position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+                zIndex: 1, pointerEvents: 'none',
+                animation: leavingDir === 'next'
+                  ? 'bkPageOutL 1.1s cubic-bezier(.33,1,.68,1) forwards'
+                  : 'bkPageOutR 1.1s cubic-bezier(.33,1,.68,1) forwards',
+              }}>
+                <div className="book-page-content" style={{ minHeight: '100%' }}>
+                  {renderPageContent(pages[leavingPage])}
+                </div>
+              </div>
+            )
+          })()}
+
           {/* 현재 페이지 */}
-          <div ref={scrollableRef} style={{
+          <div ref={scrollableRef} className="bk-scroll-area" style={{
             position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+            zIndex: 2,
+            background: isInfoPage ? bookInfoColors.frameBg : undefined,
             overflowY: (isDragging || isSnapping) ? 'hidden' : 'auto',
             touchAction: isFormPage() ? 'auto' : 'none',
-            transform: (isDragging || isSnapping) ? `translateX(${dragOffset}px)` : (pageTransition !== 'none' ? (pageTransition === 'next' ? 'translateX(-16px) scale(0.98)' : 'translateX(16px) scale(0.98)') : 'none'),
-            opacity: pageTransition !== 'none' ? 0 : 1,
-            transition: isSnapping ? 'transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)' : (pageTransition !== 'none' ? 'opacity 0.25s ease, transform 0.25s ease' : 'none'),
+            transform: (isDragging || isSnapping) ? `translateX(${dragOffset}px)` : 'none',
+            opacity: 1,
+            transition: isSnapping ? 'transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)' : 'none',
             willChange: (isDragging || isSnapping) ? 'transform' : 'auto',
+            animation: (isInfoPage && pageTransition !== 'none') ? 'none' : (pageTransition === 'next' ? 'bkPageInR 1.1s cubic-bezier(.33,1,.68,1) forwards' : pageTransition === 'prev' ? 'bkPageInL 1.1s cubic-bezier(.33,1,.68,1) forwards' : 'none'),
           }}>
-            <div key={currentPage} className="book-page-content" style={{ minHeight: '100%' }}>
+            <div key={currentPage} className="book-page-content" style={{
+              minHeight: '100%',
+              animation: (isInfoPage && pageTransition !== 'none')
+                ? (pageTransition === 'next' ? 'bkPageInR 1.1s cubic-bezier(.33,1,.68,1) forwards' : 'bkPageInL 1.1s cubic-bezier(.33,1,.68,1) forwards')
+                : 'none',
+            }}>
               {renderPageContent(page)}
             </div>
+          </div>
+
+          {/* 스크롤 힌트 (콘텐츠 오버플로 시 하단 화살표) — info 페이지는 자체 스크롤 영역 사용 */}
+          <div className={`bk-scroll-hint ${showScrollHint && !isInfoPage && !isIntroPage ? 'show' : ''}`} style={{
+            background: `linear-gradient(transparent 0%, ${activeColors.pageBg || activeColors.bg} 50%)`,
+          }}>
+            <span style={{ color: activeColors.muted }}>↓</span>
           </div>
 
           {/* 다음 페이지 (드래그 중에만 렌더) */}
           {isDragging && currentPage < totalPages - 1 && (
             <div style={{
               position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', overflowY: 'auto', touchAction: 'none',
+              background: infoPageTypes.has(pages[currentPage + 1]?.type || '') ? bookInfoColors.frameBg : undefined,
               transform: `translateX(${(containerWidthRef.current || window.innerWidth) + dragOffset}px)`,
               transition: isSnapping ? 'transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)' : 'none',
               willChange: 'transform',
@@ -2373,54 +2858,14 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
         </div>
       </div>
 
-      {/* 좌우 네비게이션 버튼 (전자책 스타일 - 화면 중앙 양옆) */}
-      {currentPage > 0 && !isDragging && (
-        <>
-          {currentPage > 0 && (
-            <button
-              className="fixed z-40 bk-arrow-left"
-              onClick={(e) => { e.stopPropagation(); prevPage() }}
-              style={{ left: '4px', top: '50%', transform: 'translateY(-50%)', background: `${activeColors.pageBg}99`, backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', border: 'none', borderRadius: '8px', cursor: 'pointer', padding: '20px 10px', opacity: 0.5, transition: 'opacity 0.2s' }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.8' }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.5' }}
-            >
-              <svg width="14" height="24" viewBox="0 0 14 24" fill="none" stroke={activeColors.toolbarText} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="11,2 3,12 11,22" />
-              </svg>
-            </button>
-          )}
-          {currentPage < totalPages - 1 && (
-            <button
-              className="fixed z-40 bk-arrow-right"
-              onClick={(e) => { e.stopPropagation(); nextPage() }}
-              style={{ right: '4px', top: '50%', transform: 'translateY(-50%)', background: `${activeColors.pageBg}99`, backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', border: 'none', borderRadius: '8px', cursor: 'pointer', padding: '20px 10px', opacity: 0.5, transition: 'opacity 0.2s' }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.8' }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.5' }}
-            >
-              <svg width="14" height="24" viewBox="0 0 14 24" fill="none" stroke={activeColors.toolbarText} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="3,2 11,12 3,22" />
-              </svg>
-            </button>
-          )}
-        </>
-      )}
+      {/* 좌우 화살표 버튼 제거됨 — 탭/스와이프로 네비게이션 */}
 
-      {/* 하단 진행률 바 */}
-      {currentPage > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 z-40" style={{ height: '36px', background: 'transparent', transition: 'background 0.4s ease' }}>
-          <div className="flex items-center h-full px-5 gap-3">
-            <span style={{ fontSize: '9px', fontFamily: "'BonmyeongjoSourceHanSerif', serif", color: activeColors.muted, flexShrink: 0, opacity: 0.6 }}>{Math.round(progress)}%</span>
-            <div className="flex-1 relative" style={{ height: '2px', background: activeColors.progressBg, borderRadius: '1px', opacity: 0.5 }}>
-              <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${progress}%`, background: activeColors.progressFill, borderRadius: '1px', transition: 'width 0.3s ease' }} />
-            </div>
-          </div>
-        </div>
-      )}
+      {/* 하단 진행률 바 제거됨 — 상단 툴바로 통합 */}
 
       {/* 목차 오버레이 */}
       {showToc && (() => {
         // 그룹화된 목차 생성
-        const storyTypes = new Set(['intro', 'greeting', 'chapter', 'quote'])
+        const storyTypes = new Set(['intro', 'greeting', 'chapter', 'quote', 'gallery'])
         const weddingDateType = 'wedding-date'
         const weddingVenueType = 'wedding-venue'
         const bonusTypes = new Set(['bonus-intro', 'bonus-interview'])
@@ -2442,7 +2887,10 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
         const tocItems: TocItem[] = []
 
         // — STORY 섹션 —
-        if (storyStart >= 0) tocItems.push({ label: '우리의 이야기', pageIndex: storyStart, active: isInStory, section: 'STORY' })
+        if (storyStart >= 0) tocItems.push({ label: '우리의 이야기', pageIndex: storyStart, active: isInStory && pages[currentPage]?.type !== 'gallery', section: 'STORY' })
+        // 갤러리 (STORY 그룹 내 별도 항목)
+        const galleryIndex = pages.findIndex(p => p.type === 'gallery')
+        if (galleryIndex >= 0) tocItems.push({ label: '갤러리', pageIndex: galleryIndex, active: pages[currentPage]?.type === 'gallery' })
 
         // — INFO 섹션 —
         if (weddingDateStart >= 0) tocItems.push({ label: '예식 일시', pageIndex: weddingDateStart, active: isOnWeddingDate, section: 'INFO' })
@@ -2478,6 +2926,15 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
           </div>
         )
       })()}
+
+      {/* 플로팅 + 버튼 (축의금/연락처 빠른 접근) */}
+      {currentPage > 0 && page?.type !== 'intro' && page?.type !== 'end' && openModalType === 'none' && (
+        <BookFloatingActions
+          onOpenModal={setOpenModalType}
+          bookColors={bookColors}
+          sectionVisibility={data?.sectionVisibility}
+        />
+      )}
 
       {/* 풀스크린 모달 */}
       {openModalType !== 'none' && (
@@ -2811,7 +3268,7 @@ function BookFullscreenModal({ type, onChangeType, onClose, data, invitationId, 
 
 // -- Book: Cover --
 function BookCover({ data, onNext }: { data: any; onNext: () => void }) {
-  const bookColors = getBookColors(data.colorTheme)
+  const bookColors = getBookColors(data.colorTheme, data.customThemeColors)
   const [loaded, setLoaded] = useState(false)
   const groomName = data.groom?.name || '신랑'
   const brideName = data.bride?.name || '신부'
@@ -3042,8 +3499,8 @@ function BookCover({ data, onNext }: { data: any; onNext: () => void }) {
 }
 
 // -- Book: TOC --
-function BookToc({ pages, currentPage, onGoTo, colorTheme }: { pages: BookPage[]; currentPage: number; onGoTo: (i: number) => void; colorTheme?: string }) {
-  const bookColors = getBookColors(colorTheme)
+function BookToc({ pages, currentPage, onGoTo, colorTheme, customThemeColors }: { pages: BookPage[]; currentPage: number; onGoTo: (i: number) => void; colorTheme?: string; customThemeColors?: { bg: string; pageBg: string; accent: string; text: string } }) {
+  const bookColors = getBookColors(colorTheme, customThemeColors)
   const contentPages = pages.filter(p => !['cover', 'toc', 'end'].includes(p.type))
   return (
     <div className="bk-page flex items-center" style={{ background: bookColors.pageBg }}>
@@ -3073,12 +3530,27 @@ function BookToc({ pages, currentPage, onGoTo, colorTheme }: { pages: BookPage[]
 
 // -- Book: Intro (사진 없는 이유) --
 function BookIntro({ data, onOpenModal }: { data: any; onOpenModal?: (modal: 'contact' | 'rsvp' | 'location' | 'account') => void }) {
-  const bookColors = getBookColors(data?.colorTheme)
+  const bookColors = getBookColors(data?.colorTheme, data?.customThemeColors)
   const intro = data?.intro
   const title = intro?.title || '우리만의 에세이'
   const subtitle = intro?.subtitle || '— 사진 없는 청첩장 —'
   const bodyText = intro?.body || '사진이 없는 이유는 단순합니다.\n우리의 이야기가 더 잘 보이길 바라서입니다.\n\n수많은 이미지 속에서\n스쳐 지나가는 대신,\n한 문장이라도 천천히 읽히고 싶었습니다.\n\n이곳은 우리의 기록이고,\n작은 에세이입니다.'
   const lines = bodyText.split('\n')
+
+  // 텍스트 컬러 (커스텀 테마 accentText > intro textColor > 기본 흰색)
+  const tc = (data?.colorTheme === 'essay-custom' && data?.customThemeColors?.accentText) || intro?.textColor || '#FFFFFF'
+  const hexToRgba = (hex: string, a: number) => {
+    const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16)
+    return `rgba(${r},${g},${b},${a})`
+  }
+  const tcFull = tc
+  const tcSub = hexToRgba(tc, 0.6)
+  const tcBody = hexToRgba(tc, 0.9)
+  const tcNav = hexToRgba(tc, 0.7)
+  const tcNavLabel = hexToRgba(tc, 0.5)
+  const tcNavBg = hexToRgba(tc, 0.12)
+  const tcHint = hexToRgba(tc, 0.4)
+  const tcHintArrow = hexToRgba(tc, 0.6)
 
   // 하단 네비게이션 아이템 (팝업 모달로 연결, sectionVisibility 반영)
   const sv = data?.sectionVisibility
@@ -3090,20 +3562,16 @@ function BookIntro({ data, onOpenModal }: { data: any; onOpenModal?: (modal: 'co
   ].filter(Boolean) as { modal: 'contact' | 'rsvp' | 'location' | 'account'; label: string; icon: React.ReactNode }[]
 
   return (
-    <div className="bk-page flex flex-col items-center justify-center" style={{ background: bookColors.accent }}>
+    <div className="bk-page flex flex-col items-center justify-center" style={{ background: intro?.backgroundColor || bookColors.accent, position: 'relative' }}>
       <div className="w-full px-12 py-16 max-w-md mx-auto text-center flex-1 flex flex-col justify-center">
-        <BA d={0} type="fade" className="mb-8">
-          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '4px', color: 'rgba(255,255,255,0.6)' }}>BEFORE WE BEGIN</div>
-          <div className="mt-3"><BLine width="20px" color="rgba(255,255,255,0.4)" d={300} center /></div>
-        </BA>
         <BA d={200} className="mb-10">
-          <p className="es-f18" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '18px', fontWeight: 600, lineHeight: 1.6, color: '#fff' }}>{title}</p>
-          <p className="es-f12" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '12px', letterSpacing: '2px', color: 'rgba(255,255,255,0.6)', marginTop: '6px' }}>{subtitle}</p>
+          <p className="es-f18" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '18px', fontWeight: 600, lineHeight: 1.6, color: tcFull }}>{title}</p>
+          <p className="es-f12" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '12px', letterSpacing: '2px', color: tcSub, marginTop: '6px' }}>{subtitle}</p>
         </BA>
         <div>
           {lines.map((line: string, i: number) => (
             <BA key={i} d={400 + i * 80}>
-              <p className="es-f14" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '14px', lineHeight: 2.4, color: 'rgba(255,255,255,0.9)' }}>{line || '\u00A0'}</p>
+              <p className="es-f14" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '14px', lineHeight: 2.4, color: tcBody }}>{line || '\u00A0'}</p>
             </BA>
           ))}
         </div>
@@ -3119,145 +3587,154 @@ function BookIntro({ data, onOpenModal }: { data: any; onOpenModal?: (modal: 'co
                   key={item.modal}
                   onClick={(e) => { e.stopPropagation(); onOpenModal(item.modal) }}
                   className="flex flex-col items-center gap-1.5 transition-opacity active:opacity-60"
-                  style={{ color: 'rgba(255,255,255,0.7)' }}
+                  style={{ color: tcNav }}
                 >
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(4px)' }}>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: tcNavBg, backdropFilter: 'blur(4px)' }}>
                     {item.icon}
                   </div>
-                  <span style={{ fontSize: '9px', letterSpacing: '0.5px', color: 'rgba(255,255,255,0.5)' }}>{item.label}</span>
+                  <span style={{ fontSize: '9px', letterSpacing: '0.5px', color: tcNavLabel }}>{item.label}</span>
                 </button>
               ))}
             </div>
           </div>
         </BA>
       )}
+
+      {/* 우측 탭 유도 힌트 - 원형 */}
+      <div style={{
+        position: 'absolute', top: '50%', right: '28px', transform: 'translateY(-50%)',
+        width: '44px', height: '44px', borderRadius: '50%',
+        border: `1px solid ${tcHint}`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        opacity: 0, animation: 'bkFadeIn 1.2s ease-out 2000ms forwards, bkSwipePulse 3s ease-in-out 3200ms infinite',
+      }}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ animation: 'bkSwipeX 1.8s ease-in-out 2800ms infinite' }}>
+          <path d="M9 6l6 6-6 6" stroke={tcHintArrow} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </div>
     </div>
   )
 }
 
 // -- Book: Greeting --
 function BookGreeting({ data }: { data: any }) {
-  const bookColors = getBookColors(data.colorTheme)
+  const bookColors = getBookColors(data.colorTheme, data.customThemeColors)
   const text = data.greeting || ''
   const lines = text.split('\n')
   return (
-    <div className="bk-page flex items-center" style={{ background: bookColors.pageBg }}>
-      <div className="w-full px-10 py-16 max-w-md mx-auto">
-        <BA d={0} type="fade" className="mb-10">
-          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '4px', color: bookColors.muted }}>PROLOGUE</div>
-          <div className="mt-3"><BLine width="20px" color={bookColors.accent} d={300} /></div>
-        </BA>
-        <div>
-          {lines.map((line: string, i: number) => (
-            <BA key={i} d={300 + i * 100}>
-              <p className="es-f15" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '15px', lineHeight: 2.2, color: bookColors.text }}>{line || '\u00A0'}</p>
-            </BA>
-          ))}
-        </div>
+    <div className="bk-page" style={{ background: bookColors.pageBg, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+      {/* 인사말 본문: 우하단 정렬 */}
+      <div style={{ marginTop: 'auto', marginBottom: '80px', marginLeft: 'auto', textAlign: 'right' as const, maxWidth: '240px', paddingRight: '48px' }}>
+        {lines.map((line: string, i: number) => (
+          <span key={i} className="es-f15" style={{
+            display: 'block',
+            fontFamily: "'Pretendard', sans-serif", fontSize: '15px', fontWeight: 200,
+            lineHeight: 2.5, letterSpacing: '0.2px', color: bookColors.text,
+            opacity: 0, animation: `bkFadeIn 1.4s ease-out ${400 + i * 300}ms forwards`,
+          }}>{line || '\u00A0'}</span>
+        ))}
       </div>
     </div>
   )
 }
 
 // -- Book: Chapter --
-function BookChapter({ chapter, index, ed = false, colorTheme }: { chapter: any; index: number; ed?: boolean; colorTheme?: string }) {
-  const bookColors = getBookColors(colorTheme)
+function BookChapter({ chapter, index, ed = false, colorTheme, customThemeColors }: { chapter: any; index: number; ed?: boolean; colorTheme?: string; customThemeColors?: { bg: string; pageBg: string; accent: string; text: string } }) {
+  const bookColors = getBookColors(colorTheme, customThemeColors)
   const lines = (chapter.body || '').split('\n')
-  const firstTextIdx = lines.findIndex((l: string) => l.trim().length > 0)
-  const chapterNum = String(index + 1).padStart(2, '0')
-
-  // 에디토리얼: 텍스트 정렬 변주 (0: left, 1: right, 2: center)
-  const alignments: ('left' | 'right' | 'center')[] = ['left', 'right', 'left']
-  const textAlign = ed ? alignments[index % 3] : 'left' as 'left' | 'right' | 'center'
-
-  // 본문에서 >>텍스트<< 강조 문구 감지 (여러 줄 지원)
-  const heroStartIdx = lines.findIndex((l: string) => /^>>/.test(l.trim()))
-  const heroEndIdx = lines.findIndex((l: string) => /<<$/.test(l.trim()))
-  const heroLineIdx = (heroStartIdx >= 0 && heroEndIdx >= heroStartIdx) ? heroStartIdx : -1
-  const heroEndLine = (heroStartIdx >= 0 && heroEndIdx >= heroStartIdx) ? heroEndIdx : -1
 
   return (
-    <div className="bk-page flex items-center" style={{ background: bookColors.pageBg, position: 'relative', overflow: 'hidden' }}>
-      {/* 에디토리얼: 배경 챕터 넘버 */}
-      {ed && (
-        <div style={{
-          position: 'absolute',
-          top: textAlign === 'right' ? '60px' : '80px',
-          [textAlign === 'right' ? 'left' : 'right']: '-10px',
-          fontFamily: "'BonmyeongjoSourceHanSerif', serif",
-          fontSize: '180px', fontWeight: 300, lineHeight: 1,
-          color: bookColors.accent, opacity: 0.06,
-          pointerEvents: 'none', userSelect: 'none',
-        }}>
-          {chapterNum}
-        </div>
-      )}
-
-      <div className="w-full px-10 py-16 max-w-md mx-auto" style={{ textAlign: ed ? textAlign : 'left' }}>
-        {/* 챕터 번호 */}
-        <BA d={0} type="fade" className="mb-2">
-          <span style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: ed ? '11px' : '10px', letterSpacing: '4px', color: bookColors.muted }}>
-            {ed ? chapterNum : `CHAPTER ${chapterNum}`}
-          </span>
-        </BA>
-
-        {/* 챕터 제목 */}
-        <BA d={150}>
-          <h2 style={{ fontFamily: "'Pretendard', sans-serif", fontSize: ed ? '22px' : '20px', fontWeight: 600, color: bookColors.heading, lineHeight: 1.5, marginBottom: '6px' }}>
-            {chapter.title}
-          </h2>
-        </BA>
-
-        {/* 영문 부제 */}
-        {chapter.subtitle && (
-          <BA d={250} type="fade">
-            <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '11px', fontStyle: 'italic', color: bookColors.muted, letterSpacing: '2px', marginBottom: '20px' }}>
-              {chapter.subtitle}
+    <div className="bk-page" style={{ background: bookColors.pageBg, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      {/* 스크롤 영역 */}
+      <div style={{ flex: 1, position: 'relative', zIndex: 1 }}>
+        {/* 챕터 헤더 */}
+        <div style={{ padding: '100px 44px 0' }}>
+          <div style={{ opacity: 0, animation: 'bkFadeIn 1.4s ease-out 300ms forwards' }}>
+            <h2 style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '26px', fontWeight: 300, color: bookColors.heading, lineHeight: 1.6, letterSpacing: '0.5px', marginTop: 0 }}>
+              {chapter.title}
+            </h2>
+          </div>
+          {chapter.subtitle && (
+            <div style={{ opacity: 0, animation: 'bkFadeIn 1s ease-out 600ms forwards' }}>
+              <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '8.5px', fontWeight: 400, letterSpacing: '3px', color: bookColors.muted, textTransform: 'uppercase' as const, marginTop: '10px' }}>
+                {chapter.subtitle}
+              </div>
             </div>
-          </BA>
+          )}
+        </div>
+
+        {/* 사진 */}
+        {chapter.photo && (
+          <div style={{ opacity: 0, animation: 'bkFadeIn 1.8s ease-out 500ms forwards', position: 'relative', zIndex: 1, width: chapter.photoStyle === 'square' ? '160px' : '100%', margin: '28px 0 0', padding: 0, marginLeft: chapter.photoStyle === 'square' ? '44px' : undefined, overflow: 'hidden', aspectRatio: chapter.photoStyle === 'square' ? '1/1' : '16/9' }}>
+            {chapter.photoCrop ? (
+              <img
+                src={chapter.photo}
+                alt={chapter.title}
+                style={{
+                  position: 'absolute',
+                  width: `${10000 / chapter.photoCrop.width}%`,
+                  height: `${10000 / chapter.photoCrop.height}%`,
+                  left: `${-chapter.photoCrop.x * 100 / chapter.photoCrop.width}%`,
+                  top: `${-chapter.photoCrop.y * 100 / chapter.photoCrop.height}%`,
+                  maxWidth: 'none',
+                  display: 'block',
+                  filter: 'saturate(0.85)',
+                }}
+              />
+            ) : (
+              <img
+                src={chapter.photo}
+                alt={chapter.title}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', filter: 'saturate(0.85)' }}
+              />
+            )}
+            {(chapter.location || chapter.date) && (
+              <div style={{ position: 'absolute', bottom: '14px', left: '16px', zIndex: 2 }}>
+                {chapter.location && (
+                  <span style={{ display: 'block', fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '7.5px', letterSpacing: '3px', color: `rgba(244,241,235,0.5)`, textTransform: 'uppercase' as const }}>
+                    {chapter.location}
+                  </span>
+                )}
+                {chapter.date && (
+                  <span style={{ display: 'block', fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '7.5px', letterSpacing: '3px', color: `rgba(244,241,235,0.5)`, textTransform: 'uppercase' as const }}>
+                    {chapter.date}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
         )}
 
-        <BA d={350}><BLine width={ed ? '32px' : '24px'} color={bookColors.accent} d={0} center={ed && textAlign === 'center'} /></BA>
-        <div style={{ marginBottom: '24px' }} />
+        {/* 메타 정보 (위치/날짜) - 사진 아래 */}
+        {(chapter.location || chapter.date) && (
+          <div style={{ opacity: 0, animation: 'bkFadeIn 1.2s ease-out 900ms forwards', padding: '24px 44px 0' }}>
+            {chapter.location && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '1px', color: bookColors.muted }}>
+                <span style={{ fontSize: '9px', opacity: 0.5, width: '14px', textAlign: 'center' as const }}>◎</span>
+                {chapter.location}
+              </div>
+            )}
+            {chapter.date && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0', fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '1px', color: bookColors.muted }}>
+                <span style={{ fontSize: '9px', opacity: 0.5, width: '14px', textAlign: 'center' as const }}>▪</span>
+                {chapter.date}
+              </div>
+            )}
+            <div style={{ width: '100%', height: '1px', background: `${bookColors.muted}18`, marginTop: '16px' }} />
+          </div>
+        )}
 
         {/* 본문 */}
-        <div className={`theme-${colorTheme || 'essay-ivory'}`} style={{ textAlign: 'left' }}>
-          {lines.map((line: string, j: number) => {
-            // >>텍스트<< 강조 문구 (리디바탕체, 여러 줄 지원)
-            if (j >= heroLineIdx && j <= heroEndLine && heroLineIdx >= 0) {
-              if (j > heroLineIdx) return null // 첫 줄에서 모두 렌더링
-              const heroLines = lines.slice(heroStartIdx, heroEndLine + 1)
-              const heroText = heroLines.map((l: string) => l.trim().replace(/^>>/, '').replace(/<<$/, '')).join('\n')
-              return (
-                <BA key={j} d={450 + j * 60}>
-                  <p style={{
-                    fontFamily: "'Ridibatang', serif",
-                    fontSize: '20px', fontWeight: 400, fontStyle: 'normal',
-                    lineHeight: 2, color: bookColors.heading,
-                    margin: '24px 0', textAlign: 'center',
-                    padding: '0 4px', letterSpacing: '-0.3px',
-                    whiteSpace: 'pre-line',
-                  }}>{heroText}</p>
-                </BA>
-              )
-            }
-
-            const hasMarkup = /==|~~|\*\*/.test(line)
-            return (
-              <BA key={j} d={450 + j * 60}>
-                {hasMarkup ? (
-                  <p className="es-f15" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '15px', lineHeight: 2.2, color: bookColors.text }} dangerouslySetInnerHTML={{ __html: parseHighlight(line) }} />
-                ) : (
-                  <p className="es-f15" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '15px', lineHeight: 2.2, color: bookColors.text }}>{line || '\u00A0'}</p>
-                )}
-              </BA>
-            )
-          })}
-        </div>
-
-        {/* 하단 장식 */}
-        <div className="mt-12" style={{ textAlign: ed ? textAlign : 'center' }}>
-          <BLine width="16px" color={bookColors.divider} d={800} center={!ed || textAlign === 'center'} />
+        <div style={{ padding: '0 44px 40px' }} className={`theme-${colorTheme || 'essay-ivory'}`}>
+          <div style={{ paddingTop: (chapter.location || chapter.date) ? '0' : '28px', opacity: 0, animation: 'bkFadeIn 2s ease-out 1300ms forwards' }}>
+            {lines.map((line: string, j: number) => (
+              <p key={j} className="es-f13" style={{
+                fontFamily: "'Pretendard', sans-serif", fontSize: '12.5px', lineHeight: 2.4,
+                fontWeight: 300, color: `${bookColors.heading}BF`, letterSpacing: '0.2px',
+                maxWidth: '210px',
+              }}>{line || '\u00A0'}</p>
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -3265,8 +3742,8 @@ function BookChapter({ chapter, index, ed = false, colorTheme }: { chapter: any;
 }
 
 // -- Book: Interview (Q&A) --
-function BookInterview({ qa, index, ed = false, colorTheme }: { qa: any; index: number; ed?: boolean; colorTheme?: string }) {
-  const bookColors = getBookColors(colorTheme)
+function BookInterview({ qa, index, ed = false, colorTheme, customThemeColors }: { qa: any; index: number; ed?: boolean; colorTheme?: string; customThemeColors?: { bg: string; pageBg: string; accent: string; text: string } }) {
+  const bookColors = getBookColors(colorTheme, customThemeColors)
   const answerLines = (qa.answer || '').split('\n')
   const qNum = String(index + 1).padStart(2, '0')
 
@@ -3304,18 +3781,11 @@ function BookInterview({ qa, index, ed = false, colorTheme }: { qa: any; index: 
 
         {/* 답변 */}
         <div className={`theme-${colorTheme || 'essay-ivory'}`}>
-          {answerLines.map((line: string, j: number) => {
-            const hasMarkup = /==|~~|\*\*/.test(line)
-            return (
+          {answerLines.map((line: string, j: number) => (
               <BA key={j} d={500 + j * 70}>
-                {hasMarkup ? (
-                  <p className="es-f15" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '15px', lineHeight: 2.2, color: bookColors.text }} dangerouslySetInnerHTML={{ __html: parseHighlight(line) }} />
-                ) : (
-                  <p className="es-f15" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '15px', lineHeight: 2.2, color: bookColors.text }}>{line || '\u00A0'}</p>
-                )}
+                <p className="es-f15" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '15px', lineHeight: 2.2, color: bookColors.text }}>{line || '\u00A0'}</p>
               </BA>
-            )
-          })}
+          ))}
         </div>
 
         {qa.answerer && qa.answerer !== 'both' && (
@@ -3334,217 +3804,565 @@ function BookInterview({ qa, index, ed = false, colorTheme }: { qa: any; index: 
 
 // -- Book: Quote --
 function BookQuote({ data, ed = false }: { data: any; ed?: boolean }) {
-  const bookColors = getBookColors(data.colorTheme)
+  const bookColors = getBookColors(data.colorTheme, data.customThemeColors)
   const quote = data.quote
   if (!quote?.text) return null
   const quoteLines = quote.text.split('\n')
 
-  // 에디토리얼: 테마별 다크 반전 배경
-  const darkColorsByTheme: Record<string, { bg: string; text: string; muted: string; divider: string }> = {
-    'essay-ivory':  { bg: '#2C2820', text: '#F5F0E8', muted: '#A09882', divider: '#5C5444' },
-    'essay-blush':  { bg: '#3A2028', text: '#FBE8ED', muted: '#B08890', divider: '#6C3848' },
-    'essay-sage':   { bg: '#1E2A1C', text: '#E8F2E0', muted: '#82A078', divider: '#3E5C34' },
-    'essay-mono':   { bg: '#1A1A1A', text: '#F0F0F0', muted: '#888888', divider: '#444444' },
-    'essay-sky':    { bg: '#1C2830', text: '#E0ECF8', muted: '#7A9AB0', divider: '#3A5468' },
-    'essay-coral':  { bg: '#2E1E18', text: '#FCE8DE', muted: '#B08878', divider: '#6A3E30' },
+  // 테마별 다크 반전 배경
+  const darkColorsByTheme: Record<string, { bg: string; text: string; muted: string }> = {
+    'essay-ivory':  { bg: '#2C2820', text: '#F5F0E8', muted: '#A09882' },
+    'essay-blush':  { bg: '#3A2028', text: '#FBE8ED', muted: '#B08890' },
+    'essay-sage':   { bg: '#1E2A1C', text: '#E8F2E0', muted: '#82A078' },
+    'essay-mono':   { bg: '#1A1A1A', text: '#F0F0F0', muted: '#888888' },
+    'essay-sky':    { bg: '#1C2830', text: '#E0ECF8', muted: '#7A9AB0' },
+    'essay-coral':  { bg: '#2E1E18', text: '#FCE8DE', muted: '#B08878' },
   }
-  const darkColors = darkColorsByTheme[data.colorTheme || 'essay-ivory'] || darkColorsByTheme['essay-ivory']
-
-  const bg = ed ? darkColors.bg : bookColors.bg
-  const textColor = ed ? darkColors.text : bookColors.heading
-  const mutedColor = ed ? darkColors.muted : bookColors.muted
-  const quoteMarkColor = ed ? darkColors.divider : bookColors.divider
+  const darkColors = data.colorTheme === 'essay-custom' && data.customThemeColors
+    ? generateDarkColors(data.customThemeColors.pageBg || data.customThemeColors.bg, data.customThemeColors.accent, data.customThemeColors.text)
+    : (darkColorsByTheme[data.colorTheme || 'essay-ivory'] || darkColorsByTheme['essay-ivory'])
 
   return (
-    <div className="bk-page flex items-center" style={{ background: bg, transition: 'background 0.4s ease' }}>
-      <div className="w-full px-10 py-16 max-w-md mx-auto text-center">
-        <BA d={0} type="scale">
-          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: ed ? '96px' : '72px', color: quoteMarkColor, lineHeight: 0.5, marginBottom: ed ? '36px' : '28px' }}>&ldquo;</div>
-        </BA>
-        {quoteLines.map((line: string, i: number) => (
-          <BA key={i} d={300 + i * 120}>
-            <p className={ed ? 'es-f20' : 'es-f18'} style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: ed ? '20px' : '18px', fontWeight: ed ? 300 : 400, fontStyle: 'italic', lineHeight: 2.4, color: textColor, letterSpacing: ed ? '0.5px' : '0' }}>{line || '\u00A0'}</p>
-          </BA>
-        ))}
+    <div className="bk-page" style={{
+      background: darkColors.bg, display: 'flex', justifyContent: 'center',
+      alignItems: 'center', padding: '0 40px', textAlign: 'center' as const,
+    }}>
+      <div>
+        <div style={{ marginBottom: '40px' }}>
+          {quoteLines.map((line: string, i: number) => (
+            <span key={i} className="es-f18" style={{
+              display: 'block',
+              fontFamily: "'Pretendard', sans-serif", fontSize: '18px', fontWeight: 200,
+              fontStyle: 'italic', lineHeight: 2.6, letterSpacing: '0.3px',
+              color: darkColors.text,
+              opacity: 0, animation: `bkFadeIn 1.6s ease-out ${500 + i * 800}ms forwards`,
+            }}>{line || '\u00A0'}</span>
+          ))}
+        </div>
         {quote.author && (
-          <BA d={500 + quoteLines.length * 120} type="fade">
-            <div className="mt-10" style={{ fontSize: '11px', color: mutedColor, letterSpacing: '3px' }}>— {quote.author}</div>
-          </BA>
+          <div style={{
+            fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '7.5px', fontWeight: 400,
+            letterSpacing: '4px', color: darkColors.text, textTransform: 'uppercase' as const,
+            opacity: 0, animation: `bkFadeIn 1.2s ease-out ${500 + quoteLines.length * 800 + 300}ms forwards`,
+          }}>{quote.author}</div>
         )}
       </div>
+    </div>
+  )
+}
+
+// -- Book: Gallery --
+function BookGallery({ data }: { data: any }) {
+  const bookColors = getBookColors(data.colorTheme, data.customThemeColors)
+  const images: string[] = data.gallery?.images || []
+  const [viewerOpen, setViewerOpen] = useState(false)
+  const [viewerIndex, setViewerIndex] = useState(0)
+
+  if (images.length === 0) return null
+
+  return (
+    <div className="bk-page" style={{ background: bookColors.bg, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '72px 14px 40px', WebkitOverflowScrolling: 'touch' }}>
+        <BA d={200} type="fade">
+          <div style={{
+            fontFamily: "'Cormorant Garamond', serif", fontSize: '8px', fontWeight: 400,
+            letterSpacing: '4px', color: bookColors.muted, textTransform: 'uppercase' as const,
+            textAlign: 'center', marginBottom: '18px',
+          }}>Gallery</div>
+        </BA>
+        <BA d={400} type="fade">
+          <EssayGalleryGrid
+            images={images}
+            onImageClick={(i) => { setViewerIndex(i); setViewerOpen(true) }}
+            colors={{ bg: bookColors.bg, muted: bookColors.muted, accent: bookColors.accent }}
+          />
+        </BA>
+      </div>
+      {viewerOpen && (
+        <EssayGalleryViewer images={images} startIndex={viewerIndex} onClose={() => setViewerOpen(false)} />
+      )}
     </div>
   )
 }
 
 // -- Book: Wedding Date (그 날) --
+// -- Book: Date Essay (날짜 에세이 - warm transition page) --
+function BookDateEssay({ data }: { data: any }) {
+  const bookColors = getBookColors(data.colorTheme, data.customThemeColors)
+  const bookInfoColors = getBookInfoColors(data.colorTheme, data.customThemeColors)
+  const weddingDate = data.wedding?.date ? new Date(data.wedding.date) : new Date()
+  const dateEssay = data.wedding?.dateEssay || `${weddingDate.getFullYear()}년 ${weddingDate.getMonth()+1}월,\n우리가 처음 만났던 계절이\n다시 돌아오는 날.\n\n가장 따뜻한 햇살 아래에서\n시작되는 이야기를\n함께해 주세요.`
+  const lines = dateEssay.split('\n')
+
+  return (
+    <div
+      className="bk-page bk-card"
+      style={{
+        background: bookInfoColors.bg,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        textAlign: 'center',
+        padding: '0 48px'
+      }}
+    >
+      <div style={{ opacity: 0, animation: 'bkFadeIn 1s ease-out 300ms forwards' }}>
+        <div style={{
+          fontFamily: "'BonmyeongjoSourceHanSerif', serif",
+          fontSize: '8px',
+          fontWeight: 400,
+          letterSpacing: '4px',
+          color: bookInfoColors.muted,
+          textTransform: 'uppercase',
+          marginBottom: '20px'
+        }}>Date</div>
+      </div>
+      <div style={{
+        width: '20px',
+        height: '1px',
+        background: `${bookInfoColors.muted}40`,
+        margin: '0 auto 28px',
+        opacity: 0,
+        animation: 'bkFadeIn 0.8s ease-out 600ms forwards'
+      }} />
+      <div style={{ opacity: 0, animation: 'bkFadeIn 1.8s ease-out 800ms forwards' }}>
+        {lines.map((line: string, i: number) => (
+          <p key={i} style={{
+            fontFamily: "'Pretendard', sans-serif",
+            fontSize: '13.5px',
+            fontWeight: 200,
+            lineHeight: 2.4,
+            letterSpacing: '0.2px',
+            color: bookInfoColors.text,
+            margin: 0
+          }}>{line || '\u00A0'}</p>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// -- Book: Venue Essay (장소 에세이 - warm transition page) --
+function BookVenueEssay({ data }: { data: any }) {
+  const bookColors = getBookColors(data.colorTheme, data.customThemeColors)
+  const bookInfoColors = getBookInfoColors(data.colorTheme, data.customThemeColors)
+  const venueEssay = data.wedding?.venueEssay || `높은 천장 아래로\n따뜻한 빛이 쏟아지던 곳.\n\n처음 이곳에 왔을 때,\n\"여기서 우리 결혼식을 하자\"\n동시에 같은 말을 했습니다.\n\n그 마음 그대로,\n이곳에서 여러분을 기다리겠습니다.`
+  const lines = venueEssay.split('\n')
+
+  return (
+    <div
+      className="bk-page bk-card"
+      style={{
+        background: bookInfoColors.bg,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        textAlign: 'center',
+        padding: '0 48px'
+      }}
+    >
+      <div style={{ opacity: 0, animation: 'bkFadeIn 1s ease-out 300ms forwards' }}>
+        <div style={{
+          fontFamily: "'BonmyeongjoSourceHanSerif', serif",
+          fontSize: '8px',
+          fontWeight: 400,
+          letterSpacing: '4px',
+          color: bookInfoColors.muted,
+          textTransform: 'uppercase',
+          marginBottom: '20px'
+        }}>Venue</div>
+      </div>
+      <div style={{
+        width: '20px',
+        height: '1px',
+        background: `${bookInfoColors.muted}40`,
+        margin: '0 auto 28px',
+        opacity: 0,
+        animation: 'bkFadeIn 0.8s ease-out 600ms forwards'
+      }} />
+      <div style={{ opacity: 0, animation: 'bkFadeIn 1.8s ease-out 800ms forwards' }}>
+        {lines.map((line: string, i: number) => (
+          <p key={i} style={{
+            fontFamily: "'Pretendard', sans-serif",
+            fontSize: '13.5px',
+            fontWeight: 200,
+            lineHeight: 2.4,
+            letterSpacing: '0.2px',
+            color: bookInfoColors.text,
+            margin: 0
+          }}>{line || '\u00A0'}</p>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // -- Book: Info Intro (STORY→INFO 전환 페이지) --
 function BookInfoIntro({ data }: { data: any }) {
-  const bookInfoColors = getBookInfoColors(data.colorTheme)
+  const bookInfoColors = getBookInfoColors(data.colorTheme, data.customThemeColors)
   const groomName = data.groom?.name || '신랑'
   const brideName = data.bride?.name || '신부'
   const weddingDate = data.wedding?.date ? new Date(data.wedding.date) : new Date()
   const dateStr = `${weddingDate.getFullYear()}. ${String(weddingDate.getMonth() + 1).padStart(2, '0')}. ${String(weddingDate.getDate()).padStart(2, '0')}`
   const venueName = data.wedding?.venue?.name || ''
+  const coverImage = data.media?.coverImage
+
   return (
-    <div className="bk-page flex items-center justify-center" style={{ background: bookInfoColors.accent }}>
-      <div className="w-full px-12 py-16 max-w-md mx-auto text-center">
-        <BA d={0}><BLine width="40px" color="rgba(255,255,255,0.3)" d={0} center /></BA>
-        <BA d={200} type="fade"><p style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '11px', letterSpacing: '4px', color: 'rgba(255,255,255,0.6)', marginBottom: '24px', marginTop: '32px' }}>INFORMATION</p></BA>
-        <BA d={400}><p style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '22px', fontWeight: 300, color: '#fff', lineHeight: 1.8 }}>예식 안내</p></BA>
-        <BA d={600} type="scale"><div style={{ width: '1px', height: '40px', background: 'rgba(255,255,255,0.3)', margin: '24px auto' }} /></BA>
-        <BA d={800} type="fade"><p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.9)', letterSpacing: '1px', lineHeight: 2 }}>{dateStr}</p></BA>
-        {venueName && <BA d={900} type="fade"><p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', marginTop: '4px' }}>{venueName}</p></BA>}
-        <BA d={1000}><BLine width="40px" color="rgba(255,255,255,0.3)" d={0} center /></BA>
+    <div className="bk-page bk-card" style={{ padding: 0, position: 'relative', overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'center', textAlign: 'center', background: bookInfoColors.accent }}>
+      {/* Background image (if exists) */}
+      {coverImage && (
+        <>
+          <img
+            src={coverImage}
+            alt=""
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              filter: 'saturate(0.4) contrast(1.1)',
+              opacity: 0,
+              animation: 'bkFadeIn 1.8s ease-out forwards'
+            }}
+          />
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'rgba(44,40,32,0.55)',
+            zIndex: 1
+          }} />
+        </>
+      )}
+
+      {/* Content */}
+      <div className="w-full px-12 py-16 max-w-md mx-auto text-center" style={{ position: 'relative', zIndex: 2 }}>
+        <div style={{ opacity: 0, animation: 'bkFadeIn 1s ease-out 400ms forwards' }}>
+          <p style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '11px', letterSpacing: '4px', color: 'rgba(255,255,255,0.6)', marginBottom: '24px' }}>Information</p>
+        </div>
+        <div style={{ opacity: 0, animation: 'bkFadeIn 1.2s ease-out 600ms forwards' }}>
+          <p style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '22px', fontWeight: 300, color: '#fff', lineHeight: 1.8, marginBottom: '16px' }}>예식 안내</p>
+        </div>
+        <div style={{ opacity: 0, animation: 'bkFadeIn 1.4s ease-out 800ms forwards' }}>
+          <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.9)', letterSpacing: '1px', lineHeight: 2 }}>{dateStr}</p>
+          {venueName && <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', marginTop: '4px' }}>{venueName}</p>}
+        </div>
       </div>
     </div>
   )
 }
 
+// -- Book: Wedding Date (날짜 - magazine big number style) --
 function BookWeddingDate({ data }: { data: any }) {
-  const bookInfoColors = getBookInfoColors(data.colorTheme)
-  const w = data.wedding || {}; const groom = data.groom || {}; const bride = data.bride || {}
+  const bookInfoColors = getBookInfoColors(data.colorTheme, data.customThemeColors)
+  const w = data.wedding || {}
   const weddingDate = w.date ? new Date(w.date) : new Date()
   const dayNames = ['일', '월', '화', '수', '목', '금', '토']
+  const dayOfWeek = weddingDate.getDay()
+  const dateDay = weddingDate.getDate()
+  const year = weddingDate.getFullYear()
+  const month = weddingDate.getMonth()
 
-  // 에세이: 이 날을 고른 이유
-  const dateEssay = data.wedding?.dateEssay || `${weddingDate.getFullYear()}년 ${weddingDate.getMonth() + 1}월,\n우리가 처음 만났던 계절이\n다시 돌아오는 날.\n\n그때의 설렘을 다시 한번,\n이번에는 영원히 간직하고 싶어\n이 날을 골랐습니다.`
+  // 시간 표시
+  const timeStr = w.timeDisplay || '오후 2시'
+  const korDay = `${dayNames[dayOfWeek]}요일`
 
-  const essayLines = dateEssay.split('\n')
+  // D-day 계산
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const target = new Date(weddingDate)
+  target.setHours(0, 0, 0, 0)
+  const diff = Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+  let ddayStr = ''
+  if (diff > 0) ddayStr = `D-${diff}`
+  else if (diff === 0) ddayStr = 'D-DAY'
+
+  // 달력 데이터 생성
+  const firstDay = new Date(year, month, 1).getDay() // 0=일 ~ 6=토
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
+  const calWeeks: (number | null)[][] = []
+  let week: (number | null)[] = Array(firstDay).fill(null)
+  for (let d = 1; d <= daysInMonth; d++) {
+    week.push(d)
+    if (week.length === 7) { calWeeks.push(week); week = [] }
+  }
+  if (week.length > 0) {
+    while (week.length < 7) week.push(null)
+    calWeeks.push(week)
+  }
+
+  const calHeaders = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+
   return (
-    <div className="bk-page flex items-center" style={{ background: bookInfoColors.pageBg }}>
-      <div className="w-full px-8 py-16 max-w-md mx-auto">
-        <BA d={0} type="fade" className="mb-2">
-          <span style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '10px', letterSpacing: '4px', color: bookInfoColors.muted }}>예식 일시</span>
-        </BA>
-        <BA d={150}>
-          <h2 style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '20px', fontWeight: 600, color: bookInfoColors.heading, marginBottom: '6px' }}>
-            {data.wedding?.dateEssayTitle || '저희 결혼합니다.'}
-          </h2>
-        </BA>
-        <BA d={350}><BLine width="24px" color={bookInfoColors.accent} d={0} /></BA>
-        <div style={{ marginBottom: '24px' }} />
+    <div className="bk-page bk-card" style={{
+      background: bookInfoColors.pageBg,
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      padding: '52px 32px 36px',
+    }}>
+      {/* WEDDING DATE 라벨 */}
+      <div style={{ opacity: 0, animation: 'bkFadeIn 0.8s ease-out 200ms forwards' }}>
+        <div style={{
+          fontFamily: "'Cormorant Garamond', serif",
+          fontSize: '10px', fontWeight: 400, letterSpacing: '6px',
+          color: bookInfoColors.muted, textTransform: 'uppercase',
+          textAlign: 'center', marginBottom: '24px',
+        }}>Wedding Date</div>
+      </div>
 
-        {/* 날짜 카드 */}
-        <BA d={500} type="scale">
-          <div className="my-8 py-6 px-6" style={{ background: bookInfoColors.cardBg, border: `0.5px solid ${bookInfoColors.divider}` }}>
-            <div className="text-center">
-              <div className="es-f16" style={{ fontSize: '16px', fontWeight: 400, color: bookInfoColors.heading, lineHeight: 1 }}>{weddingDate.getFullYear()}년 {weddingDate.getMonth() + 1}월 {weddingDate.getDate()}일</div>
-              <div className="es-f13 mt-3" style={{ fontSize: '13px', color: bookInfoColors.muted }}>
-                {dayNames[weddingDate.getDay()]}요일 {w.timeDisplay || ''}
-              </div>
-              {(() => {
-                const today = new Date()
-                today.setHours(0, 0, 0, 0)
-                const target = new Date(weddingDate)
-                target.setHours(0, 0, 0, 0)
-                const diff = Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-                if (diff > 0) return <div className="mt-4 pt-3" style={{ borderTop: `0.5px solid ${bookInfoColors.divider}`, fontSize: '12px', color: bookInfoColors.accent }}>D-{diff}</div>
-                if (diff === 0) return <div className="mt-4 pt-3" style={{ borderTop: `0.5px solid ${bookInfoColors.divider}`, fontSize: '12px', color: bookInfoColors.accent }}>D-DAY</div>
-                return null
-              })()}
-            </div>
-          </div>
-        </BA>
+      {/* 날짜 숫자 */}
+      <div style={{ opacity: 0, animation: 'bkFadeIn 0.8s ease-out 400ms forwards' }}>
+        <div style={{
+          fontFamily: "'Pretendard', sans-serif",
+          fontSize: '26px', fontWeight: 300, letterSpacing: '2px',
+          color: bookInfoColors.heading, textAlign: 'center',
+          marginBottom: '12px',
+        }}>
+          {year}.{String(month + 1).padStart(2, '0')}.{String(dateDay).padStart(2, '0')}
+        </div>
+      </div>
 
-        {/* 에세이 */}
-        <div className="mt-6">
-          {essayLines.map((line: string, i: number) => (
-            <BA key={i} d={700 + i * 60}>
-              <p className="es-f15" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '15px', lineHeight: 2.2, color: bookInfoColors.text }}>{line || '\u00A0'}</p>
-            </BA>
+      {/* 요일 · 시간 */}
+      <div style={{ opacity: 0, animation: 'bkFadeIn 0.8s ease-out 600ms forwards' }}>
+        <div style={{
+          fontFamily: "'Pretendard', sans-serif",
+          fontSize: '11.5px', fontWeight: 300, letterSpacing: '0.8px',
+          color: bookInfoColors.text, textAlign: 'center',
+          marginBottom: '32px',
+        }}>
+          {korDay} &middot; {timeStr}
+        </div>
+      </div>
+
+      {/* 달력 */}
+      <div style={{
+        width: '100%', maxWidth: '280px',
+        opacity: 0, animation: 'bkFadeIn 1s ease-out 700ms forwards',
+      }}>
+        {/* 요일 헤더 */}
+        <div style={{
+          display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', textAlign: 'center',
+          paddingBottom: '10px', marginBottom: '6px',
+          borderBottom: `1px solid ${bookInfoColors.divider}`,
+        }}>
+          {calHeaders.map((h, i) => (
+            <div key={i} style={{
+              fontFamily: "'Cormorant Garamond', serif",
+              fontSize: '11px', fontWeight: 400, letterSpacing: '1px',
+              color: i === 0 ? bookInfoColors.accent : i === 6 ? bookInfoColors.accent : bookInfoColors.muted,
+              opacity: (i === 0 || i === 6) ? 0.8 : 1,
+            }}>{h}</div>
           ))}
         </div>
 
-        {/* 양가 */}
+        {/* 날짜 그리드 */}
+        {calWeeks.map((wk, wi) => (
+          <div key={wi} style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', textAlign: 'center' }}>
+            {wk.map((d, di) => {
+              const isWeddingDay = d === dateDay
+              const isSunday = di === 0
+              const isSaturday = di === 6
+              return (
+                <div key={di} style={{
+                  padding: '8px 0',
+                  position: 'relative',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  {isWeddingDay && (
+                    <svg
+                      style={{ position: 'absolute' }}
+                      width="30" height="30" viewBox="0 0 24 24"
+                      fill={bookInfoColors.accent}
+                    >
+                      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                    </svg>
+                  )}
+                  {d && (
+                    <span style={{
+                      fontFamily: "'Pretendard', sans-serif",
+                      fontSize: '12px',
+                      fontWeight: isWeddingDay ? 500 : 300,
+                      color: isWeddingDay
+                        ? bookInfoColors.pageBg
+                        : isSunday ? bookInfoColors.accent
+                        : isSaturday ? bookInfoColors.accent
+                        : bookInfoColors.text,
+                      opacity: isWeddingDay ? 1 : (isSunday || isSaturday) ? 0.7 : 1,
+                      position: 'relative', zIndex: 1,
+                      lineHeight: 1,
+                    }}>
+                      {d}
+                    </span>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        ))}
       </div>
+
+      {/* D-day */}
+      {ddayStr && (
+        <div style={{
+          marginTop: '36px',
+          opacity: 0, animation: 'bkFadeIn 0.8s ease-out 1200ms forwards',
+          textAlign: 'center',
+        }}>
+          <div style={{
+            fontFamily: "'Cormorant Garamond', serif",
+            fontSize: '10px', fontWeight: 400, letterSpacing: '3px',
+            color: bookInfoColors.muted,
+          }}>{ddayStr}</div>
+        </div>
+      )}
     </div>
   )
 }
 
-// -- Book: Wedding Venue (예식 장소) --
+// -- Book: Wedding Venue (장소 - magazine scrollable style) --
 function BookWeddingVenue({ data }: { data: any }) {
-  const bookInfoColors = getBookInfoColors(data.colorTheme)
+  const bookInfoColors = getBookInfoColors(data.colorTheme, data.customThemeColors)
   const w = data.wedding || {}
 
-  // 에세이: 이 장소를 고른 이유
-  const venueEssay = data.wedding?.venueEssay || `높은 천장 아래로\n따뜻한 빛이 쏟아지던 곳.\n\n처음 이곳에 왔을 때,\n\"여기서 우리 결혼식을 하자\"\n동시에 같은 말을 했습니다.\n\n그 마음 그대로,\n이곳에서 여러분을 기다리겠습니다.`
-
-  const essayLines = venueEssay.split('\n')
   return (
-    <div className="bk-page flex items-center" style={{ background: bookInfoColors.pageBg }}>
-      <div className="w-full px-8 py-16 max-w-md mx-auto">
-        <BA d={0} type="fade" className="mb-2">
-          <span style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '4px', color: bookInfoColors.muted }}>THE PLACE</span>
-        </BA>
-        <BA d={150}>
-          <h2 style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '20px', fontWeight: 600, color: bookInfoColors.heading, marginBottom: '6px' }}>{data.wedding?.venueEssayTitle || '초대합니다'}</h2>
-        </BA>
-        <BA d={350}><BLine width="24px" color={bookInfoColors.accent} d={0} /></BA>
-        <div style={{ marginBottom: '24px' }} />
-
-        {/* 장소 정보 카드 */}
-        <BA d={500} type="scale">
-          <div className="my-8 py-6 px-6" style={{ background: bookInfoColors.cardBg, border: `0.5px solid ${bookInfoColors.divider}` }}>
-            <div className="text-center">
-              <div className="es-f17" style={{ fontSize: '17px', fontWeight: 600, color: bookInfoColors.heading }}>{w.venue?.name || ''}</div>
-              {w.venue?.hall && !w.venue?.hideHall && <div className="es-f13" style={{ fontSize: '13px', color: bookInfoColors.text, marginTop: '4px' }}>{w.venue.hall}</div>}
-              <div className="es-f12" style={{ fontSize: '12px', color: bookInfoColors.muted, marginTop: '6px' }}>{w.venue?.address || ''}</div>
-            </div>
-          </div>
-        </BA>
-
-        {/* 에세이 */}
-        <div className="mt-6">
-          {essayLines.map((line: string, i: number) => (
-            <BA key={i} d={700 + i * 60}>
-              <p className="es-f15" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '15px', lineHeight: 2.2, color: bookInfoColors.text }}>{line || '\u00A0'}</p>
-            </BA>
-          ))}
+    <div className="bk-page bk-card" style={{ background: bookInfoColors.pageBg, display: 'flex', flexDirection: 'column' }}>
+      {/* Scrollable content */}
+      <div className="bk-scroll-area" style={{ flex: 1, overflowY: 'auto', padding: '72px 48px 62px', WebkitOverflowScrolling: 'touch' }}>
+        {/* Venue name */}
+        <div style={{ opacity: 0, animation: 'bkFadeIn 0.9s ease-out 400ms forwards' }}>
+          <div style={{
+            fontFamily: "'Pretendard', sans-serif",
+            fontSize: '18px',
+            fontWeight: 600,
+            color: bookInfoColors.heading,
+            letterSpacing: '0.5px',
+            marginBottom: '8px'
+          }}>{w.venue?.name || ''}</div>
+          {w.venue?.hall && !w.venue?.hideHall && (
+            <div style={{
+              fontFamily: "'Pretendard', sans-serif",
+              fontSize: '13px',
+              fontWeight: 300,
+              color: bookInfoColors.text,
+              marginBottom: '12px'
+            }}>{w.venue.hall}</div>
+          )}
         </div>
 
-        {/* 지도 링크 */}
+        {/* Address */}
+        <div style={{ opacity: 0, animation: 'bkFadeIn 0.9s ease-out 600ms forwards' }}>
+          <div style={{
+            fontFamily: "'Pretendard', sans-serif",
+            fontSize: '12px',
+            fontWeight: 300,
+            color: bookInfoColors.muted,
+            lineHeight: 1.8,
+            marginBottom: '20px'
+          }}>{w.venue?.address || ''}</div>
+        </div>
+
+        {/* Map links */}
         {w.venue?.address && (
-          <BA d={1000} type="fade">
-            <div className="mt-10 grid grid-cols-3 gap-2">
+          <div style={{ opacity: 0, animation: 'bkFadeIn 0.9s ease-out 800ms forwards', marginBottom: '32px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
               {[
                 { href: `https://map.naver.com/v5/search/${encodeURIComponent(w.venue.address)}`, label: 'NAVER' },
                 { href: `https://map.kakao.com/link/search/${encodeURIComponent(w.venue.address)}`, label: 'KAKAO' },
                 { href: `tmap://search?name=${encodeURIComponent(w.venue.name || '')}`, label: 'TMAP' },
               ].map(m => (
-                <a key={m.label} href={m.href} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="flex items-center justify-center py-2" style={{ border: `0.5px solid ${bookInfoColors.divider}`, fontSize: '10px', letterSpacing: '1px', color: bookInfoColors.muted }}>
+                <a key={m.label} href={m.href} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '10px 0',
+                    border: `0.5px solid ${bookInfoColors.divider}`,
+                    fontFamily: "'Pretendard', sans-serif",
+                    fontSize: '10px',
+                    letterSpacing: '1.5px',
+                    color: bookInfoColors.muted,
+                    textDecoration: 'none'
+                  }}
+                >
                   {m.label}
                 </a>
               ))}
             </div>
-          </BA>
+          </div>
         )}
 
-        {/* 오시는 길 */}
+        {/* Directions */}
         {w.directions && (w.directions.car || w.directions.publicTransport || w.directions.train || w.directions.expressBus) && (
-          <BA d={1100} type="fade">
-            <div className="mt-6 space-y-3">
-              {[{ key: 'car', label: '자가용' }, { key: 'publicTransport', label: '대중교통' }, { key: 'train', label: '기차 (KTX/SRT)' }, { key: 'expressBus', label: '고속버스' }].map(d => w.directions[d.key] && (
-                <div key={d.key} style={{ padding: '10px 14px', borderLeft: `2px solid ${bookInfoColors.accent}`, background: bookInfoColors.bg }}>
-                  <div className="es-f11" style={{ fontSize: '11px', fontWeight: 600, color: bookInfoColors.accent, marginBottom: '4px' }}>{d.label}</div>
-                  {w.directions[d.key].split('\n').map((line: string, i: number) => <p key={i} className="es-f12" style={{ fontSize: '12px', lineHeight: 1.7, color: bookInfoColors.muted }}>{line}</p>)}
+          <div style={{ opacity: 0, animation: 'bkFadeIn 0.9s ease-out 1000ms forwards' }}>
+            <div style={{ marginBottom: '16px' }}>
+              {[
+                { key: 'car', label: '자가용' },
+                { key: 'publicTransport', label: '대중교통' },
+                { key: 'train', label: '기차 (KTX/SRT)' },
+                { key: 'expressBus', label: '고속버스' }
+              ].map((d, idx) => w.directions[d.key] && (
+                <div key={d.key} style={{
+                  marginBottom: idx < 3 ? '20px' : '0',
+                  paddingBottom: idx < 3 ? '20px' : '0',
+                  borderBottom: idx < 3 ? `1px solid ${bookInfoColors.divider}15` : 'none'
+                }}>
+                  <div style={{
+                    fontFamily: "'Pretendard', sans-serif",
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    color: bookInfoColors.accent,
+                    marginBottom: '8px',
+                    letterSpacing: '0.3px'
+                  }}>{d.label}</div>
+                  {w.directions[d.key].split('\n').map((line: string, i: number) => (
+                    <p key={i} style={{
+                      fontFamily: "'Pretendard', sans-serif",
+                      fontSize: '12px',
+                      fontWeight: 300,
+                      lineHeight: 1.8,
+                      color: bookInfoColors.text,
+                      margin: 0,
+                      opacity: 0.85
+                    }}>{line}</p>
+                  ))}
                 </div>
               ))}
             </div>
-          </BA>
+          </div>
         )}
 
-        {/* 추가 안내사항 */}
+        {/* Extra info */}
         {w.directions?.extraInfoEnabled && w.directions.extraInfoText && (
-          <BA d={1200} type="fade">
-            <div className="mt-5" style={{ padding: '12px 14px', background: bookInfoColors.bg, borderRadius: '4px' }}>
-              <div style={{ fontSize: '11px', fontWeight: 600, color: bookInfoColors.accent, marginBottom: '6px' }}>
+          <div style={{ opacity: 0, animation: 'bkFadeIn 0.9s ease-out 1200ms forwards', marginTop: '12px' }}>
+            <div style={{
+              padding: '16px 18px',
+              background: bookInfoColors.bg,
+              borderRadius: '4px'
+            }}>
+              <div style={{
+                fontFamily: "'Pretendard', sans-serif",
+                fontSize: '11px',
+                fontWeight: 600,
+                color: bookInfoColors.accent,
+                marginBottom: '8px',
+                letterSpacing: '0.3px'
+              }}>
                 {w.directions.extraInfoTitle || '추가 안내사항'}
               </div>
               {w.directions.extraInfoText.split('\n').map((line: string, i: number) => (
-                <p key={i} className="es-f12" style={{ fontSize: '12px', lineHeight: 1.7, color: bookInfoColors.muted }}>{line}</p>
+                <p key={i} style={{
+                  fontFamily: "'Pretendard', sans-serif",
+                  fontSize: '12px',
+                  fontWeight: 300,
+                  lineHeight: 1.8,
+                  color: bookInfoColors.text,
+                  margin: 0,
+                  opacity: 0.85
+                }}>{line}</p>
               ))}
             </div>
-          </BA>
+          </div>
         )}
       </div>
     </div>
@@ -3553,7 +4371,7 @@ function BookWeddingVenue({ data }: { data: any }) {
 
 // -- Book: Guidance (행복한 시간을 위한 안내) --
 function BookGuidance({ data }: { data: any }) {
-  const bookInfoColors = getBookInfoColors(data.colorTheme)
+  const bookInfoColors = getBookInfoColors(data.colorTheme, data.customThemeColors)
   const info = data.info || {}
   const defaultItemOrder = ['dressCode', 'photoBooth', 'photoShare', 'flowerGift', 'flowerChild', 'wreath', 'shuttle', 'reception']
   const itemOrder = info.itemOrder || defaultItemOrder
@@ -3564,48 +4382,24 @@ function BookGuidance({ data }: { data: any }) {
   if (enabledItems.length === 0) return null
 
   return (
-    <div className="bk-page flex items-center" style={{ background: bookInfoColors.pageBg }}>
-      <div className="w-full px-8 py-16 max-w-md mx-auto">
-        {/* 타이틀 - THE PLACE 구조와 동일 */}
-        <BA d={0} type="fade" className="mb-2">
-          <span style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '4px', color: bookInfoColors.muted }}>INFORMATION</span>
-        </BA>
-        <BA d={150}>
-          <h2 style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '20px', fontWeight: 600, color: bookInfoColors.heading, marginBottom: '6px' }}>행복한 시간을 위한 안내</h2>
-        </BA>
-        <BA d={350}><BLine width="24px" color={bookInfoColors.accent} d={0} /></BA>
-        <div style={{ marginBottom: '24px' }} />
-
-        {/* 안내 항목 리스트 */}
-        <div className="space-y-4">
+    <div className="bk-page bk-card" style={{ background: bookInfoColors.pageBg, display: 'flex', flexDirection: 'column' }}>
+      <div className="bk-scroll-area" style={{ flex: 1, overflowY: 'auto', padding: '72px 48px 62px', WebkitOverflowScrolling: 'touch' }}>
+        <div style={{ paddingTop: '12px' }}>
+          <div style={{ fontSize: '20px', fontWeight: 200, letterSpacing: '0.3px', color: bookInfoColors.heading, marginBottom: '8px', opacity: 0, animation: 'bkFadeIn 1.4s ease-out 200ms forwards' }}>안내</div>
+          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '8px', fontWeight: 400, letterSpacing: '3px', color: bookInfoColors.muted, textTransform: 'uppercase' as const, marginBottom: '24px', opacity: 0, animation: 'bkFadeIn 1s ease-out 500ms forwards' }}>Information</div>
           {enabledItems.map((key: string, i: number) => {
             const isCustom = key.startsWith('custom-')
             const item = isCustom ? info.customItems[parseInt(key.split('-')[1])] : info[key]
             if (!item?.enabled || !item?.content) return null
             return (
-              <BA key={i} d={450 + i * 120}>
-                <div style={{
-                  background: bookInfoColors.cardBg,
-                  border: `1px solid ${bookInfoColors.divider}`,
-                  padding: '16px 18px',
-                }}>
-                  {/* 항목 제목 */}
-                  <div className="flex items-center gap-2 mb-3">
-                    <div style={{ width: '3px', height: '14px', background: bookInfoColors.accent, opacity: 0.6 }} />
-                    <span className="es-f13" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '13px', fontWeight: 600, color: bookInfoColors.heading, letterSpacing: '0.3px' }}>
-                      {item.title}
-                    </span>
-                  </div>
-                  {/* 항목 내용 */}
-                  <div style={{ paddingLeft: '11px' }}>
-                    {item.content.split('\n').map((line: string, j: number) => (
-                      <p key={j} className="es-f13" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '12.5px', lineHeight: 1.9, color: bookInfoColors.text, opacity: 0.85 }}>
-                        {line || '\u00A0'}
-                      </p>
-                    ))}
-                  </div>
+              <div key={i} style={{ marginBottom: '28px', paddingBottom: '28px', borderBottom: `1px solid ${bookInfoColors.divider}40`, opacity: 0, animation: `bkFadeIn 1.2s ease-out ${600 + i * 300}ms forwards` }}>
+                <div style={{ fontSize: '13px', fontWeight: 400, color: bookInfoColors.heading, marginBottom: '8px' }}>{item.title}</div>
+                <div style={{ fontSize: '12px', fontWeight: 300, color: bookInfoColors.muted, lineHeight: 2 }}>
+                  {item.content.split('\n').map((line: string, j: number) => (
+                    <span key={j}>{line}{j < item.content.split('\n').length - 1 && <br />}</span>
+                  ))}
                 </div>
-              </BA>
+              </div>
             )
           })}
         </div>
@@ -3614,209 +4408,145 @@ function BookGuidance({ data }: { data: any }) {
   )
 }
 
-// -- Book: Contacts --
+// -- Book: Contacts (Magazine accordion style) --
 function BookContacts({ data }: { data: any }) {
-  const bookInfoColors = getBookInfoColors(data.colorTheme)
+  const bookInfoColors = getBookInfoColors(data.colorTheme, data.customThemeColors)
   const groom = data.groom || {}; const bride = data.bride || {}
   const contactsEssay = data.content?.contactsEssay || `축하의 마음을 전하고 싶으시다면,\n편하게 연락해 주세요.\n\n한 통의 전화, 짧은 문자 하나에도\n저희는 크게 웃을 수 있답니다.`
-  const [expandedSide, setExpandedSide] = useState<'groom' | 'bride' | null>(null)
+  const [openSide, setOpenSide] = useState<Record<string, boolean>>({})
 
   const groomContacts = [
-    groom.phoneEnabled !== false && groom.phone && { label: `신랑 ${groom.name || ''}`, phone: groom.phone },
-    groom.father?.phoneEnabled && groom.father?.phone && { label: `아버지 ${groom.father.name || ''}`, phone: groom.father.phone },
-    groom.mother?.phoneEnabled && groom.mother?.phone && { label: `어머니 ${groom.mother.name || ''}`, phone: groom.mother.phone },
-  ].filter(Boolean)
+    groom.phoneEnabled !== false && groom.phone && { name: groom.name || '신랑', role: '', phone: groom.phone },
+    groom.father?.phoneEnabled && groom.father?.phone && { name: groom.father.name || '', role: '아버지', phone: groom.father.phone },
+    groom.mother?.phoneEnabled && groom.mother?.phone && { name: groom.mother.name || '', role: '어머니', phone: groom.mother.phone },
+  ].filter(Boolean) as { name: string; role: string; phone: string }[]
 
   const brideContacts = [
-    bride.phoneEnabled !== false && bride.phone && { label: `신부 ${bride.name || ''}`, phone: bride.phone },
-    bride.father?.phoneEnabled && bride.father?.phone && { label: `아버지 ${bride.father.name || ''}`, phone: bride.father.phone },
-    bride.mother?.phoneEnabled && bride.mother?.phone && { label: `어머니 ${bride.mother.name || ''}`, phone: bride.mother.phone },
-  ].filter(Boolean)
+    bride.phoneEnabled !== false && bride.phone && { name: bride.name || '신부', role: '', phone: bride.phone },
+    bride.father?.phoneEnabled && bride.father?.phone && { name: bride.father.name || '', role: '아버지', phone: bride.father.phone },
+    bride.mother?.phoneEnabled && bride.mother?.phone && { name: bride.mother.name || '', role: '어머니', phone: bride.mother.phone },
+  ].filter(Boolean) as { name: string; role: string; phone: string }[]
 
-  const hasContacts = groomContacts.length > 0 || brideContacts.length > 0
+  const toggleSide = (key: string) => setOpenSide(prev => ({ ...prev, [key]: !prev[key] }))
 
-  const renderContactList = (contacts: any[]) => (
-    <div style={{ background: bookInfoColors.cardBg, border: `0.5px solid ${bookInfoColors.divider}`, padding: '4px 16px', marginTop: '12px' }}>
-      {contacts.map((c: any, i: number) => (
-        <div key={i} className="flex items-center justify-between py-3" style={{ borderBottom: i < contacts.length - 1 ? `0.5px solid ${bookInfoColors.divider}` : 'none' }}>
-          <span style={{ fontSize: '13px', color: bookInfoColors.text }}>{c.label}</span>
-          <div className="flex items-center gap-2">
-            <a href={`tel:${c.phone}`} onClick={e => e.stopPropagation()} className="flex items-center justify-center w-8 h-8 rounded-full" style={{ border: `0.5px solid ${bookInfoColors.accent}` }}>
-              <svg className="w-4 h-4" fill="none" stroke={bookInfoColors.accent} viewBox="0 0 24 24" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" /></svg>
-            </a>
-            <a href={`sms:${c.phone}`} onClick={e => e.stopPropagation()} className="flex items-center justify-center w-8 h-8 rounded-full" style={{ border: `0.5px solid ${bookInfoColors.accent}` }}>
-              <svg className="w-4 h-4" fill="none" stroke={bookInfoColors.accent} viewBox="0 0 24 24" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 011.037-.443 48.282 48.282 0 005.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg>
-            </a>
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-
-  return (
-    <div className="bk-page flex items-center" style={{ background: bookInfoColors.pageBg }}>
-      <div className="w-full px-8 py-16 max-w-md mx-auto">
-        {/* 타이틀 - THE PLACE 구조와 동일 */}
-        <BA d={0} type="fade" className="mb-2">
-          <span style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '4px', color: bookInfoColors.muted }}>CONTACT</span>
-        </BA>
-        <BA d={150}>
-          <h2 style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '20px', fontWeight: 600, color: bookInfoColors.heading, marginBottom: '6px' }}>연락처</h2>
-        </BA>
-        <BA d={350}><BLine width="24px" color={bookInfoColors.accent} d={0} /></BA>
-        <div style={{ marginBottom: '24px' }} />
-
-        {/* 에세이 */}
-        <BA d={500} className="mb-8">
-          {contactsEssay.split('\n').map((line: string, i: number) => (
-            <p key={i} className="es-f15" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '15px', lineHeight: 2.2, color: bookInfoColors.text }}>{line || '\u00A0'}</p>
-          ))}
-        </BA>
-
-        {hasContacts ? (
-          <BA d={700} type="fade">
-            {/* 신랑측 / 신부측 탭 */}
-            <div className="grid grid-cols-2 gap-3">
-              {groomContacts.length > 0 && (
-                <button
-                  onClick={(e) => { e.stopPropagation(); setExpandedSide(expandedSide === 'groom' ? null : 'groom') }}
-                  style={{
-                    fontFamily: "'Pretendard', sans-serif", fontSize: '13px', letterSpacing: '1px',
-                    padding: '12px', border: `0.5px solid ${expandedSide === 'groom' ? bookInfoColors.accent : bookInfoColors.divider}`,
-                    background: expandedSide === 'groom' ? bookInfoColors.accent : bookInfoColors.cardBg,
-                    color: expandedSide === 'groom' ? '#FFF' : bookInfoColors.text,
-                    cursor: 'pointer', transition: 'all 0.3s',
-                  }}
-                >
-                  신랑측
-                </button>
-              )}
-              {brideContacts.length > 0 && (
-                <button
-                  onClick={(e) => { e.stopPropagation(); setExpandedSide(expandedSide === 'bride' ? null : 'bride') }}
-                  style={{
-                    fontFamily: "'Pretendard', sans-serif", fontSize: '13px', letterSpacing: '1px',
-                    padding: '12px', border: `0.5px solid ${expandedSide === 'bride' ? bookInfoColors.accent : bookInfoColors.divider}`,
-                    background: expandedSide === 'bride' ? bookInfoColors.accent : bookInfoColors.cardBg,
-                    color: expandedSide === 'bride' ? '#FFF' : bookInfoColors.text,
-                    cursor: 'pointer', transition: 'all 0.3s',
-                  }}
-                >
-                  신부측
-                </button>
-              )}
-            </div>
-
-            {/* 펼쳐진 연락처 */}
-            {expandedSide === 'groom' && groomContacts.length > 0 && renderContactList(groomContacts)}
-            {expandedSide === 'bride' && brideContacts.length > 0 && renderContactList(brideContacts)}
-          </BA>
-        ) : (
-          <BA d={600} type="fade">
-            <p style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '13px', color: bookInfoColors.muted }}>연락처 정보가 등록되면 이곳에 표시됩니다.</p>
-          </BA>
-        )}
+  const renderAccordion = (label: string, contacts: { name: string; role: string; phone: string }[], key: string, delay: number) => (
+    <div style={{ marginBottom: '20px', opacity: 0, animation: `bkFadeIn 1.2s ease-out ${delay}ms forwards` }}>
+      <div role="button" onClick={(e) => { e.stopPropagation(); toggleSide(key) }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', padding: '12px 0', borderBottom: `1px solid ${bookInfoColors.divider}40` }}>
+        <span style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '9px', fontWeight: 400, letterSpacing: '3px', color: bookInfoColors.muted, textTransform: 'uppercase' as const }}>{label}</span>
+        <span style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '16px', fontWeight: 300, color: bookInfoColors.muted, lineHeight: 1, transition: 'transform 0.35s ease', transform: openSide[key] ? 'rotate(45deg)' : 'none' }}>+</span>
       </div>
-    </div>
-  )
-}
-
-// -- Book: Bank --
-function BookBank({ data }: { data: any }) {
-  const bookInfoColors = getBookInfoColors(data.colorTheme)
-  const groom = data.groom || {}; const bride = data.bride || {}
-  const groomName = groom.name || '신랑'; const brideName = bride.name || '신부'
-  const bankEssay = data.content?.bankEssay || `직접 오시지 못하더라도\n마음만으로 충분히 감사합니다.\n\n혹 축하의 마음을 전하고 싶으시다면,\n아래를 통해 보내주실 수 있습니다.`
-  const [expandedSide, setExpandedSide] = useState<'groom' | 'bride' | null>(null)
-  const hasAccounts = [groom.bank?.enabled, groom.father?.bank?.enabled, groom.mother?.bank?.enabled, bride.bank?.enabled, bride.father?.bank?.enabled, bride.mother?.bank?.enabled].some(Boolean)
-
-  const renderAccounts = (side: 'groom' | 'bride') => {
-    const person = side === 'groom' ? groom : bride
-    const accs = [person.bank?.enabled && { name: person.name, ...person.bank, role: side === 'groom' ? '신랑' : '신부' }, person.father?.bank?.enabled && { name: person.father.name, ...person.father.bank, role: '아버지' }, person.mother?.bank?.enabled && { name: person.mother.name, ...person.mother.bank, role: '어머니' }].filter(Boolean)
-    return (
-      <div style={{ background: bookInfoColors.cardBg, border: `0.5px solid ${bookInfoColors.divider}`, padding: '4px 16px' }}>
-        {accs.map((acc: any, i: number) => (
-          <div key={i} className="py-3" style={{ borderBottom: i < accs.length - 1 ? `0.5px solid ${bookInfoColors.divider}` : 'none' }}>
-            <div className="flex items-center justify-between">
-              <div>
-                <span style={{ fontSize: '11px', color: bookInfoColors.muted }}>{acc.role}</span>
-                <span style={{ fontSize: '13px', color: bookInfoColors.text, marginLeft: '8px', fontWeight: 500 }}>{acc.holder || acc.name}</span>
-              </div>
-              <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(acc.account); alert('복사되었습니다.') }} style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '10px', letterSpacing: '1px', color: bookInfoColors.accent, background: 'none', border: `0.5px solid ${bookInfoColors.accent}`, padding: '4px 10px', cursor: 'pointer' }}>COPY</button>
+      <div style={{ maxHeight: openSide[key] ? '300px' : '0', overflow: 'hidden', transition: 'max-height 0.45s cubic-bezier(.33,1,.68,1)' }}>
+        {contacts.map((c, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 0', borderBottom: i < contacts.length - 1 ? `1px solid ${bookInfoColors.divider}20` : 'none' }}>
+            <div><span style={{ fontSize: '13.5px', fontWeight: 300, color: bookInfoColors.text }}>{c.name}</span>{c.role && <span style={{ fontSize: '11px', color: bookInfoColors.muted, marginLeft: '5px', fontWeight: 300 }}>{c.role}</span>}</div>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <a href={`tel:${c.phone}`} onClick={e => e.stopPropagation()} style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '7.5px', letterSpacing: '1.5px', color: bookInfoColors.muted, textTransform: 'uppercase' as const, textDecoration: 'none', padding: '5px 11px', border: `1px solid ${bookInfoColors.divider}40` }}>Tel</a>
+              <a href={`sms:${c.phone}`} onClick={e => e.stopPropagation()} style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '7.5px', letterSpacing: '1.5px', color: bookInfoColors.muted, textTransform: 'uppercase' as const, textDecoration: 'none', padding: '5px 11px', border: `1px solid ${bookInfoColors.divider}40` }}>Sms</a>
             </div>
-            <div style={{ fontSize: '12px', color: bookInfoColors.muted, marginTop: '4px' }}>{acc.bank} {acc.account}</div>
           </div>
         ))}
       </div>
-    )
-  }
+    </div>
+  )
 
   return (
-    <div className="bk-page flex items-center" style={{ background: bookInfoColors.pageBg }}>
-      <div className="w-full px-8 py-16 max-w-md mx-auto">
-        {/* 타이틀 - THE PLACE 구조와 동일 */}
-        <BA d={0} type="fade" className="mb-2">
-          <span style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '4px', color: bookInfoColors.muted }}>ACCOUNT</span>
-        </BA>
-        <BA d={150}>
-          <h2 style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '20px', fontWeight: 600, color: bookInfoColors.heading, marginBottom: '6px' }}>마음 전하실 곳</h2>
-        </BA>
-        <BA d={350}><BLine width="24px" color={bookInfoColors.accent} d={0} /></BA>
-        <div style={{ marginBottom: '24px' }} />
-
-        {/* Essay */}
-        <BA d={500} className="mb-8">
-          {bankEssay.split('\n').map((line: string, i: number) => (
-            <p key={i} className="es-f15" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '15px', lineHeight: 2.2, color: bookInfoColors.text }}>{line || '\u00A0'}</p>
-          ))}
-        </BA>
-        {hasAccounts ? (
-          <BA d={700} type="fade">
-            <div className="grid grid-cols-2 gap-3">
-              {(['groom', 'bride'] as const).map(side => (
-                <button key={side} onClick={(e) => { e.stopPropagation(); setExpandedSide(expandedSide === side ? null : side) }} style={{
-                  fontFamily: "'Pretendard', sans-serif", fontSize: '13px', letterSpacing: '1px', padding: '12px',
-                  border: `0.5px solid ${expandedSide === side ? bookInfoColors.accent : bookInfoColors.divider}`,
-                  background: expandedSide === side ? bookInfoColors.accent : bookInfoColors.cardBg,
-                  color: expandedSide === side ? '#FFF' : bookInfoColors.text, cursor: 'pointer', transition: 'all 0.3s',
-                }}>{side === 'groom' ? '신랑측' : '신부측'}</button>
-              ))}
-            </div>
-            {expandedSide && <div style={{ marginTop: '12px' }}>{renderAccounts(expandedSide)}</div>}
-          </BA>
-        ) : (
-          <BA d={600} type="fade">
-            <p style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '13px', color: bookInfoColors.muted }}>계좌 정보가 등록되면 이곳에 표시됩니다.</p>
-          </BA>
-        )}
+    <div className="bk-page bk-card" style={{ background: bookInfoColors.pageBg, display: 'flex', flexDirection: 'column' }}>
+      <div className="bk-scroll-area" style={{ flex: 1, overflowY: 'auto', padding: '72px 48px 62px', WebkitOverflowScrolling: 'touch' }}>
+        <div style={{ paddingTop: '12px' }}>
+          <div style={{ fontSize: '20px', fontWeight: 200, letterSpacing: '0.3px', color: bookInfoColors.heading, marginBottom: '8px', opacity: 0, animation: 'bkFadeIn 1.4s ease-out 200ms forwards' }}>연락처</div>
+          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '8px', fontWeight: 400, letterSpacing: '3px', color: bookInfoColors.muted, textTransform: 'uppercase' as const, marginBottom: '24px', opacity: 0, animation: 'bkFadeIn 1s ease-out 500ms forwards' }}>Contact</div>
+          <div style={{ fontSize: '12.5px', fontWeight: 300, lineHeight: 2.3, letterSpacing: '0.2px', color: bookInfoColors.text, marginBottom: '24px', opacity: 0, animation: 'bkFadeIn 1.8s ease-out 700ms forwards' }}>
+            {contactsEssay.split('\n').map((line: string, i: number) => <p key={i} style={{ margin: 0 }}>{line || '\u00A0'}</p>)}
+          </div>
+          <div style={{ width: '28px', height: '1px', background: `${bookInfoColors.muted}40`, marginBottom: '28px', opacity: 0, animation: 'bkFadeIn 1s ease-out 1000ms forwards' }} />
+          {groomContacts.length > 0 && renderAccordion('Groom', groomContacts, 'groom', 500)}
+          {brideContacts.length > 0 && renderAccordion('Bride', brideContacts, 'bride', 900)}
+        </div>
       </div>
     </div>
   )
 }
 
-// -- Book: Thank You --
-function BookThankYou({ data }: { data: any }) {
-  const bookInfoColors = getBookInfoColors(data.colorTheme)
-  const ty = data.thankYou
-  const groomName = data.groom?.name || '신랑'; const brideName = data.bride?.name || '신부'
-  const thankYouEssay = data.content?.thankYouEssay || `이 긴 이야기를 끝까지 읽어주셔서\n진심으로 감사합니다.\n\n여러분 한 분 한 분의 축복이\n저희의 새 출발에 큰 힘이 됩니다.\n\n앞으로도 함께 웃고, 함께 걸어가는\n${groomName}과 ${brideName}이 되겠습니다.`
-  const message = ty?.message || ''
-  if (!message && !thankYouEssay) return null
+// -- Book: Bank (Magazine accordion style) --
+function BookBank({ data }: { data: any }) {
+  const bookInfoColors = getBookInfoColors(data.colorTheme, data.customThemeColors)
+  const groom = data.groom || {}; const bride = data.bride || {}
+  const bankEssay = data.content?.bankEssay || `직접 오시지 못하더라도\n마음만으로 충분히 감사합니다.\n\n혹 축하의 마음을 전하고 싶으시다면,\n아래를 통해 보내주실 수 있습니다.`
+  const [openSide, setOpenSide] = useState<Record<string, boolean>>({})
+  const [copiedId, setCopiedId] = useState('')
+
+  const getAccounts = (side: 'groom' | 'bride') => {
+    const person = side === 'groom' ? groom : bride
+    return [
+      person.bank?.enabled && { name: person.name, bank: person.bank.bank, account: person.bank.account, holder: person.bank.holder || person.name, role: side === 'groom' ? '신랑' : '신부' },
+      person.father?.bank?.enabled && { name: person.father.name, bank: person.father.bank.bank, account: person.father.bank.account, holder: person.father.bank.holder || person.father.name, role: '아버지' },
+      person.mother?.bank?.enabled && { name: person.mother.name, bank: person.mother.bank.bank, account: person.mother.bank.account, holder: person.mother.bank.holder || person.mother.name, role: '어머니' },
+    ].filter(Boolean) as { name: string; bank: string; account: string; holder: string; role: string }[]
+  }
+
+  const groomAccounts = getAccounts('groom')
+  const brideAccounts = getAccounts('bride')
+  const toggleSide = (key: string) => setOpenSide(prev => ({ ...prev, [key]: !prev[key] }))
+  const copyAccount = (id: string, account: string) => { navigator.clipboard.writeText(account); setCopiedId(id); setTimeout(() => setCopiedId(''), 2000) }
+
+  const renderAccordion = (label: string, accounts: { name: string; bank: string; account: string; holder: string; role: string }[], key: string, delay: number) => (
+    <div style={{ marginBottom: '20px', opacity: 0, animation: `bkFadeIn 1.2s ease-out ${delay}ms forwards` }}>
+      <div role="button" onClick={(e) => { e.stopPropagation(); toggleSide(key) }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', padding: '12px 0', borderBottom: `1px solid ${bookInfoColors.divider}40` }}>
+        <span style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '9px', fontWeight: 400, letterSpacing: '3px', color: bookInfoColors.muted, textTransform: 'uppercase' as const }}>{label}</span>
+        <span style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '16px', fontWeight: 300, color: bookInfoColors.muted, lineHeight: 1, transition: 'transform 0.35s ease', transform: openSide[key] ? 'rotate(45deg)' : 'none' }}>+</span>
+      </div>
+      <div style={{ maxHeight: openSide[key] ? '500px' : '0', overflow: 'hidden', transition: 'max-height 0.45s cubic-bezier(.33,1,.68,1)' }}>
+        {accounts.map((acc, i) => {
+          const accId = `${key}-${i}`
+          return (
+            <div key={i} style={{ marginBottom: '20px', paddingBottom: '20px', borderBottom: i < accounts.length - 1 ? `1px solid ${bookInfoColors.divider}20` : 'none' }}>
+              <div style={{ fontSize: '11px', fontWeight: 300, color: bookInfoColors.muted, marginBottom: '4px' }}>{acc.role}</div>
+              <div style={{ fontSize: '13.5px', fontWeight: 300, color: bookInfoColors.text, marginBottom: '9px' }}>{acc.holder}</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '12px', fontWeight: 300, color: bookInfoColors.muted, letterSpacing: '0.3px' }}>{acc.bank} {acc.account}</span>
+                <button onClick={(e) => { e.stopPropagation(); copyAccount(accId, acc.account) }} style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '7.5px', letterSpacing: '2px', color: copiedId === accId ? bookInfoColors.pageBg : bookInfoColors.muted, textTransform: 'uppercase' as const, padding: '5px 12px', border: `1px solid ${bookInfoColors.divider}40`, background: copiedId === accId ? bookInfoColors.text : 'none', cursor: 'pointer', transition: 'all 0.3s' }}>{copiedId === accId ? 'Done' : 'Copy'}</button>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+
   return (
-    <div className="bk-page flex items-center" style={{ background: bookInfoColors.pageBg }}>
-      <div className="w-full px-8 py-16 max-w-md mx-auto text-center">
-        <BA d={0} type="fade"><div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '4px', color: bookInfoColors.muted, marginBottom: '24px' }}>EPILOGUE</div></BA>
-        <BA d={200}><BLine width="20px" color={bookInfoColors.accent} d={0} center /></BA>
-        <div style={{ marginBottom: '24px' }} />
-        {/* Essay */}
-        <div className="mb-8">
-          {thankYouEssay.split('\n').map((line: string, i: number) => (
-            <BA key={i} d={400 + i * 80}>
-              <p style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '13px', lineHeight: 2, color: bookInfoColors.text, opacity: 0.85 }}>{line || '\u00A0'}</p>
-            </BA>
-          ))}
+    <div className="bk-page bk-card" style={{ background: bookInfoColors.pageBg, display: 'flex', flexDirection: 'column' }}>
+      <div className="bk-scroll-area" style={{ flex: 1, overflowY: 'auto', padding: '72px 48px 62px', WebkitOverflowScrolling: 'touch' }}>
+        <div style={{ paddingTop: '12px' }}>
+          <div style={{ fontSize: '20px', fontWeight: 200, letterSpacing: '0.3px', color: bookInfoColors.heading, marginBottom: '8px', opacity: 0, animation: 'bkFadeIn 1.4s ease-out 200ms forwards' }}>축의금</div>
+          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '8px', fontWeight: 400, letterSpacing: '3px', color: bookInfoColors.muted, textTransform: 'uppercase' as const, marginBottom: '24px', opacity: 0, animation: 'bkFadeIn 1s ease-out 500ms forwards' }}>Gift</div>
+          <div style={{ fontSize: '12.5px', fontWeight: 300, lineHeight: 2.3, letterSpacing: '0.2px', color: bookInfoColors.text, marginBottom: '24px', opacity: 0, animation: 'bkFadeIn 1.8s ease-out 700ms forwards' }}>
+            {bankEssay.split('\n').map((line: string, i: number) => <p key={i} style={{ margin: 0 }}>{line || '\u00A0'}</p>)}
+          </div>
+          <div style={{ width: '28px', height: '1px', background: `${bookInfoColors.muted}40`, marginBottom: '28px', opacity: 0, animation: 'bkFadeIn 1s ease-out 1000ms forwards' }} />
+          {groomAccounts.length > 0 && renderAccordion('Groom', groomAccounts, 'groom', 500)}
+          {brideAccounts.length > 0 && renderAccordion('Bride', brideAccounts, 'bride', 900)}
         </div>
-        {ty?.sign && <BA d={800} type="fade"><div className="mt-8" style={{ fontSize: '13px', color: bookInfoColors.muted }}>{ty.sign}</div></BA>}
+      </div>
+    </div>
+  )
+}
+
+// -- Book: Thank You (Magazine epilogue style - left-aligned, bottom) --
+function BookThankYou({ data }: { data: any }) {
+  const bookInfoColors = getBookInfoColors(data.colorTheme, data.customThemeColors)
+  const groomName = data.groom?.name || '신랑'; const brideName = data.bride?.name || '신부'
+  const thankYouEssay = data.content?.thankYouEssay || `바쁘신 와중에도\n저희의 결혼을 축하해 주셔서\n진심으로 감사드립니다.\n\n여러분의 축복을 마음에 새기며\n서로 아끼고 사랑하며\n살겠습니다.`
+  const lines = thankYouEssay.split('\n')
+  return (
+    <div className="bk-page bk-card" style={{ background: bookInfoColors.pageBg, display: 'flex', flexDirection: 'column', padding: '0 48px', position: 'relative' }}>
+      <span style={{ position: 'absolute', top: '58px', right: '48px', fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '7.5px', fontWeight: 400, letterSpacing: '3px', color: bookInfoColors.muted, textTransform: 'uppercase' as const, opacity: 0, animation: 'bkFadeIn 0.8s ease-out 150ms forwards' }}>Epilogue</span>
+      <div style={{ marginTop: 'auto', marginBottom: '80px', maxWidth: '260px' }}>
+        {lines.map((line: string, i: number) => (
+          <span key={i} style={{ display: 'block', fontSize: '14px', fontWeight: 200, lineHeight: 2.4, letterSpacing: '0.2px', color: bookInfoColors.text, opacity: 0, animation: `bkFadeIn 1.4s ease-out ${500 + i * 300}ms forwards` }}>{line || '\u00A0'}</span>
+        ))}
+        <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', fontWeight: 400, letterSpacing: '2px', color: bookInfoColors.muted, marginTop: '28px', opacity: 0, animation: `bkFadeIn 1s ease-out ${500 + lines.length * 300 + 500}ms forwards` }}>
+          {groomName} & {brideName} 올림
+        </div>
       </div>
     </div>
   )
@@ -3824,7 +4554,7 @@ function BookThankYou({ data }: { data: any }) {
 
 // -- Book: Guestbook --
 function BookGuestbook({ data, invitationId, isSample }: { data: any; invitationId: string; isSample?: boolean }) {
-  const bookInfoColors = getBookInfoColors(data.colorTheme)
+  const bookInfoColors = getBookInfoColors(data.colorTheme, data.customThemeColors)
   const guestbookEssay = data.content?.guestbookEssay || `이야기의 마지막 페이지는\n여러분의 따뜻한 한 마디로 채워집니다.\n\n축하, 응원, 혹은 그냥 안부 한 줄도\n저희에게는 소중한 선물이에요.`
   const sampleMessages = data.content?.sampleGuestbook || []
   const [messages, setMessages] = useState<any[]>(isSample ? sampleMessages : [])
@@ -3840,117 +4570,210 @@ function BookGuestbook({ data, invitationId, isSample }: { data: any; invitation
   }
 
   return (
-    <div className="bk-page flex items-center" style={{ background: bookInfoColors.pageBg }}>
-      <div className="w-full px-8 py-16 max-w-md mx-auto">
-        <BA d={0} type="fade" className="text-center mb-6">
-          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '4px', color: bookInfoColors.muted }}>GUEST NOTE</div>
-          <div className="mt-3"><BLine width="20px" color={bookInfoColors.accent} d={200} center /></div>
-        </BA>
-        {/* Essay */}
-        <BA d={300} className="text-center mb-8">
-          {guestbookEssay.split('\n').map((line: string, i: number) => (
-            <p key={i} style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '13px', lineHeight: 2, color: bookInfoColors.text, opacity: 0.85 }}>{line || '\u00A0'}</p>
-          ))}
-        </BA>
-        <BA d={600} className="space-y-3 mb-6">
-          <input value={name} onChange={e => setName(e.target.value)} onClick={e => e.stopPropagation()} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} placeholder="이름" maxLength={20} className="w-full px-4 py-3 text-sm outline-none" style={{ border: `0.5px solid ${bookInfoColors.divider}`, background: bookInfoColors.cardBg, color: bookInfoColors.text }} />
-          <textarea value={message} onChange={e => setMessage(e.target.value)} onClick={e => e.stopPropagation()} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} placeholder="축하 메시지를 남겨주세요" rows={3} maxLength={500} className="w-full px-4 py-3 text-sm outline-none resize-none" style={{ border: `0.5px solid ${bookInfoColors.divider}`, background: bookInfoColors.cardBg, color: bookInfoColors.text }} />
-          <button onClick={(e) => { e.stopPropagation(); handleSubmit() }} disabled={submitting || !name.trim() || !message.trim()} className="w-full py-3 text-sm disabled:opacity-50" style={{ background: bookInfoColors.accent, color: '#FFF', border: 'none', cursor: 'pointer' }}>{submitting ? '등록 중...' : '메시지 남기기'}</button>
-        </BA>
-        {/* 메시지 카드 */}
-        {messages.length > 0 && (
-          <div style={{ background: bookInfoColors.cardBg, border: `0.5px solid ${bookInfoColors.divider}`, padding: '4px 16px' }}>
-            {messages.slice(0, 3).map((m: any, i: number) => (
-              <div key={m.id} className="py-3" style={{ borderBottom: i < Math.min(messages.length, 3) - 1 ? `0.5px solid ${bookInfoColors.divider}` : 'none' }}>
-                <div className="flex justify-between mb-1">
-                  <span style={{ fontSize: '12px', fontWeight: 600, color: bookInfoColors.heading }}>{m.guest_name}</span>
-                  <span style={{ fontSize: '10px', color: bookInfoColors.muted }}>{new Date(m.created_at).toLocaleDateString('ko-KR')}</span>
-                </div>
-                <p style={{ fontSize: '13px', lineHeight: 1.7, color: bookInfoColors.text }}>{m.message}</p>
-              </div>
-            ))}
+    <div className="bk-page bk-card" style={{ background: bookInfoColors.bg, display: 'flex', flexDirection: 'column' }}>
+      <div className="bk-scroll-area" style={{ flex: 1, overflowY: 'auto', padding: '72px 48px 62px', WebkitOverflowScrolling: 'touch' }}>
+        <div style={{ paddingTop: '12px' }}>
+          <div style={{ fontSize: '20px', fontWeight: 200, letterSpacing: '0.3px', color: bookInfoColors.heading, marginBottom: '8px', opacity: 0, animation: 'bkFadeIn 1.4s ease-out 200ms forwards' }}>방명록</div>
+          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '8px', fontWeight: 400, letterSpacing: '3px', color: bookInfoColors.muted, textTransform: 'uppercase' as const, marginBottom: '24px', opacity: 0, animation: 'bkFadeIn 1s ease-out 500ms forwards' }}>Guestbook</div>
+          <div style={{ fontSize: '12.5px', fontWeight: 300, lineHeight: 2.3, letterSpacing: '0.2px', color: bookInfoColors.text, marginBottom: '24px', opacity: 0, animation: 'bkFadeIn 1.8s ease-out 700ms forwards' }}>
+            {guestbookEssay.split('\n').map((line: string, i: number) => <p key={i} style={{ margin: 0 }}>{line || '\u00A0'}</p>)}
           </div>
-        )}
+          <div style={{ width: '28px', height: '1px', background: `${bookInfoColors.muted}40`, marginBottom: '28px', opacity: 0, animation: 'bkFadeIn 1s ease-out 1000ms forwards' }} />
+          {/* Form */}
+          <div style={{ background: bookInfoColors.pageBg, padding: '20px 22px', marginBottom: '20px', opacity: 0, animation: 'bkFadeIn 1.2s ease-out 400ms forwards' }}>
+            <input value={name} onChange={e => setName(e.target.value)} onClick={e => e.stopPropagation()} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} placeholder="이름" maxLength={20} style={{ width: '100%', border: 'none', borderBottom: `1px solid ${bookInfoColors.divider}40`, background: 'none', padding: '9px 0', fontFamily: "'Pretendard', sans-serif", fontSize: '12.5px', fontWeight: 300, color: bookInfoColors.text, outline: 'none' }} />
+            <textarea value={message} onChange={e => setMessage(e.target.value)} onClick={e => e.stopPropagation()} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} placeholder="축하 메시지를 남겨주세요" maxLength={500} style={{ width: '100%', border: 'none', borderBottom: `1px solid ${bookInfoColors.divider}40`, background: 'none', padding: '9px 0', fontFamily: "'Pretendard', sans-serif", fontSize: '12.5px', fontWeight: 300, color: bookInfoColors.text, outline: 'none', resize: 'none', lineHeight: 1.8, marginTop: '10px', height: '68px' }} />
+            <button onClick={(e) => { e.stopPropagation(); handleSubmit() }} disabled={submitting || !name.trim() || !message.trim()} style={{ display: 'block', marginTop: '14px', marginLeft: 'auto', fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '7.5px', letterSpacing: '3px', color: bookInfoColors.muted, textTransform: 'uppercase' as const, padding: '7px 18px', border: `1px solid ${bookInfoColors.divider}40`, background: 'none', cursor: 'pointer', opacity: (submitting || !name.trim() || !message.trim()) ? 0.5 : 1 }}>{submitting ? '...' : 'Submit'}</button>
+          </div>
+          {/* Messages */}
+          {messages.length > 0 && (
+            <div style={{ opacity: 0, animation: 'bkFadeIn 1.2s ease-out 800ms forwards' }}>
+              {messages.slice(0, 5).map((m: any, i: number) => (
+                <div key={m.id} style={{ background: bookInfoColors.pageBg, padding: '16px 20px', marginBottom: '8px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 400, color: bookInfoColors.heading, marginBottom: '4px' }}>{m.guest_name}</div>
+                  <div style={{ fontSize: '12px', fontWeight: 300, color: bookInfoColors.muted, lineHeight: 1.8 }}>{m.message}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
 }
 
-// -- Book: RSVP --
+// -- Book: RSVP (Magazine warm style) --
 function BookRsvp({ data, invitationId }: { data: any; invitationId: string }) {
-  const bookInfoColors = getBookInfoColors(data.colorTheme)
+  const bookInfoColors = getBookInfoColors(data.colorTheme, data.customThemeColors)
   return (
-    <div className="bk-page flex items-center" style={{ background: bookInfoColors.pageBg }}>
-      <div className="w-full px-8 py-16 max-w-md mx-auto">
-        <BA d={0} type="fade" className="text-center mb-8">
-          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '4px', color: bookInfoColors.muted }}>RSVP</div>
-          <div className="mt-3"><BLine width="20px" color={bookInfoColors.accent} d={200} center /></div>
-          {data.rsvpDeadline && <p className="mt-4" style={{ fontSize: '12px', color: bookInfoColors.muted }}>{new Date(data.rsvpDeadline).toLocaleDateString('ko-KR')}까지 알려주세요</p>}
-        </BA>
-        <BA d={400}>
-          <div onClick={e => e.stopPropagation()}>
+    <div className="bk-page bk-card" style={{ background: bookInfoColors.bg, display: 'flex', flexDirection: 'column' }}>
+      <div className="bk-scroll-area" style={{ flex: 1, overflowY: 'auto', padding: '72px 48px 62px', WebkitOverflowScrolling: 'touch' }}>
+        <div style={{ paddingTop: '12px' }}>
+          <div style={{ fontSize: '20px', fontWeight: 200, letterSpacing: '0.3px', color: bookInfoColors.heading, marginBottom: '8px', opacity: 0, animation: 'bkFadeIn 1.4s ease-out 200ms forwards' }}>참석 여부</div>
+          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '8px', fontWeight: 400, letterSpacing: '3px', color: bookInfoColors.muted, textTransform: 'uppercase' as const, marginBottom: '24px', opacity: 0, animation: 'bkFadeIn 1s ease-out 500ms forwards' }}>RSVP</div>
+          {data.rsvpDeadline && <div style={{ fontSize: '11.5px', fontWeight: 300, color: bookInfoColors.muted, marginBottom: '24px', opacity: 0, animation: 'bkFadeIn 1s ease-out 300ms forwards' }}>{new Date(data.rsvpDeadline).toLocaleDateString('ko-KR')}까지 회신 부탁드립니다</div>}
+          <div style={{ background: bookInfoColors.pageBg, padding: '24px 22px', opacity: 0, animation: 'bkFadeIn 1.2s ease-out 500ms forwards' }} onClick={e => e.stopPropagation()}>
             <RsvpForm invitationId={invitationId} primaryColor={bookInfoColors.accent} showMealOption={data.rsvpMealOption} showShuttleOption={data.rsvpShuttleOption} notice={data.rsvpNotice} />
           </div>
-        </BA>
+        </div>
       </div>
+    </div>
+  )
+}
+
+// -- Book: Floating Actions (+ 버튼 → 축의금/연락처) --
+function BookFloatingActions({ onOpenModal, bookColors, sectionVisibility }: {
+  onOpenModal: (modal: 'contact' | 'rsvp' | 'location' | 'account') => void
+  bookColors: ReturnType<typeof getBookColors>
+  sectionVisibility?: any
+}) {
+  const [expanded, setExpanded] = useState(false)
+  const sv = sectionVisibility
+  const hasContact = sv?.contacts !== false
+  const hasAccount = sv?.bankAccounts !== false
+
+  const items = [
+    hasAccount ? { modal: 'account' as const, label: '축의금',
+      icon: <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>
+    } : null,
+    hasContact ? { modal: 'contact' as const, label: '연락처',
+      icon: <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" /></svg>
+    } : null,
+    { modal: 'location' as const, label: '오시는길',
+      icon: <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
+    },
+    sv?.rsvp !== false ? { modal: 'rsvp' as const, label: '참석여부',
+      icon: <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+    } : null,
+  ].filter(Boolean) as { modal: 'contact' | 'account' | 'location' | 'rsvp'; label: string; icon: React.ReactNode }[]
+
+  if (items.length === 0) return null
+
+  return (
+    <div className="fixed z-30" style={{ bottom: '24px', right: '24px' }}>
+      {/* 펼쳐진 메뉴 아이템 */}
+      {items.map((item, i) => (
+        <div key={item.modal} style={{
+          position: 'absolute',
+          bottom: expanded ? `${(items.length - i) * 52 + 4}px` : '0',
+          right: '0',
+          opacity: expanded ? 1 : 0,
+          transform: expanded ? 'scale(1)' : 'scale(0.5)',
+          transition: `all 0.25s cubic-bezier(.33,1,.68,1) ${expanded ? i * 60 : 0}ms`,
+          pointerEvents: expanded ? 'auto' : 'none',
+        }}>
+          <button
+            onClick={(e) => { e.stopPropagation(); setExpanded(false); onOpenModal(item.modal) }}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              background: bookColors.pageBg, border: `1px solid ${bookColors.divider}`,
+              borderRadius: '24px', padding: '8px 16px 8px 12px',
+              cursor: 'pointer', boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+              whiteSpace: 'nowrap', minWidth: '110px',
+            }}
+          >
+            <span style={{ color: bookColors.muted }}>{item.icon}</span>
+            <span style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '12px', fontWeight: 400, color: bookColors.text, letterSpacing: '0.3px' }}>{item.label}</span>
+          </button>
+        </div>
+      ))}
+
+      {/* ♥ 버튼 */}
+      <button
+        onClick={(e) => { e.stopPropagation(); setExpanded(prev => !prev) }}
+        style={{
+          width: '44px', height: '44px', borderRadius: '50%',
+          background: bookColors.pageBg, border: `1px solid ${bookColors.divider}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', boxShadow: '0 2px 16px rgba(0,0,0,0.1)',
+          transition: 'all 0.3s cubic-bezier(.33,1,.68,1)',
+        }}
+      >
+        {expanded ? (
+          <svg width="18" height="18" fill="none" stroke={bookColors.text} strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+        ) : (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill={bookColors.muted} stroke="none"><path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>
+        )}
+      </button>
     </div>
   )
 }
 
 // -- Book: End --
 function BookEnd({ data, onRestart, onShowBonus, showBonus }: { data: any; onRestart: () => void; onShowBonus?: () => void; showBonus?: boolean }) {
-  const bookColors = getBookColors(data.colorTheme)
   const groomName = data.groom?.name || '신랑'
   const brideName = data.bride?.name || '신부'
+  const endingPhoto = data.media?.endingPhoto || data.media?.coverImage
+  const endingMessage = data.endingMessage || '이 이야기를\n함께 읽어주셔서\n감사합니다.'
+  const endDarkByTheme: Record<string, { bg: string; text: string; muted: string }> = {
+    'essay-ivory':  { bg: '#2C2820', text: 'rgba(244,241,235,0.65)', muted: '#9B9088' },
+    'essay-blush':  { bg: '#3A2028', text: 'rgba(253,246,244,0.65)', muted: '#B08890' },
+    'essay-sage':   { bg: '#1E2A1C', text: 'rgba(245,247,243,0.65)', muted: '#82A078' },
+    'essay-mono':   { bg: '#1A1A1A', text: 'rgba(245,245,245,0.65)', muted: '#888888' },
+    'essay-sky':    { bg: '#1C2830', text: 'rgba(244,248,252,0.65)', muted: '#7A9AB0' },
+    'essay-coral':  { bg: '#2E1E18', text: 'rgba(254,246,242,0.65)', muted: '#B08878' },
+  }
+  const dk = data.colorTheme === 'essay-custom' && data.customThemeColors
+    ? generateDarkColors(data.customThemeColors.pageBg || data.customThemeColors.bg, data.customThemeColors.accent, data.customThemeColors.text)
+    : (endDarkByTheme[data.colorTheme || 'essay-ivory'] || endDarkByTheme['essay-ivory'])
+
   return (
-    <div className="bk-page flex flex-col items-center justify-center" style={{ background: bookColors.bg }}>
-      <div className="text-center">
-        <BA d={0} type="fade"><div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '6px', color: bookColors.muted, marginBottom: '24px' }}>THE END</div></BA>
-        <BA d={300}><BLine width="32px" color={bookColors.accent} d={0} center /></BA>
-        <div style={{ marginBottom: '24px' }} />
-        <BA d={500}><p style={{ fontSize: '14px', color: bookColors.text, lineHeight: 2 }}>이 이야기를 함께 읽어주셔서<br />감사합니다.</p></BA>
-        <BA d={700} type="fade"><p className="mt-4" style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '13px', fontStyle: 'italic', color: bookColors.muted }}>
-          {groomName} & {brideName}
-        </p></BA>
-        <BA d={900} type="scale"><div className="flex flex-col items-center gap-3 mt-8">
-          <button onClick={(e) => { e.stopPropagation(); onRestart() }} style={{
-            background: 'none', border: `1px solid ${bookColors.divider}`, padding: '10px 24px',
-            cursor: 'pointer', fontFamily: "'Pretendard', sans-serif", fontSize: '10px',
-            letterSpacing: '3px', color: bookColors.muted, width: '200px',
-          }}>
-            READ AGAIN
-          </button>
-          {!showBonus && onShowBonus && (
-            <button onClick={(e) => { e.stopPropagation(); onShowBonus() }} style={{
-              background: bookColors.accent, border: 'none', padding: '12px 24px',
-              cursor: 'pointer', fontFamily: "'Pretendard', sans-serif", fontSize: '13px',
-              color: '#FFF', width: '200px', letterSpacing: '0.5px',
-            }}>
-              더 많은 이야기 보러가기 →
-            </button>
-          )}
-        </div></BA>
+    <div className="bk-page flex flex-col items-center justify-center" style={{ background: dk.bg, padding: '0 48px', position: 'relative' }}>
+      {endingPhoto && (
+        <div style={{
+          width: '80px', height: '80px', overflow: 'hidden', marginBottom: '32px',
+          clipPath: 'inset(0 50%)',
+          animation: 'bkClipCx 1.6s cubic-bezier(.16,1,.3,1) 300ms forwards'
+        }}>
+          <img src={endingPhoto} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'saturate(0.4) brightness(0.85)' }} />
+        </div>
+      )}
+      <div style={{ opacity: 0, animation: 'bkFadeIn 1s ease-out 800ms forwards' }}>
+        <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '8px', fontWeight: 400, letterSpacing: '6px', color: dk.muted, textTransform: 'uppercase' as const, marginBottom: '28px' }}>The End</div>
       </div>
-      <BA d={1100} type="fade"><div className="mt-16">
-        <p style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '9px', letterSpacing: '3px', color: bookColors.muted }}>DEAR DRAWER</p>
-      </div></BA>
+      <div style={{ opacity: 0, animation: 'bkFadeIn 1.6s ease-out 1100ms forwards' }}>
+        <p style={{ fontSize: '14px', fontWeight: 200, lineHeight: 2.3, textAlign: 'center', color: dk.text }}>{endingMessage.split('\n').map((line: string, i: number, arr: string[]) => <span key={i}>{line}{i < arr.length - 1 && <br />}</span>)}</p>
+      </div>
+      <div style={{ opacity: 0, animation: 'bkFadeIn 1s ease-out 1500ms forwards' }}>
+        <p style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', fontWeight: 400, letterSpacing: '2px', color: dk.muted, fontStyle: 'italic', marginTop: '24px' }}>
+          {groomName} & {brideName}
+        </p>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', marginTop: '32px' }}>
+        <div style={{ opacity: 0, animation: 'bkFadeIn 1s ease-out 1800ms forwards' }}>
+          <button onClick={(e) => { e.stopPropagation(); onRestart() }} style={{
+            fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '7.5px', fontWeight: 400,
+            letterSpacing: '3px', color: `${dk.muted}90`, textTransform: 'uppercase' as const,
+            background: 'none', border: `1px solid ${dk.muted}25`, padding: '10px 28px', cursor: 'pointer', width: '200px',
+          }}>Read Again</button>
+        </div>
+        {!showBonus && onShowBonus && (
+          <div style={{ opacity: 0, animation: 'bkFadeIn 1s ease-out 2000ms forwards' }}>
+            <button onClick={(e) => { e.stopPropagation(); onShowBonus() }} style={{
+              background: dk.muted, border: 'none', padding: '12px 24px', cursor: 'pointer',
+              fontFamily: "'Pretendard', sans-serif", fontSize: '13px', color: dk.bg, width: '200px', letterSpacing: '0.5px',
+            }}>더 많은 이야기 보러가기 →</button>
+          </div>
+        )}
+      </div>
+      <span style={{ position: 'absolute', bottom: '28px', fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '8px', letterSpacing: '1px', color: dk.muted, opacity: 0.35 }}>Dear Drawer</span>
     </div>
   )
 }
 
 // -- Book: Bonus Intro --
 function BookBonusIntro({ data }: { data: any }) {
-  const bookColors = getBookColors(data.colorTheme)
+  const bookColors = getBookColors(data.colorTheme, data.customThemeColors)
   const groomName = data.groom?.name || '신랑'
   const brideName = data.bride?.name || '신부'
   return (
     <div className="bk-page flex items-center justify-center" style={{ background: bookColors.pageBg }}>
       <div className="w-full px-12 py-16 max-w-md mx-auto text-center">
-        <div className="mb-8">
-          <BA d={0} type="fade"><div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '4px', color: bookColors.muted }}>BONUS CHAPTER</div></BA>
+        <div className="mb-12">
+          <BA d={0} type="fade"><div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '4px', color: bookColors.muted, marginBottom: '16px' }}>BONUS CHAPTER</div></BA>
           <BA d={200}><BLine width="20px" color={bookColors.accent} d={0} center /></BA>
         </div>
-        <div className="mb-8">
+        <div className="mb-10">
           <BA d={400}><p style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '20px', fontWeight: 600, color: bookColors.heading, lineHeight: 1.6 }}>웨딩 인터뷰</p></BA>
           <BA d={550} type="fade"><p style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '12px', color: bookColors.muted, marginTop: '8px', letterSpacing: '1px' }}>— {groomName} & {brideName} —</p></BA>
         </div>
@@ -3967,14 +4790,14 @@ function BookBonusIntro({ data }: { data: any }) {
 }
 
 // -- Book: Bonus Interview --
-function BookBonusInterview({ interview, index, total, colorTheme }: { interview: any; index: number; total: number; colorTheme?: string }) {
-  const bookColors = getBookColors(colorTheme)
+function BookBonusInterview({ interview, index, total, colorTheme, customThemeColors }: { interview: any; index: number; total: number; colorTheme?: string; customThemeColors?: { bg: string; pageBg: string; accent: string; text: string } }) {
+  const bookColors = getBookColors(colorTheme, customThemeColors)
   const answer = interview.answer || ''
   return (
     <div className="bk-page flex items-center" style={{ background: bookColors.pageBg }}>
       <div className="w-full px-10 py-16 max-w-md mx-auto">
         <div className="text-center mb-8">
-          <BA d={0} type="fade"><div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '9px', letterSpacing: '3px', color: bookColors.muted }}>Q{index + 1} OF {total}</div></BA>
+          <BA d={0} type="fade"><div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '9px', letterSpacing: '3px', color: bookColors.muted, marginBottom: '16px' }}>Q{index + 1} OF {total}</div></BA>
           <BA d={150}><BLine width="20px" color={bookColors.accent} d={0} center /></BA>
         </div>
         {/* Question */}
@@ -3996,14 +4819,14 @@ function BookBonusInterview({ interview, index, total, colorTheme }: { interview
 
 // -- Book: Bonus End --
 function BookBonusEnd({ data, onRestart }: { data: any; onRestart: () => void }) {
-  const bookColors = getBookColors(data.colorTheme)
+  const bookColors = getBookColors(data.colorTheme, data.customThemeColors)
   const groomName = data.groom?.name || '신랑'
   const brideName = data.bride?.name || '신부'
   return (
     <div className="bk-page flex flex-col items-center justify-center" style={{ background: bookColors.bg }}>
       <div className="text-center">
         <BA d={0} type="fade"><div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '6px', color: bookColors.muted, marginBottom: '24px' }}>FIN</div></BA>
-        <BA d={200}><BLine width="32px" color={bookColors.accent} d={0} center /></BA>
+        <BA d={200}><div style={{ marginBottom: '24px' }}><BLine width="20px" color={bookColors.accent} d={0} center /></div></BA>
         <BA d={400}><p style={{ fontSize: '14px', color: bookColors.text, lineHeight: 2 }}>저희의 이야기에<br />귀 기울여 주셔서 감사합니다.</p></BA>
         <BA d={550}><p className="mt-2" style={{ fontSize: '13px', color: bookColors.text, lineHeight: 2, opacity: 0.7 }}>여러분의 축복이 가장 큰 선물입니다.</p></BA>
         <BA d={700} type="fade"><p className="mt-4" style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '13px', fontStyle: 'italic', color: bookColors.muted }}>
@@ -4130,8 +4953,21 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
               left: calc(50% - 215px) !important;
               right: calc(50% - 215px) !important;
             }
+            .essay-book-desktop-wrapper .fixed.top-0.left-0.right-0 {
+              left: calc(50% - 215px) !important;
+              right: calc(50% - 215px) !important;
+            }
             .essay-book-desktop-wrapper > button.fixed {
               right: calc(50% - 215px + 16px) !important; left: auto !important;
+            }
+            .essay-book-desktop-wrapper .bk-tap-left {
+              left: calc(50% - 215px) !important;
+              width: 215px !important;
+            }
+            .essay-book-desktop-wrapper .bk-tap-right {
+              right: calc(50% - 215px) !important;
+              left: auto !important;
+              width: 215px !important;
             }
             .essay-book-desktop-wrapper .bk-arrow-left {
               left: calc(50% - 215px + 6px) !important;
@@ -4179,7 +5015,18 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
         right: calc(50% - 215px + 16px) !important; left: auto !important;
         top: 16px !important;
       }
+      .essay-desktop-wrapper > .essay-scroll-hint-overlay {
+        left: calc(50% - 215px) !important;
+        right: calc(50% - 215px) !important;
+      }
     }
+  `
+
+  // Scrollbar hide + scroll hint CSS (default/paper 공통)
+  const scrollHintCSS = `
+    html { scrollbar-width: none; -ms-overflow-style: none; }
+    html::-webkit-scrollbar { display: none; }
+    @keyframes bkScrollBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
   `
 
   // Paper concept - completely different layout
@@ -4188,6 +5035,7 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
       <>
         {allCSS && <style>{allCSS}</style>}
         <style>{desktopWrapperCSS}</style>
+        {!isPreview && <style>{scrollHintCSS}</style>}
         <div className="essay-desktop-wrapper">
         {!isPaid && !isPreview && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px 16px', backgroundColor: 'rgba(0,0,0,0.9)' }}>
@@ -4197,6 +5045,7 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
         <div className={`essay-font-container theme-${themeKey}`} style={{ wordBreak: 'keep-all', overflowWrap: 'anywhere', ...customHighlightStyle }}>
           <PaperConcept data={data} invitationId={invitationId} isSample={isSample} />
         </div>
+        {!isPreview && <ScrollHintOverlay theme={theme} />}
         {hasBgm && <audio ref={audioRef} loop preload="auto"><source src={bgm.url} type="audio/mpeg" /></audio>}
         {hasBgm && <EssayMusicToggle audioRef={audioRef} theme={theme} />}
         </div>
@@ -4218,6 +5067,7 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
     <>
       {allCSS && <style>{allCSS}</style>}
       <style>{desktopWrapperCSS}</style>
+      {!isPreview && <style>{scrollHintCSS}</style>}
       <div className="essay-desktop-wrapper">
       {!isPaid && !isPreview && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px 16px', backgroundColor: 'rgba(0,0,0,0.9)' }}>
@@ -4235,6 +5085,7 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
           ))
         )}
         <QuoteSection data={data} theme={theme} />
+        {data.gallery?.images?.length > 0 && <DefaultGallerySection data={data} theme={theme} />}
         <WeddingInfoSection data={data} theme={theme} />
         {data.sectionVisibility?.contacts !== false && <ContactsSection data={data} theme={theme} />}
         {data.sectionVisibility?.bankAccounts !== false && <BankAccountsSection data={data} theme={theme} />}
@@ -4243,6 +5094,7 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
         {data.rsvpEnabled && data.sectionVisibility?.rsvp !== false && <RsvpSection data={data} invitationId={invitationId} theme={theme} />}
         <EssayFooter theme={theme} />
       </div>
+      {!isPreview && <ScrollHintOverlay theme={theme} />}
       {hasBgm && <audio ref={audioRef} loop preload="auto"><source src={bgm.url} type="audio/mpeg" /></audio>}
       {hasBgm && <EssayMusicToggle audioRef={audioRef} theme={theme} />}
       </div>

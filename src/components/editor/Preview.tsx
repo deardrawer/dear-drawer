@@ -209,6 +209,12 @@ function InvitationPreviewWrapper({ invitation, skipIntro, onIntroScreenChange }
     mapButtons: (invitation as any).mapButtons,
     magazineSectionTitles: (invitation as any).magazineSectionTitles,
     ddayPopup: invitation.ddayPopup,
+    galleryDisplayStyle: invitation.galleryDisplayStyle,
+    galleryCustomAspect: invitation.galleryCustomAspect,
+    galleryRowPattern: invitation.galleryRowPattern,
+    galleryShowMoreRow: invitation.galleryShowMoreRow,
+    galleryLightboxVariant: invitation.galleryLightboxVariant,
+    galleryLightboxEnabled: invitation.galleryLightboxEnabled,
   }), [invitation])
 
   const invitationData = useMemo(() => ({
@@ -430,6 +436,10 @@ const Preview = forwardRef<PreviewHandle, object>(function Preview(_, ref) {
               body[data-preview-modal] .preview-tabs,
               body[data-preview-modal] .preview-floating-btn,
               body[data-preview-modal] .mobile-tab-bar { display: none !important; }
+              body.lightbox-open .preview-tabs,
+              body.lightbox-open .preview-floating-btn,
+              body.lightbox-open .mobile-tab-bar { display: none !important; }
+              body.lightbox-open #preview-content { z-index: 20 !important; }
             `}</style>
             <div ref={previewContentRef} className={`flex-1 overflow-y-auto min-h-0 relative z-0 theme-${invitation.colorTheme || 'classic-rose'} ${isRomantic ? 'font-romantic' : ''}`} id="preview-content" style={{ fontFamily: fonts.body, color: customBodyTextColor, letterSpacing: '-0.3px', ...(customAccentTextColor ? { '--text-accent': customAccentTextColor } as React.CSSProperties : {}), ...(invitation.highlightColor ? { '--highlight-white': invitation.highlightColor } as React.CSSProperties : {}) }}>
               {invitation.templateId === 'narrative-record'

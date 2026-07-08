@@ -1608,20 +1608,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
             </div>
           )}
 
-          {/* 라이트박스 활성화 */}
-          <div className="flex items-center justify-between">
-            <div>
-              <Label className="text-xs font-medium text-gray-600">사진 확대 보기</Label>
-              <p className="text-[10px] text-gray-400">갤러리 사진을 탭하면 전체화면으로 확대합니다.</p>
-            </div>
-            <Switch
-              checked={invitation.galleryLightboxEnabled !== false}
-              onCheckedChange={(checked) => updateField('galleryLightboxEnabled', checked)}
-            />
-          </div>
-
           {/* 라이트박스 스타일 */}
-          {invitation.galleryLightboxEnabled !== false && (
           <div className="space-y-2">
             <Label className="text-xs font-medium text-gray-600">라이트박스 스타일</Label>
             <p className="text-[10px] text-gray-400">갤러리 사진을 탭했을 때 열리는 전체화면 뷰어의 스타일입니다.</p>
@@ -1651,7 +1638,6 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
               ))}
             </div>
           </div>
-          )}
         </section>
       )}
 

@@ -2145,6 +2145,20 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose }: { images: st
 
   useEffect(() => { setCurrentIndex(initialIndex) }, [initialIndex])
 
+  useEffect(() => {
+    if (!isOpen) return
+    const preventZoom = (e: TouchEvent) => { if (e.touches.length > 1) e.preventDefault() }
+    const preventGesture = (e: Event) => e.preventDefault()
+    document.addEventListener('touchmove', preventZoom, { passive: false })
+    document.addEventListener('gesturestart', preventGesture, { passive: false } as AddEventListenerOptions)
+    document.addEventListener('gesturechange', preventGesture, { passive: false } as AddEventListenerOptions)
+    return () => {
+      document.removeEventListener('touchmove', preventZoom)
+      document.removeEventListener('gesturestart', preventGesture)
+      document.removeEventListener('gesturechange', preventGesture)
+    }
+  }, [isOpen])
+
   if (!isOpen) return null
 
   const resolvedImages = images.map(extractImageUrl).filter(Boolean)

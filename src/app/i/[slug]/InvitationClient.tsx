@@ -1855,7 +1855,7 @@ function GalleryLightbox({
     setCurrentIndex(prev => prev + 1)
   }, [isTransitioning])
 
-  // Keyboard navigation
+  // Keyboard navigation + 핀치줌 방지
   useEffect(() => {
     if (!isOpen) return
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -1863,8 +1863,18 @@ function GalleryLightbox({
       if (e.key === 'ArrowLeft') goToPrev()
       if (e.key === 'ArrowRight') goToNext()
     }
+    const onGesture = (e: Event) => e.preventDefault()
+    const onTouchMove = (e: TouchEvent) => { if (e.touches.length > 1) e.preventDefault() }
     document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
+    document.addEventListener('gesturestart', onGesture, { passive: false } as AddEventListenerOptions)
+    document.addEventListener('gesturechange', onGesture, { passive: false } as AddEventListenerOptions)
+    document.addEventListener('touchmove', onTouchMove, { passive: false })
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      document.removeEventListener('gesturestart', onGesture)
+      document.removeEventListener('gesturechange', onGesture)
+      document.removeEventListener('touchmove', onTouchMove)
+    }
   }, [isOpen, onClose, goToPrev, goToNext])
 
   // Touch swipe

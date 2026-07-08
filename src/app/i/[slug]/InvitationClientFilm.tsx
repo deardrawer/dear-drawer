@@ -2543,6 +2543,21 @@ function FilmFooter({ invitation, fonts, tc }: { invitation: any; fonts: FontCon
 function GalleryLightbox({ images, isOpen, initialIndex, onClose }: { images: string[]; isOpen: boolean; initialIndex: number; onClose: () => void }) {
   const [idx, setIdx] = useState(initialIndex)
   useEffect(() => { setIdx(initialIndex) }, [initialIndex])
+
+  useEffect(() => {
+    if (!isOpen) return
+    const preventZoom = (e: TouchEvent) => { if (e.touches.length > 1) e.preventDefault() }
+    const preventGesture = (e: Event) => e.preventDefault()
+    document.addEventListener('touchmove', preventZoom, { passive: false })
+    document.addEventListener('gesturestart', preventGesture, { passive: false } as AddEventListenerOptions)
+    document.addEventListener('gesturechange', preventGesture, { passive: false } as AddEventListenerOptions)
+    return () => {
+      document.removeEventListener('touchmove', preventZoom)
+      document.removeEventListener('gesturestart', preventGesture)
+      document.removeEventListener('gesturechange', preventGesture)
+    }
+  }, [isOpen])
+
   if (!isOpen) return null
   const resolved = images.map(extractImageUrl).filter(Boolean)
   return (

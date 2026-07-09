@@ -247,7 +247,7 @@ export default function NotificationSheet({
 
   const handleTestPush = async () => {
     setTestSending(true)
-    setTestResult(null)
+    setTestResult('발송 중...')
     try {
       const res = await fetch('/api/geunnal/push/test', {
         method: 'POST',
@@ -256,17 +256,30 @@ export default function NotificationSheet({
           'Authorization': `Bearer ${token}`,
         },
       })
-      const data = await res.json() as { error?: string; success?: boolean; subscriptionCount?: number; results?: { success?: boolean }[] }
+      const text = await res.text()
+      let data: { error?: string; success?: boolean; subscriptionCount?: number; message?: string; results?: { success?: boolean; error?: string }[] }
+      try {
+        data = JSON.parse(text)
+      } catch {
+        setTestResult(`응답 파싱 실패: ${text.slice(0, 100)}`)
+        return
+      }
       if (!res.ok) {
-        setTestResult(`실패: ${data.error || '알 수 없는 오류'}`)
+        setTestResult(`❌ ${data.error || `HTTP ${res.status}`}`)
       } else if (data.subscriptionCount === 0) {
-        setTestResult('구독 정보가 없습니다. 알림을 먼저 저장해주세요.')
+        setTestResult(`⚠️ ${data.message || '구독 없음. 알림을 먼저 저장해주세요.'}`)
       } else {
         const successCount = data.results?.filter(r => r.success).length || 0
-        setTestResult(`발송 완료! (${successCount}/${data.subscriptionCount} 성공)`)
+        const failedResults = data.results?.filter(r => !r.success) || []
+        if (successCount > 0) {
+          setTestResult(`✅ 발송 성공! (${successCount}/${data.subscriptionCount})`)
+        } else {
+          const errMsg = failedResults[0]?.error || '알 수 없는 오류'
+          setTestResult(`❌ 발송 실패: ${errMsg.slice(0, 80)}`)
+        }
       }
-    } catch {
-      setTestResult('네트워크 오류가 발생했습니다.')
+    } catch (err) {
+      setTestResult(`❌ 네트워크 오류: ${String(err).slice(0, 80)}`)
     } finally {
       setTestSending(false)
     }

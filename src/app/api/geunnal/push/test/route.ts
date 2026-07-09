@@ -5,6 +5,15 @@ import { sendPushNotification } from "@/lib/webPush";
 import { verifyGeunnalToken } from "@/lib/geunnalAuth";
 import { loadVapidKeys } from "@/lib/vapidKeys";
 
+function base64UrlDecodeFn(str: string): Uint8Array {
+  str = str.replace(/-/g, '+').replace(/_/g, '/').replace(/\s/g, '')
+  while (str.length % 4) str += '='
+  const binary = atob(str)
+  const bytes = new Uint8Array(binary.length)
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+  return bytes
+}
+
 export async function POST(request: NextRequest) {
   const auth = request.headers.get("authorization");
   const tokenOrSecret = auth?.replace("Bearer ", "");
@@ -51,6 +60,40 @@ export async function POST(request: NextRequest) {
 
   const { publicKey, privateKey, subject, diag } = vapidKeys;
 
+  // 키 쌍 self-test: sign → verify (민감정보 미출력)
+  const selfTest: Record<string, unknown> = {};
+  try {
+    const privKeyBytes = base64UrlDecodeFn(privateKey);
+    const pubKeyBytes = base64UrlDecodeFn(publicKey);
+    selfTest.privKeyBytes = privKeyBytes.length;
+    selfTest.pubKeyBytes = pubKeyBytes.length;
+
+    const privBuf = privKeyBytes.buffer.slice(privKeyBytes.byteOffset, privKeyBytes.byteOffset + privKeyBytes.byteLength) as ArrayBuffer;
+    const pubBuf = pubKeyBytes.buffer.slice(pubKeyBytes.byteOffset, pubKeyBytes.byteOffset + pubKeyBytes.byteLength) as ArrayBuffer;
+
+    const ecPriv = await crypto.subtle.importKey(
+      'pkcs8', privBuf, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign']
+    );
+    selfTest.privKeyImported = true;
+
+    const ecPub = await crypto.subtle.importKey(
+      'raw', pubBuf, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['verify']
+    );
+    selfTest.pubKeyImported = true;
+
+    const testData = new TextEncoder().encode('vapid-self-test');
+    const sig = await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, ecPriv, testData);
+    const sigBytes = new Uint8Array(sig);
+    selfTest.signatureLen = sigBytes.length;
+    selfTest.signatureFirstByte = `0x${sigBytes[0]?.toString(16).padStart(2, '0')}`;
+    selfTest.signatureFormat = sigBytes.length === 64 ? 'raw' : (sigBytes[0] === 0x30 ? 'DER' : 'unknown');
+
+    const verified = await crypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, ecPub, sig, testData);
+    selfTest.verified = verified;
+  } catch (err) {
+    selfTest.error = String(err);
+  }
+
   const subscriptions = await getSubscriptionsByPageId(pageId);
 
   if (subscriptions.length === 0) {
@@ -59,6 +102,8 @@ export async function POST(request: NextRequest) {
       message: "등록된 푸시 구독이 없습니다. 알림을 먼저 활성화해주세요.",
       subscriptionCount: 0,
       keyDiag: diag,
+      selfTest,
+      serverPublicKeyPrefix: publicKey.slice(0, 20),
     });
   }
 
@@ -89,5 +134,7 @@ export async function POST(request: NextRequest) {
     subscriptionCount: subscriptions.length,
     results,
     keyDiag: diag,
+    selfTest,
+    serverPublicKeyPrefix: publicKey.slice(0, 20),
   });
 }

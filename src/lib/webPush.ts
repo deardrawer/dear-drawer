@@ -277,8 +277,24 @@ export async function sendPushNotification(
 
     const url = new URL(subscription.endpoint)
     const audience = `${url.protocol}//${url.host}`
+    debug.audience = audience
+
     const jwt = await createVapidJwt(audience, vapidSubject, vapidPrivateKey)
     debug.jwtLen = jwt.length
+
+    // JWT header/payload 디코딩 (signature 제외)
+    const jwtParts = jwt.split('.')
+    try {
+      const hdrRaw = atob(jwtParts[0].replace(/-/g, '+').replace(/_/g, '/'))
+      const plRaw = atob(jwtParts[1].replace(/-/g, '+').replace(/_/g, '/'))
+      debug.jwtHeader = JSON.parse(hdrRaw)
+      debug.jwtPayload = JSON.parse(plRaw)
+      debug.jwtSignatureLen = jwtParts[2]?.length ?? 0
+    } catch { /* ignore decode errors */ }
+
+    debug.vapidPublicKeyPrefix = vapidPublicKey.slice(0, 20)
+    debug.vapidPublicKeyLen = vapidPublicKey.length
+
     const vapidAuth = `vapid t=${jwt}, k=${vapidPublicKey}`
 
     const response = await fetch(subscription.endpoint, {

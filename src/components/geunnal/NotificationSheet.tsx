@@ -274,7 +274,7 @@ export default function NotificationSheet({
       } else if (data.subscriptionCount === 0) {
         setTestResult(`⚠️ ${(data.message as string) || '구독 없음. 알림을 먼저 저장해주세요.'}`)
       } else {
-        const results = data.results as { success?: boolean; error?: string; statusCode?: number; expired?: boolean; responseBody?: string; endpoint?: string }[] | undefined
+        const results = data.results as { success?: boolean; error?: string; statusCode?: number; expired?: boolean; responseBody?: string; endpoint?: string; debug?: Record<string, unknown> }[] | undefined
         const successCount = results?.filter(r => r.success).length || 0
         const failedResults = results?.filter(r => !r.success) || []
         if (successCount > 0) {
@@ -283,9 +283,10 @@ export default function NotificationSheet({
           const f = failedResults[0]
           const status = f?.statusCode ? `HTTP ${f.statusCode}` : ''
           const body = f?.responseBody ? ` | ${f.responseBody.slice(0, 100)}` : ''
-          const ep = f?.endpoint ? ` | ${f.endpoint}` : ''
-          const err = f?.error || ''
-          setTestResult(`❌ ${status}${body}${ep}${err}`)
+          const debugStr = f?.debug ? `\n[debug] ${JSON.stringify(f.debug)}` : ''
+          const selfTestStr = data.selfTest ? `\n[selfTest] ${JSON.stringify(data.selfTest)}` : ''
+          const keyDiagStr = data.keyDiag ? `\n[keyDiag] ${JSON.stringify(data.keyDiag)}` : ''
+          setTestResult(`❌ ${status}${body}${debugStr}${selfTestStr}${keyDiagStr}`)
         }
       }
     } catch (err) {

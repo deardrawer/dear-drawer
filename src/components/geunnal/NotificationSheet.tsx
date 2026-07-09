@@ -269,15 +269,15 @@ export default function NotificationSheet({
       } else if (data.subscriptionCount === 0) {
         setTestResult(`⚠️ ${(data.message as string) || '구독 없음. 알림을 먼저 저장해주세요.'}`)
       } else {
-        const results = data.results as { success?: boolean; error?: string }[] | undefined
+        const results = data.results as { success?: boolean; error?: string; statusCode?: number; expired?: boolean }[] | undefined
         const successCount = results?.filter(r => r.success).length || 0
         const failedResults = results?.filter(r => !r.success) || []
-        const diag = data.keyDiag ? `\n키: ${JSON.stringify(data.keyDiag)}` : ''
         if (successCount > 0) {
           setTestResult(`✅ 발송 성공! (${successCount}/${data.subscriptionCount as number})`)
         } else {
-          const errMsg = failedResults[0]?.error || '오류 상세 없음'
-          setTestResult(`❌ 실패: ${errMsg.slice(0, 120)}${diag}`)
+          const f = failedResults[0]
+          const detail = f?.error || `HTTP ${f?.statusCode || '?'}${f?.expired ? ' (만료)' : ''}`
+          setTestResult(`❌ 실패: ${detail.slice(0, 150)}`)
         }
       }
     } catch (err) {

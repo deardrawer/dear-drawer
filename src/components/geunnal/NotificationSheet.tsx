@@ -80,6 +80,8 @@ export default function NotificationSheet({
   const [loading, setLoading] = useState(false)
   const [pushError, setPushError] = useState<string | null>(null)
   const [envWarning, setEnvWarning] = useState<EnvWarning>(null)
+  const [testSending, setTestSending] = useState(false)
+  const [testResult, setTestResult] = useState<string | null>(null)
   const loadedRef = useRef(false)
 
   // 열릴 때: 서버 설정 로드 (fallback: localStorage)
@@ -243,6 +245,33 @@ export default function NotificationSheet({
     }
   }
 
+  const handleTestPush = async () => {
+    setTestSending(true)
+    setTestResult(null)
+    try {
+      const res = await fetch('/api/geunnal/push/test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      })
+      const data = await res.json() as { error?: string; success?: boolean; subscriptionCount?: number; results?: { success?: boolean }[] }
+      if (!res.ok) {
+        setTestResult(`실패: ${data.error || '알 수 없는 오류'}`)
+      } else if (data.subscriptionCount === 0) {
+        setTestResult('구독 정보가 없습니다. 알림을 먼저 저장해주세요.')
+      } else {
+        const successCount = data.results?.filter(r => r.success).length || 0
+        setTestResult(`발송 완료! (${successCount}/${data.subscriptionCount} 성공)`)
+      }
+    } catch {
+      setTestResult('네트워크 오류가 발생했습니다.')
+    } finally {
+      setTestSending(false)
+    }
+  }
+
   const needsTime = selectedDay !== 'none'
 
   return (
@@ -384,6 +413,22 @@ export default function NotificationSheet({
             >
               {saving ? '저장 중...' : '저장'}
             </button>
+
+            {token && (
+              <button
+                onClick={handleTestPush}
+                disabled={testSending}
+                className="w-full py-2.5 text-[13px] font-medium text-[#8B75D0] bg-[#F9F7FD] border border-[#E8E4F0] rounded-xl transition-colors disabled:opacity-60 hover:bg-[#EDE9FA]"
+              >
+                {testSending ? '발송 중...' : '🔔 테스트 알림 보내기'}
+              </button>
+            )}
+
+            {testResult && (
+              <p className={`text-[12px] px-1 ${testResult.startsWith('발송 완료') ? 'text-[#4CAF50]' : 'text-[#D4899A]'}`}>
+                {testResult}
+              </p>
+            )}
           </>
         )}
       </div>

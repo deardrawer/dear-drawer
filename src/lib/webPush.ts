@@ -53,6 +53,30 @@ function concatBuffers(...buffers: (Uint8Array | ArrayBuffer)[]): Uint8Array {
 
 // ── VAPID JWT ──
 
+// raw 32-byte EC key → PKCS8 DER wrapper
+function wrapRawKeyInPkcs8(rawKey: Uint8Array): Uint8Array {
+  const pkcs8Header = new Uint8Array([
+    0x30, 0x41, 0x02, 0x01, 0x00, 0x30, 0x13, 0x06,
+    0x07, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x02, 0x01,
+    0x06, 0x08, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x03,
+    0x01, 0x07, 0x04, 0x27, 0x30, 0x25, 0x02, 0x01,
+    0x01, 0x04, 0x20,
+  ])
+  return concatBuffers(pkcs8Header, rawKey)
+}
+
+async function importVapidPrivateKey(privateKeyBase64: string): Promise<CryptoKey> {
+  const privateKeyBytes = base64UrlDecode(privateKeyBase64)
+  const algo = { name: 'ECDSA', namedCurve: 'P-256' }
+
+  if (privateKeyBytes.length === 32) {
+    const pkcs8 = wrapRawKeyInPkcs8(privateKeyBytes)
+    return crypto.subtle.importKey('pkcs8', toBuffer(pkcs8), algo, false, ['sign'])
+  }
+
+  return crypto.subtle.importKey('pkcs8', toBuffer(privateKeyBytes), algo, false, ['sign'])
+}
+
 async function createVapidJwt(audience: string, subject: string, privateKeyBase64: string): Promise<string> {
   const now = Math.floor(Date.now() / 1000)
   const header = base64UrlEncode(new TextEncoder().encode(JSON.stringify({ typ: 'JWT', alg: 'ES256' })))
@@ -62,14 +86,7 @@ async function createVapidJwt(audience: string, subject: string, privateKeyBase6
     sub: subject,
   })))
 
-  const privateKeyBytes = base64UrlDecode(privateKeyBase64)
-  const key = await crypto.subtle.importKey(
-    'pkcs8',
-    toBuffer(privateKeyBytes),
-    { name: 'ECDSA', namedCurve: 'P-256' },
-    false,
-    ['sign']
-  )
+  const key = await importVapidPrivateKey(privateKeyBase64)
 
   const data = new TextEncoder().encode(`${header}.${payload}`)
   const signatureDer = await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, key, data)

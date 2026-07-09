@@ -66,15 +66,39 @@ function wrapRawKeyInPkcs8(rawKey: Uint8Array): Uint8Array {
 }
 
 async function importVapidPrivateKey(privateKeyBase64: string): Promise<CryptoKey> {
-  const privateKeyBytes = base64UrlDecode(privateKeyBase64)
+  const cleaned = privateKeyBase64.replace(/-----[A-Z ]+-----/g, '').replace(/\s/g, '')
+  const privateKeyBytes = base64UrlDecode(cleaned)
   const algo = { name: 'ECDSA', namedCurve: 'P-256' }
 
+  // 32 bytes = raw key, wrap in PKCS8
   if (privateKeyBytes.length === 32) {
     const pkcs8 = wrapRawKeyInPkcs8(privateKeyBytes)
     return crypto.subtle.importKey('pkcs8', toBuffer(pkcs8), algo, false, ['sign'])
   }
 
-  return crypto.subtle.importKey('pkcs8', toBuffer(privateKeyBytes), algo, false, ['sign'])
+  // Try PKCS8 directly
+  try {
+    return await crypto.subtle.importKey('pkcs8', toBuffer(privateKeyBytes), algo, false, ['sign'])
+  } catch {
+    // Fallback: extract raw 32-byte d value from the PKCS8/DER structure and re-wrap
+    const dOffset = findRawKeyInDer(privateKeyBytes)
+    if (dOffset >= 0) {
+      const rawKey = privateKeyBytes.slice(dOffset, dOffset + 32)
+      const pkcs8 = wrapRawKeyInPkcs8(rawKey)
+      return crypto.subtle.importKey('pkcs8', toBuffer(pkcs8), algo, false, ['sign'])
+    }
+    throw new Error(`VAPID key import failed (length=${privateKeyBytes.length})`)
+  }
+}
+
+function findRawKeyInDer(der: Uint8Array): number {
+  // Look for 04 20 (OCTET STRING, 32 bytes) which holds the d value
+  for (let i = 0; i < der.length - 33; i++) {
+    if (der[i] === 0x04 && der[i + 1] === 0x20) {
+      return i + 2
+    }
+  }
+  return -1
 }
 
 async function createVapidJwt(audience: string, subject: string, privateKeyBase64: string): Promise<string> {

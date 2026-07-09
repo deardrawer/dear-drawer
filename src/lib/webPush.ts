@@ -113,10 +113,20 @@ async function createVapidJwt(audience: string, subject: string, privateKeyBase6
   const key = await importVapidPrivateKey(privateKeyBase64)
 
   const data = new TextEncoder().encode(`${header}.${payload}`)
-  const signatureDer = await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, key, data)
+  const signatureBytes = new Uint8Array(
+    await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, key, data)
+  )
 
-  // Convert DER signature to raw (r || s, 32 bytes each)
-  const signature = derToRaw(new Uint8Array(signatureDer))
+  // Web Crypto spec returns raw (r||s, 64 bytes), but some runtimes return DER
+  let signature: Uint8Array
+  if (signatureBytes.length === 64) {
+    signature = signatureBytes
+  } else if (signatureBytes[0] === 0x30) {
+    signature = derToRaw(signatureBytes)
+  } else {
+    throw new Error(`Unexpected ECDSA signature format: length=${signatureBytes.length}, first_byte=0x${signatureBytes[0]?.toString(16)}`)
+  }
+
   return `${header}.${payload}.${base64UrlEncode(signature)}`
 }
 
@@ -249,37 +259,55 @@ export async function sendPushNotification(
   vapidPublicKey: string,
   vapidPrivateKey: string,
   vapidSubject: string
-): Promise<{ success: boolean; statusCode: number; expired?: boolean; responseBody?: string }> {
-  const payloadBytes = new TextEncoder().encode(JSON.stringify(payload))
-  const clientPublicKey = base64UrlDecode(subscription.p256dh)
-  const clientAuth = base64UrlDecode(subscription.auth)
+): Promise<{ success: boolean; statusCode: number; expired?: boolean; responseBody?: string; debug?: Record<string, unknown> }> {
+  const debug: Record<string, unknown> = {}
 
-  const { ciphertext } = await encryptPayload(payloadBytes, clientPublicKey, clientAuth)
+  try {
+    const payloadBytes = new TextEncoder().encode(JSON.stringify(payload))
+    const clientPublicKey = base64UrlDecode(subscription.p256dh)
+    const clientAuth = base64UrlDecode(subscription.auth)
+    debug.payloadLen = payloadBytes.length
+    debug.clientPubKeyLen = clientPublicKey.length
+    debug.clientAuthLen = clientAuth.length
 
-  // Build VAPID Authorization
-  const url = new URL(subscription.endpoint)
-  const audience = `${url.protocol}//${url.host}`
-  const jwt = await createVapidJwt(audience, vapidSubject, vapidPrivateKey)
-  const vapidAuth = `vapid t=${jwt}, k=${vapidPublicKey}`
+    const { ciphertext, salt, serverPublicKey } = await encryptPayload(payloadBytes, clientPublicKey, clientAuth)
+    debug.ciphertextLen = ciphertext.length
+    debug.saltLen = salt.length
+    debug.serverPubKeyLen = serverPublicKey.length
 
-  const response = await fetch(subscription.endpoint, {
-    method: 'POST',
-    headers: {
-      'Authorization': vapidAuth,
-      'Content-Encoding': 'aes128gcm',
-      'Content-Type': 'application/octet-stream',
-      'TTL': '86400',
-      'Urgency': 'normal',
-    },
-    body: toBuffer(ciphertext),
-  })
+    const url = new URL(subscription.endpoint)
+    const audience = `${url.protocol}//${url.host}`
+    const jwt = await createVapidJwt(audience, vapidSubject, vapidPrivateKey)
+    debug.jwtLen = jwt.length
+    const vapidAuth = `vapid t=${jwt}, k=${vapidPublicKey}`
 
-  const expired = response.status === 404 || response.status === 410
-  let responseBody: string | undefined
-  if (response.status !== 201) {
-    try { responseBody = await response.text() } catch { /* ignore */ }
+    const response = await fetch(subscription.endpoint, {
+      method: 'POST',
+      headers: {
+        'Authorization': vapidAuth,
+        'Content-Encoding': 'aes128gcm',
+        'Content-Type': 'application/octet-stream',
+        'TTL': '86400',
+        'Urgency': 'normal',
+      },
+      body: toBuffer(ciphertext),
+    })
+
+    const expired = response.status === 404 || response.status === 410
+    let responseBody: string | undefined
+    if (response.status !== 201) {
+      try { responseBody = await response.text() } catch { /* ignore */ }
+    }
+    return { success: response.status === 201, statusCode: response.status, expired, responseBody, debug }
+  } catch (err) {
+    const e = err instanceof Error ? err : new Error(String(err))
+    return {
+      success: false,
+      statusCode: 0,
+      responseBody: `${e.name}: ${e.message}\n${e.stack || ''}`,
+      debug,
+    }
   }
-  return { success: response.status === 201, statusCode: response.status, expired, responseBody }
 }
 
 // ── VAPID Key Generation (run once with Node.js) ──

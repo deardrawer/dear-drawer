@@ -314,11 +314,24 @@ function InstagramHeader({
 function InlineBgmEqualizer({
   audioRef,
   bgmEnabled,
+  showNotification,
 }: {
   audioRef: React.RefObject<HTMLAudioElement | null>
   bgmEnabled: boolean
+  showNotification?: boolean
 }) {
   const [isPlaying, setIsPlaying] = useState(false)
+  const [notifVisible, setNotifVisible] = useState(false)
+  const notifDismissed = useRef(false)
+
+  useEffect(() => {
+    if (showNotification && bgmEnabled && !isPlaying && !notifDismissed.current) {
+      const t = setTimeout(() => setNotifVisible(true), 1000)
+      return () => clearTimeout(t)
+    }
+  }, [showNotification, bgmEnabled, isPlaying])
+  useEffect(() => { if (notifVisible) { const t = setTimeout(() => { setNotifVisible(false); notifDismissed.current = true }, 4000); return () => clearTimeout(t) } }, [notifVisible])
+  useEffect(() => { if (isPlaying && notifVisible) { setNotifVisible(false); notifDismissed.current = true } }, [isPlaying, notifVisible])
 
   useEffect(() => {
     const audio = audioRef.current
@@ -334,7 +347,7 @@ function InlineBgmEqualizer({
   }, [audioRef])
 
   const toggleMusic = (e: React.MouseEvent) => {
-    e.stopPropagation() // CoverSection tap 이벤트 방지
+    e.stopPropagation()
     if (!audioRef.current) return
     if (audioRef.current.paused) {
       audioRef.current.play()
@@ -350,44 +363,55 @@ function InlineBgmEqualizer({
   if (!bgmEnabled) return null
 
   return (
-    <button
-      onClick={toggleMusic}
-      className="absolute top-8 right-3 z-20 flex flex-col items-center gap-[3px]"
-      aria-label={isPlaying ? '음악 끄기' : '음악 켜기'}
-    >
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 1.5, height: 14 }}>
-        {[
-          { delay: '0s', anim: 'eq-bar1' },
-          { delay: '0.15s', anim: 'eq-bar2' },
-          { delay: '0.08s', anim: 'eq-bar3' },
-          { delay: '0.22s', anim: 'eq-bar4' },
-        ].map((bar, i) => (
-          <div
-            key={i}
-            style={{
-              width: 2,
-              borderRadius: 1,
-              background: isPlaying ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.4)',
-              animation: isPlaying ? `${bar.anim} 0.8s ease-in-out ${bar.delay} infinite` : 'none',
-              height: isPlaying ? undefined : 3,
-              transition: 'background 0.3s, height 0.3s',
-            }}
-          />
-        ))}
-      </div>
-      <span
-        style={{
-          fontSize: 8,
-          fontWeight: 500,
-          letterSpacing: '0.5px',
-          color: isPlaying ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.4)',
-          transition: 'color 0.3s',
-          textTransform: 'uppercase',
-        }}
+    <div className="absolute top-8 right-3 z-20">
+      {notifVisible && !isPlaying && (
+        <div className="absolute right-0 top-10 whitespace-nowrap bg-white/90 text-gray-800 text-xs px-3 py-1.5 rounded-lg shadow-lg" style={{ animation: 'fadeInUp 0.3s ease-out' }}>
+          음악이 준비되어 있어요
+          <div className="absolute -top-1 right-2 w-2 h-2 bg-white/90 rotate-45" />
+        </div>
+      )}
+      {showNotification && !isPlaying && !notifDismissed.current && (
+        <span className="absolute -inset-1 rounded-full animate-ping" style={{ background: 'rgba(255,255,255,0.3)' }} />
+      )}
+      <button
+        onClick={toggleMusic}
+        className="relative flex flex-col items-center gap-[3px]"
+        aria-label={isPlaying ? '음악 끄기' : '음악 켜기'}
       >
-        {isPlaying ? 'on' : 'off'}
-      </span>
-    </button>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 1.5, height: 14 }}>
+          {[
+            { delay: '0s', anim: 'eq-bar1' },
+            { delay: '0.15s', anim: 'eq-bar2' },
+            { delay: '0.08s', anim: 'eq-bar3' },
+            { delay: '0.22s', anim: 'eq-bar4' },
+          ].map((bar, i) => (
+            <div
+              key={i}
+              style={{
+                width: 2,
+                borderRadius: 1,
+                background: isPlaying ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.4)',
+                animation: isPlaying ? `${bar.anim} 0.8s ease-in-out ${bar.delay} infinite` : 'none',
+                height: isPlaying ? undefined : 3,
+                transition: 'background 0.3s, height 0.3s',
+              }}
+            />
+          ))}
+        </div>
+        <span
+          style={{
+            fontSize: 8,
+            fontWeight: 500,
+            letterSpacing: '0.5px',
+            color: isPlaying ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.4)',
+            transition: 'color 0.3s',
+            textTransform: 'uppercase',
+          }}
+        >
+          {isPlaying ? 'on' : 'off'}
+        </span>
+      </button>
+    </div>
   )
 }
 
@@ -562,7 +586,7 @@ function CoverSection({ content, invitation, displayId, audioRef, bgmEnabled, fo
       </div>
 
       {/* BGM equalizer — top right, 인트로에만 표시 */}
-      <InlineBgmEqualizer audioRef={audioRef} bgmEnabled={bgmEnabled} />
+      <InlineBgmEqualizer audioRef={audioRef} bgmEnabled={bgmEnabled} showNotification={content?.bgm?.showNotification} />
 
       {/* Story photos — crossfade */}
       <div className="absolute inset-0">

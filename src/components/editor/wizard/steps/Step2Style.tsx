@@ -1213,6 +1213,18 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
               <span className="text-xs text-gray-400 ml-auto">모바일에서 자동재생</span>
             </div>
 
+            {/* 음악 안내 표시 */}
+            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+              <Switch
+                checked={bgm?.showNotification ?? false}
+                onCheckedChange={(checked) => updateNestedField('bgm.showNotification', checked)}
+              />
+              <div className="flex-1">
+                <span className="text-sm text-gray-700">음악 안내 표시</span>
+                <p className="text-xs text-gray-400">자동재생이 안 될 때 음악 버튼에 펄스 효과와 안내 문구를 표시합니다</p>
+              </div>
+            </div>
+
             {/* 재생 시작 페이지 선택 - OUR/FAMILY 템플릿 + 자동재생 ON일 때만 */}
             {bgm?.autoplay && ['narrative-our', 'narrative-family'].includes(templateId || invitation.templateId || '') && (
               <div className="p-3 bg-gray-50 rounded-lg space-y-2">

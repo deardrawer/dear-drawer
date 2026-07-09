@@ -360,6 +360,7 @@ export interface TheSimpleInvitationData {
     enabled: boolean
     url: string
     autoplay: boolean
+    showNotification?: boolean
   }
 
   // D-Day 팝업 (결혼식 근접일 당일 안내)

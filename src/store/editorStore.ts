@@ -253,6 +253,7 @@ export interface BgmSettings {
   url: string
   autoplay: boolean
   startPage?: 'intro' | 'invitation' | 'main'  // BGM 재생 시작 페이지 (기본값 'main')
+  showNotification?: boolean  // 음악 안내 표시 (펄스 + 툴팁)
 }
 
 // 행복한 시간을 위한 안내 섹션

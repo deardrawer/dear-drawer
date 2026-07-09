@@ -7,6 +7,10 @@
   "observability": {
     "enabled": true
   },
+  "vars": {
+    "VAPID_PUBLIC_KEY": "BAL5L0r_CPM_Sgb6FqMLDtB86misgzGxHxpq1oVxe7lsTImoLvi8utGcG2wJyYz7VPP9YWiVcDfkA6T35X3L8Ug",
+    "VAPID_SUBJECT": "mailto:hello@deardrawer.com"
+  },
   "d1_databases": [
     {
       "binding": "DB",

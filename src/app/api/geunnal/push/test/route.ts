@@ -3,6 +3,7 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getSubscriptionsByPageId } from "@/lib/geunnalDb";
 import { sendPushNotification } from "@/lib/webPush";
 import { verifyGeunnalToken } from "@/lib/geunnalAuth";
+import { loadVapidKeys } from "@/lib/vapidKeys";
 
 export async function POST(request: NextRequest) {
   const auth = request.headers.get("authorization");
@@ -15,7 +16,6 @@ export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => ({}));
   const { pageId: bodyPageId } = body as { pageId?: string };
 
-  // 인증: geunnal 토큰 또는 CRON_SECRET
   let pageId: string | undefined;
 
   const geunnalPayload = await verifyGeunnalToken(tokenOrSecret);
@@ -39,45 +39,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // VAPID 키
-  let vapidPublicKey: string;
-  let vapidPrivateKey: string;
-  let vapidSubject: string;
-  const FALLBACK_PUB = "BAL5L0r_CPM_Sgb6FqMLDtB86misgzGxHxpq1oVxe7lsTImoLvi8utGcG2wJyYz7VPP9YWiVcDfkA6T35X3L8Ug";
-  const FALLBACK_PRIV = "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgEb2a5ZMbVuvS6Zgh5AVcEktxJgEByEFzst0IDoHA8-qhRANCAAQC-S9K_wjzP0oG-hajCw7QfOporIMxsR8aataFcXu5bEyJqC74vLrRnBtsCcmM-1Tz_WFolXA35AOk9-V9y_FI";
+  let vapidKeys;
   try {
-    const { env } = (await getCloudflareContext()) as unknown as { env: Record<string, string> };
-    vapidPublicKey = env.VAPID_PUBLIC_KEY || FALLBACK_PUB;
-    vapidPrivateKey = env.VAPID_PRIVATE_KEY || FALLBACK_PRIV;
-    vapidSubject = env.VAPID_SUBJECT || "mailto:hello@deardrawer.com";
-  } catch {
-    vapidPublicKey = process.env.VAPID_PUBLIC_KEY || FALLBACK_PUB;
-    vapidPrivateKey = process.env.VAPID_PRIVATE_KEY || FALLBACK_PRIV;
-    vapidSubject = process.env.VAPID_SUBJECT || "mailto:hello@deardrawer.com";
+    vapidKeys = await loadVapidKeys();
+  } catch (err) {
+    return NextResponse.json(
+      { error: String(err) },
+      { status: 500 }
+    );
   }
 
-  if (!vapidPublicKey || !vapidPrivateKey) {
-    return NextResponse.json({
-      error: "VAPID keys not configured",
-      debug: { publicKeySet: !!vapidPublicKey, privateKeySet: !!vapidPrivateKey },
-    }, { status: 500 });
-  }
-
-  // 키 진단 정보
-  function decodeLen(b64: string): number {
-    try {
-      let s = b64.replace(/-/g, '+').replace(/_/g, '/');
-      while (s.length % 4) s += '=';
-      return atob(s).length;
-    } catch { return -1; }
-  }
-  const keyDiag = {
-    publicKeyLen: vapidPublicKey.length,
-    publicKeyBytes: decodeLen(vapidPublicKey),
-    privateKeyLen: vapidPrivateKey.length,
-    privateKeyBytes: decodeLen(vapidPrivateKey),
-    privateKeyPrefix: vapidPrivateKey.slice(0, 12),
-  };
+  const { publicKey, privateKey, subject, diag } = vapidKeys;
 
   const subscriptions = await getSubscriptionsByPageId(pageId);
 
@@ -86,6 +58,7 @@ export async function POST(request: NextRequest) {
       success: false,
       message: "등록된 푸시 구독이 없습니다. 알림을 먼저 활성화해주세요.",
       subscriptionCount: 0,
+      keyDiag: diag,
     });
   }
 
@@ -101,9 +74,9 @@ export async function POST(request: NextRequest) {
       const result = await sendPushNotification(
         { endpoint: sub.endpoint, p256dh: sub.p256dh, auth: sub.auth },
         payload,
-        vapidPublicKey,
-        vapidPrivateKey,
-        vapidSubject
+        publicKey,
+        privateKey,
+        subject
       );
       results.push({ id: sub.id, ...result, endpoint: sub.endpoint.slice(0, 60) });
     } catch (err) {
@@ -115,6 +88,6 @@ export async function POST(request: NextRequest) {
     success: true,
     subscriptionCount: subscriptions.length,
     results,
-    keyDiag,
+    keyDiag: diag,
   });
 }

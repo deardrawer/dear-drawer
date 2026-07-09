@@ -8,6 +8,7 @@ import {
   deletePushSubscriptionById,
 } from "@/lib/geunnalDb";
 import { sendPushNotification } from "@/lib/webPush";
+import { loadVapidKeys } from "@/lib/vapidKeys";
 
 // KST 현재 날짜/시간 가져오기
 function getKSTNow(): { date: string; time: string } {
@@ -43,24 +44,16 @@ export async function POST(request: NextRequest) {
   }
 
   // VAPID 키 가져오기
-  const FALLBACK_PUB = "BAL5L0r_CPM_Sgb6FqMLDtB86misgzGxHxpq1oVxe7lsTImoLvi8utGcG2wJyYz7VPP9YWiVcDfkA6T35X3L8Ug";
-  const FALLBACK_PRIV = "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgEb2a5ZMbVuvS6Zgh5AVcEktxJgEByEFzst0IDoHA8-qhRANCAAQC-S9K_wjzP0oG-hajCw7QfOporIMxsR8aataFcXu5bEyJqC74vLrRnBtsCcmM-1Tz_WFolXA35AOk9-V9y_FI";
   let vapidPublicKey: string;
   let vapidPrivateKey: string;
   let vapidSubject: string;
   try {
-    const { env } = (await getCloudflareContext()) as unknown as { env: Record<string, string> };
-    vapidPublicKey = env.VAPID_PUBLIC_KEY || FALLBACK_PUB;
-    vapidPrivateKey = env.VAPID_PRIVATE_KEY || FALLBACK_PRIV;
-    vapidSubject = env.VAPID_SUBJECT || "mailto:hello@deardrawer.com";
-  } catch {
-    vapidPublicKey = process.env.VAPID_PUBLIC_KEY || FALLBACK_PUB;
-    vapidPrivateKey = process.env.VAPID_PRIVATE_KEY || FALLBACK_PRIV;
-    vapidSubject = process.env.VAPID_SUBJECT || "mailto:hello@deardrawer.com";
-  }
-
-  if (!vapidPublicKey || !vapidPrivateKey) {
-    return NextResponse.json({ error: "VAPID keys not configured" }, { status: 500 });
+    const vapidKeys = await loadVapidKeys();
+    vapidPublicKey = vapidKeys.publicKey;
+    vapidPrivateKey = vapidKeys.privateKey;
+    vapidSubject = vapidKeys.subject;
+  } catch (err) {
+    return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 
   const { date: today, time: currentTime } = getKSTNow();

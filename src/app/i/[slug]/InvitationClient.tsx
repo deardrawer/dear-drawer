@@ -33,7 +33,13 @@ function MusicToggle({
   const [isPlaying, setIsPlaying] = useState(false)
   const hasAutoPlayed = useRef(false)
   const [notifVisible, setNotifVisible] = useState(false)
+  const [notifFading, setNotifFading] = useState(false)
   const notifDismissed = useRef(false)
+
+  const dismissNotif = () => {
+    setNotifFading(true)
+    setTimeout(() => { setNotifVisible(false); setNotifFading(false); notifDismissed.current = true }, 400)
+  }
 
   useEffect(() => {
     if (showNotification && isVisible && !isPlaying && !notifDismissed.current) {
@@ -43,14 +49,14 @@ function MusicToggle({
   }, [showNotification, isVisible, isPlaying])
 
   useEffect(() => {
-    if (notifVisible) {
-      const t = setTimeout(() => { setNotifVisible(false); notifDismissed.current = true }, 4000)
+    if (notifVisible && !notifFading) {
+      const t = setTimeout(dismissNotif, 4000)
       return () => clearTimeout(t)
     }
-  }, [notifVisible])
+  }, [notifVisible, notifFading])
 
   useEffect(() => {
-    if (isPlaying && notifVisible) { setNotifVisible(false); notifDismissed.current = true }
+    if (isPlaying && notifVisible) { dismissNotif() }
   }, [isPlaying, notifVisible])
 
   // Auto-play when shouldAutoPlay becomes true (triggered by user interaction)
@@ -121,13 +127,10 @@ function MusicToggle({
   return (
     <div className="fixed top-4 right-4 z-50">
       {notifVisible && !isPlaying && (
-        <div className="absolute right-0 top-12 whitespace-nowrap rounded-full shadow-lg"
-          style={{ animation: 'fadeInUp 0.3s ease-out', background: 'rgba(255,255,255,0.97)', padding: '8px 16px', backdropFilter: 'blur(8px)', border: '1px solid rgba(0,0,0,0.08)' }}>
+        <div className="absolute right-12 top-1 whitespace-nowrap rounded-full shadow-lg"
+          style={{ animation: notifFading ? 'bgmFadeOut 0.4s ease-out forwards' : 'bgmSlideIn 0.35s ease-out forwards', background: 'rgba(255,255,255,0.97)', padding: '8px 16px', backdropFilter: 'blur(8px)', border: '1px solid rgba(0,0,0,0.08)' }}>
           <span style={{ fontSize: '12px', color: '#555', letterSpacing: '0.02em' }}>🎵 음악이 준비되어 있어요</span>
         </div>
-      )}
-      {showNotification && !isPlaying && !notifDismissed.current && (
-        <span className="absolute inset-0 rounded-full animate-ping" style={{ background: 'rgba(0,0,0,0.1)' }} />
       )}
       <button
         onClick={toggleMusic}
@@ -135,6 +138,7 @@ function MusicToggle({
         style={{
           background: 'rgba(255,255,255,0.9)',
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          animation: showNotification && !isPlaying && !notifDismissed.current ? 'bgmRing 1.5s ease-out infinite' : 'none',
         }}
         aria-label={isPlaying ? '음악 끄기' : '음악 켜기'}
       >
@@ -162,7 +166,13 @@ function MusicToggleInSection({
 }) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [notifVisible, setNotifVisible] = useState(false)
+  const [notifFading, setNotifFading] = useState(false)
   const notifDismissed = useRef(false)
+
+  const dismissNotif = () => {
+    setNotifFading(true)
+    setTimeout(() => { setNotifVisible(false); setNotifFading(false); notifDismissed.current = true }, 400)
+  }
 
   useEffect(() => {
     if (showNotification && !isPlaying && !notifDismissed.current) {
@@ -172,14 +182,14 @@ function MusicToggleInSection({
   }, [showNotification, isPlaying])
 
   useEffect(() => {
-    if (notifVisible) {
-      const t = setTimeout(() => { setNotifVisible(false); notifDismissed.current = true }, 4000)
+    if (notifVisible && !notifFading) {
+      const t = setTimeout(dismissNotif, 4000)
       return () => clearTimeout(t)
     }
-  }, [notifVisible])
+  }, [notifVisible, notifFading])
 
   useEffect(() => {
-    if (isPlaying && notifVisible) { setNotifVisible(false); notifDismissed.current = true }
+    if (isPlaying && notifVisible) { dismissNotif() }
   }, [isPlaying, notifVisible])
 
   useEffect(() => {
@@ -221,13 +231,10 @@ function MusicToggleInSection({
   return (
     <div className="absolute top-4 right-4 z-10">
       {notifVisible && !isPlaying && (
-        <div className="absolute right-0 top-12 whitespace-nowrap rounded-full shadow-lg"
-          style={{ animation: 'fadeInUp 0.3s ease-out', background: 'rgba(255,255,255,0.97)', padding: '8px 16px', backdropFilter: 'blur(8px)', border: '1px solid rgba(0,0,0,0.08)' }}>
+        <div className="absolute right-12 top-1 whitespace-nowrap rounded-full shadow-lg"
+          style={{ animation: notifFading ? 'bgmFadeOut 0.4s ease-out forwards' : 'bgmSlideIn 0.35s ease-out forwards', background: 'rgba(255,255,255,0.97)', padding: '8px 16px', backdropFilter: 'blur(8px)', border: '1px solid rgba(0,0,0,0.08)' }}>
           <span style={{ fontSize: '12px', color: '#555', letterSpacing: '0.02em' }}>🎵 음악이 준비되어 있어요</span>
         </div>
-      )}
-      {showNotification && !isPlaying && !notifDismissed.current && (
-        <span className="absolute inset-0 rounded-full animate-ping" style={{ background: 'rgba(0,0,0,0.15)' }} />
       )}
       <button
         onClick={toggleMusic}
@@ -235,6 +242,7 @@ function MusicToggleInSection({
         style={{
           background: 'rgba(255,255,255,0.9)',
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          animation: showNotification && !isPlaying && !notifDismissed.current ? 'bgmRing 1.5s ease-out infinite' : 'none',
         }}
         aria-label={isPlaying ? '음악 끄기' : '음악 켜기'}
       >

@@ -3023,6 +3023,20 @@ function InvitationClientExhibitContent({
   const audioRef = useRef<HTMLAudioElement>(null)
   const guestbookRef = useRef<HTMLDivElement>(null)
 
+  // 페이지 레벨 핀치줌 방지
+  useEffect(() => {
+    const preventZoom = (e: TouchEvent) => { if (e.touches.length > 1) e.preventDefault() }
+    const preventGesture = (e: Event) => e.preventDefault()
+    document.addEventListener('touchmove', preventZoom, { passive: false })
+    document.addEventListener('gesturestart', preventGesture, { passive: false } as AddEventListenerOptions)
+    document.addEventListener('gesturechange', preventGesture, { passive: false } as AddEventListenerOptions)
+    return () => {
+      document.removeEventListener('touchmove', preventZoom)
+      document.removeEventListener('gesturestart', preventGesture)
+      document.removeEventListener('gesturechange', preventGesture)
+    }
+  }, [])
+
   // BGM fade out/in when video plays
   const bgmWasPlayingRef = useRef(false)
   const bgmFadeTimer = useRef<ReturnType<typeof setInterval> | null>(null)

@@ -2519,6 +2519,20 @@ function InvitationClientMagazineContent({
   const [lightboxIndex, setLightboxIndex] = useState(0)
   const [interviewPopupOpen, setInterviewPopupOpen] = useState(false)
 
+  // 페이지 레벨 핀치줌 방지
+  useEffect(() => {
+    const preventZoom = (e: TouchEvent) => { if (e.touches.length > 1) e.preventDefault() }
+    const preventGesture = (e: Event) => e.preventDefault()
+    document.addEventListener('touchmove', preventZoom, { passive: false })
+    document.addEventListener('gesturestart', preventGesture, { passive: false } as AddEventListenerOptions)
+    document.addEventListener('gesturechange', preventGesture, { passive: false } as AddEventListenerOptions)
+    return () => {
+      document.removeEventListener('touchmove', preventZoom)
+      document.removeEventListener('gesturestart', preventGesture)
+      document.removeEventListener('gesturechange', preventGesture)
+    }
+  }, [])
+
   // D-Day popup state
   const [showDdayPopup, setShowDdayPopup] = useState(false)
   useEffect(() => {

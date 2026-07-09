@@ -5269,6 +5269,20 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
   const [currentPage, setCurrentPage] = useState<PageType>(skipIntro ? 'main' : 'intro')
   const [introScreen, setIntroScreen] = useState<'cover' | 'invitation'>('cover')
 
+  // 페이지 레벨 핀치줌 방지
+  useEffect(() => {
+    const preventZoom = (e: TouchEvent) => { if (e.touches.length > 1) e.preventDefault() }
+    const preventGesture = (e: Event) => e.preventDefault()
+    document.addEventListener('touchmove', preventZoom, { passive: false })
+    document.addEventListener('gesturestart', preventGesture, { passive: false } as AddEventListenerOptions)
+    document.addEventListener('gesturechange', preventGesture, { passive: false } as AddEventListenerOptions)
+    return () => {
+      document.removeEventListener('touchmove', preventZoom)
+      document.removeEventListener('gesturestart', preventGesture)
+      document.removeEventListener('gesturechange', preventGesture)
+    }
+  }, [])
+
   // 에디터 프리뷰에 intro screen 상태 전달
   useEffect(() => {
     onIntroScreenChange?.(introScreen)

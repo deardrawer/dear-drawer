@@ -4872,6 +4872,20 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
   const fontStyleKey = (data.fontStyle && data.fontStyle in essayFontStyles) ? data.fontStyle as EssayFontStyle : 'modern'
   const fonts = essayFontStyles[fontStyleKey]
 
+  // 페이지 레벨 핀치줌 방지
+  useEffect(() => {
+    const preventZoom = (e: TouchEvent) => { if (e.touches.length > 1) e.preventDefault() }
+    const preventGesture = (e: Event) => e.preventDefault()
+    document.addEventListener('touchmove', preventZoom, { passive: false })
+    document.addEventListener('gesturestart', preventGesture, { passive: false } as AddEventListenerOptions)
+    document.addEventListener('gesturechange', preventGesture, { passive: false } as AddEventListenerOptions)
+    return () => {
+      document.removeEventListener('touchmove', preventZoom)
+      document.removeEventListener('gesturestart', preventGesture)
+      document.removeEventListener('gesturechange', preventGesture)
+    }
+  }, [])
+
   // D-Day popup
   const ddayPopup = normalizeDdayPopup(data.ddayPopup)
   const [showDdayPopup, setShowDdayPopup] = useState(false)

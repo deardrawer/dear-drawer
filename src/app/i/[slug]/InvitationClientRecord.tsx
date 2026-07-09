@@ -2679,6 +2679,20 @@ function InvitationClientRecordContent({
 
   const [currentPage, setCurrentPage] = useState<'cover' | 'main'>(skipIntro ? 'main' : 'cover')
 
+  // 페이지 레벨 핀치줌 방지
+  useEffect(() => {
+    const preventZoom = (e: TouchEvent) => { if (e.touches.length > 1) e.preventDefault() }
+    const preventGesture = (e: Event) => e.preventDefault()
+    document.addEventListener('touchmove', preventZoom, { passive: false })
+    document.addEventListener('gesturestart', preventGesture, { passive: false } as AddEventListenerOptions)
+    document.addEventListener('gesturechange', preventGesture, { passive: false } as AddEventListenerOptions)
+    return () => {
+      document.removeEventListener('touchmove', preventZoom)
+      document.removeEventListener('gesturestart', preventGesture)
+      document.removeEventListener('gesturechange', preventGesture)
+    }
+  }, [])
+
   // skipIntro prop 변경 시 페이지 전환 (에디터 미리보기용)
   useEffect(() => {
     setCurrentPage(skipIntro ? 'main' : 'cover')

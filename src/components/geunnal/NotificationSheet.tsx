@@ -303,6 +303,30 @@ export default function NotificationSheet({
 
   const needsTime = selectedDay !== 'none'
 
+  // 프로덕션 점검 모드: 운영 환경에서 알림 기능 임시 숨김
+  const isMaintenanceMode = process.env.NODE_ENV === 'production'
+
+  if (isMaintenanceMode) {
+    return (
+      <BottomSheet open={open} onClose={onClose} title="알림 설정">
+        <div className="flex flex-col items-center gap-4 py-6 px-2 text-center">
+          <p className="text-[14px] text-[#2A2240] leading-relaxed">
+            🚧 현재 알림 기능을 테스트 중입니다.<br />
+            더 안정적인 서비스를 제공하기 위해 점검 중이며,<br />
+            완료 후 다시 오픈하겠습니다.
+          </p>
+          <button
+            onClick={onClose}
+            className="w-full py-3 text-[14px] font-medium text-white rounded-xl transition-colors"
+            style={{ background: 'linear-gradient(135deg, #8B75D0, #B87AAB)' }}
+          >
+            확인
+          </button>
+        </div>
+      </BottomSheet>
+    )
+  }
+
   return (
     <BottomSheet open={open} onClose={onClose} title="알림 설정">
       <div className="flex flex-col gap-4">

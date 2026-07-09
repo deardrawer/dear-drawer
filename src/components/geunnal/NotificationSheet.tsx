@@ -214,9 +214,13 @@ export default function NotificationSheet({
             const registration = await navigator.serviceWorker.register('/sw.js')
             await navigator.serviceWorker.ready
 
-            // 기존 구독 해제 후 새로 등록
+            // 기존 구독 해제 후 새로 등록 (VAPID 키 변경 시 endpoint가 달라지므로 이전 것 정리)
             const existingSub = await registration.pushManager.getSubscription()
-            if (existingSub) await existingSub.unsubscribe()
+            let oldEndpoint: string | undefined
+            if (existingSub) {
+              oldEndpoint = existingSub.endpoint
+              await existingSub.unsubscribe()
+            }
 
             const subscription = await registration.pushManager.subscribe({
               userVisibleOnly: true,
@@ -235,6 +239,7 @@ export default function NotificationSheet({
                 dayBefore: selectedDay,
                 notifyTime: selectedTime,
                 rsvpNotify,
+                oldEndpoint,
               }),
             }, onSessionExpired)
           } catch (err) {

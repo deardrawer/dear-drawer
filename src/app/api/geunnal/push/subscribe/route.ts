@@ -39,13 +39,14 @@ export async function POST(request: NextRequest) {
   if (!payload) return NextResponse.json({ error: "유효하지 않은 토큰" }, { status: 401 });
 
   const body = await request.json();
-  const { endpoint, p256dh, auth, dayBefore, notifyTime, rsvpNotify } = body as {
+  const { endpoint, p256dh, auth, dayBefore, notifyTime, rsvpNotify, oldEndpoint } = body as {
     endpoint: string;
     p256dh: string;
     auth: string;
     dayBefore: NotificationDayBefore;
     notifyTime: string;
     rsvpNotify?: boolean;
+    oldEndpoint?: string;
   };
 
   if (!endpoint || !p256dh || !auth) {
@@ -55,6 +56,10 @@ export async function POST(request: NextRequest) {
   const validDays: NotificationDayBefore[] = ["none", "0d", "1d", "2d"];
   if (!validDays.includes(dayBefore)) {
     return NextResponse.json({ error: "잘못된 알림 설정" }, { status: 400 });
+  }
+
+  if (oldEndpoint && oldEndpoint !== endpoint) {
+    await deletePushSubscription(oldEndpoint);
   }
 
   await upsertPushSubscription(payload.pageId, endpoint, p256dh, auth);

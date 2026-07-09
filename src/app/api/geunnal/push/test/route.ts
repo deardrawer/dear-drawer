@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { getSubscriptionsByPageId } from "@/lib/geunnalDb";
+import { getSubscriptionsByPageId, deletePushSubscriptionById } from "@/lib/geunnalDb";
 import { sendPushNotification } from "@/lib/webPush";
 import { verifyGeunnalToken } from "@/lib/geunnalAuth";
 import { loadVapidKeys } from "@/lib/vapidKeys";
@@ -123,7 +123,12 @@ export async function POST(request: NextRequest) {
         privateKey,
         subject
       );
-      results.push({ id: sub.id, ...result, endpoint: sub.endpoint.slice(0, 60) });
+      if (result.expired || result.statusCode === 403) {
+        await deletePushSubscriptionById(sub.id);
+        results.push({ id: sub.id, ...result, endpoint: sub.endpoint.slice(0, 60), cleaned: true });
+      } else {
+        results.push({ id: sub.id, ...result, endpoint: sub.endpoint.slice(0, 60) });
+      }
     } catch (err) {
       results.push({ id: sub.id, success: false, error: String(err) });
     }

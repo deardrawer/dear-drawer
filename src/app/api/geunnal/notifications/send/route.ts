@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
           vapidSubject
         );
 
-        if (result.expired) {
+        if (result.expired || result.statusCode === 403) {
           await deletePushSubscriptionById(sub.id);
           expired++;
         } else if (result.success) {

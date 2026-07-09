@@ -366,7 +366,7 @@ function InlineBgmEqualizer({
     <div className="absolute top-8 right-3 z-20">
       {notifVisible && !isPlaying && (
         <div className="absolute right-0 top-12 whitespace-nowrap rounded-full shadow-lg"
-          style={{ animation: 'fadeInUp 0.3s ease-out', background: 'rgba(255,255,255,0.95)', padding: '8px 16px', backdropFilter: 'blur(8px)' }}>
+          style={{ animation: 'fadeInUp 0.3s ease-out', background: 'rgba(255,255,255,0.95)', padding: '8px 16px', backdropFilter: 'blur(8px)', border: '1px solid rgba(0,0,0,0.08)' }}>
           <span style={{ fontSize: '12px', color: '#555', letterSpacing: '0.02em' }}>🎵 음악이 준비되어 있어요</span>
         </div>
       )}

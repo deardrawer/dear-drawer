@@ -69,18 +69,18 @@ export async function POST(request: NextRequest) {
   let expired = 0;
 
   for (const setting of allSettings) {
-    // 시간 매칭: cron은 5분 간격이므로 ±2분 허용
-    const [setH, setM] = setting.notify_time.split(":").map(Number);
-    const [curH, curM] = currentTime.split(":").map(Number);
-    const setTotal = setH * 60 + setM;
-    const curTotal = curH * 60 + curM;
-    if (Math.abs(setTotal - curTotal) > 2) {
+    // 중복 방지: 오늘 이미 발송했으면 건너뛰기
+    if (setting.last_sent_date === today) {
       skipped++;
       continue;
     }
 
-    // 중복 방지: 오늘 이미 발송했으면 건너뛰기
-    if (setting.last_sent_date === today) {
+    // 시간 매칭: 설정 시간 이후인지 확인 (last_sent_date로 중복 방지)
+    const [setH, setM] = setting.notify_time.split(":").map(Number);
+    const [curH, curM] = currentTime.split(":").map(Number);
+    const setTotal = setH * 60 + setM;
+    const curTotal = curH * 60 + curM;
+    if (curTotal < setTotal) {
       skipped++;
       continue;
     }

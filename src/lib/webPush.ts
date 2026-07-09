@@ -249,7 +249,7 @@ export async function sendPushNotification(
   vapidPublicKey: string,
   vapidPrivateKey: string,
   vapidSubject: string
-): Promise<{ success: boolean; statusCode: number; expired?: boolean }> {
+): Promise<{ success: boolean; statusCode: number; expired?: boolean; responseBody?: string }> {
   const payloadBytes = new TextEncoder().encode(JSON.stringify(payload))
   const clientPublicKey = base64UrlDecode(subscription.p256dh)
   const clientAuth = base64UrlDecode(subscription.auth)
@@ -275,7 +275,11 @@ export async function sendPushNotification(
   })
 
   const expired = response.status === 404 || response.status === 410
-  return { success: response.status === 201, statusCode: response.status, expired }
+  let responseBody: string | undefined
+  if (response.status !== 201) {
+    try { responseBody = await response.text() } catch { /* ignore */ }
+  }
+  return { success: response.status === 201, statusCode: response.status, expired, responseBody }
 }
 
 // ── VAPID Key Generation (run once with Node.js) ──

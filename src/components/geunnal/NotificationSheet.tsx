@@ -252,7 +252,7 @@ export default function NotificationSheet({
 
   const handleTestPush = async () => {
     setTestSending(true)
-    setTestResult('발송 중...')
+    setTestResult(`발송 중... (clientKey: ${VAPID_PUBLIC_KEY ? VAPID_PUBLIC_KEY.slice(0, 12) + '...' : 'EMPTY'})`)
     try {
       const res = await fetch('/api/geunnal/push/test', {
         method: 'POST',
@@ -274,15 +274,18 @@ export default function NotificationSheet({
       } else if (data.subscriptionCount === 0) {
         setTestResult(`⚠️ ${(data.message as string) || '구독 없음. 알림을 먼저 저장해주세요.'}`)
       } else {
-        const results = data.results as { success?: boolean; error?: string; statusCode?: number; expired?: boolean }[] | undefined
+        const results = data.results as { success?: boolean; error?: string; statusCode?: number; expired?: boolean; responseBody?: string; endpoint?: string }[] | undefined
         const successCount = results?.filter(r => r.success).length || 0
         const failedResults = results?.filter(r => !r.success) || []
         if (successCount > 0) {
           setTestResult(`✅ 발송 성공! (${successCount}/${data.subscriptionCount as number})`)
         } else {
           const f = failedResults[0]
-          const detail = f?.error || `HTTP ${f?.statusCode || '?'}${f?.expired ? ' (만료)' : ''}`
-          setTestResult(`❌ 실패: ${detail.slice(0, 150)}`)
+          const status = f?.statusCode ? `HTTP ${f.statusCode}` : ''
+          const body = f?.responseBody ? ` | ${f.responseBody.slice(0, 100)}` : ''
+          const ep = f?.endpoint ? ` | ${f.endpoint}` : ''
+          const err = f?.error || ''
+          setTestResult(`❌ ${status}${body}${ep}${err}`)
         }
       }
     } catch (err) {

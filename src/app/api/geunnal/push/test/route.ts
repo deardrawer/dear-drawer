@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
         vapidPrivateKey,
         vapidSubject
       );
-      results.push({ id: sub.id, ...result });
+      results.push({ id: sub.id, ...result, endpoint: sub.endpoint.slice(0, 60) });
     } catch (err) {
       results.push({ id: sub.id, success: false, error: String(err) });
     }

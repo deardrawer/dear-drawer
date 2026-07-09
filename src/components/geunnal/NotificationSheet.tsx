@@ -195,6 +195,7 @@ export default function NotificationSheet({
             const sw = await navigator.serviceWorker?.ready
             const sub = await sw?.pushManager?.getSubscription()
             endpoint = sub?.endpoint || ''
+            if (sub) await sub.unsubscribe()
           } catch { /* no SW */ }
 
           await geunnalFetch('/api/geunnal/push/subscribe', {
@@ -212,6 +213,10 @@ export default function NotificationSheet({
           try {
             const registration = await navigator.serviceWorker.register('/sw.js')
             await navigator.serviceWorker.ready
+
+            // 기존 구독 해제 후 새로 등록
+            const existingSub = await registration.pushManager.getSubscription()
+            if (existingSub) await existingSub.unsubscribe()
 
             const subscription = await registration.pushManager.subscribe({
               userVisibleOnly: true,

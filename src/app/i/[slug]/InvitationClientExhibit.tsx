@@ -365,13 +365,13 @@ function InlineBgmEqualizer({
   return (
     <div className="absolute top-8 right-3 z-20">
       {notifVisible && !isPlaying && (
-        <div className="absolute right-0 top-10 whitespace-nowrap bg-white/90 text-gray-800 text-xs px-3 py-1.5 rounded-lg shadow-lg" style={{ animation: 'fadeInUp 0.3s ease-out' }}>
-          음악이 준비되어 있어요
-          <div className="absolute -top-1 right-2 w-2 h-2 bg-white/90 rotate-45" />
+        <div className="absolute right-0 top-12 whitespace-nowrap rounded-full shadow-lg"
+          style={{ animation: 'fadeInUp 0.3s ease-out', background: 'rgba(255,255,255,0.95)', padding: '8px 16px', backdropFilter: 'blur(8px)' }}>
+          <span style={{ fontSize: '12px', color: '#555', letterSpacing: '0.02em' }}>🎵 음악이 준비되어 있어요</span>
         </div>
       )}
       {showNotification && !isPlaying && !notifDismissed.current && (
-        <span className="absolute -inset-1 rounded-full animate-ping" style={{ background: 'rgba(255,255,255,0.3)' }} />
+        <span className="absolute -inset-1 rounded-full animate-ping" style={{ background: 'rgba(255,255,255,0.25)' }} />
       )}
       <button
         onClick={toggleMusic}

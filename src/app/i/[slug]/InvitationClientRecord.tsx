@@ -310,13 +310,13 @@ function MusicToggle({ audioRef, isVisible, shouldAutoPlay, tc, showNotification
   return (
     <div className="fixed top-4 right-4 z-50">
       {notifVisible && !isPlaying && (
-        <div className="absolute right-0 top-11 whitespace-nowrap bg-black/80 text-white text-xs px-3 py-1.5 rounded-lg" style={{ animation: 'fadeInUp 0.3s ease-out' }}>
-          음악이 준비되어 있어요
-          <div className="absolute -top-1 right-3 w-2 h-2 bg-black/80 rotate-45" />
+        <div className="absolute right-0 top-12 whitespace-nowrap rounded-full shadow-lg"
+          style={{ animation: 'fadeInUp 0.3s ease-out', background: 'rgba(255,255,255,0.97)', padding: '8px 16px', backdropFilter: 'blur(8px)' }}>
+          <span style={{ fontSize: '12px', color: '#555', letterSpacing: '0.02em' }}>🎵 음악이 준비되어 있어요</span>
         </div>
       )}
       {showNotification && !isPlaying && !notifDismissed.current && (
-        <span className="absolute inset-0 rounded-full animate-ping" style={{ background: 'rgba(0,0,0,0.15)' }} />
+        <span className="absolute inset-0 rounded-full animate-ping" style={{ background: 'rgba(0,0,0,0.1)' }} />
       )}
       <button onClick={toggle} className="relative w-9 h-9 rounded-full flex items-center justify-center transition-all hover:scale-110"
         style={{ background: `${tc.sectionBg}E6`, backdropFilter: 'blur(10px)', border: `1px solid ${tc.divider}40`, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>

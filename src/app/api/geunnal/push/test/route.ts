@@ -55,8 +55,27 @@ export async function POST(request: NextRequest) {
   }
 
   if (!vapidPublicKey || !vapidPrivateKey) {
-    return NextResponse.json({ error: "VAPID keys not configured" }, { status: 500 });
+    return NextResponse.json({
+      error: "VAPID keys not configured",
+      debug: { publicKeySet: !!vapidPublicKey, privateKeySet: !!vapidPrivateKey },
+    }, { status: 500 });
   }
+
+  // 키 진단 정보
+  function decodeLen(b64: string): number {
+    try {
+      let s = b64.replace(/-/g, '+').replace(/_/g, '/');
+      while (s.length % 4) s += '=';
+      return atob(s).length;
+    } catch { return -1; }
+  }
+  const keyDiag = {
+    publicKeyLen: vapidPublicKey.length,
+    publicKeyBytes: decodeLen(vapidPublicKey),
+    privateKeyLen: vapidPrivateKey.length,
+    privateKeyBytes: decodeLen(vapidPrivateKey),
+    privateKeyPrefix: vapidPrivateKey.slice(0, 12),
+  };
 
   const subscriptions = await getSubscriptionsByPageId(pageId);
 
@@ -94,5 +113,6 @@ export async function POST(request: NextRequest) {
     success: true,
     subscriptionCount: subscriptions.length,
     results,
+    keyDiag,
   });
 }

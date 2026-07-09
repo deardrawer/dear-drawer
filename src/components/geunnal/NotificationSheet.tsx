@@ -257,7 +257,7 @@ export default function NotificationSheet({
         },
       })
       const text = await res.text()
-      let data: { error?: string; success?: boolean; subscriptionCount?: number; message?: string; results?: { success?: boolean; error?: string }[] }
+      let data: Record<string, unknown>
       try {
         data = JSON.parse(text)
       } catch {
@@ -265,17 +265,19 @@ export default function NotificationSheet({
         return
       }
       if (!res.ok) {
-        setTestResult(`❌ ${data.error || `HTTP ${res.status}`}`)
+        setTestResult(`❌ ${(data.error as string) || `HTTP ${res.status}`}`)
       } else if (data.subscriptionCount === 0) {
-        setTestResult(`⚠️ ${data.message || '구독 없음. 알림을 먼저 저장해주세요.'}`)
+        setTestResult(`⚠️ ${(data.message as string) || '구독 없음. 알림을 먼저 저장해주세요.'}`)
       } else {
-        const successCount = data.results?.filter(r => r.success).length || 0
-        const failedResults = data.results?.filter(r => !r.success) || []
+        const results = data.results as { success?: boolean; error?: string }[] | undefined
+        const successCount = results?.filter(r => r.success).length || 0
+        const failedResults = results?.filter(r => !r.success) || []
+        const diag = data.keyDiag ? `\n키: ${JSON.stringify(data.keyDiag)}` : ''
         if (successCount > 0) {
-          setTestResult(`✅ 발송 성공! (${successCount}/${data.subscriptionCount})`)
+          setTestResult(`✅ 발송 성공! (${successCount}/${data.subscriptionCount as number})`)
         } else {
-          const errMsg = failedResults[0]?.error || '알 수 없는 오류'
-          setTestResult(`❌ 발송 실패: ${errMsg.slice(0, 80)}`)
+          const errMsg = failedResults[0]?.error || '오류 상세 없음'
+          setTestResult(`❌ 실패: ${errMsg.slice(0, 120)}${diag}`)
         }
       }
     } catch (err) {

@@ -54,7 +54,7 @@ const MINUTE_OPTIONS = Array.from({ length: 60 }, (_, i) => ({
   label: String(i).padStart(2, '0'),
 }))
 
-const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || 'BAL5L0r_CPM_Sgb6FqMLDtB86misgzGxHxpq1oVxe7lsTImoLvi8utGcG2wJyYz7VPP9YWiVcDfkA6T35X3L8Ug'
+const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || 'BECtFR7mstY5MmHgkE9OwRydlARrBwW9rAL4Qb3JIiwONN_87pGdkhwrMO2CIf8Mu4st9tYGlgx022WgR6ab6R4'
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4)

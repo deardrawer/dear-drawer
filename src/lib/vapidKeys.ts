@@ -1,15 +1,14 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 export interface VapidKeyDiag {
-  publicKeySource: "env" | "fallback";
-  privateKeySource: "env" | "fallback";
+  publicKeySource: "env";
+  privateKeySource: "env";
   publicKeyPresent: boolean;
   privateKeyPresent: boolean;
   publicKeyBytes: number;
   privateKeyBytes: number;
   privateKeyLen: number;
-  pairConsistent: boolean;
-  warning?: string;
+  pairConsistent: true;
 }
 
 export interface VapidKeyResult {
@@ -19,11 +18,8 @@ export interface VapidKeyResult {
   diag: VapidKeyDiag;
 }
 
-// dev/test 전용 fallback (프로덕션에서는 env가 반드시 설정되어야 함)
-const DEV_PUB =
-  "BAL5L0r_CPM_Sgb6FqMLDtB86misgzGxHxpq1oVxe7lsTImoLvi8utGcG2wJyYz7VPP9YWiVcDfkA6T35X3L8Ug";
-const DEV_PRIV =
-  "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgEb2a5ZMbVuvS6Zgh5AVcEktxJgEByEFzst0IDoHA8-qhRANCAAQC-S9K_wjzP0oG-hajCw7QfOporIMxsR8aataFcXu5bEyJqC74vLrRnBtsCcmM-1Tz_WFolXA35AOk9-V9y_FI";
+// fallback 없음: env에 VAPID_PUBLIC_KEY + VAPID_PRIVATE_KEY 필수
+// 로컬 개발: .env.local, 프로덕션: wrangler vars + Cloudflare secret
 
 function decodeByteLength(b64: string): number {
   try {
@@ -65,38 +61,27 @@ export async function loadVapidKeys(): Promise<VapidKeyResult> {
     );
   }
 
-  let publicKey: string;
-  let privateKey: string;
-  let pubSource: "env" | "fallback";
-  let privSource: "env" | "fallback";
-
-  if (hasEnvPub && hasEnvPriv) {
-    publicKey = envPub!;
-    privateKey = envPriv!;
-    pubSource = "env";
-    privSource = "env";
-  } else {
-    publicKey = DEV_PUB;
-    privateKey = DEV_PRIV;
-    pubSource = "fallback";
-    privSource = "fallback";
+  if (!hasEnvPub || !hasEnvPriv) {
+    throw new Error(
+      "VAPID keys not configured. Set VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY in env."
+    );
   }
+
+  const publicKey = envPub!;
+  const privateKey = envPriv!;
 
   const publicKeyBytes = decodeByteLength(publicKey);
   const privateKeyBytes = decodeByteLength(privateKey);
 
   const diag: VapidKeyDiag = {
-    publicKeySource: pubSource,
-    privateKeySource: privSource,
-    publicKeyPresent: !!publicKey,
-    privateKeyPresent: !!privateKey,
+    publicKeySource: "env",
+    privateKeySource: "env",
+    publicKeyPresent: true,
+    privateKeyPresent: true,
     publicKeyBytes,
     privateKeyBytes,
     privateKeyLen: privateKey.length,
-    pairConsistent: pubSource === privSource,
-    ...(pubSource === "fallback" && {
-      warning: "Using dev/test fallback keys. Set VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY in env for production.",
-    }),
+    pairConsistent: true,
   };
 
   return {

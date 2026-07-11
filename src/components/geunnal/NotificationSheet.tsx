@@ -269,7 +269,27 @@ export default function NotificationSheet({
 
   const handleTestPush = async () => {
     setTestSending(true)
-    setTestResult(`발송 중... (clientKey: ${VAPID_PUBLIC_KEY ? VAPID_PUBLIC_KEY.slice(0, 12) + '...' : 'EMPTY'})`)
+
+    // [DEBUG] SW 상태 진단
+    let swDiag = 'SW: '
+    try {
+      const reg = await navigator.serviceWorker?.getRegistration()
+      if (reg) {
+        const sw = reg.active || reg.waiting || reg.installing
+        swDiag += `state=${sw?.state || 'none'} scope=${reg.scope} `
+        const swResponse = await fetch('/sw.js', { cache: 'no-store' })
+        const swText = await swResponse.text()
+        const vMatch = swText.match(/Service Worker (v\d+)/)
+        swDiag += `file=${vMatch ? vMatch[1] : 'no-version'} `
+      } else {
+        swDiag += 'NOT_REGISTERED '
+      }
+    } catch (e) { swDiag += `err=${String(e).slice(0, 30)} ` }
+
+    // Notification permission 확인
+    swDiag += `perm=${typeof Notification !== 'undefined' ? Notification.permission : 'N/A'}`
+
+    setTestResult(`발송 중... ${swDiag}`)
     try {
       const res = await fetch('/api/geunnal/push/test', {
         method: 'POST',
@@ -291,11 +311,11 @@ export default function NotificationSheet({
       } else if (data.subscriptionCount === 0) {
         setTestResult(`⚠️ ${(data.message as string) || '구독 없음. 알림을 먼저 저장해주세요.'}`)
       } else {
-        const results = data.results as { success?: boolean; error?: string; statusCode?: number; expired?: boolean; responseBody?: string; endpoint?: string; debug?: Record<string, unknown> }[] | undefined
+        const results = data.results as { success?: boolean; error?: string; statusCode?: number; expired?: boolean; responseBody?: string; endpoint?: string; debug?: Record<string, unknown>; cleaned?: boolean }[] | undefined
         const successCount = results?.filter(r => r.success).length || 0
         const failedResults = results?.filter(r => !r.success) || []
         if (successCount > 0) {
-          setTestResult(`✅ 발송 성공! (${successCount}/${data.subscriptionCount as number})`)
+          setTestResult(`✅ FCM 201 (${successCount}/${data.subscriptionCount as number})\n${swDiag}`)
         } else {
           const f = failedResults[0]
           const status = f?.statusCode ? `HTTP ${f.statusCode}` : ''
@@ -303,7 +323,7 @@ export default function NotificationSheet({
           const debugStr = f?.debug ? `\n[debug] ${JSON.stringify(f.debug)}` : ''
           const selfTestStr = data.selfTest ? `\n[selfTest] ${JSON.stringify(data.selfTest)}` : ''
           const keyDiagStr = data.keyDiag ? `\n[keyDiag] ${JSON.stringify(data.keyDiag)}` : ''
-          setTestResult(`❌ ${status}${body}${debugStr}${selfTestStr}${keyDiagStr}`)
+          setTestResult(`❌ ${status}${body}${debugStr}${selfTestStr}${keyDiagStr}\n${swDiag}`)
         }
       }
     } catch (err) {

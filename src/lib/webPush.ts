@@ -14,6 +14,7 @@ interface PushPayload {
   title: string
   body: string
   url?: string
+  tag?: string
 }
 
 // Helper: Uint8Array → ArrayBuffer (for strict TS)

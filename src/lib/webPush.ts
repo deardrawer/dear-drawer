@@ -199,11 +199,11 @@ async function encryptPayload(
     serverPublicKeyRaw
   )
 
-  // IKM = HKDF(auth_secret, ecdh_secret, "WebPush: info" || 0x00 || client_pub || server_pub, 32)
-  const ikmKey = await crypto.subtle.importKey('raw', toBuffer(clientAuthBytes), { name: 'HKDF' }, false, ['deriveBits'])
+  // RFC 8291: IKM = HKDF(salt=auth_secret, IKM=ecdh_secret, info, 32)
+  const ecdhKey = await crypto.subtle.importKey('raw', toBuffer(sharedSecret), { name: 'HKDF' }, false, ['deriveBits'])
   const prkBits = await crypto.subtle.deriveBits(
-    { name: 'HKDF', hash: 'SHA-256', salt: toBuffer(sharedSecret), info: toBuffer(authInfo) },
-    ikmKey,
+    { name: 'HKDF', hash: 'SHA-256', salt: toBuffer(clientAuthBytes), info: toBuffer(authInfo) },
+    ecdhKey,
     256
   )
 

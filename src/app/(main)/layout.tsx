@@ -67,7 +67,7 @@ export default function MainLayout({
             결재 후 후기 남기면, The simple 청첩장 or 혼주용 모바일 청첩장 무료!
           </p>
           <p className="text-[10px] sm:text-xs text-gray-800/80 mt-0.5">
-            선착순 10쌍 한정 · 6월 이벤트
+            선착순 10쌍 한정 · {new Date().getMonth() + 1}월 이벤트
           </p>
           <button
             onClick={closeBanner}

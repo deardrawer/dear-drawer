@@ -254,6 +254,7 @@ export interface BgmSettings {
   autoplay: boolean
   startPage?: 'intro' | 'invitation' | 'main'  // BGM 재생 시작 페이지 (기본값 'main')
   showNotification?: boolean  // 음악 안내 표시 (펄스 + 툴팁)
+  notificationText?: string   // 커스텀 안내 문구 (기본: "배경음악이 준비되어 있어요")
 }
 
 // 행복한 시간을 위한 안내 섹션

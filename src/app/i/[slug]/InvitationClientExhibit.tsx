@@ -315,10 +315,12 @@ function InlineBgmEqualizer({
   audioRef,
   bgmEnabled,
   showNotification,
+  notificationText,
 }: {
   audioRef: React.RefObject<HTMLAudioElement | null>
   bgmEnabled: boolean
   showNotification?: boolean
+  notificationText?: string
 }) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [notifVisible, setNotifVisible] = useState(false)
@@ -367,7 +369,7 @@ function InlineBgmEqualizer({
       {notifVisible && !isPlaying && (
         <div className="absolute right-12 top-1 whitespace-nowrap rounded-full shadow-lg"
           style={{ animation: 'fadeInUp 0.3s ease-out', background: 'rgba(255,255,255,0.95)', padding: '8px 16px', backdropFilter: 'blur(8px)', border: '1px solid rgba(0,0,0,0.08)' }}>
-          <span style={{ fontSize: '12px', color: '#555', letterSpacing: '0.02em' }}>🎵 음악이 준비되어 있어요</span>
+          <span style={{ fontSize: '12px', color: '#555', letterSpacing: '0.02em' }}>🎵 {notificationText || '배경음악이 준비되어 있어요'}</span>
         </div>
       )}
       {showNotification && !isPlaying && !notifDismissed.current && (
@@ -586,7 +588,7 @@ function CoverSection({ content, invitation, displayId, audioRef, bgmEnabled, fo
       </div>
 
       {/* BGM equalizer — top right, 인트로에만 표시 */}
-      <InlineBgmEqualizer audioRef={audioRef} bgmEnabled={bgmEnabled} showNotification={content?.bgm?.showNotification} />
+      <InlineBgmEqualizer audioRef={audioRef} bgmEnabled={bgmEnabled} showNotification={content?.bgm?.showNotification} notificationText={content?.bgm?.notificationText} />
 
       {/* Story photos — crossfade */}
       <div className="absolute inset-0">

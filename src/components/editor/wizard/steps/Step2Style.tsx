@@ -1225,6 +1225,22 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
               </div>
             </div>
 
+            {/* 음악 안내 커스텀 텍스트 */}
+            {bgm?.showNotification && (
+              <div className="p-3 bg-gray-50 rounded-lg space-y-2">
+                <label className="text-sm text-gray-700">안내 문구</label>
+                <input
+                  type="text"
+                  value={bgm?.notificationText ?? ''}
+                  onChange={(e) => updateNestedField('bgm.notificationText', e.target.value)}
+                  placeholder="배경음악이 준비되어 있어요"
+                  maxLength={30}
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-rose-300"
+                />
+                <p className="text-xs text-gray-400">비워두면 기본 문구가 표시됩니다</p>
+              </div>
+            )}
+
             {/* 재생 시작 페이지 선택 - OUR/FAMILY 템플릿 + 자동재생 ON일 때만 */}
             {bgm?.autoplay && ['narrative-our', 'narrative-family'].includes(templateId || invitation.templateId || '') && (
               <div className="p-3 bg-gray-50 rounded-lg space-y-2">

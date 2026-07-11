@@ -249,7 +249,7 @@ function EssayGalleryGrid({ images, onImageClick, colors }: {
 }
 
 // ===== Music Toggle =====
-function EssayMusicToggle({ audioRef, theme, showNotification }: { audioRef: React.RefObject<HTMLAudioElement | null>; theme: ThemeConfig; showNotification?: boolean }) {
+function EssayMusicToggle({ audioRef, theme, showNotification, notificationText }: { audioRef: React.RefObject<HTMLAudioElement | null>; theme: ThemeConfig; showNotification?: boolean; notificationText?: string }) {
   const [isPlaying, setIsPlaying] = useState(false)
   const hasAutoPlayed = useRef(false)
   const [notifVisible, setNotifVisible] = useState(false)
@@ -298,7 +298,7 @@ function EssayMusicToggle({ audioRef, theme, showNotification }: { audioRef: Rea
       {notifVisible && !isPlaying && (
         <div className="absolute right-12 top-1 whitespace-nowrap rounded-full shadow-lg"
           style={{ animation: 'fadeInUp 0.3s ease-out', background: 'rgba(255,255,255,0.97)', padding: '8px 16px', backdropFilter: 'blur(8px)', border: '1px solid rgba(0,0,0,0.08)' }}>
-          <span style={{ fontSize: '12px', color: '#555', letterSpacing: '0.02em' }}>🎵 음악이 준비되어 있어요</span>
+          <span style={{ fontSize: '12px', color: '#555', letterSpacing: '0.02em' }}>🎵 {notificationText || '배경음악이 준비되어 있어요'}</span>
         </div>
       )}
       {showNotification && !isPlaying && !notifDismissed.current && (
@@ -5033,7 +5033,7 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
           <BookConcept data={data} invitationId={invitationId} isSample={isSample} />
         </div>
         {hasBgm && <audio ref={audioRef} loop preload="auto"><source src={bgm.url} type="audio/mpeg" /></audio>}
-        {hasBgm && <EssayMusicToggle audioRef={audioRef} theme={theme} showNotification={bgm.showNotification} />}
+        {hasBgm && <EssayMusicToggle audioRef={audioRef} theme={theme} showNotification={bgm.showNotification} notificationText={bgm.notificationText} />}
         </div>
         {showDdayPopup && ddayPopup?.enabled && (
           <DdayPopupOverlay
@@ -5093,7 +5093,7 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
         </div>
         {!isPreview && <ScrollHintOverlay theme={theme} />}
         {hasBgm && <audio ref={audioRef} loop preload="auto"><source src={bgm.url} type="audio/mpeg" /></audio>}
-        {hasBgm && <EssayMusicToggle audioRef={audioRef} theme={theme} showNotification={bgm.showNotification} />}
+        {hasBgm && <EssayMusicToggle audioRef={audioRef} theme={theme} showNotification={bgm.showNotification} notificationText={bgm.notificationText} />}
         </div>
         {showDdayPopup && ddayPopup?.enabled && (
           <DdayPopupOverlay
@@ -5142,7 +5142,7 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
       </div>
       {!isPreview && <ScrollHintOverlay theme={theme} />}
       {hasBgm && <audio ref={audioRef} loop preload="auto"><source src={bgm.url} type="audio/mpeg" /></audio>}
-      {hasBgm && <EssayMusicToggle audioRef={audioRef} theme={theme} showNotification={bgm.showNotification} />}
+      {hasBgm && <EssayMusicToggle audioRef={audioRef} theme={theme} showNotification={bgm.showNotification} notificationText={bgm.notificationText} />}
       </div>
       {showDdayPopup && ddayPopup?.enabled && (
         <DdayPopupOverlay

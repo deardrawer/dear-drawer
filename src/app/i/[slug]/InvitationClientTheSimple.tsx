@@ -17,7 +17,7 @@ import type { Invitation } from '@/types/invitation'
 import { WatermarkOverlay } from '@/components/ui/WatermarkOverlay'
 import GuestFloatingButton from '@/components/invitation/GuestFloatingButton'
 
-function MusicToggle({ audioRef, shouldAutoPlay, showNotification }: { audioRef: React.RefObject<HTMLAudioElement | null>; shouldAutoPlay: boolean; showNotification?: boolean }) {
+function MusicToggle({ audioRef, shouldAutoPlay, showNotification, notificationText }: { audioRef: React.RefObject<HTMLAudioElement | null>; shouldAutoPlay: boolean; showNotification?: boolean; notificationText?: string }) {
   const [isPlaying, setIsPlaying] = useState(false)
   const hasAutoPlayed = useRef(false)
   const [notifVisible, setNotifVisible] = useState(false)
@@ -67,7 +67,7 @@ function MusicToggle({ audioRef, shouldAutoPlay, showNotification }: { audioRef:
       {notifVisible && !isPlaying && (
         <div className="absolute right-12 top-1 whitespace-nowrap rounded-full shadow-lg"
           style={{ animation: 'fadeInUp 0.3s ease-out', background: 'rgba(255,255,255,0.97)', padding: '8px 16px', backdropFilter: 'blur(8px)', border: '1px solid rgba(0,0,0,0.08)' }}>
-          <span style={{ fontSize: '12px', color: '#555', letterSpacing: '0.02em' }}>🎵 음악이 준비되어 있어요</span>
+          <span style={{ fontSize: '12px', color: '#555', letterSpacing: '0.02em' }}>🎵 {notificationText || '배경음악이 준비되어 있어요'}</span>
         </div>
       )}
       {showNotification && !isPlaying && !notifDismissed.current && (
@@ -468,6 +468,7 @@ export default function InvitationClientTheSimple({
             audioRef={audioRef}
             shouldAutoPlay={(!hasCover || coverOpen) && data.bgm?.autoplay === true}
             showNotification={data.bgm?.showNotification}
+            notificationText={data.bgm?.notificationText}
           />
         </>
       )}
@@ -678,6 +679,7 @@ function normalizeTheSimpleData(
       url: c.bgm.url || '',
       autoplay: c.bgm.autoplay !== false,
       showNotification: !!c.bgm.showNotification,
+      notificationText: c.bgm.notificationText || '',
     } : undefined,
     ddayPopup: normalizeDdayPopup(c.ddayPopup),
     meta: {

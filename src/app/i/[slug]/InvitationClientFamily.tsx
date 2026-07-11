@@ -24,11 +24,13 @@ function MusicToggle({
   isVisible,
   shouldAutoPlay,
   showNotification,
+  notificationText,
 }: {
   audioRef: React.RefObject<HTMLAudioElement | null>
   isVisible: boolean
   shouldAutoPlay: boolean
   showNotification?: boolean
+  notificationText?: string
 }) {
   const [isPlaying, setIsPlaying] = useState(false)
   const hasAutoPlayed = useRef(false)
@@ -99,7 +101,7 @@ function MusicToggle({
       {notifVisible && !isPlaying && (
         <div className="absolute right-12 top-1 whitespace-nowrap rounded-full shadow-lg"
           style={{ animation: 'fadeInUp 0.3s ease-out', background: 'rgba(255,255,255,0.97)', padding: '8px 16px', backdropFilter: 'blur(8px)', border: '1px solid rgba(0,0,0,0.08)' }}>
-          <span style={{ fontSize: '12px', color: '#555', letterSpacing: '0.02em' }}>🎵 음악이 준비되어 있어요</span>
+          <span style={{ fontSize: '12px', color: '#555', letterSpacing: '0.02em' }}>🎵 {notificationText || '배경음악이 준비되어 있어요'}</span>
         </div>
       )}
       {showNotification && !isPlaying && !notifDismissed.current && (
@@ -3847,6 +3849,7 @@ const mockInvitation = {
     autoplay: true,
     startPage: 'main' as 'intro' | 'invitation' | 'main',
     showNotification: false,
+    notificationText: '' as string | undefined,
   },
 
   // Intro animation settings
@@ -4755,7 +4758,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
     <div className="relative">
       {/* Title Section - FAMILY 템플릿 */}
       <div className="relative">
-        {audioRef && <MusicToggle audioRef={audioRef} isVisible={showMusicToggle ?? false} shouldAutoPlay={shouldAutoPlay ?? false} showNotification={invitation?.bgm?.showNotification} />}
+        {audioRef && <MusicToggle audioRef={audioRef} isVisible={showMusicToggle ?? false} shouldAutoPlay={shouldAutoPlay ?? false} showNotification={invitation?.bgm?.showNotification} notificationText={invitation?.bgm?.notificationText} />}
       </div>
 
       {/* 첫 번째 디바이더 (Divider 0) - 부모님 소개 섹션 상단 */}
@@ -5757,6 +5760,7 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
                       audioRef={audioRef}
                       isVisible={currentPage === 'intro' && introScreen === 'invitation'}
                       showNotification={invitation.bgm?.showNotification}
+                      notificationText={invitation.bgm?.notificationText}
                       shouldAutoPlay={
                         invitation.bgm?.autoplay === true && (() => {
                           const sp = invitation.bgm?.startPage || 'main'

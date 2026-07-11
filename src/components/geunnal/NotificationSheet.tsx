@@ -84,18 +84,6 @@ export default function NotificationSheet({
   const [testSending, setTestSending] = useState(false)
   const [testResult, setTestResult] = useState<string | null>(null)
   const loadedRef = useRef(false)
-  const [pushReceived, setPushReceived] = useState<string | null>(null)
-
-  // SW에서 push 수신 메시지 리스닝
-  useEffect(() => {
-    const handler = (e: MessageEvent) => {
-      if (e.data?.type === 'PUSH_RECEIVED') {
-        setPushReceived(`✅ SW push 이벤트 수신: ${e.data.time}`)
-      }
-    }
-    navigator.serviceWorker?.addEventListener('message', handler)
-    return () => navigator.serviceWorker?.removeEventListener('message', handler)
-  }, [])
 
   // 열릴 때: 서버 설정 로드 (fallback: localStorage)
   useEffect(() => {
@@ -224,15 +212,7 @@ export default function NotificationSheet({
 
         if (token && VAPID_PUBLIC_KEY && 'serviceWorker' in navigator) {
           try {
-            // [DEBUG] 클라이언트가 사용하는 VAPID public key 진단
             const keyBytes = urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-            console.log('[PUSH DEBUG] clientVapidKey:', {
-              prefix: VAPID_PUBLIC_KEY.slice(0, 20),
-              length: VAPID_PUBLIC_KEY.length,
-              byteLength: keyBytes.length,
-              envSource: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ? 'env' : 'fallback',
-            })
-            setPushError(`[진단] key=${VAPID_PUBLIC_KEY.slice(0, 20)}... len=${VAPID_PUBLIC_KEY.length} bytes=${keyBytes.length} src=${process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ? 'env' : 'fallback'}`)
 
             const registration = await navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' })
             await registration.update()
@@ -281,27 +261,14 @@ export default function NotificationSheet({
 
   const handleTestPush = async () => {
     setTestSending(true)
+    setTestResult(null)
 
-    // [DEBUG] SW 상태 진단
-    let swDiag = 'SW: '
-    try {
-      const reg = await navigator.serviceWorker?.getRegistration()
-      if (reg) {
-        const sw = reg.active || reg.waiting || reg.installing
-        swDiag += `state=${sw?.state || 'none'} scope=${reg.scope} `
-        const swResponse = await fetch('/sw.js', { cache: 'no-store' })
-        const swText = await swResponse.text()
-        const vMatch = swText.match(/Service Worker (v\d+)/)
-        swDiag += `file=${vMatch ? vMatch[1] : 'no-version'} `
-      } else {
-        swDiag += 'NOT_REGISTERED '
-      }
-    } catch (e) { swDiag += `err=${String(e).slice(0, 30)} ` }
+    if (typeof Notification !== 'undefined' && Notification.permission !== 'granted') {
+      setTestResult('알림 권한이 꺼져 있어요. 브라우저 설정에서 알림을 허용해주세요.')
+      setTestSending(false)
+      return
+    }
 
-    // Notification permission 확인
-    swDiag += `perm=${typeof Notification !== 'undefined' ? Notification.permission : 'N/A'}`
-
-    setTestResult(`발송 중... ${swDiag}`)
     try {
       const res = await fetch('/api/geunnal/push/test', {
         method: 'POST',
@@ -310,67 +277,27 @@ export default function NotificationSheet({
           'Authorization': `Bearer ${token}`,
         },
       })
-      const text = await res.text()
-      let data: Record<string, unknown>
-      try {
-        data = JSON.parse(text)
-      } catch {
-        setTestResult(`응답 파싱 실패: ${text.slice(0, 100)}`)
-        return
-      }
+      const data = await res.json().catch(() => ({})) as { subscriptionCount?: number; results?: { success?: boolean }[] }
       if (!res.ok) {
-        setTestResult(`❌ ${(data.error as string) || `HTTP ${res.status}`}`)
+        setTestResult('테스트 알림 전송에 실패했어요. 잠시 후 다시 시도해주세요.')
       } else if (data.subscriptionCount === 0) {
-        setTestResult(`⚠️ ${(data.message as string) || '구독 없음. 알림을 먼저 저장해주세요.'}`)
+        setTestResult('알림 연결이 해제되어 있어요. 알림을 다시 켜주세요.')
       } else {
-        const results = data.results as { success?: boolean; error?: string; statusCode?: number; expired?: boolean; responseBody?: string; endpoint?: string; debug?: Record<string, unknown>; cleaned?: boolean }[] | undefined
-        const successCount = results?.filter(r => r.success).length || 0
-        const failedResults = results?.filter(r => !r.success) || []
+        const successCount = data.results?.filter(r => r.success).length || 0
         if (successCount > 0) {
-          setTestResult(`✅ FCM 201 (${successCount}/${data.subscriptionCount as number})\n${swDiag}`)
+          setTestResult('테스트 알림을 보냈어요. 알림이 도착하는지 확인해주세요.')
         } else {
-          const f = failedResults[0]
-          const status = f?.statusCode ? `HTTP ${f.statusCode}` : ''
-          const body = f?.responseBody ? ` | ${f.responseBody.slice(0, 100)}` : ''
-          const debugStr = f?.debug ? `\n[debug] ${JSON.stringify(f.debug)}` : ''
-          const selfTestStr = data.selfTest ? `\n[selfTest] ${JSON.stringify(data.selfTest)}` : ''
-          const keyDiagStr = data.keyDiag ? `\n[keyDiag] ${JSON.stringify(data.keyDiag)}` : ''
-          setTestResult(`❌ ${status}${body}${debugStr}${selfTestStr}${keyDiagStr}\n${swDiag}`)
+          setTestResult('테스트 알림 전송에 실패했어요. 잠시 후 다시 시도해주세요.')
         }
       }
-    } catch (err) {
-      setTestResult(`❌ 네트워크 오류: ${String(err).slice(0, 80)}`)
+    } catch {
+      setTestResult('테스트 알림 전송에 실패했어요. 잠시 후 다시 시도해주세요.')
     } finally {
       setTestSending(false)
     }
   }
 
   const needsTime = selectedDay !== 'none'
-
-  // 프로덕션 점검 모드: 운영 환경에서 알림 기능 임시 숨김
-  // TODO: 테스트 완료 후 아래 주석 해제하여 점검 모드 재적용
-  const isMaintenanceMode = false // process.env.NODE_ENV === 'production'
-
-  if (isMaintenanceMode) {
-    return (
-      <BottomSheet open={open} onClose={onClose} title="알림 설정">
-        <div className="flex flex-col items-center gap-4 py-6 px-2 text-center">
-          <p className="text-[14px] text-[#2A2240] leading-relaxed">
-            🚧 현재 알림 기능을 테스트 중입니다.<br />
-            더 안정적인 서비스를 제공하기 위해 점검 중이며,<br />
-            완료 후 다시 오픈하겠습니다.
-          </p>
-          <button
-            onClick={onClose}
-            className="w-full py-3 text-[14px] font-medium text-white rounded-xl transition-colors"
-            style={{ background: 'linear-gradient(135deg, #8B75D0, #B87AAB)' }}
-          >
-            확인
-          </button>
-        </div>
-      </BottomSheet>
-    )
-  }
 
   return (
     <BottomSheet open={open} onClose={onClose} title="알림 설정">
@@ -513,46 +440,18 @@ export default function NotificationSheet({
             </button>
 
             {token && (
-              <>
-                <button
-                  onClick={handleTestPush}
-                  disabled={testSending}
-                  className="w-full py-2.5 text-[13px] font-medium text-[#8B75D0] bg-[#F9F7FD] border border-[#E8E4F0] rounded-xl transition-colors disabled:opacity-60 hover:bg-[#EDE9FA]"
-                >
-                  {testSending ? '발송 중...' : '🔔 테스트 알림 (FCM 경유)'}
-                </button>
-                <button
-                  onClick={async () => {
-                    try {
-                      const reg = await navigator.serviceWorker?.getRegistration()
-                      if (!reg) { setTestResult('❌ SW 미등록'); return }
-                      await reg.showNotification('💌 로컬 테스트', {
-                        body: '이 알림이 보이면 SW showNotification 정상!',
-                        icon: '/icon-192x192.png',
-                        tag: 'local-test',
-                        vibrate: [200, 100, 200],
-                      } as NotificationOptions & { renotify?: boolean })
-                      setTestResult('✅ 로컬 알림 발송 완료 — 팝업이 뜨는지 확인하세요')
-                    } catch (e) {
-                      setTestResult(`❌ 로컬 알림 실패: ${String(e).slice(0, 100)}`)
-                    }
-                  }}
-                  className="w-full py-2.5 text-[13px] font-medium text-[#9B8CC4] bg-white border border-[#E8E4F0] rounded-xl transition-colors hover:bg-[#F9F7FD]"
-                >
-                  📱 로컬 알림 테스트 (FCM 없이)
-                </button>
-              </>
+              <button
+                onClick={handleTestPush}
+                disabled={testSending}
+                className="w-full py-2.5 text-[13px] font-medium text-[#8B75D0] bg-[#F9F7FD] border border-[#E8E4F0] rounded-xl transition-colors disabled:opacity-60 hover:bg-[#EDE9FA]"
+              >
+                {testSending ? '발송 중...' : '🔔 테스트 알림 보내기'}
+              </button>
             )}
 
             {testResult && (
-              <p className="text-[12px] px-1 text-[#D4899A] whitespace-pre-wrap break-all">
+              <p className="text-[12px] px-1 text-[#9B8CC4]">
                 {testResult}
-              </p>
-            )}
-
-            {pushReceived && (
-              <p className="text-[12px] px-1 text-[#4CAF50]">
-                {pushReceived}
               </p>
             )}
           </>

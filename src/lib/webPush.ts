@@ -260,42 +260,18 @@ export async function sendPushNotification(
   vapidPublicKey: string,
   vapidPrivateKey: string,
   vapidSubject: string
-): Promise<{ success: boolean; statusCode: number; expired?: boolean; responseBody?: string; debug?: Record<string, unknown> }> {
-  const debug: Record<string, unknown> = {}
-
+): Promise<{ success: boolean; statusCode: number; expired?: boolean; responseBody?: string }> {
   try {
     const payloadBytes = new TextEncoder().encode(JSON.stringify(payload))
     const clientPublicKey = base64UrlDecode(subscription.p256dh)
     const clientAuth = base64UrlDecode(subscription.auth)
-    debug.payloadLen = payloadBytes.length
-    debug.clientPubKeyLen = clientPublicKey.length
-    debug.clientAuthLen = clientAuth.length
 
-    const { ciphertext, salt, serverPublicKey } = await encryptPayload(payloadBytes, clientPublicKey, clientAuth)
-    debug.ciphertextLen = ciphertext.length
-    debug.saltLen = salt.length
-    debug.serverPubKeyLen = serverPublicKey.length
+    const { ciphertext } = await encryptPayload(payloadBytes, clientPublicKey, clientAuth)
 
     const url = new URL(subscription.endpoint)
     const audience = `${url.protocol}//${url.host}`
-    debug.audience = audience
 
     const jwt = await createVapidJwt(audience, vapidSubject, vapidPrivateKey)
-    debug.jwtLen = jwt.length
-
-    // JWT header/payload 디코딩 (signature 제외)
-    const jwtParts = jwt.split('.')
-    try {
-      const hdrRaw = atob(jwtParts[0].replace(/-/g, '+').replace(/_/g, '/'))
-      const plRaw = atob(jwtParts[1].replace(/-/g, '+').replace(/_/g, '/'))
-      debug.jwtHeader = JSON.parse(hdrRaw)
-      debug.jwtPayload = JSON.parse(plRaw)
-      debug.jwtSignatureLen = jwtParts[2]?.length ?? 0
-    } catch { /* ignore decode errors */ }
-
-    debug.vapidPublicKeyPrefix = vapidPublicKey.slice(0, 20)
-    debug.vapidPublicKeyLen = vapidPublicKey.length
-
     const vapidAuth = `vapid t=${jwt}, k=${vapidPublicKey}`
 
     const response = await fetch(subscription.endpoint, {
@@ -305,7 +281,7 @@ export async function sendPushNotification(
         'Content-Encoding': 'aes128gcm',
         'Content-Type': 'application/octet-stream',
         'TTL': '86400',
-        'Urgency': 'normal',
+        'Urgency': 'high',
       },
       body: toBuffer(ciphertext),
     })
@@ -315,14 +291,13 @@ export async function sendPushNotification(
     if (response.status !== 201) {
       try { responseBody = await response.text() } catch { /* ignore */ }
     }
-    return { success: response.status === 201, statusCode: response.status, expired, responseBody, debug }
+    return { success: response.status === 201, statusCode: response.status, expired, responseBody }
   } catch (err) {
     const e = err instanceof Error ? err : new Error(String(err))
     return {
       success: false,
       statusCode: 0,
-      responseBody: `${e.name}: ${e.message}\n${e.stack || ''}`,
-      debug,
+      responseBody: `${e.name}: ${e.message}`,
     }
   }
 }

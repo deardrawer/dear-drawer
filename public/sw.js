@@ -1,4 +1,4 @@
-// Geunnal Push Notification Service Worker v3
+// Geunnal Push Notification Service Worker v4
 
 self.addEventListener('install', () => {
   self.skipWaiting()
@@ -9,36 +9,24 @@ self.addEventListener('activate', (event) => {
 })
 
 self.addEventListener('push', (event) => {
-  // 열려있는 페이지에 push 수신 사실 알리기
-  const notifyClients = self.clients.matchAll({ type: 'window' }).then((cls) => {
-    cls.forEach((c) => c.postMessage({ type: 'PUSH_RECEIVED', time: new Date().toISOString() }))
-  })
-
   let data = { title: '근날 알림', body: '모임 일정을 확인하세요.', url: '/', tag: 'geunnal' }
-  let parseError = null
   try {
     if (event.data) data = { ...data, ...event.data.json() }
-  } catch (e) {
-    parseError = String(e)
-  }
+  } catch { /* ignore parse errors */ }
 
   const showOpts = {
-    body: parseError ? `[파싱오류] ${parseError.slice(0, 80)}` : data.body,
+    body: data.body,
     icon: '/icon-192x192.png',
     badge: '/icon-192x192.png',
     tag: data.tag || ('push-' + Date.now()),
+    renotify: true,
     vibrate: [200, 100, 200],
     data: { url: data.url },
-    requireInteraction: false,
+    requireInteraction: true,
     silent: false,
   }
 
-  event.waitUntil(
-    Promise.all([
-      notifyClients,
-      self.registration.showNotification(data.title, showOpts),
-    ])
-  )
+  event.waitUntil(self.registration.showNotification(data.title, showOpts))
 })
 
 self.addEventListener('notificationclick', (event) => {

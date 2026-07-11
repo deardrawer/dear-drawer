@@ -501,13 +501,36 @@ export default function NotificationSheet({
             </button>
 
             {token && (
-              <button
-                onClick={handleTestPush}
-                disabled={testSending}
-                className="w-full py-2.5 text-[13px] font-medium text-[#8B75D0] bg-[#F9F7FD] border border-[#E8E4F0] rounded-xl transition-colors disabled:opacity-60 hover:bg-[#EDE9FA]"
-              >
-                {testSending ? '발송 중...' : '🔔 테스트 알림 보내기'}
-              </button>
+              <>
+                <button
+                  onClick={handleTestPush}
+                  disabled={testSending}
+                  className="w-full py-2.5 text-[13px] font-medium text-[#8B75D0] bg-[#F9F7FD] border border-[#E8E4F0] rounded-xl transition-colors disabled:opacity-60 hover:bg-[#EDE9FA]"
+                >
+                  {testSending ? '발송 중...' : '🔔 테스트 알림 (FCM 경유)'}
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      const reg = await navigator.serviceWorker?.getRegistration()
+                      if (!reg) { setTestResult('❌ SW 미등록'); return }
+                      await reg.showNotification('💌 로컬 테스트', {
+                        body: '이 알림이 보이면 SW showNotification 정상!',
+                        icon: '/icon-192x192.png',
+                        tag: 'local-test',
+                        renotify: true,
+                        vibrate: [200, 100, 200],
+                      })
+                      setTestResult('✅ 로컬 알림 발송 완료 — 팝업이 뜨는지 확인하세요')
+                    } catch (e) {
+                      setTestResult(`❌ 로컬 알림 실패: ${String(e).slice(0, 100)}`)
+                    }
+                  }}
+                  className="w-full py-2.5 text-[13px] font-medium text-[#9B8CC4] bg-white border border-[#E8E4F0] rounded-xl transition-colors hover:bg-[#F9F7FD]"
+                >
+                  📱 로컬 알림 테스트 (FCM 없이)
+                </button>
+              </>
             )}
 
             {testResult && (

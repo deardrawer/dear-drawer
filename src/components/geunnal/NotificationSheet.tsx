@@ -222,7 +222,8 @@ export default function NotificationSheet({
             })
             setPushError(`[진단] key=${VAPID_PUBLIC_KEY.slice(0, 20)}... len=${VAPID_PUBLIC_KEY.length} bytes=${keyBytes.length} src=${process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ? 'env' : 'fallback'}`)
 
-            const registration = await navigator.serviceWorker.register('/sw.js')
+            const registration = await navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' })
+            await registration.update()
             await navigator.serviceWorker.ready
 
             // 기존 구독 해제 후 새로 등록 (VAPID 키 변경 시 endpoint가 달라지므로 이전 것 정리)

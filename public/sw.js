@@ -1,10 +1,20 @@
-// Geunnal Push Notification Service Worker
+// Geunnal Push Notification Service Worker v2
+
+self.addEventListener('install', () => {
+  self.skipWaiting()
+})
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(self.clients.claim())
+})
 
 self.addEventListener('push', (event) => {
   let data = { title: '근날 알림', body: '모임 일정을 확인하세요.', url: '/', tag: 'geunnal' }
   try {
     if (event.data) data = { ...data, ...event.data.json() }
-  } catch { /* use defaults */ }
+  } catch (e) {
+    console.error('[SW] push data parse error:', e)
+  }
 
   event.waitUntil(
     self.registration.showNotification(data.title, {
@@ -15,9 +25,6 @@ self.addEventListener('push', (event) => {
       renotify: true,
       vibrate: [200, 100, 200],
       data: { url: data.url },
-      actions: [
-        { action: 'open', title: '확인하기' },
-      ],
       requireInteraction: false,
       silent: false,
     })

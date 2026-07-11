@@ -54,7 +54,7 @@ const MINUTE_OPTIONS = Array.from({ length: 60 }, (_, i) => ({
   label: String(i).padStart(2, '0'),
 }))
 
-// 환경변수 대신 하드코딩: Cloudflare Pages 대시보드 env가 빌드 시 구 키를 주입하는 문제 방���
+// Cloudflare Pages 대시보드 env 오버라이드 문제로 하드코딩 (TODO: 대시보드 정리 후 env로 복원)
 const VAPID_PUBLIC_KEY = 'BECtFR7mstY5MmHgkE9OwRydlARrBwW9rAL4Qb3JIiwONN_87pGdkhwrMO2CIf8Mu4st9tYGlgx022WgR6ab6R4'
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {

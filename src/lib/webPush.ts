@@ -192,14 +192,14 @@ async function encryptPayload(
   // Generate salt (16 bytes)
   const salt = crypto.getRandomValues(new Uint8Array(16))
 
-  // HKDF to derive keys
   const authInfo = concatBuffers(
     new TextEncoder().encode('WebPush: info\0'),
     clientPublicKeyBytes,
     serverPublicKeyRaw
   )
 
-  // RFC 8291: IKM = HKDF(salt=auth_secret, IKM=ecdh_secret, info, 32)
+  // RFC 8291 §3.3: PRK = HKDF(salt=auth_secret, IKM=ecdh_shared_secret, info="WebPush: info\0"||ua_public||as_public)
+  // 주의: Web Crypto HKDF에서 importKey의 대상이 IKM(=ecdh_secret)이고, deriveBits의 salt가 auth_secret임
   const ecdhKey = await crypto.subtle.importKey('raw', toBuffer(sharedSecret), { name: 'HKDF' }, false, ['deriveBits'])
   const prkBits = await crypto.subtle.deriveBits(
     { name: 'HKDF', hash: 'SHA-256', salt: toBuffer(clientAuthBytes), info: toBuffer(authInfo) },

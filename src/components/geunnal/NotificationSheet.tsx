@@ -304,7 +304,8 @@ export default function NotificationSheet({
   const needsTime = selectedDay !== 'none'
 
   // 프로덕션 점검 모드: 운영 환경에서 알림 기능 임시 숨김
-  const isMaintenanceMode = process.env.NODE_ENV === 'production'
+  // TODO: 테스트 완료 후 아래 주석 해제하여 점검 모드 재적용
+  const isMaintenanceMode = false // process.env.NODE_ENV === 'production'
 
   if (isMaintenanceMode) {
     return (

@@ -518,9 +518,8 @@ export default function NotificationSheet({
                         body: '이 알림이 보이면 SW showNotification 정상!',
                         icon: '/icon-192x192.png',
                         tag: 'local-test',
-                        renotify: true,
                         vibrate: [200, 100, 200],
-                      })
+                      } as NotificationOptions & { renotify?: boolean })
                       setTestResult('✅ 로컬 알림 발송 완료 — 팝업이 뜨는지 확인하세요')
                     } catch (e) {
                       setTestResult(`❌ 로컬 알림 실패: ${String(e).slice(0, 100)}`)

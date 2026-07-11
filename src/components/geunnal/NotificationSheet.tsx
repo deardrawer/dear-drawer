@@ -211,6 +211,16 @@ export default function NotificationSheet({
 
         if (token && VAPID_PUBLIC_KEY && 'serviceWorker' in navigator) {
           try {
+            // [DEBUG] 클라이언트가 사용하는 VAPID public key 진단
+            const keyBytes = urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+            console.log('[PUSH DEBUG] clientVapidKey:', {
+              prefix: VAPID_PUBLIC_KEY.slice(0, 20),
+              length: VAPID_PUBLIC_KEY.length,
+              byteLength: keyBytes.length,
+              envSource: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ? 'env' : 'fallback',
+            })
+            setPushError(`[진단] key=${VAPID_PUBLIC_KEY.slice(0, 20)}... len=${VAPID_PUBLIC_KEY.length} bytes=${keyBytes.length} src=${process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ? 'env' : 'fallback'}`)
+
             const registration = await navigator.serviceWorker.register('/sw.js')
             await navigator.serviceWorker.ready
 
@@ -224,7 +234,7 @@ export default function NotificationSheet({
 
             const subscription = await registration.pushManager.subscribe({
               userVisibleOnly: true,
-              applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY).buffer as ArrayBuffer,
+              applicationServerKey: keyBytes.buffer as ArrayBuffer,
             })
 
             const subJson = subscription.toJSON()

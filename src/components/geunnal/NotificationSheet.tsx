@@ -54,7 +54,8 @@ const MINUTE_OPTIONS = Array.from({ length: 60 }, (_, i) => ({
   label: String(i).padStart(2, '0'),
 }))
 
-const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || 'BECtFR7mstY5MmHgkE9OwRydlARrBwW9rAL4Qb3JIiwONN_87pGdkhwrMO2CIf8Mu4st9tYGlgx022WgR6ab6R4'
+// 환경변수 대신 하드코딩: Cloudflare Pages 대시보드 env가 빌드 시 구 키를 주입하는 문제 방���
+const VAPID_PUBLIC_KEY = 'BECtFR7mstY5MmHgkE9OwRydlARrBwW9rAL4Qb3JIiwONN_87pGdkhwrMO2CIf8Mu4st9tYGlgx022WgR6ab6R4'
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4)

@@ -84,6 +84,18 @@ export default function NotificationSheet({
   const [testSending, setTestSending] = useState(false)
   const [testResult, setTestResult] = useState<string | null>(null)
   const loadedRef = useRef(false)
+  const [pushReceived, setPushReceived] = useState<string | null>(null)
+
+  // SW에서 push 수신 메시지 리스닝
+  useEffect(() => {
+    const handler = (e: MessageEvent) => {
+      if (e.data?.type === 'PUSH_RECEIVED') {
+        setPushReceived(`✅ SW push 이벤트 수신: ${e.data.time}`)
+      }
+    }
+    navigator.serviceWorker?.addEventListener('message', handler)
+    return () => navigator.serviceWorker?.removeEventListener('message', handler)
+  }, [])
 
   // 열릴 때: 서버 설정 로드 (fallback: localStorage)
   useEffect(() => {
@@ -533,8 +545,14 @@ export default function NotificationSheet({
             )}
 
             {testResult && (
-              <p className={`text-[12px] px-1 ${testResult.startsWith('발송 완료') ? 'text-[#4CAF50]' : 'text-[#D4899A]'}`}>
+              <p className="text-[12px] px-1 text-[#D4899A] whitespace-pre-wrap break-all">
                 {testResult}
+              </p>
+            )}
+
+            {pushReceived && (
+              <p className="text-[12px] px-1 text-[#4CAF50]">
+                {pushReceived}
               </p>
             )}
           </>

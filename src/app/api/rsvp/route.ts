@@ -161,9 +161,10 @@ export async function POST(request: NextRequest) {
         const attendLabel = body.attendance === 'attending' ? '참석' : body.attendance === 'not_attending' ? '불참' : '미정';
         const guestInfo = body.attendance === 'attending' && guestCount > 1 ? ` (${guestCount}명)` : '';
         const payload = {
-          title: '새 참석 응답',
+          title: '💌 새 참석 응답',
           body: `${body.guestName}님이 ${attendLabel}으로 응답했습니다.${guestInfo}`,
           url: `/g/${page.slug}#dashboard`,
+          tag: `rsvp-${page.id}-${Date.now()}`,
         };
 
         // Cloudflare env에서 먼저, 없으면 process.env fallback

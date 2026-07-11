@@ -107,9 +107,10 @@ export async function POST(request: NextRequest) {
       setting.day_before === "1d" ? "내일" : "모레";
 
     const payload = {
-      title: `${setting.groom_name}♥${setting.bride_name} 근날`,
+      title: `💌 ${setting.groom_name}♥${setting.bride_name}`,
       body: `${dayLabel} 모임이 있어요: ${eventNames}`,
       url: `/g/${setting.slug}`,
+      tag: `geunnal-${setting.page_id}-${today}`,
     };
 
     for (const sub of subscriptions) {

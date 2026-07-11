@@ -108,9 +108,10 @@ export async function POST(request: NextRequest) {
   }
 
   const payload = {
-    title: "🔔 디어드로어 테스트",
+    title: "💌 디어드로어",
     body: "푸시 알림이 정상 작동합니다!",
     url: `/g/test`,
+    tag: `test-${Date.now()}`,
   };
 
   const results = [];

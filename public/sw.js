@@ -22,7 +22,7 @@ self.addEventListener('push', (event) => {
     renotify: true,
     vibrate: [200, 100, 200],
     data: { url: data.url },
-    requireInteraction: true,
+    requireInteraction: false,
     silent: false,
   }
 

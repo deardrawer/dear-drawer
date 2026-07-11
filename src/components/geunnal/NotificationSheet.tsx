@@ -454,6 +454,10 @@ export default function NotificationSheet({
                 {testResult}
               </p>
             )}
+
+            <p className="text-[11px] text-[#C5BAE8] px-1 mt-1">
+              상단 팝업 표시는 휴대폰 및 브라우저 설정에 따라 다를 수 있으며, 알림창에서 확인할 수 있습니다.
+            </p>
           </>
         )}
       </div>

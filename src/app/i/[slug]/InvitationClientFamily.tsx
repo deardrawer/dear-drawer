@@ -187,6 +187,15 @@ const globalStyles = `
     50% { transform: translateY(6px); opacity: 0.5; }
   }
 
+  /* 동작 줄이기: 진입 모션/무한 루프 제거 (콘텐츠는 그대로 표시) */
+  @media (prefers-reduced-motion: reduce) {
+    .desktop-frame-wrapper *, .our-lightbox * {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+    }
+  }
+
   @keyframes scrollDotMove {
     0%, 100% {
       opacity: 0;
@@ -1154,28 +1163,47 @@ function useScrollAnimation() {
   useEffect(() => {
     if (!isMounted) return
 
+    let done = false
+    const REVEAL_RATIO = 0.82
+    const isInView = () => {
+      const el = ref.current
+      if (!el) return false
+      const rect = el.getBoundingClientRect()
+      const viewH = window.innerHeight || document.documentElement.clientHeight
+      if (rect.bottom <= 40) return false
+      const enough = rect.top < viewH * REVEAL_RATIO
+      const fullyIn = rect.bottom <= viewH && rect.top < viewH
+      return enough || fullyIn
+    }
+    const reveal = () => {
+      if (done) return
+      done = true
+      setIsVisible(true)
+      observer.disconnect()
+      window.removeEventListener('scroll', onScroll, true)
+      window.removeEventListener('resize', onScroll)
+    }
+    const onScroll = () => { if (isInView()) reveal() }
+
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true)
-          observer.unobserve(entry.target)
-        }
-      },
-      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+      ([entry]) => { if (entry.isIntersecting) reveal() },
+      { threshold: 0.1, rootMargin: '0px 0px -18% 0px' }
     )
 
     if (ref.current) {
       observer.observe(ref.current)
       // Fallback: 스크롤 컨테이너 안에서 IntersectionObserver�� viewport root로
       // 제대로 감지하지 못하는 경우를 대비한 수동 체크
-      const rect = ref.current.getBoundingClientRect()
-      const viewH = window.innerHeight || document.documentElement.clientHeight
-      if (rect.top < viewH + 50 && rect.bottom > -50) {
-        setIsVisible(true)
-        observer.unobserve(ref.current)
-      }
+      window.addEventListener('scroll', onScroll, true)
+      window.addEventListener('resize', onScroll)
+      // 마운트 시 이미 충분히 보이는 섹션은 즉시 표시
+      if (isInView()) reveal()
     }
-    return () => observer.disconnect()
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('scroll', onScroll, true)
+      window.removeEventListener('resize', onScroll)
+    }
   }, [isMounted])
 
   return { ref, isVisible }
@@ -1234,7 +1262,8 @@ function AnimatedSection({ children, className, style, delay = 0 }: {
         ...style,
         opacity: isVisible ? 1 : 0,
         transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
-        transition: `opacity 0.8s ease ${delay}s, transform 0.8s ease ${delay}s`,
+        filter: isVisible ? 'blur(0px)' : 'blur(6px)',
+        transition: `opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1) ${delay}s, transform 0.9s cubic-bezier(0.22, 1, 0.36, 1) ${delay}s, filter 0.9s cubic-bezier(0.22, 1, 0.36, 1) ${delay}s`,
       }}
     >
       {children}
@@ -1285,7 +1314,7 @@ function SlideGallerySection({ invitation, themeColors, onOpenLightbox }: {
         background: themeColors.cardBg,
         opacity: isVisible ? 1 : 0,
         transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-        transition: 'opacity 0.8s ease, transform 0.8s ease',
+        transition: 'opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1)',
       }}
     >
       <div style={{ position: 'relative' }}>
@@ -1411,7 +1440,7 @@ function FeatureGallerySection({ invitation, themeColors, onOpenLightbox }: {
         background: themeColors.cardBg,
         opacity: isVisible ? 1 : 0,
         transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-        transition: 'opacity 0.8s ease, transform 0.8s ease',
+        transition: 'opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1)',
       }}
     >
       <div
@@ -1546,7 +1575,7 @@ function CustomLayoutGallerySection({ invitation, themeColors, onOpenLightbox }:
         background: themeColors.cardBg,
         opacity: isVisible ? 1 : 0,
         transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-        transition: 'opacity 0.8s ease, transform 0.8s ease',
+        transition: 'opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1)',
       }}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap }}>
@@ -1672,15 +1701,16 @@ function StaggeredGallerySectionFamily({ invitation, themeColors, showAllGallery
               const imgSettings = invitation.gallery?.imageSettings?.[i] || { scale: 1, positionX: 0, positionY: 0 }
               const isExpanded = i >= 6
               const show = isExpanded ? expandedVisible : isVisible
-              const delay = isExpanded ? (i - 6) * 0.1 : i * 0.1
+              const delay = isExpanded ? (i - 6) * 0.18 : i * 0.18
               return (
                 <div
                   key={i}
                   className="relative aspect-square overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform"
                   style={{
                     opacity: show ? 1 : 0,
-                    transform: show ? 'translateY(0)' : 'translateY(20px)',
-                    transition: `opacity 0.6s ease ${delay}s, transform 0.6s ease ${delay}s`,
+                    transform: show ? 'translateY(0)' : 'translateY(24px) scale(0.96)',
+                    filter: show ? 'blur(0px)' : 'blur(5px)',
+                    transition: `opacity 1.2s cubic-bezier(0.22, 1, 0.36, 1) ${delay}s, transform 1.2s cubic-bezier(0.22, 1, 0.36, 1) ${delay}s, filter 1.2s cubic-bezier(0.22, 1, 0.36, 1) ${delay}s`,
                   }}
                   onClick={() => onOpenLightbox?.(i)}
                 >
@@ -2752,7 +2782,7 @@ function LineExpandDividerSection() {
           style={{
             width: isVisible ? '50%' : '0%',
             opacity: isVisible ? 1 : 0,
-            transition: 'all 2.5s ease-out 0.3s',
+            transition: 'all 1.1s cubic-bezier(0.22, 1, 0.36, 1)-out 0.3s',
           }}
         />
         <div
@@ -2768,7 +2798,7 @@ function LineExpandDividerSection() {
           style={{
             width: isVisible ? '50%' : '0%',
             opacity: isVisible ? 1 : 0,
-            transition: 'all 2.5s ease-out 0.3s',
+            transition: 'all 1.1s cubic-bezier(0.22, 1, 0.36, 1)-out 0.3s',
           }}
         />
       </div>
@@ -3013,7 +3043,8 @@ function WhyWeChoseSection({
         style={{
           opacity: isVisible ? 1 : 0,
           transform: isVisible ? 'translateY(0) scale(1)' : 'translateY(40px) scale(0.98)',
-          transition: 'opacity 1.8s cubic-bezier(0.4, 0, 0.2, 1), transform 1.8s cubic-bezier(0.4, 0, 0.2, 1)',
+          filter: isVisible ? 'blur(0px)' : 'blur(6px)',
+          transition: 'opacity 1.2s cubic-bezier(0.22, 1, 0.36, 1), transform 1.2s cubic-bezier(0.22, 1, 0.36, 1), filter 1.2s cubic-bezier(0.22, 1, 0.36, 1)',
         }}
       >
         <ProfileImageSlider
@@ -3157,7 +3188,7 @@ function ProfileSection({
         style={{
           opacity: isVisible ? 1 : 0,
           transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
-          transition: 'opacity 2.5s ease, transform 2.5s ease',
+          transition: 'opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1), transform 1.1s cubic-bezier(0.22, 1, 0.36, 1)',
         }}
       >
         <ProfileImageSlider
@@ -3174,7 +3205,7 @@ function ProfileSection({
             color: themeColors.gray,
             opacity: isVisible ? 1 : 0,
             transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-            transition: 'opacity 2.5s ease 0.5s, transform 2.5s ease 0.5s',
+            transition: 'opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.5s, transform 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.5s',
           }}
         >
           {profile.aboutLabel}
@@ -3185,7 +3216,7 @@ function ProfileSection({
             color: '#999',
             opacity: isVisible ? 1 : 0,
             transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-            transition: 'opacity 2.5s ease 1s, transform 2.5s ease 1s',
+            transition: 'opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1) 1s, transform 1.1s cubic-bezier(0.22, 1, 0.36, 1) 1s',
           }}
         >
           {profile.subtitle}
@@ -3200,7 +3231,7 @@ function ProfileSection({
           textAlign: textStyle?.textAlign || 'left',
           opacity: isVisible ? 1 : 0,
           transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-          transition: 'opacity 2.5s ease 1.5s, transform 2.5s ease 1.5s',
+          transition: 'opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1) 1.5s, transform 1.1s cubic-bezier(0.22, 1, 0.36, 1) 1.5s',
         }}
         dangerouslySetInnerHTML={{ __html: parseHighlight(profile.intro) }}
       />
@@ -3212,7 +3243,7 @@ function ProfileSection({
             color: '#777',
             opacity: isVisible ? 1 : 0,
             transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-            transition: 'opacity 2.5s ease 2s, transform 2.5s ease 2s',
+            transition: 'opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1) 2s, transform 1.1s cubic-bezier(0.22, 1, 0.36, 1) 2s',
           }}
         >
           &#9829; {profile.tag}
@@ -3342,7 +3373,7 @@ function InterviewSection({
         style={{
           opacity: isVisible ? 1 : 0,
           transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
-          transition: 'opacity 2.5s ease, transform 2.5s ease',
+          transition: 'opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1), transform 1.1s cubic-bezier(0.22, 1, 0.36, 1)',
         }}
       >
         {interview.images && interview.images.length > 0 ? (
@@ -3365,7 +3396,7 @@ function InterviewSection({
           style={{
             opacity: isVisible ? 1 : 0,
             transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-            transition: 'opacity 2.5s ease 0.5s, transform 2.5s ease 0.5s',
+            transition: 'opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.5s, transform 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.5s',
           }}
         >
           <p
@@ -3388,7 +3419,7 @@ function InterviewSection({
             textAlign: textStyle?.textAlign || 'left',
             opacity: isVisible ? 1 : 0,
             transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-            transition: 'opacity 2.5s ease 1.5s, transform 2.5s ease 1.5s',
+            transition: 'opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1) 1.5s, transform 1.1s cubic-bezier(0.22, 1, 0.36, 1) 1.5s',
           }}
           dangerouslySetInnerHTML={{ __html: parseHighlight(interview.answer) }}
         />
@@ -3485,11 +3516,13 @@ function StorySection({
                 }}
               >
                 {img ? (
-                  <CroppedImageDiv
-                    src={img}
-                    crop={imgSettings}
-                    className="w-full h-full"
-                  />
+                  <div className="w-full h-full" style={{ transform: isVisible ? 'scale(1)' : 'scale(1.06)', transition: 'transform 3.5s cubic-bezier(0.22, 1, 0.36, 1)' }}>
+                    <CroppedImageDiv
+                      src={img}
+                      crop={imgSettings}
+                      className="w-full h-full"
+                    />
+                  </div>
                 ) : (
                   <div className="w-full h-full" />
                 )}
@@ -4234,8 +4267,8 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
             className="absolute inset-0"
             style={{
               opacity: coverAnimated ? 1 : 0,
-              transform: coverAnimated ? 'scale(1)' : 'scale(1.03)',
-              transition: 'opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1), transform 1.1s cubic-bezier(0.22, 1, 0.36, 1)'
+              transform: coverAnimated ? 'scale(1)' : 'scale(1.08)',
+              transition: 'opacity 1.4s cubic-bezier(0.22, 1, 0.36, 1), transform 6s cubic-bezier(0.22, 1, 0.36, 1)'
             }}
           />
         ) : (
@@ -4244,8 +4277,8 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
             style={{
               background: 'linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)',
               opacity: coverAnimated ? 1 : 0,
-              transform: coverAnimated ? 'scale(1)' : 'scale(1.03)',
-              transition: 'opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1), transform 1.1s cubic-bezier(0.22, 1, 0.36, 1)'
+              transform: coverAnimated ? 'scale(1)' : 'scale(1.08)',
+              transition: 'opacity 1.4s cubic-bezier(0.22, 1, 0.36, 1), transform 6s cubic-bezier(0.22, 1, 0.36, 1)'
             }}
           />
         )}
@@ -4282,8 +4315,9 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
               letterSpacing: '6px',
               marginBottom: '18px',
               opacity: coverAnimated ? 1 : 0,
-              transform: coverAnimated ? 'translateY(0)' : 'translateY(8px)',
-              transition: 'opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.4s, transform 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.4s'
+              transform: coverAnimated ? 'translateY(0)' : 'translateY(10px)',
+              filter: coverAnimated ? 'blur(0px)' : 'blur(3px)',
+              transition: 'opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.4s, transform 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.4s, filter 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.4s'
             }}
           >
             {invitation.wedding.title || 'OUR WEDDING'}

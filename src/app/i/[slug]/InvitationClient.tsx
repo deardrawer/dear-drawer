@@ -1843,7 +1843,7 @@ function StaggeredGallerySection({ invitation, themeColors, showAllGallery, onSh
               const imgSettings = invitation.gallery?.imageSettings?.[i] || { scale: 1, positionX: 0, positionY: 0 }
               const isExpanded = i >= 6
               const show = isExpanded ? expandedVisible : isVisible
-              const delay = isExpanded ? (i - 6) * 0.1 : i * 0.1
+              const delay = isExpanded ? (i - 6) * 0.18 : i * 0.18
               return (
                 <div
                   key={i}
@@ -1852,7 +1852,7 @@ function StaggeredGallerySection({ invitation, themeColors, showAllGallery, onSh
                     opacity: show ? 1 : 0,
                     transform: show ? 'translateY(0)' : `translateY(24px) scale(0.96)`,
                     filter: show ? 'blur(0px)' : 'blur(5px)',
-                    transition: `opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1) ${delay}s, transform 0.75s cubic-bezier(0.22, 1, 0.36, 1) ${delay}s, filter 0.75s cubic-bezier(0.22, 1, 0.36, 1) ${delay}s`,
+                    transition: `opacity 1.2s cubic-bezier(0.22, 1, 0.36, 1) ${delay}s, transform 1.2s cubic-bezier(0.22, 1, 0.36, 1) ${delay}s, filter 1.2s cubic-bezier(0.22, 1, 0.36, 1) ${delay}s`,
                   }}
                   onClick={() => onOpenLightbox?.(i)}
                 >
@@ -4038,11 +4038,12 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
               fontFamily: "'Cormorant Garamond', serif",
               fontSize: '24px',
               fontWeight: 600,
-              letterSpacing: coverAnimated ? '6px' : '16px',
+              letterSpacing: '6px',
               marginBottom: '18px',
               opacity: coverAnimated ? 1 : 0,
+              transform: coverAnimated ? 'translateY(0)' : 'translateY(10px)',
               filter: coverAnimated ? 'blur(0px)' : 'blur(3px)',
-              transition: 'opacity 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.4s, letter-spacing 1.4s cubic-bezier(0.22, 1, 0.36, 1) 0.4s, filter 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.4s'
+              transition: 'opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.4s, transform 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.4s, filter 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.4s'
             }}
           >
             {invitation.wedding.title || 'OUR WEDDING'}

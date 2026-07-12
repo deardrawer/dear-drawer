@@ -625,16 +625,16 @@ export default function IntroAnimation({
           100% { clip-path: polygon(0 0, 100% 0, 100% 50%, 0 68%); opacity: 1; }
         }
         .intro-diagonal-reveal { animation: introDiagonalReveal 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; opacity: 0; }
+
+        /* 모바일: 화면을 꽉 채워 상/하/좌/우 검은 여백 제거 (카카오톡 인앱브라우저 100vh 오차 대응) */
+        .intro-frame { width: 100%; height: 100%; }
+        /* 데스크톱(≥768px)에서만 9:16 세로 프레임 유지 */
+        @media (min-width: 768px) {
+          .intro-frame { width: min(100%, calc(100dvh * 9 / 16)); height: 100%; }
+        }
       `}</style>
 
-      {/* 세로는 화면을 꽉 채우고(모바일 상/하단 검은 여백 제거) 가로만 최대 9:16로 제한(데스크톱 세로 프레임 유지) */}
-      <div
-        className="relative overflow-hidden"
-        style={{
-          width: 'min(100%, calc(100vh * 9 / 16))',
-          height: '100%',
-        }}
-      >
+      <div className="relative overflow-hidden intro-frame">
         {renderIntro()}
       </div>
 

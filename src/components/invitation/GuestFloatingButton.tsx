@@ -198,14 +198,16 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
     }
   }, [scrollContainerRef])
 
-  // 하단 네비바(bottom-nav/mini)가 콘텐츠(푸터)를 가리지 않도록 스크롤 컨테이너에 하단 여백 확보
-  // scrollContainerRef 미전달 템플릿(FAMILY 등)은 .mobile-frame-content 스크롤러로 폴백
+  // 하단 네비바(bottom-nav/mini)가 콘텐츠(푸터)를 가리지 않도록 실제 스크롤 요소에 하단 여백 확보
+  // 바깥 .mobile-frame-content + 그 안의 실제 스크롤러(.overflow-y-auto) 모두에 적용 (템플릿별 중첩 구조 대응)
   useEffect(() => {
-    const container = scrollContainerRef?.current || document.querySelector<HTMLElement>('.mobile-frame-content')
-    if (!container) return
+    const root = scrollContainerRef?.current || document.querySelector<HTMLElement>('.mobile-frame-content')
+    if (!root) return
     const needPad = (navStyle === 'bottom-nav' || navStyle === 'bottom-mini') && !navHidden
-    container.style.paddingBottom = needPad ? 'calc(84px + env(safe-area-inset-bottom))' : ''
-    return () => { if (container) container.style.paddingBottom = '' }
+    const pad = needPad ? 'calc(104px + env(safe-area-inset-bottom))' : ''
+    const targets = [root, ...Array.from(root.querySelectorAll<HTMLElement>('.overflow-y-auto'))]
+    targets.forEach((el) => { el.style.paddingBottom = pad })
+    return () => { targets.forEach((el) => { el.style.paddingBottom = '' }) }
   }, [scrollContainerRef, navStyle, navHidden])
 
   // 바텀시트 열기 (스크롤 위치 먼저 저장)

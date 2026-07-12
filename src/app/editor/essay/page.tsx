@@ -106,6 +106,9 @@ export interface EssayInvitationData {
     }
   }
 
+  // Gallery
+  gallery?: { images: string[]; imageSettings?: { scale: number; positionX: number; positionY: number }[] }
+
   // Section visibility
   sectionVisibility: { contacts: boolean; bankAccounts: boolean; guestbook: boolean; rsvp: boolean; parentNames: boolean; guidance: boolean; greeting?: boolean; story?: boolean; quote?: boolean; gallery?: boolean; info?: boolean; thankyou?: boolean }
 
@@ -239,6 +242,7 @@ const defaultData: EssayInvitationData = {
       customItems: [],
     },
   },
+  gallery: { images: [], imageSettings: [] },
   sectionVisibility: { contacts: true, bankAccounts: true, guestbook: true, rsvp: true, parentNames: true, guidance: true },
   rsvpEnabled: true,
   rsvpDeadline: '',

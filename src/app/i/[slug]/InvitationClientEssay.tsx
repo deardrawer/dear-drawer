@@ -222,29 +222,54 @@ function EssayGalleryViewer({ images, startIndex, onClose }: { images: string[];
   )
 }
 
-function EssayGalleryGrid({ images, onImageClick, colors }: {
-  images: string[]; onImageClick: (index: number) => void; colors: { bg: string; muted: string; accent: string }
+// 갤러리 전용 keyframe: 컴포넌트 로컬로 포함해 default/paper/book 모든 컨셉에서 동작
+const essayGalleryCSS = `
+@keyframes esGalInL { from { opacity: 0; transform: translateX(-18px); filter: blur(8px); } to { opacity: 1; transform: translateX(0); filter: blur(0); } }
+@keyframes esGalInR { from { opacity: 0; transform: translateX(18px); filter: blur(8px); } to { opacity: 1; transform: translateX(0); filter: blur(0); } }
+@media (prefers-reduced-motion: reduce) {
+  .essay-gal-item { animation-duration: 0.01ms !important; animation-delay: 0ms !important; }
+}
+`
+
+// active: false면 애니메이션 대기(투명), true가 되는 순간 지그재그 리빌 시작 (스크롤형 컨셉용)
+function EssayGalleryGrid({ images, imageSettings, onImageClick, colors, active = true }: {
+  images: string[]; imageSettings?: { scale: number; positionX: number; positionY: number }[]; onImageClick: (index: number) => void; colors: { bg: string; muted: string; accent: string }; active?: boolean
 }) {
   if (!images || images.length === 0) return null
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px' }}>
-      {images.map((src: string, i: number) => (
-        <div key={i} style={{ overflow: 'hidden', aspectRatio: '1/1' }}>
-          <img
-            src={src}
-            alt=""
-            onClick={() => onImageClick(i)}
-            style={{
-              width: '100%', height: '100%', objectFit: 'cover', display: 'block',
-              filter: 'saturate(0.55) contrast(1.08)', cursor: 'pointer',
-              WebkitTapHighlightColor: 'transparent',
-              opacity: 0,
-              animation: `bkGalImg 0.8s cubic-bezier(.33,1,.68,1) ${0.4 + i * 0.12}s forwards`,
-            }}
-          />
-        </div>
-      ))}
-    </div>
+    <>
+      <style>{essayGalleryCSS}</style>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px' }}>
+        {images.map((src: string, i: number) => {
+          const s = imageSettings?.[i]
+          const scale = s?.scale || 1
+          const posX = s?.positionX || 0
+          const posY = s?.positionY || 0
+          return (
+            <div key={i} className="essay-gal-item" style={{
+              overflow: 'hidden', aspectRatio: '1/1',
+              background: `${colors.muted}14`,
+              opacity: active ? undefined : 0,
+              animation: active ? `${i % 2 === 0 ? 'esGalInL' : 'esGalInR'} 0.9s cubic-bezier(.33,1,.68,1) ${0.35 + i * 0.1}s both` : 'none',
+            }}>
+              <img
+                src={src}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                onClick={() => onImageClick(i)}
+                style={{
+                  width: '100%', height: '100%', objectFit: 'cover', display: 'block',
+                  filter: 'saturate(0.55) contrast(1.08)', cursor: 'pointer',
+                  WebkitTapHighlightColor: 'transparent',
+                  transform: `scale(${scale}) translate(${posX}%, ${posY}%)`,
+                }}
+              />
+            </div>
+          )
+        })}
+      </div>
+    </>
   )
 }
 
@@ -778,8 +803,10 @@ function DefaultGallerySection({ data, theme }: { data: any; theme: ThemeConfig 
         }}>Gallery</div>
         <EssayGalleryGrid
           images={images}
+          imageSettings={data.gallery?.imageSettings}
           onImageClick={(i) => { setViewerIndex(i); setViewerOpen(true) }}
           colors={{ bg: theme.sectionBg, muted: theme.gray, accent: theme.accent }}
+          active={isVisible}
         />
       </div>
       {viewerOpen && (
@@ -1424,11 +1451,12 @@ function PaperGallery({ data }: { data: any }) {
   const images: string[] = data.gallery?.images || []
   const [viewerOpen, setViewerOpen] = useState(false)
   const [viewerIndex, setViewerIndex] = useState(0)
+  const { ref, isVisible } = useScrollReveal(0.1)
 
   if (images.length === 0) return null
 
   return (
-    <div style={{ minHeight: '50vh', padding: '60px 16px', background: paperColors.bg }}>
+    <div ref={ref} style={{ minHeight: '50vh', padding: '60px 16px', background: paperColors.bg }}>
       <div style={{ maxWidth: '640px', margin: '0 auto' }}>
         <PaperReveal>
           <div style={{
@@ -1440,8 +1468,10 @@ function PaperGallery({ data }: { data: any }) {
         <PaperReveal delay={100}>
           <EssayGalleryGrid
             images={images}
+            imageSettings={data.gallery?.imageSettings}
             onImageClick={(i) => { setViewerIndex(i); setViewerOpen(true) }}
             colors={{ bg: paperColors.bg, muted: paperColors.muted, accent: paperColors.accent }}
+            active={isVisible}
           />
         </PaperReveal>
       </div>
@@ -2188,15 +2218,24 @@ const bookAnimCSS = `
 @keyframes bkSwipeX { 0%,100% { transform: translateX(0); } 50% { transform: translateX(12px); } }
 @keyframes bkSwipePulse { 0%,100% { opacity: 0.7; } 50% { opacity: 0.35; } }
 @keyframes bkClipCx { from { clip-path: inset(0 50%); } to { clip-path: inset(0); } }
+@keyframes bkInk { from { opacity: 0; filter: blur(7px); transform: translateY(10px); } to { opacity: 1; filter: blur(0); transform: translateY(0); } }
+@keyframes bkCurtain { from { opacity: 1; clip-path: inset(0 0 100% 0); } to { opacity: 1; clip-path: inset(0 0 0 0); } }
+@keyframes bkKen { from { transform: scale(1.08); } to { transform: scale(1); } }
+@keyframes bkMaskUp { from { transform: translateY(110%); } to { transform: translateY(0); } }
+@keyframes bkTrack { from { opacity: 0; letter-spacing: 10px; filter: blur(2px); } to { opacity: 1; filter: blur(0); } }
+@keyframes bkHeartPop { 0% { opacity: 0; transform: scale(0); } 60% { opacity: 1; transform: scale(1.18); } 100% { opacity: 1; transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) {
+  .bk-page *, .book-page-content * { animation-duration: 0.01ms !important; animation-delay: 0ms !important; transition-duration: 0.01ms !important; }
+}
 `
 
 // -- Book: 애니메이션 헬퍼 --
-// d=delay(ms), type: up(기본)/fade/scale/right
+// d=delay(ms), type: up(기본)/fade/scale/right/ink(잉크 번짐)/track(자간 수축)
 function BA({ children, d = 0, type = 'up', className = '' }: {
-  children: React.ReactNode; d?: number; type?: 'up' | 'fade' | 'scale' | 'right'; className?: string
+  children: React.ReactNode; d?: number; type?: 'up' | 'fade' | 'scale' | 'right' | 'ink' | 'track'; className?: string
 }) {
-  const anim = type === 'scale' ? 'bkScaleIn' : type === 'fade' ? 'bkFadeIn' : type === 'right' ? 'bkSlideRight' : 'bkFadeUp'
-  const dur = type === 'scale' ? '0.7s' : '0.6s'
+  const anim = type === 'scale' ? 'bkScaleIn' : type === 'fade' ? 'bkFadeIn' : type === 'right' ? 'bkSlideRight' : type === 'ink' ? 'bkInk' : type === 'track' ? 'bkTrack' : 'bkFadeUp'
+  const dur = type === 'scale' ? '0.7s' : type === 'ink' ? '1.1s' : type === 'track' ? '1.2s' : '0.6s'
   return <div className={className} style={{ animation: `${anim} ${dur} ease-out ${d}ms both` }}>{children}</div>
 }
 
@@ -2427,9 +2466,6 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
 
     const onTouchStart = (e: TouchEvent) => {
       if (isSnapping) return
-      // 폼 페이지면 터치 핸들러 스킵
-      const p = pages[currentPage]
-      if (p?.type === 'guestbook' || p?.type === 'rsvp') return
       // 인터랙티브 요소 클릭은 스킵 (SVG 아이콘 포함 — Element로 체크)
       if (e.target instanceof Element && e.target.closest('a, button, input, textarea, select, [role="button"]')) return
 
@@ -2486,8 +2522,6 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
     }
 
     const onTouchEnd = (e: TouchEvent) => {
-      const p = pages[currentPage]
-      if (p?.type === 'guestbook' || p?.type === 'rsvp') return
       // 인터랙티브 요소 탭은 네비게이션 스킵 (touchstart에서 startX 미설정 → stale 값 방지)
       if (e.target instanceof Element && e.target.closest('a, button, input, textarea, select, [role="button"]')) return
 
@@ -2520,8 +2554,6 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
 
     const onMouseDown = (e: MouseEvent) => {
       if (isSnapping) return
-      const p = pages[currentPage]
-      if (p?.type === 'guestbook' || p?.type === 'rsvp') return
       if (e.target instanceof Element && e.target.closest('a, button, input, textarea, select, [role="button"]')) return
 
       mouseDown = true
@@ -2566,9 +2598,6 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
     const onMouseUp = (e: MouseEvent) => {
       if (!mouseDown) return
       mouseDown = false
-
-      const p = pages[currentPage]
-      if (p?.type === 'guestbook' || p?.type === 'rsvp') return
 
       const dx = e.clientX - startX
       const dy = e.clientY - startY
@@ -3662,7 +3691,7 @@ function BookGreeting({ data }: { data: any }) {
             display: 'block',
             fontFamily: "'Pretendard', sans-serif", fontSize: '15px', fontWeight: 200,
             lineHeight: 2.5, letterSpacing: '0.2px', color: bookColors.text,
-            opacity: 0, animation: `bkFadeIn 1.4s ease-out ${400 + i * 300}ms forwards`,
+            animation: `bkInk 1.2s cubic-bezier(.22,1,.36,1) ${400 + i * 260}ms both`,
           }}>{line || '\u00A0'}</span>
         ))}
       </div>
@@ -3681,14 +3710,14 @@ function BookChapter({ chapter, index, ed = false, colorTheme, customThemeColors
       <div style={{ flex: 1, position: 'relative', zIndex: 1 }}>
         {/* 챕터 헤더 */}
         <div style={{ padding: '100px 44px 0' }}>
-          <div style={{ opacity: 0, animation: 'bkFadeIn 1.4s ease-out 300ms forwards' }}>
+          <div style={{ animation: 'bkInk 1.3s cubic-bezier(.22,1,.36,1) 300ms both' }}>
             <h2 style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '26px', fontWeight: 300, color: bookColors.heading, lineHeight: 1.6, letterSpacing: '0.5px', marginTop: 0 }}>
               {chapter.title}
             </h2>
           </div>
           {chapter.subtitle && (
-            <div style={{ opacity: 0, animation: 'bkFadeIn 1s ease-out 600ms forwards' }}>
-              <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '8.5px', fontWeight: 400, letterSpacing: '3px', color: bookColors.muted, textTransform: 'uppercase' as const, marginTop: '10px' }}>
+            <div>
+              <div style={{ animation: 'bkTrack 1.2s ease-out 600ms both', fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '8.5px', fontWeight: 400, letterSpacing: '3px', color: bookColors.muted, textTransform: 'uppercase' as const, marginTop: '10px' }}>
                 {chapter.subtitle}
               </div>
             </div>
@@ -3697,7 +3726,9 @@ function BookChapter({ chapter, index, ed = false, colorTheme, customThemeColors
 
         {/* 사진 */}
         {chapter.photo && (
-          <div style={{ opacity: 0, animation: 'bkFadeIn 1.8s ease-out 500ms forwards', position: 'relative', zIndex: 1, width: chapter.photoStyle === 'square' ? '160px' : '100%', margin: '28px 0 0', padding: 0, marginLeft: chapter.photoStyle === 'square' ? '44px' : undefined, overflow: 'hidden', aspectRatio: chapter.photoStyle === 'square' ? '1/1' : '16/9' }}>
+          <div style={{ animation: 'bkCurtain 1.3s cubic-bezier(.22,1,.36,1) 500ms both', position: 'relative', zIndex: 1, width: chapter.photoStyle === 'square' ? '160px' : '100%', margin: '28px 0 0', padding: 0, marginLeft: chapter.photoStyle === 'square' ? '44px' : undefined, overflow: 'hidden', aspectRatio: chapter.photoStyle === 'square' ? '1/1' : '16/9', background: `${bookColors.muted}14` }}>
+            {/* Ken Burns: 커튼 리빌 후 아주 느린 줌아웃 */}
+            <div style={{ position: 'absolute', inset: 0, animation: 'bkKen 6.5s ease-out 500ms both' }}>
             {chapter.photoCrop ? (
               <img
                 src={chapter.photo}
@@ -3720,6 +3751,7 @@ function BookChapter({ chapter, index, ed = false, colorTheme, customThemeColors
                 style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', filter: 'saturate(0.85)' }}
               />
             )}
+            </div>
             {(chapter.location || chapter.date) && (
               <div style={{ position: 'absolute', bottom: '14px', left: '16px', zIndex: 2 }}>
                 {chapter.location && (
@@ -3752,13 +3784,13 @@ function BookChapter({ chapter, index, ed = false, colorTheme, customThemeColors
                 {chapter.date}
               </div>
             )}
-            <div style={{ width: '100%', height: '1px', background: `${bookColors.muted}18`, marginTop: '16px' }} />
+            <div style={{ width: '100%', height: '1px', background: `${bookColors.muted}18`, marginTop: '16px', transformOrigin: 'left', animation: 'bkDrawLine 1s cubic-bezier(.22,1,.36,1) 1100ms both' }} />
           </div>
         )}
 
         {/* 본문 */}
         <div style={{ padding: '0 44px 40px' }} className={`theme-${colorTheme || 'essay-ivory'}`}>
-          <div style={{ paddingTop: (chapter.location || chapter.date) ? '0' : '28px', opacity: 0, animation: 'bkFadeIn 2s ease-out 1300ms forwards' }}>
+          <div style={{ paddingTop: (chapter.location || chapter.date) ? '0' : '28px', animation: 'bkInk 1.6s cubic-bezier(.22,1,.36,1) 1300ms both' }}>
             {lines.map((line: string, j: number) => (
               <p key={j} className="es-f13" style={{
                 fontFamily: "'Pretendard', sans-serif", fontSize: '12.5px', lineHeight: 2.4,
@@ -3862,20 +3894,22 @@ function BookQuote({ data, ed = false }: { data: any; ed?: boolean }) {
       <div>
         <div style={{ marginBottom: '40px' }}>
           {quoteLines.map((line: string, i: number) => (
-            <span key={i} className="es-f18" style={{
-              display: 'block',
-              fontFamily: "'Pretendard', sans-serif", fontSize: '18px', fontWeight: 200,
-              fontStyle: 'italic', lineHeight: 2.6, letterSpacing: '0.3px',
-              color: darkColors.text,
-              opacity: 0, animation: `bkFadeIn 1.6s ease-out ${500 + i * 800}ms forwards`,
-            }}>{line || '\u00A0'}</span>
+            <div key={i} style={{ overflow: 'hidden' }}>
+              <span className="es-f18" style={{
+                display: 'block',
+                fontFamily: "'Pretendard', sans-serif", fontSize: '18px', fontWeight: 200,
+                fontStyle: 'italic', lineHeight: 2.6, letterSpacing: '0.3px',
+                color: darkColors.text,
+                animation: `bkMaskUp 1.1s cubic-bezier(.22,1,.36,1) ${500 + i * 280}ms both`,
+              }}>{line || '\u00A0'}</span>
+            </div>
           ))}
         </div>
         {quote.author && (
           <div style={{
             fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '7.5px', fontWeight: 400,
             letterSpacing: '4px', color: darkColors.text, textTransform: 'uppercase' as const,
-            opacity: 0, animation: `bkFadeIn 1.2s ease-out ${500 + quoteLines.length * 800 + 300}ms forwards`,
+            animation: `bkTrack 1.4s ease-out ${500 + quoteLines.length * 280 + 400}ms both`,
           }}>{quote.author}</div>
         )}
       </div>
@@ -3895,16 +3929,16 @@ function BookGallery({ data }: { data: any }) {
   return (
     <div className="bk-page" style={{ background: bookColors.bg, display: 'flex', flexDirection: 'column' }}>
       <div style={{ flex: 1, overflowY: 'auto', padding: '72px 14px 40px', WebkitOverflowScrolling: 'touch' }}>
-        <BA d={200} type="fade">
-          <div style={{
-            fontFamily: "'Cormorant Garamond', serif", fontSize: '8px', fontWeight: 400,
-            letterSpacing: '4px', color: bookColors.muted, textTransform: 'uppercase' as const,
-            textAlign: 'center', marginBottom: '18px',
-          }}>Gallery</div>
-        </BA>
+        <div style={{
+          animation: 'bkTrack 1.3s ease-out 200ms both',
+          fontFamily: "'Cormorant Garamond', serif", fontSize: '8px', fontWeight: 400,
+          letterSpacing: '4px', color: bookColors.muted, textTransform: 'uppercase' as const,
+          textAlign: 'center', marginBottom: '18px',
+        }}>Gallery</div>
         <BA d={400} type="fade">
           <EssayGalleryGrid
             images={images}
+            imageSettings={data.gallery?.imageSettings}
             onImageClick={(i) => { setViewerIndex(i); setViewerOpen(true) }}
             colors={{ bg: bookColors.bg, muted: bookColors.muted, accent: bookColors.accent }}
           />
@@ -3939,8 +3973,9 @@ function BookDateEssay({ data }: { data: any }) {
         padding: '0 48px'
       }}
     >
-      <div style={{ opacity: 0, animation: 'bkFadeIn 1s ease-out 300ms forwards' }}>
+      <div>
         <div style={{
+          animation: 'bkTrack 1.3s ease-out 300ms both',
           fontFamily: "'BonmyeongjoSourceHanSerif', serif",
           fontSize: '8px',
           fontWeight: 400,
@@ -3955,10 +3990,10 @@ function BookDateEssay({ data }: { data: any }) {
         height: '1px',
         background: `${bookInfoColors.muted}40`,
         margin: '0 auto 28px',
-        opacity: 0,
-        animation: 'bkFadeIn 0.8s ease-out 600ms forwards'
+        transformOrigin: 'center',
+        animation: 'bkDrawLine 0.9s cubic-bezier(.22,1,.36,1) 600ms both'
       }} />
-      <div style={{ opacity: 0, animation: 'bkFadeIn 1.8s ease-out 800ms forwards' }}>
+      <div style={{ animation: 'bkInk 1.5s cubic-bezier(.22,1,.36,1) 800ms both' }}>
         {lines.map((line: string, i: number) => (
           <p key={i} style={{
             fontFamily: "'Pretendard', sans-serif",
@@ -3995,8 +4030,9 @@ function BookVenueEssay({ data }: { data: any }) {
         padding: '0 48px'
       }}
     >
-      <div style={{ opacity: 0, animation: 'bkFadeIn 1s ease-out 300ms forwards' }}>
+      <div>
         <div style={{
+          animation: 'bkTrack 1.3s ease-out 300ms both',
           fontFamily: "'BonmyeongjoSourceHanSerif', serif",
           fontSize: '8px',
           fontWeight: 400,
@@ -4011,10 +4047,10 @@ function BookVenueEssay({ data }: { data: any }) {
         height: '1px',
         background: `${bookInfoColors.muted}40`,
         margin: '0 auto 28px',
-        opacity: 0,
-        animation: 'bkFadeIn 0.8s ease-out 600ms forwards'
+        transformOrigin: 'center',
+        animation: 'bkDrawLine 0.9s cubic-bezier(.22,1,.36,1) 600ms both'
       }} />
-      <div style={{ opacity: 0, animation: 'bkFadeIn 1.8s ease-out 800ms forwards' }}>
+      <div style={{ animation: 'bkInk 1.5s cubic-bezier(.22,1,.36,1) 800ms both' }}>
         {lines.map((line: string, i: number) => (
           <p key={i} style={{
             fontFamily: "'Pretendard', sans-serif",
@@ -4134,8 +4170,9 @@ function BookWeddingDate({ data }: { data: any }) {
       padding: '52px 32px 36px',
     }}>
       {/* WEDDING DATE 라벨 */}
-      <div style={{ opacity: 0, animation: 'bkFadeIn 0.8s ease-out 200ms forwards' }}>
+      <div>
         <div style={{
+          animation: 'bkTrack 1.3s ease-out 200ms both',
           fontFamily: "'Cormorant Garamond', serif",
           fontSize: '10px', fontWeight: 400, letterSpacing: '6px',
           color: bookInfoColors.muted, textTransform: 'uppercase',
@@ -4144,8 +4181,9 @@ function BookWeddingDate({ data }: { data: any }) {
       </div>
 
       {/* 날짜 숫자 */}
-      <div style={{ opacity: 0, animation: 'bkFadeIn 0.8s ease-out 400ms forwards' }}>
+      <div>
         <div style={{
+          animation: 'bkTrack 1.4s cubic-bezier(.22,1,.36,1) 450ms both',
           fontFamily: "'Pretendard', sans-serif",
           fontSize: '26px', fontWeight: 300, letterSpacing: '2px',
           color: bookInfoColors.heading, textAlign: 'center',
@@ -4156,7 +4194,7 @@ function BookWeddingDate({ data }: { data: any }) {
       </div>
 
       {/* 요일 · 시간 */}
-      <div style={{ opacity: 0, animation: 'bkFadeIn 0.8s ease-out 600ms forwards' }}>
+      <div style={{ animation: 'bkInk 1.1s cubic-bezier(.22,1,.36,1) 700ms both' }}>
         <div style={{
           fontFamily: "'Pretendard', sans-serif",
           fontSize: '11.5px', fontWeight: 300, letterSpacing: '0.8px',
@@ -4168,15 +4206,13 @@ function BookWeddingDate({ data }: { data: any }) {
       </div>
 
       {/* 달력 */}
-      <div style={{
-        width: '100%', maxWidth: '280px',
-        opacity: 0, animation: 'bkFadeIn 1s ease-out 700ms forwards',
-      }}>
+      <div style={{ width: '100%', maxWidth: '280px' }}>
         {/* 요일 헤더 */}
         <div style={{
           display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', textAlign: 'center',
           paddingBottom: '10px', marginBottom: '6px',
           borderBottom: `1px solid ${bookInfoColors.divider}`,
+          animation: 'bkFadeIn 0.9s ease-out 850ms both',
         }}>
           {calHeaders.map((h, i) => (
             <div key={i} style={{
@@ -4188,9 +4224,9 @@ function BookWeddingDate({ data }: { data: any }) {
           ))}
         </div>
 
-        {/* 날짜 그리드 */}
+        {/* 날짜 그리드 (주 단위 스태거) */}
         {calWeeks.map((wk, wi) => (
-          <div key={wi} style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', textAlign: 'center' }}>
+          <div key={wi} style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', textAlign: 'center', animation: `bkFadeUp 0.7s cubic-bezier(.22,1,.36,1) ${950 + wi * 90}ms both` }}>
             {wk.map((d, di) => {
               const isWeddingDay = d === dateDay
               const isSunday = di === 0
@@ -4203,7 +4239,7 @@ function BookWeddingDate({ data }: { data: any }) {
                 }}>
                   {isWeddingDay && (
                     <svg
-                      style={{ position: 'absolute' }}
+                      style={{ position: 'absolute', animation: `bkHeartPop 0.6s cubic-bezier(.34,1.56,.64,1) ${950 + calWeeks.length * 90 + 350}ms both` }}
                       width="30" height="30" viewBox="0 0 24 24"
                       fill={bookInfoColors.accent}
                     >
@@ -4236,12 +4272,9 @@ function BookWeddingDate({ data }: { data: any }) {
 
       {/* D-day */}
       {ddayStr && (
-        <div style={{
-          marginTop: '36px',
-          opacity: 0, animation: 'bkFadeIn 0.8s ease-out 1200ms forwards',
-          textAlign: 'center',
-        }}>
+        <div style={{ marginTop: '36px', textAlign: 'center' }}>
           <div style={{
+            animation: `bkTrack 1.2s ease-out ${950 + calWeeks.length * 90 + 900}ms both`,
             fontFamily: "'Cormorant Garamond', serif",
             fontSize: '10px', fontWeight: 400, letterSpacing: '3px',
             color: bookInfoColors.muted,
@@ -4417,8 +4450,8 @@ function BookGuidance({ data }: { data: any }) {
     <div className="bk-page bk-card" style={{ background: bookInfoColors.pageBg, display: 'flex', flexDirection: 'column' }}>
       <div className="bk-scroll-area" style={{ flex: 1, overflowY: 'auto', padding: '72px 48px 62px', WebkitOverflowScrolling: 'touch' }}>
         <div style={{ paddingTop: '12px' }}>
-          <div style={{ fontSize: '20px', fontWeight: 200, letterSpacing: '0.3px', color: bookInfoColors.heading, marginBottom: '8px', opacity: 0, animation: 'bkFadeIn 1.4s ease-out 200ms forwards' }}>안내</div>
-          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '8px', fontWeight: 400, letterSpacing: '3px', color: bookInfoColors.muted, textTransform: 'uppercase' as const, marginBottom: '24px', opacity: 0, animation: 'bkFadeIn 1s ease-out 500ms forwards' }}>Information</div>
+          <div style={{ fontSize: '20px', fontWeight: 200, letterSpacing: '0.3px', color: bookInfoColors.heading, marginBottom: '8px', animation: 'bkInk 1.2s cubic-bezier(.22,1,.36,1) 200ms both' }}>안내</div>
+          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '8px', fontWeight: 400, letterSpacing: '3px', color: bookInfoColors.muted, textTransform: 'uppercase' as const, marginBottom: '24px', animation: 'bkTrack 1.3s ease-out 500ms both' }}>Information</div>
           {enabledItems.map((key: string, i: number) => {
             const isCustom = key.startsWith('custom-')
             const item = isCustom ? info.customItems[parseInt(key.split('-')[1])] : info[key]
@@ -4485,12 +4518,12 @@ function BookContacts({ data }: { data: any }) {
     <div className="bk-page bk-card" style={{ background: bookInfoColors.pageBg, display: 'flex', flexDirection: 'column' }}>
       <div className="bk-scroll-area" style={{ flex: 1, overflowY: 'auto', padding: '72px 48px 62px', WebkitOverflowScrolling: 'touch' }}>
         <div style={{ paddingTop: '12px' }}>
-          <div style={{ fontSize: '20px', fontWeight: 200, letterSpacing: '0.3px', color: bookInfoColors.heading, marginBottom: '8px', opacity: 0, animation: 'bkFadeIn 1.4s ease-out 200ms forwards' }}>연락처</div>
-          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '8px', fontWeight: 400, letterSpacing: '3px', color: bookInfoColors.muted, textTransform: 'uppercase' as const, marginBottom: '24px', opacity: 0, animation: 'bkFadeIn 1s ease-out 500ms forwards' }}>Contact</div>
+          <div style={{ fontSize: '20px', fontWeight: 200, letterSpacing: '0.3px', color: bookInfoColors.heading, marginBottom: '8px', animation: 'bkInk 1.2s cubic-bezier(.22,1,.36,1) 200ms both' }}>연락처</div>
+          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '8px', fontWeight: 400, letterSpacing: '3px', color: bookInfoColors.muted, textTransform: 'uppercase' as const, marginBottom: '24px', animation: 'bkTrack 1.3s ease-out 500ms both' }}>Contact</div>
           <div style={{ fontSize: '12.5px', fontWeight: 300, lineHeight: 2.3, letterSpacing: '0.2px', color: bookInfoColors.text, marginBottom: '24px', opacity: 0, animation: 'bkFadeIn 1.8s ease-out 700ms forwards' }}>
             {contactsEssay.split('\n').map((line: string, i: number) => <p key={i} style={{ margin: 0 }}>{line || '\u00A0'}</p>)}
           </div>
-          <div style={{ width: '28px', height: '1px', background: `${bookInfoColors.muted}40`, marginBottom: '28px', opacity: 0, animation: 'bkFadeIn 1s ease-out 1000ms forwards' }} />
+          <div style={{ width: '28px', height: '1px', background: `${bookInfoColors.muted}40`, marginBottom: '28px', transformOrigin: 'left', animation: 'bkDrawLine 0.9s cubic-bezier(.22,1,.36,1) 1000ms both' }} />
           {groomContacts.length > 0 && renderAccordion('Groom', groomContacts, 'groom', 500)}
           {brideContacts.length > 0 && renderAccordion('Bride', brideContacts, 'bride', 900)}
         </div>
@@ -4549,12 +4582,12 @@ function BookBank({ data }: { data: any }) {
     <div className="bk-page bk-card" style={{ background: bookInfoColors.pageBg, display: 'flex', flexDirection: 'column' }}>
       <div className="bk-scroll-area" style={{ flex: 1, overflowY: 'auto', padding: '72px 48px 62px', WebkitOverflowScrolling: 'touch' }}>
         <div style={{ paddingTop: '12px' }}>
-          <div style={{ fontSize: '20px', fontWeight: 200, letterSpacing: '0.3px', color: bookInfoColors.heading, marginBottom: '8px', opacity: 0, animation: 'bkFadeIn 1.4s ease-out 200ms forwards' }}>축의금</div>
-          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '8px', fontWeight: 400, letterSpacing: '3px', color: bookInfoColors.muted, textTransform: 'uppercase' as const, marginBottom: '24px', opacity: 0, animation: 'bkFadeIn 1s ease-out 500ms forwards' }}>Gift</div>
+          <div style={{ fontSize: '20px', fontWeight: 200, letterSpacing: '0.3px', color: bookInfoColors.heading, marginBottom: '8px', animation: 'bkInk 1.2s cubic-bezier(.22,1,.36,1) 200ms both' }}>축의금</div>
+          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '8px', fontWeight: 400, letterSpacing: '3px', color: bookInfoColors.muted, textTransform: 'uppercase' as const, marginBottom: '24px', animation: 'bkTrack 1.3s ease-out 500ms both' }}>Gift</div>
           <div style={{ fontSize: '12.5px', fontWeight: 300, lineHeight: 2.3, letterSpacing: '0.2px', color: bookInfoColors.text, marginBottom: '24px', opacity: 0, animation: 'bkFadeIn 1.8s ease-out 700ms forwards' }}>
             {bankEssay.split('\n').map((line: string, i: number) => <p key={i} style={{ margin: 0 }}>{line || '\u00A0'}</p>)}
           </div>
-          <div style={{ width: '28px', height: '1px', background: `${bookInfoColors.muted}40`, marginBottom: '28px', opacity: 0, animation: 'bkFadeIn 1s ease-out 1000ms forwards' }} />
+          <div style={{ width: '28px', height: '1px', background: `${bookInfoColors.muted}40`, marginBottom: '28px', transformOrigin: 'left', animation: 'bkDrawLine 0.9s cubic-bezier(.22,1,.36,1) 1000ms both' }} />
           {groomAccounts.length > 0 && renderAccordion('Groom', groomAccounts, 'groom', 500)}
           {brideAccounts.length > 0 && renderAccordion('Bride', brideAccounts, 'bride', 900)}
         </div>
@@ -4571,10 +4604,10 @@ function BookThankYou({ data }: { data: any }) {
   const lines = thankYouEssay.split('\n')
   return (
     <div className="bk-page bk-card" style={{ background: bookInfoColors.pageBg, display: 'flex', flexDirection: 'column', padding: '0 48px', position: 'relative' }}>
-      <span style={{ position: 'absolute', top: '58px', right: '48px', fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '7.5px', fontWeight: 400, letterSpacing: '3px', color: bookInfoColors.muted, textTransform: 'uppercase' as const, opacity: 0, animation: 'bkFadeIn 0.8s ease-out 150ms forwards' }}>Epilogue</span>
+      <span style={{ position: 'absolute', top: '58px', right: '48px', fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '7.5px', fontWeight: 400, letterSpacing: '3px', color: bookInfoColors.muted, textTransform: 'uppercase' as const, animation: 'bkTrack 1.3s ease-out 150ms both' }}>Epilogue</span>
       <div style={{ marginTop: 'auto', marginBottom: '80px', maxWidth: '260px' }}>
         {lines.map((line: string, i: number) => (
-          <span key={i} style={{ display: 'block', fontSize: '14px', fontWeight: 200, lineHeight: 2.4, letterSpacing: '0.2px', color: bookInfoColors.text, opacity: 0, animation: `bkFadeIn 1.4s ease-out ${500 + i * 300}ms forwards` }}>{line || '\u00A0'}</span>
+          <span key={i} style={{ display: 'block', fontSize: '14px', fontWeight: 200, lineHeight: 2.4, letterSpacing: '0.2px', color: bookInfoColors.text, animation: `bkInk 1.2s cubic-bezier(.22,1,.36,1) ${500 + i * 240}ms both` }}>{line || '\u00A0'}</span>
         ))}
         <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', fontWeight: 400, letterSpacing: '2px', color: bookInfoColors.muted, marginTop: '28px', opacity: 0, animation: `bkFadeIn 1s ease-out ${500 + lines.length * 300 + 500}ms forwards` }}>
           {groomName} & {brideName} 올림
@@ -4605,12 +4638,12 @@ function BookGuestbook({ data, invitationId, isSample }: { data: any; invitation
     <div className="bk-page bk-card" style={{ background: bookInfoColors.bg, display: 'flex', flexDirection: 'column' }}>
       <div className="bk-scroll-area" style={{ flex: 1, overflowY: 'auto', padding: '72px 48px 62px', WebkitOverflowScrolling: 'touch' }}>
         <div style={{ paddingTop: '12px' }}>
-          <div style={{ fontSize: '20px', fontWeight: 200, letterSpacing: '0.3px', color: bookInfoColors.heading, marginBottom: '8px', opacity: 0, animation: 'bkFadeIn 1.4s ease-out 200ms forwards' }}>방명록</div>
-          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '8px', fontWeight: 400, letterSpacing: '3px', color: bookInfoColors.muted, textTransform: 'uppercase' as const, marginBottom: '24px', opacity: 0, animation: 'bkFadeIn 1s ease-out 500ms forwards' }}>Guestbook</div>
+          <div style={{ fontSize: '20px', fontWeight: 200, letterSpacing: '0.3px', color: bookInfoColors.heading, marginBottom: '8px', animation: 'bkInk 1.2s cubic-bezier(.22,1,.36,1) 200ms both' }}>방명록</div>
+          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '8px', fontWeight: 400, letterSpacing: '3px', color: bookInfoColors.muted, textTransform: 'uppercase' as const, marginBottom: '24px', animation: 'bkTrack 1.3s ease-out 500ms both' }}>Guestbook</div>
           <div style={{ fontSize: '12.5px', fontWeight: 300, lineHeight: 2.3, letterSpacing: '0.2px', color: bookInfoColors.text, marginBottom: '24px', opacity: 0, animation: 'bkFadeIn 1.8s ease-out 700ms forwards' }}>
             {guestbookEssay.split('\n').map((line: string, i: number) => <p key={i} style={{ margin: 0 }}>{line || '\u00A0'}</p>)}
           </div>
-          <div style={{ width: '28px', height: '1px', background: `${bookInfoColors.muted}40`, marginBottom: '28px', opacity: 0, animation: 'bkFadeIn 1s ease-out 1000ms forwards' }} />
+          <div style={{ width: '28px', height: '1px', background: `${bookInfoColors.muted}40`, marginBottom: '28px', transformOrigin: 'left', animation: 'bkDrawLine 0.9s cubic-bezier(.22,1,.36,1) 1000ms both' }} />
           {/* Form */}
           <div style={{ background: bookInfoColors.pageBg, padding: '20px 22px', marginBottom: '20px', opacity: 0, animation: 'bkFadeIn 1.2s ease-out 400ms forwards' }}>
             <input value={name} onChange={e => setName(e.target.value)} onClick={e => e.stopPropagation()} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} placeholder="이름" maxLength={20} style={{ width: '100%', border: 'none', borderBottom: `1px solid ${bookInfoColors.divider}40`, background: 'none', padding: '9px 0', fontFamily: "'Pretendard', sans-serif", fontSize: '12.5px', fontWeight: 300, color: bookInfoColors.text, outline: 'none' }} />
@@ -4641,8 +4674,8 @@ function BookRsvp({ data, invitationId }: { data: any; invitationId: string }) {
     <div className="bk-page bk-card" style={{ background: bookInfoColors.bg, display: 'flex', flexDirection: 'column' }}>
       <div className="bk-scroll-area" style={{ flex: 1, overflowY: 'auto', padding: '72px 48px 62px', WebkitOverflowScrolling: 'touch' }}>
         <div style={{ paddingTop: '12px' }}>
-          <div style={{ fontSize: '20px', fontWeight: 200, letterSpacing: '0.3px', color: bookInfoColors.heading, marginBottom: '8px', opacity: 0, animation: 'bkFadeIn 1.4s ease-out 200ms forwards' }}>참석 여부</div>
-          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '8px', fontWeight: 400, letterSpacing: '3px', color: bookInfoColors.muted, textTransform: 'uppercase' as const, marginBottom: '24px', opacity: 0, animation: 'bkFadeIn 1s ease-out 500ms forwards' }}>RSVP</div>
+          <div style={{ fontSize: '20px', fontWeight: 200, letterSpacing: '0.3px', color: bookInfoColors.heading, marginBottom: '8px', animation: 'bkInk 1.2s cubic-bezier(.22,1,.36,1) 200ms both' }}>참석 여부</div>
+          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '8px', fontWeight: 400, letterSpacing: '3px', color: bookInfoColors.muted, textTransform: 'uppercase' as const, marginBottom: '24px', animation: 'bkTrack 1.3s ease-out 500ms both' }}>RSVP</div>
           {data.rsvpDeadline && <div style={{ fontSize: '11.5px', fontWeight: 300, color: bookInfoColors.muted, marginBottom: '24px', opacity: 0, animation: 'bkFadeIn 1s ease-out 300ms forwards' }}>{new Date(data.rsvpDeadline).toLocaleDateString('ko-KR')}까지 회신 부탁드립니다</div>}
           <div style={{ background: bookInfoColors.pageBg, padding: '24px 22px', opacity: 0, animation: 'bkFadeIn 1.2s ease-out 500ms forwards' }} onClick={e => e.stopPropagation()}>
             <RsvpForm invitationId={invitationId} primaryColor={bookInfoColors.accent} showMealOption={data.rsvpMealOption} showShuttleOption={data.rsvpShuttleOption} notice={data.rsvpNotice} />

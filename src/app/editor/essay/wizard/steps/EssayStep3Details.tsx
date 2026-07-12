@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { SAMPLE_DIRECTIONS } from '@/lib/sampleData'
+import { MultiImageUploader } from '@/components/editor/ImageUploader'
+import InlineCropEditor from '@/components/editor/InlineCropEditor'
 import type { EssayInvitationData } from '../../page'
 
 interface StepProps {
@@ -619,6 +621,84 @@ export default function EssayStep3Details({ data, updateData, updateNestedData }
                 )}
               </div>
             </div>
+          </div>
+        )}
+      </section>
+
+      {/* 갤러리 */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>
+            갤러리 <span className="text-xs font-normal text-gray-500">(최대 30장)</span>
+          </h3>
+          <ToggleSwitch checked={data.sectionVisibility?.gallery !== false} onChange={v => updateNestedData('sectionVisibility.gallery', v)} />
+        </div>
+        {data.sectionVisibility?.gallery !== false && (
+          <div className="space-y-3">
+            <p className="text-sm text-blue-600">
+              <svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
+              두 사람의 사진을 업로드해 주세요. 에세이 갤러리 섹션에 표시됩니다.
+            </p>
+            <MultiImageUploader
+              images={data.gallery?.images || []}
+              onChange={(images) => {
+                updateNestedData('gallery.images', images)
+                const currentSettings = data.gallery?.imageSettings || []
+                if (images.length > currentSettings.length) {
+                  const padded = [...currentSettings]
+                  while (padded.length < images.length) {
+                    padded.push({ scale: 1.0, positionX: 0, positionY: 0 })
+                  }
+                  updateNestedData('gallery.imageSettings', padded)
+                }
+              }}
+              onReorder={(newImages) => {
+                const oldImages = data.gallery?.images || []
+                const currentSettings = data.gallery?.imageSettings || []
+                const newSettings = newImages.map((img) => {
+                  const oldIdx = oldImages.indexOf(img)
+                  return currentSettings[oldIdx] || { scale: 1.0, positionX: 0, positionY: 0 }
+                })
+                updateNestedData('gallery.images', newImages)
+                updateNestedData('gallery.imageSettings', newSettings)
+              }}
+              sortable={true}
+              maxImages={30}
+              placeholder="사진 추가"
+              aspectRatio="aspect-square"
+            />
+
+            {/* 갤러리 이미지 크롭 조정 */}
+            {(data.gallery?.images || []).length > 0 && (
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <p className="text-[10px] font-medium text-gray-600 mb-2">이미지 크롭 조정</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {(data.gallery?.images || []).map((imageUrl, imgIndex) => {
+                    const settings = data.gallery?.imageSettings?.[imgIndex] || { scale: 1.0, positionX: 0, positionY: 0 }
+                    return (
+                      <div key={imgIndex}>
+                        <p className="text-[8px] text-gray-400 mb-1">{imgIndex + 1}</p>
+                        <InlineCropEditor
+                          imageUrl={imageUrl}
+                          settings={settings}
+                          onUpdate={(newSettings) => {
+                            const currentSettings = [...(data.gallery?.imageSettings || [])]
+                            while (currentSettings.length <= imgIndex) {
+                              currentSettings.push({ scale: 1.0, positionX: 0, positionY: 0 })
+                            }
+                            currentSettings[imgIndex] = { ...currentSettings[imgIndex], ...newSettings }
+                            updateNestedData('gallery.imageSettings', currentSettings)
+                          }}
+                          aspectRatio={1}
+                          containerWidth={90}
+                        />
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </section>

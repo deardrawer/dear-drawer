@@ -50,6 +50,7 @@ export default function EssayPreview({ data, fullscreen }: EssayPreviewProps) {
     meta: data.meta,
     endingMessage: data.endingMessage,
     sectionOrder: data.sectionOrder,
+    gallery: data.gallery,
   }), [data, fullscreen])
 
   // InvitationClientEssay가 요구하는 invitation 객체 형식으로 변환

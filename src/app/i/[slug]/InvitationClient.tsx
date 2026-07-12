@@ -1262,8 +1262,8 @@ function useScrollAnimation() {
     if (!isMounted) return
 
     let done = false
-    // 섹션이 뷰포트에 "충분히"(약 18%) 들어왔을 때 리빌 — 너무 일찍 트리거되지 않도록
-    const REVEAL_RATIO = 0.82
+    // 섹션이 화면 중앙(50%)까지 올라왔을 때 리빌 — TheSimple과 동일한 차분한 트리거
+    const REVEAL_RATIO = 0.50
     const isInView = () => {
       const el = ref.current
       if (!el) return false
@@ -1290,7 +1290,7 @@ function useScrollAnimation() {
 
     const observer = new IntersectionObserver(
       ([entry]) => { if (entry.isIntersecting) reveal() },
-      { threshold: 0.1, rootMargin: '0px 0px -18% 0px' }
+      { threshold: 0.1, rootMargin: '0px 0px -50% 0px' }
     )
 
     if (ref.current) {
@@ -4482,6 +4482,8 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
   const [guestName, setGuestName] = useState('')
   const [guestMessage, setGuestMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  // 방명록 포스트잇 등장 애니메이션용 리빌
+  const { ref: guestbookNotesRef, isVisible: guestbookNotesVisible } = useScrollAnimation()
 
   // BGM fade out/in when video plays
   const bgmWasPlayingRef = useRef(false)
@@ -5040,14 +5042,21 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
             {guestbookMessages.length === 0 ? (
               <p className="text-[11px] font-light text-gray-400 pt-10">아직 방명록이 없습니다. 첫 번째로 메시지를 남겨보세요!</p>
             ) : (
-              <div className="flex flex-wrap justify-center gap-3">
-                {guestbookMessages.slice(0, 6).map((msg, index) => (
+              <div ref={guestbookNotesRef} className="flex flex-wrap justify-center gap-3">
+                {guestbookMessages.slice(0, 6).map((msg, index) => {
+                  const tilt = index % 2 === 0 ? -3 : 2
+                  return (
                   <div
                     key={msg.id}
-                    className="w-[130px] px-3 py-3.5 rounded-lg text-left shadow-sm cursor-pointer transition-transform hover:scale-105"
+                    className="w-[130px] px-3 py-3.5 rounded-lg text-left shadow-sm cursor-pointer"
                     style={{
                       background: cardColors[index % cardColors.length],
-                      transform: `rotate(${index % 2 === 0 ? -3 : 2}deg)`,
+                      // 기울기를 유지한 채 살짝 튕기며 순차로 내려앉음
+                      opacity: guestbookNotesVisible ? 1 : 0,
+                      transform: guestbookNotesVisible
+                        ? `rotate(${tilt}deg) scale(1) translateY(0)`
+                        : `rotate(${tilt}deg) scale(0.5) translateY(14px)`,
+                      transition: `opacity 0.4s ease ${index * 0.09}s, transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) ${index * 0.09}s`,
                       touchAction: 'manipulation',
                     }}
                     onClick={() => openGuestbookModal(index)}
@@ -5058,7 +5067,8 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
                     <p className="text-[11px] font-light leading-[1.6] mb-1" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>{msg.message}</p>
                     <p className="text-[8px] font-light text-gray-400">- {msg.guest_name}</p>
                   </div>
-                ))}
+                  )
+                })}
               </div>
             )}
             {guestbookMessages.length > 6 && (

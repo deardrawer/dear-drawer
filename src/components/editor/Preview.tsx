@@ -113,6 +113,7 @@ function RecordPreviewWrapper({ invitation, skipIntro }: { invitation: Invitatio
     magazineSectionBgMap: invitation.magazineSectionBgMap,
     accentTextColor: invitation.accentTextColor,
     bodyTextColor: invitation.bodyTextColor,
+    coverTextColor: (invitation as any).coverTextColor,
     highlightColor: invitation.highlightColor,
     displayFont: (invitation as any).displayFont,
     styleOverrides: (invitation as any).styleOverrides,
@@ -179,6 +180,7 @@ function InvitationPreviewWrapper({ invitation, skipIntro, onIntroScreenChange }
     meta: invitation.meta,
     accentTextColor: invitation.accentTextColor,
     bodyTextColor: invitation.bodyTextColor,
+    coverTextColor: (invitation as any).coverTextColor,
     highlightColor: invitation.highlightColor,
     profileOrder: (invitation as any).profileOrder,
     profileFrameShape: (invitation as any).profileFrameShape,
@@ -409,18 +411,18 @@ const Preview = forwardRef<PreviewHandle, object>(function Preview(_, ref) {
   return (
     <div className="h-full bg-white flex flex-col">
       <style dangerouslySetInnerHTML={{ __html: romanticFontStyles }} />
-      {!(currentPage === 'intro' && introScreen === 'cover') && (
+      {!(invitation.templateId !== 'narrative-record' && currentPage === 'intro' && introScreen === 'cover') && (
         <div className="sticky top-0 z-10 bg-white py-4 flex justify-center shrink-0 preview-tabs">
-          <div className="flex bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="inline-flex items-center gap-1 p-1 rounded-full bg-gray-100 border border-gray-200/70 shadow-inner">
             <button
               onClick={() => handleTabClick('intro')}
-              className={`px-6 py-2.5 text-sm font-medium transition-all select-none ${currentPage === 'intro' ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+              className={`px-6 py-1.5 text-xs font-semibold tracking-wide rounded-full transition-all select-none ${currentPage === 'intro' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
             >
               Intro
             </button>
             <button
               onClick={() => handleTabClick('main')}
-              className={`px-6 py-2.5 text-sm font-medium transition-all select-none ${currentPage === 'main' ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+              className={`px-6 py-1.5 text-xs font-semibold tracking-wide rounded-full transition-all select-none ${currentPage === 'main' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
             >
               Main
             </button>

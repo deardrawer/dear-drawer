@@ -1164,7 +1164,7 @@ function useScrollAnimation() {
     if (!isMounted) return
 
     let done = false
-    const REVEAL_RATIO = 0.82
+    const REVEAL_RATIO = 0.50
     const isInView = () => {
       const el = ref.current
       if (!el) return false
@@ -1187,7 +1187,7 @@ function useScrollAnimation() {
 
     const observer = new IntersectionObserver(
       ([entry]) => { if (entry.isIntersecting) reveal() },
-      { threshold: 0.1, rootMargin: '0px 0px -18% 0px' }
+      { threshold: 0.1, rootMargin: '0px 0px -50% 0px' }
     )
 
     if (ref.current) {

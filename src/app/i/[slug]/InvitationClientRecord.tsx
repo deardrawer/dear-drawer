@@ -356,6 +356,8 @@ function VinylRecordCover({ invitation, fonts, tc, onEnter, colorTheme }: {
   const dateStr = `${String(weddingDate.getFullYear()).slice(2)}.${String(weddingDate.getMonth() + 1).padStart(2, '0')}.${String(weddingDate.getDate()).padStart(2, '0')}`
   const groomName = invitation.groom?.name || '신랑'
   const brideName = invitation.bride?.name || '신부'
+  // 인트로(커버) 글자 색상 커스텀 — 지정 시 커버 배경 위 텍스트에 적용
+  const coverTextColor = (invitation as any)?.coverTextColor as string | undefined
 
   return (
     <div className="relative w-full min-h-screen flex flex-col items-center justify-center overflow-hidden"
@@ -377,7 +379,7 @@ function VinylRecordCover({ invitation, fonts, tc, onEnter, colorTheme }: {
         opacity: phase >= 2 ? 1 : 0, transform: phase >= 2 ? 'translateY(0)' : 'translateY(-10px)',
         transition: 'all 0.8s ease',
       }}>
-        <div style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '5px', color: isLightCover ? `${tc.primary}90` : 'rgba(255,255,255,0.5)' }}>
+        <div style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '5px', color: coverTextColor ? `${coverTextColor}99` : (isLightCover ? `${tc.primary}90` : 'rgba(255,255,255,0.5)') }}>
           A LOVE RECORD
         </div>
       </div>
@@ -414,19 +416,19 @@ function VinylRecordCover({ invitation, fonts, tc, onEnter, colorTheme }: {
       }}>
         <h1 style={{
           fontFamily: fonts.display, fontSize: '18px', fontWeight: 300, letterSpacing: '5px',
-          color: isLightCover ? tc.text : '#FFFFFF', marginBottom: '12px', lineHeight: 1.6,
+          color: coverTextColor || (isLightCover ? tc.text : '#FFFFFF'), marginBottom: '12px', lineHeight: 1.6,
         }}>
           {invitation.design?.coverTitle || 'Our Love, Our Song'}
         </h1>
-        <div style={{ width: '30px', height: '1px', background: isLightCover ? `${tc.primary}50` : 'rgba(255,255,255,0.3)', margin: '0 auto 12px' }} />
-        <p style={{ fontFamily: fonts.displayKr, fontSize: '12px', letterSpacing: '2px', color: isLightCover ? `${tc.text}B0` : 'rgba(255,255,255,0.7)' }}>
+        <div style={{ width: '30px', height: '1px', background: coverTextColor ? `${coverTextColor}4D` : (isLightCover ? `${tc.primary}50` : 'rgba(255,255,255,0.3)'), margin: '0 auto 12px' }} />
+        <p style={{ fontFamily: fonts.displayKr, fontSize: '12px', letterSpacing: '2px', color: coverTextColor ? `${coverTextColor}CC` : (isLightCover ? `${tc.text}B0` : 'rgba(255,255,255,0.7)') }}>
           {groomName} & {brideName}
         </p>
-        <p style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '2px', color: isLightCover ? `${tc.text}80` : 'rgba(255,255,255,0.5)', marginTop: '6px' }}>
+        <p style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '2px', color: coverTextColor ? `${coverTextColor}99` : (isLightCover ? `${tc.text}80` : 'rgba(255,255,255,0.5)'), marginTop: '6px' }}>
           {dateStr}
         </p>
         {invitation.wedding?.venue?.name && (
-          <p style={{ fontFamily: fonts.body, fontSize: '10px', color: isLightCover ? `${tc.text}60` : 'rgba(255,255,255,0.4)', marginTop: '4px' }}>
+          <p style={{ fontFamily: fonts.body, fontSize: '10px', color: coverTextColor ? `${coverTextColor}80` : (isLightCover ? `${tc.text}60` : 'rgba(255,255,255,0.4)'), marginTop: '4px' }}>
             {invitation.wedding.venue.name}
           </p>
         )}
@@ -439,9 +441,9 @@ function VinylRecordCover({ invitation, fonts, tc, onEnter, colorTheme }: {
         <button onClick={onEnter} className="transition-all duration-300 hover:scale-105 active:scale-95"
           style={{
             fontFamily: fonts.display, fontSize: '10px', letterSpacing: '5px',
-            color: isLightCover ? '#FFFFFF' : '#FFFFFF',
+            color: (coverTextColor && !isLightCover) ? coverTextColor : '#FFFFFF',
             background: isLightCover ? tc.primary : 'transparent',
-            border: isLightCover ? 'none' : '1px solid rgba(255,255,255,0.3)',
+            border: isLightCover ? 'none' : `1px solid ${coverTextColor ? `${coverTextColor}4D` : 'rgba(255,255,255,0.3)'}`,
             padding: '12px 40px', cursor: 'pointer',
             borderRadius: '30px',
           }}>
@@ -2648,6 +2650,7 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     customBgColor: (content as any).customBgColor,
     accentTextColor: (content as any).accentTextColor,
     bodyTextColor: (content as any).bodyTextColor,
+    coverTextColor: (content as any).coverTextColor,
     displayFont: (content as any).displayFont,
     deceasedDisplayStyle: content.deceasedDisplayStyle || 'flower',
     profileFrameShape: (content as any).profileFrameShape || 'circle',

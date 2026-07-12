@@ -1116,6 +1116,13 @@ const globalStyles = `
     }
   }
 
+  /* 하단 네비바 클리어런스 스페이서: 데스크톱은 프레임 스크롤러에 JS 패딩이 걸리므로 0,
+     모바일(≤767px)은 body가 스크롤되고 .mobile-frame-content가 display:contents라 여기서 여백 확보 */
+  .bottom-nav-spacer { height: 0; }
+  @media (max-width: 767px) {
+    .bottom-nav-spacer { height: calc(96px + env(safe-area-inset-bottom)); }
+  }
+
   /* Okticon Font for Romantic Style */
   @font-face {
     font-family: 'Okticon';
@@ -3826,6 +3833,7 @@ interface PageProps {
   isSample?: boolean
   introSettings?: IntroSettings
   audioRef?: React.RefObject<HTMLAudioElement | null>
+  navStyle?: 'hamburger' | 'bottom-nav' | 'bottom-mini'
 }
 
 // 방명록 메시지 타입
@@ -4457,7 +4465,7 @@ const sampleGuestbookMessages: GuestbookMessage[] = [
 ]
 
 // Main Page Component - matching template exactly
-function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, onOpenRsvp, onOpenLightbox, onOpenGuestbookModal, isSample = false, audioRef }: PageProps) {
+function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, onOpenRsvp, onOpenLightbox, onOpenGuestbookModal, isSample = false, audioRef, navStyle }: PageProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(() => {
     const questions = invitation.content.guestbookQuestions
     return questions?.length > 0 ? Math.floor(Math.random() * questions.length) : 0
@@ -5104,6 +5112,11 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
         <p className="text-[10px] font-light" style={{ color: '#999' }}>Thank you for celebrating with us</p>
         <p className="text-[9px] font-light mt-2" style={{ color: '#ccc' }}>Made with dear drawer</p>
       </div>
+
+      {/* 하단 네비바가 푸터를 가리지 않도록 모바일 전용 여백 (모바일에서 .mobile-frame-content가 display:contents라 JS 패딩이 안 먹힘) */}
+      {(navStyle === 'bottom-nav' || navStyle === 'bottom-mini') && (
+        <div className="bottom-nav-spacer" style={{ background: themeColors.background }} aria-hidden />
+      )}
     </div>
     </SectionHighlightContext.Provider>
   )
@@ -5617,6 +5630,7 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
                       }}
                       isSample={isSample}
                       audioRef={audioRef}
+                      navStyle={content?.navStyle || 'hamburger'}
                     />
                   )}
 

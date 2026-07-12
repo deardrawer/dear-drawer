@@ -974,7 +974,7 @@ const globalStyles = `
      모바일(≤767px)은 body가 스크롤되고 .mobile-frame-content가 display:contents라 여기서 여백 확보 */
   .bottom-nav-spacer { height: 0; }
   @media (max-width: 767px) {
-    .bottom-nav-spacer { height: calc(56px + env(safe-area-inset-bottom)); }
+    .bottom-nav-spacer { height: calc(28px + env(safe-area-inset-bottom)); }
   }
 
   /* Okticon Font for Romantic Style */

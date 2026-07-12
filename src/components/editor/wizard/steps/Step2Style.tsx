@@ -487,6 +487,30 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
               </div>
               <div className="flex items-center justify-between">
                 <div>
+                  <p className="text-sm text-gray-700">인트로 배경색</p>
+                  <p className="text-xs text-gray-500">인트로(커버) 배경 컬러 · 포인트 컬러와 별개</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {(invitation as any).coverBgColor && (
+                    <button
+                      onClick={() => updateField('coverBgColor' as any, undefined as unknown as string)}
+                      className="text-[10px] text-gray-400 underline"
+                    >
+                      기본값
+                    </button>
+                  )}
+                  <input
+                    type="color"
+                    value={(invitation as any).coverBgColor || '#FAF7F4'}
+                    onChange={(e) => updateField('coverBgColor' as any, e.target.value)}
+                    className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300"
+                    style={{ padding: 0 }}
+                  />
+                  <span className="text-xs text-gray-600 font-mono w-16">{(invitation as any).coverBgColor || '기본'}</span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
                   <p className="text-sm text-gray-700">인트로 글자 색상</p>
                   <p className="text-xs text-gray-500">인트로(커버) 배경 위 텍스트 색상</p>
                 </div>

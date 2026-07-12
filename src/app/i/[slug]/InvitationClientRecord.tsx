@@ -358,12 +358,16 @@ function VinylRecordCover({ invitation, fonts, tc, onEnter, colorTheme }: {
   const brideName = invitation.bride?.name || '신부'
   // 인트로(커버) 글자 색상 커스텀 — 지정 시 커버 배경 위 텍스트에 적용
   const coverTextColor = (invitation as any)?.coverTextColor as string | undefined
+  // 인트로(커버) 배경색 커스텀 — 포인트 컬러와 독립. 지정 시 커버 배경으로 사용
+  const coverBgColor = (invitation as any)?.coverBgColor as string | undefined
 
   return (
     <div className="relative w-full min-h-screen flex flex-col items-center justify-center overflow-hidden"
-      style={{ background: isLightCover
-        ? `radial-gradient(ellipse 140% 70% at 50% 40%, ${tc.primary}30 0%, ${tc.primary}12 35%, transparent 65%), ${coverBaseBg}`
-        : `linear-gradient(180deg, ${tc.primary} 0%, ${tc.accent} 100%)`
+      style={{ background: coverBgColor
+        ? coverBgColor
+        : (isLightCover
+          ? `radial-gradient(ellipse 140% 70% at 50% 40%, ${tc.primary}30 0%, ${tc.primary}12 35%, transparent 65%), ${coverBaseBg}`
+          : `linear-gradient(180deg, ${tc.primary} 0%, ${tc.accent} 100%)`)
       }}>
 
       {/* Subtle texture overlay */}
@@ -396,7 +400,7 @@ function VinylRecordCover({ invitation, fonts, tc, onEnter, colorTheme }: {
               <CroppedImageDiv src={coverImage} crop={coverSettings} className="w-full h-full" />
             </div>
             <div className="vinyl-grooves" />
-            <div className="vinyl-label" style={{ background: isLightCover ? coverBaseBg : `linear-gradient(135deg, ${tc.primary}, ${tc.accent})` }} />
+            <div className="vinyl-label" style={{ background: coverBgColor ? coverBgColor : (isLightCover ? coverBaseBg : `linear-gradient(135deg, ${tc.primary}, ${tc.accent})`) }} />
           </div>
           <div className="vinyl-play-hint" style={{
             opacity: phase >= 3 ? 1 : 0, transition: 'opacity 0.5s ease',
@@ -2651,6 +2655,7 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     accentTextColor: (content as any).accentTextColor,
     bodyTextColor: (content as any).bodyTextColor,
     coverTextColor: (content as any).coverTextColor,
+    coverBgColor: (content as any).coverBgColor,
     displayFont: (content as any).displayFont,
     deceasedDisplayStyle: content.deceasedDisplayStyle || 'flower',
     profileFrameShape: (content as any).profileFrameShape || 'circle',

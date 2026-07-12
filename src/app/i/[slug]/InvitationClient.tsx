@@ -302,6 +302,16 @@ const globalStyles = `
     50% { transform: translateY(6px); opacity: 0.5; }
   }
 
+  /* 방명록 포스트잇 등장 (기울기 유지) — 마운트 시 재생, 종료 후 보이는 상태 유지 */
+  @keyframes gbPopA {
+    from { opacity: 0; transform: rotate(-3deg) scale(0.5) translateY(14px); }
+    to { opacity: 1; transform: rotate(-3deg) scale(1) translateY(0); }
+  }
+  @keyframes gbPopB {
+    from { opacity: 0; transform: rotate(2deg) scale(0.5) translateY(14px); }
+    to { opacity: 1; transform: rotate(2deg) scale(1) translateY(0); }
+  }
+
   /* 커버/사진 슬로우 줌 (Ken Burns) */
   @keyframes ourKenBurns {
     from { transform: scale(1.08); }
@@ -4482,8 +4492,6 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
   const [guestName, setGuestName] = useState('')
   const [guestMessage, setGuestMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  // 방명록 포스트잇 등장 애니메이션용 리빌
-  const { ref: guestbookNotesRef, isVisible: guestbookNotesVisible } = useScrollAnimation()
 
   // BGM fade out/in when video plays
   const bgmWasPlayingRef = useRef(false)
@@ -5042,7 +5050,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
             {guestbookMessages.length === 0 ? (
               <p className="text-[11px] font-light text-gray-400 pt-10">아직 방명록이 없습니다. 첫 번째로 메시지를 남겨보세요!</p>
             ) : (
-              <div ref={guestbookNotesRef} className="flex flex-wrap justify-center gap-3">
+              <div className="flex flex-wrap justify-center gap-3">
                 {guestbookMessages.slice(0, 6).map((msg, index) => {
                   const tilt = index % 2 === 0 ? -3 : 2
                   return (
@@ -5051,12 +5059,9 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
                     className="w-[130px] px-3 py-3.5 rounded-lg text-left shadow-sm cursor-pointer"
                     style={{
                       background: cardColors[index % cardColors.length],
-                      // 기울기를 유지한 채 살짝 튕기며 순차로 내려앉음
-                      opacity: guestbookNotesVisible ? 1 : 0,
-                      transform: guestbookNotesVisible
-                        ? `rotate(${tilt}deg) scale(1) translateY(0)`
-                        : `rotate(${tilt}deg) scale(0.5) translateY(14px)`,
-                      transition: `opacity 0.4s ease ${index * 0.09}s, transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) ${index * 0.09}s`,
+                      // 기울기 유지 + 마운트 시 CSS 애니메이션으로 튕기며 등장 (스크롤 리빌 미의존 → 항상 표시)
+                      transform: `rotate(${tilt}deg)`,
+                      animation: `${index % 2 === 0 ? 'gbPopA' : 'gbPopB'} 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) ${index * 0.09}s both`,
                       touchAction: 'manipulation',
                     }}
                     onClick={() => openGuestbookModal(index)}

@@ -198,6 +198,16 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
     }
   }, [scrollContainerRef])
 
+  // 하단 네비바(bottom-nav/mini)가 콘텐츠(푸터)를 가리지 않도록 스크롤 컨테이너에 하단 여백 확보
+  // scrollContainerRef 미전달 템플릿(FAMILY 등)은 .mobile-frame-content 스크롤러로 폴백
+  useEffect(() => {
+    const container = scrollContainerRef?.current || document.querySelector<HTMLElement>('.mobile-frame-content')
+    if (!container) return
+    const needPad = (navStyle === 'bottom-nav' || navStyle === 'bottom-mini') && !navHidden
+    container.style.paddingBottom = needPad ? 'calc(84px + env(safe-area-inset-bottom))' : ''
+    return () => { if (container) container.style.paddingBottom = '' }
+  }, [scrollContainerRef, navStyle, navHidden])
+
   // 바텀시트 열기 (스크롤 위치 먼저 저장)
   const handleOpenBottomSheet = useCallback(() => {
     saveScrollPosition()

@@ -138,8 +138,8 @@ export default function MainPhotoSection({
           className="w-full aspect-[3/4] relative overflow-hidden cursor-pointer"
           style={{
             opacity: cH ? 1 : 0,
-            transform: cH ? 'scale(1)' : 'scale(1.05)',
-            transition: 'opacity 1.2s ease, transform 1.2s ease',
+            transform: cH ? 'scale(1)' : 'scale(1.06)',
+            transition: 'opacity 1.4s cubic-bezier(0.22, 1, 0.36, 1), transform 3s cubic-bezier(0.22, 1, 0.36, 1)',
           }}
           onClick={() => !isPreview && setLightboxIndex(0)}
         >
@@ -218,7 +218,8 @@ export default function MainPhotoSection({
             style={{
               opacity: cH ? 1 : 0,
               transform: cH ? 'translateY(0)' : 'translateY(20px)',
-              transition: 'opacity 0.8s ease, transform 0.8s ease',
+              filter: cH ? 'blur(0px)' : 'blur(6px)',
+              transition: 'opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1), filter 0.9s cubic-bezier(0.22, 1, 0.36, 1)',
               transitionDelay: cH ? '0.45s' : '0s',
             }}
           >

@@ -43,8 +43,9 @@ const defaultTheme: ThemeColors = {
 
 const stagger = (hasAppeared: boolean, delay: number) => ({
   opacity: hasAppeared ? 1 : 0,
-  transform: hasAppeared ? 'translateY(0)' : 'translateY(18px)',
-  transition: 'opacity 0.8s ease, transform 0.8s ease',
+  transform: hasAppeared ? 'translateY(0)' : 'translateY(20px)',
+  filter: hasAppeared ? 'blur(0px)' : 'blur(6px)',
+  transition: 'opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1), filter 0.9s cubic-bezier(0.22, 1, 0.36, 1)',
   transitionDelay: hasAppeared ? `${delay}s` : '0s',
 });
 
@@ -93,9 +94,10 @@ function TimelineItemComponent({
       className="relative flex pb-12 last:pb-0"
       style={{
         opacity: showItem ? (isItemActive ? 1 : 0.3) : 0,
-        transform: showItem ? 'translateY(0)' : 'translateY(24px)',
-        filter: showItem ? (isItemActive ? 'none' : 'grayscale(30%)') : 'none',
-        transition: 'opacity 0.5s ease, transform 0.8s ease, filter 0.5s ease',
+        transform: showItem ? 'translateY(0)' : 'translateY(28px)',
+        // blur↔grayscale 보간을 위해 filter 함수 리스트를 동일하게 유지
+        filter: showItem ? (isItemActive ? 'blur(0px) grayscale(0%)' : 'blur(0px) grayscale(30%)') : 'blur(6px) grayscale(0%)',
+        transition: 'opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1), filter 0.7s cubic-bezier(0.22, 1, 0.36, 1)',
         transitionDelay: !hasAppeared && showItem ? `${0.15 * index}s` : '0s',
       }}
     >
@@ -150,6 +152,8 @@ function TimelineItemComponent({
           onPointerUp={() => setIsPressed(false)}
           onPointerLeave={() => setIsPressed(false)}
         >
+          {/* 활성(현재 보는 기억) 사진은 아주 느리게 다가옴 */}
+          <div className="w-full h-full" style={{ transform: isItemActive ? 'scale(1.05)' : 'scale(1)', transition: 'transform 3.5s cubic-bezier(0.22, 1, 0.36, 1)' }}>
           {(() => {
             const imageUrl = item.image?.url || item.imageUrl;
             const hasCropData = item.image && (item.image.cropWidth < 1 || item.image.cropHeight < 1);
@@ -185,6 +189,7 @@ function TimelineItemComponent({
               );
             }
           })()}
+          </div>
         </div>
       </div>
     </div>
@@ -280,7 +285,10 @@ export default function FamilyTimeline({
             background: sectionActive
               ? `linear-gradient(to bottom, ${theme.accent}40, ${theme.accent}15)`
               : '#ddd',
-            transition: 'background 0.5s',
+            // 세월이 흐르듯 위→아래로 선이 그려짐
+            transform: sectionAppeared ? 'scaleY(1)' : 'scaleY(0)',
+            transformOrigin: 'top',
+            transition: 'transform 1.8s cubic-bezier(0.22, 1, 0.36, 1) 0.3s, background 0.5s',
           }}
         />
 

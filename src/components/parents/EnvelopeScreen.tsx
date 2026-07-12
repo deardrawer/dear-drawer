@@ -95,6 +95,7 @@ export default function EnvelopeScreen({
   const [isExtracted, setIsExtracted] = useState(false)
   const [isHidden, setIsHidden] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
+  const [isLeaving, setIsLeaving] = useState(false)
 
   // 마운트 후 컴포넌트 표시 (CSS 로딩 전 깜빡임 방지)
   useEffect(() => {
@@ -111,6 +112,7 @@ export default function EnvelopeScreen({
       setStage(0)
       setIsExtracted(false)
       setIsHidden(false)
+      setIsLeaving(false)
     }
   }, [recipientName, recipientRelation, isPreview])
 
@@ -137,10 +139,12 @@ export default function EnvelopeScreen({
         }, 1000)
       }, 800)
     } else if (stage === 3 && isExtracted) {
-      // 편지가 나온 상태에서 클릭하면 바로 본문으로 전환
-      onOpen()
+      // 편지가 나온 상태에서 클릭 → 편지가 다가오며 페이드된 뒤 본문 전환
+      if (isLeaving) return
+      setIsLeaving(true)
+      setTimeout(() => onOpen(), 380)
     }
-  }, [stage, isExtracted, onOpen, isPreview])
+  }, [stage, isExtracted, onOpen, isPreview, isLeaving])
 
   return (
     <div
@@ -150,8 +154,8 @@ export default function EnvelopeScreen({
         '--accent-color': accentColor,
         '--envelope-font': fontFamily,
         fontFamily: fontFamily || 'inherit',
-        opacity: isMounted ? 1 : 0,
-        transition: 'opacity 0.15s ease-in',
+        opacity: isMounted && !isLeaving ? 1 : 0,
+        transition: isLeaving ? 'opacity 0.38s ease' : 'opacity 0.15s ease-in',
         cursor: 'pointer',
       } as React.CSSProperties}
       onClick={handleClick}
@@ -418,7 +422,12 @@ export default function EnvelopeScreen({
         }
       `}</style>
 
-      <div className="envelope-wrapper" onClick={handleClick} style={{ perspective: '1500px', position: 'relative', zIndex: 1 }}>
+      <div className="envelope-wrapper" onClick={handleClick} style={{
+        perspective: '1500px', position: 'relative', zIndex: 1,
+        // 도착(살짝 내려앉음) → 대기 → 퇴장(다가옴) 모션
+        transform: !isMounted ? 'translateY(16px) scale(0.98)' : isLeaving ? 'scale(1.05)' : 'translateY(0) scale(1)',
+        transition: 'transform 0.9s cubic-bezier(0.22, 1, 0.36, 1)',
+      }}>
         <div
           className={`envelope-container ${stage >= 1 ? 'flipped' : ''}`}
           style={{ transformStyle: 'preserve-3d' }}
@@ -472,7 +481,7 @@ export default function EnvelopeScreen({
               onClick={(e) => {
                 if (stage === 3 && isExtracted) {
                   e.stopPropagation()
-                  onOpen()
+                  handleClick()
                 }
               }}
               style={{ cursor: stage === 3 ? 'pointer' : 'default' }}

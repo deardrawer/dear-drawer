@@ -912,17 +912,42 @@ function TrackOurJourney({ invitation, fonts, tc, trackRef, bgOverride, trackNum
   const interviews = invitation.content?.interviews || []
   const scrollRef = useRef<HTMLDivElement>(null)
   const [activeIdx, setActiveIdx] = useState(0)
-
-  if (interviews.length === 0) return null
+  // 연속 스크롤 위치 (카드 폭 단위) — 커버플로우 강조에 사용
+  const [scrollFloat, setScrollFloat] = useState(0)
+  const rafRef = useRef<number | null>(null)
 
   const handleScroll = useCallback(() => {
-    const el = scrollRef.current
-    if (!el) return
-    const scrollLeft = el.scrollLeft
-    const cardWidth = el.offsetWidth
-    const idx = Math.round(scrollLeft / cardWidth)
-    setActiveIdx(Math.min(idx, interviews.length - 1))
+    if (rafRef.current != null) return
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null
+      const el = scrollRef.current
+      if (!el) return
+      const cards = el.querySelectorAll<HTMLElement>('.record-journey-card')
+      if (!cards.length) return
+      const c0 = cards[0]
+      const c1 = cards[1]
+      const step = c1 ? c1.offsetLeft - c0.offsetLeft : el.offsetWidth
+      if (!step) return
+      // 뷰포트 중앙과 각 카드 중심의 거리로 연속 인덱스 산출 (카드 폭/여백 무관)
+      const viewportCenter = el.scrollLeft + el.clientWidth / 2
+      const center0 = c0.offsetLeft + c0.offsetWidth / 2
+      const raw = (viewportCenter - center0) / step
+      setScrollFloat(raw)
+      setActiveIdx(Math.max(0, Math.min(Math.round(raw), interviews.length - 1)))
+    })
   }, [interviews.length])
+
+  // 카드를 스크롤포트 중앙에 정렬 (peek 캐러셀용)
+  const scrollToCard = (idx: number) => {
+    const el = scrollRef.current
+    const card = el?.querySelectorAll<HTMLElement>('.record-journey-card')[idx]
+    if (!el || !card) return
+    el.scrollTo({ left: card.offsetLeft + card.offsetWidth / 2 - el.clientWidth / 2, behavior: 'smooth' })
+  }
+
+  useEffect(() => () => { if (rafRef.current != null) cancelAnimationFrame(rafRef.current) }, [])
+
+  if (interviews.length === 0) return null
 
   return (
     <div ref={(el) => { (ref as any).current = el; trackRef(el) }} className="py-10"
@@ -952,20 +977,29 @@ function TrackOurJourney({ invitation, fonts, tc, trackRef, bgOverride, trackNum
         style={{
           display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory',
           scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch',
-          padding: '0 20px',
+          padding: 0, position: 'relative',
         }}
       >
+        {/* 첫/마지막 카드도 중앙 정렬되도록 양끝 여백 스페이서 */}
+        <div aria-hidden style={{ flex: '0 0 8%' }} />
         {interviews.map((item: any, idx: number) => {
           const images = (item.images || []).map(extractImageUrl).filter(Boolean)
           const mainImg = images[0] || ''
           const trackProgress = ((idx + 1) / interviews.length) * 100
+          // 커버플로우: 중앙 카드는 풀 스케일/불투명, 양옆은 축소·디밍
+          const dist = Math.min(Math.abs(idx - scrollFloat), 1)
+          const emph = 1 - dist            // 1(중앙) → 0(양옆)
+          const cardScale = 0.9 + emph * 0.1   // 0.9 → 1.0
+          const cardOp = 0.4 + emph * 0.6      // 0.4 → 1.0
           return (
-            <div key={idx} style={{
-              flex: '0 0 calc(100% - 16px)', scrollSnapAlign: 'center',
+            <div key={idx} className="record-journey-card" style={{
+              flex: '0 0 84%', scrollSnapAlign: 'center',
               marginRight: idx < interviews.length - 1 ? '12px' : '0',
-              opacity: isVisible ? 1 : 0,
-              transform: isVisible ? 'translateY(0) rotate(0deg) scale(1)' : 'translateY(80px) rotate(4deg) scale(0.95)',
-              transition: `all 1.2s cubic-bezier(0.22, 1, 0.36, 1) ${idx * 300}ms`,
+              opacity: isVisible ? cardOp : 0,
+              transform: isVisible ? `translateY(0) scale(${cardScale})` : 'translateY(40px) scale(0.9)',
+              transformOrigin: 'center center',
+              willChange: 'transform, opacity',
+              transition: 'transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.45s ease',
             }}>
               <div style={{
                 background: tc.cardBg, borderRadius: '12px', overflow: 'hidden',
@@ -1018,6 +1052,7 @@ function TrackOurJourney({ invitation, fonts, tc, trackRef, bgOverride, trackNum
             </div>
           )
         })}
+        <div aria-hidden style={{ flex: '0 0 8%' }} />
       </div>
 
       {/* Navigation: arrows + dot indicators */}
@@ -1025,10 +1060,7 @@ function TrackOurJourney({ invitation, fonts, tc, trackRef, bgOverride, trackNum
         <div className="flex items-center justify-center gap-3 mt-4 px-5">
           {/* Prev arrow */}
           <button
-            onClick={() => {
-              const prev = Math.max(0, activeIdx - 1)
-              scrollRef.current?.scrollTo({ left: prev * (scrollRef.current?.offsetWidth || 0), behavior: 'smooth' })
-            }}
+            onClick={() => scrollToCard(Math.max(0, activeIdx - 1))}
             style={{
               background: 'none', border: `1px solid ${tc.divider}`, borderRadius: '50%',
               width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -1040,7 +1072,7 @@ function TrackOurJourney({ invitation, fonts, tc, trackRef, bgOverride, trackNum
           {/* Dots */}
           {interviews.map((_: any, idx: number) => (
             <button key={idx}
-              onClick={() => { scrollRef.current?.scrollTo({ left: idx * (scrollRef.current?.offsetWidth || 0), behavior: 'smooth' }) }}
+              onClick={() => scrollToCard(idx)}
               style={{
                 width: activeIdx === idx ? '18px' : '6px', height: '6px', borderRadius: '3px',
                 background: activeIdx === idx ? tc.primary : `${tc.divider}`, border: 'none',
@@ -1050,10 +1082,7 @@ function TrackOurJourney({ invitation, fonts, tc, trackRef, bgOverride, trackNum
 
           {/* Next arrow */}
           <button
-            onClick={() => {
-              const next = Math.min(interviews.length - 1, activeIdx + 1)
-              scrollRef.current?.scrollTo({ left: next * (scrollRef.current?.offsetWidth || 0), behavior: 'smooth' })
-            }}
+            onClick={() => scrollToCard(Math.min(interviews.length - 1, activeIdx + 1))}
             style={{
               background: 'none', border: `1px solid ${tc.divider}`, borderRadius: '50%',
               width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -1355,8 +1384,8 @@ function TrackWeddingDay({ invitation, fonts, tc, trackRef, bgOverride, trackNum
     if (!isVisible || isPreview) return
     const timer = setTimeout(() => {
       setIsShaking(true)
-      setTimeout(() => setIsShaking(false), 500)
-    }, 1200)
+      setTimeout(() => setIsShaking(false), 700)
+    }, 1150)
     return () => clearTimeout(timer)
   }, [isVisible, isPreview])
 
@@ -1373,11 +1402,11 @@ function TrackWeddingDay({ invitation, fonts, tc, trackRef, bgOverride, trackNum
       </div>
 
       {/* Concert ticket */}
-      <div style={{
+      <div className="record-ticket-impact" style={{
         opacity: isVisible ? 1 : 0,
         transform: isVisible ? 'translateY(0) rotate(0deg)' : 'translateY(50px) rotate(-3deg)',
         transition: 'all 1.1s cubic-bezier(0.34, 1.56, 0.64, 1)',
-        ...(isShaking ? { animation: 'ticketShake 0.5s ease' } : {}),
+        ...(isShaking ? { animation: 'ticketStamp 0.7s cubic-bezier(0.22, 1, 0.36, 1)' } : {}),
       }}>
         <div style={{
           background: tc.cardBg, borderRadius: '12px', overflow: 'hidden',
@@ -2489,14 +2518,17 @@ const globalStyles = `
     100% { opacity: 0.8; transform: rotate(12deg) scale(1); }
   }
 
-  /* Ticket shake */
-  @keyframes ticketShake {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    15% { transform: rotate(-0.8deg) translateX(-3px); }
-    30% { transform: rotate(0.8deg) translateX(3px); }
-    45% { transform: rotate(-0.4deg) translateX(-2px); }
-    60% { transform: rotate(0.4deg) translateX(1px); }
-    75% { transform: rotate(0deg); }
+  /* Ticket stamp impact — 스탬프가 눌리며 종이가 압착됐다 감쇠 복귀 (좌우 지터 없음) */
+  @keyframes ticketStamp {
+    0%   { transform: translateY(0) scale(1); }
+    24%  { transform: translateY(4px) scale(0.986); }
+    52%  { transform: translateY(-1.5px) scale(1.005); }
+    78%  { transform: translateY(0.5px) scale(0.999); }
+    100% { transform: translateY(0) scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .record-ticket-impact { animation: none !important; }
+    .record-journey-card { transform: none !important; opacity: 1 !important; }
   }
   @keyframes rec-photoScale {
     from { opacity: 0; transform: scale(0.7) translateY(30px); }

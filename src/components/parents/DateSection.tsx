@@ -12,8 +12,9 @@ interface DateSectionProps {
 
 const stagger = (hasAppeared: boolean, delay: number) => ({
   opacity: hasAppeared ? 1 : 0,
-  transform: hasAppeared ? 'translateY(0)' : 'translateY(18px)',
-  transition: 'opacity 0.8s ease, transform 0.8s ease',
+  transform: hasAppeared ? 'translateY(0)' : 'translateY(20px)',
+  filter: hasAppeared ? 'blur(0px)' : 'blur(6px)',
+  transition: 'opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1), filter 0.9s cubic-bezier(0.22, 1, 0.36, 1)',
   transitionDelay: hasAppeared ? `${delay}s` : '0s',
 })
 
@@ -195,7 +196,8 @@ export default function DateSection({
           boxShadow: isActive ? '0 2px 20px rgba(0,0,0,0.04)' : '0 1px 8px rgba(0,0,0,0.02)',
           opacity: hasAppeared ? 1 : 0,
           transform: hasAppeared ? 'translateY(0) scale(1)' : 'translateY(24px) scale(0.97)',
-          transition: 'opacity 0.8s ease, transform 0.8s ease, box-shadow 0.5s',
+          filter: hasAppeared ? 'blur(0px)' : 'blur(6px)',
+          transition: 'opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1), filter 0.9s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.5s',
           transitionDelay: hasAppeared ? '0.35s' : '0s',
         }}
       >

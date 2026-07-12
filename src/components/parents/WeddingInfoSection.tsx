@@ -45,8 +45,9 @@ const defaultPhotoBooth = '소중한 하루를 오래 기억할 수 있도록\n�
 
 const stagger = (hasAppeared: boolean, delay: number) => ({
   opacity: hasAppeared ? 1 : 0,
-  transform: hasAppeared ? 'translateY(0)' : 'translateY(18px)',
-  transition: 'opacity 0.8s ease, transform 0.8s ease',
+  transform: hasAppeared ? 'translateY(0)' : 'translateY(20px)',
+  filter: hasAppeared ? 'blur(0px)' : 'blur(6px)',
+  transition: 'opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1), filter 0.9s cubic-bezier(0.22, 1, 0.36, 1)',
   transitionDelay: hasAppeared ? `${delay}s` : '0s',
 })
 

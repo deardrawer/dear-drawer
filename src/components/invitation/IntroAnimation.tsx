@@ -627,12 +627,12 @@ export default function IntroAnimation({
         .intro-diagonal-reveal { animation: introDiagonalReveal 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; opacity: 0; }
       `}</style>
 
-      {/* 9:16 고정 비율 컨테이너 — 모든 기기에서 동일한 사진 비율 유지 */}
+      {/* 세로는 화면을 꽉 채우고(모바일 상/하단 검은 여백 제거) 가로만 최대 9:16로 제한(데스크톱 세로 프레임 유지) */}
       <div
         className="relative overflow-hidden"
         style={{
           width: 'min(100%, calc(100vh * 9 / 16))',
-          height: 'min(100%, calc(100vw * 16 / 9))',
+          height: '100%',
         }}
       >
         {renderIntro()}

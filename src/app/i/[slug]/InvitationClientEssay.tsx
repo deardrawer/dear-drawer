@@ -2463,8 +2463,14 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
     let lastTouchY = 0
     let locked: 'none' | 'horizontal' | 'vertical' = 'none'
     let dragging = false
+    // 관성(플릭) 스크롤용
+    let vY = 0
+    let lastMoveTime = 0
+    let momentumRAF = 0
+    const stopMomentum = () => { if (momentumRAF) { cancelAnimationFrame(momentumRAF); momentumRAF = 0 } }
 
     const onTouchStart = (e: TouchEvent) => {
+      stopMomentum()
       if (isSnapping) return
       // 인터랙티브 요소 클릭은 스킵 (SVG 아이콘 포함 — Element로 체크)
       if (e.target instanceof Element && e.target.closest('a, button, input, textarea, select, [role="button"]')) return
@@ -2473,6 +2479,8 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
       startY = e.touches[0].clientY
       lastTouchY = startY
       startTime = Date.now()
+      lastMoveTime = startTime
+      vY = 0
       locked = 'none'
       dragging = false
       containerWidthRef.current = el.getBoundingClientRect().width
@@ -2510,6 +2518,11 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
         if (scrollEl) {
           const deltaY = lastTouchY - cy
           scrollEl.scrollTop += deltaY
+          // 관성 스크롤용 속도(px/ms) 추적
+          const now = Date.now()
+          const dt = now - lastMoveTime
+          if (dt > 0) vY = deltaY / dt
+          lastMoveTime = now
         }
         lastTouchY = cy
         if (e.cancelable) e.preventDefault()
@@ -2542,6 +2555,19 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
         const w = rect.width
         if (x < w * 0.35) prevPage()
         else if (x > w * 0.65) nextPage()
+      }
+
+      // 세로 스크롤 후 관성(플릭) 스크롤 — 손을 뗀 뒤에도 감속하며 계속 스크롤
+      if (locked === 'vertical' && Math.abs(vY) > 0.05) {
+        let velocity = vY * 16 // px/frame (~60fps 기준)
+        const step = () => {
+          const scrollEl = scrollableRef.current
+          if (!scrollEl) { momentumRAF = 0; return }
+          scrollEl.scrollTop += velocity
+          velocity *= 0.95
+          momentumRAF = Math.abs(velocity) > 0.5 ? requestAnimationFrame(step) : 0
+        }
+        momentumRAF = requestAnimationFrame(step)
       }
 
       locked = 'none'
@@ -2631,6 +2657,7 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
     el.addEventListener('mouseleave', onMouseUp)
 
     return () => {
+      stopMomentum()
       el.removeEventListener('touchstart', onTouchStart)
       el.removeEventListener('touchmove', onTouchMove)
       el.removeEventListener('touchend', onTouchEnd)
@@ -2707,6 +2734,7 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
   const isInfoIntroPage = page?.type === 'info-intro'
   const isWarmEssayPage = page?.type === 'date-essay' || page?.type === 'venue-essay'
   const isIntroPage = page?.type === 'intro'
+  const isCoverPage = page?.type === 'cover'
   const isQuoteDark = isEditorial && page?.type === 'quote'
   const isEndPage = page?.type === 'end'
   const quoteDarkByTheme: Record<string, Partial<BookColorConfig>> = {
@@ -2896,7 +2924,7 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
           </div>
 
           {/* 스크롤 힌트 (콘텐츠 오버플로 시 하단 화살표) — info 페이지는 자체 스크롤 영역 사용 */}
-          <div className={`bk-scroll-hint ${showScrollHint && !isInfoPage && !isIntroPage ? 'show' : ''}`} style={{
+          <div className={`bk-scroll-hint ${showScrollHint && !isInfoPage && !isIntroPage && !isCoverPage && !isEndPage ? 'show' : ''}`} style={{
             background: `linear-gradient(transparent 0%, ${activeColors.pageBg || activeColors.bg} 50%)`,
           }}>
             <span style={{ color: activeColors.muted }}>↓</span>

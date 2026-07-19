@@ -232,14 +232,18 @@ const essayGalleryCSS = `
 `
 
 // active: false면 애니메이션 대기(투명), true가 되는 순간 지그재그 리빌 시작 (스크롤형 컨셉용)
-function EssayGalleryGrid({ images, imageSettings, onImageClick, colors, active = true }: {
-  images: string[]; imageSettings?: { scale: number; positionX: number; positionY: number }[]; onImageClick: (index: number) => void; colors: { bg: string; muted: string; accent: string }; active?: boolean
+function EssayGalleryGrid({ images, imageSettings, onImageClick, colors, active = true, fitHeight = false }: {
+  images: string[]; imageSettings?: { scale: number; positionX: number; positionY: number }[]; onImageClick: (index: number) => void; colors: { bg: string; muted: string; accent: string }; active?: boolean; fitHeight?: boolean
 }) {
   if (!images || images.length === 0) return null
+  const rows = Math.ceil(images.length / 2)
   return (
     <>
       <style>{essayGalleryCSS}</style>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px' }}>
+      <div style={{
+        display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px',
+        ...(fitHeight ? { height: '100%', gridTemplateRows: `repeat(${rows}, 1fr)` } : {}),
+      }}>
         {images.map((src: string, i: number) => {
           const s = imageSettings?.[i]
           const scale = s?.scale || 1
@@ -247,7 +251,7 @@ function EssayGalleryGrid({ images, imageSettings, onImageClick, colors, active 
           const posY = s?.positionY || 0
           return (
             <div key={i} className="essay-gal-item" style={{
-              overflow: 'hidden', aspectRatio: '1/1',
+              overflow: 'hidden', ...(fitHeight ? { minHeight: 0, height: '100%' } : { aspectRatio: '1/1' }),
               background: `${colors.muted}14`,
               opacity: active ? undefined : 0,
               animation: active ? `${i % 2 === 0 ? 'esGalInL' : 'esGalInR'} 0.9s cubic-bezier(.33,1,.68,1) ${0.35 + i * 0.1}s both` : 'none',
@@ -2197,10 +2201,10 @@ const bookAnimCSS = `
 @keyframes bkPageInR { from { opacity: 0; transform: translateX(12%); } to { opacity: 1; transform: none; } }
 @keyframes bkPageOutL { to { opacity: 0; transform: translateX(-18%) scale(0.94); } }
 @keyframes bkPageOutR { to { opacity: 0; transform: translateX(18%) scale(0.94); } }
-.book-page-content .bk-page { min-height: 100vh; padding-top: 52px; box-sizing: border-box; }
+.book-page-content .bk-page { min-height: 100dvh; padding-top: 52px; box-sizing: border-box; }
 .book-page-content .bk-page > .w-full { padding-left: 52px; padding-right: 52px; }
-.book-page-content:has(.bk-card) { display: flex; flex-direction: column; min-height: 100vh; }
-.book-page-content .bk-page.bk-card { min-height: calc(100vh - 20px); margin: 10px; border-radius: 14px; box-shadow: 0 4px 30px rgba(46,42,38,0.08); overflow: hidden; position: relative; padding-top: 0; }
+.book-page-content:has(.bk-card) { display: flex; flex-direction: column; min-height: 100dvh; }
+.book-page-content .bk-page.bk-card { min-height: calc(100dvh - 20px); margin: 10px; border-radius: 14px; box-shadow: 0 4px 30px rgba(46,42,38,0.08); overflow: hidden; position: relative; padding-top: 0; }
 .bk-scroll-area { scrollbar-width: none; -ms-overflow-style: none; }
 .bk-scroll-area::-webkit-scrollbar { display: none; }
 .bk-scroll-hint {
@@ -2463,14 +2467,8 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
     let lastTouchY = 0
     let locked: 'none' | 'horizontal' | 'vertical' = 'none'
     let dragging = false
-    // 관성(플릭) 스크롤용
-    let vY = 0
-    let lastMoveTime = 0
-    let momentumRAF = 0
-    const stopMomentum = () => { if (momentumRAF) { cancelAnimationFrame(momentumRAF); momentumRAF = 0 } }
 
     const onTouchStart = (e: TouchEvent) => {
-      stopMomentum()
       if (isSnapping) return
       // 인터랙티브 요소 클릭은 스킵 (SVG 아이콘 포함 — Element로 체크)
       if (e.target instanceof Element && e.target.closest('a, button, input, textarea, select, [role="button"]')) return
@@ -2479,8 +2477,6 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
       startY = e.touches[0].clientY
       lastTouchY = startY
       startTime = Date.now()
-      lastMoveTime = startTime
-      vY = 0
       locked = 'none'
       dragging = false
       containerWidthRef.current = el.getBoundingClientRect().width
@@ -2507,29 +2503,18 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
           locked = Math.abs(dx) > Math.abs(dy) ? 'horizontal' : 'vertical'
           dragDirectionRef.current = locked
         } else {
-          if (e.cancelable) e.preventDefault()
+          // 방향 미결정: preventDefault 하지 않아 네이티브 세로 스크롤이 시작될 수 있게 함
           return
         }
       }
 
+      // 수직: 브라우저 네이티브 스크롤(touch-action: pan-y)에 위임 → 부드러움 + 관성 내장
       if (locked === 'vertical') {
-        // 수직 스크롤을 JS로 직접 처리
-        const scrollEl = scrollableRef.current
-        if (scrollEl) {
-          const deltaY = lastTouchY - cy
-          scrollEl.scrollTop += deltaY
-          // 관성 스크롤용 속도(px/ms) 추적
-          const now = Date.now()
-          const dt = now - lastMoveTime
-          if (dt > 0) vY = deltaY / dt
-          lastMoveTime = now
-        }
         lastTouchY = cy
-        if (e.cancelable) e.preventDefault()
         return
       }
 
-      // 수평 드래그 비활성화 - 기본 동작만 방지
+      // 수평 스와이프: 네이티브 동작만 차단 (페이지 넘김은 touchEnd에서 처리)
       if (e.cancelable) e.preventDefault()
       return
     }
@@ -2555,19 +2540,6 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
         const w = rect.width
         if (x < w * 0.35) prevPage()
         else if (x > w * 0.65) nextPage()
-      }
-
-      // 세로 스크롤 후 관성(플릭) 스크롤 — 손을 뗀 뒤에도 감속하며 계속 스크롤
-      if (locked === 'vertical' && Math.abs(vY) > 0.05) {
-        let velocity = vY * 16 // px/frame (~60fps 기준)
-        const step = () => {
-          const scrollEl = scrollableRef.current
-          if (!scrollEl) { momentumRAF = 0; return }
-          scrollEl.scrollTop += velocity
-          velocity *= 0.95
-          momentumRAF = Math.abs(velocity) > 0.5 ? requestAnimationFrame(step) : 0
-        }
-        momentumRAF = requestAnimationFrame(step)
       }
 
       locked = 'none'
@@ -2657,7 +2629,6 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
     el.addEventListener('mouseleave', onMouseUp)
 
     return () => {
-      stopMomentum()
       el.removeEventListener('touchstart', onTouchStart)
       el.removeEventListener('touchmove', onTouchMove)
       el.removeEventListener('touchend', onTouchEnd)
@@ -2845,7 +2816,7 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
       <div className="fixed inset-0 overflow-hidden" style={{
         paddingTop: 0,
         paddingBottom: 0,
-        touchAction: 'none',
+        touchAction: 'pan-y',
       }}>
         <div style={{ position: 'relative', width: '100%', height: '100%' }}>
           {/* 이전 페이지 (드래그 중에만 렌더) */}
@@ -2906,7 +2877,7 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
             zIndex: 2,
             background: isInfoPage ? bookInfoColors.frameBg : undefined,
             overflowY: (isDragging || isSnapping) ? 'hidden' : 'auto',
-            touchAction: isFormPage() ? 'auto' : 'none',
+            touchAction: isFormPage() ? 'auto' : 'pan-y',
             transform: (isDragging || isSnapping) ? `translateX(${dragOffset}px)` : 'none',
             opacity: 1,
             transition: isSnapping ? 'transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)' : 'none',
@@ -3651,8 +3622,8 @@ function BookIntro({ data, onOpenModal }: { data: any; onOpenModal?: (modal: 'co
   ].filter(Boolean) as { modal: 'contact' | 'rsvp' | 'location' | 'account'; label: string; icon: React.ReactNode }[]
 
   return (
-    <div className="bk-page flex flex-col items-center justify-center" style={{ background: intro?.backgroundColor || bookColors.accent, position: 'relative' }}>
-      <div className="w-full px-12 py-16 max-w-md mx-auto text-center flex-1 flex flex-col justify-center">
+    <div className="bk-page flex flex-col items-center justify-center" style={{ background: intro?.backgroundColor || bookColors.accent, position: 'relative', maxHeight: '100dvh', overflow: 'hidden' }}>
+      <div className="w-full px-12 py-16 max-w-md mx-auto text-center flex-1 flex flex-col justify-center" style={{ minHeight: 0, overflowY: 'auto' }}>
         <BA d={200} className="mb-10">
           <p className="es-f18" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '18px', fontWeight: 600, lineHeight: 1.6, color: tcFull }}>{title}</p>
           <p className="es-f12" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '12px', letterSpacing: '2px', color: tcSub, marginTop: '6px' }}>{subtitle}</p>
@@ -3955,20 +3926,21 @@ function BookGallery({ data }: { data: any }) {
   if (images.length === 0) return null
 
   return (
-    <div className="bk-page" style={{ background: bookColors.bg, display: 'flex', flexDirection: 'column' }}>
-      <div style={{ flex: 1, overflowY: 'auto', padding: '72px 14px 40px', WebkitOverflowScrolling: 'touch' }}>
+    <div className="bk-page" style={{ background: bookColors.bg, display: 'flex', flexDirection: 'column', maxHeight: '100dvh', overflow: 'hidden' }}>
+      <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', padding: '64px 14px 24px' }}>
         <div style={{
           animation: 'bkTrack 1.3s ease-out 200ms both',
           fontFamily: "'Cormorant Garamond', serif", fontSize: '8px', fontWeight: 400,
           letterSpacing: '4px', color: bookColors.muted, textTransform: 'uppercase' as const,
-          textAlign: 'center', marginBottom: '18px',
+          textAlign: 'center', marginBottom: '18px', flexShrink: 0,
         }}>Gallery</div>
-        <BA d={400} type="fade">
+        <BA d={400} type="fade" className="flex-1 min-h-0">
           <EssayGalleryGrid
             images={images}
             imageSettings={data.gallery?.imageSettings}
             onImageClick={(i) => { setViewerIndex(i); setViewerOpen(true) }}
             colors={{ bg: bookColors.bg, muted: bookColors.muted, accent: bookColors.accent }}
+            fitHeight
           />
         </BA>
       </div>

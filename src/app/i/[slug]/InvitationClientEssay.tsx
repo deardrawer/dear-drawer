@@ -2497,10 +2497,11 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
       const dx = cx - startX
       const dy = cy - startY
 
-      // 방향 잠금 결정 (10px 이상 이동 후)
+      // 방향 잠금 결정 (10px 이상 이동 후) — 수평은 dx가 dy를 확실히 지배할 때만(오탐 방지)
       if (locked === 'none') {
-        if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
-          locked = Math.abs(dx) > Math.abs(dy) ? 'horizontal' : 'vertical'
+        const adx = Math.abs(dx), ady = Math.abs(dy)
+        if (adx > 10 || ady > 10) {
+          locked = (adx > ady * 1.5 && adx > 14) ? 'horizontal' : 'vertical'
           dragDirectionRef.current = locked
         } else {
           // 방향 미결정: preventDefault 하지 않아 네이티브 세로 스크롤이 시작될 수 있게 함
@@ -2528,8 +2529,8 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
       const dx = endX - startX
       const dy = endY - startY
 
-      // 스와이프 감지 (매거진 방식: 35px 이상 수평 이동)
-      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 35) {
+      // 스와이프 감지: 수평이 수직을 1.5배 이상 지배 + 60px 이상 이동 (오탐/과민 방지)
+      if (Math.abs(dx) > Math.abs(dy) * 1.5 && Math.abs(dx) > 60) {
         if (dx < 0) nextPage()
         else prevPage()
       }
@@ -2600,8 +2601,8 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
       const dx = e.clientX - startX
       const dy = e.clientY - startY
 
-      // 스와이프 감지 (매거진 방식: 35px 이상 수평 이동)
-      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 35) {
+      // 스와이프 감지: 수평이 수직을 1.5배 이상 지배 + 60px 이상 이동 (오탐/과민 방지)
+      if (Math.abs(dx) > Math.abs(dy) * 1.5 && Math.abs(dx) > 60) {
         if (dx < 0) nextPage()
         else prevPage()
       }
@@ -2786,7 +2787,7 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
     <div
       ref={containerRef}
       className="fixed inset-0 select-none"
-      style={{ background: bookColors.bg, fontFamily: "'Pretendard', sans-serif", touchAction: 'none' }}
+      style={{ background: bookColors.bg, fontFamily: "'Pretendard', sans-serif", touchAction: 'pan-y' }}
     >
       {/* 애니메이션 키프레임 */}
       <style dangerouslySetInnerHTML={{ __html: bookAnimCSS }} />
@@ -2795,7 +2796,7 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
 
       {/* 상단 툴바 (메뉴 + 페이지 번호 + 프로그레스 바) */}
       {currentPage > 0 && (
-        <div className="fixed top-0 left-0 right-0 z-40 flex items-center gap-2.5 pointer-events-none" style={{ height: '52px', padding: '20px 20px 8px 20px', background: 'transparent', ...(isInfoPage ? { top: '10px', left: '10px', right: '10px', borderRadius: '14px 14px 0 0' } : {}) }}>
+        <div className="fixed top-0 left-0 right-0 z-40 flex items-center gap-2.5 pointer-events-none" style={{ height: '52px', padding: '20px 20px 8px 20px', background: isInfoPage ? bookInfoColors.bg : 'transparent', ...(isInfoPage ? { top: '10px', left: '10px', right: '10px', borderRadius: '14px 14px 0 0' } : {}) }}>
           <button
             onClick={(e) => { e.stopPropagation(); setShowToc(true) }}
             className="pointer-events-auto"

@@ -299,6 +299,18 @@ export default function IntroAnimation({
           margin-left: 2px;
         }
 
+        /* 글자별 페이드 리빌 (타이핑 대체) */
+        @keyframes introCharReveal {
+          0% { opacity: 0; filter: blur(7px); transform: translateY(9px); }
+          100% { opacity: 1; filter: blur(0); transform: translateY(0); }
+        }
+        .intro-char {
+          display: inline-block;
+          white-space: pre;
+          opacity: 0;
+          animation: introCharReveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
         /* 페이드 인 */
         @keyframes introFadeIn {
           from { opacity: 0; }
@@ -703,31 +715,10 @@ function CinematicIntro({ settings, backgroundStyle, overlayStyle, titleStyle, s
 
 // 타이핑 인트로 (상하 분할 레이아웃)
 function TypingIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle, accentColor, bodyTextColor, waveColor }: IntroComponentProps) {
-  const [displayText, setDisplayText] = useState('')
-  const [completed, setCompleted] = useState(false)
   const fullText = settings.mainTitle
-
-  useEffect(() => {
-    let index = 0
-    const startTimer = setTimeout(() => {
-      setDisplayText(fullText.slice(0, 1))
-      index = 1
-
-      const timer = setInterval(() => {
-        if (index < fullText.length) {
-          index++
-          setDisplayText(fullText.slice(0, index))
-        } else {
-          clearInterval(timer)
-          setTimeout(() => setCompleted(true), 300)
-        }
-      }, 100)
-
-      return () => clearInterval(timer)
-    }, 800)
-
-    return () => clearTimeout(startTimer)
-  }, [fullText])
+  // 글자별 페이드 리빌 (기존 타자기 커서 방식 제거 — 느긋한 속도 유지)
+  const charStart = 0.8   // 첫 글자 시작 (초)
+  const charStep = 0.09   // 글자 간격 (초)
 
   // Subtitle and date/venue colors derived from accentColor
   const typingSubColor = hexToRgba(accentColor, 0.6)
@@ -760,9 +751,17 @@ function TypingIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subT
             {settings.subTitle}
           </p>
         )}
-        <p className="mb-2" style={titleStyle}>
-          {displayText}
-          {!completed && <span className="intro-typing-cursor">|</span>}
+        <p className="mb-2" style={titleStyle} aria-label={fullText}>
+          {[...fullText].map((ch, i) => (
+            <span
+              key={i}
+              className="intro-char"
+              aria-hidden="true"
+              style={{ animationDelay: `${charStart + i * charStep}s` }}
+            >
+              {ch === ' ' ? ' ' : ch}
+            </span>
+          ))}
         </p>
         <div className="w-16 h-px my-5 intro-split-reveal" style={{ backgroundColor: `${accentColor}66`, animationDelay: '2.8s' }} />
         {settings.dateText && (
@@ -812,13 +811,13 @@ function BlurIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTit
 }
 
 // 줌 인트로 (중앙 확대 레이아웃)
-function ZoomIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle, accentColor, bodyTextColor }: IntroComponentProps) {
+function ZoomIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle, accentColor, bodyTextColor, bgColor }: IntroComponentProps) {
   const zoomSubColor = hexToRgba(accentColor, 0.6)
   const zoomDateColor = hexToRgba(accentColor, 0.5)
   const zoomVenueColor = hexToRgba(accentColor, 0.4)
 
   return (
-    <div className="relative h-full flex flex-col items-center justify-center overflow-hidden bg-[#F7F5F2]">
+    <div className="relative h-full flex flex-col items-center justify-center overflow-hidden" style={{ backgroundColor: bgColor }}>
       {/* 서브타이틀 (사진 위) */}
       {settings.subTitle && (
         <p className="text-[10px] tracking-[4px] mb-6 intro-fade-in-up relative z-10" style={{ color: zoomSubColor, opacity: 0, animationDelay: '0.5s' }}>
@@ -1037,12 +1036,12 @@ function PetalIntro({ settings, backgroundStyle, titleStyle, subTitleStyle, acce
 }
 
 // 수채화 인트로 (아치 윈도우 레이아웃)
-function WatercolorIntro({ settings, backgroundStyle, titleStyle, subTitleStyle, accentColor, bodyTextColor }: IntroComponentProps) {
+function WatercolorIntro({ settings, backgroundStyle, titleStyle, subTitleStyle, accentColor, bodyTextColor, bgColor }: IntroComponentProps) {
   const watercolorSubColor = hexToRgba(accentColor, 0.7)
   const watercolorVenueColor = hexToRgba(accentColor, 0.5)
 
   return (
-    <div className="relative h-full flex flex-col items-center justify-center overflow-hidden bg-[#F8F6F3]">
+    <div className="relative h-full flex flex-col items-center justify-center overflow-hidden" style={{ backgroundColor: bgColor }}>
       {/* 수채화 블롭 배경 (은은하게) */}
       <div className="intro-watercolor-spread absolute inset-0">
         <div
@@ -1105,13 +1104,13 @@ function WatercolorIntro({ settings, backgroundStyle, titleStyle, subTitleStyle,
 }
 
 // 빛의 커튼 인트로 (대각 분할 레이아웃)
-function LightrayIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle, accentColor, bodyTextColor }: IntroComponentProps) {
+function LightrayIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle, accentColor, bodyTextColor, bgColor }: IntroComponentProps) {
   const lightraySubColor = hexToRgba(accentColor, 0.8)
   const lightrayDateColor = hexToRgba(accentColor, 0.7)
   const lightrayVenueColor = hexToRgba(accentColor, 0.5)
 
   return (
-    <div className="relative h-full overflow-hidden bg-[#F8F6F3]">
+    <div className="relative h-full overflow-hidden" style={{ backgroundColor: bgColor }}>
       {/* 대각선으로 잘린 사진 영역 */}
       <div
         className="absolute inset-0 intro-diagonal-reveal"

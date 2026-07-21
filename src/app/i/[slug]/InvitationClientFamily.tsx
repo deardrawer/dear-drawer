@@ -4203,19 +4203,35 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
     touchStartY.current = e.touches[0].clientY
   }
 
+  // "다음 이야기"가 화면에 들어와 있는지 (하단 도달 여부)
+  const isNextStoryVisible = () => {
+    const el = nextStoryRef.current
+    if (!el) return false
+    const rect = el.getBoundingClientRect()
+    return rect.top < window.innerHeight - 20
+  }
+
   const handleTouchEnd = (e: React.TouchEvent) => {
     const touchEndY = e.changedTouches[0].clientY
     if (touchStartY.current - touchEndY > 50) {
       // Swipe up
       if (currentScreen === 'cover') {
         switchScreen('cover', 'invitation')
+      } else if (currentScreen === 'invitation' && isNextStoryVisible()) {
+        // 다음 이야기가 보이는 상태에서 위로 스와이프하면 메인으로
+        onNavigate('main')
       }
     }
   }
 
   const handleWheel = (e: React.WheelEvent) => {
-    if (e.deltaY > 0 && currentScreen === 'cover') {
-      switchScreen('cover', 'invitation')
+    if (e.deltaY > 0) {
+      if (currentScreen === 'cover') {
+        switchScreen('cover', 'invitation')
+      } else if (currentScreen === 'invitation' && isNextStoryVisible()) {
+        // 다음 이야기가 보이는 상태에서 아래로 스크롤하면 메인으로
+        onNavigate('main')
+      }
     }
   }
 
@@ -4371,6 +4387,15 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
             transition: 'opacity 0.6s ease-out 1.8s'
           }}
         >
+          {/* 넘김 안내 문구 (옵션) - 스크롤 인디케이터 상단 */}
+          {effectiveIntroSettings.guideEnabled && (
+            <p
+              className="mb-3 text-[11px] font-light text-center"
+              style={{ color: 'rgba(255,255,255,0.85)', fontFamily: fonts.displayKr, letterSpacing: '1px' }}
+            >
+              {effectiveIntroSettings.guideText || '터치하거나 아래로 넘겨주세요'}
+            </p>
+          )}
           <div
             style={{
               width: '1px',
@@ -4403,6 +4428,9 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
           transition: 'opacity 0.5s ease'
         }}
         onClick={handleInvitationClick}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onWheel={handleWheel}
       >
         {/* INVITATION Title */}
         <p className="invitation-title typo-caption mb-9" style={{ color: themeColors.gray }}>INVITATION</p>
@@ -4481,7 +4509,9 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
             className="text-[13px] font-light"
             style={{ color: themeColors.gray, fontFamily: fonts.displayKr }}
           >
-            다음 이야기
+            {effectiveIntroSettings.guideEnabled
+              ? (effectiveIntroSettings.guideText || '터치하거나 아래로 넘겨주세요')
+              : '다음 이야기'}
           </button>
           <div className="flex flex-col items-center mt-4">
             <div

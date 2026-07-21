@@ -936,7 +936,8 @@ function TabBar({ activeTab, onTabChange, visitedTabs, hiddenTabs = [], stickyTo
 
 // === 5-1. People Tab (신랑/신부 소개) ===
 function ProfileCarousel({ images, imageSettings }: { images: string[]; imageSettings?: any }) {
-  const { currentIndex, style: swipeStyle, handlers, containerRef } = useSwipeCarousel(images.length)
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   if (images.length <= 1) {
     return (
@@ -949,26 +950,34 @@ function ProfileCarousel({ images, imageSettings }: { images: string[]; imageSet
     )
   }
 
+  // Native scroll-snap: one image per swipe on both desktop (trackpad/wheel) and mobile (touch).
+  // scroll-snap-stop: always prevents fast flings from skipping multiple images.
+  const handleScroll = () => {
+    const el = scrollRef.current
+    if (!el) return
+    setCurrentIndex(Math.round(el.scrollLeft / el.clientWidth))
+  }
+
   return (
     <div className="relative w-full" style={{ aspectRatio: '4/5', background: '#FAFAFA' }}>
       <div
-        ref={containerRef}
-        className="w-full h-full overflow-hidden"
-        {...handlers}
+        ref={scrollRef}
+        onScroll={handleScroll}
+        className="flex w-full h-full overflow-x-auto ig-scroll"
+        style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}
       >
-        <div className="flex h-full" style={swipeStyle}>
-          {images.map((img, idx) => (
-            <CroppedImageDiv
-              key={idx}
-              src={img}
-              crop={imageSettings}
-              className="w-full h-full flex-shrink-0"
-            />
-          ))}
-        </div>
+        {images.map((img, idx) => (
+          <div
+            key={idx}
+            className="w-full h-full flex-shrink-0"
+            style={{ scrollSnapAlign: 'start', scrollSnapStop: 'always' }}
+          >
+            <CroppedImageDiv src={img} crop={imageSettings} className="w-full h-full" />
+          </div>
+        ))}
       </div>
       {/* Dot indicators */}
-      <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1">
+      <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1 pointer-events-none">
         {images.map((_, idx) => (
           <div
             key={idx}
@@ -1116,6 +1125,7 @@ function StoryCarousel({ images }: { images: string[] }) {
             className="w-full flex-shrink-0"
             style={{
               scrollSnapAlign: 'start',
+              scrollSnapStop: 'always',
               aspectRatio: '4/5',
               background: '#FAFAFA',
               backgroundImage: `url(${img})`,
@@ -1175,8 +1185,8 @@ function LoveStoryTab({ content, profileImage, username }: { content: any; profi
               profileImageSettings={avatarSettings}
               caption={
                 <div className="pb-3">
-                  <p className="text-[13px] leading-[1.7] whitespace-pre-line" style={{ color: '#262626' }}>
-                    <span className="font-semibold">{username}</span>{' '}
+                  <p className="text-[13px] leading-[1.7] whitespace-pre-line" style={{ color: '#6E6E6E' }}>
+                    <span style={{ fontWeight: 800, color: '#1A1A1A' }}>{username}</span>{' '}
                     {story.caption || story.content || ''}
                   </p>
                 </div>
@@ -1534,8 +1544,8 @@ function WeddingInfoPost({
         likes={128}
         caption={
           <div className="pb-3">
-            <p className="text-[13px] mb-3" style={{ color: '#262626' }}>
-              <span className="font-semibold">{username}</span>{' '}
+            <p className="text-[13px] mb-3" style={{ color: '#6E6E6E' }}>
+              <span style={{ fontWeight: 800, color: '#1A1A1A' }}>{username}</span>{' '}
               {content?.postCaptions?.weddingInfo || '우리의 특별한 날에 초대합니다 💌'}
             </p>
 
@@ -1820,8 +1830,8 @@ function GuidancePost({
       profileImageSettings={avatarSettings}
       caption={
         <div className="pb-3">
-          <p className="text-[13px]" style={{ color: '#262626' }}>
-            <span className="font-semibold">{username}</span>{' '}
+          <p className="text-[13px]" style={{ color: '#6E6E6E' }}>
+            <span style={{ fontWeight: 800, color: '#1A1A1A' }}>{username}</span>{' '}
             {content?.postCaptions?.guidance || '결혼식 안내사항을 알려드립니다 ✨'}
           </p>
         </div>
@@ -1925,9 +1935,15 @@ function GuestbookSection({
   const [guestMessage, setGuestMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showAll, setShowAll] = useState(false)
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(() =>
-    guestbookQuestions.length > 0 ? Math.floor(Math.random() * guestbookQuestions.length) : 0
-  )
+  // Start at 0 so SSR and first client render match (avoids hydration mismatch),
+  // then pick a random question after mount.
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
+
+  useEffect(() => {
+    if (guestbookQuestions.length > 1) {
+      setCurrentQuestionIndex(Math.floor(Math.random() * guestbookQuestions.length))
+    }
+  }, [guestbookQuestions.length])
 
   // Fetch guestbook messages (or use sample)
   useEffect(() => {
@@ -2031,8 +2047,8 @@ function GuestbookSection({
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[13px]" style={{ color: '#262626' }}>
-                <span className="font-semibold">{msg.guest_name}</span>{' '}
-                <span className="font-normal">{msg.message}</span>
+                <span style={{ fontWeight: 800, color: '#1A1A1A' }}>{msg.guest_name}</span>{' '}
+                <span style={{ fontWeight: 400, color: '#6E6E6E' }}>{msg.message}</span>
               </p>
               <p className="text-[11px] mt-0.5" style={{ color: '#8E8E8E' }}>
                 {timeAgo(msg.created_at)}
@@ -2122,8 +2138,8 @@ function VideoPost({
       {/* Caption */}
       {youtube.title && (
         <div className="px-3 py-3">
-          <p className="text-[13px]" style={{ color: '#262626' }}>
-            <span className="font-semibold">{username}</span>{' '}
+          <p className="text-[13px]" style={{ color: '#6E6E6E' }}>
+            <span style={{ fontWeight: 800, color: '#1A1A1A' }}>{username}</span>{' '}
             {youtube.title}
           </p>
         </div>
@@ -2228,8 +2244,8 @@ function AccountPost({
       profileImageSettings={avatarSettings}
       caption={
         <div className="pb-3">
-          <p className="text-[13px]" style={{ color: '#262626' }}>
-            <span className="font-semibold">{username}</span>{' '}
+          <p className="text-[13px]" style={{ color: '#6E6E6E' }}>
+            <span style={{ fontWeight: 800, color: '#1A1A1A' }}>{username}</span>{' '}
             {content?.postCaptions?.account || '전해주시는 축하와 응원, 오래도록 기억하겠습니다. 💛'}
           </p>
         </div>
@@ -2767,8 +2783,8 @@ function ThankYouPost({
       profileImageSettings={avatarSettings}
       caption={
         <div className="pb-3">
-          <p className="text-[13px]" style={{ color: '#262626' }}>
-            <span className="font-semibold">{username}</span>{' '}
+          <p className="text-[13px]" style={{ color: '#6E6E6E' }}>
+            <span style={{ fontWeight: 800, color: '#1A1A1A' }}>{username}</span>{' '}
             {thankYou.caption || '축하해주셔서 감사합니다'}
           </p>
           {thankYou.sign && (

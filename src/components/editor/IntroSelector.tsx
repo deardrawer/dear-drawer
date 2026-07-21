@@ -584,12 +584,12 @@ export default function IntroSelector({ onBack }: IntroSelectorProps) {
                     </div>
                   )}
 
-                  {/* 배경색 - petal, film, filmstrip */}
-                  {['petal', 'film', 'filmstrip'].includes(intro.presetId) && (
+                  {/* 배경색 - petal, film, filmstrip, zoom(프레임), watercolor(아치), lightray(대각선) */}
+                  {['petal', 'film', 'filmstrip', 'zoom', 'watercolor', 'lightray'].includes(intro.presetId) && (
                     <div>
                       <Label className="text-sm text-gray-700 mb-2 block">배경색</Label>
                       <div className="flex gap-2 flex-wrap">
-                        {['#FDF6F4', '#F5F3F0', '#F8F6F3', '#FFFFFF', '#1a1a1a', '#2c2c2c', '#F0EDE8', '#E8E0D4'].map((color) => (
+                        {['#FDF6F4', '#F5F3F0', '#F8F6F3', '#F7F5F2', '#FFFFFF', '#1a1a1a', '#2c2c2c', '#F0EDE8', '#E8E0D4'].map((color) => (
                           <button
                             key={color}
                             onClick={() => handleFieldChange('bgColor', color)}

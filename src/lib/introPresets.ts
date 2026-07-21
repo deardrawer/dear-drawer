@@ -98,6 +98,9 @@ export interface IntroSettings {
   bgColor?: string           // 배경색 (petal, film, filmstrip)
   waveColor?: string         // 웨이브 색상 (typing)
   envelopeColor?: string     // 봉투 색상 (letter)
+  // 인트로 → 메인 넘김 안내 문구 (하단)
+  guideEnabled?: boolean     // 안내 문구 표시 여부 (기본 미표시)
+  guideText?: string         // 안내 문구 내용 (커스텀)
 }
 
 // 사용 가능한 폰트 목록
@@ -167,11 +170,11 @@ export const presetCustomColors: Record<IntroPresetId, {
   cinematic: { overlayColor: '#000000' },
   typing: { bodyTextColor: '#2c2c2c', waveColor: '#FAF8F5' },
   blur: { overlayColor: '#000000' },
-  zoom: { bodyTextColor: '#2c2c2c' },
+  zoom: { bodyTextColor: '#2c2c2c', bgColor: '#F7F5F2' },
   letter: { envelopeColor: '#f5f0e8', overlayColor: '#000000' },
   petal: { bgColor: '#FDF6F4', bodyTextColor: '#374151' },
-  watercolor: { bodyTextColor: '#374151' },
-  lightray: { bodyTextColor: '#374151' },
+  watercolor: { bodyTextColor: '#374151', bgColor: '#F8F6F3' },
+  lightray: { bodyTextColor: '#374151', bgColor: '#F8F6F3' },
   film: { bgColor: '#F5F3F0', bodyTextColor: '#4a4a4a' },
   filmstrip: { bgColor: '#1a1a1a' },
 }
@@ -482,6 +485,9 @@ export function getDefaultIntroSettings(presetId: IntroPresetId = 'cinematic'): 
     bgColor: defaults.bgColor ?? presetCustomColors[presetId]?.bgColor,
     waveColor: defaults.waveColor ?? presetCustomColors[presetId]?.waveColor,
     envelopeColor: defaults.envelopeColor ?? presetCustomColors[presetId]?.envelopeColor,
+    // 넘김 안내 문구 (기본: 미표시 + 기본 문구)
+    guideEnabled: defaults.guideEnabled ?? false,
+    guideText: defaults.guideText ?? '터치하거나 아래로 넘겨주세요',
   }
 }
 
@@ -532,6 +538,9 @@ export function mergeIntroSettings(
     gradientAngle: currentSettings.gradientAngle,
     // accentColor는 새 프리셋 기본값 사용 (프리셋별로 다르므로)
     // 프리셋별 커스텀 컬러도 새 프리셋 기본값 사용
+    // 넘김 안내 문구는 프리셋과 무관하므로 사용자 설정 유지
+    guideEnabled: currentSettings.guideEnabled,
+    guideText: currentSettings.guideText,
   }
 }
 

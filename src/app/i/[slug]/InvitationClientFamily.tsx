@@ -4158,6 +4158,8 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
 
   // Touch handling for swipe
   const touchStartY = useRef(0)
+  const touchStartAtBottom = useRef(false) // 스와이프 시작 시 이미 스크롤 하단이었는지
+  const lastWheelTs = useRef(0)            // 연속 휠 스크롤 구분용
 
   // Get intro settings from invitation or use default
   const effectiveIntroSettings = introSettings || invitation.intro || getDefaultIntroSettings('cinematic')
@@ -4199,37 +4201,52 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
     }
   }
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartY.current = e.touches[0].clientY
-  }
-
-  // "다음 이야기"가 화면에 들어와 있는지 (하단 도달 여부)
-  const isNextStoryVisible = () => {
+  // 초대장 콘텐츠 스크롤이 맨 아래(다음 이야기까지)에 도달했는지
+  const isAtScrollBottom = () => {
     const el = nextStoryRef.current
     if (!el) return false
-    const rect = el.getBoundingClientRect()
-    return rect.top < window.innerHeight - 20
+    let node: HTMLElement | null = el.parentElement
+    while (node) {
+      const s = getComputedStyle(node)
+      if (/(auto|scroll)/.test(s.overflowY) && node.scrollHeight > node.clientHeight + 1) {
+        return node.scrollTop + node.clientHeight >= node.scrollHeight - 6
+      }
+      node = node.parentElement
+    }
+    const doc = document.documentElement
+    return window.innerHeight + window.scrollY >= doc.scrollHeight - 6
+  }
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY
+    // 제스처 시작 시 이미 하단이었는지 기록 (다음 이야기를 드러낸 스와이프로는 넘기지 않기 위함)
+    touchStartAtBottom.current = isAtScrollBottom()
   }
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    const touchEndY = e.changedTouches[0].clientY
-    if (touchStartY.current - touchEndY > 50) {
-      // Swipe up
-      if (currentScreen === 'cover') {
-        switchScreen('cover', 'invitation')
-      } else if (currentScreen === 'invitation' && isNextStoryVisible()) {
-        // 다음 이야기가 보이는 상태에서 위로 스와이프하면 메인으로
+    const dy = touchStartY.current - e.changedTouches[0].clientY // 양수 = 위로 스와이프
+    if (currentScreen === 'cover') {
+      if (dy > 50) switchScreen('cover', 'invitation')
+    } else if (currentScreen === 'invitation') {
+      // 이미 하단에 도달한 상태에서 시작한 '별도' 스와이프만 메인으로
+      if (dy > 60 && touchStartAtBottom.current && isAtScrollBottom()) {
         onNavigate('main')
       }
     }
   }
 
   const handleWheel = (e: React.WheelEvent) => {
-    if (e.deltaY > 0) {
-      if (currentScreen === 'cover') {
-        switchScreen('cover', 'invitation')
-      } else if (currentScreen === 'invitation' && isNextStoryVisible()) {
-        // 다음 이야기가 보이는 상태에서 아래로 스크롤하면 메인으로
+    if (e.deltaY <= 0) return
+    if (currentScreen === 'cover') {
+      switchScreen('cover', 'invitation')
+      return
+    }
+    if (currentScreen === 'invitation') {
+      const now = Date.now()
+      const gap = now - lastWheelTs.current
+      lastWheelTs.current = now
+      // 하단 도달 + 연속 스크롤이 아닌 별도 스크롤(간격 > 220ms)일 때만 메인으로
+      if (isAtScrollBottom() && gap > 220) {
         onNavigate('main')
       }
     }

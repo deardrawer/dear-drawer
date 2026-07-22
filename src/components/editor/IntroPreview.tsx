@@ -370,7 +370,7 @@ export default function IntroPreview({
           from { width: 0; }
           to { width: 50px; }
         }
-        .intro-line-expand { animation: introLineExpand 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+        .intro-line-expand { animation: introLineExpand 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
 
         /* 플로팅 */
         @keyframes introFloat {
@@ -834,13 +834,24 @@ function LetterIntro({ settings, backgroundStyle, titleStyle, subTitleStyle, acc
   // 편지 카드 내부는 밝은 배경이므로 흰색 텍스트면 어두운 색으로 변환
   const cardTitleColor = titleStyle.color === '#ffffff' ? '#4a4a4a' : titleStyle.color
 
-  // envelopeColor에서 더 어두운 색 파생
-  const darkerEnvelopeColor = (() => {
-    const r = parseInt(envelopeColor.slice(1, 3), 16)
-    const g = parseInt(envelopeColor.slice(3, 5), 16)
-    const b = parseInt(envelopeColor.slice(5, 7), 16)
-    return `rgb(${Math.max(0, r - 15)}, ${Math.max(0, g - 15)}, ${Math.max(0, b - 15)})`
-  })()
+  // 색상 명도 조절 헬퍼
+  const shade = (hex: string, amt: number) => {
+    const r = parseInt(hex.slice(1, 3), 16)
+    const g = parseInt(hex.slice(3, 5), 16)
+    const b = parseInt(hex.slice(5, 7), 16)
+    const c = (v: number) => Math.max(0, Math.min(255, v + amt)).toString(16).padStart(2, '0')
+    return `#${c(r)}${c(g)}${c(b)}`
+  }
+  const darkerEnvelopeColor = shade(envelopeColor, -15)
+  const envLight = shade(envelopeColor, 10)
+  const envShade = shade(envelopeColor, -10)
+  // 톤온톤 왁스 씰 색상 (봉투색에서 파생)
+  const sealTop = shade(envelopeColor, -6)
+  const sealMid = shade(envelopeColor, -20)
+  const sealDeep = shade(envelopeColor, -42)
+  const sealRing = shade(envelopeColor, -32)
+  const sealEmblem = shade(envelopeColor, -78)
+  const sealHi = shade(envelopeColor, 16)
 
   const overlayOpacity = (settings.overlayOpacity ?? 30) / 100
   const customOverlayStyle = {
@@ -877,7 +888,7 @@ function LetterIntro({ settings, backgroundStyle, titleStyle, subTitleStyle, acc
       {/* 봉투 */}
       <div className="relative mt-[50px]" style={{ animation: 'introEnvelopeDown 0.8s ease-in 3.5s forwards' }}>
         <div className="relative w-[280px] h-[260px]">
-          <div className="absolute inset-0 shadow-lg" style={{ backgroundColor: envelopeColor, zIndex: 1 }} />
+          <div className="absolute inset-0 shadow-lg" style={{ background: `linear-gradient(160deg, ${envLight} 0%, ${envelopeColor} 55%, ${envShade} 100%)`, zIndex: 1 }} />
           <div
             className="absolute left-[15px] right-[15px] h-[180px] bg-[#F8F6F3] rounded-md shadow-xl flex flex-col items-center justify-center p-4 text-center"
             style={{ zIndex: 2, top: '80px', animation: 'introCardSlideOut 1.2s ease-out 1.5s forwards' }}
@@ -889,18 +900,45 @@ function LetterIntro({ settings, backgroundStyle, titleStyle, subTitleStyle, acc
             <div className="w-8 h-px mb-3" style={{ backgroundColor: accentColor }} />
             <p className="text-sm text-gray-600">{settings.dateText}</p>
           </div>
-          <div className="absolute inset-x-0 top-0 bottom-0 shadow-sm" style={{ backgroundColor: envelopeColor, zIndex: 3, clipPath: 'polygon(0 0, 50% 40%, 100% 0, 100% 100%, 0 100%)' }} />
+          <div className="absolute inset-x-0 top-0 bottom-0 shadow-sm" style={{ background: `linear-gradient(155deg, ${envLight} 0%, ${envelopeColor} 52%, ${envShade} 100%)`, boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.4)', zIndex: 3, clipPath: 'polygon(0 0, 50% 40%, 100% 0, 100% 100%, 0 100%)' }} />
           <div
             className="absolute top-0 left-0 right-0 h-[104px] shadow-sm origin-top"
-            style={{ backgroundColor: envelopeColor, zIndex: 4, clipPath: 'polygon(0 0, 50% 100%, 100% 0)', transformStyle: 'preserve-3d', animation: 'introFlapOpen 1s ease-in-out 0.6s forwards' }}
+            style={{ background: `linear-gradient(180deg, ${envLight} 0%, ${envelopeColor} 70%, ${envShade} 100%)`, zIndex: 4, clipPath: 'polygon(0 0, 50% 100%, 100% 0)', transformStyle: 'preserve-3d', animation: 'introFlapOpen 1s ease-in-out 0.6s forwards' }}
           >
-            <div className="absolute inset-0" style={{ backgroundColor: darkerEnvelopeColor, clipPath: 'polygon(5% 5%, 50% 90%, 95% 5%)' }} />
+            <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, ${darkerEnvelopeColor} 0%, ${shade(envelopeColor, -22)} 100%)`, clipPath: 'polygon(5% 5%, 50% 90%, 95% 5%)' }} />
           </div>
+          {/* 왁스 씰 (밀랍 실링) */}
           <div
-            className="absolute top-[60px] left-1/2 -translate-x-1/2 w-11 h-11 rounded-full flex items-center justify-center shadow-md"
-            style={{ backgroundColor: accentColor, zIndex: 5, animation: 'introSealBreak 0.5s ease-out 0.2s forwards' }}
+            className="absolute top-[58px] left-1/2 -translate-x-1/2"
+            style={{ zIndex: 5, animation: 'introSealBreak 0.5s ease-out 0.2s forwards' }}
           >
-            <span className="text-white text-lg">♥</span>
+            <div
+              className="flex items-center justify-center"
+              style={{
+                width: 46,
+                height: 46,
+                borderRadius: '50%',
+                background: `radial-gradient(circle at 40% 32%, ${sealTop} 0%, ${sealMid} 55%, ${sealDeep} 100%)`,
+                boxShadow: 'inset 0 -2px 5px rgba(120,100,70,0.18), 0 2px 6px rgba(120,100,70,0.22)',
+              }}
+            >
+              {/* 얇은 안쪽 링 */}
+              <div style={{ position: 'absolute', inset: 5, borderRadius: '50%', boxShadow: `inset 0 0 0 1px ${sealRing}` }} />
+              <span
+                style={{
+                  fontFamily: "'Cormorant Garamond', 'Playfair Display', serif",
+                  fontSize: 22,
+                  fontWeight: 600,
+                  lineHeight: 1,
+                  position: 'relative',
+                  zIndex: 2,
+                  color: sealEmblem,
+                  textShadow: `0 1px 0.5px ${sealHi}`,
+                }}
+              >
+                &amp;
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -934,7 +972,7 @@ function PetalIntro({ settings, backgroundStyle, titleStyle, subTitleStyle, acce
 
       {/* 서브타이틀 (원 위) */}
       {settings.subTitle && (
-        <p className="text-[10px] tracking-[4px] mb-6 intro-fade-in-up relative z-10" style={{ color: hexToRgba(accentColor, 0.8), opacity: 0, animationDelay: '0.3s' }}>
+        <p className="text-[10px] tracking-[4px] mb-6 intro-fade-in-up relative z-10" style={{ color: hexToRgba(accentColor, 0.8), opacity: 0, animationDelay: '1.1s' }}>
           {settings.subTitle}
         </p>
       )}
@@ -946,17 +984,17 @@ function PetalIntro({ settings, backgroundStyle, titleStyle, subTitleStyle, acce
       </div>
 
       {/* 메인타이틀 (원 아래) */}
-      <p className="mt-6 intro-fade-in-up relative z-10" style={{ ...titleStyle, color: adjustedTitleColor, opacity: 0, animationDelay: '0.6s' }}>
+      <p className="mt-6 intro-fade-in-up relative z-10" style={{ ...titleStyle, color: adjustedTitleColor, opacity: 0, animationDelay: '1.4s' }}>
         {settings.mainTitle || '꽃잎처럼 아름다운 날'}
       </p>
-      <div className="w-16 h-px my-4 intro-split-reveal relative z-10" style={{ backgroundColor: `${accentColor}66`, animationDelay: '1s', opacity: 0 }} />
+      <div className="w-16 h-px my-4 intro-split-reveal relative z-10" style={{ backgroundColor: `${accentColor}66`, animationDelay: '1.7s', opacity: 0 }} />
       {settings.dateText && (
-        <p className="text-xs intro-fade-in-up relative z-10" style={{ color: hexToRgba(accentColor, 0.7), opacity: 0, animationDelay: '1.3s' }}>
+        <p className="text-xs intro-fade-in-up relative z-10" style={{ color: hexToRgba(accentColor, 0.7), opacity: 0, animationDelay: '2.0s' }}>
           {settings.dateText}
         </p>
       )}
       {settings.venueText && (
-        <p className="text-[11px] mt-1.5 intro-fade-in-up relative z-10" style={{ color: hexToRgba(accentColor, 0.6), opacity: 0, animationDelay: '1.6s' }}>
+        <p className="text-[11px] mt-1.5 intro-fade-in-up relative z-10" style={{ color: hexToRgba(accentColor, 0.6), opacity: 0, animationDelay: '2.3s' }}>
           {settings.venueText}
         </p>
       )}

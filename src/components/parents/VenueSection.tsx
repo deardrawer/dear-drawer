@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSectionHighlight } from './SectionHighlightContext'
 import { useTheme } from './ThemeContext'
 import { BusIcon, SubwayIcon, ExpressBusIcon, TrainIcon, ParkingIcon } from './icons'
@@ -66,6 +66,50 @@ export default function VenueSection({
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapInitialized = useRef(false)
   const [mapError, setMapError] = useState(false)
+
+  // 지도 스크롤 가로채기 방지: 1차 터치=안내, 2차 터치=활성화 (the-simple과 동일)
+  const mapWrapRef = useRef<HTMLDivElement>(null)
+  const [mapState, setMapState] = useState<'locked' | 'hint' | 'active'>('locked')
+  const mapActive = mapState === 'active'
+  const hintTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleOverlayTap = useCallback(() => {
+    setMapState(prev => {
+      if (prev === 'locked') {
+        if (hintTimer.current) clearTimeout(hintTimer.current)
+        hintTimer.current = setTimeout(() => {
+          setMapState(p => (p === 'hint' ? 'locked' : p))
+        }, 3000)
+        return 'hint'
+      }
+      if (prev === 'hint') {
+        if (hintTimer.current) clearTimeout(hintTimer.current)
+        return 'active'
+      }
+      return prev
+    })
+  }, [])
+
+  // 지도 외부 터치 시 다시 잠금
+  useEffect(() => {
+    if (mapState === 'locked') return
+    const handler = (e: TouchEvent | MouseEvent) => {
+      if (mapWrapRef.current && !mapWrapRef.current.contains(e.target as Node)) {
+        setMapState('locked')
+        if (hintTimer.current) clearTimeout(hintTimer.current)
+      }
+    }
+    document.addEventListener('touchstart', handler, { passive: true })
+    document.addEventListener('mousedown', handler, { passive: true })
+    return () => {
+      document.removeEventListener('touchstart', handler)
+      document.removeEventListener('mousedown', handler)
+    }
+  }, [mapState])
+
+  useEffect(() => {
+    return () => { if (hintTimer.current) clearTimeout(hintTimer.current) }
+  }, [])
 
   useEffect(() => {
     if (mapInitialized.current || !venue.address) return
@@ -197,8 +241,10 @@ export default function VenueSection({
         }}
       >
         <div
+          ref={mapWrapRef}
           className="rounded-2xl overflow-hidden"
           style={{
+            position: 'relative',
             boxShadow: isActive ? '0 4px 24px rgba(0,0,0,0.06)' : '0 2px 8px rgba(0,0,0,0.02)',
             transition: 'box-shadow 0.5s',
           }}
@@ -214,6 +260,29 @@ export default function VenueSection({
               </div>
             )}
           </div>
+          {/* 지도 스크롤 가로채기 방지 오버레이 — 1차 터치: 안내, 2차 터치: 활성화 */}
+          {!mapActive && !mapError && (
+            <div
+              onClick={handleOverlayTap}
+              style={{
+                position: 'absolute', inset: 0, zIndex: 2, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'rgba(255,255,255,0.01)',
+              }}
+            >
+              {mapState === 'hint' && (
+                <span
+                  style={{
+                    padding: '6px 14px', borderRadius: 20,
+                    background: 'rgba(0,0,0,0.45)', color: '#fff',
+                    fontSize: 11, letterSpacing: '0.02em', pointerEvents: 'none',
+                  }}
+                >
+                  지도를 한 번 더 터치하면 이동할 수 있어요
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

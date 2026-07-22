@@ -44,7 +44,12 @@ function useSubSection() {
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        const active = entry.intersectionRatio > 0.3
+        // 대상 자체 높이 기준(intersectionRatio)은 "더보기"로 갤러리가 뷰포트보다
+        // 길어지면 화면에 꽉 차 있어도 0.3을 못 넘어 흐려짐 → 뷰포트(root) 커버 비율도 함께 판정
+        const rb = entry.rootBounds
+        const viewportH = (rb && rb.height) || (typeof window !== 'undefined' ? window.innerHeight : 0)
+        const rootCoverage = viewportH > 0 ? entry.intersectionRect.height / viewportH : 0
+        const active = entry.isIntersecting && (entry.intersectionRatio > 0.3 || rootCoverage > 0.3)
         setIsActive(active)
         if (active && !hasAppeared) setHasAppeared(true)
       },

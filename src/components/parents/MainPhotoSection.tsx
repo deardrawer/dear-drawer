@@ -102,6 +102,20 @@ export default function MainPhotoSection({
   const [slideDir, setSlideDir] = useState<'left' | 'right' | null>(null)
   const [pressedIndex, setPressedIndex] = useState<number | null>(null)
   const touchStartXRef = useRef<number>(0)
+  const moreBtnRef = useRef<HTMLButtonElement>(null)
+
+  // 더보기/접기 토글: 접을 때 갤러리 높이가 줄며 스크롤이 아래 섹션으로 튀지 않도록 버튼 위치 고정
+  const toggleGrid = () => {
+    const collapsing = gridExpanded
+    const beforeTop = moreBtnRef.current?.getBoundingClientRect().top ?? 0
+    setGridExpanded((v) => !v)
+    if (collapsing) {
+      requestAnimationFrame(() => {
+        const afterTop = moreBtnRef.current?.getBoundingClientRect().top ?? 0
+        window.scrollBy(0, afterTop - beforeTop)
+      })
+    }
+  }
 
   const validPhotos = photos.filter(p => p.url && p.url.trim() !== '')
   const heroImage = (mainImage && mainImage.url && mainImage.url.trim() !== '') ? mainImage : (validPhotos.length > 0 ? validPhotos[0] : null)
@@ -351,7 +365,7 @@ export default function MainPhotoSection({
                         ? {
                             // 더보기로 새로 나오는 사진: CSS 애니메이션(마운트 시 재생, 재렌더에 강함) + stagger
                             animation: 'parentsGalleryReveal 0.55s cubic-bezier(0.16, 1, 0.3, 1) both',
-                            animationDelay: `${(index - 3) * 0.13}s`,
+                            animationDelay: `${(index - 3) * 0.18}s`,
                           }
                         : {
                             opacity: gH ? 1 : 0,
@@ -395,7 +409,8 @@ export default function MainPhotoSection({
 
             {galleryPhotos.length > 3 && (
               <button
-                onClick={() => setGridExpanded((v) => !v)}
+                ref={moreBtnRef}
+                onClick={toggleGrid}
                 className="w-full flex items-center justify-center gap-1.5 py-3.5 mt-[2px] text-[13px] transition-all duration-300"
                 style={{
                   backgroundColor: gA ? '#f5f5f5' : '#fafafa',

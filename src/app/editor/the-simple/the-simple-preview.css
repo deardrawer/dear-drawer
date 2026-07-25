@@ -250,9 +250,14 @@
 .ts-preview .ts-in1 .center .kicker {
   font-family: var(--font-display);
   font-size: calc(12px * var(--ts-font-scale, 1));
-  letter-spacing: 0.5em;
+  letter-spacing: 0.3em;
   text-transform: uppercase;
   opacity: 0.92;
+  /* 긴 eyebrow가 모서리 라벨과 겹치지 않도록 폭 제한 + 자연스러운 줄바꿈 */
+  max-width: 88%;
+  margin-left: auto;
+  margin-right: auto;
+  overflow-wrap: break-word;
 }
 .ts-preview .ts-in1 .center .rule {
   width: 28px;
@@ -302,7 +307,7 @@
 .ts-preview .ts-text-top > .ts-in7-content { transform: translateY(-24dvh); }
 .ts-preview .ts-text-top > .ts-in9-stack { transform: translateY(-20dvh); }
 .ts-preview .ts-text-top > .ts-in5-content { transform: translateY(-28dvh); }
-.ts-preview .ts-in1.ts-text-top .center { transform: translateY(-28dvh); }
+.ts-preview .ts-in1.ts-text-top .center { transform: translateY(-19dvh); }
 /* 하단 — 텍스트를 아래로 이동 */
 .ts-preview .ts-text-bottom > .ts-in2-content { transform: translateY(18dvh); }
 .ts-preview .ts-text-bottom > .ts-in3-frame { transform: translateY(18dvh); }

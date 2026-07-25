@@ -349,9 +349,9 @@ export default function MainPhotoSection({
                     style={
                       isNewlyExpanded
                         ? {
-                            // 더보기로 새로 나오는 사진: 마운트 시 CSS 애니메이션으로 확실히 재생 (stagger)
-                            animation: 'parentsGalleryReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) both',
-                            animationDelay: `${(index - 3) * 0.08}s`,
+                            // 더보기로 새로 나오는 사진: CSS 애니메이션(마운트 시 재생, 재렌더에 강함) + stagger
+                            animation: 'parentsGalleryReveal 0.55s cubic-bezier(0.16, 1, 0.3, 1) both',
+                            animationDelay: `${(index - 3) * 0.13}s`,
                           }
                         : {
                             opacity: gH ? 1 : 0,

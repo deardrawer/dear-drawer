@@ -98,7 +98,6 @@ export default function MainPhotoSection({
   const gH = isPreview ? true : gallerySection.hasAppeared
 
   const [gridExpanded, setGridExpanded] = useState(false)
-  const [expandAnimReady, setExpandAnimReady] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [slideDir, setSlideDir] = useState<'left' | 'right' | null>(null)
   const [pressedIndex, setPressedIndex] = useState<number | null>(null)
@@ -331,6 +330,7 @@ export default function MainPhotoSection({
 
           {/* ── Photo Grid ── */}
           <div className="px-4 pb-12">
+            <style>{`@keyframes parentsGalleryReveal { from { opacity: 0; transform: translateY(24px) scale(0.94); } to { opacity: 1; transform: translateY(0) scale(1); } }`}</style>
             <div className="grid grid-cols-2 gap-1">
               {displayPhotos.map((photo, index) => {
                 const isWide = index === 0
@@ -340,27 +340,26 @@ export default function MainPhotoSection({
                 // 등장 방향: 와이드는 아래에서, 나머지는 좌우 교차
                 const enterX = isWide ? 0 : (index % 2 === 1 ? -30 : 30)
                 const enterY = isWide ? 40 : 20
-                // 새로 확장된 사진: expandAnimReady로 애니메이션 트리거
-                const shouldShow = isNewlyExpanded ? expandAnimReady : gH
-
                 return (
                   <div
                     key={`gallery-${photo.id}`}
                     className={`overflow-hidden rounded-sm cursor-pointer ${
                       isWide ? 'col-span-2 aspect-[16/10]' : 'aspect-square'
                     }`}
-                    style={{
-                      opacity: shouldShow ? 1 : 0,
-                      transform: shouldShow
-                        ? 'translate(0, 0) scale(1)'
-                        : `translate(${isNewlyExpanded ? 0 : enterX}px, ${isNewlyExpanded ? 24 : enterY}px) scale(0.92)`,
-                      transition: isNewlyExpanded
-                        ? 'opacity 0.5s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)'
-                        : 'opacity 0.9s ease, transform 1s cubic-bezier(0.16, 1, 0.3, 1)',
-                      transitionDelay: isNewlyExpanded
-                        ? `${(index - 3) * 0.1}s`
-                        : (gH ? `${0.6 + index * 0.18}s` : '0s'),
-                    }}
+                    style={
+                      isNewlyExpanded
+                        ? {
+                            // 더보기로 새로 나오는 사진: 마운트 시 CSS 애니메이션으로 확실히 재생 (stagger)
+                            animation: 'parentsGalleryReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) both',
+                            animationDelay: `${(index - 3) * 0.08}s`,
+                          }
+                        : {
+                            opacity: gH ? 1 : 0,
+                            transform: gH ? 'translate(0, 0) scale(1)' : `translate(${enterX}px, ${enterY}px) scale(0.92)`,
+                            transition: 'opacity 0.9s ease, transform 1s cubic-bezier(0.16, 1, 0.3, 1)',
+                            transitionDelay: gH ? `${0.6 + index * 0.18}s` : '0s',
+                          }
+                    }
                     onClick={() => {
                       if (!isPreview) {
                         // displayPhotos 내 index → allPhotos 내 index 찾기
@@ -396,18 +395,7 @@ export default function MainPhotoSection({
 
             {galleryPhotos.length > 3 && (
               <button
-                onClick={() => {
-                  if (!gridExpanded) {
-                    setExpandAnimReady(false)
-                    setGridExpanded(true)
-                    requestAnimationFrame(() => {
-                      requestAnimationFrame(() => setExpandAnimReady(true))
-                    })
-                  } else {
-                    setGridExpanded(false)
-                    setExpandAnimReady(false)
-                  }
-                }}
+                onClick={() => setGridExpanded((v) => !v)}
                 className="w-full flex items-center justify-center gap-1.5 py-3.5 mt-[2px] text-[13px] transition-all duration-300"
                 style={{
                   backgroundColor: gA ? '#f5f5f5' : '#fafafa',

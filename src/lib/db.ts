@@ -1297,6 +1297,75 @@ export async function deleteExpiredInvitations(): Promise<{ deleted: number; err
 }
 
 // 관리자 통계
+// ==================== User Functions (카카오 로그인 사용자) ====================
+
+export interface RecordUserLoginInput {
+  id: string;            // kakao_{id}
+  kakaoId: string | number;
+  nickname: string;
+  email?: string | null;
+  profileImage?: string | null;
+}
+
+// 로그인 시 사용자 upsert (최초=가입 기록, 재로그인=last_login/login_count 갱신)
+// failsafe: users 테이블이 아직 없거나 오류가 나도 로그인 흐름을 절대 막지 않음
+export async function recordUserLogin(input: RecordUserLoginInput): Promise<void> {
+  try {
+    const db = await getDB();
+    const now = new Date().toISOString();
+    await db
+      .prepare(
+        `INSERT INTO users (id, kakao_id, nickname, email, profile_image, login_count, created_at, last_login_at)
+         VALUES (?, ?, ?, ?, ?, 1, ?, ?)
+         ON CONFLICT(id) DO UPDATE SET
+           nickname = excluded.nickname,
+           email = excluded.email,
+           profile_image = excluded.profile_image,
+           login_count = login_count + 1,
+           last_login_at = excluded.last_login_at`
+      )
+      .bind(
+        input.id,
+        String(input.kakaoId),
+        input.nickname,
+        input.email ?? null,
+        input.profileImage ?? null,
+        now,
+        now
+      )
+      .run();
+  } catch (e) {
+    // users 테이블 미적용 등 어떤 이유로든 로그인은 계속 진행
+    console.error("recordUserLogin failed (non-fatal):", e);
+  }
+}
+
+export interface RecentUser {
+  id: string;
+  nickname: string | null;
+  email: string | null;
+  login_count: number;
+  created_at: string;
+  last_login_at: string;
+}
+
+// 최근 가입자 목록 (created_at 내림차순). failsafe: 테이블 없으면 빈 배열
+export async function getRecentUsers(limit = 30): Promise<RecentUser[]> {
+  try {
+    const db = await getDB();
+    const result = await db
+      .prepare(
+        `SELECT id, nickname, email, login_count, created_at, last_login_at
+         FROM users ORDER BY created_at DESC LIMIT ?`
+      )
+      .bind(limit)
+      .all<RecentUser>();
+    return result.results ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export interface AdminStats {
   total_invitations: number;
   published_invitations: number;
@@ -1304,6 +1373,8 @@ export interface AdminStats {
   paid_invitations: number;
   expiring_soon: number;
   total_users: number;
+  new_users_7d: number;
+  new_users_30d: number;
 }
 
 export async function getAdminStats(): Promise<AdminStats> {
@@ -1317,9 +1388,20 @@ export async function getAdminStats(): Promise<AdminStats> {
 
   // users 테이블이 없을 수 있으므로 별도 처리
   let usersCount = 0;
+  let newUsers7d = 0;
+  let newUsers30d = 0;
   try {
-    const usersResult = await db.prepare("SELECT COUNT(*) as count FROM users").first<{ count: number }>();
+    const now = Date.now();
+    const cutoff7d = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const cutoff30d = new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const [usersResult, new7dResult, new30dResult] = await Promise.all([
+      db.prepare("SELECT COUNT(*) as count FROM users").first<{ count: number }>(),
+      db.prepare("SELECT COUNT(*) as count FROM users WHERE created_at >= ?").bind(cutoff7d).first<{ count: number }>(),
+      db.prepare("SELECT COUNT(*) as count FROM users WHERE created_at >= ?").bind(cutoff30d).first<{ count: number }>(),
+    ]);
     usersCount = usersResult?.count || 0;
+    newUsers7d = new7dResult?.count || 0;
+    newUsers30d = new30dResult?.count || 0;
   } catch {
     // users 테이블이 없는 경우 무시
   }
@@ -1335,5 +1417,7 @@ export async function getAdminStats(): Promise<AdminStats> {
     paid_invitations: paidResult?.count || 0,
     expiring_soon: expiringSoon,
     total_users: usersCount,
+    new_users_7d: newUsers7d,
+    new_users_30d: newUsers30d,
   };
 }

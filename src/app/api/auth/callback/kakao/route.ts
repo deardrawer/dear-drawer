@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createToken, getAuthCookieOptions } from "@/lib/auth";
+import { recordUserLogin } from "@/lib/db";
 import type { KakaoTokenResponse, KakaoUserResponse, User } from "@/types/kakao";
 
 export async function GET(request: NextRequest) {
@@ -69,6 +70,15 @@ export async function GET(request: NextRequest) {
       email: kakaoUser.kakao_account?.email,
       profileImage: kakaoUser.kakao_account?.profile?.profile_image_url,
     };
+
+    // 사용자 저장 (신규 가입/재로그인 추적) — 실패해도 로그인은 계속 진행
+    await recordUserLogin({
+      id: user.id,
+      kakaoId: kakaoUser.id,
+      nickname: user.nickname,
+      email: user.email,
+      profileImage: user.profileImage,
+    });
 
     // Create JWT token
     const jwtToken = await createToken(user);

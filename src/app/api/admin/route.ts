@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   getAllInvitationsForAdmin,
   getAdminStats,
+  getRecentUsers,
   forceDeleteInvitation,
   deleteExpiredInvitations,
 } from "@/lib/db";
@@ -30,10 +31,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ stats });
     }
 
-    const invitations = await getAllInvitationsForAdmin();
-    const stats = await getAdminStats();
+    const [invitations, stats, recentUsers] = await Promise.all([
+      getAllInvitationsForAdmin(),
+      getAdminStats(),
+      getRecentUsers(30),
+    ]);
 
-    return NextResponse.json({ invitations, stats });
+    return NextResponse.json({ invitations, stats, recentUsers });
   } catch (error) {
     console.error("Admin GET error:", error);
     return NextResponse.json({ error: "Failed to fetch data" }, { status: 500 });

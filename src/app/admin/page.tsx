@@ -26,6 +26,17 @@ interface Stats {
   paid_invitations: number
   expiring_soon: number
   total_users: number
+  new_users_7d: number
+  new_users_30d: number
+}
+
+interface RecentUser {
+  id: string
+  nickname: string | null
+  email: string | null
+  login_count: number
+  created_at: string
+  last_login_at: string
 }
 
 interface PaymentRequest {
@@ -65,6 +76,7 @@ export default function AdminPage() {
   // Invitations state
   const [invitations, setInvitations] = useState<Invitation[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
+  const [recentUsers, setRecentUsers] = useState<RecentUser[]>([])
   const [filter, setFilter] = useState<'all' | 'incomplete' | 'expiring' | 'paid'>('all')
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
 
@@ -114,9 +126,10 @@ export default function AdminPage() {
         throw new Error('Failed to fetch')
       }
 
-      const data = await res.json() as { invitations?: Invitation[]; stats?: Stats }
+      const data = await res.json() as { invitations?: Invitation[]; stats?: Stats; recentUsers?: RecentUser[] }
       setInvitations(data.invitations || [])
       setStats(data.stats || null)
+      setRecentUsers(data.recentUsers || [])
       setIsAuthenticated(true)
     } catch (err) {
       setError('데이터를 불러오는데 실패했습니다')
@@ -470,14 +483,16 @@ export default function AdminPage() {
           <>
             {/* Stats Cards */}
             {stats && (
-              <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 {[
                   { label: '전체 청첩장', value: stats.total_invitations, color: '#2C2C2C' },
                   { label: '결제완료', value: stats.paid_invitations, color: '#2563EB' },
                   { label: '완성', value: stats.published_invitations, color: '#4CAF50' },
                   { label: '미완성', value: stats.unpublished_invitations, color: '#FF9800' },
                   { label: '7일내 삭제', value: stats.expiring_soon, color: '#DC2626' },
-                  { label: '전체 사용자', value: stats.total_users, color: '#C9A962' },
+                  { label: '전체 가입자', value: stats.total_users, color: '#C9A962' },
+                  { label: '신규 가입(7일)', value: stats.new_users_7d, color: '#8B75D0' },
+                  { label: '신규 가입(30일)', value: stats.new_users_30d, color: '#6D9DC5' },
                 ].map((stat) => (
                   <div
                     key={stat.label}
@@ -493,6 +508,61 @@ export default function AdminPage() {
                 ))}
               </div>
             )}
+
+            {/* 최근 가입자 */}
+            <div className="bg-white rounded-xl p-4 mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-bold" style={{ color: '#2C2C2C' }}>
+                  최근 가입자
+                  {recentUsers.length > 0 && (
+                    <span className="ml-2 text-xs font-normal" style={{ color: '#888' }}>
+                      최근 {recentUsers.length}명
+                    </span>
+                  )}
+                </h3>
+              </div>
+              {recentUsers.length === 0 ? (
+                <p className="text-xs py-4 text-center" style={{ color: '#AAA' }}>
+                  아직 가입자 데이터가 없습니다. (users 마이그레이션 적용 후 발생하는 로그인부터 집계됩니다)
+                </p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr style={{ color: '#888' }} className="text-xs border-b">
+                        <th className="text-left py-2 pr-3 font-medium">닉네임</th>
+                        <th className="text-left py-2 pr-3 font-medium">이메일</th>
+                        <th className="text-left py-2 pr-3 font-medium">가입일</th>
+                        <th className="text-left py-2 pr-3 font-medium">최근 로그인</th>
+                        <th className="text-right py-2 font-medium">로그인 횟수</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {recentUsers.map((u) => (
+                        <tr key={u.id} className="border-b last:border-0">
+                          <td className="py-2 pr-3 font-semibold" style={{ color: '#2C2C2C' }}>
+                            {u.nickname || '-'}
+                            {u.login_count <= 1 && (
+                              <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded-full align-middle" style={{ backgroundColor: '#8B75D0', color: '#FFF' }}>
+                                NEW
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-2 pr-3" style={{ color: '#666' }}>{u.email || '-'}</td>
+                          <td className="py-2 pr-3" style={{ color: '#666' }}>
+                            {new Date(u.created_at).toLocaleString('ko-KR', { dateStyle: 'medium', timeStyle: 'short' })}
+                          </td>
+                          <td className="py-2 pr-3" style={{ color: '#666' }}>
+                            {new Date(u.last_login_at).toLocaleString('ko-KR', { dateStyle: 'medium', timeStyle: 'short' })}
+                          </td>
+                          <td className="py-2 text-right" style={{ color: '#666' }}>{u.login_count}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
 
             {/* Filter & Actions */}
             <div className="flex flex-wrap items-center gap-3 mb-4">

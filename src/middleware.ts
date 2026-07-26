@@ -34,6 +34,20 @@ export function middleware(request: NextRequest) {
     );
   }
 
+  // ===== 편집기 진입 로그인 게이트 (선로그인) =====
+  // 갤러리(/templates)·청첩장 열람(/i/*)은 자유, 편집기 진입 시에만 카카오 로그인 요구.
+  // 인증 쿠키 존재 여부만 확인(만료/무효 토큰은 서버·API 인증에서 재차 차단).
+  if (pathname === "/editor" || pathname.startsWith("/editor/")) {
+    const hasAuth = request.cookies.get("auth-token");
+    if (!hasAuth) {
+      const loginUrl = request.nextUrl.clone();
+      const target = pathname + request.nextUrl.search;
+      loginUrl.pathname = "/login";
+      loginUrl.search = `?redirect=${encodeURIComponent(target)}`;
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
   const response = NextResponse.next();
 
   // ===== 1. Security Headers =====

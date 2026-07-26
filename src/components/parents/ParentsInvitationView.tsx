@@ -520,7 +520,7 @@ export default function ParentsInvitationView({
               <SectionDivider />
               <DateSection
                 weddingDate={data.wedding.date || '2027-01-09'}
-                weddingTimeDisplay={data.wedding.timeDisplay || 'Saturday, 4pm'}
+                weddingTimeDisplay={data.wedding.timeDisplay || ''}
               />
               <SectionDivider />
               <div id="preview-venue">

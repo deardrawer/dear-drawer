@@ -72,8 +72,7 @@ function RollingCounter({ target, isActive, hasStarted, theme }: {
 
 export default function DateSection({
   weddingDate = '2027-01-09',
-  weddingTime = '16:00',
-  weddingTimeDisplay = 'Saturday, 4pm',
+  weddingTimeDisplay = '',
 }: DateSectionProps) {
   const { ref, isActive, hasAppeared } = useSectionHighlight('date')
   const theme = useTheme()
@@ -87,11 +86,12 @@ export default function DateSection({
   const dayNames = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일']
   const weddingDayOfWeek = dayNames[date.getDay()]
 
-  const [hourStr] = weddingTime.split(':')
-  const hour = parseInt(hourStr)
-  const ampm = hour < 12 ? '오전' : '오후'
-  const displayHour = hour > 12 ? hour - 12 : hour
-  const timeKorean = `${weddingDayOfWeek} ${ampm} ${displayHour}시`
+  // 시간은 에디터 '시간 표시'(timeDisplay) 값을 그대로 사용.
+  // (parents 템플릿엔 HH:MM 시간 필드가 없으므로 재계산하지 않음. 영문 기본값은 무시)
+  const timeText = weddingTimeDisplay && !/[A-Za-z]/.test(weddingTimeDisplay)
+    ? weddingTimeDisplay.trim()
+    : ''
+  const timeKorean = timeText ? `${weddingDayOfWeek} ${timeText}` : weddingDayOfWeek
 
   const firstDayOfMonth = new Date(year, month - 1, 1).getDay()
   const daysInMonth = new Date(year, month, 0).getDate()

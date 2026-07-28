@@ -124,7 +124,7 @@ export default function AdminLoginPage() {
       <div
         className="min-h-screen flex flex-col items-center justify-center px-6"
         style={{
-          backgroundColor: '#F5F3EE',
+          backgroundColor: '#FAFAF8',
           fontFamily: 'Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif',
         }}
       >
@@ -132,13 +132,13 @@ export default function AdminLoginPage() {
         <div className="text-center mb-12">
           <div
             className="text-xs tracking-[3px] mb-3 font-medium"
-            style={{ color: '#C9A962' }}
+            style={{ color: '#7A2E39' }}
           >
             FAMILY INVITATION
           </div>
           <h1
             className="text-2xl font-semibold mb-2"
-            style={{ color: '#2C2C2C' }}
+            style={{ color: '#1A1A1A' }}
           >
             관리자 페이지
           </h1>
@@ -159,8 +159,8 @@ export default function AdminLoginPage() {
             key={i}
             className="w-4 h-4 rounded-full transition-all duration-200"
             style={{
-              backgroundColor: password.length > i ? '#C9A962' : 'transparent',
-              border: `2px solid ${password.length > i ? '#C9A962' : '#D0D0D0'}`,
+              backgroundColor: password.length > i ? '#7A2E39' : 'transparent',
+              border: `2px solid ${password.length > i ? '#7A2E39' : '#D0D0D0'}`,
               transform: password.length > i ? 'scale(1.1)' : 'scale(1)',
             }}
           />
@@ -193,8 +193,8 @@ export default function AdminLoginPage() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: key === 'C' || key === '←' ? '#E8E4DD' : '#FFFFFF',
-              color: key === 'C' || key === '←' ? '#666' : '#2C2C2C',
+              backgroundColor: key === 'C' || key === '←' ? '#ECE9E3' : '#FFFFFF',
+              color: key === 'C' || key === '←' ? '#666' : '#1A1A1A',
               boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
               opacity: isLoading ? 0.5 : 1,
               fontFamily: 'Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif',
@@ -214,7 +214,7 @@ export default function AdminLoginPage() {
           <div className="flex items-center gap-2 text-sm font-medium" style={{ color: '#666' }}>
             <div
               className="w-4 h-4 border-2 rounded-full animate-spin"
-              style={{ borderColor: '#C9A962', borderTopColor: 'transparent' }}
+              style={{ borderColor: '#7A2E39', borderTopColor: 'transparent' }}
             />
             확인 중...
           </div>
@@ -232,7 +232,7 @@ export default function AdminLoginPage() {
         <div
           className="fixed bottom-20 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full text-sm font-medium transition-all duration-300"
           style={{
-            backgroundColor: '#2C2C2C',
+            backgroundColor: '#1A1A1A',
             color: '#FFF',
             opacity: showToast ? 1 : 0,
             transform: `translateX(-50%) translateY(${showToast ? 0 : 20}px)`,

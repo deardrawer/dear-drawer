@@ -92,13 +92,13 @@ export function Modal({
         {(title || showCloseButton) && (
           <div
             className="flex items-center justify-between px-6 py-4"
-            style={{ borderBottom: '1px solid #E8E4DD' }}
+            style={{ borderBottom: '1px solid #ECE9E3' }}
           >
             {title && (
               <h2
                 id="modal-title"
                 className="text-lg font-semibold"
-                style={{ color: '#2C2C2C' }}
+                style={{ color: '#1A1A1A' }}
               >
                 {title}
               </h2>
@@ -107,7 +107,7 @@ export function Modal({
               <button
                 onClick={onClose}
                 className="flex items-center justify-center w-8 h-8 rounded-full transition-colors"
-                style={{ backgroundColor: '#F5F3EE', color: '#666' }}
+                style={{ backgroundColor: '#FAFAF8', color: '#666' }}
                 aria-label="닫기"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -151,7 +151,7 @@ export function ModalHeader({ children, className = '' }: ModalHeaderProps) {
   return (
     <div
       className={`px-6 py-4 ${className}`}
-      style={{ borderBottom: '1px solid #E8E4DD' }}
+      style={{ borderBottom: '1px solid #ECE9E3' }}
     >
       {children}
     </div>
@@ -185,7 +185,7 @@ export function ModalFooter({ children, className = '' }: ModalFooterProps) {
     <div
       className={`px-6 py-4 ${className}`}
       style={{
-        borderTop: '1px solid #E8E4DD',
+        borderTop: '1px solid #ECE9E3',
         paddingBottom: 'calc(16px + env(safe-area-inset-bottom))',
       }}
     >
@@ -227,7 +227,7 @@ export function ConfirmModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose} position="center" maxWidth="360px" showCloseButton={false}>
       <div className="p-6 text-center">
-        <h3 className="text-lg font-semibold mb-2" style={{ color: '#2C2C2C' }}>
+        <h3 className="text-lg font-semibold mb-2" style={{ color: '#1A1A1A' }}>
           {title}
         </h3>
         <p className="text-sm mb-6" style={{ color: '#666' }}>
@@ -237,7 +237,7 @@ export function ConfirmModal({
           <button
             onClick={onClose}
             className="flex-1 py-3 rounded-xl text-sm font-medium"
-            style={{ backgroundColor: '#F5F3EE', color: '#666' }}
+            style={{ backgroundColor: '#FAFAF8', color: '#666' }}
           >
             {cancelText}
           </button>
@@ -245,7 +245,7 @@ export function ConfirmModal({
             onClick={handleConfirm}
             className="flex-1 py-3 rounded-xl text-sm font-semibold text-white"
             style={{
-              backgroundColor: variant === 'danger' ? '#DC2626' : '#C9A962',
+              backgroundColor: variant === 'danger' ? '#DC2626' : '#7A2E39',
             }}
           >
             {confirmText}

@@ -204,7 +204,7 @@ export default function GuestList({
           <button
             onClick={onAdd}
             className="mt-4 text-sm font-medium underline"
-            style={{ color: '#C9A962' }}
+            style={{ color: '#7A2E39' }}
           >
             첫 게스트 추가하기
           </button>
@@ -215,12 +215,12 @@ export default function GuestList({
             <div
               key={guest.id}
               className="p-4 rounded-xl"
-              style={{ backgroundColor: '#F5F3EE' }}
+              style={{ backgroundColor: '#F1EDE7' }}
             >
               {/* 상단: 게스트 정보 + 수정/삭제 */}
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <div className="font-semibold text-base" style={{ color: '#2C2C2C' }}>
+                  <div className="font-semibold text-base" style={{ color: '#1A1A1A' }}>
                     {guest.name}
                   </div>
                   <div className="flex items-center gap-1.5 mt-1 text-sm" style={{ color: '#666' }}>
@@ -241,7 +241,7 @@ export default function GuestList({
                     style={{
                       backgroundColor: '#FFF',
                       color: '#666',
-                      border: '1px solid #E8E4DD',
+                      border: '1px solid #ECE9E3',
                     }}
                   >
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -281,7 +281,7 @@ export default function GuestList({
                   style={{
                     backgroundColor: '#FFF',
                     color: '#666',
-                    border: '1px solid #E8E4DD',
+                    border: '1px solid #ECE9E3',
                   }}
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -296,9 +296,9 @@ export default function GuestList({
                   onClick={() => handleCopyLink(guest)}
                   className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-all"
                   style={{
-                    backgroundColor: copiedId === guest.id ? '#C9A962' : '#FFF',
+                    backgroundColor: copiedId === guest.id ? '#7A2E39' : '#FFF',
                     color: copiedId === guest.id ? '#FFF' : '#666',
-                    border: '1px solid #E8E4DD',
+                    border: '1px solid #ECE9E3',
                   }}
                 >
                   {copiedId === guest.id ? (
@@ -344,7 +344,7 @@ export default function GuestList({
               onClick={handleCopyAllLinks}
               className="w-full py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2"
               style={{
-                backgroundColor: '#F5F3EE',
+                backgroundColor: '#FAFAF8',
                 color: '#666',
                 border: '1px dashed #D0D0D0',
               }}
@@ -361,7 +361,7 @@ export default function GuestList({
               onClick={onAdd}
               className="w-full py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
               style={{
-                backgroundColor: '#C9A962',
+                backgroundColor: '#7A2E39',
                 color: '#FFF',
               }}
             >

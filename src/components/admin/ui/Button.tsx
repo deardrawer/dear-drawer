@@ -27,13 +27,13 @@ const variantStyles: Record<ButtonVariant, { base: string; style: React.CSSPrope
   primary: {
     base: 'text-white font-semibold',
     style: {
-      backgroundColor: '#C9A962',
+      backgroundColor: '#7A2E39',
     },
   },
   secondary: {
     base: 'font-medium',
     style: {
-      backgroundColor: '#F5F3EE',
+      backgroundColor: '#FAFAF8',
       color: '#555',
     },
   },
@@ -48,7 +48,7 @@ const variantStyles: Record<ButtonVariant, { base: string; style: React.CSSPrope
     style: {
       backgroundColor: 'transparent',
       color: '#666',
-      border: '1px solid #E8E4DD',
+      border: '1px solid #ECE9E3',
     },
   },
 }
@@ -238,7 +238,7 @@ export function LinkButton({ children, className = '', ...props }: LinkButtonPro
         ${className}
       `}
       style={{
-        color: '#C9A962',
+        color: '#7A2E39',
         fontFamily: 'Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif',
       }}
       {...props}

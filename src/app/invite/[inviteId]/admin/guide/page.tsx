@@ -2,9 +2,13 @@
 
 import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/admin/ui/Button'
+import {
+  UsersIcon, ClipboardIcon, ShareIcon, LockIcon, MailIcon, BulbIcon,
+  type IconProps,
+} from '@/components/admin/DashboardIcons'
 
 interface GuideStep {
-  icon: string
+  Icon: React.ComponentType<IconProps>
   title: string
   description: string
   details: string[]
@@ -12,7 +16,7 @@ interface GuideStep {
 
 const guideSteps: GuideStep[] = [
   {
-    icon: '🔐',
+    Icon: LockIcon,
     title: '시작하기',
     description: 'PIN 번호로 관리 페이지에 접속하세요',
     details: [
@@ -22,7 +26,7 @@ const guideSteps: GuideStep[] = [
     ],
   },
   {
-    icon: '👥',
+    Icon: UsersIcon,
     title: '게스트 추가하기',
     description: '초대할 분들의 정보를 등록하세요',
     details: [
@@ -33,7 +37,7 @@ const guideSteps: GuideStep[] = [
     ],
   },
   {
-    icon: '📤',
+    Icon: ShareIcon,
     title: '링크 공유하기',
     description: '게스트별 맞춤 링크를 공유하세요',
     details: [
@@ -44,7 +48,7 @@ const guideSteps: GuideStep[] = [
     ],
   },
   {
-    icon: '📋',
+    Icon: ClipboardIcon,
     title: 'RSVP 확인하기',
     description: '참석 여부를 한눈에 확인하세요',
     details: [
@@ -67,17 +71,17 @@ export default function AdminGuidePage() {
   return (
     <div
       className="min-h-screen pb-24"
-      style={{ backgroundColor: '#F5F3EE' }}
+      style={{ backgroundColor: '#FAFAF8' }}
     >
       {/* 헤더 */}
       <header
         className="sticky top-0 z-40 px-4 py-4"
-        style={{ backgroundColor: '#F5F3EE', borderBottom: '1px solid #E8E4DD' }}
+        style={{ backgroundColor: '#FAFAF8', borderBottom: '1px solid #ECE9E3' }}
       >
-        <div className="text-xs tracking-[2px]" style={{ color: '#C9A962' }}>
+        <div className="text-xs tracking-[2px]" style={{ color: '#7A2E39' }}>
           USER GUIDE
         </div>
-        <h1 className="text-lg font-semibold" style={{ color: '#2C2C2C' }}>
+        <h1 className="text-lg font-semibold" style={{ color: '#1A1A1A' }}>
           게스트 관리 사용 가이드
         </h1>
       </header>
@@ -88,8 +92,13 @@ export default function AdminGuidePage() {
           className="p-5 rounded-2xl text-center"
           style={{ backgroundColor: '#FFF' }}
         >
-          <div className="text-4xl mb-3">💌</div>
-          <h2 className="text-base font-semibold mb-2" style={{ color: '#2C2C2C' }}>
+          <div
+            className="w-14 h-14 mx-auto mb-3 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: '#F1EDE7' }}
+          >
+            <MailIcon size={26} color="#7A2E39" />
+          </div>
+          <h2 className="text-base font-semibold mb-2" style={{ color: '#1A1A1A' }}>
             소중한 분들께 청첩장을 보내세요
           </h2>
           <p className="text-sm" style={{ color: '#888' }}>
@@ -108,17 +117,22 @@ export default function AdminGuidePage() {
             style={{ backgroundColor: '#FFF' }}
           >
             {/* 단계 헤더 */}
-            <div className="flex items-center gap-3 px-5 py-4" style={{ borderBottom: '1px solid #F5F3EE' }}>
-              <span className="text-2xl">{step.icon}</span>
+            <div className="flex items-center gap-3 px-5 py-4" style={{ borderBottom: '1px solid #ECE9E3' }}>
+              <div
+                className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+                style={{ backgroundColor: '#F1EDE7' }}
+              >
+                <step.Icon size={19} color="#8A8378" />
+              </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <span
                     className="text-xs font-bold px-2 py-0.5 rounded-full"
-                    style={{ backgroundColor: '#C9A962', color: '#FFF' }}
+                    style={{ backgroundColor: '#7A2E39', color: '#FFF' }}
                   >
                     STEP {index + 1}
                   </span>
-                  <span className="font-semibold" style={{ color: '#2C2C2C' }}>
+                  <span className="font-semibold" style={{ color: '#1A1A1A' }}>
                     {step.title}
                   </span>
                 </div>
@@ -133,7 +147,7 @@ export default function AdminGuidePage() {
               <ul className="space-y-2">
                 {step.details.map((detail, detailIndex) => (
                   <li key={detailIndex} className="flex items-start gap-2">
-                    <span className="text-xs mt-0.5" style={{ color: '#C9A962' }}>•</span>
+                    <span className="text-xs mt-0.5" style={{ color: '#7A2E39' }}>•</span>
                     <span className="text-sm" style={{ color: '#555' }}>
                       {detail}
                     </span>
@@ -149,30 +163,30 @@ export default function AdminGuidePage() {
       <div className="px-4 py-6">
         <div
           className="p-5 rounded-2xl"
-          style={{ backgroundColor: '#FFFBF0', border: '1px solid #F5E6B8' }}
+          style={{ backgroundColor: '#FAF6F3', border: '1px solid #ECE9E3' }}
         >
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-lg">💡</span>
-            <span className="font-semibold text-sm" style={{ color: '#8B7355' }}>
+            <BulbIcon size={17} color="#7A2E39" />
+            <span className="font-semibold text-sm" style={{ color: '#6B6560' }}>
               유용한 팁
             </span>
           </div>
           <ul className="space-y-2">
             <li className="flex items-start gap-2">
-              <span className="text-xs mt-0.5" style={{ color: '#C9A962' }}>•</span>
-              <span className="text-sm" style={{ color: '#8B7355' }}>
+              <span className="text-xs mt-0.5" style={{ color: '#7A2E39' }}>•</span>
+              <span className="text-sm" style={{ color: '#6B6560' }}>
                 인사말 템플릿을 미리 만들어두면 게스트 추가가 빨라져요
               </span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-xs mt-0.5" style={{ color: '#C9A962' }}>•</span>
-              <span className="text-sm" style={{ color: '#8B7355' }}>
+              <span className="text-xs mt-0.5" style={{ color: '#7A2E39' }}>•</span>
+              <span className="text-sm" style={{ color: '#6B6560' }}>
                 봉투 앞면에 관계와 호칭이 함께 표시돼요
               </span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-xs mt-0.5" style={{ color: '#C9A962' }}>•</span>
-              <span className="text-sm" style={{ color: '#8B7355' }}>
+              <span className="text-xs mt-0.5" style={{ color: '#7A2E39' }}>•</span>
+              <span className="text-sm" style={{ color: '#6B6560' }}>
                 열람 여부를 확인하면 누가 청첩장을 봤는지 알 수 있어요
               </span>
             </li>
@@ -184,8 +198,8 @@ export default function AdminGuidePage() {
       <div
         className="fixed bottom-0 left-0 right-0 px-4 py-4"
         style={{
-          backgroundColor: '#F5F3EE',
-          borderTop: '1px solid #E8E4DD',
+          backgroundColor: '#FAFAF8',
+          borderTop: '1px solid #ECE9E3',
           paddingBottom: 'calc(16px + env(safe-area-inset-bottom))',
         }}
       >

@@ -20,7 +20,7 @@ export default function DashboardLayout({
       <div
         className="min-h-screen"
         style={{
-          backgroundColor: '#F5F3EE',
+          backgroundColor: '#FAFAF8',
           maxWidth: '480px',
           margin: '0 auto',
           fontFamily: 'Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif',

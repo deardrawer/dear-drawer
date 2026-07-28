@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { EditIcon, ChevronDownIcon } from '@/components/admin/DashboardIcons'
 
 interface Template {
   id: string
@@ -98,30 +99,27 @@ export default function TemplateSection({
         className="w-full flex items-center justify-between p-4"
         style={{
           backgroundColor: '#FFF',
-          borderBottom: isOpen ? '1px solid #E8E4DD' : 'none',
+          borderBottom: isOpen ? '1px solid #ECE9E3' : 'none',
           borderRadius: isOpen ? '12px 12px 0 0' : '12px',
         }}
       >
         <div className="flex items-center gap-3">
-          <span className="text-lg">📝</span>
-          <span className="font-semibold" style={{ color: '#2C2C2C' }}>
+          <EditIcon size={19} color="#8A8378" />
+          <span className="font-semibold" style={{ color: '#1A1A1A' }}>
             인사말 템플릿
           </span>
           <span
             className="text-xs px-2 py-0.5 rounded-full font-medium"
-            style={{ backgroundColor: '#E8E4DD', color: '#666' }}
+            style={{ backgroundColor: '#ECE9E3', color: '#666' }}
           >
             {templates.length}
           </span>
         </div>
         <span
-          className="transition-transform duration-200"
-          style={{
-            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-            color: '#888',
-          }}
+          className="transition-transform duration-200 flex"
+          style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
         >
-          ▼
+          <ChevronDownIcon size={18} color="#B0A99C" />
         </span>
       </button>
 
@@ -141,7 +139,7 @@ export default function TemplateSection({
                 <button
                   onClick={openAddModal}
                   className="mt-4 text-sm font-medium underline"
-                  style={{ color: '#C9A962' }}
+                  style={{ color: '#7A2E39' }}
                 >
                   첫 템플릿 추가하기
                 </button>
@@ -152,18 +150,18 @@ export default function TemplateSection({
                   <div
                     key={template.id}
                     className="p-4 rounded-xl"
-                    style={{ backgroundColor: '#F5F3EE' }}
+                    style={{ backgroundColor: '#F1EDE7' }}
                   >
                     {/* 템플릿 헤더 */}
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold" style={{ color: '#2C2C2C' }}>
+                        <span className="font-semibold" style={{ color: '#1A1A1A' }}>
                           {template.name}
                         </span>
                         {template.is_default === 1 && (
                           <span
                             className="text-xs px-2 py-0.5 rounded-full font-medium"
-                            style={{ backgroundColor: '#C9A962', color: '#FFF' }}
+                            style={{ backgroundColor: '#7A2E39', color: '#FFF' }}
                           >
                             기본
                           </span>
@@ -177,7 +175,7 @@ export default function TemplateSection({
                           style={{
                             backgroundColor: '#FFF',
                             color: '#666',
-                            border: '1px solid #E8E4DD',
+                            border: '1px solid #ECE9E3',
                           }}
                         >
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -193,7 +191,7 @@ export default function TemplateSection({
                           style={{
                             backgroundColor: template.is_default === 1 ? '#F5F5F5' : '#FEF2F2',
                             color: template.is_default === 1 ? '#BBB' : '#DC2626',
-                            border: template.is_default === 1 ? '1px solid #E8E4DD' : '1px solid #FECACA',
+                            border: template.is_default === 1 ? '1px solid #ECE9E3' : '1px solid #FECACA',
                             cursor: template.is_default === 1 ? 'not-allowed' : 'pointer',
                           }}
                           disabled={template.is_default === 1}
@@ -221,7 +219,7 @@ export default function TemplateSection({
                   onClick={openAddModal}
                   className="w-full py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2 mt-4"
                   style={{
-                    backgroundColor: '#F5F3EE',
+                    backgroundColor: '#FAFAF8',
                     color: '#666',
                     border: '1px dashed #D0D0D0',
                   }}
@@ -251,7 +249,7 @@ export default function TemplateSection({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold" style={{ color: '#2C2C2C' }}>
+              <h3 className="text-lg font-semibold" style={{ color: '#1A1A1A' }}>
                 {editingTemplate ? '템플릿 수정' : '템플릿 추가'}
               </h3>
               <button
@@ -275,7 +273,7 @@ export default function TemplateSection({
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   placeholder="예) 친척용, 직장동료용"
                   className="w-full px-4 py-3 rounded-lg border"
-                  style={{ borderColor: '#E8E4DD' }}
+                  style={{ borderColor: '#ECE9E3' }}
                 />
               </div>
 
@@ -290,7 +288,7 @@ export default function TemplateSection({
                   placeholder="항상 저희 가족 챙겨주셔서 감사합니다..."
                   rows={5}
                   className="w-full px-4 py-3 rounded-lg border resize-none"
-                  style={{ borderColor: '#E8E4DD' }}
+                  style={{ borderColor: '#ECE9E3' }}
                 />
               </div>
 
@@ -302,7 +300,7 @@ export default function TemplateSection({
                   </label>
                   <div
                     className="p-4 rounded-lg text-sm leading-relaxed whitespace-pre-line"
-                    style={{ backgroundColor: '#F5F3EE', color: '#2C2C2C' }}
+                    style={{ backgroundColor: '#F1EDE7', color: '#1A1A1A' }}
                   >
                     {form.content}
                   </div>
@@ -313,7 +311,7 @@ export default function TemplateSection({
             <button
               onClick={handleSave}
               className="w-full mt-6 py-4 rounded-full text-white font-semibold"
-              style={{ backgroundColor: '#C9A962' }}
+              style={{ backgroundColor: '#7A2E39' }}
             >
               {editingTemplate ? '저장하기' : '추가하기'}
             </button>

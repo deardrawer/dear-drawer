@@ -8,13 +8,13 @@ import { InputHTMLAttributes, TextareaHTMLAttributes, forwardRef, ReactNode } fr
 
 const baseInputStyle: React.CSSProperties = {
   fontFamily: 'Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif',
-  borderColor: '#E8E4DD',
+  borderColor: '#ECE9E3',
   backgroundColor: '#FFF',
-  color: '#2C2C2C',
+  color: '#1A1A1A',
 }
 
 const focusInputStyle: React.CSSProperties = {
-  borderColor: '#C9A962',
+  borderColor: '#7A2E39',
   outline: 'none',
   boxShadow: '0 0 0 3px rgba(201, 169, 98, 0.1)',
 }
@@ -105,7 +105,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             onBlur={(e) => {
               e.target.style.boxShadow = ''
               if (!error) {
-                e.target.style.borderColor = '#E8E4DD'
+                e.target.style.borderColor = '#ECE9E3'
               }
               props.onBlur?.(e)
             }}
@@ -223,7 +223,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           onBlur={(e) => {
             e.target.style.boxShadow = ''
             if (!error) {
-              e.target.style.borderColor = '#E8E4DD'
+              e.target.style.borderColor = '#ECE9E3'
             }
             props.onBlur?.(e)
           }}

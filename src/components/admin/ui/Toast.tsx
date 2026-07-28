@@ -48,7 +48,7 @@ function ToastItem({ toast, onClose }: ToastItemProps) {
 
   const config = {
     success: {
-      bg: '#2C2C2C',
+      bg: '#1A1A1A',
       icon: (
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" strokeWidth="2.5">
           <polyline points="20 6 9 17 4 12" />
@@ -56,7 +56,7 @@ function ToastItem({ toast, onClose }: ToastItemProps) {
       ),
     },
     error: {
-      bg: '#2C2C2C',
+      bg: '#1A1A1A',
       icon: (
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2.5">
           <circle cx="12" cy="12" r="10" />
@@ -66,9 +66,9 @@ function ToastItem({ toast, onClose }: ToastItemProps) {
       ),
     },
     info: {
-      bg: '#2C2C2C',
+      bg: '#1A1A1A',
       icon: (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C9A962" strokeWidth="2.5">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7A2E39" strokeWidth="2.5">
           <polyline points="20 6 9 17 4 12" />
         </svg>
       ),
@@ -213,14 +213,14 @@ export function AdminToast({ message, type = 'info', isVisible }: AdminToastProp
   const config = {
     success: { icon: '✓', color: '#4CAF50' },
     error: { icon: '✕', color: '#EF4444' },
-    info: { icon: '✓', color: '#C9A962' },
+    info: { icon: '✓', color: '#7A2E39' },
   }[type]
 
   return (
     <div
       className="fixed bottom-6 left-1/2 -translate-x-1/2 px-5 py-3 rounded-full text-sm font-medium transition-all duration-300 z-50"
       style={{
-        backgroundColor: '#2C2C2C',
+        backgroundColor: '#1A1A1A',
         color: '#FFF',
         opacity: isVisible ? 1 : 0,
         transform: `translateX(-50%) translateY(${isVisible ? 0 : 20}px)`,

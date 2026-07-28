@@ -8,6 +8,10 @@ import { Modal, ModalBody, ModalFooter } from '@/components/admin/ui/Modal'
 import { Button } from '@/components/admin/ui/Button'
 import { Input, Textarea, Select } from '@/components/admin/ui/Input'
 import { AdminToast } from '@/components/admin/ui/Toast'
+import {
+  UsersIcon, ClipboardIcon, HelpIcon, ShareIcon, LockIcon, LogoutIcon,
+  ChevronDownIcon, MailIcon, LetterIcon, PhoneIcon, BulbIcon,
+} from '@/components/admin/DashboardIcons'
 
 declare global {
   interface Window {
@@ -734,11 +738,11 @@ export default function AdminDashboardPage() {
     return (
       <div
         className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: '#F5F3EE' }}
+        style={{ backgroundColor: '#FAFAF8' }}
       >
         <div
           className="w-8 h-8 border-2 rounded-full animate-spin"
-          style={{ borderColor: '#C9A962', borderTopColor: 'transparent' }}
+          style={{ borderColor: '#7A2E39', borderTopColor: 'transparent' }}
         />
       </div>
     )
@@ -747,18 +751,18 @@ export default function AdminDashboardPage() {
   return (
     <div
       className="min-h-screen pb-24"
-      style={{ backgroundColor: '#F5F3EE' }}
+      style={{ backgroundColor: '#FAFAF8' }}
     >
       {/* 헤더 */}
       <header
         className="sticky top-0 z-40 px-4 py-4 flex items-center justify-between"
-        style={{ backgroundColor: '#F5F3EE', borderBottom: '1px solid #E8E4DD' }}
+        style={{ backgroundColor: '#FAFAF8', borderBottom: '1px solid #ECE9E3' }}
       >
         <div>
-          <div className="text-xs tracking-[2px]" style={{ color: '#C9A962' }}>
+          <div className="text-xs tracking-[2px]" style={{ color: '#7A2E39' }}>
             GUEST MANAGER
           </div>
-          <h1 className="text-lg font-semibold" style={{ color: '#2C2C2C' }}>
+          <h1 className="text-lg font-semibold" style={{ color: '#1A1A1A' }}>
             게스트 관리
           </h1>
         </div>
@@ -768,7 +772,7 @@ export default function AdminDashboardPage() {
           <button
             onClick={() => setShowHeaderMenu(!showHeaderMenu)}
             className="p-2 rounded-lg transition-all active:scale-95"
-            style={{ backgroundColor: showHeaderMenu ? '#E8E4DD' : '#F5F3EE' }}
+            style={{ backgroundColor: showHeaderMenu ? '#ECE9E3' : '#FAFAF8' }}
             aria-label="메뉴 열기"
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2" strokeLinecap="round">
@@ -789,7 +793,7 @@ export default function AdminDashboardPage() {
               {/* 메뉴 */}
               <div
                 className="absolute right-0 top-full mt-2 z-50 py-2 rounded-xl shadow-lg min-w-[160px]"
-                style={{ backgroundColor: '#FFF', border: '1px solid #E8E4DD' }}
+                style={{ backgroundColor: '#FFF', border: '1px solid #ECE9E3' }}
               >
                 <button
                   onClick={() => {
@@ -797,9 +801,9 @@ export default function AdminDashboardPage() {
                     handleGoToGuide()
                   }}
                   className="w-full px-4 py-3 text-left text-sm font-medium flex items-center gap-3 transition-colors hover:bg-gray-50"
-                  style={{ color: '#2C2C2C' }}
+                  style={{ color: '#1A1A1A' }}
                 >
-                  <span className="text-base">📖</span>
+                  <HelpIcon size={18} color="#8A8378" />
                   도움말
                 </button>
                 <button
@@ -808,21 +812,21 @@ export default function AdminDashboardPage() {
                     setShowShareModal(true)
                   }}
                   className="w-full px-4 py-3 text-left text-sm font-medium flex items-center gap-3 transition-colors hover:bg-gray-50"
-                  style={{ color: '#2C2C2C' }}
+                  style={{ color: '#1A1A1A' }}
                 >
-                  <span className="text-base">📤</span>
+                  <ShareIcon size={18} color="#8A8378" />
                   부모님께 공유
                 </button>
-                <div className="h-px mx-4 my-1" style={{ backgroundColor: '#E8E4DD' }} />
+                <div className="h-px mx-4 my-1" style={{ backgroundColor: '#ECE9E3' }} />
                 <button
                   onClick={() => {
                     setShowHeaderMenu(false)
                     openPasswordModal()
                   }}
                   className="w-full px-4 py-3 text-left text-sm font-medium flex items-center gap-3 transition-colors hover:bg-gray-50"
-                  style={{ color: '#2C2C2C' }}
+                  style={{ color: '#1A1A1A' }}
                 >
-                  <span className="text-base">🔒</span>
+                  <LockIcon size={18} color="#8A8378" />
                   비밀번호 변경
                 </button>
                 <button
@@ -833,7 +837,7 @@ export default function AdminDashboardPage() {
                   className="w-full px-4 py-3 text-left text-sm font-medium flex items-center gap-3 transition-colors hover:bg-gray-50"
                   style={{ color: '#DC2626' }}
                 >
-                  <span className="text-base">🚪</span>
+                  <LogoutIcon size={18} color="#DC2626" />
                   로그아웃
                 </button>
               </div>
@@ -842,30 +846,81 @@ export default function AdminDashboardPage() {
         </div>
       </header>
 
-      {/* 통계 */}
-      {stats && (
-        <div className="px-4 py-4 grid grid-cols-4 gap-2">
-          {[
-            { label: '전체', value: stats.total, color: '#2C2C2C' },
-            { label: '열람', value: stats.opened, color: '#4CAF50' },
-            { label: '미열람', value: stats.notOpened, color: '#FF9800' },
-            { label: 'RSVP', value: rsvpSummary?.total || stats.withRsvp, color: '#C9A962' },
-          ].map((item) => (
+      {/* 통계 — 열람률 중심 위계 */}
+      {stats && (() => {
+        const total = stats.total || 0
+        const opened = stats.opened || 0
+        const rate = total ? Math.round((opened / total) * 100) : 0
+        const secondary = [
+          { label: '전체', value: total },
+          { label: '미열람', value: stats.notOpened },
+          { label: 'RSVP', value: rsvpSummary?.total || stats.withRsvp },
+        ]
+        return (
+          <div className="px-4 pt-4 pb-1">
             <div
-              key={item.label}
-              className="text-center py-3 rounded-lg"
-              style={{ backgroundColor: '#FFF' }}
+              className="px-5 py-5 rounded-xl"
+              style={{ backgroundColor: '#FFF', border: '1px solid #ECE9E3' }}
             >
-              <div className="text-2xl font-semibold" style={{ color: item.color }}>
-                {item.value}
+              {/* 열람률 (주요 지표) */}
+              <div className="flex items-end justify-between mb-3">
+                <div>
+                  <div className="text-xs font-medium mb-1.5" style={{ color: '#A29B8E' }}>
+                    열람률
+                  </div>
+                  <div className="flex items-baseline gap-1">
+                    <span
+                      className="text-[38px] leading-none font-semibold"
+                      style={{
+                        color: '#1A1A1A',
+                        fontFamily: "'Noto Serif KR', Georgia, serif",
+                        fontVariantNumeric: 'tabular-nums',
+                      }}
+                    >
+                      {rate}
+                    </span>
+                    <span className="text-lg font-medium" style={{ color: '#7A2E39' }}>%</span>
+                  </div>
+                </div>
+                <div className="text-right text-xs leading-relaxed" style={{ color: '#999' }}>
+                  전체 {total}명 중<br />
+                  <span style={{ color: '#1A1A1A', fontWeight: 500 }}>{opened}명</span> 열람
+                </div>
               </div>
-              <div className="text-xs font-medium" style={{ color: '#888' }}>
-                {item.label}
+
+              {/* 진행바 */}
+              <div className="h-1.5 w-full rounded-full overflow-hidden mb-5" style={{ backgroundColor: '#EDE9E1' }}>
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{ width: `${rate}%`, backgroundColor: '#7A2E39' }}
+                />
+              </div>
+
+              {/* 보조 지표 — 헤어라인 구분 */}
+              <div className="grid grid-cols-3">
+                {secondary.map((item, i) => (
+                  <div
+                    key={item.label}
+                    className="flex flex-col gap-0.5"
+                    style={{
+                      borderLeft: i === 0 ? 'none' : '1px solid #EDE9E1',
+                      paddingLeft: i === 0 ? 0 : 16,
+                    }}
+                  >
+                    <span
+                      className="text-xl font-semibold"
+                      style={{ color: '#1A1A1A', fontVariantNumeric: 'tabular-nums' }}
+                    >
+                      {item.value}
+                    </span>
+                    <span className="text-xs" style={{ color: '#999' }}>{item.label}</span>
+                  </div>
+                ))}
               </div>
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        )
+      })()}
 
       {/* 게스트 섹션 (아코디언) */}
       <div className="px-4 mb-4">
@@ -874,30 +929,29 @@ export default function AdminDashboardPage() {
           className="w-full flex items-center justify-between p-4 rounded-t-lg"
           style={{
             backgroundColor: '#FFF',
-            borderBottom: openSections.includes('guests') ? '1px solid #E8E4DD' : 'none',
+            borderBottom: openSections.includes('guests') ? '1px solid #ECE9E3' : 'none',
             borderRadius: openSections.includes('guests') ? '12px 12px 0 0' : '12px',
           }}
         >
           <div className="flex items-center gap-3">
-            <span className="text-lg">👥</span>
-            <span className="font-semibold" style={{ color: '#2C2C2C' }}>
+            <UsersIcon size={19} color="#8A8378" />
+            <span className="font-semibold" style={{ color: '#1A1A1A' }}>
               게스트 목록
             </span>
             <span
               className="text-xs px-2 py-0.5 rounded-full font-medium"
-              style={{ backgroundColor: '#C9A962', color: '#FFF' }}
+              style={{ backgroundColor: '#7A2E39', color: '#FFF' }}
             >
               {guests.length}
             </span>
           </div>
           <span
-            className="transition-transform duration-200"
+            className="transition-transform duration-200 flex"
             style={{
               transform: openSections.includes('guests') ? 'rotate(180deg)' : 'rotate(0deg)',
-              color: '#888',
             }}
           >
-            ▼
+            <ChevronDownIcon size={18} color="#B0A99C" />
           </span>
         </button>
 
@@ -932,18 +986,18 @@ export default function AdminDashboardPage() {
             className="w-full flex items-center justify-between p-4 rounded-t-lg"
             style={{
               backgroundColor: '#FFF',
-              borderBottom: openSections.includes('rsvp') ? '1px solid #E8E4DD' : 'none',
+              borderBottom: openSections.includes('rsvp') ? '1px solid #ECE9E3' : 'none',
               borderRadius: openSections.includes('rsvp') ? '12px 12px 0 0' : '12px',
             }}
           >
             <div className="flex items-center gap-3">
-              <span className="text-lg">📋</span>
-              <span className="font-semibold" style={{ color: '#2C2C2C' }}>
+              <ClipboardIcon size={19} color="#8A8378" />
+              <span className="font-semibold" style={{ color: '#1A1A1A' }}>
                 RSVP 응답
               </span>
               <span
                 className="text-xs px-2 py-0.5 rounded-full font-medium"
-                style={{ backgroundColor: '#C9A962', color: '#FFF' }}
+                style={{ backgroundColor: '#7A2E39', color: '#FFF' }}
               >
                 {rsvpResponses.length}
               </span>
@@ -956,7 +1010,7 @@ export default function AdminDashboardPage() {
                   window.open(`/api/rsvp/export?invitationId=${inviteId}`)
                 }}
                 className="p-1.5 rounded-lg transition-all active:scale-95"
-                style={{ backgroundColor: '#F5F3EE' }}
+                style={{ backgroundColor: '#F1EDE7' }}
                 title="CSV 내보내기"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -966,13 +1020,12 @@ export default function AdminDashboardPage() {
                 </svg>
               </button>
               <span
-                className="transition-transform duration-200"
+                className="transition-transform duration-200 flex"
                 style={{
                   transform: openSections.includes('rsvp') ? 'rotate(180deg)' : 'rotate(0deg)',
-                  color: '#888',
                 }}
               >
-                ▼
+                <ChevronDownIcon size={18} color="#B0A99C" />
               </span>
             </div>
           </button>
@@ -990,12 +1043,12 @@ export default function AdminDashboardPage() {
                       { label: '참석', value: rsvpSummary.attending, color: '#4CAF50' },
                       { label: '불참', value: rsvpSummary.notAttending, color: '#EF4444' },
                       { label: '미정', value: rsvpSummary.pending, color: '#F59E0B' },
-                      { label: '식사인원', value: `${rsvpSummary.totalGuests}명`, color: '#C9A962' },
+                      { label: '식사인원', value: `${rsvpSummary.totalGuests}명`, color: '#7A2E39' },
                     ].map((item) => (
                       <div
                         key={item.label}
                         className="text-center py-2.5 rounded-lg"
-                        style={{ backgroundColor: '#F8F6F2' }}
+                        style={{ backgroundColor: '#F1EDE7' }}
                       >
                         <div className="text-xl font-bold" style={{ color: item.color }}>
                           {item.value}
@@ -1018,7 +1071,7 @@ export default function AdminDashboardPage() {
                           {rsvpSummary.attending}/{rsvpSummary.total}
                         </span>
                       </div>
-                      <div className="w-full h-2 rounded-full" style={{ backgroundColor: '#E8E4DD' }}>
+                      <div className="w-full h-2 rounded-full" style={{ backgroundColor: '#ECE9E3' }}>
                         <div
                           className="h-full rounded-full transition-all duration-500"
                           style={{
@@ -1065,7 +1118,7 @@ export default function AdminDashboardPage() {
                       onClick={() => setRsvpFilter(tab.key)}
                       className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all"
                       style={{
-                        backgroundColor: rsvpFilter === tab.key ? '#2C2C2C' : '#F5F3EE',
+                        backgroundColor: rsvpFilter === tab.key ? '#1A1A1A' : '#FAFAF8',
                         color: rsvpFilter === tab.key ? '#FFF' : '#888',
                       }}
                     >
@@ -1091,14 +1144,14 @@ export default function AdminDashboardPage() {
                     value={rsvpSearch}
                     onChange={(e) => setRsvpSearch(e.target.value)}
                     className="w-full pl-9 pr-3 py-2 text-xs rounded-lg border-none outline-none"
-                    style={{ backgroundColor: '#F8F6F2', color: '#2C2C2C' }}
+                    style={{ backgroundColor: '#F1EDE7', color: '#1A1A1A' }}
                   />
                 </div>
                 <select
                   value={rsvpSort}
                   onChange={(e) => setRsvpSort(e.target.value as 'date' | 'name' | 'count')}
                   className="px-3 py-2 text-xs rounded-lg border-none outline-none appearance-none cursor-pointer"
-                  style={{ backgroundColor: '#F8F6F2', color: '#555' }}
+                  style={{ backgroundColor: '#F1EDE7', color: '#555' }}
                 >
                   <option value="date">최신순</option>
                   <option value="name">이름순</option>
@@ -1113,12 +1166,12 @@ export default function AdminDashboardPage() {
                     <div
                       key={r.id}
                       className="p-3 rounded-lg"
-                      style={{ backgroundColor: '#F8F6F2' }}
+                      style={{ backgroundColor: '#F1EDE7' }}
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="font-medium text-sm" style={{ color: '#2C2C2C' }}>
+                            <span className="font-medium text-sm" style={{ color: '#1A1A1A' }}>
                               {r.guest_name}
                             </span>
                             {r.side && (
@@ -1242,7 +1295,7 @@ export default function AdminDashboardPage() {
         <ModalBody className="space-y-4">
           {/* 개인/단체 탭 - 추가 모드에서만 표시 */}
           {!editingGuest && (
-            <div className="flex rounded-lg overflow-hidden border" style={{ borderColor: '#E8E4DD' }}>
+            <div className="flex rounded-lg overflow-hidden border" style={{ borderColor: '#ECE9E3' }}>
               <button
                 type="button"
                 onClick={() => {
@@ -1251,7 +1304,7 @@ export default function AdminDashboardPage() {
                 }}
                 className="flex-1 py-2.5 text-sm font-medium transition-colors"
                 style={{
-                  backgroundColor: guestType === 'individual' ? '#2C2C2C' : '#FFF',
+                  backgroundColor: guestType === 'individual' ? '#1A1A1A' : '#FFF',
                   color: guestType === 'individual' ? '#FFF' : '#888',
                 }}
               >
@@ -1265,7 +1318,7 @@ export default function AdminDashboardPage() {
                 }}
                 className="flex-1 py-2.5 text-sm font-medium transition-colors"
                 style={{
-                  backgroundColor: guestType === 'group' ? '#2C2C2C' : '#FFF',
+                  backgroundColor: guestType === 'group' ? '#1A1A1A' : '#FFF',
                   color: guestType === 'group' ? '#FFF' : '#888',
                 }}
               >
@@ -1349,8 +1402,8 @@ export default function AdminDashboardPage() {
           {/* 봉투 미리보기 (Parents 템플릿 스타일) */}
           {guestForm.name && (
             <div className="rounded-xl overflow-hidden">
-              <div className="flex items-center gap-2 px-4 py-2" style={{ backgroundColor: '#F8F6F2' }}>
-                <span className="text-sm">✉️</span>
+              <div className="flex items-center gap-2 px-4 py-2" style={{ backgroundColor: '#F1EDE7' }}>
+                <MailIcon size={15} color="#A29B8E" />
                 <span className="text-xs font-medium" style={{ color: '#888' }}>
                   봉투 앞면 미리보기
                 </span>
@@ -1375,7 +1428,7 @@ export default function AdminDashboardPage() {
                   )}
                   <p
                     className="text-xl"
-                    style={{ color: '#2C2C2C', fontFamily: "'Noto Serif KR', Georgia, serif" }}
+                    style={{ color: '#1A1A1A', fontFamily: "'Noto Serif KR', Georgia, serif" }}
                   >
                     {guestForm.name}{guestForm.honorific ? ` ${guestForm.honorific}` : ''}
                   </p>
@@ -1405,8 +1458,8 @@ export default function AdminDashboardPage() {
 
             return (
               <div className="rounded-xl overflow-hidden">
-                <div className="flex items-center gap-2 px-4 py-2" style={{ backgroundColor: '#F8F6F2' }}>
-                  <span className="text-sm">📜</span>
+                <div className="flex items-center gap-2 px-4 py-2" style={{ backgroundColor: '#F1EDE7' }}>
+                  <LetterIcon size={15} color="#A29B8E" />
                   <span className="text-xs font-medium" style={{ color: '#888' }}>
                     편지지 미리보기
                   </span>
@@ -1428,7 +1481,7 @@ export default function AdminDashboardPage() {
                     <div className="h-px w-[40px] mx-auto mb-3" style={{ backgroundColor: invitationInfo?.accentColor || '#C9A962' }} />
                     <p
                       className="text-sm mb-4"
-                      style={{ color: '#2C2C2C', fontFamily: "'Noto Serif KR', Georgia, serif" }}
+                      style={{ color: '#1A1A1A', fontFamily: "'Noto Serif KR', Georgia, serif" }}
                     >
                       {displayGreetingTo}
                     </p>
@@ -1455,9 +1508,9 @@ export default function AdminDashboardPage() {
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-medium transition-all"
-              style={{ backgroundColor: '#2C2C2C', color: '#FFF' }}
+              style={{ backgroundColor: '#1A1A1A', color: '#FFF' }}
             >
-              <span>📱</span>
+              <PhoneIcon size={16} color="#FFF" />
               청첩장 미리보기
             </a>
           )}
@@ -1504,9 +1557,9 @@ export default function AdminDashboardPage() {
                 disabled={showConfirmInput}
                 className="w-14 h-14 text-center text-2xl font-bold rounded-xl border-2 transition-all duration-150 focus:outline-none disabled:cursor-not-allowed"
                 style={{
-                  borderColor: passwordError && !showConfirmInput ? '#DC2626' : showConfirmInput ? '#C9A962' : '#E8E4DD',
-                  backgroundColor: showConfirmInput ? '#FFFBF0' : '#FFF',
-                  color: '#2C2C2C',
+                  borderColor: passwordError && !showConfirmInput ? '#DC2626' : showConfirmInput ? '#7A2E39' : '#ECE9E3',
+                  backgroundColor: showConfirmInput ? '#FAF6F3' : '#FFF',
+                  color: '#1A1A1A',
                 }}
               />
             ))}
@@ -1528,9 +1581,9 @@ export default function AdminDashboardPage() {
                   onPaste={index === 0 ? (e) => handlePasswordPaste(e, true) : undefined}
                   className="w-14 h-14 text-center text-2xl font-bold rounded-xl border-2 transition-all duration-150 focus:outline-none"
                   style={{
-                    borderColor: passwordError ? '#DC2626' : '#E8E4DD',
+                    borderColor: passwordError ? '#DC2626' : '#ECE9E3',
                     backgroundColor: '#FFF',
-                    color: '#2C2C2C',
+                    color: '#1A1A1A',
                   }}
                 />
               ))}
@@ -1579,7 +1632,12 @@ export default function AdminDashboardPage() {
       >
         <ModalBody className="space-y-4">
           <div className="text-center py-4">
-            <div className="text-4xl mb-3">👨‍👩‍👧</div>
+            <div
+              className="w-14 h-14 mx-auto mb-3 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: '#F1EDE7' }}
+            >
+              <UsersIcon size={26} color="#7A2E39" />
+            </div>
             <p className="text-sm" style={{ color: '#555' }}>
               부모님도 게스트 관리를 할 수 있어요
             </p>
@@ -1606,7 +1664,7 @@ export default function AdminDashboardPage() {
             <button
               onClick={handleCopyShareLink}
               className="flex-1 flex flex-col items-center gap-2 py-4 rounded-xl transition-all active:scale-[0.98]"
-              style={{ backgroundColor: '#F5F3EE' }}
+              style={{ backgroundColor: '#F1EDE7' }}
             >
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2">
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
@@ -1621,11 +1679,11 @@ export default function AdminDashboardPage() {
           {/* 안내 문구 */}
           <div
             className="p-4 rounded-xl"
-            style={{ backgroundColor: '#FFFBF0', border: '1px solid #F5E6B8' }}
+            style={{ backgroundColor: '#FAF6F3', border: '1px solid #ECE9E3' }}
           >
             <div className="flex items-start gap-2">
-              <span className="text-sm">💡</span>
-              <div className="text-xs" style={{ color: '#8B7355' }}>
+              <span className="flex-shrink-0 mt-0.5"><BulbIcon size={15} color="#7A2E39" /></span>
+              <div className="text-xs" style={{ color: '#6B6560' }}>
                 <p className="font-medium mb-1">PIN 번호는 별도로 전달해주세요</p>
                 <p>보안을 위해 PIN 번호는 카카오톡 메시지에 포함되지 않아요. 전화나 문자로 따로 알려주세요.</p>
               </div>
@@ -1638,10 +1696,11 @@ export default function AdminDashboardPage() {
               setShowShareModal(false)
               handleGoToGuide()
             }}
-            className="w-full py-3 text-sm font-medium rounded-xl transition-all"
-            style={{ backgroundColor: '#F5F3EE', color: '#555' }}
+            className="w-full py-3 text-sm font-medium rounded-xl transition-all flex items-center justify-center gap-2"
+            style={{ backgroundColor: '#F1EDE7', color: '#555' }}
           >
-            📖 사용 가이드 보기
+            <HelpIcon size={16} color="#8A8378" />
+            사용 가이드 보기
           </button>
         </ModalBody>
       </Modal>

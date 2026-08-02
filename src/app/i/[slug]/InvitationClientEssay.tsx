@@ -2201,10 +2201,14 @@ const bookAnimCSS = `
 @keyframes bkPageInR { from { opacity: 0; transform: translateX(12%); } to { opacity: 1; transform: none; } }
 @keyframes bkPageOutL { to { opacity: 0; transform: translateX(-18%) scale(0.94); } }
 @keyframes bkPageOutR { to { opacity: 0; transform: translateX(18%) scale(0.94); } }
-.book-page-content .bk-page { min-height: 100dvh; padding-top: 52px; box-sizing: border-box; }
+.book-page-content .bk-page { min-height: 100dvh; padding-top: calc(env(safe-area-inset-top, 0px) + 52px); box-sizing: border-box; }
 .book-page-content .bk-page > .w-full { padding-left: 52px; padding-right: 52px; }
 .book-page-content:has(.bk-card) { display: flex; flex-direction: column; min-height: 100dvh; }
 .book-page-content .bk-page.bk-card { min-height: calc(100dvh - 20px); margin: 10px; border-radius: 14px; box-shadow: 0 4px 30px rgba(46,42,38,0.08); overflow: hidden; position: relative; padding-top: 0; }
+/* 카드 내부 콘텐츠 스크롤 뷰포트: 잘림선을 뷰포트 툴바 하단(=52px, 카드 margin 10px 반영 → 42px)에 고정.
+   프레임(.bk-card 배경·테두리)은 clip하지 않으므로 툴바 뒤에서도 그대로 보이고, 스크롤되는 본문만 잘린다.
+   clip-path는 스크롤 컨테이너(고정 박스)에 적용되어 콘텐츠와 함께 움직이지 않는다. 페이지별 색 매핑 불필요. */
+.book-page-content .bk-page.bk-card .bk-scroll-area { clip-path: inset(calc(env(safe-area-inset-top, 0px) + 42px) 0 0 0); }
 .bk-scroll-area { scrollbar-width: none; -ms-overflow-style: none; }
 .bk-scroll-area::-webkit-scrollbar { display: none; }
 .bk-scroll-hint {
@@ -2748,7 +2752,7 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
     }
     return { ...bookColors, ...(endDark[data.colorTheme || 'essay-ivory'] || endDark['essay-ivory']) }
   })()
-  const activeColors = isEndPage ? endDarkForToolbar : isIntroPage ? bookIntroColors : isQuoteDark ? bookQuoteDarkColors : isInfoPage ? bookInfoColors : bookColors
+  const activeColors = isEndPage ? endDarkForToolbar : isIntroPage ? bookIntroColors : isInfoIntroPage ? endDarkForToolbar : isQuoteDark ? bookQuoteDarkColors : isInfoPage ? bookInfoColors : bookColors
 
   // 페이지 콘텐츠 렌더 헬퍼 (현재+인접 페이지에서 재사용)
   const renderPageContent = useCallback((p: BookPage | undefined) => {
@@ -2796,7 +2800,7 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
 
       {/* 상단 툴바 (메뉴 + 페이지 번호 + 프로그레스 바) */}
       {currentPage > 0 && (
-        <div className="fixed top-0 left-0 right-0 z-40 flex items-center gap-2.5 pointer-events-none" style={{ height: '52px', padding: '20px 20px 8px 20px', background: isInfoPage ? bookInfoColors.bg : 'transparent', ...(isInfoPage ? { top: '10px', left: '10px', right: '10px', borderRadius: '14px 14px 0 0' } : {}) }}>
+        <div className="fixed top-0 left-0 right-0 z-40 flex items-center gap-2.5 pointer-events-none" style={{ height: 'calc(env(safe-area-inset-top, 0px) + 52px)', padding: 'calc(env(safe-area-inset-top, 0px) + 20px) 20px 8px 20px', background: 'transparent' }}>
           <button
             onClick={(e) => { e.stopPropagation(); setShowToc(true) }}
             className="pointer-events-auto"
@@ -3683,7 +3687,9 @@ function BookGreeting({ data }: { data: any }) {
   const text = data.greeting || ''
   const lines = text.split('\n')
   return (
-    <div className="bk-page" style={{ background: bookColors.pageBg, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+    <div className="bk-page" style={{ background: bookColors.pageBg, display: 'flex', flexDirection: 'column', position: 'relative', maxHeight: '100dvh', overflow: 'hidden' }}>
+      {/* 콘텐츠 스크롤 영역: bk-page padding-top(safe+52)로 top이 툴바 하단 → overflow가 툴바 위 본문을 잘라냄. 프레임(배경)은 clip 안 되어 툴바 뒤에서도 보임 */}
+      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
       {/* 인사말 본문: 우하단 정렬 */}
       <div style={{ marginTop: 'auto', marginBottom: '80px', marginLeft: 'auto', textAlign: 'right' as const, maxWidth: '240px', paddingRight: '48px' }}>
         {lines.map((line: string, i: number) => (
@@ -3695,6 +3701,7 @@ function BookGreeting({ data }: { data: any }) {
           }}>{line || '\u00A0'}</span>
         ))}
       </div>
+      </div>
     </div>
   )
 }
@@ -3705,9 +3712,9 @@ function BookChapter({ chapter, index, ed = false, colorTheme, customThemeColors
   const lines = (chapter.body || '').split('\n')
 
   return (
-    <div className="bk-page" style={{ background: bookColors.pageBg, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-      {/* 스크롤 영역 */}
-      <div style={{ flex: 1, position: 'relative', zIndex: 1 }}>
+    <div className="bk-page" style={{ background: bookColors.pageBg, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: '100dvh' }}>
+      {/* 스크롤 영역: bk-page padding-top(safe+52)로 top이 툴바 하단 → overflow가 툴바 위 본문을 잘라냄. 프레임(배경)은 clip 안 됨 */}
+      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', position: 'relative', zIndex: 1 }}>
         {/* 챕터 헤더 */}
         <div style={{ padding: '100px 44px 0' }}>
           <div style={{ animation: 'bkInk 1.3s cubic-bezier(.22,1,.36,1) 300ms both' }}>
@@ -3812,7 +3819,7 @@ function BookInterview({ qa, index, ed = false, colorTheme, customThemeColors }:
   const qNum = String(index + 1).padStart(2, '0')
 
   return (
-    <div className="bk-page flex items-center" style={{ background: bookColors.pageBg, position: 'relative', overflow: 'hidden' }}>
+    <div className="bk-page flex flex-col" style={{ background: bookColors.pageBg, position: 'relative', overflow: 'hidden', maxHeight: '100dvh' }}>
       {/* 에디토리얼: 배경 Q 넘버 */}
       {ed && (
         <div style={{
@@ -3826,7 +3833,7 @@ function BookInterview({ qa, index, ed = false, colorTheme, customThemeColors }:
         </div>
       )}
 
-      <div className="w-full px-10 py-16 max-w-md mx-auto">
+      <div className="w-full px-10 py-16 max-w-md mx-auto" style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         <BA d={0} type="fade" className="mb-8">
           <span style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: ed ? '11px' : '10px', letterSpacing: '4px', color: bookColors.muted }}>
             Q.{qNum}
@@ -4860,8 +4867,8 @@ function BookBonusInterview({ interview, index, total, colorTheme, customThemeCo
   const bookColors = getBookColors(colorTheme, customThemeColors)
   const answer = interview.answer || ''
   return (
-    <div className="bk-page flex items-center" style={{ background: bookColors.pageBg }}>
-      <div className="w-full px-10 py-16 max-w-md mx-auto">
+    <div className="bk-page flex flex-col" style={{ background: bookColors.pageBg, overflow: 'hidden', maxHeight: '100dvh' }}>
+      <div className="w-full px-10 py-16 max-w-md mx-auto" style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         <div className="text-center mb-8">
           <BA d={0} type="fade"><div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '9px', letterSpacing: '3px', color: bookColors.muted, marginBottom: '16px' }}>Q{index + 1} OF {total}</div></BA>
           <BA d={150}><BLine width="20px" color={bookColors.accent} d={0} center /></BA>

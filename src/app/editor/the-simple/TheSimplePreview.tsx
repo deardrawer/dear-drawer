@@ -813,6 +813,7 @@ function AccountTabbed({
   brideName,
   variant = 1,
   order,
+  alwaysOpen = false,
 }: {
   groomRole: string
   brideRole: string
@@ -832,9 +833,21 @@ function AccountTabbed({
   brideName?: string
   variant?: number
   order?: 'groom-first' | 'bride-first'
+  alwaysOpen?: boolean
 }) {
-  const [groomOpen, setGroomOpen] = useState(false)
-  const [brideOpen, setBrideOpen] = useState(false)
+  const [groomOpenState, setGroomOpen] = useState(false)
+  const [brideOpenState, setBrideOpen] = useState(false)
+  // '항상 펼쳐보기'(alwaysOpen):
+  //   - V3(세로): 신랑·신부 둘 다 펼침
+  //   - 듀얼(V1/V2/V4/V5): 항상 한쪽은 펼침(탭). 클릭으로 전환만, 접힘 없음. 초기엔 firstSide.
+  const accFirstSide: 'groom' | 'bride' = order === 'bride-first' ? 'bride' : 'groom'
+  const dualNoneSel = !groomOpenState && !brideOpenState
+  const groomOpen = variant === 3
+    ? (alwaysOpen || groomOpenState)
+    : (alwaysOpen ? (groomOpenState || (dualNoneSel && accFirstSide === 'groom')) : groomOpenState)
+  const brideOpen = variant === 3
+    ? (alwaysOpen || brideOpenState)
+    : (alwaysOpen ? (brideOpenState || (dualNoneSel && accFirstSide === 'bride')) : brideOpenState)
   const isAccBrideFirst = order === 'bride-first'
   const [copied, setCopied] = useState<string | null>(null)
 
@@ -1094,9 +1107,9 @@ function AccountTabbed({
       const label = isGroom ? (groomRole || 'Groom') : (brideRole || 'Bride')
       return (
         <div key={side}>
-          <button type="button" onClick={toggle} style={getV3HeaderStyle()}>
+          <button type="button" onClick={() => { if (!alwaysOpen) toggle() }} style={{ ...getV3HeaderStyle(), ...(alwaysOpen ? { cursor: 'default' } : {}) }}>
             <span>{label}</span>
-            <Chevron open={open} size={14} />
+            {!alwaysOpen && <Chevron open={open} size={14} />}
           </button>
           {renderContent(side)}
         </div>
@@ -1110,6 +1123,12 @@ function AccountTabbed({
 
   /* ── V1/V2/V4/V5: 듀얼 (나란히) 헤더 + 아래 콘텐츠 ── */
   const toggleSide = (side: 'groom' | 'bride') => {
+    if (alwaysOpen) {
+      // 탭: 클릭한 쪽 선택, 반대쪽 닫힘. 이미 선택된 쪽 재클릭해도 접히지 않음.
+      if (side === 'groom') { setGroomOpen(true); setBrideOpen(false) }
+      else { setBrideOpen(true); setGroomOpen(false) }
+      return
+    }
     if (side === 'groom') {
       setGroomOpen(p => { if (!p) setBrideOpen(false); return !p })
     } else {
@@ -1120,28 +1139,29 @@ function AccountTabbed({
   const firstSide: 'groom' | 'bride' = isAccBrideFirst ? 'bride' : 'groom'
   const secondSide: 'groom' | 'bride' = isAccBrideFirst ? 'groom' : 'bride'
 
+  const headerBtn = (side: 'groom' | 'bride') => {
+    const sideOpen = side === 'groom' ? groomOpen : brideOpen
+    const label = side === 'groom' ? (groomRole || 'Groom') : (brideRole || 'Bride')
+    return (
+      <button
+        type="button"
+        onClick={() => toggleSide(side)}
+        style={getDualHeaderStyle(side, sideOpen)}
+      >
+        <span>{label}</span>
+        {!alwaysOpen && <Chevron open={sideOpen} />}
+      </button>
+    )
+  }
+
   return (
     <div>
-      {/* 듀얼 헤더 */}
+      {/* 듀얼 헤더 (alwaysOpen이면 탭: 클릭 전환, 접힘 없음) */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', marginBottom: 0 }}>
-        <button
-          type="button"
-          onClick={() => toggleSide(firstSide)}
-          style={getDualHeaderStyle(firstSide, firstSide === 'groom' ? groomOpen : brideOpen)}
-        >
-          <span>{firstSide === 'groom' ? (groomRole || 'Groom') : (brideRole || 'Bride')}</span>
-          <Chevron open={firstSide === 'groom' ? groomOpen : brideOpen} />
-        </button>
-        <button
-          type="button"
-          onClick={() => toggleSide(secondSide)}
-          style={getDualHeaderStyle(secondSide, secondSide === 'groom' ? groomOpen : brideOpen)}
-        >
-          <span>{secondSide === 'groom' ? (groomRole || 'Groom') : (brideRole || 'Bride')}</span>
-          <Chevron open={secondSide === 'groom' ? groomOpen : brideOpen} />
-        </button>
+        {headerBtn(firstSide)}
+        {headerBtn(secondSide)}
       </div>
-      {/* 콘텐츠 — 열려 있는 쪽만 표시 */}
+      {/* 콘텐츠 — 열려 있는 쪽만 표시 (alwaysOpen 듀얼은 항상 한쪽 표시) */}
       {renderContent(firstSide)}
       {renderContent(secondSide)}
     </div>
@@ -4623,6 +4643,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
         brideName,
         variant: v,
         order: account.order,
+        alwaysOpen: account.alwaysOpen ?? false,
       }
 
       // V2 · 베이지 카드

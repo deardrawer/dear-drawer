@@ -183,6 +183,19 @@ export default function AccountEditor({ value, onChange }: AccountEditorProps) {
         </button>
       </div>
 
+      {/* 항상 펼쳐보기 */}
+      <label className="flex items-center gap-2 cursor-pointer select-none">
+        <input
+          type="checkbox"
+          checked={value.alwaysOpen ?? false}
+          onChange={(e) => onChange({ ...value, alwaysOpen: e.target.checked })}
+          className="h-3.5 w-3.5 accent-stone-700"
+        />
+        <span className="text-[11px] text-stone-600">
+          항상 펼쳐보기 <span className="text-stone-400">(접힘 없이 항상 표시 · 듀얼형은 버튼으로 전환)</span>
+        </span>
+      </label>
+
       {(isBrideFirst ? [
         { sectionLabel: '신부측', sideKey: 'bride' as SideKey, sideLabel: '신부',
           fatherKey: 'brideFather' as SideKey, motherKey: 'brideMother' as SideKey,

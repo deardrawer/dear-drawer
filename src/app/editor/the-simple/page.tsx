@@ -186,6 +186,7 @@ export interface SectionContents {
     brideFatherName?: string
     brideMotherName?: string
     toggle?: { enabled: boolean; label: string; style?: number }
+    alwaysOpen?: boolean
   }
   lovestory: {
     eyebrow: string
@@ -499,6 +500,7 @@ const defaultData: TheSimpleInvitationData = {
       groomMother: [],
       brideFather: [],
       brideMother: [],
+      alwaysOpen: false,
     },
     guestbook: {
       subtitle: '따뜻한 한 마디를 남겨주세요',

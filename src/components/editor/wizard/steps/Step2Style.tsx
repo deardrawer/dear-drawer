@@ -675,14 +675,32 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
             </div>
           </section>
 
-          {/* Movie 라이트 틴티드 배경 색상 */}
+          {/* Movie 라이트 배경 색상 */}
           {currentFilmTheme === 'film-light' && (
             <section className="space-y-4">
               <div className="p-4 bg-gray-50 rounded-xl space-y-4">
-                <h4 className="text-sm font-medium text-gray-800">틴티드 배경</h4>
+                <h4 className="text-sm font-medium text-gray-800">배경 색상</h4>
+                {/* 기본(흰색) 배경 — 인사말 등 비틴트 섹션 */}
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-700">섹션 배경</p>
+                    <p className="text-sm text-gray-700">기본 배경</p>
+                    <p className="text-xs text-gray-500">흰색 섹션·인사말 배경 컬러</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={(invitation as any).customBaseColor || '#FFFFFF'}
+                      onChange={(e) => updateField('customBaseColor' as any, e.target.value)}
+                      className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300"
+                      style={{ padding: 0 }}
+                    />
+                    <span className="text-xs text-gray-600 font-mono w-16">{(invitation as any).customBaseColor || '#FFFFFF'}</span>
+                  </div>
+                </div>
+                {/* 틴티드 배경 — 짝수 섹션 */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-700">틴티드 배경</p>
                     <p className="text-xs text-gray-500">틴티드 섹션 배경 컬러</p>
                   </div>
                   <div className="flex items-center gap-2">

@@ -1509,13 +1509,9 @@ function GuidanceInfoSection({ invitation, fonts, themeColors, bgOverride }: { i
         {/* Guidance Image */}
         {guidance?.image && (
           <div className="px-6 mb-4">
-            <div className="w-full overflow-hidden" style={{
-              aspectRatio: '4/5',
-              borderRadius: '8px',
-              backgroundImage: `url(${guidance.image})`,
-              backgroundSize: 'cover',
-              backgroundPosition: `center ${50 - (guidance.imageSettings?.positionY || 0)}%`,
-            }} />
+            <div className="w-full overflow-hidden" style={{ aspectRatio: '4/5', borderRadius: '8px' }}>
+              <CroppedImageDiv src={guidance.image} crop={guidance.imageSettings || {}} className="w-full h-full" />
+            </div>
           </div>
         )}
 

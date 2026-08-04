@@ -280,7 +280,13 @@ function FilmPosterCover({ invitation, fonts, tc, onEnter, isPreview }: {
   }, [])
 
   const accent = tc.accent || '#D4838F'
-  const isLight = tc.background === '#FFFFFF'
+  // 배경 밝기로 라이트/다크 판정 (기본 배경색을 커스텀해도 커버가 다크로 오판되지 않게)
+  const isLight = (() => {
+    const hex = (tc.background || '#FFFFFF').replace('#', '')
+    if (hex.length < 6) return true
+    const r = parseInt(hex.slice(0, 2), 16), g = parseInt(hex.slice(2, 4), 16), b = parseInt(hex.slice(4, 6), 16)
+    return (0.299 * r + 0.587 * g + 0.114 * b) > 150
+  })()
   const coverBg = isLight ? getAccentTint(accent, 0.92) : '#0A0A0A'
   const coverText = isLight ? tc.text : '#FFFFFF'
   const coverGray = isLight ? tc.gray : 'rgba(255,255,255,0.6)'
@@ -717,7 +723,7 @@ function FilmHeader({ invitation, fonts, tc }: { invitation: any; fonts: FontCon
 }
 
 // ===== Chapter 1: The Beginning (Split Text + Blur to Focus) =====
-function ChapterOne({ invitation, fonts, tc }: { invitation: any; fonts: FontConfig; tc: ColorConfig }) {
+function ChapterOne({ invitation, fonts, tc, bgOverride }: { invitation: any; fonts: FontConfig; tc: ColorConfig; bgOverride?: string }) {
   const dfs = (px: number) => `${Math.round(px * (fonts.ds || 1))}px`
   const { ref, isVisible } = useScrollReveal()
   const greeting = invitation.content?.greeting || ''
@@ -740,7 +746,7 @@ function ChapterOne({ invitation, fonts, tc }: { invitation: any; fonts: FontCon
   let lineCounter = 0
 
   return (
-    <div ref={ref} className="px-6" style={{ backgroundColor: tc.background, paddingTop: '16px', paddingBottom: '16px' }}>
+    <div ref={ref} className="px-6" style={{ backgroundColor: bgOverride || tc.background, paddingTop: '16px', paddingBottom: '16px' }}>
       {/* Chapter label - letter spacing animation */}
       <div className="text-center mb-10">
         <div className="flex items-center justify-center gap-3 mb-3" style={{
@@ -1268,7 +1274,13 @@ function ChapterThree({ invitation, fonts, tc, onOpenLightbox, bgOverride }: {
   const images = (invitation.gallery?.images || []).map(extractImageUrl).filter(Boolean)
   const [showAllGrid, setShowAllGrid] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
-  const isLight = tc.background === '#FFFFFF'
+  // 배경 밝기로 라이트/다크 판정 (기본 배경색을 커스텀해도 커버가 다크로 오판되지 않게)
+  const isLight = (() => {
+    const hex = (tc.background || '#FFFFFF').replace('#', '')
+    if (hex.length < 6) return true
+    const r = parseInt(hex.slice(0, 2), 16), g = parseInt(hex.slice(2, 4), 16), b = parseInt(hex.slice(4, 6), 16)
+    return (0.299 * r + 0.587 * g + 0.114 * b) > 150
+  })()
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const pausedRef = useRef(false)
   const resumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -1415,7 +1427,7 @@ function ChapterThree({ invitation, fonts, tc, onOpenLightbox, bgOverride }: {
                   className="w-full mt-3 py-3 text-center transition-colors hover:opacity-80"
                   style={{ border: `1px solid ${tc.divider}`, background: tc.background }}
                 >
-                  <span style={{ fontFamily: fonts.display, fontSize: dfs(13), color: tc.text }}>
+                  <span style={{ fontFamily: fonts.body, fontSize: dfs(13), color: tc.text }}>
                     +{images.length - 6}장 더 보기
                   </span>
                 </button>
@@ -3067,6 +3079,7 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     deceasedDisplayStyle: content.deceasedDisplayStyle || 'flower',
     customAccentColor: content.customAccentColor,
     customBgColor: (content as any).customBgColor,
+    customBaseColor: (content as any).customBaseColor,
     displayFont: (content as any).displayFont,
     filmIntroStyle: (content as any).filmIntroStyle,
     magazineSectionOrder: content.magazineSectionOrder,
@@ -3103,6 +3116,7 @@ const FILM_DEFAULT_SECTION_ORDER = [
 ]
 
 const FILM_DEFAULT_BG: Record<string, 'background' | 'sectionBg'> = {
+  greeting: 'background',
   chapterTwo: 'sectionBg',
   filmScenes: 'sectionBg',
   chapterThree: 'background',
@@ -3202,11 +3216,14 @@ function InvitationClientFilmContent({
   const baseTc = colorThemes[effectiveColorTheme]
   const customAccent = invitation?.customAccentColor
   const customBg = (invitation as any)?.customBgColor
+  const customBase = (invitation as any)?.customBaseColor
   // film-light: 베이지(#F8F6F3) 대신 accent 틴트를 sectionBg로 사용
   const tc = (() => {
     const base = customAccent ? { ...baseTc, accent: customAccent } : { ...baseTc }
     if (!base.cardText) base.sectionBg = getAccentTint(base.accent, 0.85)
     if (effectiveColorTheme === 'film-light' && customBg) base.sectionBg = customBg
+    // 라이트 모드에서 기본(흰색) 배경도 편집 가능 — 인사말 등 tc.background 사용 섹션에 반영
+    if (effectiveColorTheme === 'film-light' && customBase) base.background = customBase
     return base
   })()
   const baseFonts = fontStyles[effectiveFontStyle]
@@ -3282,7 +3299,11 @@ function InvitationClientFilmContent({
                   ) : (
                     <>
                       <FilmHeader invitation={invitation} fonts={fonts} tc={tc} />
-                      <div className="snap-section" style={{ backgroundColor: tc.background }}><ChapterOne invitation={invitation} fonts={fonts} tc={tc} /></div>
+                      {(() => {
+                        const gKey: 'background' | 'sectionBg' = invitation.magazineSectionBgMap?.greeting || FILM_DEFAULT_BG.greeting || 'background'
+                        const greetingBg = tc[gKey]
+                        return <div className="snap-section" style={{ backgroundColor: greetingBg }}><ChapterOne invitation={invitation} fonts={fonts} tc={tc} bgOverride={greetingBg} /></div>
+                      })()}
                       {(() => {
                         const sectionBgMap: Record<string, 'background' | 'sectionBg'> = invitation.magazineSectionBgMap || FILM_DEFAULT_BG
                         const getBg = (id: string) => tc[sectionBgMap[id] || FILM_DEFAULT_BG[id] || 'sectionBg']

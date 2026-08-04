@@ -99,6 +99,11 @@ export default function EssayPreview({ data, fullscreen }: EssayPreviewProps) {
             min-height: 100cqh !important;
             padding-top: 44px !important;
           }
+          /* info 카드: 컨테이너 높이로 상한 고정 → 카드 내부(.bk-scroll-area)만 스크롤 */
+          .essay-preview-book-container .bk-page.bk-card {
+            min-height: calc(100cqh - 20px) !important;
+            max-height: calc(100cqh - 20px) !important;
+          }
           /* 데스크탑 wrapper의 viewport 기준 위치 계산을 컨테이너 기준으로 리셋 */
           .essay-preview-book-container .essay-book-desktop-wrapper {
             display: block !important;

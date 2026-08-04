@@ -2204,7 +2204,7 @@ const bookAnimCSS = `
 .book-page-content .bk-page { min-height: 100dvh; padding-top: calc(env(safe-area-inset-top, 0px) + 52px); box-sizing: border-box; }
 .book-page-content .bk-page > .w-full { padding-left: 52px; padding-right: 52px; }
 .book-page-content:has(.bk-card) { display: flex; flex-direction: column; min-height: 100dvh; }
-.book-page-content .bk-page.bk-card { min-height: calc(100dvh - 20px); margin: 10px; border-radius: 14px; box-shadow: 0 4px 30px rgba(46,42,38,0.08); overflow: hidden; position: relative; padding-top: 0; }
+.book-page-content .bk-page.bk-card { min-height: calc(100dvh - 20px); max-height: calc(100dvh - 20px); margin: 10px; border-radius: 14px; box-shadow: 0 4px 30px rgba(46,42,38,0.08); overflow: hidden; position: relative; padding-top: 0; }
 /* 카드 내부 콘텐츠 스크롤 뷰포트: 잘림선을 뷰포트 툴바 하단(=52px, 카드 margin 10px 반영 → 42px)에 고정.
    프레임(.bk-card 배경·테두리)은 clip하지 않으므로 툴바 뒤에서도 그대로 보이고, 스크롤되는 본문만 잘린다.
    clip-path는 스크롤 컨테이너(고정 박스)에 적용되어 콘텐츠와 함께 움직이지 않는다. 페이지별 색 매핑 불필요. */
@@ -3935,20 +3935,19 @@ function BookGallery({ data }: { data: any }) {
 
   return (
     <div className="bk-page" style={{ background: bookColors.bg, display: 'flex', flexDirection: 'column', maxHeight: '100dvh', overflow: 'hidden' }}>
-      <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', padding: '64px 14px 24px' }}>
+      <div className="bk-scroll-area" style={{ flex: 1, minHeight: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '64px 14px 24px' }}>
         <div style={{
           animation: 'bkTrack 1.3s ease-out 200ms both',
           fontFamily: "'Cormorant Garamond', serif", fontSize: '8px', fontWeight: 400,
           letterSpacing: '4px', color: bookColors.muted, textTransform: 'uppercase' as const,
-          textAlign: 'center', marginBottom: '18px', flexShrink: 0,
+          textAlign: 'center', marginBottom: '18px',
         }}>Gallery</div>
-        <BA d={400} type="fade" className="flex-1 min-h-0">
+        <BA d={400} type="fade">
           <EssayGalleryGrid
             images={images}
             imageSettings={data.gallery?.imageSettings}
             onImageClick={(i) => { setViewerIndex(i); setViewerOpen(true) }}
             colors={{ bg: bookColors.bg, muted: bookColors.muted, accent: bookColors.accent }}
-            fitHeight
           />
         </BA>
       </div>
@@ -4612,7 +4611,8 @@ function BookThankYou({ data }: { data: any }) {
   const lines = thankYouEssay.split('\n')
   return (
     <div className="bk-page bk-card" style={{ background: bookInfoColors.pageBg, display: 'flex', flexDirection: 'column', padding: '0 48px', position: 'relative' }}>
-      <span style={{ position: 'absolute', top: '58px', right: '48px', fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '7.5px', fontWeight: 400, letterSpacing: '3px', color: bookInfoColors.muted, textTransform: 'uppercase' as const, animation: 'bkTrack 1.3s ease-out 150ms both' }}>Epilogue</span>
+      <span style={{ position: 'absolute', top: '58px', right: '48px', fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '7.5px', fontWeight: 400, letterSpacing: '3px', color: bookInfoColors.muted, textTransform: 'uppercase' as const, animation: 'bkTrack 1.3s ease-out 150ms both', zIndex: 1 }}>Epilogue</span>
+      <div className="bk-scroll-area" style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', paddingTop: '52px' }}>
       <div style={{ marginTop: 'auto', marginBottom: '80px', maxWidth: '260px' }}>
         {lines.map((line: string, i: number) => (
           <span key={i} style={{ display: 'block', fontSize: '14px', fontWeight: 200, lineHeight: 2.4, letterSpacing: '0.2px', color: bookInfoColors.text, animation: `bkInk 1.2s cubic-bezier(.22,1,.36,1) ${500 + i * 240}ms both` }}>{line || '\u00A0'}</span>
@@ -4620,6 +4620,7 @@ function BookThankYou({ data }: { data: any }) {
         <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', fontWeight: 400, letterSpacing: '2px', color: bookInfoColors.muted, marginTop: '28px', opacity: 0, animation: `bkFadeIn 1s ease-out ${500 + lines.length * 300 + 500}ms forwards` }}>
           {groomName} & {brideName} 올림
         </div>
+      </div>
       </div>
     </div>
   )

@@ -1,1 +1,1 @@
-{"version":1,"include":["/*"],"exclude":["/_next/static/*","/_next/image*","/samples/*","/*.ico","/*.svg","/*.png","/*.jpg","/*.jpeg","/*.webp","/sw.js"]}
+{"version":1,"include":["/*"],"exclude":["/_next/static/*","/_next/image*","/samples/*","/*.ico","/*.svg","/*.png","/*.jpg","/*.jpeg","/frames/*","/sw.js"]}

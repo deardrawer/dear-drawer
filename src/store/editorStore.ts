@@ -475,7 +475,17 @@ export interface InvitationContent {
   magazineIntroStyle?: 'cover' | 'clean' | 'editorial'
 
   // ===== 필름 인트로 스타일 =====
-  filmIntroStyle?: 'tudum' | 'cinematic'
+  filmIntroStyle?: 'tudum' | 'cinematic' | 'frame'
+  // 프레임 인트로 설정
+  filmFrameId?: string
+  filmFrameColorMode?: 'original' | 'custom'
+  filmFrameColor?: string
+  filmFrameTextColor?: string
+  filmFrameBgColor?: string
+  filmFrameLabel?: string
+  filmFrameTitle?: string
+  filmFrameImage2?: string
+  filmFrameImage2Settings?: { scale?: number; positionX?: number; positionY?: number }
 
   // ===== 매거진 섹션 순서 =====
   magazineSectionOrder?: string[]

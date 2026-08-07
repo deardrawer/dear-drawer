@@ -512,6 +512,99 @@ function FilmPosterCover({ invitation, fonts, tc, onEnter, isPreview }: {
   )
 }
 
+// ===== Frame Intro Cover (사진 프레임) =====
+type FrameBox = { x: number; y: number; w: number; h: number }
+const FILM_FRAME_CFG: Record<string, { box: FrameBox; slots?: FrameBox[] }> = {
+  '10': { box: { x: 20.9, y: 35.6, w: 58.2, h: 28.6 } },
+  '4': { box: { x: 31.4, y: 32.6, w: 37.2, h: 34.7 } },
+  '9': { box: { x: 21.9, y: 24.2, w: 62.6, h: 46.8 } },
+  '5': { box: { x: 18.1, y: 37.6, w: 63.7, h: 24.9 } },
+  '12': { box: { x: 25.2, y: 33.4, w: 48.7, h: 33.1 } },
+  '8': { box: { x: 27.7, y: 26.9, w: 44.4, h: 51.2 }, slots: [{ x: 27.8, y: 26.9, w: 44.3, h: 25.1 }, { x: 27.7, y: 52.9, w: 44.4, h: 25.1 }] },
+}
+const FILM_FRAME_ANIM_CSS = `
+@keyframes ffZoom { 0%{opacity:0;transform:scale(1.13);filter:blur(6px)} 55%{opacity:1} 100%{opacity:1;transform:scale(1);filter:blur(0)} }
+@keyframes ffUp { 0%{opacity:0;transform:translateY(20px);filter:blur(4px)} 100%{opacity:1;transform:translateY(0);filter:blur(0)} }
+@keyframes ffLetter { 0%{opacity:0;letter-spacing:14px;transform:translateY(12px)} 100%{opacity:1;letter-spacing:4px;transform:translateY(0)} }
+`
+
+function FilmFrameCover({ invitation, fonts, tc, onEnter, isPreview }: {
+  invitation: any; fonts: FontConfig; tc: ColorConfig; onEnter: () => void; isPreview?: boolean
+}) {
+  const frameId = (invitation.filmFrameId as string) || '10'
+  const cfg = FILM_FRAME_CFG[frameId] || FILM_FRAME_CFG['10']
+  const box = cfg.box
+  const colorMode = (invitation.filmFrameColorMode as string) || 'original'
+  const frameColor = (invitation.filmFrameColor as string) || '#ffffff'
+  const textColor = (invitation.filmFrameTextColor as string) || '#726565'
+  const bgColor = (invitation.filmFrameBgColor as string) || '#e3e0d9'
+  const frameUrl = `/frames/frame-${frameId}.webp`
+  const holecropUrl = `/frames/frame-${frameId}-holecrop.webp`
+
+  const coverImage = invitation.media?.coverImage || ''
+  const cs = invitation.media?.coverImageSettings || {}
+  const image2 = invitation.filmFrameImage2 || coverImage
+  const slotImgs = [coverImage, image2]
+  const slotSettings = [cs, invitation.filmFrameImage2Settings || {}]
+
+  const w = invitation.wedding
+  const weddingDate = w?.date ? new Date(w.date) : new Date()
+  const dateStr = `${weddingDate.getFullYear()}.${String(weddingDate.getMonth() + 1).padStart(2, '0')}.${String(weddingDate.getDate()).padStart(2, '0')}`
+  const groomName = invitation.groom?.nameEn || invitation.groom?.name || ''
+  const brideName = invitation.bride?.nameEn || invitation.bride?.name || ''
+  const venueName = invitation.wedding?.venue?.name || ''
+  const hasEn = !!(invitation.groom?.nameEn && invitation.bride?.nameEn)
+  const frameTitle = invitation.filmFrameTitle ? invitation.filmFrameTitle : `${groomName} & ${brideName}`
+  const frameLabel = invitation.filmFrameLabel != null ? invitation.filmFrameLabel : 'SAVE THE DATE'
+  // 커스텀 문구에 한글 포함 시 한글 폰트 사용
+  const titleHasKo = /[가-힣]/.test(frameTitle)
+  const nameFont = (hasEn && !titleHasKo) ? fonts.display : fonts.displayKr
+
+  const CB = 'cubic-bezier(.16,1,.3,1)'
+
+  return (
+    <div onClick={onEnter} className="relative w-full" style={{ height: isPreview ? '660px' : '100dvh', overflow: 'hidden', background: bgColor, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+      <style dangerouslySetInnerHTML={{ __html: FILM_FRAME_ANIM_CSS }} />
+      {/* 스테이지 (9:16, 너비 100% = 좌우 꽉) */}
+      <div style={{ position: 'relative', flexShrink: 0, width: '100%', aspectRatio: '9 / 16', background: bgColor }}>
+        {/* 무대: 프레임+사진 시네마 줌 */}
+        <div style={{ position: 'absolute', inset: 0, animation: `ffZoom 3.6s ${CB} both` }}>
+          {cfg.slots ? (
+            cfg.slots.map((s, i) => (
+              <div key={i} style={{ position: 'absolute', left: `${s.x}%`, top: `${s.y}%`, width: `${s.w}%`, height: `${s.h}%`, overflow: 'hidden' }}>
+                {slotImgs[i] && <CroppedImageDiv src={slotImgs[i]} crop={slotSettings[i]} className="w-full h-full" />}
+              </div>
+            ))
+          ) : (
+            <div style={{ position: 'absolute', left: `${box.x}%`, top: `${box.y}%`, width: `${box.w}%`, height: `${box.h}%`, overflow: 'hidden', WebkitMaskImage: `url(${holecropUrl})`, maskImage: `url(${holecropUrl})`, WebkitMaskSize: '100% 100%', maskSize: '100% 100%' }}>
+              {coverImage && <CroppedImageDiv src={coverImage} crop={cs} className="w-full h-full" />}
+            </div>
+          )}
+          {/* 프레임 오버레이 */}
+          {colorMode === 'original' ? (
+            <img src={frameUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block', pointerEvents: 'none' }} />
+          ) : (
+            <div style={{ position: 'absolute', inset: 0, isolation: 'isolate', pointerEvents: 'none', WebkitMaskImage: `url(${frameUrl})`, maskImage: `url(${frameUrl})`, WebkitMaskSize: '100% 100%', maskSize: '100% 100%' }}>
+              <div style={{ position: 'absolute', inset: 0, background: frameColor }} />
+              <img src={frameUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block', mixBlendMode: 'multiply' }} />
+            </div>
+          )}
+        </div>
+        {/* 상단 글자 */}
+        <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: `${box.y}%`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', color: textColor, padding: '0 20px' }}>
+          {frameLabel && <div style={{ fontFamily: fonts.display, fontSize: '11px', letterSpacing: '4px', fontWeight: 600, animation: `ffLetter 2.1s ${CB} 1.3s both` }}>{frameLabel}</div>}
+          {frameTitle && <div style={{ fontFamily: nameFont, fontSize: '30px', marginTop: '6px', whiteSpace: 'pre-line', animation: `ffUp 1.9s ${CB} 2.1s both` }}>{frameTitle}</div>}
+        </div>
+        {/* 하단 글자 */}
+        <div style={{ position: 'absolute', left: 0, right: 0, top: `${box.y + box.h}%`, bottom: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', color: textColor, padding: '0 20px', gap: '10px' }}>
+          <div style={{ fontFamily: fonts.display, fontSize: '18px', fontStyle: 'italic', animation: `ffUp 1.9s ${CB} 2.9s both` }}>{dateStr}</div>
+          {venueName && <div style={{ fontFamily: fonts.body, fontSize: '13px', letterSpacing: '1px', animation: `ffUp 1.9s ${CB} 3.5s both` }}>{venueName}</div>}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ===== Cinematic Photo Cover (B version) =====
 function FilmCinematicCover({ invitation, fonts, tc, onEnter, isPreview }: {
   invitation: any; fonts: FontConfig; tc: ColorConfig; onEnter: () => void; isPreview?: boolean
@@ -2605,7 +2698,7 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose }: { images: st
 
 // ===== CSS =====
 const globalStyles = `
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Cinzel:wght@400;600&family=Montserrat:wght@300;400;600&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Great+Vibes&family=Lora:ital,wght@0,400;0,600;1,400&family=Italiana&family=Italianno&display=swap');
 
   .desktop-frame-wrapper {
     min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; background: #F0EDE8;
@@ -3082,6 +3175,15 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     customBaseColor: (content as any).customBaseColor,
     displayFont: (content as any).displayFont,
     filmIntroStyle: (content as any).filmIntroStyle,
+    filmFrameId: (content as any).filmFrameId,
+    filmFrameColorMode: (content as any).filmFrameColorMode,
+    filmFrameColor: (content as any).filmFrameColor,
+    filmFrameTextColor: (content as any).filmFrameTextColor,
+    filmFrameBgColor: (content as any).filmFrameBgColor,
+    filmFrameLabel: (content as any).filmFrameLabel,
+    filmFrameTitle: (content as any).filmFrameTitle,
+    filmFrameImage2: (content as any).filmFrameImage2,
+    filmFrameImage2Settings: (content as any).filmFrameImage2Settings,
     magazineSectionOrder: content.magazineSectionOrder,
     magazineSectionBgMap: (content as any).magazineSectionBgMap,
     styleOverrides: (content as any).styleOverrides,
@@ -3293,7 +3395,9 @@ function InvitationClientFilmContent({
               <WatermarkOverlay isPaid={isPaid || !!isPreview} className="relative w-full min-h-screen">
                 <div className="relative w-full min-h-screen overflow-x-hidden" style={{ backgroundColor: tc.background, fontFamily: fonts.body, color: tc.text }}>
                   {currentPage === 'cover' ? (
-                    invitation.filmIntroStyle === 'cinematic'
+                    invitation.filmIntroStyle === 'frame'
+                      ? <FilmFrameCover invitation={invitation} fonts={fonts} tc={tc} onEnter={() => setCurrentPage('main')} isPreview={isPreview} />
+                      : invitation.filmIntroStyle === 'cinematic'
                       ? <FilmCinematicCover invitation={invitation} fonts={fonts} tc={tc} onEnter={() => setCurrentPage('main')} isPreview={isPreview} />
                       : <FilmPosterCover invitation={invitation} fonts={fonts} tc={tc} onEnter={() => setCurrentPage('main')} isPreview={isPreview} />
                   ) : (

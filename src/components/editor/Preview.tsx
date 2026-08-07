@@ -193,6 +193,15 @@ function InvitationPreviewWrapper({ invitation, skipIntro, onIntroScreenChange }
     youtube: (invitation as any).youtube,
     magazineIntroStyle: (invitation as any).magazineIntroStyle,
     filmIntroStyle: (invitation as any).filmIntroStyle,
+    filmFrameId: (invitation as any).filmFrameId,
+    filmFrameColorMode: (invitation as any).filmFrameColorMode,
+    filmFrameColor: (invitation as any).filmFrameColor,
+    filmFrameTextColor: (invitation as any).filmFrameTextColor,
+    filmFrameBgColor: (invitation as any).filmFrameBgColor,
+    filmFrameLabel: (invitation as any).filmFrameLabel,
+    filmFrameTitle: (invitation as any).filmFrameTitle,
+    filmFrameImage2: (invitation as any).filmFrameImage2,
+    filmFrameImage2Settings: (invitation as any).filmFrameImage2Settings,
     fullHeightDividers: (invitation as any).fullHeightDividers,
     parentIntro: (invitation as any).parentIntro,
     whyWeChose: (invitation as any).whyWeChose,
@@ -415,7 +424,7 @@ const Preview = forwardRef<PreviewHandle, object>(function Preview(_, ref) {
   return (
     <div className="h-full bg-white flex flex-col">
       <style dangerouslySetInnerHTML={{ __html: romanticFontStyles }} />
-      {!(invitation.templateId !== 'narrative-record' && currentPage === 'intro' && introScreen === 'cover') && (
+      {(
         <div className="sticky top-0 z-10 bg-white py-4 flex justify-center shrink-0 preview-tabs">
           <div className="inline-flex items-center gap-1 p-1 rounded-full bg-gray-100 border border-gray-200/70 shadow-inner">
             <button

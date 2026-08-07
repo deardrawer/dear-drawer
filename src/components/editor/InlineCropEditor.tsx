@@ -13,6 +13,7 @@ interface InlineCropEditorProps {
   containerWidth?: number
   colorClass?: string
   disableResize?: boolean // 리사이즈 핸들 비활성화 (이동만 허용)
+  freeResize?: boolean // 비율 고정 없이 가로/세로 독립 리사이즈
 }
 
 export default function InlineCropEditor({
@@ -23,6 +24,7 @@ export default function InlineCropEditor({
   containerWidth = 200,
   colorClass = 'rose',
   disableResize = false,
+  freeResize = false,
 }: InlineCropEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 })
@@ -134,6 +136,28 @@ export default function InlineCropEditor({
     if (dragType === 'move') {
       newCropX = Math.max(0, Math.min(1 - newCropW, dragStart.cropX + dx))
       newCropY = Math.max(0, Math.min(1 - newCropH, dragStart.cropY + dy))
+    } else if (freeResize) {
+      // 자유 리사이즈: 가로/세로 독립, 최소 크기 유지, 영역 밖 제한
+      const fMin = 0.1
+      const right = dragStart.cropX + dragStart.cropW
+      const bottom = dragStart.cropY + dragStart.cropH
+      if (dragType === 'se') {
+        newCropW = Math.max(fMin, Math.min(1 - dragStart.cropX, dragStart.cropW + dx))
+        newCropH = Math.max(fMin, Math.min(1 - dragStart.cropY, dragStart.cropH + dy))
+      } else if (dragType === 'sw') {
+        newCropX = Math.max(0, Math.min(right - fMin, dragStart.cropX + dx))
+        newCropW = right - newCropX
+        newCropH = Math.max(fMin, Math.min(1 - dragStart.cropY, dragStart.cropH + dy))
+      } else if (dragType === 'ne') {
+        newCropW = Math.max(fMin, Math.min(1 - dragStart.cropX, dragStart.cropW + dx))
+        newCropY = Math.max(0, Math.min(bottom - fMin, dragStart.cropY + dy))
+        newCropH = bottom - newCropY
+      } else if (dragType === 'nw') {
+        newCropX = Math.max(0, Math.min(right - fMin, dragStart.cropX + dx))
+        newCropW = right - newCropX
+        newCropY = Math.max(0, Math.min(bottom - fMin, dragStart.cropY + dy))
+        newCropH = bottom - newCropY
+      }
     } else {
       const diagonal = (dx + dy) / 2
 
@@ -216,7 +240,7 @@ export default function InlineCropEditor({
       cropWidth: newCropW,
       cropHeight: newCropH,
     })
-  }, [dragType, dragStart, containerSize, aspectRatio, imageSize])
+  }, [dragType, dragStart, containerSize, aspectRatio, imageSize, freeResize])
 
   // 드래그 종료 - 최종 값을 부모에게 전달 (localCrop은 유지하여 깜빡임 방지)
   const handleDragEnd = useCallback(() => {

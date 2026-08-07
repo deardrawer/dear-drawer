@@ -39,6 +39,8 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
   const [isUploadingCover, setIsUploadingCover] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const coverInputRef = useRef<HTMLInputElement>(null)
+  const frame2InputRef = useRef<HTMLInputElement>(null)
+  const [isUploadingFrame2, setIsUploadingFrame2] = useState(false)
 
   const handleCoverUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -52,6 +54,18 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
       updateNestedField('media.coverImage', result.webUrl)
     }
   }, [invitationId, updateNestedField])
+
+  const handleFrame2Upload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (frame2InputRef.current) frame2InputRef.current.value = ''
+    setIsUploadingFrame2(true)
+    const result = await uploadImage(file, { invitationId: invitationId || undefined })
+    setIsUploadingFrame2(false)
+    if (result.success && result.webUrl) {
+      updateField('filmFrameImage2' as any, result.webUrl)
+    }
+  }, [invitationId, updateField])
 
   const updateKakaoDescriptionIfAuto = useCallback((newDate?: string, newTime?: string, newVenueName?: string) => {
     if (!invitation) return
@@ -70,7 +84,13 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
 
   const { media } = invitation
   const introStyle = invitation.filmIntroStyle || 'tudum'
-  const needsCoverImage = introStyle === 'cinematic'
+  const needsCoverImage = introStyle === 'cinematic' || introStyle === 'frame'
+  const frameId = (invitation as any).filmFrameId || '10'
+  const frameColorMode = (invitation as any).filmFrameColorMode || 'original'
+  const FILM_FRAMES: { id: string; name: string }[] = [
+    { id: '10', name: '하트' }, { id: '4', name: '레이스' }, { id: '9', name: '오벌 액자' },
+    { id: '5', name: '필리그리' }, { id: '12', name: '우표' }, { id: '8', name: '필름(2컷)' },
+  ]
 
   return (
     <div className="p-6 space-y-6">
@@ -137,8 +157,142 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
             </div>
             <p className="text-[10px] text-gray-700 font-medium py-1 text-center">시네마틱</p>
           </button>
+
+          {/* 프레임 스타일 (사진 프레임) */}
+          <button
+            onClick={() => updateField('filmIntroStyle', 'frame')}
+            className={`relative rounded-lg border-2 overflow-hidden transition-all ${
+              introStyle === 'frame' ? 'border-gray-900 ring-2 ring-gray-900/20' : 'border-gray-200 hover:border-gray-300'
+            }`}
+          >
+            {introStyle === 'frame' && (
+              <div className="absolute top-1 right-1 z-10 w-4 h-4 bg-black rounded-full flex items-center justify-center">
+                <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            )}
+            <div className="aspect-[4/3] bg-[#EFE9E2] flex flex-col items-center justify-center p-1.5 relative">
+              <div className="text-[5px] tracking-[2px] text-[#7A2E39] mb-0.5 uppercase font-semibold">Save the Date</div>
+              <div className="w-9 h-9 flex items-center justify-center" style={{ color: '#7A2E39' }}>
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 21s-7.5-4.6-10-9.3C.6 8.4 2 5 5.2 5c1.9 0 3.4 1.1 4.3 2.6C10.4 6.1 11.9 5 13.8 5 17 5 18.4 8.4 17 11.7 14.5 16.4 12 21 12 21z"/></svg>
+              </div>
+              <div className="text-[5px] tracking-[1px] text-[#7A2E39]/70 mt-0.5">2026.05.23</div>
+            </div>
+            <p className="text-[10px] text-gray-700 font-medium py-1 text-center">프레임</p>
+          </button>
         </div>
       </section>
+
+      {/* 프레임 선택 + 색상 (프레임 스타일에서만) */}
+      {introStyle === 'frame' && (
+        <section className="space-y-4">
+          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><rect x="7" y="7" width="10" height="10" rx="1" /></svg>
+            프레임 선택
+          </h3>
+          <div className="grid grid-cols-3 gap-2">
+            {FILM_FRAMES.map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                onClick={() => updateField('filmFrameId' as any, f.id)}
+                className={`rounded-lg border-2 overflow-hidden transition-all p-1 ${frameId === f.id ? 'border-gray-900 ring-2 ring-gray-900/20' : 'border-gray-200 hover:border-gray-300'}`}
+              >
+                <div className="aspect-[9/16] bg-[#EFE9E2] flex items-center justify-center overflow-hidden">
+                  <img src={`/frames/frame-${f.id}.webp`} alt={f.name} className="w-full h-full object-contain" />
+                </div>
+                <p className="text-[10px] text-gray-700 font-medium pt-1 text-center">{f.name}</p>
+              </button>
+            ))}
+          </div>
+
+          {/* 인트로 문구 */}
+          <div className="p-4 bg-gray-50 rounded-xl space-y-3">
+            <h4 className="text-sm font-medium text-gray-800">인트로 문구</h4>
+            <label className="block">
+              <span className="text-xs text-gray-500">상단 라벨</span>
+              <input type="text" value={(invitation as any).filmFrameLabel ?? 'SAVE THE DATE'} onChange={(e) => updateField('filmFrameLabel' as any, e.target.value)} placeholder="SAVE THE DATE (비우면 숨김)" className="mt-0.5 w-full border border-gray-200 rounded-md px-2.5 py-1.5 text-sm focus:outline-none focus:border-gray-600 bg-white" />
+            </label>
+            <label className="block">
+              <span className="text-xs text-gray-500">메인 문구</span>
+              <input type="text" value={(invitation as any).filmFrameTitle ?? ''} onChange={(e) => updateField('filmFrameTitle' as any, e.target.value)} placeholder={`${invitation.groom?.name || '신랑'} & ${invitation.bride?.name || '신부'}`} className="mt-0.5 w-full border border-gray-200 rounded-md px-2.5 py-1.5 text-sm focus:outline-none focus:border-gray-600 bg-white" />
+              <span className="text-[10px] text-gray-400">비우면 신랑 &amp; 신부 이름이 자동 표시됩니다</span>
+            </label>
+          </div>
+
+          {/* 프레임 색상 */}
+          <div className="p-4 bg-gray-50 rounded-xl space-y-3">
+            <h4 className="text-sm font-medium text-gray-800">프레임 색상</h4>
+            <div className="flex gap-2">
+              <button type="button" onClick={() => updateField('filmFrameColorMode' as any, 'original')} className={`flex-1 py-2 rounded-md border text-xs transition-colors ${frameColorMode === 'original' ? 'border-gray-900 bg-white text-gray-900' : 'border-gray-200 bg-white text-gray-500 hover:border-gray-400'}`}>원본</button>
+              <button type="button" onClick={() => updateField('filmFrameColorMode' as any, 'custom')} className={`flex-1 py-2 rounded-md border text-xs transition-colors ${frameColorMode === 'custom' ? 'border-gray-900 bg-white text-gray-900' : 'border-gray-200 bg-white text-gray-500 hover:border-gray-400'}`}>커스텀 색</button>
+            </div>
+            {frameColorMode === 'custom' && (
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-700">프레임 컬러</span>
+                <div className="flex items-center gap-2">
+                  <input type="color" value={(invitation as any).filmFrameColor || '#ffffff'} onChange={(e) => updateField('filmFrameColor' as any, e.target.value)} className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300" style={{ padding: 0 }} />
+                  <span className="text-xs text-gray-600 font-mono w-16">{(invitation as any).filmFrameColor || '#ffffff'}</span>
+                </div>
+              </div>
+            )}
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-700">글자 색상</span>
+              <div className="flex items-center gap-2">
+                <input type="color" value={(invitation as any).filmFrameTextColor || '#726565'} onChange={(e) => updateField('filmFrameTextColor' as any, e.target.value)} className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300" style={{ padding: 0 }} />
+                <span className="text-xs text-gray-600 font-mono w-16">{(invitation as any).filmFrameTextColor || '#726565'}</span>
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-sm text-gray-700">배경색</span>
+                <p className="text-xs text-gray-500">프레임 주변/여백 배경 컬러</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <input type="color" value={(invitation as any).filmFrameBgColor || '#e3e0d9'} onChange={(e) => updateField('filmFrameBgColor' as any, e.target.value)} className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300" style={{ padding: 0 }} />
+                <span className="text-xs text-gray-600 font-mono w-16">{(invitation as any).filmFrameBgColor || '#e3e0d9'}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* 필름(2컷): 두 번째 사진 */}
+          {frameId === '8' && (
+            <div className="p-4 bg-gray-50 rounded-xl space-y-3">
+              <h4 className="text-sm font-medium text-gray-800">두 번째 사진 (하단 컷)</h4>
+              <p className="text-xs text-gray-500">상단 컷은 위의 커버 이미지, 하단 컷은 이 사진을 사용합니다.</p>
+              <input ref={frame2InputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleFrame2Upload} className="hidden" />
+              {(invitation as any).filmFrameImage2 ? (
+                <div className="space-y-3">
+                  <div className="relative w-full max-w-[160px] aspect-square mx-auto rounded-lg overflow-hidden shadow-md">
+                    <img src={(invitation as any).filmFrameImage2} alt="사진2" className="w-full h-full object-cover" />
+                    {isUploadingFrame2 && <div className="absolute inset-0 bg-white/80 flex items-center justify-center"><div className="w-8 h-8 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" /></div>}
+                  </div>
+                  <div className="flex justify-center gap-2">
+                    <button type="button" onClick={() => frame2InputRef.current?.click()} disabled={isUploadingFrame2} className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors">사진 변경</button>
+                    <button type="button" onClick={() => updateField('filmFrameImage2' as any, '')} className="px-4 py-2 text-sm bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-colors">삭제</button>
+                  </div>
+                  <div className="p-3 bg-white rounded-lg space-y-2">
+                    <p className="text-[10px] font-medium text-gray-600">이미지 크롭 조정</p>
+                    <InlineCropEditor
+                      imageUrl={(invitation as any).filmFrameImage2}
+                      settings={(invitation as any).filmFrameImage2Settings || { scale: 1.0, positionX: 0, positionY: 0 }}
+                      onUpdate={(s) => updateField('filmFrameImage2Settings' as any, { ...((invitation as any).filmFrameImage2Settings || {}), ...s })}
+                      aspectRatio={1}
+                      containerWidth={160}
+                      freeResize
+                    />
+                  </div>
+                </div>
+              ) : (
+                <button type="button" onClick={() => frame2InputRef.current?.click()} disabled={isUploadingFrame2} className="w-full aspect-square max-w-[160px] mx-auto border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-gray-400 transition-colors">
+                  {isUploadingFrame2 ? <div className="w-6 h-6 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" /> : <span className="text-xs text-gray-500">+ 사진 추가</span>}
+                </button>
+              )}
+            </div>
+          )}
+        </section>
+      )}
 
       {/* 커버 이미지 (시네마틱 스타일에서만 표시) */}
       {needsCoverImage && (
@@ -195,7 +349,8 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
                   onUpdate={(s) => updateNestedField('media.coverImageSettings', { ...(media.coverImageSettings || {}), ...s })}
                   aspectRatio={9/16}
                   containerWidth={160}
-                  disableResize
+                  disableResize={introStyle !== 'frame'}
+                  freeResize={introStyle === 'frame'}
                 />
               </div>
             </div>

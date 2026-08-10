@@ -48,13 +48,13 @@ export default function WizardNavigation({ onSave, isSaving, isOurTemplate }: Wi
   // 마지막 단계는 Step6Publish에서 자체 버튼 사용
   if (isLastStep) {
     return (
-      <div className={`px-6 py-4 ${isOurTemplate ? 'px-9 py-5 border-t border-black/[0.04]' : 'border-t border-gray-100 bg-white'}`}>
+      <div className={`px-4 py-2 md:px-6 md:py-4 border-t ${isOurTemplate ? 'md:px-9 md:py-5 border-black/[0.04]' : 'border-gray-100 bg-white'}`}>
         <Button
           variant="outline"
           onClick={handlePrev}
-          className={`w-full btn-cta-outline ${isOurTemplate ? 'neu-btn text-[#8A8580]' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+          className={`w-full btn-cta-outline h-8 text-xs px-2.5 py-0 md:h-11 md:text-base md:px-4 ${isOurTemplate ? 'neu-btn text-[#8A8580]' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
         >
-          <ChevronLeft className="w-5 h-5 mr-1" />
+          <ChevronLeft className="w-4 h-4 mr-0.5 md:w-5 md:h-5 md:mr-1" />
           이전 단계로
         </Button>
       </div>
@@ -62,34 +62,34 @@ export default function WizardNavigation({ onSave, isSaving, isOurTemplate }: Wi
   }
 
   return (
-    <div className={`px-6 py-4 ${isOurTemplate ? 'px-9 py-5 border-t border-black/[0.04]' : 'border-t border-gray-100 bg-white'}`}>
+    <div className={`px-4 py-2 md:px-6 md:py-4 border-t ${isOurTemplate ? 'md:px-9 md:py-5 border-black/[0.04]' : 'border-gray-100 bg-white'}`}>
       {/* 에러 메시지 */}
       {validationError?.tab === 'wizard' && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-100 rounded-lg">
+        <div className="mb-3 p-3 bg-red-50 border border-red-100 rounded-lg">
           <p className="text-sm text-red-600 whitespace-pre-line">{validationError.message}</p>
         </div>
       )}
 
       {/* 버튼 영역 */}
-      <div className={`flex items-center justify-between ${isOurTemplate ? 'gap-3' : 'gap-4'}`}>
+      <div className={`flex items-center justify-between gap-2 md:gap-3`}>
         {/* 이전 버튼 */}
         <Button
           variant="outline"
           onClick={handlePrev}
           disabled={isFirstStep}
-          className={`flex-1 btn-cta-outline ${isOurTemplate ? 'neu-btn text-[#8A8580]' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+          className={`flex-1 btn-cta-outline h-8 text-xs px-2.5 py-0 md:h-11 md:text-base md:px-4 ${isOurTemplate ? 'neu-btn text-[#8A8580]' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
         >
-          <ChevronLeft className="w-5 h-5 mr-1" />
+          <ChevronLeft className="w-4 h-4 mr-0.5 md:w-5 md:h-5 md:mr-1" />
           이전
         </Button>
 
         {/* 다음 버튼 */}
         <Button
           onClick={handleNext}
-          className={`flex-[2] btn-cta tracking-wide ${isOurTemplate ? 'neu-btn-primary' : 'bg-black text-white hover:bg-gray-800'}`}
+          className={`flex-[2] btn-cta tracking-wide h-8 text-xs px-2.5 py-0 md:h-11 md:text-base md:px-4 ${isOurTemplate ? 'neu-btn-primary' : 'bg-black text-white hover:bg-gray-800'}`}
         >
           다음 단계
-          <ChevronRight className="w-5 h-5 ml-1" />
+          <ChevronRight className="w-4 h-4 ml-0.5 md:w-5 md:h-5 md:ml-1" />
         </Button>
       </div>
     </div>

@@ -42,7 +42,36 @@ function ThankYouEditorContent() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
-  const [mobileView, setMobileView] = useState<'editor' | 'preview'>('editor')
+  // 모바일 분할 뷰(미리보기+편집 동시): 상단 미리보기 비율 %
+  const [splitRatio, setSplitRatio] = useState(45)
+  const splitDragging = useRef(false)
+  const splitStartY = useRef(0)
+  const splitStartRatio = useRef(45)
+  useEffect(() => {
+    const onMove = (clientY: number) => {
+      if (!splitDragging.current) return
+      const delta = ((clientY - splitStartY.current) / window.innerHeight) * 100
+      setSplitRatio(Math.min(75, Math.max(20, splitStartRatio.current + delta)))
+    }
+    const onEnd = () => { splitDragging.current = false }
+    const tm = (e: TouchEvent) => { if (!splitDragging.current) return; e.preventDefault(); onMove(e.touches[0].clientY) }
+    const mm = (e: MouseEvent) => onMove(e.clientY)
+    document.addEventListener('touchmove', tm, { passive: false })
+    document.addEventListener('touchend', onEnd)
+    document.addEventListener('mousemove', mm)
+    document.addEventListener('mouseup', onEnd)
+    return () => {
+      document.removeEventListener('touchmove', tm)
+      document.removeEventListener('touchend', onEnd)
+      document.removeEventListener('mousemove', mm)
+      document.removeEventListener('mouseup', onEnd)
+    }
+  }, [])
+  const startSplitDrag = (clientY: number) => {
+    splitDragging.current = true
+    splitStartY.current = clientY
+    splitStartRatio.current = splitRatio
+  }
   const [previewKey, setPreviewKey] = useState(0)
   const [isExitModalOpen, setIsExitModalOpen] = useState(false)
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
@@ -298,7 +327,7 @@ function ThankYouEditorContent() {
       {/* Main Editor Area */}
       <div id="thankyou-editor-scroll-container" className="flex-1 overflow-y-scroll editor-scroll-area">
         <div className="w-full max-w-[1400px] mx-auto">
-          <div className="flex">
+          <div className={`flex ${isMobile ? 'flex-col' : ''}`} style={isMobile ? { height: 'calc(100dvh - 48px)' } : undefined}>
             {/* Preview - 데스크탑 */}
             {!isMobile && (
               <div className="w-[440px] min-w-[440px] sticky top-0 overflow-hidden editor-panel m-4 mr-0 flex flex-col justify-center items-center" style={{ height: 'calc(100vh - 88px)' }}>
@@ -310,7 +339,7 @@ function ThankYouEditorContent() {
 
             {/* 모바일: 미리보기 모드 (항상 마운트, CSS로 숨김) */}
             {isMobile && (
-              <div className="w-full flex flex-col items-center py-8 relative" style={{ minHeight: 'calc(100vh - 104px)', display: mobileView === 'preview' ? 'flex' : 'none' }}>
+              <div className="w-full flex flex-col items-center relative overflow-hidden" style={{ height: `${splitRatio}%`, flexShrink: 0, transform: 'translateZ(0)' }}>
                 <button
                   onClick={() => setPreviewKey(k => k + 1)}
                   className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-black/5 hover:bg-black/10 active:bg-black/15 transition-colors"
@@ -326,8 +355,20 @@ function ThankYouEditorContent() {
               </div>
             )}
 
+                {/* 모바일: 분할 드래그 핸들 */}
+                {isMobile && (
+                  <div
+                    className="w-full flex items-center justify-center bg-gray-100 border-y border-gray-200 cursor-row-resize touch-none select-none"
+                    style={{ height: '20px', flexShrink: 0 }}
+                    onTouchStart={(e) => startSplitDrag(e.touches[0].clientY)}
+                    onMouseDown={(e) => startSplitDrag(e.clientY)}
+                  >
+                    <div className="w-10 h-1 rounded-full bg-gray-400" />
+                  </div>
+                )}
+
             {/* Edit Panel */}
-            <div className={`${isMobile ? 'w-full' : 'flex-1 flex flex-col overflow-hidden editor-panel m-4'}`} style={isMobile ? { paddingBottom: '56px', display: mobileView === 'editor' ? 'flex' : 'none', flexDirection: 'column' as const, height: 'calc(100vh - 48px)', overflow: 'hidden' } : { height: 'calc(100vh - 88px)' }}>
+            <div className={`${isMobile ? 'w-full' : 'flex-1 flex flex-col overflow-hidden editor-panel m-4'}`} style={isMobile ? { flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' as const, overflow: 'hidden' } : { height: 'calc(100vh - 88px)' }}>
                 <ThankYouWizardEditor
                   invitationId={invitationId}
                   slug={savedSlug || urlSlug || (invitationId ? invitationId : null)}
@@ -381,31 +422,7 @@ function ThankYouEditorContent() {
         />
       )}
 
-      {/* 모바일 하단 탭 바 */}
-      {isMobile && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 mobile-tab-bar flex safe-area-bottom">
-          <button
-            onClick={() => setMobileView('editor')}
-            className={`flex-1 py-3.5 text-sm font-medium flex items-center justify-center gap-1.5 transition-colors ${mobileView === 'editor' ? 'text-black' : 'text-gray-400'}`}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-            편집
-          </button>
-          <div className="w-px bg-gray-200 my-2" />
-          <button
-            onClick={() => setMobileView('preview')}
-            className={`flex-1 py-3.5 text-sm font-medium flex items-center justify-center gap-1.5 transition-colors ${mobileView === 'preview' ? 'text-black' : 'text-gray-400'}`}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-            </svg>
-            미리보기
-          </button>
-        </div>
-      )}
+      {/* 모바일: 분할 뷰로 대체 (하단 탭바 제거) */}
 
       {/* 나가기 확인 모달 */}
       {isExitModalOpen && (

@@ -2902,12 +2902,72 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
       const greetBodyScale = greeting.bodyScale ?? 1
       const greetBodyFs = `calc(13px * var(--ts-font-scale, 1) * ${greetBodyScale})`
 
+      // 하단 서명: 부모님 이름 표시 옵션 (켜면 커플소개 형식, family 데이터 사용)
+      // 두 가지 스타일 — cols(커플소개2: 2열+하트) / lines(커플소개1: 가로줄 스택)
+      const SigColumn = ({ entry }: { entry: { parents: React.ReactNode; hasParents: boolean; rel: string; name: string } }) => (
+        <div style={{ textAlign: 'center' }}>
+          {entry.hasParents && <div style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(10.5px * var(--ts-font-scale, 1))', color: 'var(--mute)', marginBottom: 5, whiteSpace: 'nowrap' }}>{entry.parents}<span style={{ opacity: 0.7 }}>의 {entry.rel}</span></div>}
+          <div style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(15px * var(--ts-font-scale, 1))', color: 'var(--ink, #333)' }}>{entry.name}</div>
+        </div>
+      )
+      const { parentsSigCols, parentsSigLines } = (() => {
+        const fam = data.sections.family
+        const decStyle = fam?.deceasedStyle || 'flower'
+        // 고인 표시 — 부모님 섹션과 동일 (故 한자 / 국화 아이콘)
+        const decIcon = (deceased?: boolean) => {
+          if (!deceased) return null
+          if (decStyle === 'hanja') return <span className="ts-fam-deceased">故</span>
+          return <img src="/icons/chrysanthemum.svg" alt="고인" className="ts-fam-chrysanthemum" />
+        }
+        const parentNode = (
+          f?: { name?: string; deceased?: boolean },
+          m?: { name?: string; deceased?: boolean },
+        ): { node: React.ReactNode; has: boolean } => {
+          const parts: React.ReactNode[] = []
+          if (f?.name) parts.push(<span key="f">{decIcon(f.deceased)}{f.name}</span>)
+          if (m?.name) {
+            if (parts.length) parts.push(<span key="d" className="ts-fam-dot"> · </span>)
+            parts.push(<span key="m">{decIcon(m.deceased)}{m.name}</span>)
+          }
+          return { node: parts.length ? <>{parts}</> : null, has: parts.length > 0 }
+        }
+        const g = parentNode(fam?.groomFather, fam?.groomMother)
+        const b = parentNode(fam?.brideFather, fam?.brideMother)
+        if (!greeting.showParents || (!g.has && !b.has)) return { parentsSigCols: null, parentsSigLines: null }
+        const groomEntry = { parents: g.node, hasParents: g.has, rel: fam?.groomRelation || '아들', name: groomName }
+        const brideEntry = { parents: b.node, hasParents: b.has, rel: fam?.brideRelation || '딸', name: brideName }
+        const list = fam?.order === 'bride-first' ? [brideEntry, groomEntry] : [groomEntry, brideEntry]
+        const sigMt = 'calc(38px * var(--ts-spacing-scale, 1))'
+
+        // 커플소개2 참고 — 2열, 열 사이에 작은 하트
+        const cols = (
+          <div className="ts-greet-sig" style={{ marginTop: sigMt, display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: 'calc(16px * var(--ts-font-scale, 1))' }}>
+            <SigColumn entry={list[0]} />
+            <span style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(10px * var(--ts-font-scale, 1))', color: 'var(--accent, #b76e79)', opacity: 0.7, paddingBottom: 'calc(4px * var(--ts-font-scale, 1))', lineHeight: 1 }}>&#9829;</span>
+            <SigColumn entry={list[1]} />
+          </div>
+        )
+
+        // 커플소개1 참고 — 부모 · 부모의 아들/딸 + 이름 가로줄, 세로 스택 (V1 서명 스타일)
+        const lines = (
+          <div className="ts-greet-sig" style={{ marginTop: sigMt, display: 'grid', gridTemplateColumns: 'auto auto', columnGap: 'calc(8px * var(--ts-font-scale, 1))', rowGap: 'calc(7px * var(--ts-font-scale, 1))', justifyContent: 'start', alignItems: 'baseline' }}>
+            {list.flatMap((c, i) => [
+              <div key={`p${i}`} style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(11px * var(--ts-font-scale, 1))', color: 'var(--mute)', textAlign: 'left', whiteSpace: 'nowrap' }}>
+                {c.hasParents ? <>{c.parents}<span style={{ opacity: 0.7 }}>의 {c.rel}</span></> : ''}
+              </div>,
+              <div key={`n${i}`} style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(14px * var(--ts-font-scale, 1))', color: 'var(--ink, #333)', whiteSpace: 'nowrap' }}>{c.name}</div>,
+            ])}
+          </div>
+        )
+        return { parentsSigCols: cols, parentsSigLines: lines }
+      })()
+
       // V2 · Karaoke Fill (회색→검정 채워지기, 줄 단위 stagger)
       if (v === 2) {
         const bodyLines = (greeting.body || '').split('\n')
         const ruleDelay = 800 + bodyLines.length * 550
         return (
-          <AnimatedSection className="ts-sec ts-greet ts-greet--v2 ts-anim-greet-v2" key={`greeting-${v}`} style={{ textAlign: 'left' }} threshold={0.15}>
+          <AnimatedSection className="ts-sec ts-greet ts-greet--v2 ts-anim-greet-v2" key={`greeting-${v}`} style={{ textAlign: 'left', ['--sig-delay' as string]: `${ruleDelay + 700}ms` } as React.CSSProperties} threshold={0.15}>
             <div className="ts-greet-label ts-anim-item">{greeting.label}</div>
             <div className="ts-greet-title ts-anim-item" style={{ marginTop: 14, marginBottom: 24 }}>
               {greeting.title}
@@ -2925,6 +2985,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
               className="ts-greet-rule ts-anim-rule"
               style={{ marginLeft: 0, marginTop: 28, animationDelay: `${ruleDelay}ms` }}
             />
+            {parentsSigLines}
           </AnimatedSection>
         )
       }
@@ -2936,6 +2997,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
               {greeting.body}
               <span className="ts-g3-attr">— {greeting.label || 'INVITATION'} —</span>
             </blockquote>
+            {parentsSigCols}
           </AnimatedSection>
         )
       }
@@ -2953,17 +3015,11 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
               <p className="ts-greet-body ts-anim-item" style={{ fontSize: greetBodyFs, lineHeight: 2 }}>
                 {greeting.body}
               </p>
-              <div
-                className="ts-anim-item"
-                style={{
-                  marginTop: 18,
-                  fontFamily: 'var(--font-ko)',
-                  fontSize: 'calc(13px * var(--ts-font-scale, 1))',
-                  color: 'var(--mute)',
-                }}
-              >
-                {groomName} · {brideName}
-              </div>
+              {parentsSigCols ?? (
+                <div className="ts-anim-item" style={{ marginTop: 18, fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', color: 'var(--mute)' }}>
+                  {groomName} · {brideName}
+                </div>
+              )}
             </div>
           </AnimatedSection>
         )
@@ -2993,6 +3049,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
               >
                 {greeting.body}
               </p>
+              {parentsSigLines}
             </div>
           </AnimatedSection>
         )
@@ -3003,6 +3060,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
           <div className="ts-greet-label ts-anim-item">{greeting.label}</div>
           <div className="ts-greet-title ts-anim-item" style={{ margin: '14px 0 18px' }}>{greeting.title}</div>
           <p className="ts-greet-body ts-anim-item" style={{ fontSize: greetBodyFs, marginBottom: 12 }}>{greeting.body}</p>
+          {parentsSigCols}
         </AnimatedSection>
       )
     },

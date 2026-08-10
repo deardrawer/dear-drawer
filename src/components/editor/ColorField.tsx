@@ -61,6 +61,16 @@ export default function ColorField({ value, onChange, label, presets = DEFAULT_P
   const { h, s, l } = hexToHsl(v)
   const [hexText, setHexText] = useState(v)
   useEffect(() => { setHexText(v) }, [v])
+  // 스포이드(EyeDropper API) — 지원 브라우저(데스크톱 Chromium 등)에서만
+  const [hasEyeDropper, setHasEyeDropper] = useState(false)
+  useEffect(() => { setHasEyeDropper(typeof window !== 'undefined' && 'EyeDropper' in window) }, [])
+  const pickEyeDropper = async () => {
+    try {
+      const ED = (window as unknown as { EyeDropper: new () => { open: () => Promise<{ sRGBHex: string }> } }).EyeDropper
+      const res = await new ED().open()
+      if (res && typeof res.sRGBHex === 'string') onChange(res.sRGBHex)
+    } catch { /* 사용자 취소 */ }
+  }
 
   const setHSL = (nh: number, ns: number, nl: number) => onChange(hslToHex(nh, ns, nl))
 
@@ -129,6 +139,16 @@ export default function ColorField({ value, onChange, label, presets = DEFAULT_P
                   maxLength={7}
                 />
               </div>
+              {hasEyeDropper && (
+                <button
+                  type="button"
+                  onClick={pickEyeDropper}
+                  title="스포이드 (화면에서 색 추출)"
+                  className="w-10 h-10 flex-shrink-0 rounded-lg border border-gray-200 hover:border-gray-400 flex items-center justify-center text-gray-600 transition-colors"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m2 22 1-1h3l9-9" /><path d="M3 21v-3l9-9" /><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4Z" /></svg>
+                </button>
+              )}
             </div>
 
             {/* 프리셋 */}

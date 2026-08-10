@@ -27,6 +27,7 @@ import DdayPopupEditor from './SectionEditors/DdayPopupEditor'
 import DdayPopupOverlay from './DdayPopupOverlay'
 import TapToOpenCover, { COVER_VARIANTS } from './TapToOpenCover'
 import ImageZoomEditor from '@/components/editor/ImageZoomEditor'
+import ColorField from '@/components/editor/ColorField'
 import { uploadImages, deleteImage, cropAndUploadImage } from '@/lib/imageUpload'
 import { bgmPresets, getBgmPresetByUrl } from '@/lib/bgmPresets'
 import { loadKakaoMapSDK } from '@/lib/geunnalKakaoMap'
@@ -1672,18 +1673,11 @@ function TheSimpleEditorContent() {
                             />
                           )
                         })}
-                        <label
-                          className="w-7 h-7 rounded-full border-2 border-dashed border-stone-300 flex items-center justify-center cursor-pointer hover:border-stone-500 overflow-hidden"
-                          title="커스텀 컬러"
-                        >
-                          <input
-                            type="color"
-                            value={data.pointColor || '#B8A88A'}
-                            onChange={(e) => updateData({ pointColor: e.target.value })}
-                            className="absolute w-0 h-0 opacity-0"
-                          />
-                          <span className="text-[9px] text-stone-400">+</span>
-                        </label>
+                        <ColorField
+                          label="포인트 컬러"
+                          value={data.pointColor || '#B8A88A'}
+                          onChange={(hex) => updateData({ pointColor: hex })}
+                        />
                       </div>
                     </div>
 
@@ -1715,18 +1709,11 @@ function TheSimpleEditorContent() {
                             />
                           )
                         })}
-                        <label
-                          className="w-7 h-7 rounded-full border-2 border-dashed border-stone-300 flex items-center justify-center cursor-pointer hover:border-stone-500 overflow-hidden"
-                          title="커스텀 컬러"
-                        >
-                          <input
-                            type="color"
-                            value={data.cardBg || '#f5f5f5'}
-                            onChange={(e) => updateData({ cardBg: e.target.value })}
-                            className="absolute w-0 h-0 opacity-0"
-                          />
-                          <span className="text-[9px] text-stone-400">+</span>
-                        </label>
+                        <ColorField
+                          label="카드 배경"
+                          value={data.cardBg || '#f5f5f5'}
+                          onChange={(hex) => updateData({ cardBg: hex })}
+                        />
                       </div>
                     </div>
 
@@ -1780,18 +1767,11 @@ function TheSimpleEditorContent() {
                               />
                             )
                           })}
-                          <label
-                            className="w-7 h-7 rounded-full border-2 border-dashed border-stone-300 flex items-center justify-center cursor-pointer hover:border-stone-500 overflow-hidden"
-                            title="커스텀 틴트"
-                          >
-                            <input
-                              type="color"
-                              value={data.tintedColor || '#FAF8F5'}
-                              onChange={(e) => updateData({ tintedColor: e.target.value })}
-                              className="absolute w-0 h-0 opacity-0"
-                            />
-                            <span className="text-[9px] text-stone-400">+</span>
-                          </label>
+                          <ColorField
+                            label="틴트 색상"
+                            value={data.tintedColor || '#FAF8F5'}
+                            onChange={(hex) => updateData({ tintedColor: hex })}
+                          />
                         </div>
                       )}
                     </div>

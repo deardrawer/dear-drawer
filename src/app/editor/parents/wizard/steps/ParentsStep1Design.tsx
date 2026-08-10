@@ -9,6 +9,7 @@ import { hexToSealFilter } from '@/components/parents/EnvelopeScreen'
 import { bgmPresets } from '@/lib/bgmPresets'
 import { uploadImage } from '@/lib/imageUpload'
 import InlineCropEditor from '@/components/editor/InlineCropEditor'
+import ColorField from '@/components/editor/ColorField'
 import type { ParentsInvitationData } from '../../page'
 
 interface ParentsStep1DesignProps {
@@ -177,15 +178,11 @@ export default function ParentsStep1Design({
               <label className="text-xs font-medium text-gray-600">메인 컬러</label>
               <p className="text-[10px] text-gray-400 leading-tight">봉투, 테두리</p>
               <div className="flex flex-col items-center gap-1">
-                <input
-                  type="color"
+                <ColorField
+                  label="메인 컬러"
                   value={data.customPrimaryColor || COLOR_THEMES[data.colorTheme || 'burgundy'].primary}
-                  onChange={(e) => updateData({ customPrimaryColor: e.target.value })}
-                  className="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer p-0.5"
+                  onChange={(hex) => updateData({ customPrimaryColor: hex })}
                 />
-                <span className="text-[10px] text-gray-500 font-mono">
-                  {(data.customPrimaryColor || COLOR_THEMES[data.colorTheme || 'burgundy'].primary).toUpperCase()}
-                </span>
               </div>
             </div>
 
@@ -194,15 +191,11 @@ export default function ParentsStep1Design({
               <label className="text-xs font-medium text-gray-600">포인트 컬러</label>
               <p className="text-[10px] text-gray-400 leading-tight">날짜, 장식</p>
               <div className="flex flex-col items-center gap-1">
-                <input
-                  type="color"
+                <ColorField
+                  label="포인트 컬러"
                   value={data.customAccentColor || COLOR_THEMES[data.colorTheme || 'burgundy'].accent}
-                  onChange={(e) => updateData({ customAccentColor: e.target.value })}
-                  className="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer p-0.5"
+                  onChange={(hex) => updateData({ customAccentColor: hex })}
                 />
-                <span className="text-[10px] text-gray-500 font-mono">
-                  {(data.customAccentColor || COLOR_THEMES[data.colorTheme || 'burgundy'].accent).toUpperCase()}
-                </span>
               </div>
             </div>
 
@@ -211,15 +204,11 @@ export default function ParentsStep1Design({
               <label className="text-xs font-medium text-gray-600">배경 컬러</label>
               <p className="text-[10px] text-gray-400 leading-tight">본문 배경</p>
               <div className="flex flex-col items-center gap-1">
-                <input
-                  type="color"
+                <ColorField
+                  label="배경 컬러"
                   value={data.customBackgroundColor || COLOR_THEMES[data.colorTheme || 'burgundy'].background}
-                  onChange={(e) => updateData({ customBackgroundColor: e.target.value })}
-                  className="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer p-0.5"
+                  onChange={(hex) => updateData({ customBackgroundColor: hex })}
                 />
-                <span className="text-[10px] text-gray-500 font-mono">
-                  {(data.customBackgroundColor || COLOR_THEMES[data.colorTheme || 'burgundy'].background).toUpperCase()}
-                </span>
               </div>
             </div>
           </div>
@@ -284,15 +273,11 @@ export default function ParentsStep1Design({
 
           {/* 컬러 피커 + hex */}
           <div className="flex items-center justify-center gap-3">
-            <input
-              type="color"
+            <ColorField
+              label="실링스티커 색상"
               value={data.sealColor || '#722F37'}
-              onChange={(e) => updateData({ sealColor: e.target.value })}
-              className="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer p-0.5"
+              onChange={(hex) => updateData({ sealColor: hex })}
             />
-            <span className="text-[10px] text-gray-500 font-mono">
-              {(data.sealColor || '#722F37').toUpperCase()}
-            </span>
           </div>
 
           {/* 프리셋 색상들 - 2줄 그리드 */}
@@ -446,15 +431,11 @@ export default function ParentsStep1Design({
           <p className="text-xs text-gray-500">&ldquo;편지가 도착했어요&rdquo; 안내 문구의 글자색을 변경할 수 있어요.</p>
 
           <div className="flex items-center gap-3">
-            <input
-              type="color"
+            <ColorField
+              label="안내 문구 색상"
               value={data.envelope?.hintTextColor || '#FFFFFF'}
-              onChange={(e) => updateNestedData('envelope.hintTextColor', e.target.value)}
-              className="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer p-0.5"
+              onChange={(hex) => updateNestedData('envelope.hintTextColor', hex)}
             />
-            <span className="text-[10px] text-gray-500 font-mono">
-              {(data.envelope?.hintTextColor || '#FFFFFF').toUpperCase()}
-            </span>
           </div>
 
           {/* 프리셋 */}

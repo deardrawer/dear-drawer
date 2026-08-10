@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { uploadImage } from '@/lib/imageUpload'
 import InlineCropEditor from '@/components/editor/InlineCropEditor'
+import ColorField from '@/components/editor/ColorField'
 import ShareSettingsSection from '@/components/editor/ShareSettingsSection'
 import DdayPopupEditor from '@/components/dday/DdayPopupEditor'
 import { DEFAULT_DDAY_POPUP } from '@/lib/ddayPopupTypes'
@@ -232,16 +233,14 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-700">프레임 컬러</span>
                 <div className="flex items-center gap-2">
-                  <input type="color" value={(invitation as any).filmFrameColor || '#ffffff'} onChange={(e) => updateField('filmFrameColor' as any, e.target.value)} className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300" style={{ padding: 0 }} />
-                  <span className="text-xs text-gray-600 font-mono w-16">{(invitation as any).filmFrameColor || '#ffffff'}</span>
+                  <ColorField label="프레임 색상" value={(invitation as any).filmFrameColor || '#ffffff'} onChange={(hex) => updateField('filmFrameColor' as any, hex)} />
                 </div>
               </div>
             )}
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-700">글자 색상</span>
               <div className="flex items-center gap-2">
-                <input type="color" value={(invitation as any).filmFrameTextColor || '#726565'} onChange={(e) => updateField('filmFrameTextColor' as any, e.target.value)} className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300" style={{ padding: 0 }} />
-                <span className="text-xs text-gray-600 font-mono w-16">{(invitation as any).filmFrameTextColor || '#726565'}</span>
+                <ColorField label="글자 색상" value={(invitation as any).filmFrameTextColor || '#726565'} onChange={(hex) => updateField('filmFrameTextColor' as any, hex)} />
               </div>
             </div>
             <div className="flex items-center justify-between">
@@ -250,8 +249,7 @@ export default function Step2Film({ invitationId }: Step2FilmProps) {
                 <p className="text-xs text-gray-500">프레임 주변/여백 배경 컬러</p>
               </div>
               <div className="flex items-center gap-2">
-                <input type="color" value={(invitation as any).filmFrameBgColor || '#e3e0d9'} onChange={(e) => updateField('filmFrameBgColor' as any, e.target.value)} className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300" style={{ padding: 0 }} />
-                <span className="text-xs text-gray-600 font-mono w-16">{(invitation as any).filmFrameBgColor || '#e3e0d9'}</span>
+                <ColorField label="배경색" value={(invitation as any).filmFrameBgColor || '#e3e0d9'} onChange={(hex) => updateField('filmFrameBgColor' as any, hex)} />
               </div>
             </div>
           </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import type { SectionContents } from '../page'
+import ColorField from '@/components/editor/ColorField'
 
 interface InfoEditorProps {
   value: SectionContents['info']
@@ -92,11 +93,10 @@ export default function InfoEditor({ value, onChange }: InfoEditorProps) {
       <div className="space-y-1.5">
         <div className="text-[10px] uppercase tracking-wider text-stone-500">도형 색상 <span className="normal-case tracking-normal text-stone-400">(캘린더 · 주간)</span></div>
         <div className="flex items-center gap-2">
-          <input
-            type="color"
+          <ColorField
+            label="도형 색상"
             value={value.dateShapeColor || '#b5a48b'}
-            onChange={(e) => update({ dateShapeColor: e.target.value })}
-            className="w-8 h-8 rounded border border-stone-200 cursor-pointer p-0.5"
+            onChange={(hex) => update({ dateShapeColor: hex })}
           />
           <input
             type="text"
@@ -122,11 +122,10 @@ export default function InfoEditor({ value, onChange }: InfoEditorProps) {
         <div className="text-[10px] uppercase tracking-wider text-stone-500">날짜 포인트 컬러 <span className="normal-case tracking-normal text-stone-400">(캘린더 · 주간)</span></div>
         <p className="text-[9px] text-stone-400">예식일 텍스트 색상</p>
         <div className="flex items-center gap-2">
-          <input
-            type="color"
+          <ColorField
+            label="날짜 포인트 컬러"
             value={value.datePointColor || '#b5a48b'}
-            onChange={(e) => update({ datePointColor: e.target.value })}
-            className="w-8 h-8 rounded border border-stone-200 cursor-pointer p-0.5"
+            onChange={(hex) => update({ datePointColor: hex })}
           />
           <input
             type="text"

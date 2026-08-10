@@ -8,6 +8,7 @@ import { Play, Pause, Upload, X, Loader2, Plus } from 'lucide-react'
 import { bgmPresets } from '@/lib/bgmPresets'
 import InlineCropEditor from '@/components/editor/InlineCropEditor'
 import { uploadImage } from '@/lib/imageUpload'
+import ColorField from '@/components/editor/ColorField'
 import type { EssayInvitationData } from '../../page'
 
 // Essay 전용 컬러 테마
@@ -578,25 +579,18 @@ export default function EssayStepDesign({ data, updateData, updateNestedData, in
               { key: 'text' as const, label: '텍스트', desc: '본문 글자색', defaultVal: '#3D3028' },
             ].map(({ key, label, desc, defaultVal }) => (
               <div key={key} className="flex items-center gap-3">
-                <label
-                  className="relative w-8 h-8 rounded-lg border border-gray-300 cursor-pointer overflow-hidden flex-shrink-0"
-                  style={{ backgroundColor: data.customThemeColors?.[key] || defaultVal }}
-                >
-                  <input
-                    type="color"
-                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                    value={data.customThemeColors?.[key] || defaultVal}
-                    onChange={(e) => {
-                      const current = data.customThemeColors || { bg: '#FAF8F3', pageBg: '#FFFEF9', accent: '#8B7355', text: '#3D3028' }
-                      updateData({ customThemeColors: { ...current, [key]: e.target.value } })
-                    }}
-                  />
-                </label>
+                <ColorField
+                  label={label}
+                  value={data.customThemeColors?.[key] || defaultVal}
+                  onChange={(hex) => {
+                    const current = data.customThemeColors || { bg: '#FAF8F3', pageBg: '#FFFEF9', accent: '#8B7355', text: '#3D3028' }
+                    updateData({ customThemeColors: { ...current, [key]: hex } })
+                  }}
+                />
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-700">{label}</span>
                   <span className="text-[10px] text-gray-400 leading-tight">{desc}</span>
                 </div>
-                <span className="text-xs text-gray-400 ml-auto font-mono">{(data.customThemeColors?.[key] || defaultVal).toUpperCase()}</span>
               </div>
             ))}
           </div>
@@ -630,17 +624,11 @@ export default function EssayStepDesign({ data, updateData, updateNestedData, in
                   {data.intro?.backgroundColor ? '커스텀 색상' : '테마 기본값'}
                 </span>
               </div>
-              <label className="cursor-pointer">
-                <div className="px-3 py-1.5 text-xs font-medium bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
-                  변경
-                </div>
-                <input
-                  type="color"
-                  value={data.intro?.backgroundColor || (ESSAY_THEMES.find(t => t.id === colorTheme)?.accent || '#8B7355')}
-                  onChange={(e) => updateNestedData('intro.backgroundColor', e.target.value)}
-                  className="hidden"
-                />
-              </label>
+              <ColorField
+                label="배경색"
+                value={data.intro?.backgroundColor || (ESSAY_THEMES.find(t => t.id === colorTheme)?.accent || '#8B7355')}
+                onChange={(hex) => updateNestedData('intro.backgroundColor', hex)}
+              />
               {data.intro?.backgroundColor && (
                 <button
                   onClick={() => updateNestedData('intro.backgroundColor', undefined)}
@@ -665,17 +653,11 @@ export default function EssayStepDesign({ data, updateData, updateNestedData, in
                   {data.intro?.textColor ? '커스텀 색상' : '기본값 (흰색)'}
                 </span>
               </div>
-              <label className="cursor-pointer">
-                <div className="px-3 py-1.5 text-xs font-medium bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
-                  변경
-                </div>
-                <input
-                  type="color"
-                  value={data.intro?.textColor || '#FFFFFF'}
-                  onChange={(e) => updateNestedData('intro.textColor', e.target.value)}
-                  className="hidden"
-                />
-              </label>
+              <ColorField
+                label="텍스트 컬러"
+                value={data.intro?.textColor || '#FFFFFF'}
+                onChange={(hex) => updateNestedData('intro.textColor', hex)}
+              />
               {data.intro?.textColor && (
                 <button
                   onClick={() => updateNestedData('intro.textColor', undefined)}

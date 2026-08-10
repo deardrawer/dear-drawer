@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Play, Pause, Upload, X, Loader2 } from 'lucide-react'
 import { bgmPresets } from '@/lib/bgmPresets'
+import ColorField from '@/components/editor/ColorField'
 
 // 색상 테마 옵션
 const COLOR_THEMES = [
@@ -418,26 +419,7 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
                 </button>
               ))}
               <div className="flex flex-col items-center gap-1">
-                <label className="relative cursor-pointer">
-                  <div
-                    className={`w-10 h-10 rounded-full border-2 transition-all overflow-hidden ${
-                      !ACCENT_PRESETS.some(p => p.color === currentRecordAccent)
-                        ? 'border-gray-900 ring-2 ring-gray-900/20 scale-110'
-                        : 'border-gray-200 hover:border-gray-400 hover:scale-105'
-                    }`}
-                    style={{
-                      background: !ACCENT_PRESETS.some(p => p.color === currentRecordAccent)
-                        ? currentRecordAccent
-                        : 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)',
-                    }}
-                  />
-                  <input
-                    type="color"
-                    value={currentRecordAccent}
-                    onChange={(e) => updateField('customAccentColor', e.target.value)}
-                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                  />
-                </label>
+                <ColorField label="커스텀" value={currentRecordAccent} onChange={(hex) => updateField('customAccentColor', hex)} />
                 <span className="text-[10px] text-gray-500">커스텀</span>
               </div>
             </div>
@@ -464,26 +446,14 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
                   <p className="text-sm text-gray-700">배경 색상</p>
                   <p className="text-xs text-gray-500">페이지 전체 배경 컬러</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="color"
-                    value={(invitation as any).customBgColor || ({ 'record-coral': '#FAF7F4', 'record-rose': '#FDEFEC', 'record-peach': '#ECF4F7', 'record-bw': '#FFFFFF', 'record-lilac': '#F0ECED', 'record-mint': '#F8FAF5' } as Record<string, string>)[currentRecordTheme] || '#FAF7F4'}
-                    onChange={(e) => updateField('customBgColor' as any, e.target.value)}
-                    className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300"
-                    style={{ padding: 0 }}
-                  />
-                  <span className="text-xs text-gray-600 font-mono w-16">{(invitation as any).customBgColor || ({ 'record-coral': '#FAF7F4', 'record-rose': '#FDEFEC', 'record-peach': '#ECF4F7', 'record-bw': '#FFFFFF', 'record-lilac': '#F0ECED', 'record-mint': '#F8FAF5' } as Record<string, string>)[currentRecordTheme] || '#FAF7F4'}</span>
-                </div>
+                <ColorField label="배경색" value={(invitation as any).customBgColor || ({ 'record-coral': '#FAF7F4', 'record-rose': '#FDEFEC', 'record-peach': '#ECF4F7', 'record-bw': '#FFFFFF', 'record-lilac': '#F0ECED', 'record-mint': '#F8FAF5' } as Record<string, string>)[currentRecordTheme] || '#FAF7F4'} onChange={(hex) => updateField('customBgColor' as any, hex)} />
               </div>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-700">본문 색상</p>
                   <p className="text-xs text-gray-500">청첩장 전체 글자색</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <input type="color" value={currentBodyColor} onChange={(e) => updateField('bodyTextColor', e.target.value)} className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300" style={{ padding: 0 }} />
-                  <span className="text-xs text-gray-600 font-mono w-16">{currentBodyColor}</span>
-                </div>
+                <ColorField label="본문 색상" value={currentBodyColor} onChange={(hex) => updateField('bodyTextColor', hex)} />
               </div>
               <div className="flex items-center justify-between">
                 <div>
@@ -499,14 +469,7 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
                       기본값
                     </button>
                   )}
-                  <input
-                    type="color"
-                    value={(invitation as any).coverBgColor || '#FAF7F4'}
-                    onChange={(e) => updateField('coverBgColor' as any, e.target.value)}
-                    className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300"
-                    style={{ padding: 0 }}
-                  />
-                  <span className="text-xs text-gray-600 font-mono w-16">{(invitation as any).coverBgColor || '기본'}</span>
+                  <ColorField label="인트로 배경색" value={(invitation as any).coverBgColor || '#FAF7F4'} onChange={(hex) => updateField('coverBgColor' as any, hex)} />
                 </div>
               </div>
               <div className="flex items-center justify-between">
@@ -523,14 +486,7 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
                       기본값
                     </button>
                   )}
-                  <input
-                    type="color"
-                    value={(invitation as any).coverTextColor || '#FFFFFF'}
-                    onChange={(e) => updateField('coverTextColor' as any, e.target.value)}
-                    className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300"
-                    style={{ padding: 0 }}
-                  />
-                  <span className="text-xs text-gray-600 font-mono w-16">{(invitation as any).coverTextColor || '기본'}</span>
+                  <ColorField label="인트로 글자 색상" value={(invitation as any).coverTextColor || '#FFFFFF'} onChange={(hex) => updateField('coverTextColor' as any, hex)} />
                 </div>
               </div>
             </div>
@@ -638,26 +594,7 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
               ))}
               {/* 커스텀 컬러 */}
               <div className="flex flex-col items-center gap-1">
-                <label className="relative cursor-pointer">
-                  <div
-                    className={`w-10 h-10 rounded-full border-2 transition-all overflow-hidden ${
-                      !ACCENT_PRESETS.some(p => p.color === currentAccent)
-                        ? 'border-gray-900 ring-2 ring-gray-900/20 scale-110'
-                        : 'border-gray-200 hover:border-gray-400 hover:scale-105'
-                    }`}
-                    style={{
-                      background: !ACCENT_PRESETS.some(p => p.color === currentAccent)
-                        ? currentAccent
-                        : 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)',
-                    }}
-                  />
-                  <input
-                    type="color"
-                    value={currentAccent}
-                    onChange={(e) => updateField('customAccentColor', e.target.value)}
-                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                  />
-                </label>
+                <ColorField label="커스텀" value={currentAccent} onChange={(hex) => updateField('customAccentColor', hex)} />
                 <span className="text-[10px] text-gray-500">커스텀</span>
               </div>
             </div>
@@ -686,16 +623,7 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
                     <p className="text-sm text-gray-700">기본 배경</p>
                     <p className="text-xs text-gray-500">흰색 섹션·인사말 배경 컬러</p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="color"
-                      value={(invitation as any).customBaseColor || '#FFFFFF'}
-                      onChange={(e) => updateField('customBaseColor' as any, e.target.value)}
-                      className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300"
-                      style={{ padding: 0 }}
-                    />
-                    <span className="text-xs text-gray-600 font-mono w-16">{(invitation as any).customBaseColor || '#FFFFFF'}</span>
-                  </div>
+                  <ColorField label="기본 배경" value={(invitation as any).customBaseColor || '#FFFFFF'} onChange={(hex) => updateField('customBaseColor' as any, hex)} />
                 </div>
                 {/* 틴티드 배경 — 짝수 섹션 */}
                 <div className="flex items-center justify-between">
@@ -703,16 +631,7 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
                     <p className="text-sm text-gray-700">틴티드 배경</p>
                     <p className="text-xs text-gray-500">틴티드 섹션 배경 컬러</p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="color"
-                      value={(invitation as any).customBgColor || '#F8F6F3'}
-                      onChange={(e) => updateField('customBgColor' as any, e.target.value)}
-                      className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300"
-                      style={{ padding: 0 }}
-                    />
-                    <span className="text-xs text-gray-600 font-mono w-16">{(invitation as any).customBgColor || '#F8F6F3'}</span>
-                  </div>
+                  <ColorField label="틴티드 배경" value={(invitation as any).customBgColor || '#F8F6F3'} onChange={(hex) => updateField('customBgColor' as any, hex)} />
                 </div>
               </div>
             </section>
@@ -792,16 +711,7 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
                 <p className="text-sm text-gray-700">메인 컬러</p>
                 <p className="text-xs text-gray-500">포인트, 버튼, 강조 요소</p>
               </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="color"
-                  value={(invitation as any).customAccentColor || '#C41050'}
-                  onChange={(e) => updateField('customAccentColor' as any, e.target.value)}
-                  className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300"
-                  style={{ padding: 0 }}
-                />
-                <span className="text-xs text-gray-600 font-mono w-16">{(invitation as any).customAccentColor || '#C41050'}</span>
-              </div>
+              <ColorField label="메인 컬러" value={(invitation as any).customAccentColor || '#C41050'} onChange={(hex) => updateField('customAccentColor' as any, hex)} />
             </div>
 
             {/* 전체 배경 */}
@@ -810,16 +720,7 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
                 <p className="text-sm text-gray-700">전체 배경</p>
                 <p className="text-xs text-gray-500">페이지 배경 컬러</p>
               </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="color"
-                  value={(invitation as any).customBgColor || '#FFFFFF'}
-                  onChange={(e) => updateField('customBgColor' as any, e.target.value)}
-                  className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300"
-                  style={{ padding: 0 }}
-                />
-                <span className="text-xs text-gray-600 font-mono w-16">{(invitation as any).customBgColor || '#FFFFFF'}</span>
-              </div>
+              <ColorField label="전체 배경" value={(invitation as any).customBgColor || '#FFFFFF'} onChange={(hex) => updateField('customBgColor' as any, hex)} />
             </div>
 
             {/* 섹션 배경 */}
@@ -828,16 +729,7 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
                 <p className="text-sm text-gray-700">섹션 배경</p>
                 <p className="text-xs text-gray-500">구분 섹션 배경 컬러</p>
               </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="color"
-                  value={(invitation as any).customSectionBgColor || '#F5F5F5'}
-                  onChange={(e) => updateField('customSectionBgColor' as any, e.target.value)}
-                  className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300"
-                  style={{ padding: 0 }}
-                />
-                <span className="text-xs text-gray-600 font-mono w-16">{(invitation as any).customSectionBgColor || '#F5F5F5'}</span>
-              </div>
+              <ColorField label="섹션 배경" value={(invitation as any).customSectionBgColor || '#F5F5F5'} onChange={(hex) => updateField('customSectionBgColor' as any, hex)} />
             </div>
 
             {/* 구분선 */}
@@ -846,16 +738,7 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
                 <p className="text-sm text-gray-700">구분선</p>
                 <p className="text-xs text-gray-500">섹션 사이 구분선 컬러</p>
               </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="color"
-                  value={(invitation as any).customDividerColor || '#E0E0E0'}
-                  onChange={(e) => updateField('customDividerColor' as any, e.target.value)}
-                  className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300"
-                  style={{ padding: 0 }}
-                />
-                <span className="text-xs text-gray-600 font-mono w-16">{(invitation as any).customDividerColor || '#E0E0E0'}</span>
-              </div>
+              <ColorField label="구분선" value={(invitation as any).customDividerColor || '#E0E0E0'} onChange={(hex) => updateField('customDividerColor' as any, hex)} />
             </div>
 
             {/* 미리보기 */}
@@ -924,26 +807,7 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
                 </button>
               ))}
               <div className="flex flex-col items-center gap-1">
-                <label className="relative cursor-pointer">
-                  <div
-                    className={`w-10 h-10 rounded-full border-2 transition-all overflow-hidden ${
-                      !ACCENT_PRESETS.some(p => p.color === currentMagazineAccent)
-                        ? 'border-gray-900 ring-2 ring-gray-900/20 scale-110'
-                        : 'border-gray-200 hover:border-gray-400 hover:scale-105'
-                    }`}
-                    style={{
-                      background: !ACCENT_PRESETS.some(p => p.color === currentMagazineAccent)
-                        ? currentMagazineAccent
-                        : 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)',
-                    }}
-                  />
-                  <input
-                    type="color"
-                    value={currentMagazineAccent}
-                    onChange={(e) => updateField('customAccentColor', e.target.value)}
-                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                  />
-                </label>
+                <ColorField label="커스텀" value={currentMagazineAccent} onChange={(hex) => updateField('customAccentColor', hex)} />
                 <span className="text-[10px] text-gray-500">커스텀</span>
               </div>
             </div>
@@ -978,32 +842,14 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
                 <p className="text-sm text-gray-700">전체 배경</p>
                 <p className="text-xs text-gray-500">전체 배경 컬러</p>
               </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="color"
-                  value={(invitation as any).customBgColor || '#FFFFFF'}
-                  onChange={(e) => updateField('customBgColor' as any, e.target.value)}
-                  className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300"
-                  style={{ padding: 0 }}
-                />
-                <span className="text-xs text-gray-600 font-mono w-16">{(invitation as any).customBgColor || '#FFFFFF'}</span>
-              </div>
+              <ColorField label="전체 배경" value={(invitation as any).customBgColor || '#FFFFFF'} onChange={(hex) => updateField('customBgColor' as any, hex)} />
             </div>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-700">섹션 배경</p>
                 <p className="text-xs text-gray-500">구분 섹션 배경 컬러</p>
               </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="color"
-                  value={(invitation as any).customSectionBgColor || '#F5F5F5'}
-                  onChange={(e) => updateField('customSectionBgColor' as any, e.target.value)}
-                  className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300"
-                  style={{ padding: 0 }}
-                />
-                <span className="text-xs text-gray-600 font-mono w-16">{(invitation as any).customSectionBgColor || '#F5F5F5'}</span>
-              </div>
+              <ColorField label="섹션 배경" value={(invitation as any).customSectionBgColor || '#F5F5F5'} onChange={(hex) => updateField('customSectionBgColor' as any, hex)} />
             </div>
             <div className="p-3 rounded-lg border border-gray-200 flex gap-2">
               <div className="flex-1 h-8 rounded" style={{ backgroundColor: (invitation as any).customBgColor || '#FFFFFF', border: '1px solid #eee' }} />
@@ -1038,16 +884,7 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
               <p className="text-sm text-gray-700">{isMagazine ? '전체 배경 텍스트' : '본문 색상'}</p>
               <p className="text-xs text-gray-500">{isMagazine ? '메인 배경 위 글자색' : '청첩장 전체 글자색'}</p>
             </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="color"
-                value={currentBodyColor}
-                onChange={(e) => updateField('bodyTextColor', e.target.value)}
-                className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300"
-                style={{ padding: 0 }}
-              />
-              <span className="text-xs text-gray-600 font-mono w-16">{currentBodyColor}</span>
-            </div>
+            <ColorField label="본문 색상" value={currentBodyColor} onChange={(hex) => updateField('bodyTextColor', hex)} />
           </div>
 
           {/* 매거진 섹션 배경 텍스트 색상 */}
@@ -1057,16 +894,7 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
                 <p className="text-sm text-gray-700">섹션 배경 텍스트</p>
                 <p className="text-xs text-gray-500">섹션 배경 위 글자색</p>
               </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="color"
-                  value={(invitation as any).sectionTextColor || currentBodyColor}
-                  onChange={(e) => updateField('sectionTextColor' as any, e.target.value)}
-                  className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300"
-                  style={{ padding: 0 }}
-                />
-                <span className="text-xs text-gray-600 font-mono w-16">{(invitation as any).sectionTextColor || currentBodyColor}</span>
-              </div>
+              <ColorField label="섹션 배경 텍스트" value={(invitation as any).sectionTextColor || currentBodyColor} onChange={(hex) => updateField('sectionTextColor' as any, hex)} />
             </div>
           )}
 
@@ -1078,16 +906,7 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
                   <p className="text-sm text-gray-700">강조 색상</p>
                   <p className="text-xs text-gray-500">**텍스트** 형식 강조색</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="color"
-                    value={currentAccentColor}
-                    onChange={(e) => updateField('accentTextColor', e.target.value)}
-                    className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300"
-                    style={{ padding: 0 }}
-                  />
-                  <span className="text-xs text-gray-600 font-mono w-16">{currentAccentColor}</span>
-                </div>
+                <ColorField label="강조 색상" value={currentAccentColor} onChange={(hex) => updateField('accentTextColor', hex)} />
               </div>
 
               {/* 미리보기 */}

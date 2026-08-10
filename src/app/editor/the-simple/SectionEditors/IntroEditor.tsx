@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import type { SectionContents, ImageWithSettings, TheSimpleImageSettings } from '../page'
 import ImageZoomEditor from '@/components/editor/ImageZoomEditor'
+import ColorField from '@/components/editor/ColorField'
 import { uploadImage } from '@/lib/imageUpload'
 
 interface IntroEditorProps {
@@ -236,13 +237,11 @@ export default function IntroEditor({ value, variant, onChange }: IntroEditorPro
           인트로 영역의 기본 배경색을 변경합니다
         </p>
         <div className="flex items-center gap-2">
-          <input
-            type="color"
+          <ColorField
+            label="배경 색상"
             value={value.bgColor || '#000000'}
-            onChange={(e) => update({ bgColor: e.target.value })}
-            className="w-7 h-7 rounded border border-stone-200 cursor-pointer p-0.5"
+            onChange={(hex) => update({ bgColor: hex })}
           />
-          <span className="text-[10px] text-stone-400">{value.bgColor || '#000000'}</span>
         </div>
       </div>
 
@@ -290,16 +289,14 @@ export default function IntroEditor({ value, variant, onChange }: IntroEditorPro
             return (
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <input
-                    type="color"
+                  <ColorField
+                    label="오버레이"
                     value={parsed.hex}
-                    onChange={(e) => {
-                      const { r, g, b } = hexToRgb(e.target.value)
+                    onChange={(hex) => {
+                      const { r, g, b } = hexToRgb(hex)
                       update({ overlayColor: `rgba(${r},${g},${b},${parsed.opacity / 100})` })
                     }}
-                    className="w-7 h-7 rounded border border-stone-200 cursor-pointer p-0.5"
                   />
-                  <span className="text-[10px] text-stone-400">{parsed.hex}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] text-stone-400 shrink-0 w-10">투명도</span>

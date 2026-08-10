@@ -5,6 +5,7 @@ import { useEditorStore } from '@/store/editorStore'
 import { introPresets, IntroPresetId, IntroSettings, getPresetById, availableFonts, presetAccentColors, presetCustomColors } from '@/lib/introPresets'
 import { uploadImage } from '@/lib/imageUpload'
 import InlineCropEditor from '@/components/editor/InlineCropEditor'
+import ColorField from '@/components/editor/ColorField'
 import { ImageSettings } from '@/store/editorStore'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -525,11 +526,10 @@ export default function IntroSelector({ onBack }: IntroSelectorProps) {
                         style={{ backgroundColor: color }}
                       />
                     ))}
-                    <input
-                      type="color"
+                    <ColorField
+                      label="제목 색상"
                       value={intro.titleColor || '#ffffff'}
-                      onChange={(e) => handleFieldChange('titleColor', e.target.value)}
-                      className="w-8 h-8 rounded border border-gray-200 cursor-pointer"
+                      onChange={(hex) => handleFieldChange('titleColor', hex)}
                     />
                   </div>
                 </div>
@@ -549,11 +549,10 @@ export default function IntroSelector({ onBack }: IntroSelectorProps) {
                         style={{ backgroundColor: color }}
                       />
                     ))}
-                    <input
-                      type="color"
+                    <ColorField
+                      label="포인트 색상"
                       value={accentColor}
-                      onChange={(e) => handleFieldChange('accentColor', e.target.value)}
-                      className="w-8 h-8 rounded border border-gray-200 cursor-pointer"
+                      onChange={(hex) => handleFieldChange('accentColor', hex)}
                     />
                   </div>
                 </div>
@@ -574,11 +573,10 @@ export default function IntroSelector({ onBack }: IntroSelectorProps) {
                             style={{ backgroundColor: color }}
                           />
                         ))}
-                        <input
-                          type="color"
+                        <ColorField
+                          label="오버레이 색상"
                           value={intro.overlayColor || presetCustomColors[intro.presetId]?.overlayColor || '#000000'}
-                          onChange={(e) => handleFieldChange('overlayColor', e.target.value)}
-                          className="w-8 h-8 rounded border border-gray-200 cursor-pointer"
+                          onChange={(hex) => handleFieldChange('overlayColor', hex)}
                         />
                       </div>
                     </div>
@@ -599,11 +597,10 @@ export default function IntroSelector({ onBack }: IntroSelectorProps) {
                             style={{ backgroundColor: color }}
                           />
                         ))}
-                        <input
-                          type="color"
+                        <ColorField
+                          label="배경색"
                           value={intro.bgColor || presetCustomColors[intro.presetId]?.bgColor || '#F8F6F3'}
-                          onChange={(e) => handleFieldChange('bgColor', e.target.value)}
-                          className="w-8 h-8 rounded border border-gray-200 cursor-pointer"
+                          onChange={(hex) => handleFieldChange('bgColor', hex)}
                         />
                       </div>
                     </div>
@@ -624,11 +621,10 @@ export default function IntroSelector({ onBack }: IntroSelectorProps) {
                             style={{ backgroundColor: color }}
                           />
                         ))}
-                        <input
-                          type="color"
+                        <ColorField
+                          label="웨이브 색상"
                           value={intro.waveColor || '#FAF8F5'}
-                          onChange={(e) => handleFieldChange('waveColor', e.target.value)}
-                          className="w-8 h-8 rounded border border-gray-200 cursor-pointer"
+                          onChange={(hex) => handleFieldChange('waveColor', hex)}
                         />
                       </div>
                     </div>
@@ -649,11 +645,10 @@ export default function IntroSelector({ onBack }: IntroSelectorProps) {
                             style={{ backgroundColor: color }}
                           />
                         ))}
-                        <input
-                          type="color"
+                        <ColorField
+                          label="봉투 색상"
                           value={intro.envelopeColor || '#f5f0e8'}
-                          onChange={(e) => handleFieldChange('envelopeColor', e.target.value)}
-                          className="w-8 h-8 rounded border border-gray-200 cursor-pointer"
+                          onChange={(hex) => handleFieldChange('envelopeColor', hex)}
                         />
                       </div>
                     </div>

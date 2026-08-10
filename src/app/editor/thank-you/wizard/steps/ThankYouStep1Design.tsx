@@ -10,6 +10,7 @@ import { THANKYOU_ACCENT_PRESETS } from '@/components/thank-you/types'
 import { hexToSealFilter } from '@/components/parents/EnvelopeScreen'
 import { uploadImage } from '@/lib/imageUpload'
 import InlineCropEditor from '@/components/editor/InlineCropEditor'
+import ColorField from '@/components/editor/ColorField'
 
 const FONT_STYLE_OPTIONS: { id: ThankYouFontStyle; name: string; fontFamily: string; sample: string }[] = [
   { id: 'classic', name: '리디바탕', fontFamily: "'Ridibatang', serif", sample: '감사합니다' },
@@ -150,13 +151,11 @@ export default function ThankYouStep1Design({ invitationId }: ThankYouStep1Desig
         {/* 커스텀 색상 */}
         <div className="flex items-center justify-center gap-2">
           <label className="text-xs text-gray-500">직접 선택:</label>
-          <input
-            type="color"
+          <ColorField
+            label="메인 컬러"
             value={accentColor}
-            onChange={(e) => setAccentColor(e.target.value)}
-            className="w-8 h-8 rounded cursor-pointer border border-gray-200"
+            onChange={(hex) => setAccentColor(hex)}
           />
-          <span className="text-xs text-gray-400 font-mono">{accentColor}</span>
         </div>
       </div>
 
@@ -314,13 +313,11 @@ export default function ThankYouStep1Design({ invitationId }: ThankYouStep1Desig
         {/* 커스텀 색상 */}
         <div className="flex items-center justify-center gap-2">
           <label className="text-xs text-gray-500">직접 선택:</label>
-          <input
-            type="color"
+          <ColorField
+            label="실링 색상"
             value={sealColor}
-            onChange={(e) => setSealColor(e.target.value)}
-            className="w-8 h-8 rounded cursor-pointer border border-gray-200"
+            onChange={(hex) => setSealColor(hex)}
           />
-          <span className="text-xs text-gray-400 font-mono">{sealColor}</span>
         </div>
       </div>
 

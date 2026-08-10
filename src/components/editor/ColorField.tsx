@@ -48,13 +48,14 @@ interface ColorFieldProps {
   label?: string
   presets?: string[]
   className?: string
+  compact?: boolean // 스와치만(작은 인라인 툴바용)
 }
 
 /**
  * 모바일 친화 컬러 피커 — 스와치 버튼 탭 → 하단 시트(프리셋 + 색상/채도/명도 슬라이더 + HEX)
  * 네이티브 <input type="color"> 대체용.
  */
-export default function ColorField({ value, onChange, label, presets = DEFAULT_PRESETS, className }: ColorFieldProps) {
+export default function ColorField({ value, onChange, label, presets = DEFAULT_PRESETS, className, compact = false }: ColorFieldProps) {
   const [open, setOpen] = useState(false)
   const v = value || '#FFFFFF'
   const { h, s, l } = hexToHsl(v)
@@ -69,14 +70,24 @@ export default function ColorField({ value, onChange, label, presets = DEFAULT_P
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className={`flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 hover:border-gray-400 transition-colors ${className || ''}`}
-      >
-        <span className="w-6 h-6 rounded-md border border-gray-300 flex-shrink-0" style={{ background: v }} />
-        <span className="text-xs text-gray-600 font-mono">{v.toUpperCase()}</span>
-      </button>
+      {compact ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          title={label || '색상 선택'}
+          className={`w-6 h-6 rounded-md border border-gray-300 flex-shrink-0 hover:ring-2 hover:ring-gray-300 transition-all ${className || ''}`}
+          style={{ background: v }}
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className={`flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 hover:border-gray-400 transition-colors ${className || ''}`}
+        >
+          <span className="w-6 h-6 rounded-md border border-gray-300 flex-shrink-0" style={{ background: v }} />
+          <span className="text-xs text-gray-600 font-mono">{v.toUpperCase()}</span>
+        </button>
+      )}
 
       {open && createPortal(
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center" onClick={() => setOpen(false)}>

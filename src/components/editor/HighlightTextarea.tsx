@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Type, X } from 'lucide-react'
 import { useEditorStore } from '@/store/editorStore'
+import ColorField from '@/components/editor/ColorField'
 
 interface HighlightTextareaProps {
   value: string
@@ -42,7 +43,6 @@ export default function HighlightTextarea({
   showHeroButton,
 }: HighlightTextareaProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const colorInputRef = useRef<HTMLInputElement>(null)
 
   // 외부 prop이 있으면 사용, 없으면 스토어에서 읽기
   const storeHighlightColor = useEditorStore((s) => s.invitation?.highlightColor)
@@ -252,14 +252,12 @@ export default function HighlightTextarea({
           <span className="w-3 h-3 rounded-sm border border-gray-300" style={{ background: `linear-gradient(transparent 50%, ${highlightColor || 'rgba(255,255,255,0.9)'} 50%)` }} />
           커스텀
         </Button>
-        <input
-          ref={colorInputRef}
-          type="color"
+        <ColorField
+          compact
           value={highlightColor || '#FFFFFF'}
-          onChange={(e) => updateHighlightColor(e.target.value)}
-          className="w-5 h-5 rounded cursor-pointer border border-gray-300 -ml-0.5"
-          style={{ padding: 0 }}
-          title="하이라이트 색상 선택"
+          onChange={(hex) => updateHighlightColor(hex)}
+          label="하이라이트 색상"
+          className="-ml-0.5"
         />
         {!showHeroButton && (
           <Button

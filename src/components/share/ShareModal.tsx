@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import ColorField from '@/components/editor/ColorField'
 
 interface ShareModalProps {
   open: boolean
@@ -325,19 +326,7 @@ export default function ShareModal({
 
             <div className="space-y-2">
               <Label>QR 코드 색상</Label>
-              <div className="flex gap-2">
-                <input
-                  type="color"
-                  value={qrColor}
-                  onChange={(e) => setQrColor(e.target.value)}
-                  className="w-10 h-10 rounded border cursor-pointer"
-                />
-                <Input
-                  value={qrColor}
-                  onChange={(e) => setQrColor(e.target.value)}
-                  className="flex-1 font-mono"
-                />
-              </div>
+              <ColorField value={qrColor} onChange={(hex) => setQrColor(hex)} label="QR 코드 색상" presets={['#000000', '#1A1A1A', '#3A3A3A', '#7A2E39', '#0f2035', '#3A5A3A', '#B8956A', '#FFFFFF']} />
             </div>
 
             <Button onClick={handleDownloadQR} className="w-full">

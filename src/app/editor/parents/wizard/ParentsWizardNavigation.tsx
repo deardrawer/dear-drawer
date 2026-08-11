@@ -22,7 +22,7 @@ export default function ParentsWizardNavigation({
   // 마지막 단계는 자체 버튼 사용
   if (isLastStep) {
     return (
-      <div className="px-6 py-4">
+      <div className="hidden md:block px-6 py-4">
         <button
           onClick={onPrev}
           className="w-full neu-btn h-11 text-sm flex items-center justify-center"
@@ -35,7 +35,7 @@ export default function ParentsWizardNavigation({
   }
 
   return (
-    <div className="px-6 py-4">
+    <div className="hidden md:block px-6 py-4">
       {/* 에러 메시지 */}
       {validationError && (
         <div className="mb-4 p-4 bg-red-50/80 border border-red-100 rounded-xl">

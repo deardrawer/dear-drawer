@@ -1998,6 +1998,16 @@ function GuidanceSection({ invitation, fonts, tc, bgOverride }: { invitation: an
                     {item.title?.toUpperCase()}
                   </div>
                   <p style={{ fontFamily: fonts.body, fontSize: '12px', fontWeight: 300, lineHeight: 1.8, color: isDark ? tc.text : (tc.cardGray || tc.gray), whiteSpace: 'pre-line', letterSpacing: '0.3px' }}>{item.content}</p>
+                  {item.buttonText && item.url && (
+                    <a
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ display: 'inline-block', marginTop: '14px', padding: '8px 18px', fontFamily: fonts.body, fontSize: '10px', fontWeight: 500, letterSpacing: '2px', color: tc.accent, border: `1px solid ${tc.accent}80`, textDecoration: 'none', textTransform: 'uppercase' as const }}
+                    >
+                      {item.buttonText}
+                    </a>
+                  )}
                 </div>
               )
             })}

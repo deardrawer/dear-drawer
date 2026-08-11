@@ -48,7 +48,7 @@ export default function WizardNavigation({ onSave, isSaving, isOurTemplate }: Wi
   // 마지막 단계는 Step6Publish에서 자체 버튼 사용
   if (isLastStep) {
     return (
-      <div className={`px-4 py-2 md:px-6 md:py-4 border-t ${isOurTemplate ? 'md:px-9 md:py-5 border-black/[0.04]' : 'border-gray-100 bg-white'}`}>
+      <div className={`hidden md:block px-4 py-2 md:px-6 md:py-4 border-t ${isOurTemplate ? 'md:px-9 md:py-5 border-black/[0.04]' : 'border-gray-100 bg-white'}`}>
         <Button
           variant="outline"
           onClick={handlePrev}
@@ -62,7 +62,7 @@ export default function WizardNavigation({ onSave, isSaving, isOurTemplate }: Wi
   }
 
   return (
-    <div className={`px-4 py-2 md:px-6 md:py-4 border-t ${isOurTemplate ? 'md:px-9 md:py-5 border-black/[0.04]' : 'border-gray-100 bg-white'}`}>
+    <div className={`hidden md:block px-4 py-2 md:px-6 md:py-4 border-t ${isOurTemplate ? 'md:px-9 md:py-5 border-black/[0.04]' : 'border-gray-100 bg-white'}`}>
       {/* 에러 메시지 */}
       {validationError?.tab === 'wizard' && (
         <div className="mb-3 p-3 bg-red-50 border border-red-100 rounded-lg">

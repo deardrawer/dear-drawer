@@ -23,7 +23,7 @@ export default function FeedWizardNavigation({
   // 마지막 단계는 자체 버튼 사용
   if (isLastStep) {
     return (
-      <div className="px-9 py-5 border-t border-black/[0.04]">
+      <div className="hidden md:block px-9 py-5 border-t border-black/[0.04]">
         <Button
           variant="outline"
           onClick={onPrev}
@@ -37,7 +37,7 @@ export default function FeedWizardNavigation({
   }
 
   return (
-    <div className="px-9 py-5 border-t border-black/[0.04]">
+    <div className="hidden md:block px-9 py-5 border-t border-black/[0.04]">
       {/* 에러 메시지 */}
       {validationError && (
         <div className="mb-4 p-4 bg-red-50 border border-red-100 rounded-lg">

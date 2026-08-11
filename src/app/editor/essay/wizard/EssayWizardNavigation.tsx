@@ -17,7 +17,7 @@ export default function EssayWizardNavigation({ currentStep, onNext, onPrev, val
 
   if (isLastStep) {
     return (
-      <div className="px-9 py-5 border-t border-black/[0.04]">
+      <div className="hidden md:block px-9 py-5 border-t border-black/[0.04]">
         <Button variant="outline" onClick={onPrev} className="w-full btn-cta-outline neu-btn text-[#8A8580]">
           <ChevronLeft className="w-5 h-5 mr-1" />이전 단계로
         </Button>
@@ -26,7 +26,7 @@ export default function EssayWizardNavigation({ currentStep, onNext, onPrev, val
   }
 
   return (
-    <div className="px-9 py-5 border-t border-black/[0.04]">
+    <div className="hidden md:block px-9 py-5 border-t border-black/[0.04]">
       {validationError && (
         <div className="mb-4 p-4 bg-red-50 border border-red-100 rounded-lg">
           <p className="text-sm text-red-600 whitespace-pre-line">{validationError}</p>

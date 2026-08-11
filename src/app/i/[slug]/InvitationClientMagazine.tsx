@@ -1529,6 +1529,16 @@ function GuidanceInfoSection({ invitation, fonts, themeColors, bgOverride }: { i
                     {fonts.isScript ? item.title : item.title?.toUpperCase()}
                   </div>
                   <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: themeColors.gray, whiteSpace: 'pre-line' }}>{item.content}</p>
+                  {item.buttonText && item.url && (
+                    <a
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ display: 'inline-block', marginTop: '12px', padding: '8px 16px', fontFamily: fonts.body, fontSize: '11px', letterSpacing: '1px', color: themeColors.primary, border: `0.5px solid ${themeColors.primary}`, textDecoration: 'none' }}
+                    >
+                      {item.buttonText}
+                    </a>
+                  )}
                 </div>
               )
             })}

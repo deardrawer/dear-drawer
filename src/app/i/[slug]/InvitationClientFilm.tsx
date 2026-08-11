@@ -2003,7 +2003,7 @@ function GuidanceSection({ invitation, fonts, tc, bgOverride }: { invitation: an
                       href={item.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{ display: 'inline-block', marginTop: '14px', padding: '8px 18px', fontFamily: fonts.body, fontSize: '10px', fontWeight: 500, letterSpacing: '2px', color: tc.accent, border: `1px solid ${tc.accent}80`, textDecoration: 'none', textTransform: 'uppercase' as const }}
+                      style={{ display: 'block', width: '100%', boxSizing: 'border-box', textAlign: 'center', marginTop: '14px', padding: '11px 18px', fontFamily: fonts.body, fontSize: '10px', fontWeight: 500, letterSpacing: '2px', color: tc.accent, border: `1px solid ${tc.accent}80`, textDecoration: 'none', textTransform: 'uppercase' as const }}
                     >
                       {item.buttonText}
                     </a>

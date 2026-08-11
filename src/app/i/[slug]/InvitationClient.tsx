@@ -3067,10 +3067,10 @@ function InfoBlock({
 
       {/* Optional Button */}
       {buttonText && buttonUrl && (
-        <div style={{ textAlign: 'center' }}>
+        <div>
           <button
             onClick={() => window.open(buttonUrl, '_blank')}
-            className="mt-4 px-5 py-2.5 rounded-full text-[11px] font-light transition-all hover:opacity-80"
+            className="mt-4 w-full px-5 py-3 rounded-full text-[11px] font-light transition-all hover:opacity-80"
             style={{
               background: themeColors.primary,
               color: '#fff',

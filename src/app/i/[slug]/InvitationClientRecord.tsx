@@ -1686,7 +1686,7 @@ function GuidanceSection({ invitation, fonts, tc, trackRef, bgOverride }: {
                       href={item.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{ display: 'inline-block', marginTop: '12px', padding: '8px 16px', fontFamily: fonts.body, fontSize: '11px', letterSpacing: '1px', color: tc.primary, border: `1px solid ${tc.primary}60`, borderRadius: '8px', textDecoration: 'none' }}
+                      style={{ display: 'block', width: '100%', boxSizing: 'border-box', textAlign: 'center', marginTop: '14px', padding: '11px 16px', fontFamily: fonts.body, fontSize: '11px', letterSpacing: '1px', color: tc.primary, border: `1px solid ${tc.primary}60`, borderRadius: '8px', textDecoration: 'none' }}
                     >
                       {item.buttonText}
                     </a>

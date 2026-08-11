@@ -4476,7 +4476,7 @@ function BookGuidance({ data }: { data: any }) {
                     href={item.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ display: 'inline-block', marginTop: '14px', padding: '8px 16px', fontSize: '11px', letterSpacing: '0.5px', color: bookInfoColors.heading, border: `1px solid ${bookInfoColors.divider}`, textDecoration: 'none' }}
+                    style={{ display: 'block', width: '100%', boxSizing: 'border-box', textAlign: 'center', marginTop: '14px', padding: '11px 16px', fontSize: '11px', letterSpacing: '0.5px', color: bookInfoColors.heading, border: `1px solid ${bookInfoColors.divider}`, textDecoration: 'none' }}
                   >
                     {item.buttonText}
                   </a>

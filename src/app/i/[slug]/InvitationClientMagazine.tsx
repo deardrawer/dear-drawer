@@ -1534,7 +1534,7 @@ function GuidanceInfoSection({ invitation, fonts, themeColors, bgOverride }: { i
                       href={item.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{ display: 'inline-block', marginTop: '12px', padding: '8px 16px', fontFamily: fonts.body, fontSize: '11px', letterSpacing: '1px', color: themeColors.primary, border: `0.5px solid ${themeColors.primary}`, textDecoration: 'none' }}
+                      style={{ display: 'block', width: '100%', boxSizing: 'border-box', textAlign: 'center', marginTop: '14px', padding: '11px 16px', fontFamily: fonts.body, fontSize: '11px', letterSpacing: '1px', color: themeColors.primary, border: `0.5px solid ${themeColors.primary}`, textDecoration: 'none' }}
                     >
                       {item.buttonText}
                     </a>

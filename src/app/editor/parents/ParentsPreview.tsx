@@ -32,6 +32,7 @@ export default function ParentsPreview({
     ...(data.customPrimaryColor && { primary: data.customPrimaryColor }),
     ...(data.customAccentColor && { accent: data.customAccentColor }),
     ...(data.customBackgroundColor && { background: data.customBackgroundColor }),
+    ...(data.customTextColor && { text: data.customTextColor, textLight: data.customTextColor }),
   }
 
   // 폰트 스타일 가져오기

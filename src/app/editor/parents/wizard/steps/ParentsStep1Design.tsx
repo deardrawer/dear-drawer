@@ -133,7 +133,7 @@ export default function ParentsStep1Design({
             return (
               <button
                 key={themeId}
-                onClick={() => updateData({ colorTheme: themeId, customPrimaryColor: undefined, customAccentColor: undefined, customBackgroundColor: undefined })}
+                onClick={() => updateData({ colorTheme: themeId, customPrimaryColor: undefined, customAccentColor: undefined, customBackgroundColor: undefined, customTextColor: undefined })}
                 className={`p-3 rounded-lg border-2 transition-all text-left ${
                   isSelected
                     ? 'border-gray-800 bg-gray-50'
@@ -160,10 +160,10 @@ export default function ParentsStep1Design({
         <div className="mt-4 p-4 bg-gray-50 rounded-lg space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium text-gray-700">색상 커스텀</p>
-            {(data.customPrimaryColor || data.customAccentColor || data.customBackgroundColor) && (
+            {(data.customPrimaryColor || data.customAccentColor || data.customBackgroundColor || data.customTextColor) && (
               <button
                 type="button"
-                onClick={() => updateData({ customPrimaryColor: undefined, customAccentColor: undefined, customBackgroundColor: undefined })}
+                onClick={() => updateData({ customPrimaryColor: undefined, customAccentColor: undefined, customBackgroundColor: undefined, customTextColor: undefined })}
                 className="text-xs text-gray-500 hover:text-gray-700 underline"
               >
                 테마 기본 색상으로 복원
@@ -172,7 +172,7 @@ export default function ParentsStep1Design({
           </div>
           <p className="text-xs text-gray-500">선택한 테마의 색상을 원하는 색상으로 변경할 수 있어요.</p>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             {/* 메인 컬러 */}
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-gray-600">메인 컬러</label>
@@ -211,6 +211,19 @@ export default function ParentsStep1Design({
                 />
               </div>
             </div>
+
+            {/* 본문 텍스트 컬러 */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-gray-600">본문 텍스트</label>
+              <p className="text-[10px] text-gray-400 leading-tight">글자 색</p>
+              <div className="flex flex-col items-center gap-1">
+                <ColorField
+                  label="본문 텍스트"
+                  value={data.customTextColor || COLOR_THEMES[data.colorTheme || 'burgundy'].text}
+                  onChange={(hex) => updateData({ customTextColor: hex })}
+                />
+              </div>
+            </div>
           </div>
 
           {/* 미리보기 스와치 */}
@@ -230,7 +243,7 @@ export default function ParentsStep1Design({
                 style={{ backgroundColor: data.customBackgroundColor || COLOR_THEMES[data.colorTheme || 'burgundy'].background }}
               />
             </div>
-            {(data.customPrimaryColor || data.customAccentColor || data.customBackgroundColor) && (
+            {(data.customPrimaryColor || data.customAccentColor || data.customBackgroundColor || data.customTextColor) && (
               <span className="text-[10px] text-blue-500 font-medium">커스텀 적용됨</span>
             )}
           </div>

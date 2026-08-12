@@ -122,7 +122,7 @@ export default function AccountSection({
           <button
             key={`${item.name}-${index}`}
             onClick={() => handleCopy(item, index)}
-            className="w-full px-5 py-4 rounded-xl text-left transition-all duration-300"
+            className="w-full px-5 py-4 rounded-[5px] text-left transition-all duration-300"
             style={{
               backgroundColor: '#FFFFFF',
               boxShadow: isActive ? '0 1px 8px rgba(0,0,0,0.03)' : 'none',
@@ -175,7 +175,7 @@ export default function AccountSection({
           onClick={() => setShowAccountModal(null)}
         >
           <div
-            className="bg-white rounded-2xl p-6 max-w-[320px] w-full mx-4 shadow-xl"
+            className="bg-white rounded-[5px] p-6 max-w-[320px] w-full mx-4 shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             <p className="text-sm font-medium text-center mb-1" style={{ color: theme.text }}>

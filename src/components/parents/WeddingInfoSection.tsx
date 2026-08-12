@@ -5,7 +5,7 @@ import { useSectionHighlight } from './SectionHighlightContext'
 import { useTheme } from './ThemeContext'
 import {
   BouquetIcon, WreathIcon, FlowerChildIcon, CutleryIcon,
-  CameraIcon, BusIcon, PinIcon, renderSvgIcon,
+  CameraIcon, VanIcon, PinIcon, renderSvgIcon,
 } from './icons'
 
 interface CustomInfoItem {
@@ -72,7 +72,7 @@ export default function WeddingInfoSection({
     flowerChild: { label: '화동 안내', icon: <FlowerChildIcon size={28} color={theme.accent} />, enabled: !!flowerChild?.enabled },
     reception: { label: '피로연', icon: <CutleryIcon size={28} color={theme.accent} />, enabled: !!reception?.enabled },
     photoBooth: { label: '포토부스', icon: <CameraIcon size={28} color={theme.accent} />, enabled: !!photoBooth?.enabled },
-    shuttle: { label: '셔틀버스', icon: <BusIcon size={28} color={theme.accent} />, enabled: !!shuttle?.enabled },
+    shuttle: { label: '셔틀버스', icon: <VanIcon size={28} color={theme.accent} />, enabled: !!shuttle?.enabled },
   }
 
   // itemOrder 기반으로 탭 순서 결정
@@ -146,7 +146,7 @@ export default function WeddingInfoSection({
   // 정보 박스 (reception, shuttle 공통)
   const renderInfoBox = (items: { label: string; value: string }[]) => (
     <div
-      className="text-left p-4 rounded-xl space-y-3 mt-5"
+      className="text-left p-4 rounded-[5px] space-y-3 mt-5"
       style={{
         backgroundColor: isActive ? `${theme.accent}08` : '#f9f9f9',
         border: `1px solid ${isActive ? `${theme.accent}15` : '#f0f0f0'}`,
@@ -213,7 +213,7 @@ export default function WeddingInfoSection({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className="px-4 py-2 text-[11px] tracking-[0.5px] rounded-3xl transition-all duration-300"
+              className="px-4 py-2 text-[11px] tracking-[0.5px] rounded-[5px] transition-all duration-300"
               style={{
                 backgroundColor: isTabActive ? '#FFFFFF' : 'transparent',
                 border: `1px solid ${isTabActive ? (isActive ? theme.accent : '#ccc') : (isActive ? '#E8E2DA' : '#ddd')}`,
@@ -230,7 +230,7 @@ export default function WeddingInfoSection({
 
       {/* 콘텐츠 카드 */}
       <div
-        className="w-full max-w-[320px] text-center p-7 rounded-2xl transition-shadow duration-500"
+        className="w-full max-w-[320px] text-center p-7 rounded-[5px] transition-shadow duration-500"
         style={{
           backgroundColor: '#FFFFFF',
           boxShadow: isActive ? '0 2px 20px rgba(0,0,0,0.04)' : '0 1px 8px rgba(0,0,0,0.02)',
@@ -280,7 +280,7 @@ export default function WeddingInfoSection({
             }}
           >
             <div className="flex items-center justify-center mb-5" style={{ opacity: 0.8 }}>
-              <BusIcon size={28} color={theme.accent} />
+              <VanIcon size={28} color={theme.accent} />
             </div>
             <h3
               className="font-serif text-[15px] mb-4 tracking-[1px]"
@@ -309,7 +309,7 @@ export default function WeddingInfoSection({
 
             {shuttle.notes && shuttle.notes.length > 0 && (
               <div
-                className="mt-4 p-3.5 rounded-xl text-left"
+                className="mt-4 p-3.5 rounded-[5px] text-left"
                 style={{
                   backgroundColor: isActive ? `${theme.primary}08` : '#fafafa',
                   border: `1px solid ${isActive ? `${theme.primary}15` : '#f0f0f0'}`,

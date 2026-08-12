@@ -242,7 +242,7 @@ export default function VenueSection({
       >
         <div
           ref={mapWrapRef}
-          className="rounded-2xl overflow-hidden"
+          className="rounded-[5px] overflow-hidden"
           style={{
             position: 'relative',
             boxShadow: isActive ? '0 4px 24px rgba(0,0,0,0.06)' : '0 2px 8px rgba(0,0,0,0.02)',
@@ -293,7 +293,7 @@ export default function VenueSection({
       >
         <button
           onClick={openNaverMap}
-          className="flex items-center gap-1.5 px-3.5 py-2.5 text-[11px] tracking-[0.5px] rounded-3xl whitespace-nowrap transition-all duration-200"
+          className="flex items-center gap-1.5 px-3.5 py-2.5 text-[11px] tracking-[0.5px] rounded-[5px] whitespace-nowrap transition-all duration-200"
           style={{
             backgroundColor: '#FFFFFF',
             border: `1px solid ${isActive ? '#E8E2DA' : '#eee'}`,
@@ -310,7 +310,7 @@ export default function VenueSection({
         </button>
         <button
           onClick={openKakaoMap}
-          className="flex items-center gap-1.5 px-3.5 py-2.5 text-[11px] tracking-[0.5px] rounded-3xl whitespace-nowrap transition-all duration-200"
+          className="flex items-center gap-1.5 px-3.5 py-2.5 text-[11px] tracking-[0.5px] rounded-[5px] whitespace-nowrap transition-all duration-200"
           style={{
             backgroundColor: '#FFFFFF',
             border: `1px solid ${isActive ? '#E8E2DA' : '#eee'}`,
@@ -327,7 +327,7 @@ export default function VenueSection({
         </button>
         <button
           onClick={openTmap}
-          className="flex items-center gap-1.5 px-3.5 py-2.5 text-[11px] tracking-[0.5px] rounded-3xl whitespace-nowrap transition-all duration-200"
+          className="flex items-center gap-1.5 px-3.5 py-2.5 text-[11px] tracking-[0.5px] rounded-[5px] whitespace-nowrap transition-all duration-200"
           style={{
             backgroundColor: '#FFFFFF',
             border: `1px solid ${isActive ? '#E8E2DA' : '#eee'}`,
@@ -356,7 +356,7 @@ export default function VenueSection({
           </div>
 
           <div
-            className="overflow-hidden rounded-xl"
+            className="overflow-hidden rounded-[5px]"
             style={{
               border: `1px solid ${isActive ? '#E8E2DA' : '#eee'}`,
             }}

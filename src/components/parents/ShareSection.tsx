@@ -139,7 +139,7 @@ export default function ShareSection({
               }
             }
           }}
-          className="flex items-center gap-1.5 px-5 py-2.5 text-[11px] tracking-[0.5px] rounded-3xl transition-all duration-200"
+          className="flex items-center gap-1.5 px-5 py-2.5 text-[11px] tracking-[0.5px] rounded-[5px] transition-all duration-200"
           style={{
             backgroundColor: '#FEE500',
             border: '1px solid #FEE500',
@@ -150,7 +150,7 @@ export default function ShareSection({
         </button>
         <button
           onClick={handleCopyLink}
-          className="flex items-center gap-1.5 px-5 py-2.5 text-[11px] tracking-[0.5px] rounded-3xl transition-all duration-200"
+          className="flex items-center gap-1.5 px-5 py-2.5 text-[11px] tracking-[0.5px] rounded-[5px] transition-all duration-200"
           style={{
             backgroundColor: '#FFFFFF',
             border: `1px solid ${isActive ? '#E8E2DA' : '#eee'}`,

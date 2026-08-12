@@ -140,7 +140,7 @@ function TimelineItemComponent({
 
         {/* 사진 카드 */}
         <div
-          className="w-full aspect-[4/3] rounded-xl overflow-hidden transition-all duration-500 cursor-pointer"
+          className="w-full aspect-[4/3] rounded-[5px] overflow-hidden transition-all duration-500 cursor-pointer"
           style={{
             backgroundColor: '#E8E4DC',
             boxShadow: isItemActive

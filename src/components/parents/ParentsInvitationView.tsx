@@ -185,6 +185,7 @@ export default function ParentsInvitationView({
     ...(data.customPrimaryColor && { primary: data.customPrimaryColor }),
     ...(data.customAccentColor && { accent: data.customAccentColor }),
     ...(data.customBackgroundColor && { background: data.customBackgroundColor }),
+    ...(data.customTextColor && { text: data.customTextColor, textLight: data.customTextColor }),
   }
 
   // 폰트 스타일
@@ -286,7 +287,7 @@ export default function ParentsInvitationView({
   const currentFontConfig = FONT_SIZE_CONFIG[fontSize]
 
   return (
-    <ThemeProvider themeId={data.colorTheme || 'burgundy'} customPrimary={data.customPrimaryColor} customAccent={data.customAccentColor} customBackground={data.customBackgroundColor}>
+    <ThemeProvider themeId={data.colorTheme || 'burgundy'} customPrimary={data.customPrimaryColor} customAccent={data.customAccentColor} customBackground={data.customBackgroundColor} customText={data.customTextColor}>
       {/* 전체 화면 배경색 (max-w-[390px] 바깥 영역 커버) */}
       <div style={{ backgroundColor: theme.background, minHeight: '100vh' }}>
       <div
@@ -480,6 +481,7 @@ export default function ParentsInvitationView({
                   <MainPhotoSection
                     photos={photos}
                     mainImage={data.mainImage}
+                    mainImageFrame={data.mainImageFrame}
                     groomName={(data.groom.firstName || '').trim() || '민수'}
                     brideName={(data.bride.firstName || '').trim() || '서연'}
                     groomParents={groomParentsText}

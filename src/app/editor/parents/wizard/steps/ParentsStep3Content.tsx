@@ -9,6 +9,7 @@ import { Switch } from '@/components/ui/switch'
 import { Heart, Clock, ImagePlus, MapPin, Bus, CreditCard, Plus, X, MessageSquare, GripVertical, Film } from 'lucide-react'
 import { SortableList, SortableItem } from '@/components/ui/sortable-list'
 import ImageCropEditor from '@/components/parents/ImageCropEditor'
+import { PARENTS_FRAME_CFG, PARENTS_FRAME_IDS } from '@/components/parents/MainPhotoSection'
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -169,12 +170,12 @@ function IconPickerButton({ value, onChange }: { value: string; onChange: (v: st
 
 // 결혼식 안내 항목 설정
 const PARENTS_INFO_ITEMS_CONFIG: { key: string; label: string; iconKey: SvgIconKey }[] = [
-  { key: 'flowerGift', label: '꽃 답례품 안내', iconKey: 'bouquet' },
-  { key: 'wreath', label: '화환 안내', iconKey: 'wreath' },
-  { key: 'flowerChild', label: '화동 안내', iconKey: 'flower-child' },
-  { key: 'reception', label: '피로연 안내', iconKey: 'cutlery' },
+  { key: 'flowerGift', label: '꽃 답례품 안내', iconKey: 'flower' },
+  { key: 'wreath', label: '화환 안내', iconKey: 'clover' },
+  { key: 'flowerChild', label: '화동 안내', iconKey: 'baby' },
+  { key: 'reception', label: '피로연 안내', iconKey: 'champagne' },
   { key: 'photoBooth', label: '포토부스 안내', iconKey: 'camera' },
-  { key: 'shuttle', label: '셔틀버스 운행', iconKey: 'bus' },
+  { key: 'shuttle', label: '셔틀버스 운행', iconKey: 'van' },
 ]
 
 const DEFAULT_ITEM_ORDER = PARENTS_INFO_ITEMS_CONFIG.map(item => item.key)
@@ -367,6 +368,42 @@ export default function ParentsStep3Content({
           invitationId={invitationId || undefined}
           label=""
         />
+
+        {/* 메인사진 프레임 (선택) */}
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-gray-800">
+            사진 프레임 <span className="text-xs font-normal text-gray-400">(선택)</span>
+          </p>
+          <div className="grid grid-cols-6 gap-2">
+            <button
+              type="button"
+              onClick={() => updateNestedData('mainImageFrame', '')}
+              className={`aspect-[9/16] rounded-md border flex items-center justify-center text-[10px] transition-all ${
+                !data.mainImageFrame || data.mainImageFrame === 'none'
+                  ? 'border-teal-500 ring-1 ring-teal-300 text-teal-600 bg-teal-50'
+                  : 'border-gray-200 text-gray-400 hover:border-gray-300'
+              }`}
+            >
+              없음
+            </button>
+            {PARENTS_FRAME_IDS.map((id) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => updateNestedData('mainImageFrame', id)}
+                title={PARENTS_FRAME_CFG[id].label}
+                className={`aspect-[9/16] rounded-md border overflow-hidden bg-stone-50 transition-all ${
+                  data.mainImageFrame === id
+                    ? 'border-teal-500 ring-1 ring-teal-300'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <img src={`/frames/frame-${id}.webp`} alt={PARENTS_FRAME_CFG[id].label} className="w-full h-full object-contain" />
+              </button>
+            ))}
+          </div>
+          <p className="text-[10px] text-gray-400">프레임을 선택하면 메인 사진이 프레임 안에 표시됩니다.</p>
+        </div>
 
         {/* 양가 부모님 정보 - 메인 사진 아래에 함께 표시되는 영역 */}
         <div className="space-y-3 pt-2">

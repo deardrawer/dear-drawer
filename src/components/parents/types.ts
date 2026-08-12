@@ -358,6 +358,7 @@ export interface ParentsInvitationContent {
 
   // 메인 이미지
   mainImage?: ImageCropData
+  mainImageFrame?: string  // 메인사진 프레임 옵션 (프레임 id, 없으면 프레임 없음)
 
   // 갤러리
   gallery: {
@@ -418,6 +419,7 @@ export interface ParentsInvitationContent {
   customPrimaryColor?: string
   customAccentColor?: string
   customBackgroundColor?: string
+  customTextColor?: string  // 본문 텍스트 색 (지정 시 text/textLight 덮어씀)
   sealColor?: string  // 실링스티커 색상 (hex)
 
   // D-Day 팝업

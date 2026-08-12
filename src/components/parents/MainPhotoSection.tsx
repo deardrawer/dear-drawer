@@ -29,8 +29,19 @@ interface MainPhotoSectionProps {
   brideParents?: string
   groomParentsNode?: React.ReactNode
   brideParentsNode?: React.ReactNode
+  mainImageFrame?: string
   isPreview?: boolean
 }
+
+/** 메인사진 프레임 옵션 (9:16 세로 프레임, box는 사진 창 위치 %, show는 세로 중 표시할 비율=아래 여백 크롭) */
+export const PARENTS_FRAME_CFG: Record<string, { label: string; box: { x: number; y: number; w: number; h: number }; show: number }> = {
+  '10': { label: '하트', box: { x: 20.9, y: 35.6, w: 58.2, h: 28.6 }, show: 0.74 },
+  '4': { label: '오벌', box: { x: 31.4, y: 32.6, w: 37.2, h: 34.7 }, show: 0.82 },
+  '9': { label: '아치', box: { x: 21.9, y: 24.2, w: 62.6, h: 46.8 }, show: 0.86 },
+  '5': { label: '레이스', box: { x: 18.1, y: 37.6, w: 63.7, h: 24.9 }, show: 0.76 },
+  '12': { label: '우표', box: { x: 25.2, y: 33.4, w: 48.7, h: 33.1 }, show: 0.82 },
+}
+export const PARENTS_FRAME_IDS = ['10', '4', '9', '5', '12'] as const
 
 /** 독립적인 IntersectionObserver 훅 (활성/비활성 + 최초등장) */
 function useSubSection() {
@@ -81,6 +92,7 @@ export default function MainPhotoSection({
   brideParents = '',
   groomParentsNode,
   brideParentsNode,
+  mainImageFrame,
   isPreview = false,
 }: MainPhotoSectionProps) {
   // 섹션 전체 (SectionHighlightContext 용)
@@ -151,33 +163,83 @@ export default function MainPhotoSection({
       style={{ backgroundColor: theme.background }}
     >
       {/* ═══════════ HERO IMAGE ═══════════ */}
-      {heroImage && heroImage.url && (
-        <div
-          className="w-full aspect-[3/4] relative overflow-hidden cursor-pointer"
-          style={{
-            opacity: cH ? 1 : 0,
-            transform: cH ? 'scale(1)' : 'scale(1.06)',
-            transition: 'opacity 1.4s cubic-bezier(0.22, 1, 0.36, 1), transform 3s cubic-bezier(0.22, 1, 0.36, 1)',
-          }}
-          onClick={() => !isPreview && setLightboxIndex(0)}
-        >
-          <div className="w-full h-full" style={getCropStyle(heroImage)} />
+      {heroImage && heroImage.url && (() => {
+        const frameId = mainImageFrame && mainImageFrame !== 'none' ? mainImageFrame : null
+        const frameCfg = frameId ? PARENTS_FRAME_CFG[frameId] : null
+
+        // 프레임 옵션 — 9:16 세로 프레임 안 창(box)에 사진을 홀크롭 마스크로 끼움
+        // 바깥 컨테이너는 show 비율만큼만 표시해 프레임 아래 빈 공간을 잘라냄
+        if (frameCfg) {
+          const showFrac = frameCfg.show ?? 0.8
+          return (
+            <div
+              className="w-full relative overflow-hidden cursor-pointer"
+              style={{
+                aspectRatio: `9 / ${(16 * showFrac).toFixed(3)}`,
+                backgroundColor: theme.background,
+                opacity: cH ? 1 : 0,
+                transform: cH ? 'scale(1)' : 'scale(1.04)',
+                transition: 'opacity 1.4s cubic-bezier(0.22, 1, 0.36, 1), transform 3s cubic-bezier(0.22, 1, 0.36, 1)',
+              }}
+              onClick={() => !isPreview && setLightboxIndex(0)}
+            >
+              {/* 내부는 프레임 원본 비율(9:16), 상단 정렬 → 바깥에서 하단 크롭 */}
+              <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', aspectRatio: '9 / 16' }}>
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: `${frameCfg.box.x}%`,
+                    top: `${frameCfg.box.y}%`,
+                    width: `${frameCfg.box.w}%`,
+                    height: `${frameCfg.box.h}%`,
+                    overflow: 'hidden',
+                    WebkitMaskImage: `url(/frames/frame-${frameId}-holecrop.webp)`,
+                    maskImage: `url(/frames/frame-${frameId}-holecrop.webp)`,
+                    WebkitMaskSize: '100% 100%',
+                    maskSize: '100% 100%',
+                  }}
+                >
+                  <div className="w-full h-full" style={getCropStyle(heroImage)} />
+                </div>
+                <img
+                  src={`/frames/frame-${frameId}.webp`}
+                  alt=""
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block', pointerEvents: 'none' }}
+                />
+              </div>
+            </div>
+          )
+        }
+
+        // 기본 — full-bleed 3/4 히어로
+        return (
           <div
-            className="absolute bottom-0 left-0 right-0"
+            className="w-full aspect-[3/4] relative overflow-hidden cursor-pointer"
             style={{
-              height: '200px',
-              background: `linear-gradient(to top, ${theme.background} 0%, transparent 100%)`,
+              opacity: cH ? 1 : 0,
+              transform: cH ? 'scale(1)' : 'scale(1.06)',
+              transition: 'opacity 1.4s cubic-bezier(0.22, 1, 0.36, 1), transform 3s cubic-bezier(0.22, 1, 0.36, 1)',
             }}
-          />
-        </div>
-      )}
+            onClick={() => !isPreview && setLightboxIndex(0)}
+          >
+            <div className="w-full h-full" style={getCropStyle(heroImage)} />
+            <div
+              className="absolute bottom-0 left-0 right-0"
+              style={{
+                height: '200px',
+                background: `linear-gradient(to top, ${theme.background} 0%, transparent 100%)`,
+              }}
+            />
+          </div>
+        )
+      })()}
 
       {/* ═══════════ COUPLE INFO (독립 활성화) ═══════════ */}
       <div
         ref={coupleSection.ref}
         className="relative z-10 px-8 pb-14"
         style={{
-          marginTop: heroImage?.url ? '-60px' : '80px',
+          marginTop: heroImage?.url ? (mainImageFrame && mainImageFrame !== 'none' ? '0px' : '-60px') : '80px',
           opacity: cH ? (cA ? 1 : 0.25) : 0,
           filter: cA ? 'none' : 'grayscale(40%)',
           transition: 'opacity 0.6s ease, filter 0.6s ease',
@@ -357,7 +419,7 @@ export default function MainPhotoSection({
                 return (
                   <div
                     key={`gallery-${photo.id}`}
-                    className={`overflow-hidden rounded-sm cursor-pointer ${
+                    className={`overflow-hidden rounded-[5px] cursor-pointer ${
                       isWide ? 'col-span-2 aspect-[16/10]' : 'aspect-square'
                     }`}
                     style={
@@ -525,7 +587,7 @@ export default function MainPhotoSection({
                   style={{
                     width: i === lightboxIndex ? '18px' : '6px',
                     height: '6px',
-                    borderRadius: '3px',
+                    borderRadius: '5px',
                     backgroundColor: i === lightboxIndex ? 'white' : 'rgba(255,255,255,0.3)',
                     transition: 'all 0.3s',
                     border: 'none',

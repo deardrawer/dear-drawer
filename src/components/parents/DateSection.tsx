@@ -190,7 +190,7 @@ export default function DateSection({
 
       {/* Calendar card */}
       <div
-        className="w-full max-w-[300px] mt-8 rounded-2xl p-6"
+        className="w-full max-w-[300px] mt-8 rounded-[5px] p-6"
         style={{
           backgroundColor: '#FFFFFF',
           boxShadow: isActive ? '0 2px 20px rgba(0,0,0,0.04)' : '0 1px 8px rgba(0,0,0,0.02)',
@@ -297,7 +297,7 @@ export default function DateSection({
       {/* D-day badge with rolling counter */}
       <div style={stagger(hasAppeared, 0.6)}>
         <div
-          className="inline-flex items-center gap-2 px-5 py-2 rounded-3xl text-xs mt-6"
+          className="inline-flex items-center gap-2 px-5 py-2 rounded-[5px] text-xs mt-6"
           style={{
             backgroundColor: '#FFFFFF',
             boxShadow: '0 1px 8px rgba(0,0,0,0.04)',

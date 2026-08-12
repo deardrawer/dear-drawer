@@ -288,57 +288,43 @@ export default function VenueSection({
 
       {/* Navigation chip buttons */}
       <div
-        className="flex items-center justify-center gap-2 mb-6 px-4"
+        className="grid grid-cols-3 gap-2 mb-6 px-4"
         style={stagger(hasAppeared, 0.5)}
       >
         <button
           onClick={openNaverMap}
-          className="flex items-center gap-1.5 px-3.5 py-2.5 text-[11px] tracking-[0.5px] rounded-[5px] whitespace-nowrap transition-all duration-200"
+          className="flex items-center justify-center px-3.5 py-2.5 text-[11px] tracking-[0.5px] rounded-full whitespace-nowrap transition-all duration-200"
           style={{
-            backgroundColor: '#FFFFFF',
-            border: `1px solid ${isActive ? '#E8E2DA' : '#eee'}`,
-            color: isActive ? theme.textLight : '#aaa',
+            backgroundColor: isActive ? theme.accent : '#c9c2b8',
+            color: '#FFFFFF',
           }}
-          onMouseEnter={(e) => { e.currentTarget.style.borderColor = theme.accent; e.currentTarget.style.color = theme.accent; }}
-          onMouseLeave={(e) => { e.currentTarget.style.borderColor = isActive ? '#E8E2DA' : '#eee'; e.currentTarget.style.color = isActive ? theme.textLight : '#aaa'; }}
+          onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.85'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
         >
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-          </svg>
-          네이버지도
+네이버지도
         </button>
         <button
           onClick={openKakaoMap}
-          className="flex items-center gap-1.5 px-3.5 py-2.5 text-[11px] tracking-[0.5px] rounded-[5px] whitespace-nowrap transition-all duration-200"
+          className="flex items-center justify-center px-3.5 py-2.5 text-[11px] tracking-[0.5px] rounded-full whitespace-nowrap transition-all duration-200"
           style={{
-            backgroundColor: '#FFFFFF',
-            border: `1px solid ${isActive ? '#E8E2DA' : '#eee'}`,
-            color: isActive ? theme.textLight : '#aaa',
+            backgroundColor: isActive ? theme.accent : '#c9c2b8',
+            color: '#FFFFFF',
           }}
-          onMouseEnter={(e) => { e.currentTarget.style.borderColor = theme.accent; e.currentTarget.style.color = theme.accent; }}
-          onMouseLeave={(e) => { e.currentTarget.style.borderColor = isActive ? '#E8E2DA' : '#eee'; e.currentTarget.style.color = isActive ? theme.textLight : '#aaa'; }}
+          onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.85'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
         >
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-          </svg>
-          카카오맵
+카카오맵
         </button>
         <button
           onClick={openTmap}
-          className="flex items-center gap-1.5 px-3.5 py-2.5 text-[11px] tracking-[0.5px] rounded-[5px] whitespace-nowrap transition-all duration-200"
+          className="flex items-center justify-center px-3.5 py-2.5 text-[11px] tracking-[0.5px] rounded-full whitespace-nowrap transition-all duration-200"
           style={{
-            backgroundColor: '#FFFFFF',
-            border: `1px solid ${isActive ? '#E8E2DA' : '#eee'}`,
-            color: isActive ? theme.textLight : '#aaa',
+            backgroundColor: isActive ? theme.accent : '#c9c2b8',
+            color: '#FFFFFF',
           }}
-          onMouseEnter={(e) => { e.currentTarget.style.borderColor = theme.accent; e.currentTarget.style.color = theme.accent; }}
-          onMouseLeave={(e) => { e.currentTarget.style.borderColor = isActive ? '#E8E2DA' : '#eee'; e.currentTarget.style.color = isActive ? theme.textLight : '#aaa'; }}
+          onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.85'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
         >
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
-          </svg>
           T맵
         </button>
       </div>

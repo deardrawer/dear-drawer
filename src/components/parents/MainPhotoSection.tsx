@@ -30,18 +30,20 @@ interface MainPhotoSectionProps {
   groomParentsNode?: React.ReactNode
   brideParentsNode?: React.ReactNode
   mainImageFrame?: string
+  galleryBg?: string  // 갤러리 영역 배경 (틴트에서 제외해 흰 배경 유지용)
+  coupleHeadline?: string  // 이름 위 커스텀 문구
+  coupleConnector?: 'and' | 'heart'  // 이름 사이 연결 (and / 하트)
   isPreview?: boolean
 }
 
-/** 메인사진 프레임 옵션 (9:16 세로 프레임, box는 사진 창 위치 %, show는 세로 중 표시할 비율=아래 여백 크롭) */
-export const PARENTS_FRAME_CFG: Record<string, { label: string; box: { x: number; y: number; w: number; h: number }; show: number }> = {
-  '10': { label: '하트', box: { x: 20.9, y: 35.6, w: 58.2, h: 28.6 }, show: 0.74 },
-  '4': { label: '오벌', box: { x: 31.4, y: 32.6, w: 37.2, h: 34.7 }, show: 0.82 },
-  '9': { label: '아치', box: { x: 21.9, y: 24.2, w: 62.6, h: 46.8 }, show: 0.86 },
-  '5': { label: '레이스', box: { x: 18.1, y: 37.6, w: 63.7, h: 24.9 }, show: 0.76 },
-  '12': { label: '우표', box: { x: 25.2, y: 33.4, w: 48.7, h: 33.1 }, show: 0.82 },
+/** 메인사진 프레임 옵션 (9:16 세로 프레임, box는 사진 창 위치 %, top/bot는 프레임 아트의 세로 범위(0~1) — 상하 여백 크롭용) */
+export const PARENTS_FRAME_CFG: Record<string, { label: string; box: { x: number; y: number; w: number; h: number }; top: number; bot: number }> = {
+  '4': { label: '오벌', box: { x: 31.4, y: 32.6, w: 37.2, h: 34.7 }, top: 0.17, bot: 0.83 },
+  '9': { label: '아치', box: { x: 21.9, y: 24.2, w: 62.6, h: 46.8 }, top: 0.10, bot: 0.86 },
+  '5': { label: '레이스', box: { x: 18.1, y: 37.6, w: 63.7, h: 24.9 }, top: 0.22, bot: 0.78 },
+  '12': { label: '우표', box: { x: 25.2, y: 33.4, w: 48.7, h: 33.1 }, top: 0.19, bot: 0.81 },
 }
-export const PARENTS_FRAME_IDS = ['10', '4', '9', '5', '12'] as const
+export const PARENTS_FRAME_IDS = ['4', '9', '5', '12'] as const
 
 /** 독립적인 IntersectionObserver 훅 (활성/비활성 + 최초등장) */
 function useSubSection() {
@@ -93,8 +95,12 @@ export default function MainPhotoSection({
   groomParentsNode,
   brideParentsNode,
   mainImageFrame,
+  galleryBg,
+  coupleHeadline,
+  coupleConnector,
   isPreview = false,
 }: MainPhotoSectionProps) {
+  const coupleIsHeart = coupleConnector === 'heart'
   // 섹션 전체 (SectionHighlightContext 용)
   const { ref: sectionRef } = useSectionHighlight('main-photo')
   const theme = useTheme()
@@ -170,12 +176,14 @@ export default function MainPhotoSection({
         // 프레임 옵션 — 9:16 세로 프레임 안 창(box)에 사진을 홀크롭 마스크로 끼움
         // 바깥 컨테이너는 show 비율만큼만 표시해 프레임 아래 빈 공간을 잘라냄
         if (frameCfg) {
-          const showFrac = frameCfg.show ?? 0.8
+          const cropTop = frameCfg.top ?? 0
+          const cropBot = frameCfg.bot ?? 1
+          const band = Math.max(0.1, cropBot - cropTop)
           return (
             <div
               className="w-full relative overflow-hidden cursor-pointer"
               style={{
-                aspectRatio: `9 / ${(16 * showFrac).toFixed(3)}`,
+                aspectRatio: `9 / ${(16 * band).toFixed(3)}`,
                 backgroundColor: theme.background,
                 opacity: cH ? 1 : 0,
                 transform: cH ? 'scale(1)' : 'scale(1.04)',
@@ -183,8 +191,8 @@ export default function MainPhotoSection({
               }}
               onClick={() => !isPreview && setLightboxIndex(0)}
             >
-              {/* 내부는 프레임 원본 비율(9:16), 상단 정렬 → 바깥에서 하단 크롭 */}
-              <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', aspectRatio: '9 / 16' }}>
+              {/* 내부는 프레임 원본 비율(9:16), top만큼 위로 올려 상·하 여백 모두 크롭 */}
+              <div style={{ position: 'absolute', top: `${(-cropTop / band * 100).toFixed(2)}%`, left: 0, width: '100%', aspectRatio: '9 / 16' }}>
                 <div
                   style={{
                     position: 'absolute',
@@ -245,6 +253,23 @@ export default function MainPhotoSection({
           transition: 'opacity 0.6s ease, filter 0.6s ease',
         }}
       >
+        {/* 이름 위 커스텀 문구 */}
+        {coupleHeadline && coupleHeadline.trim() && (
+          <p
+            className="text-center mb-3 text-[13px] tracking-[3px] whitespace-pre-line"
+            style={{
+              color: cA ? theme.primary : '#bbb',
+              fontWeight: 300,
+              opacity: cH ? 1 : 0,
+              transform: cH ? 'translateY(0)' : 'translateY(16px)',
+              transition: 'opacity 0.9s ease, transform 0.9s cubic-bezier(0.16, 1, 0.3, 1)',
+              transitionDelay: cH ? '0.1s' : '0s',
+            }}
+          >
+            {coupleHeadline}
+          </p>
+        )}
+
         {/* Names */}
         <div
           className="flex items-center justify-center gap-5 mb-4"
@@ -266,9 +291,9 @@ export default function MainPhotoSection({
             {groomName}
           </span>
           <span
-            className="text-[16px] italic"
+            className={`text-[16px] ${coupleIsHeart ? '' : 'italic'}`}
             style={{
-              fontFamily: "'Cormorant Garamond', 'Georgia', serif",
+              fontFamily: coupleIsHeart ? undefined : "'Cormorant Garamond', 'Georgia', serif",
               fontWeight: 300,
               color: cA ? theme.primary : '#bbb',
               transform: cH ? 'scale(1)' : 'scale(0)',
@@ -277,7 +302,7 @@ export default function MainPhotoSection({
               transitionDelay: cH ? '0.5s' : '0s',
             }}
           >
-            and
+            {coupleIsHeart ? '♥' : 'and'}
           </span>
           <span
             className="text-[22px] tracking-[6px]"
@@ -338,13 +363,16 @@ export default function MainPhotoSection({
         <div
           ref={gallerySection.ref}
           style={{
+            backgroundColor: galleryBg || theme.background,
             opacity: gH ? (gA ? 1 : 0.2) : 0,
             filter: gA ? 'none' : 'grayscale(40%)',
             transition: 'opacity 0.6s ease, filter 0.6s ease',
           }}
         >
           {/* ── Separator: ornament lines + diamond + label ── */}
-          <div className="flex flex-col items-center pt-2 pb-10">
+          <div className={`flex flex-col items-center pb-10 ${theme.tintedBg ? 'pt-16' : 'pt-2'}`}>
+            {/* 틴트 모드에선 디바이더처럼 오너먼트(선+다이아) 숨김 */}
+            {!theme.tintedBg && (
             <div className="flex items-center gap-3 mb-5">
               {/* Left line */}
               <div
@@ -387,6 +415,7 @@ export default function MainPhotoSection({
                 }}
               />
             </div>
+            )}
 
             {/* GALLERY label */}
             <p

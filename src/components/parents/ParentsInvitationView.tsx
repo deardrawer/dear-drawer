@@ -14,7 +14,7 @@ import AccountSection from './AccountSection'
 import ShareSection from './ShareSection'
 import RsvpModal from './RsvpModal'
 import { COLOR_THEMES, FONT_STYLES, type ParentsInvitationContent, type GuestInfo } from './types'
-import { ThemeProvider } from './ThemeContext'
+import { ThemeProvider, SectionTint } from './ThemeContext'
 import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
 import { resolveKoreanFontFamily } from '@/app/editor/the-simple/fontOptions'
 import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
@@ -186,7 +186,15 @@ export default function ParentsInvitationView({
     ...(data.customAccentColor && { accent: data.customAccentColor }),
     ...(data.customBackgroundColor && { background: data.customBackgroundColor }),
     ...(data.customTextColor && { text: data.customTextColor, textLight: data.customTextColor }),
+    tintedBg: !!data.tintedBg,
+    cardText: data.cardTextColor || baseTheme.text,
+    cardTextLight: data.cardTextColor || baseTheme.textLight,
   }
+
+  // 섹션별 틴트 on/off — 전역 틴트 켜짐 + 해당 섹션이 제외목록에 없으면 틴트
+  const baseBg = data.customBackgroundColor || baseTheme.background
+  const tintOff = data.tintOffSections || []
+  const secTinted = (k: string) => !!data.tintedBg && !tintOff.includes(k)
 
   // 폰트 스타일
   const fontStyle = FONT_STYLES[data.fontStyle || 'elegant']
@@ -287,7 +295,7 @@ export default function ParentsInvitationView({
   const currentFontConfig = FONT_SIZE_CONFIG[fontSize]
 
   return (
-    <ThemeProvider themeId={data.colorTheme || 'burgundy'} customPrimary={data.customPrimaryColor} customAccent={data.customAccentColor} customBackground={data.customBackgroundColor} customText={data.customTextColor}>
+    <ThemeProvider themeId={data.colorTheme || 'burgundy'} customPrimary={data.customPrimaryColor} customAccent={data.customAccentColor} customBackground={data.customBackgroundColor} customText={data.customTextColor} customCardText={data.cardTextColor} tintedBg={data.tintedBg} tintedColor={data.tintedColor}>
       {/* 전체 화면 배경색 (max-w-[390px] 바깥 영역 커버) */}
       <div style={{ backgroundColor: theme.background, minHeight: '100vh' }}>
       <div
@@ -413,17 +421,21 @@ export default function ParentsInvitationView({
               </>
             )}
             <div id="preview-greeting">
+              <SectionTint tinted={secTinted('greeting')} tintColor={data.tintedColor} baseBackground={baseBg} tintedText={data.tintedTextColor}>
               <GreetingSection
                 childName={childFirstName || '○○'}
                 greeting={data.greeting}
                 parentSignature={hasSenderDeceased ? senderSignatureNode : (senderNames.length > 0 ? `${senderNames.join(' · ')} 올림` : '')}
                 senderSide={data.sender.side}
               />
+              </SectionTint>
             </div>
             {data.timelineEnabled !== false && (
               <div id="preview-timeline">
                 <SectionDivider />
-                <TimelineSection items={data.timeline} />
+                <SectionTint tinted={secTinted('timeline')} tintColor={data.tintedColor} baseBackground={baseBg} tintedText={data.tintedTextColor}>
+                  <TimelineSection items={data.timeline} />
+                </SectionTint>
               </div>
             )}
             <div id="preview-couple">
@@ -478,18 +490,23 @@ export default function ParentsInvitationView({
                 ) : undefined
 
                 return (
+                  <SectionTint tinted={secTinted('couple')} tintColor={data.tintedColor} baseBackground={baseBg} tintedText={data.tintedTextColor}>
                   <MainPhotoSection
                     photos={photos}
                     mainImage={data.mainImage}
                     mainImageFrame={data.mainImageFrame}
-                    groomName={(data.groom.firstName || '').trim() || '민수'}
-                    brideName={(data.bride.firstName || '').trim() || '서연'}
+                    galleryBg={baseBg}
+                    coupleHeadline={data.coupleHeadline}
+                    groomName={data.coupleShowLastName ? `${(data.groom.lastName || '').trim()}${(data.groom.firstName || '').trim()}` || '민수' : ((data.groom.firstName || '').trim() || '민수')}
+                    brideName={data.coupleShowLastName ? `${(data.bride.lastName || '').trim()}${(data.bride.firstName || '').trim()}` || '서연' : ((data.bride.firstName || '').trim() || '서연')}
+                    coupleConnector={data.coupleConnector}
                     groomParents={groomParentsText}
                     brideParents={brideParentsText}
                     isPreview={isPreview}
                     groomParentsNode={groomParentsNode}
                     brideParentsNode={brideParentsNode}
                   />
+                  </SectionTint>
                 )
               })()}
             </div>
@@ -520,12 +537,15 @@ export default function ParentsInvitationView({
             })()}
             <div id="preview-wedding">
               <SectionDivider />
+              <SectionTint tinted={secTinted('date')} tintColor={data.tintedColor} baseBackground={baseBg} tintedText={data.tintedTextColor}>
               <DateSection
                 weddingDate={data.wedding.date || '2027-01-09'}
                 weddingTimeDisplay={data.wedding.timeDisplay || ''}
               />
+              </SectionTint>
               <SectionDivider />
               <div id="preview-venue">
+              <SectionTint tinted={secTinted('venue')} tintColor={data.tintedColor} baseBackground={baseBg} tintedText={data.tintedTextColor}>
               <VenueSection
                 venue={{
                   name: data.wedding.venue.name || '예식장',
@@ -565,6 +585,7 @@ export default function ParentsInvitationView({
                   extraInfoText: data.wedding.directions?.extraInfoText,
                 }}
               />
+              </SectionTint>
               </div>
             </div>
             {/* 결혼식 안내 - 활성화된 항목이 있을 때만 표시 */}
@@ -579,6 +600,7 @@ export default function ParentsInvitationView({
             ) && (
               <div id="preview-weddingInfo">
                 <SectionDivider />
+                <SectionTint tinted={secTinted('weddingInfo')} tintColor={data.tintedColor} baseBackground={baseBg} tintedText={data.tintedTextColor}>
                 <WeddingInfoSection
                   enabled={data.weddingInfo?.enabled}
                   flowerGift={data.weddingInfo?.flowerGift}
@@ -590,16 +612,20 @@ export default function ParentsInvitationView({
                   customItems={data.weddingInfo?.customItems}
                   itemOrder={data.weddingInfo?.itemOrder}
                 />
+                </SectionTint>
               </div>
             )}
             {/* 계좌 안내 - 활성화되고 계좌가 있을 때만 표시 */}
             {data.accounts?.enabled !== false && accounts.length > 0 && (
               <div id="preview-accounts">
                 <SectionDivider />
-                <AccountSection accounts={accounts} />
+                <SectionTint tinted={secTinted('account')} tintColor={data.tintedColor} baseBackground={baseBg} tintedText={data.tintedTextColor}>
+                  <AccountSection accounts={accounts} />
+                </SectionTint>
               </div>
             )}
             <SectionDivider />
+            <SectionTint tinted={secTinted('share')} tintColor={data.tintedColor} baseBackground={baseBg} tintedText={data.tintedTextColor}>
             <ShareSection
               shareTitle={data.meta?.title || `${data.groom?.lastName || ''}${data.groom?.firstName || ''} ❤️ ${data.bride?.lastName || ''}${data.bride?.firstName || ''}의 결혼식`}
               shareDescription={data.meta?.description}
@@ -611,6 +637,7 @@ export default function ParentsInvitationView({
               }
               kakaoThumbnailRatio={data.meta?.kakaoThumbnailRatio}
             />
+            </SectionTint>
             {data.rsvpEnabled !== false && (
               <RsvpModal isPreview={isPreview} invitationId={invitationId} rsvpMealOption={data.rsvpMealOption} rsvpShuttleOption={data.rsvpShuttleOption} rsvpNotice={data.rsvpNotice} rsvpPhoneOption={data.rsvpPhoneOption} rsvpSideDetail={data.rsvpSideDetail} rsvpSideDetailOptions={data.rsvpSideDetailOptions} rsvpMessagePlaceholder={data.rsvpMessagePlaceholder} senderSide={data.sender?.side} />
             )}

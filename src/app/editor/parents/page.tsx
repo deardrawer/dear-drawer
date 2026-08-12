@@ -177,6 +177,9 @@ export interface ParentsInvitationData {
   // 메인 이미지 (크롭 정보 포함)
   mainImage: ImageCropData
   mainImageFrame?: string  // 메인사진 프레임 옵션 (프레임 id, 없으면 프레임 없음)
+  coupleHeadline?: string  // 커플 이름 위 커스텀 문구
+  coupleShowLastName?: boolean
+  coupleConnector?: 'and' | 'heart'
 
   // 갤러리 (크롭 정보 포함)
   gallery: {
@@ -284,6 +287,11 @@ export interface ParentsInvitationData {
   customAccentColor?: string
   customBackgroundColor?: string
   customTextColor?: string
+  cardTextColor?: string
+  tintedBg?: boolean
+  tintedColor?: string
+  tintedTextColor?: string
+  tintOffSections?: string[]
   sealColor?: string
 }
 

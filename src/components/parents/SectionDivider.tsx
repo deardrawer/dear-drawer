@@ -20,6 +20,9 @@ export default function SectionDivider() {
     return () => observer.disconnect()
   }, [])
 
+  // 틴티드 배경 모드에서는 섹션 경계가 배경색으로 구분되므로 디바이더 숨김
+  if (theme.tintedBg) return null
+
   return (
     <div
       ref={ref}

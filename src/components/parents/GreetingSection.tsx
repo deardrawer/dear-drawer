@@ -48,7 +48,7 @@ export default function GreetingSection({
   return (
     <section
       ref={ref as React.RefObject<HTMLDivElement>}
-      className="min-h-screen flex flex-col items-center justify-center px-8 py-20"
+      className={`flex flex-col items-center justify-center px-8 ${theme.tintedBg ? 'py-12' : 'min-h-screen py-20'}`}
       style={{
         backgroundColor: theme.background,
         filter: isActive ? 'none' : 'grayscale(30%)',
@@ -56,45 +56,55 @@ export default function GreetingSection({
         transition: 'filter 0.5s, opacity 0.5s',
       }}
     >
-      {/* Ornament: horizontal line with center circle */}
+      {/* 틴티드 배경일 때: 본문이 배경에 묻히지 않도록 흰 종이 카드 위에 표시 */}
       <div
-        className="relative mb-10"
-        style={{
-          width: '48px',
-          height: '1px',
-          backgroundColor: theme.accent,
-          ...stagger(hasAppeared, 0),
-          transform: hasAppeared ? 'scaleX(1)' : 'scaleX(0)',
-        }}
+        style={theme.tintedBg
+          ? { backgroundColor: '#ffffff', borderRadius: '5px', padding: '52px 28px 32px', width: '100%', maxWidth: 400, boxShadow: '0 2px 24px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'center' }
+          : { display: 'contents' }}
       >
+      {/* Ornament: horizontal line with center circle — 틴트일 땐 상단에서 숨기고 하단으로 이동 */}
+      {!theme.tintedBg && (
         <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+          className="relative mb-10"
           style={{
-            width: '7px',
-            height: '7px',
-            borderRadius: '50%',
-            border: `1px solid ${theme.accent}`,
-            backgroundColor: theme.background,
+            width: '48px',
+            height: '1px',
+            backgroundColor: theme.accent,
+            ...stagger(hasAppeared, 0),
+            transform: hasAppeared ? 'scaleX(1)' : 'scaleX(0)',
           }}
-        />
-      </div>
+        >
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+            style={{
+              width: '7px',
+              height: '7px',
+              borderRadius: '50%',
+              border: `1px solid ${theme.accent}`,
+              backgroundColor: theme.background,
+            }}
+          />
+        </div>
+      )}
 
-      {/* INVITATION label */}
-      <span
-        className="text-[11px] tracking-[6px] uppercase mb-7"
-        style={{
-          color: `${theme.accent}80`,
-          fontWeight: 300,
-          ...stagger(hasAppeared, 0.15),
-        }}
-      >
-        invitation
-      </span>
+      {/* INVITATION label — 틴티드(흰 카드)일 땐 어색해서 숨김 */}
+      {!theme.tintedBg && (
+        <span
+          className="text-[11px] tracking-[6px] uppercase mb-7"
+          style={{
+            color: `${theme.accent}80`,
+            fontWeight: 300,
+            ...stagger(hasAppeared, 0.15),
+          }}
+        >
+          invitation
+        </span>
+      )}
 
       <h2
         className="font-serif text-[19px] leading-[2] tracking-wider mb-9 text-center"
         style={{
-          color: isActive ? theme.text : '#999',
+          color: isActive ? (theme.tintedBg ? theme.cardText : theme.text) : '#999',
           fontWeight: 300,
           ...stagger(hasAppeared, 0.3),
         }}
@@ -109,13 +119,38 @@ export default function GreetingSection({
         {' '}결혼합니다
       </h2>
 
+      {/* 틴트일 때: 오너먼트를 제목 바로 아래에 배치 */}
+      {theme.tintedBg && (
+        <div
+          className="relative -mt-4 mb-9"
+          style={{
+            width: '48px',
+            height: '1px',
+            backgroundColor: theme.accent,
+            ...stagger(hasAppeared, 0.4),
+            transform: hasAppeared ? 'scaleX(1)' : 'scaleX(0)',
+          }}
+        >
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+            style={{
+              width: '7px',
+              height: '7px',
+              borderRadius: '50%',
+              border: `1px solid ${theme.accent}`,
+              backgroundColor: '#ffffff',
+            }}
+          />
+        </div>
+      )}
+
       <div
         className="text-center mb-12 max-w-[280px]"
         style={stagger(hasAppeared, 0.5)}
       >
         <p
-          className="font-serif text-[13px] leading-[2.2] whitespace-pre-line"
-          style={{ color: isActive ? theme.textLight : '#999', letterSpacing: '0.3px' }}
+          className="font-serif text-[13px] leading-[2.2] whitespace-pre-line break-keep"
+          style={{ color: isActive ? (theme.tintedBg ? theme.cardTextLight : theme.textLight) : '#999', letterSpacing: '0.3px' }}
         >
           {greeting}
         </p>
@@ -142,6 +177,8 @@ export default function GreetingSection({
           </p>
         </div>
       )}
+
+      </div>
     </section>
   )
 }

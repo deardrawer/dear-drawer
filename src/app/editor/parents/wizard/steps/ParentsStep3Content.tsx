@@ -392,17 +392,59 @@ export default function ParentsStep3Content({
                 type="button"
                 onClick={() => updateNestedData('mainImageFrame', id)}
                 title={PARENTS_FRAME_CFG[id].label}
-                className={`aspect-[9/16] rounded-md border overflow-hidden bg-stone-50 transition-all ${
+                className={`aspect-[9/16] rounded-md border overflow-hidden transition-all ${
                   data.mainImageFrame === id
                     ? 'border-teal-500 ring-1 ring-teal-300'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
+                style={{ background: 'linear-gradient(160deg, #CFC4B4, #B7AB99)' }}
               >
                 <img src={`/frames/frame-${id}.webp`} alt={PARENTS_FRAME_CFG[id].label} className="w-full h-full object-contain" />
               </button>
             ))}
           </div>
           <p className="text-[10px] text-gray-400">프레임을 선택하면 메인 사진이 프레임 안에 표시됩니다.</p>
+        </div>
+
+        {/* 커플 이름 표시 옵션 */}
+        <div className="space-y-3 pt-2 border-t border-gray-100">
+          <h4 className="text-sm font-semibold text-gray-900 pt-2">이름 표시</h4>
+          <div>
+            <label className="text-xs text-gray-600">이름 위 문구 <span className="text-gray-400">(선택)</span></label>
+            <Input
+              value={data.coupleHeadline || ''}
+              onChange={(e) => updateData({ coupleHeadline: e.target.value })}
+              placeholder="예: 결혼합니다"
+              className="mt-1"
+            />
+          </div>
+          <label className="flex items-center justify-between gap-2">
+            <span className="text-xs text-gray-600">이름에 성(姓) 붙이기</span>
+            <Switch
+              checked={!!data.coupleShowLastName}
+              onCheckedChange={(c) => updateData({ coupleShowLastName: c })}
+              className="scale-75 origin-right"
+            />
+          </label>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs text-gray-600">이름 사이</span>
+            <div className="flex gap-1">
+              {([{ v: 'and', l: 'and' }, { v: 'heart', l: '♥' }] as const).map((o) => (
+                <button
+                  key={o.v}
+                  type="button"
+                  onClick={() => updateData({ coupleConnector: o.v })}
+                  className={`px-3 py-1 rounded-md text-xs border transition-colors ${
+                    (data.coupleConnector || 'and') === o.v
+                      ? 'border-teal-500 bg-teal-50 text-teal-600'
+                      : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                  }`}
+                >
+                  {o.l}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* 양가 부모님 정보 - 메인 사진 아래에 함께 표시되는 영역 */}

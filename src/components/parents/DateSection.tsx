@@ -54,7 +54,7 @@ function RollingCounter({ target, isActive, hasStarted, theme }: {
   return (
     <span
       style={{
-        color: isActive ? theme.accent : `${theme.accent}80`,
+        color: 'currentColor',
         fontWeight: 500,
         fontFamily: "'Cormorant Garamond', 'Georgia', serif",
         fontSize: '20px',
@@ -282,7 +282,7 @@ export default function DateSection({
                         ? '#D4897A'
                         : isSaturday
                         ? '#7A9CB8'
-                        : (isActive ? theme.text : '#999'),
+                        : (isActive ? theme.cardText : '#999'),
                     }}
                   >
                     {dayNum}
@@ -297,11 +297,10 @@ export default function DateSection({
       {/* D-day badge with rolling counter */}
       <div style={stagger(hasAppeared, 0.6)}>
         <div
-          className="inline-flex items-center gap-2 px-5 py-2 rounded-[5px] text-xs mt-6"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs mt-6"
           style={{
-            backgroundColor: '#FFFFFF',
-            boxShadow: '0 1px 8px rgba(0,0,0,0.04)',
-            color: isActive ? theme.textLight : '#aaa',
+            backgroundColor: isActive ? theme.accent : '#c9c2b8',
+            color: '#FFFFFF',
           }}
         >
           {diffDays > 0

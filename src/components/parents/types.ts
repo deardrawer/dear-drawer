@@ -162,8 +162,11 @@ export interface ColorTheme {
   primary: string      // 메인 컬러
   accent: string       // 포인트 컬러
   background: string   // 배경 컬러
-  text: string         // 텍스트 컬러
-  textLight: string    // 밝은 텍스트
+  text: string         // 텍스트 컬러 (배경 위)
+  textLight: string    // 밝은 텍스트 (배경 위)
+  tintedBg?: boolean   // 틴티드 배경 모드 여부 (인사말 흰카드·디바이더 숨김 트리거)
+  cardText?: string      // 흰 카드 위 텍스트 (초대글/달력/안내 카드)
+  cardTextLight?: string // 흰 카드 위 밝은 텍스트
 }
 
 // 6가지 컬러 테마
@@ -359,6 +362,9 @@ export interface ParentsInvitationContent {
   // 메인 이미지
   mainImage?: ImageCropData
   mainImageFrame?: string  // 메인사진 프레임 옵션 (프레임 id, 없으면 프레임 없음)
+  coupleHeadline?: string  // 커플 이름 위 커스텀 문구
+  coupleShowLastName?: boolean  // 커플 이름에 성(姓) 포함
+  coupleConnector?: 'and' | 'heart'  // 이름 사이 연결 (and / 하트)
 
   // 갤러리
   gallery: {
@@ -419,7 +425,12 @@ export interface ParentsInvitationContent {
   customPrimaryColor?: string
   customAccentColor?: string
   customBackgroundColor?: string
-  customTextColor?: string  // 본문 텍스트 색 (지정 시 text/textLight 덮어씀)
+  customTextColor?: string  // 배경 위 텍스트 색 (지정 시 text/textLight 덮어씀)
+  cardTextColor?: string    // 흰 카드 위 텍스트 색 (미지정 시 진한 기본색)
+  tintedBg?: boolean        // 틴티드 배경 모드 (켜면 배경 tintedColor, 인사말 흰카드, 디바이더 숨김)
+  tintedColor?: string      // 틴티드 배경 색
+  tintedTextColor?: string  // 틴트 배경 위 텍스트 색 (어두운 틴트에서 가독성용)
+  tintOffSections?: string[] // 틴트 모드에서 흰 배경으로 뺄 섹션 키 목록
   sealColor?: string  // 실링스티커 색상 (hex)
 
   // D-Day 팝업

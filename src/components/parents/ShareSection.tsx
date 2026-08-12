@@ -56,7 +56,7 @@ export default function ShareSection({
       <p
         className="text-center text-xs mb-5 tracking-[1px]"
         style={{
-          color: isActive ? `${theme.accent}80` : '#aaa',
+          color: isActive ? (theme.tintedBg ? theme.text : `${theme.accent}80`) : '#aaa',
           fontWeight: 300,
           ...stagger(hasAppeared, 0),
         }}
@@ -153,11 +153,12 @@ export default function ShareSection({
           className="flex items-center gap-1.5 px-5 py-2.5 text-[11px] tracking-[0.5px] rounded-[5px] transition-all duration-200"
           style={{
             backgroundColor: '#FFFFFF',
+            // 흰 버튼이므로 진한 카드 텍스트 (틴트 텍스트 영향 X)
             border: `1px solid ${isActive ? '#E8E2DA' : '#eee'}`,
-            color: isActive ? theme.textLight : '#aaa',
+            color: isActive ? theme.cardText : '#aaa',
           }}
           onMouseEnter={(e) => { e.currentTarget.style.borderColor = theme.accent; e.currentTarget.style.color = theme.accent; }}
-          onMouseLeave={(e) => { e.currentTarget.style.borderColor = isActive ? '#E8E2DA' : '#eee'; e.currentTarget.style.color = isActive ? theme.textLight : '#aaa'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.borderColor = isActive ? '#E8E2DA' : '#eee'; e.currentTarget.style.color = isActive ? (theme.cardText || theme.text) : '#aaa'; }}
         >
           링크복사
         </button>
@@ -166,7 +167,7 @@ export default function ShareSection({
       <p
         className="text-center text-[10px] mt-12 tracking-[4px]"
         style={{
-          color: isActive ? `${theme.accent}60` : '#ccc',
+          color: isActive ? (theme.tintedBg ? theme.text : `${theme.accent}60`) : '#ccc',
           fontWeight: 300,
           ...stagger(hasAppeared, 0.4),
         }}

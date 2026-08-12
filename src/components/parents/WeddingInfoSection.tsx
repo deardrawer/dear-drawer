@@ -128,14 +128,24 @@ export default function WeddingInfoSection({
         {icon}
       </div>
       <h3
-        className="font-serif text-[15px] mb-4 tracking-[1px]"
-        style={{ color: isActive ? theme.text : '#999', fontWeight: 400 }}
+        className="font-serif text-[15px] mb-3 tracking-[1px]"
+        style={{ color: isActive ? theme.cardText : '#999', fontWeight: 400 }}
       >
         {title}
       </h3>
+      {/* 제목 하단 디바이더 바 */}
+      <div
+        style={{
+          width: '32px',
+          height: '1px',
+          margin: '0 auto 16px',
+          background: isActive ? theme.accent : '#ccc',
+          opacity: 0.5,
+        }}
+      />
       <p
-        className="text-xs leading-[2] whitespace-pre-line"
-        style={{ color: isActive ? theme.textLight : '#aaa' }}
+        className="text-xs leading-[2] whitespace-pre-line break-keep"
+        style={{ color: isActive ? theme.cardTextLight : '#aaa' }}
       >
         {content}
       </p>
@@ -160,7 +170,7 @@ export default function WeddingInfoSection({
           >
             {item.label}
           </p>
-          <p className="text-xs" style={{ color: isActive ? theme.textLight : '#aaa' }}>
+          <p className="text-xs" style={{ color: isActive ? theme.cardTextLight : '#aaa' }}>
             {item.value}
           </p>
         </div>
@@ -213,13 +223,13 @@ export default function WeddingInfoSection({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className="px-4 py-2 text-[11px] tracking-[0.5px] rounded-[5px] transition-all duration-300"
+              className="px-4 py-2 text-[11px] tracking-[0.5px] rounded-full transition-all duration-300"
               style={{
-                backgroundColor: isTabActive ? '#FFFFFF' : 'transparent',
-                border: `1px solid ${isTabActive ? (isActive ? theme.accent : '#ccc') : (isActive ? '#E8E2DA' : '#ddd')}`,
-                color: isTabActive ? (isActive ? theme.accent : '#999') : (isActive ? theme.textLight : '#aaa'),
-                boxShadow: isTabActive ? '0 1px 8px rgba(0,0,0,0.06)' : 'none',
-                fontWeight: isTabActive ? 500 : 300,
+                backgroundColor: isTabActive
+                  ? (isActive ? theme.accent : '#c9c2b8')
+                  : (isActive ? `${theme.accent}14` : '#eee'),
+                color: isTabActive ? '#FFFFFF' : (isActive ? theme.textLight : '#aaa'),
+                fontWeight: isTabActive ? 500 : 400,
               }}
             >
               {tab.label}
@@ -284,13 +294,13 @@ export default function WeddingInfoSection({
             </div>
             <h3
               className="font-serif text-[15px] mb-4 tracking-[1px]"
-              style={{ color: isActive ? theme.text : '#999', fontWeight: 400 }}
+              style={{ color: isActive ? theme.cardText : '#999', fontWeight: 400 }}
             >
               셔틀버스 안내
             </h3>
             <p
               className="text-xs leading-[2] mb-5"
-              style={{ color: isActive ? theme.textLight : '#aaa' }}
+              style={{ color: isActive ? theme.cardTextLight : '#aaa' }}
             >
               {`예식 당일 셔틀버스가 운행될 예정입니다.
 탑승 장소와 시간은 아래 내용을 참고해 주세요.

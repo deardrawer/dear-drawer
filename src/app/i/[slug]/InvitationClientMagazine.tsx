@@ -2696,6 +2696,7 @@ function InvitationClientMagazineContent({
                           const wrap = (el: React.ReactNode) => wrapStyle ? <div key={sectionId} style={wrapStyle}>{el}</div> : el
                           switch (sectionId) {
                             case 'meetTheCouple':
+                              if ((invitation.sectionVisibility as any)?.meetTheCouple === false) return null
                               return wrap(<MeetTheCouple key={wrapStyle ? undefined : sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />)
                             case 'featureInterview':
                               if (invitation.sectionVisibility?.interview === false) return null
@@ -2704,14 +2705,17 @@ function InvitationClientMagazineContent({
                               }
                               return wrap(<FeatureInterview key={wrapStyle ? undefined : sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />)
                             case 'photoSpread':
+                              if ((invitation.sectionVisibility as any)?.gallery === false) return null
                               return wrap(<PhotoSpread key={wrapStyle ? undefined : sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} onOpenLightbox={(idx) => { setLightboxIndex(idx); setLightboxOpen(true) }} bgOverride={getBg(sectionId)} />)
                             case 'youtube':
                               return wrap(<YouTubeSection key={wrapStyle ? undefined : sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} onPlay={handleVideoPlay} onStop={handleVideoStop} />)
                             case 'theDetails':
+                              if ((invitation.sectionVisibility as any)?.info === false) return null
                               return wrap(<TheDetails key={wrapStyle ? undefined : sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />)
                             case 'guidance':
                               return wrap(<GuidanceInfoSection key={wrapStyle ? undefined : sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />)
                             case 'thankYou':
+                              if ((invitation.sectionVisibility as any)?.thankyou === false) return null
                               return wrap(<ThankYouSection key={wrapStyle ? undefined : sectionId} invitation={invitation} fonts={fonts} themeColors={getColors(sectionId)} bgOverride={getBg(sectionId)} />)
                             case 'contacts':
                               if (invitation.sectionVisibility?.bankAccounts === false) return null

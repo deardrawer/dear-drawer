@@ -90,6 +90,26 @@ export default function Step5MenuSettings() {
     rsvp: 'sectionBg',
   }
   const MAGAZINE_TOGGLEABLE: Record<string, { read: () => boolean; write: (checked: boolean) => void }> = {
+    meetTheCouple: {
+      read: () => (invitation.sectionVisibility as any)?.meetTheCouple !== false,
+      write: (checked) => updateNestedField('sectionVisibility.meetTheCouple', checked),
+    },
+    featureInterview: {
+      read: () => (invitation.sectionVisibility as any)?.interview !== false,
+      write: (checked) => updateNestedField('sectionVisibility.interview', checked),
+    },
+    photoSpread: {
+      read: () => (invitation.sectionVisibility as any)?.gallery !== false,
+      write: (checked) => updateNestedField('sectionVisibility.gallery', checked),
+    },
+    theDetails: {
+      read: () => (invitation.sectionVisibility as any)?.info !== false,
+      write: (checked) => updateNestedField('sectionVisibility.info', checked),
+    },
+    thankYou: {
+      read: () => (invitation.sectionVisibility as any)?.thankyou !== false,
+      write: (checked) => updateNestedField('sectionVisibility.thankyou', checked),
+    },
     youtube: {
       read: () => (invitation as any).youtube?.enabled || false,
       write: (checked) => updateNestedField('youtube.enabled', checked),

@@ -1452,7 +1452,7 @@ function DirectionItem({ label, text, fonts, themeColors }: { label: string; tex
       <div style={{ fontFamily: fonts.displayKr, fontSize: '12px', fontWeight: 600, color: themeColors.primary, marginBottom: '6px' }}>
         {label}
       </div>
-      <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: themeColors.gray, whiteSpace: 'pre-line' }}>
+      <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: (themeColors as any).cardGray || themeColors.gray, whiteSpace: 'pre-line' }}>
         {text}
       </p>
     </div>
@@ -1528,7 +1528,7 @@ function GuidanceInfoSection({ invitation, fonts, themeColors, bgOverride }: { i
                   <div style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '3px', color: themeColors.primary, marginBottom: '8px' }}>
                     {fonts.isScript ? item.title : item.title?.toUpperCase()}
                   </div>
-                  <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: themeColors.gray, whiteSpace: 'pre-line' }}>{item.content}</p>
+                  <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: (themeColors as any).cardGray || themeColors.gray, whiteSpace: 'pre-line' }}>{item.content}</p>
                   {item.buttonText && item.url && (
                     <a
                       href={item.url}
@@ -2676,9 +2676,11 @@ function InvitationClientMagazineContent({
                         const getColors = (id: string) => {
                           const isSec = (sectionBgMap[id] || MAGAZINE_DEFAULT_BG[id] || 'sectionBg') === 'sectionBg'
                           if (sectionTextColor && isSec) {
-                            return { ...themeColors, text: sectionTextColor, gray: sectionTextColor + 'CC', buttonText: themeColors.text }
+                            // 섹션 배경 섹션: 본문=섹션텍스트, 반대(카드 위)=전체 배경 텍스트
+                            return { ...themeColors, text: sectionTextColor, gray: sectionTextColor + 'CC', buttonText: themeColors.text, cardText: themeColors.text, cardGray: themeColors.gray } as any
                           }
-                          return { ...themeColors, buttonText: themeColors.text }
+                          // 전체 배경 섹션: 본문=전체텍스트, 반대(카드 위)=섹션 배경 텍스트
+                          return { ...themeColors, buttonText: themeColors.text, cardText: sectionTextColor || themeColors.text, cardGray: sectionTextColor ? sectionTextColor + 'CC' : themeColors.gray } as any
                         }
                         const so = (invitation as any).styleOverrides as StyleOverrides | undefined
                         // Map magazine sectionId → styleOverrides sectionId

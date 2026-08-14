@@ -783,7 +783,7 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
                     return tabs.length > 1 ? (
                       <div className="flex rounded-lg overflow-hidden mb-3" style={{ background: '#fafafa' }}>
                         {tabs.map(tab => (
-                          <button key={tab.key} onClick={() => setDirectionsTab(tab.key)} className="flex-1 py-2.5 text-[10px] transition-all" style={{ background: directionsTab === tab.key ? buttonBg : 'transparent', color: directionsTab === tab.key ? '#fff' : '#777' }}>{tab.label}</button>
+                          <button key={tab.key} onClick={() => setDirectionsTab(tab.key)} className="flex-1 py-2.5 text-[10px] transition-all" style={{ background: directionsTab === tab.key ? selBg : 'transparent', color: directionsTab === tab.key ? selText : '#777' }}>{tab.label}</button>
                         ))}
                       </div>
                     ) : null

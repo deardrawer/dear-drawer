@@ -659,10 +659,15 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
               {/* Location Content */}
               {activeModal === 'location' && (
                 <>
-                  <div className="text-center mb-4">
+                  <div className="text-center mb-2">
                     <p className="text-sm font-medium mb-1" style={{ color: sheetColors.text }}>{invitation?.venue_name || '예식장'}</p>
                     <p className="text-xs" style={{ color: '#aaa' }}>{invitation?.venue_address || '주소를 입력해주세요'}</p>
                   </div>
+                  <button
+                    onClick={() => copyToClipboard(invitation?.venue_address || '')}
+                    className="w-full mb-4 py-2 rounded-lg text-xs"
+                    style={{ background: selBg + '66', color: '#333' }}
+                  >주소 복사</button>
 
                   {/* 지도 앱 버튼 */}
                   <div className="grid grid-cols-3 gap-2 mb-4">
@@ -755,12 +760,6 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
                       </p>
                     </div>
                   )}
-
-                  <button
-                    onClick={() => copyToClipboard(invitation?.venue_address || '')}
-                    className="w-full mt-4 py-2 rounded-lg text-xs"
-                    style={{ background: selBg, color: selText, opacity: 0.4 }}
-                  >주소 복사</button>
                 </>
               )}
 

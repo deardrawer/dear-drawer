@@ -735,10 +735,11 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
               {/* Location Content */}
               {activeModal === 'location' && (
                 <>
-                  <div className="text-center mb-4">
+                  <div className="text-center mb-2">
                     <p className="text-sm font-medium mb-1" style={{ color: '#333' }}>{invitation.venue_name || '예식장'}</p>
                     <p className="text-xs" style={{ color: '#aaa' }}>{invitation.venue_address || '주소를 입력해주세요'}</p>
                   </div>
+                  <button onClick={() => copyToClipboard(invitation.venue_address || '')} className="w-full mb-4 py-2 rounded-lg text-xs" style={{ background: selBg + '66', color: '#333' }}>주소 복사</button>
                   <div className="grid grid-cols-3 gap-2 mb-4">
                     <a href={`https://map.naver.com/v5/search/${encodeURIComponent(invitation.venue_address || '')}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center p-3 rounded-lg" style={{ background: '#fafafa' }}>
                       <div className="w-8 h-8 rounded-full flex items-center justify-center mb-1" style={{ background: '#03C75A' }}><span className="text-white text-xs font-bold">N</span></div>
@@ -824,8 +825,6 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
                       return <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: '#333' }}>{item.text}</p>
                     })()}
                   </div>
-
-                  <button onClick={() => copyToClipboard(invitation.venue_address || '')} className="w-full mt-4 py-2 rounded-lg text-xs" style={{ background: selBg, color: selText, opacity: 0.4 }}>주소 복사</button>
                 </>
               )}
 

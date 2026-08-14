@@ -486,7 +486,11 @@ const Preview = forwardRef<PreviewHandle, object>(function Preview(_, ref) {
                   } : {}),
                 }
               }
-              return themeColors
+              return {
+                ...themeColors,
+                ...((invitation as any).buttonBgColor ? { buttonBg: (invitation as any).buttonBgColor } : {}),
+                ...((invitation as any).buttonTextColor ? { buttonOnText: (invitation as any).buttonTextColor } : {}),
+              } as any
             })()} fonts={fonts} showTooltip={false} invitation={{
                 venue_name: invitation.wedding.venue.name,
                 venue_address: invitation.wedding.venue.address,

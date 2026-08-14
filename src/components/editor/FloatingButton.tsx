@@ -333,7 +333,7 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
           <div className="absolute inset-0 bg-black/50 z-50" onClick={() => setIsBottomSheetOpen(false)} />
           <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 p-6 pb-8" style={{ maxHeight: '70%', boxShadow: '0 -4px 20px rgba(0,0,0,0.15)' }}>
             <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-6" />
-            <h3 className="text-center text-sm mb-6" style={{ fontFamily: fonts.displayKr, color: sheetColors.text, fontWeight: 500 }}>결혼식 정보</h3>
+            <h3 className="text-center text-sm mb-6" style={{ fontFamily: fonts.displayKr, color: '#333', fontWeight: 500 }}>결혼식 정보</h3>
             <div className={`grid gap-3 ${menuItems.length <= 2 ? 'grid-cols-' + menuItems.length : 'grid-cols-2'}`}>
               {menuItems.map((item) => (
                 <button
@@ -349,7 +349,7 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
                 </button>
               ))}
             </div>
-            <button onClick={() => setIsBottomSheetOpen(false)} className="w-full mt-6 py-3 rounded-lg text-xs font-light" style={{ background: buttonBgLight, color: sheetColors.text }}>닫기</button>
+            <button onClick={() => setIsBottomSheetOpen(false)} className="w-full mt-6 py-3 rounded-lg text-xs font-light" style={{ background: (themeColors as any).buttonBg || buttonBgLight, color: (themeColors as any).buttonOnText || sheetColors.text }}>닫기</button>
           </div>
         </>
       )}

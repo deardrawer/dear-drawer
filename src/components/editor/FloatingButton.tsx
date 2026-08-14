@@ -116,8 +116,8 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
   const isDarkTheme = themeColors.background === '#111111' || themeColors.sectionBg === '#111111'
   const sheetColors = {
     sectionBg: isDarkTheme ? '#F5F5F5' : themeColors.sectionBg,
-    text: isDarkTheme ? '#2A2A2A' : themeColors.text,
-    gray: isDarkTheme ? '#888888' : themeColors.gray,
+    text: '#333',
+    gray: '#888888',
     primary: isDarkTheme ? '#2A2A2A' : themeColors.primary,
     closeBg: isDarkTheme ? '#F5F5F5' : themeColors.background,
   }
@@ -319,7 +319,7 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
             boxShadow: '0 4px 12px rgba(0,0,0,0.12)'
           }}
         >
-          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke={themeColors.text} strokeWidth={2} strokeLinecap="round">
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="#777" strokeWidth={2} strokeLinecap="round">
             <line x1="4" y1="6" x2="20" y2="6" />
             <line x1="4" y1="12" x2="20" y2="12" />
             <line x1="4" y1="18" x2="14" y2="18" />
@@ -647,7 +647,7 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
                   <button
                     onClick={closeModal}
                     className="w-full py-3 rounded-lg text-sm transition-opacity"
-                    style={{ background: buttonBg, color: '#fff', opacity: (!rsvpForm.name.trim() || !rsvpForm.attendance) ? 0.4 : 1 }}
+                    style={{ background: (themeColors as any).buttonBg || buttonBg, color: (themeColors as any).buttonOnText || '#fff', opacity: (!rsvpForm.name.trim() || !rsvpForm.attendance) ? 0.4 : 1 }}
                     disabled={!rsvpForm.name.trim() || !rsvpForm.attendance}
                   >제출하기</button>
                 </>
@@ -917,7 +917,7 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
 
             {/* Close Button */}
             <div className="p-4 pt-0 flex-shrink-0">
-              <button onClick={closeModal} className="w-full py-3 rounded-lg text-sm" style={{ background: buttonBgLight, color: sheetColors.text }}>닫기</button>
+              <button onClick={closeModal} className="w-full py-3 rounded-lg text-sm" style={{ background: (themeColors as any).buttonBg || buttonBgLight, color: (themeColors as any).buttonOnText || sheetColors.text }}>닫기</button>
             </div>
           </div>
           <style>{`

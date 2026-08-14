@@ -488,8 +488,10 @@ const Preview = forwardRef<PreviewHandle, object>(function Preview(_, ref) {
               }
               return {
                 ...themeColors,
-                ...((invitation as any).buttonBgColor ? { buttonBg: (invitation as any).buttonBgColor } : {}),
-                ...((invitation as any).buttonTextColor ? { buttonOnText: (invitation as any).buttonTextColor } : {}),
+                ...(invitation.templateId === 'narrative-magazine' ? {
+                  buttonBg: (invitation as any).buttonBgColor || invitation.customAccentColor || themeColors.primary,
+                  buttonOnText: (invitation as any).buttonTextColor || '#FFFFFF',
+                } : {}),
               } as any
             })()} fonts={fonts} showTooltip={false} invitation={{
                 venue_name: invitation.wedding.venue.name,

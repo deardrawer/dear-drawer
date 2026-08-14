@@ -215,6 +215,8 @@ function InvitationPreviewWrapper({ invitation, skipIntro, onIntroScreenChange }
     customSectionBgColor: (invitation as any).customSectionBgColor,
     customDividerColor: (invitation as any).customDividerColor,
     sectionTextColor: (invitation as any).sectionTextColor,
+    buttonBgColor: (invitation as any).buttonBgColor,
+    buttonTextColor: (invitation as any).buttonTextColor,
     displayFont: (invitation as any).displayFont,
     styleOverrides: (invitation as any).styleOverrides,
     editorsNoteImage: (invitation as any).editorsNoteImage,

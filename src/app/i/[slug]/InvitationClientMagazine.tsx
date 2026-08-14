@@ -18,7 +18,7 @@ import { YouTubeLite } from '@/components/invitation/YouTubeLite'
 
 // ===== Types =====
 type ColorTheme = 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-green' | 'luxury-navy' | 'sunset-coral'
-interface ColorConfig { primary: string; secondary: string; accent: string; background: string; sectionBg: string; cardBg: string; divider: string; text: string; gray: string; highlight?: string; buttonText?: string }
+interface ColorConfig { primary: string; secondary: string; accent: string; background: string; sectionBg: string; cardBg: string; divider: string; text: string; gray: string; highlight?: string; buttonText?: string; buttonBg?: string; buttonOnText?: string }
 
 const colorThemes: Record<ColorTheme, ColorConfig> = {
   'classic-rose': { primary: '#C41050', secondary: '#D4768A', accent: '#C41050', background: '#FFFFFF', sectionBg: '#FFF5F5', cardBg: '#FFFFFF', divider: '#E8A0B0', text: '#3d3d3d', gray: '#555555' },
@@ -1607,9 +1607,9 @@ function ContactsSection({ invitation, fonts, themeColors, bgOverride }: { invit
     return accounts.map((acc: any, i: number) => (
       <div key={i} className="flex items-center justify-between py-3" style={{ borderBottom: `0.5px solid ${themeColors.divider}` }}>
         <div>
-          <span style={{ fontFamily: fonts.body, fontSize: '11px', color: themeColors.gray }}>{acc.role}</span>
-          <span style={{ fontFamily: fonts.body, fontSize: '12px', color: themeColors.text, marginLeft: '8px' }}>{acc.bank} {acc.account}</span>
-          {(acc.holder || acc.name) && <span style={{ fontFamily: fonts.body, fontSize: '11px', color: themeColors.gray, marginLeft: '6px' }}>{acc.holder || acc.name}</span>}
+          <span style={{ fontFamily: fonts.body, fontSize: '11px', color: (themeColors as any).cardGray || themeColors.gray }}>{acc.role}</span>
+          <span style={{ fontFamily: fonts.body, fontSize: '12px', color: (themeColors as any).cardText || themeColors.text, marginLeft: '8px' }}>{acc.bank} {acc.account}</span>
+          {(acc.holder || acc.name) && <span style={{ fontFamily: fonts.body, fontSize: '11px', color: (themeColors as any).cardGray || themeColors.gray, marginLeft: '6px' }}>{acc.holder || acc.name}</span>}
         </div>
         <button
           onClick={() => {
@@ -1653,8 +1653,8 @@ function ContactsSection({ invitation, fonts, themeColors, bgOverride }: { invit
             letterSpacing: '2px',
             padding: '12px',
             border: `0.5px solid ${expandedSide === 'groom' ? themeColors.primary : themeColors.divider}`,
-            background: expandedSide === 'groom' ? themeColors.primary : themeColors.cardBg,
-            color: expandedSide === 'groom' ? '#FFFFFF' : (themeColors.buttonText || themeColors.text),
+            background: expandedSide === 'groom' ? (themeColors.buttonBg || themeColors.primary) : themeColors.cardBg,
+            color: expandedSide === 'groom' ? (themeColors.buttonOnText || "#FFFFFF") : (themeColors.buttonText || themeColors.text),
             cursor: 'pointer',
             transition: 'all 0.3s',
             opacity: 0,
@@ -1671,8 +1671,8 @@ function ContactsSection({ invitation, fonts, themeColors, bgOverride }: { invit
             letterSpacing: '2px',
             padding: '12px',
             border: `0.5px solid ${expandedSide === 'bride' ? themeColors.primary : themeColors.divider}`,
-            background: expandedSide === 'bride' ? themeColors.primary : themeColors.cardBg,
-            color: expandedSide === 'bride' ? '#FFFFFF' : (themeColors.buttonText || themeColors.text),
+            background: expandedSide === 'bride' ? (themeColors.buttonBg || themeColors.primary) : themeColors.cardBg,
+            color: expandedSide === 'bride' ? (themeColors.buttonOnText || "#FFFFFF") : (themeColors.buttonText || themeColors.text),
             cursor: 'pointer',
             transition: 'all 0.3s',
             opacity: 0,
@@ -1851,8 +1851,8 @@ function GuestbookSection({ invitation, invitationId, fonts, themeColors, isSamp
             fontSize: '11px',
             letterSpacing: '3px',
             padding: '12px',
-            background: themeColors.primary,
-            color: '#FFFFFF',
+            background: themeColors.buttonBg || themeColors.primary,
+            color: themeColors.buttonOnText || '#FFFFFF',
             border: 'none',
             cursor: 'pointer',
             opacity: submitting ? 0.5 : 1,
@@ -1978,7 +1978,7 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
         )}
       </div>
 
-      <div style={{ background: '#FFFFFF', padding: '24px 20px', border: `0.5px solid ${themeColors.divider}`, transformOrigin: 'top center', opacity: 0, ...(isVisible ? { animation: 'mag-paperUnfold 1.2s cubic-bezier(0.22,1,0.36,1) 0.3s both' } : {}) }}>
+      <div style={{ background: themeColors.cardBg, padding: '24px 20px', border: `0.5px solid ${themeColors.divider}`, transformOrigin: 'top center', opacity: 0, ...(isVisible ? { animation: 'mag-paperUnfold 1.2s cubic-bezier(0.22,1,0.36,1) 0.3s both' } : {}) }}>
       <div className="space-y-4">
         <input
           value={name}
@@ -2009,8 +2009,8 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
                 fontSize: '13px',
                 padding: '12px',
                 border: `0.5px solid ${side === opt.value ? themeColors.primary : themeColors.divider}`,
-                background: side === opt.value ? themeColors.primary : themeColors.cardBg,
-                color: side === opt.value ? '#FFFFFF' : (themeColors.buttonText || themeColors.text),
+                background: side === opt.value ? (themeColors.buttonBg || themeColors.primary) : themeColors.cardBg,
+                color: side === opt.value ? (themeColors.buttonOnText || "#FFFFFF") : (themeColors.buttonText || themeColors.text),
                 cursor: 'pointer',
                 transition: 'all 0.3s',
               }}
@@ -2025,17 +2025,17 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
             <span style={{ fontFamily: fonts.body, fontSize: '13px', color: themeColors.gray, display: 'block', marginBottom: '6px' }}>초대 경로</span>
             <div className="flex gap-2 flex-wrap" style={{ wordBreak: 'keep-all' }}>
               {((side === 'groom' && (invitation.rsvpSideDetailOptions?.groomSelf ?? true)) || (side === 'bride' && (invitation.rsvpSideDetailOptions?.brideSelf ?? true))) && (
-                <button onClick={() => setSideDetail('self')} style={{ flex: 1, fontFamily: fonts.body, fontSize: '12px', padding: '10px', border: `0.5px solid ${sideDetail === 'self' ? themeColors.primary : themeColors.divider}`, background: sideDetail === 'self' ? themeColors.primary : themeColors.cardBg, color: sideDetail === 'self' ? '#FFFFFF' : (themeColors.buttonText || themeColors.text), cursor: 'pointer', transition: 'all 0.3s' }}>
+                <button onClick={() => setSideDetail('self')} style={{ flex: 1, fontFamily: fonts.body, fontSize: '12px', padding: '10px', border: `0.5px solid ${sideDetail === 'self' ? themeColors.primary : themeColors.divider}`, background: sideDetail === 'self' ? (themeColors.buttonBg || themeColors.primary) : themeColors.cardBg, color: sideDetail === 'self' ? (themeColors.buttonOnText || "#FFFFFF") : (themeColors.buttonText || themeColors.text), cursor: 'pointer', transition: 'all 0.3s' }}>
                   {side === 'groom' ? '신랑' : '신부'}
                 </button>
               )}
               {((side === 'groom' && (invitation.rsvpSideDetailOptions?.groomFather ?? true)) || (side === 'bride' && (invitation.rsvpSideDetailOptions?.brideFather ?? true))) && (
-                <button onClick={() => setSideDetail('father')} style={{ flex: 1, fontFamily: fonts.body, fontSize: '12px', padding: '10px', border: `0.5px solid ${sideDetail === 'father' ? themeColors.primary : themeColors.divider}`, background: sideDetail === 'father' ? themeColors.primary : themeColors.cardBg, color: sideDetail === 'father' ? '#FFFFFF' : (themeColors.buttonText || themeColors.text), cursor: 'pointer', transition: 'all 0.3s' }}>
+                <button onClick={() => setSideDetail('father')} style={{ flex: 1, fontFamily: fonts.body, fontSize: '12px', padding: '10px', border: `0.5px solid ${sideDetail === 'father' ? themeColors.primary : themeColors.divider}`, background: sideDetail === 'father' ? (themeColors.buttonBg || themeColors.primary) : themeColors.cardBg, color: sideDetail === 'father' ? (themeColors.buttonOnText || "#FFFFFF") : (themeColors.buttonText || themeColors.text), cursor: 'pointer', transition: 'all 0.3s' }}>
                   {side === 'groom' ? '신랑' : '신부'} 아버지
                 </button>
               )}
               {((side === 'groom' && (invitation.rsvpSideDetailOptions?.groomMother ?? true)) || (side === 'bride' && (invitation.rsvpSideDetailOptions?.brideMother ?? true))) && (
-                <button onClick={() => setSideDetail('mother')} style={{ flex: 1, fontFamily: fonts.body, fontSize: '12px', padding: '10px', border: `0.5px solid ${sideDetail === 'mother' ? themeColors.primary : themeColors.divider}`, background: sideDetail === 'mother' ? themeColors.primary : themeColors.cardBg, color: sideDetail === 'mother' ? '#FFFFFF' : (themeColors.buttonText || themeColors.text), cursor: 'pointer', transition: 'all 0.3s' }}>
+                <button onClick={() => setSideDetail('mother')} style={{ flex: 1, fontFamily: fonts.body, fontSize: '12px', padding: '10px', border: `0.5px solid ${sideDetail === 'mother' ? themeColors.primary : themeColors.divider}`, background: sideDetail === 'mother' ? (themeColors.buttonBg || themeColors.primary) : themeColors.cardBg, color: sideDetail === 'mother' ? (themeColors.buttonOnText || "#FFFFFF") : (themeColors.buttonText || themeColors.text), cursor: 'pointer', transition: 'all 0.3s' }}>
                   {side === 'groom' ? '신랑' : '신부'} 어머니
                 </button>
               )}
@@ -2053,8 +2053,8 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
                 fontSize: '13px',
                 padding: '12px',
                 border: `0.5px solid ${attendance === opt ? themeColors.primary : themeColors.divider}`,
-                background: attendance === opt ? themeColors.primary : themeColors.cardBg,
-                color: attendance === opt ? '#FFFFFF' : (themeColors.buttonText || themeColors.text),
+                background: attendance === opt ? (themeColors.buttonBg || themeColors.primary) : themeColors.cardBg,
+                color: attendance === opt ? (themeColors.buttonOnText || "#FFFFFF") : (themeColors.buttonText || themeColors.text),
                 cursor: 'pointer',
                 transition: 'all 0.3s',
               }}
@@ -2091,7 +2091,7 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
             <div className="grid grid-cols-2 gap-2">
               {([{ v: 'yes' as const, l: '식사 예정' }, { v: 'no' as const, l: '식사 안 함' }]).map(opt => (
                 <button key={opt.v} onClick={() => setMealAttendance(mealAttendance === opt.v ? '' : opt.v)}
-                  style={{ fontFamily: fonts.body, fontSize: '13px', padding: '12px', border: `0.5px solid ${mealAttendance === opt.v ? themeColors.primary : themeColors.divider}`, background: mealAttendance === opt.v ? themeColors.primary : themeColors.cardBg, color: mealAttendance === opt.v ? '#FFFFFF' : (themeColors.buttonText || themeColors.text), cursor: 'pointer', transition: 'all 0.3s' }}>
+                  style={{ fontFamily: fonts.body, fontSize: '13px', padding: '12px', border: `0.5px solid ${mealAttendance === opt.v ? themeColors.primary : themeColors.divider}`, background: mealAttendance === opt.v ? (themeColors.buttonBg || themeColors.primary) : themeColors.cardBg, color: mealAttendance === opt.v ? (themeColors.buttonOnText || "#FFFFFF") : (themeColors.buttonText || themeColors.text), cursor: 'pointer', transition: 'all 0.3s' }}>
                   {opt.l}
                 </button>
               ))}
@@ -2105,7 +2105,7 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
             <div className="grid grid-cols-2 gap-2">
               {([{ v: 'yes' as const, l: '이용 예정' }, { v: 'no' as const, l: '이용 안 함' }]).map(opt => (
                 <button key={opt.v} onClick={() => setShuttleBus(shuttleBus === opt.v ? '' : opt.v)}
-                  style={{ fontFamily: fonts.body, fontSize: '13px', padding: '12px', border: `0.5px solid ${shuttleBus === opt.v ? themeColors.primary : themeColors.divider}`, background: shuttleBus === opt.v ? themeColors.primary : themeColors.cardBg, color: shuttleBus === opt.v ? '#FFFFFF' : (themeColors.buttonText || themeColors.text), cursor: 'pointer', transition: 'all 0.3s' }}>
+                  style={{ fontFamily: fonts.body, fontSize: '13px', padding: '12px', border: `0.5px solid ${shuttleBus === opt.v ? themeColors.primary : themeColors.divider}`, background: shuttleBus === opt.v ? (themeColors.buttonBg || themeColors.primary) : themeColors.cardBg, color: shuttleBus === opt.v ? (themeColors.buttonOnText || "#FFFFFF") : (themeColors.buttonText || themeColors.text), cursor: 'pointer', transition: 'all 0.3s' }}>
                   {opt.l}
                 </button>
               ))}
@@ -2131,8 +2131,8 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
             fontSize: '11px',
             letterSpacing: '3px',
             padding: '14px',
-            background: themeColors.primary,
-            color: '#FFFFFF',
+            background: themeColors.buttonBg || themeColors.primary,
+            color: themeColors.buttonOnText || '#FFFFFF',
             border: 'none',
             cursor: 'pointer',
             opacity: (submitting || !name.trim() || !attendance || (invitation.rsvpSideDetail && !!side && !sideDetail)) ? 0.4 : 1,
@@ -2420,6 +2420,8 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     customBgColor: (content as any).customBgColor,
     customSectionBgColor: (content as any).customSectionBgColor,
     sectionTextColor: (content as any).sectionTextColor,
+    buttonBgColor: (content as any).buttonBgColor,
+    buttonTextColor: (content as any).buttonTextColor,
     accentTextColor: (content as any).accentTextColor || (content as any).colors?.accent,
     bodyTextColor: (content as any).bodyTextColor || (content as any).colors?.text,
     displayFont: (content as any).displayFont,
@@ -2584,6 +2586,8 @@ function InvitationClientMagazineContent({
   const customBgColor = (invitation as any)?.customBgColor
   const customSectionBgColor = (invitation as any)?.customSectionBgColor
   const customSectionText = (invitation as any)?.sectionTextColor
+  const customButtonBg = (invitation as any)?.buttonBgColor
+  const customButtonText = (invitation as any)?.buttonTextColor
   const themeColors: ColorConfig = {
     ...baseThemeColors,
     ...(customAccent ? { primary: customAccent, accent: customAccent, divider: customAccent + '60' } : {}),
@@ -2592,6 +2596,9 @@ function InvitationClientMagazineContent({
     ...(customBgColor ? { background: customBgColor, cardBg: customBgColor } : {}),
     ...(customSectionBgColor ? { sectionBg: customSectionBgColor } : {}),
     ...(customSectionText ? { sectionText: customSectionText } : {}),
+    // 버튼 배경/글자 (미지정 시 기존 동작: 포인트색 배경 + 흰 글자)
+    buttonBg: customButtonBg || (customAccent || baseThemeColors.primary),
+    buttonOnText: customButtonText || '#FFFFFF',
   }
   const baseFonts = fontStyles[effectiveFontStyle]
   const isScriptFont = invitation?.displayFont === 'greatvibes'

@@ -898,6 +898,26 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
             </div>
           )}
 
+          {/* 매거진 버튼 색상 (포인트색과 분리) */}
+          {isMagazine && (
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-700">버튼 색상</p>
+                <p className="text-xs text-gray-500">버튼 색상 (미지정 시 포인트색)</p>
+              </div>
+              <ColorField label="버튼 색상" value={(invitation as any).buttonBgColor || (invitation as any).customAccentColor || '#333333'} onChange={(hex) => updateField('buttonBgColor' as any, hex)} />
+            </div>
+          )}
+          {isMagazine && (
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-700">버튼 글자색</p>
+                <p className="text-xs text-gray-500">버튼 위 글자색</p>
+              </div>
+              <ColorField label="버튼 글자색" value={(invitation as any).buttonTextColor || '#FFFFFF'} onChange={(hex) => updateField('buttonTextColor' as any, hex)} />
+            </div>
+          )}
+
           {/* 강조 텍스트 색상 (매거진 제외) */}
           {!isMagazine && (
             <>

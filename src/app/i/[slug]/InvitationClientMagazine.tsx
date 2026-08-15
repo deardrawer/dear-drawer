@@ -191,6 +191,7 @@ const magazineIntroStyles = `
 
 // ===== Magazine Section Scroll Animation Keyframes =====
 const magazineSectionStyles = `
+  .mag-field::placeholder { color: var(--mag-ph, #9aa0a6); opacity: 1; }
   @keyframes mag-sectionFadeIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes mag-dropCapScale { from { opacity: 0; transform: scale(1.5); } to { opacity: 1; transform: scale(1); } }
   @keyframes mag-lineReveal { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
@@ -609,7 +610,7 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
 }
 
 // ===== Editor's Note Section =====
-function EditorsNote({ invitation, fonts, themeColors }: { invitation: any; fonts: FontConfig; themeColors: ColorConfig }) {
+function EditorsNote({ invitation, fonts, themeColors, bgOverride }: { invitation: any; fonts: FontConfig; themeColors: ColorConfig; bgOverride?: string }) {
   const mst = invitation.magazineSectionTitles || {}
   const getTitle = (section: string, type: 'main' | 'sub', defaultVal: string) => {
     const val = (mst as any)[section]?.[type]
@@ -630,7 +631,7 @@ function EditorsNote({ invitation, fonts, themeColors }: { invitation: any; font
   const noteImageRatio = invitation.editorsNoteImageRatio || 'landscape'
 
   return (
-    <div style={{ position: 'sticky', top: '44px', zIndex: 5, backgroundColor: themeColors.background }}>
+    <div style={{ position: 'sticky', top: '44px', zIndex: 5, backgroundColor: bgOverride || themeColors.background }}>
       {/* Editor's Note 상단 사진 (옵션) */}
       {noteImage && (
         <div className="px-6 pt-16 pb-0" style={{ opacity: 0, ...(show ? { animation: 'mag-sectionFadeIn 1s ease 0.2s both' } : {}) }}>
@@ -1448,8 +1449,8 @@ function TheDetails({ invitation, fonts, themeColors, bgOverride }: { invitation
 
 function DirectionItem({ label, text, fonts, themeColors }: { label: string; text: string; fonts: FontConfig; themeColors: ColorConfig }) {
   return (
-    <div style={{ padding: '12px 16px', background: themeColors.sectionBg, borderLeft: `2px solid ${themeColors.primary}` }}>
-      <div style={{ fontFamily: fonts.displayKr, fontSize: '12px', fontWeight: 600, color: themeColors.primary, marginBottom: '6px' }}>
+    <div style={{ padding: '12px 16px', background: (themeColors as any).cardSurface || themeColors.sectionBg, borderLeft: `2px solid ${(themeColors as any).cardAccent || themeColors.primary}` }}>
+      <div style={{ fontFamily: fonts.displayKr, fontSize: '12px', fontWeight: 600, color: (themeColors as any).cardAccent || themeColors.primary, marginBottom: '6px' }}>
         {label}
       </div>
       <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: (themeColors as any).cardGray || themeColors.gray, whiteSpace: 'pre-line' }}>
@@ -1524,8 +1525,8 @@ function GuidanceInfoSection({ invitation, fonts, themeColors, bgOverride }: { i
               if (!item?.enabled || !item?.content) return null
 
               return (
-                <div key={i} style={{ padding: '16px', background: themeColors.cardBg, border: `0.5px solid ${themeColors.divider}`, transformOrigin: 'top center', opacity: 0, ...(isVisible ? { animation: `mag-expandIn 0.6s ease ${0.2 + i * 0.15}s both` } : {}) }}>
-                  <div style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '3px', color: themeColors.primary, marginBottom: '8px' }}>
+                <div key={i} style={{ padding: '16px', background: (themeColors as any).cardSurface || themeColors.cardBg, border: `0.5px solid ${(themeColors as any).cardDivider || themeColors.divider}`, transformOrigin: 'top center', opacity: 0, ...(isVisible ? { animation: `mag-expandIn 0.6s ease ${0.2 + i * 0.15}s both` } : {}) }}>
+                  <div style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '3px', color: (themeColors as any).cardAccent || themeColors.primary, marginBottom: '8px' }}>
                     {fonts.isScript ? item.title : item.title?.toUpperCase()}
                   </div>
                   <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: (themeColors as any).cardGray || themeColors.gray, whiteSpace: 'pre-line' }}>{item.content}</p>
@@ -1605,7 +1606,7 @@ function ContactsSection({ invitation, fonts, themeColors, bgOverride }: { invit
     ].filter(Boolean)
 
     return accounts.map((acc: any, i: number) => (
-      <div key={i} className="flex items-center justify-between py-3" style={{ borderBottom: `0.5px solid ${themeColors.divider}` }}>
+      <div key={i} className="flex items-center justify-between py-3" style={{ borderBottom: `0.5px solid ${(themeColors as any).cardDivider || themeColors.divider}` }}>
         <div>
           <span style={{ fontFamily: fonts.body, fontSize: '11px', color: (themeColors as any).cardGray || themeColors.gray }}>{acc.role}</span>
           <span style={{ fontFamily: fonts.body, fontSize: '12px', color: (themeColors as any).cardText || themeColors.text, marginLeft: '8px' }}>{acc.bank} {acc.account}</span>
@@ -1620,9 +1621,9 @@ function ContactsSection({ invitation, fonts, themeColors, bgOverride }: { invit
             fontFamily: fonts.display,
             fontSize: '10px',
             letterSpacing: '1px',
-            color: themeColors.primary,
+            color: (themeColors as any).cardAccent || themeColors.primary,
             background: 'none',
-            border: `0.5px solid ${themeColors.primary}`,
+            border: `0.5px solid ${(themeColors as any).cardAccent || themeColors.primary}`,
             padding: '4px 12px',
             cursor: 'pointer',
           }}
@@ -1684,7 +1685,7 @@ function ContactsSection({ invitation, fonts, themeColors, bgOverride }: { invit
       </div>
 
       {expandedSide && (
-        <div className="transition-all duration-300" style={{ padding: '12px 16px', background: themeColors.cardBg }}>
+        <div className="transition-all duration-300" style={{ padding: '12px 16px', background: (themeColors as any).cardSurface || themeColors.cardBg }}>
           {renderAccounts(expandedSide)}
         </div>
       )}
@@ -1826,21 +1827,23 @@ function GuestbookSection({ invitation, invitationId, fonts, themeColors, isSamp
       {/* Form */}
       <div className="mb-8 space-y-3" style={{ opacity: 0, ...(isVisible ? { animation: 'mag-formFadeIn 0.7s ease 0.2s both' } : {}) }}>
         <input
+            className="mag-field"
             value={name}
             onChange={e => setName(e.target.value)}
             onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
             placeholder="이름"
             maxLength={20}
-            style={{ fontFamily: fonts.body, fontSize: '13px', padding: '10px 12px', border: `0.5px solid ${themeColors.divider}`, background: themeColors.cardBg, outline: 'none', width: '100%', color: themeColors.buttonText || themeColors.text }}
+            style={{ fontFamily: fonts.body, fontSize: '13px', padding: '10px 12px', border: `0.5px solid ${(themeColors as any).cardDivider || themeColors.divider}`, background: (themeColors as any).cardSurface || themeColors.cardBg, outline: 'none', width: '100%', color: (themeColors as any).cardText || themeColors.text, ['--mag-ph' as any]: (themeColors as any).cardGray || themeColors.gray }}
           />
         <textarea
+          className="mag-field"
           value={message}
           onChange={e => setMessage(e.target.value)}
           onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
           placeholder="메시지를 남겨주세요 (100자 이내)"
           rows={3}
           maxLength={100}
-          style={{ fontFamily: fonts.body, fontSize: '13px', padding: '10px 12px', border: `0.5px solid ${themeColors.divider}`, background: themeColors.cardBg, outline: 'none', width: '100%', resize: 'none', color: themeColors.buttonText || themeColors.text }}
+          style={{ fontFamily: fonts.body, fontSize: '13px', padding: '10px 12px', border: `0.5px solid ${(themeColors as any).cardDivider || themeColors.divider}`, background: (themeColors as any).cardSurface || themeColors.cardBg, outline: 'none', width: '100%', resize: 'none', color: (themeColors as any).cardText || themeColors.text, ['--mag-ph' as any]: (themeColors as any).cardGray || themeColors.gray }}
         />
         <button
           onClick={handleSubmit}
@@ -1870,16 +1873,16 @@ function GuestbookSection({ invitation, invitationId, fonts, themeColors, isSamp
       ) : (
         <div className="space-y-3">
           {(showAllMessages ? messages : messages.slice(0, 5)).map((msg: any, i: number) => (
-            <div key={msg.id || i} style={{ padding: '14px 16px', border: `0.5px solid ${themeColors.divider}`, background: themeColors.cardBg, opacity: 0, ...(isVisible ? { animation: `${i % 2 === 0 ? 'mag-msgSlideOdd' : 'mag-msgSlideEven'} 0.6s ease ${0.3 + i * 0.1}s both` } : {}) }}>
+            <div key={msg.id || i} style={{ padding: '14px 16px', border: `0.5px solid ${(themeColors as any).cardDivider || themeColors.divider}`, background: (themeColors as any).cardSurface || themeColors.cardBg, opacity: 0, ...(isVisible ? { animation: `${i % 2 === 0 ? 'mag-msgSlideOdd' : 'mag-msgSlideEven'} 0.6s ease ${0.3 + i * 0.1}s both` } : {}) }}>
               {invitation.content?.guestbookShowQuestion !== false && msg.question && (
-                <p style={{ fontFamily: fonts.body, fontSize: '10px', color: themeColors.gray, marginBottom: '6px', opacity: 0.7 }}>
+                <p style={{ fontFamily: fonts.body, fontSize: '10px', color: (themeColors as any).cardGray || themeColors.gray, marginBottom: '6px', opacity: 0.7 }}>
                   Q. {msg.question}
                 </p>
               )}
-              <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: themeColors.text, marginBottom: '8px', whiteSpace: 'pre-line' }}>{msg.message}</p>
+              <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: (themeColors as any).cardText || themeColors.text, marginBottom: '8px', whiteSpace: 'pre-line' }}>{msg.message}</p>
               <div className="flex items-center justify-between">
-                <span style={{ fontFamily: fonts.body, fontSize: '11px', fontWeight: 500, color: themeColors.gray }}>— {msg.guest_name}</span>
-                <span style={{ fontFamily: fonts.display, fontSize: '10px', color: themeColors.gray, opacity: 0.5 }}>
+                <span style={{ fontFamily: fonts.body, fontSize: '11px', fontWeight: 500, color: (themeColors as any).cardGray || themeColors.gray }}>— {msg.guest_name}</span>
+                <span style={{ fontFamily: fonts.display, fontSize: '10px', color: (themeColors as any).cardGray || themeColors.gray, opacity: 0.5 }}>
                   {msg.created_at ? new Date(msg.created_at).toLocaleDateString() : ''}
                 </span>
               </div>
@@ -1978,24 +1981,26 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
         )}
       </div>
 
-      <div style={{ background: themeColors.cardBg, padding: '24px 20px', border: `0.5px solid ${themeColors.divider}`, transformOrigin: 'top center', opacity: 0, ...(isVisible ? { animation: 'mag-paperUnfold 1.2s cubic-bezier(0.22,1,0.36,1) 0.3s both' } : {}) }}>
+      <div style={{ background: ((themeColors as any).cardSurface || themeColors.cardBg), padding: '24px 20px', border: `0.5px solid ${((themeColors as any).cardDivider || themeColors.divider)}`, transformOrigin: 'top center', opacity: 0, ...(isVisible ? { animation: 'mag-paperUnfold 1.2s cubic-bezier(0.22,1,0.36,1) 0.3s both' } : {}) }}>
       <div className="space-y-4">
         <input
+          className="mag-field"
           value={name}
           onChange={e => setName(e.target.value)}
           onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
           placeholder="성함"
-          style={{ fontFamily: fonts.body, fontSize: '13px', padding: '10px 12px', border: `0.5px solid ${themeColors.divider}`, background: themeColors.cardBg, outline: 'none', width: '100%', color: themeColors.buttonText || themeColors.text }}
+          style={{ fontFamily: fonts.body, fontSize: '13px', padding: '10px 12px', border: `0.5px solid ${((themeColors as any).cardDivider || themeColors.divider)}`, background: ((themeColors as any).cardSurface || themeColors.cardBg), outline: 'none', width: '100%', color: (themeColors as any).cardText || themeColors.text, ['--mag-ph' as any]: (themeColors as any).cardGray || themeColors.gray }}
         />
 
         {invitation.rsvpPhoneOption && (
           <input
+            className="mag-field"
             value={phone}
             onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 4))}
             inputMode="numeric"
             maxLength={4}
             placeholder="연락처 뒷자리 4자리"
-            style={{ fontFamily: fonts.body, fontSize: '13px', padding: '10px 12px', border: `0.5px solid ${themeColors.divider}`, background: themeColors.cardBg, outline: 'none', width: '100%', color: themeColors.buttonText || themeColors.text }}
+            style={{ fontFamily: fonts.body, fontSize: '13px', padding: '10px 12px', border: `0.5px solid ${((themeColors as any).cardDivider || themeColors.divider)}`, background: ((themeColors as any).cardSurface || themeColors.cardBg), outline: 'none', width: '100%', color: (themeColors as any).cardText || themeColors.text, ['--mag-ph' as any]: (themeColors as any).cardGray || themeColors.gray }}
           />
         )}
 
@@ -2008,9 +2013,9 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
                 fontFamily: fonts.body,
                 fontSize: '13px',
                 padding: '12px',
-                border: `0.5px solid ${side === opt.value ? 'transparent' : themeColors.divider}`,
-                background: side === opt.value ? (themeColors.buttonBg || themeColors.primary) : themeColors.cardBg,
-                color: side === opt.value ? (themeColors.buttonOnText || "#FFFFFF") : (themeColors.buttonText || themeColors.text),
+                border: `0.5px solid ${side === opt.value ? 'transparent' : ((themeColors as any).cardDivider || themeColors.divider)}`,
+                background: side === opt.value ? (themeColors.buttonBg || themeColors.primary) : ((themeColors as any).cardSurface || themeColors.cardBg),
+                color: side === opt.value ? (themeColors.buttonOnText || "#FFFFFF") : ((themeColors as any).cardText || themeColors.text),
                 cursor: 'pointer',
                 transition: 'all 0.3s',
               }}
@@ -2022,20 +2027,20 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
 
         {invitation.rsvpSideDetail && side && (
           <div>
-            <span style={{ fontFamily: fonts.body, fontSize: '13px', color: themeColors.gray, display: 'block', marginBottom: '6px' }}>초대 경로</span>
+            <span style={{ fontFamily: fonts.body, fontSize: '13px', color: ((themeColors as any).cardGray || themeColors.gray), display: 'block', marginBottom: '6px' }}>초대 경로</span>
             <div className="flex gap-2 flex-wrap" style={{ wordBreak: 'keep-all' }}>
               {((side === 'groom' && (invitation.rsvpSideDetailOptions?.groomSelf ?? true)) || (side === 'bride' && (invitation.rsvpSideDetailOptions?.brideSelf ?? true))) && (
-                <button onClick={() => setSideDetail('self')} style={{ flex: 1, fontFamily: fonts.body, fontSize: '12px', padding: '10px', border: `0.5px solid ${sideDetail === 'self' ? 'transparent' : themeColors.divider}`, background: sideDetail === 'self' ? (themeColors.buttonBg || themeColors.primary) : themeColors.cardBg, color: sideDetail === 'self' ? (themeColors.buttonOnText || "#FFFFFF") : (themeColors.buttonText || themeColors.text), cursor: 'pointer', transition: 'all 0.3s' }}>
+                <button onClick={() => setSideDetail('self')} style={{ flex: 1, fontFamily: fonts.body, fontSize: '12px', padding: '10px', border: `0.5px solid ${sideDetail === 'self' ? 'transparent' : ((themeColors as any).cardDivider || themeColors.divider)}`, background: sideDetail === 'self' ? (themeColors.buttonBg || themeColors.primary) : ((themeColors as any).cardSurface || themeColors.cardBg), color: sideDetail === 'self' ? (themeColors.buttonOnText || "#FFFFFF") : ((themeColors as any).cardText || themeColors.text), cursor: 'pointer', transition: 'all 0.3s' }}>
                   {side === 'groom' ? '신랑' : '신부'}
                 </button>
               )}
               {((side === 'groom' && (invitation.rsvpSideDetailOptions?.groomFather ?? true)) || (side === 'bride' && (invitation.rsvpSideDetailOptions?.brideFather ?? true))) && (
-                <button onClick={() => setSideDetail('father')} style={{ flex: 1, fontFamily: fonts.body, fontSize: '12px', padding: '10px', border: `0.5px solid ${sideDetail === 'father' ? 'transparent' : themeColors.divider}`, background: sideDetail === 'father' ? (themeColors.buttonBg || themeColors.primary) : themeColors.cardBg, color: sideDetail === 'father' ? (themeColors.buttonOnText || "#FFFFFF") : (themeColors.buttonText || themeColors.text), cursor: 'pointer', transition: 'all 0.3s' }}>
+                <button onClick={() => setSideDetail('father')} style={{ flex: 1, fontFamily: fonts.body, fontSize: '12px', padding: '10px', border: `0.5px solid ${sideDetail === 'father' ? 'transparent' : ((themeColors as any).cardDivider || themeColors.divider)}`, background: sideDetail === 'father' ? (themeColors.buttonBg || themeColors.primary) : ((themeColors as any).cardSurface || themeColors.cardBg), color: sideDetail === 'father' ? (themeColors.buttonOnText || "#FFFFFF") : ((themeColors as any).cardText || themeColors.text), cursor: 'pointer', transition: 'all 0.3s' }}>
                   {side === 'groom' ? '신랑' : '신부'} 아버지
                 </button>
               )}
               {((side === 'groom' && (invitation.rsvpSideDetailOptions?.groomMother ?? true)) || (side === 'bride' && (invitation.rsvpSideDetailOptions?.brideMother ?? true))) && (
-                <button onClick={() => setSideDetail('mother')} style={{ flex: 1, fontFamily: fonts.body, fontSize: '12px', padding: '10px', border: `0.5px solid ${sideDetail === 'mother' ? 'transparent' : themeColors.divider}`, background: sideDetail === 'mother' ? (themeColors.buttonBg || themeColors.primary) : themeColors.cardBg, color: sideDetail === 'mother' ? (themeColors.buttonOnText || "#FFFFFF") : (themeColors.buttonText || themeColors.text), cursor: 'pointer', transition: 'all 0.3s' }}>
+                <button onClick={() => setSideDetail('mother')} style={{ flex: 1, fontFamily: fonts.body, fontSize: '12px', padding: '10px', border: `0.5px solid ${sideDetail === 'mother' ? 'transparent' : ((themeColors as any).cardDivider || themeColors.divider)}`, background: sideDetail === 'mother' ? (themeColors.buttonBg || themeColors.primary) : ((themeColors as any).cardSurface || themeColors.cardBg), color: sideDetail === 'mother' ? (themeColors.buttonOnText || "#FFFFFF") : ((themeColors as any).cardText || themeColors.text), cursor: 'pointer', transition: 'all 0.3s' }}>
                   {side === 'groom' ? '신랑' : '신부'} 어머니
                 </button>
               )}
@@ -2052,9 +2057,9 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
                 fontFamily: fonts.body,
                 fontSize: '13px',
                 padding: '12px',
-                border: `0.5px solid ${attendance === opt ? 'transparent' : themeColors.divider}`,
-                background: attendance === opt ? (themeColors.buttonBg || themeColors.primary) : themeColors.cardBg,
-                color: attendance === opt ? (themeColors.buttonOnText || "#FFFFFF") : (themeColors.buttonText || themeColors.text),
+                border: `0.5px solid ${attendance === opt ? 'transparent' : ((themeColors as any).cardDivider || themeColors.divider)}`,
+                background: attendance === opt ? (themeColors.buttonBg || themeColors.primary) : ((themeColors as any).cardSurface || themeColors.cardBg),
+                color: attendance === opt ? (themeColors.buttonOnText || "#FFFFFF") : ((themeColors as any).cardText || themeColors.text),
                 cursor: 'pointer',
                 transition: 'all 0.3s',
               }}
@@ -2066,18 +2071,18 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
 
         {attendance === 'yes' && invitation.rsvpAllowGuestCount && (
           <div className="flex items-center gap-3">
-            <span style={{ fontFamily: fonts.body, fontSize: '13px', color: themeColors.gray }}>참석 인원</span>
+            <span style={{ fontFamily: fonts.body, fontSize: '13px', color: ((themeColors as any).cardGray || themeColors.gray) }}>참석 인원</span>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setGuestCount(Math.max(1, guestCount - 1))}
-                style={{ width: '32px', height: '32px', border: `0.5px solid ${themeColors.divider}`, background: themeColors.cardBg, cursor: 'pointer', fontSize: '16px', color: themeColors.buttonText || themeColors.text }}
+                style={{ width: '32px', height: '32px', border: `0.5px solid ${((themeColors as any).cardDivider || themeColors.divider)}`, background: ((themeColors as any).cardSurface || themeColors.cardBg), cursor: 'pointer', fontSize: '16px', color: (themeColors as any).cardText || themeColors.text }}
               >
                 -
               </button>
-              <span style={{ fontFamily: fonts.display, fontSize: '14px', width: '32px', textAlign: 'center', color: themeColors.buttonText || themeColors.text }}>{guestCount}</span>
+              <span style={{ fontFamily: fonts.display, fontSize: '14px', width: '32px', textAlign: 'center', color: (themeColors as any).cardText || themeColors.text }}>{guestCount}</span>
               <button
                 onClick={() => setGuestCount(guestCount + 1)}
-                style={{ width: '32px', height: '32px', border: `0.5px solid ${themeColors.divider}`, background: themeColors.cardBg, cursor: 'pointer', fontSize: '16px', color: themeColors.buttonText || themeColors.text }}
+                style={{ width: '32px', height: '32px', border: `0.5px solid ${((themeColors as any).cardDivider || themeColors.divider)}`, background: ((themeColors as any).cardSurface || themeColors.cardBg), cursor: 'pointer', fontSize: '16px', color: (themeColors as any).cardText || themeColors.text }}
               >
                 +
               </button>
@@ -2087,11 +2092,11 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
 
         {invitation.rsvpMealOption && attendance === 'yes' && (
           <div>
-            <span style={{ fontFamily: fonts.body, fontSize: '13px', color: themeColors.gray, display: 'block', marginBottom: '6px' }}>식사 여부</span>
+            <span style={{ fontFamily: fonts.body, fontSize: '13px', color: ((themeColors as any).cardGray || themeColors.gray), display: 'block', marginBottom: '6px' }}>식사 여부</span>
             <div className="grid grid-cols-2 gap-2">
               {([{ v: 'yes' as const, l: '식사 예정' }, { v: 'no' as const, l: '식사 안 함' }]).map(opt => (
                 <button key={opt.v} onClick={() => setMealAttendance(mealAttendance === opt.v ? '' : opt.v)}
-                  style={{ fontFamily: fonts.body, fontSize: '13px', padding: '12px', border: `0.5px solid ${mealAttendance === opt.v ? 'transparent' : themeColors.divider}`, background: mealAttendance === opt.v ? (themeColors.buttonBg || themeColors.primary) : themeColors.cardBg, color: mealAttendance === opt.v ? (themeColors.buttonOnText || "#FFFFFF") : (themeColors.buttonText || themeColors.text), cursor: 'pointer', transition: 'all 0.3s' }}>
+                  style={{ fontFamily: fonts.body, fontSize: '13px', padding: '12px', border: `0.5px solid ${mealAttendance === opt.v ? 'transparent' : ((themeColors as any).cardDivider || themeColors.divider)}`, background: mealAttendance === opt.v ? (themeColors.buttonBg || themeColors.primary) : ((themeColors as any).cardSurface || themeColors.cardBg), color: mealAttendance === opt.v ? (themeColors.buttonOnText || "#FFFFFF") : ((themeColors as any).cardText || themeColors.text), cursor: 'pointer', transition: 'all 0.3s' }}>
                   {opt.l}
                 </button>
               ))}
@@ -2101,11 +2106,11 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
 
         {invitation.rsvpShuttleOption && attendance === 'yes' && (
           <div>
-            <span style={{ fontFamily: fonts.body, fontSize: '13px', color: themeColors.gray, display: 'block', marginBottom: '6px' }}>대절버스 이용 여부</span>
+            <span style={{ fontFamily: fonts.body, fontSize: '13px', color: ((themeColors as any).cardGray || themeColors.gray), display: 'block', marginBottom: '6px' }}>대절버스 이용 여부</span>
             <div className="grid grid-cols-2 gap-2">
               {([{ v: 'yes' as const, l: '이용 예정' }, { v: 'no' as const, l: '이용 안 함' }]).map(opt => (
                 <button key={opt.v} onClick={() => setShuttleBus(shuttleBus === opt.v ? '' : opt.v)}
-                  style={{ fontFamily: fonts.body, fontSize: '13px', padding: '12px', border: `0.5px solid ${shuttleBus === opt.v ? 'transparent' : themeColors.divider}`, background: shuttleBus === opt.v ? (themeColors.buttonBg || themeColors.primary) : themeColors.cardBg, color: shuttleBus === opt.v ? (themeColors.buttonOnText || "#FFFFFF") : (themeColors.buttonText || themeColors.text), cursor: 'pointer', transition: 'all 0.3s' }}>
+                  style={{ fontFamily: fonts.body, fontSize: '13px', padding: '12px', border: `0.5px solid ${shuttleBus === opt.v ? 'transparent' : ((themeColors as any).cardDivider || themeColors.divider)}`, background: shuttleBus === opt.v ? (themeColors.buttonBg || themeColors.primary) : ((themeColors as any).cardSurface || themeColors.cardBg), color: shuttleBus === opt.v ? (themeColors.buttonOnText || "#FFFFFF") : ((themeColors as any).cardText || themeColors.text), cursor: 'pointer', transition: 'all 0.3s' }}>
                   {opt.l}
                 </button>
               ))}
@@ -2114,12 +2119,13 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
         )}
 
         <textarea
+          className="mag-field"
           value={rsvpMessage}
           onChange={e => setRsvpMessage(e.target.value)}
           placeholder={invitation.rsvpMessagePlaceholder || "전하고 싶은 말 (선택)"}
           rows={2}
           onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
-          style={{ fontFamily: fonts.body, fontSize: '13px', padding: '10px 12px', border: `0.5px solid ${themeColors.divider}`, background: themeColors.cardBg, outline: 'none', width: '100%', resize: 'none', color: themeColors.buttonText || themeColors.text }}
+          style={{ fontFamily: fonts.body, fontSize: '13px', padding: '10px 12px', border: `0.5px solid ${((themeColors as any).cardDivider || themeColors.divider)}`, background: ((themeColors as any).cardSurface || themeColors.cardBg), outline: 'none', width: '100%', resize: 'none', color: (themeColors as any).cardText || themeColors.text, ['--mag-ph' as any]: (themeColors as any).cardGray || themeColors.gray }}
         />
 
         <button
@@ -2420,6 +2426,8 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     customBgColor: (content as any).customBgColor,
     customSectionBgColor: (content as any).customSectionBgColor,
     sectionTextColor: (content as any).sectionTextColor,
+    sectionAccentColor: (content as any).sectionAccentColor,
+    magazineBoxContrastMap: (content as any).magazineBoxContrastMap,
     buttonBgColor: (content as any).buttonBgColor,
     buttonTextColor: (content as any).buttonTextColor,
     accentTextColor: (content as any).accentTextColor || (content as any).colors?.accent,
@@ -2456,6 +2464,7 @@ const displayFontMap: Record<string, string> = {
 }
 
 const MAGAZINE_DEFAULT_BG: Record<string, 'background' | 'sectionBg'> = {
+  greeting: 'background',
   meetTheCouple: 'sectionBg',
   featureInterview: 'sectionBg',
   photoSpread: 'background',
@@ -2466,6 +2475,48 @@ const MAGAZINE_DEFAULT_BG: Record<string, 'background' | 'sectionBg'> = {
   contacts: 'sectionBg',
   guestbook: 'background',
   rsvp: 'sectionBg',
+}
+
+// 섹션 배경 종류 (전체 배경 / 섹션 틴티드 배경)
+function getMagazineSectionBg(invitation: any, themeColors: ColorConfig, id: string): string {
+  const sectionBgMap: Record<string, 'background' | 'sectionBg'> = invitation?.magazineSectionBgMap || MAGAZINE_DEFAULT_BG
+  return themeColors[sectionBgMap[id] || MAGAZINE_DEFAULT_BG[id] || 'sectionBg']
+}
+
+// 섹션별 색상 세트 (본문 텍스트 + 카드/박스 색). EditorsNote·본문 섹션이 공유
+function getMagazineSectionColors(invitation: any, themeColors: ColorConfig, id: string): any {
+  const sectionBgMap: Record<string, 'background' | 'sectionBg'> = invitation?.magazineSectionBgMap || MAGAZINE_DEFAULT_BG
+  const isSec = (sectionBgMap[id] || MAGAZINE_DEFAULT_BG[id] || 'sectionBg') === 'sectionBg'
+  const sectionTextColor = (themeColors as any).sectionText
+  const sectionAccentColor = (themeColors as any).sectionAccent
+  // 박스 반대색 여부: 섹션별 지정(magazineBoxContrastMap[id]) / 미지정 시 기본 true(반대색)
+  const boxContrast = invitation?.magazineBoxContrastMap?.[id] !== false
+  // 섹션(틴티드) 배경에서만 포인트색을 별도 지정색으로 교체
+  const accentOverride = (sectionAccentColor && isSec)
+    ? { primary: sectionAccentColor, accent: sectionAccentColor, divider: sectionAccentColor + '60' }
+    : {}
+  // 카드(박스) 색: boxContrast면 섹션 배경과 반대 쪽, 아니면 섹션과 동일 쪽
+  const oppSurface = isSec ? themeColors.cardBg : themeColors.sectionBg
+  const oppText = isSec ? themeColors.text : (sectionTextColor || themeColors.text)
+  const oppGray = isSec ? themeColors.gray : (sectionTextColor ? sectionTextColor + 'CC' : themeColors.gray)
+  const oppAccent = isSec ? themeColors.primary : (sectionAccentColor || themeColors.primary)
+  const oppDivider = isSec ? themeColors.divider : (sectionAccentColor ? sectionAccentColor + '60' : themeColors.divider)
+  const sameSurface = isSec ? themeColors.sectionBg : themeColors.cardBg
+  const sameText = isSec ? (sectionTextColor || themeColors.text) : themeColors.text
+  const sameGray = isSec ? (sectionTextColor ? sectionTextColor + 'CC' : themeColors.gray) : themeColors.gray
+  const sameAccent = isSec ? (sectionAccentColor || themeColors.primary) : themeColors.primary
+  const sameDivider = isSec ? (sectionAccentColor ? sectionAccentColor + '60' : themeColors.divider) : themeColors.divider
+  const cardSurface = boxContrast ? oppSurface : sameSurface
+  const cardText = boxContrast ? oppText : sameText
+  const cardGray = boxContrast ? oppGray : sameGray
+  const cardAccent = boxContrast ? oppAccent : sameAccent
+  const cardDivider = boxContrast ? oppDivider : sameDivider
+  if (sectionTextColor && isSec) {
+    // 섹션 배경 섹션: 본문=섹션텍스트
+    return { ...themeColors, ...accentOverride, text: sectionTextColor, gray: sectionTextColor + 'CC', buttonText: themeColors.text, cardText, cardGray, cardSurface, cardAccent, cardDivider }
+  }
+  // 전체 배경 섹션: 본문=전체텍스트
+  return { ...themeColors, ...accentOverride, buttonText: themeColors.text, cardText, cardGray, cardSurface, cardAccent, cardDivider }
 }
 
 // ===== Time Format Helper =====
@@ -2586,6 +2637,7 @@ function InvitationClientMagazineContent({
   const customBgColor = (invitation as any)?.customBgColor
   const customSectionBgColor = (invitation as any)?.customSectionBgColor
   const customSectionText = (invitation as any)?.sectionTextColor
+  const customSectionAccent = (invitation as any)?.sectionAccentColor
   const customButtonBg = (invitation as any)?.buttonBgColor
   const customButtonText = (invitation as any)?.buttonTextColor
   const themeColors: ColorConfig = {
@@ -2596,10 +2648,14 @@ function InvitationClientMagazineContent({
     ...(customBgColor ? { background: customBgColor, cardBg: customBgColor } : {}),
     ...(customSectionBgColor ? { sectionBg: customSectionBgColor } : {}),
     ...(customSectionText ? { sectionText: customSectionText } : {}),
+    ...(customSectionAccent ? { sectionAccent: customSectionAccent } : {}),
     // 버튼 배경/글자 (미지정 시 기존 동작: 포인트색 배경 + 흰 글자)
     buttonBg: customButtonBg || (customAccent || baseThemeColors.primary),
     buttonOnText: customButtonText || '#FFFFFF',
   }
+  // 인사말(greeting) 섹션 색/배경 — 상단 네임플레이트 바도 이 색을 따름
+  const greetingSectionBg = getMagazineSectionBg(invitation, themeColors, 'greeting')
+  const greetingSectionColors = getMagazineSectionColors(invitation, themeColors, 'greeting')
   const baseFonts = fontStyles[effectiveFontStyle]
   const isScriptFont = invitation?.displayFont === 'greatvibes'
   const fonts = invitation?.displayFont && displayFontMap[invitation.displayFont]
@@ -2662,33 +2718,23 @@ function InvitationClientMagazineContent({
                     />
                   ) : (
                     <>
-                      {/* Magazine Nameplate Bar */}
-                      <div className="sticky top-0 z-40 px-4 py-3 flex items-center justify-between" style={{ backgroundColor: themeColors.background, borderBottom: `0.5px solid ${themeColors.divider}` }}>
-                        <div style={{ fontFamily: fonts.display, fontSize: '13px', fontWeight: 300, letterSpacing: '3px', color: themeColors.primary }}>
+                      {/* Magazine Nameplate Bar — 인사말 색을 따름 */}
+                      <div className="sticky top-0 z-40 px-4 py-3 flex items-center justify-between" style={{ backgroundColor: greetingSectionBg, borderBottom: `0.5px solid ${greetingSectionColors.divider}` }}>
+                        <div style={{ fontFamily: fonts.display, fontSize: '13px', fontWeight: 300, letterSpacing: '3px', color: greetingSectionColors.primary }}>
                           {invitation.groom?.name || ''} & {invitation.bride?.name || ''}
                         </div>
-                        <div style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '2px', color: themeColors.gray }}>
+                        <div style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '2px', color: greetingSectionColors.gray }}>
                           WEDDING
                         </div>
                       </div>
 
                       {/* EditorsNote 항상 첫 번째 */}
-                      <EditorsNote invitation={invitation} fonts={fonts} themeColors={themeColors} />
+                      <EditorsNote invitation={invitation} fonts={fonts} themeColors={greetingSectionColors} bgOverride={greetingSectionBg} />
                       {/* 동적 섹션 순서 - relative z-10으로 EditorsNote(sticky) 위를 덮으며 올라옴 */}
                       <div style={{ position: 'relative', zIndex: 10 }}>
                       {(() => {
-                        const sectionBgMap: Record<string, 'background' | 'sectionBg'> = invitation.magazineSectionBgMap || MAGAZINE_DEFAULT_BG
-                        const getBg = (id: string) => themeColors[sectionBgMap[id] || MAGAZINE_DEFAULT_BG[id] || 'sectionBg']
-                        const sectionTextColor = (themeColors as any).sectionText
-                        const getColors = (id: string) => {
-                          const isSec = (sectionBgMap[id] || MAGAZINE_DEFAULT_BG[id] || 'sectionBg') === 'sectionBg'
-                          if (sectionTextColor && isSec) {
-                            // 섹션 배경 섹션: 본문=섹션텍스트, 반대(카드 위)=전체 배경 텍스트
-                            return { ...themeColors, text: sectionTextColor, gray: sectionTextColor + 'CC', buttonText: themeColors.text, cardText: themeColors.text, cardGray: themeColors.gray } as any
-                          }
-                          // 전체 배경 섹션: 본문=전체텍스트, 반대(카드 위)=섹션 배경 텍스트
-                          return { ...themeColors, buttonText: themeColors.text, cardText: sectionTextColor || themeColors.text, cardGray: sectionTextColor ? sectionTextColor + 'CC' : themeColors.gray } as any
-                        }
+                        const getBg = (id: string) => getMagazineSectionBg(invitation, themeColors, id)
+                        const getColors = (id: string) => getMagazineSectionColors(invitation, themeColors, id)
                         const so = (invitation as any).styleOverrides as StyleOverrides | undefined
                         // Map magazine sectionId → styleOverrides sectionId
                         const soMap: Record<string, string> = {

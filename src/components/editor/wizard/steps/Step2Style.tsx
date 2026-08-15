@@ -820,15 +820,27 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
                   <div className="w-12 h-0.5" style={{ backgroundColor: currentMagazineAccent }} />
                 </div>
               </div>
-              {invitation.customAccentColor && (
+              {(invitation.customAccentColor || (invitation as any).sectionAccentColor) && (
                 <button
                   type="button"
-                  onClick={() => updateField('customAccentColor', undefined as unknown as string)}
+                  onClick={() => {
+                    updateField('customAccentColor', undefined as unknown as string)
+                    updateField('sectionAccentColor' as any, undefined as unknown as string)
+                  }}
                   className="text-xs text-blue-600 hover:text-blue-700 whitespace-nowrap"
                 >
                   초기화
                 </button>
               )}
+            </div>
+
+            {/* 섹션(틴티드) 배경용 포인트색 */}
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-700">섹션 배경 포인트색</p>
+                <p className="text-xs text-gray-500">섹션(틴티드) 배경 위 제목·구분선 색</p>
+              </div>
+              <ColorField label="섹션 배경 포인트색" value={(invitation as any).sectionAccentColor || currentMagazineAccent} onChange={(hex) => updateField('sectionAccentColor' as any, hex)} />
             </div>
           </div>
         )}

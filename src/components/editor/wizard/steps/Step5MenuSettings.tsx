@@ -254,6 +254,14 @@ export default function Step5MenuSettings() {
     updateField('magazineSectionBgMap', { ...magazineSectionBgMap, [sectionId]: newBg })
   }
 
+  // 박스가 있는 섹션 (오시는길=theDetails, 예식정보=guidance, 계좌=contacts, RSVP, 방명록=guestbook)
+  const BOX_SECTIONS = new Set(['theDetails', 'guidance', 'contacts', 'rsvp', 'guestbook'])
+  const boxContrastMap: Record<string, boolean> = (invitation as any).magazineBoxContrastMap || {}
+  const handleToggleBoxContrast = (sectionId: string) => {
+    const current = boxContrastMap[sectionId] !== false // 기본 true(반대색)
+    updateField('magazineBoxContrastMap' as any, { ...boxContrastMap, [sectionId]: !current })
+  }
+
   const navStyleOptions: { value: 'hamburger' | 'bottom-nav' | 'bottom-mini'; label: string; desc: string; icon: React.ReactNode }[] = [
     {
       value: 'hamburger',
@@ -376,13 +384,13 @@ export default function Step5MenuSettings() {
           )}
           <div className="space-y-1">
             {/* 고정: 인사말 (순서는 고정, Film은 배경 틴티드/기본 선택 가능) */}
-            <div className={`flex items-center gap-3 px-3 py-2.5 bg-gray-100 rounded-lg ${isFilm && sectionConfig?.showBgToggle ? '' : 'opacity-60'}`}>
+            <div className={`flex items-center gap-3 px-3 py-2.5 bg-gray-100 rounded-lg ${(isFilm || isMagazine) && sectionConfig?.showBgToggle ? '' : 'opacity-60'}`}>
               <svg className="w-4 h-4 text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                 <path d="M7 11V7a5 5 0 0 1 10 0v4" />
               </svg>
               <span className="text-sm text-gray-500 flex-1">인사말 (고정)</span>
-              {isFilm && sectionConfig?.showBgToggle && (() => {
+              {(isFilm || isMagazine) && sectionConfig?.showBgToggle && (() => {
                 const gBg = magazineSectionBgMap['greeting'] || 'background'
                 return (
                   <button
@@ -424,6 +432,16 @@ export default function Step5MenuSettings() {
                           onCheckedChange={(checked) => toggle.write(checked)}
                           className="scale-75 origin-right"
                         />
+                      )}
+                      {/* 박스 반대색 토글 (박스 있는 섹션만) */}
+                      {isMagazine && BOX_SECTIONS.has(sectionId) && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleToggleBoxContrast(sectionId) }}
+                          className={`text-[10px] px-1.5 py-1 rounded border flex-shrink-0 transition-colors ${boxContrastMap[sectionId] !== false ? 'border-gray-800 bg-gray-800 text-white' : 'border-gray-300 bg-white text-gray-500'}`}
+                          title="박스 배경: 섹션과 반대색 / 동일 톤"
+                        >
+                          {boxContrastMap[sectionId] !== false ? '박스 반대' : '박스 동일'}
+                        </button>
                       )}
                       {/* 배경색 토글 */}
                       {sectionConfig?.showBgToggle && (

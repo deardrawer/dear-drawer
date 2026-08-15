@@ -336,8 +336,10 @@ const Preview = forwardRef<PreviewHandle, object>(function Preview(_, ref) {
   }, [])
 
   // 위자드 스텝에 따른 미리보기 페이지 매핑 (5단계 위자드)
+  // 매거진은 디자인 탭에서 인트로로 강제 전환하지 않고 메인 유지
+  const isMagazineTpl = invitation?.templateId === 'narrative-magazine'
   const wizardStepToPage: Record<number, PageType> = {
-    1: 'intro',    // 디자인 → 인트로
+    1: isMagazineTpl ? 'main' : 'intro',    // 디자인 → (매거진)메인 / 그 외 인트로
     2: 'intro',    // 인트로 → 인트로
     3: 'main',     // 스토리 → 메인
     4: 'main',     // 추가기능 → 메인

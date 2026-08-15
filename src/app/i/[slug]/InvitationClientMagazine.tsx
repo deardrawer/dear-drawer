@@ -1181,7 +1181,7 @@ function PhotoSpread({ invitation, fonts, themeColors, onOpenLightbox, bgOverrid
             <button
               onClick={() => setShowAll(true)}
               className="w-full mt-3 py-3 text-center transition-colors hover:opacity-80"
-              style={{ border: `1px solid ${themeColors.divider}`, background: themeColors.cardBg }}
+              style={{ border: `1px solid ${themeColors.divider}`, background: bgOverride || themeColors.background }}
             >
               <span style={{ fontFamily: fonts.displayKr, fontSize: '13px', color: themeColors.primary }}>
                 +{allImages.length - 5}장 더 보기
@@ -1449,7 +1449,7 @@ function TheDetails({ invitation, fonts, themeColors, bgOverride }: { invitation
 
 function DirectionItem({ label, text, fonts, themeColors }: { label: string; text: string; fonts: FontConfig; themeColors: ColorConfig }) {
   return (
-    <div style={{ padding: '12px 16px', background: (themeColors as any).cardSurface || themeColors.sectionBg, borderLeft: `2px solid ${(themeColors as any).cardAccent || themeColors.primary}` }}>
+    <div style={{ padding: '12px 16px', background: (themeColors as any).cardSurface || themeColors.sectionBg, borderTop: (themeColors as any).cardBorder || undefined, borderRight: (themeColors as any).cardBorder || undefined, borderBottom: (themeColors as any).cardBorder || undefined, borderLeft: `2px solid ${(themeColors as any).cardAccent || themeColors.primary}` }}>
       <div style={{ fontFamily: fonts.displayKr, fontSize: '12px', fontWeight: 600, color: (themeColors as any).cardAccent || themeColors.primary, marginBottom: '6px' }}>
         {label}
       </div>
@@ -2233,10 +2233,10 @@ function InterviewPopupButton({ fonts, themeColors, bgOverride, onClick }: { fon
             fontFamily: fonts.displayKr,
             fontSize: '13px',
             letterSpacing: '1px',
-            color: themeColors.background,
+            color: (themeColors as any).buttonOnText || '#FFFFFF',
             border: 'none',
             padding: '16px 32px',
-            background: themeColors.primary,
+            background: (themeColors as any).buttonBg || themeColors.primary,
             cursor: 'pointer',
             transition: 'all 0.3s ease',
             width: '100%',
@@ -2268,6 +2268,13 @@ function InterviewPopup({ invitation, fonts, themeColors, isOpen, onClose }: { i
       const timer = setTimeout(() => setAnimating(false), 500)
       return () => clearTimeout(timer)
     }
+  }, [isOpen])
+
+  // 에디터 프리뷰: 팝업 열림 동안 Intro/Main 탭 숨김 (닫기 버튼 가림 방지)
+  useEffect(() => {
+    if (isOpen) document.body.setAttribute('data-preview-modal', 'true')
+    else document.body.removeAttribute('data-preview-modal')
+    return () => { document.body.removeAttribute('data-preview-modal') }
   }, [isOpen])
 
   if (!animating && !isOpen) return null
@@ -2511,12 +2518,14 @@ function getMagazineSectionColors(invitation: any, themeColors: ColorConfig, id:
   const cardGray = boxContrast ? oppGray : sameGray
   const cardAccent = boxContrast ? oppAccent : sameAccent
   const cardDivider = boxContrast ? oppDivider : sameDivider
+  // 동일 톤(박스=섹션 색)일 때는 테두리로 박스를 구분
+  const cardBorder = boxContrast ? '' : `0.5px solid ${cardDivider}`
   if (sectionTextColor && isSec) {
     // 섹션 배경 섹션: 본문=섹션텍스트
-    return { ...themeColors, ...accentOverride, text: sectionTextColor, gray: sectionTextColor + 'CC', buttonText: themeColors.text, cardText, cardGray, cardSurface, cardAccent, cardDivider }
+    return { ...themeColors, ...accentOverride, text: sectionTextColor, gray: sectionTextColor + 'CC', buttonText: themeColors.text, cardText, cardGray, cardSurface, cardAccent, cardDivider, cardBorder }
   }
   // 전체 배경 섹션: 본문=전체텍스트
-  return { ...themeColors, ...accentOverride, buttonText: themeColors.text, cardText, cardGray, cardSurface, cardAccent, cardDivider }
+  return { ...themeColors, ...accentOverride, buttonText: themeColors.text, cardText, cardGray, cardSurface, cardAccent, cardDivider, cardBorder }
 }
 
 // ===== Time Format Helper =====

@@ -10,6 +10,7 @@ import InvitationClientExhibit from "./InvitationClientExhibit";
 import InvitationClientEssay from "./InvitationClientEssay";
 import InvitationClientThankYou from "./InvitationClientThankYou";
 import InvitationClientTheSimple from "./InvitationClientTheSimple";
+import InvitationClientClassic from "./InvitationClientClassic";
 import type { Invitation } from "@/types/invitation";
 import type { Viewport } from "next";
 import { isUUID } from "@/lib/slug";
@@ -38,10 +39,11 @@ export default async function InvitationPage({ params, searchParams }: PageProps
   let isSampleInvitation = false;
 
   // 샘플 청첩장 처리
-  const sampleSlugs = ['sample-our', 'sample-family', 'sample-magazine', 'sample-film', 'sample-record', 'sample-exhibit', 'sample-feed', 'sample-essay', 'sample-essay-paper', 'sample-essay-book', 'sample-the-simple'];
+  const sampleSlugs = ['sample-our', 'sample-family', 'sample-magazine', 'sample-classic', 'sample-film', 'sample-record', 'sample-exhibit', 'sample-feed', 'sample-essay', 'sample-essay-paper', 'sample-essay-book', 'sample-the-simple'];
   if (sampleSlugs.includes(slug)) {
-    let sampleType: 'our' | 'family' | 'magazine' | 'film' | 'record' | 'exhibit' | 'essay' | 'the-simple' = 'our';
+    let sampleType: 'our' | 'family' | 'magazine' | 'classic' | 'film' | 'record' | 'exhibit' | 'essay' | 'the-simple' = 'our';
     if (slug === 'sample-the-simple') sampleType = 'the-simple';
+    else if (slug === 'sample-classic') sampleType = 'classic';
     else if (slug === 'sample-essay' || slug === 'sample-essay-paper' || slug === 'sample-essay-book') sampleType = 'essay';
     else if (slug === 'sample-exhibit' || slug === 'sample-feed') sampleType = 'exhibit';
     else if (slug === 'sample-record') sampleType = 'record';
@@ -153,6 +155,7 @@ export default async function InvitationPage({ params, searchParams }: PageProps
   const isEssay = invitation.template_id === 'narrative-essay';
   const isThankYou = invitation.template_id === 'narrative-thankyou';
   const isTheSimple = invitation.template_id === 'narrative-the-simple';
+  const isClassic = invitation.template_id === 'narrative-classic';
 
   // 감사장은 별도 렌더링 (props가 다름)
   if (isThankYou) {
@@ -168,7 +171,7 @@ export default async function InvitationPage({ params, searchParams }: PageProps
   }
 
   // 템플릿에 따라 적절한 컴포넌트 렌더링
-  const ClientComponent = isTheSimple ? InvitationClientTheSimple : isEssay ? InvitationClientEssay : isExhibit ? InvitationClientExhibit : isRecord ? InvitationClientRecord : isFilm ? InvitationClientFilm : isMagazine ? InvitationClientMagazine : isFamily ? InvitationClientFamily : InvitationClient;
+  const ClientComponent = isClassic ? InvitationClientClassic : isTheSimple ? InvitationClientTheSimple : isEssay ? InvitationClientEssay : isExhibit ? InvitationClientExhibit : isRecord ? InvitationClientRecord : isFilm ? InvitationClientFilm : isMagazine ? InvitationClientMagazine : isFamily ? InvitationClientFamily : InvitationClient;
 
   return (
     <ClientComponent
@@ -238,7 +241,7 @@ export async function generateMetadata({ params }: PageProps) {
         },
       };
     }
-    const sampleType = (slug === 'sample-essay' || slug === 'sample-essay-paper' || slug === 'sample-essay-book') ? 'essay' : (slug === 'sample-exhibit' || slug === 'sample-feed') ? 'exhibit' : slug === 'sample-record' ? 'record' : slug === 'sample-film' ? 'film' : slug === 'sample-magazine' ? 'magazine' : slug === 'sample-our' ? 'our' : 'family';
+    const sampleType = (slug === 'sample-essay' || slug === 'sample-essay-paper' || slug === 'sample-essay-book') ? 'essay' : (slug === 'sample-exhibit' || slug === 'sample-feed') ? 'exhibit' : slug === 'sample-record' ? 'record' : slug === 'sample-film' ? 'film' : slug === 'sample-magazine' ? 'magazine' : (slug === 'sample-our' || slug === 'sample-classic') ? 'our' : 'family';
     const content = sampleType === 'family' ? familySampleContent : ourSampleContent;
     const title = `${content.groom.name} ♥ ${content.bride.name} 결혼합니다`;
     const description = content.content.greeting;

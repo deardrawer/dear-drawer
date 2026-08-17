@@ -174,6 +174,7 @@ const SHOWCASE_ITEMS: {
   badgeBg: string
   btnClass: string
   badge?: 'Best' | 'New'
+  comingSoon?: boolean
 }[] = [
   {
     id: 'our',
@@ -283,6 +284,20 @@ const SHOWCASE_ITEMS: {
     badge: 'New',
   },
   {
+    id: 'the-classic',
+    templateId: 'narrative-classic',
+    name: 'THE CLASSIC',
+    tagline: '격식과 여백으로 완성하는 클래식 청첩장',
+    category: 'parents',
+    categoryLabel: '혼주용',
+    thumbnail: '/sample/preview-the-classic.png',
+    sampleUrl: '/i/sample-classic',
+    badgeColor: 'text-stone-700',
+    badgeBg: 'bg-stone-100',
+    btnClass: 'bg-stone-800 hover:bg-stone-900',
+    comingSoon: true,
+  },
+  {
     id: 'parents',
     templateId: 'narrative-parents',
     name: 'PARENTS',
@@ -389,6 +404,8 @@ function TemplatesContent() {
       router.push(`/editor/thank-you?slug=${autoSlug}`)
     } else if (templateId === 'narrative-the-simple') {
       router.push(`/editor/the-simple?slug=${autoSlug}`)
+    } else if (templateId === 'narrative-classic') {
+      router.push(`/editor/classic?slug=${autoSlug}`)
     } else {
       router.push(`/editor?template=${templateId}&slug=${autoSlug}`)
     }
@@ -763,17 +780,24 @@ function TemplatesContent() {
                       className="group flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-gray-200 transition-all duration-300 overflow-hidden"
                     >
                       {/* 폰 프레임 썸네일 */}
-                      <a href={item.sampleUrl} target="_blank" rel="noopener noreferrer" className="relative bg-gray-50 px-4 pt-5 pb-4 sm:px-5 sm:pt-6 sm:pb-5 flex items-center justify-center cursor-pointer">
+                      <a href={item.comingSoon ? undefined : item.sampleUrl} target={item.comingSoon ? undefined : '_blank'} rel="noopener noreferrer" className={`relative bg-gray-50 px-4 pt-5 pb-4 sm:px-5 sm:pt-6 sm:pb-5 flex items-center justify-center ${item.comingSoon ? '' : 'cursor-pointer'}`}>
                         <div className="relative w-full aspect-[9/16] rounded-[18px] sm:rounded-[22px] overflow-hidden border-[3px] sm:border-4 border-gray-800 bg-white shadow-lg">
                           {/* 노치 */}
                           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 sm:w-18 h-3.5 sm:h-4.5 bg-gray-800 rounded-b-lg z-10" />
-                          <Image
-                            src={item.thumbnail}
-                            alt={`${item.name} 샘플`}
-                            fill
-                            className="object-cover object-top group-hover:animate-scroll-preview"
-                            sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 25vw"
-                          />
+                          {item.comingSoon ? (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-center px-3" style={{ background: 'linear-gradient(180deg,#F4F0E9,#E7DECF)' }}>
+                              <span className="text-base sm:text-lg font-semibold tracking-wide text-stone-600" style={{ fontFamily: 'Georgia, serif' }}>THE CLASSIC</span>
+                              <span className="text-[9px] sm:text-[10px] tracking-[0.3em] text-stone-400">COMING SOON</span>
+                            </div>
+                          ) : (
+                            <Image
+                              src={item.thumbnail}
+                              alt={`${item.name} 샘플`}
+                              fill
+                              className="object-cover object-top group-hover:animate-scroll-preview"
+                              sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 25vw"
+                            />
+                          )}
                         </div>
                       </a>
 
@@ -793,19 +817,33 @@ function TemplatesContent() {
                               New
                             </span>
                           )}
+                          {item.comingSoon && (
+                            <span className="px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-bold rounded-full bg-stone-500 text-white">
+                              준비중
+                            </span>
+                          )}
                         </div>
                         <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-0.5">{item.name}</h3>
                         <p className="text-[10px] sm:text-xs text-gray-400 mb-3 line-clamp-2 flex-1">{item.tagline}</p>
 
                         <div className="flex flex-col gap-1.5 mt-auto">
-                          <a
-                            href={item.sampleUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-full h-9 sm:h-10 flex items-center justify-center text-xs sm:text-sm font-medium border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors"
-                          >
-                            미리보기
-                          </a>
+                          {item.comingSoon ? (
+                            <button
+                              disabled
+                              className="w-full h-9 sm:h-10 flex items-center justify-center text-xs sm:text-sm font-medium border border-gray-200 text-gray-300 rounded-lg bg-gray-50 cursor-not-allowed"
+                            >
+                              미리보기 준비중
+                            </button>
+                          ) : (
+                            <a
+                              href={item.sampleUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-full h-9 sm:h-10 flex items-center justify-center text-xs sm:text-sm font-medium border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors"
+                            >
+                              미리보기
+                            </a>
+                          )}
                           <button
                             onClick={() => handleTemplateSelect(item.templateId)}
                             className={`w-full h-9 sm:h-10 flex items-center justify-center text-xs sm:text-sm font-medium text-white rounded-lg transition-colors ${item.btnClass}`}

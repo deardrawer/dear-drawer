@@ -1,4 +1,4 @@
-export type NarrativeType = 'our' | 'family' | 'parents' | 'magazine' | 'film' | 'record' | 'exhibit' | 'essay' | 'thankyou' | 'the-simple'
+export type NarrativeType = 'our' | 'family' | 'parents' | 'magazine' | 'film' | 'record' | 'exhibit' | 'essay' | 'thankyou' | 'the-simple' | 'classic'
 
 export type TemplateSection = {
   id: string
@@ -124,6 +124,42 @@ export const templates: Template[] = [
       { id: 'account', title: '마음 전하실 곳', aiGenerated: false },
       { id: 'share', title: '공유하기', aiGenerated: false },
       { id: 'rsvp', title: '참석 의사', aiGenerated: false },
+    ],
+  },
+  {
+    id: 'narrative-classic',
+    name: 'THE CLASSIC',
+    description: '혼주가 전하는 클래식 스테이셔너리 청첩장',
+    thumbnail: '/templates/narrative-classic.jpg',
+    defaultCoverImage: '/images/our-cover.png',
+    narrativeType: 'classic',
+    emoji: '✉️',
+    colors: {
+      primary: '#351714',
+      secondary: '#DDD1BB',
+      accent: '#351714',
+      background: '#F2EEE6',
+      text: '#351714',
+    },
+    fonts: {
+      heading: 'Italiana',
+      body: 'Gowun Batang',
+    },
+    features: ['봉투 오프닝', '클래식 스테이셔너리', '혼주용', '스크롤 스토리'],
+    sections: [
+      { id: 'opening', title: '오프닝(봉투)', aiGenerated: false },
+      { id: 'letter', title: '인사말', aiGenerated: true },
+      { id: 'introduction', title: '신랑신부 소개', aiGenerated: false },
+      { id: 'portraits', title: '인물 사진', aiGenerated: false },
+      { id: 'gallery', title: '갤러리', aiGenerated: false },
+      { id: 'our-story', title: '우리 이야기', aiGenerated: true },
+      { id: 'date', title: '날짜', aiGenerated: false },
+      { id: 'directions', title: '오시는 길', aiGenerated: false },
+      { id: 'information', title: '결혼식 안내', aiGenerated: false, optional: true },
+      { id: 'accounts', title: '마음 전하실 곳', aiGenerated: false },
+      { id: 'links', title: '공유', aiGenerated: false },
+      { id: 'rsvp', title: '참석 의사', aiGenerated: false },
+      { id: 'closing', title: '클로징', aiGenerated: false },
     ],
   },
   {

@@ -887,7 +887,7 @@ export const theSimpleSampleContent = {
 }
 
 // 샘플 청첩장 객체 생성 함수
-export function createSampleInvitation(type: 'our' | 'family' | 'magazine' | 'film' | 'record' | 'exhibit' | 'essay' | 'the-simple', essayConcept?: string) {
+export function createSampleInvitation(type: 'our' | 'family' | 'magazine' | 'film' | 'record' | 'exhibit' | 'essay' | 'the-simple' | 'classic', essayConcept?: string) {
   // the-simple 타입은 별도 처리 (독자 스키마)
   if (type === 'the-simple') {
     const now = new Date().toISOString()
@@ -954,7 +954,7 @@ export function createSampleInvitation(type: 'our' | 'family' | 'magazine' | 'fi
   }
 
   const content = type === 'family' ? familySampleContent : type === 'film' ? filmSampleContent : type === 'record' ? recordSampleContent : type === 'exhibit' ? exhibitSampleContent : ourSampleContent
-  const templateIdMap = { our: 'narrative-our', family: 'narrative-family', magazine: 'narrative-magazine', film: 'narrative-film', record: 'narrative-record', exhibit: 'narrative-exhibit' } as const
+  const templateIdMap = { our: 'narrative-our', family: 'narrative-family', magazine: 'narrative-magazine', film: 'narrative-film', record: 'narrative-record', exhibit: 'narrative-exhibit', classic: 'narrative-classic' } as const
   const now = new Date().toISOString()
 
   // magazine uses OUR content with modern-black theme override + interview images adjusted (1장/2장/2장)
@@ -988,7 +988,8 @@ export function createSampleInvitation(type: 'our' | 'family' | 'magazine' | 'fi
   }
   const magazineMedia = { ...content.media, coverImage: '/sample/magazine-cover.png' }
   const magazineYoutube = { enabled: true, title: '', url: 'https://youtu.be/iK1eXqrFZ6s' }
-  const finalContent = type === 'magazine' ? { ...content, colorTheme: 'modern-black', fontStyle: 'modern', profileFrameShape: 'portrait', interviews: magazineInterviews, guidance: magazineGuidance, gallery: magazineGallery, media: magazineMedia, youtube: magazineYoutube } : content
+  const magazineLike = type === 'magazine' || type === 'classic'
+  const finalContent = magazineLike ? { ...content, colorTheme: 'modern-black', fontStyle: 'modern', profileFrameShape: 'portrait', interviews: magazineInterviews, guidance: magazineGuidance, gallery: magazineGallery, media: magazineMedia, youtube: magazineYoutube } : content
 
   return {
     id: `sample-${type}-id`,
@@ -1002,8 +1003,8 @@ export function createSampleInvitation(type: 'our' | 'family' | 'magazine' | 'fi
     venue_address: content.wedding.venue.address,
     venue_detail: null,
     venue_map_url: null,
-    main_image: type === 'magazine' ? magazineMedia.coverImage : content.media.coverImage,
-    gallery_images: type === 'magazine' ? JSON.stringify(magazineGallery.images) : JSON.stringify(content.gallery.images),
+    main_image: magazineLike ? magazineMedia.coverImage : content.media.coverImage,
+    gallery_images: magazineLike ? JSON.stringify(magazineGallery.images) : JSON.stringify(content.gallery.images),
     greeting_message: content.content.greeting,
     contact_groom: content.groom.phone,
     contact_bride: content.bride.phone,

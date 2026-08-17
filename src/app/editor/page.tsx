@@ -196,6 +196,11 @@ function EditorContent() {
               router.push(`/editor/essay?id=${editId}${adminParam}`)
               return
             }
+            // CLASSIC 템플릿이면 classic 에디터로 리다이렉트
+            if (inv.template_id === 'narrative-classic') {
+              router.push(`/editor/classic?id=${editId}${adminParam}`)
+              return
+            }
             // THANKYOU 템플릿이면 thank-you 에디터로 리다이렉트
             if (inv.template_id === 'narrative-thankyou') {
               router.push(`/editor/thank-you?id=${editId}${adminParam}`)
@@ -248,6 +253,16 @@ function EditorContent() {
 
   // 새 청첩장 생성 시 스토어 초기화 (editId가 없을 때)
   const [isNewInvitation] = useState(!editId)
+
+  // CLASSIC 템플릿으로 새 청첩장을 시작하면 classic 에디터로 리다이렉트
+  useEffect(() => {
+    if (isNewInvitation && templateId === 'narrative-classic') {
+      const params = new URLSearchParams()
+      if (urlSlug) params.set('slug', urlSlug)
+      if (isAdminMode) params.set('admin', 'true')
+      router.replace(`/editor/classic${params.toString() ? `?${params.toString()}` : ''}`)
+    }
+  }, [isNewInvitation, templateId, urlSlug, isAdminMode, router])
 
   useEffect(() => {
     // 새 청첩장인 경우 항상 초기화 (이전 데이터 무시)

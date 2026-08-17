@@ -21,6 +21,7 @@ const InvitationClient = dynamic(() => import('@/app/i/[slug]/InvitationClient')
 const InvitationClientFamily = dynamic(() => import('@/app/i/[slug]/InvitationClientFamily'), { ssr: false })
 const InvitationClientFilm = dynamic(() => import('@/app/i/[slug]/InvitationClientFilm'), { ssr: false })
 const InvitationClientMagazine = dynamic(() => import('@/app/i/[slug]/InvitationClientMagazine'), { ssr: false })
+const InvitationClientClassic = dynamic(() => import('@/app/i/[slug]/InvitationClientClassic'), { ssr: false })
 
 type ColorTheme = 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-green' | 'luxury-navy' | 'sunset-coral' | 'custom' | 'film-dark' | 'film-light' | 'record-coral' | 'record-rose' | 'record-peach' | 'record-bw' | 'record-lilac' | 'record-mint'
 interface ColorConfig { primary: string; secondary: string; accent: string; background: string; sectionBg: string; cardBg: string; divider: string; text: string; gray: string; highlight?: string; cardText?: string; cardGray?: string }
@@ -256,6 +257,7 @@ function InvitationPreviewWrapper({ invitation, skipIntro, onIntroScreenChange }
       case 'narrative-family': return InvitationClientFamily
       case 'narrative-film': return InvitationClientFilm
       case 'narrative-magazine': return InvitationClientMagazine
+      case 'narrative-classic': return InvitationClientClassic
       default: return InvitationClient
     }
   }, [invitation.templateId])

@@ -984,6 +984,7 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
       </section>
       )}
 
+
       {/* 배경음악 */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">

@@ -263,6 +263,15 @@ export default function MyInvitationsPage() {
     const path = isParentsTemplate ? '/invite' : '/i'
     return inv.slug ? `${baseUrl}${path}/${inv.slug}` : `${baseUrl}${path}/${inv.id}`
   }
+  // QR 전용: 항상 불변 시스템 id (슬러그를 바꿔도 QR URL 불변). 링크복사·카카오·문자는 getInvitationUrl(슬러그) 사용.
+  const getQrUrl = (inv: InvitationSummary) => {
+    const isParentsTemplate =
+      inv.template_id === 'narrative-parents' ||
+      inv.template_id === 'parents' ||
+      inv.template_id === 'parents-formal'
+    const path = isParentsTemplate ? '/invite' : '/i'
+    return `${baseUrl}${path}/${inv.id}`
+  }
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -336,7 +345,7 @@ export default function MyInvitationsPage() {
   }
 
   const generateQRCode = async (inv: InvitationSummary) => {
-    const url = getInvitationUrl(inv)
+    const url = getQrUrl(inv)
     try {
       if (qrCanvasRef.current) {
         await QRCode.toCanvas(qrCanvasRef.current, url, {
@@ -352,7 +361,7 @@ export default function MyInvitationsPage() {
   }
 
   const generateManageQRCode = async (inv: InvitationSummary) => {
-    const url = getInvitationUrl(inv)
+    const url = getQrUrl(inv)
     try {
       if (manageQrCanvasRef.current) {
         await QRCode.toCanvas(manageQrCanvasRef.current, url, {

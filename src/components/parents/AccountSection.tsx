@@ -15,6 +15,17 @@ interface AccountSectionProps {
   accounts?: Account[]
 }
 
+// hex 색을 어둡게 (0~1, 클수록 진함) — 밝은 파스텔 메인컬러를 진하게 쓰기 위함
+const darken = (hex: string, f: number): string => {
+  const m = /^#?([0-9a-fA-F]{6})$/.exec(hex)
+  if (!m) return hex
+  const n = parseInt(m[1], 16)
+  const r = Math.round(((n >> 16) & 255) * (1 - f))
+  const g = Math.round(((n >> 8) & 255) * (1 - f))
+  const b = Math.round((n & 255) * (1 - f))
+  return `rgb(${r}, ${g}, ${b})`
+}
+
 const stagger = (hasAppeared: boolean, delay: number) => ({
   opacity: hasAppeared ? 1 : 0,
   transform: hasAppeared ? 'translateY(0)' : 'translateY(20px)',
@@ -148,8 +159,8 @@ export default function AccountSection({
                   {item.name}
                 </p>
                 <p
-                  className="text-[15px]"
-                  style={{ color: isActive ? theme.text : '#999', fontWeight: 500 }}
+                  className="text-[13px]"
+                  style={{ color: isActive ? darken(theme.primary, 0.4) : '#999', fontWeight: 500 }}
                 >
                   {item.bank} {item.account}
                 </p>

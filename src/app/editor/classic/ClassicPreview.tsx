@@ -60,11 +60,12 @@ export default function ClassicPreview({ data, fullscreen }: ClassicPreviewProps
   }), [data, content])
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Intro / Main 토글 (풀스크린 미리보기에서는 숨김 — 인트로부터 실제 게스트처럼 표시) */}
+    <div className="h-full flex flex-col relative">
+      {/* Intro / Main 토글 (풀스크린 미리보기에서는 숨김 — 인트로부터 실제 게스트처럼 표시)
+          · 절대 오버레이로 띄워 프레임 높이를 잡아먹지 않게 → 인트로가 프레임 비율(9:18) 그대로 채워짐 */}
       {!fullscreen && (
-      <div className="shrink-0 py-3 flex justify-center bg-white">
-        <div className="inline-flex items-center gap-1 p-1 rounded-full bg-gray-100 border border-gray-200/70 shadow-inner">
+      <div className="absolute top-0 left-0 right-0 z-30 pt-2.5 flex justify-center pointer-events-none">
+        <div className="inline-flex items-center gap-1 p-1 rounded-full bg-gray-100/95 backdrop-blur border border-gray-200/70 shadow-inner pointer-events-auto">
           <button
             type="button"
             onClick={showIntro}

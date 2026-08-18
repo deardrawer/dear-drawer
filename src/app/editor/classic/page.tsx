@@ -491,7 +491,7 @@ function ClassicEditorContent() {
 
             {/* 모바일: 미리보기 모드 (항상 마운트, CSS로 숨김) */}
             {isMobile && (
-              <div className="w-full flex flex-col items-center relative overflow-hidden" style={{ height: `${splitRatio}%`, flexShrink: 0, transform: 'translateZ(0)' }}>
+              <div className="w-full flex items-center justify-center relative overflow-hidden" style={{ height: `${splitRatio}%`, flexShrink: 0, transform: 'translateZ(0)', padding: '8px 0' }}>
                 <button
                   onClick={() => setPreviewKey(k => k + 1)}
                   className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-black/5 hover:bg-black/10 active:bg-black/15 transition-colors"
@@ -501,7 +501,8 @@ function ClassicEditorContent() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
                 </button>
-                <div className="w-[320px] shadow-2xl bg-white overflow-hidden border border-gray-200 flex-1 relative" style={{ maxHeight: '630px' }}>
+                {/* 높이=분할영역 100% + aspect 9:18 → 드래그해도 폭이 높이를 따라가 비율 고정 (THE SIMPLE처럼 안 깨짐) */}
+                <div className="shadow-2xl bg-white overflow-hidden border border-gray-200 relative" style={{ height: '100%', aspectRatio: '9 / 18', maxWidth: '100%', borderRadius: 10 }}>
                   <div className="h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                     <ClassicPreview key={previewKey} data={data} />
                   </div>
@@ -550,7 +551,7 @@ function ClassicEditorContent() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-          <div className="relative overflow-y-auto bg-white rounded-lg shadow-2xl" style={{ height: 'min(780px, calc(100dvh - 40px))', aspectRatio: '9 / 18', maxWidth: 'calc(100vw - 32px)' }}>
+          <div className="relative overflow-y-auto bg-white shadow-2xl" style={isMobile ? { width: '100%', height: '100dvh' } : { height: 'min(780px, calc(100vh - 40px))', aspectRatio: '9 / 18', maxWidth: 'calc(100vw - 32px)', borderRadius: 8 }}>
             <ClassicPreview data={data} fullscreen />
           </div>
         </div>

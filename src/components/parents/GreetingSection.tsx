@@ -105,14 +105,14 @@ export default function GreetingSection({
         className="font-serif text-[19px] leading-[2] tracking-wider mb-9 text-center"
         style={{
           color: isActive ? (theme.tintedBg ? theme.cardText : theme.text) : '#999',
-          fontWeight: 300,
+          fontWeight: 500,
           ...stagger(hasAppeared, 0.3),
         }}
       >
         저희 {childTitle}{' '}
         <em
           className="not-italic"
-          style={{ color: theme.primary, fontWeight: 400 }}
+          style={{ color: theme.primary, fontWeight: 500 }}
         >
           {childName}
         </em>

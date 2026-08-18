@@ -209,7 +209,7 @@ export default function VenueSection({
       >
         <p
           className="text-xl mb-1.5 tracking-[2px]"
-          style={{ color: isActive ? theme.text : '#999', fontWeight: 300 }}
+          style={{ color: isActive ? theme.text : '#999', fontWeight: 500 }}
         >
           {venue.name}
         </p>
@@ -222,8 +222,8 @@ export default function VenueSection({
           </p>
         )}
         <p
-          className="text-[11px] tracking-[0.5px]"
-          style={{ color: isActive ? `${theme.accent}80` : '#bbb' }}
+          className="text-[13px] tracking-[0.5px]"
+          style={{ color: isActive ? theme.text : '#999', fontWeight: 500 }}
         >
           {venue.address}
         </p>

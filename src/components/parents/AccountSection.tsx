@@ -110,7 +110,7 @@ export default function AccountSection({
         className="font-serif text-[16px] text-center mb-8 tracking-[1px]"
         style={{
           color: isActive ? theme.text : '#999',
-          fontWeight: 300,
+          fontWeight: 500,
           ...stagger(hasAppeared, 0.15),
         }}
       >

@@ -129,7 +129,7 @@ export default function WeddingInfoSection({
       </div>
       <h3
         className="font-serif text-[15px] mb-3 tracking-[1px]"
-        style={{ color: isActive ? theme.cardText : '#999', fontWeight: 400 }}
+        style={{ color: isActive ? theme.cardText : '#999', fontWeight: 500 }}
       >
         {title}
       </h3>
@@ -205,7 +205,7 @@ export default function WeddingInfoSection({
         className="font-serif text-[16px] text-center mb-8 tracking-[1px]"
         style={{
           color: isActive ? theme.text : '#999',
-          fontWeight: 300,
+          fontWeight: 500,
           ...stagger(hasAppeared, 0.15),
         }}
       >
@@ -294,7 +294,7 @@ export default function WeddingInfoSection({
             </div>
             <h3
               className="font-serif text-[15px] mb-4 tracking-[1px]"
-              style={{ color: isActive ? theme.cardText : '#999', fontWeight: 400 }}
+              style={{ color: isActive ? theme.cardText : '#999', fontWeight: 500 }}
             >
               셔틀버스 안내
             </h3>

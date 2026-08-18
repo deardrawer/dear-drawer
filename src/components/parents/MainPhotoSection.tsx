@@ -284,7 +284,7 @@ export default function MainPhotoSection({
             className="text-[22px] tracking-[6px]"
             style={{
               color: cA ? theme.text : '#999',
-              fontWeight: 300,
+              fontWeight: 500,
               transition: 'color 0.5s',
             }}
           >
@@ -294,7 +294,7 @@ export default function MainPhotoSection({
             className={`text-[16px] ${coupleIsHeart ? '' : 'italic'}`}
             style={{
               fontFamily: coupleIsHeart ? undefined : "'Cormorant Garamond', 'Georgia', serif",
-              fontWeight: 300,
+              fontWeight: 400,
               color: cA ? theme.primary : '#bbb',
               transform: cH ? 'scale(1)' : 'scale(0)',
               opacity: cH ? 1 : 0,
@@ -308,7 +308,7 @@ export default function MainPhotoSection({
             className="text-[22px] tracking-[6px]"
             style={{
               color: cA ? theme.text : '#999',
-              fontWeight: 300,
+              fontWeight: 500,
               transition: 'color 0.5s',
             }}
           >

@@ -174,7 +174,7 @@ export default function DateSection({
           className="text-[32px] leading-[1.2] tracking-[2px]"
           style={{
             fontFamily: "'Cormorant Garamond', 'Georgia', serif",
-            fontWeight: 300,
+            fontWeight: 500,
             color: isActive ? theme.text : '#999',
           }}
         >

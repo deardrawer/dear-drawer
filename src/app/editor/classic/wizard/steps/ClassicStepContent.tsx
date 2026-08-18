@@ -96,53 +96,6 @@ export default function ClassicStepContent({ data, updateNestedData, invitationI
         </p>
       </div>
 
-      {/* 섹션 순서 */}
-      <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
-          </svg>
-          섹션 순서
-        </h3>
-        <p className="text-sm text-gray-500">청첩장에 표시되는 순서입니다. 항목을 끌어서 원하는 위치로 옮기세요.</p>
-        <div className="space-y-2">
-          {sectionOrder.map((key, i) => (
-            <div
-              key={key}
-              draggable
-              onDragStart={() => setDragIndex(i)}
-              onDragEnter={() => setOverIndex(i)}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={() => { if (dragIndex !== null) moveSection(dragIndex, i); setDragIndex(null); setOverIndex(null) }}
-              onDragEnd={() => { setDragIndex(null); setOverIndex(null) }}
-              className={`flex items-center gap-3 rounded-lg border bg-white px-4 py-3 cursor-grab active:cursor-grabbing select-none transition-all ${dragIndex === i ? 'opacity-40' : ''} ${overIndex === i && dragIndex !== null && dragIndex !== i ? 'border-gray-900 ring-1 ring-gray-900' : 'border-gray-200'}`}
-            >
-              <svg className="w-4 h-4 text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                <circle cx="9" cy="6" r="1.6" /><circle cx="15" cy="6" r="1.6" /><circle cx="9" cy="12" r="1.6" /><circle cx="15" cy="12" r="1.6" /><circle cx="9" cy="18" r="1.6" /><circle cx="15" cy="18" r="1.6" />
-              </svg>
-              <span className="w-5 text-center text-xs font-medium text-gray-400">{i + 1}</span>
-              <span className={`flex-1 text-sm ${isHidden(key) ? 'text-gray-400 line-through' : 'text-gray-800'}`}>{labelOf(key)}</span>
-              {TINTABLE.has(key) && !isHidden(key) && (
-                <div className="flex rounded-md border border-gray-200 overflow-hidden text-[11px] shrink-0" onDragStart={(e) => e.preventDefault()}>
-                  <button type="button" draggable={false} onClick={() => setBgMode(key, false)} className={`px-2 py-1 transition-colors ${!isTintedMode(key) ? 'bg-gray-900 text-white' : 'bg-white text-gray-500'}`}>기본</button>
-                  <button type="button" draggable={false} onClick={() => setBgMode(key, true)} className={`px-2 py-1 transition-colors ${isTintedMode(key) ? 'bg-gray-900 text-white' : 'bg-white text-gray-500'}`}>틴티드</button>
-                </div>
-              )}
-              <button
-                type="button"
-                draggable={false}
-                onClick={() => toggleSection(key)}
-                onDragStart={(e) => e.preventDefault()}
-                aria-label={isHidden(key) ? '표시' : '숨김'}
-                className={`relative w-9 h-5 rounded-full transition-colors shrink-0 ${isHidden(key) ? 'bg-gray-300' : 'bg-gray-900'}`}
-              >
-                <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform shadow-sm ${isHidden(key) ? '' : 'translate-x-4'}`} />
-              </button>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* 오시는 길 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
@@ -350,6 +303,53 @@ export default function ClassicStepContent({ data, updateNestedData, invitationI
               ))}
             </div>
           )}
+        </div>
+      </section>
+
+      {/* 섹션 순서 (가장 마지막) */}
+      <section className="space-y-4">
+        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+          </svg>
+          섹션 순서
+        </h3>
+        <p className="text-sm text-gray-500">청첩장에 표시되는 순서입니다. 항목을 끌어서 원하는 위치로 옮기세요.</p>
+        <div className="space-y-2">
+          {sectionOrder.map((key, i) => (
+            <div
+              key={key}
+              draggable
+              onDragStart={() => setDragIndex(i)}
+              onDragEnter={() => setOverIndex(i)}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={() => { if (dragIndex !== null) moveSection(dragIndex, i); setDragIndex(null); setOverIndex(null) }}
+              onDragEnd={() => { setDragIndex(null); setOverIndex(null) }}
+              className={`flex items-center gap-3 rounded-lg border bg-white px-4 py-3 cursor-grab active:cursor-grabbing select-none transition-all ${dragIndex === i ? 'opacity-40' : ''} ${overIndex === i && dragIndex !== null && dragIndex !== i ? 'border-gray-900 ring-1 ring-gray-900' : 'border-gray-200'}`}
+            >
+              <svg className="w-4 h-4 text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="9" cy="6" r="1.6" /><circle cx="15" cy="6" r="1.6" /><circle cx="9" cy="12" r="1.6" /><circle cx="15" cy="12" r="1.6" /><circle cx="9" cy="18" r="1.6" /><circle cx="15" cy="18" r="1.6" />
+              </svg>
+              <span className="w-5 text-center text-xs font-medium text-gray-400">{i + 1}</span>
+              <span className={`flex-1 text-sm ${isHidden(key) ? 'text-gray-400 line-through' : 'text-gray-800'}`}>{labelOf(key)}</span>
+              {TINTABLE.has(key) && !isHidden(key) && (
+                <div className="flex rounded-md border border-gray-200 overflow-hidden text-[11px] shrink-0" onDragStart={(e) => e.preventDefault()}>
+                  <button type="button" draggable={false} onClick={() => setBgMode(key, false)} className={`px-2 py-1 transition-colors ${!isTintedMode(key) ? 'bg-gray-900 text-white' : 'bg-white text-gray-500'}`}>기본</button>
+                  <button type="button" draggable={false} onClick={() => setBgMode(key, true)} className={`px-2 py-1 transition-colors ${isTintedMode(key) ? 'bg-gray-900 text-white' : 'bg-white text-gray-500'}`}>틴티드</button>
+                </div>
+              )}
+              <button
+                type="button"
+                draggable={false}
+                onClick={() => toggleSection(key)}
+                onDragStart={(e) => e.preventDefault()}
+                aria-label={isHidden(key) ? '표시' : '숨김'}
+                className={`relative w-9 h-5 rounded-full transition-colors shrink-0 ${isHidden(key) ? 'bg-gray-300' : 'bg-gray-900'}`}
+              >
+                <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform shadow-sm ${isHidden(key) ? '' : 'translate-x-4'}`} />
+              </button>
+            </div>
+          ))}
         </div>
       </section>
 

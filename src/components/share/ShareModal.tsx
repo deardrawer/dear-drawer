@@ -66,7 +66,10 @@ export default function ShareModal({
   const baseUrl = 'https://invite.deardrawer.com'
   // 템플릿에 따라 경로 분기: Parents는 /invite/, 나머지는 /i/
   const urlPath = templateType === 'parents' ? '/invite/' : '/i/'
+  // 링크 복사·카카오 공유용: 현재 커스텀 슬러그 (사용자 변경 가능)
   const invitationUrl = `${baseUrl}${urlPath}${currentSlug || invitationId}`
+  // QR 전용: 항상 불변 시스템 id (기존/신규 모두 통일). 슬러그를 바꿔도 QR URL은 절대 변하지 않음.
+  const qrUrl = `${baseUrl}${urlPath}${invitationId}`
 
   // Generate default slug
   useEffect(() => {
@@ -77,14 +80,14 @@ export default function ShareModal({
     }
   }, [groomName, brideName, weddingDate, slug])
 
-  // Generate QR code when QR tab is active and canvas is available
+  // Generate QR code when QR tab is active and canvas is available (QR은 항상 불변 id URL 사용)
   useEffect(() => {
-    if (activeTab !== 'qr' || !invitationUrl) return
+    if (activeTab !== 'qr' || !qrUrl) return
 
     // Wait for canvas to mount after tab switch
     const timer = setTimeout(() => {
       if (qrCanvasRef.current) {
-        QRCode.toCanvas(qrCanvasRef.current, invitationUrl, {
+        QRCode.toCanvas(qrCanvasRef.current, qrUrl, {
           width: 256,
           margin: 2,
           color: {
@@ -93,7 +96,7 @@ export default function ShareModal({
           },
         })
 
-        QRCode.toDataURL(invitationUrl, {
+        QRCode.toDataURL(qrUrl, {
           width: 1024,
           margin: 2,
           color: {
@@ -105,7 +108,7 @@ export default function ShareModal({
     }, 50)
 
     return () => clearTimeout(timer)
-  }, [invitationUrl, qrColor, activeTab])
+  }, [qrUrl, qrColor, activeTab])
 
   const handleSlugChange = (value: string) => {
     const sanitized = value.toLowerCase().replace(/[^a-z0-9-]/g, '')
@@ -136,8 +139,8 @@ export default function ShareModal({
         return
       }
 
-      // 저장
-      const response = await fetch(`/api/invitations/${invitationId}`, {
+      // 저장 — 전용 /slug 엔드포인트 사용: 이전 slug를 alias로 보존해 기존 링크·QR이 계속 동작
+      const response = await fetch(`/api/invitations/${invitationId}/slug`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ slug }),
@@ -150,7 +153,8 @@ export default function ShareModal({
         }
         setTimeout(() => setSlugSaved(false), 3000)
       } else {
-        setSlugError('주소 변경에 실패했습니다')
+        const errData = await response.json().catch(() => null) as { error?: string } | null
+        setSlugError(errData?.error || '주소 변경에 실패했습니다')
       }
     } catch {
       setSlugError('주소 변경에 실패했습니다')

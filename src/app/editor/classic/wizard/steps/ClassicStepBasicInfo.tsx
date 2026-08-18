@@ -57,7 +57,7 @@ export default function ClassicStepBasicInfo({ data, updateNestedData, invitatio
               <Input
                 value={data.groom.name}
                 onChange={(e) => updateNestedData('groom.name', e.target.value)}
-                placeholder="엘리엇"
+                placeholder="테오"
               />
             </div>
             <div className="space-y-1.5">
@@ -65,7 +65,7 @@ export default function ClassicStepBasicInfo({ data, updateNestedData, invitatio
               <Input
                 value={data.groom.nameEn}
                 onChange={(e) => updateNestedData('groom.nameEn', e.target.value)}
-                placeholder="ELLIOT"
+                placeholder="THEO"
               />
             </div>
           </div>
@@ -79,7 +79,7 @@ export default function ClassicStepBasicInfo({ data, updateNestedData, invitatio
               <Input
                 value={data.bride.name}
                 onChange={(e) => updateNestedData('bride.name', e.target.value)}
-                placeholder="클라라"
+                placeholder="엘리스"
               />
             </div>
             <div className="space-y-1.5">
@@ -87,7 +87,7 @@ export default function ClassicStepBasicInfo({ data, updateNestedData, invitatio
               <Input
                 value={data.bride.nameEn}
                 onChange={(e) => updateNestedData('bride.nameEn', e.target.value)}
-                placeholder="CLARA"
+                placeholder="ELISE"
               />
             </div>
           </div>

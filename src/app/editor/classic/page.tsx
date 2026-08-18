@@ -265,12 +265,17 @@ function ClassicEditorContent() {
   const [isExitModalOpen, setIsExitModalOpen] = useState(false)
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
 
-  // 모바일 감지
+  // 모바일 감지 + 데스크톱 사이드 미리보기 스케일 (고정 390×780 렌더 → 화면 높이에 맞춰 균일 축소)
+  const [sideScale, setSideScale] = useState(1)
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768)
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
+    const check = () => {
+      setIsMobile(window.innerWidth < 768)
+      // 사이드 프레임 가용 높이 = 100vh - 88(헤더/여백). 780 기준으로 축소 (확대는 안 함)
+      setSideScale(Math.min(1, (window.innerHeight - 88) / 780))
+    }
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
   }, [])
 
   // 나가기 방지
@@ -481,9 +486,12 @@ function ClassicEditorContent() {
             {/* Preview - 왼쪽 sticky 고정, 카드형 디바이스 프리뷰 (데스크탑) */}
             {!isMobile && (
               <div className="w-[460px] min-w-[460px] sticky top-0 overflow-hidden editor-panel m-4 mr-0 flex justify-center items-center" style={{ height: 'calc(100vh - 88px)' }}>
-                <div className="shadow-2xl bg-white overflow-hidden border border-gray-200 relative" style={{ height: 'min(780px, calc(100vh - 88px))', aspectRatio: '9 / 18', maxWidth: '100%' }}>
-                  <div className="h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
-                    <ClassicPreview data={data} />
+                {/* 고정 390×780으로 렌더 후 균일 scale → 창 비율과 무관하게 프레임 왜곡 없음 */}
+                <div className="shadow-2xl bg-white overflow-hidden border border-gray-200 relative" style={{ width: 390 * sideScale, height: 780 * sideScale, borderRadius: 10 }}>
+                  <div className="absolute top-0 left-0 bg-white" style={{ width: 390, height: 780, transform: `scale(${sideScale})`, transformOrigin: 'top left' }}>
+                    <div className="w-full h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+                      <ClassicPreview data={data} />
+                    </div>
                   </div>
                 </div>
               </div>

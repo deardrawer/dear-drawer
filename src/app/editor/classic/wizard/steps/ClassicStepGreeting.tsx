@@ -73,11 +73,10 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
               <span className="text-sm font-medium text-gray-700">혼주 (표시할 측)</span>
               <div className="mt-1 inline-flex rounded-lg border border-gray-200 overflow-hidden">
                 {([
-                  { id: 'both', label: '양가' },
                   { id: 'groom', label: '신랑측' },
                   { id: 'bride', label: '신부측' },
                 ] as const).map((opt) => {
-                  const active = (data.content.classicHostSide || 'both') === opt.id
+                  const active = (data.content.classicHostSide || 'groom') === opt.id
                   return (
                     <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicHostSide', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                       {opt.label}
@@ -269,7 +268,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
                   <Textarea
                     value={data.content.classicGroomIntro || ''}
                     onChange={(e) => updateNestedData('content.classicGroomIntro', e.target.value)}
-                    placeholder={'다정하고 든든한 사람\n○○의 아들 △△입니다.'}
+                    placeholder={'다정하고 든든한 사람입니다.'}
                     rows={4}
                   />
                 </div>
@@ -290,7 +289,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
                   <Textarea
                     value={data.content.classicBrideIntro || ''}
                     onChange={(e) => updateNestedData('content.classicBrideIntro', e.target.value)}
-                    placeholder={'따뜻하고 밝은 사람\n○○의 딸 △△입니다.'}
+                    placeholder={'따뜻하고 밝은 사람입니다.'}
                     rows={4}
                   />
                 </div>

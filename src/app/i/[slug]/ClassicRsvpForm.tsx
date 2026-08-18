@@ -23,6 +23,7 @@ interface Props {
   messagePlaceholder?: string
   initialAttend?: 'attending' | 'not_attending'
   hideNotice?: boolean
+  onClose?: () => void
   tokens: Tokens
 }
 
@@ -38,7 +39,7 @@ const SIDE_ITEMS = [
   { key: 'brideMother', label: '신부 어머니', side: 'bride' as const, detail: 'mother' as const },
 ]
 
-export default function ClassicRsvpForm({ invitationId, isPreview, meal, shuttle, phone, sideDetail, sideDetailOptions, notice, messagePlaceholder, initialAttend, hideNotice, tokens }: Props) {
+export default function ClassicRsvpForm({ invitationId, isPreview, meal, shuttle, phone, sideDetail, sideDetailOptions, notice, messagePlaceholder, initialAttend, hideNotice, onClose, tokens }: Props) {
   const { INK, IVORY, PAPER, inkA, F_BODY, F_LABEL } = tokens
   const [name, setName] = useState('')
   const [tel, setTel] = useState('')
@@ -95,6 +96,9 @@ export default function ClassicRsvpForm({ invitationId, isPreview, meal, shuttle
       <div style={{ background: PAPER, padding: '40px 26px', textAlign: 'center', boxShadow: '0 24px 38px -32px rgba(53,23,20,.7)' }}>
         <p style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 22, color: INK }}>Thank you</p>
         <p style={{ margin: '14px 0 0', fontFamily: F_BODY, fontSize: 12.5, lineHeight: 1.9, color: inkA(0.65) }}>참석 여부를 전해주셔서 감사합니다.</p>
+        {onClose && (
+          <button type="button" onClick={onClose} style={{ margin: '22px auto 0', display: 'block', padding: '10px 28px', border: `1px solid ${inkA(0.3)}`, background: 'transparent', fontFamily: F_LABEL, fontSize: 11, letterSpacing: '.22em', paddingLeft: 'calc(28px + .22em)', color: INK, cursor: 'pointer' }}>닫기</button>
+        )}
       </div>
     )
   }

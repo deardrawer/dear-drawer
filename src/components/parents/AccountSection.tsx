@@ -142,14 +142,14 @@ export default function AccountSection({
                   </p>
                 )}
                 <p
-                  className="font-serif text-sm mb-0.5"
-                  style={{ color: isActive ? theme.text : '#999', fontWeight: 400 }}
+                  className="font-serif text-[12px] mb-1"
+                  style={{ color: isActive ? theme.text : '#999', fontWeight: 500 }}
                 >
                   {item.name}
                 </p>
                 <p
-                  className="text-[11px]"
-                  style={{ color: isActive ? `${theme.accent}80` : '#bbb' }}
+                  className="text-[15px]"
+                  style={{ color: isActive ? theme.text : '#999', fontWeight: 500 }}
                 >
                   {item.bank} {item.account}
                 </p>

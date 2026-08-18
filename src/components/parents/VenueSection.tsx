@@ -70,6 +70,32 @@ export default function VenueSection({
   // 지도 스크롤 가로채기 방지: 1차 터치=안내, 2차 터치=활성화 (the-simple과 동일)
   const mapWrapRef = useRef<HTMLDivElement>(null)
   const [mapState, setMapState] = useState<'locked' | 'hint' | 'active'>('locked')
+  const [addressCopied, setAddressCopied] = useState(false)
+
+  const handleAddressCopy = async () => {
+    const text = venue.address || ''
+    if (!text) return
+    let copied = false
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      try { await navigator.clipboard.writeText(text); copied = true } catch { /* fallthrough */ }
+    }
+    if (!copied) {
+      try {
+        const ta = document.createElement('textarea')
+        ta.value = text
+        ta.style.position = 'fixed'
+        ta.style.left = '-9999px'
+        document.body.appendChild(ta)
+        ta.select()
+        copied = document.execCommand('copy')
+        document.body.removeChild(ta)
+      } catch { copied = false }
+    }
+    if (copied) {
+      setAddressCopied(true)
+      setTimeout(() => setAddressCopied(false), 2000)
+    }
+  }
   const mapActive = mapState === 'active'
   const hintTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -140,10 +166,20 @@ export default function VenueSection({
           })
           marker.setMap(map)
 
-          const infowindow = new window.kakao.maps.InfoWindow({
-            content: `<div style="padding:5px;font-size:12px;white-space:nowrap;">${venue.name}</div>`,
+          // 테마컬러 말풍선 (중앙정렬 pill + 아래 꼬리)
+          const accent = theme.accent || '#8A9A7B'
+          const overlayEl = document.createElement('div')
+          overlayEl.style.cssText = 'position:relative;transform:translateY(-8px);display:flex;flex-direction:column;align-items:center;'
+          overlayEl.innerHTML =
+            `<div style="background:${accent};color:#fff;font-size:12px;font-weight:500;letter-spacing:0.3px;line-height:1;padding:7px 14px;border-radius:16px;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,0.18);text-align:center;">${venue.name}</div>` +
+            `<div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:7px solid ${accent};margin-top:-1px;"></div>`
+          const overlay = new window.kakao.maps.CustomOverlay({
+            position: new window.kakao.maps.LatLng(lat, lng),
+            content: overlayEl,
+            yAnchor: 1.55,
+            xAnchor: 0.5,
           })
-          infowindow.open(map, marker)
+          overlay.setMap(map)
         } else {
           console.warn('Geocoding failed, using default coordinates')
           setMapError(true)
@@ -221,12 +257,25 @@ export default function VenueSection({
             {venue.hall}
           </p>
         )}
-        <p
-          className="text-[13px] tracking-[0.5px]"
-          style={{ color: isActive ? theme.text : '#999', fontWeight: 500 }}
-        >
-          {venue.address}
-        </p>
+        <div className="flex items-center justify-center gap-1.5">
+          <p
+            className="text-[13px] tracking-[0.5px]"
+            style={{ color: isActive ? theme.text : '#999', fontWeight: 500 }}
+          >
+            {venue.address}
+          </p>
+          <button
+            type="button"
+            onClick={handleAddressCopy}
+            className="flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] tracking-[0.5px] transition-all duration-200"
+            style={{
+              backgroundColor: addressCopied ? '#22c55e' : (isActive ? `${theme.accent}12` : '#eee'),
+              color: addressCopied ? '#FFFFFF' : (isActive ? theme.accent : '#aaa'),
+            }}
+          >
+            {addressCopied ? '복사됨' : '복사'}
+          </button>
+        </div>
       </div>
 
       {/* Map with rounded corners and shadow - scale-up entrance */}

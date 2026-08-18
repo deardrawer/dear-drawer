@@ -11,6 +11,7 @@ declare global {
         LatLng: new (lat: number, lng: number) => any;
         Marker: new (options: { position: any }) => { setMap: (map: any) => void };
         InfoWindow: new (options: { content: string }) => { open: (map: any, marker: any) => void };
+        CustomOverlay: new (options: { position: any; content: string | HTMLElement; yAnchor?: number; xAnchor?: number }) => { setMap: (map: any) => void };
         services: {
           Geocoder: new () => {
             addressSearch: (

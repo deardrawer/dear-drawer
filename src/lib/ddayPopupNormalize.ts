@@ -48,7 +48,9 @@ export function normalizeDdayPopup(raw: unknown): DdayPopupData | undefined {
     ...(typeof c.displayStart === 'string' && { displayStart: c.displayStart }),
     ...(typeof c.displayEnd === 'string' && { displayEnd: c.displayEnd }),
     ...(typeof c.startDays === 'number' && { startDays: Math.min(c.startDays as number, 10) }),
-    title: (c.title as string) || '결혼식 당일 안내',
+    ...(typeof c.pointColor === 'string' && c.pointColor && { pointColor: c.pointColor }),
+    // 제목은 기본값을 넣지 않음 — 사용자가 비우면 undefined → 팝업 미표시 (오버레이에서 가드)
+    title: typeof c.title === 'string' ? c.title : '',
     pages: (rawPages as unknown[]).map((r) => {
       const p = (r && typeof r === 'object' ? r : {}) as Record<string, unknown>
       // backward compat: 단일 linkUrl/linkLabel → links 배열로 변환

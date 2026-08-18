@@ -10,6 +10,8 @@ import ClassicWizardEditor from './wizard/ClassicWizardEditor'
 import type { ClassicPhoto } from './ClassicPhotoField'
 import ShareModal from '@/components/share/ShareModal'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import type { DdayPopupData } from '@/lib/ddayPopupTypes'
+import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
 
 // ===== THE CLASSIC 에디터용 데이터 타입 =====
 // 클라이언트(InvitationClientClassic)가 읽는 content 경로를 그대로 반영한다.
@@ -155,6 +157,7 @@ export interface ClassicInvitationData {
     classicLightboxVariant?: number // 갤러리 라이트박스 스타일 (1=에디토리얼 2=글라스 4=룩북 5=시네마 6=미니멀 7=매거진 9=필름)
     classicGalleryType?: 'default' | 'album' | 'fullbleed' | 'swipe' | 'film' // 갤러리 레이아웃 타입
     classicGalleryCaption?: string // 갤러리 캡션 (이탤릭)
+    classicDdayPopup?: DdayPopupData // D-Day 팝업 (다른 템플릿의 ddayPopup과 분리된 필드명)
   }
 
   // 공유 메타 (Phase 2에서 편집 UI 추가 예정)
@@ -228,6 +231,7 @@ function ClassicEditorContent() {
   const [isDirty, setIsDirty] = useState(false)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
+  const [ddayPreviewOpen, setDdayPreviewOpen] = useState(false)
   const [currentWizardStep, setCurrentWizardStep] = useState<number>(1)
   const wizardStepRef = useRef<number>(1)
   const [isMobile, setIsMobile] = useState(false)
@@ -493,6 +497,16 @@ function ClassicEditorContent() {
                       <ClassicPreview data={data} />
                     </div>
                   </div>
+                  {ddayPreviewOpen && data.content.classicDdayPopup?.enabled && (
+                    <DdayPopupOverlay
+                      data={data.content.classicDdayPopup}
+                      weddingDate={data.wedding.date}
+                      isPreview
+                      onDismiss={() => setDdayPreviewOpen(false)}
+                      pointColor={data.customAccentColor}
+                      style={{ position: 'absolute', inset: 0, zIndex: 60 }}
+                    />
+                  )}
                 </div>
               </div>
             )}
@@ -517,6 +531,16 @@ function ClassicEditorContent() {
                       <ClassicPreview key={previewKey} data={data} />
                     </div>
                   </div>
+                  {ddayPreviewOpen && data.content.classicDdayPopup?.enabled && (
+                    <DdayPopupOverlay
+                      data={data.content.classicDdayPopup}
+                      weddingDate={data.wedding.date}
+                      isPreview
+                      onDismiss={() => setDdayPreviewOpen(false)}
+                      pointColor={data.customAccentColor}
+                      style={{ position: 'absolute', inset: 0, zIndex: 60 }}
+                    />
+                  )}
                 </div>
               </div>
             )}
@@ -545,6 +569,7 @@ function ClassicEditorContent() {
                   onSlugChange={handleSlugChange}
                   initialStep={wizardStepRef.current as 1 | 2 | 3 | 4 | 5}
                   onStepChange={(step) => { setCurrentWizardStep(step); wizardStepRef.current = step }}
+                  onDdayPreview={() => setDdayPreviewOpen(true)}
                 />
               </div>
           </div>

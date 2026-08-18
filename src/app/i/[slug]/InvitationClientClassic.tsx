@@ -6,6 +6,9 @@ import type { InvitationContent } from '@/store/editorStore'
 import { DISPLAY_FONTS, KOREAN_FONTS } from '@/app/editor/the-simple/fontOptions'
 import ClassicRsvpForm from './ClassicRsvpForm'
 import ClassicLightbox from './ClassicLightbox'
+import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
+import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
+import '@/components/dday/dday-popup.css'
 
 /**
  * THE CLASSIC (혼주용) — 클래식 스테이셔너리 청첩장
@@ -154,6 +157,9 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   const venue = wedding.venue || {}
   const cc = c.content || {}
   const directions = wedding.directions || c.directions || {}
+
+  // D-Day 팝업 (THE CLASSIC 전용 필드: content.classicDdayPopup — 다른 템플릿의 ddayPopup과 분리)
+  const ddayPopup = normalizeDdayPopup(cc.classicDdayPopup)
 
   // ===== 폰트 (에디터 디자인 탭에서 선택; 미선택 시 기본값) =====
   const F_DISPLAY = DISPLAY_FONTS.find((f) => f.id === cc.classicDisplayFont)?.fontFamily || F_DISPLAY_DEFAULT
@@ -661,6 +667,16 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   useEffect(() => {
     setPage(skipIntro ? 'main' : 'intro')
   }, [skipIntro])
+
+  // D-Day popup state
+  const [showDdayPopup, setShowDdayPopup] = useState(false)
+  useEffect(() => {
+    if (isPreview) return
+    if (ddayPopup?.enabled) {
+      const t = setTimeout(() => setShowDdayPopup(true), 800)
+      return () => clearTimeout(t)
+    }
+  }, [ddayPopup?.enabled, isPreview])
 
   return (
     <div style={{ minHeight: isPreview ? undefined : '100vh', height: isPreview && page === 'intro' ? '100%' : undefined, display: 'flex', justifyContent: 'center', background: '#c9c1b3' }}>
@@ -1276,6 +1292,16 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         {/* 갤러리 라이트박스 */}
         <ClassicLightbox images={gallery} index={lbIndex} open={lbOpen} variant={lbVariant} onClose={() => setLbOpen(false)} />
       </div>
+      {showDdayPopup && ddayPopup?.enabled && (
+        <DdayPopupOverlay
+          data={ddayPopup}
+          weddingDate={wedding.date}
+          isPreview={isPreview}
+          onDismiss={() => setShowDdayPopup(false)}
+          pointColor={INK}
+          fontFamily={F_BODY}
+        />
+      )}
     </div>
   )
 }

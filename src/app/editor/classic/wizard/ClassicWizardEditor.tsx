@@ -20,10 +20,11 @@ interface Props {
   onSave?: () => Promise<void>
   onStepChange?: (step: ClassicWizardStep) => void
   onSlugChange?: (newSlug: string) => void
+  onDdayPreview?: () => void
   initialStep?: ClassicWizardStep
 }
 
-export default function ClassicWizardEditor({ data, updateData, updateNestedData, invitationId, slug, onSave, onStepChange, onSlugChange, initialStep = 1 }: Props) {
+export default function ClassicWizardEditor({ data, updateData, updateNestedData, invitationId, slug, onSave, onStepChange, onSlugChange, onDdayPreview, initialStep = 1 }: Props) {
   const [currentStep, setCurrentStep] = useState<ClassicWizardStep>(initialStep)
   const [completedSteps, setCompletedSteps] = useState<ClassicWizardStep[]>([])
   const [visitedSteps, setVisitedSteps] = useState<ClassicWizardStep[]>([1])
@@ -69,7 +70,7 @@ export default function ClassicWizardEditor({ data, updateData, updateNestedData
   const renderStep = () => {
     switch (currentStep) {
       case 1: return <ClassicStepDesign {...commonProps} />
-      case 2: return <ClassicStepBasicInfo {...commonProps} />
+      case 2: return <ClassicStepBasicInfo {...commonProps} onDdayPreview={onDdayPreview} />
       case 3: return <ClassicStepGreeting {...commonProps} />
       case 4: return <ClassicStepContent {...commonProps} />
       case 5: return <ClassicStepPublish {...commonProps} slug={slug} onSave={onSave} onSlugChange={onSlugChange} />

@@ -43,6 +43,7 @@ export interface DdayPopupData {
   ddayStyle?: 'pill' | 'outline' | 'circle' | 'minimal' | 'elegant'
   buttonStyle?: 'solid' | 'outline' | 'pill' | 'minimal' | 'soft'
   showDismissToday?: boolean
+  pointColor?: string // D-Day 팝업 전용 포인트 색상 (미설정 시 템플릿 accent 사용)
 }
 
 export const DEFAULT_DDAY_POPUP: DdayPopupData = {

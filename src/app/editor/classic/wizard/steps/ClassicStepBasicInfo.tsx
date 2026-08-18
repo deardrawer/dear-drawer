@@ -4,6 +4,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import ImageUploader from '@/components/editor/ImageUploader'
+import DdayPopupEditor from '@/components/dday/DdayPopupEditor'
+import { DEFAULT_DDAY_POPUP } from '@/lib/ddayPopupTypes'
 import type { ClassicInvitationData } from '../../page'
 
 interface Props {
@@ -11,6 +13,7 @@ interface Props {
   updateData: (updates: Partial<ClassicInvitationData>) => void
   updateNestedData: (path: string, value: unknown) => void
   invitationId: string | null
+  onDdayPreview?: () => void
 }
 
 const RATIO_OPTIONS = [
@@ -19,7 +22,7 @@ const RATIO_OPTIONS = [
   { value: '3:2', label: '가로형', aspect: 'aspect-[3/2]' },
 ] as const
 
-export default function ClassicStepBasicInfo({ data, updateNestedData, invitationId }: Props) {
+export default function ClassicStepBasicInfo({ data, updateNestedData, invitationId, onDdayPreview }: Props) {
   const kakaoRatio = data.meta.kakaoThumbnailRatio || '1:1'
   const getDayOfWeek = (dateStr: string) => {
     if (!dateStr) return ''
@@ -212,6 +215,34 @@ export default function ClassicStepBasicInfo({ data, updateNestedData, invitatio
               placeholder="서울 중구 정동길 24"
             />
           </div>
+        </div>
+      </section>
+
+      {/* D-Day 팝업 */}
+      <section className="space-y-4">
+        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" />
+            <path d="M16 2v4" />
+            <path d="M8 2v4" />
+            <path d="M3 10h18" />
+            <path d="M12 14v4" />
+            <path d="M10 16h4" />
+          </svg>
+          D-Day 팝업
+        </h3>
+        <p className="text-sm text-gray-500">결혼식 당일 안내 팝업을 설정합니다.</p>
+
+        <div className="rounded-lg border border-gray-200 p-4 bg-gray-50/50">
+          <DdayPopupEditor
+            value={data.content.classicDdayPopup || DEFAULT_DDAY_POPUP}
+            weddingDate={data.wedding.date}
+            onChange={(patch) => {
+              const current = data.content.classicDdayPopup || DEFAULT_DDAY_POPUP
+              updateNestedData('content.classicDdayPopup', { ...current, ...patch })
+            }}
+            onPreview={onDdayPreview}
+          />
         </div>
       </section>
 

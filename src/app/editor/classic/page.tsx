@@ -501,10 +501,13 @@ function ClassicEditorContent() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
                 </button>
-                {/* 높이=분할영역 100% + aspect 9:18 → 드래그해도 폭이 높이를 따라가 비율 고정 (THE SIMPLE처럼 안 깨짐) */}
-                <div className="shadow-2xl bg-white overflow-hidden border border-gray-200 relative" style={{ height: '100%', aspectRatio: '9 / 18', maxWidth: '100%', borderRadius: 10 }}>
-                  <div className="h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
-                    <ClassicPreview key={previewKey} data={data} />
+                {/* 실제 폰 크기(390×780)로 렌더 후 CSS scale로 축소 (THE SIMPLE 방식)
+                    → 인트로가 짧은 프레임에 눌려 겹치던 문제 해결. 창은 고정 뷰포트, 내용은 내부 스크롤 */}
+                <div className="relative h-full overflow-hidden shadow-2xl bg-white border border-gray-200" style={{ width: 190, borderRadius: 10 }}>
+                  <div className="absolute top-0 left-0 bg-white" style={{ width: 390, height: 780, transform: 'scale(0.4872)', transformOrigin: 'top left' }}>
+                    <div className="w-full h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+                      <ClassicPreview key={previewKey} data={data} />
+                    </div>
                   </div>
                 </div>
               </div>

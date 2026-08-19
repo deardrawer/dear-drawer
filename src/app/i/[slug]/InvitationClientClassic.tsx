@@ -136,6 +136,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   const [fold, setFold] = useState(0)
   const [flip, setFlip] = useState(false)
   const [mapActive, setMapActive] = useState(false)
+  const [mapError, setMapError] = useState(false)
+  const mapContainerRef = useRef<HTMLDivElement>(null)
   const [rsvpAttend, setRsvpAttend] = useState<'attending' | 'not_attending' | null>(null)
   // 갤러리 라이트박스
   const [lbOpen, setLbOpen] = useState(false)
@@ -281,6 +283,49 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   const venueHall = venue.hall || ''
   const venueAddress = venue.address || '서울 중구 정동길 24'
   const venueFull = [venueAddress, venueHall].filter(Boolean).join(' · ')
+
+  // 카카오맵 (다른 템플릿과 동일: 주소 지오코딩 → 지도+마커+말풍선). 실패 시 mapError로 폴백.
+  useEffect(() => {
+    if (!venueAddress) return
+    let cancelled = false
+    const initMap = () => {
+      if (cancelled) return
+      const container = mapContainerRef.current
+      if (!container || !window.kakao?.maps?.services) return
+      const geocoder = new window.kakao.maps.services.Geocoder()
+      geocoder.addressSearch(venueAddress, (result: { x: string; y: string }[], status: string) => {
+        if (cancelled) return
+        if (status === window.kakao.maps.services.Status.OK && result[0]) {
+          const center = new window.kakao.maps.LatLng(parseFloat(result[0].y), parseFloat(result[0].x))
+          const map = new window.kakao.maps.Map(container, { center, level: 3 })
+          const marker = new window.kakao.maps.Marker({ position: center })
+          marker.setMap(map)
+          const accent = INK
+          const el = document.createElement('div')
+          el.style.cssText = 'position:relative;transform:translateY(-8px);display:flex;flex-direction:column;align-items:center;'
+          el.innerHTML = `<div style="background:${accent};color:#fff;font-size:12px;font-weight:500;letter-spacing:.02em;line-height:1;padding:7px 14px;border-radius:16px;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.18);">${venueName}</div><div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:7px solid ${accent};margin-top:-1px;"></div>`
+          new window.kakao.maps.CustomOverlay({ position: center, content: el, yAnchor: 1.55, xAnchor: 0.5 }).setMap(map)
+        } else {
+          setMapError(true)
+        }
+      })
+    }
+    if (window.kakao?.maps?.services) { initMap(); return () => { cancelled = true } }
+    const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY || '0890847927f3189d845391481ead8ecc'
+    const existing = document.getElementById('kakao-maps-sdk') as HTMLScriptElement | null
+    if (existing) {
+      existing.addEventListener('load', () => window.kakao.maps.load(initMap))
+      if (window.kakao?.maps) window.kakao.maps.load(initMap)
+    } else {
+      const script = document.createElement('script')
+      script.id = 'kakao-maps-sdk'
+      script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoKey}&libraries=services&autoload=false`
+      script.async = true
+      script.onload = () => { if (!cancelled) window.kakao.maps.load(initMap) }
+      document.head.appendChild(script)
+    }
+    return () => { cancelled = true }
+  }, [venueAddress, venueName])
 
   // 인사말 배경 (크롭 사진 + 오버레이 색상/투명도)
   const greetingOverlay: string = cc.classicGreetingOverlayColor || '#241610'
@@ -1127,17 +1172,17 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: '44%', background: 'linear-gradient(180deg,rgba(242,238,230,.2),rgba(242,238,230,.9))' }} />
           <div className="cl-reveal cl-clip" style={{ position: 'relative', margin: '0 26px' }}>
             <div style={{ position: 'relative', aspectRatio: '4/3', overflow: 'hidden', background: '#E3DCCD' }}>
-              <iframe
-                title="map"
-                src={`https://maps.google.com/maps?q=${encodeURIComponent(venueAddress)}&z=16&output=embed`}
-                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0, filter: 'grayscale(.15) saturate(.9)' }}
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
-              {!mapActive && (
-                <div onClick={() => setMapActive(true)} style={{ position: 'absolute', inset: 0, cursor: 'pointer', background: 'rgba(53,23,20,.04)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 12 }}>
-                  <span style={{ fontFamily: F_BODY, fontSize: 10.5, color: IVORY, background: inkA(0.62), padding: '5px 12px', borderRadius: 20 }}>지도를 눌러 이동/확대</span>
-                </div>
+              {mapError ? (
+                <a href={`https://map.kakao.com/?q=${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: F_BODY, fontSize: 12, color: inkA(0.6) }}>지도에서 위치 보기</a>
+              ) : (
+                <>
+                  <div ref={mapContainerRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
+                  {!mapActive && (
+                    <div onClick={() => setMapActive(true)} style={{ position: 'absolute', inset: 0, cursor: 'pointer', background: 'rgba(53,23,20,.04)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 12 }}>
+                      <span style={{ fontFamily: F_BODY, fontSize: 10.5, color: IVORY, background: inkA(0.62), padding: '5px 12px', borderRadius: 20 }}>지도를 눌러 이동/확대</span>
+                    </div>
+                  )}
+                </>
               )}
             </div>
             <div style={{ position: 'absolute', inset: 0, border: `1px solid ${inkA(0.16)}`, pointerEvents: 'none' }} />

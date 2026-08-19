@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Plus, X, Loader2 } from 'lucide-react'
 import type { DdayPopupData, DdayPopupPage, ImageWithSettings, ImageSettings } from '@/lib/ddayPopupTypes'
 import { uploadImage } from '@/lib/imageUpload'
+import ColorField from '@/components/editor/ColorField'
 
 interface DdayPopupEditorProps {
   value: DdayPopupData
@@ -365,19 +366,10 @@ export default function DdayPopupEditor({ value, weddingDate, onChange, onPrevie
             <span className="text-[10px] uppercase tracking-wider text-stone-400">포인트 색상</span>
             <p className="text-[10px] text-stone-400 leading-tight">뱃지·제목·버튼 색. 미설정 시 템플릿 기본 색을 사용합니다.</p>
             <div className="mt-1 flex items-center gap-2">
-              <input
-                type="color"
+              <ColorField
+                label="포인트 색상"
                 value={value.pointColor || '#1a1a1a'}
-                onChange={(e) => onChange({ pointColor: e.target.value })}
-                className="w-9 h-9 rounded border border-stone-200 cursor-pointer bg-white p-0.5"
-                aria-label="포인트 색상"
-              />
-              <input
-                type="text"
-                value={value.pointColor || ''}
-                onChange={(e) => onChange({ pointColor: e.target.value })}
-                placeholder="#1a1a1a (미설정=기본색)"
-                className="flex-1 border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white"
+                onChange={(hex) => onChange({ pointColor: hex })}
               />
               {value.pointColor && (
                 <button type="button" onClick={() => onChange({ pointColor: undefined })} className="text-[10px] text-stone-400 hover:text-stone-700 underline underline-offset-2 whitespace-nowrap">기본값</button>

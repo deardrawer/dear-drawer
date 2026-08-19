@@ -48,13 +48,10 @@ export default function DdayPopupOverlay({
   const dday = calcDday(weddingDate)
   // D-Day 팝업 전용 색상 우선(설정 시), 없으면 템플릿 accent(prop) 사용
   const accent = data.pointColor || pointColor
-  // 제목이 비어 있으면 팝업 자체를 띄우지 않음
-  const hasTitle = !!(data.title && data.title.trim())
 
   const [visible, setVisible] = useState(() => {
     if (!data.enabled) return false
-    if (isPreview) return true // 미리보기는 제목 유무와 무관하게 표시(설정 확인용)
-    if (!hasTitle) return false // 배포본은 제목이 있어야 표시
+    if (isPreview) return true
     return false
   })
   const [closing, setClosing] = useState(false)
@@ -64,7 +61,7 @@ export default function DdayPopupOverlay({
   const [pageKey, setPageKey] = useState(0)
 
   useEffect(() => {
-    if (!data.enabled || !hasTitle || isPreview) return
+    if (!data.enabled || isPreview) return
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     // displayStart / displayEnd 우선, 없으면 startDays 폴백
@@ -93,7 +90,7 @@ export default function DdayPopupOverlay({
       try { if (localStorage.getItem(getTodayKey(weddingDate))) return } catch {}
     }
     setVisible(true)
-  }, [data.enabled, hasTitle, data.showDismissToday, data.displayStart, data.displayEnd, data.startDays, weddingDate, isPreview])
+  }, [data.enabled, data.showDismissToday, data.displayStart, data.displayEnd, data.startDays, weddingDate, isPreview])
 
   const dismissToday = useCallback(() => {
     setClosing(true)
@@ -162,7 +159,7 @@ export default function DdayPopupOverlay({
             </span>
           )}
         </div>
-        <h2 className="dday-popup-title" style={accent ? { color: accent } : undefined}>{title}</h2>
+        {title && <h2 className="dday-popup-title" style={accent ? { color: accent } : undefined}>{title}</h2>}
 
         {/* 페이지 콘텐츠 */}
         {totalPages > 0 && (

@@ -14,3 +14,53 @@
   font-weight: normal;
   font-display: swap;
 }
+
+@font-face {
+  font-family: 'Britney';
+  src: url('/fonts/Britney_Complete/fonts/Britney-Regular.woff2') format('woff2'),
+       url('/fonts/Britney_Complete/fonts/Britney-Regular.woff') format('woff'),
+       url('/fonts/Britney_Complete/fonts/Britney-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Britney';
+  src: url('/fonts/Britney_Complete/fonts/Britney-Bold.woff2') format('woff2'),
+       url('/fonts/Britney_Complete/fonts/Britney-Bold.woff') format('woff'),
+       url('/fonts/Britney_Complete/fonts/Britney-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Melodrama';
+  src: url('/fonts/Melodrama/fonts/Melodrama-Regular.woff2') format('woff2'),
+       url('/fonts/Melodrama/fonts/Melodrama-Regular.woff') format('woff'),
+       url('/fonts/Melodrama/fonts/Melodrama-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Melodrama';
+  src: url('/fonts/Melodrama/fonts/Melodrama-Bold.woff2') format('woff2'),
+       url('/fonts/Melodrama/fonts/Melodrama-Bold.woff') format('woff'),
+       url('/fonts/Melodrama/fonts/Melodrama-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Stardom';
+  src: url('/fonts/Stradom/fonts/Stardom-Regular.woff2') format('woff2'),
+       url('/fonts/Stradom/fonts/Stardom-Regular.woff') format('woff'),
+       url('/fonts/Stradom/fonts/Stardom-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}

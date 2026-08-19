@@ -78,20 +78,24 @@ export interface ClassicInvitationData {
     classicOpeningFrame?: 'frame1' | 'frame2' | 'none' // 프레임(바로시작) 엠보스 프레임 (배경색 위 오버레이)
     classicFrameHintColor?: string // 프레임 오프닝: 이름 아래 '터치 또는 스크롤' 글자색 (미설정 시 포인트색)
     classicOpeningNameLang?: 'en' | 'ko' // 오프닝 이름 언어 5종 공통 (기본 영문)
+    classicNameCase?: 'upper' | 'title' // 영문 이름 대소문자 (전부 대문자 / 첫 글자만)
     classicSealColor?: string // 실링 인장 색상 (리본 매듭 인장, 미설정 시 기본 은색)
     classicTraceVeilColor?: string // 트레이싱지 걷어낸 사진 위 오버레이 색상
     classicTraceVeilOpacity?: number // 트레이싱지 오버레이 투명도 0~1 (0=없음, 자연 사진)
     classicTraceStartText?: string // 트레이싱지 시작 전 문구 (기본 '화면을 누르세요')
     classicInfoStartText?: string // 접힌편지·사진뒤집기 안내 문구 (기본 '예식 정보 빠르게 확인하기')
     classicInfoOverlayColor?: string // 접힌편지·사진뒤집기 배경 오버레이 색상
+    classicInfoOverlayOpacity?: number // 접힌편지·사진뒤집기 처음(어두운 상태) 오버레이 투명도 0~1 (기본 0.42)
+    classicInfoBrightOverlayOpacity?: number // 접힌편지·사진뒤집기 원본(펼침·뒤집은 후 밝은 상태) 오버레이 투명도 0~1 (기본 0)
     classicInfoPhotoOpacity?: number // 접힌편지·사진뒤집기 첫 사진 배경 투명도 0~1 (0=사진 없음)
+    classicFlipPhoto?: ClassicPhoto // 사진 뒤집기 카드 앞면·배경 사진 (미설정 시 갤러리 첫 사진)
     // 본문 · 인사말 배경
     classicGreetingBgImage?: ClassicPhoto // 인사말 배경 사진 (크롭, 미설정 시 갤러리 첫 사진)
     classicGreetingOverlayColor?: string // 인사말 배경 오버레이 색상
     classicGreetingOverlayOpacity?: number // 인사말 배경 오버레이 투명도 0~1
     classicLetterFrame?: 'wave' | 'lace' // 인사말 카드 프레임 (웨이브 / 레이스)
     // 본문 · 신랑신부 소개
-    classicIntroMode?: 'each' | 'together' // 각자 / 함께
+    classicIntroMode?: 'each' | 'together' | 'nameOnly' // 각자 / 함께 / 이름만
     classicIntroEachFrame?: 'plaque' | 'stamp' // 각자 카드 프레임 (웨이브 플라크 / 우표)
     classicIntroTogetherFrame?: 'pearl' | 'filigree' // 함께 소개 프레임 (진주 / 필리그리)
     classicGroomIntro?: string // 신랑 소개 한마디 (각자)
@@ -145,7 +149,7 @@ export interface ClassicInvitationData {
     classicThanksFrame?: 'none' | 'doily' // 마무리 감사 인사 프레임 (없음 / 도일리)
     classicDateHeading?: string // 예식일정 상단 문구 (저희가 하나 되는 날)
     classicIntroShowParents?: boolean // 커플소개 상단 부모님 성함 표시
-    classicLetterSign?: 'parents' | 'couple' | 'hosts' // 인사말 서명 방식
+    classicLetterSign?: 'parents' | 'couple' | 'hosts' | 'none' // 인사말 서명 방식
     classicHostSide?: 'both' | 'groom' | 'bride' // 혼주 올림: 표시할 측
     classicRsvpMeal?: boolean // 식사 여부 입력
     classicRsvpShuttle?: boolean // 대절버스 이용 여부 입력
@@ -158,6 +162,9 @@ export interface ClassicInvitationData {
     classicGalleryType?: 'default' | 'album' | 'fullbleed' | 'swipe' | 'film' // 갤러리 레이아웃 타입
     classicGalleryCaption?: string // 갤러리 캡션 (이탤릭)
     classicDdayPopup?: DdayPopupData // D-Day 팝업 (다른 템플릿의 ddayPopup과 분리된 필드명)
+    // 디자인 커스텀 스케일 (THE SIMPLE 참조)
+    classicFontScale?: number // 본문 글자 크기 배수 (0.85~1.3, 기본 1)
+    classicEyebrowScale?: number // 상단문구(라벨) 크기 배수 (0.85~1.3, 기본 1)
   }
 
   // 공유 메타 (Phase 2에서 편집 UI 추가 예정)
@@ -180,8 +187,8 @@ const defaultPerson = (): ClassicPersonInfo => ({
 
 const defaultData: ClassicInvitationData = {
   customAccentColor: '#351714',
-  customBgColor: '#FFFFFF',
-  customSectionBgColor: '#DDD1BB',
+  customBgColor: '#F7F3EC',
+  customSectionBgColor: '#2B1613',
   groom: defaultPerson(),
   bride: defaultPerson(),
   wedding: {
@@ -201,6 +208,11 @@ const defaultData: ClassicInvitationData = {
     classicDisplayFont: 'italiana',
     classicBodyFont: 'classic',
     classicInfo: [],
+    // 기본 컬러테마 = 딥브라운 (커플소개·일정·rsvp 진한 배경)
+    classicDefaultTextColor: '#351714',
+    classicTintedTextColor: '#F2EEE6',
+    classicButtonTextColor: '#FFFFFF',
+    classicSectionBgMap: { intro: 'tinted', date: 'tinted', rsvp: 'tinted' },
   },
   meta: { title: '', description: '', kakaoThumbnail: '' },
 }

@@ -36,6 +36,10 @@ export const DISPLAY_FONTS: readonly DisplayFontOption[] = [
   { id: 'made-slab', name: 'MADE Slab', fontFamily: "'MADELikesSlab', serif", sample: 'Wedding Day' },
   { id: 'italiana', name: 'Italiana', fontFamily: "'Italiana', serif", sample: 'Wedding Day' },
   { id: 'majesty', name: 'Majesty', fontFamily: "'Majesty', serif", sample: 'Wedding Day' },
+  { id: 'britney', name: 'Britney', fontFamily: "'Britney', serif", sample: 'Wedding Day' },
+  { id: 'instrument-serif', name: 'Instrument Serif', fontFamily: "var(--font-instrument-serif), serif", sample: 'Wedding Day' },
+  { id: 'melodrama', name: 'Melodrama', fontFamily: "'Melodrama', serif", sample: 'Wedding Day' },
+  { id: 'stardom', name: 'Stardom', fontFamily: "'Stardom', serif", sample: 'Wedding Day' },
 ] as const
 
 /**

@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Essay — V5</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@200;300;400;500;600;700;900&display=swap');
+
+  *{margin:0;padding:0;box-sizing:border-box}
+
+  :root{
+    --bg:#EDE8E0;
+    --bg-deep:#E4DED4;
+    --fg:#2C2420;
+    --brown:#5C4A3A;
+    --stone:#8C7E72;
+    --warm:#B8A898;
+    --rule:#2C2420;
+    --rule-light:#C8BEB2;
+  }
+
+  html,body{width:100%;height:100%;overflow:hidden;
+    background:var(--fg);
+    font-family:'Pretendard',-apple-system,sans-serif;
+    -webkit-font-smoothing:antialiased;color:var(--fg)}
+
+  .bk{width:100%;max-width:430px;height:100%;margin:0 auto;
+    position:relative;overflow:hidden;background:var(--bg)}
+
+  /* ── Pages ── */
+  .p{position:absolute;inset:0;opacity:0;visibility:hidden;
+    will-change:transform,opacity;display:flex;flex-direction:column}
+  .p.on{opacity:1;visibility:visible;z-index:2}
+  .p.ol{animation:ol .4s cubic-bezier(.4,0,.2,1) forwards}
+  .p.or{animation:or .4s cubic-bezier(.4,0,.2,1) forwards}
+  .p.ir{animation:ir .4s cubic-bezier(.4,0,.2,1) forwards}
+  .p.il{animation:il .4s cubic-bezier(.4,0,.2,1) forwards}
+  @keyframes ol{to{opacity:0;transform:translateX(-16px)}}
+  @keyframes or{to{opacity:0;transform:translateX(16px)}}
+  @keyframes ir{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+  @keyframes il{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:none}}
+  @keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @keyframes fi{from{opacity:0}to{opacity:1}}
+  @keyframes sx{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+  .rv{opacity:0}.p.on .rv{animation:up .4s ease forwards}
+
+  /* shared */
+  .hr{height:1px;background:var(--rule);transform:scaleX(0);transform-origin:left}
+  .p.on .hr{animation:sx .5s cubic-bezier(.22,1,.36,1) forwards}
+  .hr-l{height:1px;background:var(--rule-light)}
+
+  /* ════════════════════════════════════════
+     COVER — 포토그래퍼 포트폴리오
+     ════════════════════════════════════════ */
+  .cover{background:var(--fg);padding:0}
+
+  .cover-img-w{position:absolute;inset:0;overflow:hidden}
+  .cover-img{width:100%;height:100%;object-fit:cover;
+    opacity:0;transform:scale(1.04);
+    filter:brightness(.4) saturate(.7) contrast(1.1)}
+  .cover-img.ld{animation:18s ease-out ckb forwards,2s ease ci forwards}
+  @keyframes ckb{to{transform:scale(1)}}
+  @keyframes ci{to{opacity:1}}
+
+  .cover-c{position:relative;z-index:2;height:100%;width:100%;
+    display:flex;flex-direction:column;justify-content:space-between;
+    padding:20px 28px 24px;color:var(--bg)}
+
+  .cover-top{display:flex;justify-content:space-between;align-items:center;
+    padding-bottom:14px;border-bottom:1px solid rgba(237,232,224,.15);opacity:0}
+  .cover-top.on{animation:up .5s ease 1s forwards}
+  .cover-top-l{font-size:9px;letter-spacing:3px;color:rgba(237,232,224,.4);text-transform:uppercase}
+  .cover-top-r{font-size:9px;letter-spacing:2px;color:rgba(237,232,224,.3)}
+
+  .cover-mid{flex:1;display:flex;align-items:center;justify-content:center}
+  .cover-mid-inner{text-align:center;opacity:0}
+  .cover-mid-inner.on{animation:up .7s ease 1.6s forwards}
+  .cover-title{font-family:'Cormorant Garamond',serif;
+    font-size:13px;font-weight:400;font-style:italic;
+    letter-spacing:4px;color:rgba(237,232,224,.5);margin-bottom:20px}
+  .cover-names{font-family:'Cormorant Garamond','Noto Serif KR',serif;
+    font-size:36px;font-weight:300;letter-spacing:6px;line-height:1.6;
+    color:rgba(237,232,224,.9)}
+  .cover-ampersand{font-family:'Cormorant Garamond',serif;
+    font-size:20px;font-weight:300;font-style:italic;
+    color:rgba(237,232,224,.35);margin:4px 0}
+
+  .cover-bot{opacity:0}
+  .cover-bot.on{animation:up .5s ease 2.2s forwards}
+  .cover-bot-line{height:1px;background:rgba(237,232,224,.12);margin-bottom:16px}
+  .cover-bot-row{display:flex;justify-content:space-between;align-items:baseline}
+  .cover-bot-date{font-family:'Cormorant Garamond',serif;
+    font-size:12px;letter-spacing:2px;color:rgba(237,232,224,.45)}
+  .cover-bot-venue{font-size:10px;letter-spacing:1px;color:rgba(237,232,224,.3)}
+
+  /* ════════════════════════════════════════
+     CHAPTER
+     ════════════════════════════════════════ */
+  .ch{background:var(--bg)}
+
+  .ch-bar{flex-shrink:0;padding:14px 28px;
+    display:flex;justify-content:space-between;align-items:center;
+    border-bottom:1px solid var(--rule)}
+  .ch-bar-l{font-size:9px;letter-spacing:3px;color:var(--stone);text-transform:uppercase}
+  .ch-bar-r{font-size:9px;letter-spacing:2px;color:var(--stone)}
+
+  .ch-head{flex-shrink:0;padding:32px 28px 0}
+  .ch-head-title{font-family:'Noto Serif KR',serif;
+    font-size:26px;font-weight:400;line-height:1.5;
+    letter-spacing:1px;color:var(--fg);margin-bottom:12px}
+  .ch-head-en{font-family:'Cormorant Garamond',serif;
+    font-size:11px;font-weight:400;font-style:italic;
+    letter-spacing:2px;color:var(--stone);margin-bottom:20px}
+
+  .ch-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+    padding:24px 28px 44px}
+  .ch-body::-webkit-scrollbar{display:none}
+
+  .ch-body .t{font-size:14px;line-height:2.6;color:var(--fg);
+    letter-spacing:.2px;opacity:0}
+  .p.on .ch-body .t{animation:up .35s ease forwards}
+  .ch-body .g{height:12px}
+
+  /* highlight */
+  .hl{position:relative}
+  .hl::after{content:'';position:absolute;left:-1px;right:-1px;
+    bottom:2px;height:6px;background:var(--warm);opacity:.35;
+    transform:scaleX(0);transform-origin:left;
+    transition:transform .7s cubic-bezier(.22,1,.36,1) .2s}
+  .p.on .hl::after{transform:scaleX(1)}
+
+  .em{color:var(--brown);font-weight:600}
+
+  /* pullquote */
+  .pq{margin:28px 0;padding:24px 28px;
+    background:var(--bg-deep);opacity:0}
+  .p.on .pq{animation:up .5s ease forwards}
+  .pq p{font-family:'Noto Serif KR',serif;
+    font-size:16px;font-weight:300;font-style:italic;
+    line-height:2.2;color:var(--brown);letter-spacing:.3px}
+  .pq-attr{font-size:9px;letter-spacing:2px;color:var(--stone);
+    margin-top:12px;text-transform:uppercase}
+
+  .ch-end{margin-top:28px;padding-top:16px;
+    border-top:1px solid var(--rule-light);
+    display:flex;align-items:center;gap:8px;opacity:0}
+  .p.on .ch-end{animation:up .3s ease 1s forwards}
+  .ch-end span{font-size:8px;letter-spacing:3px;color:var(--stone);text-transform:uppercase}
+
+  /* ════════════════════════════════════════
+     QUOTE PAGE — 다크
+     ════════════════════════════════════════ */
+  .qt{background:var(--fg);padding:0;display:flex;flex-direction:column}
+
+  .qt-bar{flex-shrink:0;padding:14px 28px;
+    display:flex;justify-content:space-between;align-items:center;
+    border-bottom:1px solid rgba(237,232,224,.1)}
+  .qt-bar span{font-size:9px;letter-spacing:3px;
+    color:rgba(237,232,224,.3);text-transform:uppercase}
+
+  .qt-body{flex:1;display:flex;flex-direction:column;
+    justify-content:center;padding:48px 28px}
+
+  .qt-text{font-family:'Cormorant Garamond','Noto Serif KR',serif;
+    font-size:24px;font-weight:300;font-style:italic;
+    line-height:2;color:rgba(237,232,224,.75);
+    letter-spacing:.5px;margin-bottom:32px}
+  .qt-text .ql{display:block;opacity:0}
+  .p.on .qt-text .ql{animation:up .45s ease forwards}
+
+  .qt-rule{width:24px;height:1px;background:rgba(237,232,224,.12);margin-bottom:16px;
+    transform:scaleX(0);transform-origin:left}
+  .p.on .qt-rule{animation:sx .5s ease 1s forwards}
+  .qt-who{font-size:10px;font-weight:400;letter-spacing:3px;
+    color:rgba(237,232,224,.25);text-transform:uppercase;opacity:0}
+  .p.on .qt-who{animation:up .3s ease 1.2s forwards}
+
+  /* ════════════════════════════════════════
+     INFO PAGE
+     ════════════════════════════════════════ */
+  .nf{background:var(--bg)}
+
+  .nf-bar{flex-shrink:0;padding:14px 28px;
+    display:flex;justify-content:space-between;align-items:center;
+    border-bottom:1px solid var(--rule)}
+  .nf-bar span{font-size:9px;letter-spacing:3px;color:var(--stone);text-transform:uppercase}
+
+  .nf-hero{flex-shrink:0;padding:32px 28px 0}
+  .nf-hero-label{font-size:9px;letter-spacing:3px;color:var(--stone);
+    text-transform:uppercase;margin-bottom:12px;opacity:0}
+  .p.on .nf-hero-label{animation:up .3s ease .15s forwards}
+  .nf-hero-title{font-family:'Noto Serif KR',serif;
+    font-size:24px;font-weight:400;letter-spacing:1px;
+    color:var(--fg);line-height:1.5;margin-bottom:8px;opacity:0}
+  .p.on .nf-hero-title{animation:up .4s ease .25s forwards}
+  .nf-hero-sub{font-family:'Cormorant Garamond',serif;
+    font-size:12px;font-style:italic;letter-spacing:1px;
+    color:var(--stone);margin-bottom:24px;opacity:0}
+  .p.on .nf-hero-sub{animation:up .35s ease .35s forwards}
+
+  .nf-img{width:100%;aspect-ratio:16/9;object-fit:cover;
+    display:block;opacity:0}
+  .p.on .nf-img{animation:fi .6s ease .4s forwards}
+
+  .nf-grid{flex:1;display:grid;grid-template-columns:1fr 1fr;
+    border-top:1px solid var(--rule)}
+  .nf-cell{padding:18px 28px;opacity:0;display:flex;flex-direction:column;gap:4px}
+  .nf-cell:nth-child(odd){border-right:1px solid var(--rule-light)}
+  .nf-cell:nth-child(n+3){border-top:1px solid var(--rule-light)}
+  .p.on .nf-cell{animation:up .3s ease forwards}
+  .nf-k{font-size:8px;letter-spacing:2px;color:var(--stone);text-transform:uppercase}
+  .nf-v{font-size:12px;line-height:1.7;color:var(--fg)}
+
+  /* ════════════════════════════════════════
+     FIN PAGE
+     ════════════════════════════════════════ */
+  .fn{background:var(--bg-deep)}
+
+  .fn-bar{flex-shrink:0;padding:14px 28px;
+    display:flex;justify-content:space-between;align-items:center;
+    border-bottom:1px solid var(--rule)}
+  .fn-bar span{font-size:9px;letter-spacing:3px;color:var(--stone);text-transform:uppercase}
+
+  .fn-body{flex:1;display:flex;flex-direction:column;
+    justify-content:center;padding:48px 28px}
+
+  .fn-title{font-family:'Noto Serif KR',serif;
+    font-size:22px;font-weight:300;line-height:1.8;
+    letter-spacing:1px;color:var(--fg);margin-bottom:24px;opacity:0}
+  .p.on .fn-title{animation:up .45s ease .2s forwards}
+
+  .fn-msg{font-size:13px;line-height:2.4;color:var(--brown);opacity:0}
+  .p.on .fn-msg{animation:up .4s ease .45s forwards}
+
+  .fn-foot{flex-shrink:0;padding:20px 28px;
+    border-top:1px solid var(--rule);
+    display:flex;justify-content:space-between;align-items:center;opacity:0}
+  .p.on .fn-foot{animation:up .3s ease .7s forwards}
+  .fn-names{font-family:'Cormorant Garamond',serif;
+    font-size:11px;font-weight:500;letter-spacing:3px;
+    color:var(--brown);text-transform:uppercase}
+  .fn-btn{background:none;border:none;cursor:pointer;
+    font-size:9px;letter-spacing:2px;color:var(--stone);
+    text-transform:uppercase;padding:8px 0}
+  .fn-btn:active{color:var(--fg)}
+
+  /* ─── Progress ─── */
+  .pg{position:absolute;bottom:0;left:0;right:0;height:24px;z-index:10;
+    display:flex;align-items:center;padding:0 28px;gap:10px;
+    background:var(--bg);border-top:1px solid var(--rule-light);
+    transition:opacity .3s,background .3s}
+  .pg.dark{background:var(--fg);border-top-color:rgba(237,232,224,.08)}
+  .pg-n{font-size:8px;letter-spacing:1px;color:var(--stone);min-width:36px;
+    transition:color .3s}
+  .pg.dark .pg-n{color:rgba(237,232,224,.25)}
+  .pg-track{flex:1;height:1px;background:var(--rule-light);overflow:hidden;
+    transition:background .3s}
+  .pg.dark .pg-track{background:rgba(237,232,224,.08)}
+  .pg-fill{height:100%;background:var(--brown);transition:width .5s cubic-bezier(.22,1,.36,1)}
+
+  .nz{position:absolute;top:0;bottom:24px;z-index:5;cursor:pointer}
+  .nz.l{left:0;width:25%}.nz.r{right:0;width:25%}
+
+  @media(max-height:700px){
+    .ch-head-title,.nf-hero-title{font-size:22px}
+    .ch-body .t{font-size:13px;line-height:2.4}
+    .cover-names{font-size:30px}
+    .qt-text{font-size:20px}
+  }
+</style>
+</head>
+<body>
+<div class="bk" id="bk">
+
+  <!-- ═══ COVER ═══ -->
+  <div class="p cover on" data-i="0">
+    <div class="cover-img-w">
+      <img class="cover-img" src="https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80" alt="" onload="this.classList.add('ld')">
+    </div>
+    <div class="cover-c">
+      <div class="cover-top on">
+        <span class="cover-top-l">Dear Drawer</span>
+        <span class="cover-top-r">Vol. 01</span>
+      </div>
+
+      <div class="cover-mid">
+        <div class="cover-mid-inner on">
+          <div class="cover-title">Our Story</div>
+          <div class="cover-names">지훈</div>
+          <div class="cover-ampersand">&amp;</div>
+          <div class="cover-names">서연</div>
+        </div>
+      </div>
+
+      <div class="cover-bot on">
+        <div class="cover-bot-line"></div>
+        <div class="cover-bot-row">
+          <span class="cover-bot-date">23. May. 2026</span>
+          <span class="cover-bot-venue">더채플앳청담</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CH 01 ═══ -->
+  <div class="p ch" data-i="1">
+    <div class="ch-bar">
+      <span class="ch-bar-l">Chapter 01</span>
+      <span class="ch-bar-r">The Beginning</span>
+    </div>
+    <div class="ch-head">
+      <h2 class="ch-head-title rv" style="animation-delay:.2s">우리는 우연히<br>같은 길 위에 있었습니다</h2>
+      <div class="ch-head-en rv" style="animation-delay:.3s">Bukhansan, Autumn 2020</div>
+      <div class="hr" style="animation-delay:.4s"></div>
+    </div>
+    <div class="ch-body">
+      <p class="t" style="animation-delay:.5s">2020년 가을,</p>
+      <p class="t" style="animation-delay:.55s">북한산 둘레길에서 처음 만났습니다.</p>
+      <div class="g"></div>
+      <p class="t" style="animation-delay:.63s">같은 방향으로 걷고 있었고,</p>
+      <p class="t" style="animation-delay:.68s">같은 풍경에 발을 멈췄습니다.</p>
+      <div class="g"></div>
+      <p class="t" style="animation-delay:.76s"><span class="hl">"저기, 혹시 사진 한 장</span></p>
+      <p class="t" style="animation-delay:.81s"><span class="hl">찍어주실 수 있을까요?"</span></p>
+      <div class="g"></div>
+      <p class="t" style="animation-delay:.9s">그 한 마디가 <span class="em">시작</span>이었습니다.</p>
+
+      <div class="ch-end">
+        <span>Continued</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CH 02 ═══ -->
+  <div class="p ch" data-i="2">
+    <div class="ch-bar">
+      <span class="ch-bar-l">Chapter 02</span>
+      <span class="ch-bar-r">Our Days Together</span>
+    </div>
+    <div class="ch-head">
+      <h2 class="ch-head-title rv" style="animation-delay:.2s">같은 계절을<br>여러 번 보았습니다</h2>
+      <div class="ch-head-en rv" style="animation-delay:.3s">Four Seasons on the Mountain</div>
+      <div class="hr" style="animation-delay:.4s"></div>
+    </div>
+    <div class="ch-body">
+      <p class="t" style="animation-delay:.5s">그 뒤로 매주 함께 산에 올랐습니다.</p>
+      <div class="g"></div>
+      <p class="t" style="animation-delay:.58s">봄에는 진달래가 핀 능선을 걸었고,</p>
+      <p class="t" style="animation-delay:.63s">여름에는 계곡에 발을 담갔습니다.</p>
+      <p class="t" style="animation-delay:.68s">가을 단풍 아래에서 도시락을 나눠 먹고,</p>
+      <p class="t" style="animation-delay:.73s">겨울 설산에서는 서로의 손을 꼭 잡았습니다.</p>
+
+      <div class="pq" style="animation-delay:.85s">
+        <p>이번 주말 어디 갈까?가<br>이번 주말 어느 산 갈까?로</p>
+        <div class="pq-attr">바뀌어 버린 질문</div>
+      </div>
+
+      <p class="t" style="animation-delay:1s">바뀐 것은 아주 자연스러운 일이었습니다.</p>
+
+      <div class="ch-end">
+        <span>End of chapter</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ QUOTE ═══ -->
+  <div class="p qt" data-i="3">
+    <div class="qt-bar">
+      <span>Quote</span>
+      <span>03 / 06</span>
+    </div>
+    <div class="qt-body">
+      <div class="qt-text">
+        <span class="ql" style="animation-delay:.4s">사랑한다는 건</span>
+        <span class="ql" style="animation-delay:.6s">같은 방향을</span>
+        <span class="ql" style="animation-delay:.8s">바라보는 것이다.</span>
+      </div>
+      <div class="qt-rule"></div>
+      <div class="qt-who">생텍쥐페리</div>
+    </div>
+  </div>
+
+  <!-- ═══ INFO ═══ -->
+  <div class="p nf" data-i="4">
+    <div class="nf-bar">
+      <span>Information</span>
+      <span>04 / 06</span>
+    </div>
+    <div class="nf-hero">
+      <div class="nf-hero-label">Wedding Ceremony</div>
+      <div class="nf-hero-title">예식 안내</div>
+      <div class="nf-hero-sub">23. May. 2026 — Saturday, 1:00 PM</div>
+    </div>
+    <img class="nf-img" src="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800&q=80" alt="">
+    <div class="nf-grid">
+      <div class="nf-cell" style="animation-delay:.6s">
+        <div class="nf-k">Date</div>
+        <div class="nf-v">2026. 05. 23<br>토요일 오후 1시</div>
+      </div>
+      <div class="nf-cell" style="animation-delay:.7s">
+        <div class="nf-k">Venue</div>
+        <div class="nf-v">더채플앳청담<br>그랜드홀 3층</div>
+      </div>
+      <div class="nf-cell" style="animation-delay:.8s">
+        <div class="nf-k">Address</div>
+        <div class="nf-v">서울시 강남구<br>선릉로 158길 12</div>
+      </div>
+      <div class="nf-cell" style="animation-delay:.9s">
+        <div class="nf-k">Contact</div>
+        <div class="nf-v">신랑 010-1234<br>신부 010-8765</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ FIN ═══ -->
+  <div class="p fn" data-i="5">
+    <div class="fn-bar">
+      <span>Fin</span>
+      <span>05 / 06</span>
+    </div>
+    <div class="fn-body">
+      <div class="fn-title">모든 이야기를<br>읽어주셔서<br>감사합니다.</div>
+      <div class="fn-msg">여러분의 축복이<br>가장 큰 선물입니다.</div>
+    </div>
+    <div class="fn-foot">
+      <span class="fn-names">Jihoon &amp; Seoyeon</span>
+      <button class="fn-btn" onclick="go(0)">Read again →</button>
+    </div>
+  </div>
+
+  <!-- Nav -->
+  <div class="nz l" onclick="prev()"></div>
+  <div class="nz r" onclick="next()"></div>
+
+  <!-- Progress -->
+  <div class="pg" id="pg">
+    <span class="pg-n" id="pn">01 / 06</span>
+    <div class="pg-track"><div class="pg-fill" id="pf" style="width:0%"></div></div>
+  </div>
+</div>
+
+<script>
+const ps=document.querySelectorAll('.p'),tot=ps.length;
+let c=0,busy=false;
+const pg=document.getElementById('pg');
+
+function upd(){
+  document.getElementById('pn').textContent=
+    String(c+1).padStart(2,'0')+' / '+String(tot).padStart(2,'0');
+  document.getElementById('pf').style.width=
+    Math.round(c/(tot-1)*100)+'%';
+  const dark=ps[c].classList.contains('cover')||ps[c].classList.contains('qt');
+  pg.classList.toggle('dark',dark);
+}
+
+function go(t){
+  if(busy||t===c||t<0||t>=tot)return;busy=true;
+  const d=t>c?1:-1,o=ps[c],n=ps[t];
+  ps.forEach(p=>p.classList.remove('on','ol','or','il','ir'));
+  o.classList.add(d>0?'ol':'or');
+  n.classList.add('on',d>0?'ir':'il');
+  c=t;upd();
+  setTimeout(()=>{o.classList.remove('ol','or');
+    n.classList.remove('ir','il');busy=false},400);
+}
+function next(){go(c+1)}function prev(){go(c-1)}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();next()}
+  if(e.key==='ArrowLeft'){e.preventDefault();prev()}
+});
+let sx=0,sy=0;const bk=document.getElementById('bk');
+bk.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
+bk.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
+  if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>35)dx<0?next():prev();
+},{passive:true});
+upd();
+</script>
+</body>
+</html>

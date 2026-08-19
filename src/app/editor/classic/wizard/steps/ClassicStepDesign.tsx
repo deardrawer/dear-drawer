@@ -2,6 +2,7 @@
 
 import ColorField from '@/components/editor/ColorField'
 import ImageUploader from '@/components/editor/ImageUploader'
+import ClassicPhotoField from '../../ClassicPhotoField'
 import { DISPLAY_FONTS, KOREAN_FONTS } from '@/app/editor/the-simple/fontOptions'
 import ClassicBgmEditor from '../../ClassicBgmEditor'
 import type { ClassicInvitationData } from '../../page'
@@ -199,7 +200,6 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
       )
     }
     if (id === '접힌 편지' || id === '사진 뒤집기') {
-      const op = Math.round((data.content.classicInfoPhotoOpacity ?? 0) * 100)
       return (
         <div className="mt-2 space-y-3 rounded-lg border border-gray-200 p-4 bg-white">
           <div>
@@ -211,28 +211,24 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
               className="mt-1 w-full border border-gray-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-gray-600"
             />
           </div>
-          <div>
-            <p className="text-sm font-medium text-gray-700">배경 · 사진</p>
-            <p className="text-[10px] text-gray-400 leading-tight">처음엔 어둡다가 펼치거나 뒤집으면 밝아집니다. 배경 오버레이 색상과 첫 사진 배경 투명도를 설정하세요.</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <ColorField
-              label="오버레이 색상"
-              value={data.content.classicInfoOverlayColor || '#1C100D'}
-              onChange={(hex) => updateNestedData('content.classicInfoOverlayColor', hex)}
-            />
-            <div className="flex-1">
-              <div className="flex justify-between text-[11px] text-gray-500 mb-1"><span>첫 사진 배경 투명도</span><span>{op}%</span></div>
-              <input
-                type="range"
-                min={0}
-                max={100}
-                value={op}
-                onChange={(e) => updateNestedData('content.classicInfoPhotoOpacity', Number(e.target.value) / 100)}
-                className="w-full accent-gray-900"
+          {id === '사진 뒤집기' && (
+            <div>
+              <p className="text-sm font-medium text-gray-700">뒤집기 사진</p>
+              <p className="text-[10px] text-gray-400 leading-tight mb-1.5">카드 앞면과 배경에 쓰입니다. 비우면 갤러리 첫 사진이 사용됩니다.</p>
+              <ClassicPhotoField
+                value={data.content.classicFlipPhoto}
+                onChange={(p) => updateNestedData('content.classicFlipPhoto', p)}
+                invitationId={invitationId || undefined}
+                aspectRatio={250 / 330}
+                containerWidth={200}
               />
             </div>
-          </div>
+          )}
+          <ColorField
+            label="오버레이 색상"
+            value={data.content.classicInfoOverlayColor || '#1C100D'}
+            onChange={(hex) => updateNestedData('content.classicInfoOverlayColor', hex)}
+          />
         </div>
       )
     }
@@ -395,6 +391,22 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
               ))}
             </select>
           </label>
+          <div>
+            <span className="text-sm font-medium text-gray-700">영문 대소문자</span>
+            <div className="mt-1 inline-flex rounded-lg border border-gray-200 overflow-hidden">
+              {([
+                { id: 'upper', label: '전부 대문자 (THEO)' },
+                { id: 'title', label: '첫 글자만 (Theo)' },
+              ] as const).map((opt) => {
+                const active = (data.content.classicNameCase || 'upper') === opt.id
+                return (
+                  <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicNameCase', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                    {opt.label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
           <label className="block">
             <span className="text-sm font-medium text-gray-700">한글 본문 폰트</span>
             <select
@@ -410,6 +422,32 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
             </select>
           </label>
         </div>
+
+        {/* 글자 크기 · 상단문구 · 섹션 간격 */}
+        {(() => {
+          const fontPct = Math.round((data.content.classicFontScale ?? 1) * 100)
+          const eyebrowPct = Math.round((data.content.classicEyebrowScale ?? 1) * 100)
+          return (
+            <div className="space-y-4 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
+              <div>
+                <div className="flex justify-between text-[11px] text-gray-500 mb-1"><span className="font-medium text-gray-700">본문 글자 크기</span><span>{fontPct}%</span></div>
+                <input
+                  type="range" min={85} max={130} value={fontPct}
+                  onChange={(e) => updateNestedData('content.classicFontScale', parseInt(e.target.value, 10) / 100)}
+                  className="w-full accent-gray-900"
+                />
+              </div>
+              <div>
+                <div className="flex justify-between text-[11px] text-gray-500 mb-1"><span className="font-medium text-gray-700">상단문구 크기</span><span>{eyebrowPct}%</span></div>
+                <input
+                  type="range" min={85} max={130} value={eyebrowPct}
+                  onChange={(e) => updateNestedData('content.classicEyebrowScale', parseInt(e.target.value, 10) / 100)}
+                  className="w-full accent-gray-900"
+                />
+              </div>
+            </div>
+          )
+        })()}
       </section>
 
       {/* 오프닝 스타일 */}

@@ -54,36 +54,47 @@ const extractUrl = (im: unknown): string => (typeof im === 'string' ? im : (im &
 
 // 스크롤 리빌 + 인터랙션 스타일
 const CLASSIC_STYLES = `
-  .cl-reveal { opacity: 0; transform: translateY(18px); }
+  /* ===== 모션 컨셉: "서랍에서 꺼낸 한 통의 편지" — 안착(Settle)·스밈(Ink)·긋기(Draw) ===== */
+  .cl-reveal { opacity: 0; transform: translateY(14px); }
   .cl-reveal.is-in { opacity: 1; transform: none; transition: opacity 1.4s ease, transform 1.4s cubic-bezier(.22,.61,.36,1); }
   /* ===== 섹션별 등장(entrance) 모션 변형 — 기존 .cl-reveal/.is-in 위에 얹는 additive modifier ===== */
-  .cl-reveal.cl-l { transform: translateX(-30px); }
+  /* 안착 계열: 작은 이동/스케일로 종이가 제자리에 놓이는 느낌 */
+  .cl-reveal.cl-l { transform: translateX(-12px); }
   .cl-reveal.cl-l.is-in { transform: none; transition: opacity 1.3s ease, transform 1.3s cubic-bezier(.22,.61,.36,1); }
-  .cl-reveal.cl-r { transform: translateX(30px); }
+  .cl-reveal.cl-r { transform: translateX(12px); }
   .cl-reveal.cl-r.is-in { transform: none; transition: opacity 1.3s ease, transform 1.3s cubic-bezier(.22,.61,.36,1); }
-  .cl-reveal.cl-up { transform: translateY(34px); }
+  .cl-reveal.cl-up { transform: translateY(22px); }
   .cl-reveal.cl-up.is-in { transform: none; transition: opacity 1.5s ease, transform 1.5s cubic-bezier(.22,.61,.36,1); }
-  .cl-reveal.cl-drop { transform: translateY(-24px); }
+  .cl-reveal.cl-drop { transform: translateY(-16px); }
   .cl-reveal.cl-drop.is-in { transform: none; transition: opacity 1.3s ease, transform 1.3s cubic-bezier(.22,.61,.36,1); }
-  .cl-reveal.cl-zoom { transform: scale(.9); }
-  .cl-reveal.cl-zoom.is-in { transform: none; transition: opacity 1.3s ease, transform 1.4s cubic-bezier(.22,.61,.36,1); }
-  .cl-reveal.cl-blur { transform: translateY(20px) scale(.97); filter: blur(8px); }
-  .cl-reveal.cl-blur.is-in { transform: none; filter: blur(0); transition: opacity 1.5s ease, transform 1.5s cubic-bezier(.22,.61,.36,1), filter 1.5s ease; }
+  .cl-reveal.cl-zoom { transform: translateY(10px) scale(.985); }
+  .cl-reveal.cl-zoom.is-in { transform: none; transition: opacity 1.4s ease, transform 1.4s cubic-bezier(.22,.61,.36,1); }
+  /* 스밈 계열: 세리프/이탤릭 문구가 잉크처럼 번지며 안착 (blur는 6px로 GPU 절제) */
+  .cl-reveal.cl-blur { transform: translateY(14px) scale(.99); filter: blur(6px); }
+  .cl-reveal.cl-blur.is-in { transform: none; filter: blur(0); transition: opacity 1.5s ease, transform 1.5s cubic-bezier(.22,.61,.36,1), filter 1.4s ease; }
+  /* 긋기 계열: 마스크/선이 그어지며 프레임·사진이 드러남 */
   .cl-reveal.cl-clip { opacity: 1; transform: none; clip-path: inset(0 0 100% 0); }
   .cl-reveal.cl-clip.is-in { opacity: 1; clip-path: inset(0 0 0 0); transition: clip-path 1.2s cubic-bezier(.22,.61,.36,1); }
   .cl-reveal.cl-line { opacity: 1; transform: scaleY(0); transform-origin: top; }
   .cl-reveal.cl-line.is-in { opacity: 1; transform: scaleY(1); transition: transform 1.1s cubic-bezier(.22,.61,.36,1); }
-  /* 잔잔·고급 전용 변형 (달력 섹션 등) */
-  .cl-reveal.cl-soft { transform: scale(.97); }
-  .cl-reveal.cl-soft.is-in { transform: none; transition: opacity .6s ease, transform .6s cubic-bezier(.22,.61,.36,1); }
-  .cl-reveal.cl-rise { transform: translateY(10px); }
-  .cl-reveal.cl-rise.is-in { transform: none; transition: opacity .7s ease, transform .7s cubic-bezier(.22,.61,.36,1); }
   .cl-reveal.cl-linex { opacity: 1; transform: scaleX(0); transform-origin: left; }
   .cl-reveal.cl-linex.is-in { transform: scaleX(1); transition: transform .7s cubic-bezier(.22,.61,.36,1); }
-  .cl-reveal.cl-pop { transform: scale(.9); }
-  .cl-reveal.cl-pop.is-in { transform: none; transition: opacity .4s ease, transform .45s cubic-bezier(.22,.61,.36,1); }
-  .cl-reveal.cl-poof { transform: scale(.6); }
-  .cl-reveal.cl-poof.is-in { transform: none; transition: opacity .3s ease, transform .55s cubic-bezier(.34,1.56,.64,1); }
+  /* 정적 계열: 이동 없이 조용히 떠오르는 fade (감사·푸터 등 "움직이지 않는 순간") */
+  .cl-reveal.cl-fade { transform: none; }
+  .cl-reveal.cl-fade.is-in { transform: none; transition: opacity 1.7s ease; }
+  /* 잔잔·고급 전용 변형 (달력 섹션 등) */
+  .cl-reveal.cl-soft { transform: scale(.98); }
+  .cl-reveal.cl-soft.is-in { transform: none; transition: opacity .6s ease, transform .6s cubic-bezier(.22,.61,.36,1); }
+  .cl-reveal.cl-rise { transform: translateY(9px); }
+  .cl-reveal.cl-rise.is-in { transform: none; transition: opacity .7s ease, transform .7s cubic-bezier(.22,.61,.36,1); }
+  .cl-reveal.cl-pop { transform: scale(.92); }
+  .cl-reveal.cl-pop.is-in { transform: none; transition: opacity .5s ease, transform .6s cubic-bezier(.22,.61,.36,1); }
+  /* 장식(우표·새 등): 바운스 제거 → 잔잔한 안착 */
+  .cl-reveal.cl-poof { transform: scale(.94); }
+  .cl-reveal.cl-poof.is-in { transform: none; transition: opacity .7s ease, transform .8s cubic-bezier(.22,.61,.36,1); }
+  /* RSVP: 카드가 봉투 뒤에서 천천히 솟아오르는 시그니처 */
+  .cl-reveal.cl-env { transform: translateY(62px) scale(.99); }
+  .cl-reveal.cl-env.is-in { transform: none; transition: opacity 1.1s ease, transform 1.2s cubic-bezier(.22,.61,.36,1); }
   @media (prefers-reduced-motion: reduce) {
     .cl-reveal, .cl-reveal.is-in,
     .cl-reveal.cl-l, .cl-reveal.cl-l.is-in,
@@ -94,17 +105,21 @@ const CLASSIC_STYLES = `
     .cl-reveal.cl-blur, .cl-reveal.cl-blur.is-in,
     .cl-reveal.cl-clip, .cl-reveal.cl-clip.is-in,
     .cl-reveal.cl-line, .cl-reveal.cl-line.is-in,
+    .cl-reveal.cl-fade, .cl-reveal.cl-fade.is-in,
     .cl-reveal.cl-soft, .cl-reveal.cl-soft.is-in,
     .cl-reveal.cl-rise, .cl-reveal.cl-rise.is-in,
     .cl-reveal.cl-linex, .cl-reveal.cl-linex.is-in,
     .cl-reveal.cl-pop, .cl-reveal.cl-pop.is-in,
-    .cl-reveal.cl-poof, .cl-reveal.cl-poof.is-in {
+    .cl-reveal.cl-poof, .cl-reveal.cl-poof.is-in,
+    .cl-reveal.cl-env, .cl-reveal.cl-env.is-in {
       transition: none !important;
       opacity: 1;
       transform: none;
       filter: none;
       clip-path: inset(0 0 0 0);
     }
+    /* 오프닝 등 인라인 키프레임 애니메이션도 정지 (요소는 최종 상태로 표시) */
+    .cl-root [style*="animation"] { animation: none !important; }
   }
   /* 필름 스트립: 무한 마퀴 (상·하행 반대방향, 끊김 없이 루프) */
   .cl-film-row { overflow: hidden; }
@@ -122,6 +137,7 @@ const CLASSIC_STYLES = `
   @keyframes cl-spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
   @keyframes cl-nudge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
   @keyframes cl-seal-in { 0% { opacity: 0; transform: translateY(18px) scale(.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+  @keyframes cl-flip-enter { 0% { opacity: 0; transform: translateY(44px) scale(.9); filter: blur(7px); } 55% { opacity: 1; filter: blur(0); } 100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
   @keyframes cl-caret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
   .cl-scroll::-webkit-scrollbar { display: none; }
 `
@@ -209,8 +225,11 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   })()
 
   // 이름
-  const groomEn = (groom.nameEn || groom.name || 'THEO').toUpperCase()
-  const brideEn = (bride.nameEn || bride.name || 'ELISE').toUpperCase()
+  // 영문 대소문자 옵션은 '본문 영문 라벨'에만 적용. 영문 이름은 기본정보 입력값 그대로 사용.
+  const titleCase = (s: string) => s.toLowerCase().replace(/(^|[\s\-'])([a-z])/g, (_, p, c: string) => p + c.toUpperCase())
+  const nameCase = (s: string) => (cc.classicNameCase === 'title' ? titleCase(s) : s.toUpperCase())
+  const groomEn = groom.nameEn || groom.name || 'THEO'
+  const brideEn = bride.nameEn || bride.name || 'ELISE'
   const groomKo = groom.name || '테오'
   const brideKo = bride.name || '엘리스'
   // 트레이싱지 걷어낸 사진 위 오버레이 (색상 + 투명도, 0=자연 사진)
@@ -219,6 +238,15 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   // 접힌편지·사진뒤집기 배경 오버레이 색상 + 첫 사진 배경 투명도
   const infoOverlay: string = cc.classicInfoOverlayColor || '#1C100D'
   const infoPhotoOp: number = typeof cc.classicInfoPhotoOpacity === 'number' ? Math.max(0, Math.min(1, cc.classicInfoPhotoOpacity)) : 0
+  // 오버레이 투명도: 처음(어두운 상태) / 펼치거나 뒤집은 후(원본·밝은 상태). 원본 상태도 오버레이 설정 가능
+  const infoDarkOverlayOp: number = typeof cc.classicInfoOverlayOpacity === 'number' ? Math.max(0, Math.min(1, cc.classicInfoOverlayOpacity)) : 0.42
+  const infoBrightOverlayOp: number = typeof cc.classicInfoBrightOverlayOpacity === 'number' ? Math.max(0, Math.min(1, cc.classicInfoBrightOverlayOpacity)) : 0
+  // 디자인 커스텀 스케일 (THE SIMPLE 참조): 본문 글자 / 상단문구. 기본 1
+  const bodyScale: number = typeof cc.classicFontScale === 'number' ? Math.max(0.85, Math.min(1.3, cc.classicFontScale)) : 1
+  const labelScale: number = typeof cc.classicEyebrowScale === 'number' ? Math.max(0.85, Math.min(1.3, cc.classicEyebrowScale)) : 1
+  // 본문(F_BODY) / 라벨(F_LABEL·label()) 글자 크기 배수. 소수 1자리 반올림
+  const bfs = (n: number) => Math.round(n * bodyScale * 10) / 10
+  const lfs = (n: number) => Math.round(n * labelScale * 10) / 10
   // 오프닝 이름 언어 (영문/한글) — 5종 공통
   const nameLang: string = cc.classicOpeningNameLang === 'ko' ? 'ko' : 'en'
   const nameGroom = nameLang === 'ko' ? groomKo : groomEn
@@ -226,7 +254,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   const nameFont = nameLang === 'ko' ? F_BODY : F_DISPLAY
 
   // 혼주 (호칭 · 고인표시)
-  const letterSign: string = ['parents', 'couple', 'hosts'].includes(cc.classicLetterSign) ? cc.classicLetterSign : 'parents'
+  const letterSign: string = ['parents', 'couple', 'hosts', 'none'].includes(cc.classicLetterSign) ? cc.classicLetterSign : 'parents'
   const hostSide: string = ['both', 'groom', 'bride'].includes(cc.classicHostSide) ? cc.classicHostSide : 'groom'
   const groomTitle = cc.classicGroomTitle ?? '아들'
   const brideTitle = cc.classicBrideTitle ?? '딸'
@@ -242,8 +270,9 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
     return items.reduce<React.ReactNode[]>((acc, el, i) => (i === 0 ? [el] : [...acc, <span key={'d' + i}> · </span>, el]), [])
   }
   const coupleTogetherText: string = cc.coupleTogetherText || groom.profile?.tag || '오랜 시간 함께 걸어온 두 사람이\n이제 같은 이름으로 살아가려 합니다.'
-  // 신랑·신부 소개: 에디터에서 각자/함께 선택 + 각자 소개 한마디 + 크롭 사진
-  const introTogether = cc.classicIntroMode === 'together'
+  // 신랑·신부 소개: 에디터에서 각자/함께/이름만 선택 + 각자 소개 한마디 + 크롭 사진
+  const introMode: string = cc.classicIntroMode === 'together' ? 'together' : cc.classicIntroMode === 'nameOnly' ? 'nameOnly' : 'each'
+  const introTogether = introMode === 'together'
   // 각자 카드 프레임 (웨이브 플라크 / 우표)
   const eachFrame = cc.classicIntroEachFrame === 'stamp'
     ? { img: '/classic/stamp.webp', aspect: '770 / 484', pad: '22px 40px' }
@@ -357,7 +386,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           <button type="button" onClick={() => setGalExpanded(true)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, width: '100%', padding: 0, border: 'none', background: 'transparent', cursor: 'pointer' }}>
             <span style={{ width: 30, height: 1, background: cA(0.3) }} />
             <span style={{ fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 15, letterSpacing: '.04em', color: c1 }}>사진 더보기</span>
-            <span style={{ fontFamily: F_LABEL, fontSize: 10, letterSpacing: '.28em', paddingLeft: '.28em', color: cA(0.5) }}>{String(rest.length).padStart(2, '0')} MORE</span>
+            <span style={{ fontFamily: F_LABEL, fontSize: lfs(10), letterSpacing: '.28em', paddingLeft: '.28em', color: cA(0.5) }}>{String(rest.length).padStart(2, '0')} {nameCase('MORE')}</span>
           </button>
         ) : (
           <>
@@ -545,7 +574,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
     return { backgroundImage: `url(${url})`, backgroundSize: sc > 1 ? `${sc * 100}%` : 'cover', backgroundPosition: `${50 - px}% ${50 - py}%`, backgroundRepeat: 'no-repeat', ...restExtra }
   }
 
-  const label = (size: number, ls: number, color: string): React.CSSProperties => ({ margin: 0, fontFamily: F_LABEL, fontSize: size, letterSpacing: `${ls}em`, color, paddingLeft: `${ls}em` })
+  const label = (size: number, ls: number, color: string): React.CSSProperties => ({ margin: 0, fontFamily: F_LABEL, fontSize: Math.round(size * labelScale * 10) / 10, letterSpacing: `${ls}em`, color, paddingLeft: `${ls}em` })
 
   // 간지 풀화면 배경 오버레이 (사진2 / 인용구)
   const interOverlay = (item: Inter): React.ReactNode => {
@@ -580,7 +609,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           <div className="cl-reveal cl-clip" data-delay="120" style={{ position: 'relative', zIndex: 1, margin: '0 auto 0 0', width: '82%', aspectRatio: '4/5', ...cropBg(interSrc(item, 0), bgPhoto(idx, { backgroundPosition: '46% 38%' })), filter: 'saturate(.68)' }} />
           <div className="cl-reveal cl-blur" data-delay="380" style={{ position: 'relative', zIndex: 2, margin: '-58px 30px 0 auto', width: '78%', background: PAPER, padding: '34px 26px 30px', boxShadow: '0 26px 44px -36px rgba(53,23,20,.7)' }}>
             <blockquote style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 21, lineHeight: 1.5, color: INK }}>“{item.text || ''}”</blockquote>
-            {item.caption ? <p style={{ margin: '20px 0 0', fontFamily: F_BODY, fontSize: 10.5, color: inkA(0.55) }}>{item.caption}</p> : null}
+            {item.caption ? <p style={{ margin: '20px 0 0', fontFamily: F_BODY, fontSize: bfs(10.5), color: inkA(0.55) }}>{item.caption}</p> : null}
           </div>
         </section>
       )
@@ -619,7 +648,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
     }, { threshold: 0.15, rootMargin: '0px 0px -6% 0px' })
     root.querySelectorAll<HTMLElement>('.cl-reveal').forEach((el) => io.observe(el))
 
-    const onScroll = () => {
+    let ticking = false
+    const doScroll = () => {
       const intro = root.querySelector<HTMLElement>('[data-scene="opening"]')
       if (intro) {
         const r = intro.getBoundingClientRect()
@@ -650,9 +680,15 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         }
       })
     }
+    // rAF 스로틀: 스크롤 이벤트가 몰려도 프레임당 1회만 계산 → 저사양 60fps 유지
+    const onScroll = () => {
+      if (ticking) return
+      ticking = true
+      window.requestAnimationFrame(() => { doScroll(); ticking = false })
+    }
     // capture:true → 내부 스크롤 컨테이너(에디터 미리보기 등)의 스크롤도 window에서 잡혀 리빌 fallback이 동작
     window.addEventListener('scroll', onScroll, { passive: true, capture: true })
-    onScroll()
+    doScroll()
     return () => { io.disconnect(); window.removeEventListener('scroll', onScroll, { capture: true } as EventListenerOptions) }
   }, [page, content])
 
@@ -731,7 +767,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           <span style={{ color: 'rgba(255,255,255,0.95)', fontSize: 13, fontWeight: 500 }}>결제 후 워터마크가 제거됩니다</span>
         </div>
       )}
-      <div ref={rootRef} style={{ width: '100%', maxWidth: 420, height: isPreview && page === 'intro' ? '100%' : undefined, position: 'relative', overflow: 'hidden', background: IVORY, boxShadow: '0 0 80px rgba(53,23,20,.2)', fontFamily: F_BODY, color: INK }}>
+      <div ref={rootRef} className="cl-root" style={{ width: '100%', maxWidth: 420, height: isPreview && page === 'intro' ? '100%' : undefined, position: 'relative', overflow: 'hidden', background: IVORY, boxShadow: '0 0 80px rgba(53,23,20,.2)', fontFamily: F_BODY, color: INK }}>
         <style dangerouslySetInnerHTML={{ __html: CLASSIC_STYLES }} />
         {/* Grain overlay */}
         <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 20, opacity: 0.5, mixBlendMode: 'multiply', backgroundImage: 'repeating-linear-gradient(0deg,rgba(53,23,20,.035) 0 1px,transparent 1px 3px),repeating-linear-gradient(90deg,rgba(53,23,20,.03) 0 1px,transparent 1px 3px)' }} />
@@ -762,10 +798,10 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
 
           {/* 리본 매듭·접힌 편지·사진 뒤집기: 처음엔 배경 살짝 어둡게 → 상호작용 시 밝아짐 (카드는 위에 떠 있음) */}
           {(openingStyle === '실링' || openingStyle === '접힌 편지' || openingStyle === '사진 뒤집기') && infoPhotoOp > 0 && (
-            <div style={{ position: 'absolute', inset: 0, ...bgPhoto(0, { backgroundPosition: '50% 40%', backgroundColor: DARK_PHOTO }), opacity: infoPhotoOp, pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', inset: 0, ...(openingStyle === '사진 뒤집기' ? cropBg(cc.classicFlipPhoto, bgPhoto(0, { backgroundPosition: '50% 40%', backgroundColor: DARK_PHOTO })) : bgPhoto(0, { backgroundPosition: '50% 40%', backgroundColor: DARK_PHOTO })), opacity: infoPhotoOp, pointerEvents: 'none' }} />
           )}
           {(openingStyle === '실링' || openingStyle === '접힌 편지' || openingStyle === '사진 뒤집기') && (
-            <div style={{ position: 'absolute', inset: 0, background: `rgba(${hexToRgb(infoOverlay, '28,16,13')},.42)`, opacity: ((openingStyle === '실링' && ribbon) || (openingStyle === '접힌 편지' && fold > 0) || (openingStyle === '사진 뒤집기' && flip)) ? 0 : 1, transition: 'opacity 1.2s ease', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', inset: 0, background: `rgb(${hexToRgb(infoOverlay, '28,16,13')})`, opacity: ((openingStyle === '실링' && ribbon) || (openingStyle === '접힌 편지' && fold > 0) || (openingStyle === '사진 뒤집기' && flip)) ? infoBrightOverlayOp : infoDarkOverlayOp, transition: 'opacity 1.2s ease', pointerEvents: 'none' }} />
           )}
 
           {openingStyle === '트레이싱지' ? (
@@ -773,13 +809,13 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
               <div style={{ position: 'absolute', inset: 0, ...(openBgImg ? bgOf(openBgImg, { backgroundPosition: '52% 38%' }) : bgPhoto(0, { backgroundPosition: '52% 38%' })) }} />
               {traceVeilOp > 0 && <div style={{ position: 'absolute', inset: 0, background: traceVeil, opacity: traceVeilOp, pointerEvents: 'none' }} />}
               <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-                <p style={{ ...label(9.5, 0.46, ivoryA(0.85)), textShadow: '0 1px 10px rgba(20,10,8,.55)', animation: frost ? 'cl-fade-soft .9s ease .35s both' : undefined }}>WE INVITE YOU</p>
+                <p style={{ ...label(9.5, 0.46, ivoryA(0.85)), textShadow: '0 1px 10px rgba(20,10,8,.55)', animation: frost ? 'cl-fade-soft .9s ease .35s both' : undefined }}>{nameCase('WE INVITE YOU')}</p>
                 <h1 style={{ margin: '22px 0 0', fontFamily: nameFont, fontSize: 42, lineHeight: 1.12, color: IVORY, textShadow: '0 2px 14px rgba(20,10,8,.55)', animation: frost ? 'cl-emerge 1.2s cubic-bezier(.22,.61,.36,1) .55s both' : undefined }}>{nameGroom}<br />{nameBride}</h1>
-                <p style={{ margin: '26px 0 0', fontFamily: F_BODY, fontSize: 14, letterSpacing: '.04em', color: ivoryA(0.92), textShadow: '0 1px 10px rgba(20,10,8,.55)', animation: frost ? 'cl-fade-soft 1s ease 1.15s both' : undefined }}>{dateFullKo}</p>
-                <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: 12, letterSpacing: '.02em', color: ivoryA(0.85), textShadow: '0 1px 10px rgba(20,10,8,.55)', animation: frost ? 'cl-fade-soft 1s ease 1.3s both' : undefined }}>{timeDisplay} · {venueName}</p>
+                <p style={{ margin: '26px 0 0', fontFamily: F_BODY, fontSize: bfs(14), letterSpacing: '.04em', color: ivoryA(0.92), textShadow: '0 1px 10px rgba(20,10,8,.55)', animation: frost ? 'cl-fade-soft 1s ease 1.15s both' : undefined }}>{dateFullKo}</p>
+                <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(12), letterSpacing: '.02em', color: ivoryA(0.85), textShadow: '0 1px 10px rgba(20,10,8,.55)', animation: frost ? 'cl-fade-soft 1s ease 1.3s both' : undefined }}>{timeDisplay} · {venueName}</p>
               </div>
               <div style={{ position: 'absolute', inset: 0, background: 'rgba(244,241,233,.78)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', opacity: frost ? 0 : 1, transition: 'opacity 1.2s ease', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
-                <p style={{ margin: 0, fontFamily: F_BODY, fontSize: 15, letterSpacing: '.02em', color: inkA(0.62), minHeight: '1.4em' }}>{traceText.slice(0, traceTyped)}<span style={{ display: 'inline-block', marginLeft: 1, color: inkA(0.5), animation: 'cl-caret 1s step-end infinite' }}>|</span></p>
+                <p style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(15), letterSpacing: '.02em', color: inkA(0.62), minHeight: '1.4em' }}>{traceText.slice(0, traceTyped)}<span style={{ display: 'inline-block', marginLeft: 1, color: inkA(0.5), animation: 'cl-caret 1s step-end infinite' }}>|</span></p>
                 <p style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 11.5, letterSpacing: '.1em', paddingLeft: '.1em', color: inkA(0.42), opacity: traceTyped >= traceText.length ? 1 : 0, transition: 'opacity .8s ease' }}>화면을 클릭해주세요.</p>
               </div>
             </div>
@@ -790,11 +826,11 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
               {openingStyle === '프레임' && (
                 <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', minHeight: 470 }}>
                   <div style={{ position: 'relative', textAlign: 'center' }}>
-                    <p style={{ ...label(9.5, 0.46, frameInkA(0.5)), animation: 'cl-fade-soft .9s ease .2s both' }}>WE INVITE YOU</p>
+                    <p style={{ ...label(9.5, 0.46, frameInkA(0.5)), animation: 'cl-fade-soft .9s ease .2s both' }}>{nameCase('WE INVITE YOU')}</p>
                     <h1 style={{ margin: '22px 0 0', fontFamily: nameFont, fontWeight: 400, fontSize: nameLang === 'ko' ? 34 : 44, lineHeight: 1.12, letterSpacing: nameLang === 'ko' ? '.02em' : '.03em', color: frameInk, animation: 'cl-emerge 1.25s cubic-bezier(.22,.61,.36,1) .45s both' }}>{nameGroom}<span style={{ display: 'block', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 20, letterSpacing: 0, opacity: 0.55, margin: '10px 0', lineHeight: 1 }}>and</span>{nameBride}</h1>
                     <div style={{ width: 1, height: 34, background: frameInkA(0.22), margin: '26px auto', transformOrigin: 'center', animation: 'cl-line-grow .85s ease .95s both' }} />
-                    <p style={{ margin: 0, fontFamily: F_BODY, fontSize: 14, letterSpacing: '.04em', color: frameInk, animation: 'cl-fade-soft 1s ease 1.2s both' }}>{dateFullKo}</p>
-                    <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: 12, letterSpacing: '.02em', color: frameInkA(0.7), animation: 'cl-fade-soft 1s ease 1.35s both' }}>{timeDisplay} · {venueName}</p>
+                    <p style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(14), letterSpacing: '.04em', color: frameInk, animation: 'cl-fade-soft 1s ease 1.2s both' }}>{dateFullKo}</p>
+                    <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(12), letterSpacing: '.02em', color: frameInkA(0.7), animation: 'cl-fade-soft 1s ease 1.35s both' }}>{timeDisplay} · {venueName}</p>
                   </div>
                 </div>
               )}
@@ -809,11 +845,11 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                     {ribbon && (
                       <div style={{ position: 'absolute', left: '50%', top: '50%', zIndex: 2, transform: 'translate(-50%,-74%)' }}>
                         <div style={{ width: 232, background: PAPER, boxShadow: '0 18px 32px -18px rgba(53,23,20,.55)', border: `1px solid ${openInkA(0.1)}`, padding: '24px 20px 88px', textAlign: 'center', animation: 'cl-card-reveal 1.2s cubic-bezier(.22,.61,.36,1) .8s both' }}>
-                          <p style={label(9, 0.44, openInkA(0.5))}>SAVE THE DATE</p>
+                          <p style={label(9, 0.44, openInkA(0.5))}>{nameCase('SAVE THE DATE')}</p>
                           <h1 style={{ margin: '14px 0 0', fontFamily: nameFont, fontSize: 26, lineHeight: 1.16, color: openInk }}>{nameGroom}<br />{nameBride}</h1>
                           <div style={{ width: 22, height: 1, background: openInkA(0.25), margin: '16px auto' }} />
-                          <p style={{ margin: 0, fontFamily: F_BODY, fontSize: 12.5, letterSpacing: '.03em', color: openInk }}>{dateFullKo}</p>
-                          <p style={{ margin: '10px 0 0', fontFamily: F_BODY, fontSize: 11, letterSpacing: '.02em', color: openInkA(0.65) }}>{timeDisplay} · {venueName}</p>
+                          <p style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(12.5), letterSpacing: '.03em', color: openInk }}>{dateFullKo}</p>
+                          <p style={{ margin: '10px 0 0', fontFamily: F_BODY, fontSize: bfs(11), letterSpacing: '.02em', color: openInkA(0.65) }}>{timeDisplay} · {venueName}</p>
                         </div>
                       </div>
                     )}
@@ -829,61 +865,61 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                       </div>
                     </div>
                   </div>
-                  <p style={{ position: 'absolute', bottom: 22, left: 0, right: 0, margin: 0, textAlign: 'center', fontFamily: F_BODY, fontSize: 14, lineHeight: 1.7, color: 'rgba(250,247,242,.9)', textShadow: '0 1px 6px rgba(20,10,8,.5)', opacity: ribbon ? 0 : 1, transition: 'opacity .5s ease', animation: 'cl-fade-soft .9s ease .9s backwards' }}>편지가 도착했어요.<br />클릭하여 편지를 열어주세요.</p>
+                  <p style={{ position: 'absolute', bottom: 22, left: 0, right: 0, margin: 0, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(14), lineHeight: 1.7, color: 'rgba(250,247,242,.9)', textShadow: '0 1px 6px rgba(20,10,8,.5)', opacity: ribbon ? 0 : 1, transition: 'opacity .5s ease', animation: 'cl-fade-soft .9s ease .9s backwards' }}>편지가 도착했어요.<br />클릭하여 편지를 열어주세요.</p>
                 </div>
               )}
 
               {/* 접힌 편지 */}
               {openingStyle === '접힌 편지' && (
                 <div onClick={() => { if (fold === 0) { setFold(1); window.setTimeout(() => setFold(2), 1100) } }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', position: 'relative', cursor: fold === 0 ? 'pointer' : 'default' }}>
-                  <div style={{ width: 270, background: PAPER, boxShadow: '0 26px 44px -32px rgba(53,23,20,.6)', animation: 'cl-seal-in 1s cubic-bezier(.22,.61,.36,1) .2s both' }}>
+                  <div style={{ width: 270, background: PAPER, boxShadow: '0 26px 44px -32px rgba(53,23,20,.6)', animation: 'cl-flip-enter 1.25s cubic-bezier(.22,.61,.36,1) .15s both' }}>
                     <div style={{ padding: '34px 26px', textAlign: 'center', borderBottom: `1px solid ${openInkA(0.1)}` }}>
-                      <p style={label(9, 0.44, openInkA(0.5))}>INVITATION</p>
+                      <p style={label(9, 0.44, openInkA(0.5))}>{nameCase('INVITATION')}</p>
                       <h1 style={{ margin: '18px 0 0', fontFamily: nameFont, fontSize: 30, lineHeight: 1.16, color: openInk }}>{nameGroom}<br />{nameBride}</h1>
                     </div>
                     <div style={{ maxHeight: fold >= 1 ? 260 : 0, overflow: 'hidden', transition: 'max-height 1s cubic-bezier(.4,.1,.2,1)' }}>
                       <div style={{ padding: '30px 26px 32px', textAlign: 'center', borderBottom: `1px solid ${openInkA(0.1)}`, transform: fold >= 1 ? 'translateY(0)' : 'translateY(26px)', opacity: fold >= 1 ? 1 : 0, transition: 'transform .8s cubic-bezier(.22,.61,.36,1) .2s, opacity .6s ease .2s' }}>
-                        <p style={label(9, 0.44, openInkA(0.45))}>{['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'][dow]}</p>
-                        <p style={{ margin: '14px 0 0', fontFamily: F_BODY, fontSize: 17, letterSpacing: '.02em', color: openInk }}>{dateFullKo}</p>
-                        <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: 12, color: openInkA(0.65) }}>{timeDisplay}</p>
+                        <p style={label(9, 0.44, openInkA(0.45))}>{nameCase(['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'][dow])}</p>
+                        <p style={{ margin: '14px 0 0', fontFamily: F_BODY, fontSize: bfs(17), letterSpacing: '.02em', color: openInk }}>{dateFullKo}</p>
+                        <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(12), color: openInkA(0.65) }}>{timeDisplay}</p>
                       </div>
                     </div>
                     <div style={{ maxHeight: fold >= 2 ? 320 : 0, overflow: 'hidden', transition: 'max-height 1s cubic-bezier(.4,.1,.2,1)' }}>
                       <div style={{ padding: '32px 26px 34px', textAlign: 'center', background: INK, transform: fold >= 2 ? 'translateY(0)' : 'translateY(26px)', opacity: fold >= 2 ? 1 : 0, transition: 'transform .8s cubic-bezier(.22,.61,.36,1) .2s, opacity .6s ease .2s' }}>
-                        <p style={label(9, 0.44, ivoryA(0.6))}>LOCATION</p>
+                        <p style={label(9, 0.44, ivoryA(0.6))}>{nameCase('LOCATION')}</p>
                         <p style={{ margin: '14px 0 0', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 24, color: IVORY }}>{venueName}</p>
                         <div style={{ width: 24, height: 1, background: ivoryA(0.3), margin: '18px auto' }} />
-                        <p style={{ margin: 0, fontFamily: F_BODY, fontSize: 12, lineHeight: 1.95, color: ivoryA(0.78), wordBreak: 'keep-all' }}>{venueFull}</p>
+                        <p style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.95, color: ivoryA(0.78), wordBreak: 'keep-all' }}>{venueFull}</p>
                       </div>
                     </div>
                   </div>
-                  <p style={{ margin: '18px 0 0', textAlign: 'center', fontFamily: F_BODY, fontSize: 13, color: 'rgba(250,247,242,.9)', textShadow: '0 1px 6px rgba(20,10,8,.5)', opacity: fold > 0 ? 0 : 1, transition: 'opacity .5s ease', animation: 'cl-fade-soft .8s ease 1s backwards' }}>{cc.classicInfoStartText || '예식정보 바로보기'} <span style={{ opacity: 0.7 }}>(클릭)</span></p>
+                  <p style={{ margin: '18px 0 0', textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(13), color: 'rgba(250,247,242,.9)', textShadow: '0 1px 6px rgba(20,10,8,.5)', opacity: fold > 0 ? 0 : 1, transition: 'opacity .5s ease', animation: 'cl-fade-soft .8s ease 1s backwards' }}>{cc.classicInfoStartText || '예식정보 바로보기'} <span style={{ opacity: 0.7 }}>(클릭)</span></p>
                 </div>
               )}
 
               {/* 사진 뒤집기 */}
               {openingStyle === '사진 뒤집기' && (
-                <div onClick={() => setFlip((v) => !v)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', perspective: '1200px', cursor: 'pointer', animation: 'cl-fade-soft 1s ease .2s both' }}>
+                <div onClick={() => setFlip((v) => !v)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', perspective: '1200px', cursor: 'pointer', animation: 'cl-flip-enter 1.25s cubic-bezier(.22,.61,.36,1) .15s both' }}>
                   <div style={{ position: 'relative', width: 250, height: 330, transformStyle: 'preserve-3d', transform: flip ? 'rotateY(180deg)' : 'rotateY(0deg)', transition: 'transform 1.2s cubic-bezier(.4,.1,.2,1)', boxShadow: '0 30px 44px -30px rgba(53,23,20,.7)' }}>
                     <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', background: PAPER, padding: '11px 11px 74px', boxSizing: 'border-box' }}>
-                      <div style={{ width: '100%', height: '100%', ...bgPhoto(0, { backgroundPosition: '50% 34%' }), filter: 'saturate(.7)' }} />
+                      <div style={{ width: '100%', height: '100%', ...cropBg(cc.classicFlipPhoto, bgPhoto(0, { backgroundPosition: '50% 34%' }), { backgroundPosition: '50% 34%' }), filter: 'saturate(.7)' }} />
                       <p style={{ margin: '14px 0 0', textAlign: 'center', fontFamily: nameFont, fontSize: 20, letterSpacing: '.06em', color: openInk }}>{nameGroom} &amp; {nameBride}</p>
-                      <p style={{ margin: '8px 0 0', textAlign: 'center', fontFamily: F_BODY, fontSize: 11, color: openInkA(0.5) }}>{cc.classicInfoStartText || '예식정보 바로보기'} <span style={{ opacity: 0.7 }}>(클릭)</span></p>
+                      <p style={{ margin: '8px 0 0', textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(11), color: openInkA(0.5) }}>{cc.classicInfoStartText || '예식정보 바로보기'} <span style={{ opacity: 0.7 }}>(클릭)</span></p>
                     </div>
                     <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', transform: 'rotateY(180deg)', background: PAPER, backgroundImage: 'repeating-linear-gradient(135deg,rgba(53,23,20,.022) 0 1px,transparent 1px 7px)', boxSizing: 'border-box', padding: 14 }}>
                       <div style={{ position: 'relative', width: '100%', height: '100%', border: `1px solid ${openInkA(0.2)}`, boxSizing: 'border-box', padding: '22px 20px', display: 'flex', flexDirection: 'column' }}>
-                        <p style={label(8, 0.4, openInkA(0.45))}>THE WEDDING OF</p>
+                        <p style={label(8, 0.4, openInkA(0.45))}>{nameCase('THE WEDDING OF')}</p>
                         <p style={{ margin: '6px 0 0', fontFamily: nameFont, fontSize: 15, letterSpacing: '.06em', color: openInk }}>{nameGroom} &amp; {nameBride}</p>
-                        <p style={{ margin: '24px 0 0', fontFamily: F_BODY, fontSize: 16, lineHeight: 1.5, letterSpacing: '.02em', color: openInk }}>{dateDotKo}</p>
+                        <p style={{ margin: '24px 0 0', fontFamily: F_BODY, fontSize: bfs(16), lineHeight: 1.5, letterSpacing: '.02em', color: openInk }}>{dateDotKo}</p>
                         <div style={{ height: 1, background: openInkA(0.16), margin: '20px 0 16px' }} />
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 9, paddingRight: 52 }}>
                           <div style={{ display: 'flex', gap: 10, alignItems: 'baseline' }}>
-                            <span style={{ flex: '0 0 34px', fontFamily: F_LABEL, fontSize: 7.5, letterSpacing: '.28em', color: openInkA(0.42) }}>TIME</span>
-                            <span style={{ fontFamily: F_BODY, fontSize: 11.5, color: openInkA(0.75) }}>{timeDisplay}</span>
+                            <span style={{ flex: '0 0 34px', fontFamily: F_LABEL, fontSize: lfs(7.5), letterSpacing: '.28em', color: openInkA(0.42) }}>{nameCase('TIME')}</span>
+                            <span style={{ fontFamily: F_BODY, fontSize: bfs(11.5), color: openInkA(0.75) }}>{timeDisplay}</span>
                           </div>
                           <div style={{ display: 'flex', gap: 10, alignItems: 'baseline' }}>
-                            <span style={{ flex: '0 0 34px', fontFamily: F_LABEL, fontSize: 7.5, letterSpacing: '.28em', color: openInkA(0.42) }}>PLACE</span>
-                            <span style={{ fontFamily: F_BODY, fontSize: 11.5, lineHeight: 1.7, color: openInkA(0.75), wordBreak: 'keep-all' }}>{venueFull}</span>
+                            <span style={{ flex: '0 0 34px', fontFamily: F_LABEL, fontSize: lfs(7.5), letterSpacing: '.28em', color: openInkA(0.42) }}>{nameCase('PLACE')}</span>
+                            <span style={{ fontFamily: F_BODY, fontSize: bfs(11.5), lineHeight: 1.7, color: openInkA(0.75), wordBreak: 'keep-all' }}>{venueFull}</span>
                           </div>
                         </div>
                         <div style={{ position: 'absolute', right: 16, bottom: 16, width: 44, height: 44, borderRadius: '50%', border: `1px solid ${openInkA(0.25)}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 13, color: openInkA(0.5) }}>C&amp;E</div>
@@ -897,7 +933,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           )}
           {introDone && (
           <div style={{ position: 'absolute', bottom: 20, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, pointerEvents: 'none', zIndex: 6, animation: 'cl-fade-soft 1.1s ease both' }}>
-            <span style={{ fontFamily: F_BODY, fontSize: 12, letterSpacing: '.18em', paddingLeft: '.18em', color: openingStyle === '프레임' ? frameInk : 'rgba(250,247,242,.9)', textShadow: openingStyle === '프레임' ? undefined : '0 1px 6px rgba(20,10,8,.5)' }}>터치 또는 스크롤</span>
+            <span style={{ fontFamily: F_BODY, fontSize: bfs(12), letterSpacing: '.18em', paddingLeft: '.18em', color: openingStyle === '프레임' ? frameInk : 'rgba(250,247,242,.9)', textShadow: openingStyle === '프레임' ? undefined : '0 1px 6px rgba(20,10,8,.5)' }}>터치 또는 스크롤</span>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={openingStyle === '프레임' ? frameInk : 'rgba(250,247,242,.9)'} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'cl-nudge 1.6s ease-in-out infinite', filter: openingStyle === '프레임' ? undefined : 'drop-shadow(0 1px 4px rgba(20,10,8,.5))' }}><path d="M6 9l6 6 6-6" /></svg>
           </div>
           )}
@@ -913,10 +949,11 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           <div style={{ position: 'relative', width: '100%', maxWidth: 356 }}>
             <div className="cl-reveal cl-zoom" data-delay="200" style={{ position: 'relative', aspectRatio: letterFrame.aspect, backgroundImage: `url('${letterFrame.img}')`, backgroundColor: 'transparent', backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', filter: 'drop-shadow(0 26px 26px rgba(53,23,20,.45))' }}>
               <div className="cl-reveal cl-up" data-delay="420" style={{ position: 'absolute', inset: letterFrame.inset, display: 'flex', flexDirection: 'column', justifyContent: 'center', textAlign: 'center', minWidth: 0 }}>
-                <p style={label(9.5, 0.44, inkA(0.5))}>INVITATION</p>
-                <p style={{ margin: '22px 0 0', width: '100%', maxWidth: '100%', fontFamily: F_BODY, fontSize: 13, lineHeight: 2.1, color: INK, whiteSpace: 'pre-line', wordBreak: 'keep-all', overflowWrap: 'anywhere' }}>{greeting}</p>
-                <div style={{ width: 1, height: 22, background: inkA(0.25), margin: '22px auto 18px' }} />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 7, fontFamily: F_BODY, fontSize: 11, color: inkA(0.7) }}>
+                <p style={label(9.5, 0.44, inkA(0.5))}>{nameCase('INVITATION')}</p>
+                <p style={{ margin: '22px 0 0', width: '100%', maxWidth: '100%', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 2.1, color: INK, whiteSpace: 'pre-line', wordBreak: 'keep-all', overflowWrap: 'anywhere' }}>{greeting}</p>
+                {letterSign !== 'none' && (<>
+                <div className="cl-reveal cl-line" data-delay="760" style={{ width: 1, height: 22, background: inkA(0.25), margin: '22px auto 18px' }} />
+                <div className="cl-reveal cl-blur" data-delay="900" style={{ display: 'flex', flexDirection: 'column', gap: 7, fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.7) }}>
                   {letterSign === 'couple' ? (
                     <p style={{ margin: 0 }}><span style={{ color: INK }}>{groomKo}</span> &amp; <span style={{ color: INK }}>{brideKo}</span> 올림</p>
                   ) : letterSign === 'hosts' ? (
@@ -938,6 +975,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                     </>
                   )}
                 </div>
+                </>)}
               </div>
             </div>
           </div>
@@ -946,27 +984,43 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         {/* ===== III. Introduction (각자 / 함께 토글) ===== */}
         <section style={{ order: orderOf('intro'), position: 'relative', isolation: 'isolate', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 30, padding: '82px 30px', overflow: 'hidden', ...cropBg(introSecBg, { background: IVORY }), ...hide('intro'), ...(introHasBg ? {} : tintBg('intro')) }}>
           {introHasBg && introSecOverlayOp > 0 && <div style={{ position: 'absolute', inset: 0, background: `rgba(${hexToRgb(introSecOverlay, '28,16,13')},${introSecOverlayOp})`, pointerEvents: 'none', zIndex: -1 }} />}
-          {!introTogether ? (
+          {introMode === 'nameOnly' ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 30, textAlign: 'center' }}>
+              {([
+                { side: groom, ko: groomKo, title: groomTitle, label: 'GROOM' },
+                { side: bride, ko: brideKo, title: brideTitle, label: 'BRIDE' },
+              ] as const).map((p, i) => (
+                <div key={p.label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  {!(cc.classicIntroShowParents !== false && parentsJsx(p.side.father, p.side.mother)) && <p className="cl-reveal cl-up" data-delay={String(160 + i * 260)} style={label(8.5, 0.42, introFgAf(0.45))}>{nameCase(p.label)}</p>}
+                  {cc.classicIntroShowParents !== false && parentsJsx(p.side.father, p.side.mother) && (
+                    <p className="cl-reveal cl-up" data-delay={String(160 + i * 260)} style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(11.5), color: introFgAf(0.6), whiteSpace: 'nowrap' }}>{parentsJsx(p.side.father, p.side.mother)} 의 {p.title}</p>
+                  )}
+                  <p className="cl-reveal cl-blur" data-delay={String(300 + i * 260)} style={{ margin: '6px 0 0', fontFamily: F_BODY, fontSize: bfs(22), letterSpacing: '.01em', color: introFgC }}>{p.ko}</p>
+                  {i === 0 && <div className="cl-reveal cl-line" data-delay="440" style={{ width: 1, height: 26, background: introFgAf(0.22), margin: '30px auto 0' }} />}
+                </div>
+              ))}
+            </div>
+          ) : !introTogether ? (
             <>
               <div className="cl-reveal cl-l" data-delay="180" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 16, aspectRatio: eachFrame.aspect, padding: eachFrame.pad, backgroundImage: `url(${eachFrame.img})`, backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', filter: 'drop-shadow(0 14px 18px rgba(53,23,20,.12))' }}>
                 <div style={{ flex: '0 0 84px', height: 106, borderRadius: 2, ...cropBg(cc.classicGroomPhoto, bgPhoto(1, { backgroundPosition: '34% 32%' })), filter: 'saturate(.85)' }} />
                 <div className="cl-reveal cl-up" data-delay="380" style={{ flex: 1, minWidth: 0 }}>
-                  {!(cc.classicIntroShowParents !== false && parentsJsx(groom.father, groom.mother)) && <p style={label(8.5, 0.4, inkA(0.45))}>GROOM</p>}
-                  <p style={{ margin: '3px 0 0', fontFamily: F_BODY, fontSize: 18, letterSpacing: '.01em', color: INK }}>{groomKo}</p>
+                  {!(cc.classicIntroShowParents !== false && parentsJsx(groom.father, groom.mother)) && <p style={label(8.5, 0.4, inkA(0.45))}>{nameCase('GROOM')}</p>}
+                  <p style={{ margin: '3px 0 0', fontFamily: F_BODY, fontSize: bfs(18), letterSpacing: '.01em', color: INK }}>{groomKo}</p>
                   {cc.classicIntroShowParents !== false && parentsJsx(groom.father, groom.mother) && (
-                    <p style={{ margin: '2px 0 0', fontFamily: F_BODY, fontSize: 10.5, color: inkA(0.55), whiteSpace: 'nowrap' }}>{parentsJsx(groom.father, groom.mother)} 의 {groomTitle}</p>
+                    <p style={{ margin: '2px 0 0', fontFamily: F_BODY, fontSize: bfs(10.5), color: inkA(0.55), whiteSpace: 'nowrap' }}>{parentsJsx(groom.father, groom.mother)} 의 {groomTitle}</p>
                   )}
-                  {groomIntro && <p style={{ margin: '14px 0 0', width: '100%', maxWidth: '100%', minWidth: 0, fontFamily: F_BODY, fontSize: 12.5, fontWeight: 600, lineHeight: 1.6, color: INK, wordBreak: 'keep-all', overflowWrap: 'anywhere', whiteSpace: 'pre-line' }}>{groomIntro}</p>}
+                  {groomIntro && <p style={{ margin: '14px 0 0', width: '100%', maxWidth: '100%', minWidth: 0, fontFamily: F_BODY, fontSize: bfs(12.5), fontWeight: 600, lineHeight: 1.6, color: INK, wordBreak: 'keep-all', overflowWrap: 'anywhere', whiteSpace: 'pre-line' }}>{groomIntro}</p>}
                 </div>
               </div>
               <div className="cl-reveal cl-r" data-delay="340" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 16, aspectRatio: eachFrame.aspect, padding: eachFrame.pad, backgroundImage: `url(${eachFrame.img})`, backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', filter: 'drop-shadow(0 14px 18px rgba(53,23,20,.12))' }}>
                 <div className="cl-reveal cl-up" data-delay="520" style={{ flex: 1, minWidth: 0, textAlign: 'right' }}>
-                  {!(cc.classicIntroShowParents !== false && parentsJsx(bride.father, bride.mother)) && <p style={label(8.5, 0.4, inkA(0.45))}>BRIDE</p>}
-                  <p style={{ margin: '3px 0 0', fontFamily: F_BODY, fontSize: 18, letterSpacing: '.01em', color: INK }}>{brideKo}</p>
+                  {!(cc.classicIntroShowParents !== false && parentsJsx(bride.father, bride.mother)) && <p style={label(8.5, 0.4, inkA(0.45))}>{nameCase('BRIDE')}</p>}
+                  <p style={{ margin: '3px 0 0', fontFamily: F_BODY, fontSize: bfs(18), letterSpacing: '.01em', color: INK }}>{brideKo}</p>
                   {cc.classicIntroShowParents !== false && parentsJsx(bride.father, bride.mother) && (
-                    <p style={{ margin: '2px 0 0', fontFamily: F_BODY, fontSize: 10.5, color: inkA(0.55), whiteSpace: 'nowrap' }}>{parentsJsx(bride.father, bride.mother)} 의 {brideTitle}</p>
+                    <p style={{ margin: '2px 0 0', fontFamily: F_BODY, fontSize: bfs(10.5), color: inkA(0.55), whiteSpace: 'nowrap' }}>{parentsJsx(bride.father, bride.mother)} 의 {brideTitle}</p>
                   )}
-                  {brideIntro && <p style={{ margin: '14px 0 0', width: '100%', maxWidth: '100%', minWidth: 0, fontFamily: F_BODY, fontSize: 12.5, fontWeight: 600, lineHeight: 1.6, color: INK, wordBreak: 'keep-all', overflowWrap: 'anywhere', whiteSpace: 'pre-line' }}>{brideIntro}</p>}
+                  {brideIntro && <p style={{ margin: '14px 0 0', width: '100%', maxWidth: '100%', minWidth: 0, fontFamily: F_BODY, fontSize: bfs(12.5), fontWeight: 600, lineHeight: 1.6, color: INK, wordBreak: 'keep-all', overflowWrap: 'anywhere', whiteSpace: 'pre-line' }}>{brideIntro}</p>}
                 </div>
                 <div style={{ flex: '0 0 84px', height: 106, borderRadius: 2, ...cropBg(cc.classicBridePhoto, bgPhoto(2, { backgroundPosition: '74% 38%' })), filter: 'saturate(.85)' }} />
               </div>
@@ -980,22 +1034,22 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
               <div className="cl-reveal cl-up" data-delay="260" style={{ textAlign: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
                   <div style={{ textAlign: 'right' }}>
-                    {!(cc.classicIntroShowParents !== false && parentsJsx(groom.father, groom.mother)) && <p style={label(8, 0.4, introFgAf(0.45))}>GROOM</p>}
-                    <p style={{ margin: 0, fontFamily: F_BODY, fontSize: 18, letterSpacing: '.01em', color: introFgC }}>{groomKo}</p>
+                    {!(cc.classicIntroShowParents !== false && parentsJsx(groom.father, groom.mother)) && <p style={label(8, 0.4, introFgAf(0.45))}>{nameCase('GROOM')}</p>}
+                    <p style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(18), letterSpacing: '.01em', color: introFgC }}>{groomKo}</p>
                     {cc.classicIntroShowParents !== false && parentsJsx(groom.father, groom.mother) && (
-                      <p style={{ margin: '4px 0 0', fontFamily: F_BODY, fontSize: 11, color: introFgAf(0.68), whiteSpace: 'nowrap' }}>{parentsJsx(groom.father, groom.mother)} 의 {groomTitle}</p>
+                      <p style={{ margin: '4px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: introFgAf(0.68), whiteSpace: 'nowrap' }}>{parentsJsx(groom.father, groom.mother)} 의 {groomTitle}</p>
                     )}
                   </div>
                   <span style={{ width: 1, height: 34, background: introFgAf(0.2) }} />
                   <div style={{ textAlign: 'left' }}>
-                    {!(cc.classicIntroShowParents !== false && parentsJsx(bride.father, bride.mother)) && <p style={label(8, 0.4, introFgAf(0.45))}>BRIDE</p>}
-                    <p style={{ margin: 0, fontFamily: F_BODY, fontSize: 18, letterSpacing: '.01em', color: introFgC }}>{brideKo}</p>
+                    {!(cc.classicIntroShowParents !== false && parentsJsx(bride.father, bride.mother)) && <p style={label(8, 0.4, introFgAf(0.45))}>{nameCase('BRIDE')}</p>}
+                    <p style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(18), letterSpacing: '.01em', color: introFgC }}>{brideKo}</p>
                     {cc.classicIntroShowParents !== false && parentsJsx(bride.father, bride.mother) && (
-                      <p style={{ margin: '4px 0 0', fontFamily: F_BODY, fontSize: 11, color: introFgAf(0.68), whiteSpace: 'nowrap' }}>{parentsJsx(bride.father, bride.mother)} 의 {brideTitle}</p>
+                      <p style={{ margin: '4px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: introFgAf(0.68), whiteSpace: 'nowrap' }}>{parentsJsx(bride.father, bride.mother)} 의 {brideTitle}</p>
                     )}
                   </div>
                 </div>
-                <p style={{ margin: '18px 0 0', padding: '0 12px', textAlign: 'center', fontFamily: F_BODY, fontSize: 11.5, lineHeight: 2, color: introFgAf(0.7), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{coupleTogetherText}</p>
+                <p style={{ margin: '18px 0 0', padding: '0 12px', textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(11.5), lineHeight: 2, color: introFgAf(0.7), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{coupleTogetherText}</p>
               </div>
             </>
           )}
@@ -1009,35 +1063,35 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         {/* ===== VI. Gallery ===== */}
         <section style={{ order: orderOf('gallery'), padding: '82px 0 88px', background: IVORY, ...hide('gallery'), ...tintBg('gallery') }}>
           {galType === 'default' && (() => { const inkA = (a: number) => fgA('gallery', a); return (<>
-          <p className="cl-reveal cl-up" style={{ ...label(13, 0.44, inkA(0.45)), margin: '0 30px 32px' }}>GALLERY</p>
+          <p className="cl-reveal cl-up" style={{ ...label(13, 0.44, inkA(0.45)), margin: '0 30px 32px' }}>{nameCase('GALLERY')}</p>
           <div className="cl-reveal cl-clip" onClick={() => openLightbox(0)} style={{ margin: '0 30px', aspectRatio: '3/4', cursor: 'pointer', ...cropBg(galItem(0), { background: DEEP_BEIGE }, { backgroundPosition: '50% 36%' }) }} />
           <p className="cl-reveal cl-blur" data-delay="140" style={{ margin: '20px 30px 0', textAlign: 'right', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 16, color: inkA(0.6) }}>a quiet afternoon in June</p>
-          <div className="cl-reveal cl-zoom" data-delay="200" onClick={() => openLightbox(1)} style={{ margin: '46px 30px 0', aspectRatio: '4/3', cursor: 'pointer', ...cropBg(galItem(1), { background: DEEP_BEIGE }, { backgroundPosition: '26% 46%' }), filter: 'saturate(.68)' }} />
+          <div className="cl-reveal cl-clip" data-delay="200" onClick={() => openLightbox(1)} style={{ margin: '46px 30px 0', aspectRatio: '4/3', cursor: 'pointer', ...cropBg(galItem(1), { background: DEEP_BEIGE }, { backgroundPosition: '26% 46%' }), filter: 'saturate(.68)' }} />
           <div style={{ position: 'relative', height: 310, margin: '54px 30px 0' }}>
-            <div className="cl-reveal cl-zoom" data-delay="120" onClick={() => openLightbox(2)} style={{ position: 'absolute', left: 0, top: 0, width: '58%', aspectRatio: '3/4', cursor: 'pointer', ...cropBg(galItem(2), { background: DEEP_BEIGE }, { backgroundPosition: '60% 30%' }) }} />
-            <div className="cl-reveal cl-zoom" data-delay="420" onClick={() => openLightbox(3)} style={{ position: 'absolute', right: 0, bottom: 0, width: '52%', aspectRatio: '1/1', cursor: 'pointer', ...cropBg(galItem(3), { background: DEEP_BEIGE }, { backgroundPosition: '40% 60%' }), border: `7px solid ${PAPER}`, filter: 'grayscale(.3)' }} />
+            <div className="cl-reveal cl-clip" data-delay="120" onClick={() => openLightbox(2)} style={{ position: 'absolute', left: 0, top: 0, width: '58%', aspectRatio: '3/4', cursor: 'pointer', ...cropBg(galItem(2), { background: DEEP_BEIGE }, { backgroundPosition: '60% 30%' }) }} />
+            <div className="cl-reveal cl-clip" data-delay="420" onClick={() => openLightbox(3)} style={{ position: 'absolute', right: 0, bottom: 0, width: '52%', aspectRatio: '1/1', cursor: 'pointer', ...cropBg(galItem(3), { background: DEEP_BEIGE }, { backgroundPosition: '40% 60%' }), border: `7px solid ${PAPER}`, filter: 'grayscale(.3)' }} />
           </div>
-          <div className="cl-reveal cl-zoom" data-delay="200" onClick={() => openLightbox(4)} style={{ margin: '58px 30px 0', aspectRatio: '16/11', cursor: 'pointer', ...cropBg(galItem(4), { background: DEEP_BEIGE }, { backgroundPosition: '50% 44%' }) }} />
+          <div className="cl-reveal cl-clip" data-delay="200" onClick={() => openLightbox(4)} style={{ margin: '58px 30px 0', aspectRatio: '16/11', cursor: 'pointer', ...cropBg(galItem(4), { background: DEEP_BEIGE }, { backgroundPosition: '50% 44%' }) }} />
           <div style={{ padding: '0 30px' }}>{galleryMore(5, 'ink')}</div>
           </>) })()}
 
           {/* 1A — 앨범 스프레드 */}
           {galType === 'album' && (
             <div style={{ margin: '-82px 0 -88px', padding: '76px 26px 74px', background: PAPER }}>
-              <p className="cl-reveal cl-up" style={{ ...label(11, 0.4, fgA('gallery', 0.5)), margin: '0 0 28px' }}>GALLERY</p>
+              <p className="cl-reveal cl-up" style={{ ...label(11, 0.4, fgA('gallery', 0.5)), margin: '0 0 28px' }}>{nameCase('GALLERY')}</p>
               <div className="cl-reveal cl-clip" style={{ background: '#FFFFFF', padding: '12px 12px 46px', boxShadow: '0 16px 26px -22px rgba(53,23,20,.6)' }}>
                 <div onClick={() => openLightbox(0)} style={{ aspectRatio: '4/5', cursor: 'pointer', ...cropBg(galItem(0), { background: DEEP_BEIGE }) }} />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, margin: '20px 0 0' }}>
-                <div className="cl-reveal cl-zoom" data-delay="120" style={{ background: '#FFFFFF', padding: '8px 8px 26px', boxShadow: '0 16px 26px -22px rgba(53,23,20,.6)' }}>
+                <div className="cl-reveal cl-clip" data-delay="120" style={{ background: '#FFFFFF', padding: '8px 8px 26px', boxShadow: '0 16px 26px -22px rgba(53,23,20,.6)' }}>
                   <div onClick={() => openLightbox(1)} style={{ aspectRatio: '1/1', cursor: 'pointer', ...cropBg(galItem(1), { background: DEEP_BEIGE }) }} />
                 </div>
-                <div className="cl-reveal cl-zoom" data-delay="220" style={{ marginTop: 26, background: '#FFFFFF', padding: '8px 8px 26px', boxShadow: '0 16px 26px -22px rgba(53,23,20,.6)' }}>
+                <div className="cl-reveal cl-clip" data-delay="220" style={{ marginTop: 26, background: '#FFFFFF', padding: '8px 8px 26px', boxShadow: '0 16px 26px -22px rgba(53,23,20,.6)' }}>
                   <div onClick={() => openLightbox(2)} style={{ aspectRatio: '1/1', cursor: 'pointer', ...cropBg(galItem(2), { background: DEEP_BEIGE }) }} />
                 </div>
               </div>
               <p className="cl-reveal cl-blur" style={{ margin: '32px 0 0', textAlign: 'center', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 16, color: fgA('gallery', 0.6) }}>{galCaption}</p>
-              <div className="cl-reveal cl-zoom" style={{ margin: '32px 0 0', background: '#FFFFFF', padding: '10px 10px 38px', boxShadow: '0 20px 32px -26px rgba(53,23,20,.6)' }}>
+              <div className="cl-reveal cl-clip" style={{ margin: '32px 0 0', background: '#FFFFFF', padding: '10px 10px 38px', boxShadow: '0 20px 32px -26px rgba(53,23,20,.6)' }}>
                 <div onClick={() => openLightbox(3)} style={{ aspectRatio: '3/2', cursor: 'pointer', ...cropBg(galItem(3), { background: DEEP_BEIGE }) }} />
               </div>
               {galleryMore(4, 'ink')}
@@ -1050,18 +1104,18 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
               <div className="cl-reveal cl-clip" onClick={() => openLightbox(0)} style={{ position: 'relative', height: 420, cursor: 'pointer', overflow: 'hidden' }}>
                 <div style={{ position: 'absolute', inset: 0, ...cropBg(galItem(0), bgPhoto(0)) }} />
                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg,rgba(36,17,16,.4),transparent 42%,rgba(36,17,16,.5))', pointerEvents: 'none' }} />
-                <p style={{ ...label(11, 0.4, ivoryA(0.7)), position: 'absolute', left: 24, top: 24, margin: 0 }}>GALLERY</p>
+                <p style={{ ...label(11, 0.4, ivoryA(0.7)), position: 'absolute', left: 24, top: 24, margin: 0 }}>{nameCase('GALLERY')}</p>
                 <p style={{ position: 'absolute', left: 24, right: 24, bottom: 20, margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 16, color: ivoryA(0.85) }}>{galCaption}</p>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, marginTop: 2 }}>
-                <div className="cl-reveal cl-zoom" onClick={() => openLightbox(1)} style={{ aspectRatio: '3/4', cursor: 'pointer', ...cropBg(galItem(1), bgPhoto(1)) }} />
-                <div className="cl-reveal cl-zoom" data-delay="120" onClick={() => openLightbox(2)} style={{ aspectRatio: '3/4', cursor: 'pointer', filter: 'grayscale(.4)', ...cropBg(galItem(2), bgPhoto(2)) }} />
+                <div className="cl-reveal cl-clip" onClick={() => openLightbox(1)} style={{ aspectRatio: '3/4', cursor: 'pointer', ...cropBg(galItem(1), bgPhoto(1)) }} />
+                <div className="cl-reveal cl-clip" data-delay="120" onClick={() => openLightbox(2)} style={{ aspectRatio: '3/4', cursor: 'pointer', filter: 'grayscale(.4)', ...cropBg(galItem(2), bgPhoto(2)) }} />
               </div>
-              <div className="cl-reveal cl-zoom" onClick={() => openLightbox(3)} style={{ height: 300, marginTop: 2, cursor: 'pointer', ...cropBg(galItem(3), bgPhoto(3)) }} />
+              <div className="cl-reveal cl-clip" onClick={() => openLightbox(3)} style={{ height: 300, marginTop: 2, cursor: 'pointer', ...cropBg(galItem(3), bgPhoto(3)) }} />
               <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 2, marginTop: 2 }}>
-                <div className="cl-reveal cl-zoom" onClick={() => openLightbox(4)} style={{ aspectRatio: '1/1', cursor: 'pointer', ...cropBg(galItem(4), bgPhoto(4)) }} />
+                <div className="cl-reveal cl-clip" onClick={() => openLightbox(4)} style={{ aspectRatio: '1/1', cursor: 'pointer', ...cropBg(galItem(4), bgPhoto(4)) }} />
                 <div style={{ background: INK, display: 'flex', alignItems: 'flex-end' }}>
-                  <p style={{ margin: 0, padding: '0 0 16px 14px', writingMode: 'vertical-rl', fontFamily: F_LABEL, fontSize: 13, letterSpacing: '.2em', color: ivoryA(0.75) }}>{nameGroom} &amp; {nameBride}</p>
+                  <p style={{ margin: 0, padding: '0 0 16px 14px', writingMode: 'vertical-rl', fontFamily: F_LABEL, fontSize: lfs(13), letterSpacing: '.2em', color: ivoryA(0.75) }}>{nameGroom} &amp; {nameBride}</p>
                 </div>
               </div>
               <div style={{ padding: '0 24px' }}>{galleryMore(5, 'ivory')}</div>
@@ -1072,13 +1126,13 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           {galType === 'swipe' && (
             <div style={{ margin: '-82px 0 -88px', padding: '76px 26px 74px', background: IVORY }}>
               <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-                <p className="cl-reveal cl-up" style={{ ...label(10, 0.4, fgA('gallery', 0.5)), margin: 0 }}>GALLERY</p>
-                <p style={{ margin: 0, fontFamily: F_LABEL, fontSize: 11, letterSpacing: '.06em', color: fgA('gallery', 0.5) }}>{galSwipeIdx + 1} / {galCount}</p>
+                <p className="cl-reveal cl-up" style={{ ...label(10, 0.4, fgA('gallery', 0.5)), margin: 0 }}>{nameCase('GALLERY')}</p>
+                <p style={{ margin: 0, fontFamily: F_LABEL, fontSize: lfs(11), letterSpacing: '.06em', color: fgA('gallery', 0.5) }}>{galSwipeIdx + 1} / {galCount}</p>
               </div>
               <div className="cl-reveal cl-clip" onClick={() => openLightbox(galSwipeIdx)} style={{ margin: '26px 0 0', aspectRatio: '3/4', cursor: 'pointer', transition: 'background-position .6s cubic-bezier(.22,.61,.36,1)', ...cropBg(galItem(galSwipeIdx), { background: DEEP_BEIGE }) }} />
               <div style={{ display: 'flex', gap: 10, margin: '18px 0 0' }}>
-                <button type="button" onClick={() => setGalSwipeIdx((i) => (i + galCount - 1) % galCount)} style={{ flex: 1, padding: '11px 0', border: `1px solid ${fgA('gallery', 0.35)}`, background: 'transparent', fontFamily: F_LABEL, fontSize: 10, letterSpacing: '.3em', color: fgC('gallery'), cursor: 'pointer' }}>PREV</button>
-                <button type="button" onClick={() => setGalSwipeIdx((i) => (i + 1) % galCount)} style={{ flex: 1, padding: '11px 0', border: 'none', background: INK, fontFamily: F_LABEL, fontSize: 10, letterSpacing: '.3em', color: IVORY, cursor: 'pointer' }}>NEXT</button>
+                <button type="button" onClick={() => setGalSwipeIdx((i) => (i + galCount - 1) % galCount)} style={{ flex: 1, padding: '11px 0', border: `1px solid ${fgA('gallery', 0.35)}`, background: 'transparent', fontFamily: F_LABEL, fontSize: lfs(10), letterSpacing: '.3em', color: fgC('gallery'), cursor: 'pointer' }}>{nameCase('PREV')}</button>
+                <button type="button" onClick={() => setGalSwipeIdx((i) => (i + 1) % galCount)} style={{ flex: 1, padding: '11px 0', border: 'none', background: INK, fontFamily: F_LABEL, fontSize: lfs(10), letterSpacing: '.3em', color: IVORY, cursor: 'pointer' }}>{nameCase('NEXT')}</button>
               </div>
               {gallery.length > 0 && (
                 <div style={{ display: 'flex', gap: 8, margin: '18px 0 0', overflowX: 'auto' }}>
@@ -1094,7 +1148,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           {/* 1D — 필름 스트립 (무한 마퀴: 상행 좌 / 하행 우, 반대방향 연속) */}
           {galType === 'film' && (
             <div style={{ margin: '-82px 0 -88px', padding: '76px 0 74px', background: IVORY }}>
-              <p className="cl-reveal cl-up" style={{ ...label(11, 0.4, fgA('gallery', 0.5)), margin: '0 26px 24px' }}>GALLERY</p>
+              <p className="cl-reveal cl-up" style={{ ...label(11, 0.4, fgA('gallery', 0.5)), margin: '0 26px 24px' }}>{nameCase('GALLERY')}</p>
               <div className="cl-film-row cl-reveal cl-zoom">
                 <div className="cl-film-track cl-film-track--l">
                   {[0, 1, 2, 3, 0, 1, 2, 3].map((i, k) => (
@@ -1120,46 +1174,46 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           {(() => { const IVORY = dInk; const ivoryA = dInkA; return (<>
           <div className="cl-reveal cl-line" data-delay="100" style={{ position: 'absolute', left: 30, top: 0, bottom: 0, width: 1, background: ivoryA(0.14) }} />
           <p className="cl-reveal cl-rise" data-delay="180" style={{ margin: '0 0 12px', position: 'relative', fontFamily: F_BODY, fontStyle: 'italic', fontSize: 13, letterSpacing: '.03em', color: ivoryA(0.75) }}>{cc.classicDateHeading || '저희가 하나 되는 날'}</p>
-          <h2 className="cl-reveal cl-rise" data-delay="320" style={{ margin: 0, position: 'relative', fontFamily: F_DISPLAY, fontSize: 70, lineHeight: 1, letterSpacing: '.01em', color: IVORY }}>{mm}<span style={{ fontFamily: F_BODY, fontSize: 28, letterSpacing: 0 }}>월</span> {dd}<span style={{ fontFamily: F_BODY, fontSize: 28, letterSpacing: 0 }}>일</span></h2>
+          <h2 className="cl-reveal cl-rise" data-delay="320" style={{ margin: 0, position: 'relative', fontFamily: F_DISPLAY, fontSize: 70, lineHeight: 1, letterSpacing: '.01em', color: IVORY }}>{mm}<span style={{ fontFamily: F_BODY, fontSize: bfs(28), letterSpacing: 0 }}>월</span> {dd}<span style={{ fontFamily: F_BODY, fontSize: bfs(28), letterSpacing: 0 }}>일</span></h2>
           <div style={{ position: 'relative', zIndex: 3, display: 'flex', alignItems: 'center', gap: 14, margin: '20px 160px 0 0' }}>
             <span className="cl-reveal cl-linex" data-delay="560" style={{ flex: 1, height: 1, background: ivoryA(0.28) }} />
-            <span className="cl-reveal cl-rise" data-delay="660" style={{ fontFamily: F_BODY, fontSize: 18, letterSpacing: '.1em', color: ivoryA(0.72), paddingLeft: '.1em', whiteSpace: 'nowrap' }}>{year}년</span>
+            <span className="cl-reveal cl-rise" data-delay="660" style={{ fontFamily: F_BODY, fontSize: bfs(18), letterSpacing: '.1em', color: ivoryA(0.72), paddingLeft: '.1em', whiteSpace: 'nowrap' }}>{year}년</span>
           </div>
           {cc.classicDatePhotoEnabled !== false && dateFrame === 'stamp' && (
-            <div className="cl-reveal cl-poof" data-delay="2150" style={{ position: 'absolute', right: 8, top: 220, width: 150, aspectRatio: '1900 / 2275', zIndex: 2, filter: 'drop-shadow(0 9px 13px rgba(53,23,20,.2))' }}>
+            <div className="cl-reveal cl-poof" data-delay="780" style={{ position: 'absolute', right: 8, top: 220, width: 150, aspectRatio: '1900 / 2275', zIndex: 2, filter: 'drop-shadow(0 9px 13px rgba(53,23,20,.2))' }}>
               <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: '86%', height: '87%', ...cropBg(cc.classicDatePhoto, bgPhoto(2, { backgroundPosition: '52% 40%' })), filter: 'saturate(.85) contrast(1.02)' }} />
               <img src="/classic/frame-datestamp.webp" alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} />
             </div>
           )}
           {cc.classicDatePhotoEnabled !== false && dateFrame === 'heart' && (
-            <div className="cl-reveal cl-poof" data-delay="2150" style={{ position: 'absolute', right: 8, top: 220, width: 184, aspectRatio: '424 / 376', zIndex: 2, filter: 'drop-shadow(0 9px 13px rgba(53,23,20,.2))' }}>
+            <div className="cl-reveal cl-poof" data-delay="780" style={{ position: 'absolute', right: 8, top: 220, width: 184, aspectRatio: '424 / 376', zIndex: 2, filter: 'drop-shadow(0 9px 13px rgba(53,23,20,.2))' }}>
               <div style={{ position: 'absolute', inset: 0, ...cropBg(cc.classicDatePhoto, bgPhoto(2, { backgroundPosition: '52% 40%' })), filter: 'saturate(.85) contrast(1.02)', WebkitMaskImage: "url('/classic/heart-mask.png')", maskImage: "url('/classic/heart-mask.png')", WebkitMaskSize: '103% 103%', maskSize: '103% 103%', WebkitMaskPosition: 'center', maskPosition: 'center', WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat' }} />
               <img src="/classic/frame-heart.webp" alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} />
             </div>
           )}
           {cc.classicDatePhotoEnabled === false && (
-            <img src="/classic/bird.webp" alt="" className="cl-reveal cl-poof" data-delay="2150" style={{ position: 'absolute', right: 14, top: 200, width: 152, pointerEvents: 'none', zIndex: 2, filter: 'drop-shadow(0 8px 12px rgba(53,23,20,.16))' }} />
+            <img src="/classic/bird.webp" alt="" className="cl-reveal cl-poof" data-delay="780" style={{ position: 'absolute', right: 14, top: 200, width: 152, pointerEvents: 'none', zIndex: 2, filter: 'drop-shadow(0 8px 12px rgba(53,23,20,.16))' }} />
           )}
           <div style={{ position: 'relative', margin: '210px 0 0', borderTop: `1px solid ${ivoryA(0.22)}`, borderBottom: `1px solid ${ivoryA(0.22)}`, padding: '16px 0' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', fontFamily: F_BODY, fontSize: 13, letterSpacing: '.06em', color: ivoryA(0.6), textAlign: 'center' }}>
-              {['일', '월', '화', '수', '목', '금', '토'].map((d, i) => <span key={i} className="cl-reveal cl-rise" data-delay={860 + i * 35}>{d}</span>)}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', fontFamily: F_BODY, fontSize: bfs(13), letterSpacing: '.06em', color: ivoryA(0.6), textAlign: 'center' }}>
+              {['일', '월', '화', '수', '목', '금', '토'].map((d, i) => <span key={i} className="cl-reveal cl-rise" data-delay={720 + i * 30}>{d}</span>)}
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', marginTop: 14, rowGap: 6, fontFamily: F_LABEL, fontSize: 17, color: ivoryA(0.8), textAlign: 'center', alignItems: 'center' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', marginTop: 14, rowGap: 6, fontFamily: F_LABEL, fontSize: lfs(17), color: ivoryA(0.8), textAlign: 'center', alignItems: 'center' }}>
               {(() => {
                 const start = day - dow // Sunday of that week
                 return Array.from({ length: 7 }, (_, i) => start + i).map((n, i) => (
                   <span key={i} style={{ display: 'flex', justifyContent: 'center' }}>
                     {n === day
-                      ? <span className="cl-reveal cl-pop" data-delay={1450} style={{ width: 36, height: 36, borderRadius: '50%', background: IVORY, color: secBg('date'), display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: F_BODY }}>{n}</span>
-                      : <span className="cl-reveal cl-rise" data-delay={1120 + i * 35}>{n >= 1 ? n : ''}</span>}
+                      ? <span className="cl-reveal cl-pop" data-delay={1120} style={{ width: 36, height: 36, borderRadius: '50%', background: IVORY, color: secBg('date'), display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: F_BODY }}>{n}</span>
+                      : <span className="cl-reveal cl-rise" data-delay={900 + i * 30}>{n >= 1 ? n : ''}</span>}
                   </span>
                 ))
               })()}
             </div>
           </div>
-          <p className="cl-reveal cl-rise" data-delay="1550" style={{ position: 'relative', textAlign: 'center', margin: '26px 0 0', fontFamily: F_BODY, fontSize: 12.5, letterSpacing: '.06em', color: ivoryA(0.85) }}>{timeDisplay} · {venueName}</p>
+          <p className="cl-reveal cl-rise" data-delay="1200" style={{ position: 'relative', textAlign: 'center', margin: '26px 0 0', fontFamily: F_BODY, fontSize: bfs(12.5), letterSpacing: '.06em', color: ivoryA(0.85) }}>{timeDisplay} · {venueName}</p>
           {dday !== null && dday >= 0 && (
-            <p className="cl-reveal cl-rise" data-delay="1650" style={{ position: 'relative', textAlign: 'center', margin: '16px 0 0', fontFamily: F_BODY, fontSize: 13, letterSpacing: '.02em', color: IVORY, wordBreak: 'keep-all' }}>
+            <p className="cl-reveal cl-rise" data-delay="1280" style={{ position: 'relative', textAlign: 'center', margin: '16px 0 0', fontFamily: F_BODY, fontSize: bfs(13), letterSpacing: '.02em', color: IVORY, wordBreak: 'keep-all' }}>
               {dday === 0 ? '오늘은 결혼식 날입니다' : <>결혼식 <span style={{ fontFamily: F_DISPLAY, fontSize: 18, letterSpacing: '.04em' }}>{dday}</span>일 남았습니다</>}
             </p>
           )}
@@ -1173,13 +1227,13 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           <div className="cl-reveal cl-clip" style={{ position: 'relative', margin: '0 26px' }}>
             <div style={{ position: 'relative', aspectRatio: '4/3', overflow: 'hidden', background: '#E3DCCD' }}>
               {mapError ? (
-                <a href={`https://map.kakao.com/?q=${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: F_BODY, fontSize: 12, color: inkA(0.6) }}>지도에서 위치 보기</a>
+                <a href={`https://map.kakao.com/?q=${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: F_BODY, fontSize: bfs(12), color: inkA(0.6) }}>지도에서 위치 보기</a>
               ) : (
                 <>
                   <div ref={mapContainerRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
                   {!mapActive && (
                     <div onClick={() => setMapActive(true)} style={{ position: 'absolute', inset: 0, cursor: 'pointer', background: 'rgba(53,23,20,.04)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 12 }}>
-                      <span style={{ fontFamily: F_BODY, fontSize: 10.5, color: IVORY, background: inkA(0.62), padding: '5px 12px', borderRadius: 20 }}>지도를 눌러 이동/확대</span>
+                      <span style={{ fontFamily: F_BODY, fontSize: bfs(10.5), color: IVORY, background: inkA(0.62), padding: '5px 12px', borderRadius: 20 }}>지도를 눌러 이동/확대</span>
                     </div>
                   )}
                 </>
@@ -1188,25 +1242,25 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             <div style={{ position: 'absolute', inset: 0, border: `1px solid ${inkA(0.16)}`, pointerEvents: 'none' }} />
           </div>
           <div className="cl-reveal cl-zoom" data-delay="120" style={{ position: 'relative', zIndex: 2, margin: '-34px 26px 0', background: PAPER, padding: '34px 28px 30px', boxShadow: '0 26px 42px -34px rgba(53,23,20,.8)' }}>
-            <p style={{ margin: 0, textAlign: 'center', ...label(9.5, 0.44, inkA(0.45)) }}>LOCATION</p>
+            <p style={{ margin: 0, textAlign: 'center', ...label(9.5, 0.44, inkA(0.45)) }}>{nameCase('LOCATION')}</p>
             <h2 className="cl-reveal cl-up" data-delay="300" style={{ margin: '14px 0 0', textAlign: 'center', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 26, color: INK }}>{venueName}</h2>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, margin: '10px 0 0' }}>
-              <p style={{ margin: 0, textAlign: 'center', fontFamily: F_BODY, fontSize: 12, color: inkA(0.7) }}>{venueFull}</p>
-              <button onClick={() => doCopy(venueFull, 'addr')} style={{ flexShrink: 0, fontFamily: F_BODY, fontSize: 10, cursor: 'pointer', background: 'transparent', border: `1px solid ${inkA(0.3)}`, color: inkA(0.7), borderRadius: 4, padding: '3px 8px', whiteSpace: 'nowrap' }}>{copied === 'addr' ? '복사됨' : '주소 복사'}</button>
+              <p style={{ margin: 0, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(12), color: inkA(0.7) }}>{venueFull}</p>
+              <button onClick={() => doCopy(venueFull, 'addr')} style={{ flexShrink: 0, fontFamily: F_BODY, fontSize: bfs(10), cursor: 'pointer', background: 'transparent', border: `1px solid ${inkA(0.3)}`, color: inkA(0.7), borderRadius: 4, padding: '3px 8px', whiteSpace: 'nowrap' }}>{copied === 'addr' ? '복사됨' : '주소 복사'}</button>
             </div>
             <div style={{ height: 1, background: inkA(0.14), margin: '24px 0' }} />
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {dirDisplay.map((r, i) => (
-                <div key={i} style={{ display: 'flex', gap: 14 }}>
-                  <span style={{ flex: '0 0 54px', fontFamily: F_BODY, fontSize: 11, fontWeight: 600, color: inkA(0.55), paddingTop: 2 }}>{r.label}</span>
-                  <p style={{ margin: 0, flex: 1, fontFamily: F_BODY, fontSize: 11.5, lineHeight: 1.85, color: inkA(0.72), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{r.text}</p>
+                <div key={i} className="cl-reveal cl-rise" data-delay={200 + i * 90} style={{ display: 'flex', gap: 14 }}>
+                  <span style={{ flex: '0 0 54px', fontFamily: F_BODY, fontSize: bfs(11), fontWeight: 600, color: inkA(0.55), paddingTop: 2 }}>{r.label}</span>
+                  <p style={{ margin: 0, flex: 1, fontFamily: F_BODY, fontSize: bfs(11.5), lineHeight: 1.85, color: inkA(0.72), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{r.text}</p>
                 </div>
               ))}
             </div>
             <div style={{ display: 'flex', gap: 7, margin: '26px 0 0' }}>
-              <a href={`https://map.naver.com/p/search/${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ flex: 1, textAlign: 'center', fontFamily: F_BODY, fontSize: 11.5, padding: '11px 0', background: '#03C75A', color: '#fff', borderRadius: 6, whiteSpace: 'nowrap' }}>네이버</a>
-              <a href={`https://map.kakao.com/?q=${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ flex: 1, textAlign: 'center', fontFamily: F_BODY, fontSize: 11.5, padding: '11px 0', background: '#FEE500', color: '#3C1E1E', borderRadius: 6, whiteSpace: 'nowrap' }}>카카오</a>
-              <a href={`tmap://search?name=${encodeURIComponent(venueName)}`} style={{ flex: 1, textAlign: 'center', fontFamily: F_BODY, fontSize: 11.5, padding: '11px 0', background: INK, color: BTN_TEXT, borderRadius: 6, whiteSpace: 'nowrap' }}>티맵</a>
+              <a href={`https://map.naver.com/p/search/${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ flex: 1, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(11.5), padding: '11px 0', background: '#03C75A', color: '#fff', borderRadius: 6, whiteSpace: 'nowrap' }}>네이버</a>
+              <a href={`https://map.kakao.com/?q=${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ flex: 1, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(11.5), padding: '11px 0', background: '#FEE500', color: '#3C1E1E', borderRadius: 6, whiteSpace: 'nowrap' }}>카카오</a>
+              <a href={`tmap://search?name=${encodeURIComponent(venueName)}`} style={{ flex: 1, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(11.5), padding: '11px 0', background: INK, color: BTN_TEXT, borderRadius: 6, whiteSpace: 'nowrap' }}>티맵</a>
             </div>
           </div>
         </section>
@@ -1217,15 +1271,15 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           {infoSecOverlayOp > 0 && <div style={{ position: 'absolute', inset: 0, background: `rgba(${hexToRgb(infoSecOverlay, '28,16,13')},${infoSecOverlayOp})`, pointerEvents: 'none', zIndex: -1 }} />}
           <div style={{ position: 'absolute', inset: 0, opacity: 0.5, pointerEvents: 'none', backgroundImage: 'repeating-linear-gradient(135deg,rgba(53,23,20,.05) 0 1px,transparent 1px 9px)' }} />
           <div className="cl-reveal cl-up" style={{ position: 'relative', textAlign: 'center', marginBottom: 6 }}>
-            <h2 style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 30, letterSpacing: '.02em', color: infoFgC }}>Information</h2>
-            <p style={{ margin: '10px 0 0', fontFamily: F_BODY, fontSize: 11.5, letterSpacing: '.02em', color: infoFgAf(0.6) }}>결혼식 안내</p>
+            <h2 style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 30, letterSpacing: '.02em', color: infoFgC }}>{nameCase('Information')}</h2>
+            <p style={{ margin: '10px 0 0', fontFamily: F_BODY, fontSize: bfs(11.5), letterSpacing: '.02em', color: infoFgAf(0.6) }}>결혼식 안내</p>
           </div>
           {guideList.map((g, i) => (
-            <div key={i} className="cl-reveal cl-zoom" data-delay={i * 120} style={{ position: 'relative', background: '#FFFDF8', padding: extractUrl(g.photo) ? '14px 14px 26px' : '26px 24px', boxShadow: '0 24px 38px -32px rgba(53,23,20,.8)' }}>
+            <div key={i} className="cl-reveal cl-up" data-delay={i * 130} style={{ position: 'relative', background: '#FFFDF8', padding: extractUrl(g.photo) ? '14px 14px 26px' : '26px 24px', boxShadow: '0 24px 38px -32px rgba(53,23,20,.8)' }}>
               {extractUrl(g.photo) && <div style={{ aspectRatio: '4/3', margin: '0 0 20px', ...cropBg(g.photo, { background: DEEP_BEIGE }), filter: 'saturate(.75)' }} />}
-              <p className="cl-reveal cl-up" data-delay={i * 120 + 180} style={{ margin: 0, textAlign: 'center', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 18, color: INK }}>{g.title}</p>
+              <p style={{ margin: 0, textAlign: 'center', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 18, color: INK }}>{g.title}</p>
               <div style={{ width: 22, height: 1, background: inkA(0.25), margin: '13px auto' }} />
-              <p className="cl-reveal cl-up" data-delay={i * 120 + 280} style={{ margin: 0, textAlign: 'center', fontFamily: F_BODY, fontSize: 13, lineHeight: 2, color: inkA(0.72), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{g.body}</p>
+              <p style={{ margin: 0, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 2, color: inkA(0.72), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{g.body}</p>
             </div>
           ))}
         </section>
@@ -1235,22 +1289,22 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         {acctSides.length > 0 && !hiddenSet.has('accounts') && (
         <section style={{ order: orderOf('accounts'), position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 22, padding: '84px 30px', background: IVORY, backgroundImage: 'repeating-linear-gradient(135deg,rgba(53,23,20,.035) 0 1px,transparent 1px 9px)', ...tintBg('accounts') }}>
           <div className="cl-reveal cl-up" style={{ textAlign: 'center' }}>
-            <h2 style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 30, color: fgC('accounts') }}>With Your Heart</h2>
-            <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: 11.5, lineHeight: 1.9, color: fgA('accounts', 0.65), wordBreak: 'keep-all' }}>참석이 어려우신 분들을 위해<br />마음 전하실 곳을 안내드립니다.</p>
+            <h2 style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 30, color: fgC('accounts') }}>{nameCase('With Your Heart')}</h2>
+            <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(11.5), lineHeight: 1.9, color: fgA('accounts', 0.65), wordBreak: 'keep-all' }}>참석이 어려우신 분들을 위해<br />마음 전하실 곳을 안내드립니다.</p>
           </div>
           {acctSides.map((grp, gi) => (
-            <div key={gi} className="cl-reveal cl-zoom" data-delay={gi * 160} style={{ background: '#FFFDF8', padding: '24px 22px', boxShadow: '0 24px 38px -32px rgba(53,23,20,.8)' }}>
-              <p className="cl-reveal cl-up" data-delay={gi * 160 + 180} style={label(8.5, 0.4, inkA(0.45))}>{grp.side}</p>
-              <div className="cl-reveal cl-up" data-delay={gi * 160 + 280} style={{ display: 'flex', flexDirection: 'column', gap: 14, margin: '16px 0 0' }}>
+            <div key={gi} className="cl-reveal cl-up" data-delay={gi * 150} style={{ background: '#FFFDF8', padding: '24px 22px', boxShadow: '0 24px 38px -32px rgba(53,23,20,.8)' }}>
+              <p style={label(8.5, 0.4, inkA(0.45))}>{grp.side}</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14, margin: '16px 0 0' }}>
                 {grp.accts.map((a, ai) => (
                   <div key={ai}>
                     {ai > 0 && <div style={{ height: 1, background: inkA(0.12), marginBottom: 14 }} />}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                       <div style={{ flex: 1 }}>
-                        <p style={{ margin: 0, fontFamily: F_BODY, fontSize: 12, color: INK }}>{a.line}</p>
-                        <p style={{ margin: '5px 0 0', fontFamily: F_BODY, fontSize: 10.5, color: inkA(0.55) }}>{a.who}</p>
+                        <p style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(12), color: INK }}>{a.line}</p>
+                        <p style={{ margin: '5px 0 0', fontFamily: F_BODY, fontSize: bfs(10.5), color: inkA(0.55) }}>{a.who}</p>
                       </div>
-                      <button onClick={() => doCopy(a.copy, `acc-${gi}-${ai}`)} style={{ fontFamily: F_BODY, fontSize: 10.5, padding: '8px 13px', cursor: 'pointer', background: 'transparent', border: `1px solid ${inkA(0.3)}`, color: inkA(0.75), borderRadius: 4, whiteSpace: 'nowrap' }}>{copied === `acc-${gi}-${ai}` ? '복사됨' : '복사'}</button>
+                      <button onClick={() => doCopy(a.copy, `acc-${gi}-${ai}`)} style={{ fontFamily: F_BODY, fontSize: bfs(10.5), padding: '8px 13px', cursor: 'pointer', background: 'transparent', border: `1px solid ${inkA(0.3)}`, color: inkA(0.75), borderRadius: 4, whiteSpace: 'nowrap' }}>{copied === `acc-${gi}-${ai}` ? '복사됨' : '복사'}</button>
                     </div>
                   </div>
                 ))}
@@ -1266,21 +1320,21 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           {(() => { const INK = thanksFgC; const inkA = (a: number) => thanksFgAf(a)
           const thanksBody = (col: string, colA: (a: number) => string) => (
             <>
-              <p style={{ ...label(9.5, 0.44, colA(0.45)) }}>THANK YOU</p>
-              <p style={{ margin: '16px 0 0', fontFamily: F_BODY, fontSize: 13, lineHeight: 2, color: colA(0.82), whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{cc.classicThankYou || '귀한 걸음으로 축복해 주시는\n모든 분께 진심으로 감사드립니다.'}</p>
+              <p style={{ ...label(9.5, 0.44, colA(0.45)) }}>{nameCase('THANK YOU')}</p>
+              <p style={{ margin: '16px 0 0', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 2, color: colA(0.82), whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{cc.classicThankYou || '귀한 걸음으로 축복해 주시는\n모든 분께 진심으로 감사드립니다.'}</p>
             </>
           )
           return (<>
           {thanksFrame === 'doily' ? (
-            <div className="cl-reveal cl-zoom" style={{ position: 'relative', backgroundImage: "url('/classic/thanks-frame.webp')", backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', aspectRatio: '894 / 711', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16% 14%', boxSizing: 'border-box' }}>
-              <div className="cl-reveal cl-up" data-delay="180" style={{ textAlign: 'center' }}>{thanksBody(fgC('links'), (a) => fgA('links', a))}</div>
+            <div className="cl-reveal cl-fade" style={{ position: 'relative', backgroundImage: "url('/classic/thanks-frame.webp')", backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', aspectRatio: '894 / 711', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16% 14%', boxSizing: 'border-box' }}>
+              <div style={{ textAlign: 'center' }}>{thanksBody(fgC('links'), (a) => fgA('links', a))}</div>
             </div>
           ) : (
             <div className="cl-reveal cl-blur" style={{ position: 'relative', textAlign: 'center' }}>{thanksBody(INK, inkA)}</div>
           )}
           <div className="cl-reveal cl-up" data-delay="200" style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <button onClick={doShare} style={{ fontFamily: F_BODY, fontSize: 13, letterSpacing: '.02em', padding: '15px 0', cursor: 'pointer', background: '#FEE500', border: '1px solid #FEE500', color: '#3C1E1E', whiteSpace: 'nowrap' }}>카카오톡 공유</button>
-            <button onClick={() => doCopy(shareUrl, 'link')} style={{ fontFamily: F_BODY, fontSize: 13, letterSpacing: '.02em', padding: '15px 0', cursor: 'pointer', background: 'transparent', border: `1px solid ${inkA(0.35)}`, color: INK, whiteSpace: 'nowrap' }}>{copied === 'link' ? '링크 복사됨' : '링크 복사'}</button>
+            <button onClick={doShare} style={{ fontFamily: F_BODY, fontSize: bfs(13), letterSpacing: '.02em', padding: '15px 0', cursor: 'pointer', background: '#FEE500', border: '1px solid #FEE500', color: '#3C1E1E', whiteSpace: 'nowrap' }}>카카오톡 공유</button>
+            <button onClick={() => doCopy(shareUrl, 'link')} style={{ fontFamily: F_BODY, fontSize: bfs(13), letterSpacing: '.02em', padding: '15px 0', cursor: 'pointer', background: 'transparent', border: `1px solid ${inkA(0.35)}`, color: INK, whiteSpace: 'nowrap' }}>{copied === 'link' ? '링크 복사됨' : '링크 복사'}</button>
           </div>
           </>) })()}
         </section>
@@ -1289,7 +1343,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         <section style={{ order: orderOf('rsvp'), position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 30, padding: '84px 30px', background: IVORY, ...hide('rsvp'), ...tintBg('rsvp') }}>
           <div className="cl-reveal cl-up" style={{ textAlign: 'center' }}>
             <h2 style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 30, color: rInk }}>R.S.V.P</h2>
-            <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: 11.5, lineHeight: 1.9, color: rInkA(0.62), whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{cc.classicRsvpNotice || '참석 여부를 알려주시면\n정성껏 준비하겠습니다.'}</p>
+            <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(11.5), lineHeight: 1.9, color: rInkA(0.62), whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{cc.classicRsvpNotice || '참석 여부를 알려주시면\n정성껏 준비하겠습니다.'}</p>
           </div>
 
           {rsvpAttend === 'attending' ? (
@@ -1308,28 +1362,33 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                 onClose={() => setRsvpAttend(null)}
                 tokens={{ INK, IVORY: BTN_TEXT, PAPER, inkA, F_BODY, F_LABEL }}
               />
-              <button onClick={() => setRsvpAttend(null)} style={{ display: 'block', margin: '16px auto 0', fontFamily: F_LABEL, fontSize: 9, letterSpacing: '.4em', paddingLeft: '.4em', color: rInkA(0.6), background: 'transparent', border: 'none', cursor: 'pointer' }}>← 다시 선택</button>
+              <button onClick={() => setRsvpAttend(null)} style={{ display: 'block', margin: '16px auto 0', fontFamily: F_LABEL, fontSize: lfs(9), letterSpacing: '.4em', paddingLeft: '.4em', color: rInkA(0.6), background: 'transparent', border: 'none', cursor: 'pointer' }}>← 다시 선택</button>
             </div>
           ) : (
             <div style={{ position: 'relative', width: '100%', maxWidth: 300, minHeight: 310 }}>
               <div className="cl-reveal cl-up" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 208, backgroundImage: "url('/classic/letter.webp')", backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'bottom center', filter: 'drop-shadow(0 26px 38px rgba(0,0,0,.55))', zIndex: 1 }} />
               {rsvpAttend !== 'not_attending' && (
-                <div className="cl-reveal cl-up" data-delay="900" style={{ position: 'relative', zIndex: 2, margin: '0 8px 96px', background: PAPER, padding: '28px 22px 26px', textAlign: 'center', boxShadow: '0 22px 34px -26px rgba(0,0,0,.9)' }}>
-                  <p style={{ ...label(9.5, 0.46, inkA(0.5)) }}>INVITATION</p>
-                  <p style={{ margin: '14px 0 0', fontFamily: F_BODY, fontSize: 20, letterSpacing: '.06em', color: INK }}>초대합니다</p>
+                <div className="cl-reveal cl-env" data-delay="820" style={{ position: 'relative', zIndex: 2, margin: '0 8px 96px', background: PAPER, padding: '28px 22px 26px', textAlign: 'center', boxShadow: '0 22px 34px -26px rgba(0,0,0,.9)' }}>
+                  <p style={{ ...label(9.5, 0.46, inkA(0.5)) }}>{nameCase('INVITATION')}</p>
+                  <p style={{ margin: '14px 0 0', fontFamily: F_BODY, fontSize: bfs(20), letterSpacing: '.06em', color: INK }}>초대합니다</p>
                   <div style={{ display: 'flex', gap: 8, margin: '22px 0 0' }}>
-                    <button onClick={() => setRsvpAttend('attending')} style={{ flex: 1, fontFamily: F_BODY, fontSize: 12, color: BTN_TEXT, background: INK, border: `1px solid ${INK}`, padding: '11px 0', cursor: 'pointer', whiteSpace: 'nowrap' }}>참석합니다</button>
-                    <button onClick={() => setRsvpAttend('not_attending')} style={{ flex: 1, fontFamily: F_BODY, fontSize: 12, color: INK, background: 'transparent', border: `1px solid ${inkA(0.35)}`, padding: '11px 0', cursor: 'pointer', whiteSpace: 'nowrap' }}>참석 어렵습니다</button>
+                    <button onClick={() => setRsvpAttend('attending')} style={{ flex: 1, fontFamily: F_BODY, fontSize: bfs(12), color: BTN_TEXT, background: INK, border: `1px solid ${INK}`, padding: '11px 0', cursor: 'pointer', whiteSpace: 'nowrap' }}>참석합니다</button>
+                    <button onClick={() => setRsvpAttend('not_attending')} style={{ flex: 1, fontFamily: F_BODY, fontSize: bfs(12), color: INK, background: 'transparent', border: `1px solid ${inkA(0.35)}`, padding: '11px 0', cursor: 'pointer', whiteSpace: 'nowrap' }}>참석 어렵습니다</button>
                   </div>
                 </div>
               )}
               {rsvpAttend === 'not_attending' && (
-                <p style={{ position: 'absolute', top: 6, left: 0, right: 0, textAlign: 'center', margin: 0, fontFamily: F_BODY, fontSize: 12, lineHeight: 1.9, color: rInkA(0.7) }}>마음 전해주셔서 감사합니다.<br /><button onClick={() => setRsvpAttend(null)} style={{ marginTop: 8, fontFamily: F_LABEL, fontSize: 9, letterSpacing: '.3em', paddingLeft: '.3em', color: rInkA(0.55), background: 'transparent', border: 'none', cursor: 'pointer' }}>다시 선택</button></p>
+                <p style={{ position: 'absolute', top: 6, left: 0, right: 0, textAlign: 'center', margin: 0, fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.9, color: rInkA(0.7) }}>마음 전해주셔서 감사합니다.<br /><button onClick={() => setRsvpAttend(null)} style={{ marginTop: 8, fontFamily: F_LABEL, fontSize: lfs(9), letterSpacing: '.3em', paddingLeft: '.3em', color: rInkA(0.55), background: 'transparent', border: 'none', cursor: 'pointer' }}>다시 선택</button></p>
               )}
             </div>
           )}
-          <p className="cl-reveal cl-blur" data-delay="200" style={{ position: 'relative', margin: '38px 0 0', textAlign: 'center', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 15, letterSpacing: '.04em', color: rInkA(0.5) }}>dear drawer</p>
         </section>
+
+        {/* ===== 푸터 ===== */}
+        <footer style={{ order: 999, background: IVORY, textAlign: 'center', padding: '44px 30px 52px' }}>
+          <p className="cl-reveal cl-fade" style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 14, letterSpacing: '.03em', color: inkA(0.55) }}>Thank you for celebrating with us</p>
+          <p className="cl-reveal cl-fade" data-delay="220" style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(9.5), letterSpacing: '.16em', paddingLeft: '.16em', color: inkA(0.32) }}>Made with dear drawer</p>
+        </footer>
 
         </div>
         )}

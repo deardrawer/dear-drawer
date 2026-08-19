@@ -18,6 +18,7 @@ import {
   Hahmlet,
   Italiana,
   Italianno,
+  Instrument_Serif,
 } from "next/font/google";
 import "./fonts.css";
 import "./globals.css";
@@ -69,6 +70,14 @@ const montserrat = Montserrat({
 // Romantic 스타일
 const greatVibes = Great_Vibes({
   variable: "--font-great-vibes",
+  subsets: ["latin"],
+  weight: ["400"],
+  display: "swap",
+  preload: false,
+});
+
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-instrument-serif",
   subsets: ["latin"],
   weight: ["400"],
   display: "swap",
@@ -201,6 +210,7 @@ const fontVariables = [
   hahmlet.variable,
   italiana.variable,
   italianno.variable,
+  instrumentSerif.variable,
 ].join(' ');
 
 export default function RootLayout({

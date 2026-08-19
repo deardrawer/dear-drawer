@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Essay Book — V6 Magazine</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@200;300;400;500&display=swap');
+
+  *{margin:0;padding:0;box-sizing:border-box}
+
+  :root{
+    --bg:#F4F1EB;
+    --fg:#2E2A26;
+    --mid:#9B9088;
+    --dk:#2C2820;
+    --e:cubic-bezier(.16,1,.3,1);
+    --e2:cubic-bezier(.33,1,.68,1);
+  }
+
+  html,body{width:100%;height:100%;overflow:hidden;
+    background:var(--fg);font-family:'Noto Serif KR',serif;
+    -webkit-font-smoothing:antialiased;color:var(--fg)}
+
+  .bk{width:100%;max-width:430px;height:100%;margin:0 auto;
+    position:relative;overflow:hidden;background:var(--bg)}
+
+  /* ── Progress ── */
+  .pg{position:absolute;top:0;left:0;right:0;height:2px;z-index:10}
+  .pg-f{height:100%;width:0;background:var(--mid);opacity:.35;
+    transition:width .9s var(--e)}
+
+  /* ── Pages ── */
+  .p{position:absolute;inset:0;opacity:0;visibility:hidden;
+    display:flex;flex-direction:column;background:var(--bg);overflow:hidden}
+  .p.on{opacity:1;visibility:visible;z-index:2}
+  .p.out{visibility:visible;z-index:1;animation:p-out .9s var(--e2) forwards}
+  .p.in{visibility:visible;z-index:2;animation:p-in .9s var(--e2) forwards}
+  @keyframes p-out{to{opacity:0;transform:scale(.99)}}
+  @keyframes p-in{from{opacity:0;transform:scale(1.005)}to{opacity:1;transform:none}}
+
+  /* ── Animations ── */
+  @keyframes c-lr{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0)}}
+  @keyframes c-cx{from{clip-path:inset(0 50%)}to{clip-path:inset(0)}}
+  @keyframes c-cy{from{clip-path:inset(42% 0)}to{clip-path:inset(0)}}
+  @keyframes fi{from{opacity:0}to{opacity:1}}
+
+  /* ── Default bars ── */
+  .p::before,.p::after{content:'';position:absolute;left:48px;right:48px;
+    height:1px;background:var(--mid);opacity:.15;z-index:3}
+  .p::before{top:54px}
+  .p::after{bottom:44px}
+
+  /* ── Watermark ── */
+  .wm{position:absolute;font-family:'Cormorant Garamond',serif;
+    font-weight:300;color:var(--fg);opacity:.035;line-height:.85;
+    pointer-events:none;z-index:0}
+
+  /* scrollable */
+  .sc{flex:1;overflow-y:auto;padding:72px 48px 62px;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none;position:relative;z-index:1}
+  .sc::-webkit-scrollbar{display:none}
+
+  /* shared */
+  .lb{font-family:'Cormorant Garamond',serif;
+    font-size:7.5px;font-weight:400;letter-spacing:3px;color:var(--mid);
+    text-transform:uppercase}
+  .fo{position:absolute;font-family:'Cormorant Garamond',serif;
+    font-size:8px;letter-spacing:1px;color:var(--mid);opacity:.35}
+
+  /* ════════════════════════════════════════
+     0. INTRO — 중앙, 깨끗
+     ════════════════════════════════════════ */
+  .it{justify-content:center;align-items:center;padding:0 48px}
+  .it-tt{font-size:21px;font-weight:200;letter-spacing:.5px;
+    text-align:center;margin-bottom:12px;opacity:0}
+  .p.on .it-tt{animation:fi 1.6s var(--e2) .3s forwards}
+  .it-st{font-family:'Cormorant Garamond',serif;
+    font-size:9px;font-weight:400;font-style:italic;letter-spacing:2px;
+    color:var(--mid);text-align:center;margin-bottom:40px;opacity:0}
+  .p.on .it-st{animation:fi 1.2s var(--e2) .6s forwards}
+  .it-bd{font-size:11.5px;font-weight:300;line-height:2.1;
+    text-align:center;color:var(--fg);max-width:260px;opacity:0}
+  .p.on .it-bd{animation:fi 2s var(--e2) 1s forwards}
+  .it-nav{position:absolute;bottom:60px;left:48px;right:48px;
+    display:flex;justify-content:center;gap:20px;opacity:0}
+  .p.on .it-nav{animation:fi 1s var(--e2) 1.6s forwards}
+  .it-nav a{font-family:'Cormorant Garamond',serif;font-size:7px;
+    font-weight:400;letter-spacing:2px;color:var(--mid);
+    text-transform:uppercase;text-decoration:none;padding:6px 0;
+    border-bottom:1px solid transparent;transition:border-color .3s}
+  .it-nav a:hover{border-color:var(--mid)}
+
+  /* ════════════════════════════════════════
+     1. PROLOGUE — 하단 우측 배치, 상단 여백 극대화
+     ════════════════════════════════════════ */
+  .gr{padding:0 48px}
+  .gr .lb{position:absolute;top:36px;left:48px;
+    clip-path:inset(0 100% 0 0)}
+  .p.on .gr .lb{animation:c-lr .8s var(--e) .15s forwards}
+  .gr-body{margin-top:auto;margin-bottom:80px;margin-left:auto;
+    text-align:right;max-width:240px}
+  .gr-ln{font-size:13px;font-weight:200;line-height:2.5;
+    letter-spacing:.2px;display:block;opacity:0}
+  .p.on .gr-ln{animation:fi 1.4s var(--e2) forwards}
+
+  /* ════════════════════════════════════════
+     2. CH01 — 좌측 정렬, 큰 워터마크 01
+     ════════════════════════════════════════ */
+  .c1 .wm{font-size:200px;top:50%;right:-20px;transform:translateY(-50%)}
+  .c1-top{padding:100px 48px 0 48px;position:relative;z-index:1}
+  .c1-tt{font-size:28px;font-weight:200;letter-spacing:.3px;
+    line-height:1.6;margin-bottom:0;opacity:0}
+  .p.on .c1-tt{animation:fi 1.4s var(--e2) .3s forwards}
+  .c1-sub{font-family:'Cormorant Garamond',serif;font-size:9px;
+    font-style:italic;letter-spacing:2px;color:var(--mid);
+    margin-top:10px;opacity:0}
+  .p.on .c1-sub{animation:fi 1s var(--e2) .8s forwards}
+  .c1-bd{margin-top:auto;padding:0 48px 90px;position:relative;z-index:1}
+  .c1-tx{max-width:250px;font-size:11.5px;line-height:2.2;
+    font-weight:300;letter-spacing:.1px;opacity:0}
+  .p.on .c1-tx{animation:fi 2.2s var(--e2) 1.2s forwards}
+  .c1-tx p{margin-bottom:1.6em}
+  .c1-tx p:last-child{margin-bottom:0}
+
+  /* ════════════════════════════════════════
+     3. PHOTO — 풀블리드, 바 없음
+     ════════════════════════════════════════ */
+  .ph{padding:0}
+  .ph::before,.ph::after{display:none}
+  .ph-img{position:absolute;inset:0;width:100%;height:100%;
+    object-fit:cover;filter:saturate(.7) contrast(1.05);
+    clip-path:inset(42% 0)}
+  .p.on .ph-img{animation:c-cy 2.8s var(--e) .15s forwards}
+  .ph-ov{position:absolute;bottom:0;left:0;right:0;
+    padding:40px 28px 24px;z-index:2;
+    background:linear-gradient(transparent,rgba(44,40,32,.35))}
+  .ph-cap{font-family:'Cormorant Garamond',serif;
+    font-size:7.5px;font-weight:400;letter-spacing:3px;
+    color:rgba(244,241,235,.55);text-transform:uppercase;
+    clip-path:inset(0 100% 0 0)}
+  .p.on .ph-cap{animation:c-lr .9s var(--e) 2s forwards}
+
+  /* ════════════════════════════════════════
+     4. CH02 — 우측 배치, 본문 먼저 → 제목 아래
+     ════════════════════════════════════════ */
+  .c2{align-items:flex-end;padding:0 48px}
+  .c2 .wm{font-size:200px;top:50%;left:-20px;transform:translateY(-50%)}
+  .c2-bd{margin-top:auto;max-width:240px;position:relative;z-index:1}
+  .c2-tx{font-size:11.5px;line-height:2.2;font-weight:300;
+    letter-spacing:.1px;opacity:0}
+  .p.on .c2-tx{animation:fi 2.2s var(--e2) .4s forwards}
+  .c2-tx p{margin-bottom:1.6em}
+  .c2-tx p:last-child{margin-bottom:0}
+  .c2-hero{font-size:14px;font-weight:200;font-style:italic;
+    line-height:2;text-align:right;letter-spacing:.3px;
+    margin:1.4em 0;color:var(--fg)}
+  .c2-tt{font-size:13px;font-weight:200;letter-spacing:1px;
+    color:var(--mid);margin-top:20px;margin-bottom:90px;
+    text-align:right;opacity:0}
+  .p.on .c2-tt{animation:fi 1.2s var(--e2) 2s forwards}
+
+  /* ════════════════════════════════════════
+     5. CH03 — 중앙 정렬, 좁은 컬럼
+     ════════════════════════════════════════ */
+  .c3{align-items:center;justify-content:center;padding:0 52px;
+    text-align:center}
+  .c3 .wm{font-size:200px;top:50%;left:50%;
+    transform:translate(-50%,-50%)}
+  .c3-tt{font-size:22px;font-weight:200;letter-spacing:.5px;
+    margin-bottom:28px;position:relative;z-index:1;opacity:0}
+  .p.on .c3-tt{animation:fi 1.4s var(--e2) .3s forwards}
+  .c3-tx{max-width:240px;font-size:11.5px;line-height:2.3;
+    font-weight:300;letter-spacing:.1px;position:relative;z-index:1;opacity:0}
+  .p.on .c3-tx{animation:fi 2.2s var(--e2) .9s forwards}
+  .c3-tx p{margin-bottom:1.6em}
+  .c3-tx p:last-child{margin-bottom:0}
+  .c3-hero{font-size:14.5px;font-weight:200;font-style:italic;
+    line-height:2;letter-spacing:.3px;margin:1.2em 0}
+
+  /* ════════════════════════════════════════
+     6. QUOTE — 다크, 센터, 큰 타이포
+     ════════════════════════════════════════ */
+  .qt{justify-content:center;align-items:center;padding:0 40px;
+    background:var(--dk);text-align:center}
+  .qt::before,.qt::after{background:var(--bg);opacity:.06}
+  .qt-tx{font-size:16px;font-weight:200;font-style:italic;
+    line-height:2.6;color:var(--bg);letter-spacing:.3px;
+    margin-bottom:40px}
+  .ql{display:block;clip-path:inset(0 100% 0 0)}
+  .p.on .ql{animation:c-lr 1.3s var(--e) forwards}
+  .qt-fr{font-family:'Cormorant Garamond',serif;
+    font-size:7.5px;font-weight:400;letter-spacing:4px;
+    color:var(--bg);text-transform:uppercase;opacity:0}
+  .p.on .qt-fr{animation:fi 1.2s var(--e2) 3.2s forwards}
+  .qt .fo{color:var(--bg);opacity:.12}
+
+  /* ════════════════════════════════════════
+     7. DATE — 거대한 숫자
+     ════════════════════════════════════════ */
+  .dt{padding:0 48px;align-items:flex-start}
+  .dt-num{font-family:'Cormorant Garamond',serif;
+    font-size:160px;font-weight:300;letter-spacing:-6px;
+    line-height:.85;color:var(--fg);margin-top:auto;
+    clip-path:inset(0 50%)}
+  .p.on .dt-num{animation:c-cx 1.8s var(--e) .3s forwards}
+  .dt-info{margin-top:16px;margin-bottom:auto;padding-bottom:60px}
+  .dt-full{font-size:12px;font-weight:300;letter-spacing:.5px;
+    line-height:2;opacity:0}
+  .p.on .dt-full{animation:fi 1.4s var(--e2) 1s forwards}
+  .dt-time{font-family:'Cormorant Garamond',serif;
+    font-size:9px;font-weight:400;letter-spacing:3px;
+    color:var(--mid);text-transform:uppercase;margin-top:6px;opacity:0}
+  .p.on .dt-time{animation:fi 1s var(--e2) 1.4s forwards}
+  .dt-dday{font-family:'Cormorant Garamond',serif;
+    font-size:8px;font-weight:400;letter-spacing:4px;
+    color:var(--mid);margin-top:24px;opacity:0}
+  .p.on .dt-dday{animation:fi 1s var(--e2) 1.8s forwards}
+
+  /* ════════════════════════════════════════
+     8. VENUE — 장소명 크게, 정보 아래
+     ════════════════════════════════════════ */
+  .vn-nm{font-size:20px;font-weight:200;letter-spacing:.5px;
+    margin-bottom:6px;opacity:0}
+  .p.on .vn-nm{animation:fi 1.4s var(--e2) .3s forwards}
+  .vn-hall{font-size:11px;font-weight:300;color:var(--mid);
+    margin-bottom:4px;opacity:0}
+  .p.on .vn-hall{animation:fi 1.2s var(--e2) .5s forwards}
+  .vn-addr{font-size:10.5px;font-weight:300;color:var(--mid);
+    line-height:1.8;margin-bottom:28px;opacity:0}
+  .p.on .vn-addr{animation:fi 1.2s var(--e2) .7s forwards}
+  .vn-maps{display:flex;gap:12px;margin-bottom:28px;opacity:0}
+  .p.on .vn-maps{animation:fi 1s var(--e2) 1s forwards}
+  .vn-maps a{font-family:'Cormorant Garamond',serif;
+    font-size:7.5px;font-weight:400;letter-spacing:2px;color:var(--mid);
+    text-transform:uppercase;text-decoration:none;
+    padding:7px 12px;border:1px solid rgba(155,144,136,.2);
+    transition:all .3s}
+  .vn-maps a:hover{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+  .vn-dir{border-top:1px solid rgba(155,144,136,.1);padding-top:18px;opacity:0}
+  .p.on .vn-dir{animation:fi 1.2s var(--e2) 1.3s forwards}
+  .vn-dir-tt{font-family:'Cormorant Garamond',serif;font-size:8px;
+    font-weight:400;letter-spacing:3px;color:var(--mid);
+    text-transform:uppercase;margin-bottom:12px}
+  .vn-dir-item{margin-bottom:12px}
+  .vn-dir-k{font-size:10.5px;font-weight:400;margin-bottom:2px}
+  .vn-dir-v{font-size:10px;font-weight:300;color:var(--mid);line-height:1.8}
+
+  /* ════════════════════════════════════════
+     9. GUIDANCE
+     ════════════════════════════════════════ */
+  .gd-item{margin-bottom:20px;padding-bottom:20px;
+    border-bottom:1px solid rgba(155,144,136,.08);opacity:0}
+  .p.on .gd-item{animation:fi 1.2s var(--e2) forwards}
+  .gd-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+  .gd-k{font-size:11.5px;font-weight:400;letter-spacing:.2px;margin-bottom:5px}
+  .gd-v{font-size:10.5px;font-weight:300;color:var(--mid);line-height:1.9}
+
+  /* ════════════════════════════════════════
+     10. CONTACTS
+     ════════════════════════════════════════ */
+  .ct-side{margin-bottom:22px;opacity:0}
+  .p.on .ct-side{animation:fi 1.2s var(--e2) forwards}
+  .ct-side-lb{font-family:'Cormorant Garamond',serif;font-size:8px;
+    font-weight:400;letter-spacing:3px;color:var(--mid);
+    text-transform:uppercase;margin-bottom:12px}
+  .ct-row{display:flex;align-items:center;justify-content:space-between;
+    padding:9px 0;border-bottom:1px solid rgba(155,144,136,.06)}
+  .ct-row:last-child{border-bottom:none}
+  .ct-name{font-size:12px;font-weight:300}
+  .ct-role{font-size:9.5px;color:var(--mid);margin-left:5px;font-weight:300}
+  .ct-btns{display:flex;gap:8px}
+  .ct-btn{font-family:'Cormorant Garamond',serif;font-size:7px;
+    letter-spacing:1.5px;color:var(--mid);text-transform:uppercase;
+    text-decoration:none;padding:4px 9px;
+    border:1px solid rgba(155,144,136,.18);transition:all .3s}
+  .ct-btn:hover{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+
+  /* ════════════════════════════════════════
+     11. BANK
+     ════════════════════════════════════════ */
+  .ba-tabs{display:flex;gap:18px;margin-bottom:22px;opacity:0}
+  .p.on .ba-tabs{animation:fi 1s var(--e2) .3s forwards}
+  .ba-tab{font-size:11px;font-weight:300;color:var(--mid);
+    padding:4px 0;border:none;background:none;cursor:pointer;
+    border-bottom:1px solid transparent;transition:all .3s;
+    font-family:'Noto Serif KR',serif}
+  .ba-tab.active{color:var(--fg);border-bottom-color:var(--fg)}
+  .ba-panel{display:none}
+  .ba-panel.active{display:block}
+  .ba-item{margin-bottom:16px;padding-bottom:16px;
+    border-bottom:1px solid rgba(155,144,136,.06)}
+  .ba-item:last-child{border-bottom:none}
+  .ba-role{font-size:9.5px;font-weight:300;color:var(--mid);margin-bottom:3px}
+  .ba-name{font-size:12px;font-weight:300;margin-bottom:7px}
+  .ba-info{display:flex;align-items:center;justify-content:space-between}
+  .ba-acct{font-size:10.5px;font-weight:300;color:var(--mid);letter-spacing:.3px}
+  .ba-copy{font-family:'Cormorant Garamond',serif;font-size:7px;
+    letter-spacing:2px;color:var(--mid);text-transform:uppercase;
+    padding:4px 10px;border:1px solid rgba(155,144,136,.18);
+    background:none;cursor:pointer;transition:all .3s}
+  .ba-copy:hover,.ba-copy.done{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+
+  /* ════════════════════════════════════════
+     12. EPILOGUE — 하단 배치, 상단 극대 여백
+     ════════════════════════════════════════ */
+  .ty{padding:0 48px}
+  .ty .lb{position:absolute;top:36px;right:48px;left:auto;
+    clip-path:inset(0 100% 0 0)}
+  .p.on .ty .lb{animation:c-lr .8s var(--e) .15s forwards}
+  .ty-body{margin-top:auto;margin-bottom:80px;max-width:260px}
+  .ty-ln{font-size:12.5px;font-weight:200;line-height:2.4;
+    letter-spacing:.2px;display:block;opacity:0}
+  .p.on .ty-ln{animation:fi 1.4s var(--e2) forwards}
+  .ty-sign{font-family:'Cormorant Garamond','Noto Serif KR',serif;
+    font-size:10px;font-weight:400;letter-spacing:2px;color:var(--mid);
+    margin-top:28px;opacity:0}
+  .p.on .ty-sign{animation:fi 1s var(--e2) 2s forwards}
+
+  /* ════════════════════════════════════════
+     13. GUESTBOOK
+     ════════════════════════════════════════ */
+  .gb-form{margin-bottom:24px;opacity:0}
+  .p.on .gb-form{animation:fi 1.2s var(--e2) .4s forwards}
+  .gb-input{width:100%;border:none;border-bottom:1px solid rgba(155,144,136,.18);
+    background:none;padding:9px 0;font-family:'Noto Serif KR',serif;
+    font-size:11px;font-weight:300;color:var(--fg);outline:none;
+    transition:border-color .3s}
+  .gb-input:focus{border-bottom-color:var(--fg)}
+  .gb-input::placeholder{color:var(--mid);opacity:.5}
+  textarea.gb-input{resize:none;line-height:1.8;margin-top:10px;height:68px}
+  .gb-submit{display:block;margin-top:14px;margin-left:auto;
+    font-family:'Cormorant Garamond',serif;font-size:7.5px;
+    letter-spacing:3px;color:var(--mid);text-transform:uppercase;
+    padding:7px 18px;border:1px solid rgba(155,144,136,.18);
+    background:none;cursor:pointer;transition:all .3s}
+  .gb-submit:hover{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+  .gb-list{opacity:0}
+  .p.on .gb-list{animation:fi 1.2s var(--e2) .8s forwards}
+  .gb-msg{padding:12px 0;border-bottom:1px solid rgba(155,144,136,.06)}
+  .gb-msg:last-child{border-bottom:none}
+  .gb-msg-name{font-size:10.5px;font-weight:400;margin-bottom:2px}
+  .gb-msg-txt{font-size:10.5px;font-weight:300;color:var(--mid);line-height:1.8}
+
+  /* ════════════════════════════════════════
+     14. RSVP
+     ════════════════════════════════════════ */
+  .rv-deadline{font-size:10px;font-weight:300;color:var(--mid);
+    margin-bottom:24px;opacity:0}
+  .p.on .rv-deadline{animation:fi 1s var(--e2) .3s forwards}
+  .rv-group{margin-bottom:18px;opacity:0}
+  .p.on .rv-group{animation:fi 1.2s var(--e2) forwards}
+  .rv-label{font-family:'Cormorant Garamond',serif;font-size:7.5px;
+    font-weight:400;letter-spacing:2.5px;color:var(--mid);
+    text-transform:uppercase;margin-bottom:7px}
+  .rv-input{width:100%;border:none;border-bottom:1px solid rgba(155,144,136,.18);
+    background:none;padding:9px 0;font-family:'Noto Serif KR',serif;
+    font-size:11px;font-weight:300;color:var(--fg);outline:none;
+    transition:border-color .3s}
+  .rv-input:focus{border-bottom-color:var(--fg)}
+  .rv-input::placeholder{color:var(--mid);opacity:.5}
+  .rv-radios{display:flex;gap:18px;padding:5px 0}
+  .rv-radio{display:flex;align-items:center;gap:6px;cursor:pointer}
+  .rv-radio input{appearance:none;width:13px;height:13px;border-radius:50%;
+    border:1px solid var(--mid);cursor:pointer;position:relative;transition:border-color .3s}
+  .rv-radio input:checked{border-color:var(--fg)}
+  .rv-radio input:checked::after{content:'';position:absolute;
+    top:3px;left:3px;width:5px;height:5px;border-radius:50%;background:var(--fg)}
+  .rv-radio span{font-size:11px;font-weight:300}
+  .rv-count{width:44px;text-align:center;border:none;
+    border-bottom:1px solid rgba(155,144,136,.18);background:none;
+    padding:5px 0;font-family:'Noto Serif KR',serif;font-size:11.5px;
+    font-weight:300;color:var(--fg);outline:none}
+  textarea.rv-input{resize:none;line-height:1.8;height:56px}
+  .rv-submit{display:block;width:100%;margin-top:20px;
+    font-family:'Cormorant Garamond',serif;font-size:8.5px;
+    letter-spacing:4px;color:var(--bg);text-transform:uppercase;
+    padding:13px 0;border:none;background:var(--fg);cursor:pointer;
+    transition:opacity .3s}
+  .rv-submit:hover{opacity:.8}
+
+  /* ════════════════════════════════════════
+     15. END — 다크, 센터
+     ════════════════════════════════════════ */
+  .en{justify-content:center;align-items:center;padding:0 48px;
+    background:var(--dk)}
+  .en::before,.en::after{background:var(--bg);opacity:.06}
+  .en-label{font-family:'Cormorant Garamond',serif;font-size:8px;
+    font-weight:400;letter-spacing:5px;color:var(--bg);opacity:.25;
+    text-transform:uppercase;margin-bottom:40px;opacity:0}
+  .p.on .en-label{animation:fi 1s var(--e2) .2s forwards}
+  .en-msg{font-size:12px;font-weight:200;line-height:2.3;
+    text-align:center;letter-spacing:.2px;color:var(--bg);
+    margin-bottom:32px;opacity:0}
+  .p.on .en-msg{animation:fi 1.6s var(--e2) .5s forwards}
+  .en-nm{font-family:'Cormorant Garamond','Noto Serif KR',serif;
+    font-size:10px;font-weight:400;letter-spacing:4px;color:var(--bg);
+    opacity:.4;text-transform:uppercase;margin-bottom:48px;opacity:0}
+  .p.on .en-nm{animation:fi 1s var(--e2) 1s forwards}
+  .en-restart{font-family:'Cormorant Garamond',serif;font-size:7.5px;
+    letter-spacing:3px;color:var(--bg);opacity:.4;text-transform:uppercase;
+    padding:9px 22px;border:1px solid rgba(244,241,235,.15);
+    background:none;cursor:pointer;transition:all .3s;opacity:0}
+  .p.on .en-restart{animation:fi 1s var(--e2) 1.4s forwards}
+  .en-restart:hover{background:var(--bg);color:var(--dk);border-color:var(--bg)}
+  .en-pub{position:absolute;bottom:28px;font-family:'Cormorant Garamond',serif;
+    font-size:7px;font-weight:400;letter-spacing:3px;
+    color:var(--bg);opacity:.15;text-transform:uppercase}
+
+  /* ── Nav ── */
+  .nz{position:absolute;top:0;bottom:0;z-index:5}
+  .nz.l{left:0;width:28%}.nz.r{right:0;width:28%}
+
+  @media(max-height:700px){
+    .c1-tt{font-size:23px}
+    .dt-num{font-size:120px}
+    .qt-tx{font-size:14px}
+    .gr-ln{font-size:12px}
+  }
+  @media(max-height:600px){
+    .dt-num{font-size:100px}
+  }
+</style>
+</head>
+<body>
+<div class="bk" id="bk">
+  <div class="pg"><div class="pg-f" id="pgf"></div></div>
+
+  <!-- ═══ 0. INTRO ═══ -->
+  <div class="p it on" data-i="0">
+    <span class="lb" style="position:absolute;top:36px;left:48px;opacity:.4;clip-path:none">Dear Drawer</span>
+    <div style="flex:1"></div>
+    <div class="it-tt">우리만의 에세이</div>
+    <div class="it-st">— A Story Without Photos —</div>
+    <div class="it-bd">사진 대신 글로 전하는<br>우리의 이야기를 담았습니다.<br>천천히 읽어주세요.</div>
+    <div style="flex:.8"></div>
+    <div class="it-nav">
+      <a href="#" onclick="goTo(10);return false">Contact</a>
+      <a href="#" onclick="goTo(14);return false">RSVP</a>
+      <a href="#" onclick="goTo(8);return false">Location</a>
+      <a href="#" onclick="goTo(11);return false">Gift</a>
+    </div>
+  </div>
+
+  <!-- ═══ 1. PROLOGUE — 우하단 텍스트 ═══ -->
+  <div class="p gr" data-i="1">
+    <span class="lb">Prologue</span>
+    <div class="gr-body">
+      <span class="gr-ln" style="animation-delay:.4s">서로 다른 길을 걸어온</span>
+      <span class="gr-ln" style="animation-delay:.7s">두 사람이</span>
+      <span class="gr-ln" style="animation-delay:1s">같은 산 위에서</span>
+      <span class="gr-ln" style="animation-delay:1.3s">멈춰 섰습니다.</span>
+      <span class="gr-ln" style="animation-delay:2s">&nbsp;</span>
+      <span class="gr-ln" style="animation-delay:2.3s">오래 기다려온 이 순간,</span>
+      <span class="gr-ln" style="animation-delay:2.6s">당신과 함께하고 싶습니다.</span>
+      <span class="gr-ln" style="animation-delay:3.3s">&nbsp;</span>
+      <span class="gr-ln" style="animation-delay:3.6s">귀한 걸음으로</span>
+      <span class="gr-ln" style="animation-delay:3.9s">축복해 주세요.</span>
+    </div>
+    <span class="fo" style="bottom:28px;right:48px">01</span>
+  </div>
+
+  <!-- ═══ 2. CH01 — 좌측 상단 제목 + 우측 워터마크 ═══ -->
+  <div class="p c1" data-i="2">
+    <span class="wm">01</span>
+    <div class="c1-top">
+      <div class="c1-tt">시작</div>
+      <div class="c1-sub">The Beginning</div>
+    </div>
+    <div class="c1-bd">
+      <div class="c1-tx">
+        <p>2020년 가을, 북한산 둘레길에서 처음 만났습니다. 같은 방향으로 걷고 있던 두 사람.</p>
+        <p>길을 물어보는 척 건넨 인사에 돌아온 건 해맑은 웃음이었습니다.</p>
+        <p>정상까지 함께 오르며 나눈 대화가 어찌나 편하던지. 산을 내려오는 길이 아쉬웠던 건 처음이었습니다.</p>
+      </div>
+    </div>
+    <span class="fo" style="bottom:28px;left:48px">02</span>
+  </div>
+
+  <!-- ═══ 3. PHOTO — 풀블리드 ═══ -->
+  <div class="p ph" data-i="3">
+    <img class="ph-img" src="https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80" alt="">
+    <div class="ph-ov">
+      <span class="ph-cap">Bukhansan, Autumn 2020</span>
+    </div>
+  </div>
+
+  <!-- ═══ 4. CH02 — 우측 배치 ═══ -->
+  <div class="p c2" data-i="4">
+    <span class="wm">02</span>
+    <div style="flex:1"></div>
+    <div class="c2-bd">
+      <div class="c2-tx">
+        <p>그 뒤로 매주 함께 산에 올랐습니다. 봄에는 진달래가 핀 능선을 걸었고, 여름에는 계곡에 발을 담갔습니다.</p>
+        <p>가을 단풍 아래에서 도시락을 나눠 먹고, 겨울 설산에서는 서로의 손을 꼭 잡았습니다.</p>
+        <div class="c2-hero">"이번 주말 어디 갈까?"가<br>"이번 주말 어느 산 갈까?"로</div>
+        <p>바뀐 것은 아주 자연스러운 일이었습니다.</p>
+      </div>
+      <div class="c2-tt">우리의 시간</div>
+    </div>
+    <span class="fo" style="bottom:28px;right:48px">04</span>
+  </div>
+
+  <!-- ═══ 5. CH03 — 중앙 ═══ -->
+  <div class="p c3" data-i="5">
+    <span class="wm">03</span>
+    <div class="c3-tt">약속</div>
+    <div class="c3-tx">
+      <p>프로포즈는 북한산 정상에서 하려고 했습니다. 그런데 반지를 배낭 맨 아래에 넣어둔 걸 깜빡하고 말았습니다.</p>
+      <p>정상에서 허겁지겁 짐을 뒤지는 저를 보며 그녀가 물었습니다.</p>
+      <div class="c3-hero">"혹시 반지 찾는 거야?"</div>
+      <p>들켰지만, 어쨌든 무릎을 꿇었고 그녀는 웃으면서 울었습니다. 완벽하진 않았지만 우리다운 약속이었습니다.</p>
+    </div>
+    <span class="fo" style="bottom:28px;left:50%;transform:translateX(-50%)">05</span>
+  </div>
+
+  <!-- ═══ 6. QUOTE — 다크 센터 ═══ -->
+  <div class="p qt" data-i="6">
+    <div class="qt-tx">
+      <span class="ql" style="animation-delay:.5s">인생에서 가장</span>
+      <span class="ql" style="animation-delay:1.3s">아름다운 여행은</span>
+      <span class="ql" style="animation-delay:2.1s">사랑하는 사람과</span>
+      <span class="ql" style="animation-delay:2.9s">같은 길을 걷는 것이다</span>
+    </div>
+    <div class="qt-fr">파울로 코엘료</div>
+    <span class="fo" style="bottom:28px;right:48px">06</span>
+  </div>
+
+  <!-- ═══ 7. DATE — 거대한 23 ═══ -->
+  <div class="p dt" data-i="7">
+    <span class="lb" style="position:absolute;top:36px;right:48px;left:auto;
+      clip-path:inset(0 100% 0 0)">Date</span>
+    <div class="dt-num">23</div>
+    <div class="dt-info">
+      <div class="dt-full">2026년 5월 23일 토요일</div>
+      <div class="dt-time">Saturday, 2:00 PM</div>
+      <div class="dt-dday" id="dday"></div>
+    </div>
+    <span class="fo" style="bottom:28px;right:48px">07</span>
+  </div>
+
+  <!-- ═══ 8. VENUE ═══ -->
+  <div class="p" data-i="8">
+    <span class="lb" style="position:absolute;top:36px;left:48px;
+      clip-path:inset(0 100% 0 0)">Venue</span>
+    <div class="sc">
+      <div style="padding-top:12px">
+        <div class="vn-nm">더채플앳청담</div>
+        <div class="vn-hall">그랜드볼룸 5층</div>
+        <div class="vn-addr">서울특별시 강남구 청담동 123-45</div>
+        <div class="vn-maps">
+          <a href="#">Naver</a>
+          <a href="#">Kakao</a>
+          <a href="#">Tmap</a>
+        </div>
+        <div class="vn-dir">
+          <div class="vn-dir-tt">Directions</div>
+          <div class="vn-dir-item">
+            <div class="vn-dir-k">자가용</div>
+            <div class="vn-dir-v">네비게이션에 "더채플앳청담" 검색<br>강남역 방면에서 청담사거리 방향 직진 후 우회전</div>
+          </div>
+          <div class="vn-dir-item">
+            <div class="vn-dir-k">대중교통</div>
+            <div class="vn-dir-v">지하철: 압구정로데오역 5번 출구 도보 10분<br>버스: 146, 301, 401, 3422</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <span class="fo" style="bottom:28px;right:48px">08</span>
+  </div>
+
+  <!-- ═══ 9. GUIDANCE ═══ -->
+  <div class="p" data-i="9">
+    <span class="lb" style="position:absolute;top:36px;left:48px;
+      clip-path:inset(0 100% 0 0)">Guide</span>
+    <div class="sc">
+      <div style="padding-top:12px">
+        <div class="gd-item" style="animation-delay:.4s">
+          <div class="gd-k">포토부스</div>
+          <div class="gd-v">로비에 포토부스가 준비되어 있습니다. 자유롭게 촬영하시고 추억을 남겨주세요.</div>
+        </div>
+        <div class="gd-item" style="animation-delay:.7s">
+          <div class="gd-k">셔틀버스</div>
+          <div class="gd-v">강남역 10번 출구에서 12시 30분, 1시에 셔틀이 운행됩니다.</div>
+        </div>
+        <div class="gd-item" style="animation-delay:1s">
+          <div class="gd-k">식사 안내</div>
+          <div class="gd-v">예식 후 5층 연회장에서 식사가 준비되어 있습니다. 편안하게 즐겨주세요.</div>
+        </div>
+      </div>
+    </div>
+    <span class="fo" style="bottom:28px;right:48px">09</span>
+  </div>
+
+  <!-- ═══ 10. CONTACTS ═══ -->
+  <div class="p" data-i="10">
+    <span class="lb" style="position:absolute;top:36px;left:48px;
+      clip-path:inset(0 100% 0 0)">Contact</span>
+    <div class="sc">
+      <div style="padding-top:12px">
+        <div class="ct-side" style="animation-delay:.3s">
+          <div class="ct-side-lb">Groom</div>
+          <div class="ct-row">
+            <div><span class="ct-name">한지훈</span></div>
+            <div class="ct-btns">
+              <a href="tel:010-1234-5678" class="ct-btn">Tel</a>
+              <a href="sms:010-1234-5678" class="ct-btn">Sms</a>
+            </div>
+          </div>
+          <div class="ct-row">
+            <div><span class="ct-name">한영수</span><span class="ct-role">아버지</span></div>
+            <div class="ct-btns">
+              <a href="tel:010-1111-2222" class="ct-btn">Tel</a>
+              <a href="sms:010-1111-2222" class="ct-btn">Sms</a>
+            </div>
+          </div>
+          <div class="ct-row">
+            <div><span class="ct-name">김미경</span><span class="ct-role">어머니</span></div>
+            <div class="ct-btns">
+              <a href="tel:010-3333-4444" class="ct-btn">Tel</a>
+              <a href="sms:010-3333-4444" class="ct-btn">Sms</a>
+            </div>
+          </div>
+        </div>
+        <div class="ct-side" style="animation-delay:.7s">
+          <div class="ct-side-lb">Bride</div>
+          <div class="ct-row">
+            <div><span class="ct-name">윤서연</span></div>
+            <div class="ct-btns">
+              <a href="tel:010-5678-1234" class="ct-btn">Tel</a>
+              <a href="sms:010-5678-1234" class="ct-btn">Sms</a>
+            </div>
+          </div>
+          <div class="ct-row">
+            <div><span class="ct-name">윤정호</span><span class="ct-role">아버지</span></div>
+            <div class="ct-btns">
+              <a href="tel:010-5555-6666" class="ct-btn">Tel</a>
+              <a href="sms:010-5555-6666" class="ct-btn">Sms</a>
+            </div>
+          </div>
+          <div class="ct-row">
+            <div><span class="ct-name">이선영</span><span class="ct-role">어머니</span></div>
+            <div class="ct-btns">
+              <a href="tel:010-7777-8888" class="ct-btn">Tel</a>
+              <a href="sms:010-7777-8888" class="ct-btn">Sms</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <span class="fo" style="bottom:28px;right:48px">10</span>
+  </div>
+
+  <!-- ═══ 11. BANK ═══ -->
+  <div class="p" data-i="11">
+    <span class="lb" style="position:absolute;top:36px;left:48px;
+      clip-path:inset(0 100% 0 0)">Gift</span>
+    <div class="sc">
+      <div style="padding-top:12px">
+        <div class="ba-tabs">
+          <button class="ba-tab active" onclick="switchTab('groom')">신랑측</button>
+          <button class="ba-tab" onclick="switchTab('bride')">신부측</button>
+        </div>
+        <div class="ba-panel active" id="tab-groom">
+          <div class="ba-item">
+            <div class="ba-role">신랑</div>
+            <div class="ba-name">한지훈</div>
+            <div class="ba-info">
+              <span class="ba-acct">신한은행 110-123-456789</span>
+              <button class="ba-copy" onclick="copyAcct(this,'110-123-456789')">Copy</button>
+            </div>
+          </div>
+          <div class="ba-item">
+            <div class="ba-role">아버지</div>
+            <div class="ba-name">한영수</div>
+            <div class="ba-info">
+              <span class="ba-acct">우리은행 1002-123-456789</span>
+              <button class="ba-copy" onclick="copyAcct(this,'1002-123-456789')">Copy</button>
+            </div>
+          </div>
+          <div class="ba-item">
+            <div class="ba-role">어머니</div>
+            <div class="ba-name">김미경</div>
+            <div class="ba-info">
+              <span class="ba-acct">하나은행 267-910123-45678</span>
+              <button class="ba-copy" onclick="copyAcct(this,'267-910123-45678')">Copy</button>
+            </div>
+          </div>
+        </div>
+        <div class="ba-panel" id="tab-bride">
+          <div class="ba-item">
+            <div class="ba-role">신부</div>
+            <div class="ba-name">윤서연</div>
+            <div class="ba-info">
+              <span class="ba-acct">국민은행 123-45-678901</span>
+              <button class="ba-copy" onclick="copyAcct(this,'123-45-678901')">Copy</button>
+            </div>
+          </div>
+          <div class="ba-item">
+            <div class="ba-role">아버지</div>
+            <div class="ba-name">윤정호</div>
+            <div class="ba-info">
+              <span class="ba-acct">NH농협 302-1234-5678-91</span>
+              <button class="ba-copy" onclick="copyAcct(this,'302-1234-5678-91')">Copy</button>
+            </div>
+          </div>
+          <div class="ba-item">
+            <div class="ba-role">어머니</div>
+            <div class="ba-name">이선영</div>
+            <div class="ba-info">
+              <span class="ba-acct">카카오뱅크 3333-12-3456789</span>
+              <button class="ba-copy" onclick="copyAcct(this,'3333-12-3456789')">Copy</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <span class="fo" style="bottom:28px;right:48px">11</span>
+  </div>
+
+  <!-- ═══ 12. EPILOGUE — 좌하단 텍스트 ═══ -->
+  <div class="p ty" data-i="12">
+    <span class="lb">Epilogue</span>
+    <div class="ty-body">
+      <span class="ty-ln" style="animation-delay:.5s">바쁘신 와중에도</span>
+      <span class="ty-ln" style="animation-delay:.8s">저희의 결혼을 축하해 주셔서</span>
+      <span class="ty-ln" style="animation-delay:1.1s">진심으로 감사드립니다.</span>
+      <span class="ty-ln" style="animation-delay:1.7s">&nbsp;</span>
+      <span class="ty-ln" style="animation-delay:2s">여러분의 축복을 마음에 새기며</span>
+      <span class="ty-ln" style="animation-delay:2.3s">서로 아끼고 사랑하며</span>
+      <span class="ty-ln" style="animation-delay:2.6s">살겠습니다.</span>
+      <div class="ty-sign">지훈 &amp; 서연 올림</div>
+    </div>
+    <span class="fo" style="bottom:28px;left:48px">12</span>
+  </div>
+
+  <!-- ═══ 13. GUESTBOOK ═══ -->
+  <div class="p" data-i="13">
+    <span class="lb" style="position:absolute;top:36px;left:48px;
+      clip-path:inset(0 100% 0 0)">Messages</span>
+    <div class="sc">
+      <div style="padding-top:12px">
+        <div class="gb-form">
+          <input type="text" class="gb-input" placeholder="이름" maxlength="20">
+          <textarea class="gb-input" placeholder="축하 메시지를 남겨주세요" maxlength="500"></textarea>
+          <button class="gb-submit">Submit</button>
+        </div>
+        <div class="gb-list">
+          <div class="gb-msg">
+            <div class="gb-msg-name">박지영</div>
+            <div class="gb-msg-txt">사진 없는 청첩장인데 오히려 더 감동이에요. 진심이 느껴지는 글이 최고입니다.</div>
+          </div>
+          <div class="gb-msg">
+            <div class="gb-msg-name">최현우</div>
+            <div class="gb-msg-txt">지훈아 드디어! 축하한다 형! 행복해라.</div>
+          </div>
+          <div class="gb-msg">
+            <div class="gb-msg-name">정소희</div>
+            <div class="gb-msg-txt">두 분의 이야기가 정말 아름다워요. 결혼 축하드립니다.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <span class="fo" style="bottom:28px;right:48px">13</span>
+  </div>
+
+  <!-- ═══ 14. RSVP ═══ -->
+  <div class="p" data-i="14">
+    <span class="lb" style="position:absolute;top:36px;left:48px;
+      clip-path:inset(0 100% 0 0)">RSVP</span>
+    <div class="sc">
+      <div style="padding-top:12px">
+        <div class="rv-deadline">2026년 5월 16일까지 회신 부탁드립니다</div>
+        <div class="rv-group" style="animation-delay:.4s">
+          <div class="rv-label">Name</div>
+          <input type="text" class="rv-input" placeholder="성함을 입력해주세요">
+        </div>
+        <div class="rv-group" style="animation-delay:.6s">
+          <div class="rv-label">Attendance</div>
+          <div class="rv-radios">
+            <label class="rv-radio"><input type="radio" name="attend" value="yes"><span>참석합니다</span></label>
+            <label class="rv-radio"><input type="radio" name="attend" value="no"><span>불참합니다</span></label>
+          </div>
+        </div>
+        <div class="rv-group" style="animation-delay:.8s">
+          <div class="rv-label">Guests</div>
+          <input type="number" class="rv-count" value="1" min="1" max="10">
+          <span style="font-size:10.5px;font-weight:300;color:var(--mid);margin-left:5px">명</span>
+        </div>
+        <div class="rv-group" style="animation-delay:1s">
+          <div class="rv-label">Meal</div>
+          <div class="rv-radios">
+            <label class="rv-radio"><input type="radio" name="meal" value="yes"><span>예</span></label>
+            <label class="rv-radio"><input type="radio" name="meal" value="no"><span>아니오</span></label>
+          </div>
+        </div>
+        <div class="rv-group" style="animation-delay:1.2s">
+          <div class="rv-label">Message</div>
+          <textarea class="rv-input" placeholder="축하 메시지 (선택)"></textarea>
+        </div>
+        <button class="rv-submit">Submit</button>
+      </div>
+    </div>
+    <span class="fo" style="bottom:28px;right:48px">14</span>
+  </div>
+
+  <!-- ═══ 15. END — 다크 ═══ -->
+  <div class="p en" data-i="15">
+    <div style="flex:1"></div>
+    <div class="en-label">The End</div>
+    <div class="en-msg">이 이야기를<br>함께 읽어주셔서<br>감사합니다.</div>
+    <div class="en-nm">Jihoon &amp; Seoyeon</div>
+    <button class="en-restart" onclick="goTo(0)">Read Again</button>
+    <div style="flex:.8"></div>
+    <span class="en-pub">Dear Drawer</span>
+  </div>
+
+  <div class="nz l" onclick="prev()"></div>
+  <div class="nz r" onclick="next()"></div>
+</div>
+
+<script>
+const ps=document.querySelectorAll('.p'),tot=ps.length;
+let c=0,busy=false;
+const pgf=document.getElementById('pgf');
+
+function updatePg(){pgf.style.width=((c/(tot-1))*100)+'%'}
+
+function go(t){
+  if(busy||t===c||t<0||t>=tot)return;busy=true;
+  const o=ps[c],n=ps[t];
+  ps.forEach(p=>p.classList.remove('on','in','out'));
+  o.classList.add('out');n.classList.add('on','in');c=t;
+  updatePg();
+  setTimeout(()=>{o.classList.remove('out');n.classList.remove('in');busy=false},950);
+}
+function goTo(t){go(t)}
+function next(){go(c+1)}
+function prev(){go(c-1)}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();next()}
+  if(e.key==='ArrowLeft'){e.preventDefault();prev()}
+});
+
+let sx=0,sy=0;const bk=document.getElementById('bk');
+bk.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
+bk.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
+  if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>35)dx<0?next():prev();
+},{passive:true});
+
+function switchTab(side){
+  document.querySelectorAll('.ba-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.ba-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tab-'+side).classList.add('active');
+}
+
+function copyAcct(btn,acct){
+  navigator.clipboard.writeText(acct).then(()=>{
+    btn.textContent='Done';btn.classList.add('done');
+    setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('done')},1500);
+  });
+}
+
+(function(){
+  const w=new Date('2026-05-23T14:00:00+09:00'),n=new Date();
+  const d=Math.ceil((w-n)/(864e5)),el=document.getElementById('dday');
+  if(d>0)el.textContent='D-'+d;
+  else if(d===0)el.textContent='D-DAY';
+  else el.textContent='D+'+Math.abs(d);
+})();
+
+updatePg();
+</script>
+</body>
+</html>

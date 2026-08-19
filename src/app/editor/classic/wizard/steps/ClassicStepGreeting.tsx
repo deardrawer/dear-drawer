@@ -58,6 +58,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
                 { id: 'parents', label: '부모님 성함 (양가)' },
                 { id: 'couple', label: '신랑 · 신부 올림' },
                 { id: 'hosts', label: '신랑측 / 신부측 혼주 올림' },
+                { id: 'none', label: '서명 없음' },
               ] as const).map((opt) => {
                 const active = (data.content.classicLetterSign || 'parents') === opt.id
                 return (
@@ -98,7 +99,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
               </div>
             </div>
           )}
-          {(data.content.classicLetterSign || 'parents') !== 'couple' && (
+          {['parents', 'hosts'].includes(data.content.classicLetterSign || 'parents') && (
           <div>
             <span className="text-sm font-medium text-gray-700">고인 표시 스타일</span>
             <div className="mt-1 inline-flex rounded-lg border border-gray-200 overflow-hidden">
@@ -188,6 +189,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
           {([
             { id: 'each', label: '각자' },
             { id: 'together', label: '함께' },
+            { id: 'nameOnly', label: '이름만' },
           ] as const).map((opt) => {
             const active = (data.content.classicIntroMode || 'each') === opt.id
             return (
@@ -296,7 +298,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
               </div>
             </div>
           </div>
-        ) : (
+        ) : (data.content.classicIntroMode || 'each') === 'together' ? (
           <div className="rounded-lg border border-gray-200 p-4 bg-gray-50/50 space-y-3">
             <p className="text-sm font-medium text-gray-700">함께 사진 · 소개 문구</p>
             <div>
@@ -332,7 +334,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
               />
             </div>
           </div>
-        )}
+        ) : null}
 
         <div className="space-y-3 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
           <div>

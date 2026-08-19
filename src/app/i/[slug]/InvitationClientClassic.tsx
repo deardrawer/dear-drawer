@@ -138,6 +138,8 @@ const CLASSIC_STYLES = `
   @keyframes cl-nudge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
   @keyframes cl-seal-in { 0% { opacity: 0; transform: translateY(18px) scale(.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
   @keyframes cl-flip-enter { 0% { opacity: 0; transform: translateY(44px) scale(.9); filter: blur(7px); } 55% { opacity: 1; filter: blur(0); } 100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
+  /* 잉크 스밈: 흐릿하게 인쇄된 상태 → 서서히 진해짐 (빈 종이처럼 보이지 않게 시작 opacity 유지) */
+  @keyframes cl-ink-in { 0% { opacity: .18; filter: blur(4px); } 60% { filter: blur(0); } 100% { opacity: 1; filter: blur(0); } }
   @keyframes cl-caret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
   .cl-scroll::-webkit-scrollbar { display: none; }
 `
@@ -874,8 +876,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                 <div onClick={() => { if (fold === 0) { setFold(1); window.setTimeout(() => setFold(2), 1100) } }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', position: 'relative', cursor: fold === 0 ? 'pointer' : 'default' }}>
                   <div style={{ width: 270, background: PAPER, boxShadow: '0 26px 44px -32px rgba(53,23,20,.6)', animation: 'cl-flip-enter 1.25s cubic-bezier(.22,.61,.36,1) .15s both' }}>
                     <div style={{ padding: '34px 26px', textAlign: 'center', borderBottom: `1px solid ${openInkA(0.1)}` }}>
-                      <p style={label(9, 0.44, openInkA(0.5))}>{nameCase('INVITATION')}</p>
-                      <h1 style={{ margin: '18px 0 0', fontFamily: nameFont, fontSize: 30, lineHeight: 1.16, color: openInk }}>{nameGroom}<br />{nameBride}</h1>
+                      <p style={{ ...label(9, 0.44, openInkA(0.5)), animation: 'cl-ink-in .9s ease .5s both' }}>{nameCase('INVITATION')}</p>
+                      <h1 style={{ margin: '18px 0 0', fontFamily: nameFont, fontSize: 30, lineHeight: 1.16, color: openInk, animation: 'cl-ink-in 1.3s ease .68s both' }}>{nameGroom}<br />{nameBride}</h1>
                     </div>
                     <div style={{ maxHeight: fold >= 1 ? 260 : 0, overflow: 'hidden', transition: 'max-height 1s cubic-bezier(.4,.1,.2,1)' }}>
                       <div style={{ padding: '30px 26px 32px', textAlign: 'center', borderBottom: `1px solid ${openInkA(0.1)}`, transform: fold >= 1 ? 'translateY(0)' : 'translateY(26px)', opacity: fold >= 1 ? 1 : 0, transition: 'transform .8s cubic-bezier(.22,.61,.36,1) .2s, opacity .6s ease .2s' }}>
@@ -903,8 +905,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                   <div style={{ position: 'relative', width: 250, height: 330, transformStyle: 'preserve-3d', transform: flip ? 'rotateY(180deg)' : 'rotateY(0deg)', transition: 'transform 1.2s cubic-bezier(.4,.1,.2,1)', boxShadow: '0 30px 44px -30px rgba(53,23,20,.7)' }}>
                     <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', background: PAPER, padding: '11px 11px 74px', boxSizing: 'border-box' }}>
                       <div style={{ width: '100%', height: '100%', ...cropBg(cc.classicFlipPhoto, bgPhoto(0, { backgroundPosition: '50% 34%' }), { backgroundPosition: '50% 34%' }), filter: 'saturate(.7)' }} />
-                      <p style={{ margin: '14px 0 0', textAlign: 'center', fontFamily: nameFont, fontSize: 20, letterSpacing: '.06em', color: openInk }}>{nameGroom} &amp; {nameBride}</p>
-                      <p style={{ margin: '8px 0 0', textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(11), color: openInkA(0.5) }}>{cc.classicInfoStartText || '예식정보 바로보기'} <span style={{ opacity: 0.7 }}>(클릭)</span></p>
+                      <p style={{ margin: '14px 0 0', textAlign: 'center', fontFamily: nameFont, fontSize: 20, letterSpacing: '.06em', color: openInk, animation: 'cl-ink-in 1.3s ease .58s both' }}>{nameGroom} &amp; {nameBride}</p>
+                      <p style={{ margin: '8px 0 0', textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(11), color: openInkA(0.5), animation: 'cl-ink-in 1s ease 1.05s both' }}>{cc.classicInfoStartText || '예식정보 바로보기'} <span style={{ opacity: 0.7 }}>(클릭)</span></p>
                     </div>
                     <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', transform: 'rotateY(180deg)', background: PAPER, backgroundImage: 'repeating-linear-gradient(135deg,rgba(53,23,20,.022) 0 1px,transparent 1px 7px)', boxSizing: 'border-box', padding: 14 }}>
                       <div style={{ position: 'relative', width: '100%', height: '100%', border: `1px solid ${openInkA(0.2)}`, boxSizing: 'border-box', padding: '22px 20px', display: 'flex', flexDirection: 'column' }}>

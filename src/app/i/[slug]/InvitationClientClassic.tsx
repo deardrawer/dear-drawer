@@ -140,6 +140,21 @@ const CLASSIC_STYLES = `
   @keyframes cl-flip-enter { 0% { opacity: 0; transform: translateY(44px) scale(.9); filter: blur(7px); } 55% { opacity: 1; filter: blur(0); } 100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
   /* 잉크 스밈: 흐릿하게 인쇄된 상태 → 서서히 진해짐 (빈 종이처럼 보이지 않게 시작 opacity 유지) */
   @keyframes cl-ink-in { 0% { opacity: .18; filter: blur(4px); } 60% { filter: blur(0); } 100% { opacity: 1; filter: blur(0); } }
+  /* ===== 오프닝 5종 시그니처 등장 ===== */
+  /* 프레임: 엠보스 프레임이 줌아웃되며 안착 */
+  @keyframes cl-frame-in { 0% { opacity: 0; transform: scale(1.05); } 100% { opacity: 1; transform: scale(1); } }
+  /* 이름 타이포: 넓은 자간에서 좁혀지며 잉크처럼 맺힘 (100% 생략 → 원래 자간으로 수렴) */
+  @keyframes cl-letters { 0% { opacity: 0; letter-spacing: .24em; filter: blur(7px); } 62% { opacity: 1; filter: blur(0); } }
+  /* 실링: 봉투가 살짝 기울며 떠올라 안착 */
+  @keyframes cl-env-in { 0% { opacity: 0; transform: translateY(64px) rotate(3deg) scale(.94); filter: blur(6px); } 60% { opacity: 1; filter: blur(0); } 100% { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); filter: blur(0); } }
+  /* 실링: 인장이 도장 찍히듯 눌림 (압인 — 바운스 아님) */
+  @keyframes cl-stamp { 0% { opacity: 0; transform: scale(2.1); filter: blur(3px); } 55% { opacity: 1; transform: scale(.93); filter: blur(0); } 100% { opacity: 1; transform: scale(1); } }
+  /* 트레이싱지: 서리 뒤 사진이 숨쉬듯 천천히 정착 (Ken Burns) */
+  @keyframes cl-kenburns { 0% { transform: scale(1.12); } 100% { transform: scale(1); } }
+  /* 접힌 편지: 종이가 위에서 살짝 기울며 낙하해 안착 */
+  @keyframes cl-paper-drop { 0% { opacity: 0; transform: translateY(-54px) rotate(-4.5deg); filter: blur(5px); } 62% { opacity: 1; filter: blur(0); } 100% { opacity: 1; transform: translateY(0) rotate(0deg); } }
+  /* 사진 뒤집기: 카드가 3D로 스윙하며 들어옴 (뒤집기 인터랙션 예고) */
+  @keyframes cl-swing-in { 0% { opacity: 0; transform: perspective(1200px) rotateY(-42deg) translateY(26px) scale(.95); filter: blur(5px); } 62% { opacity: 1; filter: blur(0); } 100% { opacity: 1; transform: perspective(1200px) rotateY(0deg) translateY(0) scale(1); filter: blur(0); } }
   @keyframes cl-caret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
   .cl-scroll::-webkit-scrollbar { display: none; }
 `
@@ -796,7 +811,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         <section data-scene="opening" style={{ position: 'relative', minHeight: isPreview ? '100%' : '100vh', height: isPreview ? '100%' : undefined, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '76px 30px 70px', background: isDarkOpening ? DARK_PHOTO : openBg, overflow: 'hidden' }}>
           {openBgImg && openingStyle !== '프레임' && <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${openBgImg})`, backgroundSize: 'cover', backgroundPosition: 'center', pointerEvents: 'none' }} />}
           {/* 엠보스 프레임 — 프레임(바로시작) 전용 · 배경색 위 multiply 오버레이 (frame1/frame2) */}
-          {openingStyle === '프레임' && openFrame !== 'none' && <div style={{ position: 'absolute', inset: 0, backgroundImage: `url('/classic/${openFrame}.webp')`, backgroundSize: '100% 100%', mixBlendMode: 'multiply', pointerEvents: 'none' }} />}
+          {openingStyle === '프레임' && openFrame !== 'none' && <div style={{ position: 'absolute', inset: 0, backgroundImage: `url('/classic/${openFrame}.webp')`, backgroundSize: '100% 100%', mixBlendMode: 'multiply', pointerEvents: 'none', animation: 'cl-frame-in 1.6s cubic-bezier(.22,.61,.36,1) .1s both' }} />}
 
           {/* 리본 매듭·접힌 편지·사진 뒤집기: 처음엔 배경 살짝 어둡게 → 상호작용 시 밝아짐 (카드는 위에 떠 있음) */}
           {(openingStyle === '실링' || openingStyle === '접힌 편지' || openingStyle === '사진 뒤집기') && infoPhotoOp > 0 && (
@@ -808,7 +823,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
 
           {openingStyle === '트레이싱지' ? (
             <div data-intro-inner onClick={() => setFrost(true)} style={{ position: 'absolute', inset: 0, cursor: 'pointer', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', inset: 0, ...(openBgImg ? bgOf(openBgImg, { backgroundPosition: '52% 38%' }) : bgPhoto(0, { backgroundPosition: '52% 38%' })) }} />
+              <div style={{ position: 'absolute', inset: 0, ...(openBgImg ? bgOf(openBgImg, { backgroundPosition: '52% 38%' }) : bgPhoto(0, { backgroundPosition: '52% 38%' })), animation: 'cl-kenburns 7s ease-out .2s both', willChange: 'transform' }} />
               {traceVeilOp > 0 && <div style={{ position: 'absolute', inset: 0, background: traceVeil, opacity: traceVeilOp, pointerEvents: 'none' }} />}
               <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
                 <p style={{ ...label(9.5, 0.46, ivoryA(0.85)), textShadow: '0 1px 10px rgba(20,10,8,.55)', animation: frost ? 'cl-fade-soft .9s ease .35s both' : undefined }}>{nameCase('WE INVITE YOU')}</p>
@@ -829,7 +844,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                 <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', minHeight: 470 }}>
                   <div style={{ position: 'relative', textAlign: 'center' }}>
                     <p style={{ ...label(9.5, 0.46, frameInkA(0.5)), animation: 'cl-fade-soft .9s ease .2s both' }}>{nameCase('WE INVITE YOU')}</p>
-                    <h1 style={{ margin: '22px 0 0', fontFamily: nameFont, fontWeight: 400, fontSize: nameLang === 'ko' ? 34 : 44, lineHeight: 1.12, letterSpacing: nameLang === 'ko' ? '.02em' : '.03em', color: frameInk, animation: 'cl-emerge 1.25s cubic-bezier(.22,.61,.36,1) .45s both' }}>{nameGroom}<span style={{ display: 'block', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 20, letterSpacing: 0, opacity: 0.55, margin: '10px 0', lineHeight: 1 }}>and</span>{nameBride}</h1>
+                    <h1 style={{ margin: '22px 0 0', fontFamily: nameFont, fontWeight: 400, fontSize: nameLang === 'ko' ? 34 : 44, lineHeight: 1.12, letterSpacing: nameLang === 'ko' ? '.02em' : '.03em', color: frameInk, animation: 'cl-letters 1.5s cubic-bezier(.22,.61,.36,1) .45s both' }}>{nameGroom}<span style={{ display: 'block', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 20, letterSpacing: 0, opacity: 0.55, margin: '10px 0', lineHeight: 1 }}>and</span>{nameBride}</h1>
                     <div style={{ width: 1, height: 34, background: frameInkA(0.22), margin: '26px auto', transformOrigin: 'center', animation: 'cl-line-grow .85s ease .95s both' }} />
                     <p style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(14), letterSpacing: '.04em', color: frameInk, animation: 'cl-fade-soft 1s ease 1.2s both' }}>{dateFullKo}</p>
                     <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(12), letterSpacing: '.02em', color: frameInkA(0.7), animation: 'cl-fade-soft 1s ease 1.35s both' }}>{timeDisplay} · {venueName}</p>
@@ -840,7 +855,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
               {/* 실링 — 편지봉투 안에서 편지(이름 카드)가 올라오는 연출 */}
               {openingStyle === '실링' && (
                 <div onClick={() => setRibbon(true)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', position: 'relative', minHeight: 470, cursor: ribbon ? 'default' : 'pointer' }}>
-                  <div style={{ position: 'relative', width: 344, aspectRatio: '760 / 790', animation: 'cl-seal-in 1s cubic-bezier(.22,.61,.36,1) .2s both' }}>
+                  <div style={{ position: 'relative', width: 344, aspectRatio: '760 / 790', animation: 'cl-env-in 1.15s cubic-bezier(.22,.61,.36,1) .15s both' }}>
                     {/* (뒤) 열린 봉투 LT1 — 열릴 때 */}
                     <div style={{ position: 'absolute', inset: 0, zIndex: 1, backgroundImage: "url('/classic/lt-open.webp')", backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', filter: 'drop-shadow(0 22px 34px rgba(53,23,20,.28))', opacity: ribbon ? 1 : 0, transform: ribbon ? 'scale(1)' : 'scale(1.02)', transformOrigin: '50% 42%', transition: 'opacity .6s ease .4s, transform .8s cubic-bezier(.22,.61,.36,1) .4s' }} />
                     {/* (중간) 편지 이름 카드 — 불투명 · 슬라이드 없이 위→아래로 나타남 */}
@@ -858,26 +873,26 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                     {/* (앞) 봉투 앞주머니 LT2 — 편지 아래를 가려 봉투 속처럼 보이게 */}
                     <div style={{ position: 'absolute', inset: 0, zIndex: 3, backgroundImage: "url('/classic/lt-front.webp')", backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', opacity: ribbon ? 1 : 0, transform: ribbon ? 'scale(1)' : 'scale(1.02)', transformOrigin: '50% 42%', transition: 'opacity .6s ease .4s, transform .8s cubic-bezier(.22,.61,.36,1) .4s', pointerEvents: 'none' }} />
                     {/* (맨앞) 닫힌 봉투 커버 LETTER + 인장 — 열면 페이드 */}
-                    <div style={{ position: 'absolute', inset: 0, zIndex: 4, opacity: ribbon ? 0 : 1, transform: ribbon ? 'translateY(14px) scale(.985)' : 'none', transformOrigin: '50% 60%', transition: 'opacity .5s ease .3s, transform .75s cubic-bezier(.4,.1,.2,1) .3s', pointerEvents: 'none' }}>
+                    <div style={{ position: 'absolute', inset: 0, zIndex: 4, opacity: ribbon ? 0 : 1, transform: ribbon ? 'translateY(14px) scale(.83)' : 'scale(.84)', transformOrigin: '50% 60%', transition: 'opacity .5s ease .3s, transform .75s cubic-bezier(.4,.1,.2,1) .3s', pointerEvents: 'none' }}>
                       <div style={{ position: 'absolute', inset: 0, backgroundImage: "url('/classic/letter.webp')", backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', filter: 'drop-shadow(0 22px 34px rgba(53,23,20,.3))' }} />
-                      <div style={{ position: 'absolute', left: '50%', top: '60%', width: 74, height: 74, marginLeft: -37, marginTop: -37, filter: 'drop-shadow(0 8px 13px rgba(53,23,20,.45))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ position: 'absolute', left: '50%', top: '60%', width: 74, height: 74, marginLeft: -37, marginTop: -37, filter: 'drop-shadow(0 8px 13px rgba(53,23,20,.45))', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'cl-stamp .65s cubic-bezier(.3,.1,.25,1) 1.25s both' }}>
                         <div style={{ position: 'absolute', inset: 0, backgroundImage: "url('/classic/shilling.webp')", backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center' }} />
                         {sealColor && <div style={{ position: 'absolute', inset: 0, backgroundColor: sealColor, mixBlendMode: 'multiply', WebkitMaskImage: "url('/classic/shilling.webp')", maskImage: "url('/classic/shilling.webp')", WebkitMaskSize: 'contain', maskSize: 'contain', WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat', WebkitMaskPosition: 'center', maskPosition: 'center' }} />}
                         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: F_DISPLAY, fontSize: 12, letterSpacing: '.12em', paddingLeft: '.12em', color: sealMono }}>{groomEn.charAt(0)}&nbsp;{brideEn.charAt(0)}</div>
                       </div>
                     </div>
                   </div>
-                  <p style={{ position: 'absolute', bottom: 22, left: 0, right: 0, margin: 0, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(14), lineHeight: 1.7, color: 'rgba(250,247,242,.9)', textShadow: '0 1px 6px rgba(20,10,8,.5)', opacity: ribbon ? 0 : 1, transition: 'opacity .5s ease', animation: 'cl-fade-soft .9s ease .9s backwards' }}>편지가 도착했어요.<br />클릭하여 편지를 열어주세요.</p>
+                  <p style={{ position: 'absolute', bottom: 22, left: 0, right: 0, margin: 0, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(14), lineHeight: 1.7, color: 'rgba(250,247,242,.9)', textShadow: '0 1px 6px rgba(20,10,8,.5)', opacity: ribbon ? 0 : 1, transition: 'opacity .5s ease', animation: 'cl-fade-soft .9s ease 1.8s backwards' }}>편지가 도착했어요.<br />클릭하여 편지를 열어주세요.</p>
                 </div>
               )}
 
               {/* 접힌 편지 */}
               {openingStyle === '접힌 편지' && (
                 <div onClick={() => { if (fold === 0) { setFold(1); window.setTimeout(() => setFold(2), 1100) } }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', position: 'relative', cursor: fold === 0 ? 'pointer' : 'default' }}>
-                  <div style={{ width: 270, background: PAPER, boxShadow: '0 26px 44px -32px rgba(53,23,20,.6)', animation: 'cl-flip-enter 1.25s cubic-bezier(.22,.61,.36,1) .15s both' }}>
+                  <div style={{ width: 270, background: PAPER, boxShadow: '0 26px 44px -32px rgba(53,23,20,.6)', animation: 'cl-paper-drop 1.15s cubic-bezier(.22,.61,.36,1) .15s both' }}>
                     <div style={{ padding: '34px 26px', textAlign: 'center', borderBottom: `1px solid ${openInkA(0.1)}` }}>
-                      <p style={{ ...label(9, 0.44, openInkA(0.5)), animation: 'cl-ink-in .9s ease .5s both' }}>{nameCase('INVITATION')}</p>
-                      <h1 style={{ margin: '18px 0 0', fontFamily: nameFont, fontSize: 30, lineHeight: 1.16, color: openInk, animation: 'cl-ink-in 1.3s ease .68s both' }}>{nameGroom}<br />{nameBride}</h1>
+                      <p style={{ ...label(9, 0.44, openInkA(0.5)), animation: 'cl-ink-in .9s ease .7s both' }}>{nameCase('INVITATION')}</p>
+                      <h1 style={{ margin: '18px 0 0', fontFamily: nameFont, fontSize: 30, lineHeight: 1.16, color: openInk, animation: 'cl-ink-in 1.3s ease .88s both' }}>{nameGroom}<br />{nameBride}</h1>
                     </div>
                     <div style={{ maxHeight: fold >= 1 ? 260 : 0, overflow: 'hidden', transition: 'max-height 1s cubic-bezier(.4,.1,.2,1)' }}>
                       <div style={{ padding: '30px 26px 32px', textAlign: 'center', borderBottom: `1px solid ${openInkA(0.1)}`, transform: fold >= 1 ? 'translateY(0)' : 'translateY(26px)', opacity: fold >= 1 ? 1 : 0, transition: 'transform .8s cubic-bezier(.22,.61,.36,1) .2s, opacity .6s ease .2s' }}>
@@ -901,12 +916,12 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
 
               {/* 사진 뒤집기 */}
               {openingStyle === '사진 뒤집기' && (
-                <div onClick={() => setFlip((v) => !v)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', perspective: '1200px', cursor: 'pointer', animation: 'cl-flip-enter 1.25s cubic-bezier(.22,.61,.36,1) .15s both' }}>
+                <div onClick={() => setFlip((v) => !v)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', perspective: '1200px', cursor: 'pointer', animation: 'cl-swing-in 1.35s cubic-bezier(.22,.61,.36,1) .15s both' }}>
                   <div style={{ position: 'relative', width: 250, height: 330, transformStyle: 'preserve-3d', transform: flip ? 'rotateY(180deg)' : 'rotateY(0deg)', transition: 'transform 1.2s cubic-bezier(.4,.1,.2,1)', boxShadow: '0 30px 44px -30px rgba(53,23,20,.7)' }}>
                     <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', background: PAPER, padding: '11px 11px 74px', boxSizing: 'border-box' }}>
                       <div style={{ width: '100%', height: '100%', ...cropBg(cc.classicFlipPhoto, bgPhoto(0, { backgroundPosition: '50% 34%' }), { backgroundPosition: '50% 34%' }), filter: 'saturate(.7)' }} />
-                      <p style={{ margin: '14px 0 0', textAlign: 'center', fontFamily: nameFont, fontSize: 20, letterSpacing: '.06em', color: openInk, animation: 'cl-ink-in 1.3s ease .58s both' }}>{nameGroom} &amp; {nameBride}</p>
-                      <p style={{ margin: '8px 0 0', textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(11), color: openInkA(0.5), animation: 'cl-ink-in 1s ease 1.05s both' }}>{cc.classicInfoStartText || '예식정보 바로보기'} <span style={{ opacity: 0.7 }}>(클릭)</span></p>
+                      <p style={{ margin: '14px 0 0', textAlign: 'center', fontFamily: nameFont, fontSize: 20, letterSpacing: '.06em', color: openInk, animation: 'cl-ink-in 1.3s ease .75s both' }}>{nameGroom} &amp; {nameBride}</p>
+                      <p style={{ margin: '8px 0 0', textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(11), color: openInkA(0.5), animation: 'cl-ink-in 1s ease 1.2s both' }}>{cc.classicInfoStartText || '예식정보 바로보기'} <span style={{ opacity: 0.7 }}>(클릭)</span></p>
                     </div>
                     <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', transform: 'rotateY(180deg)', background: PAPER, backgroundImage: 'repeating-linear-gradient(135deg,rgba(53,23,20,.022) 0 1px,transparent 1px 7px)', boxSizing: 'border-box', padding: 14 }}>
                       <div style={{ position: 'relative', width: '100%', height: '100%', border: `1px solid ${openInkA(0.2)}`, boxSizing: 'border-box', padding: '22px 20px', display: 'flex', flexDirection: 'column' }}>

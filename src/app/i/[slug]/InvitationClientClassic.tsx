@@ -72,9 +72,16 @@ const CLASSIC_STYLES = `
   /* 스밈 계열: 세리프/이탤릭 문구가 잉크처럼 번지며 안착 (blur는 6px로 GPU 절제) */
   .cl-reveal.cl-blur { transform: translateY(14px) scale(.99); filter: blur(6px); }
   .cl-reveal.cl-blur.is-in { transform: none; filter: blur(0); transition: opacity 1.5s ease, transform 1.5s cubic-bezier(.22,.61,.36,1), filter 1.4s ease; }
-  /* 긋기 계열: 마스크/선이 그어지며 프레임·사진이 드러남 */
-  .cl-reveal.cl-clip { opacity: 1; transform: none; clip-path: inset(0 0 100% 0); }
-  .cl-reveal.cl-clip.is-in { opacity: 1; clip-path: inset(0 0 0 0); transition: clip-path 1.2s cubic-bezier(.22,.61,.36,1); }
+  /* 긋기 계열: 마스크가 걷히며 사진이 드러나고, 그 안에서 사진이 숨쉬듯 정착 (scale 1.04→1) */
+  .cl-reveal.cl-clip { opacity: 1; transform: scale(1.04); clip-path: inset(0 0 100% 0); }
+  .cl-reveal.cl-clip.is-in { opacity: 1; transform: scale(1); clip-path: inset(0 0 0 0); transition: clip-path 1.25s cubic-bezier(.22,.61,.36,1), transform 1.7s cubic-bezier(.22,.61,.36,1); }
+  /* 방향 변형: 좌→우 / 우→좌 / 아래→위 커튼 리빌 (갤러리 에디토리얼 리듬) */
+  .cl-reveal.cl-clip-l { opacity: 1; transform: scale(1.04); clip-path: inset(0 100% 0 0); }
+  .cl-reveal.cl-clip-l.is-in { opacity: 1; transform: scale(1); clip-path: inset(0 0 0 0); transition: clip-path 1.25s cubic-bezier(.22,.61,.36,1), transform 1.7s cubic-bezier(.22,.61,.36,1); }
+  .cl-reveal.cl-clip-r { opacity: 1; transform: scale(1.04); clip-path: inset(0 0 0 100%); }
+  .cl-reveal.cl-clip-r.is-in { opacity: 1; transform: scale(1); clip-path: inset(0 0 0 0); transition: clip-path 1.25s cubic-bezier(.22,.61,.36,1), transform 1.7s cubic-bezier(.22,.61,.36,1); }
+  .cl-reveal.cl-clip-up { opacity: 1; transform: scale(1.04); clip-path: inset(100% 0 0 0); }
+  .cl-reveal.cl-clip-up.is-in { opacity: 1; transform: scale(1); clip-path: inset(0 0 0 0); transition: clip-path 1.25s cubic-bezier(.22,.61,.36,1), transform 1.7s cubic-bezier(.22,.61,.36,1); }
   .cl-reveal.cl-line { opacity: 1; transform: scaleY(0); transform-origin: top; }
   .cl-reveal.cl-line.is-in { opacity: 1; transform: scaleY(1); transition: transform 1.1s cubic-bezier(.22,.61,.36,1); }
   .cl-reveal.cl-linex { opacity: 1; transform: scaleX(0); transform-origin: left; }
@@ -82,6 +89,9 @@ const CLASSIC_STYLES = `
   /* 정적 계열: 이동 없이 조용히 떠오르는 fade (감사·푸터 등 "움직이지 않는 순간") */
   .cl-reveal.cl-fade { transform: none; }
   .cl-reveal.cl-fade.is-in { transform: none; transition: opacity 1.7s ease; }
+  /* 필름 현상: 흑백의 밝은 인화지 상태에서 색이 차오르며 선명해짐 (이동 없음 — 갤러리 시그니처) */
+  .cl-reveal.cl-develop { opacity: 1; transform: none; filter: grayscale(1) brightness(1.14) contrast(.95); }
+  .cl-reveal.cl-develop.is-in { opacity: 1; transform: none; filter: grayscale(0) brightness(1) contrast(1); transition: filter 1.9s ease; }
   /* 잔잔·고급 전용 변형 (달력 섹션 등) */
   .cl-reveal.cl-soft { transform: scale(.98); }
   .cl-reveal.cl-soft.is-in { transform: none; transition: opacity .6s ease, transform .6s cubic-bezier(.22,.61,.36,1); }
@@ -104,8 +114,12 @@ const CLASSIC_STYLES = `
     .cl-reveal.cl-zoom, .cl-reveal.cl-zoom.is-in,
     .cl-reveal.cl-blur, .cl-reveal.cl-blur.is-in,
     .cl-reveal.cl-clip, .cl-reveal.cl-clip.is-in,
+    .cl-reveal.cl-clip-l, .cl-reveal.cl-clip-l.is-in,
+    .cl-reveal.cl-clip-r, .cl-reveal.cl-clip-r.is-in,
+    .cl-reveal.cl-clip-up, .cl-reveal.cl-clip-up.is-in,
     .cl-reveal.cl-line, .cl-reveal.cl-line.is-in,
     .cl-reveal.cl-fade, .cl-reveal.cl-fade.is-in,
+    .cl-reveal.cl-develop, .cl-reveal.cl-develop.is-in,
     .cl-reveal.cl-soft, .cl-reveal.cl-soft.is-in,
     .cl-reveal.cl-rise, .cl-reveal.cl-rise.is-in,
     .cl-reveal.cl-linex, .cl-reveal.cl-linex.is-in,
@@ -328,11 +342,13 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   const venueName = venue.name || '더 클래식 하우스'
   const venueHall = venue.hall || ''
   const venueAddress = venue.address || '서울 중구 정동길 24'
-  const venueFull = [venueAddress, venueHall].filter(Boolean).join(' · ')
+  const venueFull = [venueHall, venueAddress].filter(Boolean).join(' · ')
 
   // 카카오맵 (다른 템플릿과 동일: 주소 지오코딩 → 지도+마커+말풍선). 실패 시 mapError로 폴백.
+  // 주의: 인트로 페이지에서는 지도 컨테이너가 렌더되지 않으므로 page가 main일 때 초기화해야 함
   useEffect(() => {
     if (!venueAddress) return
+    if (page !== 'main') return
     let cancelled = false
     const initMap = () => {
       if (cancelled) return
@@ -371,7 +387,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
       document.head.appendChild(script)
     }
     return () => { cancelled = true }
-  }, [venueAddress, venueName])
+  }, [venueAddress, venueName, page])
 
   // 인사말 배경 (크롭 사진 + 오버레이 색상/투명도)
   const greetingOverlay: string = cc.classicGreetingOverlayColor || '#241610'
@@ -662,7 +678,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         window.setTimeout(() => el.classList.add('is-in'), d)
         io.unobserve(el)
       })
-    }, { threshold: 0.15, rootMargin: '0px 0px -6% 0px' })
+    }, { threshold: 0.15, rootMargin: '0px 0px -18% 0px' })
     root.querySelectorAll<HTMLElement>('.cl-reveal').forEach((el) => io.observe(el))
 
     let ticking = false
@@ -691,7 +707,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
       // 리빌 폴백 (옵저버 누락 대비: 화면에 들어온 요소는 반드시 표시)
       root.querySelectorAll<HTMLElement>('.cl-reveal:not(.is-in)').forEach((el) => {
         const b = el.getBoundingClientRect()
-        if (b.top < window.innerHeight * 0.94 && b.bottom > 0) {
+        if (b.top < window.innerHeight * 0.84 && b.bottom > 0) {
           const d = parseInt(el.dataset.delay || '0', 10)
           window.setTimeout(() => el.classList.add('is-in'), d)
         }
@@ -906,7 +922,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                         <p style={label(9, 0.44, ivoryA(0.6))}>{nameCase('LOCATION')}</p>
                         <p style={{ margin: '14px 0 0', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 24, color: IVORY }}>{venueName}</p>
                         <div style={{ width: 24, height: 1, background: ivoryA(0.3), margin: '18px auto' }} />
-                        <p style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.95, color: ivoryA(0.78), wordBreak: 'keep-all' }}>{venueFull}</p>
+                        <p style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.95, color: ivoryA(0.78), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{venueFull}</p>
                       </div>
                     </div>
                   </div>
@@ -936,7 +952,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                           </div>
                           <div style={{ display: 'flex', gap: 10, alignItems: 'baseline' }}>
                             <span style={{ flex: '0 0 34px', fontFamily: F_LABEL, fontSize: lfs(7.5), letterSpacing: '.28em', color: openInkA(0.42) }}>{nameCase('PLACE')}</span>
-                            <span style={{ fontFamily: F_BODY, fontSize: bfs(11.5), lineHeight: 1.7, color: openInkA(0.75), wordBreak: 'keep-all' }}>{venueFull}</span>
+                            <span style={{ fontFamily: F_BODY, fontSize: bfs(11.5), lineHeight: 1.7, color: openInkA(0.75), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{venueFull}</span>
                           </div>
                         </div>
                         <div style={{ position: 'absolute', right: 16, bottom: 16, width: 44, height: 44, borderRadius: '50%', border: `1px solid ${openInkA(0.25)}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 13, color: openInkA(0.5) }}>C&amp;E</div>
@@ -1081,14 +1097,14 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         <section style={{ order: orderOf('gallery'), padding: '82px 0 88px', background: IVORY, ...hide('gallery'), ...tintBg('gallery') }}>
           {galType === 'default' && (() => { const inkA = (a: number) => fgA('gallery', a); return (<>
           <p className="cl-reveal cl-up" style={{ ...label(13, 0.44, inkA(0.45)), margin: '0 30px 32px' }}>{nameCase('GALLERY')}</p>
-          <div className="cl-reveal cl-clip" onClick={() => openLightbox(0)} style={{ margin: '0 30px', aspectRatio: '3/4', cursor: 'pointer', ...cropBg(galItem(0), { background: DEEP_BEIGE }, { backgroundPosition: '50% 36%' }) }} />
+          <div className="cl-reveal cl-develop" onClick={() => openLightbox(0)} style={{ margin: '0 30px', aspectRatio: '3/4', cursor: 'pointer', ...cropBg(galItem(0), { background: DEEP_BEIGE }, { backgroundPosition: '50% 36%' }) }} />
           <p className="cl-reveal cl-blur" data-delay="140" style={{ margin: '20px 30px 0', textAlign: 'right', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 16, color: inkA(0.6) }}>a quiet afternoon in June</p>
-          <div className="cl-reveal cl-clip" data-delay="200" onClick={() => openLightbox(1)} style={{ margin: '46px 30px 0', aspectRatio: '4/3', cursor: 'pointer', ...cropBg(galItem(1), { background: DEEP_BEIGE }, { backgroundPosition: '26% 46%' }), filter: 'saturate(.68)' }} />
+          <div className="cl-reveal cl-develop" data-delay="200" onClick={() => openLightbox(1)} style={{ margin: '46px 30px 0', aspectRatio: '4/3', cursor: 'pointer', ...cropBg(galItem(1), { background: DEEP_BEIGE }, { backgroundPosition: '26% 46%' }) }} />
           <div style={{ position: 'relative', height: 310, margin: '54px 30px 0' }}>
-            <div className="cl-reveal cl-clip" data-delay="120" onClick={() => openLightbox(2)} style={{ position: 'absolute', left: 0, top: 0, width: '58%', aspectRatio: '3/4', cursor: 'pointer', ...cropBg(galItem(2), { background: DEEP_BEIGE }, { backgroundPosition: '60% 30%' }) }} />
-            <div className="cl-reveal cl-clip" data-delay="420" onClick={() => openLightbox(3)} style={{ position: 'absolute', right: 0, bottom: 0, width: '52%', aspectRatio: '1/1', cursor: 'pointer', ...cropBg(galItem(3), { background: DEEP_BEIGE }, { backgroundPosition: '40% 60%' }), border: `7px solid ${PAPER}`, filter: 'grayscale(.3)' }} />
+            <div className="cl-reveal cl-develop" data-delay="120" onClick={() => openLightbox(2)} style={{ position: 'absolute', left: 0, top: 0, width: '58%', aspectRatio: '3/4', cursor: 'pointer', ...cropBg(galItem(2), { background: DEEP_BEIGE }, { backgroundPosition: '60% 30%' }) }} />
+            <div className="cl-reveal cl-develop" data-delay="420" onClick={() => openLightbox(3)} style={{ position: 'absolute', right: 0, bottom: 0, width: '52%', aspectRatio: '1/1', cursor: 'pointer', ...cropBg(galItem(3), { background: DEEP_BEIGE }, { backgroundPosition: '40% 60%' }), border: `7px solid ${secBg('gallery')}` }} />
           </div>
-          <div className="cl-reveal cl-clip" data-delay="200" onClick={() => openLightbox(4)} style={{ margin: '58px 30px 0', aspectRatio: '16/11', cursor: 'pointer', ...cropBg(galItem(4), { background: DEEP_BEIGE }, { backgroundPosition: '50% 44%' }) }} />
+          <div className="cl-reveal cl-develop" data-delay="200" onClick={() => openLightbox(4)} style={{ margin: '58px 30px 0', aspectRatio: '16/11', cursor: 'pointer', ...cropBg(galItem(4), { background: DEEP_BEIGE }, { backgroundPosition: '50% 44%' }) }} />
           <div style={{ padding: '0 30px' }}>{galleryMore(5, 'ink')}</div>
           </>) })()}
 
@@ -1096,19 +1112,19 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           {galType === 'album' && (
             <div style={{ margin: '-82px 0 -88px', padding: '76px 26px 74px', background: PAPER }}>
               <p className="cl-reveal cl-up" style={{ ...label(11, 0.4, fgA('gallery', 0.5)), margin: '0 0 28px' }}>{nameCase('GALLERY')}</p>
-              <div className="cl-reveal cl-clip" style={{ background: '#FFFFFF', padding: '12px 12px 46px', boxShadow: '0 16px 26px -22px rgba(53,23,20,.6)' }}>
+              <div className="cl-reveal cl-develop" style={{ background: '#FFFFFF', padding: '12px 12px 46px', boxShadow: '0 16px 26px -22px rgba(53,23,20,.6)' }}>
                 <div onClick={() => openLightbox(0)} style={{ aspectRatio: '4/5', cursor: 'pointer', ...cropBg(galItem(0), { background: DEEP_BEIGE }) }} />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, margin: '20px 0 0' }}>
-                <div className="cl-reveal cl-clip" data-delay="120" style={{ background: '#FFFFFF', padding: '8px 8px 26px', boxShadow: '0 16px 26px -22px rgba(53,23,20,.6)' }}>
+                <div className="cl-reveal cl-develop" data-delay="120" style={{ background: '#FFFFFF', padding: '8px 8px 26px', boxShadow: '0 16px 26px -22px rgba(53,23,20,.6)' }}>
                   <div onClick={() => openLightbox(1)} style={{ aspectRatio: '1/1', cursor: 'pointer', ...cropBg(galItem(1), { background: DEEP_BEIGE }) }} />
                 </div>
-                <div className="cl-reveal cl-clip" data-delay="220" style={{ marginTop: 26, background: '#FFFFFF', padding: '8px 8px 26px', boxShadow: '0 16px 26px -22px rgba(53,23,20,.6)' }}>
+                <div className="cl-reveal cl-develop" data-delay="220" style={{ marginTop: 26, background: '#FFFFFF', padding: '8px 8px 26px', boxShadow: '0 16px 26px -22px rgba(53,23,20,.6)' }}>
                   <div onClick={() => openLightbox(2)} style={{ aspectRatio: '1/1', cursor: 'pointer', ...cropBg(galItem(2), { background: DEEP_BEIGE }) }} />
                 </div>
               </div>
               <p className="cl-reveal cl-blur" style={{ margin: '32px 0 0', textAlign: 'center', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 16, color: fgA('gallery', 0.6) }}>{galCaption}</p>
-              <div className="cl-reveal cl-clip" style={{ margin: '32px 0 0', background: '#FFFFFF', padding: '10px 10px 38px', boxShadow: '0 20px 32px -26px rgba(53,23,20,.6)' }}>
+              <div className="cl-reveal cl-develop" style={{ margin: '32px 0 0', background: '#FFFFFF', padding: '10px 10px 38px', boxShadow: '0 20px 32px -26px rgba(53,23,20,.6)' }}>
                 <div onClick={() => openLightbox(3)} style={{ aspectRatio: '3/2', cursor: 'pointer', ...cropBg(galItem(3), { background: DEEP_BEIGE }) }} />
               </div>
               {galleryMore(4, 'ink')}
@@ -1125,12 +1141,12 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                 <p style={{ position: 'absolute', left: 24, right: 24, bottom: 20, margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 16, color: ivoryA(0.85) }}>{galCaption}</p>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, marginTop: 2 }}>
-                <div className="cl-reveal cl-clip" onClick={() => openLightbox(1)} style={{ aspectRatio: '3/4', cursor: 'pointer', ...cropBg(galItem(1), bgPhoto(1)) }} />
-                <div className="cl-reveal cl-clip" data-delay="120" onClick={() => openLightbox(2)} style={{ aspectRatio: '3/4', cursor: 'pointer', filter: 'grayscale(.4)', ...cropBg(galItem(2), bgPhoto(2)) }} />
+                <div className="cl-reveal cl-clip-l" onClick={() => openLightbox(1)} style={{ aspectRatio: '3/4', cursor: 'pointer', ...cropBg(galItem(1), bgPhoto(1)) }} />
+                <div className="cl-reveal cl-clip-r" data-delay="120" onClick={() => openLightbox(2)} style={{ aspectRatio: '3/4', cursor: 'pointer', filter: 'grayscale(.4)', ...cropBg(galItem(2), bgPhoto(2)) }} />
               </div>
-              <div className="cl-reveal cl-clip" onClick={() => openLightbox(3)} style={{ height: 300, marginTop: 2, cursor: 'pointer', ...cropBg(galItem(3), bgPhoto(3)) }} />
+              <div className="cl-reveal cl-clip-up" onClick={() => openLightbox(3)} style={{ height: 300, marginTop: 2, cursor: 'pointer', ...cropBg(galItem(3), bgPhoto(3)) }} />
               <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 2, marginTop: 2 }}>
-                <div className="cl-reveal cl-clip" onClick={() => openLightbox(4)} style={{ aspectRatio: '1/1', cursor: 'pointer', ...cropBg(galItem(4), bgPhoto(4)) }} />
+                <div className="cl-reveal cl-clip-l" onClick={() => openLightbox(4)} style={{ aspectRatio: '1/1', cursor: 'pointer', ...cropBg(galItem(4), bgPhoto(4)) }} />
                 <div style={{ background: INK, display: 'flex', alignItems: 'flex-end' }}>
                   <p style={{ margin: 0, padding: '0 0 16px 14px', writingMode: 'vertical-rl', fontFamily: F_LABEL, fontSize: lfs(13), letterSpacing: '.2em', color: ivoryA(0.75) }}>{nameGroom} &amp; {nameBride}</p>
                 </div>
@@ -1146,7 +1162,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                 <p className="cl-reveal cl-up" style={{ ...label(10, 0.4, fgA('gallery', 0.5)), margin: 0 }}>{nameCase('GALLERY')}</p>
                 <p style={{ margin: 0, fontFamily: F_LABEL, fontSize: lfs(11), letterSpacing: '.06em', color: fgA('gallery', 0.5) }}>{galSwipeIdx + 1} / {galCount}</p>
               </div>
-              <div className="cl-reveal cl-clip" onClick={() => openLightbox(galSwipeIdx)} style={{ margin: '26px 0 0', aspectRatio: '3/4', cursor: 'pointer', transition: 'background-position .6s cubic-bezier(.22,.61,.36,1)', ...cropBg(galItem(galSwipeIdx), { background: DEEP_BEIGE }) }} />
+              <div className="cl-reveal cl-clip" onClick={() => openLightbox(galSwipeIdx)} style={{ margin: '26px 0 0', aspectRatio: '3/4', cursor: 'pointer', transition: 'background-position .6s cubic-bezier(.22,.61,.36,1), clip-path 1.25s cubic-bezier(.22,.61,.36,1), transform 1.7s cubic-bezier(.22,.61,.36,1)', ...cropBg(galItem(galSwipeIdx), { background: DEEP_BEIGE }) }} />
               <div style={{ display: 'flex', gap: 10, margin: '18px 0 0' }}>
                 <button type="button" onClick={() => setGalSwipeIdx((i) => (i + galCount - 1) % galCount)} style={{ flex: 1, padding: '11px 0', border: `1px solid ${fgA('gallery', 0.35)}`, background: 'transparent', fontFamily: F_LABEL, fontSize: lfs(10), letterSpacing: '.3em', color: fgC('gallery'), cursor: 'pointer' }}>{nameCase('PREV')}</button>
                 <button type="button" onClick={() => setGalSwipeIdx((i) => (i + 1) % galCount)} style={{ flex: 1, padding: '11px 0', border: 'none', background: INK, fontFamily: F_LABEL, fontSize: lfs(10), letterSpacing: '.3em', color: IVORY, cursor: 'pointer' }}>{nameCase('NEXT')}</button>
@@ -1166,7 +1182,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           {galType === 'film' && (
             <div style={{ margin: '-82px 0 -88px', padding: '76px 0 74px', background: IVORY }}>
               <p className="cl-reveal cl-up" style={{ ...label(11, 0.4, fgA('gallery', 0.5)), margin: '0 26px 24px' }}>{nameCase('GALLERY')}</p>
-              <div className="cl-film-row cl-reveal cl-zoom">
+              <div className="cl-film-row cl-reveal cl-clip-l">
                 <div className="cl-film-track cl-film-track--l">
                   {[0, 1, 2, 3, 0, 1, 2, 3].map((i, k) => (
                     <div key={k} onClick={() => openLightbox(i)} style={{ width: 170, aspectRatio: '3/4', cursor: 'pointer', ...cropBg(galItem(i), { background: DEEP_BEIGE }) }} />
@@ -1174,7 +1190,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                 </div>
               </div>
               <div style={{ height: 1, margin: '10px 0', background: fgA('gallery', 0.14) }} />
-              <div className="cl-film-row cl-reveal cl-zoom" data-delay="160">
+              <div className="cl-film-row cl-reveal cl-clip-r" data-delay="160">
                 <div className="cl-film-track cl-film-track--r">
                   {[3, 4, 5, 6, 3, 4, 5, 6].map((i, k) => (
                     <div key={k} onClick={() => openLightbox(i)} style={{ width: 132, aspectRatio: '1/1', cursor: 'pointer', ...cropBg(galItem(i), { background: DEEP_BEIGE }) }} />
@@ -1263,7 +1279,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             <h2 className="cl-reveal cl-up" data-delay="300" style={{ margin: '14px 0 0', textAlign: 'center', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 26, color: INK }}>{venueName}</h2>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, margin: '10px 0 0' }}>
               <p style={{ margin: 0, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(12), color: inkA(0.7) }}>{venueFull}</p>
-              <button onClick={() => doCopy(venueFull, 'addr')} style={{ flexShrink: 0, fontFamily: F_BODY, fontSize: bfs(10), cursor: 'pointer', background: 'transparent', border: `1px solid ${inkA(0.3)}`, color: inkA(0.7), borderRadius: 4, padding: '3px 8px', whiteSpace: 'nowrap' }}>{copied === 'addr' ? '복사됨' : '주소 복사'}</button>
+              <button onClick={() => doCopy(venueAddress, 'addr')} style={{ flexShrink: 0, fontFamily: F_BODY, fontSize: bfs(10), cursor: 'pointer', background: 'transparent', border: `1px solid ${inkA(0.3)}`, color: inkA(0.7), borderRadius: 4, padding: '3px 8px', whiteSpace: 'nowrap' }}>{copied === 'addr' ? '복사됨' : '주소 복사'}</button>
             </div>
             <div style={{ height: 1, background: inkA(0.14), margin: '24px 0' }} />
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

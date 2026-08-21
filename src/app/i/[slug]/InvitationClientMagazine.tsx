@@ -396,7 +396,7 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
           onClick={onEnter}
           className="mt-12 hover:scale-105 active:scale-95"
           style={{
-            fontFamily: fonts.display, fontSize: '10px', letterSpacing: '4px',
+            fontFamily: fonts.display, fontSize: '13px', letterSpacing: '4px',
             color: themeColors.primary, background: 'transparent',
             border: `1px solid ${themeColors.divider}`, padding: '14px 40px', cursor: 'pointer',
             opacity: 0,
@@ -498,7 +498,7 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
             onClick={onEnter}
             className="mt-4 hover:opacity-70 active:scale-95"
             style={{
-              fontFamily: fonts.display, fontSize: '9px', letterSpacing: '5px',
+              fontFamily: fonts.display, fontSize: '12px', letterSpacing: '5px',
               color: 'rgba(255,255,255,0.8)', background: 'transparent',
               border: 'none', padding: '0', cursor: 'pointer',
               opacity: 0,
@@ -593,7 +593,7 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
           onClick={onEnter}
           className="mt-8 hover:scale-105 active:scale-95"
           style={{
-            fontFamily: fonts.display, fontSize: '10px', letterSpacing: '4px',
+            fontFamily: fonts.display, fontSize: '13px', letterSpacing: '4px',
             color: themeColors.primary, background: 'transparent',
             border: `1px solid ${themeColors.divider}`, padding: '12px 36px', cursor: 'pointer',
             opacity: 0,

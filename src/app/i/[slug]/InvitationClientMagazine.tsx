@@ -178,6 +178,7 @@ const magazineIntroStyles = `
   @keyframes mag-lineGrowDown { to { height: 50px; } }
   @keyframes mag-btnPulse { 0%, 100% { border-color: var(--mag-pulse-color, #ccc); } 50% { border-color: var(--mag-pulse-active, #999); box-shadow: 0 0 0 4px rgba(0,0,0,0.03); } }
   @keyframes mag-btnPulseWhite { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; text-shadow: 0 0 8px rgba(255,255,255,0.3); } }
+  @keyframes mag-nudge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
   @keyframes mag-lineDrawRight { to { transform: scaleX(1); } }
   @keyframes mag-kenBurnsOut { 0% { transform: scale(1.15); } 100% { transform: scale(1.0); } }
   @keyframes mag-charReveal { to { opacity: 1; transform: translateY(0); } }
@@ -315,6 +316,30 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
     return () => clearTimeout(timer)
   }, [introStyle])
 
+  // OPEN 버튼 등장 이후에는 위로 스와이프/휠 스크롤로도 입장 (실제 페이지에서만)
+  const gestureReadyRef = useRef(false)
+  useEffect(() => {
+    if (isPreview) return
+    gestureReadyRef.current = false
+    const readyTimer = window.setTimeout(() => { gestureReadyRef.current = true }, 3200)
+    let startY = 0
+    const onTouchStart = (e: TouchEvent) => { startY = e.touches[0].clientY }
+    const onTouchMove = (e: TouchEvent) => {
+      if (!gestureReadyRef.current) return
+      if (startY - e.touches[0].clientY > 46) onEnter()
+    }
+    const onWheel = (e: WheelEvent) => { if (gestureReadyRef.current && e.deltaY > 12) onEnter() }
+    window.addEventListener('touchstart', onTouchStart, { passive: true })
+    window.addEventListener('touchmove', onTouchMove, { passive: true })
+    window.addEventListener('wheel', onWheel, { passive: true })
+    return () => {
+      window.clearTimeout(readyTimer)
+      window.removeEventListener('touchstart', onTouchStart)
+      window.removeEventListener('touchmove', onTouchMove)
+      window.removeEventListener('wheel', onWheel)
+    }
+  }, [isPreview, introStyle, onEnter])
+
   const weddingDate = invitation.wedding?.date ? new Date(invitation.wedding.date) : new Date()
   const year = weddingDate.getFullYear()
   const month = String(weddingDate.getMonth() + 1).padStart(2, '0')
@@ -419,7 +444,7 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
       ? `${((coverSettings.cropX || 0) + (coverSettings.cropWidth || 1) / 2) * 100}% ${((coverSettings.cropY || 0) + (coverSettings.cropHeight || 1) / 2) * 100}%`
       : 'center'
     return (
-      <div className="relative w-full flex flex-col" style={{ backgroundColor: '#000', height: isPreview ? '660px' : '100vh', overflow: 'hidden' }}>
+      <div className="relative w-full flex flex-col" onClick={isPreview ? undefined : onEnter} style={{ backgroundColor: '#000', height: isPreview ? '660px' : '100vh', overflow: 'hidden', cursor: isPreview ? undefined : 'pointer' }}>
         <style dangerouslySetInnerHTML={{ __html: magazineIntroStyles }} />
         {/* Full bleed cover — Ken Burns zoom out */}
         <div className="absolute inset-0 overflow-hidden">
@@ -493,20 +518,18 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
             background: 'rgba(255,255,255,0.3)', margin: '20px auto 0',
             ...(loaded ? { animation: 'mag-lineGrowDown 0.6s ease 3s both' } : {}),
           }} />
-          {/* OPEN button */}
-          <button
-            onClick={onEnter}
-            className="mt-4 hover:opacity-70 active:scale-95"
+          {/* OPEN: 버튼 없이 화면 터치/스와이프로 입장 (하단 안내) */}
+          <div
+            className="mt-4"
             style={{
-              fontFamily: fonts.display, fontSize: '12px', letterSpacing: '5px',
-              color: 'rgba(255,255,255,0.8)', background: 'transparent',
-              border: 'none', padding: '0', cursor: 'pointer',
-              opacity: 0,
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
+              pointerEvents: 'none', opacity: 0,
               ...(loaded ? { animation: 'mag-fadeIn 0.6s ease 3.3s both, mag-btnPulseWhite 3s ease-in-out 4s infinite' } : {}),
             }}
           >
-            {dt('OPEN')}
-          </button>
+            <span style={{ fontFamily: fonts.display, fontSize: '11px', letterSpacing: '5px', paddingLeft: '5px', color: 'rgba(255,255,255,0.85)' }}>{dt('OPEN')}</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'mag-nudge 1.9s ease-in-out infinite' }}><path d="M6 9l6 6 6-6" /></svg>
+          </div>
         </div>
       </div>
     )

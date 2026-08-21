@@ -323,12 +323,17 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
     gestureReadyRef.current = false
     const readyTimer = window.setTimeout(() => { gestureReadyRef.current = true }, 3200)
     let startY = 0
+    let wheelAcc = 0
     const onTouchStart = (e: TouchEvent) => { startY = e.touches[0].clientY }
     const onTouchMove = (e: TouchEvent) => {
       if (!gestureReadyRef.current) return
-      if (startY - e.touches[0].clientY > 46) onEnter()
+      if (startY - e.touches[0].clientY > 90) onEnter()
     }
-    const onWheel = (e: WheelEvent) => { if (gestureReadyRef.current && e.deltaY > 12) onEnter() }
+    const onWheel = (e: WheelEvent) => {
+      if (!gestureReadyRef.current) return
+      wheelAcc = Math.max(0, wheelAcc + e.deltaY)
+      if (wheelAcc > 60) onEnter()
+    }
     window.addEventListener('touchstart', onTouchStart, { passive: true })
     window.addEventListener('touchmove', onTouchMove, { passive: true })
     window.addEventListener('wheel', onWheel, { passive: true })
@@ -2588,6 +2593,7 @@ function InvitationClientMagazineContent({
       : 'modern'
 
   const [currentPage, setCurrentPage] = useState<'cover' | 'main'>(skipIntro ? 'main' : 'cover')
+  const [coverLeaving, setCoverLeaving] = useState(false) // 커버 → 본문 크로스페이드 중
   const audioRef = useRef<HTMLAudioElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
@@ -2741,22 +2747,30 @@ function InvitationClientMagazineContent({
                   style={{ backgroundColor: themeColors.background, fontFamily: fonts.body, color: themeColors.text }}
                 >
                   {currentPage === 'cover' ? (
+                    <div style={{ opacity: coverLeaving ? 0 : 1, transition: 'opacity .55s ease' }}>
                     <MagazineCover
                       invitation={invitation}
                       fonts={fonts}
                       themeColors={themeColors}
                       onEnter={() => {
-                        setCurrentPage('main')
-                        // 스와이프/휠 입장 시 제스처의 관성 스크롤이 본문으로 이어지지 않도록 잠깐 상단 고정
-                        window.scrollTo(0, 0)
-                        const until = Date.now() + 700
-                        const holdTop = () => { window.scrollTo(0, 0); if (Date.now() < until) window.requestAnimationFrame(holdTop) }
-                        window.requestAnimationFrame(holdTop)
+                        if (coverLeaving) return
+                        // 커버가 먼저 부드럽게 사라진 뒤 본문으로 전환 (크로스페이드)
+                        setCoverLeaving(true)
+                        window.setTimeout(() => {
+                          setCurrentPage('main')
+                          // 스와이프/휠 입장 시 제스처의 관성 스크롤이 본문으로 이어지지 않도록 잠깐 상단 고정
+                          window.scrollTo(0, 0)
+                          const until = Date.now() + 700
+                          const holdTop = () => { window.scrollTo(0, 0); if (Date.now() < until) window.requestAnimationFrame(holdTop) }
+                          window.requestAnimationFrame(holdTop)
+                        }, 520)
                       }}
                       isPreview={isPreview}
                     />
+                    </div>
                   ) : (
-                    <>
+                    <div style={{ animation: skipIntro ? undefined : 'mag-main-in .8s ease both' }}>
+                      <style dangerouslySetInnerHTML={{ __html: '@keyframes mag-main-in { from { opacity: 0; } to { opacity: 1; } }' }} />
                       {/* Magazine Nameplate Bar — 인사말 색을 따름 */}
                       <div className="sticky top-0 z-40 px-4 py-3 flex items-center justify-between" style={{ backgroundColor: greetingSectionBg, borderBottom: `0.5px solid ${greetingSectionColors.divider}` }}>
                         <div style={{ fontFamily: fonts.display, fontSize: '13px', fontWeight: 300, letterSpacing: '3px', color: greetingSectionColors.primary }}>
@@ -2832,7 +2846,7 @@ function InvitationClientMagazineContent({
                       {/* MagazineFooter 항상 마지막 */}
                       <MagazineFooter invitation={invitation} fonts={fonts} themeColors={themeColors} />
                       </div>
-                    </>
+                    </div>
                   )}
 
                   {/* BGM */}

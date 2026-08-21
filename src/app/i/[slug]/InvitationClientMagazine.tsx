@@ -2745,7 +2745,14 @@ function InvitationClientMagazineContent({
                       invitation={invitation}
                       fonts={fonts}
                       themeColors={themeColors}
-                      onEnter={() => setCurrentPage('main')}
+                      onEnter={() => {
+                        setCurrentPage('main')
+                        // 스와이프/휠 입장 시 제스처의 관성 스크롤이 본문으로 이어지지 않도록 잠깐 상단 고정
+                        window.scrollTo(0, 0)
+                        const until = Date.now() + 700
+                        const holdTop = () => { window.scrollTo(0, 0); if (Date.now() < until) window.requestAnimationFrame(holdTop) }
+                        window.requestAnimationFrame(holdTop)
+                      }}
                       isPreview={isPreview}
                     />
                   ) : (

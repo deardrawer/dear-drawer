@@ -1530,8 +1530,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
 
         {/* ===== 푸터 ===== */}
         <footer style={{ order: 999, background: IVORY, textAlign: 'center', padding: '44px 30px 52px' }}>
-          <p className="cl-reveal cl-fade" style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 14, letterSpacing: '.03em', color: inkA(0.55) }}>Thank you for celebrating with us</p>
-          <p className="cl-reveal cl-fade" data-delay="220" style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(9.5), letterSpacing: '.16em', paddingLeft: '.16em', color: inkA(0.32) }}>Made with dear drawer</p>
+          <p style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 14, letterSpacing: '.03em', color: inkA(0.55), animation: 'cl-fade-soft 1.2s ease both' }}>Thank you for celebrating with us</p>
+          <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(9.5), letterSpacing: '.16em', paddingLeft: '.16em', color: inkA(0.32), animation: 'cl-fade-soft 1.2s ease .22s both' }}>Made with dear drawer</p>
         </footer>
 
         </div>

@@ -299,7 +299,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   const decStyle: string = cc.classicDeceasedStyle === 'hanja' ? 'hanja' : 'flower'
   const decMark = (d?: boolean): React.ReactNode => !d ? null : (decStyle === 'hanja'
     ? <span style={{ fontFamily: F_BODY }}>故&nbsp;</span>
-    : <img src="/icons/chrysanthemum.svg" alt="故" style={{ display: 'inline-block', width: '0.82em', height: '0.82em', marginRight: 3, verticalAlign: '-0.06em', opacity: 0.85 }} />)
+    : <span aria-label="故" role="img" style={{ display: 'inline-block', width: '0.82em', height: '0.82em', marginRight: 3, verticalAlign: '-0.06em', opacity: 0.85, backgroundColor: 'currentColor', WebkitMaskImage: "url('/icons/chrysanthemum.svg')", maskImage: "url('/icons/chrysanthemum.svg')", WebkitMaskSize: 'contain', maskSize: 'contain', WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat', WebkitMaskPosition: 'center', maskPosition: 'center' }} />)
   const parentsJsx = (f?: { name?: string; deceased?: boolean }, m?: { name?: string; deceased?: boolean }): React.ReactNode[] | null => {
     const items: React.ReactNode[] = []
     if (f?.name) items.push(<span key="f">{decMark(f.deceased)}{f.name}</span>)

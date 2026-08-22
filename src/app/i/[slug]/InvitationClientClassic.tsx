@@ -373,6 +373,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
     if (!venueAddress) return
     if (page !== 'main') return
     let cancelled = false
+    let visObs: IntersectionObserver | null = null
     const initMap = () => {
       if (cancelled) return
       const container = mapContainerRef.current
@@ -390,14 +391,17 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           el.style.cssText = 'position:relative;transform:translateY(-8px);display:flex;flex-direction:column;align-items:center;'
           el.innerHTML = `<div style="background:${accent};color:#fff;font-size:12px;font-weight:500;letter-spacing:.02em;line-height:1;padding:7px 14px;border-radius:16px;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.18);">${venueName}</div><div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:7px solid ${accent};margin-top:-1px;"></div>`
           new window.kakao.maps.CustomOverlay({ position: center, content: el, yAnchor: 1.55, xAnchor: 0.5 }).setMap(map)
-          // 화면 밖/페이드 중 생성되면 타일 크기가 어긋날 수 있어 잠시 후 재배치
-          window.setTimeout(() => { if (!cancelled) { map.relayout(); map.setCenter(center) } }, 400)
+          // 화면 밖/페이드 중 생성되면 타일이 blank로 남을 수 있어, 잠시 후 + 화면에 보일 때마다 재배치
+          const relayout = () => { if (!cancelled) { map.relayout(); map.setCenter(center) } }
+          window.setTimeout(relayout, 400)
+          visObs = new IntersectionObserver((ents) => { ents.forEach((e) => { if (e.isIntersecting) relayout() }) }, { threshold: 0.05 })
+          visObs.observe(container)
         } else {
           setMapError(true)
         }
       })
     }
-    if (window.kakao?.maps?.services) { initMap(); return () => { cancelled = true } }
+    if (window.kakao?.maps?.services) { initMap(); return () => { cancelled = true; visObs?.disconnect() } }
     const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY || '0890847927f3189d845391481ead8ecc'
     const existing = document.getElementById('kakao-maps-sdk') as HTMLScriptElement | null
     if (existing) {
@@ -411,7 +415,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
       script.onload = () => { if (!cancelled) window.kakao.maps.load(initMap) }
       document.head.appendChild(script)
     }
-    return () => { cancelled = true }
+    return () => { cancelled = true; visObs?.disconnect() }
   }, [venueAddress, venueName, page])
 
   // 인사말 배경 (크롭 사진 + 오버레이 색상/투명도)

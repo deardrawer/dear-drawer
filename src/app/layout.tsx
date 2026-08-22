@@ -221,6 +221,8 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <head>
+        {/* 로컬 폰트: public 정적 CSS로 직접 로드 (번들러 미처리 → 프로덕션에서 @font-face 확실히 유지) */}
+        <link rel="stylesheet" href="/local-fonts.css" />
         {/* Google Tag Manager */}
         <Script id="gtm" strategy="afterInteractive">
           {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':

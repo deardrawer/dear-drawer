@@ -134,6 +134,8 @@ function getTemplateDisplayName(templateId: string, senderSide?: string) {
       return '감사장'
     case 'narrative-the-simple':
       return 'THE SIMPLE'
+    case 'narrative-classic':
+      return 'THE CLASSIC'
     default:
       return templateId || '기본'
   }
@@ -169,6 +171,9 @@ function getTemplateBadgeColor(templateId: string, senderSide?: string) {
   }
   if (templateId === 'narrative-thankyou') {
     return 'bg-amber-100 text-amber-600'
+  }
+  if (templateId === 'narrative-classic') {
+    return 'bg-stone-200 text-stone-700'
   }
   return 'bg-gray-100 text-gray-600'
 }
@@ -1059,6 +1064,8 @@ export default function MyInvitationsPage() {
                         ? `/editor/thank-you?id=${invitation.id}`
                         : invitation.template_id === 'narrative-the-simple'
                         ? `/editor/the-simple?id=${invitation.id}`
+                        : invitation.template_id === 'narrative-classic'
+                        ? `/editor/classic?id=${invitation.id}`
                         : invitation.template_id === 'narrative-essay'
                         ? `/editor/essay?id=${invitation.id}`
                         : `/editor?id=${invitation.id}`

@@ -11,6 +11,7 @@ const InvitationClient = dynamic(() => import('@/app/i/[slug]/InvitationClient')
 const InvitationClientFamily = dynamic(() => import('@/app/i/[slug]/InvitationClientFamily'), { ssr: false })
 const InvitationClientFilm = dynamic(() => import('@/app/i/[slug]/InvitationClientFilm'), { ssr: false })
 const InvitationClientMagazine = dynamic(() => import('@/app/i/[slug]/InvitationClientMagazine'), { ssr: false })
+const InvitationClientClassic = dynamic(() => import('@/app/i/[slug]/InvitationClientClassic'), { ssr: false })
 
 interface InvitationRow {
   id: string
@@ -428,6 +429,7 @@ function PreviewRenderer({ invitation, content }: { invitation: InvitationRow; c
     case 'narrative-family': ClientComponent = InvitationClientFamily; break
     case 'narrative-film': ClientComponent = InvitationClientFilm; break
     case 'narrative-magazine': ClientComponent = InvitationClientMagazine; break
+    case 'narrative-classic': ClientComponent = InvitationClientClassic; break
     default: ClientComponent = InvitationClient
   }
 

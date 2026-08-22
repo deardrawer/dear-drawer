@@ -93,11 +93,14 @@ export interface ClassicInvitationData {
     classicGreetingBgImage?: ClassicPhoto // 인사말 배경 사진 (크롭, 미설정 시 갤러리 첫 사진)
     classicGreetingOverlayColor?: string // 인사말 배경 오버레이 색상
     classicGreetingOverlayOpacity?: number // 인사말 배경 오버레이 투명도 0~1
-    classicLetterFrame?: 'wave' | 'lace' // 인사말 카드 프레임 (웨이브 / 레이스)
+    classicLetterFrame?: 'wave' | 'wavy' | 'lace' | 'scallop' | 'paper' | 'none' // 인사말 카드 프레임 (웨이브 / 물결 / 레이스 / 스캘럽 / 종이 / 없음)
+    classicLetterTextColor?: string // 프레임 '없음'일 때 인사말 텍스트 색상
     // 본문 · 신랑신부 소개
     classicIntroMode?: 'each' | 'together' | 'nameOnly' // 각자 / 함께 / 이름만
-    classicIntroEachFrame?: 'plaque' | 'stamp' // 각자 카드 프레임 (웨이브 플라크 / 우표)
-    classicIntroTogetherFrame?: 'pearl' | 'filigree' // 함께 소개 프레임 (진주 / 필리그리)
+    classicIntroEachFrame?: 'plaque' | 'stamp' | 'box' // 각자 카드 프레임 (웨이브 플라크 / 우표 / 종이)
+    classicIntroTogetherFrame?: 'pearl' | 'filigree' | 'oval' // 함께 소개 프레임 (진주 / 필리그리 / 오벌)
+    classicIntroTogetherFrameColor?: string // 오벌 프레임 색상 (선택 시 틴트)
+    classicIntroTextColor?: string // 소개 프레임 '없음'일 때 텍스트 색상
     classicGroomIntro?: string // 신랑 소개 한마디 (각자)
     classicBrideIntro?: string // 신부 소개 한마디 (각자)
     classicGroomPhoto?: ClassicPhoto // 신랑 사진 (각자)

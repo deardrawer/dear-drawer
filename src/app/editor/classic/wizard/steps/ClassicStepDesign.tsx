@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import ColorField from '@/components/editor/ColorField'
 import ImageUploader from '@/components/editor/ImageUploader'
 import ClassicPhotoField from '../../ClassicPhotoField'
@@ -40,7 +41,7 @@ const OPENING_GROUPS: { title: string; desc: string; items: { id: OpeningId; lab
 
 // 커스텀 컬러 테마 프리셋 (포인트 / 기본배경 / 틴티드배경 / 기본텍스트 / 틴티드텍스트 / 버튼텍스트)
 const COLOR_THEMES: { name: string; accent: string; bg: string; tinted: string; defText: string; tintText: string; btnText: string; sections?: string[] }[] = [
-  { name: '클래식', accent: '#351714', bg: '#FFFFFF', tinted: '#DDD1BB', defText: '#351714', tintText: '#351714', btnText: '#FFFFFF' },
+  { name: '클래식', accent: '#111111', bg: '#FFFFFF', tinted: '#F3F1EC', defText: '#111111', tintText: '#111111', btnText: '#FFFFFF' },
   { name: '딥브라운', accent: '#351714', bg: '#F7F3EC', tinted: '#2B1613', defText: '#351714', tintText: '#F2EEE6', btnText: '#FFFFFF', sections: ['intro', 'date', 'rsvp'] },
   { name: '세이지', accent: '#3B4A3A', bg: '#F7F6F1', tinted: '#C8CFBE', defText: '#2E3A2C', tintText: '#2E3A2C', btnText: '#FFFFFF' },
   { name: '더스티블루', accent: '#3A4657', bg: '#F5F6F8', tinted: '#C3CCD6', defText: '#2C3542', tintText: '#2C3542', btnText: '#FFFFFF' },
@@ -68,6 +69,8 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
   const displayFont = data.content.classicDisplayFont || 'italiana'
   const bodyFont = data.content.classicBodyFont || 'classic'
   const displayFontFamily = DISPLAY_FONTS.find((f) => f.id === displayFont)?.fontFamily || 'inherit'
+  const [displayFontOpen, setDisplayFontOpen] = useState(true) // 영문 폰트 목록 펼침 (기본 펼침 + 접기)
+  const [koreanFontOpen, setKoreanFontOpen] = useState(true) // 한글 폰트 목록 펼침
 
   // 오프닝별 세부 설정 (선택 시 해당 옵션 아래에 펼쳐짐)
   const renderOpeningSettings = (id: OpeningId) => {
@@ -376,21 +379,27 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
         <p className="text-sm text-gray-500">청첩장에 사용할 영문 · 한글 폰트를 선택하세요.</p>
 
         <div className="space-y-3 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
-          <label className="block">
-            <span className="text-sm font-medium text-gray-700">영문 디스플레이 폰트</span>
-            <select
-              value={displayFont}
-              onChange={(e) => updateNestedData('content.classicDisplayFont', e.target.value)}
-              className="mt-1 w-full border border-gray-200 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:border-gray-600"
-              style={{ fontFamily: displayFontFamily }}
-            >
-              {DISPLAY_FONTS.map((font) => (
-                <option key={font.id} value={font.id} style={{ fontFamily: font.fontFamily }}>
-                  {font.name}
-                </option>
-              ))}
-            </select>
-          </label>
+          <div>
+            <button type="button" onClick={() => setDisplayFontOpen((o) => !o)} className="w-full flex items-center justify-between">
+              <span className="text-sm font-medium text-gray-700">영문 디스플레이 폰트</span>
+              <span className="flex items-center gap-1 text-[10px] text-gray-400">
+                {DISPLAY_FONTS.find((f) => f.id === displayFont)?.name}
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: displayFontOpen ? 'rotate(180deg)' : 'none', transition: 'transform .2s ease' }}><path d="M6 9l6 6 6-6" /></svg>
+              </span>
+            </button>
+            {displayFontOpen && (
+              <div className="mt-2 grid grid-cols-2 gap-1.5">
+                {DISPLAY_FONTS.map((font) => {
+                  const active = font.id === displayFont
+                  return (
+                    <button key={font.id} type="button" onClick={() => updateNestedData('content.classicDisplayFont', font.id)} className={`px-2 py-2 rounded-md border text-sm text-center transition-colors ${active ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-400'}`} style={{ fontFamily: font.fontFamily }}>
+                      {font.name}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
           <div>
             <span className="text-sm font-medium text-gray-700">영문 대소문자</span>
             <div className="mt-1 inline-flex rounded-lg border border-gray-200 overflow-hidden">
@@ -407,20 +416,27 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
               })}
             </div>
           </div>
-          <label className="block">
-            <span className="text-sm font-medium text-gray-700">한글 본문 폰트</span>
-            <select
-              value={bodyFont}
-              onChange={(e) => updateNestedData('content.classicBodyFont', e.target.value)}
-              className="mt-1 w-full border border-gray-200 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:border-gray-600"
-            >
-              {KOREAN_FONTS.map((font) => (
-                <option key={font.id} value={font.id}>
-                  {font.name}
-                </option>
-              ))}
-            </select>
-          </label>
+          <div>
+            <button type="button" onClick={() => setKoreanFontOpen((o) => !o)} className="w-full flex items-center justify-between">
+              <span className="text-sm font-medium text-gray-700">한글 본문 폰트</span>
+              <span className="flex items-center gap-1 text-[10px] text-gray-400">
+                {KOREAN_FONTS.find((f) => f.id === bodyFont)?.name}
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: koreanFontOpen ? 'rotate(180deg)' : 'none', transition: 'transform .2s ease' }}><path d="M6 9l6 6 6-6" /></svg>
+              </span>
+            </button>
+            {koreanFontOpen && (
+              <div className="mt-2 grid grid-cols-2 gap-1.5">
+                {KOREAN_FONTS.map((font) => {
+                  const active = font.id === bodyFont
+                  return (
+                    <button key={font.id} type="button" onClick={() => updateNestedData('content.classicBodyFont', font.id)} className={`px-2 py-2 rounded-md border text-sm text-center transition-colors ${active ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-400'}`} style={{ fontFamily: font.fontFamily }}>
+                      {font.name}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* 글자 크기 · 상단문구 · 섹션 간격 */}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 
 /** hex → HSL */
@@ -64,12 +64,18 @@ export default function ColorField({ value, onChange, label, presets = DEFAULT_P
   // 스포이드(EyeDropper API) — 지원 브라우저(데스크톱 Chromium 등)에서만
   const [hasEyeDropper, setHasEyeDropper] = useState(false)
   useEffect(() => { setHasEyeDropper(typeof window !== 'undefined' && 'EyeDropper' in window) }, [])
+  const modalRef = useRef<HTMLDivElement>(null)
   const pickEyeDropper = async () => {
+    // 스포이드가 모달 오버레이(반투명 딤) 위 픽셀을 추출하지 않도록, 추출 동안 모달을 숨김
+    const modal = modalRef.current
+    if (modal) modal.style.visibility = 'hidden'
     try {
       const ED = (window as unknown as { EyeDropper: new () => { open: () => Promise<{ sRGBHex: string }> } }).EyeDropper
       const res = await new ED().open()
       if (res && typeof res.sRGBHex === 'string') onChange(res.sRGBHex)
-    } catch { /* 사용자 취소 */ }
+    } catch { /* 사용자 취소 */ } finally {
+      if (modal) modal.style.visibility = ''
+    }
   }
 
   const setHSL = (nh: number, ns: number, nl: number) => onChange(hslToHex(nh, ns, nl))
@@ -100,7 +106,7 @@ export default function ColorField({ value, onChange, label, presets = DEFAULT_P
       )}
 
       {open && createPortal(
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center" onClick={() => setOpen(false)}>
+        <div ref={modalRef} className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center" onClick={() => setOpen(false)}>
           <div className="absolute inset-0 bg-black/40" />
           <div
             className="relative w-full sm:max-w-sm bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl p-5 pb-7 space-y-4 safe-area-bottom"

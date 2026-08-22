@@ -39,6 +39,36 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
           인사말
         </h3>
         <p className="text-sm text-gray-500">청첩장 상단(Letter 섹션)에 표시되는 초대 문구입니다.</p>
+        {/* 인사말 카드 프레임 (본문 위) */}
+        <div className="space-y-3 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
+          <div>
+            <p className="text-sm font-medium text-gray-700">인사말 카드 프레임</p>
+            <p className="text-[10px] text-gray-400 leading-tight">인사말 텍스트를 감싸는 카드 프레임을 선택하세요.</p>
+          </div>
+          <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+            {([
+              { id: 'wave', label: '웨이브' },
+              { id: 'wavy', label: '물결' },
+              { id: 'lace', label: '레이스' },
+              { id: 'scallop', label: '스캘럽' },
+              { id: 'paper', label: '종이' },
+              { id: 'none', label: '없음' },
+            ] as const).map((opt) => {
+              const active = (data.content.classicLetterFrame || 'wave') === opt.id
+              return (
+                <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicLetterFrame', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                  {opt.label}
+                </button>
+              )
+            })}
+          </div>
+          {data.content.classicLetterFrame === 'none' && (
+            <div className="pt-1">
+              <ColorField label="인사말 텍스트 색상" value={data.content.classicLetterTextColor || '#F7F3EC'} onChange={(hex) => updateNestedData('content.classicLetterTextColor', hex)} />
+              <p className="text-[10px] text-gray-400 leading-tight mt-1">프레임이 없으면 배경 위에 바로 놓이므로 배경과 대비되는 색을 골라주세요.</p>
+            </div>
+          )}
+        </div>
         <div className="space-y-1.5">
           <Label className="text-sm font-medium">인사말 본문</Label>
           <Textarea
@@ -151,27 +181,6 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
             </div>
           </div>
         </div>
-
-        {/* 인사말 카드 프레임 */}
-        <div className="space-y-3 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
-          <div>
-            <p className="text-sm font-medium text-gray-700">인사말 카드 프레임</p>
-            <p className="text-[10px] text-gray-400 leading-tight">인사말 텍스트를 감싸는 카드 프레임을 선택하세요.</p>
-          </div>
-          <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
-            {([
-              { id: 'wave', label: '웨이브' },
-              { id: 'lace', label: '레이스' },
-            ] as const).map((opt) => {
-              const active = (data.content.classicLetterFrame || 'wave') === opt.id
-              return (
-                <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicLetterFrame', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
-                  {opt.label}
-                </button>
-              )
-            })}
-          </div>
-        </div>
       </section>
 
       {/* 신랑 · 신부 소개 */}
@@ -245,6 +254,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
                 {([
                   { id: 'plaque', label: '웨이브 플라크' },
                   { id: 'stamp', label: '우표' },
+                  { id: 'box', label: '종이' },
                 ] as const).map((opt) => {
                   const active = (data.content.classicIntroEachFrame || 'plaque') === opt.id
                   return (
@@ -307,6 +317,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
                 {([
                   { id: 'pearl', label: '진주' },
                   { id: 'filigree', label: '필리그리' },
+                  { id: 'oval', label: '오벌' },
                 ] as const).map((opt) => {
                   const active = (data.content.classicIntroTogetherFrame || 'pearl') === opt.id
                   return (
@@ -316,6 +327,12 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
                   )
                 })}
               </div>
+              {data.content.classicIntroTogetherFrame === 'oval' && (
+                <div className="pt-2">
+                  <ColorField label="프레임 색상" value={data.content.classicIntroTogetherFrameColor || '#DDD1BB'} onChange={(hex) => updateNestedData('content.classicIntroTogetherFrameColor', hex)} />
+                  <p className="text-[10px] text-gray-400 leading-tight mt-1">비우면 기본(아이보리) 색으로 표시됩니다.</p>
+                </div>
+              )}
             </div>
             <ClassicPhotoField
               value={data.content.classicTogetherPhoto}

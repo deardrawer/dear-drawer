@@ -1,0 +1,67 @@
+/* ===== Local Display Fonts (English Title) =====
+   public/ 정적 파일로 서빙 → 번들러/Tailwind가 처리하지 않아 프로덕션에서 @font-face가 유지됨.
+   layout.tsx <head>에서 <link rel="stylesheet" href="/local-fonts.css" />로 직접 로드. */
+
+@font-face {
+  font-family: 'MADELikesSlab';
+  src: url('/fonts/MADELikesSlab.otf') format('opentype');
+  font-weight: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Majesty';
+  src: url('/fonts/Majesty-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Britney';
+  src: url('/fonts/Britney_Complete/fonts/Britney-Regular.woff2') format('woff2'),
+       url('/fonts/Britney_Complete/fonts/Britney-Regular.woff') format('woff'),
+       url('/fonts/Britney_Complete/fonts/Britney-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Britney';
+  src: url('/fonts/Britney_Complete/fonts/Britney-Bold.woff2') format('woff2'),
+       url('/fonts/Britney_Complete/fonts/Britney-Bold.woff') format('woff'),
+       url('/fonts/Britney_Complete/fonts/Britney-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Melodrama';
+  src: url('/fonts/Melodrama/fonts/Melodrama-Regular.woff2') format('woff2'),
+       url('/fonts/Melodrama/fonts/Melodrama-Regular.woff') format('woff'),
+       url('/fonts/Melodrama/fonts/Melodrama-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Melodrama';
+  src: url('/fonts/Melodrama/fonts/Melodrama-Bold.woff2') format('woff2'),
+       url('/fonts/Melodrama/fonts/Melodrama-Bold.woff') format('woff'),
+       url('/fonts/Melodrama/fonts/Melodrama-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Stardom';
+  src: url('/fonts/Stradom/fonts/Stardom-Regular.woff2') format('woff2'),
+       url('/fonts/Stradom/fonts/Stardom-Regular.woff') format('woff'),
+       url('/fonts/Stradom/fonts/Stardom-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}

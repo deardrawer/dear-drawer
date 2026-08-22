@@ -534,6 +534,12 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
               />
             </div>
           )}
+          {data.content.classicDatePhotoEnabled === false && (
+            <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer pt-3 border-t border-gray-200">
+              <input type="checkbox" checked={data.content.classicDateBird !== false} onChange={(e) => updateNestedData('content.classicDateBird', e.target.checked)} />
+              비둘기 장식 표시
+            </label>
+          )}
         </div>
       </section>
 

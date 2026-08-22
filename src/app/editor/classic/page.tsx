@@ -111,6 +111,7 @@ export interface ClassicInvitationData {
     // 본문 · 예식 일정 사진
     classicDatePhoto?: ClassicPhoto
     classicDatePhotoEnabled?: boolean // 예식 일정 폴라로이드 사진 표시 여부 (기본 true)
+    classicDateBird?: boolean // 사진 미표시일 때 비둘기 장식 표시 여부 (기본 true)
     classicDateFrame?: 'heart' | 'stamp' // 예식일정 사진 프레임 (하트 / 우표)
     // 혼주 표시 (인사말/소개)
     classicShowParents?: boolean // 부모님 성함 표시 여부 (기본 true)

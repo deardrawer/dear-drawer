@@ -328,8 +328,10 @@ export interface TheSimpleInvitationData {
   displayFont?: string // 영문 디스플레이 폰트 id (fontOptions.DISPLAY_FONTS)
   fontStyle?: string // 한글 본문 폰트 id (fontOptions.KOREAN_FONTS)
 
-  // 글자 크기 스케일 (0.85 ~ 1.2, 기본 1)
+  // 글자 크기 스케일 (0.85 ~ 1.2, 기본 1) — 인트로 제외 본문 전체
   fontScale?: number
+  // 인트로 글자 크기 스케일 (0.85 ~ 1.2, 기본 1) — 본문 글자 크기와 분리
+  introFontScale?: number
   // 상단문구(eyebrow) 크기 스케일 (0.85 ~ 1.2, 기본 1)
   eyebrowScale?: number
   // 섹션 상하 여백 스케일 (0.6 ~ 1.5, 기본 1)
@@ -776,6 +778,8 @@ function TheSimpleEditorContent() {
   const previewScrollRef = useRef<HTMLDivElement>(null)
   const previewTouchY = useRef(0)
   const [uploadingCount, setUploadingCount] = useState(0)
+  const [displayFontOpen, setDisplayFontOpen] = useState(true) // 영문 폰트 목록 펼침 (기본 펼침 + 접기 가능)
+  const [koreanFontOpen, setKoreanFontOpen] = useState(true) // 한글 폰트 목록 펼침
   const [expandedImageId, setExpandedImageId] = useState<string | null>(null)
   // 커버 리플레이 키 (변경 시 TapToOpenCover 재마운트)
   const [coverKey, setCoverKey] = useState(0)
@@ -1570,48 +1574,71 @@ function TheSimpleEditorContent() {
                     <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-stone-800 border-b border-stone-300 pb-2">
                       폰트
                     </h2>
-                    <div className="grid grid-cols-1 gap-3">
-                      <label className="block">
-                        <span className="text-xs text-stone-500">영문 디스플레이 폰트</span>
-                        <select
-                          value={data.displayFont || DEFAULT_DISPLAY_FONT_ID}
-                          onChange={(e) => updateData({ displayFont: e.target.value })}
-                          className="mt-1 w-full border border-stone-200 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:border-stone-600"
-                          style={{
-                            fontFamily:
-                              DISPLAY_FONTS.find(
-                                (f) => f.id === (data.displayFont || DEFAULT_DISPLAY_FONT_ID)
-                              )?.fontFamily || 'inherit',
-                          }}
+                    <div className="grid grid-cols-1 gap-4">
+                      {/* 영문 디스플레이 폰트 — 항상 펼쳐진 목록 + 접기 */}
+                      <div>
+                        <button
+                          type="button"
+                          onClick={() => setDisplayFontOpen((v) => !v)}
+                          className="w-full flex items-center justify-between"
                         >
-                          {DISPLAY_FONTS.map((font) => (
-                            <option
-                              key={font.id}
-                              value={font.id}
-                              style={{ fontFamily: font.fontFamily }}
-                            >
-                              {font.name}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                      <label className="block">
-                        <span className="text-xs text-stone-500">한글 본문 폰트</span>
-                        <select
-                          value={data.fontStyle || DEFAULT_KOREAN_FONT_ID}
-                          onChange={(e) => updateData({ fontStyle: e.target.value })}
-                          className="mt-1 w-full border border-stone-200 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:border-stone-600"
+                          <span className="text-xs text-stone-500">영문 디스플레이 폰트</span>
+                          <span className="flex items-center gap-1 text-[10px] text-stone-400">
+                            {DISPLAY_FONTS.find((f) => f.id === (data.displayFont || DEFAULT_DISPLAY_FONT_ID))?.name}
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: displayFontOpen ? 'rotate(180deg)' : 'none', transition: 'transform .2s ease' }}><path d="M6 9l6 6 6-6" /></svg>
+                          </span>
+                        </button>
+                        {displayFontOpen && (
+                          <div className="mt-2 grid grid-cols-2 gap-1.5">
+                            {DISPLAY_FONTS.map((font) => {
+                              const active = font.id === (data.displayFont || DEFAULT_DISPLAY_FONT_ID)
+                              return (
+                                <button
+                                  key={font.id}
+                                  type="button"
+                                  onClick={() => updateData({ displayFont: font.id })}
+                                  className={`px-2 py-2 rounded-md border text-sm text-center transition-colors ${active ? 'border-stone-800 bg-stone-800 text-white' : 'border-stone-200 bg-white text-stone-600 hover:border-stone-400'}`}
+                                  style={{ fontFamily: font.fontFamily }}
+                                >
+                                  {font.name}
+                                </button>
+                              )
+                            })}
+                          </div>
+                        )}
+                      </div>
+                      {/* 한글 본문 폰트 — 항상 펼쳐진 목록 + 접기 */}
+                      <div>
+                        <button
+                          type="button"
+                          onClick={() => setKoreanFontOpen((v) => !v)}
+                          className="w-full flex items-center justify-between"
                         >
-                          {KOREAN_FONTS.map((font) => (
-                            <option
-                              key={font.id}
-                              value={font.id}
-                            >
-                              {font.name}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
+                          <span className="text-xs text-stone-500">한글 본문 폰트</span>
+                          <span className="flex items-center gap-1 text-[10px] text-stone-400">
+                            {KOREAN_FONTS.find((f) => f.id === (data.fontStyle || DEFAULT_KOREAN_FONT_ID))?.name}
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: koreanFontOpen ? 'rotate(180deg)' : 'none', transition: 'transform .2s ease' }}><path d="M6 9l6 6 6-6" /></svg>
+                          </span>
+                        </button>
+                        {koreanFontOpen && (
+                          <div className="mt-2 grid grid-cols-2 gap-1.5">
+                            {KOREAN_FONTS.map((font) => {
+                              const active = font.id === (data.fontStyle || DEFAULT_KOREAN_FONT_ID)
+                              return (
+                                <button
+                                  key={font.id}
+                                  type="button"
+                                  onClick={() => updateData({ fontStyle: font.id })}
+                                  className={`px-2 py-2 rounded-md border text-sm text-center transition-colors ${active ? 'border-stone-800 bg-stone-800 text-white' : 'border-stone-200 bg-white text-stone-600 hover:border-stone-400'}`}
+                                  style={{ fontFamily: font.fontFamily }}
+                                >
+                                  {font.name}
+                                </button>
+                              )
+                            })}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </section>
 
@@ -1814,6 +1841,27 @@ function TheSimpleEditorContent() {
                         value={Math.round((data.fontScale ?? 1) * 100)}
                         onChange={(e) =>
                           updateData({ fontScale: parseInt(e.target.value, 10) / 100 })
+                        }
+                        className="mt-2 w-full h-1.5 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-stone-800"
+                      />
+                    </label>
+
+                    {/* 인트로 글자 크기 (본문과 분리) */}
+                    <label className="block">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-stone-500">인트로 글자 크기</span>
+                        <span className="text-[10px] text-stone-400">
+                          {Math.round((data.introFontScale ?? data.fontScale ?? 1) * 100)}%
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min={85}
+                        max={120}
+                        step={5}
+                        value={Math.round((data.introFontScale ?? data.fontScale ?? 1) * 100)}
+                        onChange={(e) =>
+                          updateData({ introFontScale: parseInt(e.target.value, 10) / 100 })
                         }
                         className="mt-2 w-full h-1.5 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-stone-800"
                       />

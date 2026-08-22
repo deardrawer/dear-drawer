@@ -145,6 +145,7 @@ const CLASSIC_STYLES = `
   @keyframes cl-film-r { from { transform: translateX(-50%); } to { transform: translateX(0); } }
   @media (prefers-reduced-motion: reduce) { .cl-film-track--l, .cl-film-track--r { animation: none !important; } }
   @keyframes cl-fade-soft { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes cl-main-in { from { opacity: 0; } to { opacity: 1; } }
   @keyframes cl-emerge { 0% { opacity: 0; transform: translateY(24px) scale(.955); filter: blur(6px); } 55% { filter: blur(0); } 100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
   @keyframes cl-line-grow { 0% { transform: scaleY(0); opacity: 0; } 100% { transform: scaleY(1); opacity: 1; } }
   @keyframes cl-card-reveal { 0% { clip-path: inset(100% 0 0 0); } 100% { clip-path: inset(0 0 0 0); } }
@@ -176,6 +177,7 @@ const CLASSIC_STYLES = `
 export default function InvitationClientClassic({ invitation, content, isPaid, isPreview, skipIntro, introClickAdvance }: Props) {
   const [copied, setCopied] = useState<string | null>(null)
   const [page, setPage] = useState<'intro' | 'main'>(skipIntro ? 'main' : 'intro')
+  const [introLeaving, setIntroLeaving] = useState(false) // 인트로 → 본문 크로스페이드 중
   // 오프닝 인터랙션 상태 (리본/트레이싱지/접힌편지/사진뒤집기)
   const [ribbon, setRibbon] = useState(false)
   const [frost, setFrost] = useState(false)
@@ -747,25 +749,47 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
     if (!introDone) return
     // 접힌편지·사진뒤집기는 탭이 카드 상호작용(펼치기/뒤집기)이므로 클릭으로는 본문 전환하지 않음 (스크롤/휠로만)
     const clickAdvances = openingStyle !== '접힌 편지' && openingStyle !== '사진 뒤집기'
+    setIntroLeaving(false)
     let ready = false
+    let fired = false
     const enable = setTimeout(() => { ready = true }, 500) // 오프닝 탭이 즉시 넘기지 않도록
-    const advance = () => { if (ready) setPage('main') }
-    window.addEventListener('wheel', advance, { passive: true })
-    window.addEventListener('touchmove', advance, { passive: true })
-    window.addEventListener('scroll', advance, { passive: true })
-    if (clickAdvances) window.addEventListener('click', advance)
+    // 인트로가 먼저 부드럽게 사라진 뒤 본문으로 전환 (크로스페이드)
+    const go = () => {
+      if (!ready || fired) return
+      fired = true
+      setIntroLeaving(true)
+      window.setTimeout(() => setPage('main'), 520)
+    }
+    // 짧은 스침으로 넘어가지 않도록 임계값: 스와이프 90px / 휠 누적 60 / 스크롤 40px
+    let startY = 0
+    let wheelAcc = 0
+    const onTouchStart = (e: TouchEvent) => { startY = e.touches[0].clientY }
+    const onTouchMove = (e: TouchEvent) => { if (startY - e.touches[0].clientY > 90) go() }
+    const onWheel = (e: WheelEvent) => { wheelAcc = Math.max(0, wheelAcc + e.deltaY); if (wheelAcc > 60) go() }
+    const onScroll = () => { if (window.scrollY > 40) go() }
+    const onClick = () => go()
+    window.addEventListener('touchstart', onTouchStart, { passive: true })
+    window.addEventListener('touchmove', onTouchMove, { passive: true })
+    window.addEventListener('wheel', onWheel, { passive: true })
+    window.addEventListener('scroll', onScroll, { passive: true })
+    if (clickAdvances) window.addEventListener('click', onClick)
     return () => {
       clearTimeout(enable)
-      window.removeEventListener('wheel', advance)
-      window.removeEventListener('touchmove', advance)
-      window.removeEventListener('scroll', advance)
-      window.removeEventListener('click', advance)
+      window.removeEventListener('touchstart', onTouchStart)
+      window.removeEventListener('touchmove', onTouchMove)
+      window.removeEventListener('wheel', onWheel)
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('click', onClick)
     }
   }, [isPreview, introClickAdvance, page, introDone, openingStyle])
 
-  // 본문 진입 시 상단으로
+  // 본문 진입 시 상단으로 (+ 입장 제스처의 관성 스크롤이 이어지지 않도록 잠깐 고정)
   useEffect(() => {
-    if (page === 'main') window.scrollTo(0, 0)
+    if (page !== 'main') return
+    window.scrollTo(0, 0)
+    const until = Date.now() + 700
+    const holdTop = () => { window.scrollTo(0, 0); if (Date.now() < until) window.requestAnimationFrame(holdTop) }
+    window.requestAnimationFrame(holdTop)
   }, [page])
 
   // D-day 계산 (클라이언트에서만)
@@ -824,7 +848,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
 
         {/* ===== I. Opening (인트로: 실링/리본/트레이싱지/접힌편지/사진뒤집기) ===== */}
         {page === 'intro' && (
-        <section data-scene="opening" style={{ position: 'relative', minHeight: isPreview ? '100%' : '100vh', height: isPreview ? '100%' : undefined, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '76px 30px 70px', background: isDarkOpening ? DARK_PHOTO : openBg, overflow: 'hidden' }}>
+        <section data-scene="opening" style={{ position: 'relative', minHeight: isPreview ? '100%' : '100vh', height: isPreview ? '100%' : undefined, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '76px 30px 70px', background: isDarkOpening ? DARK_PHOTO : openBg, overflow: 'hidden', opacity: introLeaving ? 0 : 1, transition: 'opacity .55s ease' }}>
           {openBgImg && openingStyle !== '프레임' && <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${openBgImg})`, backgroundSize: 'cover', backgroundPosition: 'center', pointerEvents: 'none' }} />}
           {/* 엠보스 프레임 — 프레임(바로시작) 전용 · 배경색 위 multiply 오버레이 (frame1/frame2) */}
           {openingStyle === '프레임' && openFrame !== 'none' && <div style={{ position: 'absolute', inset: 0, backgroundImage: `url('/classic/${openFrame}.webp')`, backgroundSize: '100% 100%', mixBlendMode: 'multiply', pointerEvents: 'none', animation: 'cl-frame-in 1.6s cubic-bezier(.22,.61,.36,1) .1s both' }} />}
@@ -974,7 +998,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         )}
 
         {page === 'main' && (
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', animation: skipIntro ? undefined : 'cl-main-in .8s ease both' }}>
         {/* ===== II. Letter (인사말) ===== */}
         <section data-scene="letter" style={{ order: orderOf('letter'), position: 'relative', minHeight: '92vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '52px 22px', background: DARK_PHOTO, overflow: 'hidden', ...hide('letter') }}>
           <div data-letter-photo style={{ position: 'absolute', inset: 0, ...cropBg(cc.classicGreetingBgImage, bgPhoto(0, { backgroundPosition: '50% 40%' })), filter: 'saturate(.78)', willChange: 'transform,opacity' }} />

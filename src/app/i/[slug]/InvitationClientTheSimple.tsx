@@ -672,6 +672,9 @@ function normalizeTheSimpleData(
     displayFont: c.displayFont,
     fontStyle: c.fontStyle,
     fontScale: typeof c.fontScale === 'number' ? c.fontScale : 1,
+    // 미설정(기존 청첩장)이면 undefined 유지 → 렌더에서 fontScale로 fallback (하위 호환)
+    introFontScale: typeof (c as Record<string, unknown>).introFontScale === 'number' ? (c as Record<string, unknown>).introFontScale as number : undefined,
+    eyebrowScale: typeof (c as Record<string, unknown>).eyebrowScale === 'number' ? (c as Record<string, unknown>).eyebrowScale as number : 1,
     sectionSpacing: typeof c.sectionSpacing === 'number' ? c.sectionSpacing : 1,
     navStyle: ((c as Record<string, unknown>).navStyle as 'hamburger' | 'bottom-nav' | 'bottom-mini') || 'hamburger',
     bgm: c.bgm ? {

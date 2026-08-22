@@ -57,6 +57,8 @@
   position: sticky;
   top: 0;
   z-index: 1;
+  /* 인트로 글자 크기는 본문(--ts-font-scale)과 분리 — 전용 슬라이더(introFontScale)만 따름 */
+  --ts-font-scale: var(--ts-intro-font-scale, 1);
 }
 
 /* 본문 래퍼 — 인트로 위로 겹쳐 올라오는 오버랩 */

@@ -5988,6 +5988,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
   const displayFontFamily = resolveDisplayFontFamily(data.displayFont)
   const koreanFontFamily = resolveKoreanFontFamily(data.fontStyle)
   const fontScale = typeof data.fontScale === 'number' ? data.fontScale : 1
+  // 인트로 글자: 미설정 시 본문(fontScale)을 따라감 — 기존 배포 청첩장 모습 유지 (하위 호환)
+  const introFontScale = typeof data.introFontScale === 'number' ? data.introFontScale : fontScale
   const eyebrowScale = typeof data.eyebrowScale === 'number' ? data.eyebrowScale : 1
   const spacingScale = typeof data.sectionSpacing === 'number' ? data.sectionSpacing : 1
   const dividerV = data.dividerVariant ?? 1
@@ -5999,6 +6001,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
     ['--font-sans' as string]: koreanFontFamily,
     ['--font-serif' as string]: koreanFontFamily,
     ['--ts-font-scale' as string]: String(fontScale),
+    ['--ts-intro-font-scale' as string]: String(introFontScale),
     ['--ts-eyebrow-scale' as string]: String(eyebrowScale),
     ['--ts-spacing-scale' as string]: String(spacingScale),
     ['--point' as string]: pointColor,

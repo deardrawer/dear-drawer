@@ -1,1 +1,1 @@
-{"version":1,"include":["/*"],"exclude":["/_next/static/*","/_next/image*","/samples/*","/*.ico","/*.svg","/*.png","/*.jpg","/*.jpeg","/classic/*","/frames/*","/fonts/*","/local-fonts.css","/*.woff2","/*.woff","/*.ttf","/*.otf","/sw.js"]}
+{"version":1,"include":["/*"],"exclude":["/_next/static/*","/_next/image*","/samples/*","/sample/classic/*","/*.ico","/*.svg","/*.png","/*.jpg","/*.jpeg","/classic/*","/frames/*","/fonts/*","/local-fonts.css","/*.woff2","/*.woff","/*.ttf","/*.otf","/sw.js"]}

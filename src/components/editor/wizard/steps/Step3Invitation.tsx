@@ -1078,9 +1078,9 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
       {/* 인사말 작성 모달 */}
       {greetingModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-2xl w-[90%] max-w-md max-h-[80vh] overflow-hidden shadow-xl">
+          <div className="bg-white rounded-2xl w-[90%] max-w-md max-h-[85vh] overflow-hidden shadow-xl flex flex-col">
             {/* 헤더 */}
-            <div className="flex items-center justify-between p-4 border-b">
+            <div className="flex items-center justify-between p-4 border-b shrink-0">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-purple-500" />
                 <h3 className="text-lg font-semibold">인사말 초안 작성</h3>
@@ -1094,7 +1094,7 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
             </div>
 
             {/* 진행 표시 */}
-            <div className="px-4 pt-4">
+            <div className="px-4 pt-4 shrink-0">
               <div className="flex gap-1">
                 {GREETING_QUESTIONS.map((_, idx) => (
                   <div
@@ -1111,7 +1111,7 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
             </div>
 
             {/* 질문 영역 */}
-            <div className="p-4 space-y-4">
+            <div className="p-4 space-y-4 flex-1 min-h-0 overflow-y-auto">
               {/* 현재 질문 */}
               <div className="text-center py-4">
                 <p className="text-lg font-medium text-gray-900">
@@ -1162,7 +1162,7 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
             </div>
 
             {/* 푸터 - 생성 버튼 */}
-            <div className="p-4 border-t bg-gray-50">
+            <div className="p-4 border-t bg-gray-50 shrink-0">
               {/* 선택한 답변 요약 */}
               <div className="mb-3 space-y-1">
                 {GREETING_QUESTIONS.map((q) => {

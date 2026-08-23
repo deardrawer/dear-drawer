@@ -459,6 +459,7 @@ function CoverSection({ content, invitation, displayId, audioRef, bgmEnabled, fo
 
   const STORY_DURATION = 5000 // 5 seconds per image
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [loadedImgs, setLoadedImgs] = useState<Record<number, boolean>>({}) // 이미지 디코딩 완료 추적(부드러운 페이드인용)
   const [progress, setProgress] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -601,10 +602,13 @@ function CoverSection({ content, invitation, displayId, audioRef, bgmEnabled, fo
               alt=""
               decoding="async"
               fetchPriority={i === 0 ? 'high' : 'auto'}
+              onLoad={() => setLoadedImgs((prev) => (prev[i] ? prev : { ...prev, [i]: true }))}
+              ref={(el) => { if (el && el.complete && el.naturalWidth > 0) setLoadedImgs((prev) => (prev[i] ? prev : { ...prev, [i]: true })) }}
               className="absolute inset-0 w-full h-full object-cover"
               style={{
-                opacity: i === currentIndex ? 1 : 0,
-                transition: 'opacity 0.3s ease-in-out',
+                // 로드 완료 시 어둠에서 서서히 떠오르도록 페이드인 (탁 나타나는 느낌 제거, 줌 없음)
+                opacity: i === currentIndex && loadedImgs[i] ? 1 : 0,
+                transition: 'opacity 0.9s ease',
               }}
             />
           ) : null

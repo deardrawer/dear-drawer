@@ -700,6 +700,25 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
           </div>
         </div>
 
+        <div className="space-y-2 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
+          <span className="text-sm font-medium text-gray-700">배치</span>
+          <p className="text-[10px] text-gray-400 leading-tight">배경 사진 구도에 맞춰 문구·버튼 위치를 선택하세요.</p>
+          <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+            {([
+              { id: 'center', label: '중간' },
+              { id: 'top', label: '상단(버튼 하단)' },
+              { id: 'bottom', label: '둘다 하단' },
+            ] as const).map((opt) => {
+              const active = (data.content.classicThanksLayout || 'center') === opt.id
+              return (
+                <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicThanksLayout', opt.id)} className={`px-3 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                  {opt.label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
         <div className="space-y-3 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
           <div>
             <p className="text-sm font-medium text-gray-700">섹션 배경 (선택)</p>

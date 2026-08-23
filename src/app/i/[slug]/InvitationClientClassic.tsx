@@ -433,6 +433,9 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   const dateFrame: 'heart' | 'stamp' = cc.classicDateFrame === 'stamp' ? 'stamp' : 'heart'
   // 마무리 감사 인사 프레임 (없음 / 도일리)
   const thanksFrame: 'none' | 'doily' = cc.classicThanksFrame === 'doily' ? 'doily' : 'none'
+  // THANK YOU 섹션 배치: 중간(center) / 상단 문구+하단 버튼(top) / 둘다 하단(bottom) — 배경 이미지에 맞춰 선택
+  const thanksLayout: 'center' | 'top' | 'bottom' = cc.classicThanksLayout === 'top' ? 'top' : cc.classicThanksLayout === 'bottom' ? 'bottom' : 'center'
+  const thanksJustify = thanksLayout === 'top' ? 'flex-start' : thanksLayout === 'bottom' ? 'flex-end' : 'center'
 
   // 날짜
   const wdate = wedding.date ? new Date(wedding.date) : new Date('2027-06-21')
@@ -1847,7 +1850,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         )}
 
         {/* ===== XII. Links ===== */}
-        <section style={{ order: orderOf('links'), position: 'relative', isolation: 'isolate', minHeight: '96vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 26, padding: '88px 34px', overflow: 'hidden', ...cropBg(thanksSecBg, { background: IVORY }), ...hide('links'), ...(thanksHasBg ? {} : tintBg('links')) }}>
+        <section style={{ order: orderOf('links'), position: 'relative', isolation: 'isolate', minHeight: '96vh', display: 'flex', flexDirection: 'column', justifyContent: thanksJustify, gap: 26, padding: '88px 34px', overflow: 'hidden', ...cropBg(thanksSecBg, { background: IVORY }), ...hide('links'), ...(thanksHasBg ? {} : tintBg('links')) }}>
           {thanksHasBg && thanksSecOverlayOp > 0 && <div style={{ position: 'absolute', inset: 0, background: `rgba(${hexToRgb(thanksSecOverlay, '28,16,13')},${thanksSecOverlayOp})`, pointerEvents: 'none', zIndex: -1 }} />}
           {(() => { const INK = thanksFgC; const inkA = (a: number) => thanksFgAf(a)
           const thanksBody = (col: string, colA: (a: number) => string) => (
@@ -1869,7 +1872,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           ) : (
             <div className="cl-reveal cl-blur" style={{ position: 'relative', textAlign: 'center' }}>{thanksBody(INK, inkA)}</div>
           )}
-          <div className="cl-reveal cl-up" data-delay="200" style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div className="cl-reveal cl-up" data-delay="200" style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: 12, marginTop: thanksLayout === 'top' ? 'auto' : undefined }}>
             <button onClick={doShare} style={{ fontFamily: F_BODY, fontSize: bfs(13), letterSpacing: '.02em', padding: '15px 0', cursor: 'pointer', background: '#FEE500', border: '1px solid #FEE500', color: '#3C1E1E', whiteSpace: 'nowrap' }}>카카오톡 공유</button>
             <button onClick={() => doCopy(shareUrl, 'link')} style={{ fontFamily: F_BODY, fontSize: bfs(13), letterSpacing: '.02em', padding: '15px 0', cursor: 'pointer', background: 'transparent', border: `1px solid ${inkA(0.35)}`, color: INK, whiteSpace: 'nowrap' }}>{copied === 'link' ? '링크 복사됨' : '링크 복사'}</button>
           </div>

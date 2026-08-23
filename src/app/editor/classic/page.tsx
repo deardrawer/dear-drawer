@@ -156,6 +156,7 @@ export interface ClassicInvitationData {
     classicButtonTextColor?: string // 채움 버튼 글자색
     classicThankYou?: string // 마무리 감사 인사 (공유 섹션)
     classicThanksFrame?: 'none' | 'doily' // 마무리 감사 인사 프레임 (없음 / 도일리)
+    classicThanksLayout?: 'center' | 'top' | 'bottom' // THANK YOU 배치: 중간 / 상단(버튼 하단) / 둘다 하단
     classicDateHeading?: string // 예식일정 상단 문구 (저희가 하나 되는 날)
     classicIntroShowParents?: boolean // 커플소개 상단 부모님 성함 표시
     classicLetterSign?: 'parents' | 'couple' | 'hosts' | 'none' // 인사말 서명 방식

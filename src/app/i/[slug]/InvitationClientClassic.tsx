@@ -510,7 +510,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   }
 
   const renderDateVariant = (): React.ReactNode => {
-    const sec = (bg: string, pad: string, extra?: React.CSSProperties): React.CSSProperties => ({ order: orderOf('date'), background: bg, padding: pad, display: 'flex', flexDirection: 'column', minHeight: '85vh', overflow: 'hidden', ...hide('date'), ...extra })
+    const sec = (bg: string, pad: string, extra?: React.CSSProperties): React.CSSProperties => ({ order: orderOf('date'), background: bg, padding: pad, display: 'flex', flexDirection: 'column', minHeight: '100dvh', overflow: 'hidden', ...hide('date'), ...extra })
     const wk = (color: string) => WEEK_KO.map((w, i) => <span key={i} style={{ fontFamily: F_META, fontSize: 11, color, letterSpacing: '.04em', textAlign: 'center', paddingBottom: 18 }}>{w}</span>)
     // 다크(2c)는 기본 달력처럼 테마 틴티드 색상을 따름
     const dTx = fgC('date'); const dTxA = (a: number) => fgA('date', a); const dBg = secBg('date')
@@ -574,7 +574,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             <div className="cl-reveal cl-lux" data-delay="180" style={{ fontFamily: F_NUM, fontWeight: 300, fontSize: 'clamp(112px,38vw,148px)', lineHeight: 0.82, letterSpacing: '-.03em', color: dTx }}>{day}</div>
             <div className="cl-reveal cl-up" data-delay="380" style={{ marginTop: 22, fontFamily: F_BODY, fontSize: 12, letterSpacing: '.22em', paddingLeft: '.22em', color: dTxA(0.72) }}>{year}년 {monthIdx0 + 1}월 · {WEEK_KO[dow]}요일</div>
           </div>
-          <p className="cl-reveal cl-blur" data-delay="240" style={{ margin: '40px 0 0', textAlign: 'center', fontFamily: F_BODY, fontSize: 15, lineHeight: 2, letterSpacing: '.02em', color: dTxA(0.82), whiteSpace: 'pre-line' }}>{'서로의 이름을 나란히 두는 날\n귀한 걸음으로 축복해 주시기 바랍니다'}</p>
+          <p className="cl-reveal cl-blur" data-delay="240" style={{ margin: '40px 0 0', textAlign: 'center', fontFamily: F_BODY, fontSize: 13.5, lineHeight: 2, letterSpacing: '.02em', color: dTxA(0.82), whiteSpace: 'pre-line' }}>{'서로의 이름을 나란히 두는 날\n귀한 걸음으로 축복해 주시기 바랍니다'}</p>
           <div style={{ marginTop: 'auto' }}>
             <div className="cl-reveal cl-linex" data-delay="80" style={{ height: 1, background: dTxA(0.24), transformOrigin: 'center' }} />
             <div className="cl-reveal cl-up" data-delay="120" style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', paddingTop: 14 }}>{wk(dTxA(0.5))}</div>
@@ -1177,6 +1177,15 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
     return () => { window.removeEventListener('pointerdown', onFirst); window.removeEventListener('touchstart', onFirst) }
   }, [bgmUrl, isPreview, cc.classicBgmAutoplay])
 
+  // 인트로 → 본문 전환 (크로스페이드). 중복 호출 방지(introLeaving 가드)
+  const goToMain = useCallback(() => {
+    setIntroLeaving((leaving) => {
+      if (leaving) return leaving
+      window.setTimeout(() => setPage('main'), 520)
+      return true
+    })
+  }, [])
+
   // 인트로 오프닝 완료 후 터치/스크롤 시 본문으로 (자동 전환 안 함)
   // 에디터 프리뷰(isPreview)에서는 상단 토글로만 전환 — 스크롤로 넘어가지 않음
   useEffect(() => {
@@ -1188,14 +1197,11 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
     const clickAdvances = openingStyle === '접힌 편지' ? fold >= 2 : openingStyle === '사진 뒤집기' ? flip : true
     setIntroLeaving(false)
     let ready = false
-    let fired = false
     const enable = setTimeout(() => { ready = true }, 500) // 오프닝 탭이 즉시 넘기지 않도록
     // 인트로가 먼저 부드럽게 사라진 뒤 본문으로 전환 (크로스페이드)
     const go = () => {
-      if (!ready || fired) return
-      fired = true
-      setIntroLeaving(true)
-      window.setTimeout(() => setPage('main'), 520)
+      if (!ready) return
+      goToMain()
     }
     // 짧은 스침으로 넘어가지 않도록 임계값: 스와이프 90px / 휠 누적 60 / 스크롤 40px
     let startY = 0
@@ -1218,7 +1224,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('click', onClick)
     }
-  }, [isPreview, introClickAdvance, page, introDone, openingStyle, fold, flip])
+  }, [isPreview, introClickAdvance, page, introDone, openingStyle, fold, flip, goToMain])
 
   // 본문 진입 시 상단으로 (+ 입장 제스처의 관성 스크롤이 이어지지 않도록 잠깐 고정)
   useEffect(() => {
@@ -1430,7 +1436,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             </div>
           )}
           {introDone && (
-          <div style={{ position: 'absolute', bottom: 40, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, pointerEvents: 'none', zIndex: 6, animation: 'cl-fade-soft 1.1s ease both' }}>
+          <div onClick={goToMain} role="button" style={{ position: 'absolute', bottom: 40, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, cursor: 'pointer', zIndex: 6, animation: 'cl-fade-soft 1.1s ease both' }}>
             <span style={{ fontFamily: F_BODY, fontSize: bfs(12), letterSpacing: '.18em', paddingLeft: '.18em', color: openingStyle === '프레임' ? frameInk : 'rgba(250,247,242,.9)', textShadow: openingStyle === '프레임' ? undefined : '0 1px 6px rgba(20,10,8,.5)' }}>터치 또는 스크롤</span>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={openingStyle === '프레임' ? frameInk : 'rgba(250,247,242,.9)'} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'cl-nudge 1.6s ease-in-out infinite', filter: openingStyle === '프레임' ? undefined : 'drop-shadow(0 1px 4px rgba(20,10,8,.5))' }}><path d="M6 9l6 6 6-6" /></svg>
           </div>
@@ -1693,7 +1699,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
 
         {/* ===== VIII. Date ===== */}
         {dateStyle !== 'classic' ? renderDateVariant() : (
-        <section style={{ order: orderOf('date'), position: 'relative', minHeight: '85vh', padding: '74px 30px 66px', background: IVORY, overflow: 'hidden', ...hide('date'), ...tintBg('date') }}>
+        <section style={{ order: orderOf('date'), position: 'relative', minHeight: '100dvh', padding: '74px 30px 66px', background: IVORY, overflow: 'hidden', ...hide('date'), ...tintBg('date') }}>
           {(() => { const IVORY = dInk; const ivoryA = dInkA; return (<>
           <div className="cl-reveal cl-line" data-delay="100" style={{ position: 'absolute', left: 30, top: 0, bottom: 0, width: 1, background: ivoryA(0.14) }} />
           <p className="cl-reveal cl-rise" data-delay="180" style={{ margin: '0 0 12px', position: 'relative', fontFamily: F_BODY, fontStyle: 'italic', fontSize: 13, letterSpacing: '.03em', color: ivoryA(0.75) }}>{cc.classicDateHeading || '저희가 하나 되는 날'}</p>
@@ -1757,7 +1763,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                 <>
                   <div ref={mapContainerRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
                   {!mapActive && (
-                    <div onClick={handleOverlayTap} style={{ position: 'absolute', inset: 0, zIndex: 2, cursor: 'pointer', background: 'rgba(53,23,20,.04)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 12 }}>
+                    <div onClick={handleOverlayTap} style={{ position: 'absolute', inset: 0, zIndex: 2, cursor: 'pointer', background: 'rgba(53,23,20,.04)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 46 }}>
                       <span style={{ fontFamily: F_BODY, fontSize: bfs(11), color: IVORY, background: inkA(0.62), padding: '5px 12px', borderRadius: 20 }}>{mapState === 'hint' ? '한 번 더 누르면 이동할 수 있어요' : '지도를 눌러 이동/확대'}</span>
                     </div>
                   )}

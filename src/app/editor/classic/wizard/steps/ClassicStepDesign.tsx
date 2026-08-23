@@ -203,6 +203,7 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
       )
     }
     if (id === '접힌 편지' || id === '사진 뒤집기') {
+      const ovOp = Math.round((data.content.classicInfoOverlayOpacity ?? 0.42) * 100)
       return (
         <div className="mt-2 space-y-3 rounded-lg border border-gray-200 p-4 bg-white">
           <div>
@@ -227,11 +228,24 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
               />
             </div>
           )}
-          <ColorField
-            label="오버레이 색상"
-            value={data.content.classicInfoOverlayColor || '#1C100D'}
-            onChange={(hex) => updateNestedData('content.classicInfoOverlayColor', hex)}
-          />
+          <div className="flex items-center gap-3">
+            <ColorField
+              label="오버레이 색상"
+              value={data.content.classicInfoOverlayColor || '#1C100D'}
+              onChange={(hex) => updateNestedData('content.classicInfoOverlayColor', hex)}
+            />
+            <div className="flex-1">
+              <div className="flex justify-between text-[11px] text-gray-500 mb-1"><span>오버레이 투명도</span><span>{ovOp}%</span></div>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={ovOp}
+                onChange={(e) => updateNestedData('content.classicInfoOverlayOpacity', Number(e.target.value) / 100)}
+                className="w-full accent-gray-900"
+              />
+            </div>
+          </div>
         </div>
       )
     }

@@ -14,7 +14,7 @@ import InvitationClientClassic from "./InvitationClientClassic";
 import type { Invitation } from "@/types/invitation";
 import type { Viewport } from "next";
 import { isUUID } from "@/lib/slug";
-import { createSampleInvitation, ourSampleContent, familySampleContent, theSimpleSampleContent } from "@/lib/sample-data";
+import { createSampleInvitation, ourSampleContent, familySampleContent, theSimpleSampleContent, classicSampleContent } from "@/lib/sample-data";
 
 // 핀치 줌 비활성화를 위한 viewport 설정
 export const viewport: Viewport = {
@@ -206,6 +206,33 @@ function toAbsoluteImageUrl(imageUrl: string, baseUrl: string): string {
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params;
   const baseUrl = "https://invite.deardrawer.com";
+
+  // 클래식 샘플(테오 & 엘리스) 전용 메타데이터
+  if (slug === 'sample-classic') {
+    const c = classicSampleContent;
+    const title = `${c.groom.name} ♥ ${c.bride.name} 결혼합니다`;
+    const description = '저희 두 사람의 새로운 시작에 함께해 주세요.';
+    const thumb = toAbsoluteImageUrl(c.content.classicOpeningBgImage || c.gallery.images[0]?.url || '', baseUrl);
+    return {
+      title,
+      description,
+      openGraph: {
+        title,
+        description,
+        type: "website",
+        url: `${baseUrl}/i/${slug}`,
+        siteName: "dear drawer - 모바일 청첩장",
+        locale: "ko_KR",
+        ...(thumb && { images: [{ url: thumb, width: 800, height: 400, alt: title }] }),
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        ...(thumb && { images: [thumb] }),
+      },
+    };
+  }
 
   // 샘플 청첩장 메타데이터 처리
   const metaSampleSlugs = ['sample-our', 'sample-family', 'sample-magazine', 'sample-film', 'sample-record', 'sample-exhibit', 'sample-feed', 'sample-essay', 'sample-essay-paper', 'sample-essay-book', 'sample-the-simple'];

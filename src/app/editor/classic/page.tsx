@@ -113,6 +113,9 @@ export interface ClassicInvitationData {
     classicDatePhotoEnabled?: boolean // 예식 일정 폴라로이드 사진 표시 여부 (기본 true)
     classicDateBird?: boolean // 사진 미표시일 때 비둘기 장식 표시 여부 (기본 true)
     classicDateFrame?: 'heart' | 'stamp' // 예식일정 사진 프레임 (하트 / 우표)
+    classicDateStyle?: 'classic' | '2b' | '2c' | '2d' | '2e' // 예식일정 달력 디자인 (기본 / 풀그리드 / 다크 / 티켓 / 에디토리얼)
+    classicDatePointColor?: string // 달력 변형 포인트 색 (하트/동그라미/말풍선/디데이)
+    classicDateNumFont?: 'display' | 'body' // 달력 숫자 폰트: 영문(display) / 한글(body)
     // 혼주 표시 (인사말/소개)
     classicShowParents?: boolean // 부모님 성함 표시 여부 (기본 true)
     classicGroomTitle?: string // 신랑 호칭 (기본 '아들')
@@ -128,6 +131,8 @@ export interface ClassicInvitationData {
     classicInfoSectionOverlayOpacity?: number
     classicInfoImgTextColor?: string // 결혼식 안내 이미지 배경 위 텍스트
     classicDirectionsBg?: ClassicPhoto // 오시는길 상단 배경 사진 (미설정 시 갤러리 첫 사진)
+    classicDirectionsOverlayColor?: string // 오시는길 배경사진 오버레이 색상 (기본 #1C100D)
+    classicDirectionsOverlayOpacity?: number // 오시는길 배경사진 오버레이 투명도 0~1 (기본 0)
     // 커플소개 섹션 배경
     classicIntroSectionBg?: ClassicPhoto
     classicIntroSectionOverlayColor?: string

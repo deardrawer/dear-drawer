@@ -19,6 +19,12 @@ declare global {
               callback: (result: { x: string; y: string }[], status: string) => void
             ) => void;
           };
+          Places: new () => {
+            keywordSearch: (
+              keyword: string,
+              callback: (result: { x: string; y: string }[], status: string) => void
+            ) => void;
+          };
           Status: {
             OK: string;
             ZERO_RESULT: string;

@@ -92,73 +92,9 @@ export default function ClassicStepContent({ data, updateNestedData, invitationI
       <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
         <p className="text-base text-orange-800 font-medium mb-1">추가 정보</p>
         <p className="text-sm text-orange-700">
-          갤러리, 오시는 길, 계좌, 결혼식 안내, 공유 정보를 입력하세요.
+          계좌, 결혼식 안내, 공유, 참석 여부(RSVP) 정보를 입력하세요.
         </p>
       </div>
-
-      {/* 오시는 길 */}
-      <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-            <circle cx="12" cy="10" r="3" />
-          </svg>
-          오시는 길
-        </h3>
-        <div className="rounded-lg border border-gray-200 p-4 bg-gray-50/50 space-y-3">
-          <div className="space-y-1.5">
-            <Label className="text-sm font-medium">배경 사진 (선택)</Label>
-            <p className="text-[10px] text-gray-400 leading-tight">상단 배경으로 쓸 사진. 비우면 갤러리 첫 사진이 흑백으로 사용됩니다.</p>
-            <ClassicPhotoField
-              value={data.content.classicDirectionsBg}
-              onChange={(p) => updateNestedData('content.classicDirectionsBg', p)}
-              invitationId={invitationId || undefined}
-              aspectRatio={16 / 9}
-              containerWidth={220}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-sm font-medium">자가용 / 주차</Label>
-            <Textarea
-              value={data.wedding.directions.car}
-              onChange={(e) => updateNestedData('wedding.directions.car', e.target.value)}
-              placeholder="예: 건물 지하 1~3층 주차 · 안내 데스크에서 3시간 무료"
-              rows={3}
-              className="resize-none"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-sm font-medium">대중교통 (버스/지하철)</Label>
-            <Textarea
-              value={data.wedding.directions.publicTransport}
-              onChange={(e) => updateNestedData('wedding.directions.publicTransport', e.target.value)}
-              placeholder="예: 1·2호선 시청역 4번 출구에서 도보 5분"
-              rows={3}
-              className="resize-none"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-sm font-medium">기차 (KTX/SRT)</Label>
-            <Textarea
-              value={data.wedding.directions.train}
-              onChange={(e) => updateNestedData('wedding.directions.train', e.target.value)}
-              placeholder="예: KTX 서울역에서 하차 후 3번 출구에서 셔틀버스 이용 (15분 소요)"
-              rows={2}
-              className="resize-none"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-sm font-medium">고속버스</Label>
-            <Textarea
-              value={data.wedding.directions.expressBus}
-              onChange={(e) => updateNestedData('wedding.directions.expressBus', e.target.value)}
-              placeholder="예: 고속버스터미널에서 하차 후 택시로 10분 소요"
-              rows={2}
-              className="resize-none"
-            />
-          </div>
-        </div>
-      </section>
 
       {/* 마음 전하실 곳 (계좌) */}
       <section className="space-y-4">

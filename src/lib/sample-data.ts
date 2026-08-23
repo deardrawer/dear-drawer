@@ -953,6 +953,37 @@ export function createSampleInvitation(type: 'our' | 'family' | 'magazine' | 'fi
     }
   }
 
+  // classic 타입은 전용 클래식 콘텐츠(테오 & 엘리스)를 사용
+  if (type === 'classic') {
+    const now = new Date().toISOString()
+    const c = classicSampleContent
+    return {
+      id: 'sample-classic-id',
+      user_id: 'sample-user-id',
+      template_id: 'narrative-classic' as const,
+      groom_name: c.groom.name,
+      bride_name: c.bride.name,
+      wedding_date: c.wedding.date,
+      wedding_time: c.wedding.timeDisplay,
+      venue_name: c.wedding.venue.name,
+      venue_address: c.wedding.venue.address,
+      venue_detail: c.wedding.venue.hall || null,
+      venue_map_url: null,
+      main_image: c.content.classicOpeningBgImage || (c.gallery.images[0]?.url ?? ''),
+      gallery_images: JSON.stringify(c.gallery.images),
+      greeting_message: c.content.greeting || '',
+      contact_groom: '',
+      contact_bride: '',
+      account_info: JSON.stringify([]),
+      content: JSON.stringify(c),
+      is_paid: 1,
+      is_published: 1,
+      slug: 'sample-classic',
+      created_at: now,
+      updated_at: now,
+    }
+  }
+
   const content = type === 'family' ? familySampleContent : type === 'film' ? filmSampleContent : type === 'record' ? recordSampleContent : type === 'exhibit' ? exhibitSampleContent : ourSampleContent
   const templateIdMap = { our: 'narrative-our', family: 'narrative-family', magazine: 'narrative-magazine', film: 'narrative-film', record: 'narrative-record', exhibit: 'narrative-exhibit', classic: 'narrative-classic' } as const
   const now = new Date().toISOString()
@@ -988,7 +1019,7 @@ export function createSampleInvitation(type: 'our' | 'family' | 'magazine' | 'fi
   }
   const magazineMedia = { ...content.media, coverImage: '/sample/magazine-cover.png' }
   const magazineYoutube = { enabled: true, title: '', url: 'https://youtu.be/iK1eXqrFZ6s' }
-  const magazineLike = type === 'magazine' || type === 'classic'
+  const magazineLike = type === 'magazine'
   const finalContent = magazineLike ? { ...content, colorTheme: 'modern-black', fontStyle: 'modern', profileFrameShape: 'portrait', interviews: magazineInterviews, guidance: magazineGuidance, gallery: magazineGallery, media: magazineMedia, youtube: magazineYoutube } : content
 
   return {
@@ -1016,4 +1047,101 @@ export function createSampleInvitation(type: 'our' | 'family' | 'magazine' | 'fi
     created_at: now,
     updated_at: now,
   }
+}
+
+// THE CLASSIC 샘플 콘텐츠 (테오 & 엘리스) — 실제 에디터로 제작한 클래식 청첩장 기반
+// 이미지는 public/sample/classic/* 로 커밋되어 배포에서도 표시됨
+export const classicSampleContent = {
+  "customAccentColor": "#000000",
+  "customBgColor": "#FFFFFF",
+  "customSectionBgColor": "#F3F1EC",
+  "groom": {
+    "name": "테오",
+    "nameEn": "THEO",
+    "father": { "name": "김00", "bank": { "bank": "", "account": "", "holder": "", "enabled": false } },
+    "mother": { "name": "박00", "bank": { "bank": "", "account": "", "holder": "", "enabled": false } },
+    "bank": { "bank": "", "account": "", "holder": "", "enabled": false }
+  },
+  "bride": {
+    "name": "엘리스",
+    "nameEn": "ELISE",
+    "father": { "name": "이00", "bank": { "bank": "", "account": "", "holder": "", "enabled": false } },
+    "mother": { "name": "최00", "bank": { "bank": "", "account": "", "holder": "", "enabled": false } },
+    "bank": { "bank": "", "account": "", "holder": "", "enabled": false }
+  },
+  "wedding": {
+    "date": "2026-08-22",
+    "time": "14:00",
+    "timeDisplay": "오후 2시",
+    "venue": { "name": "더 클래식하우스", "hall": "그랜드홀", "address": "서울 중구 정동길 24" },
+    "directions": { "car": "", "publicTransport": "", "train": "", "expressBus": "" }
+  },
+  "gallery": {
+    "images": [
+      { "url": "/sample/classic/gallery1.webp", "scale": 1, "positionX": 0, "positionY": 0 },
+      { "url": "/sample/classic/gallery2.webp", "scale": 1, "positionX": 0, "positionY": 0 },
+      { "url": "/sample/classic/gallery3.webp", "scale": 1, "positionX": 0, "positionY": 0 },
+      { "url": "/sample/classic/gallery4.webp", "scale": 1, "positionX": 0, "positionY": 0 },
+      { "url": "/sample/classic/gallery5.webp", "scale": 1, "positionX": 0, "positionY": -40 }
+    ]
+  },
+  "content": {
+    "greeting": "",
+    "quote": { "text": "", "author": "" },
+    "coupleTogetherText": "",
+    "classicOpeningStyle": "사진 뒤집기",
+    "classicAccountSide": "both",
+    "classicDisplayFont": "lora",
+    "classicBodyFont": "suit",
+    "classicInfo": [],
+    "classicDefaultTextColor": "#111111",
+    "classicTintedTextColor": "#111111",
+    "classicButtonTextColor": "#FFFFFF",
+    "classicSectionBgMap": { "intro": "tinted", "date": "tinted", "rsvp": "tinted" },
+    "classicOpeningBgImage": "/sample/classic/opening.webp",
+    "classicOpeningBgColor": "#FFFFFF",
+    "classicFlipPhoto": { "url": "/sample/classic/flip.webp", "scale": 1, "positionX": -3.79, "positionY": 0 },
+    "classicDateStyle": "2c",
+    "classicLightboxVariant": 2,
+    "classicDateHeading": "",
+    "classicOpeningFrame": "none",
+    "classicInfoOverlayOpacity": 0.34,
+    "classicLetterFrame": "wave",
+    "classicGreetingBgImage": { "url": "/sample/classic/greeting.webp", "scale": 1, "positionX": 0, "positionY": 0 },
+    "classicGreetingOverlayOpacity": 0.33,
+    "classicGreetingOverlayColor": "#000000",
+    "classicIntroMode": "together",
+    "classicIntroTogetherFrame": "oval",
+    "classicTogetherPhoto": { "url": "/sample/classic/together.webp", "scale": 1, "positionX": 0, "positionY": 0 },
+    "classicInterstitials": [
+      {
+        "type": "photoText",
+        "photos": [{ "url": "/sample/classic/inter-photo.webp", "scale": 1, "positionX": 0, "positionY": 0 }],
+        "text": "우연처럼 만나 스며든 서로가 \n이제는 인생을 함께 \n걸어갈 소중한 사람이 되었습니다.",
+        "textSize": 13,
+        "textAlign": "left",
+        "bg": { "url": "/sample/classic/inter-bg.webp", "scale": 1, "positionX": 0, "positionY": 0 },
+        "overlayOpacity": 0.66,
+        "overlayColor": "#FFFFFF"
+      }
+    ],
+    "classicGuideEnabled": true,
+    "classicGuide": [
+      {
+        "title": "꽃 답례품 안내",
+        "body": "예식 후 하객분들께 \n감사의 마음을 전하기 위해\n계절의 꽃으로 만든\n작은 꽃다발을 준비했습니다.\n소중한 발걸음에 대한\n감사의 선물로 받아주세요.",
+        "enabled": true,
+        "photo": { "url": "/sample/classic/guide-flower.webp", "scale": 1, "positionX": 0, "positionY": 0 }
+      },
+      { "title": "화환 안내", "body": "축하의 마음만으로도 충분히 감사하여\n화환은 정중히 사양하고자 합니다.\n따뜻한 마음으로 축복해주시면 감사하겠습니다.", "enabled": false },
+      { "title": "화동 안내", "body": "예식을 빛내줄 화동을 모집합니다.\n참여를 원하시면 미리 연락 부탁드립니다.", "enabled": false },
+      { "title": "피로연 안내", "body": "예식 후 피로연이 마련되어 있습니다.\n함께 자리해 주시면 감사하겠습니다.", "enabled": false },
+      { "title": "포토부스 안내", "body": "포토부스가 준비되어 있습니다.\n예쁜 순간을 자유롭게 남겨가세요.", "enabled": true },
+      { "title": "셔틀버스 운행", "body": "예식장까지 셔틀버스를 운행합니다.\n출발 시간과 위치는 아래를 참고해 주세요.", "enabled": false }
+    ],
+    "classicInfoSectionBg": { "url": "/sample/classic/info-bg.webp", "scale": 1, "positionX": 0, "positionY": 0 },
+    "classicDirectionsBg": { "url": "/sample/classic/directions-bg.webp", "scale": 1, "positionX": 0, "positionY": 0 },
+    "classicGalleryCaption": "The best is yet to come. "
+  },
+  "meta": { "title": "", "description": "", "kakaoThumbnail": "" }
 }

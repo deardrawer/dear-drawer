@@ -295,7 +295,7 @@ const SHOWCASE_ITEMS: {
     badgeColor: 'text-stone-700',
     badgeBg: 'bg-stone-100',
     btnClass: 'bg-stone-800 hover:bg-stone-900',
-    comingSoon: true,
+    badge: 'New',
   },
   {
     id: 'parents',

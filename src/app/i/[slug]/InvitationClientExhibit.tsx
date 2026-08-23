@@ -591,18 +591,23 @@ function CoverSection({ content, invitation, displayId, audioRef, bgmEnabled, fo
       <InlineBgmEqualizer audioRef={audioRef} bgmEnabled={bgmEnabled} showNotification={content?.bgm?.showNotification} notificationText={content?.bgm?.notificationText} />
 
       {/* Story photos — crossfade */}
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 bg-neutral-900">
         {storyImages.map((img, i) => (
-          <img
-            key={i}
-            src={img}
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{
-              opacity: i === currentIndex ? 1 : 0,
-              transition: 'opacity 0.3s ease-in-out',
-            }}
-          />
+          // 초기 진입 버벅임 방지: 현재/다음 이미지만 마운트해 동시 디코딩 최소화
+          (i <= currentIndex + 1) ? (
+            <img
+              key={i}
+              src={img}
+              alt=""
+              decoding="async"
+              fetchPriority={i === 0 ? 'high' : 'auto'}
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{
+                opacity: i === currentIndex ? 1 : 0,
+                transition: 'opacity 0.3s ease-in-out',
+              }}
+            />
+          ) : null
         ))}
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
       </div>

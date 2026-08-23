@@ -493,6 +493,47 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
           </svg>
           예식 일정
         </h3>
+        {/* 달력 디자인 선택 */}
+        <div className="space-y-2 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
+          <p className="text-sm font-medium text-gray-700">달력 디자인</p>
+          <div className="grid grid-cols-3 gap-1.5">
+            {([
+              { id: 'classic', label: '기본' },
+              { id: '2b', label: '풀 그리드' },
+              { id: '2c', label: '다크' },
+              { id: '2d', label: '티켓' },
+              { id: '2e', label: '에디토리얼' },
+            ] as const).map((opt) => {
+              const active = (data.content.classicDateStyle || 'classic') === opt.id
+              return (
+                <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicDateStyle', opt.id)} className={`px-2 py-2 rounded-md border text-xs transition-colors ${active ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-400'}`}>
+                  {opt.label}
+                </button>
+              )
+            })}
+          </div>
+          <p className="text-[10px] text-gray-400 leading-tight">기본 외 디자인(풀그리드·다크·티켓·에디토리얼)은 각자 고유 색상·레이아웃을 사용하며, 사진 없이 타이포 중심입니다.</p>
+          <div className="pt-1">
+            <ColorField label="포인트 색상 (예식일 강조·하트·디데이)" value={data.content.classicDatePointColor || '#c06a5b'} onChange={(hex) => updateNestedData('content.classicDatePointColor', hex)} />
+          </div>
+          <div className="pt-1">
+            <p className="text-sm font-medium text-gray-700 mb-1.5">달력 숫자 폰트</p>
+            <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+              {([
+                { id: 'display', label: '영문 폰트' },
+                { id: 'body', label: '한글 폰트' },
+              ] as const).map((opt) => {
+                const active = (data.content.classicDateNumFont || 'display') === opt.id
+                return (
+                  <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicDateNumFont', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                    {opt.label}
+                  </button>
+                )
+              })}
+            </div>
+            <p className="text-[10px] text-gray-400 leading-tight mt-1">달력 날짜 숫자에 적용할 폰트 (기본: 영문 디스플레이 폰트)</p>
+          </div>
+        </div>
         <div className="space-y-1.5">
           <Label className="text-sm font-medium">상단 문구</Label>
           <Input
@@ -501,7 +542,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
             placeholder="저희가 하나 되는 날"
           />
         </div>
-        <p className="text-sm text-gray-500">날짜·달력 섹션에 들어가는 폴라로이드 사진입니다.</p>
+        {(data.content.classicDateStyle || 'classic') === 'classic' && (
         <div className="space-y-3 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
           <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
             <input type="checkbox" checked={data.content.classicDatePhotoEnabled !== false} onChange={(e) => updateNestedData('content.classicDatePhotoEnabled', e.target.checked)} />
@@ -540,6 +581,89 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
               비둘기 장식 표시
             </label>
           )}
+        </div>
+        )}
+      </section>
+
+      {/* 오시는 길 */}
+      <section className="space-y-4">
+        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+          오시는 길
+        </h3>
+        <div className="rounded-lg border border-gray-200 p-4 bg-gray-50/50 space-y-3">
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">배경 사진 (선택)</Label>
+            <p className="text-[10px] text-gray-400 leading-tight">상단 배경으로 쓸 사진. 비우면 갤러리 첫 사진이 흑백으로 사용됩니다.</p>
+            <ClassicPhotoField
+              value={data.content.classicDirectionsBg}
+              onChange={(p) => updateNestedData('content.classicDirectionsBg', p)}
+              invitationId={invitationId || undefined}
+              aspectRatio={16 / 9}
+              containerWidth={220}
+            />
+            <div className="flex items-center gap-3 pt-1">
+              <ColorField
+                label="오버레이 색상"
+                value={data.content.classicDirectionsOverlayColor || '#1C100D'}
+                onChange={(hex) => updateNestedData('content.classicDirectionsOverlayColor', hex)}
+              />
+              <div className="flex-1">
+                <div className="flex justify-between text-[11px] text-gray-500 mb-1"><span>오버레이 투명도</span><span>{Math.round((data.content.classicDirectionsOverlayOpacity ?? 0) * 100)}%</span></div>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  value={Math.round((data.content.classicDirectionsOverlayOpacity ?? 0) * 100)}
+                  onChange={(e) => updateNestedData('content.classicDirectionsOverlayOpacity', Number(e.target.value) / 100)}
+                  className="w-full accent-gray-900"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">자가용 / 주차</Label>
+            <Textarea
+              value={data.wedding.directions.car}
+              onChange={(e) => updateNestedData('wedding.directions.car', e.target.value)}
+              placeholder="예: 건물 지하 1~3층 주차 · 안내 데스크에서 3시간 무료"
+              rows={3}
+              className="resize-none"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">대중교통 (버스/지하철)</Label>
+            <Textarea
+              value={data.wedding.directions.publicTransport}
+              onChange={(e) => updateNestedData('wedding.directions.publicTransport', e.target.value)}
+              placeholder="예: 1·2호선 시청역 4번 출구에서 도보 5분"
+              rows={3}
+              className="resize-none"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">기차 (KTX/SRT)</Label>
+            <Textarea
+              value={data.wedding.directions.train}
+              onChange={(e) => updateNestedData('wedding.directions.train', e.target.value)}
+              placeholder="예: KTX 서울역에서 하차 후 3번 출구에서 셔틀버스 이용 (15분 소요)"
+              rows={2}
+              className="resize-none"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">고속버스</Label>
+            <Textarea
+              value={data.wedding.directions.expressBus}
+              onChange={(e) => updateNestedData('wedding.directions.expressBus', e.target.value)}
+              placeholder="예: 고속버스터미널에서 하차 후 택시로 10분 소요"
+              rows={2}
+              className="resize-none"
+            />
+          </div>
         </div>
       </section>
 

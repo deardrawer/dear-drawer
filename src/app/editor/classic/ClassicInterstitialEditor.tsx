@@ -13,6 +13,8 @@ export type ClassicInter = {
   bg?: ClassicPhoto
   overlayColor?: string
   overlayOpacity?: number
+  textSize?: number
+  textAlign?: 'left' | 'center' | 'right'
 }
 
 interface Props {
@@ -22,9 +24,9 @@ interface Props {
 }
 
 const TYPES = [
-  { id: 'photo2', label: '사진 2장', photos: 2, hasText: true, hasCaption: false, hasBg: true, ratio: 4 / 3 },
-  { id: 'photo1', label: 'FULL 사진', photos: 1, hasText: true, hasCaption: false, hasBg: false, ratio: 5 / 4 },
-  { id: 'photoText', label: '인용구', photos: 1, hasText: true, hasCaption: true, hasBg: true, ratio: 5 / 4 },
+  { id: 'photo2', label: '사진 2장', photos: 2, hasText: true, hasCaption: false, hasBg: true, ratio: 4 / 3, textBase: 18, alignBase: 'center' },
+  { id: 'photo1', label: 'FULL 사진', photos: 1, hasText: true, hasCaption: false, hasBg: false, ratio: 5 / 4, textBase: 20, alignBase: 'center' },
+  { id: 'photoText', label: '인용구', photos: 1, hasText: true, hasCaption: true, hasBg: true, ratio: 5 / 4, textBase: 21, alignBase: 'left' },
 ] as const
 
 export default function ClassicInterstitialEditor({ value, onChange, invitationId }: Props) {
@@ -97,14 +99,49 @@ export default function ClassicInterstitialEditor({ value, onChange, invitationI
             </div>
 
             {meta.hasText && (
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <span className="text-sm font-medium text-gray-700">{it.type === 'photoText' ? '인용문' : '문구 (선택)'}</span>
                 <Textarea
                   value={it.text || ''}
                   onChange={(e) => update(i, { text: e.target.value })}
-                  placeholder={it.type === 'photoText' ? '함께한 모든 순간이 우리의 이야기가 되었습니다.' : '사진 위에 얹을 짧은 문구'}
-                  rows={2}
+                  placeholder={it.type === 'photoText' ? '함께한 모든 순간이\n우리의 이야기가 되었습니다.' : '사진 위에 얹을 짧은 문구\n(줄바꿈 반영됩니다)'}
+                  rows={3}
                 />
+                <div className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <div className="flex justify-between text-[11px] text-gray-500 mb-1"><span>글자 크기</span><span>{it.textSize ?? meta.textBase}px</span></div>
+                    <input
+                      type="range"
+                      min={12}
+                      max={36}
+                      value={it.textSize ?? meta.textBase}
+                      onChange={(e) => update(i, { textSize: Number(e.target.value) })}
+                      className="w-full accent-gray-900"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[11px] text-gray-500">정렬</span>
+                    <div className="inline-flex rounded-md border border-gray-200 overflow-hidden">
+                      {([
+                        { id: 'left', label: '좌' },
+                        { id: 'center', label: '중앙' },
+                        { id: 'right', label: '우' },
+                      ] as const).map((opt) => {
+                        const active = (it.textAlign ?? meta.alignBase) === opt.id
+                        return (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => update(i, { textAlign: opt.id })}
+                            className={`px-2.5 py-1 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}
+                          >
+                            {opt.label}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
             {meta.hasCaption && (

@@ -2096,8 +2096,8 @@ function TheSimpleEditorContent() {
                     <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-stone-800 border-b border-stone-300 pb-2">
                       언어
                     </h2>
-                    <p className="text-[11px] text-stone-400 leading-relaxed">
-                      English 선택 시 요일·시간·RSVP·메뉴가 영어로, 지도는 구글지도로 표시됩니다.
+                    <p className="rounded-lg border border-stone-200 bg-white p-3 text-[11.5px] text-stone-500 leading-relaxed">
+                      <b className="font-semibold text-stone-800">English</b> 선택 시 <b className="font-semibold text-stone-800">요일·시간·RSVP·메뉴·네비게이션</b>이 영어로, <b className="font-semibold text-stone-800">지도는 구글지도</b>로 표시됩니다. 그 외 인사말·소개 등 <b className="font-semibold text-stone-800">본문 텍스트</b>는 각 섹션 에디터에서 직접 영어로 입력해 주세요.
                     </p>
                     <div className="grid grid-cols-2 gap-2">
                       {([

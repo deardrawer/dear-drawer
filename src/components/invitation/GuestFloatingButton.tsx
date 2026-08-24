@@ -455,7 +455,7 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
                 fontFamily: "'Noto Sans KR', sans-serif",
               }}
             >
-              결혼식 정보 확인하기
+              {isEn ? 'View Wedding Info' : '결혼식 정보 확인하기'}
               {/* Speech bubble tail */}
               <div
                 className="absolute"
@@ -579,7 +579,7 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
           <div className="fixed inset-0 bg-black/50 z-50" onClick={handleCloseBottomSheet} />
           <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 p-6 pb-8" style={{ maxHeight: '70%' }}>
             <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-6" />
-            <h3 className="text-center text-sm mb-6" style={{ fontFamily: fonts.displayKr, color: '#333', fontWeight: 500 }}>결혼식 정보</h3>
+            <h3 className="text-center text-sm mb-6" style={{ fontFamily: fonts.displayKr, color: '#333', fontWeight: 500 }}>{isEn ? 'Wedding Info' : '결혼식 정보'}</h3>
             <div className={`grid gap-3 ${menuItems.length <= 2 ? 'grid-cols-' + menuItems.length : 'grid-cols-2'}`}>
               {menuItems.map((item) => (
                 <button key={item.key} className="flex flex-col items-center justify-center p-5 rounded-2xl" style={{ background: '#fafafa', color: '#888' }} onClick={() => openModal(item.key as ModalType)}>

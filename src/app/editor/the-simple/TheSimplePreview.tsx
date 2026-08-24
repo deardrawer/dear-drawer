@@ -6331,6 +6331,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
             themeColors={themeColors}
             fonts={{ displayKr: koreanFontFamily }}
             navStyle={data.navStyle || 'hamburger'}
+            language={data.language}
+            showShare={data.showFooterShare !== false}
             invitation={{
               venue_name: data.wedding.venue.name,
               venue_address: data.wedding.venue.address,

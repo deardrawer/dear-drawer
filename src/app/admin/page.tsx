@@ -745,7 +745,21 @@ export default function AdminPage() {
                               보기
                             </a>
                             <a
-                              href={`/editor?id=${inv.id}&admin=true`}
+                              href={`${
+                                inv.template_id === 'narrative-parents' || inv.template_id === 'parents'
+                                  ? '/editor/parents'
+                                  : inv.template_id === 'narrative-exhibit' || inv.template_id === 'exhibit'
+                                  ? '/editor/feed'
+                                  : inv.template_id === 'narrative-thankyou'
+                                  ? '/editor/thank-you'
+                                  : inv.template_id === 'narrative-the-simple'
+                                  ? '/editor/the-simple'
+                                  : inv.template_id === 'narrative-classic'
+                                  ? '/editor/classic'
+                                  : inv.template_id === 'narrative-essay'
+                                  ? '/editor/essay'
+                                  : '/editor'
+                              }?id=${inv.id}&admin=true`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="px-3 py-1 rounded text-xs"

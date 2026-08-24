@@ -11,6 +11,7 @@ import InvitationClientExhibit from "@/app/i/[slug]/InvitationClientExhibit";
 import InvitationClientEssay from "@/app/i/[slug]/InvitationClientEssay";
 import InvitationClientThankYou from "@/app/i/[slug]/InvitationClientThankYou";
 import InvitationClientTheSimple from "@/app/i/[slug]/InvitationClientTheSimple";
+import InvitationClientClassic from "@/app/i/[slug]/InvitationClientClassic";
 import type { Invitation } from "@/types/invitation";
 
 interface PageProps {
@@ -155,6 +156,7 @@ export default async function InvitationPage({ params, searchParams }: PageProps
       case 'narrative-exhibit': return InvitationClientExhibit;
       case 'narrative-essay': return InvitationClientEssay;
       case 'narrative-the-simple': return InvitationClientTheSimple;
+      case 'narrative-classic': return InvitationClientClassic;
       default: return InvitationClient;
     }
   })();

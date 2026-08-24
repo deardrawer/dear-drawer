@@ -679,6 +679,9 @@ function normalizeTheSimpleData(
     eyebrowScale: typeof (c as Record<string, unknown>).eyebrowScale === 'number' ? (c as Record<string, unknown>).eyebrowScale as number : 1,
     sectionSpacing: typeof c.sectionSpacing === 'number' ? c.sectionSpacing : 1,
     navStyle: ((c as Record<string, unknown>).navStyle as 'hamburger' | 'bottom-nav' | 'bottom-mini') || 'hamburger',
+    // 영어권 옵션 (미설정=기존 청첩장 → undefined 유지 → ko/공유표시 기본 동작)
+    language: c.language === 'en' ? 'en' : c.language === 'ko' ? 'ko' : undefined,
+    showFooterShare: typeof c.showFooterShare === 'boolean' ? c.showFooterShare : undefined,
     bgm: c.bgm ? {
       enabled: !!c.bgm.enabled,
       url: c.bgm.url || '',

@@ -4283,6 +4283,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
           venueName={invitation.wedding.venue.name}
           onComplete={handleIntroComplete}
           isComplete={introComplete}
+          introDurationMs={4500}
         />
       )}
 

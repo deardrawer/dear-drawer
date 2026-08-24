@@ -22,6 +22,7 @@ interface IntroAnimationProps {
   venueName?: string
   onComplete: () => void
   isComplete: boolean
+  introDurationMs?: number // 인트로 표시(홀드) 시간. 기본 4000ms. (예: OUR/FAMILY는 6000)
 }
 
 // 보케(빛 입자) 컴포넌트
@@ -133,18 +134,18 @@ export default function IntroAnimation({
   venueName,
   onComplete,
   isComplete,
+  introDurationMs = 4000,
 }: IntroAnimationProps) {
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // 자동 완료 (4초 후)
-  const INTRO_DURATION = 4000
+  // 자동 완료 (기본 4초, prop으로 조정 가능)
   useEffect(() => {
     const timer = setTimeout(() => {
       onComplete()
-    }, INTRO_DURATION)
+    }, introDurationMs)
 
     return () => clearTimeout(timer)
-  }, [onComplete])
+  }, [onComplete, introDurationMs])
 
   // 인트로 전용 이미지 결정: introImage 우선, 없으면 coverImage 폴백
   const effectiveImage = settings.introImage || coverImage
@@ -248,7 +249,7 @@ export default function IntroAnimation({
 
   // 프리셋별 렌더링
   const renderIntro = () => {
-    const commonProps = { settings: { ...settings, mainTitle, subTitle, dateText, venueText }, backgroundStyle, overlayStyle, titleStyle, subTitleStyle, accentColor, overlayColor, bodyTextColor, bgColor, waveColor, envelopeColor }
+    const commonProps = { settings: { ...settings, mainTitle, subTitle, dateText, venueText }, backgroundStyle, overlayStyle, titleStyle, subTitleStyle, accentColor, overlayColor, bodyTextColor, bgColor, waveColor, envelopeColor, introDurationMs }
 
     switch (settings.presetId) {
       case 'cinematic':
@@ -685,10 +686,11 @@ interface IntroComponentProps {
   bgColor: string
   waveColor: string
   envelopeColor: string
+  introDurationMs?: number
 }
 
 // 시네마틱 인트로
-function CinematicIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle, accentColor, overlayColor }: IntroComponentProps) {
+function CinematicIntro({ settings, backgroundStyle, overlayStyle, titleStyle, subTitleStyle, accentColor, overlayColor, introDurationMs = 4000 }: IntroComponentProps) {
   const customOverlayStyle = {
     backgroundColor: hexToRgba(overlayColor, (settings.overlayOpacity ?? 30) / 100)
   }
@@ -696,15 +698,16 @@ function CinematicIntro({ settings, backgroundStyle, overlayStyle, titleStyle, s
   const cinematicSubStyle = { ...subTitleStyle, color: hexToRgba(accentColor, 0.8) }
   return (
     <div className="relative h-full">
-      <div className="absolute inset-0 intro-fade-in intro-zoom-out" style={backgroundStyle} />
+      <div className="absolute inset-0 intro-fade-in intro-zoom-out" style={{ ...backgroundStyle, animationDuration: `${introDurationMs}ms`, animationTimingFunction: 'linear' }} />
       <div className="absolute inset-0" style={customOverlayStyle} />
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
-        <div className="intro-line-expand h-px mb-5" style={{ backgroundColor: `${accentColor}80` }} />
-        <p className="intro-letter-spread uppercase text-center break-words max-w-full" style={titleStyle}>
+        {/* 인트로 길이에 비례해 라인→제목→날짜가 차근차근 등장 (opacity/transform만) */}
+        <div className="intro-line-expand h-px mb-5" style={{ backgroundColor: `${accentColor}80`, animationDelay: `${Math.round(introDurationMs * 0.05)}ms` }} />
+        <p className="intro-letter-spread uppercase text-center break-words max-w-full" style={{ ...titleStyle, animationDelay: `${Math.round(introDurationMs * 0.28)}ms` }}>
           {settings.mainTitle}
         </p>
         {settings.dateText && (
-          <p className="text-[12px] mt-3.5 intro-fade-in-delay" style={{ ...cinematicSubStyle, letterSpacing: '2px' }}>
+          <p className="text-[12px] mt-3.5 intro-fade-in-delay" style={{ ...cinematicSubStyle, letterSpacing: '2px', animationDelay: `${Math.round(introDurationMs * 0.62)}ms` }}>
             {settings.dateText}
           </p>
         )}

@@ -3878,6 +3878,8 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
   const [introComplete, setIntroComplete] = useState(false)
   const [showIntroAnimation, setShowIntroAnimation] = useState(true)
   const [coverAnimated, setCoverAnimated] = useState(false)
+  // A-1: 인트로 핵심 풀스크린 이미지 decode 완료 후 인트로 시작 (fallback으로 무한 대기 방지)
+  const [introImgReady, setIntroImgReady] = useState(false)
 
   // Screen transition states
   const [currentScreen, setCurrentScreen] = useState<IntroScreen>('cover')
@@ -3908,6 +3910,23 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
       setCoverAnimated(true)
     }, 500)
   }, [])
+
+  // A-1: 인트로 핵심 풀스크린 이미지를 decode한 뒤 인트로를 시작해 decode↔애니메이션 충돌을 줄인다.
+  // decode가 오래 걸려도 오프닝이 멈추지 않도록 400ms fallback을 둔다. (A-2는 미적용 — 커버 마운트는 기존 그대로)
+  useEffect(() => {
+    const key = effectiveIntroSettings?.introImage || invitation.media.coverImage
+    if (!key) { setIntroImgReady(true); return }
+    let done = false
+    let raf = 0
+    // decode(또는 fallback) 후 레이아웃/뷰포트 안정화를 위해 rAF 1프레임 뒤에 노출 → 첫 프레임의 임시 작은 직사각형 방지
+    const finish = () => { if (done) return; done = true; raf = requestAnimationFrame(() => setIntroImgReady(true)) }
+    const im = new Image()
+    im.src = key
+    if (typeof im.decode === 'function') im.decode().then(finish).catch(finish)
+    else { im.onload = finish; im.onerror = finish }
+    const t = setTimeout(finish, 400)
+    return () => { clearTimeout(t); if (raf) cancelAnimationFrame(raf) }
+  }, [effectiveIntroSettings?.introImage, invitation.media.coverImage])
 
   // Switch screen function - matching original template
   const switchScreen = (from: IntroScreen, to: IntroScreen) => {
@@ -4007,8 +4026,13 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
 
   return (
     <div className="relative w-full h-screen">
+      {/* A-1: 인트로 이미지 decode 대기 중엔 IntroAnimation 폴백과 동일한 다크 배경만 표시(흰 플래시 방지) */}
+      {showIntroAnimation && effectiveIntroSettings?.presetId && !introImgReady && (
+        <div className="fixed inset-0 z-40" style={{ background: 'linear-gradient(135deg, #333 0%, #111 100%)' }} />
+      )}
+
       {/* INTRO ANIMATION - Using IntroAnimation component based on saved preset */}
-      {showIntroAnimation && effectiveIntroSettings?.presetId && (
+      {showIntroAnimation && effectiveIntroSettings?.presetId && introImgReady && (
         <IntroAnimation
           settings={effectiveIntroSettings}
           coverImage={invitation.media.coverImage}

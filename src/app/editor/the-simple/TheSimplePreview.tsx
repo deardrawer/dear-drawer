@@ -1227,13 +1227,17 @@ function TransportInfo({ transport }: { transport?: Record<string, string | unde
   )
 }
 
-function NavButtons({ address }: { address: string }) {
+function NavButtons({ address, useGoogle }: { address: string; useGoogle?: boolean }) {
   const encoded = encodeURIComponent(address)
-  const links = [
-    { label: '카카오맵', url: `https://map.kakao.com/link/search/${encoded}`, external: true },
-    { label: '네이버지도', url: `https://map.naver.com/v5/search/${encoded}`, external: true },
-    { label: '티맵', url: `tmap://search?name=${encoded}`, external: false },
-  ]
+  const links = useGoogle
+    ? [
+        { label: 'Google Maps', url: `https://www.google.com/maps/search/?api=1&query=${encoded}`, external: true },
+      ]
+    : [
+        { label: '카카오맵', url: `https://map.kakao.com/link/search/${encoded}`, external: true },
+        { label: '네이버지도', url: `https://map.naver.com/v5/search/${encoded}`, external: true },
+        { label: '티맵', url: `tmap://search?name=${encoded}`, external: false },
+      ]
   return (
     <div className="ts-nav-buttons" style={{ display: 'flex', gap: 8, marginTop: 12 }}>
       {links.map((l) => (
@@ -1834,6 +1838,35 @@ function LiveCountdown({ targetDate, beforeMsg, todayMsg, afterMsg }: {
 }
 
 /* ==========================================================================
+ * GoogleMapEmbed — 영어권 청첩장용 구글지도 (Maps Embed API, iframe · 무과금)
+ * NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY 필요. 키/주소 없으면 회색 placeholder.
+ * ========================================================================== */
+function GoogleMapEmbed({ address, venueName, aspectRatio = '16 / 10', className }: { address: string; venueName?: string; aspectRatio?: string; className?: string }) {
+  // Maps Embed API 전용 키. 클라이언트 노출 전제 → 구글 콘솔에서 HTTP 리퍼러 + API 제한으로 보호.
+  const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY || ''
+  const q = encodeURIComponent((address || venueName || '').trim())
+  if (!key || !q) {
+    return <div className={className} style={{ width: '100%', aspectRatio, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#eee', color: '#999', fontSize: 12 }}>Map unavailable</div>
+  }
+  return (
+    <iframe
+      className={className}
+      title={venueName || 'map'}
+      src={`https://www.google.com/maps/embed/v1/place?key=${key}&q=${q}&language=en`}
+      style={{ width: '100%', aspectRatio, border: 0, display: 'block' }}
+      loading="lazy"
+      referrerPolicy="no-referrer-when-downgrade"
+      allowFullScreen
+    />
+  )
+}
+
+// 언어에 따라 지도 제공자 선택 (en=구글 임베드, ko=카카오)
+function MapBox({ useGoogle, ...props }: { useGoogle?: boolean; address: string; venueName?: string; aspectRatio?: string; className?: string }) {
+  return useGoogle ? <GoogleMapEmbed {...props} /> : <KakaoMapBox {...props} />
+}
+
+/* ==========================================================================
  * KakaoMapBox — 주소 기반 카카오맵 렌더링
  * Geocoder로 주소→좌표 변환 후 지도 + 마커 표시.
  * SDK 실패 시 회색 placeholder 표시.
@@ -2106,6 +2139,7 @@ function RsvpModal({
   rsvpNotice,
   messagePlaceholder,
   initialAttendance,
+  language,
 }: {
   open: boolean
   onClose: () => void
@@ -2118,7 +2152,9 @@ function RsvpModal({
   rsvpNotice?: string
   messagePlaceholder?: string
   initialAttendance?: 'attending' | 'not_attending'
+  language?: 'ko' | 'en'
 }) {
+  const isEn = language === 'en'
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [attendance, setAttendance] = useState<'attending' | 'not_attending' | 'undecided' | ''>('')
@@ -2254,12 +2290,12 @@ function RsvpModal({
               <polyline points="20 6 9 17 4 12" />
             </svg>
             <div style={{ marginTop: 12, fontFamily: 'var(--font-ko)', fontSize: 'calc(14px * var(--ts-font-scale, 1))', color: 'var(--ink)' }}>
-              감사합니다!
+              {isEn ? 'Thank you!' : '감사합니다!'}
             </div>
           </div>
         ) : (
           <div className="ts-rsvp-modal-body">
-            <div className="ts-rsvp-modal-title">참석 의사 전달</div>
+            <div className="ts-rsvp-modal-title">{isEn ? 'Your Response' : '참석 의사 전달'}</div>
             {rsvpNotice && (
               <p style={{
                 fontFamily: 'var(--font-ko)',
@@ -2278,7 +2314,7 @@ function RsvpModal({
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="이름"
+                placeholder={isEn ? 'Your Name' : '이름'}
                 maxLength={50}
                 className="ts-rsvp-modal-input"
               />
@@ -2289,29 +2325,29 @@ function RsvpModal({
                   maxLength={4}
                   value={phone}
                   onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                  placeholder="연락처 뒷자리 4자리"
+                  placeholder={isEn ? 'Last 4 Digits of Phone Number' : '연락처 뒷자리 4자리'}
                   className="ts-rsvp-modal-input"
                 />
               )}
               <div>
-                <span style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', color: 'var(--ink)', display: 'block', marginBottom: 6 }}>하객 구분</span>
+                <span style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', color: 'var(--ink)', display: 'block', marginBottom: 6 }}>{isEn ? 'Guest of' : '하객 구분'}</span>
                 <div className="ts-rsvp-modal-toggle">
-                  <button type="button" className={`ts-rsvp-modal-opt ${side === 'groom' ? 'active' : ''}`} onClick={() => { setSide('groom'); setSideDetail('') }}>신랑측</button>
-                  <button type="button" className={`ts-rsvp-modal-opt ${side === 'bride' ? 'active' : ''}`} onClick={() => { setSide('bride'); setSideDetail('') }}>신부측</button>
+                  <button type="button" className={`ts-rsvp-modal-opt ${side === 'groom' ? 'active' : ''}`} onClick={() => { setSide('groom'); setSideDetail('') }}>{isEn ? 'Groom' : '신랑측'}</button>
+                  <button type="button" className={`ts-rsvp-modal-opt ${side === 'bride' ? 'active' : ''}`} onClick={() => { setSide('bride'); setSideDetail('') }}>{isEn ? 'Bride' : '신부측'}</button>
                 </div>
               </div>
               {showSideDetail && side && (
                 <div>
-                  <span style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', color: 'var(--ink)', display: 'block', marginBottom: 6 }}>초대 경로</span>
+                  <span style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', color: 'var(--ink)', display: 'block', marginBottom: 6 }}>{isEn ? 'Attending as' : '초대 경로'}</span>
                   <div style={{ display: 'flex', gap: 6 }}>
                     {((side === 'groom' && (sideDetailOptions?.groomSelf ?? true)) || (side === 'bride' && (sideDetailOptions?.brideSelf ?? true))) && (
-                      <button type="button" className={`ts-rsvp-modal-opt ${sideDetail === 'self' ? 'active' : ''}`} onClick={() => setSideDetail('self')} style={{ flex: 1, minWidth: 0, padding: '6px 4px', fontSize: 'calc(12px * var(--ts-font-scale, 1))', textAlign: 'center' }}>{side === 'groom' ? '신랑' : '신부'}</button>
+                      <button type="button" className={`ts-rsvp-modal-opt ${sideDetail === 'self' ? 'active' : ''}`} onClick={() => setSideDetail('self')} style={{ flex: 1, minWidth: 0, padding: '6px 4px', fontSize: 'calc(12px * var(--ts-font-scale, 1))', textAlign: 'center' }}>{isEn ? (side === 'groom' ? 'Groom' : 'Bride') : (side === 'groom' ? '신랑' : '신부')}</button>
                     )}
                     {((side === 'groom' && (sideDetailOptions?.groomFather ?? true)) || (side === 'bride' && (sideDetailOptions?.brideFather ?? true))) && (
-                      <button type="button" className={`ts-rsvp-modal-opt ${sideDetail === 'father' ? 'active' : ''}`} onClick={() => setSideDetail('father')} style={{ flex: 1, minWidth: 0, padding: '6px 4px', fontSize: 'calc(12px * var(--ts-font-scale, 1))', textAlign: 'center' }}>{side === 'groom' ? '신랑' : '신부'} 아버지</button>
+                      <button type="button" className={`ts-rsvp-modal-opt ${sideDetail === 'father' ? 'active' : ''}`} onClick={() => setSideDetail('father')} style={{ flex: 1, minWidth: 0, padding: '6px 4px', fontSize: 'calc(12px * var(--ts-font-scale, 1))', textAlign: 'center' }}>{isEn ? (side === 'groom' ? "Groom's Father" : "Bride's Father") : ((side === 'groom' ? '신랑' : '신부') + ' 아버지')}</button>
                     )}
                     {((side === 'groom' && (sideDetailOptions?.groomMother ?? true)) || (side === 'bride' && (sideDetailOptions?.brideMother ?? true))) && (
-                      <button type="button" className={`ts-rsvp-modal-opt ${sideDetail === 'mother' ? 'active' : ''}`} onClick={() => setSideDetail('mother')} style={{ flex: 1, minWidth: 0, padding: '6px 4px', fontSize: 'calc(12px * var(--ts-font-scale, 1))', textAlign: 'center' }}>{side === 'groom' ? '신랑' : '신부'} 어머니</button>
+                      <button type="button" className={`ts-rsvp-modal-opt ${sideDetail === 'mother' ? 'active' : ''}`} onClick={() => setSideDetail('mother')} style={{ flex: 1, minWidth: 0, padding: '6px 4px', fontSize: 'calc(12px * var(--ts-font-scale, 1))', textAlign: 'center' }}>{isEn ? (side === 'groom' ? "Groom's Mother" : "Bride's Mother") : ((side === 'groom' ? '신랑' : '신부') + ' 어머니')}</button>
                     )}
                   </div>
                 </div>
@@ -2322,26 +2358,26 @@ function RsvpModal({
                   className={`ts-rsvp-modal-opt ${attendance === 'attending' ? 'active' : ''}`}
                   onClick={() => setAttendance('attending')}
                 >
-                  참석
+                  {isEn ? 'Yes' : '참석'}
                 </button>
                 <button
                   type="button"
                   className={`ts-rsvp-modal-opt ${attendance === 'undecided' ? 'active' : ''}`}
                   onClick={() => setAttendance('undecided')}
                 >
-                  미정
+                  {isEn ? 'Pending' : '미정'}
                 </button>
                 <button
                   type="button"
                   className={`ts-rsvp-modal-opt ${attendance === 'not_attending' ? 'active' : ''}`}
                   onClick={() => setAttendance('not_attending')}
                 >
-                  불참
+                  {isEn ? 'No' : '불참'}
                 </button>
               </div>
               {attendance === 'attending' && (
                 <div className="ts-rsvp-modal-count">
-                  <span style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', color: 'var(--ink)' }}>참석 인원</span>
+                  <span style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', color: 'var(--ink)' }}>{isEn ? 'Number of Guests' : '참석 인원'}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <button
                       type="button"
@@ -2363,26 +2399,26 @@ function RsvpModal({
               )}
               {showMealOption && attendance === 'attending' && (
                 <div>
-                  <span style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', color: 'var(--ink)', display: 'block', marginBottom: 6 }}>식사 여부</span>
+                  <span style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', color: 'var(--ink)', display: 'block', marginBottom: 6 }}>{isEn ? 'Meal' : '식사 여부'}</span>
                   <div className="ts-rsvp-modal-toggle">
-                    <button type="button" className={`ts-rsvp-modal-opt ${mealAttendance === 'yes' ? 'active' : ''}`} onClick={() => setMealAttendance('yes')}>식사 예정</button>
-                    <button type="button" className={`ts-rsvp-modal-opt ${mealAttendance === 'no' ? 'active' : ''}`} onClick={() => setMealAttendance('no')}>식사 안 함</button>
+                    <button type="button" className={`ts-rsvp-modal-opt ${mealAttendance === 'yes' ? 'active' : ''}`} onClick={() => setMealAttendance('yes')}>{isEn ? 'Yes' : '식사 예정'}</button>
+                    <button type="button" className={`ts-rsvp-modal-opt ${mealAttendance === 'no' ? 'active' : ''}`} onClick={() => setMealAttendance('no')}>{isEn ? 'No' : '식사 안 함'}</button>
                   </div>
                 </div>
               )}
               {showShuttleOption && attendance === 'attending' && (
                 <div>
-                  <span style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', color: 'var(--ink)', display: 'block', marginBottom: 6 }}>대절버스 이용</span>
+                  <span style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', color: 'var(--ink)', display: 'block', marginBottom: 6 }}>{isEn ? 'Shuttle Bus' : '대절버스 이용'}</span>
                   <div className="ts-rsvp-modal-toggle">
-                    <button type="button" className={`ts-rsvp-modal-opt ${shuttleBus === 'yes' ? 'active' : ''}`} onClick={() => setShuttleBus('yes')}>이용 예정</button>
-                    <button type="button" className={`ts-rsvp-modal-opt ${shuttleBus === 'no' ? 'active' : ''}`} onClick={() => setShuttleBus('no')}>이용 안 함</button>
+                    <button type="button" className={`ts-rsvp-modal-opt ${shuttleBus === 'yes' ? 'active' : ''}`} onClick={() => setShuttleBus('yes')}>{isEn ? 'Yes' : '이용 예정'}</button>
+                    <button type="button" className={`ts-rsvp-modal-opt ${shuttleBus === 'no' ? 'active' : ''}`} onClick={() => setShuttleBus('no')}>{isEn ? 'No' : '이용 안 함'}</button>
                   </div>
                 </div>
               )}
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder={messagePlaceholder || "축하 메시지 (선택)"}
+                placeholder={messagePlaceholder || (isEn ? 'Leave a Message (Optional)' : '축하 메시지 (선택)')}
                 maxLength={500}
                 rows={2}
                 className="ts-rsvp-modal-textarea"
@@ -2394,7 +2430,7 @@ function RsvpModal({
               disabled={submitting || !name.trim() || !attendance || (showPhoneOption && phone.length > 0 && phone.length < 4) || !!(showSideDetail && side && !sideDetail)}
               className="ts-rsvp-modal-submit"
             >
-              {submitting ? '전송 중...' : '전송하기'}
+              {submitting ? (isEn ? 'Sending...' : '전송 중...') : (isEn ? 'Confirm' : '전송하기')}
             </button>
           </div>
         )}
@@ -2454,15 +2490,26 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
     setLightboxOpen(true)
   }, [])
 
+  // 영어권 청첩장(language==='en')용: 시간을 "2:00 PM" 형식으로 변환 ("HH:MM" 파싱)
+  const isEnLang = data.language === 'en'
+  const formatTimeEn = (t?: string): string => {
+    const mt = /^(\d{1,2}):(\d{2})/.exec(t || '')
+    if (!mt) return '1:00 PM'
+    let h = parseInt(mt[1], 10); const mm = mt[2]
+    const ampm = h >= 12 ? 'PM' : 'AM'
+    h = h % 12; if (h === 0) h = 12
+    return mm === '00' ? `${h}:00 ${ampm}` : `${h}:${mm} ${ampm}`
+  }
+
   const weddingMeta = useMemo(() => {
     const date = data.wedding.date ? new Date(data.wedding.date) : new Date('2026-05-16')
     const y = date.getFullYear()
     const m = date.getMonth() + 1
     const d = date.getDate()
     const monthName = date.toLocaleString('en-US', { month: 'long' }).toUpperCase()
-    const weekday = date.toLocaleString('ko-KR', { weekday: 'long' })
+    const weekday = date.toLocaleString(data.language === 'en' ? 'en-US' : 'ko-KR', { weekday: 'long' })
     return { y, m, d, monthName, weekday }
-  }, [data.wedding.date])
+  }, [data.wedding.date, data.language])
 
   // Variant 1 · 달력 생성 (전체 월)
   const calendar = useMemo(() => {
@@ -2512,7 +2559,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
       const yy = weddingMeta.y
       const monthUpper = (weddingMeta.monthName || '').toUpperCase()
       const weekdayUpper = (weddingMeta.weekday || '').toUpperCase()
-      const timeDisplay = data.wedding.timeDisplay || '오후 1시'
+      const timeDisplay = isEnLang ? formatTimeEn(data.wedding.time) : (data.wedding.timeDisplay || '오후 1시')
       const initials = `${groomName.slice(0, 1)}&${brideName.slice(0, 1)}`
       const showNames = intro.showNames || 'korean'
       const textPos = intro.textPosition || 'center'
@@ -2710,7 +2757,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
               {introBg()}
               <div className="ts-in5-top-bar ts-in-anim">
                 <span>청첩장 &mdash; No. 001</span>
-                <span>{yy}년 {weddingMeta.m}월</span>
+                <span>{isEnLang ? `${weddingMeta.monthName} ${yy}` : `${yy}년 ${weddingMeta.m}월`}</span>
               </div>
               <div className="ts-in5-content">
                 <div className="big-number ts-in-anim">
@@ -3441,7 +3488,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
     },
 
     info: (v) => {
-      const timeDisplay = data.wedding.timeDisplay || '오후 1시'
+      const timeDisplay = isEnLang ? formatTimeEn(data.wedding.time) : (data.wedding.timeDisplay || '오후 1시')
 
       // V2 · Big Date (큰 날짜 + 메타 그리드)
       if (v === 2) {
@@ -3466,9 +3513,9 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
                 <div className="ts-countdown-inline ts-cd-v2 ts-anim-item">
                   <LiveCountdown
                     targetDate={(() => { const d = data.wedding.date || '2026-05-16'; const t = data.wedding.time || '13:00'; return new Date(`${d}T${t}`) })()}
-                    beforeMsg={data.sections.info.countdownBeforeMsg || `${brideName}, ${groomName}의 결혼식이 {d}일 남았습니다.`}
-                    todayMsg={data.sections.info.countdownTodayMsg || '오늘 결혼합니다.'}
-                    afterMsg={data.sections.info.countdownAfterMsg || '행복하고 따뜻하게 살겠습니다.'}
+                    beforeMsg={data.sections.info.countdownBeforeMsg || (isEnLang ? `{d} days until ${groomName} & ${brideName}'s wedding.` : `${brideName}, ${groomName}의 결혼식이 {d}일 남았습니다.`)}
+                    todayMsg={data.sections.info.countdownTodayMsg || (isEnLang ? "We're getting married today!" : '오늘 결혼합니다.')}
+                    afterMsg={data.sections.info.countdownAfterMsg || (isEnLang ? "We'll live happily and warmly together." : '행복하고 따뜻하게 살겠습니다.')}
                   />
                 </div>
               )}
@@ -3534,9 +3581,9 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
                 <div className="ts-countdown-inline ts-cd-v3 ts-anim-item">
                   <LiveCountdown
                     targetDate={(() => { const d = data.wedding.date || '2026-05-16'; const t = data.wedding.time || '13:00'; return new Date(`${d}T${t}`) })()}
-                    beforeMsg={data.sections.info.countdownBeforeMsg || `${brideName}, ${groomName}의 결혼식이 {d}일 남았습니다.`}
-                    todayMsg={data.sections.info.countdownTodayMsg || '오늘 결혼합니다.'}
-                    afterMsg={data.sections.info.countdownAfterMsg || '행복하고 따뜻하게 살겠습니다.'}
+                    beforeMsg={data.sections.info.countdownBeforeMsg || (isEnLang ? `{d} days until ${groomName} & ${brideName}'s wedding.` : `${brideName}, ${groomName}의 결혼식이 {d}일 남았습니다.`)}
+                    todayMsg={data.sections.info.countdownTodayMsg || (isEnLang ? "We're getting married today!" : '오늘 결혼합니다.')}
+                    afterMsg={data.sections.info.countdownAfterMsg || (isEnLang ? "We'll live happily and warmly together." : '행복하고 따뜻하게 살겠습니다.')}
                   />
                 </div>
               )}
@@ -3566,9 +3613,9 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
                 <div className="ts-countdown-inline ts-cd-v4 ts-anim-item">
                   <LiveCountdown
                     targetDate={(() => { const d = data.wedding.date || '2026-05-16'; const t = data.wedding.time || '13:00'; return new Date(`${d}T${t}`) })()}
-                    beforeMsg={data.sections.info.countdownBeforeMsg || `${brideName}, ${groomName}의 결혼식이 {d}일 남았습니다.`}
-                    todayMsg={data.sections.info.countdownTodayMsg || '오늘 결혼합니다.'}
-                    afterMsg={data.sections.info.countdownAfterMsg || '행복하고 따뜻하게 살겠습니다.'}
+                    beforeMsg={data.sections.info.countdownBeforeMsg || (isEnLang ? `{d} days until ${groomName} & ${brideName}'s wedding.` : `${brideName}, ${groomName}의 결혼식이 {d}일 남았습니다.`)}
+                    todayMsg={data.sections.info.countdownTodayMsg || (isEnLang ? "We're getting married today!" : '오늘 결혼합니다.')}
+                    afterMsg={data.sections.info.countdownAfterMsg || (isEnLang ? "We'll live happily and warmly together." : '행복하고 따뜻하게 살겠습니다.')}
                   />
                 </div>
               )}
@@ -3615,7 +3662,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
               </div>
               <div className="ts-i5-rule ts-anim-item" />
               <div className="ts-i5-rows ts-anim-item">
-                <div className="ts-i5-row"><b>DATE</b><span>{weddingMeta.m}월 {weddingMeta.d}일 {weddingMeta.weekday}</span></div>
+                <div className="ts-i5-row"><b>DATE</b><span>{isEnLang ? `${weddingMeta.monthName} ${weddingMeta.d}, ${weddingMeta.y} · ${weddingMeta.weekday}` : `${weddingMeta.m}월 ${weddingMeta.d}일 ${weddingMeta.weekday}`}</span></div>
                 <div className="ts-i5-row"><b>TIME</b><span>{timeDisplay}</span></div>
                 {data.sections.info.showVenue && <div className="ts-i5-row"><b>VENUE</b><span>{venueName}</span></div>}
                 {data.sections.info.showVenue && venueHall && <div className="ts-i5-row"><b>HALL</b><span>{venueHall}</span></div>}
@@ -3624,9 +3671,9 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
                 <div className="ts-countdown-inline ts-cd-v5 ts-anim-item">
                   <LiveCountdown
                     targetDate={(() => { const d = data.wedding.date || '2026-05-16'; const t = data.wedding.time || '13:00'; return new Date(`${d}T${t}`) })()}
-                    beforeMsg={data.sections.info.countdownBeforeMsg || `${brideName}, ${groomName}의 결혼식이 {d}일 남았습니다.`}
-                    todayMsg={data.sections.info.countdownTodayMsg || '오늘 결혼합니다.'}
-                    afterMsg={data.sections.info.countdownAfterMsg || '행복하고 따뜻하게 살겠습니다.'}
+                    beforeMsg={data.sections.info.countdownBeforeMsg || (isEnLang ? `{d} days until ${groomName} & ${brideName}'s wedding.` : `${brideName}, ${groomName}의 결혼식이 {d}일 남았습니다.`)}
+                    todayMsg={data.sections.info.countdownTodayMsg || (isEnLang ? "We're getting married today!" : '오늘 결혼합니다.')}
+                    afterMsg={data.sections.info.countdownAfterMsg || (isEnLang ? "We'll live happily and warmly together." : '행복하고 따뜻하게 살겠습니다.')}
                   />
                 </div>
               )}
@@ -3710,9 +3757,9 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
             <div className="ts-countdown-inline ts-cd-v1 ts-anim-item">
               <LiveCountdown
                 targetDate={(() => { const d = data.wedding.date || '2026-05-16'; const t = data.wedding.time || '13:00'; return new Date(`${d}T${t}`) })()}
-                beforeMsg={data.sections.info.countdownBeforeMsg || `${brideName}, ${groomName}의 결혼식이 {d}일 남았습니다.`}
-                todayMsg={data.sections.info.countdownTodayMsg || '오늘 결혼합니다.'}
-                afterMsg={data.sections.info.countdownAfterMsg || '행복하고 따뜻하게 살겠습니다.'}
+                beforeMsg={data.sections.info.countdownBeforeMsg || (isEnLang ? `{d} days until ${groomName} & ${brideName}'s wedding.` : `${brideName}, ${groomName}의 결혼식이 {d}일 남았습니다.`)}
+                todayMsg={data.sections.info.countdownTodayMsg || (isEnLang ? "We're getting married today!" : '오늘 결혼합니다.')}
+                afterMsg={data.sections.info.countdownAfterMsg || (isEnLang ? "We'll live happily and warmly together." : '행복하고 따뜻하게 살겠습니다.')}
               />
             </div>
           )}
@@ -3729,7 +3776,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
             <div className="ts-eyebrow">{direction.eyebrow}</div>
             {direction.showMap !== false && (
               <div className="ts-anim-item" style={{ marginBottom: 10 }}>
-                <KakaoMapBox address={venueAddress} venueName={venueName} aspectRatio="4 / 3" />
+                <MapBox useGoogle={isEnLang} address={venueAddress} venueName={venueName} aspectRatio="4 / 3" />
               </div>
             )}
             <div className="ts-anim-item" style={{ border: '1px solid var(--line)', padding: '18px 16px', textAlign: 'center' }}>
@@ -3742,7 +3789,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
               <div style={{ width: 24, height: 1, background: 'var(--line)', margin: '0 auto 10px' }} />
               <AddressCopy address={venueAddress} />
             </div>
-            {direction.showNavButtons !== false && <NavButtons address={venueAddress} />}
+            {direction.showNavButtons !== false && <NavButtons address={venueAddress} useGoogle={isEnLang} />}
             <TransportInfo transport={direction.transport} />
           </AnimatedSection>
         )
@@ -3765,10 +3812,10 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
             </div>
             {direction.showMap !== false && (
               <div className="ts-anim-item">
-                <KakaoMapBox address={venueAddress} venueName={venueName} aspectRatio="16 / 9" />
+                <MapBox useGoogle={isEnLang} address={venueAddress} venueName={venueName} aspectRatio="16 / 9" />
               </div>
             )}
-            {direction.showNavButtons !== false && <NavButtons address={venueAddress} />}
+            {direction.showNavButtons !== false && <NavButtons address={venueAddress} useGoogle={isEnLang} />}
             <TransportInfo transport={direction.transport} />
           </AnimatedSection>
         )
@@ -3782,7 +3829,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12, marginTop: 8 }}>
               {direction.showMap !== false && (
                 <div className="ts-anim-item">
-                  <KakaoMapBox address={venueAddress} venueName={venueName} aspectRatio="3 / 2" />
+                  <MapBox useGoogle={isEnLang} address={venueAddress} venueName={venueName} aspectRatio="3 / 2" />
                 </div>
               )}
               <div className="ts-anim-card" style={{ border: '1px solid var(--line)', padding: '16px 14px', background: 'var(--card)' }}>
@@ -3801,7 +3848,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
                 <AddressCopy address={venueAddress} />
               </div>
             </div>
-            {direction.showNavButtons !== false && <NavButtons address={venueAddress} />}
+            {direction.showNavButtons !== false && <NavButtons address={venueAddress} useGoogle={isEnLang} />}
             <TransportInfo transport={direction.transport} />
           </AnimatedSection>
         )
@@ -3814,7 +3861,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
             <div className="ts-eyebrow">{direction.eyebrow}</div>
             {direction.showMap !== false && (
               <div className="ts-anim-item" style={{ marginBottom: 14 }}>
-                <KakaoMapBox address={venueAddress} venueName={venueName} aspectRatio="16 / 10" />
+                <MapBox useGoogle={isEnLang} address={venueAddress} venueName={venueName} aspectRatio="16 / 10" />
               </div>
             )}
             <div className="ts-anim-item" style={{ display: 'flex', alignItems: 'baseline', gap: 16, padding: '14px 0', borderTop: '1px solid var(--line)', borderBottom: '1px solid var(--line)' }}>
@@ -3833,7 +3880,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
                 <AddressCopy address={venueAddress} />
               </div>
             </div>
-            {direction.showNavButtons !== false && <NavButtons address={venueAddress} />}
+            {direction.showNavButtons !== false && <NavButtons address={venueAddress} useGoogle={isEnLang} />}
             <TransportInfo transport={direction.transport} />
           </AnimatedSection>
         )
@@ -3845,7 +3892,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
           <div className="ts-eyebrow">{direction.eyebrow}</div>
           {direction.showMap !== false && (
             <div className="ts-anim-item">
-              <KakaoMapBox address={venueAddress} venueName={venueName} className="ts-dir-map" />
+              <MapBox useGoogle={isEnLang} address={venueAddress} venueName={venueName} className="ts-dir-map" />
             </div>
           )}
           <div className="ts-dir-name ts-anim-item">
@@ -3855,7 +3902,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
           <div className="ts-dir-addr ts-anim-item">
             <AddressCopy address={venueAddress} />
           </div>
-          {direction.showNavButtons !== false && <NavButtons address={venueAddress} />}
+          {direction.showNavButtons !== false && <NavButtons address={venueAddress} useGoogle={isEnLang} />}
           <TransportInfo transport={direction.transport} />
         </AnimatedSection>
       )
@@ -6087,7 +6134,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
       >
         <div
           style={{
-            display: 'flex',
+            display: data.showFooterShare === false ? 'none' : 'flex',
             justifyContent: 'center',
             gap: 10,
             marginBottom: 28,
@@ -6226,7 +6273,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
         <div style={{ height: 72 }} />
       </div>
       </div>{/* /ts-body-wrap */}
-      <RsvpModal open={rsvpOpen} onClose={() => { setRsvpOpen(false); setRsvpInitAttendance(undefined) }} invitationId={data.id} showMealOption={data.sections.rsvp.showMealOption} showShuttleOption={data.sections.rsvp.showShuttleOption} showPhoneOption={data.sections.rsvp.showPhoneOption} showSideDetail={data.sections.rsvp.showSideDetail} sideDetailOptions={data.sections.rsvp.sideDetailOptions} rsvpNotice={data.sections.rsvp.rsvpNotice} messagePlaceholder={data.sections.rsvp.messagePlaceholder} initialAttendance={rsvpInitAttendance} />
+      <RsvpModal open={rsvpOpen} onClose={() => { setRsvpOpen(false); setRsvpInitAttendance(undefined) }} invitationId={data.id} showMealOption={data.sections.rsvp.showMealOption} showShuttleOption={data.sections.rsvp.showShuttleOption} showPhoneOption={data.sections.rsvp.showPhoneOption} showSideDetail={data.sections.rsvp.showSideDetail} sideDetailOptions={data.sections.rsvp.sideDetailOptions} rsvpNotice={data.sections.rsvp.rsvpNotice} messagePlaceholder={data.sections.rsvp.messagePlaceholder} initialAttendance={rsvpInitAttendance} language={data.language} />
       <GalleryLightbox images={lightboxImages} isOpen={lightboxOpen} initialIndex={lightboxIndex} onClose={() => setLightboxOpen(false)} variant={data.lightboxVariant ?? 1} />
       {/* 네비게이션 프리뷰 */}
       {(() => {

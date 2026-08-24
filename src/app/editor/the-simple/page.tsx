@@ -356,6 +356,11 @@ export interface TheSimpleInvitationData {
   // 커버 (Tap to Open) variant (0=없음, 1~10)
   coverVariant?: number
 
+  // 청첩장 언어 (영어권 결혼식용). 기본 ko. en이면 요일/시간/RSVP/네비 영문 + 지도 구글
+  language?: 'ko' | 'en'
+  // 하단 푸터 공유 버튼 표시 (기본 true)
+  showFooterShare?: boolean
+
   // 네비게이션 스타일
   navStyle?: 'hamburger' | 'bottom-nav' | 'bottom-mini'
 
@@ -2084,6 +2089,46 @@ function TheSimpleEditorContent() {
                         )
                       })}
                     </div>
+                  </section>
+
+                  {/* 청첩장 언어 (영어권 결혼식용) */}
+                  <section className="space-y-3">
+                    <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-stone-800 border-b border-stone-300 pb-2">
+                      언어
+                    </h2>
+                    <p className="text-[11px] text-stone-400 leading-relaxed">
+                      English 선택 시 요일·시간·RSVP·메뉴가 영어로, 지도는 구글지도로 표시됩니다.
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {([
+                        { value: 'ko' as const, label: '한글' },
+                        { value: 'en' as const, label: 'English' },
+                      ]).map((opt) => {
+                        const isActive = (data.language || 'ko') === opt.value
+                        return (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            onClick={() => updateData({ language: opt.value })}
+                            className={`p-2.5 rounded-lg border text-sm transition-colors ${
+                              isActive
+                                ? 'bg-stone-900 border-stone-900 text-white'
+                                : 'bg-white border-stone-200 text-stone-600 hover:border-stone-400'
+                            }`}
+                          >
+                            {opt.label}
+                          </button>
+                        )
+                      })}
+                    </div>
+                    <label className="flex items-center gap-2 text-sm text-stone-700 cursor-pointer pt-1">
+                      <input
+                        type="checkbox"
+                        checked={data.showFooterShare !== false}
+                        onChange={(e) => updateData({ showFooterShare: e.target.checked })}
+                      />
+                      공유 버튼 표시 (하단 + 메뉴/네비)
+                    </label>
                   </section>
 
                   {/* 네비게이션 스타일 */}

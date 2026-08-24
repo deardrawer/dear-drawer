@@ -429,6 +429,8 @@ export default function InvitationClientTheSimple({
             themeColors={themeColors}
             fonts={{ displayKr: data.fontStyle || 'Pretendard' }}
             navStyle={data.navStyle || 'hamburger'}
+            language={data.language}
+            showShare={data.showFooterShare !== false}
             invitation={{
               venue_name: data.wedding.venue.name,
               venue_address: data.wedding.venue.address,

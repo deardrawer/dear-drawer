@@ -203,6 +203,7 @@ export interface SectionContents {
     body: string
     showMealOption?: boolean
     showShuttleOption?: boolean
+    showAfterPartyOption?: boolean
     showSideOption?: boolean
     showPhoneOption?: boolean
     showSideDetail?: boolean
@@ -772,6 +773,7 @@ function TheSimpleEditorContent() {
   const [isSaving, setIsSaving] = useState(false)
   const [isDirty, setIsDirty] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [viewportW, setViewportW] = useState(1400) // 뷰포트 가로폭 (태블릿 미리보기 축소 계산용)
   const [splitRatio, setSplitRatio] = useState(40) // 상단(미리보기) 비율 %, 기본 40%
   const splitDragging = useRef(false)
   const splitStartY = useRef(0)
@@ -809,9 +811,19 @@ function TheSimpleEditorContent() {
   // 커버가 없거나 dismiss 완료 또는 V11 커튼이 열린 경우에만 본문 렌더링
   const showPreview = (data.coverVariant ?? 0) === 0 || coverDismissed || curtainRevealed
 
+  // 태블릿(640~767px)에서 좌측 미리보기 자동 축소 → 우측 편집패널 공간 확보.
+  // 768px 이상(기존 데스크톱)은 항상 1.0 → 동작 완전 동일.
+  const previewScale = viewportW >= 768 ? 1 : Math.max(0.6, (viewportW - 340) / 460)
+  const previewColW = Math.round(390 * previewScale + 70) // scale 1 → 460px (기존과 동일)
+
   // 모바일 감지
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    const checkMobile = () => {
+      const w = window.innerWidth
+      setViewportW(w)
+      // 640px 미만만 모바일(세로 폰). 태블릿(iPad mini 744 등)은 데스크톱 2단 레이아웃
+      setIsMobile(w < 640)
+    }
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
@@ -1498,10 +1510,10 @@ function TheSimpleEditorContent() {
         <div className={isMobile ? 'flex-1 overflow-hidden flex flex-col' : 'w-full h-full max-w-[1400px] mx-auto flex'}>
           {/* Preview (desktop) */}
           {!isMobile && (
-            <div className="w-[460px] min-w-[460px] sticky top-0 flex justify-center items-center p-4">
+            <div className="sticky top-0 flex justify-center items-start p-4" style={{ width: `${previewColW}px`, minWidth: `${previewColW}px` }}>
               <div
                 className="w-[390px] shadow-2xl bg-white overflow-hidden rounded-[22px] relative"
-                style={{ height: 'calc(100vh - 88px)', transform: 'translateZ(0)' }}
+                style={{ height: 'calc(100vh - 88px)', transform: `scale(${previewScale}) translateZ(0)`, transformOrigin: 'top center' }}
               >
                 <div className="ts-editor-scroll w-full h-full overflow-y-auto relative" style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', ['--ts-intro-vh' as string]: 'calc(100vh - 88px)' } as React.CSSProperties}>
                   {(data.coverVariant ?? 0) > 0 && !coverOverlayGone && (

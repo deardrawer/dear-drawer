@@ -273,6 +273,7 @@ export interface ParentsInvitationData {
   rsvpEnabled?: boolean
   rsvpMealOption?: boolean
   rsvpShuttleOption?: boolean
+  rsvpAfterPartyOption?: boolean
   rsvpSideOption?: boolean
   rsvpPhoneOption?: boolean
   rsvpSideDetail?: boolean
@@ -492,6 +493,7 @@ function ParentsEditorContent() {
   const wizardStepRef = useRef<number>(1) // 스텝 상태 보존용
   const [selectedGuest, setSelectedGuest] = useState<{ name: string; honorific: string; relation?: string; custom_message?: string } | null>(null)
   const [isMobile, setIsMobile] = useState(false)
+  const [viewportW, setViewportW] = useState(1400) // 태블릿 미리보기 축소 계산용
   // 모바일 분할 뷰(미리보기+편집 동시): 상단 미리보기 비율 %
   const [splitRatio, setSplitRatio] = useState(45)
   const splitDragging = useRef(false)
@@ -557,11 +559,21 @@ function ParentsEditorContent() {
 
   // 모바일 감지
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    const checkMobile = () => {
+      const w = window.innerWidth
+      setViewportW(w)
+      // 640px 미만만 모바일(세로 폰). 태블릿(iPad mini 744 등)은 데스크톱 2단 레이아웃
+      setIsMobile(w < 640)
+    }
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
+
+  // 태블릿(640~767px)에서 좌측 미리보기 자동 축소 → 우측 편집패널 공간 확보.
+  // 768px 이상(기존 데스크톱)은 항상 1.0 → 동작 완전 동일.
+  const previewScale = viewportW >= 768 ? 1 : Math.max(0.6, (viewportW - 340) / 440)
+  const previewColW = Math.round(360 * previewScale + 80) // scale 1 → 440px (기존과 동일)
 
   // 기존 청첩장 불러오기
   useEffect(() => {
@@ -851,7 +863,7 @@ function ParentsEditorContent() {
           <div className={`flex ${isMobile ? 'flex-col' : ''}`} style={isMobile ? { height: 'calc(100dvh - 48px)' } : undefined}>
             {/* Preview - 왼쪽 sticky 고정, 카드형 디바이스 프리뷰 (데스크탑) */}
             {!isMobile && (
-              <div className="w-[440px] min-w-[440px] sticky top-0 overflow-hidden editor-panel m-4 mr-0 flex flex-col justify-center items-center" style={{ height: 'calc(100vh - 88px)' }}>
+              <div className="sticky top-0 overflow-hidden editor-panel m-4 mr-0 flex flex-col justify-center items-center" style={{ width: `${previewColW}px`, minWidth: `${previewColW}px`, height: 'calc(100vh - 88px)' }}>
                 {(() => {
                   const currentTheme = COLOR_THEMES[data.colorTheme || 'burgundy']
                   const showTabs = currentWizardStep !== 2 && currentWizardStep !== 3
@@ -881,7 +893,7 @@ function ParentsEditorContent() {
                           </button>
                         </div>
                       )}
-                      <div className="w-[360px] relative shadow-2xl bg-white overflow-hidden border border-gray-200" style={{ height: '710px' }}>
+                      <div className="w-[360px] relative shadow-2xl bg-white overflow-hidden border border-gray-200" style={{ height: '710px', transform: `scale(${previewScale})`, transformOrigin: 'center top' }}>
                         <div className="h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                           <ParentsPreview data={data} activeTab={previewTab} onTabChange={setPreviewTab} selectedGuest={selectedGuest} activeSection={activeSection} />
                         </div>

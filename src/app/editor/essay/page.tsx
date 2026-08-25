@@ -117,6 +117,7 @@ export interface EssayInvitationData {
   rsvpDeadline: string
   rsvpMealOption?: boolean
   rsvpShuttleOption?: boolean
+  rsvpAfterPartyOption?: boolean
   rsvpPhoneOption?: boolean
   rsvpSideDetail?: boolean
   rsvpSideDetailOptions?: { groomSelf?: boolean; groomFather?: boolean; groomMother?: boolean; brideSelf?: boolean; brideFather?: boolean; brideMother?: boolean }
@@ -291,6 +292,7 @@ function EssayEditorContent() {
   const [currentWizardStep, setCurrentWizardStep] = useState<number>(1)
   const wizardStepRef = useRef<number>(1)
   const [isMobile, setIsMobile] = useState(false)
+  const [viewportW, setViewportW] = useState(1400) // 태블릿 미리보기 축소 계산용
   // 모바일 분할 뷰(미리보기+편집 동시): 상단 미리보기 비율 %
   const [splitRatio, setSplitRatio] = useState(45)
   const splitDragging = useRef(false)
@@ -328,11 +330,19 @@ function EssayEditorContent() {
 
   // 모바일 감지
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    const checkMobile = () => {
+      const w = window.innerWidth
+      setViewportW(w)
+      setIsMobile(w < 640) // 640px 미만만 모바일. 태블릿은 데스크톱 2단
+    }
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
+
+  // 태블릿(640~767px) 좌측 미리보기 자동 축소. 768px↑ 데스크톱은 1.0 → 동일.
+  const previewScale = viewportW >= 768 ? 1 : Math.max(0.6, (viewportW - 340) / 460)
+  const previewColW = Math.round(390 * previewScale + 70) // scale 1 → 460px
 
   // 나가기 방지
   useEffect(() => {
@@ -526,8 +536,8 @@ function EssayEditorContent() {
           <div className={`flex ${isMobile ? 'flex-col' : ''}`} style={isMobile ? { height: 'calc(100dvh - 48px)' } : undefined}>
             {/* Preview - 왼쪽 sticky 고정, 카드형 디바이스 프리뷰 (데스크탑) */}
             {!isMobile && (
-              <div className="w-[460px] min-w-[460px] sticky top-0 overflow-hidden editor-panel m-4 mr-0 flex justify-center items-center" style={{ height: 'calc(100vh - 88px)' }}>
-                <div className="w-[390px] shadow-2xl bg-white overflow-hidden border border-gray-200 relative" style={{ height: '710px' }}>
+              <div className="sticky top-0 overflow-hidden editor-panel m-4 mr-0 flex justify-center items-center" style={{ width: `${previewColW}px`, minWidth: `${previewColW}px`, height: 'calc(100vh - 88px)' }}>
+                <div className="w-[390px] shadow-2xl bg-white overflow-hidden border border-gray-200 relative" style={{ height: '710px', transform: `scale(${previewScale})`, transformOrigin: 'center top' }}>
                   <div className="h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                     <EssayPreview data={data} />
                   </div>

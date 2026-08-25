@@ -54,6 +54,7 @@ function EditorContent() {
   const [isLoading, setIsLoading] = useState(!!editId)
   const [loadAttempted, setLoadAttempted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [viewportW, setViewportW] = useState(1400) // 태블릿 미리보기 축소 계산용
   const [previewKey, setPreviewKey] = useState(0)
   // 모바일 분할 뷰(미리보기+편집 동시): 상단 미리보기 비율 %
   const [splitRatio, setSplitRatio] = useState(45)
@@ -93,11 +94,20 @@ function EditorContent() {
 
   // 모바일 감지
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    const checkMobile = () => {
+      const w = window.innerWidth
+      setViewportW(w)
+      setIsMobile(w < 640) // 640px 미만만 모바일. 태블릿은 데스크톱 2단
+    }
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
+
+  // 태블릿(640~767px) 좌측 미리보기 컬럼 폭 축소 → 편집패널 공간 확보. 768px↑ 데스크톱은 동일.
+  const previewScale = viewportW >= 768 ? 1 : Math.max(0.6, (viewportW - 340) / 460)
+  const introColW = Math.round(360 * previewScale + 120) // 인트로 컬럼: scale 1 → 480px
+  const mainColW = Math.max(380, Math.round(360 * previewScale + 80)) // 본문 컬럼: scale 1 → 440px, 프레임(360) 안 넘게 클램프
 
   // 나가기 방지 (미저장 변경사항이 있을 때)
   useEffect(() => {
@@ -797,7 +807,7 @@ function EditorContent() {
               <>
                 {/* 인트로 미리보기 - 왼쪽 sticky */}
                 {!isMobile && (
-                  <div className="w-[480px] min-w-[480px] sticky top-0 h-[calc(100vh-120px)] flex flex-col items-center justify-center p-6 bg-white border-r border-gray-100">
+                  <div className="sticky top-0 h-[calc(100vh-120px)] flex flex-col items-center justify-center p-6 bg-white border-r border-gray-100" style={{ width: `${introColW}px`, minWidth: `${introColW}px` }}>
                     <div className="relative w-full max-w-[360px] aspect-[9/16] overflow-hidden shadow-lg border border-gray-100 rounded-2xl">
                       <IntroPreview
                         key={introReplayKey}
@@ -829,7 +839,7 @@ function EditorContent() {
               <>
                 {/* Preview - 왼쪽 sticky 고정, 세로 중앙 (데스크탑) */}
                 {!isMobile && (
-                  <div className={`w-[450px] min-w-[450px] sticky top-0 overflow-hidden flex justify-center items-center ${isOurTemplate ? 'editor-panel m-4 mr-0 w-[440px] min-w-[440px]' : 'bg-white h-[calc(100vh-56px)]'}`} style={isOurTemplate ? { height: 'calc(100vh - 88px)', contain: 'layout style', willChange: 'transform' } : { contain: 'layout style', willChange: 'transform' }}>
+                  <div className={`sticky top-0 overflow-hidden flex justify-center items-center ${isOurTemplate ? 'editor-panel m-4 mr-0' : 'bg-white h-[calc(100vh-56px)]'}`} style={isOurTemplate ? { width: `${mainColW}px`, minWidth: `${mainColW}px`, height: 'calc(100vh - 88px)', contain: 'layout style', willChange: 'transform' } : { width: `${mainColW}px`, minWidth: `${mainColW}px`, contain: 'layout style', willChange: 'transform' }}>
                     <Preview ref={previewRef} />
                   </div>
                 )}

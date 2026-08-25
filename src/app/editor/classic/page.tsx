@@ -257,6 +257,7 @@ function ClassicEditorContent() {
   const [currentWizardStep, setCurrentWizardStep] = useState<number>(1)
   const wizardStepRef = useRef<number>(1)
   const [isMobile, setIsMobile] = useState(false)
+  const [viewportW, setViewportW] = useState(1400) // 태블릿 미리보기 축소 계산용
   // 모바일 분할 뷰(미리보기+편집 동시): 상단 미리보기 비율 %
   const [splitRatio, setSplitRatio] = useState(45)
   const splitDragging = useRef(false)
@@ -295,7 +296,9 @@ function ClassicEditorContent() {
   const [sideScale, setSideScale] = useState(1)
   useEffect(() => {
     const check = () => {
-      setIsMobile(window.innerWidth < 768)
+      const w = window.innerWidth
+      setViewportW(w)
+      setIsMobile(w < 640) // 640px 미만만 모바일. 태블릿은 데스크톱 2단
       // 사이드 프레임 가용 높이 = 100vh - 88(헤더/여백). 780 기준으로 축소 (확대는 안 함)
       setSideScale(Math.min(1, (window.innerHeight - 88) / 780))
     }
@@ -303,6 +306,11 @@ function ClassicEditorContent() {
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
   }, [])
+
+  // 태블릿(640~767px) 좌측 미리보기 폭 축소. 768px↑ 데스크톱은 1.0 → 동일.
+  const previewScale = viewportW >= 768 ? 1 : Math.max(0.6, (viewportW - 340) / 460)
+  const previewColW = Math.round(390 * previewScale + 70) // scale 1 → 460px
+  const frameScale = Math.min(sideScale, previewScale) // 높이·폭 중 작은 배율
 
   // 나가기 방지
   useEffect(() => {
@@ -511,10 +519,10 @@ function ClassicEditorContent() {
           <div className={`flex ${isMobile ? 'flex-col' : ''}`} style={isMobile ? { height: 'calc(100dvh - 48px)' } : undefined}>
             {/* Preview - 왼쪽 sticky 고정, 카드형 디바이스 프리뷰 (데스크탑) */}
             {!isMobile && (
-              <div className="w-[460px] min-w-[460px] sticky top-0 overflow-hidden editor-panel m-4 mr-0 flex justify-center items-center" style={{ height: 'calc(100vh - 88px)' }}>
+              <div className="sticky top-0 overflow-hidden editor-panel m-4 mr-0 flex justify-center items-center" style={{ width: `${previewColW}px`, minWidth: `${previewColW}px`, height: 'calc(100vh - 88px)' }}>
                 {/* 고정 390×780으로 렌더 후 균일 scale → 창 비율과 무관하게 프레임 왜곡 없음 */}
-                <div className="shadow-2xl bg-white overflow-hidden border border-gray-200 relative" style={{ width: 390 * sideScale, height: 780 * sideScale, borderRadius: 10 }}>
-                  <div className="absolute top-0 left-0 bg-white" style={{ width: 390, height: 780, transform: `scale(${sideScale})`, transformOrigin: 'top left' }}>
+                <div className="shadow-2xl bg-white overflow-hidden border border-gray-200 relative" style={{ width: 390 * frameScale, height: 780 * frameScale, borderRadius: 10 }}>
+                  <div className="absolute top-0 left-0 bg-white" style={{ width: 390, height: 780, transform: `scale(${frameScale})`, transformOrigin: 'top left' }}>
                     <div className="w-full h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                       <ClassicPreview data={data} />
                     </div>

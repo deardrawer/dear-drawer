@@ -6219,11 +6219,11 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
                     imageHeight: kakaoImgSize.h,
                     link: { mobileWebUrl: url, webUrl: url },
                   },
-                  buttons: [{ title: '청첩장 보기', link: { mobileWebUrl: url, webUrl: url } }],
+                  buttons: [{ title: isEnLang ? 'View Invitation' : '청첩장 보기', link: { mobileWebUrl: url, webUrl: url } }],
                 })
               } else {
                 navigator.clipboard.writeText(url)
-                alert('카카오톡 공유를 사용할 수 없어 링크가 복사��었습니다.')
+                alert(isEnLang ? 'KakaoTalk sharing is unavailable, so the link was copied instead.' : '카카오톡 공유를 사용할 수 없어 링크가 복사되었습니다.')
               }
             }}
             style={{
@@ -6241,7 +6241,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
             }}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3C6.48 3 2 6.58 2 10.94c0 2.8 1.86 5.27 4.66 6.67l-.9 3.33c-.07.28.24.51.48.36l3.87-2.57c.6.08 1.23.13 1.89.13 5.52 0 10-3.58 10-7.92S17.52 3 12 3z" /></svg>
-            카카오톡 공유
+            {isEnLang ? 'Share via KakaoTalk' : '카카오톡 공유'}
           </button>
           {/* 링크 복사 */}
           <button
@@ -6268,7 +6268,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
             }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
-            {linkCopied ? '복사됨!' : '링크 복사'}
+            {linkCopied ? (isEnLang ? 'Copied!' : '복사됨!') : (isEnLang ? 'Copy Link' : '링크 복사')}
           </button>
         </div>
         {/* dear drawer 푸터 */}

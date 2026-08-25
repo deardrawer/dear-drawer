@@ -1838,21 +1838,21 @@ function LiveCountdown({ targetDate, beforeMsg, todayMsg, afterMsg }: {
 }
 
 /* ==========================================================================
- * GoogleMapEmbed — 영어권 청첩장용 구글지도 (Maps Embed API, iframe · 무과금)
- * NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY 필요. 키/주소 없으면 회색 placeholder.
+ * GoogleMapEmbed — 영어권 청첩장용 구글지도 (keyless 클래식 output=embed iframe)
+ * API 키 불필요. 모바일 드래그/줌 동작. 주소 없으면 회색 placeholder.
  * ========================================================================== */
 function GoogleMapEmbed({ address, venueName, aspectRatio = '16 / 10', className }: { address: string; venueName?: string; aspectRatio?: string; className?: string }) {
-  // Maps Embed API 전용 키. 클라이언트 노출 전제 → 구글 콘솔에서 HTTP 리퍼러 + API 제한으로 보호.
-  const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY || ''
+  // keyless 클래식 임베드(output=embed): 모바일에서 한 손가락 드래그/핀치 줌 정상 동작.
+  // API 키 불필요(Maps Embed API의 place 모드는 모바일에서 탭 시 앱으로 넘어가 드래그가 안 되던 문제 해결).
   const q = encodeURIComponent((address || venueName || '').trim())
-  if (!key || !q) {
+  if (!q) {
     return <div className={className} style={{ width: '100%', aspectRatio, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#eee', color: '#999', fontSize: 12 }}>Map unavailable</div>
   }
   return (
     <iframe
       className={className}
       title={venueName || 'map'}
-      src={`https://www.google.com/maps/embed/v1/place?key=${key}&q=${q}&language=en`}
+      src={`https://maps.google.com/maps?q=${q}&hl=en&z=16&output=embed`}
       style={{ width: '100%', aspectRatio, border: 0, display: 'block' }}
       loading="lazy"
       referrerPolicy="no-referrer-when-downgrade"

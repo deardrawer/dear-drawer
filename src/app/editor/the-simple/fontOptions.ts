@@ -64,12 +64,29 @@ export const KOREAN_FONTS: readonly KoreanFontOption[] = [
 export const DEFAULT_DISPLAY_FONT_ID = 'lora'
 export const DEFAULT_KOREAN_FONT_ID = 'modern'
 
+/**
+ * 중국어(CJK) 전용 폰트 패밀리.
+ * 폰트 스택 맨 앞에 두면 unicode-range(globals.css @font-face 'NotoSansSC-zh')에 의해
+ * CJK 문자만 이 폰트로 렌더링되고, 한글/영문은 뒤따르는 기존 선택 폰트를 그대로 사용한다.
+ * 기존 한글 폰트에 중국어 글리프가 있어도 중국어는 항상 Noto Sans SC로 통일된다.
+ */
+export const CJK_FONT_FAMILY = "'NotoSansSC-zh'"
+
+/**
+ * 중국어(한자) 포함 여부 — Unicode 기반 공통 순수 함수.
+ * CJK Unified Ideographs + Ext A + Compatibility Ideographs.
+ * (렌더링은 CSS unicode-range가 자동 처리하므로 필수는 아니며, 조건 분기용 공통 유틸)
+ */
+export function containsChinese(text: string): boolean {
+  return /[㐀-䶿一-鿿豈-﫿]/.test(text)
+}
+
 export function resolveDisplayFontFamily(id: string | undefined): string {
   const found = DISPLAY_FONTS.find((f) => f.id === id)
-  return found?.fontFamily ?? DISPLAY_FONTS[0].fontFamily
+  return `${CJK_FONT_FAMILY}, ${found?.fontFamily ?? DISPLAY_FONTS[0].fontFamily}`
 }
 
 export function resolveKoreanFontFamily(id: string | undefined): string {
   const found = KOREAN_FONTS.find((f) => f.id === id)
-  return found?.fontFamily ?? KOREAN_FONTS[0].fontFamily
+  return `${CJK_FONT_FAMILY}, ${found?.fontFamily ?? KOREAN_FONTS[0].fontFamily}`
 }

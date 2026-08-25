@@ -1,6 +1,25 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* ===== 중국어(CJK) 전용 폰트 — 항상 Noto Sans SC =====
+ * unicode-range로 CJK 문자에만 적용된다.
+ * - 한글/영문/기존 폰트 시스템에는 전혀 영향 없음 (해당 코드포인트가 range 밖)
+ * - 브라우저는 페이지에 CJK 문자가 실제로 있을 때만 이 woff2를 로드함
+ *   → 중국어가 없는 청첩장은 추가 네트워크 요청이 발생하지 않는다.
+ * - 폰트 스택 맨 앞에 두면 기존 한글 폰트에 중국어 글리프가 있어도
+ *   중국어는 항상 이 Noto Sans SC로 통일된다. (fontOptions.ts resolver에서 prepend)
+ */
+@font-face {
+  font-family: 'NotoSansSC-zh';
+  src: url('https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-sc@latest/chinese-simplified-400-normal.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  /* 이 woff2가 실제 글리프를 가진 범위에 맞춤(검증됨): CJK 통합 한자 + CJK 문장부호 + 전각.
+   * Ext A(U+3400-4DBF)·compat(U+F900-FAFF)는 이 서브셋에 글리프가 없어 제외(불필요 로드/tofu 방지). */
+  unicode-range: U+3000-303F, U+4E00-9FFF, U+FF00-FFEF;
+}
+
 /* Okticon Font for Romantic Style */
 @font-face {
   font-family: 'Okticon';

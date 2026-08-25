@@ -41,6 +41,7 @@ export default function EssayPreview({ data, fullscreen }: EssayPreviewProps) {
     rsvpDeadline: data.rsvpDeadline,
     rsvpMealOption: data.rsvpMealOption,
     rsvpShuttleOption: data.rsvpShuttleOption,
+    rsvpAfterPartyOption: data.rsvpAfterPartyOption,
     rsvpPhoneOption: data.rsvpPhoneOption,
     rsvpSideDetail: data.rsvpSideDetail,
     rsvpSideDetailOptions: data.rsvpSideDetailOptions,

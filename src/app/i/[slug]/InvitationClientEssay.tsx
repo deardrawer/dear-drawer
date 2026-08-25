@@ -1124,7 +1124,7 @@ function RsvpSection({ data, invitationId, theme }: { data: any; invitationId: s
             <h3 style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '15px', color: theme.heading }}>참석 여부</h3>
             {data.rsvpDeadline && <p style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '12px', color: theme.gray, marginTop: '8px' }}>{new Date(data.rsvpDeadline).toLocaleDateString('ko-KR')}까지 알려주세요</p>}
           </div>
-          <RsvpForm invitationId={invitationId} primaryColor={theme.accent} showMealOption={data.rsvpMealOption} showShuttleOption={data.rsvpShuttleOption} showPhoneOption={data.rsvpPhoneOption} showSideDetail={data.rsvpSideDetail} sideDetailOptions={data.rsvpSideDetailOptions} notice={data.rsvpNotice} messagePlaceholder={data.rsvpMessagePlaceholder} />
+          <RsvpForm invitationId={invitationId} primaryColor={theme.accent} showMealOption={data.rsvpMealOption} showShuttleOption={data.rsvpShuttleOption} showAfterPartyOption={data.rsvpAfterPartyOption} showPhoneOption={data.rsvpPhoneOption} showSideDetail={data.rsvpSideDetail} sideDetailOptions={data.rsvpSideDetailOptions} notice={data.rsvpNotice} messagePlaceholder={data.rsvpMessagePlaceholder} />
         </div>
       </div>
     </ScrollSection>
@@ -1595,13 +1595,14 @@ function PaperRsvp({ data, invitationId }: { data: any; invitationId: string }) 
   const [name, setName] = useState('')
   const [mealAttendance, setMealAttendance] = useState<'' | 'yes' | 'no'>('')
   const [shuttleBus, setShuttleBus] = useState<'' | 'yes' | 'no'>('')
+  const [afterParty, setAfterParty] = useState<'' | 'yes' | 'no'>('')
 
   const handleSubmit = async () => {
     if (!selected || !name.trim()) return
     try {
       await fetch('/api/rsvp', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ invitationId, guestName: name.trim(), attendance: selected === 'attend' ? 'yes' : 'no', guestCount: 1, message: '', mealAttendance: selected === 'attend' && mealAttendance ? mealAttendance : undefined, shuttleBus: selected === 'attend' && shuttleBus ? shuttleBus : undefined }),
+        body: JSON.stringify({ invitationId, guestName: name.trim(), attendance: selected === 'attend' ? 'yes' : 'no', guestCount: 1, message: '', mealAttendance: selected === 'attend' && mealAttendance ? mealAttendance : undefined, shuttleBus: selected === 'attend' && shuttleBus ? shuttleBus : undefined, afterParty: selected === 'attend' && afterParty ? afterParty : undefined }),
       })
     } catch {}
     setSubmitted(true)
@@ -1702,6 +1703,21 @@ function PaperRsvp({ data, invitationId }: { data: any; invitationId: string }) 
                     {([{ v: 'yes' as const, l: '이용 예정' }, { v: 'no' as const, l: '이용 안 함' }]).map(opt => (
                       <button key={opt.v} onClick={() => setShuttleBus(shuttleBus === opt.v ? '' : opt.v)}
                         style={{ flex: 1, fontFamily: "'Pretendard', sans-serif", fontSize: '14px', padding: '14px 24px', cursor: 'pointer', color: shuttleBus === opt.v ? '#FFF' : paperColors.text, background: shuttleBus === opt.v ? paperColors.dustyRose : 'transparent', border: `1px solid ${shuttleBus === opt.v ? paperColors.dustyRose : paperColors.accent}`, borderRadius: '4px', transition: 'all 0.2s' }}>
+                        {opt.l}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </PaperReveal>
+            )}
+            {selected === 'attend' && data.rsvpAfterPartyOption && (
+              <PaperReveal delay={0}>
+                <div style={{ marginTop: '16px' }}>
+                  <p style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '13px', color: paperColors.muted, marginBottom: '8px' }}>애프터파티 참석 여부</p>
+                  <div className="flex gap-3" style={{ maxWidth: '280px', margin: '0 auto' }}>
+                    {([{ v: 'yes' as const, l: '참석' }, { v: 'no' as const, l: '불참' }]).map(opt => (
+                      <button key={opt.v} onClick={() => setAfterParty(afterParty === opt.v ? '' : opt.v)}
+                        style={{ flex: 1, fontFamily: "'Pretendard', sans-serif", fontSize: '14px', padding: '14px 24px', cursor: 'pointer', color: afterParty === opt.v ? '#FFF' : paperColors.text, background: afterParty === opt.v ? paperColors.dustyRose : 'transparent', border: `1px solid ${afterParty === opt.v ? paperColors.dustyRose : paperColors.accent}`, borderRadius: '4px', transition: 'all 0.2s' }}>
                         {opt.l}
                       </button>
                     ))}
@@ -3031,7 +3047,7 @@ function BookFullscreenModal({ type, onChangeType, onClose, data, invitationId, 
   accounts: { name: string; bank: { bank: string; account: string; holder: string; enabled: boolean }; role: string; side: 'groom' | 'bride' }[]
   bookColors: BookColorConfig
 }) {
-  const [rsvpForm, setRsvpForm] = useState({ name: '', phone: '', side: '' as '' | 'groom' | 'bride', sideDetail: '' as '' | 'self' | 'father' | 'mother', attendance: '', guestCount: 1, message: '', mealAttendance: '' as '' | 'yes' | 'no', shuttleBus: '' as '' | 'yes' | 'no' })
+  const [rsvpForm, setRsvpForm] = useState({ name: '', phone: '', side: '' as '' | 'groom' | 'bride', sideDetail: '' as '' | 'self' | 'father' | 'mother', attendance: '', guestCount: 1, message: '', mealAttendance: '' as '' | 'yes' | 'no', shuttleBus: '' as '' | 'yes' | 'no', afterParty: '' as '' | 'yes' | 'no' })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const accent = bookColors.accent
 
@@ -3052,9 +3068,9 @@ function BookFullscreenModal({ type, onChangeType, onClose, data, invitationId, 
       const attendanceMap: Record<string, string> = { yes: 'attending', no: 'not_attending', maybe: 'pending' }
       const res = await fetch('/api/rsvp', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ invitationId, guestName: rsvpForm.name, guestPhone: rsvpForm.phone.trim() || undefined, attendance: attendanceMap[rsvpForm.attendance] || rsvpForm.attendance, guestCount: rsvpForm.attendance === 'yes' ? rsvpForm.guestCount : 0, message: rsvpForm.message, side: rsvpForm.side || undefined, sideDetail: rsvpForm.sideDetail || undefined, mealAttendance: rsvpForm.attendance === 'yes' && rsvpForm.mealAttendance ? rsvpForm.mealAttendance : undefined, shuttleBus: rsvpForm.attendance === 'yes' && rsvpForm.shuttleBus ? rsvpForm.shuttleBus : undefined }),
+        body: JSON.stringify({ invitationId, guestName: rsvpForm.name, guestPhone: rsvpForm.phone.trim() || undefined, attendance: attendanceMap[rsvpForm.attendance] || rsvpForm.attendance, guestCount: rsvpForm.attendance === 'yes' ? rsvpForm.guestCount : 0, message: rsvpForm.message, side: rsvpForm.side || undefined, sideDetail: rsvpForm.sideDetail || undefined, mealAttendance: rsvpForm.attendance === 'yes' && rsvpForm.mealAttendance ? rsvpForm.mealAttendance : undefined, shuttleBus: rsvpForm.attendance === 'yes' && rsvpForm.shuttleBus ? rsvpForm.shuttleBus : undefined, afterParty: rsvpForm.attendance === 'yes' && rsvpForm.afterParty ? rsvpForm.afterParty : undefined }),
       })
-      if (res.ok) { alert('참석 여부가 전달되었습니다. 감사합니다!'); onClose(); setRsvpForm({ name: '', phone: '', side: '', sideDetail: '', attendance: '', guestCount: 1, message: '', mealAttendance: '', shuttleBus: '' }) }
+      if (res.ok) { alert('참석 여부가 전달되었습니다. 감사합니다!'); onClose(); setRsvpForm({ name: '', phone: '', side: '', sideDetail: '', attendance: '', guestCount: 1, message: '', mealAttendance: '', shuttleBus: '', afterParty: '' }) }
       else { const d = (await res.json().catch(() => ({}))) as { error?: string }; alert(d.error || '전송에 실패했습니다.') }
     } catch { alert('전송에 실패했습니다.') } finally { setIsSubmitting(false) }
   }
@@ -3221,6 +3237,18 @@ function BookFullscreenModal({ type, onChangeType, onClose, data, invitationId, 
                   <div className="grid grid-cols-2 gap-2">
                     {([{ v: 'yes' as const, l: '이용 예정' }, { v: 'no' as const, l: '이용 안 함' }]).map(opt => (
                       <button key={opt.v} onClick={() => setRsvpForm({ ...rsvpForm, shuttleBus: rsvpForm.shuttleBus === opt.v ? '' : opt.v })} className="py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.shuttleBus === opt.v ? accent : `${accent}08`, color: rsvpForm.shuttleBus === opt.v ? '#fff' : bookColors.text }}>
+                        {opt.l}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {data.rsvpAfterPartyOption && rsvpForm.attendance === 'yes' && (
+                <div className="mb-3">
+                  <span className="text-sm mb-1.5 block" style={{ color: bookColors.text }}>애프터파티 참석 여부</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    {([{ v: 'yes' as const, l: '참석' }, { v: 'no' as const, l: '불참' }]).map(opt => (
+                      <button key={opt.v} onClick={() => setRsvpForm({ ...rsvpForm, afterParty: rsvpForm.afterParty === opt.v ? '' : opt.v })} className="py-3 rounded-xl text-sm transition-all" style={{ background: rsvpForm.afterParty === opt.v ? accent : `${accent}08`, color: rsvpForm.afterParty === opt.v ? '#fff' : bookColors.text }}>
                         {opt.l}
                       </button>
                     ))}
@@ -4697,7 +4725,7 @@ function BookRsvp({ data, invitationId }: { data: any; invitationId: string }) {
           <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '8px', fontWeight: 400, letterSpacing: '3px', color: bookInfoColors.muted, textTransform: 'uppercase' as const, marginBottom: '24px', animation: 'bkTrack 1.3s ease-out 500ms both' }}>RSVP</div>
           {data.rsvpDeadline && <div style={{ fontSize: '11.5px', fontWeight: 300, color: bookInfoColors.muted, marginBottom: '24px', opacity: 0, animation: 'bkFadeIn 1s ease-out 300ms forwards' }}>{new Date(data.rsvpDeadline).toLocaleDateString('ko-KR')}까지 회신 부탁드립니다</div>}
           <div style={{ background: bookInfoColors.pageBg, padding: '24px 22px', opacity: 0, animation: 'bkFadeIn 1.2s ease-out 500ms forwards' }} onClick={e => e.stopPropagation()}>
-            <RsvpForm invitationId={invitationId} primaryColor={bookInfoColors.accent} showMealOption={data.rsvpMealOption} showShuttleOption={data.rsvpShuttleOption} notice={data.rsvpNotice} />
+            <RsvpForm invitationId={invitationId} primaryColor={bookInfoColors.accent} showMealOption={data.rsvpMealOption} showShuttleOption={data.rsvpShuttleOption} showAfterPartyOption={data.rsvpAfterPartyOption} notice={data.rsvpNotice} />
           </div>
         </div>
       </div>

@@ -2133,6 +2133,7 @@ function RsvpModal({
   invitationId,
   showMealOption,
   showShuttleOption,
+  showAfterPartyOption,
   showPhoneOption,
   showSideDetail,
   sideDetailOptions,
@@ -2146,6 +2147,7 @@ function RsvpModal({
   invitationId?: string
   showMealOption?: boolean
   showShuttleOption?: boolean
+  showAfterPartyOption?: boolean
   showPhoneOption?: boolean
   showSideDetail?: boolean
   sideDetailOptions?: { groomSelf?: boolean; groomFather?: boolean; groomMother?: boolean; brideSelf?: boolean; brideFather?: boolean; brideMother?: boolean }
@@ -2161,6 +2163,7 @@ function RsvpModal({
   const [count, setCount] = useState(1)
   const [mealAttendance, setMealAttendance] = useState<'yes' | 'no' | ''>('')
   const [shuttleBus, setShuttleBus] = useState<'yes' | 'no' | ''>('')
+  const [afterParty, setAfterParty] = useState<'yes' | 'no' | ''>('')
   const [side, setSide] = useState<'groom' | 'bride' | ''>('')
   const [sideDetail, setSideDetail] = useState<'self' | 'father' | 'mother' | ''>('')
   const [message, setMessage] = useState('')
@@ -2230,6 +2233,7 @@ function RsvpModal({
           message: message.trim() || undefined,
           ...(showMealOption && attendance === 'attending' && mealAttendance ? { mealAttendance } : {}),
           ...(showShuttleOption && attendance === 'attending' && shuttleBus ? { shuttleBus } : {}),
+          ...(showAfterPartyOption && attendance === 'attending' && afterParty ? { afterParty } : {}),
           side: side || undefined,
           sideDetail: sideDetail || undefined,
         }),
@@ -2245,6 +2249,7 @@ function RsvpModal({
           setCount(1)
           setMealAttendance('')
           setShuttleBus('')
+          setAfterParty('')
           setSide('')
           setSideDetail('')
           setMessage('')
@@ -2255,7 +2260,7 @@ function RsvpModal({
     } finally {
       setSubmitting(false)
     }
-  }, [name, phone, attendance, count, mealAttendance, shuttleBus, side, sideDetail, message, invitationId, submitting, onClose, showMealOption, showShuttleOption, showPhoneOption, showSideDetail])
+  }, [name, phone, attendance, count, mealAttendance, shuttleBus, afterParty, side, sideDetail, message, invitationId, submitting, onClose, showMealOption, showShuttleOption, showAfterPartyOption, showPhoneOption, showSideDetail])
 
   const [closing, setClosing] = useState(false)
 
@@ -2412,6 +2417,15 @@ function RsvpModal({
                   <div className="ts-rsvp-modal-toggle">
                     <button type="button" className={`ts-rsvp-modal-opt ${shuttleBus === 'yes' ? 'active' : ''}`} onClick={() => setShuttleBus('yes')}>{isEn ? 'Yes' : '이용 예정'}</button>
                     <button type="button" className={`ts-rsvp-modal-opt ${shuttleBus === 'no' ? 'active' : ''}`} onClick={() => setShuttleBus('no')}>{isEn ? 'No' : '이용 안 함'}</button>
+                  </div>
+                </div>
+              )}
+              {showAfterPartyOption && attendance === 'attending' && (
+                <div>
+                  <span style={{ fontFamily: 'var(--font-ko)', fontSize: 'calc(13px * var(--ts-font-scale, 1))', color: 'var(--ink)', display: 'block', marginBottom: 6 }}>{isEn ? 'After-party' : '애프터파티 참석'}</span>
+                  <div className="ts-rsvp-modal-toggle">
+                    <button type="button" className={`ts-rsvp-modal-opt ${afterParty === 'yes' ? 'active' : ''}`} onClick={() => setAfterParty('yes')}>{isEn ? 'Yes' : '참석'}</button>
+                    <button type="button" className={`ts-rsvp-modal-opt ${afterParty === 'no' ? 'active' : ''}`} onClick={() => setAfterParty('no')}>{isEn ? 'No' : '불참'}</button>
                   </div>
                 </div>
               )}
@@ -6273,7 +6287,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
         <div style={{ height: 72 }} />
       </div>
       </div>{/* /ts-body-wrap */}
-      <RsvpModal open={rsvpOpen} onClose={() => { setRsvpOpen(false); setRsvpInitAttendance(undefined) }} invitationId={data.id} showMealOption={data.sections.rsvp.showMealOption} showShuttleOption={data.sections.rsvp.showShuttleOption} showPhoneOption={data.sections.rsvp.showPhoneOption} showSideDetail={data.sections.rsvp.showSideDetail} sideDetailOptions={data.sections.rsvp.sideDetailOptions} rsvpNotice={data.sections.rsvp.rsvpNotice} messagePlaceholder={data.sections.rsvp.messagePlaceholder} initialAttendance={rsvpInitAttendance} language={data.language} />
+      <RsvpModal open={rsvpOpen} onClose={() => { setRsvpOpen(false); setRsvpInitAttendance(undefined) }} invitationId={data.id} showMealOption={data.sections.rsvp.showMealOption} showShuttleOption={data.sections.rsvp.showShuttleOption} showAfterPartyOption={data.sections.rsvp.showAfterPartyOption} showPhoneOption={data.sections.rsvp.showPhoneOption} showSideDetail={data.sections.rsvp.showSideDetail} sideDetailOptions={data.sections.rsvp.sideDetailOptions} rsvpNotice={data.sections.rsvp.rsvpNotice} messagePlaceholder={data.sections.rsvp.messagePlaceholder} initialAttendance={rsvpInitAttendance} language={data.language} />
       <GalleryLightbox images={lightboxImages} isOpen={lightboxOpen} initialIndex={lightboxIndex} onClose={() => setLightboxOpen(false)} variant={data.lightboxVariant ?? 1} />
       {/* 네비게이션 프리뷰 */}
       {(() => {
@@ -6342,6 +6356,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
               rsvpEnabled,
               rsvpMealOption: data.sections.rsvp?.showMealOption,
               rsvpShuttleOption: data.sections.rsvp?.showShuttleOption,
+              rsvpAfterPartyOption: data.sections.rsvp?.showAfterPartyOption,
               rsvpPhoneOption: data.sections.rsvp?.showPhoneOption,
               rsvpSideDetail: data.sections.rsvp?.showSideDetail,
               rsvpSideDetailOptions: data.sections.rsvp?.sideDetailOptions,

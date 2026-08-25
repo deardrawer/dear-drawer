@@ -303,6 +303,14 @@ export default function FeedStep5Details({
 
             <div className="flex items-center gap-3">
               <ToggleSwitch
+                checked={data.rsvpAfterPartyOption ?? false}
+                onChange={(checked) => updateData({ rsvpAfterPartyOption: checked })}
+              />
+              <span className="text-sm text-gray-700">애프터파티 참석 여부 입력 허용</span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <ToggleSwitch
                 checked={data.rsvpPhoneOption ?? false}
                 onChange={(checked) => updateData({ rsvpPhoneOption: checked })}
               />

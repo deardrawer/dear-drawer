@@ -410,6 +410,7 @@ export interface InvitationContent {
   rsvpAllowGuestCount: boolean
   rsvpMealOption?: boolean       // 식사 여부 옵션 표시 (기본 false)
   rsvpShuttleOption?: boolean    // 대절버스 옵션 표시 (기본 false)
+  rsvpAfterPartyOption?: boolean // 애프터파티 참석 옵션 표시 (기본 false)
   rsvpPhoneOption?: boolean      // 연락처 뒷자리 4자리 입력 (기본 false)
   rsvpSideDetail?: boolean       // 부모님 하객 구분 (기본 false)
   rsvpSideDetailOptions?: { groomSelf?: boolean; groomFather?: boolean; groomMother?: boolean; brideSelf?: boolean; brideFather?: boolean; brideMother?: boolean }
@@ -863,6 +864,7 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
   rsvpAllowGuestCount: true,
   rsvpMealOption: false,
   rsvpShuttleOption: false,
+  rsvpAfterPartyOption: false,
   rsvpPhoneOption: false,
   rsvpSideDetail: false,
   rsvpSideDetailOptions: undefined,

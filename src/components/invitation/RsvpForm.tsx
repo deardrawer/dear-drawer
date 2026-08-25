@@ -15,6 +15,7 @@ interface RsvpFormProps {
   allowGuestCount?: boolean
   showMealOption?: boolean
   showShuttleOption?: boolean
+  showAfterPartyOption?: boolean
   showPhoneOption?: boolean
   showSideDetail?: boolean
   sideDetailOptions?: {
@@ -36,6 +37,7 @@ export default function RsvpForm({
   allowGuestCount = true,
   showMealOption = false,
   showShuttleOption = false,
+  showAfterPartyOption = false,
   showPhoneOption = false,
   showSideDetail = false,
   sideDetailOptions,
@@ -49,6 +51,7 @@ export default function RsvpForm({
   const [attendance, setAttendance] = useState<Attendance | null>(null)
   const [mealAttendance, setMealAttendance] = useState<'yes' | 'no' | null>(null)
   const [shuttleBus, setShuttleBus] = useState<'yes' | 'no' | null>(null)
+  const [afterParty, setAfterParty] = useState<'yes' | 'no' | null>(null)
   const [guestCount, setGuestCount] = useState(1)
   const [message, setMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -96,6 +99,7 @@ export default function RsvpForm({
           sideDetail: sideDetail || undefined,
           mealAttendance: attendance === 'attending' ? mealAttendance : undefined,
           shuttleBus: attendance === 'attending' ? shuttleBus : undefined,
+          afterParty: attendance === 'attending' ? afterParty : undefined,
         }),
       })
 
@@ -416,6 +420,42 @@ export default function RsvpForm({
               }`}
             >
               이용 안 함
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 애프터파티 (참석 + 옵션 ON 시만) */}
+      {showAfterPartyOption && attendance === 'attending' && (
+        <div className="space-y-2">
+          <Label>애프터파티 참석 여부</Label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setAfterParty('yes')}
+              className={`py-3 px-4 rounded-lg border-2 text-sm font-medium transition-all ${
+                afterParty === 'yes'
+                  ? 'text-white'
+                  : 'border-gray-200 text-gray-700 hover:border-gray-300'
+              }`}
+              style={
+                afterParty === 'yes'
+                  ? { backgroundColor: primaryColor, borderColor: primaryColor }
+                  : {}
+              }
+            >
+              참석
+            </button>
+            <button
+              type="button"
+              onClick={() => setAfterParty('no')}
+              className={`py-3 px-4 rounded-lg border-2 text-sm font-medium transition-all ${
+                afterParty === 'no'
+                  ? 'bg-gray-700 text-white border-gray-700'
+                  : 'border-gray-200 text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              불참
             </button>
           </div>
         </div>

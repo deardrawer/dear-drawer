@@ -1571,6 +1571,13 @@ export default function ParentsStep3Content({
             </div>
             <div className="flex items-center gap-3">
               <Switch
+                checked={data.rsvpAfterPartyOption ?? false}
+                onCheckedChange={(checked) => updateData({ rsvpAfterPartyOption: checked })}
+              />
+              <span className="text-sm text-gray-700">애프터파티 참석 여부 입력 허용</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Switch
                 checked={data.rsvpPhoneOption ?? false}
                 onCheckedChange={(checked) => updateData({ rsvpPhoneOption: checked })}
               />

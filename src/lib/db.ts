@@ -340,6 +340,7 @@ export interface RSVPResponse {
   side_detail: "self" | "father" | "mother" | null;
   meal_attendance: "yes" | "no" | null;
   shuttle_bus: "yes" | "no" | null;
+  after_party: "yes" | "no" | null;
   created_at: string;
 }
 
@@ -354,6 +355,7 @@ export interface RSVPInput {
   side_detail?: "self" | "father" | "mother";
   meal_attendance?: "yes" | "no";
   shuttle_bus?: "yes" | "no";
+  after_party?: "yes" | "no";
 }
 
 // RSVP 생성
@@ -365,8 +367,8 @@ export async function createRSVP(input: RSVPInput): Promise<RSVPResponse> {
   const result = await db
     .prepare(
       `INSERT INTO rsvp_responses (
-        id, invitation_id, guest_name, guest_phone, attendance, guest_count, message, side, side_detail, meal_attendance, shuttle_bus, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        id, invitation_id, guest_name, guest_phone, attendance, guest_count, message, side, side_detail, meal_attendance, shuttle_bus, after_party, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       RETURNING *`
     )
     .bind(
@@ -381,6 +383,7 @@ export async function createRSVP(input: RSVPInput): Promise<RSVPResponse> {
       input.side_detail || null,
       input.meal_attendance || null,
       input.shuttle_bus || null,
+      input.after_party || null,
       now
     )
     .first<RSVPResponse>();
@@ -413,10 +416,10 @@ export async function updateRSVP(
   const db = await getDB();
   const result = await db
     .prepare(
-      `UPDATE rsvp_responses SET attendance = ?, guest_count = ?, message = ?, side = ?, side_detail = ?, guest_phone = ?, meal_attendance = ?, shuttle_bus = ?
+      `UPDATE rsvp_responses SET attendance = ?, guest_count = ?, message = ?, side = ?, side_detail = ?, guest_phone = ?, meal_attendance = ?, shuttle_bus = ?, after_party = ?
        WHERE id = ? RETURNING *`
     )
-    .bind(input.attendance, input.guest_count, input.message || null, input.side || null, input.side_detail || null, input.guest_phone || null, input.meal_attendance || null, input.shuttle_bus || null, id)
+    .bind(input.attendance, input.guest_count, input.message || null, input.side || null, input.side_detail || null, input.guest_phone || null, input.meal_attendance || null, input.shuttle_bus || null, input.after_party || null, id)
     .first<RSVPResponse>();
   return result || null;
 }
@@ -429,10 +432,10 @@ export async function updateRSVPAdmin(
   const db = await getDB();
   const result = await db
     .prepare(
-      `UPDATE rsvp_responses SET guest_name = ?, attendance = ?, guest_count = ?, message = ?, side = ?, side_detail = ?, guest_phone = ?, meal_attendance = ?, shuttle_bus = ?, updated_at = datetime('now')
+      `UPDATE rsvp_responses SET guest_name = ?, attendance = ?, guest_count = ?, message = ?, side = ?, side_detail = ?, guest_phone = ?, meal_attendance = ?, shuttle_bus = ?, after_party = ?, updated_at = datetime('now')
        WHERE id = ? RETURNING *`
     )
-    .bind(input.guest_name, input.attendance, input.guest_count, input.message || null, input.side || null, input.side_detail || null, input.guest_phone || null, input.meal_attendance || null, input.shuttle_bus || null, id)
+    .bind(input.guest_name, input.attendance, input.guest_count, input.message || null, input.side || null, input.side_detail || null, input.guest_phone || null, input.meal_attendance || null, input.shuttle_bus || null, input.after_party || null, id)
     .first<RSVPResponse>();
   return result || null;
 }
@@ -463,6 +466,8 @@ export async function getRSVPSummary(invitationId: string): Promise<{
   mealNo: number;
   shuttleYes: number;
   shuttleNo: number;
+  afterPartyYes: number;
+  afterPartyNo: number;
 }> {
   const responses = await getRSVPsByInvitationId(invitationId);
   const attending = responses.filter((r) => r.attendance === "attending");
@@ -492,6 +497,12 @@ export async function getRSVPSummary(invitationId: string): Promise<{
       .reduce((sum, r) => sum + (r.guest_count || 1), 0),
     shuttleNo: attending
       .filter((r) => r.shuttle_bus === "no")
+      .reduce((sum, r) => sum + (r.guest_count || 1), 0),
+    afterPartyYes: attending
+      .filter((r) => r.after_party === "yes")
+      .reduce((sum, r) => sum + (r.guest_count || 1), 0),
+    afterPartyNo: attending
+      .filter((r) => r.after_party === "no")
       .reduce((sum, r) => sum + (r.guest_count || 1), 0),
   };
 }

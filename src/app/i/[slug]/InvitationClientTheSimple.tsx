@@ -439,6 +439,7 @@ export default function InvitationClientTheSimple({
               directions,
               rsvpEnabled,
               rsvpMealOption: data.sections.rsvp?.showMealOption,
+              rsvpAfterPartyOption: data.sections.rsvp?.showAfterPartyOption,
               rsvpShuttleOption: data.sections.rsvp?.showShuttleOption,
               rsvpPhoneOption: data.sections.rsvp?.showPhoneOption,
               rsvpSideDetail: data.sections.rsvp?.showSideDetail,

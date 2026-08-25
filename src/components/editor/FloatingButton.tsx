@@ -91,6 +91,7 @@ interface FloatingButtonProps {
     rsvpAllowGuestCount?: boolean
     rsvpMealOption?: boolean
     rsvpShuttleOption?: boolean
+    rsvpAfterPartyOption?: boolean
     rsvpPhoneOption?: boolean
     rsvpSideDetail?: boolean
     rsvpSideDetailOptions?: { groomSelf?: boolean; groomFather?: boolean; groomMother?: boolean; brideSelf?: boolean; brideFather?: boolean; brideMother?: boolean }
@@ -103,7 +104,7 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false)
   const [activeModal, setActiveModal] = useState<ModalType>('none')
   const [directionsTab, setDirectionsTab] = useState<DirectionsTab>('car')
-  const [rsvpForm, setRsvpForm] = useState({ name: '', phone: '', side: '' as '' | 'groom' | 'bride', sideDetail: '' as '' | 'self' | 'father' | 'mother', attendance: '', mealAttendance: '' as '' | 'yes' | 'no', shuttleBus: '' as '' | 'yes' | 'no', guestCount: 1, message: '' })
+  const [rsvpForm, setRsvpForm] = useState({ name: '', phone: '', side: '' as '' | 'groom' | 'bride', sideDetail: '' as '' | 'self' | 'father' | 'mother', attendance: '', mealAttendance: '' as '' | 'yes' | 'no', shuttleBus: '' as '' | 'yes' | 'no', afterParty: '' as '' | 'yes' | 'no', guestCount: 1, message: '' })
 
   // 미리보기 내부의 "참석 여부 전달하기" 버튼 클릭 시 모달 열기
   useEffect(() => {
@@ -637,6 +638,15 @@ export default function FloatingButton({ themeColors, fonts, invitation, showToo
                       <div className="flex gap-2">
                         <button onClick={() => setRsvpForm({ ...rsvpForm, shuttleBus: 'yes' })} className="flex-1 py-3 rounded-lg text-sm transition-all" style={{ background: rsvpForm.shuttleBus === 'yes' ? selBg : '#fafafa', color: rsvpForm.shuttleBus === 'yes' ? selText : sheetColors.text }}>이용 예정</button>
                         <button onClick={() => setRsvpForm({ ...rsvpForm, shuttleBus: 'no' })} className="flex-1 py-3 rounded-lg text-sm transition-all" style={{ background: rsvpForm.shuttleBus === 'no' ? selBg : '#fafafa', color: rsvpForm.shuttleBus === 'no' ? selText : sheetColors.text }}>이용 안 함</button>
+                      </div>
+                    </div>
+                  )}
+                  {invitation?.rsvpAfterPartyOption && rsvpForm.attendance === 'yes' && (
+                    <div className="mb-3">
+                      <p className="text-xs mb-2" style={{ color: sheetColors.gray }}>애프터파티 참석 여부</p>
+                      <div className="flex gap-2">
+                        <button onClick={() => setRsvpForm({ ...rsvpForm, afterParty: 'yes' })} className="flex-1 py-3 rounded-lg text-sm transition-all" style={{ background: rsvpForm.afterParty === 'yes' ? selBg : '#fafafa', color: rsvpForm.afterParty === 'yes' ? selText : sheetColors.text }}>참석</button>
+                        <button onClick={() => setRsvpForm({ ...rsvpForm, afterParty: 'no' })} className="flex-1 py-3 rounded-lg text-sm transition-all" style={{ background: rsvpForm.afterParty === 'no' ? selBg : '#fafafa', color: rsvpForm.afterParty === 'no' ? selText : sheetColors.text }}>불참</button>
                       </div>
                     </div>
                   )}

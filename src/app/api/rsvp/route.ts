@@ -32,6 +32,7 @@ export type RSVPSubmission = {
   sideDetail?: "self" | "father" | "mother";
   mealAttendance?: "yes" | "no";
   shuttleBus?: "yes" | "no";
+  afterParty?: "yes" | "no";
 };
 
 export async function POST(request: NextRequest) {
@@ -109,9 +110,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 참석이 아닌 경우 식사/대절버스 여부는 null
+    // 참석이 아닌 경우 식사/대절버스/애프터파티 여부는 null
     const mealAttendance = body.attendance === "attending" ? body.mealAttendance : undefined;
     const shuttleBus = body.attendance === "attending" ? body.shuttleBus : undefined;
+    const afterParty = body.attendance === "attending" ? body.afterParty : undefined;
 
     // 기존 RSVP 확인 (같은 이름+전화번호 → 업데이트)
     const existing = await findExistingRSVP(body.invitationId, body.guestName);
@@ -127,6 +129,7 @@ export async function POST(request: NextRequest) {
         side_detail: body.sideDetail,
         meal_attendance: mealAttendance,
         shuttle_bus: shuttleBus,
+        after_party: afterParty,
       });
     } else {
       data = await createRSVP({
@@ -140,6 +143,7 @@ export async function POST(request: NextRequest) {
         side_detail: body.sideDetail,
         meal_attendance: mealAttendance,
         shuttle_bus: shuttleBus,
+        after_party: afterParty,
       });
     }
 
@@ -320,7 +324,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body: RSVPSubmission & { id?: string } = await request.json();
-    const { id, invitationId, guestName, guestPhone, attendance, guestCount, message, side, sideDetail, mealAttendance, shuttleBus } = body;
+    const { id, invitationId, guestName, guestPhone, attendance, guestCount, message, side, sideDetail, mealAttendance, shuttleBus, afterParty } = body;
 
     if (!id || !invitationId || !guestName || !attendance) {
       return NextResponse.json(
@@ -359,6 +363,7 @@ export async function PUT(request: NextRequest) {
     const finalGuestCount = attendance === "attending" ? Math.min(Math.max(guestCount || 1, 1), 100) : 0;
     const finalMealAttendance = attendance === "attending" ? mealAttendance : undefined;
     const finalShuttleBus = attendance === "attending" ? shuttleBus : undefined;
+    const finalAfterParty = attendance === "attending" ? afterParty : undefined;
 
     const data = await updateRSVPAdmin(id, {
       guest_name: guestName.trim(),
@@ -370,6 +375,7 @@ export async function PUT(request: NextRequest) {
       side_detail: sideDetail || undefined,
       meal_attendance: finalMealAttendance,
       shuttle_bus: finalShuttleBus,
+      after_party: finalAfterParty,
     });
 
     if (!data) {

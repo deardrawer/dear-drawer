@@ -914,6 +914,14 @@ export default function Step5MenuSettings() {
 
             <div className="flex items-center gap-3">
               <Switch
+                checked={invitation.rsvpAfterPartyOption ?? false}
+                onCheckedChange={(checked) => updateField('rsvpAfterPartyOption', checked)}
+              />
+              <span className="text-sm text-gray-700">애프터파티 참석 여부 입력 허용</span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Switch
                 checked={invitation.rsvpPhoneOption ?? false}
                 onCheckedChange={(checked) => updateField('rsvpPhoneOption', checked)}
               />

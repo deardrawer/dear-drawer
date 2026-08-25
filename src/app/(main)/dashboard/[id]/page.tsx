@@ -21,6 +21,7 @@ type RSVPData = {
   side_detail: 'self' | 'father' | 'mother' | null
   meal_attendance: 'yes' | 'no' | null
   shuttle_bus: 'yes' | 'no' | null
+  after_party: 'yes' | 'no' | null
   created_at: string
 }
 
@@ -38,6 +39,8 @@ type Summary = {
   mealNo: number
   shuttleYes: number
   shuttleNo: number
+  afterPartyYes: number
+  afterPartyNo: number
 }
 
 type GuestbookMessage = {
@@ -69,6 +72,8 @@ export default function DashboardPage() {
     mealNo: 0,
     shuttleYes: 0,
     shuttleNo: 0,
+    afterPartyYes: 0,
+    afterPartyNo: 0,
   })
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -76,6 +81,7 @@ export default function DashboardPage() {
   const [filterSides, setFilterSides] = useState<Set<string>>(new Set())
   const [filterMeal, setFilterMeal] = useState<string | null>(null)
   const [filterShuttle, setFilterShuttle] = useState<string | null>(null)
+  const [filterAfterParty, setFilterAfterParty] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [deletingRsvpId, setDeletingRsvpId] = useState<string | null>(null)
   const [editingRsvp, setEditingRsvp] = useState<RSVPData | null>(null)
@@ -87,6 +93,7 @@ export default function DashboardPage() {
     attendance: '' as '' | 'attending' | 'not_attending' | 'pending',
     mealAttendance: '' as '' | 'yes' | 'no',
     shuttleBus: '' as '' | 'yes' | 'no',
+    afterParty: '' as '' | 'yes' | 'no',
     guestCount: 1,
     message: '',
   })
@@ -137,6 +144,8 @@ export default function DashboardPage() {
         mealNo: 0,
         shuttleYes: 0,
         shuttleNo: 0,
+        afterPartyYes: 0,
+        afterPartyNo: 0,
       })
     } catch (error) {
       console.error('Failed to fetch RSVP data:', error)
@@ -152,12 +161,13 @@ export default function DashboardPage() {
   ].filter(item => item.value > 0)
 
   // Filter helpers
-  const hasActiveFilters = filterStatus !== null || filterSides.size > 0 || filterMeal !== null || filterShuttle !== null
+  const hasActiveFilters = filterStatus !== null || filterSides.size > 0 || filterMeal !== null || filterShuttle !== null || filterAfterParty !== null
   const resetFilters = () => {
     setFilterStatus(null)
     setFilterSides(new Set())
     setFilterMeal(null)
     setFilterShuttle(null)
+    setFilterAfterParty(null)
     setCurrentPage(1)
   }
   const toggleSideFilter = (value: string) => {
@@ -209,6 +219,8 @@ export default function DashboardPage() {
     mealNo: summary.mealNo,
     shuttleYes: summary.shuttleYes,
     shuttleNo: summary.shuttleNo,
+    afterPartyYes: summary.afterPartyYes,
+    afterPartyNo: summary.afterPartyNo,
   }
 
   // Side filter counts (computed from responses for side_detail support)
@@ -227,6 +239,7 @@ export default function DashboardPage() {
     }
     if (filterMeal !== null && r.meal_attendance !== filterMeal) return false
     if (filterShuttle !== null && r.shuttle_bus !== filterShuttle) return false
+    if (filterAfterParty !== null && r.after_party !== filterAfterParty) return false
     if (searchQuery && !r.guest_name.toLowerCase().includes(searchQuery.toLowerCase())) return false
     return true
   })
@@ -278,6 +291,7 @@ export default function DashboardPage() {
       attendance: r.attendance,
       mealAttendance: r.meal_attendance || '',
       shuttleBus: r.shuttle_bus || '',
+      afterParty: r.after_party || '',
       guestCount: r.guest_count,
       message: r.message || '',
     })
@@ -302,6 +316,7 @@ export default function DashboardPage() {
           sideDetail: editForm.sideDetail || undefined,
           mealAttendance: editForm.attendance === 'attending' ? (editForm.mealAttendance || undefined) : undefined,
           shuttleBus: editForm.attendance === 'attending' ? (editForm.shuttleBus || undefined) : undefined,
+          afterParty: editForm.attendance === 'attending' ? (editForm.afterParty || undefined) : undefined,
         }),
       })
       if (res.ok) {
@@ -505,6 +520,13 @@ export default function DashboardPage() {
             <p className="text-[10px] text-gray-400 mt-0.5 hidden sm:block">미이용 {summary.shuttleNo}명</p>
           </CardContent>
         </Card>
+        <Card className="p-0">
+          <CardContent className="p-3 sm:p-4">
+            <p className="text-[10px] sm:text-sm font-medium text-teal-600 truncate">애프터파티</p>
+            <div className="text-xl sm:text-3xl font-bold text-teal-600 mt-1">{summary.afterPartyYes}<span className="text-sm sm:text-lg font-normal text-gray-400">명</span></div>
+            <p className="text-[10px] text-gray-400 mt-0.5 hidden sm:block">불참 {summary.afterPartyNo}명</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Side Stats Cards */}
@@ -588,6 +610,11 @@ export default function DashboardPage() {
               <span className="w-8 sm:w-14 text-[10px] sm:text-xs font-medium text-gray-500 shrink-0">버스</span>
               <FilterChip label="이용" count={counts.shuttleYes} isActive={filterShuttle === 'yes'} activeClass="bg-purple-100 text-purple-700 border-purple-300" onClick={() => { setFilterShuttle(prev => prev === 'yes' ? null : 'yes'); setCurrentPage(1) }} />
               <FilterChip label="미이용" count={counts.shuttleNo} isActive={filterShuttle === 'no'} activeClass="bg-purple-50 text-purple-600 border-purple-200" onClick={() => { setFilterShuttle(prev => prev === 'no' ? null : 'no'); setCurrentPage(1) }} />
+            </div>
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+              <span className="w-8 sm:w-14 text-[10px] sm:text-xs font-medium text-gray-500 shrink-0">애프터</span>
+              <FilterChip label="참석" count={counts.afterPartyYes} isActive={filterAfterParty === 'yes'} activeClass="bg-teal-100 text-teal-700 border-teal-300" onClick={() => { setFilterAfterParty(prev => prev === 'yes' ? null : 'yes'); setCurrentPage(1) }} />
+              <FilterChip label="불참" count={counts.afterPartyNo} isActive={filterAfterParty === 'no'} activeClass="bg-teal-50 text-teal-600 border-teal-200" onClick={() => { setFilterAfterParty(prev => prev === 'no' ? null : 'no'); setCurrentPage(1) }} />
             </div>
           </div>
         </CardContent>
@@ -694,6 +721,11 @@ export default function DashboardPage() {
                             {r.shuttle_bus === 'yes' ? '버스이용' : '버스미이용'}
                           </span>
                         )}
+                        {r.attendance === 'attending' && r.after_party && (
+                          <span className={`px-1.5 py-0.5 rounded ${r.after_party === 'yes' ? 'bg-teal-50 text-teal-600' : 'bg-gray-50 text-gray-500'}`}>
+                            {r.after_party === 'yes' ? '애프터참석' : '애프터불참'}
+                          </span>
+                        )}
                         <span className="text-gray-400 ml-auto">{new Date(r.created_at).toLocaleDateString('ko-KR')}</span>
                       </div>
                       {r.message && (
@@ -714,6 +746,7 @@ export default function DashboardPage() {
                         <th className="text-left py-3 px-2 font-medium">참석</th>
                         <th className="text-left py-3 px-2 font-medium">식사</th>
                         <th className="text-left py-3 px-2 font-medium">대절버스</th>
+                        <th className="text-left py-3 px-2 font-medium">애프터파티</th>
                         <th className="text-left py-3 px-2 font-medium">인원</th>
                         <th className="text-left py-3 px-2 font-medium">메시지</th>
                         <th className="text-left py-3 px-2 font-medium">응답일</th>
@@ -758,6 +791,19 @@ export default function DashboardPage() {
                                 <span className="px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-700">이용</span>
                               ) : r.shuttle_bus === 'no' ? (
                                 <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">미이용</span>
+                              ) : (
+                                <span className="text-gray-400">-</span>
+                              )
+                            ) : (
+                              <span className="text-gray-400">-</span>
+                            )}
+                          </td>
+                          <td className="py-3 px-2">
+                            {r.attendance === 'attending' ? (
+                              r.after_party === 'yes' ? (
+                                <span className="px-2 py-1 rounded-full text-xs bg-teal-100 text-teal-700">참석</span>
+                              ) : r.after_party === 'no' ? (
+                                <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">불참</span>
                               ) : (
                                 <span className="text-gray-400">-</span>
                               )
@@ -1035,6 +1081,13 @@ export default function DashboardPage() {
                   <div className="grid grid-cols-2 gap-2">
                     <button type="button" onClick={() => setEditForm(prev => ({ ...prev, shuttleBus: 'yes' }))} className={cn('py-2 rounded-lg text-sm font-medium border transition-colors', editForm.shuttleBus === 'yes' ? 'bg-purple-100 text-purple-700 border-purple-300' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50')}>이용</button>
                     <button type="button" onClick={() => setEditForm(prev => ({ ...prev, shuttleBus: 'no' }))} className={cn('py-2 rounded-lg text-sm font-medium border transition-colors', editForm.shuttleBus === 'no' ? 'bg-gray-200 text-gray-700 border-gray-400' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50')}>미이용</button>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 block mb-1">애프터파티</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button type="button" onClick={() => setEditForm(prev => ({ ...prev, afterParty: 'yes' }))} className={cn('py-2 rounded-lg text-sm font-medium border transition-colors', editForm.afterParty === 'yes' ? 'bg-teal-100 text-teal-700 border-teal-300' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50')}>참석</button>
+                    <button type="button" onClick={() => setEditForm(prev => ({ ...prev, afterParty: 'no' }))} className={cn('py-2 rounded-lg text-sm font-medium border transition-colors', editForm.afterParty === 'no' ? 'bg-gray-200 text-gray-700 border-gray-400' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50')}>불참</button>
                   </div>
                 </div>
                 <div>

@@ -1996,6 +1996,7 @@ function RsvpSection({ invitation, invitationId, fonts, tc, bgOverride }: {
   const [submitting, setSubmitting] = useState(false)
   const [mealAttendance, setMealAttendance] = useState<'' | 'yes' | 'no'>('')
   const [shuttleBus, setShuttleBus] = useState<'' | 'yes' | 'no'>('')
+  const [afterParty, setAfterParty] = useState<'' | 'yes' | 'no'>('')
   const [phone, setPhone] = useState('')
   const [sideDetail, setSideDetail] = useState<'' | 'self' | 'father' | 'mother'>('')
 
@@ -2007,7 +2008,7 @@ function RsvpSection({ invitation, invitationId, fonts, tc, bgOverride }: {
     try {
       const attendanceMap: Record<string, string> = { yes: 'attending', no: 'not_attending', maybe: 'pending' }
       const res = await fetch('/api/rsvp', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ invitationId, guestName: name, attendance: attendanceMap[attendance] || attendance, guestCount: attendance === 'yes' ? guestCount : 0, message: rsvpMessage, side: side || undefined, mealAttendance: attendance === 'yes' && mealAttendance ? mealAttendance : undefined, shuttleBus: attendance === 'yes' && shuttleBus ? shuttleBus : undefined, ...(phone ? { phone } : {}), ...(sideDetail ? { side_detail: sideDetail } : {}) }) })
+        body: JSON.stringify({ invitationId, guestName: name, attendance: attendanceMap[attendance] || attendance, guestCount: attendance === 'yes' ? guestCount : 0, message: rsvpMessage, side: side || undefined, mealAttendance: attendance === 'yes' && mealAttendance ? mealAttendance : undefined, shuttleBus: attendance === 'yes' && shuttleBus ? shuttleBus : undefined, afterParty: attendance === 'yes' && afterParty ? afterParty : undefined, ...(phone ? { phone } : {}), ...(sideDetail ? { side_detail: sideDetail } : {}) }) })
       if (res.ok) {
         setSubmitted(true)
         setName('')
@@ -2148,6 +2149,19 @@ function RsvpSection({ invitation, invitationId, fonts, tc, bgOverride }: {
                   {([{ v: 'yes' as const, l: '이용 예정' }, { v: 'no' as const, l: '이용 안 함' }]).map(opt => (
                     <button key={opt.v} onClick={() => setShuttleBus(shuttleBus === opt.v ? '' : opt.v)}
                       style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '2px', padding: '11px', borderRadius: '8px', border: `1px solid ${shuttleBus === opt.v ? tc.primary : tc.divider}`, background: shuttleBus === opt.v ? tc.primary : 'transparent', color: shuttleBus === opt.v ? '#FFFFFF' : tc.text, cursor: 'pointer', transition: 'all 0.3s' }}>
+                      {opt.l}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {invitation.rsvpAfterPartyOption && attendance === 'yes' && (
+              <div>
+                <span style={{ fontFamily: fonts.body, fontSize: '12px', color: tc.gray, display: 'block', marginBottom: '6px' }}>애프터파티 참석 여부</span>
+                <div className="grid grid-cols-2 gap-2">
+                  {([{ v: 'yes' as const, l: '참석' }, { v: 'no' as const, l: '불참' }]).map(opt => (
+                    <button key={opt.v} onClick={() => setAfterParty(afterParty === opt.v ? '' : opt.v)}
+                      style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '2px', padding: '11px', borderRadius: '8px', border: `1px solid ${afterParty === opt.v ? tc.primary : tc.divider}`, background: afterParty === opt.v ? tc.primary : 'transparent', color: afterParty === opt.v ? '#FFFFFF' : tc.text, cursor: 'pointer', transition: 'all 0.3s' }}>
                       {opt.l}
                     </button>
                   ))}
@@ -2653,7 +2667,7 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     content: content.content || {}, gallery: content.gallery || {},
     media: content.media || {}, rsvpEnabled: content.rsvpEnabled ?? true,
     rsvpDeadline: content.rsvpDeadline || '', rsvpAllowGuestCount: content.rsvpAllowGuestCount ?? true,
-    rsvpMealOption: content.rsvpMealOption ?? false, rsvpShuttleOption: content.rsvpShuttleOption ?? false, rsvpNotice: content.rsvpNotice ?? '',
+    rsvpMealOption: content.rsvpMealOption ?? false, rsvpShuttleOption: content.rsvpShuttleOption ?? false, rsvpAfterPartyOption: content.rsvpAfterPartyOption ?? false, rsvpNotice: content.rsvpNotice ?? '',
     rsvpPhoneOption: content.rsvpPhoneOption ?? false, rsvpSideDetail: content.rsvpSideDetail ?? false, rsvpSideDetailOptions: content.rsvpSideDetailOptions, rsvpMessagePlaceholder: content.rsvpMessagePlaceholder ?? '',
     giftNotice: (content as any).giftNotice ?? '', greetingTitle: (content as any).greetingTitle, journeyTitle: (content as any).journeyTitle,
     sectionVisibility: content.sectionVisibility || {},
@@ -3110,7 +3124,7 @@ function InvitationClientRecordContent({
                     navStyle={content?.navStyle || 'hamburger'}
                     invitation={{ venue_name: invitation.wedding?.venue?.name || '', venue_address: invitation.wedding?.venue?.address || '', contacts, accounts,
                       directions: invitation.wedding?.directions, rsvpEnabled: invitation.rsvpEnabled, rsvpAllowGuestCount: invitation.rsvpAllowGuestCount,
-                      rsvpMealOption: invitation.rsvpMealOption, rsvpShuttleOption: invitation.rsvpShuttleOption, rsvpNotice: invitation.rsvpNotice,
+                      rsvpMealOption: invitation.rsvpMealOption, rsvpShuttleOption: invitation.rsvpShuttleOption, rsvpAfterPartyOption: invitation.rsvpAfterPartyOption, rsvpNotice: invitation.rsvpNotice,
                       rsvpPhoneOption: invitation.rsvpPhoneOption, rsvpSideDetail: invitation.rsvpSideDetail, rsvpSideDetailOptions: invitation.rsvpSideDetailOptions, rsvpMessagePlaceholder: invitation.rsvpMessagePlaceholder,
                       invitationId: dbInvitation.id, groomName: invitation.groom?.name || '', brideName: invitation.bride?.name || '',
                       weddingDate: invitation.wedding?.date || '', weddingTime: invitation.wedding?.timeDisplay || invitation.wedding?.time || '',

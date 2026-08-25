@@ -639,7 +639,7 @@ export default function ParentsInvitationView({
             />
             </SectionTint>
             {data.rsvpEnabled !== false && (
-              <RsvpModal isPreview={isPreview} invitationId={invitationId} rsvpMealOption={data.rsvpMealOption} rsvpShuttleOption={data.rsvpShuttleOption} rsvpNotice={data.rsvpNotice} rsvpPhoneOption={data.rsvpPhoneOption} rsvpSideDetail={data.rsvpSideDetail} rsvpSideDetailOptions={data.rsvpSideDetailOptions} rsvpMessagePlaceholder={data.rsvpMessagePlaceholder} senderSide={data.sender?.side} />
+              <RsvpModal isPreview={isPreview} invitationId={invitationId} rsvpMealOption={data.rsvpMealOption} rsvpShuttleOption={data.rsvpShuttleOption} rsvpAfterPartyOption={data.rsvpAfterPartyOption} rsvpNotice={data.rsvpNotice} rsvpPhoneOption={data.rsvpPhoneOption} rsvpSideDetail={data.rsvpSideDetail} rsvpSideDetailOptions={data.rsvpSideDetailOptions} rsvpMessagePlaceholder={data.rsvpMessagePlaceholder} senderSide={data.sender?.side} />
             )}
           </main>
         </SectionHighlightProvider>

@@ -29,6 +29,7 @@ export default function FeedPreview({ data, fullscreen: _fullscreen }: FeedPrevi
     rsvpAllowGuestCount: data.rsvpAllowGuestCount,
     rsvpMealOption: data.rsvpMealOption,
     rsvpShuttleOption: data.rsvpShuttleOption,
+    rsvpAfterPartyOption: data.rsvpAfterPartyOption,
     rsvpPhoneOption: data.rsvpPhoneOption,
     rsvpSideDetail: data.rsvpSideDetail,
     rsvpSideDetailOptions: data.rsvpSideDetailOptions,

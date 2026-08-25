@@ -15,6 +15,7 @@ interface RsvpModalProps {
   invitationId?: string  // RSVP 저장을 위한 청첩장 ID
   rsvpMealOption?: boolean
   rsvpShuttleOption?: boolean
+  rsvpAfterPartyOption?: boolean
   rsvpNotice?: string
   rsvpPhoneOption?: boolean
   rsvpSideDetail?: boolean
@@ -23,7 +24,7 @@ interface RsvpModalProps {
   senderSide?: 'groom' | 'bride'
 }
 
-export default function RsvpModal({ onSubmit, isPreview = false, invitationId, rsvpMealOption = false, rsvpShuttleOption = false, rsvpNotice, rsvpPhoneOption = false, rsvpSideDetail = false, rsvpSideDetailOptions, rsvpMessagePlaceholder, senderSide }: RsvpModalProps) {
+export default function RsvpModal({ onSubmit, isPreview = false, invitationId, rsvpMealOption = false, rsvpShuttleOption = false, rsvpAfterPartyOption = false, rsvpNotice, rsvpPhoneOption = false, rsvpSideDetail = false, rsvpSideDetailOptions, rsvpMessagePlaceholder, senderSide }: RsvpModalProps) {
   const ref = useRef<HTMLDivElement>(null)
   const formRef = useRef<HTMLDivElement>(null)
   const theme = useTheme()
@@ -37,6 +38,7 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
     attendance: null as 'yes' | 'no' | 'maybe' | null,
     mealAttendance: null as 'yes' | 'no' | null,
     shuttleBus: null as 'yes' | 'no' | null,
+    afterParty: null as 'yes' | 'no' | null,
     guestCount: 1,
     message: '',
   })
@@ -133,6 +135,7 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
           sideDetail: formData.sideDetail || undefined,
           mealAttendance: formData.attendance === 'yes' ? formData.mealAttendance : undefined,
           shuttleBus: formData.attendance === 'yes' ? formData.shuttleBus : undefined,
+          afterParty: formData.attendance === 'yes' ? formData.afterParty : undefined,
         }),
       })
 
@@ -440,6 +443,34 @@ export default function RsvpModal({ onSubmit, isPreview = false, invitationId, r
                   borderColor: formData.shuttleBus === option.value ? theme.primary : '#E8E4DC',
                   backgroundColor: formData.shuttleBus === option.value ? `${theme.primary}10` : '#FFFFFF',
                   color: formData.shuttleBus === option.value ? theme.primary : '#666',
+                }}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {rsvpAfterPartyOption && formData.attendance === 'yes' && (
+        <div>
+          <label className="block text-xs mb-2" style={{ color: '#999' }}>
+            애프터파티 참석 여부
+          </label>
+          <div className="flex gap-2">
+            {[
+              { value: 'yes', label: '참석' },
+              { value: 'no', label: '불참' },
+            ].map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, afterParty: option.value as 'yes' | 'no' }))}
+                className="flex-1 py-3 rounded-lg border text-sm transition-all"
+                style={{
+                  borderColor: formData.afterParty === option.value ? theme.primary : '#E8E4DC',
+                  backgroundColor: formData.afterParty === option.value ? `${theme.primary}10` : '#FFFFFF',
+                  color: formData.afterParty === option.value ? theme.primary : '#666',
                 }}
               >
                 {option.label}

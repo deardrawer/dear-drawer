@@ -1946,6 +1946,7 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
   const [submitting, setSubmitting] = useState(false)
   const [mealAttendance, setMealAttendance] = useState<'' | 'yes' | 'no'>('')
   const [shuttleBus, setShuttleBus] = useState<'' | 'yes' | 'no'>('')
+  const [afterParty, setAfterParty] = useState<'' | 'yes' | 'no'>('')
   const [phone, setPhone] = useState('')
   const [sideDetail, setSideDetail] = useState<'' | 'self' | 'father' | 'mother'>('')
 
@@ -1967,6 +1968,7 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
           side: side || undefined,
           mealAttendance: attendance === 'yes' && mealAttendance ? mealAttendance : undefined,
           shuttleBus: attendance === 'yes' && shuttleBus ? shuttleBus : undefined,
+          afterParty: attendance === 'yes' && afterParty ? afterParty : undefined,
           ...(phone ? { phone } : {}),
           ...(sideDetail ? { side_detail: sideDetail } : {}),
         }),
@@ -2139,6 +2141,20 @@ function RsvpSection({ invitation, invitationId, fonts, themeColors, bgOverride 
               {([{ v: 'yes' as const, l: '이용 예정' }, { v: 'no' as const, l: '이용 안 함' }]).map(opt => (
                 <button key={opt.v} onClick={() => setShuttleBus(shuttleBus === opt.v ? '' : opt.v)}
                   style={{ fontFamily: fonts.body, fontSize: '13px', padding: '12px', border: `0.5px solid ${shuttleBus === opt.v ? 'transparent' : ((themeColors as any).cardDivider || themeColors.divider)}`, background: shuttleBus === opt.v ? (themeColors.buttonBg || themeColors.primary) : ((themeColors as any).cardSurface || themeColors.cardBg), color: shuttleBus === opt.v ? (themeColors.buttonOnText || "#FFFFFF") : ((themeColors as any).cardText || themeColors.text), cursor: 'pointer', transition: 'all 0.3s' }}>
+                  {opt.l}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {invitation.rsvpAfterPartyOption && attendance === 'yes' && (
+          <div>
+            <span style={{ fontFamily: fonts.body, fontSize: '13px', color: ((themeColors as any).cardGray || themeColors.gray), display: 'block', marginBottom: '6px' }}>애프터파티 참석 여부</span>
+            <div className="grid grid-cols-2 gap-2">
+              {([{ v: 'yes' as const, l: '참석' }, { v: 'no' as const, l: '불참' }]).map(opt => (
+                <button key={opt.v} onClick={() => setAfterParty(afterParty === opt.v ? '' : opt.v)}
+                  style={{ fontFamily: fonts.body, fontSize: '13px', padding: '12px', border: `0.5px solid ${afterParty === opt.v ? 'transparent' : ((themeColors as any).cardDivider || themeColors.divider)}`, background: afterParty === opt.v ? (themeColors.buttonBg || themeColors.primary) : ((themeColors as any).cardSurface || themeColors.cardBg), color: afterParty === opt.v ? (themeColors.buttonOnText || "#FFFFFF") : ((themeColors as any).cardText || themeColors.text), cursor: 'pointer', transition: 'all 0.3s' }}>
                   {opt.l}
                 </button>
               ))}
@@ -2445,6 +2461,7 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     rsvpAllowGuestCount: content.rsvpAllowGuestCount ?? true,
     rsvpMealOption: content.rsvpMealOption ?? false,
     rsvpShuttleOption: content.rsvpShuttleOption ?? false,
+    rsvpAfterPartyOption: content.rsvpAfterPartyOption ?? false,
     rsvpNotice: content.rsvpNotice ?? '',
     rsvpPhoneOption: content.rsvpPhoneOption ?? false,
     rsvpSideDetail: content.rsvpSideDetail ?? false,
@@ -2880,6 +2897,7 @@ function InvitationClientMagazineContent({
                     rsvpAllowGuestCount: invitation.rsvpAllowGuestCount,
                     rsvpMealOption: invitation.rsvpMealOption,
                     rsvpShuttleOption: invitation.rsvpShuttleOption,
+                    rsvpAfterPartyOption: invitation.rsvpAfterPartyOption,
                     rsvpNotice: invitation.rsvpNotice,
                     rsvpPhoneOption: invitation.rsvpPhoneOption,
                     rsvpSideDetail: invitation.rsvpSideDetail,

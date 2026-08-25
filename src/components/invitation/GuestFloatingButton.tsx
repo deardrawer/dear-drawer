@@ -70,6 +70,7 @@ interface GuestFloatingButtonProps {
     rsvpAllowGuestCount?: boolean
     rsvpMealOption?: boolean
     rsvpShuttleOption?: boolean
+    rsvpAfterPartyOption?: boolean
     rsvpPhoneOption?: boolean
     rsvpSideDetail?: boolean
     rsvpSideDetailOptions?: {
@@ -100,7 +101,7 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false)
   const [activeModal, setActiveModal] = useState<ModalType>('none')
   const [directionsTab, setDirectionsTab] = useState<DirectionsTab>('car')
-  const [rsvpForm, setRsvpForm] = useState({ name: '', phone: '', side: '' as '' | 'groom' | 'bride', sideDetail: '' as '' | 'self' | 'father' | 'mother', attendance: '', mealAttendance: '' as '' | 'yes' | 'no', shuttleBus: '' as '' | 'yes' | 'no', guestCount: 1, message: '' })
+  const [rsvpForm, setRsvpForm] = useState({ name: '', phone: '', side: '' as '' | 'groom' | 'bride', sideDetail: '' as '' | 'self' | 'father' | 'mother', attendance: '', mealAttendance: '' as '' | 'yes' | 'no', shuttleBus: '' as '' | 'yes' | 'no', afterParty: '' as '' | 'yes' | 'no', guestCount: 1, message: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const scrollPositionRef = useRef(0)
   const modalContentRef = useRef<HTMLDivElement>(null)
@@ -286,12 +287,13 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
           sideDetail: rsvpForm.sideDetail || undefined,
           mealAttendance: rsvpForm.attendance === 'yes' && rsvpForm.mealAttendance ? rsvpForm.mealAttendance : undefined,
           shuttleBus: rsvpForm.attendance === 'yes' && rsvpForm.shuttleBus ? rsvpForm.shuttleBus : undefined,
+          afterParty: rsvpForm.attendance === 'yes' && rsvpForm.afterParty ? rsvpForm.afterParty : undefined,
         }),
       })
       if (res.ok) {
         alert(isEn ? 'Your response has been submitted. Thank you!' : '참석 여부가 전달되었습니다. 감사합니다!')
         closeModal()
-        setRsvpForm({ name: '', phone: '', side: '', sideDetail: '', attendance: '', mealAttendance: '', shuttleBus: '', guestCount: 1, message: '' })
+        setRsvpForm({ name: '', phone: '', side: '', sideDetail: '', attendance: '', mealAttendance: '', shuttleBus: '', afterParty: '', guestCount: 1, message: '' })
       } else {
         const data = (await res.json().catch(() => ({}))) as { error?: string }
         alert(data.error || (isEn ? 'Submission failed. Please try again.' : '전송에 실패했습니다. 다시 시도해주세요.'))
@@ -729,6 +731,15 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
                       <div className="flex gap-2">
                         <button onClick={() => setRsvpForm({ ...rsvpForm, shuttleBus: 'yes' })} className="flex-1 py-3 rounded-lg text-sm transition-all" style={{ background: rsvpForm.shuttleBus === 'yes' ? selBg : '#fafafa', color: rsvpForm.shuttleBus === 'yes' ? selText : '#333' }}>{isEn ? 'Yes' : '이용 예정'}</button>
                         <button onClick={() => setRsvpForm({ ...rsvpForm, shuttleBus: 'no' })} className="flex-1 py-3 rounded-lg text-sm transition-all" style={{ background: rsvpForm.shuttleBus === 'no' ? selBg : '#fafafa', color: rsvpForm.shuttleBus === 'no' ? selText : '#333' }}>{isEn ? 'No' : '이용 안 함'}</button>
+                      </div>
+                    </div>
+                  )}
+                  {invitation.rsvpAfterPartyOption && rsvpForm.attendance === 'yes' && (
+                    <div className="mb-4">
+                      <p className="text-xs font-medium mb-2" style={{ color: '#333' }}>{isEn ? 'After-party' : '애프터파티 참석 여부'}</p>
+                      <div className="flex gap-2">
+                        <button onClick={() => setRsvpForm({ ...rsvpForm, afterParty: 'yes' })} className="flex-1 py-3 rounded-lg text-sm transition-all" style={{ background: rsvpForm.afterParty === 'yes' ? selBg : '#fafafa', color: rsvpForm.afterParty === 'yes' ? selText : '#333' }}>{isEn ? 'Yes' : '참석'}</button>
+                        <button onClick={() => setRsvpForm({ ...rsvpForm, afterParty: 'no' })} className="flex-1 py-3 rounded-lg text-sm transition-all" style={{ background: rsvpForm.afterParty === 'no' ? selBg : '#fafafa', color: rsvpForm.afterParty === 'no' ? selText : '#333' }}>{isEn ? 'No' : '불참'}</button>
                       </div>
                     </div>
                   )}

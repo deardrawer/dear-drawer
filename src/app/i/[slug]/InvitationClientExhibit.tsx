@@ -2348,6 +2348,7 @@ function RsvpDmModal({
   allowGuestCount,
   rsvpMealOption,
   rsvpShuttleOption,
+  rsvpAfterPartyOption,
   rsvpNotice,
   rsvpPhoneOption,
   rsvpSideDetail,
@@ -2364,6 +2365,7 @@ function RsvpDmModal({
   allowGuestCount?: boolean
   rsvpMealOption?: boolean
   rsvpShuttleOption?: boolean
+  rsvpAfterPartyOption?: boolean
   rsvpNotice?: string
   rsvpPhoneOption?: boolean
   rsvpSideDetail?: boolean
@@ -2382,6 +2384,7 @@ function RsvpDmModal({
   const [message, setMessage] = useState('')
   const [mealAttendance, setMealAttendance] = useState<'' | 'yes' | 'no'>('')
   const [shuttleBus, setShuttleBus] = useState<'' | 'yes' | 'no'>('')
+  const [afterParty, setAfterParty] = useState<'' | 'yes' | 'no'>('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -2411,6 +2414,7 @@ function RsvpDmModal({
           sideDetail: sideDetail || undefined,
           mealAttendance: attendance === 'attending' && mealAttendance ? mealAttendance : undefined,
           shuttleBus: attendance === 'attending' && shuttleBus ? shuttleBus : undefined,
+          afterParty: attendance === 'attending' && afterParty ? afterParty : undefined,
         }),
       })
       if (!res.ok) {
@@ -2439,6 +2443,7 @@ function RsvpDmModal({
       setMessage('')
       setMealAttendance('')
       setShuttleBus('')
+      setAfterParty('')
       setError(null)
     }, 300)
   }
@@ -2636,6 +2641,22 @@ function RsvpDmModal({
                       <button key={opt.v} onClick={() => setShuttleBus(shuttleBus === opt.v ? '' : opt.v)}
                         className="flex-1 py-2.5 rounded-2xl text-[13px] font-medium transition-colors"
                         style={{ background: shuttleBus === opt.v ? '#0095F6' : '#FAFAFA', color: shuttleBus === opt.v ? '#FFFFFF' : '#8E8E8E', border: `1px solid ${shuttleBus === opt.v ? '#0095F6' : '#DBDBDB'}` }}>
+                        {opt.l}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* After Party */}
+              {rsvpAfterPartyOption && attendance === 'attending' && (
+                <div>
+                  <label className="text-[11px] font-medium mb-1.5 block" style={{ color: '#8E8E8E' }}>애프터파티 참석 여부</label>
+                  <div className="flex gap-2">
+                    {([{ v: 'yes' as const, l: '참석' }, { v: 'no' as const, l: '불참' }]).map(opt => (
+                      <button key={opt.v} onClick={() => setAfterParty(afterParty === opt.v ? '' : opt.v)}
+                        className="flex-1 py-2.5 rounded-2xl text-[13px] font-medium transition-colors"
+                        style={{ background: afterParty === opt.v ? '#0095F6' : '#FAFAFA', color: afterParty === opt.v ? '#FFFFFF' : '#8E8E8E', border: `1px solid ${afterParty === opt.v ? '#0095F6' : '#DBDBDB'}` }}>
                         {opt.l}
                       </button>
                     ))}
@@ -3486,6 +3507,7 @@ function InvitationClientExhibitContent({
           allowGuestCount={content?.rsvpAllowGuestCount}
           rsvpMealOption={content?.rsvpMealOption}
           rsvpShuttleOption={content?.rsvpShuttleOption}
+          rsvpAfterPartyOption={content?.rsvpAfterPartyOption}
           rsvpNotice={content?.rsvpNotice}
           rsvpPhoneOption={content?.rsvpPhoneOption}
           rsvpSideDetail={content?.rsvpSideDetail}

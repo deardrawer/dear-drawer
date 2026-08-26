@@ -13,6 +13,7 @@ import { SAMPLE_GREETING, SAMPLE_QUOTE } from '@/lib/sampleData'
 import { Sparkles, X, Loader2 } from 'lucide-react'
 import DdayPopupEditor from '@/components/dday/DdayPopupEditor'
 import { DEFAULT_DDAY_POPUP } from '@/lib/ddayPopupTypes'
+import { buildGreetingPrompt, extractGreetingFromResult } from '@/lib/greetingPrompt'
 
 // 공유 설명 자동 생성 헬퍼 함수
 function generateKakaoDescription(date: string, time: string, venueName: string): string {
@@ -112,6 +113,10 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [greetingGenerationCount, setGreetingGenerationCount] = useState(0)
   const MAX_GREETING_GENERATIONS = 3
+  // B-2: 프롬프트 직접 복사 → 무료 AI로 생성 → 결과 붙여넣기 (무제한, 비용 X)
+  const [manualMode, setManualMode] = useState(false)
+  const [pastedResult, setPastedResult] = useState('')
+  const [promptCopied, setPromptCopied] = useState(false)
 
   if (!invitation) return null
 
@@ -191,6 +196,40 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
     } finally {
       setIsGeneratingGreeting(false)
     }
+  }
+
+  // B-2: 프롬프트 복사 (사용자가 원하는 무료 AI에 붙여넣어 생성)
+  const copyGreetingPrompt = () => {
+    const allAnswered = GREETING_QUESTIONS.every(q => greetingAnswers[q.id as keyof GreetingAnswers])
+    if (!allAnswered) {
+      alert('모든 질문에 답변해주세요.')
+      return
+    }
+    const prompt = buildGreetingPrompt(
+      {
+        ...greetingAnswers,
+        groom_name: invitation.groom.name,
+        bride_name: invitation.bride.name,
+      } as GreetingAnswers,
+      { jsonOutput: false },
+    )
+    navigator.clipboard?.writeText(prompt).then(() => {
+      setPromptCopied(true)
+      setTimeout(() => setPromptCopied(false), 2000)
+    })
+  }
+
+  // B-2: 붙여넣은 AI 결과를 인사말로 적용
+  const applyPastedResult = () => {
+    const greeting = extractGreetingFromResult(pastedResult)
+    if (!greeting) {
+      alert('붙여넣은 내용이 비어있습니다.')
+      return
+    }
+    updateNestedField('content.greeting', greeting)
+    setPastedResult('')
+    setManualMode(false)
+    setGreetingModalOpen(false)
   }
 
   // 인트로 스타일 편집 버튼 클릭 핸들러
@@ -1193,6 +1232,43 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
                   </>
                 )}
               </button>
+
+              {/* B-2: 직접 만들기 (무료) — 프롬프트 복사 → 원하는 AI → 결과 붙여넣기 */}
+              <div className="mt-3 pt-3 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => setManualMode(v => !v)}
+                  className="text-xs text-gray-500 hover:text-gray-700"
+                >
+                  {manualMode ? '▲ 접기' : '또는 직접 만들기 (무료 · 프롬프트 복사)'}
+                </button>
+                {manualMode && (
+                  <div className="mt-2 space-y-2">
+                    <button
+                      type="button"
+                      onClick={copyGreetingPrompt}
+                      className="w-full py-2 border border-gray-300 rounded-lg text-xs text-gray-700 hover:bg-gray-50"
+                    >
+                      {promptCopied ? '✓ 복사됨 — 원하는 AI(ChatGPT·Claude 등)에 붙여넣으세요' : '① 프롬프트 복사'}
+                    </button>
+                    <textarea
+                      value={pastedResult}
+                      onChange={(e) => setPastedResult(e.target.value)}
+                      placeholder="② AI가 만들어준 인사말을 여기에 붙여넣으세요"
+                      rows={4}
+                      className="w-full border border-gray-300 rounded-lg p-2 text-xs resize-none focus:outline-none focus:border-purple-400"
+                    />
+                    <button
+                      type="button"
+                      onClick={applyPastedResult}
+                      disabled={!pastedResult.trim()}
+                      className="w-full py-2 bg-gray-800 text-white rounded-lg text-xs disabled:bg-gray-300"
+                    >
+                      ③ 적용하기
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

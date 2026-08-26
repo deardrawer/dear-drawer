@@ -218,11 +218,14 @@ export default function ClassicStepContent({ data, updateNestedData, invitationI
           ))}
           <SharedRsvpLinkField
             enabled={data.content.sharedRsvpEnabled ?? false}
+            invitationId={invitationId || undefined}
             shareTitle={data.content.sharedRsvpShareTitle}
             shareDesc={data.content.sharedRsvpShareDesc}
+            shareImage={data.content.sharedRsvpShareImage}
             onShareChange={(p) => {
               if ('shareTitle' in p) updateNestedData('content.sharedRsvpShareTitle', p.shareTitle ?? '')
-              else updateNestedData('content.sharedRsvpShareDesc', p.shareDesc ?? '')
+              else if ('shareDesc' in p) updateNestedData('content.sharedRsvpShareDesc', p.shareDesc ?? '')
+              else if ('shareImage' in p) updateNestedData('content.sharedRsvpShareImage', p.shareImage ?? '')
             }}
           />
           {data.content.classicRsvpSideDetail && (

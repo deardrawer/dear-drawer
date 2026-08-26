@@ -1563,9 +1563,15 @@ export default function ParentsStep3Content({
         </div>
         <SharedRsvpLinkField
           enabled={data.sharedRsvpEnabled ?? false}
+          invitationId={invitationId || undefined}
           shareTitle={data.sharedRsvpShareTitle}
           shareDesc={data.sharedRsvpShareDesc}
-          onShareChange={(p) => updateData('shareTitle' in p ? { sharedRsvpShareTitle: p.shareTitle } : { sharedRsvpShareDesc: p.shareDesc })}
+          shareImage={data.sharedRsvpShareImage}
+          onShareChange={(p) => updateData(
+            'shareTitle' in p ? { sharedRsvpShareTitle: p.shareTitle }
+              : 'shareDesc' in p ? { sharedRsvpShareDesc: p.shareDesc }
+              : { sharedRsvpShareImage: p.shareImage }
+          )}
         />
 
         {data.rsvpEnabled !== false && (

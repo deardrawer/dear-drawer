@@ -36,6 +36,7 @@ export default function FeedStep5Details({
   data,
   updateData,
   updateNestedData,
+  invitationId,
 }: StepProps) {
   // RSVP 마감일 기본값 (결혼식 7일 전)
   const getDefaultRsvpDeadline = () => {
@@ -274,9 +275,15 @@ export default function FeedStep5Details({
         </div>
         <SharedRsvpLinkField
           enabled={data.sharedRsvpEnabled ?? false}
+          invitationId={invitationId || undefined}
           shareTitle={data.sharedRsvpShareTitle}
           shareDesc={data.sharedRsvpShareDesc}
-          onShareChange={(p) => updateData('shareTitle' in p ? { sharedRsvpShareTitle: p.shareTitle } : { sharedRsvpShareDesc: p.shareDesc })}
+          shareImage={data.sharedRsvpShareImage}
+          onShareChange={(p) => updateData(
+            'shareTitle' in p ? { sharedRsvpShareTitle: p.shareTitle }
+              : 'shareDesc' in p ? { sharedRsvpShareDesc: p.shareDesc }
+              : { sharedRsvpShareImage: p.shareImage }
+          )}
         />
 
         {data.rsvpEnabled && (

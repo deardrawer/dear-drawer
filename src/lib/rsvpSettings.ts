@@ -36,6 +36,8 @@ export interface NormalizedRsvpSettings {
   shareTitle?: string
   /** 별도 RSVP 링크 카카오 공유 설명 (커스텀, 미설정 시 자동) */
   shareDescription?: string
+  /** 별도 RSVP 링크 카카오 공유 썸네일 URL (커스텀, 미설정 시 자동) */
+  shareImage?: string
 }
 
 const DEFAULT_PRIMARY = '#b0895f'
@@ -68,6 +70,7 @@ export function normalizeRsvpSettings(
       primaryColor: (typeof c.pointColor === 'string' && c.pointColor) || DEFAULT_PRIMARY,
       shareTitle: (typeof r.sharedRsvpShareTitle === 'string' && r.sharedRsvpShareTitle) || undefined,
       shareDescription: (typeof r.sharedRsvpShareDesc === 'string' && r.sharedRsvpShareDesc) || undefined,
+      shareImage: (typeof r.sharedRsvpShareImage === 'string' && r.sharedRsvpShareImage) || undefined,
     }
   }
 
@@ -91,6 +94,7 @@ export function normalizeRsvpSettings(
       primaryColor: DEFAULT_PRIMARY,
       shareTitle: (typeof cc.sharedRsvpShareTitle === 'string' && cc.sharedRsvpShareTitle) || undefined,
       shareDescription: (typeof cc.sharedRsvpShareDesc === 'string' && cc.sharedRsvpShareDesc) || undefined,
+      shareImage: (typeof cc.sharedRsvpShareImage === 'string' && cc.sharedRsvpShareImage) || undefined,
     }
   }
 
@@ -113,5 +117,6 @@ export function normalizeRsvpSettings(
       DEFAULT_PRIMARY,
     shareTitle: (typeof c.sharedRsvpShareTitle === 'string' && c.sharedRsvpShareTitle) || undefined,
     shareDescription: (typeof c.sharedRsvpShareDesc === 'string' && c.sharedRsvpShareDesc) || undefined,
+    shareImage: (typeof c.sharedRsvpShareImage === 'string' && c.sharedRsvpShareImage) || undefined,
   }
 }

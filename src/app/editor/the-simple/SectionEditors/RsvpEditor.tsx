@@ -2,16 +2,21 @@
 
 import { useState } from 'react'
 import type { SectionContents } from '../page'
+import RsvpShareThumb from '@/components/editor/RsvpShareThumb'
+import RsvpSharePreview from '@/components/editor/RsvpSharePreview'
+import { shareRsvpToKakao } from '@/lib/kakaoRsvpShare'
 
 interface RsvpEditorProps {
   value: SectionContents['rsvp']
   variant?: number
   /** 별도 RSVP 링크용 slug/id (저장 후에만 존재) */
   shareSlug?: string
+  /** 썸네일 업로드용 청첩장 id */
+  invitationId?: string
   onChange: (next: SectionContents['rsvp']) => void
 }
 
-export default function RsvpEditor({ value, variant = 1, shareSlug, onChange }: RsvpEditorProps) {
+export default function RsvpEditor({ value, variant = 1, shareSlug, invitationId, onChange }: RsvpEditorProps) {
   const [copied, setCopied] = useState(false)
   const rsvpUrl = shareSlug ? `https://invite.deardrawer.com/i/${shareSlug}/rsvp` : ''
   return (
@@ -288,18 +293,31 @@ export default function RsvpEditor({ value, variant = 1, shareSlug, onChange }: 
               type="text"
               value={value.sharedRsvpShareTitle ?? ''}
               onChange={(e) => onChange({ ...value, sharedRsvpShareTitle: e.target.value })}
-              placeholder="공유 제목 (예: 참석 여부를 전해주세요)"
+              placeholder="참석 여부 안내"
               className="w-full border border-stone-200 rounded-md px-2 py-1.5 text-[11px] text-stone-700 bg-white focus:outline-none focus:border-stone-600"
             />
             <textarea
               value={value.sharedRsvpShareDesc ?? ''}
               onChange={(e) => onChange({ ...value, sharedRsvpShareDesc: e.target.value })}
-              placeholder="공유 설명 (예: 신랑 신부에게 참석 여부를 미리 알려주세요)"
+              placeholder="예식 준비를 위해 참석 여부를 미리 알려주시면 감사하겠습니다."
               rows={2}
               className="w-full resize-none border border-stone-200 rounded-md px-2 py-1.5 text-[11px] text-stone-700 bg-white focus:outline-none focus:border-stone-600"
             />
+            <RsvpShareThumb
+              invitationId={invitationId || shareSlug}
+              value={value.sharedRsvpShareImage}
+              onChange={(url) => onChange({ ...value, sharedRsvpShareImage: url })}
+            />
+            <RsvpSharePreview image={value.sharedRsvpShareImage} title={value.sharedRsvpShareTitle} desc={value.sharedRsvpShareDesc} />
+            <button
+              type="button"
+              onClick={() => shareRsvpToKakao({ url: rsvpUrl, title: value.sharedRsvpShareTitle, desc: value.sharedRsvpShareDesc, image: value.sharedRsvpShareImage })}
+              className="w-full rounded-md bg-[#FEE500] py-2 text-[12px] font-medium text-[#3C1E1E]"
+            >
+              카카오톡으로 공유
+            </button>
             <p className="text-[10px] leading-tight text-stone-400">
-              비우면 기본 문구로 자동 표시됩니다. <span className="text-amber-600">저장해야</span> 카카오톡 공유 미리보기(제목·설명·사진)에 반영됩니다.
+              제목·설명을 비우면 기본 문구가 사용됩니다. <b className="text-stone-500">카카오톡으로 공유</b> 버튼은 수정 즉시 반영됩니다. 링크를 복사해 붙여넣는 경우엔 <span className="text-amber-600">저장 후</span> 카카오 캐시 갱신이 필요할 수 있어요.
             </p>
           </div>
         )}

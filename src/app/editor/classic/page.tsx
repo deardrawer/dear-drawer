@@ -170,6 +170,7 @@ export interface ClassicInvitationData {
     sharedRsvpEnabled?: boolean // 별도 RSVP 링크 (RSVP 폼만 공유)
     sharedRsvpShareTitle?: string // 별도 RSVP 링크 카카오 공유 제목 (커스텀)
     sharedRsvpShareDesc?: string // 별도 RSVP 링크 카카오 공유 설명 (커스텀)
+    sharedRsvpShareImage?: string // 별도 RSVP 링크 카카오 공유 썸네일 URL (커스텀)
     classicRsvpPhone?: boolean // 연락처 뒷자리
     classicRsvpSideDetail?: boolean // 본인/아버지/어머니 구분
     classicRsvpSideDetailOptions?: Record<string, boolean> // 표시할 하객 구분 항목 (신랑/신랑아버지/신랑어머니/신부/신부아버지/신부어머니)

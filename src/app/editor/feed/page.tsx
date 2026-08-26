@@ -153,6 +153,7 @@ export interface FeedInvitationData {
   sharedRsvpEnabled?: boolean
   sharedRsvpShareTitle?: string
   sharedRsvpShareDesc?: string
+  sharedRsvpShareImage?: string
   rsvpPhoneOption?: boolean
   rsvpSideDetail?: boolean
   rsvpSideDetailOptions?: { groomSelf?: boolean; groomFather?: boolean; groomMother?: boolean; brideSelf?: boolean; brideFather?: boolean; brideMother?: boolean }

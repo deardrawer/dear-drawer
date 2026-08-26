@@ -58,7 +58,7 @@ const sectionLabels: Record<string, string> = {
   rsvp: '참석 여부',
 }
 
-export default function EssayStep3Details({ data, updateData, updateNestedData }: StepProps) {
+export default function EssayStep3Details({ data, updateData, updateNestedData, invitationId }: StepProps) {
   const getDefaultRsvpDeadline = () => {
     if (data.wedding.date) {
       const d = new Date(data.wedding.date)
@@ -436,9 +436,15 @@ export default function EssayStep3Details({ data, updateData, updateNestedData }
         </div>
         <SharedRsvpLinkField
           enabled={data.sharedRsvpEnabled ?? false}
+          invitationId={invitationId || undefined}
           shareTitle={data.sharedRsvpShareTitle}
           shareDesc={data.sharedRsvpShareDesc}
-          onShareChange={(p) => updateData('shareTitle' in p ? { sharedRsvpShareTitle: p.shareTitle } : { sharedRsvpShareDesc: p.shareDesc })}
+          shareImage={data.sharedRsvpShareImage}
+          onShareChange={(p) => updateData(
+            'shareTitle' in p ? { sharedRsvpShareTitle: p.shareTitle }
+              : 'shareDesc' in p ? { sharedRsvpShareDesc: p.shareDesc }
+              : { sharedRsvpShareImage: p.shareImage }
+          )}
         />
         {data.rsvpEnabled && (
           <div className="space-y-3 p-4 bg-gray-50 rounded-lg">

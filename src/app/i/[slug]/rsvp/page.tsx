@@ -16,14 +16,6 @@ interface PageProps {
   params: Promise<{ slug: string }>
 }
 
-// 이미지 값(string | {url}) → URL 문자열
-function extractImageUrl(img: unknown): string {
-  if (!img) return ''
-  if (typeof img === 'string') return img
-  if (typeof img === 'object' && img !== null && 'url' in img) return (img as { url: string }).url || ''
-  return ''
-}
-
 // 상대경로 이미지를 절대 URL로 변환
 function toAbsoluteImageUrl(imageUrl: string, baseUrl: string): string {
   if (!imageUrl) return ''
@@ -34,8 +26,8 @@ function toAbsoluteImageUrl(imageUrl: string, baseUrl: string): string {
 
 /**
  * 별도 RSVP 링크의 카카오톡/OG 공유 메타데이터.
- * 공유 제목·설명은 에디터에서 커스텀 가능(rsvp.shareTitle/shareDescription),
- * 미설정 시 신랑·신부 이름 기반 기본값을 사용한다. 썸네일은 본문과 동일 우선순위로 추출.
+ * 제목·설명·썸네일은 에디터에서 커스텀 가능(rsvp.shareTitle/shareDescription/shareImage).
+ * 제목·설명 미설정 시 기본 문구 사용, 썸네일은 커스텀 설정 시에만 표시(미설정 시 이미지 없음).
  */
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params
@@ -58,31 +50,8 @@ export async function generateMetadata({ params }: PageProps) {
   const title = rsvp.shareTitle || '참석 여부 안내'
   const description = rsvp.shareDescription || '예식 준비를 위해 참석 여부를 미리 알려주시면 감사하겠습니다.'
 
-  // 썸네일: 본문 페이지와 동일 우선순위
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const c = (content ?? {}) as any
-  let theSimpleGalleryFirst = ''
-  if (c?.galleries) {
-    for (const key of Object.keys(c.galleries)) {
-      const imgs = c.galleries[key]
-      if (Array.isArray(imgs) && imgs.length > 0) {
-        theSimpleGalleryFirst = imgs[0]?.webUrl || imgs[0]?.url || ''
-        if (theSimpleGalleryFirst) break
-      }
-    }
-  }
-  const rawThumb =
-    (c?.meta?.ogImageCropped as string) ||
-    extractImageUrl(c?.meta?.ogImage) ||
-    extractImageUrl(c?.media?.coverImage) ||
-    extractImageUrl(c?.heroImage) ||
-    extractImageUrl(c?.mainImage) ||
-    extractImageUrl(c?.sections?.intro?.photo) ||
-    extractImageUrl(c?.gallery?.images?.[0]) ||
-    theSimpleGalleryFirst ||
-    (c?.content?.classicOpeningBgImage as string) ||
-    ''
-  const thumb = toAbsoluteImageUrl(rawThumb, baseUrl)
+  // 썸네일: RSVP 전용 커스텀 썸네일만 사용 (미설정 시 이미지 없음 — 카카오 버튼과 통일)
+  const thumb = rsvp.shareImage ? toAbsoluteImageUrl(rsvp.shareImage, baseUrl) : ''
 
   return {
     title,

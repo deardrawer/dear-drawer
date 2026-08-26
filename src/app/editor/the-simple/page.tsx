@@ -208,6 +208,7 @@ export interface SectionContents {
     sharedRsvpEnabled?: boolean
     sharedRsvpShareTitle?: string
     sharedRsvpShareDesc?: string
+    sharedRsvpShareImage?: string
     showSideOption?: boolean
     showPhoneOption?: boolean
     showSideDetail?: boolean
@@ -2402,6 +2403,7 @@ function TheSimpleEditorContent() {
                               value={data.sections.rsvp}
                               variant={data.sectionVariants[id] ?? 1}
                               shareSlug={savedSlug || invitationId || undefined}
+                              invitationId={invitationId || undefined}
                               onChange={(next) =>
                                 updateData({
                                   sections: { ...data.sections, rsvp: next },

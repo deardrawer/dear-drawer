@@ -98,9 +98,11 @@ export interface ClassicInvitationData {
     // 본문 · 신랑신부 소개
     classicIntroMode?: 'each' | 'together' | 'nameOnly' // 각자 / 함께 / 이름만
     classicIntroEachFrame?: 'plaque' | 'stamp' | 'box' // 각자 카드 프레임 (웨이브 플라크 / 우표 / 종이)
+    classicIntroEachBoxLayout?: 'v' | 'h' // 종이 프레임 각자 레이아웃: 세로(사진 좌·텍스트 우) / 가로(사진 위·이름+설명 아래)
     classicIntroTogetherFrame?: 'pearl' | 'filigree' | 'oval' // 함께 소개 프레임 (진주 / 필리그리 / 오벌)
     classicIntroTogetherFrameColor?: string // 오벌 프레임 색상 (선택 시 틴트)
     classicIntroTextColor?: string // 소개 프레임 '없음'일 때 텍스트 색상
+    classicIntroTitle?: string // 신랑신부 소개 섹션 맨 위 헤딩 (선택)
     classicGroomIntro?: string // 신랑 소개 한마디 (각자)
     classicBrideIntro?: string // 신부 소개 한마디 (각자)
     classicGroomPhoto?: ClassicPhoto // 신랑 사진 (각자)
@@ -133,6 +135,8 @@ export interface ClassicInvitationData {
     classicDirectionsBg?: ClassicPhoto // 오시는길 상단 배경 사진 (미설정 시 갤러리 첫 사진)
     classicDirectionsOverlayColor?: string // 오시는길 배경사진 오버레이 색상 (기본 #1C100D)
     classicDirectionsOverlayOpacity?: number // 오시는길 배경사진 오버레이 투명도 0~1 (기본 0)
+    classicDirectionsExtraTitle?: string // 오시는길 추가 안내 제목 (선택)
+    classicDirectionsExtraBody?: string // 오시는길 추가 안내 내용 (선택)
     // 커플소개 섹션 배경
     classicIntroSectionBg?: ClassicPhoto
     classicIntroSectionOverlayColor?: string
@@ -164,6 +168,8 @@ export interface ClassicInvitationData {
     classicRsvpMeal?: boolean // 식사 여부 입력
     classicRsvpShuttle?: boolean // 대절버스 이용 여부 입력
     sharedRsvpEnabled?: boolean // 별도 RSVP 링크 (RSVP 폼만 공유)
+    sharedRsvpShareTitle?: string // 별도 RSVP 링크 카카오 공유 제목 (커스텀)
+    sharedRsvpShareDesc?: string // 별도 RSVP 링크 카카오 공유 설명 (커스텀)
     classicRsvpPhone?: boolean // 연락처 뒷자리
     classicRsvpSideDetail?: boolean // 본인/아버지/어머니 구분
     classicRsvpSideDetailOptions?: Record<string, boolean> // 표시할 하객 구분 항목 (신랑/신랑아버지/신랑어머니/신부/신부아버지/신부어머니)
@@ -214,6 +220,7 @@ const defaultData: ClassicInvitationData = {
     greeting: '',
     quote: { text: '', author: '' },
     coupleTogetherText: '',
+    classicIntroTitle: 'The Two of Us',
     classicOpeningStyle: '프레임',
     classicAccountSide: 'both',
     classicDisplayFont: 'italiana',

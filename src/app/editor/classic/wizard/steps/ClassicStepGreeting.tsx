@@ -194,6 +194,16 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
         </h3>
         <p className="text-sm text-gray-500">소개 방식을 선택하세요. 사진은 드래그·확대로 크롭할 수 있습니다.</p>
 
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">섹션 제목</Label>
+          <p className="text-[10px] text-gray-400 leading-tight">소개 섹션 맨 위에 표시됩니다. 비우면 표시되지 않습니다.</p>
+          <Input
+            value={data.content.classicIntroTitle ?? ''}
+            onChange={(e) => updateNestedData('content.classicIntroTitle', e.target.value)}
+            placeholder="예: 신랑 · 신부를 소개합니다"
+          />
+        </div>
+
         <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
           {([
             { id: 'each', label: '각자' },
@@ -264,6 +274,25 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
                   )
                 })}
               </div>
+              {(data.content.classicIntroEachFrame || 'plaque') === 'box' && (
+                <div className="space-y-1.5 pt-1">
+                  <p className="text-xs font-medium text-gray-600">종이 레이아웃</p>
+                  <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+                    {([
+                      { id: 'v', label: '세로 (사진 옆 텍스트)' },
+                      { id: 'h', label: '가로 (사진 위 텍스트)' },
+                    ] as const).map((opt) => {
+                      const active = (data.content.classicIntroEachBoxLayout || 'v') === opt.id
+                      return (
+                        <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicIntroEachBoxLayout', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                          {opt.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                  <p className="text-[10px] text-gray-400 leading-tight">가로형은 사진을 가로로 크게 넣고 이름·소개글을 아래에 배치합니다. 소개글이 길 때 적합합니다.</p>
+                </div>
+              )}
             </div>
             <div className="rounded-lg border border-gray-200 p-4 bg-gray-50/50 space-y-3">
               <p className="text-sm font-medium text-gray-700">신랑</p>
@@ -661,6 +690,22 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
               onChange={(e) => updateNestedData('wedding.directions.expressBus', e.target.value)}
               placeholder="예: 고속버스터미널에서 하차 후 택시로 10분 소요"
               rows={2}
+              className="resize-none"
+            />
+          </div>
+          <div className="space-y-1.5 pt-3 border-t border-gray-200">
+            <Label className="text-sm font-medium">추가 안내 (선택)</Label>
+            <p className="text-[10px] text-gray-400 leading-tight">필요시 제목과 내용을 넣으면 오시는 길 하단에 표시됩니다.</p>
+            <Input
+              value={data.content.classicDirectionsExtraTitle || ''}
+              onChange={(e) => updateNestedData('content.classicDirectionsExtraTitle', e.target.value)}
+              placeholder="예: 주차 안내 / 셔틀버스 운행"
+            />
+            <Textarea
+              value={data.content.classicDirectionsExtraBody || ''}
+              onChange={(e) => updateNestedData('content.classicDirectionsExtraBody', e.target.value)}
+              placeholder="예: 예식 30분 전부터 정문 앞에서 셔틀버스를 운행합니다."
+              rows={3}
               className="resize-none"
             />
           </div>

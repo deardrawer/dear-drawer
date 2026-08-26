@@ -434,7 +434,12 @@ export default function EssayStep3Details({ data, updateData, updateNestedData }
           <Switch checked={data.sharedRsvpEnabled ?? false} onCheckedChange={v => updateData({ sharedRsvpEnabled: v })} />
           <span className="text-sm text-gray-700">별도 RSVP 링크 (RSVP 폼만 공유)</span>
         </div>
-        <SharedRsvpLinkField enabled={data.sharedRsvpEnabled ?? false} />
+        <SharedRsvpLinkField
+          enabled={data.sharedRsvpEnabled ?? false}
+          shareTitle={data.sharedRsvpShareTitle}
+          shareDesc={data.sharedRsvpShareDesc}
+          onShareChange={(p) => updateData('shareTitle' in p ? { sharedRsvpShareTitle: p.shareTitle } : { sharedRsvpShareDesc: p.shareDesc })}
+        />
         {data.rsvpEnabled && (
           <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
             <div className="space-y-1.5">

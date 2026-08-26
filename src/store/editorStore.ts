@@ -412,6 +412,8 @@ export interface InvitationContent {
   rsvpShuttleOption?: boolean    // 대절버스 옵션 표시 (기본 false)
   rsvpAfterPartyOption?: boolean // 애프터파티 참석 옵션 표시 (기본 false)
   sharedRsvpEnabled?: boolean    // 별도 RSVP 링크(/i/{slug}/rsvp) 활성화 (기본 false)
+  sharedRsvpShareTitle?: string  // 별도 RSVP 링크 카카오 공유 제목 (커스텀)
+  sharedRsvpShareDesc?: string   // 별도 RSVP 링크 카카오 공유 설명 (커스텀)
   rsvpPhoneOption?: boolean      // 연락처 뒷자리 4자리 입력 (기본 false)
   rsvpSideDetail?: boolean       // 부모님 하객 구분 (기본 false)
   rsvpSideDetailOptions?: { groomSelf?: boolean; groomFather?: boolean; groomMother?: boolean; brideSelf?: boolean; brideFather?: boolean; brideMother?: boolean }

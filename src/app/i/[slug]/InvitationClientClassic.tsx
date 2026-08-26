@@ -986,6 +986,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   // 신랑신부 소개 프레임 '없음' + 텍스트 색상 (프레임 제거 시 배경 위에 바로 놓여 색 지정 가능)
   const eachNoFrame = cc.classicIntroEachFrame === 'none'
   const eachBox = cc.classicIntroEachFrame === 'box' // 깔끔한 네모박스(아이보리 + 얇은 테두리)
+  const eachHoriz = eachBox && cc.classicIntroEachBoxLayout === 'h' // 종이 프레임 가로형(사진 위·텍스트 아래)
   const togetherNoFrame = cc.classicIntroTogetherFrame === 'none'
   const introTxtColor: string | undefined = typeof cc.classicIntroTextColor === 'string' && cc.classicIntroTextColor ? cc.classicIntroTextColor : undefined
   const introTxtA = (a: number) => (introTxtColor ? `rgba(${hexToRgb(introTxtColor, '53,23,20')},${a})` : introFgAf(a))
@@ -1506,6 +1507,9 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         {/* ===== III. Introduction (각자 / 함께 토글) ===== */}
         <section style={{ order: orderOf('intro'), position: 'relative', isolation: 'isolate', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 30, padding: '82px 30px', overflow: 'hidden', ...cropBg(introSecBg, { background: IVORY }), ...hide('intro'), ...(introHasBg ? {} : tintBg('intro')) }}>
           {introHasBg && introSecOverlayOp > 0 && <div style={{ position: 'absolute', inset: 0, background: `rgba(${hexToRgb(introSecOverlay, '28,16,13')},${introSecOverlayOp})`, pointerEvents: 'none', zIndex: -1 }} />}
+          {cc.classicIntroTitle && (
+            <p className="cl-reveal cl-up" style={{ ...label(T_EYEBROW, 0.44, introFgAf(0.5)), textAlign: 'center' }}>{nameCase(cc.classicIntroTitle)}</p>
+          )}
           {introMode === 'nameOnly' ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 30, textAlign: 'center' }}>
               {([
@@ -1523,7 +1527,38 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
               ))}
             </div>
           ) : !introTogether ? (
-            (() => { const INK = eachInk; const inkA = eachInkA; return (
+            (() => { const INK = eachInk; const inkA = eachInkA;
+            if (eachHoriz) {
+              const boxSt = { position: 'relative' as const, display: 'flex', flexDirection: 'column' as const, gap: 14, padding: '18px 18px 20px', background: PAPER, border: `1px solid ${inkA(0.24)}`, boxShadow: `inset 0 0 0 3px ${PAPER}, inset 0 0 0 4px ${inkA(0.12)}` }
+              const photoSt = { width: '100%', aspectRatio: '4 / 3', borderRadius: 2, filter: 'saturate(.85)' }
+              return (
+              <>
+                <div className="cl-reveal cl-l" data-delay="180" style={boxSt}>
+                  <div style={{ ...photoSt, ...cropBg(cc.classicGroomPhoto, { background: DEEP_BEIGE }) }} />
+                  <div className="cl-reveal cl-up" data-delay="380" style={{ width: '100%', minWidth: 0, textAlign: 'center' }}>
+                    {!(cc.classicIntroShowParents !== false && parentsJsx(groom.father, groom.mother)) && <p style={{ ...label(T_ROLE, 0.4, inkA(0.45)), textAlign: 'center' }}>{nameCase('GROOM')}</p>}
+                    <p style={{ margin: '3px 0 0', fontFamily: F_BODY, fontSize: bfs(18), letterSpacing: '.01em', color: INK }}>{groomKo}</p>
+                    {cc.classicIntroShowParents !== false && parentsJsx(groom.father, groom.mother) && (
+                      <p style={{ margin: '2px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.55) }}>{parentsJsx(groom.father, groom.mother)} 의 {groomTitle}</p>
+                    )}
+                    {groomIntro && <p style={{ margin: '12px 0 0', width: '100%', fontFamily: F_BODY, fontSize: bfs(12.5), fontWeight: 500, lineHeight: 1.8, color: INK, textAlign: 'center', wordBreak: 'keep-all', overflowWrap: 'anywhere', whiteSpace: 'pre-line' }}>{groomIntro}</p>}
+                  </div>
+                </div>
+                <div className="cl-reveal cl-r" data-delay="340" style={boxSt}>
+                  <div style={{ ...photoSt, ...cropBg(cc.classicBridePhoto, { background: DEEP_BEIGE }) }} />
+                  <div className="cl-reveal cl-up" data-delay="520" style={{ width: '100%', minWidth: 0, textAlign: 'center' }}>
+                    {!(cc.classicIntroShowParents !== false && parentsJsx(bride.father, bride.mother)) && <p style={{ ...label(T_ROLE, 0.4, inkA(0.45)), textAlign: 'center' }}>{nameCase('BRIDE')}</p>}
+                    <p style={{ margin: '3px 0 0', fontFamily: F_BODY, fontSize: bfs(18), letterSpacing: '.01em', color: INK }}>{brideKo}</p>
+                    {cc.classicIntroShowParents !== false && parentsJsx(bride.father, bride.mother) && (
+                      <p style={{ margin: '2px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.55) }}>{parentsJsx(bride.father, bride.mother)} 의 {brideTitle}</p>
+                    )}
+                    {brideIntro && <p style={{ margin: '12px 0 0', width: '100%', fontFamily: F_BODY, fontSize: bfs(12.5), fontWeight: 500, lineHeight: 1.8, color: INK, textAlign: 'center', wordBreak: 'keep-all', overflowWrap: 'anywhere', whiteSpace: 'pre-line' }}>{brideIntro}</p>}
+                  </div>
+                </div>
+              </>
+              )
+            }
+            return (
             <>
               <div className="cl-reveal cl-l" data-delay="180" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 16, ...(eachBox ? { padding: '22px 22px', background: PAPER, border: `1px solid ${inkA(0.24)}`, boxShadow: `inset 0 0 0 3px ${PAPER}, inset 0 0 0 4px ${inkA(0.12)}` } : eachNoFrame ? { padding: '2px 4px' } : { aspectRatio: eachFrame.aspect, padding: eachFrame.pad, backgroundImage: `url(${eachFrame.img})`, backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', filter: 'drop-shadow(0 14px 18px rgba(53,23,20,.12))' }) }}>
                 <div style={{ flex: '0 0 84px', height: 106, borderRadius: 2, ...cropBg(cc.classicGroomPhoto, { background: DEEP_BEIGE }), filter: 'saturate(.85)' }} />
@@ -1792,6 +1827,12 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                 </div>
               ))}
             </div>
+            {(cc.classicDirectionsExtraTitle || cc.classicDirectionsExtraBody) && (
+              <div className="cl-reveal cl-rise" style={{ marginTop: 20, paddingTop: 18, borderTop: `1px solid ${inkA(0.14)}` }}>
+                {cc.classicDirectionsExtraTitle && <p style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(11), fontWeight: 600, letterSpacing: '.04em', color: inkA(0.55) }}>{cc.classicDirectionsExtraTitle}</p>}
+                {cc.classicDirectionsExtraBody && <p style={{ margin: cc.classicDirectionsExtraTitle ? '8px 0 0' : 0, fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.85, color: inkA(0.72), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{cc.classicDirectionsExtraBody}</p>}
+              </div>
+            )}
             <div style={{ display: 'flex', gap: 7, margin: '26px 0 0' }}>
               <a href={`https://map.naver.com/p/search/${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ flex: 1, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(12), padding: '11px 0', background: '#03C75A', color: '#fff', borderRadius: 6, whiteSpace: 'nowrap' }}>네이버</a>
               <a href={`https://map.kakao.com/?q=${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ flex: 1, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(12), padding: '11px 0', background: '#FEE500', color: '#3C1E1E', borderRadius: 6, whiteSpace: 'nowrap' }}>카카오</a>

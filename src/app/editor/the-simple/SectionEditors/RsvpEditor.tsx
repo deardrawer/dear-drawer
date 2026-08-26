@@ -281,6 +281,28 @@ export default function RsvpEditor({ value, variant = 1, shareSlug, onChange }: 
             <p className="mt-2 text-[11px] text-amber-600">저장(발행) 후 링크가 생성됩니다.</p>
           )
         )}
+        {value.sharedRsvpEnabled && rsvpUrl && (
+          <div className="mt-2 space-y-1.5 rounded-md border border-stone-200 bg-stone-50/60 p-2.5">
+            <p className="text-[11px] font-medium text-stone-600">카카오톡 공유 정보</p>
+            <input
+              type="text"
+              value={value.sharedRsvpShareTitle ?? ''}
+              onChange={(e) => onChange({ ...value, sharedRsvpShareTitle: e.target.value })}
+              placeholder="공유 제목 (예: 참석 여부를 전해주세요)"
+              className="w-full border border-stone-200 rounded-md px-2 py-1.5 text-[11px] text-stone-700 bg-white focus:outline-none focus:border-stone-600"
+            />
+            <textarea
+              value={value.sharedRsvpShareDesc ?? ''}
+              onChange={(e) => onChange({ ...value, sharedRsvpShareDesc: e.target.value })}
+              placeholder="공유 설명 (예: 신랑 신부에게 참석 여부를 미리 알려주세요)"
+              rows={2}
+              className="w-full resize-none border border-stone-200 rounded-md px-2 py-1.5 text-[11px] text-stone-700 bg-white focus:outline-none focus:border-stone-600"
+            />
+            <p className="text-[10px] leading-tight text-stone-400">
+              비우면 기본 문구로 자동 표시됩니다. <span className="text-amber-600">저장해야</span> 카카오톡 공유 미리보기(제목·설명·사진)에 반영됩니다.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   )

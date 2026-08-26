@@ -1647,7 +1647,7 @@ function GalleryV2Slideshow({ images, galleryEyebrow, onOpenLightbox }: GalleryA
             <div key={img.id} style={{
               position: 'absolute', inset: 0,
               opacity: i === activeIdx ? 1 : 0,
-              transition: 'opacity 0.8s ease',
+              transition: 'opacity 1.2s ease-in-out',
             }}>
               <GalleryImg
                 src={img.webUrl}
@@ -1667,10 +1667,11 @@ function GalleryV2Slideshow({ images, galleryEyebrow, onOpenLightbox }: GalleryA
               aria-label="이전"
               style={{
                 position: 'absolute', left: 4, top: '50%', transform: 'translateY(-50%)',
-                width: 28, height: 28, borderRadius: '50%',
-                background: 'rgba(255,255,255,0.65)', border: 'none',
+                width: 28, height: 28,
+                background: 'transparent', border: 'none',
                 cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 'calc(14px * var(--ts-font-scale, 1))', color: '#333', zIndex: 2,
+                fontSize: 'calc(22px * var(--ts-font-scale, 1))', color: '#fff', lineHeight: 1,
+                textShadow: '0 1px 4px rgba(0,0,0,0.45)', zIndex: 2,
               }}
             >
               ‹
@@ -1681,10 +1682,11 @@ function GalleryV2Slideshow({ images, galleryEyebrow, onOpenLightbox }: GalleryA
               aria-label="다음"
               style={{
                 position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)',
-                width: 28, height: 28, borderRadius: '50%',
-                background: 'rgba(255,255,255,0.65)', border: 'none',
+                width: 28, height: 28,
+                background: 'transparent', border: 'none',
                 cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 'calc(14px * var(--ts-font-scale, 1))', color: '#333', zIndex: 2,
+                fontSize: 'calc(22px * var(--ts-font-scale, 1))', color: '#fff', lineHeight: 1,
+                textShadow: '0 1px 4px rgba(0,0,0,0.45)', zIndex: 2,
               }}
             >
               ›
@@ -4327,7 +4329,14 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
         )
       }
 
-      const thumbEl = <YouTubeLite videoId={videoId} onPlay={onVideoPlay} onStop={onVideoStop} />
+      const isPortrait = video?.portrait === true
+      const thumbEl = isPortrait ? (
+        <div style={{ maxWidth: '66%', margin: '0 auto' }}>
+          <YouTubeLite videoId={videoId} aspectRatio="9 / 16" onPlay={onVideoPlay} onStop={onVideoStop} />
+        </div>
+      ) : (
+        <YouTubeLite videoId={videoId} onPlay={onVideoPlay} onStop={onVideoStop} />
+      )
 
       // V2 · 풀폭 (패딩 없음)
       if (v === 2) {

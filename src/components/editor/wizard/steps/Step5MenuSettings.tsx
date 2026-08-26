@@ -886,7 +886,15 @@ export default function Step5MenuSettings() {
             />
             <span className="text-sm text-gray-700">별도 RSVP 링크 (RSVP 폼만 공유)</span>
           </div>
-          <SharedRsvpLinkField enabled={invitation.sharedRsvpEnabled ?? false} />
+          <SharedRsvpLinkField
+            enabled={invitation.sharedRsvpEnabled ?? false}
+            shareTitle={invitation.sharedRsvpShareTitle}
+            shareDesc={invitation.sharedRsvpShareDesc}
+            onShareChange={(p) => {
+              if ('shareTitle' in p) updateField('sharedRsvpShareTitle', p.shareTitle ?? '')
+              else updateField('sharedRsvpShareDesc', p.shareDesc ?? '')
+            }}
+          />
         </div>
 
         {invitation.rsvpEnabled && (

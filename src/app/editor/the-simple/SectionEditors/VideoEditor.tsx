@@ -48,10 +48,28 @@ export default function VideoEditor({ value, onChange }: VideoEditorProps) {
       {value.url && !videoId && (
         <p className="text-[10px] text-red-500">올바른 유튜브 URL을 입력해주세요.</p>
       )}
+      <label className="flex items-center justify-between pt-1">
+        <span className="text-xs text-stone-600">세로형(숏폼)으로 표시 <span className="text-[10px] text-stone-400">9:16</span></span>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={value.portrait ?? false}
+          onClick={() => onChange({ ...value, portrait: !(value.portrait ?? false) })}
+          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+            value.portrait ? 'bg-stone-800' : 'bg-stone-200'
+          }`}
+        >
+          <span
+            className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+              value.portrait ? 'translate-x-[18px]' : 'translate-x-[3px]'
+            }`}
+          />
+        </button>
+      </label>
       {videoId && (
         <div className="space-y-1">
           <span className="text-[10px] uppercase tracking-wider text-stone-400">미리보기</span>
-          <div className="aspect-video rounded-md overflow-hidden bg-black">
+          <div className={`${value.portrait ? 'aspect-[9/16] max-w-[55%] mx-auto' : 'aspect-video'} rounded-md overflow-hidden bg-black`}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={error ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}

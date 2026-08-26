@@ -197,6 +197,7 @@ export interface SectionContents {
   video: {
     eyebrow: string
     url: string
+    portrait?: boolean // 세로형(숏폼) 9:16 표시 (기본 false = 가로 16:9)
   }
   rsvp: {
     title: string
@@ -205,6 +206,8 @@ export interface SectionContents {
     showShuttleOption?: boolean
     showAfterPartyOption?: boolean
     sharedRsvpEnabled?: boolean
+    sharedRsvpShareTitle?: string
+    sharedRsvpShareDesc?: string
     showSideOption?: boolean
     showPhoneOption?: boolean
     showSideDetail?: boolean

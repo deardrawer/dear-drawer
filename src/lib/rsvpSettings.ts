@@ -32,6 +32,10 @@ export interface NormalizedRsvpSettings {
   messagePlaceholder?: string
   /** RsvpForm 버튼 강조색 (테마색 있으면 사용, 없으면 기본) */
   primaryColor: string
+  /** 별도 RSVP 링크 카카오 공유 제목 (커스텀, 미설정 시 자동) */
+  shareTitle?: string
+  /** 별도 RSVP 링크 카카오 공유 설명 (커스텀, 미설정 시 자동) */
+  shareDescription?: string
 }
 
 const DEFAULT_PRIMARY = '#b0895f'
@@ -62,6 +66,8 @@ export function normalizeRsvpSettings(
       notice: r.rsvpNotice || undefined,
       messagePlaceholder: r.messagePlaceholder || undefined,
       primaryColor: (typeof c.pointColor === 'string' && c.pointColor) || DEFAULT_PRIMARY,
+      shareTitle: (typeof r.sharedRsvpShareTitle === 'string' && r.sharedRsvpShareTitle) || undefined,
+      shareDescription: (typeof r.sharedRsvpShareDesc === 'string' && r.sharedRsvpShareDesc) || undefined,
     }
   }
 
@@ -83,6 +89,8 @@ export function normalizeRsvpSettings(
       notice: cc.classicRsvpNotice || undefined,
       messagePlaceholder: cc.classicRsvpMessagePlaceholder || undefined,
       primaryColor: DEFAULT_PRIMARY,
+      shareTitle: (typeof cc.sharedRsvpShareTitle === 'string' && cc.sharedRsvpShareTitle) || undefined,
+      shareDescription: (typeof cc.sharedRsvpShareDesc === 'string' && cc.sharedRsvpShareDesc) || undefined,
     }
   }
 
@@ -103,5 +111,7 @@ export function normalizeRsvpSettings(
       (typeof c.customPrimaryColor === 'string' && c.customPrimaryColor) ||
       (typeof c.pointColor === 'string' && c.pointColor) ||
       DEFAULT_PRIMARY,
+    shareTitle: (typeof c.sharedRsvpShareTitle === 'string' && c.sharedRsvpShareTitle) || undefined,
+    shareDescription: (typeof c.sharedRsvpShareDesc === 'string' && c.sharedRsvpShareDesc) || undefined,
   }
 }

@@ -3,8 +3,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { loadYouTubeApi } from '@/lib/youtubeApi'
 
-export function YouTubeLite({ videoId, onPlay, onStop }: {
-  videoId: string; onPlay?: () => void; onStop?: () => void
+export function YouTubeLite({ videoId, onPlay, onStop, aspectRatio = '16/9' }: {
+  videoId: string; onPlay?: () => void; onStop?: () => void; aspectRatio?: string
 }) {
   const [active, setActive] = useState(false)
   const [thumbErr, setThumbErr] = useState(false)
@@ -83,7 +83,7 @@ export function YouTubeLite({ videoId, onPlay, onStop }: {
   }
 
   return (
-    <div ref={containerRef} style={{ aspectRatio: '16/9', width: '100%', position: 'relative', background: '#000' }}>
+    <div ref={containerRef} style={{ aspectRatio, width: '100%', position: 'relative', background: '#000' }}>
       {active ? (
         <>
           <iframe

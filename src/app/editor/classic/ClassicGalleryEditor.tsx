@@ -4,6 +4,9 @@ import { useState } from 'react'
 import ImageZoomEditor from '@/components/editor/ImageZoomEditor'
 import { uploadImage } from '@/lib/imageUpload'
 import type { ClassicPhoto } from './ClassicPhotoField'
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core'
+import { SortableContext, useSortable, rectSortingStrategy, arrayMove } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 /** THE CLASSIC 갤러리 이미지 (레거시 호환: 문자열 URL 또는 크롭 객체) */
 export type ClassicGalleryImage = string | ClassicPhoto
@@ -35,6 +38,21 @@ export default function ClassicGalleryEditor({ images, onChange, invitationId, m
 
   const items: ClassicPhoto[] = images.map(toItem)
 
+  // 각 항목의 안정적인 고유 dnd id (url 기반, 중복/빈 값은 순번으로 유니크 처리)
+  const seen = new Map<string, number>()
+  const ids: string[] = items.map((it, i) => {
+    const base = it.url || `empty-${i}`
+    const count = seen.get(base) ?? 0
+    seen.set(base, count + 1)
+    return count === 0 ? base : `${base}#${count}`
+  })
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    })
+  )
+
   const updateAt = (i: number, patch: Partial<ClassicPhoto>) => {
     onChange(items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)))
   }
@@ -43,14 +61,13 @@ export default function ClassicGalleryEditor({ images, onChange, invitationId, m
     onChange(items.filter((_, idx) => idx !== i))
   }
 
-  const moveAt = (i: number, dir: -1 | 1) => {
-    const j = i + dir
-    if (j < 0 || j >= items.length) return
-    const next = [...items]
-    const tmp = next[i]
-    next[i] = next[j]
-    next[j] = tmp
-    onChange(next)
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    const oldIndex = ids.indexOf(active.id as string)
+    const newIndex = ids.indexOf(over.id as string)
+    if (oldIndex === -1 || newIndex === -1) return
+    onChange(arrayMove(items, oldIndex, newIndex))
   }
 
   const handleReplace = async (i: number, file: File) => {
@@ -90,44 +107,23 @@ export default function ClassicGalleryEditor({ images, onChange, invitationId, m
 
   return (
     <div className="space-y-3">
-      {/* 3열 썸네일 그리드 */}
-      <div className="grid grid-cols-3 gap-2">
-        {items.map((item, i) => (
-          <div key={i} className="space-y-1">
-            <div
-              className="relative rounded-md border border-gray-200 overflow-hidden group"
-              style={{
-                aspectRatio: '1',
-                backgroundColor: '#eee',
-                backgroundImage: item.url ? `url(${item.url})` : undefined,
-                backgroundSize: (item.scale ?? 1) > 1 ? `${(item.scale ?? 1) * 100}%` : 'cover',
-                backgroundPosition: `${50 - (item.positionX ?? 0)}% ${50 - (item.positionY ?? 0)}%`,
-                backgroundRepeat: 'no-repeat',
-              }}
-            >
-              <button
-                type="button"
-                onClick={() => { removeAt(i); if (editingIndex === i) setEditingIndex(null) }}
-                aria-label="삭제"
-                className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/55 text-white text-[11px] leading-none flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80"
-              >
-                ×
-              </button>
-              <div className="absolute bottom-1 left-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button type="button" disabled={i === 0} onClick={() => moveAt(i, -1)} aria-label="이전으로" className="w-5 h-5 rounded bg-black/55 text-white text-[11px] leading-none disabled:opacity-25 hover:bg-black/80">◀</button>
-                <button type="button" disabled={i === items.length - 1} onClick={() => moveAt(i, 1)} aria-label="다음으로" className="w-5 h-5 rounded bg-black/55 text-white text-[11px] leading-none disabled:opacity-25 hover:bg-black/80">▶</button>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => setEditingIndex(editingIndex === i ? null : i)}
-              className={`w-full text-[11px] rounded px-1.5 py-0.5 border transition-colors ${editingIndex === i ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}
-            >
-              {editingIndex === i ? '닫기' : '조정'}
-            </button>
+      {/* 3열 썸네일 그리드 (드래그로 순서 변경) */}
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={ids} strategy={rectSortingStrategy}>
+          <div className="grid grid-cols-3 gap-2">
+            {items.map((item, i) => (
+              <SortableThumb
+                key={ids[i]}
+                id={ids[i]}
+                item={item}
+                isEditing={editingIndex === i}
+                onRemove={() => { removeAt(i); if (editingIndex === i) setEditingIndex(null) }}
+                onToggleEdit={() => setEditingIndex(editingIndex === i ? null : i)}
+              />
+            ))}
           </div>
-        ))}
-      </div>
+        </SortableContext>
+      </DndContext>
 
       {/* 조정 패널 (선택한 사진 1장) */}
       {editingIndex !== null && items[editingIndex] && (
@@ -183,6 +179,66 @@ export default function ClassicGalleryEditor({ images, onChange, invitationId, m
           <span className="text-[10px] text-gray-300">{items.length} / {maxImages}장 · 여러 장 선택 가능</span>
         </label>
       )}
+    </div>
+  )
+}
+
+/** 드래그로 순서 변경 가능한 갤러리 썸네일 아이템 */
+function SortableThumb({
+  id,
+  item,
+  isEditing,
+  onRemove,
+  onToggleEdit,
+}: {
+  id: string
+  item: ClassicPhoto
+  isEditing: boolean
+  onRemove: () => void
+  onToggleEdit: () => void
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+    zIndex: isDragging ? 50 : undefined,
+  }
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} className="space-y-1">
+      {/* 이미지 영역: 드래그하여 순서 변경 */}
+      <div
+        {...listeners}
+        className="relative rounded-md border border-gray-200 overflow-hidden group cursor-grab active:cursor-grabbing touch-none"
+        style={{
+          aspectRatio: '1',
+          backgroundColor: '#eee',
+          backgroundImage: item.url ? `url(${item.url})` : undefined,
+          backgroundSize: (item.scale ?? 1) > 1 ? `${(item.scale ?? 1) * 100}%` : 'cover',
+          backgroundPosition: `${50 - (item.positionX ?? 0)}% ${50 - (item.positionY ?? 0)}%`,
+          backgroundRepeat: 'no-repeat',
+        }}
+      >
+        <button
+          type="button"
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => { e.stopPropagation(); onRemove() }}
+          aria-label="삭제"
+          className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/55 text-white text-[11px] leading-none flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80"
+        >
+          ×
+        </button>
+      </div>
+      <button
+        type="button"
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={(e) => { e.stopPropagation(); onToggleEdit() }}
+        className={`w-full text-[11px] rounded px-1.5 py-0.5 border transition-colors ${isEditing ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}
+      >
+        {isEditing ? '닫기' : '조정'}
+      </button>
     </div>
   )
 }

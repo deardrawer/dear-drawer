@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { ChevronUp, ChevronDown } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
@@ -61,8 +61,6 @@ export default function ClassicStepContent({ data, updateNestedData, invitationI
     updateNestedData('content.classicSectionBgMap', next)
   }
 
-  const [dragIndex, setDragIndex] = useState<number | null>(null)
-  const [overIndex, setOverIndex] = useState<number | null>(null)
   const moveSection = (from: number, to: number) => {
     if (from === to || to < 0 || to >= sectionOrder.length) return
     const next = [...sectionOrder]
@@ -218,7 +216,15 @@ export default function ClassicStepContent({ data, updateNestedData, invitationI
               {opt.label}
             </label>
           ))}
-          <SharedRsvpLinkField enabled={data.content.sharedRsvpEnabled ?? false} />
+          <SharedRsvpLinkField
+            enabled={data.content.sharedRsvpEnabled ?? false}
+            shareTitle={data.content.sharedRsvpShareTitle}
+            shareDesc={data.content.sharedRsvpShareDesc}
+            onShareChange={(p) => {
+              if ('shareTitle' in p) updateNestedData('content.sharedRsvpShareTitle', p.shareTitle ?? '')
+              else updateNestedData('content.sharedRsvpShareDesc', p.shareDesc ?? '')
+            }}
+          />
           {data.content.classicRsvpSideDetail && (
             <div className="pl-6 space-y-1.5 border-l-2 border-gray-200">
               <p className="text-sm font-medium text-gray-700">표시할 항목 선택</p>
@@ -253,35 +259,44 @@ export default function ClassicStepContent({ data, updateNestedData, invitationI
           </svg>
           섹션 순서
         </h3>
-        <p className="text-sm text-gray-500">청첩장에 표시되는 순서입니다. 항목을 끌어서 원하는 위치로 옮기세요.</p>
+        <p className="text-sm text-gray-500">청첩장에 표시되는 순서입니다. 위·아래 화살표로 순서를 바꾸세요.</p>
         <div className="space-y-2">
           {sectionOrder.map((key, i) => (
             <div
               key={key}
-              draggable
-              onDragStart={() => setDragIndex(i)}
-              onDragEnter={() => setOverIndex(i)}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={() => { if (dragIndex !== null) moveSection(dragIndex, i); setDragIndex(null); setOverIndex(null) }}
-              onDragEnd={() => { setDragIndex(null); setOverIndex(null) }}
-              className={`flex items-center gap-3 rounded-lg border bg-white px-4 py-3 cursor-grab active:cursor-grabbing select-none transition-all ${dragIndex === i ? 'opacity-40' : ''} ${overIndex === i && dragIndex !== null && dragIndex !== i ? 'border-gray-900 ring-1 ring-gray-900' : 'border-gray-200'}`}
+              className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-3 select-none"
             >
-              <svg className="w-4 h-4 text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                <circle cx="9" cy="6" r="1.6" /><circle cx="15" cy="6" r="1.6" /><circle cx="9" cy="12" r="1.6" /><circle cx="15" cy="12" r="1.6" /><circle cx="9" cy="18" r="1.6" /><circle cx="15" cy="18" r="1.6" />
-              </svg>
+              <div className="flex flex-col shrink-0">
+                <button
+                  type="button"
+                  onClick={() => moveSection(i, i - 1)}
+                  disabled={i === 0}
+                  aria-label="위로 이동"
+                  className="p-1 text-gray-400 hover:text-gray-700 disabled:opacity-25 disabled:cursor-not-allowed"
+                >
+                  <ChevronUp className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => moveSection(i, i + 1)}
+                  disabled={i === sectionOrder.length - 1}
+                  aria-label="아래로 이동"
+                  className="p-1 text-gray-400 hover:text-gray-700 disabled:opacity-25 disabled:cursor-not-allowed"
+                >
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+              </div>
               <span className="w-5 text-center text-xs font-medium text-gray-400">{i + 1}</span>
               <span className={`flex-1 text-sm ${isHidden(key) ? 'text-gray-400 line-through' : 'text-gray-800'}`}>{labelOf(key)}</span>
               {TINTABLE.has(key) && !isHidden(key) && (
-                <div className="flex rounded-md border border-gray-200 overflow-hidden text-[11px] shrink-0" onDragStart={(e) => e.preventDefault()}>
-                  <button type="button" draggable={false} onClick={() => setBgMode(key, false)} className={`px-2 py-1 transition-colors ${!isTintedMode(key) ? 'bg-gray-900 text-white' : 'bg-white text-gray-500'}`}>기본</button>
-                  <button type="button" draggable={false} onClick={() => setBgMode(key, true)} className={`px-2 py-1 transition-colors ${isTintedMode(key) ? 'bg-gray-900 text-white' : 'bg-white text-gray-500'}`}>틴티드</button>
+                <div className="flex rounded-md border border-gray-200 overflow-hidden text-[11px] shrink-0">
+                  <button type="button" onClick={() => setBgMode(key, false)} className={`px-2 py-1 transition-colors ${!isTintedMode(key) ? 'bg-gray-900 text-white' : 'bg-white text-gray-500'}`}>기본</button>
+                  <button type="button" onClick={() => setBgMode(key, true)} className={`px-2 py-1 transition-colors ${isTintedMode(key) ? 'bg-gray-900 text-white' : 'bg-white text-gray-500'}`}>틴티드</button>
                 </div>
               )}
               <button
                 type="button"
-                draggable={false}
                 onClick={() => toggleSection(key)}
-                onDragStart={(e) => e.preventDefault()}
                 aria-label={isHidden(key) ? '표시' : '숨김'}
                 className={`relative w-9 h-5 rounded-full transition-colors shrink-0 ${isHidden(key) ? 'bg-gray-300' : 'bg-gray-900'}`}
               >

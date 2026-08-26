@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { SAMPLE_DIRECTIONS } from '@/lib/sampleData'
 import { MultiImageUploader } from '@/components/editor/ImageUploader'
 import InlineCropEditor from '@/components/editor/InlineCropEditor'
+import SharedRsvpLinkField from '@/components/editor/SharedRsvpLinkField'
 import type { EssayInvitationData } from '../../page'
 
 interface StepProps {
@@ -429,6 +430,11 @@ export default function EssayStep3Details({ data, updateData, updateNestedData }
           </h3>
           <Switch checked={data.rsvpEnabled} onCheckedChange={v => updateData({ rsvpEnabled: v })} />
         </div>
+        <div className="flex items-center gap-3">
+          <Switch checked={data.sharedRsvpEnabled ?? false} onCheckedChange={v => updateData({ sharedRsvpEnabled: v })} />
+          <span className="text-sm text-gray-700">별도 RSVP 링크 (RSVP 폼만 공유)</span>
+        </div>
+        <SharedRsvpLinkField enabled={data.sharedRsvpEnabled ?? false} />
         {data.rsvpEnabled && (
           <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
             <div className="space-y-1.5">
@@ -447,10 +453,6 @@ export default function EssayStep3Details({ data, updateData, updateNestedData }
             <div className="flex items-center gap-3">
               <Switch checked={data.rsvpAfterPartyOption ?? false} onCheckedChange={v => updateData({ rsvpAfterPartyOption: v })} />
               <span className="text-sm text-gray-700">애프터파티 참석 여부 입력 허용</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <Switch checked={data.sharedRsvpEnabled ?? false} onCheckedChange={v => updateData({ sharedRsvpEnabled: v })} />
-              <span className="text-sm text-gray-700">별도 RSVP 링크 (RSVP 폼만 공유 · 공유 메뉴에서 링크 복사)</span>
             </div>
             <div className="flex items-center gap-3">
               <Switch checked={data.rsvpPhoneOption ?? false} onCheckedChange={v => updateData({ rsvpPhoneOption: v })} />

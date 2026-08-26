@@ -18,6 +18,7 @@ import {
   SVG_ICON_KEYS, SVG_ICON_LABELS, renderSvgIcon, type SvgIconKey,
   BusIcon, SubwayIcon, ExpressBusIcon, TrainIcon, ParkingIcon,
 } from '@/components/parents/icons'
+import SharedRsvpLinkField from '@/components/editor/SharedRsvpLinkField'
 
 interface ParentsStep3ContentProps {
   data: ParentsInvitationData
@@ -1553,6 +1554,15 @@ export default function ParentsStep3Content({
         </div>
         <p className="text-sm text-blue-600">💙 하객분들이 참석 여부를 전달할 수 있는 RSVP 기능이 표시됩니다.</p>
 
+        <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+          <Switch
+            checked={data.sharedRsvpEnabled ?? false}
+            onCheckedChange={(checked) => updateData({ sharedRsvpEnabled: checked })}
+          />
+          <span className="text-sm text-gray-700">별도 RSVP 링크 (RSVP 폼만 공유)</span>
+        </div>
+        <SharedRsvpLinkField enabled={data.sharedRsvpEnabled ?? false} />
+
         {data.rsvpEnabled !== false && (
           <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
             <div className="flex items-center gap-3">
@@ -1575,13 +1585,6 @@ export default function ParentsStep3Content({
                 onCheckedChange={(checked) => updateData({ rsvpAfterPartyOption: checked })}
               />
               <span className="text-sm text-gray-700">애프터파티 참석 여부 입력 허용</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <Switch
-                checked={data.sharedRsvpEnabled ?? false}
-                onCheckedChange={(checked) => updateData({ sharedRsvpEnabled: checked })}
-              />
-              <span className="text-sm text-gray-700">별도 RSVP 링크 (RSVP 폼만 공유 · 공유 메뉴에서 링크 복사)</span>
             </div>
             <div className="flex items-center gap-3">
               <Switch

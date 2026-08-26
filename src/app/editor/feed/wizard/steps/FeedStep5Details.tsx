@@ -1,5 +1,6 @@
 'use client'
 
+import SharedRsvpLinkField from '@/components/editor/SharedRsvpLinkField'
 import type { FeedInvitationData } from '../../page'
 
 interface StepProps {
@@ -264,6 +265,15 @@ export default function FeedStep5Details({
           />
         </div>
 
+        <div className="flex items-center gap-3">
+          <ToggleSwitch
+            checked={data.sharedRsvpEnabled ?? false}
+            onChange={(checked) => updateData({ sharedRsvpEnabled: checked })}
+          />
+          <span className="text-sm text-gray-700">별도 RSVP 링크 (RSVP 폼만 공유)</span>
+        </div>
+        <SharedRsvpLinkField enabled={data.sharedRsvpEnabled ?? false} />
+
         {data.rsvpEnabled && (
           <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
             <div className="space-y-1.5">
@@ -307,14 +317,6 @@ export default function FeedStep5Details({
                 onChange={(checked) => updateData({ rsvpAfterPartyOption: checked })}
               />
               <span className="text-sm text-gray-700">애프터파티 참석 여부 입력 허용</span>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <ToggleSwitch
-                checked={data.sharedRsvpEnabled ?? false}
-                onChange={(checked) => updateData({ sharedRsvpEnabled: checked })}
-              />
-              <span className="text-sm text-gray-700">별도 RSVP 링크 (RSVP 폼만 공유 · 공유 메뉴에서 링크 복사)</span>
             </div>
 
             <div className="flex items-center gap-3">

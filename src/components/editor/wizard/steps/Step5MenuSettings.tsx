@@ -7,6 +7,7 @@ import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { SAMPLE_DIRECTIONS } from '@/lib/sampleData'
 import { SortableList, SortableItem } from '@/components/ui/sortable-list'
+import SharedRsvpLinkField from '@/components/editor/SharedRsvpLinkField'
 
 // 전화번호 포맷팅 함수
 const formatPhone = (value: string) => {
@@ -876,6 +877,18 @@ export default function Step5MenuSettings() {
           </div>
         )}
 
+        {/* 별도 RSVP 링크 — 본문 RSVP(rsvpEnabled) 유무와 독립적으로 항상 표시 */}
+        <div>
+          <div className="flex items-center gap-3">
+            <Switch
+              checked={invitation.sharedRsvpEnabled ?? false}
+              onCheckedChange={(checked) => updateField('sharedRsvpEnabled', checked)}
+            />
+            <span className="text-sm text-gray-700">별도 RSVP 링크 (RSVP 폼만 공유)</span>
+          </div>
+          <SharedRsvpLinkField enabled={invitation.sharedRsvpEnabled ?? false} />
+        </div>
+
         {invitation.rsvpEnabled && (
           <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
             <div className="space-y-1.5">
@@ -926,14 +939,6 @@ export default function Step5MenuSettings() {
                 onCheckedChange={(checked) => updateField('rsvpPhoneOption', checked)}
               />
               <span className="text-sm text-gray-700">연락처 뒷자리 4자리 입력</span>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <Switch
-                checked={invitation.sharedRsvpEnabled ?? false}
-                onCheckedChange={(checked) => updateField('sharedRsvpEnabled', checked)}
-              />
-              <span className="text-sm text-gray-700">별도 RSVP 링크 (RSVP 폼만 공유 · 공유 메뉴에서 링크 복사)</span>
             </div>
 
             <div className="flex items-center gap-3">

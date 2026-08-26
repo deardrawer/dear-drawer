@@ -45,8 +45,9 @@ export default async function SharedRsvpPage({ params }: PageProps) {
 
   const rsvp = normalizeRsvpSettings(invitation.template_id, content)
 
-  // 별도 RSVP 링크가 꺼져 있거나 RSVP 자체가 비활성이면 접근 불가
-  if (!rsvp.sharedEnabled || !rsvp.enabled) notFound()
+  // 별도 RSVP 링크는 이 토글만으로 독립 동작한다.
+  // (본문에 RSVP 섹션을 넣지 않아도/숨겨도, sharedRsvpEnabled만 켜면 RSVP 폼 링크가 열림)
+  if (!rsvp.sharedEnabled) notFound()
 
   const groomName = invitation.groom_name || '신랑'
   const brideName = invitation.bride_name || '신부'

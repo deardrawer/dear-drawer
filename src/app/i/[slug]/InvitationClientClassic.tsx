@@ -1047,7 +1047,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
     return { backgroundImage: `url(${url})`, backgroundSize: sc > 1 ? `${sc * 100}%` : 'cover', backgroundPosition: `${50 - px}% ${50 - py}%`, backgroundRepeat: 'no-repeat', ...restExtra }
   }
 
-  const label = (size: number, ls: number, color: string): React.CSSProperties => ({ margin: 0, fontFamily: F_LABEL, fontSize: Math.round(size * labelScale * 10) / 10, letterSpacing: `${ls}em`, color, paddingLeft: `${ls}em` })
+  const label = (size: number, ls: number, color: string): React.CSSProperties => ({ margin: 0, fontFamily: F_LABEL, fontSize: Math.round(size * labelScale * 10) / 10, letterSpacing: `${ls}em`, color, paddingLeft: `${ls}em`, whiteSpace: 'nowrap' })
 
   // 간지 풀화면 배경 오버레이 (사진2 / 인용구)
   const interOverlay = (item: Inter): React.ReactNode => {
@@ -1508,7 +1508,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         <section style={{ order: orderOf('intro'), position: 'relative', isolation: 'isolate', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 30, padding: '82px 30px', overflow: 'hidden', ...cropBg(introSecBg, { background: IVORY }), ...hide('intro'), ...(introHasBg ? {} : tintBg('intro')) }}>
           {introHasBg && introSecOverlayOp > 0 && <div style={{ position: 'absolute', inset: 0, background: `rgba(${hexToRgb(introSecOverlay, '28,16,13')},${introSecOverlayOp})`, pointerEvents: 'none', zIndex: -1 }} />}
           {cc.classicIntroTitle && (
-            <p className="cl-reveal cl-up" style={{ ...label(T_EYEBROW, 0.44, introFgAf(0.5)), textAlign: 'center' }}>{nameCase(cc.classicIntroTitle)}</p>
+            <p className="cl-reveal cl-up" style={{ ...label(T_EYEBROW, 0.44, introFgAf(0.5)), textAlign: 'center', whiteSpace: 'normal' }}>{nameCase(cc.classicIntroTitle)}</p>
           )}
           {introMode === 'nameOnly' ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 30, textAlign: 'center' }}>

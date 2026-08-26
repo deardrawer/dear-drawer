@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     const userPrompt = buildStoryPrompt(type, answers, groomName, brideName);
 
     const message = await anthropic.messages.create({
-      model: "claude-3-haiku-20240307",
+      model: "claude-haiku-4-5-20251001",
       max_tokens: 2000,
       system: STORY_SYSTEM_PROMPT,
       messages: [

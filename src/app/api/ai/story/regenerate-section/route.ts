@@ -174,7 +174,7 @@ export async function POST(request: NextRequest) {
 
     // Anthropic API 호출 (재생성시 약간 더 높은 temperature)
     const message = await anthropic.messages.create({
-      model: 'claude-3-haiku-20240307',
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 2500,
       temperature: 0.8, // 재생성시 더 창의적으로
       messages: [

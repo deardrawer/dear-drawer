@@ -200,8 +200,24 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
           <Input
             value={data.content.classicIntroTitle ?? ''}
             onChange={(e) => updateNestedData('content.classicIntroTitle', e.target.value)}
-            placeholder="예: 신랑 · 신부를 소개합니다"
+            placeholder="e.g. The Two of Us"
           />
+          <div className="flex items-center gap-2 pt-1">
+            <span className="text-[11px] text-gray-500">제목 크기</span>
+            <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+              {([
+                { id: 'kicker', label: '작게' },
+                { id: 'title', label: '크게' },
+              ] as const).map((opt) => {
+                const active = (data.content.classicIntroTitleStyle || 'kicker') === opt.id
+                return (
+                  <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicIntroTitleStyle', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                    {opt.label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
         </div>
 
         <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">

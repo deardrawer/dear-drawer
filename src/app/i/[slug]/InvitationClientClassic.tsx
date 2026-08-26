@@ -281,6 +281,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   const [infoIdx, setInfoIdx] = useState(0)
   // 갤러리 '스와이프' 레이아웃 전용: 현재 표시 중인 사진 인덱스
   const [galSwipeIdx, setGalSwipeIdx] = useState(0)
+  const [galSwipePaused, setGalSwipePaused] = useState(false) // 썸네일 수동 선택 시 자동넘김 정지 (좌우 버튼으로 재개)
   const [galExpanded, setGalExpanded] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const infoRef = useRef<HTMLDivElement>(null)
@@ -872,12 +873,12 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   const galCaption: string = cc.classicGalleryCaption || 'a quiet afternoon in June'
   const galCount = Math.max(gallery.length, 1)
 
-  // 스와이프 갤러리: 자동 전환 (약 3.4초 간격)
+  // 스와이프 갤러리: 자동 전환 (약 3.4초 간격) — 사용자가 썸네일로 수동 선택하면 정지
   useEffect(() => {
-    if (galType !== 'swipe' || galCount <= 1) return
+    if (galType !== 'swipe' || galCount <= 1 || galSwipePaused) return
     const id = window.setInterval(() => setGalSwipeIdx((i) => (i + 1) % galCount), 3400)
     return () => window.clearInterval(id)
-  }, [galType, galCount])
+  }, [galType, galCount, galSwipePaused])
 
   // 트레이싱지 시작 문구 타자기 효과 (한 글자씩)
   useEffect(() => {
@@ -1508,7 +1509,11 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         <section style={{ order: orderOf('intro'), position: 'relative', isolation: 'isolate', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 30, padding: '82px 30px', overflow: 'hidden', ...cropBg(introSecBg, { background: IVORY }), ...hide('intro'), ...(introHasBg ? {} : tintBg('intro')) }}>
           {introHasBg && introSecOverlayOp > 0 && <div style={{ position: 'absolute', inset: 0, background: `rgba(${hexToRgb(introSecOverlay, '28,16,13')},${introSecOverlayOp})`, pointerEvents: 'none', zIndex: -1 }} />}
           {cc.classicIntroTitle && (
-            <p className="cl-reveal cl-up" style={{ ...label(T_EYEBROW, 0.44, introFgAf(0.5)), textAlign: 'center', whiteSpace: 'normal' }}>{nameCase(cc.classicIntroTitle)}</p>
+            cc.classicIntroTitleStyle === 'title' ? (
+              <h2 className="cl-reveal cl-up" style={{ margin: 0, textAlign: 'center', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: T_TITLE, letterSpacing: '.02em', color: introFgC }}>{nameCase(cc.classicIntroTitle)}</h2>
+            ) : (
+              <p className="cl-reveal cl-up" style={{ ...label(T_EYEBROW, 0.44, introFgAf(0.5)), textAlign: 'center', whiteSpace: 'normal' }}>{nameCase(cc.classicIntroTitle)}</p>
+            )
           )}
           {introMode === 'nameOnly' ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 30, textAlign: 'center' }}>
@@ -1694,16 +1699,29 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                 <p style={{ margin: 0, fontFamily: F_LABEL, fontSize: lfs(11), letterSpacing: '.06em', color: fgA('gallery', 0.5) }}>{galSwipeIdx + 1} / {galCount}</p>
               </div>
               <div style={{ margin: '26px 0 0', aspectRatio: '3/4', position: 'relative', overflow: 'hidden', background: DEEP_BEIGE }}>
-                <div key={galSwipeIdx} onClick={() => openLightbox(galSwipeIdx)} style={{ position: 'absolute', inset: 0, cursor: 'pointer', ...cropBg(galItem(galSwipeIdx), { background: DEEP_BEIGE }), animation: 'cl-swipe-fade .7s cubic-bezier(.22,.61,.36,1) both' }} />
+                {gallery.map((_, i) => (
+                  <div
+                    key={i}
+                    onClick={() => openLightbox(galSwipeIdx)}
+                    style={{
+                      position: 'absolute', inset: 0, cursor: 'pointer',
+                      ...cropBg(galItem(i), { background: DEEP_BEIGE }),
+                      opacity: i === galSwipeIdx ? 1 : 0,
+                      transform: i === galSwipeIdx ? 'scale(1)' : 'scale(1.035)',
+                      transition: 'opacity 1.1s cubic-bezier(.4,0,.2,1), transform 1.5s cubic-bezier(.22,.61,.36,1)',
+                      pointerEvents: i === galSwipeIdx ? 'auto' : 'none',
+                    }}
+                  />
+                ))}
               </div>
               <div style={{ display: 'flex', gap: 10, margin: '18px 0 0' }}>
-                <button type="button" onClick={() => setGalSwipeIdx((i) => (i + galCount - 1) % galCount)} style={{ flex: 1, padding: '11px 0', border: `1px solid ${fgA('gallery', 0.35)}`, background: 'transparent', fontFamily: F_LABEL, fontSize: lfs(10), letterSpacing: '.3em', color: fgC('gallery'), cursor: 'pointer' }}>{nameCase('PREV')}</button>
-                <button type="button" onClick={() => setGalSwipeIdx((i) => (i + 1) % galCount)} style={{ flex: 1, padding: '11px 0', border: 'none', background: INK, fontFamily: F_LABEL, fontSize: lfs(10), letterSpacing: '.3em', color: IVORY, cursor: 'pointer' }}>{nameCase('NEXT')}</button>
+                <button type="button" onClick={() => { setGalSwipeIdx((i) => (i + galCount - 1) % galCount); setGalSwipePaused(false) }} style={{ flex: 1, padding: '11px 0', border: `1px solid ${fgA('gallery', 0.35)}`, background: 'transparent', fontFamily: F_LABEL, fontSize: lfs(10), letterSpacing: '.3em', color: fgC('gallery'), cursor: 'pointer' }}>{nameCase('PREV')}</button>
+                <button type="button" onClick={() => { setGalSwipeIdx((i) => (i + 1) % galCount); setGalSwipePaused(false) }} style={{ flex: 1, padding: '11px 0', border: 'none', background: INK, fontFamily: F_LABEL, fontSize: lfs(10), letterSpacing: '.3em', color: IVORY, cursor: 'pointer' }}>{nameCase('NEXT')}</button>
               </div>
               {gallery.length > 0 && (
                 <div style={{ display: 'flex', gap: 8, margin: '18px 0 0', overflowX: 'auto' }}>
                   {gallery.map((_, i) => (
-                    <div key={i} onClick={() => setGalSwipeIdx(i)} style={{ flex: '0 0 54px', aspectRatio: '1/1', cursor: 'pointer', opacity: i === galSwipeIdx ? 1 : 0.45, ...cropBg(galItem(i), { background: DEEP_BEIGE }) }} />
+                    <div key={i} onClick={() => { setGalSwipeIdx(i); setGalSwipePaused(true) }} style={{ flex: '0 0 54px', aspectRatio: '1/1', cursor: 'pointer', opacity: i === galSwipeIdx ? 1 : 0.45, transition: 'opacity 0.3s', ...cropBg(galItem(i), { background: DEEP_BEIGE }) }} />
                   ))}
                 </div>
               )}

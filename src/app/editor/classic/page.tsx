@@ -103,6 +103,7 @@ export interface ClassicInvitationData {
     classicIntroTogetherFrameColor?: string // 오벌 프레임 색상 (선택 시 틴트)
     classicIntroTextColor?: string // 소개 프레임 '없음'일 때 텍스트 색상
     classicIntroTitle?: string // 신랑신부 소개 섹션 맨 위 헤딩 (선택)
+    classicIntroTitleStyle?: 'kicker' | 'title' // 헤딩 위계: 작게(킥커) / 크게(INFORMATION 스타일). 기본 kicker
     classicGroomIntro?: string // 신랑 소개 한마디 (각자)
     classicBrideIntro?: string // 신부 소개 한마디 (각자)
     classicGroomPhoto?: ClassicPhoto // 신랑 사진 (각자)

@@ -118,6 +118,7 @@ export interface EssayInvitationData {
   rsvpMealOption?: boolean
   rsvpShuttleOption?: boolean
   rsvpAfterPartyOption?: boolean
+  sharedRsvpEnabled?: boolean
   rsvpPhoneOption?: boolean
   rsvpSideDetail?: boolean
   rsvpSideDetailOptions?: { groomSelf?: boolean; groomFather?: boolean; groomMother?: boolean; brideSelf?: boolean; brideFather?: boolean; brideMother?: boolean }
@@ -652,6 +653,7 @@ function EssayEditorContent() {
           shareDescription={data.meta.description}
           templateType="our"
           kakaoImageRatio={data.meta.kakaoThumbnailRatio}
+          sharedRsvpEnabled={data.sharedRsvpEnabled}
         />
       )}
 

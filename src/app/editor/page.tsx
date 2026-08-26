@@ -924,6 +924,7 @@ function EditorContent() {
           invitationId={invitationId}
           currentSlug={savedSlug || undefined}
           onSlugChange={setSavedSlug}
+          sharedRsvpEnabled={invitation.sharedRsvpEnabled}
           groomName={invitation.groom.name}
           brideName={invitation.bride.name}
           weddingDate={invitation.wedding.date}

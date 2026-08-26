@@ -274,6 +274,7 @@ export interface ParentsInvitationData {
   rsvpMealOption?: boolean
   rsvpShuttleOption?: boolean
   rsvpAfterPartyOption?: boolean
+  sharedRsvpEnabled?: boolean
   rsvpSideOption?: boolean
   rsvpPhoneOption?: boolean
   rsvpSideDetail?: boolean
@@ -1060,6 +1061,7 @@ function ParentsEditorContent() {
           shareDescription={data.meta.description}
           templateType="parents"
           kakaoImageRatio={data.meta?.kakaoThumbnailRatio}
+          sharedRsvpEnabled={data.sharedRsvpEnabled}
         />
       )}
 

@@ -204,6 +204,7 @@ export interface SectionContents {
     showMealOption?: boolean
     showShuttleOption?: boolean
     showAfterPartyOption?: boolean
+    sharedRsvpEnabled?: boolean
     showSideOption?: boolean
     showPhoneOption?: boolean
     showSideDetail?: boolean
@@ -2397,6 +2398,7 @@ function TheSimpleEditorContent() {
                             <RsvpEditor
                               value={data.sections.rsvp}
                               variant={data.sectionVariants[id] ?? 1}
+                              shareSlug={savedSlug || invitationId || undefined}
                               onChange={(next) =>
                                 updateData({
                                   sections: { ...data.sections, rsvp: next },
@@ -2994,6 +2996,7 @@ function TheSimpleEditorContent() {
           venueAddress={data.wedding.venue.address}
           currentSlug={savedSlug || undefined}
           onSlugChange={setSavedSlug}
+          sharedRsvpEnabled={data.sections.rsvp.sharedRsvpEnabled}
           thumbnailUrl={data.meta.kakaoThumbnailCropped || data.meta.ogImageCropped || data.meta.kakaoThumbnail?.url || (typeof data.meta.ogImage === 'string' ? data.meta.ogImage : data.meta.ogImage?.url)}
           shareTitle={data.meta.title}
           shareDescription={data.meta.description}

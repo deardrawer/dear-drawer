@@ -1,14 +1,19 @@
 'use client'
 
+import { useState } from 'react'
 import type { SectionContents } from '../page'
 
 interface RsvpEditorProps {
   value: SectionContents['rsvp']
   variant?: number
+  /** 별도 RSVP 링크용 slug/id (저장 후에만 존재) */
+  shareSlug?: string
   onChange: (next: SectionContents['rsvp']) => void
 }
 
-export default function RsvpEditor({ value, variant = 1, onChange }: RsvpEditorProps) {
+export default function RsvpEditor({ value, variant = 1, shareSlug, onChange }: RsvpEditorProps) {
+  const [copied, setCopied] = useState(false)
+  const rsvpUrl = shareSlug ? `https://invite.deardrawer.com/i/${shareSlug}/rsvp` : ''
   return (
     <div className="space-y-3">
       <label className="block">
@@ -225,6 +230,58 @@ export default function RsvpEditor({ value, variant = 1, onChange }: RsvpEditorP
           className="mt-0.5 w-full border border-stone-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-stone-600 bg-white leading-relaxed resize-none"
         />
       </label>
+
+      {/* 별도 RSVP 링크 (청첩장 전체 대신 RSVP 폼만 공유) */}
+      <div className="pt-2 border-t border-stone-100">
+        <label className="flex items-center justify-between">
+          <span className="text-xs font-medium text-stone-700">별도 RSVP 링크</span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={value.sharedRsvpEnabled ?? false}
+            onClick={() => onChange({ ...value, sharedRsvpEnabled: !(value.sharedRsvpEnabled ?? false) })}
+            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+              value.sharedRsvpEnabled ? 'bg-stone-800' : 'bg-stone-200'
+            }`}
+          >
+            <span
+              className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                value.sharedRsvpEnabled ? 'translate-x-[18px]' : 'translate-x-[3px]'
+              }`}
+            />
+          </button>
+        </label>
+        <p className="mt-1 text-[11px] text-stone-400 leading-relaxed">
+          청첩장 전체 대신 <b className="text-stone-500">RSVP 폼만</b> 별도 URL로 공유합니다. 현재 RSVP 설정을 그대로 사용합니다.
+        </p>
+        {value.sharedRsvpEnabled && (
+          rsvpUrl ? (
+            <div className="mt-2 flex items-center gap-1.5">
+              <input
+                type="text"
+                readOnly
+                value={rsvpUrl}
+                onFocus={(e) => e.currentTarget.select()}
+                className="flex-1 min-w-0 border border-stone-200 rounded-md px-2 py-1.5 text-[11px] text-stone-600 bg-stone-50"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard?.writeText(rsvpUrl).then(() => {
+                    setCopied(true)
+                    setTimeout(() => setCopied(false), 2000)
+                  })
+                }}
+                className="shrink-0 rounded-md bg-stone-800 px-3 py-1.5 text-[11px] text-white"
+              >
+                {copied ? '복사됨' : '복사'}
+              </button>
+            </div>
+          ) : (
+            <p className="mt-2 text-[11px] text-amber-600">저장(발행) 후 링크가 생성됩니다.</p>
+          )
+        )}
+      </div>
     </div>
   )
 }

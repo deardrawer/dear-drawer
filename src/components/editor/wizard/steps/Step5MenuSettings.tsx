@@ -930,6 +930,14 @@ export default function Step5MenuSettings() {
 
             <div className="flex items-center gap-3">
               <Switch
+                checked={invitation.sharedRsvpEnabled ?? false}
+                onCheckedChange={(checked) => updateField('sharedRsvpEnabled', checked)}
+              />
+              <span className="text-sm text-gray-700">별도 RSVP 링크 (RSVP 폼만 공유 · 공유 메뉴에서 링크 복사)</span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Switch
                 checked={invitation.rsvpSideDetail ?? false}
                 onCheckedChange={(checked) => updateField('rsvpSideDetail', checked)}
               />

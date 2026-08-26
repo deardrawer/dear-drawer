@@ -1578,6 +1578,13 @@ export default function ParentsStep3Content({
             </div>
             <div className="flex items-center gap-3">
               <Switch
+                checked={data.sharedRsvpEnabled ?? false}
+                onCheckedChange={(checked) => updateData({ sharedRsvpEnabled: checked })}
+              />
+              <span className="text-sm text-gray-700">별도 RSVP 링크 (RSVP 폼만 공유 · 공유 메뉴에서 링크 복사)</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Switch
                 checked={data.rsvpPhoneOption ?? false}
                 onCheckedChange={(checked) => updateData({ rsvpPhoneOption: checked })}
               />

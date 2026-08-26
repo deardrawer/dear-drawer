@@ -449,6 +449,10 @@ export default function EssayStep3Details({ data, updateData, updateNestedData }
               <span className="text-sm text-gray-700">애프터파티 참석 여부 입력 허용</span>
             </div>
             <div className="flex items-center gap-3">
+              <Switch checked={data.sharedRsvpEnabled ?? false} onCheckedChange={v => updateData({ sharedRsvpEnabled: v })} />
+              <span className="text-sm text-gray-700">별도 RSVP 링크 (RSVP 폼만 공유 · 공유 메뉴에서 링크 복사)</span>
+            </div>
+            <div className="flex items-center gap-3">
               <Switch checked={data.rsvpPhoneOption ?? false} onCheckedChange={v => updateData({ rsvpPhoneOption: v })} />
               <span className="text-sm text-gray-700">연락처 뒷자리 4자리 입력</span>
             </div>

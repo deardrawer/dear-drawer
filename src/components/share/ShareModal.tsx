@@ -31,6 +31,8 @@ interface ShareModalProps {
   shareDescription?: string
   templateType?: 'our' | 'family' | 'parents' | 'magazine' | 'film' | 'record' | 'exhibit' | 'thankyou'
   kakaoImageRatio?: '3:4' | '1:1' | '3:2'
+  /** 별도 RSVP 링크가 켜져 있으면 'RSVP만 공유' 링크를 노출 */
+  sharedRsvpEnabled?: boolean
 }
 
 export default function ShareModal({
@@ -50,12 +52,14 @@ export default function ShareModal({
   shareDescription,
   templateType,
   kakaoImageRatio,
+  sharedRsvpEnabled,
 }: ShareModalProps) {
   const [slug, setSlug] = useState(currentSlug || '')
   const [slugError, setSlugError] = useState('')
   const [qrCodeUrl, setQrCodeUrl] = useState('')
   const [qrColor, setQrColor] = useState('#000000')
   const [copied, setCopied] = useState(false)
+  const [rsvpCopied, setRsvpCopied] = useState(false)
   const [isSavingSlug, setIsSavingSlug] = useState(false)
   const [slugSaved, setSlugSaved] = useState(false)
   const [activeTab, setActiveTab] = useState('share')
@@ -68,6 +72,8 @@ export default function ShareModal({
   const urlPath = templateType === 'parents' ? '/invite/' : '/i/'
   // 링크 복사·카카오 공유용: 현재 커스텀 슬러그 (사용자 변경 가능)
   const invitationUrl = `${baseUrl}${urlPath}${currentSlug || invitationId}`
+  // 별도 RSVP 링크: RSVP 전용 페이지는 항상 /i/{slug}/rsvp 에만 존재 (parents 포함)
+  const rsvpOnlyUrl = `${baseUrl}/i/${currentSlug || invitationId}/rsvp`
   // QR 전용: 항상 불변 시스템 id (기존/신규 모두 통일). 슬러그를 바꿔도 QR URL은 절대 변하지 않음.
   const qrUrl = `${baseUrl}${urlPath}${invitationId}`
 
@@ -352,6 +358,26 @@ export default function ShareModal({
                 </Button>
               </div>
             </div>
+
+            {sharedRsvpEnabled && (
+              <div className="space-y-2">
+                <Label>RSVP만 공유 (별도 링크)</Label>
+                <div className="flex gap-2">
+                  <Input value={rsvpOnlyUrl} readOnly className="flex-1" />
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      navigator.clipboard.writeText(rsvpOnlyUrl)
+                      setRsvpCopied(true)
+                      setTimeout(() => setRsvpCopied(false), 2000)
+                    }}
+                  >
+                    {rsvpCopied ? '복사됨!' : '복사'}
+                  </Button>
+                </div>
+                <p className="text-xs text-gray-400">청첩장 전체 대신 RSVP 폼만 보여주는 링크입니다. (친구 등 특정 대상에게 유용)</p>
+              </div>
+            )}
 
             <div className="flex gap-4 p-3 bg-gray-50 rounded-lg">
               <div className="flex-1 text-center">

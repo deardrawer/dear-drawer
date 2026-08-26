@@ -311,6 +311,14 @@ export default function FeedStep5Details({
 
             <div className="flex items-center gap-3">
               <ToggleSwitch
+                checked={data.sharedRsvpEnabled ?? false}
+                onChange={(checked) => updateData({ sharedRsvpEnabled: checked })}
+              />
+              <span className="text-sm text-gray-700">별도 RSVP 링크 (RSVP 폼만 공유 · 공유 메뉴에서 링크 복사)</span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <ToggleSwitch
                 checked={data.rsvpPhoneOption ?? false}
                 onChange={(checked) => updateData({ rsvpPhoneOption: checked })}
               />

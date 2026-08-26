@@ -413,6 +413,7 @@ export interface ParentsInvitationContent {
   rsvpMealOption?: boolean
   rsvpShuttleOption?: boolean
   rsvpAfterPartyOption?: boolean
+  sharedRsvpEnabled?: boolean
   rsvpSideOption?: boolean
   rsvpPhoneOption?: boolean
   rsvpSideDetail?: boolean

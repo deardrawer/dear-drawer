@@ -210,6 +210,7 @@ export default function ClassicStepContent({ data, updateNestedData, invitationI
             { key: 'classicRsvpShuttle', label: '대절버스 이용 여부 입력 받기' },
             { key: 'classicRsvpPhone', label: '연락처 뒷자리(4자리) 입력 받기' },
             { key: 'classicRsvpSideDetail', label: '본인 / 아버지 / 어머니 구분 받기' },
+            { key: 'sharedRsvpEnabled', label: '별도 RSVP 링크 (RSVP 폼만 공유 · 공유 메뉴에서 링크 복사)' },
           ] as const).map((opt) => (
             <label key={opt.key} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
               <input type="checkbox" checked={!!data.content[opt.key]} onChange={(e) => updateNestedData(`content.${opt.key}`, e.target.checked)} />

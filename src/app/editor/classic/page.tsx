@@ -163,6 +163,7 @@ export interface ClassicInvitationData {
     classicHostSide?: 'both' | 'groom' | 'bride' // 혼주 올림: 표시할 측
     classicRsvpMeal?: boolean // 식사 여부 입력
     classicRsvpShuttle?: boolean // 대절버스 이용 여부 입력
+    sharedRsvpEnabled?: boolean // 별도 RSVP 링크 (RSVP 폼만 공유)
     classicRsvpPhone?: boolean // 연락처 뒷자리
     classicRsvpSideDetail?: boolean // 본인/아버지/어머니 구분
     classicRsvpSideDetailOptions?: Record<string, boolean> // 표시할 하객 구분 항목 (신랑/신랑아버지/신랑어머니/신부/신부아버지/신부어머니)
@@ -640,6 +641,7 @@ function ClassicEditorContent() {
           thumbnailUrl={data.meta.kakaoThumbnail || classicGalleryUrl(data.gallery.images?.[0]) || ''}
           shareTitle={data.meta.title}
           shareDescription={data.meta.description}
+          sharedRsvpEnabled={data.content.sharedRsvpEnabled}
           templateType="our"
         />
       )}

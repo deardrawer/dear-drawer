@@ -1866,7 +1866,7 @@ function StaggeredGallerySection({ invitation, themeColors, showAllGallery, onSh
               return (
                 <div
                   key={i}
-                  className={`relative rounded overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform ${isLastOdd ? 'col-span-2 aspect-[4/3]' : 'aspect-square'}`}
+                  className={`relative rounded overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform ${isLastOdd ? 'col-span-2 aspect-square' : 'aspect-square'}`}
                   style={{
                     opacity: show ? 1 : 0,
                     transform: show ? 'translateY(0)' : `translateY(24px) scale(0.96)`,

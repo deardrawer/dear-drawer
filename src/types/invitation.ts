@@ -37,6 +37,11 @@ export interface Invitation {
   is_published: number;
   slug: string | null;
 
+  // 하객 사진 공유 (Google Drive) — 0017 마이그레이션
+  guest_share_enabled?: number | null;
+  guest_share_title?: string | null;
+  guest_share_description?: string | null;
+
   // 타임스탬프
   created_at: string;
   updated_at: string;

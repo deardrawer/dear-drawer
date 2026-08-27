@@ -26,7 +26,7 @@ interface CloudflareEnvWithDB {
 }
 
 // Cloudflare D1 데이터베이스 접근
-async function getDB(): Promise<D1Database> {
+export async function getDB(): Promise<D1Database> {
   const { env } = await getCloudflareContext() as { env: CloudflareEnvWithDB };
   if (!env.DB) {
     throw new Error("D1 Database not configured");

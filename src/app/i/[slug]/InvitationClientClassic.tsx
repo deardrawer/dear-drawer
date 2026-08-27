@@ -167,6 +167,8 @@ const CLASSIC_STYLES = `
   @keyframes cl-fade-soft { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes cl-main-in { from { opacity: 0; } to { opacity: 1; } }
   @keyframes cl-swipe-fade { 0% { opacity: 0; transform: scale(1.03); } 100% { opacity: 1; transform: scale(1); } }
+  @keyframes cl-thumb-hint { 0%, 100% { transform: translateX(0); opacity: .5; } 50% { transform: translateX(4px); opacity: .95; } }
+  .cl-thumb-scroll::-webkit-scrollbar { display: none; }
   @keyframes cl-emerge { 0% { opacity: 0; transform: translateY(24px) scale(.955); filter: blur(6px); } 55% { filter: blur(0); } 100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
   @keyframes cl-line-grow { 0% { transform: scaleY(0); opacity: 0; } 100% { transform: scaleY(1); opacity: 1; } }
   @keyframes cl-card-reveal { 0% { clip-path: inset(100% 0 0 0); } 100% { clip-path: inset(0 0 0 0); } }
@@ -281,7 +283,14 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   const [infoIdx, setInfoIdx] = useState(0)
   // 갤러리 '스와이프' 레이아웃 전용: 현재 표시 중인 사진 인덱스
   const [galSwipeIdx, setGalSwipeIdx] = useState(0)
-  const [galSwipePaused, setGalSwipePaused] = useState(false) // 썸네일 수동 선택 시 자동넘김 정지 (좌우 버튼으로 재개)
+  // 스와이프 갤러리 썸네일 스트립: 좌우 스크롤 가능 여부(끝단 페이드 힌트용)
+  const galThumbRef = useRef<HTMLDivElement>(null)
+  const [galThumbEdge, setGalThumbEdge] = useState({ l: false, r: false })
+  const measureGalThumbEdge = () => {
+    const el = galThumbRef.current
+    if (!el) return
+    setGalThumbEdge({ l: el.scrollLeft > 4, r: el.scrollLeft + el.clientWidth < el.scrollWidth - 4 })
+  }
   const [galExpanded, setGalExpanded] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const infoRef = useRef<HTMLDivElement>(null)
@@ -873,12 +882,35 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   const galCaption: string = cc.classicGalleryCaption || 'a quiet afternoon in June'
   const galCount = Math.max(gallery.length, 1)
 
-  // 스와이프 갤러리: 자동 전환 (약 3.4초 간격) — 사용자가 썸네일로 수동 선택하면 정지
+  // 스와이프 갤러리: 자동 전환 (약 3.4초 간격) — 썸네일/버튼으로 선택해도 계속 자동 전환
   useEffect(() => {
-    if (galType !== 'swipe' || galCount <= 1 || galSwipePaused) return
+    if (galType !== 'swipe' || galCount <= 1) return
     const id = window.setInterval(() => setGalSwipeIdx((i) => (i + 1) % galCount), 3400)
     return () => window.clearInterval(id)
-  }, [galType, galCount, galSwipePaused])
+  }, [galType, galCount])
+
+  // 썸네일 스트립 끝단 페이드 힌트 초기 측정 (갤러리 렌더/개수 변경 시)
+  useEffect(() => {
+    const el = galThumbRef.current
+    if (!el) return
+    setGalThumbEdge({ l: el.scrollLeft > 4, r: el.scrollLeft + el.clientWidth < el.scrollWidth - 4 })
+  }, [galType, galCount])
+
+  // 활성 썸네일이 화면 밖이면 스트립을 스크롤해 보이게 유지 (자동 전환 따라감, 나간 방향 끝에 정렬)
+  useEffect(() => {
+    if (galType !== 'swipe') return
+    const el = galThumbRef.current
+    if (!el) return
+    const child = el.children[galSwipeIdx] as HTMLElement | undefined
+    if (!child) return
+    const cLeft = child.offsetLeft
+    const cRight = cLeft + child.offsetWidth
+    if (cRight > el.scrollLeft + el.clientWidth) {
+      el.scrollTo({ left: cRight - el.clientWidth + 8, behavior: 'smooth' })
+    } else if (cLeft < el.scrollLeft) {
+      el.scrollTo({ left: Math.max(0, cLeft - 8), behavior: 'smooth' })
+    }
+  }, [galSwipeIdx, galType])
 
   // 트레이싱지 시작 문구 타자기 효과 (한 글자씩)
   useEffect(() => {
@@ -1715,14 +1747,31 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                 ))}
               </div>
               <div style={{ display: 'flex', gap: 10, margin: '18px 0 0' }}>
-                <button type="button" onClick={() => { setGalSwipeIdx((i) => (i + galCount - 1) % galCount); setGalSwipePaused(false) }} style={{ flex: 1, padding: '11px 0', border: `1px solid ${fgA('gallery', 0.35)}`, background: 'transparent', fontFamily: F_LABEL, fontSize: lfs(10), letterSpacing: '.3em', color: fgC('gallery'), cursor: 'pointer' }}>{nameCase('PREV')}</button>
-                <button type="button" onClick={() => { setGalSwipeIdx((i) => (i + 1) % galCount); setGalSwipePaused(false) }} style={{ flex: 1, padding: '11px 0', border: 'none', background: INK, fontFamily: F_LABEL, fontSize: lfs(10), letterSpacing: '.3em', color: IVORY, cursor: 'pointer' }}>{nameCase('NEXT')}</button>
+                <button type="button" onClick={() => setGalSwipeIdx((i) => (i + galCount - 1) % galCount)} style={{ flex: 1, padding: '11px 0', border: `1px solid ${fgA('gallery', 0.35)}`, background: 'transparent', fontFamily: F_LABEL, fontSize: lfs(10), letterSpacing: '.3em', color: fgC('gallery'), cursor: 'pointer' }}>{nameCase('PREV')}</button>
+                <button type="button" onClick={() => setGalSwipeIdx((i) => (i + 1) % galCount)} style={{ flex: 1, padding: '11px 0', border: 'none', background: INK, fontFamily: F_LABEL, fontSize: lfs(10), letterSpacing: '.3em', color: IVORY, cursor: 'pointer' }}>{nameCase('NEXT')}</button>
               </div>
               {gallery.length > 0 && (
-                <div style={{ display: 'flex', gap: 8, margin: '18px 0 0', overflowX: 'auto' }}>
-                  {gallery.map((_, i) => (
-                    <div key={i} onClick={() => { setGalSwipeIdx(i); setGalSwipePaused(true) }} style={{ flex: '0 0 54px', aspectRatio: '1/1', cursor: 'pointer', opacity: i === galSwipeIdx ? 1 : 0.45, transition: 'opacity 0.3s', ...cropBg(galItem(i), { background: DEEP_BEIGE }) }} />
-                  ))}
+                <div style={{ position: 'relative', margin: '18px 0 0' }}>
+                  <div
+                    ref={galThumbRef}
+                    onScroll={measureGalThumbEdge}
+                    className="cl-thumb-scroll"
+                    style={{ display: 'flex', gap: 8, overflowX: 'auto', scrollbarWidth: 'none', cursor: 'grab', scrollBehavior: 'smooth' }}
+                  >
+                    {gallery.map((_, i) => (
+                      <div key={i} onClick={() => setGalSwipeIdx(i)} style={{ flex: '0 0 54px', aspectRatio: '1/1', cursor: 'pointer', opacity: i === galSwipeIdx ? 1 : 0.45, transition: 'opacity 0.3s', ...cropBg(galItem(i), { background: DEEP_BEIGE }) }} />
+                    ))}
+                  </div>
+                  {/* 좌측 페이드 (오른쪽으로 스크롤된 상태에서만) */}
+                  {galThumbEdge.l && (
+                    <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 32, pointerEvents: 'none', background: `linear-gradient(to right, ${IVORY}, transparent)` }} />
+                  )}
+                  {/* 우측 페이드 + 스와이프 힌트 화살표 */}
+                  {galThumbEdge.r && (
+                    <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 48, pointerEvents: 'none', background: `linear-gradient(to left, ${IVORY}, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: 4 }}>
+                      <span style={{ fontFamily: F_LABEL, fontSize: 18, lineHeight: 1, color: fgA('gallery', 0.55), animation: 'cl-thumb-hint 1.4s ease-in-out infinite' }}>›</span>
+                    </div>
+                  )}
                 </div>
               )}
               <p className="cl-reveal cl-blur" style={{ margin: '24px 0 0', textAlign: 'center', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 16, color: fgA('gallery', 0.6) }}>{galCaption}</p>

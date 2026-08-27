@@ -1,0 +1,40 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "guest-drive-transfer-worker",
+  "main": "src/index.ts",
+  "compatibility_date": "2024-12-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "dear-drawer-db",
+      "database_id": "00fa0bde-3240-4e30-b1ff-8e90629d6512"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "R2",
+      "bucket_name": "dear-drawer-images"
+    }
+  ],
+  "queues": {
+    "consumers": [
+      {
+        "queue": "guest-drive-transfer",
+        "max_batch_size": 5,
+        "max_batch_timeout": 30,
+        "max_retries": 5,
+        "dead_letter_queue": "guest-drive-transfer-dlq"
+      }
+    ],
+    "producers": [
+      {
+        "queue": "guest-drive-transfer",
+        "binding": "DRIVE_QUEUE"
+      }
+    ]
+  }
+}

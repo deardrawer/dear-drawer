@@ -64,7 +64,7 @@ export function middleware(request: NextRequest) {
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net",
     "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net data:",
     "img-src 'self' data: blob: https://*.supabase.co https://*.r2.cloudflarestorage.com https://invite.deardrawer.com https://*.kakaocdn.net https://*.daumcdn.net http://*.daumcdn.net https://images.unsplash.com https://img.youtube.com https://www.googletagmanager.com https://www.google-analytics.com",
-    "connect-src 'self' https://*.supabase.co https://kapi.kakao.com https://dapi.kakao.com http://dapi.kakao.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com",
+    "connect-src 'self' https://*.supabase.co https://*.r2.cloudflarestorage.com https://kapi.kakao.com https://dapi.kakao.com http://dapi.kakao.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com",
     "frame-src 'self' https://accounts.kakao.com https://kapi.kakao.com https://www.youtube.com https://youtube.com https://maps.google.com https://www.google.com",
     "frame-ancestors 'self'",
   ].join("; ");

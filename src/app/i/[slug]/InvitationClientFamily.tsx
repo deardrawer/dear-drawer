@@ -1709,10 +1709,12 @@ function StaggeredGallerySectionFamily({ invitation, themeColors, showAllGallery
               const isExpanded = i >= 6
               const show = isExpanded ? expandedVisible : isVisible
               const delay = isExpanded ? (i - 6) * 0.18 : i * 0.18
+              // 사진 개수가 홀수면 마지막 사진을 전체 폭(가로형)으로 크게
+              const isLastOdd = i === visibleImages.length - 1 && visibleImages.length % 2 === 1
               return (
                 <div
                   key={i}
-                  className="relative aspect-square overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform"
+                  className={`relative overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform ${isLastOdd ? 'col-span-2 aspect-[4/3]' : 'aspect-square'}`}
                   style={{
                     opacity: show ? 1 : 0,
                     transform: show ? 'translateY(0)' : 'translateY(24px) scale(0.96)',
@@ -3407,7 +3409,7 @@ function InterviewSection({
           }}
         >
           <p
-            className={`profile-label-animated typo-body font-light inline-block ${titleRevealed ? 'revealed' : ''}`}
+            className={`profile-label-animated typo-body font-light inline-block whitespace-pre-line ${titleRevealed ? 'revealed' : ''}`}
             style={{ fontFamily: fonts.displayKr, color: themeColors.text }}
           >
             {interview.question}

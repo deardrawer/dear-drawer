@@ -19,6 +19,7 @@ export default function SharedRsvpLinkField({
   shareTitle,
   shareDesc,
   shareImage,
+  pagePhoto,
   onShareChange,
 }: {
   enabled: boolean
@@ -32,8 +33,10 @@ export default function SharedRsvpLinkField({
   shareDesc?: string
   /** 카카오 공유 썸네일 URL (커스텀) */
   shareImage?: string
-  /** 공유 제목/설명/썸네일 변경 콜백 (없으면 입력칸 미노출) */
-  onShareChange?: (patch: { shareTitle?: string; shareDesc?: string; shareImage?: string }) => void
+  /** RSVP 링크 페이지 상단 사진 URL (커스텀) */
+  pagePhoto?: string
+  /** 공유 제목/설명/썸네일/상단사진 변경 콜백 (없으면 입력칸 미노출) */
+  onShareChange?: (patch: { shareTitle?: string; shareDesc?: string; shareImage?: string; pagePhoto?: string }) => void
 }) {
   const [copied, setCopied] = useState(false)
   const [urlSlug, setUrlSlug] = useState('')
@@ -80,6 +83,19 @@ export default function SharedRsvpLinkField({
           {copied ? '복사됨' : '복사'}
         </button>
       </div>
+
+      {onShareChange && (
+        <div className="space-y-1.5 rounded-md border border-gray-200 bg-gray-50/60 p-2.5">
+          <RsvpShareThumb
+            invitationId={invitationId || urlId || slug}
+            value={pagePhoto}
+            onChange={(url) => onShareChange({ pagePhoto: url })}
+            label="RSVP 링크 상단 사진 (선택)"
+            hint="RSVP 페이지 맨 위에 원형으로 표시됩니다. 비우면 표시되지 않습니다."
+            circle
+          />
+        </div>
+      )}
 
       {onShareChange && (
         <div className="space-y-1.5 rounded-md border border-gray-200 bg-gray-50/60 p-2.5">

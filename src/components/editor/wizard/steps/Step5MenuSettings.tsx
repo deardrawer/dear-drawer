@@ -891,10 +891,12 @@ export default function Step5MenuSettings() {
             shareTitle={invitation.sharedRsvpShareTitle}
             shareDesc={invitation.sharedRsvpShareDesc}
             shareImage={invitation.sharedRsvpShareImage}
+            pagePhoto={invitation.sharedRsvpPhoto}
             onShareChange={(p) => {
               if ('shareTitle' in p) updateField('sharedRsvpShareTitle', p.shareTitle ?? '')
               else if ('shareDesc' in p) updateField('sharedRsvpShareDesc', p.shareDesc ?? '')
               else if ('shareImage' in p) updateField('sharedRsvpShareImage', p.shareImage ?? '')
+              else if ('pagePhoto' in p) updateField('sharedRsvpPhoto', p.pagePhoto ?? '')
             }}
           />
         </div>

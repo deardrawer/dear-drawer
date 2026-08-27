@@ -278,6 +278,7 @@ export interface ParentsInvitationData {
   sharedRsvpShareTitle?: string
   sharedRsvpShareDesc?: string
   sharedRsvpShareImage?: string
+  sharedRsvpPhoto?: string
   rsvpSideOption?: boolean
   rsvpPhoneOption?: boolean
   rsvpSideDetail?: boolean

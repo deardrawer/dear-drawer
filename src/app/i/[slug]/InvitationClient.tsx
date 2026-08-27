@@ -1861,15 +1861,17 @@ function StaggeredGallerySection({ invitation, themeColors, showAllGallery, onSh
               const isExpanded = i >= 6
               const show = isExpanded ? expandedVisible : isVisible
               const delay = isExpanded ? (i - 6) * 0.18 : i * 0.18
+              // 사진 개수가 홀수면 마지막 사진을 전체 폭(가로형)으로 크게
+              const isLastOdd = i === visibleImages.length - 1 && visibleImages.length % 2 === 1
               return (
                 <div
                   key={i}
-                  className="relative aspect-square rounded overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform"
+                  className={`relative rounded overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform ${isLastOdd ? 'col-span-2 aspect-[4/3]' : 'aspect-square'}`}
                   style={{
                     opacity: show ? 1 : 0,
                     transform: show ? 'translateY(0)' : `translateY(24px) scale(0.96)`,
                     filter: show ? 'blur(0px)' : 'blur(5px)',
-                    transition: `opacity 1.2s cubic-bezier(0.22, 1, 0.36, 1) ${delay}s, transform 1.2s cubic-bezier(0.22, 1, 0.36, 1) ${delay}s, filter 1.2s cubic-bezier(0.22, 1, 0.36, 1) ${delay}s`,
+                    transition: (() => { const d = isLastOdd ? '2.4s' : '1.2s'; return `opacity ${d} cubic-bezier(0.22, 1, 0.36, 1) ${delay}s, transform ${d} cubic-bezier(0.22, 1, 0.36, 1) ${delay}s, filter ${d} cubic-bezier(0.22, 1, 0.36, 1) ${delay}s` })(),
                   }}
                   onClick={() => onOpenLightbox?.(i)}
                 >
@@ -3146,7 +3148,7 @@ function InterviewSection({
           }}
         >
           <p
-            className={`profile-label-animated text-sm font-light inline-block ${titleRevealed ? 'revealed' : ''}`}
+            className={`profile-label-animated text-sm font-light inline-block whitespace-pre-line ${titleRevealed ? 'revealed' : ''}`}
             style={{ fontFamily: fonts.displayKr, color: themeColors.text }}
           >
             {interview.question}

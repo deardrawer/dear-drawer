@@ -99,6 +99,10 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
               })}
             </div>
           </div>
+          <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+            <input type="checkbox" checked={data.content.classicLetterSwap === true} onChange={(e) => updateNestedData('content.classicLetterSwap', e.target.checked)} />
+            서명에서 신랑·신부 순서 바꾸기
+          </label>
           {(data.content.classicLetterSign || 'parents') === 'hosts' && (
             <div>
               <span className="text-sm font-medium text-gray-700">혼주 (표시할 측)</span>
@@ -239,6 +243,10 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
           <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
             <input type="checkbox" checked={data.content.classicIntroShowParents !== false} onChange={(e) => updateNestedData('content.classicIntroShowParents', e.target.checked)} />
             소개 상단에 부모님 성함 표시
+          </label>
+          <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+            <input type="checkbox" checked={data.content.classicIntroSwap === true} onChange={(e) => updateNestedData('content.classicIntroSwap', e.target.checked)} />
+            신랑·신부 순서 바꾸기
           </label>
           {data.content.classicIntroShowParents !== false && (
             <div className="pl-6 space-y-3">
@@ -640,6 +648,22 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
           오시는 길
         </h3>
         <div className="rounded-lg border border-gray-200 p-4 bg-gray-50/50 space-y-3">
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">지도 위치</Label>
+            <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+              {([
+                { id: 'top', label: '상단' },
+                { id: 'bottom', label: '하단' },
+              ] as const).map((opt) => {
+                const active = (data.content.classicDirectionsMapPosition || 'top') === opt.id
+                return (
+                  <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicDirectionsMapPosition', opt.id)} className={`px-5 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                    {opt.label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
           <div className="space-y-1.5">
             <Label className="text-sm font-medium">배경 사진 (선택)</Label>
             <p className="text-[10px] text-gray-400 leading-tight">상단 배경으로 쓸 사진. 비우면 갤러리 첫 사진이 흑백으로 사용됩니다.</p>

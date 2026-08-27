@@ -415,6 +415,7 @@ export interface InvitationContent {
   sharedRsvpShareTitle?: string  // 별도 RSVP 링크 카카오 공유 제목 (커스텀)
   sharedRsvpShareDesc?: string   // 별도 RSVP 링크 카카오 공유 설명 (커스텀)
   sharedRsvpShareImage?: string  // 별도 RSVP 링크 카카오 공유 썸네일 URL (커스텀)
+  sharedRsvpPhoto?: string        // 별도 RSVP 링크 페이지 상단 사진 URL (커스텀)
   rsvpPhoneOption?: boolean      // 연락처 뒷자리 4자리 입력 (기본 false)
   rsvpSideDetail?: boolean       // 부모님 하객 구분 (기본 false)
   rsvpSideDetailOptions?: { groomSelf?: boolean; groomFather?: boolean; groomMother?: boolean; brideSelf?: boolean; brideFather?: boolean; brideMother?: boolean }

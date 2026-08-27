@@ -209,6 +209,7 @@ export interface SectionContents {
     sharedRsvpShareTitle?: string
     sharedRsvpShareDesc?: string
     sharedRsvpShareImage?: string
+    sharedRsvpPhoto?: string
     showSideOption?: boolean
     showPhoneOption?: boolean
     showSideDetail?: boolean

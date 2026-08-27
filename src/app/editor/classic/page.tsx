@@ -104,6 +104,8 @@ export interface ClassicInvitationData {
     classicIntroTextColor?: string // 소개 프레임 '없음'일 때 텍스트 색상
     classicIntroTitle?: string // 신랑신부 소개 섹션 맨 위 헤딩 (선택)
     classicIntroTitleStyle?: 'kicker' | 'title' // 헤딩 위계: 작게(킥커) / 크게(INFORMATION 스타일). 기본 kicker
+    classicIntroSwap?: boolean // 소개 섹션에서 신랑↔신부 순서 바꾸기 (기본 false)
+    classicLetterSwap?: boolean // 인사말 서명에서 신랑↔신부 순서 바꾸기 (기본 false)
     classicGroomIntro?: string // 신랑 소개 한마디 (각자)
     classicBrideIntro?: string // 신부 소개 한마디 (각자)
     classicGroomPhoto?: ClassicPhoto // 신랑 사진 (각자)
@@ -138,6 +140,7 @@ export interface ClassicInvitationData {
     classicDirectionsOverlayOpacity?: number // 오시는길 배경사진 오버레이 투명도 0~1 (기본 0)
     classicDirectionsExtraTitle?: string // 오시는길 추가 안내 제목 (선택)
     classicDirectionsExtraBody?: string // 오시는길 추가 안내 내용 (선택)
+    classicDirectionsMapPosition?: 'top' | 'bottom' // 오시는길 지도 위치: 상단(기본) / 하단
     // 커플소개 섹션 배경
     classicIntroSectionBg?: ClassicPhoto
     classicIntroSectionOverlayColor?: string
@@ -172,11 +175,15 @@ export interface ClassicInvitationData {
     sharedRsvpShareTitle?: string // 별도 RSVP 링크 카카오 공유 제목 (커스텀)
     sharedRsvpShareDesc?: string // 별도 RSVP 링크 카카오 공유 설명 (커스텀)
     sharedRsvpShareImage?: string // 별도 RSVP 링크 카카오 공유 썸네일 URL (커스텀)
+    sharedRsvpPhoto?: string // 별도 RSVP 링크 페이지 상단 사진 URL (커스텀)
     classicRsvpPhone?: boolean // 연락처 뒷자리
     classicRsvpSideDetail?: boolean // 본인/아버지/어머니 구분
     classicRsvpSideDetailOptions?: Record<string, boolean> // 표시할 하객 구분 항목 (신랑/신랑아버지/신랑어머니/신부/신부아버지/신부어머니)
     classicRsvpNotice?: string // 상단 안내문구
     classicRsvpMessagePlaceholder?: string // 축하메시지 placeholder
+    classicRsvpInviteText?: string // RSVP 카드 제목 (기본 '초대합니다')
+    classicRsvpAttendText?: string // 참석 버튼 텍스트 (기본 '참석합니다')
+    classicRsvpDeclineText?: string // 불참 버튼 텍스트 (기본 '참석 어렵습니다')
     classicLightboxVariant?: number // 갤러리 라이트박스 스타일 (1=에디토리얼 2=글라스 4=룩북 5=시네마 6=미니멀 7=매거진 9=필름)
     classicGalleryType?: 'default' | 'album' | 'fullbleed' | 'swipe' | 'film' // 갤러리 레이아웃 타입
     classicGalleryCaption?: string // 갤러리 캡션 (이탤릭)

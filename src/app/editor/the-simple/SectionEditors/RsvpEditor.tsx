@@ -288,6 +288,18 @@ export default function RsvpEditor({ value, variant = 1, shareSlug, invitationId
         )}
         {value.sharedRsvpEnabled && rsvpUrl && (
           <div className="mt-2 space-y-1.5 rounded-md border border-stone-200 bg-stone-50/60 p-2.5">
+            <RsvpShareThumb
+              invitationId={invitationId || shareSlug}
+              value={value.sharedRsvpPhoto}
+              onChange={(url) => onChange({ ...value, sharedRsvpPhoto: url })}
+              label="RSVP 링크 상단 사진 (선택)"
+              hint="RSVP 페이지 맨 위에 원형으로 표시됩니다. 비우면 표시되지 않습니다."
+              circle
+            />
+          </div>
+        )}
+        {value.sharedRsvpEnabled && rsvpUrl && (
+          <div className="mt-2 space-y-1.5 rounded-md border border-stone-200 bg-stone-50/60 p-2.5">
             <p className="text-[11px] font-medium text-stone-600">카카오톡 공유 정보</p>
             <input
               type="text"

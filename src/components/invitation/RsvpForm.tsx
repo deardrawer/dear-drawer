@@ -28,12 +28,15 @@ interface RsvpFormProps {
   }
   notice?: string
   messagePlaceholder?: string
+  /** 제출 완료 화면에 표시할 '청첩장 보러가기' 링크 (별도 RSVP 링크 페이지용) */
+  inviteUrl?: string
 }
 
 export default function RsvpForm({
   invitationId,
   primaryColor,
   onSuccess,
+  inviteUrl,
   allowGuestCount = true,
   showMealOption = false,
   showShuttleOption = false,
@@ -147,6 +150,16 @@ export default function RsvpForm({
           <p className="text-sm text-gray-500 mt-1">
             결혼식에서 뵙겠습니다.
           </p>
+        )}
+        {inviteUrl && (
+          <a
+            href={inviteUrl}
+            className="mt-5 inline-flex items-center justify-center gap-1.5 rounded-xl border px-5 py-2.5 text-sm transition-colors"
+            style={{ borderColor: `${primaryColor}55`, color: primaryColor }}
+          >
+            청첩장 보러가기
+            <span aria-hidden>→</span>
+          </a>
         )}
       </div>
     )

@@ -38,6 +38,8 @@ export interface NormalizedRsvpSettings {
   shareDescription?: string
   /** 별도 RSVP 링크 카카오 공유 썸네일 URL (커스텀, 미설정 시 자동) */
   shareImage?: string
+  /** 별도 RSVP 링크 페이지 상단 사진 URL (커스텀, 미설정 시 미표시) */
+  pagePhoto?: string
 }
 
 const DEFAULT_PRIMARY = '#b0895f'
@@ -71,6 +73,7 @@ export function normalizeRsvpSettings(
       shareTitle: (typeof r.sharedRsvpShareTitle === 'string' && r.sharedRsvpShareTitle) || undefined,
       shareDescription: (typeof r.sharedRsvpShareDesc === 'string' && r.sharedRsvpShareDesc) || undefined,
       shareImage: (typeof r.sharedRsvpShareImage === 'string' && r.sharedRsvpShareImage) || undefined,
+      pagePhoto: (typeof r.sharedRsvpPhoto === 'string' && r.sharedRsvpPhoto) || undefined,
     }
   }
 
@@ -95,6 +98,7 @@ export function normalizeRsvpSettings(
       shareTitle: (typeof cc.sharedRsvpShareTitle === 'string' && cc.sharedRsvpShareTitle) || undefined,
       shareDescription: (typeof cc.sharedRsvpShareDesc === 'string' && cc.sharedRsvpShareDesc) || undefined,
       shareImage: (typeof cc.sharedRsvpShareImage === 'string' && cc.sharedRsvpShareImage) || undefined,
+      pagePhoto: (typeof cc.sharedRsvpPhoto === 'string' && cc.sharedRsvpPhoto) || undefined,
     }
   }
 
@@ -118,5 +122,6 @@ export function normalizeRsvpSettings(
     shareTitle: (typeof c.sharedRsvpShareTitle === 'string' && c.sharedRsvpShareTitle) || undefined,
     shareDescription: (typeof c.sharedRsvpShareDesc === 'string' && c.sharedRsvpShareDesc) || undefined,
     shareImage: (typeof c.sharedRsvpShareImage === 'string' && c.sharedRsvpShareImage) || undefined,
+    pagePhoto: (typeof c.sharedRsvpPhoto === 'string' && c.sharedRsvpPhoto) || undefined,
   }
 }

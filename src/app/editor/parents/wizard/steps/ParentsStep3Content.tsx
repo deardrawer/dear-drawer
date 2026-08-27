@@ -1567,10 +1567,12 @@ export default function ParentsStep3Content({
           shareTitle={data.sharedRsvpShareTitle}
           shareDesc={data.sharedRsvpShareDesc}
           shareImage={data.sharedRsvpShareImage}
+          pagePhoto={data.sharedRsvpPhoto}
           onShareChange={(p) => updateData(
             'shareTitle' in p ? { sharedRsvpShareTitle: p.shareTitle }
               : 'shareDesc' in p ? { sharedRsvpShareDesc: p.shareDesc }
-              : { sharedRsvpShareImage: p.shareImage }
+              : 'shareImage' in p ? { sharedRsvpShareImage: p.shareImage }
+              : { sharedRsvpPhoto: p.pagePhoto }
           )}
         />
 

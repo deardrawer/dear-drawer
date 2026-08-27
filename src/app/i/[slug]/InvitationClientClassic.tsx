@@ -371,6 +371,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   // 오시는 길 배경사진 오버레이 (색상 + 투명도, 기본 0 = 오버레이 없음)
   const dirOverlay: string = cc.classicDirectionsOverlayColor || '#1C100D'
   const dirOverlayOp: number = typeof cc.classicDirectionsOverlayOpacity === 'number' ? Math.max(0, Math.min(1, cc.classicDirectionsOverlayOpacity)) : 0
+  const dirMapBottom = cc.classicDirectionsMapPosition === 'bottom' // 오시는길 지도 하단 배치
   // 디자인 커스텀 스케일 (THE SIMPLE 참조): 본문 글자 / 상단문구. 기본 1
   const bodyScale: number = typeof cc.classicFontScale === 'number' ? Math.max(0.85, Math.min(1.3, cc.classicFontScale)) : 1
   const labelScale: number = typeof cc.classicEyebrowScale === 'number' ? Math.max(0.85, Math.min(1.3, cc.classicEyebrowScale)) : 1
@@ -423,6 +424,15 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   // 소개 한마디: 미설정 시 미리보기에서는 샘플 문구 노출(위치 확인용), 실제 페이지에서는 숨김
   const groomIntro: string = cc.classicGroomIntro || (isPreview ? '다정하고 든든한 사람입니다.' : '')
   const brideIntro: string = cc.classicBrideIntro || (isPreview ? '따뜻하고 밝은 사람입니다.' : '')
+  // 신랑↔신부 순서 바꾸기 — 소개 섹션 / 인사말 서명 각각 독립 (기본: 신랑 먼저)
+  const introSwap = cc.classicIntroSwap === true
+  const letterSwap = cc.classicLetterSwap === true
+  const pGroom = { side: groom, ko: groomKo, title: groomTitle, label: 'GROOM' as const, photo: cc.classicGroomPhoto, intro: groomIntro }
+  const pBride = { side: bride, ko: brideKo, title: brideTitle, label: 'BRIDE' as const, photo: cc.classicBridePhoto, intro: brideIntro }
+  const introA = introSwap ? pBride : pGroom
+  const introB = introSwap ? pGroom : pBride
+  const letterA = letterSwap ? pBride : pGroom
+  const letterB = letterSwap ? pGroom : pBride
   // 인사말 카드 프레임 (웨이브 / 레이스 / 종이 / 없음)
   const letterNoFrame = cc.classicLetterFrame === 'none'
   const letterPaper = cc.classicLetterFrame === 'paper' // 풀블리드 사진 위 아이보리 종이 카드(이중 헤어라인)
@@ -1496,7 +1506,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                 <div className="cl-reveal cl-line" data-delay="760" style={{ width: 1, height: 22, background: inkA(0.25), margin: '22px auto 18px' }} />
                 <div className="cl-reveal cl-blur" data-delay="900" style={{ display: 'flex', flexDirection: 'column', gap: 7, fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.7) }}>
                   {letterSign === 'couple' ? (
-                    <p style={{ margin: 0 }}><span style={{ color: INK }}>{groomKo}</span> &amp; <span style={{ color: INK }}>{brideKo}</span> 올림</p>
+                    <p style={{ margin: 0 }}><span style={{ color: INK }}>{letterA.ko}</span> &amp; <span style={{ color: INK }}>{letterB.ko}</span> 올림</p>
                   ) : letterSign === 'hosts' ? (
                     hostSide === 'groom' ? (
                       <p style={{ margin: 0 }}><span style={{ color: INK }}>{parentsJsx(groom.father, groom.mother)}</span> 올림</p>
@@ -1504,15 +1514,15 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                       <p style={{ margin: 0 }}><span style={{ color: INK }}>{parentsJsx(bride.father, bride.mother)}</span> 올림</p>
                     ) : (
                       <>
-                        {parentsJsx(groom.father, groom.mother) && <p style={{ margin: 0 }}>신랑측 혼주 <span style={{ color: INK }}>{parentsJsx(groom.father, groom.mother)}</span></p>}
-                        {parentsJsx(bride.father, bride.mother) && <p style={{ margin: 0 }}>신부측 혼주 <span style={{ color: INK }}>{parentsJsx(bride.father, bride.mother)}</span></p>}
+                        {parentsJsx(letterA.side.father, letterA.side.mother) && <p style={{ margin: 0 }}>{letterA.label === 'GROOM' ? '신랑측 혼주' : '신부측 혼주'} <span style={{ color: INK }}>{parentsJsx(letterA.side.father, letterA.side.mother)}</span></p>}
+                        {parentsJsx(letterB.side.father, letterB.side.mother) && <p style={{ margin: 0 }}>{letterB.label === 'GROOM' ? '신랑측 혼주' : '신부측 혼주'} <span style={{ color: INK }}>{parentsJsx(letterB.side.father, letterB.side.mother)}</span></p>}
                         <p style={{ margin: '2px 0 0' }}>올림</p>
                       </>
                     )
                   ) : (
                     <>
-                      <p style={{ margin: 0 }}>{parentsJsx(groom.father, groom.mother) ? <>{parentsJsx(groom.father, groom.mother)} 의 {groomTitle} </> : `${groomTitle} `}<span style={{ color: INK }}>{groomKo}</span></p>
-                      <p style={{ margin: 0 }}>{parentsJsx(bride.father, bride.mother) ? <>{parentsJsx(bride.father, bride.mother)} 의 {brideTitle} </> : `${brideTitle} `}<span style={{ color: INK }}>{brideKo}</span></p>
+                      <p style={{ margin: 0 }}>{parentsJsx(letterA.side.father, letterA.side.mother) ? <>{parentsJsx(letterA.side.father, letterA.side.mother)} 의 {letterA.title} </> : `${letterA.title} `}<span style={{ color: INK }}>{letterA.ko}</span></p>
+                      <p style={{ margin: 0 }}>{parentsJsx(letterB.side.father, letterB.side.mother) ? <>{parentsJsx(letterB.side.father, letterB.side.mother)} 의 {letterB.title} </> : `${letterB.title} `}<span style={{ color: INK }}>{letterB.ko}</span></p>
                     </>
                   )}
                 </div>
@@ -1549,10 +1559,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           )}
           {introMode === 'nameOnly' ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 30, textAlign: 'center' }}>
-              {([
-                { side: groom, ko: groomKo, title: groomTitle, label: 'GROOM' },
-                { side: bride, ko: brideKo, title: brideTitle, label: 'BRIDE' },
-              ] as const).map((p, i) => (
+              {[introA, introB].map((p, i) => (
                 <div key={p.label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                   {!(cc.classicIntroShowParents !== false && parentsJsx(p.side.father, p.side.mother)) && <p className="cl-reveal cl-up" data-delay={String(160 + i * 260)} style={label(T_ROLE, 0.42, introFgAf(0.45))}>{nameCase(p.label)}</p>}
                   {cc.classicIntroShowParents !== false && parentsJsx(p.side.father, p.side.mother) && (
@@ -1571,25 +1578,25 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
               return (
               <>
                 <div className="cl-reveal cl-l" data-delay="180" style={boxSt}>
-                  <div style={{ ...photoSt, ...cropBg(cc.classicGroomPhoto, { background: DEEP_BEIGE }) }} />
+                  <div style={{ ...photoSt, ...cropBg(introA.photo, { background: DEEP_BEIGE }) }} />
                   <div className="cl-reveal cl-up" data-delay="380" style={{ width: '100%', minWidth: 0, textAlign: 'center' }}>
-                    {!(cc.classicIntroShowParents !== false && parentsJsx(groom.father, groom.mother)) && <p style={{ ...label(T_ROLE, 0.4, inkA(0.45)), textAlign: 'center' }}>{nameCase('GROOM')}</p>}
-                    <p style={{ margin: '3px 0 0', fontFamily: F_BODY, fontSize: bfs(18), letterSpacing: '.01em', color: INK }}>{groomKo}</p>
-                    {cc.classicIntroShowParents !== false && parentsJsx(groom.father, groom.mother) && (
-                      <p style={{ margin: '2px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.55) }}>{parentsJsx(groom.father, groom.mother)} 의 {groomTitle}</p>
+                    {!(cc.classicIntroShowParents !== false && parentsJsx(introA.side.father, introA.side.mother)) && <p style={{ ...label(T_ROLE, 0.4, inkA(0.45)), textAlign: 'center' }}>{nameCase(introA.label)}</p>}
+                    <p style={{ margin: '3px 0 0', fontFamily: F_BODY, fontSize: bfs(18), letterSpacing: '.01em', color: INK }}>{introA.ko}</p>
+                    {cc.classicIntroShowParents !== false && parentsJsx(introA.side.father, introA.side.mother) && (
+                      <p style={{ margin: '2px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.55) }}>{parentsJsx(introA.side.father, introA.side.mother)} 의 {introA.title}</p>
                     )}
-                    {groomIntro && <p style={{ margin: '12px 0 0', width: '100%', fontFamily: F_BODY, fontSize: bfs(12.5), fontWeight: 500, lineHeight: 1.8, color: INK, textAlign: 'center', wordBreak: 'keep-all', overflowWrap: 'anywhere', whiteSpace: 'pre-line' }}>{groomIntro}</p>}
+                    {introA.intro && <p style={{ margin: '12px 0 0', width: '100%', fontFamily: F_BODY, fontSize: bfs(12.5), fontWeight: 500, lineHeight: 1.8, color: INK, textAlign: 'center', wordBreak: 'keep-all', overflowWrap: 'anywhere', whiteSpace: 'pre-line' }}>{introA.intro}</p>}
                   </div>
                 </div>
                 <div className="cl-reveal cl-r" data-delay="340" style={boxSt}>
-                  <div style={{ ...photoSt, ...cropBg(cc.classicBridePhoto, { background: DEEP_BEIGE }) }} />
+                  <div style={{ ...photoSt, ...cropBg(introB.photo, { background: DEEP_BEIGE }) }} />
                   <div className="cl-reveal cl-up" data-delay="520" style={{ width: '100%', minWidth: 0, textAlign: 'center' }}>
-                    {!(cc.classicIntroShowParents !== false && parentsJsx(bride.father, bride.mother)) && <p style={{ ...label(T_ROLE, 0.4, inkA(0.45)), textAlign: 'center' }}>{nameCase('BRIDE')}</p>}
-                    <p style={{ margin: '3px 0 0', fontFamily: F_BODY, fontSize: bfs(18), letterSpacing: '.01em', color: INK }}>{brideKo}</p>
-                    {cc.classicIntroShowParents !== false && parentsJsx(bride.father, bride.mother) && (
-                      <p style={{ margin: '2px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.55) }}>{parentsJsx(bride.father, bride.mother)} 의 {brideTitle}</p>
+                    {!(cc.classicIntroShowParents !== false && parentsJsx(introB.side.father, introB.side.mother)) && <p style={{ ...label(T_ROLE, 0.4, inkA(0.45)), textAlign: 'center' }}>{nameCase(introB.label)}</p>}
+                    <p style={{ margin: '3px 0 0', fontFamily: F_BODY, fontSize: bfs(18), letterSpacing: '.01em', color: INK }}>{introB.ko}</p>
+                    {cc.classicIntroShowParents !== false && parentsJsx(introB.side.father, introB.side.mother) && (
+                      <p style={{ margin: '2px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.55) }}>{parentsJsx(introB.side.father, introB.side.mother)} 의 {introB.title}</p>
                     )}
-                    {brideIntro && <p style={{ margin: '12px 0 0', width: '100%', fontFamily: F_BODY, fontSize: bfs(12.5), fontWeight: 500, lineHeight: 1.8, color: INK, textAlign: 'center', wordBreak: 'keep-all', overflowWrap: 'anywhere', whiteSpace: 'pre-line' }}>{brideIntro}</p>}
+                    {introB.intro && <p style={{ margin: '12px 0 0', width: '100%', fontFamily: F_BODY, fontSize: bfs(12.5), fontWeight: 500, lineHeight: 1.8, color: INK, textAlign: 'center', wordBreak: 'keep-all', overflowWrap: 'anywhere', whiteSpace: 'pre-line' }}>{introB.intro}</p>}
                   </div>
                 </div>
               </>
@@ -1598,26 +1605,26 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             return (
             <>
               <div className="cl-reveal cl-l" data-delay="180" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 16, ...(eachBox ? { padding: '22px 22px', background: PAPER, border: `1px solid ${inkA(0.24)}`, boxShadow: `inset 0 0 0 3px ${PAPER}, inset 0 0 0 4px ${inkA(0.12)}` } : eachNoFrame ? { padding: '2px 4px' } : { aspectRatio: eachFrame.aspect, padding: eachFrame.pad, backgroundImage: `url(${eachFrame.img})`, backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', filter: 'drop-shadow(0 14px 18px rgba(53,23,20,.12))' }) }}>
-                <div style={{ flex: '0 0 84px', height: 106, borderRadius: 2, ...cropBg(cc.classicGroomPhoto, { background: DEEP_BEIGE }), filter: 'saturate(.85)' }} />
+                <div style={{ flex: '0 0 84px', height: 106, borderRadius: 2, ...cropBg(introA.photo, { background: DEEP_BEIGE }), filter: 'saturate(.85)' }} />
                 <div className="cl-reveal cl-up" data-delay="380" style={{ flex: 1, minWidth: 0 }}>
-                  {!(cc.classicIntroShowParents !== false && parentsJsx(groom.father, groom.mother)) && <p style={label(T_ROLE, 0.4, inkA(0.45))}>{nameCase('GROOM')}</p>}
-                  <p style={{ margin: '3px 0 0', fontFamily: F_BODY, fontSize: bfs(18), letterSpacing: '.01em', color: INK }}>{groomKo}</p>
-                  {cc.classicIntroShowParents !== false && parentsJsx(groom.father, groom.mother) && (
-                    <p style={{ margin: '2px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.55), whiteSpace: 'nowrap' }}>{parentsJsx(groom.father, groom.mother)} 의 {groomTitle}</p>
+                  {!(cc.classicIntroShowParents !== false && parentsJsx(introA.side.father, introA.side.mother)) && <p style={label(T_ROLE, 0.4, inkA(0.45))}>{nameCase(introA.label)}</p>}
+                  <p style={{ margin: '3px 0 0', fontFamily: F_BODY, fontSize: bfs(18), letterSpacing: '.01em', color: INK }}>{introA.ko}</p>
+                  {cc.classicIntroShowParents !== false && parentsJsx(introA.side.father, introA.side.mother) && (
+                    <p style={{ margin: '2px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.55), whiteSpace: 'nowrap' }}>{parentsJsx(introA.side.father, introA.side.mother)} 의 {introA.title}</p>
                   )}
-                  {groomIntro && <p style={{ margin: '14px 0 0', width: '100%', maxWidth: '100%', minWidth: 0, fontFamily: F_BODY, fontSize: bfs(12), fontWeight: 600, lineHeight: 1.6, color: INK, wordBreak: 'keep-all', overflowWrap: 'anywhere', whiteSpace: 'pre-line' }}>{groomIntro}</p>}
+                  {introA.intro && <p style={{ margin: '14px 0 0', width: '100%', maxWidth: '100%', minWidth: 0, fontFamily: F_BODY, fontSize: bfs(12), fontWeight: 600, lineHeight: 1.6, color: INK, wordBreak: 'keep-all', overflowWrap: 'anywhere', whiteSpace: 'pre-line' }}>{introA.intro}</p>}
                 </div>
               </div>
               <div className="cl-reveal cl-r" data-delay="340" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 16, ...(eachBox ? { padding: '22px 22px', background: PAPER, border: `1px solid ${inkA(0.24)}`, boxShadow: `inset 0 0 0 3px ${PAPER}, inset 0 0 0 4px ${inkA(0.12)}` } : eachNoFrame ? { padding: '2px 4px' } : { aspectRatio: eachFrame.aspect, padding: eachFrame.pad, backgroundImage: `url(${eachFrame.img})`, backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', filter: 'drop-shadow(0 14px 18px rgba(53,23,20,.12))' }) }}>
                 <div className="cl-reveal cl-up" data-delay="520" style={{ flex: 1, minWidth: 0, textAlign: 'right' }}>
-                  {!(cc.classicIntroShowParents !== false && parentsJsx(bride.father, bride.mother)) && <p style={label(T_ROLE, 0.4, inkA(0.45))}>{nameCase('BRIDE')}</p>}
-                  <p style={{ margin: '3px 0 0', fontFamily: F_BODY, fontSize: bfs(18), letterSpacing: '.01em', color: INK }}>{brideKo}</p>
-                  {cc.classicIntroShowParents !== false && parentsJsx(bride.father, bride.mother) && (
-                    <p style={{ margin: '2px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.55), whiteSpace: 'nowrap' }}>{parentsJsx(bride.father, bride.mother)} 의 {brideTitle}</p>
+                  {!(cc.classicIntroShowParents !== false && parentsJsx(introB.side.father, introB.side.mother)) && <p style={label(T_ROLE, 0.4, inkA(0.45))}>{nameCase(introB.label)}</p>}
+                  <p style={{ margin: '3px 0 0', fontFamily: F_BODY, fontSize: bfs(18), letterSpacing: '.01em', color: INK }}>{introB.ko}</p>
+                  {cc.classicIntroShowParents !== false && parentsJsx(introB.side.father, introB.side.mother) && (
+                    <p style={{ margin: '2px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.55), whiteSpace: 'nowrap' }}>{parentsJsx(introB.side.father, introB.side.mother)} 의 {introB.title}</p>
                   )}
-                  {brideIntro && <p style={{ margin: '14px 0 0', width: '100%', maxWidth: '100%', minWidth: 0, fontFamily: F_BODY, fontSize: bfs(12), fontWeight: 600, lineHeight: 1.6, color: INK, wordBreak: 'keep-all', overflowWrap: 'anywhere', whiteSpace: 'pre-line' }}>{brideIntro}</p>}
+                  {introB.intro && <p style={{ margin: '14px 0 0', width: '100%', maxWidth: '100%', minWidth: 0, fontFamily: F_BODY, fontSize: bfs(12), fontWeight: 600, lineHeight: 1.6, color: INK, wordBreak: 'keep-all', overflowWrap: 'anywhere', whiteSpace: 'pre-line' }}>{introB.intro}</p>}
                 </div>
-                <div style={{ flex: '0 0 84px', height: 106, borderRadius: 2, ...cropBg(cc.classicBridePhoto, { background: DEEP_BEIGE }), filter: 'saturate(.85)' }} />
+                <div style={{ flex: '0 0 84px', height: 106, borderRadius: 2, ...cropBg(introB.photo, { background: DEEP_BEIGE }), filter: 'saturate(.85)' }} />
               </div>
             </>
             ) })()
@@ -1634,18 +1641,18 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
               <div className="cl-reveal cl-up" data-delay="260" style={{ textAlign: 'center', marginTop: cc.classicIntroTogetherFrame === 'oval' ? -6 : 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
                   <div style={{ textAlign: 'right' }}>
-                    {!(cc.classicIntroShowParents !== false && parentsJsx(groom.father, groom.mother)) && <p style={label(T_ROLE, 0.4, introFgAf(0.45))}>{nameCase('GROOM')}</p>}
-                    <p style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(18), letterSpacing: '.01em', color: introFgC }}>{groomKo}</p>
-                    {cc.classicIntroShowParents !== false && parentsJsx(groom.father, groom.mother) && (
-                      <p style={{ margin: '4px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: introFgAf(0.68), whiteSpace: 'nowrap' }}>{parentsJsx(groom.father, groom.mother)} 의 {groomTitle}</p>
+                    {!(cc.classicIntroShowParents !== false && parentsJsx(introA.side.father, introA.side.mother)) && <p style={label(T_ROLE, 0.4, introFgAf(0.45))}>{nameCase(introA.label)}</p>}
+                    <p style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(18), letterSpacing: '.01em', color: introFgC }}>{introA.ko}</p>
+                    {cc.classicIntroShowParents !== false && parentsJsx(introA.side.father, introA.side.mother) && (
+                      <p style={{ margin: '4px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: introFgAf(0.68), whiteSpace: 'nowrap' }}>{parentsJsx(introA.side.father, introA.side.mother)} 의 {introA.title}</p>
                     )}
                   </div>
                   <span style={{ width: 1, height: 34, background: introFgAf(0.2) }} />
                   <div style={{ textAlign: 'left' }}>
-                    {!(cc.classicIntroShowParents !== false && parentsJsx(bride.father, bride.mother)) && <p style={label(T_ROLE, 0.4, introFgAf(0.45))}>{nameCase('BRIDE')}</p>}
-                    <p style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(18), letterSpacing: '.01em', color: introFgC }}>{brideKo}</p>
-                    {cc.classicIntroShowParents !== false && parentsJsx(bride.father, bride.mother) && (
-                      <p style={{ margin: '4px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: introFgAf(0.68), whiteSpace: 'nowrap' }}>{parentsJsx(bride.father, bride.mother)} 의 {brideTitle}</p>
+                    {!(cc.classicIntroShowParents !== false && parentsJsx(introB.side.father, introB.side.mother)) && <p style={label(T_ROLE, 0.4, introFgAf(0.45))}>{nameCase(introB.label)}</p>}
+                    <p style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(18), letterSpacing: '.01em', color: introFgC }}>{introB.ko}</p>
+                    {cc.classicIntroShowParents !== false && parentsJsx(introB.side.father, introB.side.mother) && (
+                      <p style={{ margin: '4px 0 0', fontFamily: F_BODY, fontSize: bfs(11), color: introFgAf(0.68), whiteSpace: 'nowrap' }}>{parentsJsx(introB.side.father, introB.side.mother)} 의 {introB.title}</p>
                     )}
                   </div>
                 </div>
@@ -1860,6 +1867,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: '44%', ...cropBg(cc.classicDirectionsBg, { background: 'transparent' }), filter: 'grayscale(.55) saturate(.5) brightness(.92)' }} />
           {dirOverlayOp > 0 && <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: '44%', background: `rgb(${hexToRgb(dirOverlay, '28,16,13')})`, opacity: dirOverlayOp, pointerEvents: 'none' }} />}
           <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: '44%', background: 'linear-gradient(180deg,rgba(242,238,230,.2),rgba(242,238,230,.9))' }} />
+          {!dirMapBottom && (
           <div className="cl-reveal cl-fade" style={{ position: 'relative', margin: '0 26px' }}>
             <div ref={mapWrapRef} style={{ position: 'relative', aspectRatio: '4/3', overflow: 'hidden', background: '#E3DCCD' }}>
               {mapError ? (
@@ -1877,20 +1885,21 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             </div>
             <div style={{ position: 'absolute', inset: 0, border: `1px solid ${inkA(0.16)}`, pointerEvents: 'none' }} />
           </div>
-          <div className="cl-reveal cl-zoom" data-delay="120" style={{ position: 'relative', zIndex: 2, margin: '-34px 26px 0', background: '#FFFFFF', padding: '34px 28px 30px', boxShadow: '0 18px 30px -26px rgba(20,10,8,.5)' }}>
+          )}
+          <div className="cl-reveal cl-zoom" data-delay="120" style={{ position: 'relative', zIndex: 2, margin: dirMapBottom ? '0 26px' : '-34px 26px 0', background: '#FFFFFF', padding: '34px 28px 30px', boxShadow: '0 18px 30px -26px rgba(20,10,8,.5)' }}>
             <p style={{ margin: 0, textAlign: 'center', ...label(T_EYEBROW, 0.44, inkA(0.45)) }}>{nameCase('LOCATION')}</p>
-            <h2 className="cl-reveal cl-up" data-delay="300" style={{ margin: '14px 0 0', textAlign: 'center', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: T_TITLE, color: INK }}>{venueName}</h2>
-            {venueHall && <p className="cl-reveal cl-rise" data-delay="400" style={{ margin: '8px 0 0', textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(12), color: inkA(0.6) }}>{venueHall}</p>}
+            <h2 className="cl-reveal cl-up" data-delay="300" style={{ margin: '12px 0 0', textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(18), fontWeight: 500, letterSpacing: '.01em', color: INK }}>{venueName}</h2>
+            {venueHall && <p className="cl-reveal cl-rise" data-delay="400" style={{ margin: '6px 0 0', textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(11.5), color: inkA(0.6) }}>{venueHall}</p>}
             <div className="cl-reveal cl-rise" data-delay="480" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, margin: '10px 0 0' }}>
-              <p style={{ margin: 0, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(12), color: inkA(0.7) }}>{venueAddress}</p>
-              <button onClick={() => doCopy(venueAddress, 'addr')} style={{ flexShrink: 0, fontFamily: F_BODY, fontSize: bfs(10), cursor: 'pointer', background: 'transparent', border: `1px solid ${inkA(0.3)}`, color: inkA(0.7), borderRadius: 4, padding: '3px 8px', whiteSpace: 'nowrap' }}>{copied === 'addr' ? '복사됨' : '주소 복사'}</button>
+              <p style={{ margin: 0, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.7) }}>{venueAddress}</p>
+              <button onClick={() => doCopy(venueAddress, 'addr')} style={{ flexShrink: 0, fontFamily: F_BODY, fontSize: bfs(9.5), cursor: 'pointer', background: 'transparent', border: `1px solid ${inkA(0.3)}`, color: inkA(0.7), borderRadius: 4, padding: '3px 8px', whiteSpace: 'nowrap' }}>{copied === 'addr' ? '복사됨' : '주소 복사'}</button>
             </div>
-            <div style={{ height: 1, background: inkA(0.14), margin: '24px 0' }} />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ height: 1, background: inkA(0.14), margin: '22px 0' }} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {dirDisplay.map((r, i) => (
                 <div key={i} className="cl-reveal cl-rise" data-delay={200 + i * 90} style={{ display: 'flex', gap: 14 }}>
-                  <span style={{ flex: '0 0 54px', fontFamily: F_BODY, fontSize: bfs(11), fontWeight: 600, color: inkA(0.55), paddingTop: 2 }}>{r.label}</span>
-                  <p style={{ margin: 0, flex: 1, fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.85, color: inkA(0.72), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{r.text}</p>
+                  <span style={{ flex: '0 0 50px', fontFamily: F_BODY, fontSize: bfs(10.5), fontWeight: 600, color: inkA(0.55), paddingTop: 2 }}>{r.label}</span>
+                  <p style={{ margin: 0, flex: 1, fontFamily: F_BODY, fontSize: bfs(11), lineHeight: 1.8, color: inkA(0.72), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{r.text}</p>
                 </div>
               ))}
             </div>
@@ -1900,10 +1909,29 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                 {cc.classicDirectionsExtraBody && <p style={{ margin: cc.classicDirectionsExtraTitle ? '8px 0 0' : 0, fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.85, color: inkA(0.72), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{cc.classicDirectionsExtraBody}</p>}
               </div>
             )}
-            <div style={{ display: 'flex', gap: 7, margin: '26px 0 0' }}>
-              <a href={`https://map.naver.com/p/search/${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ flex: 1, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(12), padding: '11px 0', background: '#03C75A', color: '#fff', borderRadius: 6, whiteSpace: 'nowrap' }}>네이버</a>
-              <a href={`https://map.kakao.com/?q=${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ flex: 1, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(12), padding: '11px 0', background: '#FEE500', color: '#3C1E1E', borderRadius: 6, whiteSpace: 'nowrap' }}>카카오</a>
-              <a href={`tmap://search?name=${encodeURIComponent(venueName)}`} style={{ flex: 1, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(12), padding: '11px 0', background: INK, color: BTN_TEXT, borderRadius: 6, whiteSpace: 'nowrap' }}>티맵</a>
+            {dirMapBottom && (
+            <div className="cl-reveal cl-fade" style={{ position: 'relative', margin: '24px -28px 0' }}>
+              <div ref={mapWrapRef} style={{ position: 'relative', aspectRatio: '4/3', overflow: 'hidden', background: '#E3DCCD' }}>
+                {mapError ? (
+                  <a href={`https://map.kakao.com/?q=${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: F_BODY, fontSize: bfs(12), color: inkA(0.6) }}>지도에서 위치 보기</a>
+                ) : (
+                  <>
+                    <div ref={mapContainerRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
+                    {!mapActive && (
+                      <div onClick={handleOverlayTap} style={{ position: 'absolute', inset: 0, zIndex: 2, cursor: 'pointer', background: 'rgba(53,23,20,.04)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 46 }}>
+                        <span style={{ fontFamily: F_BODY, fontSize: bfs(11), color: IVORY, background: inkA(0.62), padding: '5px 12px', borderRadius: 20 }}>{mapState === 'hint' ? '한 번 더 누르면 이동할 수 있어요' : '지도를 눌러 이동/확대'}</span>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+              <div style={{ position: 'absolute', inset: 0, border: `1px solid ${inkA(0.16)}`, pointerEvents: 'none' }} />
+            </div>
+            )}
+            <div style={{ display: 'flex', gap: 7, margin: '22px 0 0' }}>
+              <a href={`https://map.naver.com/p/search/${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: F_BODY, fontSize: bfs(12), padding: '10px 0', background: '#FFFFFF', border: `1px solid ${inkA(0.2)}`, color: inkA(0.78), borderRadius: 6, whiteSpace: 'nowrap' }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#03C75A', flexShrink: 0 }} />네이버</a>
+              <a href={`https://map.kakao.com/?q=${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: F_BODY, fontSize: bfs(12), padding: '10px 0', background: '#FFFFFF', border: `1px solid ${inkA(0.2)}`, color: inkA(0.78), borderRadius: 6, whiteSpace: 'nowrap' }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#FEE500', boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.08)', flexShrink: 0 }} />카카오</a>
+              <a href={`tmap://search?name=${encodeURIComponent(venueName)}`} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: F_BODY, fontSize: bfs(12), padding: '10px 0', background: '#FFFFFF', border: `1px solid ${inkA(0.2)}`, color: inkA(0.78), borderRadius: 6, whiteSpace: 'nowrap' }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#00C7B1', flexShrink: 0 }} />티맵</a>
             </div>
           </div>
         </section>
@@ -2018,10 +2046,10 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
               {rsvpAttend !== 'not_attending' && (
                 <div className="cl-reveal cl-env" data-delay="360" style={{ position: 'relative', zIndex: 2, margin: '0 8px 96px', background: '#FFFFFF', padding: '28px 22px 26px', textAlign: 'center', boxShadow: '0 18px 30px -26px rgba(20,10,8,.5)' }}>
                   <p style={{ ...label(T_EYEBROW, 0.46, inkA(0.5)) }}>{nameCase('INVITATION')}</p>
-                  <p style={{ margin: '14px 0 0', fontFamily: F_BODY, fontSize: bfs(20), letterSpacing: '.06em', color: INK }}>초대합니다</p>
+                  <p style={{ margin: '14px 0 0', fontFamily: F_BODY, fontSize: bfs(20), letterSpacing: '.06em', color: INK }}>{cc.classicRsvpInviteText || '초대합니다'}</p>
                   <div style={{ display: 'flex', gap: 8, margin: '22px 0 0' }}>
-                    <button onClick={() => setRsvpAttend('attending')} style={{ flex: 1, fontFamily: F_BODY, fontSize: bfs(12), color: BTN_TEXT, background: INK, border: `1px solid ${INK}`, padding: '11px 0', cursor: 'pointer', whiteSpace: 'nowrap' }}>참석합니다</button>
-                    <button onClick={() => setRsvpAttend('not_attending')} style={{ flex: 1, fontFamily: F_BODY, fontSize: bfs(12), color: INK, background: 'transparent', border: `1px solid ${inkA(0.35)}`, padding: '11px 0', cursor: 'pointer', whiteSpace: 'nowrap' }}>참석 어렵습니다</button>
+                    <button onClick={() => setRsvpAttend('attending')} style={{ flex: 1, fontFamily: F_BODY, fontSize: bfs(12), color: BTN_TEXT, background: INK, border: `1px solid ${INK}`, padding: '11px 0', cursor: 'pointer', whiteSpace: 'nowrap' }}>{cc.classicRsvpAttendText || '참석합니다'}</button>
+                    <button onClick={() => setRsvpAttend('not_attending')} style={{ flex: 1, fontFamily: F_BODY, fontSize: bfs(12), color: INK, background: 'transparent', border: `1px solid ${inkA(0.35)}`, padding: '11px 0', cursor: 'pointer', whiteSpace: 'nowrap' }}>{cc.classicRsvpDeclineText || '참석 어렵습니다'}</button>
                   </div>
                 </div>
               )}

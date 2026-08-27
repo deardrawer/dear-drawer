@@ -1775,11 +1775,12 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">질문</Label>
-                  <DebouncedInput
+                  <DebouncedTextarea
                     value={interview.question}
                     onChange={(value) => updateNestedField(`content.interviews.${index}.question`, value)}
                     onFocus={() => setActiveSection('interview')}
                     placeholder={SAMPLE_INTERVIEWS[index]?.question || '질문을 입력해주세요'}
+                    rows={2}
                   />
                 </div>
                 <div className="space-y-1">

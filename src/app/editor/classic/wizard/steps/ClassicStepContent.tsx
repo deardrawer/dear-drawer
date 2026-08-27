@@ -204,6 +204,32 @@ export default function ClassicStepContent({ data, updateNestedData, invitationI
               placeholder="축하의 마음을 전해주세요."
             />
           </div>
+          <div className="grid grid-cols-3 gap-2">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium">제목</Label>
+              <Input
+                value={data.content.classicRsvpInviteText || ''}
+                onChange={(e) => updateNestedData('content.classicRsvpInviteText', e.target.value)}
+                placeholder="초대합니다"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium">참석 버튼</Label>
+              <Input
+                value={data.content.classicRsvpAttendText || ''}
+                onChange={(e) => updateNestedData('content.classicRsvpAttendText', e.target.value)}
+                placeholder="참석합니다"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium">불참 버튼</Label>
+              <Input
+                value={data.content.classicRsvpDeclineText || ''}
+                onChange={(e) => updateNestedData('content.classicRsvpDeclineText', e.target.value)}
+                placeholder="참석 어렵습니다"
+              />
+            </div>
+          </div>
           {([
             { key: 'classicRsvpMeal', label: '식사 여부 입력 받기' },
             { key: 'classicRsvpShuttle', label: '대절버스 이용 여부 입력 받기' },
@@ -222,10 +248,12 @@ export default function ClassicStepContent({ data, updateNestedData, invitationI
             shareTitle={data.content.sharedRsvpShareTitle}
             shareDesc={data.content.sharedRsvpShareDesc}
             shareImage={data.content.sharedRsvpShareImage}
+            pagePhoto={data.content.sharedRsvpPhoto}
             onShareChange={(p) => {
               if ('shareTitle' in p) updateNestedData('content.sharedRsvpShareTitle', p.shareTitle ?? '')
               else if ('shareDesc' in p) updateNestedData('content.sharedRsvpShareDesc', p.shareDesc ?? '')
               else if ('shareImage' in p) updateNestedData('content.sharedRsvpShareImage', p.shareImage ?? '')
+              else if ('pagePhoto' in p) updateNestedData('content.sharedRsvpPhoto', p.pagePhoto ?? '')
             }}
           />
           {data.content.classicRsvpSideDetail && (

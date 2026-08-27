@@ -11,10 +11,16 @@ export default function RsvpShareThumb({
   invitationId,
   value,
   onChange,
+  label = '공유 썸네일',
+  hint = '비우면 청첩장 대표 사진이 자동 사용됩니다. 권장 1200×630.',
+  circle = false,
 }: {
   invitationId?: string
   value?: string
   onChange: (url: string) => void
+  label?: string
+  hint?: string
+  circle?: boolean
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
@@ -31,11 +37,11 @@ export default function RsvpShareThumb({
 
   return (
     <div className="space-y-1">
-      <p className="text-[11px] font-medium text-gray-600">공유 썸네일</p>
+      <p className="text-[11px] font-medium text-gray-600">{label}</p>
       {value ? (
         <div className="flex items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={value} alt="" className="w-14 h-14 rounded-md object-cover border border-gray-200" />
+          <img src={value} alt="" className={`w-14 h-14 object-cover border border-gray-200 ${circle ? 'rounded-full' : 'rounded-md'}`} />
           <button type="button" onClick={() => inputRef.current?.click()} disabled={uploading} className="text-[11px] px-2 py-1 rounded-md border border-gray-300 text-gray-600 disabled:opacity-50">
             {uploading ? '업로드 중…' : '변경'}
           </button>
@@ -46,7 +52,7 @@ export default function RsvpShareThumb({
           {uploading ? '업로드 중…' : '＋ 썸네일 업로드'}
         </button>
       )}
-      <p className="text-[10px] text-gray-400 leading-tight">비우면 청첩장 대표 사진이 자동 사용됩니다. 권장 1200×630.</p>
+      <p className="text-[10px] text-gray-400 leading-tight">{hint}</p>
       {err && <p className="text-[10px] text-red-500">{err}</p>}
       <input
         ref={inputRef}

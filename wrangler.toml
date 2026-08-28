@@ -20,3 +20,9 @@ database_id = "00fa0bde-3240-4e30-b1ff-8e90629d6512"
 [[r2_buckets]]
 binding = "R2"
 bucket_name = "dear-drawer-images"
+
+# Guest Share: Drive 이전 큐 producer (consumer는 별도 워커 workers/drive-transfer)
+# 참고: 이 프로젝트의 Pages 빌드는 wrangler.jsonc가 우선 사용됨(아래는 toml 사용 시 대비 동기화)
+[[queues.producers]]
+queue = "guest-drive-transfer"
+binding = "DRIVE_QUEUE"

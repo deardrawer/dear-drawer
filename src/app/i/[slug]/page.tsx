@@ -15,6 +15,7 @@ import type { Invitation } from "@/types/invitation";
 import type { Viewport } from "next";
 import { isUUID } from "@/lib/slug";
 import { createSampleInvitation, ourSampleContent, familySampleContent, theSimpleSampleContent, classicSampleContent } from "@/lib/sample-data";
+import GuestShareFab from "./GuestShareFab";
 
 // 핀치 줌 비활성화를 위한 viewport 설정
 export const viewport: Viewport = {
@@ -157,16 +158,25 @@ export default async function InvitationPage({ params, searchParams }: PageProps
   const isTheSimple = invitation.template_id === 'narrative-the-simple';
   const isClassic = invitation.template_id === 'narrative-classic';
 
+  // 하객 사진 공유 진입 FAB — 공유 활성 + 실제 청첩장(프리뷰/샘플 제외)일 때만
+  // (샘플은 union 타입이라 guest_share_* 미보유 → 실제 청첩장일 때만 접근하도록 캐스팅)
+  const realInvitation = invitation as Invitation;
+  const guestShareOn = !isSampleInvitation && !isPreview && (realInvitation.guest_share_enabled ?? 0) === 1;
+  const guestShareSlug = realInvitation.slug || realInvitation.id;
+
   // 감사장은 별도 렌더링 (props가 다름)
   if (isThankYou) {
     return (
-      <InvitationClientThankYou
-        invitation={invitation}
-        content={invitationContent}
-        isPaid={isPaid}
-        isPreview={isPreview}
-        isSample={isSampleInvitation}
-      />
+      <>
+        <InvitationClientThankYou
+          invitation={invitation}
+          content={invitationContent}
+          isPaid={isPaid}
+          isPreview={isPreview}
+          isSample={isSampleInvitation}
+        />
+        {guestShareOn && <GuestShareFab slug={guestShareSlug} />}
+      </>
     );
   }
 
@@ -174,17 +184,20 @@ export default async function InvitationPage({ params, searchParams }: PageProps
   const ClientComponent = isClassic ? InvitationClientClassic : isTheSimple ? InvitationClientTheSimple : isEssay ? InvitationClientEssay : isExhibit ? InvitationClientExhibit : isRecord ? InvitationClientRecord : isFilm ? InvitationClientFilm : isMagazine ? InvitationClientMagazine : isFamily ? InvitationClientFamily : InvitationClient;
 
   return (
-    <ClientComponent
-      invitation={invitation}
-      content={invitationContent}
-      isPaid={isPaid}
-      isPreview={isPreview}
-      overrideColorTheme={colorTheme}
-      overrideFontStyle={fontStyle}
-      skipIntro={shouldSkipIntro}
-      guestInfo={guestInfo}
-      isSample={isSampleInvitation}
-    />
+    <>
+      <ClientComponent
+        invitation={invitation}
+        content={invitationContent}
+        isPaid={isPaid}
+        isPreview={isPreview}
+        overrideColorTheme={colorTheme}
+        overrideFontStyle={fontStyle}
+        skipIntro={shouldSkipIntro}
+        guestInfo={guestInfo}
+        isSample={isSampleInvitation}
+      />
+      {guestShareOn && <GuestShareFab slug={guestShareSlug} />}
+    </>
   );
 }
 

@@ -37,9 +37,12 @@ export default function GuestShareClient({ slug, coupleName, title, description 
   const [globalError, setGlobalError] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // 언마운트 시 object URL 정리
+  // 최신 items를 effect/핸들러에서 참조하기 위한 ref (렌더 중이 아닌 effect에서 동기화)
   const itemsRef = useRef<Item[]>([])
-  itemsRef.current = items
+  useEffect(() => {
+    itemsRef.current = items
+  }, [items])
+  // 언마운트 시 object URL 정리
   useEffect(() => {
     return () => {
       itemsRef.current.forEach((i) => URL.revokeObjectURL(i.url))

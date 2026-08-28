@@ -20,5 +20,6 @@ export async function GET(request: NextRequest) {
     guestShareEnabled: (owned.invitation.guest_share_enabled ?? 0) === 1,
     guestShareTitle: owned.invitation.guest_share_title ?? null,
     guestShareDescription: owned.invitation.guest_share_description ?? null,
+    slug: owned.invitation.slug ?? owned.invitation.id,
   })
 }

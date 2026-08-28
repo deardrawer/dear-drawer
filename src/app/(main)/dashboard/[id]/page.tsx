@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
+import GuestShareSettings from '@/components/dashboard/GuestShareSettings'
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -1024,6 +1025,11 @@ export default function DashboardPage() {
             )}
           </CardContent>
         </Card>
+      </div>
+
+      {/* 하객 사진 공유 설정 (추가 섹션) */}
+      <div className="mt-6 md:mt-8">
+        <GuestShareSettings invitationId={invitationId} />
       </div>
 
       {/* RSVP 수정 Dialog */}

@@ -99,10 +99,6 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
               })}
             </div>
           </div>
-          <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-            <input type="checkbox" checked={data.content.classicLetterSwap === true} onChange={(e) => updateNestedData('content.classicLetterSwap', e.target.checked)} />
-            서명에서 신랑·신부 순서 바꾸기
-          </label>
           {(data.content.classicLetterSign || 'parents') === 'hosts' && (
             <div>
               <span className="text-sm font-medium text-gray-700">혼주 (표시할 측)</span>

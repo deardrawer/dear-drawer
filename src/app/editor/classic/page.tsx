@@ -104,8 +104,9 @@ export interface ClassicInvitationData {
     classicIntroTextColor?: string // 소개 프레임 '없음'일 때 텍스트 색상
     classicIntroTitle?: string // 신랑신부 소개 섹션 맨 위 헤딩 (선택)
     classicIntroTitleStyle?: 'kicker' | 'title' // 헤딩 위계: 작게(킥커) / 크게(INFORMATION 스타일). 기본 kicker
+    classicNameSwap?: boolean // [기본정보] 신랑↔신부 이름 순서 (오프닝~본문~서명 공통, 기본 false)
     classicIntroSwap?: boolean // 소개 섹션에서 신랑↔신부 순서 바꾸기 (기본 false)
-    classicLetterSwap?: boolean // 인사말 서명에서 신랑↔신부 순서 바꾸기 (기본 false)
+    classicLetterSwap?: boolean // (레거시) 서명 순서 — 이제 classicNameSwap이 서명까지 제어
     classicGroomIntro?: string // 신랑 소개 한마디 (각자)
     classicBrideIntro?: string // 신부 소개 한마디 (각자)
     classicGroomPhoto?: ClassicPhoto // 신랑 사진 (각자)

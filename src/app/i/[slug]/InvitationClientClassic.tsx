@@ -385,8 +385,15 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   const T_SUBTITLE = 18    // 소제목 (안내 항목 제목 등)
   // 오프닝 이름 언어 (영문/한글) — 5종 공통
   const nameLang: string = cc.classicOpeningNameLang === 'ko' ? 'ko' : 'en'
-  const nameGroom = nameLang === 'ko' ? groomKo : groomEn
-  const nameBride = nameLang === 'ko' ? brideKo : brideEn
+  // 기본정보 '신랑·신부 이름 순서' — 오프닝부터 본문·서명까지 공통 적용 (커플소개는 별도: classicIntroSwap)
+  const nameSwap = cc.classicNameSwap === true
+  const firstKo = nameSwap ? brideKo : groomKo
+  const secondKo = nameSwap ? groomKo : brideKo
+  const firstEn = nameSwap ? brideEn : groomEn
+  const secondEn = nameSwap ? groomEn : brideEn
+  // 오프닝 표시 이름(표시 순서 1/2) — nameSwap 시 신랑↔신부 자리 교체
+  const nameGroom = nameLang === 'ko' ? firstKo : firstEn
+  const nameBride = nameLang === 'ko' ? secondKo : secondEn
   const nameFont = nameLang === 'ko' ? F_BODY : F_DISPLAY
 
   // 혼주 (호칭 · 고인표시)
@@ -424,9 +431,10 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   // 소개 한마디: 미설정 시 미리보기에서는 샘플 문구 노출(위치 확인용), 실제 페이지에서는 숨김
   const groomIntro: string = cc.classicGroomIntro || (isPreview ? '다정하고 든든한 사람입니다.' : '')
   const brideIntro: string = cc.classicBrideIntro || (isPreview ? '따뜻하고 밝은 사람입니다.' : '')
-  // 신랑↔신부 순서 바꾸기 — 소개 섹션 / 인사말 서명 각각 독립 (기본: 신랑 먼저)
+  // 신랑↔신부 순서 — 커플소개(intro)는 독립 옵션 유지, 서명(letter)은 기본정보 이름 순서(nameSwap)를 따름
+  // (레거시 호환: 새 옵션 미설정 청첩장은 기존 classicLetterSwap 값을 그대로 존중)
   const introSwap = cc.classicIntroSwap === true
-  const letterSwap = cc.classicLetterSwap === true
+  const letterSwap = cc.classicNameSwap !== undefined ? nameSwap : (cc.classicLetterSwap === true)
   const pGroom = { side: groom, ko: groomKo, title: groomTitle, label: 'GROOM' as const, photo: cc.classicGroomPhoto, intro: groomIntro }
   const pBride = { side: bride, ko: brideKo, title: brideTitle, label: 'BRIDE' as const, photo: cc.classicBridePhoto, intro: brideIntro }
   const introA = introSwap ? pBride : pGroom
@@ -590,7 +598,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
       return (
         <section style={sec(dBg, '76px 34px 48px')}>
           <div className="cl-reveal cl-up" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-            <p style={{ margin: 0, textAlign: 'center', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 12, letterSpacing: '.06em', color: dTx }}>{groomKo} &amp; {brideKo}</p>
+            <p style={{ margin: 0, textAlign: 'center', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 12, letterSpacing: '.06em', color: dTx }}>{firstKo} &amp; {secondKo}</p>
             {ornRule(dTxA(0.34), 34)}
           </div>
           <div style={{ marginTop: 40, textAlign: 'center' }}>
@@ -635,7 +643,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: F_META, fontSize: 11, color: '#9a917f' }}>
               <span style={{ letterSpacing: '.2em' }}>INVITATION</span><span style={{ letterSpacing: '.08em' }}>NO. {mm}{dd}</span>
             </div>
-            <p style={{ margin: '30px 0 0', fontFamily: F_BODY, fontSize: 15, color: '#3a352c', letterSpacing: '.08em' }}>{groomKo} <span style={{ color: '#b0a48c' }}>&amp;</span> {brideKo}</p>
+            <p style={{ margin: '30px 0 0', fontFamily: F_BODY, fontSize: 15, color: '#3a352c', letterSpacing: '.08em' }}>{firstKo} <span style={{ color: '#b0a48c' }}>&amp;</span> {secondKo}</p>
             <div className="cl-reveal cl-blur" data-delay="140" style={{ margin: '20px 0 0', display: 'flex', alignItems: 'baseline', gap: 12 }}>
               <span style={{ fontFamily: F_NUM, fontWeight: 300, fontSize: 70, lineHeight: 0.85, color: '#231f1b' }}>{mm}.{dd}</span>
               <span style={{ fontFamily: F_BODY, fontSize: 14, color: '#8b8271' }}>{WEEK_KO[dow]}요일</span>
@@ -702,7 +710,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
               <p style={{ margin: 0, fontFamily: F_BODY, fontSize: 14, lineHeight: 1.7, color: '#3a352c' }}>{venueName}{venueHall ? ` ${venueHall}` : ''}</p>
               {venueAddress && <p style={{ margin: 0, fontFamily: F_BODY, fontSize: 12, color: '#8b8271' }}>{venueAddress}</p>}
             </div>
-            <span style={{ fontFamily: F_BODY, fontSize: 13, color: '#4c4638', letterSpacing: '.1em', whiteSpace: 'nowrap' }}>{groomKo} &amp; {brideKo}</span>
+            <span style={{ fontFamily: F_BODY, fontSize: 13, color: '#4c4638', letterSpacing: '.1em', whiteSpace: 'nowrap' }}>{firstKo} &amp; {secondKo}</span>
           </div>
         </div>
       </section>
@@ -950,10 +958,12 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
     }).filter(Boolean) as Acct[]
   const groomAccts = buildAccts([{ person: groom, role: '' }, { person: groom.father, role: '아버지' }, { person: groom.mother, role: '어머니' }])
   const brideAccts = buildAccts([{ person: bride, role: '' }, { person: bride.father, role: '아버지' }, { person: bride.mother, role: '어머니' }])
-  // 표시: 추가정보에서 토글(enabled)한 계좌만 표시 (신랑측/신부측 자동)
+  // 표시: 추가정보에서 토글(enabled)한 계좌만 표시 (신랑측/신부측 자동). 순서는 기본정보 이름 순서(nameSwap)를 따름
+  const _groomSide = groomAccts.length ? { side: '신랑측', accts: groomAccts } : null
+  const _brideSide = brideAccts.length ? { side: '신부측', accts: brideAccts } : null
   const acctSides = ([
-    groomAccts.length ? { side: '신랑측', accts: groomAccts } : null,
-    brideAccts.length ? { side: '신부측', accts: brideAccts } : null,
+    nameSwap ? _brideSide : _groomSide,
+    nameSwap ? _groomSide : _brideSide,
   ].filter(Boolean)) as { side: string; accts: Acct[] }[]
 
   // 오시는 길 rows
@@ -1070,7 +1080,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   }
   const doShare = () => {
     if (typeof navigator !== 'undefined' && (navigator as any).share) {
-      (navigator as any).share({ title: `${brideKo} ♥ ${groomKo}`, text: '결혼식에 초대합니다', url: shareUrl }).catch(() => {})
+      (navigator as any).share({ title: `${firstKo} ♥ ${secondKo}`, text: '결혼식에 초대합니다', url: shareUrl }).catch(() => {})
     } else { doCopy(shareUrl, 'share') }
   }
 
@@ -1408,7 +1418,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                       <div style={{ position: 'absolute', left: '50%', top: '60%', width: 74, height: 74, marginLeft: -37, marginTop: -37, filter: 'drop-shadow(0 8px 13px rgba(53,23,20,.45))', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'cl-stamp .65s cubic-bezier(.3,.1,.25,1) 1.25s both' }}>
                         <div style={{ position: 'absolute', inset: 0, backgroundImage: "url('/classic/shilling.webp')", backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center' }} />
                         {sealColor && <div style={{ position: 'absolute', inset: 0, backgroundColor: sealColor, mixBlendMode: 'multiply', WebkitMaskImage: "url('/classic/shilling.webp')", maskImage: "url('/classic/shilling.webp')", WebkitMaskSize: 'contain', maskSize: 'contain', WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat', WebkitMaskPosition: 'center', maskPosition: 'center' }} />}
-                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: F_DISPLAY, fontSize: 12, letterSpacing: '.12em', paddingLeft: '.12em', color: sealMono }}>{groomEn.charAt(0)}&nbsp;{brideEn.charAt(0)}</div>
+                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: F_DISPLAY, fontSize: 12, letterSpacing: '.12em', paddingLeft: '.12em', color: sealMono }}>{firstEn.charAt(0)}&nbsp;{secondEn.charAt(0)}</div>
                       </div>
                     </div>
                   </div>
@@ -1929,9 +1939,9 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             </div>
             )}
             <div style={{ display: 'flex', gap: 7, margin: '22px 0 0' }}>
-              <a href={`https://map.naver.com/p/search/${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: F_BODY, fontSize: bfs(12), padding: '10px 0', background: '#FFFFFF', border: `1px solid ${inkA(0.2)}`, color: inkA(0.78), borderRadius: 6, whiteSpace: 'nowrap' }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#03C75A', flexShrink: 0 }} />네이버</a>
-              <a href={`https://map.kakao.com/?q=${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: F_BODY, fontSize: bfs(12), padding: '10px 0', background: '#FFFFFF', border: `1px solid ${inkA(0.2)}`, color: inkA(0.78), borderRadius: 6, whiteSpace: 'nowrap' }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#FEE500', boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.08)', flexShrink: 0 }} />카카오</a>
-              <a href={`tmap://search?name=${encodeURIComponent(venueName)}`} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: F_BODY, fontSize: bfs(12), padding: '10px 0', background: '#FFFFFF', border: `1px solid ${inkA(0.2)}`, color: inkA(0.78), borderRadius: 6, whiteSpace: 'nowrap' }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#00C7B1', flexShrink: 0 }} />티맵</a>
+              <a href={`https://map.naver.com/p/search/${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: F_BODY, fontSize: bfs(10.5), padding: '10px 0', background: '#FFFFFF', border: `1px solid ${inkA(0.2)}`, color: inkA(0.78), borderRadius: 6, whiteSpace: 'nowrap' }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#03C75A', flexShrink: 0 }} />네이버지도</a>
+              <a href={`https://map.kakao.com/?q=${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: F_BODY, fontSize: bfs(10.5), padding: '10px 0', background: '#FFFFFF', border: `1px solid ${inkA(0.2)}`, color: inkA(0.78), borderRadius: 6, whiteSpace: 'nowrap' }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#FEE500', boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.08)', flexShrink: 0 }} />카카오맵</a>
+              <a href={`tmap://search?name=${encodeURIComponent(venueName)}`} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: F_BODY, fontSize: bfs(10.5), padding: '10px 0', background: '#FFFFFF', border: `1px solid ${inkA(0.2)}`, color: inkA(0.78), borderRadius: 6, whiteSpace: 'nowrap' }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#00C7B1', flexShrink: 0 }} />티맵</a>
             </div>
           </div>
         </section>

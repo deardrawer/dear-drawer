@@ -95,6 +95,21 @@ export default function ClassicStepBasicInfo({ data, updateNestedData, invitatio
             </div>
           </div>
         </div>
+
+        {/* 신랑·신부 이름 순서 (오프닝~본문~서명 공통) */}
+        <div className="space-y-1 pt-1">
+          <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={data.content.classicNameSwap === true}
+              onChange={(e) => updateNestedData('content.classicNameSwap', e.target.checked)}
+            />
+            신부·신랑 순서로 바꾸기
+          </label>
+          <p className="text-xs text-gray-400">
+            표지·본문·서명 등 이름이 나오는 모든 곳에 적용됩니다. (커플 소개 섹션 순서는 &lsquo;인사말/소개&rsquo; 단계에서 따로 설정)
+          </p>
+        </div>
       </section>
 
       {/* 혼주 성함 */}

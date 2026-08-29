@@ -726,15 +726,15 @@ function ProfileSection({
         <div className="flex-1 flex justify-around">
           <div className="text-center">
             <p className="text-[16px] font-semibold" style={{ color: '#262626' }}>{allImagesCount}</p>
-            <p className="text-[13px]" style={{ color: '#8E8E8E' }}>게시물</p>
+            <p className="text-[13px]" style={{ color: '#6E6E6E' }}>게시물</p>
           </div>
           <div className="text-center">
             <p className="text-[16px] font-semibold" style={{ color: '#262626' }}>&#8734;</p>
-            <p className="text-[13px]" style={{ color: '#8E8E8E' }}>팔로워</p>
+            <p className="text-[13px]" style={{ color: '#6E6E6E' }}>팔로워</p>
           </div>
           <div className="text-center">
             <p className="text-[16px] font-semibold" style={{ color: '#262626' }}>{dDay}</p>
-            <p className="text-[13px]" style={{ color: '#8E8E8E' }}>D-Day</p>
+            <p className="text-[13px]" style={{ color: '#6E6E6E' }}>D-Day</p>
           </div>
         </div>
       </div>
@@ -759,16 +759,13 @@ function ProfileSection({
 
       {/* Greeting text (bio continuation) — 위계는 색/굵기로만(선은 버튼 위 하나로 절제) */}
       {greeting && (
-        <p className="text-[13px] leading-[1.7] mb-3 whitespace-pre-line" style={{ color: '#8E8E8E' }}>
+        <p className="text-[13px] leading-[1.7] mb-3 whitespace-pre-line" style={{ color: '#6E6E6E' }}>
           {greeting}
         </p>
       )}
 
-      {/* 버튼 상단 얇은 구분선 — 위 여백만 더(구분선→버튼 mb-3=12), 아래는 pb-2=8 */}
-      <div className="h-px mt-4 mb-3" style={{ background: '#EFEFEF' }} />
-
-      {/* Action buttons */}
-      <div className="flex gap-1.5">
+      {/* Action buttons — 인사말과 여백만(구분선 없음) */}
+      <div className="flex gap-1.5 mt-6">
         <button
           onClick={onRsvpClick}
           className="flex-1 py-[7px] rounded-lg text-[13px] font-semibold text-white"
@@ -820,7 +817,7 @@ function StoryHighlights({
         >
           <div style={{ padding: 2, borderRadius: '50%', background: activeRoom === -1 ? 'conic-gradient(from 0deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888, #833ab4, #5851db, #405de6, #f09433)' : '#DBDBDB' }}>
             <div className="w-[64px] h-[64px] rounded-full overflow-hidden bg-white p-[2px] flex items-center justify-center">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={activeRoom === -1 ? '#262626' : '#8E8E8E'} strokeWidth="1.5">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={activeRoom === -1 ? '#262626' : '#6E6E6E'} strokeWidth="1.5">
                 <rect x="1" y="1" width="6.5" height="6.5" rx="0.5" />
                 <rect x="8.75" y="1" width="6.5" height="6.5" rx="0.5" />
                 <rect x="16.5" y="1" width="6.5" height="6.5" rx="0.5" />
@@ -833,7 +830,7 @@ function StoryHighlights({
               </svg>
             </div>
           </div>
-          <span className="text-[11px]" style={{ color: activeRoom === -1 ? '#262626' : '#8E8E8E', fontWeight: activeRoom === -1 ? 600 : 400 }}>
+          <span className="text-[11px]" style={{ color: activeRoom === -1 ? '#262626' : '#6E6E6E', fontWeight: activeRoom === -1 ? 600 : 400 }}>
             All
           </span>
         </button>
@@ -856,7 +853,7 @@ function StoryHighlights({
                   />
                 </div>
               </div>
-              <span className="text-[11px] max-w-[64px] truncate" style={{ color: isActive ? '#262626' : '#8E8E8E', fontWeight: isActive ? 600 : 400 }}>
+              <span className="text-[11px] max-w-[64px] truncate" style={{ color: isActive ? '#262626' : '#6E6E6E', fontWeight: isActive ? 600 : 400 }}>
                 {room.title}
               </span>
             </button>
@@ -874,7 +871,7 @@ function TabBar({ activeTab, onTabChange, visitedTabs, hiddenTabs = [], stickyTo
   const getIconColor = (tabId: ContentTab, isActive: boolean) => {
     if (isActive) return '#262626'
     if (tabId !== 'all' && !visitedTabs.has(tabId)) return '#3B82F6'
-    return '#8E8E8E'
+    return '#6E6E6E'
   }
 
   const tabs: { id: ContentTab; label: string; icon: (color: string, active: boolean) => React.ReactNode }[] = [
@@ -935,7 +932,7 @@ function TabBar({ activeTab, onTabChange, visitedTabs, hiddenTabs = [], stickyTo
             </div>
             <span
               className={`text-[10px] ${tab.id !== 'all' && !visitedTabs.has(tab.id) && !isActive ? 'tab-neon-blue' : ''}`}
-              style={tab.id !== 'all' && !visitedTabs.has(tab.id) && !isActive ? undefined : { color: isActive ? '#262626' : '#8E8E8E' }}
+              style={tab.id !== 'all' && !visitedTabs.has(tab.id) && !isActive ? undefined : { color: isActive ? '#262626' : '#6E6E6E' }}
             >
               {tab.label}
             </span>
@@ -1224,7 +1221,7 @@ function LoveStoryTab({ content, profileImage, username }: { content: any; profi
                   className="w-full flex items-center justify-center"
                   style={{ aspectRatio: '4/5', background: '#FAFAFA' }}
                 >
-                  <p className="text-[14px]" style={{ color: '#8E8E8E' }}>No photo</p>
+                  <p className="text-[14px]" style={{ color: '#6E6E6E' }}>No photo</p>
                 </div>
               )}
             </InstagramPost>
@@ -1236,7 +1233,7 @@ function LoveStoryTab({ content, profileImage, username }: { content: any; profi
             <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
           </svg>
           <p className="text-[14px] font-medium mb-1" style={{ color: '#262626' }}>Our Love Story</p>
-          <p className="text-[13px]" style={{ color: '#8E8E8E' }}>아직 러브스토리가 작성되지 않았습니다.</p>
+          <p className="text-[13px]" style={{ color: '#6E6E6E' }}>아직 러브스토리가 작성되지 않았습니다.</p>
         </div>
       )}
     </div>
@@ -1304,7 +1301,7 @@ function PhotoGrid({
             {isAllMode && (
               <div className="flex items-center px-4 py-2" style={{ background: '#FAFAFA' }}>
                 <div className="flex-1 h-[0.5px]" style={{ background: '#DBDBDB' }} />
-                <span className="px-3 text-[11px] font-medium tracking-wider" style={{ color: '#8E8E8E' }}>
+                <span className="px-3 text-[11px] font-medium tracking-wider" style={{ color: '#6E6E6E' }}>
                   {room.title}
                 </span>
                 <div className="flex-1 h-[0.5px]" style={{ background: '#DBDBDB' }} />
@@ -1570,7 +1567,7 @@ function WeddingInfoPost({
             <p className="text-[13px] mb-1" style={{ color: '#262626' }}>
               📍 {venueName}{venueHall ? ` ${venueHall}` : ''}
             </p>
-            {venueAddress && <p className="text-[11px] mb-3" style={{ color: '#8E8E8E' }}>{venueAddress}</p>}
+            {venueAddress && <p className="text-[11px] mb-3" style={{ color: '#6E6E6E' }}>{venueAddress}</p>}
 
             {/* Directions — always expanded */}
             {hasDirections && (
@@ -1584,7 +1581,7 @@ function WeddingInfoPost({
                       <span className="text-[13px] flex-shrink-0">🚗</span>
                       <div>
                         <p className="text-[11px] font-semibold mb-0.5" style={{ color: '#262626' }}>자가용 / 주차</p>
-                        <p className="text-[11px] leading-[1.6] whitespace-pre-line" style={{ color: '#8E8E8E' }}>{directions.car}</p>
+                        <p className="text-[11px] leading-[1.6] whitespace-pre-line" style={{ color: '#6E6E6E' }}>{directions.car}</p>
                       </div>
                     </div>
                   )}
@@ -1593,7 +1590,7 @@ function WeddingInfoPost({
                       <span className="text-[13px] flex-shrink-0">🚌</span>
                       <div>
                         <p className="text-[11px] font-semibold mb-0.5" style={{ color: '#262626' }}>버스 / 지하철</p>
-                        <p className="text-[11px] leading-[1.6] whitespace-pre-line" style={{ color: '#8E8E8E' }}>{directions.publicTransport}</p>
+                        <p className="text-[11px] leading-[1.6] whitespace-pre-line" style={{ color: '#6E6E6E' }}>{directions.publicTransport}</p>
                       </div>
                     </div>
                   )}
@@ -1602,7 +1599,7 @@ function WeddingInfoPost({
                       <span className="text-[13px] flex-shrink-0">🚆</span>
                       <div>
                         <p className="text-[11px] font-semibold mb-0.5" style={{ color: '#262626' }}>기차 (KTX/SRT)</p>
-                        <p className="text-[11px] leading-[1.6] whitespace-pre-line" style={{ color: '#8E8E8E' }}>{directions.train}</p>
+                        <p className="text-[11px] leading-[1.6] whitespace-pre-line" style={{ color: '#6E6E6E' }}>{directions.train}</p>
                       </div>
                     </div>
                   )}
@@ -1611,7 +1608,7 @@ function WeddingInfoPost({
                       <span className="text-[13px] flex-shrink-0">🚍</span>
                       <div>
                         <p className="text-[11px] font-semibold mb-0.5" style={{ color: '#262626' }}>고속버스</p>
-                        <p className="text-[11px] leading-[1.6] whitespace-pre-line" style={{ color: '#8E8E8E' }}>{directions.expressBus}</p>
+                        <p className="text-[11px] leading-[1.6] whitespace-pre-line" style={{ color: '#6E6E6E' }}>{directions.expressBus}</p>
                       </div>
                     </div>
                   )}
@@ -1624,7 +1621,7 @@ function WeddingInfoPost({
                           <span className="text-[13px] flex-shrink-0">{item.emoji || '📌'}</span>
                           <div>
                             <p className="text-[11px] font-semibold mb-0.5" style={{ color: '#262626' }}>{item.title}</p>
-                            <p className="text-[11px] leading-[1.6] whitespace-pre-line" style={{ color: '#8E8E8E' }}>{item.text}</p>
+                            <p className="text-[11px] leading-[1.6] whitespace-pre-line" style={{ color: '#6E6E6E' }}>{item.text}</p>
                           </div>
                         </div>
                       ))
@@ -1635,7 +1632,7 @@ function WeddingInfoPost({
                         <span className="text-[13px] flex-shrink-0">📌</span>
                         <div>
                           <p className="text-[11px] font-semibold mb-0.5" style={{ color: '#262626' }}>{(directions as any)?.extraInfoTitle || '추가 안내사항'}</p>
-                          <p className="text-[11px] leading-[1.6] whitespace-pre-line" style={{ color: '#8E8E8E' }}>{(directions as any)?.extraInfoText}</p>
+                          <p className="text-[11px] leading-[1.6] whitespace-pre-line" style={{ color: '#6E6E6E' }}>{(directions as any)?.extraInfoText}</p>
                         </div>
                       </div>
                     )
@@ -1658,13 +1655,13 @@ function WeddingInfoPost({
                 {calendarData && (
                   <div className="w-[280px] text-center">
                     {/* Month & Year */}
-                    <p className="text-[11px] tracking-[0.3em] uppercase mb-1" style={{ color: '#8E8E8E' }}>
+                    <p className="text-[11px] tracking-[0.3em] uppercase mb-1" style={{ color: '#6E6E6E' }}>
                       {calendarData.monthName}
                     </p>
                     <p className="text-[64px] font-extralight leading-none mb-1" style={{ color: '#262626' }}>
                       {calendarData.targetDay}
                     </p>
-                    <p className="text-[13px] mb-6" style={{ color: '#8E8E8E' }}>
+                    <p className="text-[13px] mb-6" style={{ color: '#6E6E6E' }}>
                       {['일', '월', '화', '수', '목', '금', '토'][dateObj!.getDay()]}요일 {time}
                     </p>
 
@@ -1689,7 +1686,7 @@ function WeddingInfoPost({
                               width: isTarget ? 26 : 'auto',
                               height: isTarget ? 26 : 'auto',
                               background: isTarget ? '#262626' : 'transparent',
-                              color: isTarget ? '#FFFFFF' : '#8E8E8E',
+                              color: isTarget ? '#FFFFFF' : '#6E6E6E',
                               fontWeight: isTarget ? 600 : 400,
                               fontSize: isTarget ? 11 : 10,
                             }}
@@ -1714,10 +1711,10 @@ function WeddingInfoPost({
                     </svg>
                   </div>
                   <p className="text-[18px] font-medium mb-0.5" style={{ color: '#262626' }}>{venueName}</p>
-                  {venueHall && <p className="text-[13px] mb-1.5" style={{ color: '#8E8E8E' }}>{venueHall}</p>}
+                  {venueHall && <p className="text-[13px] mb-1.5" style={{ color: '#6E6E6E' }}>{venueHall}</p>}
                   <div className="w-8 h-[0.5px] mx-auto my-3" style={{ background: '#DBDBDB' }} />
-                  {venueAddress && <p className="text-[11px] leading-[1.6] mb-2" style={{ color: '#8E8E8E' }}>{venueAddress}</p>}
-                  <p className="text-[11px]" style={{ color: '#8E8E8E' }}>{formattedDate} {time}</p>
+                  {venueAddress && <p className="text-[11px] leading-[1.6] mb-2" style={{ color: '#6E6E6E' }}>{venueAddress}</p>}
+                  <p className="text-[11px]" style={{ color: '#6E6E6E' }}>{formattedDate} {time}</p>
 
                   {/* Map buttons on venue card */}
                   {venueAddress && (
@@ -2043,7 +2040,7 @@ function GuestbookSection({
         <button
           onClick={() => setShowAll(true)}
           className="text-[13px] mb-3 block"
-          style={{ color: '#8E8E8E' }}
+          style={{ color: '#6E6E6E' }}
         >
           댓글 {messages.length}개 모두 보기
         </button>
@@ -2062,7 +2059,7 @@ function GuestbookSection({
                 <span style={{ fontWeight: 800, color: '#1A1A1A' }}>{msg.guest_name}</span>{' '}
                 <span style={{ fontWeight: 400, color: '#6E6E6E' }}>{msg.message}</span>
               </p>
-              <p className="text-[11px] mt-0.5" style={{ color: '#8E8E8E' }}>
+              <p className="text-[11px] mt-0.5" style={{ color: '#6E6E6E' }}>
                 {timeAgo(msg.created_at)}
               </p>
             </div>
@@ -2070,7 +2067,7 @@ function GuestbookSection({
         ))}
 
         {messages.length === 0 && (
-          <p className="text-[13px] py-4 text-center" style={{ color: '#8E8E8E' }}>
+          <p className="text-[13px] py-4 text-center" style={{ color: '#6E6E6E' }}>
             아직 댓글이 없습니다. 첫 번째로 축하 메시지를 남겨보세요!
           </p>
         )}
@@ -2229,7 +2226,7 @@ function AccountPost({
                     style={{ background: side === 'groom' ? '#E8F4FD' : '#FFF0F5', color: side === 'groom' ? '#0095F6' : '#E91E63' }}>
                     {acc.role}
                   </span>
-                  {(acc.holder || acc.name) && <span className="text-[12px]" style={{ color: '#8E8E8E' }}>{acc.holder || acc.name}</span>}
+                  {(acc.holder || acc.name) && <span className="text-[12px]" style={{ color: '#6E6E6E' }}>{acc.holder || acc.name}</span>}
                 </div>
                 <p className="text-[13px] font-medium tracking-wide" style={{ color: '#262626' }}>{acc.bank} {acc.account}</p>
               </div>
@@ -2270,7 +2267,7 @@ function AccountPost({
             <span className="text-[28px]">💌</span>
           </div>
           <p className="text-[18px] font-medium mb-3" style={{ color: '#262626' }}>마음 전하실 곳</p>
-          <p className="text-[13px] leading-[1.8]" style={{ color: '#8E8E8E' }}>
+          <p className="text-[13px] leading-[1.8]" style={{ color: '#6E6E6E' }}>
             멀리서도 함께해주시는 마음에 감사드립니다.
           </p>
         </div>
@@ -2295,7 +2292,7 @@ function AccountPost({
                 </div>
                 <svg
                   width="16" height="16" viewBox="0 0 24 24" fill="none"
-                  stroke={openSection === 'groom' ? '#FFFFFF' : '#8E8E8E'} strokeWidth="2"
+                  stroke={openSection === 'groom' ? '#FFFFFF' : '#6E6E6E'} strokeWidth="2"
                   style={{ transform: openSection === 'groom' ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.3s' }}
                 >
                   <polyline points="6 9 12 15 18 9" />
@@ -2324,7 +2321,7 @@ function AccountPost({
                 </div>
                 <svg
                   width="16" height="16" viewBox="0 0 24 24" fill="none"
-                  stroke={openSection === 'bride' ? '#FFFFFF' : '#8E8E8E'} strokeWidth="2"
+                  stroke={openSection === 'bride' ? '#FFFFFF' : '#6E6E6E'} strokeWidth="2"
                   style={{ transform: openSection === 'bride' ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.3s' }}
                 >
                   <polyline points="6 9 12 15 18 9" />
@@ -2501,7 +2498,7 @@ function RsvpDmModal({
             <div className="px-4 pb-6 space-y-4" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)' }}>
               {/* Name */}
               <div>
-                <label className="text-[11px] font-medium mb-1.5 block" style={{ color: '#8E8E8E' }}>이름 *</label>
+                <label className="text-[11px] font-medium mb-1.5 block" style={{ color: '#6E6E6E' }}>이름 *</label>
                 <input
                   type="text"
                   value={name}
@@ -2516,7 +2513,7 @@ function RsvpDmModal({
               {/* Phone */}
               {rsvpPhoneOption && (
               <div>
-                <label className="text-[11px] font-medium mb-1.5 block" style={{ color: '#8E8E8E' }}>연락처 뒷자리</label>
+                <label className="text-[11px] font-medium mb-1.5 block" style={{ color: '#6E6E6E' }}>연락처 뒷자리</label>
                 <input
                   type="tel"
                   value={phone}
@@ -2533,7 +2530,7 @@ function RsvpDmModal({
 
               {/* Side */}
               <div>
-                <label className="text-[11px] font-medium mb-1.5 block" style={{ color: '#8E8E8E' }}>소속</label>
+                <label className="text-[11px] font-medium mb-1.5 block" style={{ color: '#6E6E6E' }}>소속</label>
                 <div className="flex gap-2">
                   {[{ value: 'groom' as const, label: '신랑측' }, { value: 'bride' as const, label: '신부측' }].map((opt) => (
                     <button
@@ -2542,7 +2539,7 @@ function RsvpDmModal({
                       className="flex-1 py-2.5 rounded-2xl text-[13px] font-medium transition-colors"
                       style={{
                         background: side === opt.value ? '#262626' : '#FAFAFA',
-                        color: side === opt.value ? '#FFFFFF' : '#8E8E8E',
+                        color: side === opt.value ? '#FFFFFF' : '#6E6E6E',
                         border: `1px solid ${side === opt.value ? '#262626' : '#DBDBDB'}`,
                       }}
                     >
@@ -2555,16 +2552,16 @@ function RsvpDmModal({
               {/* Side Detail */}
               {rsvpSideDetail && side && (
               <div>
-                <label className="text-[11px] font-medium mb-1.5 block" style={{ color: '#8E8E8E' }}>초대 경로</label>
+                <label className="text-[11px] font-medium mb-1.5 block" style={{ color: '#6E6E6E' }}>초대 경로</label>
                 <div className="flex gap-2 flex-wrap" style={{ wordBreak: 'keep-all' }}>
                   {((side === 'groom' && (rsvpSideDetailOptions?.groomSelf ?? true)) || (side === 'bride' && (rsvpSideDetailOptions?.brideSelf ?? true))) && (
-                    <button onClick={() => setSideDetail('self')} className="flex-1 py-2.5 rounded-2xl text-[13px] font-medium transition-colors" style={{ background: sideDetail === 'self' ? '#262626' : '#FAFAFA', color: sideDetail === 'self' ? '#FFFFFF' : '#8E8E8E', border: `1px solid ${sideDetail === 'self' ? '#262626' : '#DBDBDB'}` }}>{side === 'groom' ? '신랑' : '신부'}</button>
+                    <button onClick={() => setSideDetail('self')} className="flex-1 py-2.5 rounded-2xl text-[13px] font-medium transition-colors" style={{ background: sideDetail === 'self' ? '#262626' : '#FAFAFA', color: sideDetail === 'self' ? '#FFFFFF' : '#6E6E6E', border: `1px solid ${sideDetail === 'self' ? '#262626' : '#DBDBDB'}` }}>{side === 'groom' ? '신랑' : '신부'}</button>
                   )}
                   {((side === 'groom' && (rsvpSideDetailOptions?.groomFather ?? true)) || (side === 'bride' && (rsvpSideDetailOptions?.brideFather ?? true))) && (
-                    <button onClick={() => setSideDetail('father')} className="flex-1 py-2.5 rounded-2xl text-[13px] font-medium transition-colors" style={{ background: sideDetail === 'father' ? '#262626' : '#FAFAFA', color: sideDetail === 'father' ? '#FFFFFF' : '#8E8E8E', border: `1px solid ${sideDetail === 'father' ? '#262626' : '#DBDBDB'}` }}>{side === 'groom' ? '신랑' : '신부'} 아버지</button>
+                    <button onClick={() => setSideDetail('father')} className="flex-1 py-2.5 rounded-2xl text-[13px] font-medium transition-colors" style={{ background: sideDetail === 'father' ? '#262626' : '#FAFAFA', color: sideDetail === 'father' ? '#FFFFFF' : '#6E6E6E', border: `1px solid ${sideDetail === 'father' ? '#262626' : '#DBDBDB'}` }}>{side === 'groom' ? '신랑' : '신부'} 아버지</button>
                   )}
                   {((side === 'groom' && (rsvpSideDetailOptions?.groomMother ?? true)) || (side === 'bride' && (rsvpSideDetailOptions?.brideMother ?? true))) && (
-                    <button onClick={() => setSideDetail('mother')} className="flex-1 py-2.5 rounded-2xl text-[13px] font-medium transition-colors" style={{ background: sideDetail === 'mother' ? '#262626' : '#FAFAFA', color: sideDetail === 'mother' ? '#FFFFFF' : '#8E8E8E', border: `1px solid ${sideDetail === 'mother' ? '#262626' : '#DBDBDB'}` }}>{side === 'groom' ? '신랑' : '신부'} 어머니</button>
+                    <button onClick={() => setSideDetail('mother')} className="flex-1 py-2.5 rounded-2xl text-[13px] font-medium transition-colors" style={{ background: sideDetail === 'mother' ? '#262626' : '#FAFAFA', color: sideDetail === 'mother' ? '#FFFFFF' : '#6E6E6E', border: `1px solid ${sideDetail === 'mother' ? '#262626' : '#DBDBDB'}` }}>{side === 'groom' ? '신랑' : '신부'} 어머니</button>
                   )}
                 </div>
               </div>
@@ -2572,7 +2569,7 @@ function RsvpDmModal({
 
               {/* Attendance */}
               <div>
-                <label className="text-[11px] font-medium mb-1.5 block" style={{ color: '#8E8E8E' }}>참석 여부 *</label>
+                <label className="text-[11px] font-medium mb-1.5 block" style={{ color: '#6E6E6E' }}>참석 여부 *</label>
                 <div className="flex gap-2">
                   {[
                     { value: 'attending' as const, label: '참석', emoji: '🥰' },
@@ -2585,7 +2582,7 @@ function RsvpDmModal({
                       className="flex-1 py-2.5 rounded-2xl text-[13px] font-medium transition-colors"
                       style={{
                         background: attendance === opt.value ? '#0095F6' : '#FAFAFA',
-                        color: attendance === opt.value ? '#FFFFFF' : '#8E8E8E',
+                        color: attendance === opt.value ? '#FFFFFF' : '#6E6E6E',
                         border: `1px solid ${attendance === opt.value ? '#0095F6' : '#DBDBDB'}`,
                       }}
                     >
@@ -2598,7 +2595,7 @@ function RsvpDmModal({
               {/* Guest Count */}
               {allowGuestCount && attendance === 'attending' && (
                 <div>
-                  <label className="text-[11px] font-medium mb-1.5 block" style={{ color: '#8E8E8E' }}>동반 인원 (본인 포함)</label>
+                  <label className="text-[11px] font-medium mb-1.5 block" style={{ color: '#6E6E6E' }}>동반 인원 (본인 포함)</label>
                   <div className="flex items-center gap-3 justify-center">
                     <button
                       onClick={() => setGuestCount(Math.max(1, guestCount - 1))}
@@ -2622,12 +2619,12 @@ function RsvpDmModal({
               {/* Meal */}
               {rsvpMealOption && attendance === 'attending' && (
                 <div>
-                  <label className="text-[11px] font-medium mb-1.5 block" style={{ color: '#8E8E8E' }}>식사 여부</label>
+                  <label className="text-[11px] font-medium mb-1.5 block" style={{ color: '#6E6E6E' }}>식사 여부</label>
                   <div className="flex gap-2">
                     {([{ v: 'yes' as const, l: '식사 예정' }, { v: 'no' as const, l: '식사 안 함' }]).map(opt => (
                       <button key={opt.v} onClick={() => setMealAttendance(mealAttendance === opt.v ? '' : opt.v)}
                         className="flex-1 py-2.5 rounded-2xl text-[13px] font-medium transition-colors"
-                        style={{ background: mealAttendance === opt.v ? '#0095F6' : '#FAFAFA', color: mealAttendance === opt.v ? '#FFFFFF' : '#8E8E8E', border: `1px solid ${mealAttendance === opt.v ? '#0095F6' : '#DBDBDB'}` }}>
+                        style={{ background: mealAttendance === opt.v ? '#0095F6' : '#FAFAFA', color: mealAttendance === opt.v ? '#FFFFFF' : '#6E6E6E', border: `1px solid ${mealAttendance === opt.v ? '#0095F6' : '#DBDBDB'}` }}>
                         {opt.l}
                       </button>
                     ))}
@@ -2638,12 +2635,12 @@ function RsvpDmModal({
               {/* Shuttle */}
               {rsvpShuttleOption && attendance === 'attending' && (
                 <div>
-                  <label className="text-[11px] font-medium mb-1.5 block" style={{ color: '#8E8E8E' }}>대절버스 이용 여부</label>
+                  <label className="text-[11px] font-medium mb-1.5 block" style={{ color: '#6E6E6E' }}>대절버스 이용 여부</label>
                   <div className="flex gap-2">
                     {([{ v: 'yes' as const, l: '이용 예정' }, { v: 'no' as const, l: '이용 안 함' }]).map(opt => (
                       <button key={opt.v} onClick={() => setShuttleBus(shuttleBus === opt.v ? '' : opt.v)}
                         className="flex-1 py-2.5 rounded-2xl text-[13px] font-medium transition-colors"
-                        style={{ background: shuttleBus === opt.v ? '#0095F6' : '#FAFAFA', color: shuttleBus === opt.v ? '#FFFFFF' : '#8E8E8E', border: `1px solid ${shuttleBus === opt.v ? '#0095F6' : '#DBDBDB'}` }}>
+                        style={{ background: shuttleBus === opt.v ? '#0095F6' : '#FAFAFA', color: shuttleBus === opt.v ? '#FFFFFF' : '#6E6E6E', border: `1px solid ${shuttleBus === opt.v ? '#0095F6' : '#DBDBDB'}` }}>
                         {opt.l}
                       </button>
                     ))}
@@ -2654,12 +2651,12 @@ function RsvpDmModal({
               {/* After Party */}
               {rsvpAfterPartyOption && attendance === 'attending' && (
                 <div>
-                  <label className="text-[11px] font-medium mb-1.5 block" style={{ color: '#8E8E8E' }}>애프터파티 참석 여부</label>
+                  <label className="text-[11px] font-medium mb-1.5 block" style={{ color: '#6E6E6E' }}>애프터파티 참석 여부</label>
                   <div className="flex gap-2">
                     {([{ v: 'yes' as const, l: '참석' }, { v: 'no' as const, l: '불참' }]).map(opt => (
                       <button key={opt.v} onClick={() => setAfterParty(afterParty === opt.v ? '' : opt.v)}
                         className="flex-1 py-2.5 rounded-2xl text-[13px] font-medium transition-colors"
-                        style={{ background: afterParty === opt.v ? '#0095F6' : '#FAFAFA', color: afterParty === opt.v ? '#FFFFFF' : '#8E8E8E', border: `1px solid ${afterParty === opt.v ? '#0095F6' : '#DBDBDB'}` }}>
+                        style={{ background: afterParty === opt.v ? '#0095F6' : '#FAFAFA', color: afterParty === opt.v ? '#FFFFFF' : '#6E6E6E', border: `1px solid ${afterParty === opt.v ? '#0095F6' : '#DBDBDB'}` }}>
                         {opt.l}
                       </button>
                     ))}
@@ -2669,7 +2666,7 @@ function RsvpDmModal({
 
               {/* Message */}
               <div>
-                <label className="text-[11px] font-medium mb-1.5 block" style={{ color: '#8E8E8E' }}>축하 메시지</label>
+                <label className="text-[11px] font-medium mb-1.5 block" style={{ color: '#6E6E6E' }}>축하 메시지</label>
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
@@ -2711,7 +2708,7 @@ function RsvpDmModal({
             <p className="text-[18px] font-semibold mb-2" style={{ color: '#262626' }}>
               전송 완료!
             </p>
-            <p className="text-[14px] mb-6" style={{ color: '#8E8E8E' }}>
+            <p className="text-[14px] mb-6" style={{ color: '#6E6E6E' }}>
               참석 여부가 전달되었습니다.{'\n'}감사합니다 💕
             </p>
             <button
@@ -2770,7 +2767,7 @@ function RsvpSection({
       <p className="text-[16px] font-semibold mb-2" style={{ color: '#262626' }}>
         초대합니다
       </p>
-      <p className="text-[13px] mb-6" style={{ color: '#8E8E8E' }}>
+      <p className="text-[13px] mb-6" style={{ color: '#6E6E6E' }}>
         소중한 자리에 함께해 주세요
       </p>
 
@@ -2787,7 +2784,7 @@ function RsvpSection({
       </button>
 
       {formattedDeadline && (
-        <p className="text-[11px] mt-3" style={{ color: '#8E8E8E' }}>
+        <p className="text-[11px] mt-3" style={{ color: '#6E6E6E' }}>
           마감일: {formattedDeadline}
         </p>
       )}
@@ -2821,7 +2818,7 @@ function ThankYouPost({
             {thankYou.caption || '축하해주셔서 감사합니다'}
           </p>
           {thankYou.sign && (
-            <p className="text-[12px] mt-1" style={{ color: '#8E8E8E' }}>{thankYou.sign}</p>
+            <p className="text-[12px] mt-1" style={{ color: '#6E6E6E' }}>{thankYou.sign}</p>
           )}
         </div>
       }
@@ -2844,7 +2841,7 @@ function ThankYouPost({
             {thankYou.title || 'Thank You'}
           </p>
           <div className="w-12 h-[0.5px] mx-auto mb-4" style={{ background: '#DBDBDB' }} />
-          <p className="text-[13px] leading-[2] whitespace-pre-line" style={{ color: '#8E8E8E' }}>
+          <p className="text-[13px] leading-[2] whitespace-pre-line" style={{ color: '#6E6E6E' }}>
             {thankYou.message || '함께해 주셔서 감사합니다'}
           </p>
         </div>
@@ -2859,7 +2856,7 @@ function InstagramFooter() {
     <div className="py-8 text-center border-t" style={{ borderColor: '#DBDBDB', background: '#FAFAFA' }}>
       <p
         className="text-[16px] mb-1"
-        style={{ fontFamily: "'Dancing Script', cursive", color: '#8E8E8E' }}
+        style={{ fontFamily: "'Dancing Script', cursive", color: '#6E6E6E' }}
       >
         dear drawer
       </p>
@@ -3003,27 +3000,9 @@ function GalleryLightbox({
   const [idx, setIdx] = useState(initialIndex)
   useEffect(() => { setIdx(initialIndex) }, [initialIndex])
 
-  // 좌우 드래그(스와이프) 네비게이션
-  const [drag, setDrag] = useState(0)
-  const startXRef = useRef<number | null>(null)
-  const dragRef = useRef(0)
-  const onDragStart = (x: number) => { startXRef.current = x; dragRef.current = 0; setDrag(0) }
-  const onDragMove = (x: number) => {
-    if (startXRef.current === null) return
-    const d = x - startXRef.current
-    dragRef.current = d
-    setDrag(d)
-  }
-  const onDragEnd = () => {
-    if (startXRef.current === null) return
-    const d = dragRef.current
-    startXRef.current = null
-    dragRef.current = 0
-    setDrag(0)
-    if (Math.abs(d) < 10) { if (images.length > 1) setIdx((i) => (i + 1) % images.length); return } // 탭 = 다음
-    if (d <= -40) setIdx((i) => (i < images.length - 1 ? i + 1 : i)) // 왼쪽으로 밀기 = 다음
-    else if (d >= 40) setIdx((i) => (i > 0 ? i - 1 : i)) // 오른쪽으로 밀기 = 이전
-  }
+  // 좌/우 영역 클릭 네비게이션
+  const prev = () => setIdx((i) => (i > 0 ? i - 1 : i))
+  const next = () => setIdx((i) => (i < images.length - 1 ? i + 1 : i))
 
   useEffect(() => {
     if (!isOpen) return
@@ -3063,29 +3042,40 @@ function GalleryLightbox({
         </span>
       </div>
 
-      {/* Image (좌우 드래그 스와이프 / 탭=다음) */}
-      <div
-        className="w-full h-full flex items-center justify-center p-4"
-        style={{ touchAction: 'none' }}
-        onClick={(e) => e.stopPropagation()}
-        onPointerDown={(e) => onDragStart(e.clientX)}
-        onPointerMove={(e) => onDragMove(e.clientX)}
-        onPointerUp={onDragEnd}
-        onPointerLeave={() => { if (startXRef.current !== null) { startXRef.current = null; dragRef.current = 0; setDrag(0) } }}
-      >
+      <style>{`@keyframes lbFade { from { opacity: 0 } to { opacity: 1 } }`}</style>
+
+      {/* Image — 좌/우 영역 클릭으로 이전·다음, 전환은 페이드 */}
+      <div className="w-full h-full flex items-center justify-center p-4" onClick={(e) => e.stopPropagation()}>
         <img
+          key={idx}
           src={images[idx]}
           alt=""
           className="max-w-full max-h-full object-contain"
           style={{
-            transform: `translateX(${drag}px)`,
-            transition: drag === 0 ? 'transform .2s ease' : 'none',
+            animation: 'lbFade .28s ease',
             pointerEvents: 'none',
             WebkitTouchCallout: 'none',
             userSelect: 'none',
             WebkitUserSelect: 'none',
           } as React.CSSProperties}
         />
+        {/* 좌/우 클릭 존 */}
+        {images.length > 1 && (
+          <>
+            <button
+              aria-label="이전 사진"
+              onClick={(e) => { e.stopPropagation(); prev() }}
+              className="absolute left-0 top-0 h-full w-1/2 bg-transparent"
+              style={{ cursor: idx > 0 ? 'pointer' : 'default' }}
+            />
+            <button
+              aria-label="다음 사진"
+              onClick={(e) => { e.stopPropagation(); next() }}
+              className="absolute right-0 top-0 h-full w-1/2 bg-transparent"
+              style={{ cursor: idx < images.length - 1 ? 'pointer' : 'default' }}
+            />
+          </>
+        )}
       </div>
 
       {/* Prev */}
@@ -3584,7 +3574,7 @@ function InvitationErrorFallback() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-white">
       <div className="text-center px-8">
-        <p className="text-[13px]" style={{ color: '#8E8E8E' }}>
+        <p className="text-[13px]" style={{ color: '#6E6E6E' }}>
           청첩장을 불러오는 중 오류가 발생했습니다.
         </p>
       </div>

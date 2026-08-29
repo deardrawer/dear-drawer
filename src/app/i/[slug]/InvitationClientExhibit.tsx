@@ -3119,25 +3119,27 @@ function GalleryLightbox({
         )}
       </div>
 
-      {/* Prev */}
+      {/* Prev — 원형 배경 없이 화살표만 */}
       {(idx > 0 || hasPrev) && (
         <button
+          aria-label="이전"
           onClick={(e) => { e.stopPropagation(); prev() }}
-          className="absolute left-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/15 flex items-center justify-center text-white"
+          className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-white/80 hover:text-white z-10"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
         </button>
       )}
 
-      {/* Next */}
+      {/* Next — 원형 배경 없이 화살표만 */}
       {(idx < images.length - 1 || hasNext) && (
         <button
+          aria-label="다음"
           onClick={(e) => { e.stopPropagation(); next() }}
-          className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/15 flex items-center justify-center text-white"
+          className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-white/80 hover:text-white z-10"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
           </svg>
         </button>

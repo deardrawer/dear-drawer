@@ -3032,7 +3032,6 @@ function GalleryLightbox({
   const hasNext = !!(nextTitle && onNextGallery)
   const hasPrev = !!(prevTitle && onPrevGallery)
   const atEnd = idx >= images.length - 1
-  const atStart = idx <= 0
 
   // 좌/우 영역 클릭 네비게이션 (경계에서 이전/다음 갤러리로)
   const prev = () => {
@@ -3145,19 +3144,7 @@ function GalleryLightbox({
         </button>
       )}
 
-      {/* 첫 사진 + 이전 갤러리 있음 → 이전 갤러리로 이동 표시 (좌하단) */}
-      {atStart && hasPrev && (
-        <button
-          onClick={(e) => { e.stopPropagation(); onPrevGallery!() }}
-          className="absolute bottom-6 left-4 z-10 flex items-center gap-1.5 px-4 py-2 rounded-full"
-          style={{ background: 'rgba(255,255,255,0.16)', color: '#FFFFFF' }}
-        >
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-          </svg>
-          <span className="text-[12px] font-medium">이전 갤러리 · {prevTitle}</span>
-        </button>
-      )}
+      {/* (이전 갤러리 표시는 두지 않음 — 좌측 화살표로만 이동) */}
 
       {/* 마지막 사진 + 다음 갤러리 있음 → 다음 갤러리로 이동 표시 (우하단) */}
       {atEnd && hasNext && (

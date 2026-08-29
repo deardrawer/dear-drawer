@@ -2991,15 +2991,39 @@ function GalleryLightbox({
   images,
   isOpen,
   initialIndex,
+  title,
   onClose,
 }: {
   images: string[]
   isOpen: boolean
   initialIndex: number
+  title?: string
   onClose: () => void
 }) {
   const [idx, setIdx] = useState(initialIndex)
   useEffect(() => { setIdx(initialIndex) }, [initialIndex])
+
+  // 좌우 드래그(스와이프) 네비게이션
+  const [drag, setDrag] = useState(0)
+  const startXRef = useRef<number | null>(null)
+  const dragRef = useRef(0)
+  const onDragStart = (x: number) => { startXRef.current = x; dragRef.current = 0; setDrag(0) }
+  const onDragMove = (x: number) => {
+    if (startXRef.current === null) return
+    const d = x - startXRef.current
+    dragRef.current = d
+    setDrag(d)
+  }
+  const onDragEnd = () => {
+    if (startXRef.current === null) return
+    const d = dragRef.current
+    startXRef.current = null
+    dragRef.current = 0
+    setDrag(0)
+    if (Math.abs(d) < 10) { if (images.length > 1) setIdx((i) => (i + 1) % images.length); return } // 탭 = 다음
+    if (d <= -40) setIdx((i) => (i < images.length - 1 ? i + 1 : i)) // 왼쪽으로 밀기 = 다음
+    else if (d >= 40) setIdx((i) => (i > 0 ? i - 1 : i)) // 오른쪽으로 밀기 = 이전
+  }
 
   useEffect(() => {
     if (!isOpen) return
@@ -3032,25 +3056,45 @@ function GalleryLightbox({
         </svg>
       </button>
 
-      {/* Counter */}
-      <div className="absolute top-5 left-1/2 -translate-x-1/2 z-10">
-        <span className="text-[13px] text-white/60 font-medium">
-          {idx + 1} / {images.length}
+      {/* 섹션 라벨 + 카운터 — 좌상단 한 줄 */}
+      <div className="absolute top-4 left-4 z-10">
+        <span className="text-[13px] font-medium" style={{ color: 'rgba(255,255,255,0.85)' }}>
+          {title ? `${title} · ` : ''}{idx + 1} / {images.length}
         </span>
       </div>
 
-      {/* Image */}
-      <div className="w-full h-full flex items-center justify-center p-4" onClick={(e) => { e.stopPropagation(); if (images.length > 1) setIdx((idx + 1) % images.length) }}>
-        <img src={images[idx]} alt="" className="max-w-full max-h-full object-contain" style={{ pointerEvents: 'none', WebkitTouchCallout: 'none', userSelect: 'none', WebkitUserSelect: 'none' } as React.CSSProperties} />
+      {/* Image (좌우 드래그 스와이프 / 탭=다음) */}
+      <div
+        className="w-full h-full flex items-center justify-center p-4"
+        style={{ touchAction: 'none' }}
+        onClick={(e) => e.stopPropagation()}
+        onPointerDown={(e) => onDragStart(e.clientX)}
+        onPointerMove={(e) => onDragMove(e.clientX)}
+        onPointerUp={onDragEnd}
+        onPointerLeave={() => { if (startXRef.current !== null) { startXRef.current = null; dragRef.current = 0; setDrag(0) } }}
+      >
+        <img
+          src={images[idx]}
+          alt=""
+          className="max-w-full max-h-full object-contain"
+          style={{
+            transform: `translateX(${drag}px)`,
+            transition: drag === 0 ? 'transform .2s ease' : 'none',
+            pointerEvents: 'none',
+            WebkitTouchCallout: 'none',
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+          } as React.CSSProperties}
+        />
       </div>
 
       {/* Prev */}
       {idx > 0 && (
         <button
           onClick={(e) => { e.stopPropagation(); setIdx(idx - 1) }}
-          className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white"
+          className="absolute left-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/15 flex items-center justify-center text-white"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
         </button>
@@ -3060,9 +3104,9 @@ function GalleryLightbox({
       {idx < images.length - 1 && (
         <button
           onClick={(e) => { e.stopPropagation(); setIdx(idx + 1) }}
-          className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white"
+          className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/15 flex items-center justify-center text-white"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
           </svg>
         </button>
@@ -3245,17 +3289,6 @@ function InvitationClientExhibitContent({
     return rooms.flatMap((room) => room.images.map(extractImageUrl).filter(Boolean))
   }, [rooms])
 
-  // Room photo offsets for lightbox index
-  const roomOffsets = useMemo(() => {
-    const offsets: number[] = []
-    let offset = 0
-    rooms.forEach((room) => {
-      offsets.push(offset)
-      offset += room.images.filter((img) => extractImageUrl(img)).length
-    })
-    return offsets
-  }, [rooms])
-
   // D-Day popup
   const ddayPopup = normalizeDdayPopup(content?.ddayPopup)
   const [showDdayPopup, setShowDdayPopup] = useState(false)
@@ -3267,9 +3300,11 @@ function InvitationClientExhibitContent({
     }
   }, [ddayPopup?.enabled, isPreview])
 
-  // Lightbox state
+  // Lightbox state — 탭한 섹션(room)의 이미지만 보여준다(B안)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
+  const [lightboxImages, setLightboxImages] = useState<string[]>([])
+  const [lightboxTitle, setLightboxTitle] = useState('')
 
   // Room story viewer (for highlight clicks)
   const [roomStoryOpen, setRoomStoryOpen] = useState(false)
@@ -3277,11 +3312,16 @@ function InvitationClientExhibitContent({
 
   const handlePhotoClick = useCallback(
     (roomIndex: number, localIdx: number) => {
-      const globalIdx = roomOffsets[roomIndex] + localIdx
-      setLightboxIndex(globalIdx)
+      const room = rooms[roomIndex]
+      if (!room) return
+      const imgs = room.images.map(extractImageUrl).filter(Boolean)
+      if (imgs.length === 0) return
+      setLightboxImages(imgs)
+      setLightboxTitle(room.title || '')
+      setLightboxIndex(localIdx)
       setLightboxOpen(true)
     },
-    [roomOffsets]
+    [rooms]
   )
 
   // Handle highlight click -> All: filter reset, Room: open story viewer
@@ -3491,9 +3531,10 @@ function InvitationClientExhibitContent({
 
         {/* Gallery Lightbox */}
         <GalleryLightbox
-          images={allImages}
+          images={lightboxImages}
           isOpen={lightboxOpen}
           initialIndex={lightboxIndex}
+          title={lightboxTitle}
           onClose={() => setLightboxOpen(false)}
         />
 

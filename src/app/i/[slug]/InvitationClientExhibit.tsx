@@ -744,28 +744,31 @@ function ProfileSection({
         @{displayId}
       </p>
 
-      {/* Bio */}
+      {/* Bio — 정보(결혼합니다·날짜·장소)를 인사말보다 위계 높게 */}
       <div className="mb-3">
-        <p className="text-[13px] leading-[1.5] mb-1" style={{ color: '#262626' }}>
+        <p className="text-[15px] font-semibold leading-[1.4] mb-1.5" style={{ color: '#1A1A1A' }}>
           결혼합니다 💍
         </p>
-        <p className="text-[13px] leading-[1.5]" style={{ color: '#262626' }}>
+        <p className="text-[13px] font-medium leading-[1.55]" style={{ color: '#262626' }}>
           {formattedDate} {time}
         </p>
-        <p className="text-[13px] leading-[1.5]" style={{ color: '#262626' }}>
+        <p className="text-[13px] font-medium leading-[1.55]" style={{ color: '#262626' }}>
           {venueName}{venueHall ? ` ${venueHall}` : ''}
         </p>
       </div>
 
-      {/* Greeting text (bio continuation) */}
+      {/* Greeting text (bio continuation) — 위계는 색/굵기로만(선은 버튼 위 하나로 절제) */}
       {greeting && (
-        <p className="text-[13px] leading-[1.6] mb-3 whitespace-pre-line" style={{ color: '#262626' }}>
+        <p className="text-[13px] leading-[1.7] mb-3 whitespace-pre-line" style={{ color: '#8E8E8E' }}>
           {greeting}
         </p>
       )}
 
+      {/* 버튼 상단 얇은 구분선 — 위 여백만 더(구분선→버튼 mb-3=12), 아래는 pb-2=8 */}
+      <div className="h-px mt-4 mb-3" style={{ background: '#EFEFEF' }} />
+
       {/* Action buttons */}
-      <div className="flex gap-1.5 mb-2">
+      <div className="flex gap-1.5">
         <button
           onClick={onRsvpClick}
           className="flex-1 py-[7px] rounded-lg text-[13px] font-semibold text-white"
@@ -2830,7 +2833,13 @@ function ThankYouPost({
         <div className="text-center px-8">
           <p
             className="text-[24px] font-light tracking-wider mb-4"
-            style={{ color: '#262626', fontFamily: "'Dancing Script', cursive" }}
+            style={{
+              color: '#262626',
+              // 한글 제목이면 Dancing Script(영문 필기체, 한글 글리프 없음)를 적용하지 않고 사용자 폰트를 그대로 사용
+              ...(/[가-힣ㄱ-ㅎㅏ-ㅣ]/.test(thankYou.title || '')
+                ? {}
+                : { fontFamily: "'Dancing Script', cursive" }),
+            }}
           >
             {thankYou.title || 'Thank You'}
           </p>

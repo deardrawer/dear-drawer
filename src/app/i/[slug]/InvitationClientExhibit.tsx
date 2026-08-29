@@ -943,6 +943,24 @@ function TabBar({ activeTab, onTabChange, visitedTabs, hiddenTabs = [], stickyTo
   )
 }
 
+// 인스타 스타일 좋아요 하트 (탭하면 빨갛게 토글)
+function LikeHeart({ size = 24 }: { size?: number }) {
+  const [liked, setLiked] = useState(false)
+  return (
+    <button
+      type="button"
+      aria-label={liked ? '좋아요 취소' : '좋아요'}
+      onClick={(e) => { e.stopPropagation(); setLiked((v) => !v) }}
+      className="active:scale-90 transition-transform"
+      style={{ lineHeight: 0 }}
+    >
+      <svg width={size} height={size} viewBox="0 0 24 24" fill={liked ? '#ED4956' : 'none'} stroke={liked ? '#ED4956' : '#262626'} strokeWidth="1.5">
+        <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
+      </svg>
+    </button>
+  )
+}
+
 // === 5-1. People Tab (신랑/신부 소개) ===
 function ProfileCarousel({ images, imageSettings }: { images: string[]; imageSettings?: any }) {
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -1075,15 +1093,17 @@ function PeopleTab({ content, profileImage, username }: { content: any; profileI
           {/* Caption */}
           <div className="px-3 py-3">
             <div className="flex items-center gap-4 mb-2">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#262626" strokeWidth="1.5">
-                <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
-              </svg>
+              <LikeHeart size={24} />
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#262626" strokeWidth="1.5">
                 <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
               </svg>
             </div>
-            <p className="text-[13px] leading-[1.7] whitespace-pre-line" style={{ color: '#262626' }}>
-              <span className="font-semibold">{person.subtitle || (person.role === '신랑' ? '신부가 소개하는 신랑 🤵' : '신랑이 소개하는 신부 👰')}</span>{'\n'}
+            {/* 제목(위계 높게) */}
+            <p className="text-[14px] font-semibold mb-1" style={{ color: '#1A1A1A' }}>
+              {person.subtitle || (person.role === '신랑' ? '신부가 소개하는 신랑 🤵' : '신랑이 소개하는 신부 👰')}
+            </p>
+            {/* 본문(보조) */}
+            <p className="text-[13px] leading-[1.7] whitespace-pre-line" style={{ color: '#6E6E6E' }}>
               {person.intro || (person.role === '신랑'
                 ? '처음 만났을 때부터 따뜻한 미소가 인상적이었던 사람. 항상 제 이야기에 귀 기울여주고, 힘들 때 묵묵히 곁에 있어주는 든든한 사람입니다.'
                 : '밝은 웃음소리가 참 예쁜 사람. 제가 지칠 때마다 힘이 되어주고, 작은 것에도 감사할 줄 아는 따뜻한 마음의 소유자입니다.')}
@@ -2989,20 +3009,40 @@ function GalleryLightbox({
   isOpen,
   initialIndex,
   title,
+  nextTitle,
+  onNextGallery,
+  prevTitle,
+  onPrevGallery,
   onClose,
 }: {
   images: string[]
   isOpen: boolean
   initialIndex: number
   title?: string
+  nextTitle?: string
+  onNextGallery?: () => void
+  prevTitle?: string
+  onPrevGallery?: () => void
   onClose: () => void
 }) {
   const [idx, setIdx] = useState(initialIndex)
-  useEffect(() => { setIdx(initialIndex) }, [initialIndex])
+  // 갤러리(이미지 배열)나 시작 인덱스가 바뀌면 인덱스 리셋
+  useEffect(() => { setIdx(initialIndex) }, [initialIndex, images])
 
-  // 좌/우 영역 클릭 네비게이션
-  const prev = () => setIdx((i) => (i > 0 ? i - 1 : i))
-  const next = () => setIdx((i) => (i < images.length - 1 ? i + 1 : i))
+  const hasNext = !!(nextTitle && onNextGallery)
+  const hasPrev = !!(prevTitle && onPrevGallery)
+  const atEnd = idx >= images.length - 1
+  const atStart = idx <= 0
+
+  // 좌/우 영역 클릭 네비게이션 (경계에서 이전/다음 갤러리로)
+  const prev = () => {
+    if (idx > 0) setIdx(idx - 1)
+    else if (onPrevGallery) onPrevGallery()
+  }
+  const next = () => {
+    if (idx < images.length - 1) setIdx(idx + 1)
+    else if (onNextGallery) onNextGallery()
+  }
 
   useEffect(() => {
     if (!isOpen) return
@@ -3042,46 +3082,47 @@ function GalleryLightbox({
         </span>
       </div>
 
-      <style>{`@keyframes lbFade { from { opacity: 0 } to { opacity: 1 } }`}</style>
-
-      {/* Image — 좌/우 영역 클릭으로 이전·다음, 전환은 페이드 */}
-      <div className="w-full h-full flex items-center justify-center p-4" onClick={(e) => e.stopPropagation()}>
-        <img
-          key={idx}
-          src={images[idx]}
-          alt=""
-          className="max-w-full max-h-full object-contain"
-          style={{
-            animation: 'lbFade .28s ease',
-            pointerEvents: 'none',
-            WebkitTouchCallout: 'none',
-            userSelect: 'none',
-            WebkitUserSelect: 'none',
-          } as React.CSSProperties}
-        />
+      {/* Image — 좌/우 영역 클릭으로 이전·다음, 이미지들을 겹쳐 두고 opacity 크로스페이드(미리 로드되어 깜빡임 없음) */}
+      <div className="relative w-full h-full p-4" onClick={(e) => e.stopPropagation()}>
+        {images.map((src, i) => (
+          <img
+            key={i}
+            src={src}
+            alt=""
+            className="absolute inset-0 m-auto max-w-full max-h-full object-contain"
+            style={{
+              opacity: i === idx ? 1 : 0,
+              transition: 'opacity .35s ease',
+              pointerEvents: 'none',
+              WebkitTouchCallout: 'none',
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+            } as React.CSSProperties}
+          />
+        ))}
         {/* 좌/우 클릭 존 */}
         {images.length > 1 && (
           <>
             <button
               aria-label="이전 사진"
               onClick={(e) => { e.stopPropagation(); prev() }}
-              className="absolute left-0 top-0 h-full w-1/2 bg-transparent"
-              style={{ cursor: idx > 0 ? 'pointer' : 'default' }}
+              className="absolute left-0 top-0 h-full w-1/2 bg-transparent z-[1]"
+              style={{ cursor: (idx > 0 || hasPrev) ? 'pointer' : 'default' }}
             />
             <button
               aria-label="다음 사진"
               onClick={(e) => { e.stopPropagation(); next() }}
-              className="absolute right-0 top-0 h-full w-1/2 bg-transparent"
-              style={{ cursor: idx < images.length - 1 ? 'pointer' : 'default' }}
+              className="absolute right-0 top-0 h-full w-1/2 bg-transparent z-[1]"
+              style={{ cursor: (idx < images.length - 1 || hasNext) ? 'pointer' : 'default' }}
             />
           </>
         )}
       </div>
 
       {/* Prev */}
-      {idx > 0 && (
+      {(idx > 0 || hasPrev) && (
         <button
-          onClick={(e) => { e.stopPropagation(); setIdx(idx - 1) }}
+          onClick={(e) => { e.stopPropagation(); prev() }}
           className="absolute left-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/15 flex items-center justify-center text-white"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -3091,12 +3132,40 @@ function GalleryLightbox({
       )}
 
       {/* Next */}
-      {idx < images.length - 1 && (
+      {(idx < images.length - 1 || hasNext) && (
         <button
-          onClick={(e) => { e.stopPropagation(); setIdx(idx + 1) }}
+          onClick={(e) => { e.stopPropagation(); next() }}
           className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/15 flex items-center justify-center text-white"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      )}
+
+      {/* 첫 사진 + 이전 갤러리 있음 → 이전 갤러리로 이동 표시 (좌하단) */}
+      {atStart && hasPrev && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onPrevGallery!() }}
+          className="absolute bottom-6 left-4 z-10 flex items-center gap-1.5 px-4 py-2 rounded-full"
+          style={{ background: 'rgba(255,255,255,0.16)', color: '#FFFFFF' }}
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+          <span className="text-[12px] font-medium">이전 갤러리 · {prevTitle}</span>
+        </button>
+      )}
+
+      {/* 마지막 사진 + 다음 갤러리 있음 → 다음 갤러리로 이동 표시 (우하단) */}
+      {atEnd && hasNext && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onNextGallery!() }}
+          className="absolute bottom-6 right-4 z-10 flex items-center gap-1.5 px-4 py-2 rounded-full"
+          style={{ background: 'rgba(255,255,255,0.16)', color: '#FFFFFF' }}
+        >
+          <span className="text-[12px] font-medium">다음 갤러리 · {nextTitle}</span>
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
           </svg>
         </button>
@@ -3295,6 +3364,7 @@ function InvitationClientExhibitContent({
   const [lightboxIndex, setLightboxIndex] = useState(0)
   const [lightboxImages, setLightboxImages] = useState<string[]>([])
   const [lightboxTitle, setLightboxTitle] = useState('')
+  const [lightboxRoomIndex, setLightboxRoomIndex] = useState(0)
 
   // Room story viewer (for highlight clicks)
   const [roomStoryOpen, setRoomStoryOpen] = useState(false)
@@ -3309,10 +3379,49 @@ function InvitationClientExhibitContent({
       setLightboxImages(imgs)
       setLightboxTitle(room.title || '')
       setLightboxIndex(localIdx)
+      setLightboxRoomIndex(roomIndex)
       setLightboxOpen(true)
     },
     [rooms]
   )
+
+  // 현재 라이트박스 룸의 '다음 갤러리'(사진 있는 다음 room) 인덱스
+  const nextRoomIndex = useMemo(() => {
+    for (let r = lightboxRoomIndex + 1; r < rooms.length; r++) {
+      if (rooms[r].images.map(extractImageUrl).filter(Boolean).length > 0) return r
+    }
+    return -1
+  }, [rooms, lightboxRoomIndex])
+
+  const openNextGallery = useCallback(() => {
+    if (nextRoomIndex < 0) return
+    const room = rooms[nextRoomIndex]
+    const imgs = room.images.map(extractImageUrl).filter(Boolean)
+    if (imgs.length === 0) return
+    setLightboxImages(imgs)
+    setLightboxTitle(room.title || '')
+    setLightboxIndex(0)
+    setLightboxRoomIndex(nextRoomIndex)
+  }, [nextRoomIndex, rooms])
+
+  // 현재 라이트박스 룸의 '이전 갤러리'(사진 있는 이전 room) 인덱스
+  const prevRoomIndex = useMemo(() => {
+    for (let r = lightboxRoomIndex - 1; r >= 0; r--) {
+      if (rooms[r].images.map(extractImageUrl).filter(Boolean).length > 0) return r
+    }
+    return -1
+  }, [rooms, lightboxRoomIndex])
+
+  const openPrevGallery = useCallback(() => {
+    if (prevRoomIndex < 0) return
+    const room = rooms[prevRoomIndex]
+    const imgs = room.images.map(extractImageUrl).filter(Boolean)
+    if (imgs.length === 0) return
+    setLightboxImages(imgs)
+    setLightboxTitle(room.title || '')
+    setLightboxIndex(imgs.length - 1) // 이전 갤러리의 마지막 사진으로
+    setLightboxRoomIndex(prevRoomIndex)
+  }, [prevRoomIndex, rooms])
 
   // Handle highlight click -> All: filter reset, Room: open story viewer
   const handleHighlightClick = useCallback((index: number) => {
@@ -3525,6 +3634,10 @@ function InvitationClientExhibitContent({
           isOpen={lightboxOpen}
           initialIndex={lightboxIndex}
           title={lightboxTitle}
+          nextTitle={nextRoomIndex >= 0 ? (rooms[nextRoomIndex]?.title || '다음 갤러리') : undefined}
+          onNextGallery={nextRoomIndex >= 0 ? openNextGallery : undefined}
+          prevTitle={prevRoomIndex >= 0 ? (rooms[prevRoomIndex]?.title || '이전 갤러리') : undefined}
+          onPrevGallery={prevRoomIndex >= 0 ? openPrevGallery : undefined}
           onClose={() => setLightboxOpen(false)}
         />
 

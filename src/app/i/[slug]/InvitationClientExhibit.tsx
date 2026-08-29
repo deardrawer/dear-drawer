@@ -2765,7 +2765,7 @@ function RsvpSection({
       </div>
 
       <p className="text-[16px] font-semibold mb-2" style={{ color: '#262626' }}>
-        참석 여부를 알려주세요
+        초대합니다
       </p>
       <p className="text-[13px] mb-6" style={{ color: '#8E8E8E' }}>
         소중한 자리에 함께해 주세요
@@ -2780,7 +2780,7 @@ function RsvpSection({
           <line x1="22" y1="2" x2="11" y2="13" />
           <polygon points="22 2 15 22 11 13 2 9 22 2" />
         </svg>
-        DM 보내기
+        참석 여부 남기기
       </button>
 
       {formattedDeadline && (

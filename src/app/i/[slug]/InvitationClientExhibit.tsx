@@ -1688,16 +1688,18 @@ function WeddingInfoPost({
                     {/* Mini calendar grid */}
                     <div className="grid grid-cols-7 gap-y-1 text-[10px] mx-auto" style={{ maxWidth: 220 }}>
                       {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
-                        <div key={i} className="py-1 font-medium" style={{ color: '#DBDBDB' }}>{d}</div>
+                        <div key={i} className="py-1 font-medium" style={{ color: i === 0 ? '#E5484D' : i === 6 ? '#0095F6' : '#DBDBDB' }}>{d}</div>
                       ))}
                       {/* Empty cells before first day */}
                       {Array.from({ length: calendarData.firstDay }).map((_, i) => (
                         <div key={`e-${i}`} />
                       ))}
-                      {/* Days */}
+                      {/* Days — 일요일 빨강, 토요일 파랑 */}
                       {Array.from({ length: calendarData.daysInMonth }).map((_, i) => {
                         const day = i + 1
                         const isTarget = day === calendarData.targetDay
+                        const dow = (calendarData.firstDay + i) % 7 // 0=일 … 6=토
+                        const dowColor = dow === 0 ? '#E5484D' : dow === 6 ? '#0095F6' : '#6E6E6E'
                         return (
                           <div
                             key={day}
@@ -1706,7 +1708,7 @@ function WeddingInfoPost({
                               width: isTarget ? 26 : 'auto',
                               height: isTarget ? 26 : 'auto',
                               background: isTarget ? '#262626' : 'transparent',
-                              color: isTarget ? '#FFFFFF' : '#6E6E6E',
+                              color: isTarget ? '#FFFFFF' : dowColor,
                               fontWeight: isTarget ? 600 : 400,
                               fontSize: isTarget ? 11 : 10,
                             }}

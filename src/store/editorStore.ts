@@ -402,6 +402,11 @@ export interface InvitationContent {
   customAccentColor?: string  // Movie 템플릿 accent 컬러 커스텀
   accentTextColor?: string  // 강조 텍스트 색상 (사용자 커스텀, 없으면 테마 기본값 사용)
   bodyTextColor?: string    // 본문 텍스트 색상 (사용자 커스텀, 없으면 테마 기본값 사용)
+  bodyFontScale?: number    // 본문(인사말·스토리) 글자 크기 배율. 없거나 1이면 기본 크기.
+  titleFontScale?: number   // 제목/헤더(섹션 제목·라벨) 글자 크기 배율. 없거나 1이면 기본 크기.
+  infoFontScale?: number    // 이름·날짜·정보(예식정보·부모님·프로필) 글자 크기 배율. 없거나 1이면 기본 크기.
+  cardColor?: string        // (Record) 카드 배경색 커스텀. 없으면 테마 cardBg 사용.
+  cardBodyColor?: string    // (Record) 카드 본문(내부 텍스트) 색상. 없으면 본문색과 동일.
   highlightColor?: string   // 하이라이트 색상 (사용자 커스텀, 없으면 테마 기본값 사용)
 
   // ===== RSVP =====

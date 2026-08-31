@@ -19,7 +19,7 @@ const PreviewModeContext = createContext(false)
 
 // ===== Types =====
 type ColorTheme = 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-green' | 'luxury-navy' | 'sunset-coral' | 'custom' | 'film-dark' | 'film-light' | 'record-coral' | 'record-rose' | 'record-peach' | 'record-bw' | 'record-lilac' | 'record-mint'
-interface ColorConfig { primary: string; secondary: string; accent: string; background: string; sectionBg: string; cardBg: string; divider: string; text: string; gray: string; highlight?: string }
+interface ColorConfig { primary: string; secondary: string; accent: string; background: string; sectionBg: string; cardBg: string; divider: string; text: string; gray: string; highlight?: string; cardText?: string }
 
 const colorThemes: Record<ColorTheme, ColorConfig> = {
   'classic-rose': { primary: '#C41050', secondary: '#B8956A', accent: '#B8956A', background: '#FFF8F5', sectionBg: '#FFE8E8', cardBg: '#FFFFFF', divider: '#d4b896', text: '#3d3d3d', gray: '#555555' },
@@ -321,7 +321,7 @@ function MusicToggle({ audioRef, isVisible, shouldAutoPlay, tc, showNotification
       <button onClick={toggle} className="relative w-9 h-9 rounded-full flex items-center justify-center transition-all hover:scale-110"
         style={{ background: `${tc.sectionBg}E6`, backdropFilter: 'blur(10px)', border: `1px solid ${tc.divider}40`, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
         {isPlaying ? (
-          <svg className="w-4 h-4" style={{ color: tc.text }} viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" /></svg>
+          <svg className="w-4 h-4" style={{ color: tc.cardText }} viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" /></svg>
         ) : (
           <svg className="w-4 h-4" style={{ color: tc.gray }} viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" /></svg>
         )}
@@ -477,7 +477,7 @@ function RecordHeader({ invitation, fonts, tc, currentTrack, progress, isCrossfa
             <div className="equalizer-bar" style={{ width: '2px', background: tc.primary, animationDelay: '0.2s' }} />
             <div className="equalizer-bar" style={{ width: '2px', background: tc.primary, animationDelay: '0.4s' }} />
           </div>
-          <div style={{ fontFamily: fonts.display, fontSize: '11px', fontWeight: 500, letterSpacing: '3px', color: tc.text }}>
+          <div style={{ fontFamily: fonts.display, fontSize: '11px', fontWeight: 500, letterSpacing: '3px', color: tc.cardText }}>
             {invitation.groom?.name || ''} & {invitation.bride?.name || ''}
           </div>
           <div className="equalizer-container flex items-end gap-[2px]" style={{ height: '14px' }}>
@@ -500,7 +500,7 @@ function RecordHeader({ invitation, fonts, tc, currentTrack, progress, isCrossfa
           <div className="equalizer-bar" style={{ width: '2px', background: tc.primary, animationDelay: '0.2s' }} />
           <div className="equalizer-bar" style={{ width: '2px', background: tc.primary, animationDelay: '0.4s' }} />
         </div>
-        <div style={{ fontFamily: fonts.display, fontSize: '11px', fontWeight: 500, letterSpacing: '3px', color: tc.text }}>
+        <div style={{ fontFamily: fonts.display, fontSize: '11px', fontWeight: 500, letterSpacing: '3px', color: tc.cardText }}>
           {invitation.groom?.name || ''} & {invitation.bride?.name || ''}
         </div>
         <span style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '3px', color: tc.primary }}>
@@ -783,7 +783,7 @@ function TrackCouple({ invitation, fonts, tc, trackRef, bgOverride, trackNumber 
               )}
             </div>
             <div className="text-center mt-3">
-              <p style={{ fontFamily: fonts.displayKr, fontSize: '13px', fontWeight: 500, letterSpacing: '2px', color: tc.text }}>
+              <p style={{ fontFamily: fonts.displayKr, fontSize: '13px', fontWeight: 500, letterSpacing: '2px', color: tc.cardText }}>
                 {groomName}
               </p>
               {groomProfile?.tag && (
@@ -807,7 +807,7 @@ function TrackCouple({ invitation, fonts, tc, trackRef, bgOverride, trackNumber 
               )}
             </div>
             <div className="text-center mt-3">
-              <p style={{ fontFamily: fonts.displayKr, fontSize: '13px', fontWeight: 500, letterSpacing: '2px', color: tc.text }}>
+              <p style={{ fontFamily: fonts.displayKr, fontSize: '13px', fontWeight: 500, letterSpacing: '2px', color: tc.cardText }}>
                 {brideName}
               </p>
               {brideProfile?.tag && (
@@ -845,7 +845,7 @@ function TrackCouple({ invitation, fonts, tc, trackRef, bgOverride, trackNumber 
               )}
             </div>
             <p style={{
-              fontFamily: fonts.displayKr, fontSize: '14px', fontWeight: 500, letterSpacing: '2px', color: tc.text,
+              fontFamily: fonts.displayKr, fontSize: '14px', fontWeight: 500, letterSpacing: '2px', color: tc.cardText,
               opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(10px)',
               transition: 'all 0.6s ease 0.9s',
             }}>
@@ -893,7 +893,7 @@ function TrackCouple({ invitation, fonts, tc, trackRef, bgOverride, trackNumber 
               )}
             </div>
             <p style={{
-              fontFamily: fonts.displayKr, fontSize: '14px', fontWeight: 500, letterSpacing: '2px', color: tc.text,
+              fontFamily: fonts.displayKr, fontSize: '14px', fontWeight: 500, letterSpacing: '2px', color: tc.cardText,
               opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(10px)',
               transition: 'all 0.6s ease 1.2s',
             }}>
@@ -1042,7 +1042,7 @@ function TrackOurJourney({ invitation, fonts, tc, trackRef, bgOverride, trackNum
                       {item.question}
                     </p>
                   </div>
-                  <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.9, color: tc.text, whiteSpace: 'pre-line' }}>{item.answer}</p>
+                  <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.9, color: tc.cardText, whiteSpace: 'pre-line' }}>{item.answer}</p>
                 </div>
 
                 {/* Individual seekbar per card */}
@@ -1453,7 +1453,7 @@ function TrackWeddingDay({ invitation, fonts, tc, trackRef, bgOverride, trackNum
             {/* Large date */}
             {date && (
               <div className="text-center mb-6">
-                <p style={{ fontFamily: fonts.display, fontSize: '28px', fontWeight: 300, letterSpacing: '3px', color: tc.text, lineHeight: 1.2 }}>
+                <p style={{ fontFamily: fonts.display, fontSize: '28px', fontWeight: 300, letterSpacing: '3px', color: tc.cardText, lineHeight: 1.2 }}>
                   {String(date.getFullYear()).slice(2)}.{String(date.getMonth() + 1).padStart(2, '0')}.{String(date.getDate()).padStart(2, '0')}
                 </p>
                 <p style={{ fontFamily: fonts.display, fontSize: '12px', letterSpacing: '4px', color: tc.gray, marginTop: '4px' }}>
@@ -1488,7 +1488,7 @@ function TrackWeddingDay({ invitation, fonts, tc, trackRef, bgOverride, trackNum
                 )}
                 </>
                 )}
-                <p style={{ fontFamily: fonts.displayKr, fontSize: '20px', fontWeight: 400, letterSpacing: '2px', color: tc.text, marginTop: '6px' }}>
+                <p style={{ fontFamily: fonts.displayKr, fontSize: '20px', fontWeight: 400, letterSpacing: '2px', color: tc.cardText, marginTop: '6px' }}>
                   {groom.name || ''}
                 </p>
               </div>
@@ -1509,7 +1509,7 @@ function TrackWeddingDay({ invitation, fonts, tc, trackRef, bgOverride, trackNum
                 )}
                 </>
                 )}
-                <p style={{ fontFamily: fonts.displayKr, fontSize: '20px', fontWeight: 400, letterSpacing: '2px', color: tc.text, marginTop: '6px' }}>
+                <p style={{ fontFamily: fonts.displayKr, fontSize: '20px', fontWeight: 400, letterSpacing: '2px', color: tc.cardText, marginTop: '6px' }}>
                   {bride.name || ''}
                 </p>
               </div>
@@ -1527,7 +1527,7 @@ function TrackWeddingDay({ invitation, fonts, tc, trackRef, bgOverride, trackNum
           <div style={{ padding: '16px 20px 20px' }}>
             <div style={{ background: tc.sectionBg, borderRadius: '10px', padding: '16px', textAlign: 'center', marginBottom: '12px' }}>
               <div style={{ fontFamily: fonts.display, fontSize: '7px', letterSpacing: '4px', color: tc.primary, marginBottom: '8px' }}>{dt('VENUE')}</div>
-              <p style={{ fontFamily: fonts.displayKr, fontSize: '15px', fontWeight: 500, color: tc.text }}>{w.venue?.name || ''}</p>
+              <p style={{ fontFamily: fonts.displayKr, fontSize: '15px', fontWeight: 500, color: tc.cardText }}>{w.venue?.name || ''}</p>
               {w.venue?.hall && !w.venue?.hideHall && (
                 <p style={{ fontFamily: fonts.body, fontSize: '12px', color: tc.gray, marginTop: '4px' }}>{w.venue.hall}</p>
               )}
@@ -1650,7 +1650,7 @@ function GuidanceSection({ invitation, fonts, tc, trackRef, bgOverride }: {
     <div ref={(el) => { (ref as any).current = el; trackRef(el) }} className="py-10 px-5" style={{ backgroundColor: bgOverride || 'transparent' }}>
       <div className="transition-all duration-700" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(40px)' }}>
         <div className="text-center mb-6 record-track-label">
-          <h3 style={{ fontFamily: fonts.display, fontSize: '13px', fontWeight: 500, letterSpacing: '5px', color: tc.text }}>{dt('INFORMATION')}</h3>
+          <h3 style={{ fontFamily: fonts.display, fontSize: '13px', fontWeight: 500, letterSpacing: '5px', color: tc.cardText }}>{dt('INFORMATION')}</h3>
           <div style={{ width: '20px', height: '1px', background: tc.primary, margin: '10px auto 0', opacity: 0.5 }} />
         </div>
 
@@ -1755,7 +1755,7 @@ function BonusTrack({ invitation, fonts, tc, trackRef, bgOverride }: {
           {/* Content */}
           <div style={{ padding: '28px 24px', textAlign: 'center', position: 'relative' }}>
             <h3 style={{
-              fontFamily: fonts.display, fontSize: '13px', letterSpacing: '5px', color: tc.text, marginBottom: '16px',
+              fontFamily: fonts.display, fontSize: '13px', letterSpacing: '5px', color: tc.cardText, marginBottom: '16px',
               fontStyle: 'italic',
             }}>
               {thankYou.title ? (fonts.isScript ? thankYou.title : thankYou.title) : dt('THANK YOU')}
@@ -1791,7 +1791,7 @@ function BonusTrack({ invitation, fonts, tc, trackRef, bgOverride }: {
                 transition: 'opacity 0.6s ease 2.8s',
               }}>
                 <div style={{ width: '1px', height: '20px', background: `${tc.divider}40`, margin: '0 auto 10px' }} />
-                <p style={{ fontFamily: fonts.displayKr, fontSize: '13px', color: tc.text, fontWeight: 400 }}>{thankYou.sign}</p>
+                <p style={{ fontFamily: fonts.displayKr, fontSize: '13px', color: tc.cardText, fontWeight: 400 }}>{thankYou.sign}</p>
               </div>
             )}
           </div>
@@ -1822,7 +1822,7 @@ function GiftSection({ invitation, fonts, tc, bgOverride }: { invitation: any; f
       <div key={i} className="flex items-center justify-between py-3" style={{ borderBottom: `1px solid ${tc.divider}` }}>
         <div>
           <span style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.gray }}>{acc.role}</span>
-          <span style={{ fontFamily: fonts.body, fontSize: '12px', color: tc.text, marginLeft: '8px' }}>{acc.bank} {acc.account}</span>
+          <span style={{ fontFamily: fonts.body, fontSize: '12px', color: tc.cardText, marginLeft: '8px' }}>{acc.bank} {acc.account}</span>
           {(acc.holder || acc.name) && <span style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.gray, marginLeft: '6px' }}>{acc.holder || acc.name}</span>}
         </div>
         <button onClick={() => { navigator.clipboard.writeText(acc.account); alert('계좌번호가 복사되었습니다.') }}
@@ -1836,7 +1836,7 @@ function GiftSection({ invitation, fonts, tc, bgOverride }: { invitation: any; f
   return (
     <div className="px-5 py-10" style={{ backgroundColor: bgOverride || 'transparent' }}>
       <div className="text-center mb-6">
-        <h3 style={{ fontFamily: fonts.displayKr, fontSize: '14px', color: tc.text, fontWeight: 400 }}>마음 전하실 곳</h3>
+        <h3 style={{ fontFamily: fonts.displayKr, fontSize: '14px', color: tc.cardText, fontWeight: 400 }}>마음 전하실 곳</h3>
         <div style={{ width: '20px', height: '1px', background: tc.primary, margin: '10px auto 0', opacity: 0.5 }} />
         {invitation.giftNotice && (
           <p style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.gray, lineHeight: 1.6, marginTop: '10px', whiteSpace: 'pre-line' }}>{invitation.giftNotice}</p>
@@ -1908,7 +1908,7 @@ function FanMailSection({ invitation, invitationId, fonts, tc, isSample, bgOverr
   }
 
   const { ref, isVisible } = useScrollReveal()
-  const inputStyle: React.CSSProperties = { fontFamily: fonts.body, fontSize: '13px', padding: '10px 12px', border: `1px solid ${tc.divider}`, borderRadius: '8px', background: tc.cardBg, outline: 'none', color: tc.text, width: '100%' }
+  const inputStyle: React.CSSProperties = { fontFamily: fonts.body, fontSize: '13px', padding: '10px 12px', border: `1px solid ${tc.divider}`, borderRadius: '8px', background: tc.cardBg, outline: 'none', color: tc.cardText, width: '100%' }
 
   return (
     <div ref={ref} className="px-5 py-10" style={{ backgroundColor: bgOverride || 'transparent' }}>
@@ -1917,7 +1917,7 @@ function FanMailSection({ invitation, invitationId, fonts, tc, isSample, bgOverr
           <span style={{ fontFamily: fonts.display, fontSize: '7px', letterSpacing: '3px', color: tc.gray, opacity: 0.4, display: 'block', marginBottom: '6px' }}>
             &#9835; {dt('MESSAGES')}
           </span>
-          <h3 style={{ fontFamily: fonts.display, fontSize: '13px', fontWeight: 500, letterSpacing: '5px', color: tc.text }}>{dt('GUESTBOOK')}</h3>
+          <h3 style={{ fontFamily: fonts.display, fontSize: '13px', fontWeight: 500, letterSpacing: '5px', color: tc.cardText }}>{dt('GUESTBOOK')}</h3>
           <div style={{ width: '20px', height: '1px', background: tc.primary, margin: '10px auto 0', opacity: 0.5 }} />
         </div>
         <div className="text-center mb-6">
@@ -1928,7 +1928,7 @@ function FanMailSection({ invitation, invitationId, fonts, tc, isSample, bgOverr
               fontSize: '14px',
               fontWeight: 400,
               lineHeight: 1.7,
-              color: tc.text,
+              color: tc.cardText,
               display: 'inline',
               backgroundImage: `linear-gradient(${tc.primary}55, ${tc.primary}55)`,
               backgroundRepeat: 'no-repeat',
@@ -1961,7 +1961,7 @@ function FanMailSection({ invitation, invitationId, fonts, tc, isSample, bgOverr
             {(expanded ? messages : messages.slice(0, 4)).map((msg: any, i: number) => (
               <div key={msg.id || i} style={{ padding: '14px', borderRadius: '10px', border: `1px solid ${tc.divider}60`, background: tc.cardBg }}>
                 {invitation.content?.guestbookShowQuestion !== false && msg.question && <p style={{ fontFamily: fonts.body, fontSize: '10px', color: tc.gray, marginBottom: '6px', opacity: 0.6 }}>Q. {msg.question}</p>}
-                <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.text, marginBottom: '8px', whiteSpace: 'pre-line' }}>{msg.message}</p>
+                <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.cardText, marginBottom: '8px', whiteSpace: 'pre-line' }}>{msg.message}</p>
                 <div className="flex items-center justify-between">
                   <span style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.gray }}>&mdash; {msg.guest_name}</span>
                   <span style={{ fontFamily: fonts.display, fontSize: '9px', color: tc.gray, opacity: 0.4 }}>{msg.created_at ? new Date(msg.created_at).toLocaleDateString() : ''}</span>
@@ -2019,12 +2019,12 @@ function RsvpSection({ invitation, invitationId, fonts, tc, bgOverride }: {
     } catch {} setSubmitting(false)
   }
 
-  const inputStyle: React.CSSProperties = { fontFamily: fonts.body, fontSize: '13px', padding: '10px 12px', border: `1px solid ${tc.divider}`, borderRadius: '8px', background: tc.cardBg, outline: 'none', color: tc.text, width: '100%' }
+  const inputStyle: React.CSSProperties = { fontFamily: fonts.body, fontSize: '13px', padding: '10px 12px', border: `1px solid ${tc.divider}`, borderRadius: '8px', background: tc.cardBg, outline: 'none', color: tc.cardText, width: '100%' }
 
   if (submitted) {
     return (
       <div className="px-5 py-14 text-center" style={{ backgroundColor: bgOverride || 'transparent' }}>
-        <div style={{ fontFamily: fonts.display, fontSize: '13px', letterSpacing: '5px', color: tc.text, marginBottom: '8px' }}>{dt('CONFIRMED')}</div>
+        <div style={{ fontFamily: fonts.display, fontSize: '13px', letterSpacing: '5px', color: tc.cardText, marginBottom: '8px' }}>{dt('CONFIRMED')}</div>
         <p style={{ fontFamily: fonts.body, fontSize: '13px', color: tc.gray }}>참석 여부가 전달되었습니다.</p>
       </div>
     )
@@ -2040,7 +2040,7 @@ function RsvpSection({ invitation, invitationId, fonts, tc, bgOverride }: {
           <span style={{ fontFamily: fonts.display, fontSize: '7px', letterSpacing: '3px', color: tc.gray, opacity: 0.4, display: 'block', marginBottom: '6px' }}>
             &#9834; {dt('ENCORE')}
           </span>
-          <h3 style={{ fontFamily: fonts.display, fontSize: '13px', fontWeight: 500, letterSpacing: '5px', color: tc.text }}>{dt('RSVP')}</h3>
+          <h3 style={{ fontFamily: fonts.display, fontSize: '13px', fontWeight: 500, letterSpacing: '5px', color: tc.cardText }}>{dt('RSVP')}</h3>
           <div style={{ width: '20px', height: '1px', background: tc.primary, margin: '10px auto 0', opacity: 0.5 }} />
           {date && (
             <p style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.gray, marginTop: '8px' }}>
@@ -2122,10 +2122,10 @@ function RsvpSection({ invitation, invitationId, fonts, tc, bgOverride }: {
                 <span style={{ fontFamily: fonts.body, fontSize: '12px', color: tc.gray }}>참석 인원</span>
                 <div className="flex items-center gap-2">
                   <button onClick={() => setGuestCount(Math.max(1, guestCount - 1))}
-                    style={{ width: '30px', height: '30px', border: `1px solid ${tc.divider}`, borderRadius: '6px', background: 'transparent', cursor: 'pointer', fontSize: '14px', color: tc.text }}>-</button>
-                  <span style={{ fontFamily: fonts.display, fontSize: '14px', width: '28px', textAlign: 'center', color: tc.text }}>{guestCount}</span>
+                    style={{ width: '30px', height: '30px', border: `1px solid ${tc.divider}`, borderRadius: '6px', background: 'transparent', cursor: 'pointer', fontSize: '14px', color: tc.cardText }}>-</button>
+                  <span style={{ fontFamily: fonts.display, fontSize: '14px', width: '28px', textAlign: 'center', color: tc.cardText }}>{guestCount}</span>
                   <button onClick={() => setGuestCount(guestCount + 1)}
-                    style={{ width: '30px', height: '30px', border: `1px solid ${tc.divider}`, borderRadius: '6px', background: 'transparent', cursor: 'pointer', fontSize: '14px', color: tc.text }}>+</button>
+                    style={{ width: '30px', height: '30px', border: `1px solid ${tc.divider}`, borderRadius: '6px', background: 'transparent', cursor: 'pointer', fontSize: '14px', color: tc.cardText }}>+</button>
                 </div>
               </div>
             )}
@@ -2232,7 +2232,7 @@ function MiniPlayerBar({ currentTrack, progress, isAudioPlaying, fonts, tc, onPr
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
             fontFamily: fonts.display, fontSize: '11px', fontWeight: 500, letterSpacing: '1px',
-            color: tc.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            color: tc.cardText, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
             {overrideTrackLabel ? dt(overrideTrackLabel) : dt(`TRACK ${trackNum}`)} &mdash; {dt(displayName)}
           </div>
@@ -2297,7 +2297,7 @@ function MiniPlayerBar({ currentTrack, progress, isAudioPlaying, fonts, tc, onPr
       {/* Track info + seekbar */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div className="flex items-center justify-between mb-1">
-          <span style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '2px', color: tc.text, fontWeight: 500 }}>
+          <span style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '2px', color: tc.cardText, fontWeight: 500 }}>
             {trackNum}. {dt(displayName)}
           </span>
           <span style={{ fontFamily: fonts.display, fontSize: '8px', color: tc.gray, opacity: 0.6 }}>
@@ -2374,7 +2374,7 @@ function RecordFooter({ invitation, fonts, tc }: { invitation: any; fonts: FontC
       <div style={{ fontFamily: fonts.display, fontSize: '11px', letterSpacing: '4px', color: tc.gray, marginBottom: '10px', opacity: 0.6 }}>
         Thank you for listening.
       </div>
-      <div style={{ fontFamily: fonts.display, fontSize: '14px', letterSpacing: '3px', color: tc.text, fontWeight: 400 }}>
+      <div style={{ fontFamily: fonts.display, fontSize: '14px', letterSpacing: '3px', color: tc.cardText, fontWeight: 400 }}>
         {invitation.groom?.name || ''} & {invitation.bride?.name || ''}
       </div>
       <div style={{ width: '30px', height: '1px', background: tc.primary, margin: '14px auto 0', opacity: 0.3 }} />
@@ -2678,6 +2678,8 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     customBgColor: (content as any).customBgColor,
     accentTextColor: (content as any).accentTextColor,
     bodyTextColor: (content as any).bodyTextColor,
+    cardColor: (content as any).cardColor,
+    cardBodyColor: (content as any).cardBodyColor,
     coverTextColor: (content as any).coverTextColor,
     coverBgColor: (content as any).coverBgColor,
     displayFont: (content as any).displayFont,
@@ -2845,13 +2847,18 @@ function InvitationClientRecordContent({
   const customBodyText = (invitation as any)?.bodyTextColor
   const customAccentText = (invitation as any)?.accentTextColor
   const customBg = (invitation as any)?.customBgColor
+  const customCardBg = (invitation as any)?.cardColor
+  const customCardText = (invitation as any)?.cardBodyColor
   const tc: ColorConfig = {
     ...baseTc,
     ...(customAccent ? { primary: customAccent, accent: customAccent, divider: customAccent + '60' } : {}),
     ...(customBodyText ? { text: customBodyText, gray: customBodyText + 'CC' } : {}),
     ...(customAccentText ? { highlight: customAccentText } : {}),
     ...(customBg ? { background: customBg } : {}),
+    ...(customCardBg ? { cardBg: customCardBg } : {}),
   }
+  // 카드 본문 색상: 지정 시 카드 내부 텍스트에 사용. 없으면 본문색(tc.text)과 동일.
+  tc.cardText = customCardText || tc.text
   const baseFonts = fontStyles[effectiveFontStyle]
   const isScriptFont = invitation?.displayFont === 'greatvibes'
   const fonts = invitation?.displayFont && displayFontMap[invitation.displayFont]
@@ -3024,7 +3031,7 @@ function InvitationClientRecordContent({
               <WatermarkOverlay isPaid={isPaid || !!isPreview} className="relative w-full min-h-screen">
                 <div className="relative w-full min-h-screen overflow-x-hidden" style={{
                   backgroundColor: tc.background,
-                  fontFamily: fonts.body, color: tc.text
+                  fontFamily: fonts.body, color: tc.cardText
                 }}>
                   {currentPage === 'cover' ? (
                     <VinylRecordCover invitation={invitation} fonts={fonts} tc={tc} onEnter={() => setCurrentPage('main')} colorTheme={effectiveColorTheme} />
@@ -3040,7 +3047,7 @@ function InvitationClientRecordContent({
                               <div style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '4px', color: tc.primary, opacity: 0.7, marginBottom: '8px' }}>
                                 {dt(section.trackLabel)}
                               </div>
-                              <h2 style={{ fontFamily: fonts.display, fontSize: '22px', fontWeight: 300, letterSpacing: '3px', color: tc.text, margin: '0 0 8px' }}>
+                              <h2 style={{ fontFamily: fonts.display, fontSize: '22px', fontWeight: 300, letterSpacing: '3px', color: tc.cardText, margin: '0 0 8px' }}>
                                 {dt(section.name)}
                               </h2>
                               {section.duration && (
@@ -3084,7 +3091,7 @@ function InvitationClientRecordContent({
                                   <div style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '4px', color: tc.primary, opacity: 0.7, marginBottom: '8px' }}>
                                     {dt(section.trackLabel)}
                                   </div>
-                                  <h2 style={{ fontFamily: fonts.display, fontSize: '22px', fontWeight: 300, letterSpacing: '3px', color: tc.text, margin: '0 0 8px' }}>
+                                  <h2 style={{ fontFamily: fonts.display, fontSize: '22px', fontWeight: 300, letterSpacing: '3px', color: tc.cardText, margin: '0 0 8px' }}>
                                     {dt(section.name)}
                                   </h2>
                                   {section.duration && (

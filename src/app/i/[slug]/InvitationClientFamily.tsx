@@ -2764,13 +2764,13 @@ function FullHeightDividerSection({
       {/* Content */}
       <div className="full-height-divider-content">
         {/* English Title - Staggered Effect */}
-        <p className="full-height-divider-english">
+        <p className="full-height-divider-english sc-tt14">
           <StaggeredText text={englishTitle} isVisible={isVisible} delay={0.3} charDelay={0.04} />
         </p>
 
         {/* Korean Text - Staggered Effect */}
         <div className="full-height-divider-quote">
-          <p className="full-height-divider-korean">
+          <p className="full-height-divider-korean sc-tt26">
             <StaggeredText text={koreanText} isVisible={isVisible} delay={1.5} charDelay={0.06} />
           </p>
         </div>
@@ -2864,13 +2864,13 @@ function ParentIntroSection({
       {/* Title */}
       <div className="mb-8 px-6" style={{ textAlign: textStyle?.textAlign || (side === 'groom' ? 'left' : 'right') }}>
         <p
-          className="typo-caption mb-2"
+          className="typo-caption sc-if10 mb-2"
           style={{ color: themeColors.gray, fontFamily: fonts.body }}
         >
           <StaggeredText text={parentNames} isVisible={isVisible} delay={0.2} charDelay={0.04} />
         </p>
         <p
-          className="typo-title font-light"
+          className="typo-title sc-tt18 font-light"
           style={{ color: themeColors.text, fontFamily: fonts.body }}
         >
           <StaggeredText text={`${childOrder === '표기안함' ? '' : childOrder + ' '}${sideLabel}, `} isVisible={isVisible} delay={0.8} charDelay={0.05} />
@@ -2952,7 +2952,7 @@ function ParentIntroSection({
         }}
       >
         <p
-          className="typo-body"
+          className="typo-body sc-bd13"
           style={{
             color: themeColors.text,
             fontFamily: fonts.body,
@@ -2987,7 +2987,7 @@ function WhyWeChoseTitleSection({
       style={{ background: '#ffffff', paddingTop: '64px' }}
     >
       <h2
-        className="typo-title font-light mb-2"
+        className="typo-title sc-tt18 font-light mb-2"
         style={{
           color: themeColors.text,
           fontFamily: fonts.displayKr,
@@ -2996,7 +2996,7 @@ function WhyWeChoseTitleSection({
         <StaggeredText text={title} isVisible={isVisible} delay={0.2} charDelay={0.05} />
       </h2>
       <p
-        className="typo-body"
+        className="typo-body sc-tt13"
         style={{
           color: themeColors.gray,
           fontFamily: fonts.body,
@@ -3089,7 +3089,7 @@ function WhyWeChoseSection({
         {/* Content */}
         <div className="relative py-10 px-6">
           <p
-            className="typo-body"
+            className="typo-body sc-bd13"
             style={{
               color: themeColors.text,
               fontFamily: fonts.body,
@@ -3107,7 +3107,7 @@ function WhyWeChoseSection({
       >
         {/* Quote Text - Word by Word */}
         <p
-          className="typo-title mb-4"
+          className="typo-title sc-bd18 mb-4"
           style={{
             color: themeColors.text,
             fontFamily: fonts.displayKr,
@@ -3147,7 +3147,7 @@ function WhyWeChoseSection({
 
         {/* Attribution - Signature Style */}
         <p
-          className="typo-caption"
+          className="typo-caption sc-if10"
           style={{ fontFamily: fonts.displayKr }}
         >
           <span
@@ -3305,7 +3305,7 @@ function InfoBlock({
       {/* Title with divider */}
       <div className="mb-4" style={{ textAlign }}>
         <h4
-          className="typo-body"
+          className="typo-body sc-tt13"
           style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 600 }}
         >
           {title}
@@ -3323,7 +3323,7 @@ function InfoBlock({
 
       {/* Content */}
       <p
-        className="typo-body leading-[1.8]"
+        className="typo-body sc-bd13 leading-[1.8]"
         style={{ color: '#666', textAlign }}
         dangerouslySetInnerHTML={{ __html: parseHighlight(content) }}
       />
@@ -3409,7 +3409,7 @@ function InterviewSection({
           }}
         >
           <p
-            className={`profile-label-animated typo-body font-light inline-block whitespace-pre-line ${titleRevealed ? 'revealed' : ''}`}
+            className={`profile-label-animated typo-body sc-tt13 font-light inline-block whitespace-pre-line ${titleRevealed ? 'revealed' : ''}`}
             style={{ fontFamily: fonts.displayKr, color: themeColors.text }}
           >
             {interview.question}
@@ -3420,7 +3420,7 @@ function InterviewSection({
       {/* Answer */}
       {interview.answer && (
         <p
-          className="typo-body"
+          className="typo-body sc-bd13"
           style={{
             fontFamily: fonts.displayKr,
             color: themeColors.text,
@@ -3555,7 +3555,7 @@ function YouTubeLiteSectionFamily({ youtube, themeColors, sectionBg, onPlay, onS
   return (
     <AnimatedSection className="px-5 py-12" style={{ background: sectionBg }}>
       {youtube.title && (
-        <p className="text-[10px] font-light text-center mb-6" style={{ color: themeColors.gray, letterSpacing: '4px' }}>{(youtube.title as string).toUpperCase()}</p>
+        <p className="text-[10px] sc-tt10 font-light text-center mb-6" style={{ color: themeColors.gray, letterSpacing: '4px' }}>{(youtube.title as string).toUpperCase()}</p>
       )}
       <div className="aspect-video rounded-lg overflow-hidden">
         <YouTubeLite videoId={videoId} onPlay={onPlay} onStop={onStop} />
@@ -4455,21 +4455,21 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
         onWheel={handleWheel}
       >
         {/* INVITATION Title */}
-        <p className="invitation-title typo-caption mb-9" style={{ color: themeColors.gray }}>INVITATION</p>
+        <p className="invitation-title typo-caption sc-tt10 mb-9" style={{ color: themeColors.gray }}>INVITATION</p>
 
         {/* Quote Section */}
         {invitation.content.quote.text && (
           <div className="quote-section mb-9">
-            <p className="typo-body" style={{ fontFamily: fonts.displayKr, color: themeColors.highlight || themeColors.primary }}>
+            <p className="typo-body sc-bd13" style={{ fontFamily: fonts.displayKr, color: themeColors.highlight || themeColors.primary }}>
               <StaggeredText text={invitation.content.quote.text} isVisible={invitationAnimated} delay={0.5} charDelay={0.05} />
             </p>
-            {invitation.content.quote.author && !invitation.content.quote.hideAuthor && <p className="typo-caption mt-2" style={{ color: themeColors.gray }}>{invitation.content.quote.author}</p>}
+            {invitation.content.quote.author && !invitation.content.quote.hideAuthor && <p className="typo-caption sc-if10 mt-2" style={{ color: themeColors.gray }}>{invitation.content.quote.author}</p>}
           </div>
         )}
 
         {/* Greeting Section */}
         <div className="greeting-section mb-11">
-          <p className="text-[13px] font-light leading-[2.1]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: (guestInfo?.customMessage || invitation.content.greeting) ? parseHighlight(guestInfo?.customMessage || invitation.content.greeting || '') : '인사말을 입력해주세요' }} />
+          <p className="greeting-body text-[13px] font-light leading-[2.1]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: (guestInfo?.customMessage || invitation.content.greeting) ? parseHighlight(guestInfo?.customMessage || invitation.content.greeting || '') : '인사말을 입력해주세요' }} />
         </div>
 
         {/* Parents Info */}
@@ -4477,7 +4477,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
         <div className="parents-section mb-9 text-center" style={{ fontFamily: fonts.displayKr }}>
           {(invitation.groom.father.name || invitation.groom.mother.name) && (
           <div className="mb-3">
-            <p className="text-[11px] font-light leading-[2]" style={{ color: themeColors.text }}>
+            <p className="text-[11px] sc-if11 font-light leading-[2]" style={{ color: themeColors.text }}>
               {invitation.groom.father.name && <><ParentName name={invitation.groom.father.name} deceased={invitation.groom.father.deceased} displayStyle={invitation.deceasedDisplayStyle as 'hanja' | 'flower'} />{invitation.groom.mother.name && ' · '}</>}
               {invitation.groom.mother.name && <ParentName name={invitation.groom.mother.name} deceased={invitation.groom.mother.deceased} displayStyle={invitation.deceasedDisplayStyle as 'hanja' | 'flower'} />}
               <span style={{ color: themeColors.gray }}> 의 아들 </span>
@@ -4487,7 +4487,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
           )}
           {(invitation.bride.father.name || invitation.bride.mother.name) && (
           <div>
-            <p className="text-[11px] font-light leading-[2]" style={{ color: themeColors.text }}>
+            <p className="text-[11px] sc-if11 font-light leading-[2]" style={{ color: themeColors.text }}>
               {invitation.bride.father.name && <><ParentName name={invitation.bride.father.name} deceased={invitation.bride.father.deceased} displayStyle={invitation.deceasedDisplayStyle as 'hanja' | 'flower'} />{invitation.bride.mother.name && ' · '}</>}
               {invitation.bride.mother.name && <ParentName name={invitation.bride.mother.name} deceased={invitation.bride.mother.deceased} displayStyle={invitation.deceasedDisplayStyle as 'hanja' | 'flower'} />}
               <span style={{ color: themeColors.gray }}> 의 딸 </span>
@@ -4500,14 +4500,14 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
 
         {/* Wedding Info Card */}
         <div className="wedding-info-card rounded-2xl px-6 py-7 mb-9" style={{ background: themeColors.cardBg, boxShadow: '0 0 0 1px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.04), 0 4px 8px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.06)' }}>
-          <span className="inline-block typo-caption px-3 py-1 rounded-full mb-5" style={{ background: '#f0f0f0', color: '#888' }}>Until wedding {calculateDday(invitation.wedding.date)}</span>
+          <span className="inline-block typo-caption sc-if10 px-3 py-1 rounded-full mb-5" style={{ background: '#f0f0f0', color: '#888' }}>Until wedding {calculateDday(invitation.wedding.date)}</span>
           <div className="pb-4 mb-4 border-b border-gray-100">
-            <p className="typo-title mb-1" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>{formatDateShort(invitation.wedding.date)}</p>
-            <p className="typo-caption" style={{ color: '#777' }}>{invitation.wedding.timeDisplay}</p>
+            <p className="typo-title sc-if18 mb-1" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>{formatDateShort(invitation.wedding.date)}</p>
+            <p className="typo-caption sc-if10" style={{ color: '#777' }}>{invitation.wedding.timeDisplay}</p>
           </div>
           <div className="mb-5">
-            <p className="typo-body mb-1" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>{invitation.wedding.venue.name}{!invitation.wedding.venue.hideHall && ` ${invitation.wedding.venue.hall}`}</p>
-            <p className="typo-caption" style={{ color: '#999' }}>{invitation.wedding.venue.address || '주소를 입력해주세요'}</p>
+            <p className="typo-body sc-if13 mb-1" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>{invitation.wedding.venue.name}{!invitation.wedding.venue.hideHall && ` ${invitation.wedding.venue.hall}`}</p>
+            <p className="typo-caption sc-if10" style={{ color: '#999' }}>{invitation.wedding.venue.address || '주소를 입력해주세요'}</p>
           </div>
           <button
             onClick={(e) => {
@@ -5061,7 +5061,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
         {/* Section Title */}
         <AnimatedSection className="text-center mb-8">
           <h3
-            className="text-[15px] font-light relative inline-block"
+            className="text-[15px] sc-tt15 font-light relative inline-block"
             style={{ fontFamily: fonts.displayKr, color: themeColors.text }}
           >
             행복한 시간을 위한 안내
@@ -5175,13 +5175,13 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
 
       {/* Thank You Section */}
       <AnimatedSection className="min-h-[300px] flex flex-col justify-center items-center text-center px-7 py-12" style={{ background: themeColors.sectionBg }}>
-        <h2 className="typo-title mb-7" style={{ fontFamily: fonts.display, color: themeColors.text }}>{invitation.content.thankYou.title}</h2>
+        <h2 className="typo-title sc-tt18 mb-7" style={{ fontFamily: fonts.display, color: themeColors.text }}>{invitation.content.thankYou.title}</h2>
         {invitation.content.thankYou.message ? (
-          <p className="typo-body mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.thankYou.message) }} />
+          <p className="typo-body sc-bd13 mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.thankYou.message) }} />
         ) : (
-          <p className="typo-body text-gray-400 mb-7">감사 메시지를 입력해주세요</p>
+          <p className="typo-body sc-bd13 text-gray-400 mb-7">감사 메시지를 입력해주세요</p>
         )}
-        {invitation.content.thankYou.sign && <p className="typo-body" style={{ fontFamily: fonts.displayKr, color: themeColors.gray }}>{invitation.content.thankYou.sign}</p>}
+        {invitation.content.thankYou.sign && <p className="typo-body sc-if13" style={{ fontFamily: fonts.displayKr, color: themeColors.gray }}>{invitation.content.thankYou.sign}</p>}
       </AnimatedSection>
 
       {/* Wave Divider before Guestbook */}
@@ -5213,12 +5213,12 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
       {/* Guestbook Section - with visibility toggle */}
       {invitation.sectionVisibility?.guestbook !== false && (
         <AnimatedSection className="px-5 py-10 pb-14 text-center" style={{ background: themeColors.cardBg }}>
-          <h3 className="typo-body mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>Guestbook</h3>
+          <h3 className="typo-body sc-tt13 mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>Guestbook</h3>
           <div className="max-w-[300px] mx-auto mb-9">
             <div className="text-center mb-6">
               <p
                 key={currentQuestionIndex}
-                className="typo-body font-medium min-h-[24px]"
+                className="typo-body sc-bd13 font-medium min-h-[24px]"
                 style={{
                   fontFamily: fonts.displayKr,
                   color: themeColors.text,
@@ -5236,7 +5236,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
               {invitation.content.guestbookQuestions.length > 1 && (
                 <button
                   onClick={handleNextQuestion}
-                  className="typo-caption cursor-pointer hover:underline active:opacity-70 transition-all block w-full mt-2"
+                  className="typo-caption sc-bd10 cursor-pointer hover:underline active:opacity-70 transition-all block w-full mt-2"
                   style={{ color: themeColors.primary }}
                 >
                   다른 질문 보기 →
@@ -5279,7 +5279,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
           {/* 방명록 메시지 표시 */}
           <div className="relative min-h-[200px]">
             {guestbookMessages.length === 0 ? (
-              <p className="typo-caption text-gray-400 pt-10">아직 방명록이 없습니다. 첫 번째로 메시지를 남겨보세요!</p>
+              <p className="typo-caption sc-bd10 text-gray-400 pt-10">아직 방명록이 없습니다. 첫 번째로 메시지를 남겨보세요!</p>
             ) : (
               <div className="flex flex-wrap justify-center gap-3">
                 {guestbookMessages.slice(0, 6).map((msg, index) => (
@@ -5311,8 +5311,8 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
       {/* RSVP Section */}
       {invitation.rsvpEnabled && (
         <AnimatedSection className="px-6 py-10 text-center" style={{ background: themeColors.cardBg }}>
-          <h3 className="typo-body mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>RSVP</h3>
-          <p className="typo-body mb-4" style={{ color: themeColors.text }}>참석 여부를 알려주세요</p>
+          <h3 className="typo-body sc-tt13 mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text }}>RSVP</h3>
+          <p className="typo-body sc-bd13 mb-4" style={{ color: themeColors.text }}>참석 여부를 알려주세요</p>
           <button
             onClick={() => onOpenRsvp?.()}
             className="w-full py-3 rounded-lg typo-caption"
@@ -5320,7 +5320,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
           >
             참석 여부 전달하기
           </button>
-          {invitation.rsvpDeadline && <p className="typo-caption mt-3" style={{ color: '#999' }}>마감일: {formatDateShort(invitation.rsvpDeadline)}</p>}
+          {invitation.rsvpDeadline && <p className="typo-caption sc-if10 mt-3" style={{ color: '#999' }}>마감일: {formatDateShort(invitation.rsvpDeadline)}</p>}
         </AnimatedSection>
       )}
 
@@ -5767,9 +5767,24 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
     (invitation.bride?.mother as any)?.bank?.enabled && (invitation.bride?.mother as any)?.bank?.account && { name: invitation.bride.mother.name, bank: (invitation.bride.mother as any).bank, role: '어머니', side: 'bride' as const },
   ].filter(Boolean) as { name: string; bank: { bank: string; account: string; holder: string; enabled: boolean }; role: string; side: 'groom' | 'bride' }[]
 
+  // 글자 크기 스케일(에디터에서 조정). 1이면 완전 무변경. (카테고리×기본크기)별 클래스로 위계 보존.
+  const bodyScale = Number((content as unknown as { bodyFontScale?: number })?.bodyFontScale) || 1
+  const titleScale = Number((content as unknown as { titleFontScale?: number })?.titleFontScale) || 1
+  const infoScale = Number((content as unknown as { infoFontScale?: number })?.infoFontScale) || 1
+  const rp = (px: number, s: number) => Math.round(px * s)
+
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: globalStyles }} />
+      {bodyScale !== 1 && (
+        <style dangerouslySetInnerHTML={{ __html: `.story-desc,.greeting-body,.sc-bd13{font-size:${rp(13,bodyScale)}px !important}.sc-bd10{font-size:${rp(10,bodyScale)}px !important}.sc-bd18{font-size:${rp(18,bodyScale)}px !important}` }} />
+      )}
+      {titleScale !== 1 && (
+        <style dangerouslySetInnerHTML={{ __html: `.sc-tt10{font-size:${rp(10,titleScale)}px !important}.sc-tt13{font-size:${rp(13,titleScale)}px !important}.sc-tt14{font-size:${rp(14,titleScale)}px !important}.sc-tt15{font-size:${rp(15,titleScale)}px !important}.sc-tt18{font-size:${rp(18,titleScale)}px !important}.sc-tt26{font-size:${rp(26,titleScale)}px !important}` }} />
+      )}
+      {infoScale !== 1 && (
+        <style dangerouslySetInnerHTML={{ __html: `.sc-if10{font-size:${rp(10,infoScale)}px !important}.sc-if11{font-size:${rp(11,infoScale)}px !important}.sc-if13{font-size:${rp(13,infoScale)}px !important}.sc-if18{font-size:${rp(18,infoScale)}px !important}` }} />
+      )}
       <div className="desktop-frame-wrapper">
         {/* 결제 안내 배너 - 핸드폰 프레임 밖 상단 */}
         {!isPaid && !isPreview && (

@@ -2805,7 +2805,7 @@ function DividerSection({
         {lines.map((line, index) => (
           <span
             key={index}
-            className="text-line"
+            className="text-line sc-tt14"
             style={{
               fontFamily,
               fontSize: '14px',
@@ -2946,7 +2946,7 @@ function ProfileSection({
       </div>
       <div className="text-center mb-8">
         <p
-          className={`profile-label-animated text-[10px] font-light mb-1.5 ${labelRevealed ? 'revealed' : ''}`}
+          className={`profile-label-animated sc-tt10 text-[10px] font-light mb-1.5 ${labelRevealed ? 'revealed' : ''}`}
           style={{
             fontFamily: fonts.display,
             color: themeColors.gray,
@@ -2959,7 +2959,7 @@ function ProfileSection({
           {profile.aboutLabel}
         </p>
         <p
-          className="text-[11px] font-light"
+          className="sc-tt11 text-[11px] font-light"
           style={{
             color: '#999',
             opacity: isVisible ? 1 : 0,
@@ -2971,7 +2971,7 @@ function ProfileSection({
         </p>
       </div>
       <div
-        className="text-[13px] font-light"
+        className="our-profile-body text-[13px] font-light"
         style={{
           fontFamily: fonts.displayKr,
           color: themeColors.text,
@@ -3044,7 +3044,7 @@ function InfoBlock({
       {/* Title with divider */}
       <div className="mb-4" style={{ textAlign }}>
         <h4
-          className="text-[13px]"
+          className="sc-tt13 text-[13px]"
           style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 600 }}
         >
           {title}
@@ -3062,7 +3062,7 @@ function InfoBlock({
 
       {/* Content */}
       <p
-        className="text-xs font-light leading-[1.8]"
+        className="sc-bd12 text-xs font-light leading-[1.8]"
         style={{ color: '#666', textAlign }}
         dangerouslySetInnerHTML={{ __html: parseHighlight(content) }}
       />
@@ -3148,7 +3148,7 @@ function InterviewSection({
           }}
         >
           <p
-            className={`profile-label-animated text-sm font-light inline-block whitespace-pre-line ${titleRevealed ? 'revealed' : ''}`}
+            className={`profile-label-animated sc-tt14 text-sm font-light inline-block whitespace-pre-line ${titleRevealed ? 'revealed' : ''}`}
             style={{ fontFamily: fonts.displayKr, color: themeColors.text }}
           >
             {interview.question}
@@ -3159,7 +3159,7 @@ function InterviewSection({
       {/* Answer */}
       {interview.answer && (
         <p
-          className="text-[13px] font-light"
+          className="our-interview-body text-[13px] font-light"
           style={{
             fontFamily: fonts.displayKr,
             color: themeColors.text,
@@ -3200,7 +3200,7 @@ function StorySection({
     >
       {story.date && (
         <p
-          className="story-date"
+          className="story-date sc-if10"
           style={{
             fontFamily: fonts.display,
             fontSize: '10px',
@@ -3216,7 +3216,7 @@ function StorySection({
 
       {story.title && (
         <p
-          className="story-title font-light"
+          className="story-title font-light sc-tt15"
           style={{
             fontFamily: fonts.displayKr,
             fontSize: '15px',
@@ -3294,7 +3294,7 @@ function YouTubeLiteSection({ youtube, themeColors, cardBg, onPlay, onStop }: { 
   return (
     <AnimatedSection className="px-5 py-12" style={{ background: cardBg }}>
       {youtube.title && (
-        <p className="text-[10px] font-light text-center mb-6" style={{ color: themeColors.gray, letterSpacing: '4px' }}>{(youtube.title as string).toUpperCase()}</p>
+        <p className="sc-tt10 text-[10px] font-light text-center mb-6" style={{ color: themeColors.gray, letterSpacing: '4px' }}>{(youtube.title as string).toUpperCase()}</p>
       )}
       <div className="aspect-video rounded-lg overflow-hidden">
         <YouTubeLite videoId={videoId} onPlay={onPlay} onStop={onStop} />
@@ -4215,7 +4215,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
         onWheel={handleWheel}
       >
         {/* INVITATION Title */}
-        <p className="invitation-title text-[10px] font-light mb-9" style={{ color: themeColors.gray, letterSpacing: '4px' }}>INVITATION</p>
+        <p className="invitation-title sc-tt10 text-[10px] font-light mb-9" style={{ color: themeColors.gray, letterSpacing: '4px' }}>INVITATION</p>
 
         {/* Quote Section */}
         {invitation.content.quote.text && (
@@ -4271,7 +4271,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
 
         {/* Greeting Section */}
         <div className="greeting-section mb-11">
-          <p className="text-[13px] font-light leading-[2.1]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: invitation.content.greeting ? parseHighlight(invitation.content.greeting) : '인사말을 입력해주세요' }} />
+          <p className="greeting-body text-[13px] font-light leading-[2.1]" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: invitation.content.greeting ? parseHighlight(invitation.content.greeting) : '인사말을 입력해주세요' }} />
         </div>
 
         {/* Parents Info */}
@@ -4279,7 +4279,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
         <div className="parents-section mb-9 text-center" style={{ fontFamily: fonts.displayKr }}>
           {(invitation.groom.father.name || invitation.groom.mother.name) && (
           <div className="mb-3">
-            <p className="text-[11px] font-light leading-[2]" style={{ color: themeColors.text }}>
+            <p className="sc-if11 text-[11px] font-light leading-[2]" style={{ color: themeColors.text }}>
               {invitation.groom.father.name && <><ParentName name={invitation.groom.father.name} deceased={invitation.groom.father.deceased} displayStyle={invitation.deceasedDisplayStyle as 'hanja' | 'flower'} />{invitation.groom.mother.name && ' · '}</>}
               {invitation.groom.mother.name && <ParentName name={invitation.groom.mother.name} deceased={invitation.groom.mother.deceased} displayStyle={invitation.deceasedDisplayStyle as 'hanja' | 'flower'} />}
               <span style={{ color: themeColors.gray }}> 의 아들 </span>
@@ -4289,7 +4289,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
           )}
           {(invitation.bride.father.name || invitation.bride.mother.name) && (
           <div>
-            <p className="text-[11px] font-light leading-[2]" style={{ color: themeColors.text }}>
+            <p className="sc-if11 text-[11px] font-light leading-[2]" style={{ color: themeColors.text }}>
               {invitation.bride.father.name && <><ParentName name={invitation.bride.father.name} deceased={invitation.bride.father.deceased} displayStyle={invitation.deceasedDisplayStyle as 'hanja' | 'flower'} />{invitation.bride.mother.name && ' · '}</>}
               {invitation.bride.mother.name && <ParentName name={invitation.bride.mother.name} deceased={invitation.bride.mother.deceased} displayStyle={invitation.deceasedDisplayStyle as 'hanja' | 'flower'} />}
               <span style={{ color: themeColors.gray }}> 의 딸 </span>
@@ -4304,12 +4304,12 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
         <div className="wedding-info-card rounded-2xl px-6 py-7 mb-9" style={{ background: themeColors.cardBg, boxShadow: '0 0 0 1px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.04), 0 4px 8px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.06)' }}>
           <span className="inline-block text-[9px] font-light px-3 py-1 rounded-full mb-5" style={{ background: '#f0f0f0', color: '#888' }}>Until wedding {calculateDday(invitation.wedding.date)}</span>
           <div className="pb-4 mb-4 border-b border-gray-100">
-            <p className="text-lg font-light mb-1" style={{ fontFamily: fonts.displayKr, color: themeColors.text, letterSpacing: '3px' }}>{formatDateShort(invitation.wedding.date)}</p>
-            <p className="text-[11px] font-light" style={{ color: '#777' }}>{invitation.wedding.timeDisplay}</p>
+            <p className="sc-if18 text-lg font-light mb-1" style={{ fontFamily: fonts.displayKr, color: themeColors.text, letterSpacing: '3px' }}>{formatDateShort(invitation.wedding.date)}</p>
+            <p className="sc-if11 text-[11px] font-light" style={{ color: '#777' }}>{invitation.wedding.timeDisplay}</p>
           </div>
           <div className="mb-5">
-            <p className="text-xs mb-1" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400 }}>{invitation.wedding.venue.name}{!invitation.wedding.venue.hideHall && ` ${invitation.wedding.venue.hall}`}</p>
-            <p className="text-[10px] font-light" style={{ color: '#999' }}>{invitation.wedding.venue.address || '주소를 입력해주세요'}</p>
+            <p className="sc-if12 text-xs mb-1" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400 }}>{invitation.wedding.venue.name}{!invitation.wedding.venue.hideHall && ` ${invitation.wedding.venue.hall}`}</p>
+            <p className="sc-if10 text-[10px] font-light" style={{ color: '#999' }}>{invitation.wedding.venue.address || '주소를 입력해주세요'}</p>
           </div>
           <button
             onClick={(e) => {
@@ -4914,7 +4914,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
         {/* Section Title */}
         <AnimatedSection className="text-center mb-8">
           <h3
-            className="text-[15px] font-light relative inline-block"
+            className="sc-tt15 text-[15px] font-light relative inline-block"
             style={{ fontFamily: fonts.displayKr, color: themeColors.text }}
           >
             행복한 시간을 위한 안내
@@ -5028,13 +5028,13 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
 
       {/* Thank You Section */}
       <AnimatedSection className="min-h-[300px] flex flex-col justify-center items-center text-center px-7 py-20" style={{ background: themeColors.sectionBg }}>
-        <h2 className="text-lg mb-7" style={{ fontFamily: fonts.display, color: themeColors.text, fontWeight: 400, letterSpacing: '4px' }}>{invitation.content.thankYou.title}</h2>
+        <h2 className="our-thankyou-title text-lg mb-7" style={{ fontFamily: fonts.display, color: themeColors.text, fontWeight: 400, letterSpacing: '4px' }}>{invitation.content.thankYou.title}</h2>
         {invitation.content.thankYou.message ? (
-          <p className="text-[11px] font-light leading-[2.2] mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.thankYou.message) }} />
+          <p className="our-thankyou-body text-[13px] font-light leading-[2.2] mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text }} dangerouslySetInnerHTML={{ __html: parseHighlight(invitation.content.thankYou.message) }} />
         ) : (
           <p className="text-[11px] text-gray-400 mb-7">감사 메시지를 입력해주세요</p>
         )}
-        {invitation.content.thankYou.sign && <p className="text-[11px] font-light" style={{ fontFamily: fonts.displayKr, color: themeColors.gray }}>{invitation.content.thankYou.sign}</p>}
+        {invitation.content.thankYou.sign && <p className="sc-if11 text-[11px] font-light" style={{ fontFamily: fonts.displayKr, color: themeColors.gray }}>{invitation.content.thankYou.sign}</p>}
       </AnimatedSection>
 
       {/* Wave Divider before Guestbook */}
@@ -5066,12 +5066,12 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
       {/* Guestbook Section - with visibility toggle */}
       {invitation.sectionVisibility?.guestbook !== false && (
         <AnimatedSection className="px-5 py-14 pb-20 text-center" style={{ background: themeColors.cardBg }}>
-          <h3 className="text-sm mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400 }}>Guestbook</h3>
+          <h3 className="sc-tt14 text-sm mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400 }}>Guestbook</h3>
           <div className="max-w-[300px] mx-auto mb-9">
             <div className="text-center mb-6">
               <p
                 key={currentQuestionIndex}
-                className="text-xs font-medium leading-[1.7] min-h-[24px]"
+                className="sc-bd12 text-xs font-medium leading-[1.7] min-h-[24px]"
                 style={{
                   fontFamily: fonts.displayKr,
                   color: themeColors.text,
@@ -5089,7 +5089,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
               {invitation.content.guestbookQuestions.length > 1 && (
                 <button
                   onClick={handleNextQuestion}
-                  className="text-[10px] font-light cursor-pointer hover:underline active:opacity-70 transition-all block w-full mt-2"
+                  className="sc-bd10 text-[10px] font-light cursor-pointer hover:underline active:opacity-70 transition-all block w-full mt-2"
                   style={{ color: themeColors.highlight || themeColors.primary }}
                 >
                   다른 질문 보기 →
@@ -5170,8 +5170,8 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
       {/* RSVP Section */}
       {invitation.rsvpEnabled && (
         <AnimatedSection className="px-6 py-14 text-center" style={{ background: themeColors.cardBg }}>
-          <h3 className="text-sm mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400 }}>RSVP</h3>
-          <p className="text-sm mb-4" style={{ color: themeColors.text }}>참석 여부를 알려주세요</p>
+          <h3 className="sc-tt14 text-sm mb-7" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400 }}>RSVP</h3>
+          <p className="sc-bd14 text-sm mb-4" style={{ color: themeColors.text }}>참석 여부를 알려주세요</p>
           <button
             onClick={() => onOpenRsvp?.()}
             className="w-full py-3 rounded-lg text-xs"
@@ -5626,9 +5626,26 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
     (invitation.bride?.mother as any)?.bank?.enabled && (invitation.bride?.mother as any)?.bank?.account && { name: invitation.bride.mother.name, bank: (invitation.bride.mother as any).bank, role: '어머니', side: 'bride' as const },
   ].filter(Boolean) as { name: string; bank: { bank: string; account: string; holder: string; enabled: boolean }; role: string; side: 'groom' | 'bride' }[]
 
+  // 본문 글자 크기 스케일(에디터에서 조정, content.bodyFontScale). 1이면 완전 무변경.
+  const bodyScale = Number((content as unknown as { bodyFontScale?: number })?.bodyFontScale) || 1
+  // 제목/헤더 스케일(content.titleFontScale). (카테고리×기본크기)별 클래스로 위계 보존.
+  const titleScale = Number((content as unknown as { titleFontScale?: number })?.titleFontScale) || 1
+  // 이름·날짜·정보 스케일(content.infoFontScale).
+  const infoScale = Number((content as unknown as { infoFontScale?: number })?.infoFontScale) || 1
+  const rp = (px: number, s: number) => Math.round(px * s)
+
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: globalStyles }} />
+      {bodyScale !== 1 && (
+        <style dangerouslySetInnerHTML={{ __html: `.story-desc,.greeting-body,.our-profile-body,.our-interview-body,.our-thankyou-body{font-size:${Math.round(13 * bodyScale)}px !important}.sc-bd10{font-size:${rp(10,bodyScale)}px !important}.sc-bd12{font-size:${rp(12,bodyScale)}px !important}.sc-bd14{font-size:${rp(14,bodyScale)}px !important}` }} />
+      )}
+      {titleScale !== 1 && (
+        <style dangerouslySetInnerHTML={{ __html: `.sc-tt10{font-size:${rp(10,titleScale)}px !important}.sc-tt11{font-size:${rp(11,titleScale)}px !important}.sc-tt13{font-size:${rp(13,titleScale)}px !important}.sc-tt14{font-size:${rp(14,titleScale)}px !important}.sc-tt15{font-size:${rp(15,titleScale)}px !important}.our-thankyou-title{font-size:${rp(18,titleScale)}px !important}` }} />
+      )}
+      {infoScale !== 1 && (
+        <style dangerouslySetInnerHTML={{ __html: `.sc-if10{font-size:${rp(10,infoScale)}px !important}.sc-if11{font-size:${rp(11,infoScale)}px !important}.sc-if12{font-size:${rp(12,infoScale)}px !important}.sc-if18{font-size:${rp(18,infoScale)}px !important}` }} />
+      )}
       <div className="desktop-frame-wrapper">
         {/* 결제 안내 배너 - 핸드폰 프레임 밖 상단 */}
         {!isPaid && !isPreview && (

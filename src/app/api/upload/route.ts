@@ -31,26 +31,23 @@ async function ensureUploadDir(subDir: string = "") {
 
 export async function POST(request: NextRequest) {
   try {
-    // 인증 확인 — 일반 사용자 토큰 또는 관리자 비밀번호(x-admin-password) 허용(우표 모더레이션용)
-    const adminPw = request.headers.get("x-admin-password");
-    const isAdmin = !!process.env.ADMIN_PASSWORD && adminPw === process.env.ADMIN_PASSWORD;
+    // 인증 확인
+    const cookieName = getAuthCookieName();
+    const token = request.cookies.get(cookieName)?.value;
 
-    if (!isAdmin) {
-      const cookieName = getAuthCookieName();
-      const token = request.cookies.get(cookieName)?.value;
-      if (!token) {
-        return NextResponse.json(
-          { error: "로그인이 필요합니다." },
-          { status: 401 }
-        );
-      }
-      const payload = await verifyToken(token);
-      if (!payload) {
-        return NextResponse.json(
-          { error: "Invalid token" },
-          { status: 401 }
-        );
-      }
+    if (!token) {
+      return NextResponse.json(
+        { error: "로그인이 필요합니다." },
+        { status: 401 }
+      );
+    }
+
+    const payload = await verifyToken(token);
+    if (!payload) {
+      return NextResponse.json(
+        { error: "Invalid token" },
+        { status: 401 }
+      );
     }
 
     const formData = await request.formData();

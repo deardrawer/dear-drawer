@@ -1,17 +1,6 @@
 /* ===== Local Display Fonts (English Title) ===== */
 /* Separated from globals.css to avoid Tailwind v4 stripping @font-face */
 
-/* Pretendard Variable — 진짜 가변폰트(굵기 100~900 실제 지원).
-   globals.css의 'Pretendard'는 Medium 파일 하나를 100~900으로 선언한 가짜라 bold가 안 나옴.
-   POST DRAWER(.pd, Wanted DS)는 이 진짜 가변폰트를 첫 순위로 사용. */
-@font-face {
-  font-family: 'Pretendard Variable';
-  src: url('https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/woff2/PretendardVariable.woff2') format('woff2');
-  font-weight: 45 920;
-  font-style: normal;
-  font-display: swap;
-}
-
 @font-face {
   font-family: 'MADELikesSlab';
   src: url('/fonts/MADELikesSlab.otf') format('opentype');

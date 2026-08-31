@@ -11,7 +11,6 @@ import {
   DialogContent,
   DialogTitle,
 } from '@/components/ui/dialog'
-import StampMessageEditor from '@/components/editor/StampMessageEditor'
 
 interface Step6PublishProps {
   invitationId?: string | null
@@ -413,21 +412,6 @@ export default function Step6Publish({
           </div>
         </div>
       </section>
-
-      {/* 결혼식 한 조각 (POST DRAWER · 선택) */}
-      {invitationId && (
-        <section className="space-y-4">
-          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="5" width="18" height="14" rx="2" />
-              <path d="M3 8h18M8 5v3" />
-            </svg>
-            결혼식 한 조각
-            <span className="text-xs font-normal text-gray-400">POST DRAWER · 선택</span>
-          </h3>
-          <StampMessageEditor invitationId={invitationId} />
-        </section>
-      )}
 
       {/* 검증 에러 표시 */}
       {validationErrors.length > 0 && (

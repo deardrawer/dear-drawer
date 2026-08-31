@@ -105,12 +105,6 @@ export default function MainLayout({
                 디어드로어
               </a>
               <Link
-                href="/post-drawer"
-                className="text-sm transition-colors tracking-wide text-gray-500 hover:text-black"
-              >
-                POST DRAWER
-              </Link>
-              <Link
                 href="/faq"
                 className="text-sm transition-colors tracking-wide text-gray-500 hover:text-black"
               >
@@ -172,13 +166,6 @@ export default function MainLayout({
               >
                 디어드로어
               </a>
-              <Link
-                href="/post-drawer"
-                className="px-4 py-3 text-sm rounded-lg transition-colors text-gray-500 hover:bg-gray-50"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                POST DRAWER
-              </Link>
               <Link
                 href="/faq"
                 className="px-4 py-3 text-sm rounded-lg transition-colors text-gray-500 hover:bg-gray-50"

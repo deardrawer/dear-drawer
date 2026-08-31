@@ -32,7 +32,6 @@ function fmtSize(bytes: number): string {
 
 export default function GuestShareClient({ slug, coupleName, title, description }: Props) {
   const [guestName, setGuestName] = useState('')
-  const [message, setMessage] = useState('')
   const [items, setItems] = useState<Item[]>([])
   const [phase, setPhase] = useState<Phase>('select')
   const [globalError, setGlobalError] = useState('')
@@ -127,7 +126,7 @@ export default function GuestShareClient({ slug, coupleName, title, description 
       const res = await fetch('/api/guest-share/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug, guestName: name, message: message.trim().slice(0, 200), files: metas }),
+        body: JSON.stringify({ slug, guestName: name, files: metas }),
       })
       if (!res.ok) {
         const err = (await res.json().catch(() => ({}))) as { error?: string }
@@ -188,7 +187,7 @@ export default function GuestShareClient({ slug, coupleName, title, description 
     if (failed > 0) {
       setGlobalError(`${success}장 전송 완료, ${failed}장 실패했어요. 실패한 사진을 다시 보낼 수 있어요.`)
     }
-  }, [guestName, message, slug, patch])
+  }, [guestName, slug, patch])
 
   const resetForMore = useCallback(() => {
     itemsRef.current.forEach((i) => URL.revokeObjectURL(i.url))
@@ -244,23 +243,6 @@ export default function GuestShareClient({ slug, coupleName, title, description 
             maxLength={40}
             placeholder="이름을 입력해주세요"
             className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 outline-none focus:border-neutral-400 disabled:opacity-60"
-          />
-        </label>
-
-        {/* 두 사람에게 한마디 (선택) */}
-        <label className="block mb-5">
-          <span className="mb-1.5 flex items-center justify-between text-xs font-medium text-neutral-600">
-            <span>두 사람에게 한마디 <span className="text-neutral-400">(선택)</span></span>
-            <span className="text-neutral-400">{message.length}/200</span>
-          </span>
-          <textarea
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            disabled={uploading}
-            maxLength={200}
-            rows={3}
-            placeholder="축하 메시지를 남겨주세요"
-            className="w-full resize-none rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 outline-none focus:border-neutral-400 disabled:opacity-60"
           />
         </label>
 

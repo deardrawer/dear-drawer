@@ -5223,6 +5223,7 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
                   fontFamily: fonts.displayKr,
                   color: themeColors.text,
                   display: 'inline',
+                  whiteSpace: 'pre-line',
                   backgroundImage: `linear-gradient(${themeColors.primary}25, ${themeColors.primary}25)`,
                   backgroundRepeat: 'no-repeat',
                   backgroundPosition: 'left bottom',

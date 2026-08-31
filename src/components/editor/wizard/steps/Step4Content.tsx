@@ -2247,24 +2247,25 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
 
               <div className="space-y-2">
                 {(invitation.content.guestbookQuestions || []).map((question, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <span className="text-xs text-amber-600 w-5">{index + 1}.</span>
-                    <Input
+                  <div key={index} className="flex items-start gap-2">
+                    <span className="text-xs text-amber-600 w-5 mt-2.5">{index + 1}.</span>
+                    <Textarea
                       value={question}
                       onChange={(e) => {
                         const newQuestions = [...(invitation.content.guestbookQuestions || [])]
                         newQuestions[index] = e.target.value
                         updateNestedField('content.guestbookQuestions', newQuestions)
                       }}
-                      placeholder="질문을 입력하세요"
-                      className="flex-1 bg-white text-sm"
+                      placeholder="질문을 입력하세요 (Enter로 줄바꿈)"
+                      rows={2}
+                      className="flex-1 bg-white text-sm resize-none leading-[1.5]"
                     />
                     <button
                       onClick={() => {
                         const newQuestions = (invitation.content.guestbookQuestions || []).filter((_, i) => i !== index)
                         updateNestedField('content.guestbookQuestions', newQuestions)
                       }}
-                      className="p-1.5 text-amber-600 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                      className="p-1.5 mt-1.5 text-amber-600 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
                     >
                       <X className="w-4 h-4" />
                     </button>

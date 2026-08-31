@@ -8,6 +8,7 @@ import QRCode from 'qrcode'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
+import GuestShareSettings from '@/components/dashboard/GuestShareSettings'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Dialog,
@@ -197,6 +198,16 @@ type GuestbookMessage = {
   created_at: string
 }
 
+// 예식 다음날(Day 1)부터 = 결혼 후. POST DRAWER(내 서랍) 활성 기준(KST).
+function isPostWeddingKST(weddingDate?: string): boolean {
+  if (!weddingDate) return false
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(weddingDate)
+  if (!m) return false
+  const weddingDay = Math.floor(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])) / 86400000)
+  const today = Math.floor((Date.now() + 9 * 3600 * 1000) / 86400000)
+  return today - weddingDay >= 1
+}
+
 export default function MyInvitationsPage() {
   const { user, status } = useAuth()
   const router = useRouter()
@@ -205,6 +216,7 @@ export default function MyInvitationsPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null)
+  const [openingDrawerId, setOpeningDrawerId] = useState<string | null>(null)
 
   // 필터 상태
   const [filterType, setFilterType] = useState<'all' | 'our' | 'family' | 'parents'>('all')
@@ -218,6 +230,8 @@ export default function MyInvitationsPage() {
   const [qrCodeUrl, setQrCodeUrl] = useState('')
   const qrCanvasRef = useRef<HTMLCanvasElement>(null)
 
+  // 하객 사진 공유 확장 패널(열린 청첩장 id)
+  const [guestShareOpenId, setGuestShareOpenId] = useState<string | null>(null)
   // 관리 모달 상태
   const [manageInvitation, setManageInvitation] = useState<InvitationSummary | null>(null)
   const [rsvpData, setRsvpData] = useState<RSVPData[]>([])
@@ -455,6 +469,29 @@ export default function MyInvitationsPage() {
       alert('복제에 실패했습니다.')
     } finally {
       setDuplicatingId(null)
+    }
+  }
+
+  // 개인 POST DRAWER(결혼식 서랍) 열기: archive_slug 확보 후 이동
+  const handleOpenPostDrawer = async (invitation: InvitationSummary) => {
+    if (openingDrawerId) return
+    setOpeningDrawerId(invitation.id)
+    try {
+      const res = await fetch('/api/post-drawer/ensure', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ invitationId: invitation.id }),
+      })
+      const data = (await res.json()) as { archiveSlug?: string; error?: string }
+      if (res.ok && data.archiveSlug) {
+        router.push(`/post-drawer/${data.archiveSlug}`)
+      } else {
+        alert(data.error || 'POST DRAWER를 열 수 없습니다.')
+      }
+    } catch {
+      alert('POST DRAWER를 열 수 없습니다.')
+    } finally {
+      setOpeningDrawerId(null)
     }
   }
 
@@ -865,14 +902,26 @@ export default function MyInvitationsPage() {
               <p className="text-sm text-gray-500">아직 청첩장이 없습니다</p>
             )}
           </div>
-          <Link href="/templates">
-            <Button className="bg-black hover:bg-gray-800 shadow-lg hover:shadow-xl transition-all hover:scale-105">
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              새 청첩장 만들기
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            {invitations.length > 0 && (
+              <Link href="/rsvp">
+                <Button variant="outline" className="bg-white/70 border-gray-300 hover:bg-white">
+                  <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                  </svg>
+                  RSVP 통합관리
+                </Button>
+              </Link>
+            )}
+            <Link href="/templates">
+              <Button className="bg-black hover:bg-gray-800 shadow-lg hover:shadow-xl transition-all hover:scale-105">
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                새 청첩장 만들기
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -949,12 +998,14 @@ export default function MyInvitationsPage() {
             const templateName = getTemplateDisplayName(invitation.template_id, senderSide)
             const templateBadgeColor = getTemplateBadgeColor(invitation.template_id, senderSide)
             const isParentsTemplate = invitation.template_id === 'narrative-parents' || invitation.template_id === 'parents' || invitation.template_id === 'parents-formal'
+            // 결제완료 + 결혼 후: 예식이 끝났으므로 카드가 미리보기 대신 서랍(POST DRAWER)으로 이동
+            const isDrawerMode = !!invitation.is_paid && isPostWeddingKST(invitation.wedding_date)
 
             return (
               <Card key={invitation.id} className="overflow-hidden group hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                 <div
                   className="aspect-[9/16] relative cursor-pointer hover:opacity-90 transition-opacity overflow-hidden"
-                  onClick={() => setPreviewInvitation(invitation)}
+                  onClick={() => (isDrawerMode ? handleOpenPostDrawer(invitation) : setPreviewInvitation(invitation))}
                 >
                   {/* 혼주용 템플릿: 항상 봉투 스타일 미리보기 */}
                   {isParentsTemplate ? (
@@ -1029,14 +1080,33 @@ export default function MyInvitationsPage() {
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
                     {daysInfo && daysInfo.days > 0 && (
                       <div className={`px-2 py-1 rounded text-xs mb-2 inline-block ${invitation.is_paid ? 'bg-blue-500/80 text-white' : 'bg-orange-500/80 text-white'}`}>
-                        {invitation.is_paid ? `예식일 +30일 후 삭제 (D-${daysInfo.days})` : `${daysInfo.days}일 후 자동 삭제`}
+                        {invitation.is_paid ? `예식 +30일 후 공개 종료 (D-${daysInfo.days})` : `${daysInfo.days}일 후 자동 삭제`}
                       </div>
                     )}
-                    <p className="text-xs text-white/90">클릭하여 미리보기</p>
+                    <p className="text-xs text-white/90">{isDrawerMode ? '클릭하여 서랍 열기' : '클릭하여 미리보기'}</p>
                   </div>
                 </div>
 
                 <CardContent className="p-4">
+                  {isDrawerMode ? (
+                    <div className="text-center py-1">
+                      <p className="text-sm font-medium text-gray-900">
+                        {invitation.title || `${invitation.groom_name} & ${invitation.bride_name}`}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1 mb-3">예식이 끝나 이 청첩장은 POST DRAWER로 옮겨졌어요</p>
+                      <button
+                        onClick={() => handleOpenPostDrawer(invitation)}
+                        disabled={openingDrawerId === invitation.id}
+                        className="w-full py-2.5 text-sm font-medium rounded-md text-white bg-orange-500 hover:bg-orange-600 transition-colors disabled:opacity-60 flex items-center justify-center gap-1.5"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7a2 2 0 012-2h12a2 2 0 012 2v3H4V7z M4 10h16v7a2 2 0 01-2 2H6a2 2 0 01-2-2v-7z M9 14h6" />
+                        </svg>
+                        {openingDrawerId === invitation.id ? '여는 중…' : '서랍 열기'}
+                      </button>
+                    </div>
+                  ) : (
+                    <>
                   <div className="flex items-center justify-between mb-3">
                     <div>
                       <p className="text-xs sm:text-sm font-medium text-gray-900">
@@ -1050,7 +1120,7 @@ export default function MyInvitationsPage() {
                   </div>
 
                   <p className="text-[10px] sm:text-xs text-gray-400 mb-3">
-                    {invitation.is_paid ? '예식일로부터 30일 후 자동 삭제됩니다' : '결제하지 않은 청첩장은 생성일로부터 7일 후 자동 삭제됩니다'}
+                    {invitation.is_paid ? '예식 30일 후 공개가 종료되며, 기록은 POST DRAWER에 보관됩니다 (삭제되지 않음)' : '결제하지 않은 청첩장은 생성일로부터 7일 후 자동 삭제됩니다'}
                   </p>
 
                   {/* 상단: 주요 액션 (에디터 편집, 워터마크 제거/모임 관리) */}
@@ -1082,6 +1152,22 @@ export default function MyInvitationsPage() {
                       </Link>
                     ) : null}
                   </div>
+                  {/* 개인 POST DRAWER — ○○·○○의 서랍 (결제완료 + 결혼 후에만 활성) */}
+                  {Boolean(invitation.is_paid) && isPostWeddingKST(invitation.wedding_date) && (
+                    <button
+                      onClick={() => handleOpenPostDrawer(invitation)}
+                      disabled={openingDrawerId === invitation.id}
+                      className="w-full mb-2 py-2 text-xs font-medium rounded-md border border-orange-200 text-orange-700 bg-orange-50 hover:bg-orange-100 transition-colors disabled:opacity-60 flex items-center justify-center gap-1.5"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7a2 2 0 012-2h12a2 2 0 012 2v3H4V7z M4 10h16v7a2 2 0 01-2 2H6a2 2 0 01-2-2v-7z M9 14h6" />
+                      </svg>
+                      {openingDrawerId === invitation.id
+                        ? '여는 중…'
+                        : `${invitation.groom_name} · ${invitation.bride_name}의 서랍`}
+                    </button>
+                  )}
+
                   {/* 하단: 보조 액션 (복제, 공유, 관리, 삭제) */}
                   <div className="grid grid-cols-4 gap-2">
                     <Button
@@ -1108,6 +1194,31 @@ export default function MyInvitationsPage() {
                       삭제
                     </Button>
                   </div>
+
+                  {/* 하객 사진 공유 — 결제완료 청첩장 전용 확장 패널 */}
+                  {Boolean(invitation.is_paid) && (
+                    <div className="mt-2">
+                      <button
+                        onClick={() => setGuestShareOpenId(guestShareOpenId === invitation.id ? null : invitation.id)}
+                        className="w-full py-2 text-xs font-medium rounded-md border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 transition-colors flex items-center justify-center gap-1.5"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        하객 사진 공유
+                        <svg className={`w-3.5 h-3.5 transition-transform ${guestShareOpenId === invitation.id ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                      {guestShareOpenId === invitation.id && (
+                        <div className="mt-2 border border-gray-100 rounded-lg p-3 bg-gray-50">
+                          <GuestShareSettings invitationId={invitation.id} />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                    </>
+                  )}
                 </CardContent>
               </Card>
             )

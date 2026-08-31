@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getInvitationBySlug, getInvitationById, getInvitationByAlias } from '@/lib/db'
-import { createGuestUploadSession, countRecentSessions } from '@/lib/cloudStorage'
-import { createGuestUploadFile } from '@/lib/guestUploadFiles'
+import { getInvitationBySlug, getInvitationById, getInvitationByAlias, getDB } from '@/lib/db'
+import { countRecentSessions } from '@/lib/cloudStorage'
 import {
   validateFile,
   validateBatch,
@@ -25,7 +24,7 @@ async function hashIp(ip: string): Promise<string> {
  */
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as { slug?: string; guestName?: string; files?: FileMetaInput[] }
+    const body = (await request.json()) as { slug?: string; guestName?: string; message?: string; files?: FileMetaInput[] }
     const slug = (body.slug || '').trim()
     const files = Array.isArray(body.files) ? body.files : []
     if (!slug) return NextResponse.json({ error: 'slug가 필요합니다.' }, { status: 400 })
@@ -66,42 +65,73 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '요청이 많습니다. 잠시 후 다시 시도해주세요.' }, { status: 429 })
     }
 
-    // 세션 생성
+    // 이름(필수, sanitize) + 메시지(선택, 200자 clamp). 메시지가 있으면 방명록(photo_share, 비공개)으로 저장.
     const guestName = sanitizeGuestName(body.guestName || '')
+    const message = ((body.message ?? '').trim().slice(0, 200)) || null
     const totalBytes = files.reduce((s, f) => s + (f.size || 0), 0)
     const expiresAt = new Date(Date.now() + PRESIGN_EXPIRES_SECONDS * 1000).toISOString()
-    const session = await createGuestUploadSession({
-      invitationId: invitation.id,
-      guestName,
-      folderId: null, // Drive 폴더는 B2 이전 시 결정
-      fileCount: files.length,
-      totalBytes,
-      ipHash,
-      expiresAt,
-    })
 
-    // 파일별 key + presigned URL
-    const out: { fileId: string; uploadUrl: string; contentType: string }[] = []
-    for (let i = 0; i < files.length; i++) {
-      const f = files[i]
+    // id/키를 미리 생성 → guestbook(선택)+session+files를 단일 batch로 원자적 기록.
+    // (검증·rate limit 통과 후에만 실행. 하나라도 실패하면 전부 롤백 → guestbook orphan 방지)
+    const db = await getDB()
+    const ts = new Date().toISOString()
+    const sessionId = `gus_${crypto.randomUUID()}`
+    const guestbookId = message ? `gbm_${crypto.randomUUID()}` : null
+    const fileEntries = files.map((f, i) => {
       const v = validated[i].v
       const fileId = crypto.randomUUID()
       const contentType = f.mimeType || extToMime(v.ext!)
-      const r2Key = buildR2Key(invitation.id, session.id, fileId, v.ext!)
-      await createGuestUploadFile({
-        id: fileId,
-        sessionId: session.id,
-        invitationId: invitation.id,
-        r2Key,
+      return {
+        fileId,
+        contentType,
+        r2Key: buildR2Key(invitation.id, sessionId, fileId, v.ext!),
         originalName: (f.name || '').slice(0, 200) || null,
-        mimeType: contentType,
         size: f.size,
-      })
-      const uploadUrl = await createPresignedPutUrl(r2Key, contentType)
-      out.push({ fileId, uploadUrl, contentType })
+      }
+    })
+
+    const stmts: ReturnType<typeof db.prepare>[] = []
+    if (guestbookId) {
+      // 기존 guestbook_messages 재사용. source='photo_share', is_public=0 → 공개 청첩장 미노출, 오너만 확인.
+      stmts.push(
+        db
+          .prepare(
+            `INSERT INTO guestbook_messages (id, invitation_id, guest_name, message, question, source, is_public, created_at)
+             VALUES (?, ?, ?, ?, NULL, 'photo_share', 0, ?)`,
+          )
+          .bind(guestbookId, invitation.id, guestName, message, ts),
+      )
+    }
+    stmts.push(
+      db
+        .prepare(
+          `INSERT INTO guest_upload_sessions
+           (id, invitation_id, guest_name, guestbook_message_id, folder_id, file_count, total_bytes, ip_hash, status, expires_at, created_at, updated_at)
+           VALUES (?, ?, ?, ?, NULL, ?, ?, ?, 'pending', ?, ?, ?)`,
+        )
+        .bind(sessionId, invitation.id, guestName, guestbookId, files.length, totalBytes, ipHash, expiresAt, ts, ts),
+    )
+    for (const fe of fileEntries) {
+      stmts.push(
+        db
+          .prepare(
+            `INSERT INTO guest_upload_files
+             (id, session_id, invitation_id, r2_key, original_name, mime_type, size, status, attempt_count, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', 0, ?, ?)`,
+          )
+          .bind(fe.fileId, sessionId, invitation.id, fe.r2Key, fe.originalName, fe.contentType, fe.size, ts, ts),
+      )
+    }
+    await db.batch(stmts) // 원자적 — 부분 실패 시 전부 롤백
+
+    // presigned URL 발급 (DB 아님 — batch 성공 후)
+    const out: { fileId: string; uploadUrl: string; contentType: string }[] = []
+    for (const fe of fileEntries) {
+      const uploadUrl = await createPresignedPutUrl(fe.r2Key, fe.contentType)
+      out.push({ fileId: fe.fileId, uploadUrl, contentType: fe.contentType })
     }
 
-    return NextResponse.json({ sessionId: session.id, files: out })
+    return NextResponse.json({ sessionId, files: out })
   } catch (e) {
     console.error('guest-share session error:', e)
     return NextResponse.json({ error: e instanceof Error ? e.message : '세션 생성에 실패했습니다.' }, { status: 500 })

@@ -417,13 +417,22 @@ export default function AdminPage() {
             관리자 페이지
           </h1>
         </div>
-        <button
-          onClick={handleLogout}
-          className="px-4 py-2 rounded-lg text-sm"
-          style={{ backgroundColor: '#F5F3EE', color: '#666' }}
-        >
-          로그아웃
-        </button>
+        <div className="flex items-center gap-2">
+          <a
+            href="/admin/stamp"
+            className="px-4 py-2 rounded-lg text-sm"
+            style={{ backgroundColor: '#F5F3EE', color: '#666' }}
+          >
+            우표 관리
+          </a>
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 rounded-lg text-sm"
+            style={{ backgroundColor: '#F5F3EE', color: '#666' }}
+          >
+            로그아웃
+          </button>
+        </div>
       </header>
 
       {/* Tabs */}

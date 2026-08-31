@@ -1,21 +1,13 @@
 import { getInvitationBySlug, getInvitationByAlias, getInvitationById, recordPageView, getGuestById, getGreetingTemplateById, recordGuestView } from "@/lib/db";
 import { notFound, redirect } from "next/navigation";
 import { headers } from "next/headers";
-import InvitationClient from "./InvitationClient";
-import InvitationClientFamily from "./InvitationClientFamily";
-import InvitationClientMagazine from "./InvitationClientMagazine";
-import InvitationClientFilm from "./InvitationClientFilm";
-import InvitationClientRecord from "./InvitationClientRecord";
-import InvitationClientExhibit from "./InvitationClientExhibit";
-import InvitationClientEssay from "./InvitationClientEssay";
-import InvitationClientThankYou from "./InvitationClientThankYou";
-import InvitationClientTheSimple from "./InvitationClientTheSimple";
-import InvitationClientClassic from "./InvitationClientClassic";
+import { InvitationBody } from "./renderInvitation";
 import type { Invitation } from "@/types/invitation";
 import type { Viewport } from "next";
 import { isUUID } from "@/lib/slug";
 import { createSampleInvitation, ourSampleContent, familySampleContent, theSimpleSampleContent, classicSampleContent } from "@/lib/sample-data";
 import GuestShareFab from "./GuestShareFab";
+import { isWeddingArchivedKST, isPostDrawerActiveKST } from "@/lib/weddingLifecycle";
 
 // 핀치 줌 비활성화를 위한 viewport 설정
 export const viewport: Viewport = {
@@ -148,15 +140,6 @@ export default async function InvitationPage({ params, searchParams }: PageProps
   }
 
   const isPaid = invitation.is_paid === 1;
-  const isFamily = invitation.template_id === 'narrative-family';
-  const isMagazine = invitation.template_id === 'narrative-magazine';
-  const isFilm = invitation.template_id === 'narrative-film';
-  const isRecord = invitation.template_id === 'narrative-record';
-  const isExhibit = invitation.template_id === 'narrative-exhibit';
-  const isEssay = invitation.template_id === 'narrative-essay';
-  const isThankYou = invitation.template_id === 'narrative-thankyou';
-  const isTheSimple = invitation.template_id === 'narrative-the-simple';
-  const isClassic = invitation.template_id === 'narrative-classic';
 
   // 하객 사진 공유 진입 FAB — 공유 활성 + 실제 청첩장(프리뷰/샘플 제외)일 때만
   // (샘플은 union 타입이라 guest_share_* 미보유 → 실제 청첩장일 때만 접근하도록 캐스팅)
@@ -164,37 +147,47 @@ export default async function InvitationPage({ params, searchParams }: PageProps
   const guestShareOn = !isSampleInvitation && !isPreview && (realInvitation.guest_share_enabled ?? 0) === 1;
   const guestShareSlug = realInvitation.slug || realInvitation.id;
 
-  // 감사장은 별도 렌더링 (props가 다름)
-  if (isThankYou) {
+  // Mode 1 공개 링크 접근제어(실제 청첩장만; preview/sample 제외):
+  //  - Day 31+ : 예식 종료 자동(isWeddingArchivedKST)
+  //  - Day 1~30: owner가 설정에서 수동 비공개(public_hidden=1) → 같은 종료 안내
+  // 데이터는 삭제하지 않고 화면 노출만 막는다. /s(비밀번호) 접근제어와는 완전 별개.
+  //
+  // ⚠️ KILL-SWITCH(기본 OFF): 환경변수 POST_WEDDING_CUTOFF_ENABLED='1' 일 때만 종료 화면 활성.
+  //   미설정(기본)이면 예식일과 무관하게 기존처럼 청첩장을 그대로 노출한다.
+  //   → 이 기능 배포만으로는 기존 운영 청첩장 화면이 절대 바뀌지 않는다.
+  //   활성화: Cloudflare Pages 환경변수에 POST_WEDDING_CUTOFF_ENABLED=1 설정 후 재배포.
+  const postWeddingCutoffEnabled = process.env.POST_WEDDING_CUTOFF_ENABLED === '1';
+  const publicHidden = (realInvitation as unknown as { public_hidden?: number }).public_hidden === 1;
+  if (
+    postWeddingCutoffEnabled &&
+    !isPreview && !isSampleInvitation &&
+    (isWeddingArchivedKST(realInvitation.wedding_date) ||
+      (publicHidden && isPostDrawerActiveKST(realInvitation.wedding_date)))
+  ) {
     return (
-      <>
-        <InvitationClientThankYou
-          invitation={invitation}
-          content={invitationContent}
-          isPaid={isPaid}
-          isPreview={isPreview}
-          isSample={isSampleInvitation}
-        />
-        {guestShareOn && <GuestShareFab slug={guestShareSlug} />}
-      </>
+      <main style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f7f5f1', padding: '0 24px', textAlign: 'center' }}>
+        <div style={{ maxWidth: 360 }}>
+          <p style={{ fontSize: 40, margin: '0 0 18px' }}>🤍</p>
+          <h1 style={{ fontSize: 18, fontWeight: 600, color: '#3a352c', margin: '0 0 10px' }}>함께 축하해주셔서 감사합니다</h1>
+          <p style={{ fontSize: 14, lineHeight: 1.8, color: '#8b8271', margin: 0 }}>두 사람의 예식이<br />행복하게 마무리되었습니다.</p>
+        </div>
+      </main>
     );
   }
 
-  // 템플릿에 따라 적절한 컴포넌트 렌더링
-  const ClientComponent = isClassic ? InvitationClientClassic : isTheSimple ? InvitationClientTheSimple : isEssay ? InvitationClientEssay : isExhibit ? InvitationClientExhibit : isRecord ? InvitationClientRecord : isFilm ? InvitationClientFilm : isMagazine ? InvitationClientMagazine : isFamily ? InvitationClientFamily : InvitationClient;
-
+  // 렌더 코어(InvitationBody)로 청첩장 본문 렌더. 접근제어는 위에서 끝났고 여기선 렌더만.
   return (
     <>
-      <ClientComponent
+      <InvitationBody
         invitation={invitation}
         content={invitationContent}
         isPaid={isPaid}
         isPreview={isPreview}
+        isSample={isSampleInvitation}
         overrideColorTheme={colorTheme}
         overrideFontStyle={fontStyle}
         skipIntro={shouldSkipIntro}
         guestInfo={guestInfo}
-        isSample={isSampleInvitation}
       />
       {guestShareOn && <GuestShareFab slug={guestShareSlug} />}
     </>

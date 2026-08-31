@@ -477,7 +477,7 @@ function RecordHeader({ invitation, fonts, tc, currentTrack, progress, isCrossfa
             <div className="equalizer-bar" style={{ width: '2px', background: tc.primary, animationDelay: '0.2s' }} />
             <div className="equalizer-bar" style={{ width: '2px', background: tc.primary, animationDelay: '0.4s' }} />
           </div>
-          <div style={{ fontFamily: fonts.display, fontSize: '11px', fontWeight: 500, letterSpacing: '3px', color: tc.text }}>
+          <div style={{ fontFamily: fonts.display, fontSize: '11px', fontWeight: 500, letterSpacing: '3px', color: tc.primary }}>
             {invitation.groom?.name || ''} & {invitation.bride?.name || ''}
           </div>
           <div className="equalizer-container flex items-end gap-[2px]" style={{ height: '14px' }}>
@@ -500,7 +500,7 @@ function RecordHeader({ invitation, fonts, tc, currentTrack, progress, isCrossfa
           <div className="equalizer-bar" style={{ width: '2px', background: tc.primary, animationDelay: '0.2s' }} />
           <div className="equalizer-bar" style={{ width: '2px', background: tc.primary, animationDelay: '0.4s' }} />
         </div>
-        <div style={{ fontFamily: fonts.display, fontSize: '11px', fontWeight: 500, letterSpacing: '3px', color: tc.text }}>
+        <div style={{ fontFamily: fonts.display, fontSize: '11px', fontWeight: 500, letterSpacing: '3px', color: tc.primary }}>
           {invitation.groom?.name || ''} & {invitation.bride?.name || ''}
         </div>
         <span style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '3px', color: tc.primary }}>
@@ -1015,11 +1015,11 @@ function TrackOurJourney({ invitation, fonts, tc, trackRef, bgOverride, trackNum
               }}>
                 {/* Tape corner decoration */}
                 <div className="absolute top-2 left-2 w-6 h-6 opacity-20" style={{
-                  background: `linear-gradient(135deg, ${tc.primary}40, transparent)`,
+                  background: `linear-gradient(135deg, ${tc.cardAccent}40, transparent)`,
                   borderRadius: '0 0 6px 0',
                 }} />
                 <div className="absolute top-2 right-2 w-6 h-6 opacity-20" style={{
-                  background: `linear-gradient(225deg, ${tc.primary}40, transparent)`,
+                  background: `linear-gradient(225deg, ${tc.cardAccent}40, transparent)`,
                   borderRadius: '0 0 0 6px',
                 }} />
 
@@ -1048,7 +1048,7 @@ function TrackOurJourney({ invitation, fonts, tc, trackRef, bgOverride, trackNum
                 {/* Individual seekbar per card */}
                 <div style={{ padding: '0 18px 12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <div style={{ flex: 1, height: '2px', background: tc.divider, borderRadius: '1px', position: 'relative' }}>
-                    <div style={{ width: `${trackProgress}%`, height: '100%', background: tc.primary, borderRadius: '1px', transition: 'width 0.3s' }} />
+                    <div style={{ width: `${trackProgress}%`, height: '100%', background: tc.cardAccent, borderRadius: '1px', transition: 'width 0.3s' }} />
                   </div>
                   <span style={{ fontFamily: fonts.display, fontSize: '7px', color: tc.cardText, opacity: 0.6 }}>
                     {idx + 1}/{interviews.length}
@@ -1292,7 +1292,7 @@ function TrackGallery({ invitation, fonts, tc, onOpenLightbox, trackRef, bgOverr
         <div className="mt-3" style={{ position: 'relative' }}>
           <div style={{ height: '3px', background: `${tc.divider}80`, borderRadius: '2px', position: 'relative' }}>
             <div style={{
-              height: '100%', background: tc.primary, borderRadius: '2px',
+              height: '100%', background: tc.cardAccent, borderRadius: '2px',
               width: `${progressPct}%`, transition: 'width 0.4s ease',
             }} />
             {/* Seekbar thumb */}
@@ -1300,7 +1300,7 @@ function TrackGallery({ invitation, fonts, tc, onOpenLightbox, trackRef, bgOverr
               position: 'absolute', top: '50%', left: `${progressPct}%`,
               transform: 'translate(-50%, -50%)',
               width: '10px', height: '10px', borderRadius: '50%',
-              background: tc.primary, boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
+              background: tc.cardAccent, boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
               transition: 'left 0.4s ease',
             }} />
           </div>
@@ -1323,7 +1323,7 @@ function TrackGallery({ invitation, fonts, tc, onOpenLightbox, trackRef, bgOverr
             background: tc.cardAccent, border: 'none', cursor: 'pointer',
             width: '56px', height: '56px', borderRadius: '50%',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: `0 4px 16px ${tc.primary}40`,
+            boxShadow: `0 4px 16px ${tc.cardAccent}40`,
             transition: 'transform 0.2s',
           }}
             className="hover:scale-105 active:scale-95"
@@ -1465,7 +1465,7 @@ function TrackWeddingDay({ invitation, fonts, tc, trackRef, bgOverride, trackNum
               </div>
             )}
 
-            <div style={{ width: '40px', height: '1px', background: tc.primary, margin: '0 auto 20px', opacity: 0.4 }} />
+            <div style={{ width: '40px', height: '1px', background: tc.cardAccent, margin: '0 auto 20px', opacity: 0.4 }} />
 
             {/* PRESENTED BY */}
             <div className="text-center mb-4">
@@ -1493,7 +1493,7 @@ function TrackWeddingDay({ invitation, fonts, tc, trackRef, bgOverride, trackNum
                 </p>
               </div>
               <div className="flex-shrink-0 mx-2" style={{ alignSelf: 'flex-end', marginBottom: '6px' }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill={tc.primary} xmlns="http://www.w3.org/2000/svg">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill={tc.cardAccent} xmlns="http://www.w3.org/2000/svg">
                   <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                 </svg>
               </div>
@@ -1763,9 +1763,9 @@ function BonusTrack({ invitation, fonts, tc, trackRef, bgOverride }: {
 
             {/* Musical note divider */}
             <div className="flex items-center justify-center gap-3 mb-4">
-              <div style={{ width: '20px', height: '1px', background: tc.primary, opacity: 0.3 }} />
-              <span style={{ fontSize: '10px', color: `${tc.primary}50` }}>&#9835;</span>
-              <div style={{ width: '20px', height: '1px', background: tc.primary, opacity: 0.3 }} />
+              <div style={{ width: '20px', height: '1px', background: tc.cardAccent, opacity: 0.3 }} />
+              <span style={{ fontSize: '10px', color: `${tc.cardAccent}50` }}>&#9835;</span>
+              <div style={{ width: '20px', height: '1px', background: tc.cardAccent, opacity: 0.3 }} />
             </div>
 
             {(() => {
@@ -1837,7 +1837,7 @@ function GiftSection({ invitation, fonts, tc, bgOverride }: { invitation: any; f
     <div className="px-5 py-10" style={{ backgroundColor: bgOverride || 'transparent' }}>
       <div className="text-center mb-6">
         <h3 style={{ fontFamily: fonts.displayKr, fontSize: '14px', color: tc.cardAccent, fontWeight: 400 }}>마음 전하실 곳</h3>
-        <div style={{ width: '20px', height: '1px', background: tc.primary, margin: '10px auto 0', opacity: 0.5 }} />
+        <div style={{ width: '20px', height: '1px', background: tc.cardAccent, margin: '10px auto 0', opacity: 0.5 }} />
         {invitation.giftNotice && (
           <p style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.gray, lineHeight: 1.6, marginTop: '10px', whiteSpace: 'pre-line' }}>{invitation.giftNotice}</p>
         )}
@@ -1848,8 +1848,8 @@ function GiftSection({ invitation, fonts, tc, bgOverride }: { invitation: any; f
             style={{
               fontFamily: fonts.display, fontSize: '10px', letterSpacing: '2px', padding: '11px',
               borderRadius: '8px',
-              border: `1px solid ${expandedSide === side ? tc.primary : tc.divider}`,
-              background: expandedSide === side ? tc.primary : tc.cardBg,
+              border: `1px solid ${expandedSide === side ? tc.cardAccent : tc.divider}`,
+              background: expandedSide === side ? tc.cardAccent : tc.cardBg,
               color: expandedSide === side ? '#FFFFFF' : tc.cardText, cursor: 'pointer', transition: 'all 0.3s',
             }}>
             {side === 'groom' ? '신랑측' : '신부측'}
@@ -1918,7 +1918,7 @@ function FanMailSection({ invitation, invitationId, fonts, tc, isSample, bgOverr
             &#9835; {dt('MESSAGES')}
           </span>
           <h3 style={{ fontFamily: fonts.display, fontSize: '13px', fontWeight: 500, letterSpacing: '5px', color: tc.cardAccent }}>{dt('GUESTBOOK')}</h3>
-          <div style={{ width: '20px', height: '1px', background: tc.primary, margin: '10px auto 0', opacity: 0.5 }} />
+          <div style={{ width: '20px', height: '1px', background: tc.cardAccent, margin: '10px auto 0', opacity: 0.5 }} />
         </div>
         <div className="text-center mb-6">
           <p
@@ -1950,7 +1950,7 @@ function FanMailSection({ invitation, invitationId, fonts, tc, isSample, bgOverr
           <textarea value={message} onChange={e => setMessage(e.target.value)} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} placeholder="메시지를 남겨주세요 (100자 이내)" rows={3} maxLength={100}
             style={{ ...inputStyle, resize: 'none' as const }} />
           <button onClick={handleSubmit} disabled={submitting}
-            style={{ width: '100%', fontFamily: fonts.display, fontSize: '10px', letterSpacing: '3px', padding: '12px', background: tc.primary, color: '#FFFFFF', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: submitting ? 0.5 : 1 }}>
+            style={{ width: '100%', fontFamily: fonts.display, fontSize: '10px', letterSpacing: '3px', padding: '12px', background: tc.cardAccent, color: '#FFFFFF', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: submitting ? 0.5 : 1 }}>
             {dt('SUBMIT')}
           </button>
         </div>
@@ -2041,7 +2041,7 @@ function RsvpSection({ invitation, invitationId, fonts, tc, bgOverride }: {
             &#9834; {dt('ENCORE')}
           </span>
           <h3 style={{ fontFamily: fonts.display, fontSize: '13px', fontWeight: 500, letterSpacing: '5px', color: tc.cardAccent }}>{dt('RSVP')}</h3>
-          <div style={{ width: '20px', height: '1px', background: tc.primary, margin: '10px auto 0', opacity: 0.5 }} />
+          <div style={{ width: '20px', height: '1px', background: tc.cardAccent, margin: '10px auto 0', opacity: 0.5 }} />
           {date && (
             <p style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.gray, marginTop: '8px' }}>
               {String(date.getFullYear()).slice(2)}.{String(date.getMonth()+1).padStart(2,'0')}.{String(date.getDate()).padStart(2,'0')} {w.venue?.name || ''}
@@ -2073,8 +2073,8 @@ function RsvpSection({ invitation, invitationId, fonts, tc, bgOverride }: {
                   style={{
                     fontFamily: fonts.display, fontSize: '10px', letterSpacing: '2px', padding: '11px',
                     borderRadius: '8px',
-                    border: `1px solid ${side === opt.value ? tc.primary : tc.divider}`,
-                    background: side === opt.value ? tc.primary : 'transparent',
+                    border: `1px solid ${side === opt.value ? tc.cardAccent : tc.divider}`,
+                    background: side === opt.value ? tc.cardAccent : 'transparent',
                     color: side === opt.value ? '#FFFFFF' : tc.cardText, cursor: 'pointer', transition: 'all 0.3s',
                   }}>
                   {opt.label}
@@ -2086,17 +2086,17 @@ function RsvpSection({ invitation, invitationId, fonts, tc, bgOverride }: {
                 <span style={{ fontFamily: fonts.body, fontSize: '12px', color: tc.cardText, display: 'block', marginBottom: '6px' }}>초대 경로</span>
                 <div className="flex gap-2 flex-wrap" style={{ wordBreak: 'keep-all' }}>
                   {((side === 'groom' && (invitation.rsvpSideDetailOptions?.groomSelf ?? true)) || (side === 'bride' && (invitation.rsvpSideDetailOptions?.brideSelf ?? true))) && (
-                    <button onClick={() => setSideDetail('self')} style={{ flex: 1, fontFamily: fonts.body, fontSize: '10px', padding: '10px', borderRadius: '8px', border: `1px solid ${sideDetail === 'self' ? tc.primary : tc.divider}`, background: sideDetail === 'self' ? tc.primary : 'transparent', color: sideDetail === 'self' ? '#FFFFFF' : tc.cardText, cursor: 'pointer', transition: 'all 0.3s' }}>
+                    <button onClick={() => setSideDetail('self')} style={{ flex: 1, fontFamily: fonts.body, fontSize: '10px', padding: '10px', borderRadius: '8px', border: `1px solid ${sideDetail === 'self' ? tc.cardAccent : tc.divider}`, background: sideDetail === 'self' ? tc.cardAccent : 'transparent', color: sideDetail === 'self' ? '#FFFFFF' : tc.cardText, cursor: 'pointer', transition: 'all 0.3s' }}>
                       {side === 'groom' ? '신랑' : '신부'}
                     </button>
                   )}
                   {((side === 'groom' && (invitation.rsvpSideDetailOptions?.groomFather ?? true)) || (side === 'bride' && (invitation.rsvpSideDetailOptions?.brideFather ?? true))) && (
-                    <button onClick={() => setSideDetail('father')} style={{ flex: 1, fontFamily: fonts.body, fontSize: '10px', padding: '10px', borderRadius: '8px', border: `1px solid ${sideDetail === 'father' ? tc.primary : tc.divider}`, background: sideDetail === 'father' ? tc.primary : 'transparent', color: sideDetail === 'father' ? '#FFFFFF' : tc.cardText, cursor: 'pointer', transition: 'all 0.3s' }}>
+                    <button onClick={() => setSideDetail('father')} style={{ flex: 1, fontFamily: fonts.body, fontSize: '10px', padding: '10px', borderRadius: '8px', border: `1px solid ${sideDetail === 'father' ? tc.cardAccent : tc.divider}`, background: sideDetail === 'father' ? tc.cardAccent : 'transparent', color: sideDetail === 'father' ? '#FFFFFF' : tc.cardText, cursor: 'pointer', transition: 'all 0.3s' }}>
                       {side === 'groom' ? '신랑' : '신부'} 아버지
                     </button>
                   )}
                   {((side === 'groom' && (invitation.rsvpSideDetailOptions?.groomMother ?? true)) || (side === 'bride' && (invitation.rsvpSideDetailOptions?.brideMother ?? true))) && (
-                    <button onClick={() => setSideDetail('mother')} style={{ flex: 1, fontFamily: fonts.body, fontSize: '10px', padding: '10px', borderRadius: '8px', border: `1px solid ${sideDetail === 'mother' ? tc.primary : tc.divider}`, background: sideDetail === 'mother' ? tc.primary : 'transparent', color: sideDetail === 'mother' ? '#FFFFFF' : tc.cardText, cursor: 'pointer', transition: 'all 0.3s' }}>
+                    <button onClick={() => setSideDetail('mother')} style={{ flex: 1, fontFamily: fonts.body, fontSize: '10px', padding: '10px', borderRadius: '8px', border: `1px solid ${sideDetail === 'mother' ? tc.cardAccent : tc.divider}`, background: sideDetail === 'mother' ? tc.cardAccent : 'transparent', color: sideDetail === 'mother' ? '#FFFFFF' : tc.cardText, cursor: 'pointer', transition: 'all 0.3s' }}>
                       {side === 'groom' ? '신랑' : '신부'} 어머니
                     </button>
                   )}
@@ -2109,8 +2109,8 @@ function RsvpSection({ invitation, invitationId, fonts, tc, bgOverride }: {
                   style={{
                     fontFamily: fonts.display, fontSize: '10px', letterSpacing: '2px', padding: '11px',
                     borderRadius: '8px',
-                    border: `1px solid ${attendance === opt ? tc.primary : tc.divider}`,
-                    background: attendance === opt ? tc.primary : 'transparent',
+                    border: `1px solid ${attendance === opt ? tc.cardAccent : tc.divider}`,
+                    background: attendance === opt ? tc.cardAccent : 'transparent',
                     color: attendance === opt ? '#FFFFFF' : tc.cardText, cursor: 'pointer', transition: 'all 0.3s',
                   }}>
                   {{ yes: '참석', maybe: '미정', no: '불참' }[opt]}
@@ -2135,7 +2135,7 @@ function RsvpSection({ invitation, invitationId, fonts, tc, bgOverride }: {
                 <div className="grid grid-cols-2 gap-2">
                   {([{ v: 'yes' as const, l: '식사 예정' }, { v: 'no' as const, l: '식사 안 함' }]).map(opt => (
                     <button key={opt.v} onClick={() => setMealAttendance(mealAttendance === opt.v ? '' : opt.v)}
-                      style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '2px', padding: '11px', borderRadius: '8px', border: `1px solid ${mealAttendance === opt.v ? tc.primary : tc.divider}`, background: mealAttendance === opt.v ? tc.primary : 'transparent', color: mealAttendance === opt.v ? '#FFFFFF' : tc.cardText, cursor: 'pointer', transition: 'all 0.3s' }}>
+                      style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '2px', padding: '11px', borderRadius: '8px', border: `1px solid ${mealAttendance === opt.v ? tc.cardAccent : tc.divider}`, background: mealAttendance === opt.v ? tc.cardAccent : 'transparent', color: mealAttendance === opt.v ? '#FFFFFF' : tc.cardText, cursor: 'pointer', transition: 'all 0.3s' }}>
                       {opt.l}
                     </button>
                   ))}
@@ -2148,7 +2148,7 @@ function RsvpSection({ invitation, invitationId, fonts, tc, bgOverride }: {
                 <div className="grid grid-cols-2 gap-2">
                   {([{ v: 'yes' as const, l: '이용 예정' }, { v: 'no' as const, l: '이용 안 함' }]).map(opt => (
                     <button key={opt.v} onClick={() => setShuttleBus(shuttleBus === opt.v ? '' : opt.v)}
-                      style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '2px', padding: '11px', borderRadius: '8px', border: `1px solid ${shuttleBus === opt.v ? tc.primary : tc.divider}`, background: shuttleBus === opt.v ? tc.primary : 'transparent', color: shuttleBus === opt.v ? '#FFFFFF' : tc.cardText, cursor: 'pointer', transition: 'all 0.3s' }}>
+                      style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '2px', padding: '11px', borderRadius: '8px', border: `1px solid ${shuttleBus === opt.v ? tc.cardAccent : tc.divider}`, background: shuttleBus === opt.v ? tc.cardAccent : 'transparent', color: shuttleBus === opt.v ? '#FFFFFF' : tc.cardText, cursor: 'pointer', transition: 'all 0.3s' }}>
                       {opt.l}
                     </button>
                   ))}
@@ -2161,7 +2161,7 @@ function RsvpSection({ invitation, invitationId, fonts, tc, bgOverride }: {
                 <div className="grid grid-cols-2 gap-2">
                   {([{ v: 'yes' as const, l: '참석' }, { v: 'no' as const, l: '불참' }]).map(opt => (
                     <button key={opt.v} onClick={() => setAfterParty(afterParty === opt.v ? '' : opt.v)}
-                      style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '2px', padding: '11px', borderRadius: '8px', border: `1px solid ${afterParty === opt.v ? tc.primary : tc.divider}`, background: afterParty === opt.v ? tc.primary : 'transparent', color: afterParty === opt.v ? '#FFFFFF' : tc.cardText, cursor: 'pointer', transition: 'all 0.3s' }}>
+                      style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '2px', padding: '11px', borderRadius: '8px', border: `1px solid ${afterParty === opt.v ? tc.cardAccent : tc.divider}`, background: afterParty === opt.v ? tc.cardAccent : 'transparent', color: afterParty === opt.v ? '#FFFFFF' : tc.cardText, cursor: 'pointer', transition: 'all 0.3s' }}>
                       {opt.l}
                     </button>
                   ))}
@@ -2172,7 +2172,7 @@ function RsvpSection({ invitation, invitationId, fonts, tc, bgOverride }: {
               onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
               style={{ ...inputStyle, resize: 'none' as const }} />
             <button onClick={handleSubmit} disabled={submitting || !name.trim() || !attendance || (invitation.rsvpPhoneOption && phone.length > 0 && phone.length < 4) || (invitation.rsvpSideDetail && !!side && !sideDetail)}
-              style={{ width: '100%', fontFamily: fonts.display, fontSize: '10px', letterSpacing: '3px', padding: '13px', background: tc.primary, color: '#FFFFFF', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: (submitting || !name.trim() || !attendance || (invitation.rsvpSideDetail && !!side && !sideDetail)) ? 0.4 : 1 }}>
+              style={{ width: '100%', fontFamily: fonts.display, fontSize: '10px', letterSpacing: '3px', padding: '13px', background: tc.cardAccent, color: '#FFFFFF', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: (submitting || !name.trim() || !attendance || (invitation.rsvpSideDetail && !!side && !sideDetail)) ? 0.4 : 1 }}>
               {dt('CONFIRM')}
             </button>
           </div>

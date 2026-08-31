@@ -1037,7 +1037,7 @@ function TrackOurJourney({ invitation, fonts, tc, trackRef, bgOverride, trackNum
                 <div style={{ padding: '16px 18px' }}>
                   {/* Note marker */}
                   <div className="flex items-start gap-2 mb-2">
-                    <span style={{ fontFamily: fonts.display, fontSize: '12px', color: `${tc.primary}50`, lineHeight: 1 }}>&#9834;</span>
+                    <span style={{ fontFamily: fonts.display, fontSize: '12px', color: `${tc.cardAccent}50`, lineHeight: 1 }}>&#9834;</span>
                     <p style={{ fontFamily: fonts.displayKr, fontSize: '11px', fontWeight: 600, letterSpacing: '1px', color: tc.cardAccent }}>
                       {item.question}
                     </p>
@@ -1430,7 +1430,7 @@ function TrackWeddingDay({ invitation, fonts, tc, trackRef, bgOverride, trackNum
           {/* LIVE stamp */}
           <div className="absolute top-4 right-4" style={{
             fontFamily: fonts.display, fontSize: '8px', letterSpacing: '3px',
-            color: tc.primary, border: `1.5px solid ${tc.primary}`,
+            color: tc.cardAccent, border: `1.5px solid ${tc.cardAccent}`,
             padding: '3px 10px', borderRadius: '2px',
             opacity: isPreview ? 0.8 : 0,
             transform: isPreview ? 'rotate(12deg) scale(1)' : 'rotate(12deg) scale(3)',
@@ -1526,7 +1526,7 @@ function TrackWeddingDay({ invitation, fonts, tc, trackRef, bgOverride, trackNum
           {/* Venue section (below tear line) */}
           <div style={{ padding: '16px 20px 20px' }}>
             <div style={{ background: tc.sectionBg, borderRadius: '10px', padding: '16px', textAlign: 'center', marginBottom: '12px' }}>
-              <div style={{ fontFamily: fonts.display, fontSize: '7px', letterSpacing: '4px', color: tc.primary, marginBottom: '8px' }}>{dt('VENUE')}</div>
+              <div style={{ fontFamily: fonts.display, fontSize: '7px', letterSpacing: '4px', color: tc.cardAccent, marginBottom: '8px' }}>{dt('VENUE')}</div>
               <p style={{ fontFamily: fonts.displayKr, fontSize: '15px', fontWeight: 500, color: tc.cardText }}>{w.venue?.name || ''}</p>
               {w.venue?.hall && !w.venue?.hideHall && (
                 <p style={{ fontFamily: fonts.body, fontSize: '12px', color: tc.cardText, marginTop: '4px' }}>{w.venue.hall}</p>
@@ -1585,32 +1585,32 @@ function TrackWeddingDay({ invitation, fonts, tc, trackRef, bgOverride, trackNum
             {w.directions && (w.directions.car || w.directions.publicTransport || w.directions.train || w.directions.expressBus) && (
               <div className="mt-4 space-y-3">
                 {w.directions.car && (
-                  <div style={{ padding: '14px 16px', background: tc.sectionBg, borderRadius: '10px', borderLeft: `3px solid ${tc.primary}50` }}>
-                    <div style={{ fontFamily: fonts.displayKr, fontSize: '8px', letterSpacing: '3px', color: tc.primary, marginBottom: '6px' }}>자가용</div>
+                  <div style={{ padding: '14px 16px', background: tc.sectionBg, borderRadius: '10px', borderLeft: `3px solid ${tc.cardAccent}50` }}>
+                    <div style={{ fontFamily: fonts.displayKr, fontSize: '8px', letterSpacing: '3px', color: tc.cardAccent, marginBottom: '6px' }}>자가용</div>
                     <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.cardText, whiteSpace: 'pre-line' }}>{w.directions.car}</p>
                   </div>
                 )}
                 {w.directions.publicTransport && (
-                  <div style={{ padding: '14px 16px', background: tc.sectionBg, borderRadius: '10px', borderLeft: `3px solid ${tc.primary}50` }}>
-                    <div style={{ fontFamily: fonts.displayKr, fontSize: '8px', letterSpacing: '3px', color: tc.primary, marginBottom: '6px' }}>대중교통</div>
+                  <div style={{ padding: '14px 16px', background: tc.sectionBg, borderRadius: '10px', borderLeft: `3px solid ${tc.cardAccent}50` }}>
+                    <div style={{ fontFamily: fonts.displayKr, fontSize: '8px', letterSpacing: '3px', color: tc.cardAccent, marginBottom: '6px' }}>대중교통</div>
                     <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.cardText, whiteSpace: 'pre-line' }}>{w.directions.publicTransport}</p>
                   </div>
                 )}
                 {w.directions.train && (
-                  <div style={{ padding: '14px 16px', background: tc.sectionBg, borderRadius: '10px', borderLeft: `3px solid ${tc.primary}50` }}>
-                    <div style={{ fontFamily: fonts.displayKr, fontSize: '8px', letterSpacing: '3px', color: tc.primary, marginBottom: '6px' }}>기차</div>
+                  <div style={{ padding: '14px 16px', background: tc.sectionBg, borderRadius: '10px', borderLeft: `3px solid ${tc.cardAccent}50` }}>
+                    <div style={{ fontFamily: fonts.displayKr, fontSize: '8px', letterSpacing: '3px', color: tc.cardAccent, marginBottom: '6px' }}>기차</div>
                     <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.cardText, whiteSpace: 'pre-line' }}>{w.directions.train}</p>
                   </div>
                 )}
                 {w.directions.expressBus && (
-                  <div style={{ padding: '14px 16px', background: tc.sectionBg, borderRadius: '10px', borderLeft: `3px solid ${tc.primary}50` }}>
-                    <div style={{ fontFamily: fonts.displayKr, fontSize: '8px', letterSpacing: '3px', color: tc.primary, marginBottom: '6px' }}>고속버스</div>
+                  <div style={{ padding: '14px 16px', background: tc.sectionBg, borderRadius: '10px', borderLeft: `3px solid ${tc.cardAccent}50` }}>
+                    <div style={{ fontFamily: fonts.displayKr, fontSize: '8px', letterSpacing: '3px', color: tc.cardAccent, marginBottom: '6px' }}>고속버스</div>
                     <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.cardText, whiteSpace: 'pre-line' }}>{w.directions.expressBus}</p>
                   </div>
                 )}
                 {w.directions.extraInfoEnabled && w.directions.extraInfoText && (
-                  <div style={{ padding: '14px 16px', background: tc.sectionBg, borderRadius: '10px', borderLeft: `3px solid ${tc.primary}50` }}>
-                    <div style={{ fontFamily: fonts.displayKr, fontSize: '8px', letterSpacing: '3px', color: tc.primary, marginBottom: '6px' }}>{w.directions.extraInfoTitle || '추가 안내사항'}</div>
+                  <div style={{ padding: '14px 16px', background: tc.sectionBg, borderRadius: '10px', borderLeft: `3px solid ${tc.cardAccent}50` }}>
+                    <div style={{ fontFamily: fonts.displayKr, fontSize: '8px', letterSpacing: '3px', color: tc.cardAccent, marginBottom: '6px' }}>{w.directions.extraInfoTitle || '추가 안내사항'}</div>
                     <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: tc.cardText, whiteSpace: 'pre-line' }}>{w.directions.extraInfoText}</p>
                   </div>
                 )}
@@ -1675,8 +1675,8 @@ function GuidanceSection({ invitation, fonts, tc, trackRef, bgOverride }: {
                   borderBottom: `1px dashed ${tc.divider}80`,
                 }}>
                   <div className="flex items-center gap-2 mb-2">
-                    <span style={{ color: tc.primary, fontSize: '10px', opacity: 0.5 }}>&#10003;</span>
-                    <span style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '3px', color: tc.primary }}>
+                    <span style={{ color: tc.cardAccent, fontSize: '10px', opacity: 0.5 }}>&#10003;</span>
+                    <span style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '3px', color: tc.cardAccent }}>
                       {fonts.isScript ? item.title : item.title?.toUpperCase()}
                     </span>
                   </div>
@@ -1686,7 +1686,7 @@ function GuidanceSection({ invitation, fonts, tc, trackRef, bgOverride }: {
                       href={item.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{ display: 'block', width: '100%', boxSizing: 'border-box', textAlign: 'center', marginTop: '14px', padding: '11px 16px', fontFamily: fonts.body, fontSize: '11px', letterSpacing: '1px', color: tc.primary, border: `1px solid ${tc.primary}60`, borderRadius: '8px', textDecoration: 'none' }}
+                      style={{ display: 'block', width: '100%', boxSizing: 'border-box', textAlign: 'center', marginTop: '14px', padding: '11px 16px', fontFamily: fonts.body, fontSize: '11px', letterSpacing: '1px', color: tc.cardAccent, border: `1px solid ${tc.cardAccent}60`, borderRadius: '8px', textDecoration: 'none' }}
                     >
                       {item.buttonText}
                     </a>
@@ -1826,7 +1826,7 @@ function GiftSection({ invitation, fonts, tc, bgOverride }: { invitation: any; f
           {(acc.holder || acc.name) && <span style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.cardText, marginLeft: '6px' }}>{acc.holder || acc.name}</span>}
         </div>
         <button onClick={() => { navigator.clipboard.writeText(acc.account); alert('계좌번호가 복사되었습니다.') }}
-          style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '1px', color: tc.primary, background: 'none', border: `1px solid ${tc.primary}50`, padding: '4px 12px', cursor: 'pointer', borderRadius: '4px' }}>
+          style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '1px', color: tc.cardAccent, background: 'none', border: `1px solid ${tc.cardAccent}50`, padding: '4px 12px', cursor: 'pointer', borderRadius: '4px' }}>
           COPY
         </button>
       </div>

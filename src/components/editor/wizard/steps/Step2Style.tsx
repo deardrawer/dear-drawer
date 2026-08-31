@@ -485,70 +485,93 @@ export default function Step2Style({ templateId, invitationId }: Step2StyleProps
 
           {/* Record 색상 설정 */}
           <section className="space-y-4">
-            <div className="p-4 bg-gray-50 rounded-xl space-y-4">
-              <h4 className="text-sm font-medium text-gray-800">색상 설정</h4>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-700">배경 색상</p>
-                  <p className="text-xs text-gray-500">페이지 전체 배경 컬러</p>
-                </div>
-                <ColorField label="배경색" value={(invitation as any).customBgColor || ({ 'record-coral': '#FAF7F4', 'record-rose': '#FDEFEC', 'record-peach': '#ECF4F7', 'record-bw': '#FFFFFF', 'record-lilac': '#F0ECED', 'record-mint': '#F8FAF5' } as Record<string, string>)[currentRecordTheme] || '#FAF7F4'} onChange={(hex) => updateField('customBgColor' as any, hex)} />
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-700">본문 색상</p>
-                  <p className="text-xs text-gray-500">청첩장 전체 글자색</p>
-                </div>
-                <ColorField label="본문 색상" value={currentBodyColor} onChange={(hex) => updateField('bodyTextColor', hex)} />
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-700">카드 색상</p>
-                  <p className="text-xs text-gray-500">RSVP · 방명록 등 카드 배경색</p>
-                </div>
-                <ColorField label="카드 색상" value={invitation.cardColor || '#FFFFFF'} onChange={(hex) => updateField('cardColor', hex)} />
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-700">카드 본문 색상</p>
-                  <p className="text-xs text-gray-500">카드 안 글자색 (본문색과 별개)</p>
-                </div>
-                <ColorField label="카드 본문 색상" value={invitation.cardBodyColor || currentBodyColor} onChange={(hex) => updateField('cardBodyColor', hex)} />
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-700">인트로 배경색</p>
-                  <p className="text-xs text-gray-500">인트로(커버) 배경 컬러 · 포인트 컬러와 별개</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  {(invitation as any).coverBgColor && (
-                    <button
-                      onClick={() => updateField('coverBgColor' as any, undefined as unknown as string)}
-                      className="text-[10px] text-gray-400 underline"
-                    >
-                      기본값
-                    </button>
-                  )}
-                  <ColorField label="인트로 배경색" value={(invitation as any).coverBgColor || '#FAF7F4'} onChange={(hex) => updateField('coverBgColor' as any, hex)} />
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-700">인트로 글자 색상</p>
-                  <p className="text-xs text-gray-500">인트로(커버) 배경 위 텍스트 색상</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  {(invitation as any).coverTextColor && (
-                    <button
-                      onClick={() => updateField('coverTextColor' as any, undefined as unknown as string)}
-                      className="text-[10px] text-gray-400 underline"
-                    >
-                      기본값
-                    </button>
-                  )}
-                  <ColorField label="인트로 글자 색상" value={(invitation as any).coverTextColor || '#FFFFFF'} onChange={(hex) => updateField('coverTextColor' as any, hex)} />
-                </div>
-              </div>
+            <div className="p-4 bg-gray-50 rounded-xl space-y-3">
+              {(() => {
+                const cBg = (invitation as any).customBgColor || ({ 'record-coral': '#FAF7F4', 'record-rose': '#FDEFEC', 'record-peach': '#ECF4F7', 'record-bw': '#FFFFFF', 'record-lilac': '#F0ECED', 'record-mint': '#F8FAF5' } as Record<string, string>)[currentRecordTheme] || '#FAF7F4'
+                const cBody = currentBodyColor
+                const cCard = invitation.cardColor || '#FFFFFF'
+                const cCardBody = invitation.cardBodyColor || currentBodyColor
+                const cCardAccent = invitation.cardAccentColor || currentRecordAccent
+                const cCoverBg = (invitation as any).coverBgColor || '#FAF7F4'
+                const cCoverText = (invitation as any).coverTextColor || '#FFFFFF'
+                return (
+                  <>
+                    <div>
+                      <h4 className="text-sm font-semibold text-gray-800">글자 색상 설정 (커스텀 시)</h4>
+                      <p className="text-xs text-gray-500 mt-0.5">인트로 → 배경·본문 → 카드 순서로 위계에 맞춰 설정하세요. 오른쪽 미리보기로 확인할 수 있어요.</p>
+                    </div>
+
+                    {/* 1. 인트로 */}
+                    <div className="rounded-xl border border-gray-200 overflow-hidden bg-white">
+                      <div className="px-3 py-2 bg-gray-100 flex items-center justify-between gap-2">
+                        <span className="text-xs font-semibold text-gray-700">1. 인트로 (커버)</span>
+                        <div className="w-24 h-9 rounded-md flex items-center justify-center text-[8px] tracking-widest shrink-0" style={{ background: cCoverBg, color: cCoverText }}>OUR WEDDING</div>
+                      </div>
+                      <div className="p-3 space-y-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <div><p className="text-sm text-gray-700">인트로 배경색</p><p className="text-xs text-gray-500">커버 배경 컬러</p></div>
+                          <div className="flex items-center gap-2">
+                            {(invitation as any).coverBgColor && (<button onClick={() => updateField('coverBgColor' as any, undefined as unknown as string)} className="text-[10px] text-gray-400 underline">기본값</button>)}
+                            <ColorField label="인트로 배경색" value={cCoverBg} onChange={(hex) => updateField('coverBgColor' as any, hex)} />
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between gap-3">
+                          <div><p className="text-sm text-gray-700">인트로 글자색</p><p className="text-xs text-gray-500">커버 위 텍스트</p></div>
+                          <div className="flex items-center gap-2">
+                            {(invitation as any).coverTextColor && (<button onClick={() => updateField('coverTextColor' as any, undefined as unknown as string)} className="text-[10px] text-gray-400 underline">기본값</button>)}
+                            <ColorField label="인트로 글자색" value={cCoverText} onChange={(hex) => updateField('coverTextColor' as any, hex)} />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 2. 배경 · 본문 */}
+                    <div className="rounded-xl border border-gray-200 overflow-hidden bg-white">
+                      <div className="px-3 py-2 bg-gray-100 flex items-center justify-between gap-2">
+                        <span className="text-xs font-semibold text-gray-700">2. 배경 · 본문</span>
+                        <div className="w-24 h-9 rounded-md flex items-center justify-center text-[9px] shrink-0" style={{ background: cBg, color: cBody }}>본문 텍스트</div>
+                      </div>
+                      <div className="p-3 space-y-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <div><p className="text-sm text-gray-700">배경 색상</p><p className="text-xs text-gray-500">페이지 전체 배경</p></div>
+                          <ColorField label="배경색" value={cBg} onChange={(hex) => updateField('customBgColor' as any, hex)} />
+                        </div>
+                        <div className="flex items-center justify-between gap-3">
+                          <div><p className="text-sm text-gray-700">본문 색상</p><p className="text-xs text-gray-500">카드 밖 전체 글자색</p></div>
+                          <ColorField label="본문 색상" value={cBody} onChange={(hex) => updateField('bodyTextColor', hex)} />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 3. 카드 */}
+                    <div className="rounded-xl border border-gray-200 overflow-hidden bg-white">
+                      <div className="px-3 py-2 bg-gray-100 flex items-center justify-between gap-2">
+                        <span className="text-xs font-semibold text-gray-700">3. 카드 (RSVP · 방명록 등)</span>
+                        <div className="w-24 h-11 rounded-md flex items-center justify-center p-1 shrink-0" style={{ background: cBg }}>
+                          <div className="w-full h-full rounded flex flex-col items-center justify-center leading-tight" style={{ background: cCard }}>
+                            <span className="text-[8px] font-bold" style={{ color: cCardAccent }}>제목</span>
+                            <span className="text-[8px]" style={{ color: cCardBody }}>카드 본문</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-3 space-y-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <div><p className="text-sm text-gray-700">카드 배경색</p><p className="text-xs text-gray-500">RSVP · 방명록 등 카드 배경</p></div>
+                          <ColorField label="카드 색상" value={cCard} onChange={(hex) => updateField('cardColor', hex)} />
+                        </div>
+                        <div className="flex items-center justify-between gap-3">
+                          <div><p className="text-sm text-gray-700">카드 본문색</p><p className="text-xs text-gray-500">카드 안 글자색</p></div>
+                          <ColorField label="카드 본문 색상" value={cCardBody} onChange={(hex) => updateField('cardBodyColor', hex)} />
+                        </div>
+                        <div className="flex items-center justify-between gap-3">
+                          <div><p className="text-sm text-gray-700">카드 제목·재생색</p><p className="text-xs text-gray-500">카드/섹션 제목 · 중앙 재생 버튼</p></div>
+                          <ColorField label="카드 포인트색" value={cCardAccent} onChange={(hex) => updateField('cardAccentColor', hex)} />
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )
+              })()}
             </div>
           </section>
         </>

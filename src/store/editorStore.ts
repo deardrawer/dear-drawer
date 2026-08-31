@@ -407,6 +407,7 @@ export interface InvitationContent {
   infoFontScale?: number    // 이름·날짜·정보(예식정보·부모님·프로필) 글자 크기 배율. 없거나 1이면 기본 크기.
   cardColor?: string        // (Record) 카드 배경색 커스텀. 없으면 테마 cardBg 사용.
   cardBodyColor?: string    // (Record) 카드 본문(내부 텍스트) 색상. 없으면 본문색과 동일.
+  cardAccentColor?: string  // (Record) 카드 제목·중앙 재생 버튼 포인트색. 없으면 테마 accent 사용.
   highlightColor?: string   // 하이라이트 색상 (사용자 커스텀, 없으면 테마 기본값 사용)
 
   // ===== RSVP =====

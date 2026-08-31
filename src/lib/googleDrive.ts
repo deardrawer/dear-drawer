@@ -16,7 +16,9 @@ export {
   ensureGuestFolder,
   createGuestSubfolder,
   startResumableSession,
+  getFileView,
 } from './guest-drive-core/drive'
+export type { DriveFileView } from './guest-drive-core/drive'
 
 /** 유효한 access_token 확보 (만료 임박 시 refresh_token으로 갱신 + DB 저장) */
 export async function getValidAccessToken(conn: CloudConnection): Promise<string> {

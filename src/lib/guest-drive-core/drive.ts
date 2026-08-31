@@ -26,6 +26,44 @@ export async function getAccountEmail(accessToken: string): Promise<string | nul
   return data.user?.emailAddress ?? null
 }
 
+/** 표시용 파일 메타(썸네일/보기 링크). 바이트는 받지 않음 — thumbnailLink는 Google CDN 직접 로드용. */
+export interface DriveFileView {
+  id: string
+  mimeType: string | null
+  /** Google 서명 임시 썸네일 URL(브라우저가 직접 로드). 만료성. */
+  thumbnailLink: string | null
+  /** Drive에서 열기(원본 접근). 로그인/권한 필요할 수 있음 — 주로 영상용. */
+  webViewLink: string | null
+  isVideo: boolean
+}
+
+/**
+ * 표시용 파일 메타 1건 조회. 바이트를 프록시하지 않고 thumbnailLink(서명 임시 URL)만 받아온다.
+ * 실패(삭제/권한/미존재) 시 null. supportsAllDrives로 공유드라이브도 대응.
+ */
+export async function getFileView(accessToken: string, fileId: string): Promise<DriveFileView | null> {
+  const res = await fetch(
+    `${DRIVE_API}/files/${encodeURIComponent(fileId)}?fields=id,mimeType,thumbnailLink,webViewLink,videoMediaMetadata&supportsAllDrives=true`,
+    { headers: { Authorization: `Bearer ${accessToken}` } },
+  )
+  if (!res.ok) return null
+  const d = (await res.json()) as {
+    id?: string
+    mimeType?: string
+    thumbnailLink?: string
+    webViewLink?: string
+    videoMediaMetadata?: unknown
+  }
+  const mime = d.mimeType ?? null
+  return {
+    id: d.id ?? fileId,
+    mimeType: mime,
+    thumbnailLink: d.thumbnailLink ?? null,
+    webViewLink: d.webViewLink ?? null,
+    isVideo: !!d.videoMediaMetadata || (!!mime && mime.toLowerCase().startsWith('video')),
+  }
+}
+
 export async function folderExists(accessToken: string, folderId: string): Promise<boolean> {
   const res = await fetch(`${DRIVE_API}/files/${folderId}?fields=id,trashed`, {
     headers: { Authorization: `Bearer ${accessToken}` },

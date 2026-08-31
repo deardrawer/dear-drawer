@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const messages = await getGuestbookMessages(invitationId);
+    const messages = await getGuestbookMessages(invitationId, true);
 
     // CSV 헤더
     const headers = ["이름", "메시지", "질문", "등록일"];

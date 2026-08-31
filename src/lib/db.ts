@@ -19,6 +19,7 @@ interface D1Result<T = unknown> {
 
 interface D1Database {
   prepare(query: string): D1PreparedStatement;
+  batch<T = unknown>(statements: D1PreparedStatement[]): Promise<D1Result<T>[]>;
 }
 
 interface CloudflareEnvWithDB {
@@ -617,6 +618,9 @@ export interface GuestbookMessage {
   message: string;
   question: string | null;
   created_at: string;
+  // 0021: 출처(guestbook/photo_share)와 공개여부(NULL=공개 폴백)를 분리
+  source?: string | null;
+  is_public?: number | null;
 }
 
 export interface GuestbookInput {
@@ -666,10 +670,13 @@ export async function getRecentGuestbookMessage(
 }
 
 // 방명록 메시지 목록 조회
-export async function getGuestbookMessages(invitationId: string): Promise<GuestbookMessage[]> {
+// includePrivate=false(기본): 공개만 — 기존 행(is_public NULL)은 공개로 폴백, photo_share(is_public=0) 제외.
+// includePrivate=true: 전체 — 오너 대시보드/CSV 전용.
+export async function getGuestbookMessages(invitationId: string, includePrivate = false): Promise<GuestbookMessage[]> {
   const db = await getDB();
+  const visFilter = includePrivate ? "" : " AND (is_public IS NULL OR is_public = 1)";
   const result = await db
-    .prepare("SELECT * FROM guestbook_messages WHERE invitation_id = ? ORDER BY created_at DESC")
+    .prepare(`SELECT * FROM guestbook_messages WHERE invitation_id = ?${visFilter} ORDER BY created_at DESC`)
     .bind(invitationId)
     .all<GuestbookMessage>();
 
@@ -1237,7 +1244,10 @@ export async function getAllInvitationsForAdmin(): Promise<InvitationWithDeletio
       deletionDate.setDate(deletionDate.getDate() + 7);
       deletionReason = 'incomplete';
     } else if (inv.wedding_date) {
-      // 완성된 청첩장: 결혼식 30일 후
+      // 완성된 청첩장: 결혼식 +30일 기준일.
+      //  - 미결제(!is_paid): 이 날 자동 삭제 대상.
+      //  - 결제완료(is_paid): 삭제하지 않음. 이 날은 /i/[slug] '공개 종료 → POST DRAWER 보관' 전환 기준일일 뿐.
+      //    (실제 자동 삭제 대상은 getInvitationsScheduledForDeletion의 !is_paid 참고)
       deletionDate = new Date(inv.wedding_date);
       deletionDate.setDate(deletionDate.getDate() + 30);
       deletionReason = 'post_wedding';
@@ -1259,9 +1269,14 @@ export async function getAllInvitationsForAdmin(): Promise<InvitationWithDeletio
   });
 }
 
-// 삭제 예정인 청첩장 조회 (결제완료 청첩장은 제외)
+// 자동 삭제 대상 청첩장 조회.
+// ⚠️ P1 정책(확정): 결제완료(is_paid) 청첩장은 예식 후에도 절대 자동 삭제하지 않는다.
+//   예식 +30일에는 /i/[slug] 공개만 종료되고, RSVP·방명록·photo_share·Guest Share·POST DRAWER 데이터는 계속 보관.
+//   => 자동 삭제 대상은 '미결제(!is_paid)'만. 아래 `!inv.is_paid` 가드를 절대 제거하지 말 것.
+//      (결제완료 삭제 로직을 추가하는 것도 금지 — 예식 후 데이터는 POST DRAWER로 보관된다.)
 export async function getInvitationsScheduledForDeletion(): Promise<InvitationWithDeletionInfo[]> {
   const all = await getAllInvitationsForAdmin();
+  // 결제완료 제외(정책) — 미결제만 days_until_deletion<=0 시 삭제.
   return all.filter((inv) => inv.days_until_deletion <= 0 && !inv.is_paid);
 }
 

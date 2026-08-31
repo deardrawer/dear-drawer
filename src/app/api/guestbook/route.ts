@@ -21,7 +21,22 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const messages = await getGuestbookMessages(invitationId);
+    // 오너(로그인 + 소유)면 비공개(photo_share) 포함. 미인증/타인은 공개만.
+    let includePrivate = false;
+    const token = request.cookies.get(getAuthCookieName())?.value;
+    if (token) {
+      try {
+        const payload = await verifyToken(token);
+        const uid = (payload as { user?: { id?: string } } | null)?.user?.id;
+        if (uid) {
+          const inv = await getInvitationById(invitationId);
+          if (inv && inv.user_id === uid) includePrivate = true;
+        }
+      } catch {
+        /* 무효 토큰 → 공개만 */
+      }
+    }
+    const messages = await getGuestbookMessages(invitationId, includePrivate);
     return NextResponse.json({ data: messages });
   } catch (error) {
     console.error("Failed to get guestbook messages:", error);

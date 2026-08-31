@@ -1119,7 +1119,7 @@ function CdBookletGrid({ images, invitation, fonts, tc, onOpenLightbox }: {
       {/* SIDE B divider */}
       <div className="flex items-center justify-center gap-4 mb-6">
         <div style={{ flex: 1, maxWidth: '60px', height: '1px', background: tc.divider }} />
-        <span style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '4px', color: tc.gray, opacity: 0.6 }}>
+        <span style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '4px', color: tc.cardAccent, opacity: 0.6 }}>
           CD BOOKLET
         </span>
         <div style={{ flex: 1, maxWidth: '60px', height: '1px', background: tc.divider }} />
@@ -1280,7 +1280,7 @@ function TrackGallery({ invitation, fonts, tc, onOpenLightbox, trackRef, bgOverr
           opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(15px)',
           transition: 'all 0.8s ease 1.3s',
         }}>
-          <span style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '3px', color: tc.primary, opacity: 0.7 }}>
+          <span style={{ fontFamily: fonts.display, fontSize: '9px', letterSpacing: '3px', color: tc.cardAccent, opacity: 0.7 }}>
             {dt('TRACK')} {currentIdx + 1} / {images.length}
           </span>
           <span style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '2px', color: tc.gray, opacity: 0.5 }}>

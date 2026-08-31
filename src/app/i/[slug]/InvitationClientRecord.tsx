@@ -2680,6 +2680,7 @@ function transformToDisplayData(invitation: Invitation, content: InvitationConte
     bodyTextColor: (content as any).bodyTextColor,
     cardColor: (content as any).cardColor,
     cardBodyColor: (content as any).cardBodyColor,
+    cardAccentColor: (content as any).cardAccentColor,
     coverTextColor: (content as any).coverTextColor,
     coverBgColor: (content as any).coverBgColor,
     displayFont: (content as any).displayFont,

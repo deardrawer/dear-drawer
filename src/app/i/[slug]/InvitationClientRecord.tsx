@@ -1731,7 +1731,7 @@ function BonusTrack({ invitation, fonts, tc, trackRef, bgOverride }: {
 
           {/* Bonus track ribbon */}
           <div className="record-track-label" style={{
-            background: `linear-gradient(135deg, ${tc.accent}, ${tc.primary})`,
+            background: tc.cardAccent,
             padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             position: 'relative',
           }}>

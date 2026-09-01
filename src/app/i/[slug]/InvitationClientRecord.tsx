@@ -1118,11 +1118,11 @@ function CdBookletGrid({ images, invitation, fonts, tc, onOpenLightbox }: {
     <div ref={gridRef} className="mt-10">
       {/* SIDE B divider */}
       <div className="flex items-center justify-center gap-4 mb-6">
-        <div style={{ flex: 1, maxWidth: '60px', height: '1px', background: tc.divider }} />
+        <div style={{ flex: 1, maxWidth: '60px', height: '1px', background: tc.cardAccent }} />
         <span style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '4px', color: tc.cardAccent, opacity: 0.6 }}>
           CD BOOKLET
         </span>
-        <div style={{ flex: 1, maxWidth: '60px', height: '1px', background: tc.divider }} />
+        <div style={{ flex: 1, maxWidth: '60px', height: '1px', background: tc.cardAccent }} />
       </div>
 
       {/* First photo full width */}

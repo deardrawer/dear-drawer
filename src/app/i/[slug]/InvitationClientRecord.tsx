@@ -1836,7 +1836,7 @@ function GiftSection({ invitation, fonts, tc, bgOverride }: { invitation: any; f
   return (
     <div className="px-5 py-10" style={{ backgroundColor: bgOverride || 'transparent' }}>
       <div className="text-center mb-6">
-        <h3 style={{ fontFamily: fonts.displayKr, fontSize: '14px', color: tc.cardAccent, fontWeight: 400 }}>마음 전하실 곳</h3>
+        <h3 style={{ fontFamily: fonts.displayKr, fontSize: '14px', color: tc.primary, fontWeight: 400 }}>마음 전하실 곳</h3>
         <div style={{ width: '20px', height: '1px', background: tc.cardAccent, margin: '10px auto 0', opacity: 0.5 }} />
         {invitation.giftNotice && (
           <p style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.gray, lineHeight: 1.6, marginTop: '10px', whiteSpace: 'pre-line' }}>{invitation.giftNotice}</p>
@@ -3051,7 +3051,7 @@ function InvitationClientRecordContent({
                               <div style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '4px', color: tc.primary, opacity: 0.7, marginBottom: '8px' }}>
                                 {dt(section.trackLabel)}
                               </div>
-                              <h2 style={{ fontFamily: fonts.display, fontSize: '22px', fontWeight: 300, letterSpacing: '3px', color: tc.cardAccent, margin: '0 0 8px' }}>
+                              <h2 style={{ fontFamily: fonts.display, fontSize: '22px', fontWeight: 300, letterSpacing: '3px', color: tc.primary, margin: '0 0 8px' }}>
                                 {dt(section.name)}
                               </h2>
                               {section.duration && (
@@ -3095,7 +3095,7 @@ function InvitationClientRecordContent({
                                   <div style={{ fontFamily: fonts.display, fontSize: '8px', letterSpacing: '4px', color: tc.primary, opacity: 0.7, marginBottom: '8px' }}>
                                     {dt(section.trackLabel)}
                                   </div>
-                                  <h2 style={{ fontFamily: fonts.display, fontSize: '22px', fontWeight: 300, letterSpacing: '3px', color: tc.cardAccent, margin: '0 0 8px' }}>
+                                  <h2 style={{ fontFamily: fonts.display, fontSize: '22px', fontWeight: 300, letterSpacing: '3px', color: tc.primary, margin: '0 0 8px' }}>
                                     {dt(section.name)}
                                   </h2>
                                   {section.duration && (

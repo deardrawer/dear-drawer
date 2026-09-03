@@ -366,7 +366,7 @@ export default function EssayStep1BasicInfo({ data, updateData, updateNestedData
               <ol className="list-decimal list-inside space-y-0.5">
                 <li>
                   <a
-                    href="https://developers.kakao.com/tool/clear/og"
+                    href="https://developers.kakao.com/tool/debugger/sharing"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-amber-800 underline hover:text-amber-900"

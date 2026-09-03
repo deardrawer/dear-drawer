@@ -237,7 +237,7 @@ export default function ThankYouStep5Publish({
                 <p>이미지 변경을 위해 썸네일 캐시 초기화가 필요합니다.</p>
                 <ol className="list-decimal list-inside space-y-0.5">
                   <li>
-                    <a href="https://developers.kakao.com/tool/clear/og" target="_blank" rel="noopener noreferrer" className="text-amber-800 underline hover:text-amber-900">
+                    <a href="https://developers.kakao.com/tool/debugger/sharing" target="_blank" rel="noopener noreferrer" className="text-amber-800 underline hover:text-amber-900">
                       카카오톡 디벨로퍼
                     </a>에 접속
                   </li>

@@ -889,14 +889,14 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
                         const f = e.target.files?.[0]
                         if (f) {
                           const formData = new FormData()
-                          formData.append('file', f)
+                          formData.append('web', f)
                           if (invitationId) formData.append('invitationId', invitationId)
                           try {
                             const res = await fetch('/api/upload', { method: 'POST', body: formData })
                             if (!res.ok) throw new Error('Upload failed')
-                            const data = await res.json() as { url?: string }
-                            if (data.url) {
-                              updateNestedField('meta.kakaoThumbnail', data.url)
+                            const data = await res.json() as { webUrl?: string }
+                            if (data.webUrl) {
+                              updateNestedField('meta.kakaoThumbnail', data.webUrl)
                             }
                           } catch (err) {
                             console.error(err)
@@ -1027,14 +1027,14 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
                     const f = e.target.files?.[0]
                     if (f) {
                       const formData = new FormData()
-                      formData.append('file', f)
+                      formData.append('web', f)
                       if (invitationId) formData.append('invitationId', invitationId)
                       try {
                         const res = await fetch('/api/upload', { method: 'POST', body: formData })
                         if (!res.ok) throw new Error('Upload failed')
-                        const data = await res.json() as { url?: string }
-                        if (data.url) {
-                          updateNestedField('meta.ogImage', data.url)
+                        const data = await res.json() as { webUrl?: string }
+                        if (data.webUrl) {
+                          updateNestedField('meta.ogImage', data.webUrl)
                         }
                       } catch (err) {
                         console.error(err)
@@ -1067,14 +1067,14 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
                   const f = e.target.files?.[0]
                   if (f) {
                     const formData = new FormData()
-                    formData.append('file', f)
+                    formData.append('web', f)
                     if (invitationId) formData.append('invitationId', invitationId)
                     try {
                       const res = await fetch('/api/upload', { method: 'POST', body: formData })
                       if (!res.ok) throw new Error('Upload failed')
-                      const data = await res.json() as { url?: string }
-                      if (data.url) {
-                        updateNestedField('meta.ogImage', data.url)
+                      const data = await res.json() as { webUrl?: string }
+                      if (data.webUrl) {
+                        updateNestedField('meta.ogImage', data.webUrl)
                       }
                     } catch (err) {
                       console.error(err)

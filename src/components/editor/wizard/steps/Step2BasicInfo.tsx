@@ -321,7 +321,7 @@ export default function Step2BasicInfo({ templateId }: Step2BasicInfoProps) {
           </p>
         </div>
 
-        <div className="max-w-[200px]">
+        <div className="max-w-[140px]">
           <ImageUploader
             value={invitation.meta.kakaoThumbnail}
             onChange={(url) => updateNestedField('meta.kakaoThumbnail', url)}

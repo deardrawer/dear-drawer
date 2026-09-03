@@ -3332,19 +3332,19 @@ function AnniversaryCounterSection({
       {/* 3-column numbers */}
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', gap: '32px', marginBottom: '40px' }}>
         <div className="counter-item" style={{ textAlign: 'center' }}>
-          <p style={{ fontFamily: fonts.displayKr, fontSize: '16px', fontWeight: 400, color: themeColors.text }}>
+          <p className="sc-tt16" style={{ fontFamily: fonts.displayKr, fontSize: '16px', fontWeight: 400, color: themeColors.text }}>
             {anniversary.days.toLocaleString()}
-            <span style={{ fontSize: '10px', fontWeight: 300, marginLeft: '2px', color: themeColors.gray }}>일</span>
+            <span className="sc-tt10" style={{ fontSize: '10px', fontWeight: 300, marginLeft: '2px', color: themeColors.gray }}>일</span>
           </p>
         </div>
         <div className="counter-item" style={{ textAlign: 'center' }}>
-          <p style={{ fontFamily: fonts.displayKr, fontSize: '16px', fontWeight: 400, color: themeColors.text }}>
+          <p className="sc-tt16" style={{ fontFamily: fonts.displayKr, fontSize: '16px', fontWeight: 400, color: themeColors.text }}>
             {anniversary.weeks.toLocaleString()}
-            <span style={{ fontSize: '10px', fontWeight: 300, marginLeft: '2px', color: themeColors.gray }}>주</span>
+            <span className="sc-tt10" style={{ fontSize: '10px', fontWeight: 300, marginLeft: '2px', color: themeColors.gray }}>주</span>
           </p>
         </div>
         <div className="counter-item" style={{ textAlign: 'center' }}>
-          <p style={{ fontFamily: fonts.displayKr, fontSize: '16px', fontWeight: 400, color: themeColors.text }}>
+          <p className="sc-tt16" style={{ fontFamily: fonts.displayKr, fontSize: '16px', fontWeight: 400, color: themeColors.text }}>
             {anniversary.yearsMonths}
           </p>
         </div>
@@ -4103,7 +4103,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
               fontSize: '13px',
               fontWeight: 300,
               letterSpacing: '2px',
-              marginBottom: '16px',
+              marginBottom: '14px',
               opacity: coverAnimated ? 1 : 0,
               transform: coverAnimated ? 'translateY(0)' : 'translateY(8px)',
               transition: 'opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.2s, transform 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.2s'
@@ -4132,10 +4132,10 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
           {/* Venue */}
           <p
             style={{
-              fontSize: '10px',
+              fontSize: '13px',
               fontWeight: 500,
               letterSpacing: '4px',
-              marginBottom: '10px',
+              marginBottom: '6px',
               opacity: coverAnimated ? 1 : 0,
               transform: coverAnimated ? 'translateY(0)' : 'translateY(8px)',
               transition: 'opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.6s, transform 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.6s'
@@ -4148,7 +4148,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
           <p
             style={{
               fontFamily: fonts.displayKr,
-              fontSize: '11px',
+              fontSize: '14px',
               fontWeight: 300,
               letterSpacing: '1px',
               opacity: coverAnimated ? 1 : 0,
@@ -5639,10 +5639,10 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
     <>
       <style dangerouslySetInnerHTML={{ __html: globalStyles }} />
       {bodyScale !== 1 && (
-        <style dangerouslySetInnerHTML={{ __html: `.story-desc,.greeting-body,.our-profile-body,.our-interview-body,.our-thankyou-body{font-size:${Math.round(13 * bodyScale)}px !important}.sc-bd10{font-size:${rp(10,bodyScale)}px !important}.sc-bd12{font-size:${rp(12,bodyScale)}px !important}.sc-bd14{font-size:${rp(14,bodyScale)}px !important}` }} />
+        <style dangerouslySetInnerHTML={{ __html: `.story-desc,.greeting-body,.our-profile-body,.our-interview-body,.our-thankyou-body,.counter-text{font-size:${Math.round(13 * bodyScale)}px !important}.sc-bd10{font-size:${rp(10,bodyScale)}px !important}.sc-bd12{font-size:${rp(12,bodyScale)}px !important}.sc-bd14{font-size:${rp(14,bodyScale)}px !important}` }} />
       )}
       {titleScale !== 1 && (
-        <style dangerouslySetInnerHTML={{ __html: `.sc-tt10{font-size:${rp(10,titleScale)}px !important}.sc-tt11{font-size:${rp(11,titleScale)}px !important}.sc-tt13{font-size:${rp(13,titleScale)}px !important}.sc-tt14{font-size:${rp(14,titleScale)}px !important}.sc-tt15{font-size:${rp(15,titleScale)}px !important}.our-thankyou-title{font-size:${rp(18,titleScale)}px !important}` }} />
+        <style dangerouslySetInnerHTML={{ __html: `.sc-tt10{font-size:${rp(10,titleScale)}px !important}.sc-tt11{font-size:${rp(11,titleScale)}px !important}.sc-tt13{font-size:${rp(13,titleScale)}px !important}.sc-tt14{font-size:${rp(14,titleScale)}px !important}.sc-tt15{font-size:${rp(15,titleScale)}px !important}.sc-tt16{font-size:${rp(16,titleScale)}px !important}.our-thankyou-title{font-size:${rp(18,titleScale)}px !important}` }} />
       )}
       {infoScale !== 1 && (
         <style dangerouslySetInnerHTML={{ __html: `.sc-if10{font-size:${rp(10,infoScale)}px !important}.sc-if11{font-size:${rp(11,infoScale)}px !important}.sc-if12{font-size:${rp(12,infoScale)}px !important}.sc-if18{font-size:${rp(18,infoScale)}px !important}` }} />

@@ -1377,6 +1377,34 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
         </section>
       )}
 
+      {/* 스토리 마무리 문구 - OUR 템플릿 전용 (신랑/신부 호칭 등 커스텀 가능) */}
+      {!isFamily && !isMagazine && (
+        <section className="space-y-4">
+          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg> 마무리 문구
+          </h3>
+          <div className="p-4 bg-gray-50 rounded-lg space-y-2">
+            <div className="flex items-start justify-between gap-2">
+              <p className="text-xs text-gray-500">스토리 마지막 문구예요. &lsquo;신랑&rsquo;·&lsquo;신부&rsquo; 호칭도 자유롭게 바꿀 수 있어요. (Enter로 줄바꿈)</p>
+              <button
+                type="button"
+                onClick={() => updateNestedField('relationship.closingText', "그리고 이제 드디어 부르는 서로의 이름에\n'신랑', '신부'라는 호칭을 담습니다")}
+                className="text-[11px] text-gray-400 underline whitespace-nowrap shrink-0 hover:text-gray-700"
+              >
+                기본 문구로
+              </button>
+            </div>
+            <Textarea
+              value={invitation.relationship.closingText ?? ''}
+              onChange={(e) => updateNestedField('relationship.closingText', e.target.value)}
+              placeholder={"그리고 이제 드디어 부르는 서로의 이름에\n'신랑', '신부'라는 호칭을 담습니다"}
+              rows={3}
+              className="w-full bg-white text-sm resize-none leading-[1.6]"
+            />
+          </div>
+        </section>
+      )}
+
       {/* 갤러리 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">

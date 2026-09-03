@@ -362,19 +362,21 @@ export async function generateMetadata({ params }: PageProps) {
           }
         }
       }
-      // OG 썸네일 우선순위: 크롭된 OG > ogImage > coverImage > heroImage > mainImage >
-      //   THE SIMPLE 인트로 사진 > gallery(구형) > THE SIMPLE galleries > 크롭된 카카오 > kakaoThumbnail
+      // OG 썸네일 우선순위: 사용자가 직접 지정한 공유 이미지(OG > 카카오 썸네일)를
+      //   자동 fallback(커버/히어로/갤러리 등)보다 항상 우선한다.
+      //   (이전엔 coverImage가 카카오 썸네일보다 앞이라, 필수인 카카오 썸네일이 무시되고
+      //    문자·카톡 미리보기에 커버가 나오던 버그를 수정)
       rawThumbnailImage =
         (content?.meta?.ogImageCropped as string) ||
         extractImageUrl(content?.meta?.ogImage) ||
+        (content?.meta?.kakaoThumbnailCropped as string) ||
+        extractImageUrl(content?.meta?.kakaoThumbnail) ||
         extractImageUrl(content?.media?.coverImage) ||
         extractImageUrl(content?.heroImage) ||
         extractImageUrl(content?.mainImage) ||
         extractImageUrl(content?.sections?.intro?.photo) ||
         extractImageUrl(content?.gallery?.images?.[0]) ||
         theSimpleGalleryFirst ||
-        (content?.meta?.kakaoThumbnailCropped as string) ||
-        extractImageUrl(content?.meta?.kakaoThumbnail) ||
         "";
     } catch (e) {
       console.error("Failed to parse content for metadata:", e);

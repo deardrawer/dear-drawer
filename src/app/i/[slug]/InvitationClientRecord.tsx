@@ -370,13 +370,14 @@ function VinylRecordCover({ invitation, fonts, tc, onEnter, colorTheme }: {
           : `linear-gradient(180deg, ${tc.primary} 0%, ${tc.accent} 100%)`)
       }}>
 
-      {/* Subtle texture overlay */}
-      {!isLightCover && (
-      <div className="absolute inset-0 opacity-[0.03]" style={{
-        backgroundImage: `radial-gradient(circle at 50% 50%, rgba(0,0,0,0.1) 1px, transparent 1px)`,
-        backgroundSize: '20px 20px',
-      }} />
-      )}
+      {/* 인트로 배경 종이 질감(그레인) */}
+      <div className="absolute inset-0" style={{
+        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+        backgroundSize: '180px 180px',
+        opacity: isLightCover ? 0.22 : 0.32,
+        mixBlendMode: isLightCover ? 'multiply' : 'soft-light',
+      } as React.CSSProperties} />
+      {/* /texture */}
 
       {/* Top area - label style */}
       <div className="relative z-10 text-center mb-8" style={{

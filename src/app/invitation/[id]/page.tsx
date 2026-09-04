@@ -25,6 +25,18 @@ interface InvitationLookupResult {
   canonicalSlug?: string;
 }
 
+// 상대/절대 이미지 URL 정규화 (og:image는 반드시 절대 URL이어야 함)
+function toAbsoluteImageUrl(imageUrl: string, baseUrl: string): string {
+  if (!imageUrl) return "";
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://') || imageUrl.startsWith('//')) {
+    return imageUrl;
+  }
+  if (imageUrl.startsWith('/')) {
+    return `${baseUrl}${imageUrl}`;
+  }
+  return `${baseUrl}/${imageUrl}`;
+}
+
 // slug 또는 id로 청첩장 조회 (slug 우선, alias redirect 지원)
 async function getInvitation(key: string): Promise<InvitationLookupResult> {
   // UUID 형식이면 ID로 조회
@@ -186,16 +198,111 @@ export async function generateMetadata({ params }: PageProps) {
     };
   }
 
+  const baseUrl = "https://invite.deardrawer.com";
   const groomName = invitation.groom_name || "신랑";
   const brideName = invitation.bride_name || "신부";
 
+  // content에서 커스텀 메타 정보 및 썸네일 추출
+  let customTitle = "";
+  let customDescription = "";
+  let rawThumbnailImage = "";
+
+  if (invitation.content) {
+    try {
+      const content = JSON.parse(invitation.content);
+      customTitle = content?.meta?.title || "";
+      customDescription = content?.meta?.description || "";
+      // 이미지 값에서 URL 추출 (string 또는 ImageCropData 객체 대응)
+      const extractImageUrl = (img: unknown): string => {
+        if (!img) return "";
+        if (typeof img === "string") return img;
+        if (typeof img === "object" && img !== null && "url" in img) return (img as { url: string }).url || "";
+        return "";
+      };
+      // THE SIMPLE 갤러리 첫 번째 이미지 추출
+      let theSimpleGalleryFirst = "";
+      if (content?.galleries) {
+        for (const key of Object.keys(content.galleries)) {
+          const imgs = content.galleries[key];
+          if (Array.isArray(imgs) && imgs.length > 0) {
+            theSimpleGalleryFirst = imgs[0]?.webUrl || imgs[0]?.url || "";
+            if (theSimpleGalleryFirst) break;
+          }
+        }
+      }
+      // OG 썸네일 우선순위: 사용자가 직접 지정한 별도 OG 이미지 > 자동 fallback(커버/히어로/
+      //   갤러리 등) > 카카오 썸네일.
+      //   ※ 카카오 썸네일(정사각형 소형)은 og:image로 쓰면 카톡/문자가 미리보기 카드를
+      //     못 만들어 "링크만 뜨는" 문제가 생기므로 최후 fallback으로 둔다.
+      rawThumbnailImage =
+        (content?.meta?.ogImageCropped as string) ||
+        extractImageUrl(content?.meta?.ogImage) ||
+        extractImageUrl(content?.media?.coverImage) ||
+        extractImageUrl(content?.heroImage) ||
+        extractImageUrl(content?.mainImage) ||
+        extractImageUrl(content?.sections?.intro?.photo) ||
+        extractImageUrl(content?.gallery?.images?.[0]) ||
+        theSimpleGalleryFirst ||
+        (content?.meta?.kakaoThumbnailCropped as string) ||
+        extractImageUrl(content?.meta?.kakaoThumbnail) ||
+        "";
+    } catch (e) {
+      console.error("Failed to parse content for metadata:", e);
+    }
+  }
+
+  const thumbnailImage = toAbsoluteImageUrl(rawThumbnailImage, baseUrl);
+
+  const isThankYouTemplate = invitation.template_id === 'narrative-thankyou';
+  const isTheSimpleTemplate = invitation.template_id === 'narrative-the-simple';
+  const title = customTitle || (isThankYouTemplate ? `${groomName} & ${brideName}의 감사 인사` : `${groomName} ♥ ${brideName} 결혼합니다`);
+
+  // THE SIMPLE: 날짜/장소 기반 자동 설명
+  let autoDescription = '';
+  if (!customDescription && isTheSimpleTemplate && invitation.content) {
+    try {
+      const c = JSON.parse(invitation.content);
+      const wDate = c?.wedding?.date;
+      const wTime = c?.wedding?.timeDisplay;
+      const vName = c?.wedding?.venue?.name;
+      if (wDate) {
+        const d = new Date(wDate + 'T00:00:00');
+        if (!isNaN(d.getTime())) {
+          const wd = ['일','월','화','수','목','금','토'];
+          autoDescription = `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 ${wd[d.getDay()]}요일${wTime ? ` ${wTime}` : ''}`;
+          if (vName) autoDescription += `\n${vName}`;
+        }
+      }
+    } catch { /* ignore */ }
+  }
+  const description = customDescription || autoDescription || invitation.greeting_message || (isThankYouTemplate ? "감사장이 도착했습니다" : "저희 결혼식에 초대합니다");
+
   return {
-    title: `${groomName} ♥ ${brideName} 결혼합니다`,
-    description: invitation.greeting_message || "저희 결혼식에 초대합니다",
+    title,
+    description,
     openGraph: {
-      title: `${groomName} ♥ ${brideName} 결혼합니다`,
-      description: invitation.greeting_message || "저희 결혼식에 초대합니다",
+      title,
+      description,
       type: "website",
+      url: `${baseUrl}/invitation/${invitation.slug || invitation.id}`,
+      siteName: "dear drawer - 모바일 청첩장",
+      locale: "ko_KR",
+      ...(thumbnailImage && {
+        images: [
+          {
+            url: thumbnailImage,
+            width: 800,
+            height: 400,
+            alt: title,
+          },
+        ],
+      }),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      ...(thumbnailImage && { images: [thumbnailImage] }),
     },
   };
 }

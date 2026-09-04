@@ -362,21 +362,22 @@ export async function generateMetadata({ params }: PageProps) {
           }
         }
       }
-      // OG 썸네일 우선순위: 사용자가 직접 지정한 공유 이미지(OG > 카카오 썸네일)를
-      //   자동 fallback(커버/히어로/갤러리 등)보다 항상 우선한다.
-      //   (이전엔 coverImage가 카카오 썸네일보다 앞이라, 필수인 카카오 썸네일이 무시되고
-      //    문자·카톡 미리보기에 커버가 나오던 버그를 수정)
+      // OG 썸네일 우선순위: 사용자가 직접 지정한 별도 OG 이미지 > 자동 fallback(커버/히어로/
+      //   갤러리 등) > 카카오 썸네일.
+      //   ※ 카카오 썸네일(정사각형 소형)은 og:image로 쓰면 카톡/문자가 미리보기 카드를
+      //     못 만들어 "링크만 뜨는" 문제가 생기므로, 커버 등 큰 이미지를 우선하고
+      //     카카오 썸네일은 최후 fallback으로 둔다. (957d48f 재정렬 되돌림)
       rawThumbnailImage =
         (content?.meta?.ogImageCropped as string) ||
         extractImageUrl(content?.meta?.ogImage) ||
-        (content?.meta?.kakaoThumbnailCropped as string) ||
-        extractImageUrl(content?.meta?.kakaoThumbnail) ||
         extractImageUrl(content?.media?.coverImage) ||
         extractImageUrl(content?.heroImage) ||
         extractImageUrl(content?.mainImage) ||
         extractImageUrl(content?.sections?.intro?.photo) ||
         extractImageUrl(content?.gallery?.images?.[0]) ||
         theSimpleGalleryFirst ||
+        (content?.meta?.kakaoThumbnailCropped as string) ||
+        extractImageUrl(content?.meta?.kakaoThumbnail) ||
         "";
     } catch (e) {
       console.error("Failed to parse content for metadata:", e);

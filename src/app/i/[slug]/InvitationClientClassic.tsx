@@ -569,7 +569,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
       const monthEnT = MONTHS_EN[monthIdx0].charAt(0) + MONTHS_EN[monthIdx0].slice(1).toLowerCase()
       const WK_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
       return (
-        <section style={sec('#f3f0ea', '38px 0')}>
+        <section style={sec(cc.classicDateBgColor || '#f3f0ea', '38px 0')}>
           <div style={{ padding: '0 28px', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'center' }}>
             <p className="cl-reveal cl-up" style={{ margin: '10px 0 0', textAlign: 'center', fontFamily: F_META, fontSize: 11, letterSpacing: '.24em', paddingLeft: '.24em', color: '#9a917f' }}>{cc.classicDateHeading || 'WEDDING CALENDAR'}</p>
             <h2 className="cl-reveal cl-up" data-delay="80" style={{ margin: '6px 0 0', textAlign: 'center', fontFamily: F_DISPLAY, fontStyle: 'italic', fontSize: 30, lineHeight: 1.1, color: '#2b2724' }}>{monthEnT}</h2>
@@ -613,7 +613,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
 
     if (dateStyle === '2c') {
       return (
-        <section style={sec(dBg, '76px 34px 48px')}>
+        <section style={sec(cc.classicDateBgColor || dBg, '76px 34px 48px')}>
           <div className="cl-reveal cl-up" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
             <p style={{ margin: 0, textAlign: 'center', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 12, letterSpacing: '.06em', color: dTx }}>{firstKo} &amp; {secondKo}</p>
             {ornRule(dTxA(0.34), 34)}
@@ -654,7 +654,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
     if (dateStyle === '2d') {
       const panel: React.CSSProperties = { background: '#FFFFFF', border: '1px solid rgba(43,39,36,.1)' }
       return (
-        <section style={sec('#efece4', '34px 24px')}>
+        <section style={sec(cc.classicDateBgColor || '#efece4', '34px 24px')}>
          <div className="cl-reveal cl-clip" style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
           <div style={{ ...panel, borderRadius: '6px 6px 0 0', padding: '32px 26px 30px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: F_META, fontSize: 11, color: '#9a917f' }}>
@@ -697,7 +697,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
 
     // 2e — Editorial
     return (
-      <section style={sec('#e9e5dc', '64px 52px 44px')}>
+      <section style={sec(cc.classicDateBgColor || '#e9e5dc', '64px 52px 44px')}>
         <p className="cl-reveal cl-up" style={{ margin: 0, fontFamily: F_BODY, fontSize: 11, letterSpacing: '.28em', paddingLeft: '.28em', color: '#8a8272' }}>{year}년 {monthIdx0 + 1}월</p>
         <div className="cl-reveal cl-clip-up" data-delay="200" style={{ margin: '16px 0 0', fontFamily: F_NUM, fontWeight: 300, fontSize: 'clamp(128px,44vw,172px)', lineHeight: 0.82, letterSpacing: '-.04em', color: 'transparent', WebkitTextStroke: '1.2px #4c4638' } as React.CSSProperties}>{day}</div>
         <div style={{ margin: '26px 0 0', display: 'flex', alignItems: 'baseline', gap: 14 }}>
@@ -1909,7 +1909,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
 
         {/* ===== VIII. Date ===== */}
         {dateStyle !== 'classic' ? renderDateVariant() : (
-        <section style={{ order: orderOf('date'), position: 'relative', minHeight: '100dvh', padding: '74px 30px 66px', background: IVORY, overflow: 'hidden', ...hide('date'), ...tintBg('date') }}>
+        <section style={{ order: orderOf('date'), position: 'relative', minHeight: '100dvh', padding: '74px 30px 66px', overflow: 'hidden', ...hide('date'), ...(cc.classicDateBgColor ? { background: cc.classicDateBgColor } : { background: IVORY, ...tintBg('date') }) }}>
           {(() => { const IVORY = dInk; const ivoryA = dInkA; return (<>
           <div className="cl-reveal cl-line" data-delay="100" style={{ position: 'absolute', left: 30, top: 0, bottom: 0, width: 1, background: ivoryA(0.14) }} />
           <p className="cl-reveal cl-rise" data-delay="180" style={{ margin: '0 0 12px', position: 'relative', fontFamily: F_BODY, fontStyle: 'italic', fontSize: 13, letterSpacing: '.03em', color: ivoryA(0.75) }}>{cc.classicDateHeading || '저희가 하나 되는 날'}</p>

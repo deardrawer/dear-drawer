@@ -623,6 +623,15 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
             <ColorField label="포인트 색상 (예식일 강조·하트·디데이)" value={data.content.classicDatePointColor || '#c06a5b'} onChange={(hex) => updateNestedData('content.classicDatePointColor', hex)} />
           </div>
           <div className="pt-1">
+            <div className="flex items-center gap-2">
+              <ColorField label="예식일정 배경색" value={data.content.classicDateBgColor || '#f3f0ea'} onChange={(hex) => updateNestedData('content.classicDateBgColor', hex)} />
+              {data.content.classicDateBgColor && (
+                <button type="button" onClick={() => updateNestedData('content.classicDateBgColor', undefined)} className="text-[11px] text-gray-400 underline">기본값</button>
+              )}
+            </div>
+            <p className="text-[10px] text-gray-400 leading-tight mt-1">미지정 시 선택한 달력 스타일의 기본 배경색을 사용합니다.</p>
+          </div>
+          <div className="pt-1">
             <p className="text-sm font-medium text-gray-700 mb-1.5">달력 숫자 폰트</p>
             <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
               {([

@@ -124,6 +124,7 @@ export interface ClassicInvitationData {
     classicDateFrame?: 'heart' | 'stamp' // 예식일정 사진 프레임 (하트 / 우표)
     classicDateStyle?: 'classic' | '2b' | '2c' | '2d' | '2e' // 예식일정 달력 디자인 (기본 / 풀그리드 / 다크 / 티켓 / 에디토리얼)
     classicDatePointColor?: string // 달력 변형 포인트 색 (하트/동그라미/말풍선/디데이)
+    classicDateBgColor?: string // 예식일정 섹션 배경색 (미지정 시 스타일별 기본값)
     classicDateNumFont?: 'display' | 'body' // 달력 숫자 폰트: 영문(display) / 한글(body)
     // 혼주 표시 (인사말/소개)
     classicShowParents?: boolean // 부모님 성함 표시 여부 (기본 true)

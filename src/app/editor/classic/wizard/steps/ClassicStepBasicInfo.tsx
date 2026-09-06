@@ -214,7 +214,7 @@ export default function ClassicStepBasicInfo({ data, updateNestedData, invitatio
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-sm font-medium">예식 홀</Label>
+            <Label className="text-sm font-medium">예식 홀 <span className="text-red-500">*</span></Label>
             <Input
               value={data.wedding.venue.hall}
               onChange={(e) => updateNestedData('wedding.venue.hall', e.target.value)}
@@ -223,7 +223,7 @@ export default function ClassicStepBasicInfo({ data, updateNestedData, invitatio
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-sm font-medium">주소 <span className="text-red-500">*</span></Label>
+            <Label className="text-sm font-medium">주소 <span className="text-gray-400 font-normal">(선택)</span></Label>
             <Input
               value={data.wedding.venue.address}
               onChange={(e) => updateNestedData('wedding.venue.address', e.target.value)}

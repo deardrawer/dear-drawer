@@ -108,7 +108,7 @@ export default function ClassicStepPublish({ data, invitationId, slug, onSave, o
     if (!data.bride.name.trim()) errors.push('신부 이름을 입력해주세요')
     if (!data.wedding.date) errors.push('결혼식 날짜를 입력해주세요')
     if (!data.wedding.venue.name.trim()) errors.push('예식장 이름을 입력해주세요')
-    if (!data.wedding.venue.address.trim()) errors.push('예식장 주소를 입력해주세요')
+    if (!data.wedding.venue.hall.trim()) errors.push('예식 홀을 입력해주세요')
     return errors
   }
 

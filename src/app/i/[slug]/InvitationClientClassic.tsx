@@ -1038,7 +1038,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
       const b = person?.bank
       if (!b?.enabled || (!b?.account && !b?.bank)) return null
       const line = `${b.bank || ''} ${b.account || ''}`.trim()
-      const who = [person.name, role].filter(Boolean).join(' · ')
+      // 예금주: 에디터에서 지정한 holder 우선, 없으면 사람 이름 fallback (예금주 변경 미반영 버그 수정)
+      const who = [(b.holder || person.name), role].filter(Boolean).join(' · ')
       return { line, who, copy: b.account || line }
     }).filter(Boolean) as Acct[]
   const groomAccts = buildAccts([{ person: groom, role: '' }, { person: groom.father, role: '아버지' }, { person: groom.mother, role: '어머니' }])

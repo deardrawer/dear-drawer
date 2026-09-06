@@ -108,12 +108,15 @@ const CLASSIC_STYLES = `
   /* 뿅 (달력 예식일 동그라미/말풍선): 살짝 오버슛하며 팝 */
   .cl-reveal.cl-boop { transform: scale(.4); }
   .cl-reveal.cl-boop.is-in { transform: none; transition: opacity .3s ease, transform .5s cubic-bezier(.34,1.56,.64,1); }
-  /* 예식일 마커: 링이 도장처럼 안쪽으로 눌러 안착 → 링 위에 은은한 펄스 1회, 라벨이 아래로 톡 내려앉음 */
-  .cl-reveal.cl-mk-ring { opacity: 0; transform: scale(1.55); }
-  .cl-reveal.cl-mk-ring.is-in { opacity: 1; transform: scale(1); transition: opacity .5s ease, transform .75s cubic-bezier(.34,1.42,.5,1); animation: cl-mk-pulse 1.7s ease-out .95s 1 both; }
+  /* 예식일 마커: 링이 도장처럼 안착(+펄스 1회), 라벨이 아래로 톡 내려앉음.
+     ※ cl-reveal(JS 스크롤 관찰자) 대신 CSS 애니메이션으로 처리 → 관찰자 미발동 시 opacity:0에
+       멈춰 일부 iOS에서 WEDDING DAY 라벨이 안 뜨던 문제 방지 (애니메이션은 항상 최종 표시 상태로 종료) */
+  @keyframes cl-mk-ring-in { 0% { opacity: 0; transform: scale(1.55); } 100% { opacity: 1; transform: scale(1); } }
+  .cl-mk-ring { animation: cl-mk-ring-in .75s cubic-bezier(.34,1.42,.5,1) .9s both, cl-mk-pulse 1.7s ease-out 1.5s 1 both; }
   @keyframes cl-mk-pulse { 0% { box-shadow: 0 0 0 0 rgba(0,0,0,0); } 22% { box-shadow: 0 0 0 5px var(--mk-pulse, rgba(192,106,91,.28)); } 100% { box-shadow: 0 0 0 11px rgba(0,0,0,0); } }
-  .cl-reveal.cl-mk-label { opacity: 0; transform: translateY(-7px) scale(.72); transform-origin: top center; }
-  .cl-reveal.cl-mk-label.is-in { opacity: 1; transform: none; transition: opacity .4s ease, transform .6s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes cl-mk-label-in { 0% { opacity: 0; transform: translateY(-7px) scale(.72); } 100% { opacity: 1; transform: none; } }
+  .cl-mk-label { transform-origin: top center; animation: cl-mk-label-in .6s cubic-bezier(.34,1.56,.64,1) 1.15s both; }
+  @media (prefers-reduced-motion: reduce) { .cl-mk-ring, .cl-mk-label { animation: none !important; opacity: 1 !important; transform: none !important; } }
   /* RSVP: 카드가 봉투 뒤에서 차분히 솟아오르는 시그니처 (거리 줄여 안정적으로) */
   .cl-reveal.cl-env { transform: translateY(30px) scale(.995); }
   .cl-reveal.cl-env.is-in { transform: none; transition: opacity 1s ease, transform 1.05s cubic-bezier(.22,.61,.36,1); }
@@ -581,11 +584,11 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                     <div key={ci} style={{ padding: '7px 0 6px 8px' }}>
                       {n === null ? null : n === day
                         ? <span style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26 }}>
-                            <span className="cl-reveal cl-mk-ring" data-delay="1000" style={{ position: 'absolute', inset: -4, border: `1.5px solid ${datePoint}`, borderRadius: '50%', ['--mk-pulse' as string]: `rgba(${hexToRgb(datePoint, '192,106,91')},.3)` } as React.CSSProperties} />
+                            <span className="cl-mk-ring" style={{ position: 'absolute', inset: -4, border: `1.5px solid ${datePoint}`, borderRadius: '50%', ['--mk-pulse' as string]: `rgba(${hexToRgb(datePoint, '192,106,91')},.3)` } as React.CSSProperties} />
                             <span style={{ fontFamily: F_NUM, fontSize: 16, color: '#231f1b' }}>{n}</span>
                             {/* 라벨: 중앙정렬은 래퍼가 담당(transform 충돌 방지), 등장 애니메이션은 내부 span */}
                             <span style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', marginTop: 8, zIndex: 6, pointerEvents: 'none' }}>
-                              <span className="cl-reveal cl-mk-label" data-delay="1220" style={{ display: 'block', whiteSpace: 'nowrap', background: datePoint, color: '#fff', fontFamily: F_BODY, fontSize: 8.5, lineHeight: 1, letterSpacing: '.1em', paddingLeft: '.1em', padding: '3px 6px', borderRadius: 3 }}>WEDDING DAY</span>
+                              <span className="cl-mk-label" style={{ display: 'block', whiteSpace: 'nowrap', background: datePoint, color: '#fff', fontFamily: F_BODY, fontSize: 8.5, lineHeight: 1, letterSpacing: '.1em', paddingLeft: '.1em', padding: '3px 6px', borderRadius: 3 }}>WEDDING DAY</span>
                             </span>
                           </span>
                         : <span style={{ fontFamily: F_NUM, fontSize: 16, color: '#5b5449' }}>{n}</span>}

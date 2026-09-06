@@ -1599,7 +1599,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           {(() => { const INK = letterInk; const inkA = letterInkA; const letterInner = (
               <>
                 <p style={label(T_EYEBROW, 0.44, inkA(0.5))}>{nameCase('INVITATION')}</p>
-                <p style={{ margin: '22px 0 0', width: '100%', maxWidth: '100%', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 2.1, color: INK, whiteSpace: 'pre-line', wordBreak: 'keep-all', overflowWrap: 'anywhere' }}>{greeting}</p>
+                <p style={{ margin: '22px 0 0', width: '100%', maxWidth: '100%', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: typeof cc.classicGreetingLineHeight === 'number' ? cc.classicGreetingLineHeight : 2.1, letterSpacing: cc.classicGreetingLetterSpacing ? `${cc.classicGreetingLetterSpacing}em` : undefined, color: INK, whiteSpace: 'pre-line', wordBreak: 'keep-all', overflowWrap: 'anywhere' }}>{greeting}</p>
                 {letterSign !== 'none' && (<>
                 <div className="cl-reveal cl-line" data-delay="760" style={{ width: 1, height: 22, background: inkA(0.25), margin: '22px auto 18px' }} />
                 <div className="cl-reveal cl-blur" data-delay="900" style={{ display: 'flex', flexDirection: 'column', gap: 7, fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.7) }}>

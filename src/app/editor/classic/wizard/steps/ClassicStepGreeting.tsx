@@ -79,6 +79,36 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
           />
         </div>
 
+        {/* 인사말 행간·자간 */}
+        <div className="space-y-3 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-700">인사말 글자 간격</span>
+            <button
+              type="button"
+              onClick={() => { updateNestedData('content.classicGreetingLineHeight', 2.1); updateNestedData('content.classicGreetingLetterSpacing', 0) }}
+              className="text-[11px] text-gray-400 underline"
+            >기본값으로</button>
+          </div>
+          <div>
+            <div className="flex justify-between text-[11px] text-gray-500 mb-1"><span>행간 (줄 간격)</span><span>{(data.content.classicGreetingLineHeight ?? 2.1).toFixed(2)}</span></div>
+            <input
+              type="range" min={1.4} max={3} step={0.05}
+              value={data.content.classicGreetingLineHeight ?? 2.1}
+              onChange={(e) => updateNestedData('content.classicGreetingLineHeight', parseFloat(e.target.value))}
+              className="w-full accent-gray-800"
+            />
+          </div>
+          <div>
+            <div className="flex justify-between text-[11px] text-gray-500 mb-1"><span>자간 (글자 간격)</span><span>{(data.content.classicGreetingLetterSpacing ?? 0).toFixed(3)}em</span></div>
+            <input
+              type="range" min={-0.03} max={0.15} step={0.005}
+              value={data.content.classicGreetingLetterSpacing ?? 0}
+              onChange={(e) => updateNestedData('content.classicGreetingLetterSpacing', parseFloat(e.target.value))}
+              className="w-full accent-gray-800"
+            />
+          </div>
+        </div>
+
         {/* 혼주 표시 옵션 */}
         <div className="space-y-3 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
           <div>

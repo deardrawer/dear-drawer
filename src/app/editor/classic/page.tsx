@@ -96,6 +96,8 @@ export interface ClassicInvitationData {
     classicGreetingOverlayOpacity?: number // 인사말 배경 오버레이 투명도 0~1
     classicLetterFrame?: 'wave' | 'wavy' | 'lace' | 'scallop' | 'paper' | 'none' // 인사말 카드 프레임 (웨이브 / 물결 / 레이스 / 스캘럽 / 종이 / 없음)
     classicLetterTextColor?: string // 프레임 '없음'일 때 인사말 텍스트 색상
+    classicGreetingLineHeight?: number // 인사말 본문 행간 (기본 2.1)
+    classicGreetingLetterSpacing?: number // 인사말 본문 자간 em (기본 0)
     // 본문 · 신랑신부 소개
     classicIntroMode?: 'each' | 'together' | 'nameOnly' // 각자 / 함께 / 이름만
     classicIntroEachFrame?: 'plaque' | 'stamp' | 'box' // 각자 카드 프레임 (웨이브 플라크 / 우표 / 종이)

@@ -30,8 +30,8 @@ const CL_LB_STYLES = `
   .cl-lb-overlay * { box-sizing: border-box; }
   .cl-lb-topbar { position: relative; z-index: 3; display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; flex-shrink: 0; }
   .cl-lb-title { font-family: ${F_LABEL}; font-style: italic; font-size: 13px; letter-spacing: .08em; color: rgba(244,241,233,.82); }
-  .cl-lb-close { appearance: none; background: rgba(244,241,233,.08); border: 1px solid rgba(244,241,233,.28); color: #F4F1E9; width: 34px; height: 34px; border-radius: 50%; font-size: 18px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-  .cl-lb-close:hover { background: rgba(244,241,233,.18); }
+  .cl-lb-close { appearance: none; background: none; border: none; color: #F4F1E9; width: 40px; height: 40px; font-size: 26px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; text-shadow: 0 1px 8px rgba(0,0,0,.45); -webkit-tap-highlight-color: transparent; opacity: .85; transition: opacity .2s ease; }
+  .cl-lb-close:hover { opacity: 1; background: none; }
   .cl-lb-stage-row { position: relative; flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
   .cl-lb-stage { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 6px 54px; touch-action: pan-y; }
   .cl-lb-img { max-width: 100%; max-height: 100%; object-fit: contain; -webkit-user-select: none; user-select: none; box-shadow: 0 30px 70px -20px rgba(0,0,0,.7); }
@@ -49,8 +49,8 @@ const CL_LB_STYLES = `
 
   /* v1 에디토리얼: 아이보리 매트 배경, 세리프 캡션 */
   .cl-lb--v1 { background: #F4F1E9; }
-  .cl-lb--v1 .cl-lb-close { border-color: rgba(53,23,20,.3); color: #351714; background: rgba(53,23,20,.05); }
-  .cl-lb--v1 .cl-lb-close:hover { background: rgba(53,23,20,.12); }
+  .cl-lb--v1 .cl-lb-close { color: #351714; text-shadow: none; }
+  .cl-lb--v1 .cl-lb-close:hover { background: none; }
   .cl-lb--v1 .cl-lb-nav { color: #351714; text-shadow: none; }
   .cl-lb--v1 .cl-lb-nav:hover { background: none; }
   .cl-lb--v1 .cl-lb-title, .cl-lb--v1 .cl-lb-counter, .cl-lb--v1 .cl-lb-caption { color: rgba(53,23,20,.62); }
@@ -62,13 +62,12 @@ const CL_LB_STYLES = `
   .cl-lb--v2 .cl-lb-stage { padding: 20px 60px; }
   .cl-lb--v2 .cl-lb-img { border-radius: 6px; }
   .cl-lb--v2 .cl-lb-thumbs { margin: 0 16px 16px; background: rgba(244,241,233,.08); border: 1px solid rgba(244,241,233,.18); border-radius: 12px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 10px; }
-  .cl-lb--v2 .cl-lb-close { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
 
   /* v4 룩북: 세로 스크롤 나열 */
   .cl-lb--v4 { background: #12100C; overflow-y: auto; }
   .cl-lb-v4-scroll { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 60px 0 40px; }
   .cl-lb-v4-img { width: 100%; max-width: 480px; -webkit-user-select: none; user-select: none; }
-  .cl-lb-v4-close { position: fixed; top: 16px; right: 18px; z-index: 4; width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(244,241,233,.28); background: rgba(10,6,4,.5); color: #F4F1E9; font-size: 18px; cursor: pointer; }
+  .cl-lb-v4-close { position: fixed; top: 16px; right: 18px; z-index: 4; width: 40px; height: 40px; border: none; background: none; color: #F4F1E9; font-size: 26px; line-height: 1; cursor: pointer; text-shadow: 0 1px 8px rgba(0,0,0,.45); }
 
   /* v5 시네마: 레터박스 */
   .cl-lb--v5 { background: #000; }
@@ -84,8 +83,8 @@ const CL_LB_STYLES = `
 
   /* v6 미니멀: 클린 화이트 */
   .cl-lb--v6 { background: #fff; }
-  .cl-lb--v6 .cl-lb-close { border-color: rgba(0,0,0,.15); color: #222; background: transparent; }
-  .cl-lb--v6 .cl-lb-close:hover { background: rgba(0,0,0,.06); }
+  .cl-lb--v6 .cl-lb-close { color: #222; text-shadow: none; }
+  .cl-lb--v6 .cl-lb-close:hover { background: none; }
   .cl-lb--v6 .cl-lb-nav { color: #222; text-shadow: none; }
   .cl-lb--v6 .cl-lb-nav:hover { background: none; }
   .cl-lb--v6 .cl-lb-title, .cl-lb--v6 .cl-lb-counter { color: rgba(0,0,0,.45); }

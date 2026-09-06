@@ -1998,7 +1998,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             {(cc.classicDirectionsExtraTitle || cc.classicDirectionsExtraBody) && (
               <div className="cl-reveal cl-rise" style={{ marginTop: 20, paddingTop: 18, borderTop: `1px solid ${inkA(0.14)}` }}>
                 {cc.classicDirectionsExtraTitle && <p style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(11), fontWeight: 600, letterSpacing: '.04em', color: inkA(0.55) }}>{cc.classicDirectionsExtraTitle}</p>}
-                {cc.classicDirectionsExtraBody && <p style={{ margin: cc.classicDirectionsExtraTitle ? '8px 0 0' : 0, fontFamily: F_BODY, fontSize: bfs(11), lineHeight: 1.8, color: inkA(0.72), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{cc.classicDirectionsExtraBody}</p>}
+                {cc.classicDirectionsExtraBody && <p style={{ margin: cc.classicDirectionsExtraTitle ? '8px 0 0' : 0, fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.85, color: inkA(0.72), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{cc.classicDirectionsExtraBody}</p>}
               </div>
             )}
             {dirMapBottom && (

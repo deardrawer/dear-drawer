@@ -1039,7 +1039,9 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
       if (!b?.enabled || (!b?.account && !b?.bank)) return null
       const line = `${b.bank || ''} ${b.account || ''}`.trim()
       // 예금주: 에디터에서 지정한 holder 우선, 없으면 사람 이름 fallback (예금주 변경 미반영 버그 수정)
-      const who = [(b.holder || person.name), role].filter(Boolean).join(' · ')
+      // 호칭(아버지/어머니)이 있으면 "아버지 홍길동"처럼 앞에 붙임(더 자연스러움)
+      const holderName = b.holder || person.name || ''
+      const who = [role, holderName].filter(Boolean).join(' · ')
       return { line, who, copy: b.account || line }
     }).filter(Boolean) as Acct[]
   const groomAccts = buildAccts([{ person: groom, role: '' }, { person: groom.father, role: '아버지' }, { person: groom.mother, role: '어머니' }])
@@ -1566,7 +1568,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                           </div>
                           <div style={{ display: 'flex', gap: 10, alignItems: 'baseline' }}>
                             <span style={{ flex: '0 0 34px', fontFamily: F_LABEL, fontSize: lfs(7.5), letterSpacing: '.28em', color: openInkA(0.42) }}>{nameCase('PLACE')}</span>
-                            <span style={{ fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.7, color: openInkA(0.75), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{venueFull}</span>
+                            <span style={{ fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.7, color: openInkA(0.75), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{venueName}{venueHall ? ` ${venueHall}` : ''}{(cc.classicFlipShowAddress !== false && (venue.address || '').trim()) ? `\n${venue.address}` : ''}</span>
                           </div>
                         </div>
                         <div style={{ position: 'absolute', right: 16, bottom: 16, width: 44, height: 44, borderRadius: '50%', border: `1px solid ${openInkA(0.25)}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 13, color: openInkA(0.5) }}>C&amp;E</div>

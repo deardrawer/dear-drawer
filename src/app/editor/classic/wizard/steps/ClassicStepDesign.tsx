@@ -228,6 +228,18 @@ export default function ClassicStepDesign({ data, updateData, updateNestedData, 
               />
             </div>
           )}
+          {id === '사진 뒤집기' && (
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={data.content.classicFlipShowAddress !== false}
+                onChange={(e) => updateNestedData('content.classicFlipShowAddress', e.target.checked)}
+                className="w-4 h-4 accent-gray-800"
+              />
+              <span className="text-sm font-medium text-gray-700">PLACE에 주소 표시</span>
+              <span className="text-[10px] text-gray-400">끄면 예식장 이름·홀만 표시</span>
+            </label>
+          )}
           <div className="flex items-center gap-3">
             <ColorField
               label="오버레이 색상"

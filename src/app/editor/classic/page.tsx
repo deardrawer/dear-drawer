@@ -89,6 +89,7 @@ export interface ClassicInvitationData {
     classicInfoBrightOverlayOpacity?: number // 접힌편지·사진뒤집기 원본(펼침·뒤집은 후 밝은 상태) 오버레이 투명도 0~1 (기본 0)
     classicInfoPhotoOpacity?: number // 접힌편지·사진뒤집기 첫 사진 배경 투명도 0~1 (0=사진 없음)
     classicFlipPhoto?: ClassicPhoto // 사진 뒤집기 카드 앞면·배경 사진 (미설정 시 갤러리 첫 사진)
+    classicFlipShowAddress?: boolean // 사진 뒤집기 PLACE에 주소 표시 여부 (기본 true)
     // 본문 · 인사말 배경
     classicGreetingBgImage?: ClassicPhoto // 인사말 배경 사진 (크롭, 미설정 시 갤러리 첫 사진)
     classicGreetingOverlayColor?: string // 인사말 배경 오버레이 색상

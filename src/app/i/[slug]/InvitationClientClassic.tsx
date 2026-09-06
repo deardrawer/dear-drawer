@@ -165,6 +165,9 @@ const CLASSIC_STYLES = `
   @keyframes cl-film-r { from { transform: translateX(-50%); } to { transform: translateX(0); } }
   @media (prefers-reduced-motion: reduce) { .cl-film-track--l, .cl-film-track--r { animation: none !important; } }
   @keyframes cl-fade-soft { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes cl-more-in { 0% { opacity: 0; transform: translateY(22px) scale(.955); filter: blur(6px); } 55% { filter: blur(0); } 100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
+  .cl-more-item { animation: cl-more-in .95s cubic-bezier(.2,.68,.24,1) both; will-change: transform, opacity, filter; }
+  @media (prefers-reduced-motion: reduce) { .cl-more-item { animation: none !important; transform: none !important; filter: none !important; opacity: 1 !important; } }
   @keyframes cl-main-in { from { opacity: 0; } to { opacity: 1; } }
   @keyframes cl-swipe-fade { 0% { opacity: 0; transform: scale(1.03); } 100% { opacity: 1; transform: scale(1); } }
   @keyframes cl-thumb-hint { 0%, 100% { transform: translateX(0); opacity: .5; } 50% { transform: translateX(4px); opacity: .95; } }
@@ -549,6 +552,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
     if (dateStyle === '2b') {
       const weeks: (number | null)[][] = []
       for (let i = 0; i < monthCells.length; i += 7) weeks.push(monthCells.slice(i, i + 7))
+      // 날짜가 하나도 없는 마지막 주(빈 줄)는 제거
+      while (weeks.length > 0 && weeks[weeks.length - 1].every((c) => c === null)) weeks.pop()
       const monthEnT = MONTHS_EN[monthIdx0].charAt(0) + MONTHS_EN[monthIdx0].slice(1).toLowerCase()
       const WK_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
       return (
@@ -567,11 +572,10 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                     <div key={ci} style={{ padding: '7px 0 6px 8px' }}>
                       {n === null ? null : n === day
                         ? <span style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26 }}>
-                            <span className="cl-reveal cl-boop" data-delay="1080" style={{ position: 'absolute', inset: -1, border: `2.5px solid ${datePoint}`, borderRadius: '52% 48% 49% 51% / 50% 52% 48% 50%' }} />
+                            <span className="cl-reveal cl-boop" data-delay="1080" style={{ position: 'absolute', inset: -4, border: `1.5px solid ${datePoint}`, borderRadius: '50%' }} />
                             <span style={{ fontFamily: F_NUM, fontSize: 16, color: '#231f1b' }}>{n}</span>
-                            <span className="cl-reveal cl-boop" data-delay="1260" style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 9, whiteSpace: 'nowrap', background: datePoint, color: '#fff', fontFamily: F_BODY, fontSize: 9, letterSpacing: '.14em', paddingLeft: '.14em', padding: '4px 9px', borderRadius: 4, zIndex: 6, pointerEvents: 'none' }}>
+                            <span className="cl-reveal cl-boop" data-delay="1260" style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', marginTop: 8, whiteSpace: 'nowrap', background: datePoint, color: '#fff', fontFamily: F_BODY, fontSize: 8.5, lineHeight: 1, letterSpacing: '.1em', paddingLeft: '.1em', padding: '3px 6px', borderRadius: 3, zIndex: 6, pointerEvents: 'none' }}>
                               WEDDING DAY
-                              <span style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', width: 0, height: 0, borderLeft: '4px solid transparent', borderRight: '4px solid transparent', borderTop: `5px solid ${datePoint}` }} />
                             </span>
                           </span>
                         : <span style={{ fontFamily: F_NUM, fontSize: 16, color: '#5b5449' }}>{n}</span>}
@@ -580,9 +584,9 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                 </div>
               ))}
             </div>
-            <div style={{ marginTop: 30, paddingTop: 22, borderTop: '1px solid rgba(43,39,36,.14)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12 }}>
+            <div style={{ marginTop: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12 }}>
               <div>
-                <p style={{ margin: 0, fontFamily: F_BODY, fontSize: 14, lineHeight: 1.7, color: '#3a352c' }}>{dateFullKo} {timeDisplay}</p>
+                <p style={{ margin: 0, fontFamily: F_BODY, fontSize: 14, lineHeight: 1.7, color: '#3a352c' }}>{dateFullKo} <span style={{ whiteSpace: 'nowrap' }}>{timeDisplay}</span></p>
                 <p style={{ margin: 0, fontFamily: F_BODY, fontSize: 12, color: '#8b8271' }}>{venueName}{venueHall ? ` ${venueHall}` : ''}</p>
               </div>
               {dday !== null && dday >= 0 && (
@@ -839,27 +843,91 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   // 갤러리 슬롯(0~4) → 라이트박스 images(gallery) 배열 상 실제 인덱스 (모듈로 매칭)
   const galIdx = (i: number): number => (gallery.length ? i % gallery.length : 0)
   const openLightbox = (i: number) => { setLbIndex(galIdx(i)); setLbOpen(true) }
-  // 히어로 레이아웃(start장) 이후 나머지 사진 '더보기' (기본/앨범/풀블리드 공통). 최대 30장.
-  const galleryMore = (start: number, tone: 'ink' | 'ivory' = 'ink') => {
+  // 히어로 레이아웃(start장) 이후 나머지 사진 '더보기'. 펼침 레이아웃은 moreLayout으로 선택
+  //  (fill=3열채움 / justified=저스티파이드 / twocol=2열 / fullbleed=여백없이). pad=감싸는 컨테이너 좌우 패딩(px, fullbleed 상쇄용)
+  const galleryMore = (start: number, tone: 'ink' | 'ivory' = 'ink', pad = 0) => {
     if (gallery.length <= start) return null
     const rest = gallery.slice(start)
     const c1 = tone === 'ivory' ? ivoryA(0.9) : fgC('gallery')
     const cA = tone === 'ivory' ? ivoryA : (a: number) => fgA('gallery', a)
+    const n = rest.length
+    // 펼칠 때 줄 단위로 순차 등장 (cl-more-in, row*70ms 스태거)
+    const cell = (idx: number, key: string, row: number, extra: React.CSSProperties) => (
+      <div key={key} className="cl-more-item" onClick={() => openLightbox(start + idx)} style={{ cursor: 'pointer', animationDelay: `${row * 70}ms`, ...cropBg(galItem(start + idx), { background: DEEP_BEIGE }), ...extra }} />
+    )
+    // 남는 1~2장을 가로(16:9) 컷으로 세로 스택 (fill·justified·fullbleed 공통)
+    const leftoverBlock = (fullCount: number, gap: number, rowBase: number) => {
+      const lo = n - fullCount
+      if (lo <= 0) return null
+      return (
+        <div style={{ display: 'grid', gap, marginTop: fullCount > 0 ? gap : 0 }}>
+          {Array.from({ length: lo }, (_, i) => cell(fullCount + i, `l${i}`, rowBase + i, { aspectRatio: '16 / 9' }))}
+        </div>
+      )
+    }
+
+    let body: React.ReactNode
+    if (moreLayout === 'twocol') {
+      // 대안 5 — 2열(4:5). 홀수로 1장 남으면 가로 전체 컷
+      const leftover = n % 2, fullCount = n - leftover
+      body = (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 8 }}>
+          {Array.from({ length: fullCount }, (_, k) => cell(k, `t${k}`, Math.floor(k / 2), { aspectRatio: '4 / 5' }))}
+          {leftover === 1 && cell(fullCount, 'tl', Math.ceil(fullCount / 2), { gridColumn: '1 / -1', aspectRatio: '16 / 9' })}
+        </div>
+      )
+    } else if (moreLayout === 'justified') {
+      // 대안 3 — 저스티파이드(비율 맞춰 폭 자동). 남는 줄은 16:9 가로컷으로 통일
+      const leftover = n % 3, fullCount = n - leftover
+      const flexes = [1.3, 1, 0.85, 1.15, 0.95, 1.25]
+      const heights = [150, 132, 166, 142]
+      const items: React.ReactNode[] = []
+      for (let i = 0; i < fullCount; i += 3) {
+        const r = i / 3
+        items.push(
+          <div key={`r${r}`} style={{ display: 'flex', gap: 8, height: heights[r % heights.length] }}>
+            {[0, 1, 2].map((j) => (
+              <div key={j} className="cl-more-item" onClick={() => openLightbox(start + i + j)} style={{ flex: flexes[(i + j) % flexes.length], height: '100%', cursor: 'pointer', animationDelay: `${r * 70}ms`, ...cropBg(galItem(start + i + j), { background: DEEP_BEIGE }) }} />
+            ))}
+          </div>
+        )
+      }
+      // 남는 1~2장: 같은 세로 스택에 16:9 full-width로 직접 추가 (간격 8px 일관 → 이중 여백 방지)
+      const baseRow = Math.ceil(fullCount / 3)
+      for (let i = 0; i < leftover; i++) {
+        items.push(cell(fullCount + i, `l${i}`, baseRow + i, { aspectRatio: '16 / 9' }))
+      }
+      body = <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{items}</div>
+    } else {
+      // 대안 2(fill) / 대안 6(fullbleed) — 3열 정사각 + 남는 줄 16:9. fullbleed는 간격 0 + 좌우 끝까지
+      const gap = moreLayout === 'fullbleed' ? 0 : 8
+      const leftover = n % 3, fullCount = n - leftover
+      const grid = (
+        <>
+          {fullCount > 0 && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap }}>
+              {Array.from({ length: fullCount }, (_, k) => cell(k, `f${k}`, Math.floor(k / 3), { aspectRatio: '1 / 1' }))}
+            </div>
+          )}
+          {leftoverBlock(fullCount, gap, Math.ceil(fullCount / 3))}
+        </>
+      )
+      body = moreLayout === 'fullbleed' && pad > 0
+        ? <div style={{ marginLeft: -pad, marginRight: -pad }}>{grid}</div>
+        : grid
+    }
+
     return (
       <div style={{ margin: '46px 0 0' }}>
         {!galExpanded ? (
           <button type="button" onClick={() => setGalExpanded(true)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, width: '100%', padding: 0, border: 'none', background: 'transparent', cursor: 'pointer' }}>
             <span style={{ width: 30, height: 1, background: cA(0.3) }} />
             <span style={{ fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 15, letterSpacing: '.04em', color: c1 }}>사진 더보기</span>
-            <span style={{ fontFamily: F_LABEL, fontSize: lfs(10), letterSpacing: '.28em', paddingLeft: '.28em', color: cA(0.5) }}>{String(rest.length).padStart(2, '0')} {nameCase('MORE')}</span>
+            <span style={{ fontFamily: F_LABEL, fontSize: lfs(10), letterSpacing: '.28em', paddingLeft: '.28em', color: cA(0.5) }}>{String(n).padStart(2, '0')} {nameCase('MORE')}</span>
           </button>
         ) : (
           <>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
-              {rest.map((_, k) => (
-                <div key={k} onClick={() => openLightbox(start + k)} style={{ aspectRatio: '1/1', cursor: 'pointer', ...cropBg(galItem(start + k), { background: DEEP_BEIGE }), animation: 'cl-fade-soft .8s cubic-bezier(.22,.61,.36,1) both', animationDelay: `${Math.min(k * 60, 600)}ms` }} />
-              ))}
-            </div>
+            {body}
             <button type="button" onClick={() => setGalExpanded(false)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, width: '100%', margin: '28px 0 0', padding: 0, border: 'none', background: 'transparent', cursor: 'pointer' }}>
               <span style={{ fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 13, letterSpacing: '.04em', color: cA(0.6) }}>접기</span>
               <span style={{ width: 22, height: 1, background: cA(0.25) }} />
@@ -899,6 +967,10 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
     ['default', 'album', 'fullbleed', 'swipe', 'film'].includes(cc.classicGalleryType) ? cc.classicGalleryType : 'default'
   const galCaption: string = cc.classicGalleryCaption || 'a quiet afternoon in June'
   const galCount = Math.max(gallery.length, 1)
+  // '사진 더보기' 펼침 레이아웃: fill(3열 채움) / justified(저스티파이드) / twocol(2열) / fullbleed(여백없이)
+  const moreLayout: 'fill' | 'justified' | 'twocol' | 'fullbleed' =
+    (['fill', 'justified', 'twocol', 'fullbleed'] as const).includes(cc.classicGalleryMoreLayout)
+      ? cc.classicGalleryMoreLayout : 'fill'
 
   // 스와이프 갤러리: 자동 전환 (약 3.4초 간격) — 썸네일/버튼으로 선택해도 계속 자동 전환
   useEffect(() => {
@@ -1690,7 +1762,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             {galParallaxPhoto(3, { position: 'absolute', right: 0, bottom: 0, width: '52%', aspectRatio: '1/1', border: `7px solid ${secBg('gallery')}` }, { backgroundPosition: '40% 60%' }, 420)}
           </div>
           {galParallaxPhoto(4, { margin: '58px 30px 0', aspectRatio: '16/11' }, { backgroundPosition: '50% 44%' }, 200)}
-          <div style={{ padding: '0 30px' }}>{galleryMore(5, 'ink')}</div>
+          <div style={{ padding: '0 30px' }}>{galleryMore(5, 'ink', 30)}</div>
           </>) })()}
 
           {/* 1A — 앨범 스프레드 */}
@@ -1712,7 +1784,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
               <div className="cl-reveal cl-place" style={{ margin: '32px 0 0', background: '#FFFFFF', padding: '10px 10px 38px', boxShadow: '0 20px 32px -26px rgba(53,23,20,.6)' }}>
                 {galParallaxPhoto(3, { aspectRatio: '3/2' }, undefined, undefined, '', '')}
               </div>
-              {galleryMore(4, 'ink')}
+              {galleryMore(4, 'ink', 26)}
             </div>
           )}
 
@@ -1736,7 +1808,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                   <p style={{ margin: 0, padding: '0 0 16px 14px', writingMode: 'vertical-rl', fontFamily: F_LABEL, fontSize: lfs(13), letterSpacing: '.2em', color: ivoryA(0.75) }}>{nameGroom} &amp; {nameBride}</p>
                 </div>
               </div>
-              <div style={{ padding: '0 24px' }}>{galleryMore(5, 'ivory')}</div>
+              <div style={{ padding: '0 24px' }}>{galleryMore(5, 'ivory', 24)}</div>
             </div>
           )}
 
@@ -2012,7 +2084,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           )
           return (<>
           {thanksFrame === 'doily' ? (
-            <div className="cl-reveal cl-fade" style={{ position: 'relative', backgroundImage: "url('/classic/thanks-frame.webp')", backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', aspectRatio: '894 / 711', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16% 14%', boxSizing: 'border-box' }}>
+            <div className="cl-reveal cl-fade" style={{ position: 'relative', backgroundImage: "url('/classic/thanks-frame.webp')", backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', aspectRatio: '894 / 711', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16% 10%', boxSizing: 'border-box' }}>
               <div style={{ textAlign: 'center' }}>{thanksBody(fgC('links'), (a) => fgA('links', a))}</div>
             </div>
           ) : (

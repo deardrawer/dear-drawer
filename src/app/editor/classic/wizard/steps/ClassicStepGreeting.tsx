@@ -469,6 +469,33 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
           </div>
         </div>
 
+        {/* 사진 더보기 레이아웃 */}
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-gray-700">사진 더보기 펼침 레이아웃</p>
+          <p className="text-[10px] text-gray-400 leading-tight">‘사진 더보기’를 펼쳤을 때 나머지 사진 배치 방식이에요. 마지막 줄은 항상 깔끔하게 채워집니다.</p>
+          <div className="grid grid-cols-2 gap-1.5">
+            {([
+              { id: 'fill', label: '꽉 채우기', desc: '3열 · 남는 줄 가로컷' },
+              { id: 'justified', label: '저스티파이드', desc: '폭 자동 · 화보' },
+              { id: 'twocol', label: '2열 크게', desc: '몰입감' },
+              { id: 'fullbleed', label: '여백 없이', desc: '간격0 · 끝까지' },
+            ] as const).map((opt) => {
+              const active = (data.content.classicGalleryMoreLayout || 'fill') === opt.id
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => updateNestedData('content.classicGalleryMoreLayout', opt.id)}
+                  className={`flex flex-col items-start gap-0.5 px-3 py-2 rounded-lg border text-left transition-colors ${active ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-200 bg-white text-gray-600 hover:text-gray-900'}`}
+                >
+                  <span className="text-[12px] font-medium">{opt.label}</span>
+                  <span className={`text-[10px] ${active ? 'text-white/70' : 'text-gray-400'}`}>{opt.desc}</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
         {/* 갤러리 캡션 */}
         <div className="space-y-1.5">
           <Label className="text-sm font-medium">갤러리 캡션</Label>

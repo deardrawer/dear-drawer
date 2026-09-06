@@ -187,6 +187,7 @@ export interface ClassicInvitationData {
     classicRsvpDeclineText?: string // 불참 버튼 텍스트 (기본 '참석 어렵습니다')
     classicLightboxVariant?: number // 갤러리 라이트박스 스타일 (1=에디토리얼 2=글라스 4=룩북 5=시네마 6=미니멀 7=매거진 9=필름)
     classicGalleryType?: 'default' | 'album' | 'fullbleed' | 'swipe' | 'film' // 갤러리 레이아웃 타입
+    classicGalleryMoreLayout?: 'fill' | 'justified' | 'twocol' | 'fullbleed' // '사진 더보기' 펼침 레이아웃
     classicGalleryCaption?: string // 갤러리 캡션 (이탤릭)
     classicDdayPopup?: DdayPopupData // D-Day 팝업 (다른 템플릿의 ddayPopup과 분리된 필드명)
     // 디자인 커스텀 스케일 (THE SIMPLE 참조)

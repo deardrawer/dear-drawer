@@ -1956,7 +1956,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
 
         {/* ===== IX. Directions ===== */}
         <section style={{ order: orderOf('directions'), position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '82px 0', background: IVORY, overflow: 'hidden', ...hide('directions'), ...tintBg('directions') }}>
-          <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: '44%', ...cropBg(cc.classicDirectionsBg, { background: 'transparent' }), filter: 'grayscale(.55) saturate(.5) brightness(.92)' }} />
+          <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: '44%', ...cropBg(cc.classicDirectionsBg, { background: 'transparent' }) }} />
           {dirOverlayOp > 0 && <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: '44%', background: `rgb(${hexToRgb(dirOverlay, '28,16,13')})`, opacity: dirOverlayOp, pointerEvents: 'none' }} />}
           <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: '44%', background: 'linear-gradient(180deg,rgba(242,238,230,.2),rgba(242,238,230,.9))' }} />
           {!dirMapBottom && (

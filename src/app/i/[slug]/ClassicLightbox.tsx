@@ -15,6 +15,7 @@ interface Props {
   open: boolean
   variant: number
   onClose: () => void
+  accentColor?: string // 화살표/닫기 hover 시 물드는 포인트 컬러 (청첩장 datePoint)
 }
 
 const F_LABEL = "var(--font-eb-garamond), serif"
@@ -30,13 +31,13 @@ const CL_LB_STYLES = `
   .cl-lb-overlay * { box-sizing: border-box; }
   .cl-lb-topbar { position: relative; z-index: 3; display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; flex-shrink: 0; }
   .cl-lb-title { font-family: ${F_LABEL}; font-style: italic; font-size: 13px; letter-spacing: .08em; color: rgba(244,241,233,.82); }
-  .cl-lb-close { appearance: none; background: none; border: none; color: #F4F1E9; width: 40px; height: 40px; font-size: 26px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; text-shadow: 0 1px 8px rgba(0,0,0,.45); -webkit-tap-highlight-color: transparent; opacity: .85; transition: opacity .2s ease; }
-  .cl-lb-close:hover { opacity: 1; background: none; }
+  .cl-lb-close { appearance: none; background: none; border: none; color: #F4F1E9; width: 40px; height: 40px; font-size: 26px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; text-shadow: 0 1px 8px rgba(0,0,0,.45); -webkit-tap-highlight-color: transparent; opacity: .85; transition: opacity .2s ease, color .2s ease; }
+  .cl-lb-close:hover, .cl-lb-close:active { opacity: 1; color: var(--lb-accent, #c06a5b); background: none; }
   .cl-lb-stage-row { position: relative; flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
   .cl-lb-stage { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 6px 54px; touch-action: pan-y; }
   .cl-lb-img { max-width: 100%; max-height: 100%; object-fit: contain; -webkit-user-select: none; user-select: none; box-shadow: 0 30px 70px -20px rgba(0,0,0,.7); }
-  .cl-lb-nav { position: absolute; top: 50%; transform: translateY(-50%); z-index: 3; width: 44px; height: 64px; border: none; background: none; color: #F4F1E9; font-size: 34px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; text-shadow: 0 1px 8px rgba(0,0,0,.45); -webkit-tap-highlight-color: transparent; opacity: .82; transition: opacity .2s ease; }
-  .cl-lb-nav:hover { opacity: 1; background: none; }
+  .cl-lb-nav { position: absolute; top: 50%; transform: translateY(-50%); z-index: 3; width: 44px; height: 64px; border: none; background: none; color: #F4F1E9; font-size: 34px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; text-shadow: 0 1px 8px rgba(0,0,0,.45); -webkit-tap-highlight-color: transparent; opacity: .82; transition: opacity .2s ease, color .2s ease; }
+  .cl-lb-nav:hover, .cl-lb-nav:active { opacity: 1; color: var(--lb-accent, #c06a5b); background: none; }
   .cl-lb-nav--prev { left: 10px; }
   .cl-lb-nav--next { right: 10px; }
   .cl-lb-counter { text-align: center; font-family: ${F_LABEL}; font-size: 11px; letter-spacing: .14em; color: rgba(244,241,233,.6); padding: 2px 0 4px; flex-shrink: 0; }
@@ -49,10 +50,10 @@ const CL_LB_STYLES = `
 
   /* v1 에디토리얼: 아이보리 매트 배경, 세리프 캡션 */
   .cl-lb--v1 { background: #F4F1E9; }
-  .cl-lb--v1 .cl-lb-close { color: #351714; text-shadow: none; }
-  .cl-lb--v1 .cl-lb-close:hover { background: none; }
-  .cl-lb--v1 .cl-lb-nav { color: #351714; text-shadow: none; }
-  .cl-lb--v1 .cl-lb-nav:hover { background: none; }
+  .cl-lb--v1 .cl-lb-close { color: #4A3B34; text-shadow: none; }
+  .cl-lb--v1 .cl-lb-close:hover, .cl-lb--v1 .cl-lb-close:active { color: var(--lb-accent, #c06a5b); background: none; }
+  .cl-lb--v1 .cl-lb-nav { color: #4A3B34; text-shadow: none; }
+  .cl-lb--v1 .cl-lb-nav:hover, .cl-lb--v1 .cl-lb-nav:active { color: var(--lb-accent, #c06a5b); background: none; }
   .cl-lb--v1 .cl-lb-title, .cl-lb--v1 .cl-lb-counter, .cl-lb--v1 .cl-lb-caption { color: rgba(53,23,20,.62); }
   .cl-lb--v1 .cl-lb-img { box-shadow: 0 26px 50px -22px rgba(53,23,20,.4); border: 10px solid #fff; }
   .cl-lb--v1 .cl-lb-thumb.is-active { border-color: rgba(53,23,20,.75); }
@@ -67,7 +68,8 @@ const CL_LB_STYLES = `
   .cl-lb--v4 { background: #12100C; overflow-y: auto; }
   .cl-lb-v4-scroll { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 60px 0 40px; }
   .cl-lb-v4-img { width: 100%; max-width: 480px; -webkit-user-select: none; user-select: none; }
-  .cl-lb-v4-close { position: fixed; top: 16px; right: 18px; z-index: 4; width: 40px; height: 40px; border: none; background: none; color: #F4F1E9; font-size: 26px; line-height: 1; cursor: pointer; text-shadow: 0 1px 8px rgba(0,0,0,.45); }
+  .cl-lb-v4-close { position: fixed; top: 16px; right: 18px; z-index: 4; width: 40px; height: 40px; border: none; background: none; color: #F4F1E9; font-size: 26px; line-height: 1; cursor: pointer; text-shadow: 0 1px 8px rgba(0,0,0,.45); transition: color .2s ease; }
+  .cl-lb-v4-close:hover, .cl-lb-v4-close:active { color: var(--lb-accent, #c06a5b); }
 
   /* v5 시네마: 레터박스 */
   .cl-lb--v5 { background: #000; }
@@ -83,10 +85,10 @@ const CL_LB_STYLES = `
 
   /* v6 미니멀: 클린 화이트 */
   .cl-lb--v6 { background: #fff; }
-  .cl-lb--v6 .cl-lb-close { color: #222; text-shadow: none; }
-  .cl-lb--v6 .cl-lb-close:hover { background: none; }
-  .cl-lb--v6 .cl-lb-nav { color: #222; text-shadow: none; }
-  .cl-lb--v6 .cl-lb-nav:hover { background: none; }
+  .cl-lb--v6 .cl-lb-close { color: #4A3B34; text-shadow: none; }
+  .cl-lb--v6 .cl-lb-close:hover, .cl-lb--v6 .cl-lb-close:active { color: var(--lb-accent, #c06a5b); background: none; }
+  .cl-lb--v6 .cl-lb-nav { color: #4A3B34; text-shadow: none; }
+  .cl-lb--v6 .cl-lb-nav:hover, .cl-lb--v6 .cl-lb-nav:active { color: var(--lb-accent, #c06a5b); background: none; }
   .cl-lb--v6 .cl-lb-title, .cl-lb--v6 .cl-lb-counter { color: rgba(0,0,0,.45); }
   .cl-lb--v6 .cl-lb-img { box-shadow: none; }
   .cl-lb--v6 .cl-lb-thumbs { display: none; }
@@ -112,7 +114,8 @@ const CL_LB_STYLES = `
   .cl-lb-grain { position: absolute; inset: 0; pointer-events: none; opacity: .18; mix-blend-mode: overlay; background-image: repeating-linear-gradient(0deg, rgba(255,255,255,.5) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, rgba(0,0,0,.5) 0 1px, transparent 1px 3px); }
 `
 
-export default function ClassicLightbox({ images, index, open, variant, onClose }: Props) {
+export default function ClassicLightbox({ images, index, open, variant, onClose, accentColor }: Props) {
+  const accentVar = { ['--lb-accent' as string]: accentColor || '#c06a5b' } as React.CSSProperties
   const [idx, setIdx] = useState(index)
   const [fading, setFading] = useState(false)
   const [prevOpen, setPrevOpen] = useState(open)
@@ -185,7 +188,7 @@ export default function ClassicLightbox({ images, index, open, variant, onClose 
   // === v4 룩북: 전체 세로 스크롤 ===
   if (v === 4) {
     return wrap(
-      <div className="cl-lb-overlay cl-lb--v4" onContextMenu={preventContext} onClick={onClose}>
+      <div className="cl-lb-overlay cl-lb--v4" style={accentVar} onContextMenu={preventContext} onClick={onClose}>
         <style dangerouslySetInnerHTML={{ __html: CL_LB_STYLES }} />
         <button type="button" className="cl-lb-v4-close" onClick={(e) => { e.stopPropagation(); onClose() }} aria-label="닫기">&times;</button>
         <div className="cl-lb-v4-scroll" onClick={(e) => e.stopPropagation()}>
@@ -200,7 +203,7 @@ export default function ClassicLightbox({ images, index, open, variant, onClose 
   const showThumbs = v !== 5 && v !== 6
 
   return wrap(
-    <div className={`cl-lb-overlay cl-lb--v${v}`} onContextMenu={preventContext} onClick={onClose}>
+    <div className={`cl-lb-overlay cl-lb--v${v}`} style={accentVar} onContextMenu={preventContext} onClick={onClose}>
       <style dangerouslySetInnerHTML={{ __html: CL_LB_STYLES }} />
       {v === 9 && <div className="cl-lb-grain" aria-hidden="true" />}
 

@@ -2162,7 +2162,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         )}
 
         {/* 갤러리 라이트박스 */}
-        <ClassicLightbox images={gallery} index={lbIndex} open={lbOpen} variant={lbVariant} onClose={() => setLbOpen(false)} />
+        <ClassicLightbox images={gallery} index={lbIndex} open={lbOpen} variant={lbVariant} accentColor={datePoint} onClose={() => setLbOpen(false)} />
       </div>
       {showDdayPopup && ddayPopup?.enabled && (
         <DdayPopupOverlay

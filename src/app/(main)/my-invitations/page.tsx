@@ -865,14 +865,26 @@ export default function MyInvitationsPage() {
               <p className="text-sm text-gray-500">아직 청첩장이 없습니다</p>
             )}
           </div>
-          <Link href="/templates">
-            <Button className="bg-black hover:bg-gray-800 shadow-lg hover:shadow-xl transition-all hover:scale-105">
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              새 청첩장 만들기
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            {invitations.length > 0 && (
+              <Link href="/rsvp">
+                <Button variant="outline" className="bg-white/70 border-gray-300 hover:bg-white">
+                  <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                  </svg>
+                  RSVP 통합관리
+                </Button>
+              </Link>
+            )}
+            <Link href="/templates">
+              <Button className="bg-black hover:bg-gray-800 shadow-lg hover:shadow-xl transition-all hover:scale-105">
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                새 청첩장 만들기
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 

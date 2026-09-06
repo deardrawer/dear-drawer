@@ -1243,7 +1243,7 @@ export default function MyInvitationsPage() {
             <TabsList className={`grid w-full ${manageInvitation?.is_paid ? 'grid-cols-3' : 'grid-cols-2'}`}>
               <TabsTrigger value="rsvp">RSVP ({rsvpSummary.total})</TabsTrigger>
               <TabsTrigger value="guestbook">방명록 ({guestbookData.length})</TabsTrigger>
-              {manageInvitation?.is_paid && (
+              {!!manageInvitation?.is_paid && (
                 <TabsTrigger value="deardrawer">데이드로어</TabsTrigger>
               )}
             </TabsList>
@@ -1479,7 +1479,7 @@ export default function MyInvitationsPage() {
                 </TabsContent>
 
                 {/* 데이드로어 탭 */}
-                {manageInvitation?.is_paid && (
+                {!!manageInvitation?.is_paid && (
                   <TabsContent value="deardrawer" className="flex-1 overflow-auto mt-4">
                     <div className="space-y-6">
                       {/* 데이드로어 소개 */}

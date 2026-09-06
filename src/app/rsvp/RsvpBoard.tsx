@@ -6,6 +6,7 @@ import Link from 'next/link'
 interface InvSummary {
   id: string
   name: string
+  typeLabel: string // 청첩장 유형(템플릿) 라벨
   weddingDate: string | null
   attending: number
   notAttending: number
@@ -256,7 +257,7 @@ export default function RsvpBoard({ shareSlug }: { shareSlug?: string }) {
             <Chip on={invFilter === 'all'} onClick={() => reload({ inv: 'all' })}>전체</Chip>
             {overview.invitations.map((inv) => (
               <Chip key={inv.id} on={invFilter === inv.id} onClick={() => reload({ inv: inv.id })}>
-                {inv.name}
+                {inv.typeLabel}
               </Chip>
             ))}
           </div>

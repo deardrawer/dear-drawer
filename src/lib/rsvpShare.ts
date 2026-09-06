@@ -64,6 +64,7 @@ export interface RsvpBreakdown {
 export interface RsvpInvSummary extends RsvpBreakdown {
   id: string
   name: string
+  typeLabel: string // 청첩장 유형(템플릿) 라벨 — 신랑신부 이름이 같은 여러 청첩장 구분용
   weddingDate: string | null
   slug: string | null
   attending: number
@@ -77,12 +78,23 @@ export interface RsvpOverview {
   totals: { attending: number; notAttending: number; pending: number; guests: number; total: number; invitations: number } & RsvpBreakdown
 }
 
+// 템플릿 id → 유형 라벨 (RSVP 통합 필터에서 청첩장 구분용)
+const TEMPLATE_LABELS: Record<string, string> = {
+  'narrative-our': 'OUR', 'narrative-family': 'FAMILY', 'narrative-parents': 'PARENTS',
+  'narrative-classic': 'THE CLASSIC', 'narrative-magazine': 'MAGAZINE', 'narrative-film': 'MOVIE',
+  'narrative-record': 'RECORD', 'narrative-exhibit': 'FEED', 'narrative-essay': 'ESSAY',
+  'narrative-the-simple': 'THE SIMPLE', 'narrative-thankyou': 'THANKS',
+}
+export function rsvpTemplateLabel(templateId: string | null | undefined): string {
+  return (templateId && TEMPLATE_LABELS[templateId]) || '청첩장'
+}
+
 export async function getRsvpOverview(userId: string): Promise<RsvpOverview> {
   const db = await getDB()
   const rows = (
     await db
       .prepare(
-        `SELECT i.id AS id, i.groom_name AS groom_name, i.bride_name AS bride_name, i.wedding_date AS wedding_date, i.slug AS slug,
+        `SELECT i.id AS id, i.groom_name AS groom_name, i.bride_name AS bride_name, i.wedding_date AS wedding_date, i.slug AS slug, i.template_id AS template_id,
                 COALESCE(SUM(CASE WHEN r.attendance='attending' THEN 1 ELSE 0 END), 0) AS attending,
                 COALESCE(SUM(CASE WHEN r.attendance='not_attending' THEN 1 ELSE 0 END), 0) AS notAttending,
                 COALESCE(SUM(CASE WHEN r.attendance='pending' THEN 1 ELSE 0 END), 0) AS pending,
@@ -103,11 +115,12 @@ export async function getRsvpOverview(userId: string): Promise<RsvpOverview> {
          ORDER BY i.wedding_date DESC`,
       )
       .bind(userId)
-      .all<{ id: string; groom_name: string | null; bride_name: string | null; wedding_date: string | null; slug: string | null; attending: number; notAttending: number; pending: number; guests: number; total: number; mealYes: number; mealNo: number; shuttleYes: number; shuttleNo: number; afterYes: number; afterNo: number; groomSide: number; brideSide: number }>()
+      .all<{ id: string; groom_name: string | null; bride_name: string | null; wedding_date: string | null; slug: string | null; template_id: string | null; attending: number; notAttending: number; pending: number; guests: number; total: number; mealYes: number; mealNo: number; shuttleYes: number; shuttleNo: number; afterYes: number; afterNo: number; groomSide: number; brideSide: number }>()
   ).results || []
   const invitations: RsvpInvSummary[] = rows.map((r) => ({
     id: r.id,
     name: [r.groom_name, r.bride_name].filter(Boolean).join(' · ') || '청첩장',
+    typeLabel: rsvpTemplateLabel(r.template_id),
     weddingDate: r.wedding_date,
     slug: r.slug,
     attending: r.attending,
@@ -206,20 +219,20 @@ export async function getRsvpResponses(
         `SELECT r.id AS id, r.invitation_id AS invitation_id, r.guest_name AS guest_name, r.guest_phone AS guest_phone,
                 r.attendance AS attendance, r.guest_count AS guest_count, r.message AS message, r.created_at AS created_at,
                 r.side AS side, r.side_detail AS side_detail, r.meal_attendance AS meal_attendance, r.shuttle_bus AS shuttle_bus, r.after_party AS after_party,
-                i.groom_name AS groom_name, i.bride_name AS bride_name
+                i.groom_name AS groom_name, i.bride_name AS bride_name, i.template_id AS template_id
          FROM rsvp_responses r JOIN invitations i ON r.invitation_id = i.id
          WHERE ${where}
          ORDER BY ${orderBy}
          LIMIT ? OFFSET ?`,
       )
       .bind(...binds, pageSize, offset)
-      .all<{ id: string; invitation_id: string; guest_name: string; guest_phone: string | null; attendance: 'attending' | 'not_attending' | 'pending'; guest_count: number; message: string | null; created_at: string; side: 'groom' | 'bride' | null; side_detail: 'self' | 'father' | 'mother' | null; meal_attendance: 'yes' | 'no' | null; shuttle_bus: 'yes' | 'no' | null; after_party: 'yes' | 'no' | null; groom_name: string | null; bride_name: string | null }>()
+      .all<{ id: string; invitation_id: string; guest_name: string; guest_phone: string | null; attendance: 'attending' | 'not_attending' | 'pending'; guest_count: number; message: string | null; created_at: string; side: 'groom' | 'bride' | null; side_detail: 'self' | 'father' | 'mother' | null; meal_attendance: 'yes' | 'no' | null; shuttle_bus: 'yes' | 'no' | null; after_party: 'yes' | 'no' | null; groom_name: string | null; bride_name: string | null; template_id: string | null }>()
   ).results || []
 
   const items: RsvpResponseItem[] = rows.map((r) => ({
     id: r.id,
     invitationId: r.invitation_id,
-    invitationName: [r.groom_name, r.bride_name].filter(Boolean).join(' · ') || '청첩장',
+    invitationName: rsvpTemplateLabel(r.template_id), // 유형 라벨(신랑신부 이름이 같아 구분 안 되므로)
     guestName: r.guest_name,
     guestPhone: r.guest_phone,
     attendance: r.attendance,

@@ -41,10 +41,13 @@ interface RespItem {
   afterParty: 'yes' | 'no' | null
 }
 
+// 통합 RSVP 페이지는 무조건 프리텐다드 (fonts.css의 Pretendard Variable → globals.css의 Pretendard 순)
+const PRETENDARD = "'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif"
+
 const ATTEND = {
-  attending: { label: '참석', cls: 'bg-emerald-50 text-emerald-700' },
-  pending: { label: '미정', cls: 'bg-amber-50 text-amber-700' },
-  not_attending: { label: '불참', cls: 'bg-gray-100 text-gray-500' },
+  attending: { label: '참석', dot: 'bg-slate-600', soft: 'bg-slate-100 text-slate-700' },
+  pending: { label: '미정', dot: 'bg-amber-500', soft: 'bg-amber-50 text-amber-700' },
+  not_attending: { label: '불참', dot: 'bg-gray-300 ring-1 ring-inset ring-gray-300', soft: 'bg-gray-100 text-gray-500' },
 } as const
 
 function sideLabel(side: string | null, detail: string | null): string | null {
@@ -166,24 +169,26 @@ export default function RsvpBoard({ shareSlug }: { shareSlug?: string }) {
 
   // ── 화면 ──
   if (state === 'loading') {
-    return <div className="min-h-screen flex items-center justify-center bg-gray-50 text-sm text-gray-500">불러오는 중…</div>
+    return <div style={{ fontFamily: PRETENDARD }} className="min-h-screen flex items-center justify-center bg-gray-50 text-sm text-gray-500">불러오는 중…</div>
   }
   if (state === 'auth') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
-        <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm p-8 text-center">
-          <h1 className="text-lg font-bold text-gray-900">로그인이 필요합니다</h1>
+      <div style={{ fontFamily: PRETENDARD }} className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
+        <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
+          <div className="text-[11px] font-semibold tracking-[0.22em] uppercase text-slate-400">RSVP</div>
+          <h1 className="text-lg font-bold text-gray-900 mt-2">로그인이 필요합니다</h1>
           <p className="text-sm text-gray-500 mt-1">내 청첩장들의 RSVP를 한곳에서 관리하세요.</p>
-          <Link href="/login" className="mt-5 inline-block w-full rounded-lg bg-gray-900 text-white py-2.5 text-sm font-semibold">로그인</Link>
+          <Link href="/login" className="mt-5 inline-block w-full rounded-xl bg-slate-700 text-white py-2.5 text-sm font-semibold hover:bg-slate-800">로그인</Link>
         </div>
       </div>
     )
   }
   if (state === 'password') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
-        <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm p-8">
-          <h1 className="text-lg font-bold text-gray-900">RSVP 현황</h1>
+      <div style={{ fontFamily: PRETENDARD }} className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
+        <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+          <div className="text-[11px] font-semibold tracking-[0.22em] uppercase text-slate-400">RSVP</div>
+          <h1 className="text-lg font-bold text-gray-900 mt-2">참석 현황</h1>
           <p className="text-sm text-gray-500 mt-1">비밀번호를 입력하면 참석 현황을 볼 수 있어요.</p>
           <input
             type="password"
@@ -191,10 +196,10 @@ export default function RsvpBoard({ shareSlug }: { shareSlug?: string }) {
             onChange={(e) => setPw(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && submitPassword()}
             placeholder="비밀번호"
-            className="mt-5 w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm focus:outline-none focus:border-gray-900"
+            className="mt-5 w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:outline-none focus:border-slate-500"
           />
           {pwErr && <p className="text-sm text-red-500 mt-2">{pwErr}</p>}
-          <button type="button" onClick={submitPassword} disabled={pwBusy || !pw} className="mt-4 w-full rounded-lg bg-gray-900 text-white py-2.5 text-sm font-semibold disabled:opacity-50">
+          <button type="button" onClick={submitPassword} disabled={pwBusy || !pw} className="mt-4 w-full rounded-xl bg-slate-700 text-white py-2.5 text-sm font-semibold hover:bg-slate-800 disabled:opacity-50">
             {pwBusy ? '확인 중…' : '입장'}
           </button>
         </div>
@@ -202,118 +207,155 @@ export default function RsvpBoard({ shareSlug }: { shareSlug?: string }) {
     )
   }
   if (state === 'error' || !overview) {
-    return <div className="min-h-screen flex items-center justify-center bg-gray-50 text-sm text-gray-500">불러오지 못했습니다.</div>
+    return <div style={{ fontFamily: PRETENDARD }} className="min-h-screen flex items-center justify-center bg-gray-50 text-sm text-gray-500">불러오지 못했습니다.</div>
   }
 
   const t = overview.totals
   const hasMore = items.length < total
+  const hasSide = t.groomSide + t.brideSide > 0
+  const hasSub = hasSide || t.mealYes + t.mealNo > 0 || t.shuttleYes + t.shuttleNo > 0 || t.afterYes + t.afterNo > 0
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-16">
+    <div style={{ fontFamily: PRETENDARD }} className="min-h-screen bg-gray-50 pb-16">
       <div className="max-w-md mx-auto px-4 pt-6">
         {/* 헤더 */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-900">RSVP 현황</h1>
+        <div className="text-[11px] font-semibold tracking-[0.22em] uppercase text-slate-400">RSVP</div>
+        <div className="flex items-end justify-between mt-1.5">
+          <h1 className="text-2xl font-medium text-gray-900" style={{ fontFamily: 'Isamanru, sans-serif' }}>참석 현황</h1>
           {!isShared && <ShareButton />}
         </div>
-        <p className="text-xs text-gray-500 mt-0.5">청첩장 {t.invitations}개 · 응답 {t.total}건</p>
+        <p className="text-xs text-gray-500 mt-2">청첩장 {t.invitations}개 · 응답 {t.total}건</p>
 
-        {/* 요약 */}
-        <div className="grid grid-cols-3 gap-2 mt-4">
-          {([
-            ['참석', t.attending, 'text-emerald-600'],
-            ['미정', t.pending, 'text-amber-600'],
-            ['불참', t.notAttending, 'text-gray-400'],
-          ] as const).map(([label, n, cls]) => (
-            <div key={label} className="bg-white rounded-xl border border-gray-100 py-3 text-center">
-              <div className={`text-2xl font-bold tabular-nums ${cls}`}>{n}</div>
-              <div className="text-xs text-gray-500 mt-0.5">{label}</div>
-            </div>
-          ))}
+        {/* 요약 (간결) */}
+        <div className="mt-5 bg-white rounded-2xl border border-gray-100 p-5">
+          <div className="flex items-baseline justify-between">
+            <span className="text-xs text-gray-500 font-medium">예상 참석 인원</span>
+            {!isShared && total > 0 && (
+              <a href="/api/rsvp/export?scope=all" className="text-[13px] font-semibold text-gray-500 underline underline-offset-2 decoration-gray-300">CSV 내보내기</a>
+            )}
+          </div>
+          <div className="text-[44px] leading-none font-bold text-gray-900 tabular-nums mt-1.5 tracking-tight">
+            {t.guests}
+            <span className="text-base font-medium text-gray-500 ml-1">명</span>
+          </div>
+          <div className="text-xs text-gray-400 mt-2">전체 응답 {t.total}건</div>
+
+          {/* 참석 / 미정 / 불참 */}
+          <div className="flex mt-4 pt-4 border-t border-gray-100">
+            {([
+              ['참석', t.attending, 'text-gray-900'],
+              ['미정', t.pending, 'text-gray-900'],
+              ['불참', t.notAttending, 'text-gray-400'],
+            ] as const).map(([label, n, cls], i) => (
+              <div key={label} className={`flex-1 text-center ${i > 0 ? 'border-l border-gray-100' : ''}`}>
+                <div className={`text-2xl font-bold tabular-nums ${cls}`}>{n}</div>
+                <div className="text-xs text-gray-500 mt-1">{label}</div>
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="mt-2 bg-white rounded-xl border border-gray-100 py-2.5 text-center text-sm text-gray-600">
-          예상 참석 인원 <b className="text-gray-900">{t.guests}명</b>
-        </div>
 
-        {/* 세부 통계 (있는 항목만) */}
-        {(() => {
-          const bd: string[] = []
-          if (t.groomSide + t.brideSide > 0) bd.push(`신랑측 ${t.groomSide} · 신부측 ${t.brideSide}`)
-          if (t.mealYes + t.mealNo > 0) bd.push(`식사 ${t.mealYes} · 안 함 ${t.mealNo}`)
-          if (t.shuttleYes + t.shuttleNo > 0) bd.push(`셔틀 ${t.shuttleYes} · 미이용 ${t.shuttleNo}`)
-          if (t.afterYes + t.afterNo > 0) bd.push(`애프터 ${t.afterYes} · 불참 ${t.afterNo}`)
-          return bd.length > 0 ? (
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {bd.map((x) => (
-                <span key={x} className="text-[11px] text-gray-600 bg-gray-100 rounded-md px-2 py-1">{x}</span>
-              ))}
-            </div>
-          ) : null
-        })()}
+        {/* 세부 통계 (보조) — 신랑측·신부측은 색 구분 */}
+        {hasSub && (
+          <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-3 px-1 text-[13px] text-gray-500">
+            {hasSide && (
+              <>
+                <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500" />신랑측 <b className="font-bold text-gray-900 tabular-nums">{t.groomSide}</b></span>
+                <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-400" />신부측 <b className="font-bold text-gray-900 tabular-nums">{t.brideSide}</b></span>
+              </>
+            )}
+            {t.mealYes + t.mealNo > 0 && <span>식사 <b className="font-bold text-gray-900 tabular-nums">{t.mealYes}</b></span>}
+            {t.shuttleYes + t.shuttleNo > 0 && <span>셔틀 <b className="font-bold text-gray-900 tabular-nums">{t.shuttleYes}</b></span>}
+            {t.afterYes + t.afterNo > 0 && <span>애프터 <b className="font-bold text-gray-900 tabular-nums">{t.afterYes}</b></span>}
+          </div>
+        )}
 
-        {/* 청첩장 필터 */}
+        {/* 청첩장 필터 (언더라인 탭) */}
         {overview.invitations.length > 1 && (
-          <div className="flex gap-2 mt-4 overflow-x-auto pb-1 -mx-4 px-4">
-            <Chip on={invFilter === 'all'} onClick={() => reload({ inv: 'all' })}>전체</Chip>
+          <div className="flex mt-6 border-b border-gray-100 overflow-x-auto -mx-4 px-4">
+            <Tab on={invFilter === 'all'} onClick={() => reload({ inv: 'all' })}>전체</Tab>
             {overview.invitations.map((inv) => (
-              <Chip key={inv.id} on={invFilter === inv.id} onClick={() => reload({ inv: inv.id })}>
+              <Tab key={inv.id} on={invFilter === inv.id} onClick={() => reload({ inv: inv.id })}>
                 {inv.typeLabel}
-              </Chip>
+              </Tab>
             ))}
           </div>
         )}
 
-        {/* 참석여부 필터 + 검색 */}
-        <div className="flex gap-2 mt-3">
-          {(['all', 'attending', 'pending', 'not_attending'] as const).map((s) => (
-            <Chip key={s} small on={statusFilter === s} onClick={() => reload({ status: s })}>
-              {s === 'all' ? '전체' : ATTEND[s].label}
-            </Chip>
-          ))}
+        {/* 참석여부 (세그먼트) */}
+        <div className="mt-4">
+          <Segment
+            options={[['all', '전체'], ['attending', '참석'], ['pending', '미정'], ['not_attending', '불참']]}
+            value={statusFilter}
+            onChange={(v) => reload({ status: v })}
+          />
         </div>
-        {/* 신랑/신부측 필터 (측 데이터 있을 때만) */}
+        {/* 신랑/신부측 (측 데이터 있을 때만) */}
         {t.groomSide + t.brideSide > 0 && (
-          <div className="flex gap-2 mt-2">
-            {(['all', 'groom', 'bride'] as const).map((s) => (
-              <Chip key={s} small on={sideFilter === s} onClick={() => reload({ side: s })}>
-                {s === 'all' ? '전체' : s === 'groom' ? '신랑측' : '신부측'}
-              </Chip>
-            ))}
+          <div className="mt-2">
+            <Segment
+              options={[['all', '전체'], ['groom', '신랑측'], ['bride', '신부측']]}
+              value={sideFilter}
+              onChange={(v) => reload({ side: v })}
+            />
           </div>
         )}
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && reload({ q: search })}
-          onBlur={() => reload({ q: search })}
-          placeholder="이름 · 메시지 검색"
-          className="w-full rounded-lg border border-gray-200 px-3.5 py-2.5 text-sm mt-3 focus:outline-none focus:border-gray-900"
-        />
 
-        {/* 응답 목록(카드) */}
-        <div className="mt-4 space-y-2.5">
+        {/* 검색 */}
+        <div className="relative mt-3">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <circle cx="11" cy="11" r="7" />
+            <path d="M21 21l-4-4" />
+          </svg>
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && reload({ q: search })}
+            onBlur={() => reload({ q: search })}
+            placeholder="이름 · 메시지 검색"
+            className="w-full rounded-xl border border-gray-200 bg-white pl-9 pr-3.5 py-2.5 text-sm focus:outline-none focus:border-slate-500"
+          />
+        </div>
+
+        {/* 응답 원장(ledger) */}
+        <div className="mt-3">
           {items.length === 0 && !listLoading && <p className="text-center text-sm text-gray-400 py-10">응답이 없습니다.</p>}
           {items.map((r) => {
             const sd = sideLabel(r.side, r.sideDetail)
+            const hasTags = sd || r.meal === 'yes' || r.shuttle === 'yes' || r.afterParty === 'yes'
             return (
-              <div key={r.id} className="bg-white rounded-xl border border-gray-100 p-4">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-sm font-semibold text-gray-900 truncate">{r.guestName}</span>
-                    <span className={`text-[11px] font-semibold rounded-full px-2 py-0.5 shrink-0 ${ATTEND[r.attendance].cls}`}>{ATTEND[r.attendance].label}</span>
-                    {r.attendance === 'attending' && r.guestCount > 0 && <span className="text-xs text-gray-500 shrink-0">{r.guestCount}명</span>}
+              <div key={r.id} className="grid grid-cols-[8px_1fr_auto] gap-x-3 py-4 border-b border-gray-100">
+                <span className={`w-2 h-2 rounded-full mt-1.5 ${r.side === 'bride' ? 'bg-rose-400' : r.side === 'groom' ? 'bg-blue-500' : 'bg-gray-300'}`} />
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[15px] font-semibold text-gray-900">{r.guestName}</span>
+                    {r.attendance === 'attending' ? (
+                      r.guestCount > 0 && <span className="text-xs font-semibold text-slate-700 bg-slate-100 rounded px-1.5 py-0.5 tabular-nums">{r.guestCount}명</span>
+                    ) : (
+                      <span className={`text-[11px] font-semibold rounded-full px-2 py-0.5 ${ATTEND[r.attendance].soft}`}>{ATTEND[r.attendance].label}</span>
+                    )}
                   </div>
-                  <span className="text-[11px] text-gray-400 shrink-0">{fmtDateTime(r.createdAt)}</span>
+                  {r.guestPhone && <div className="text-xs text-gray-400 mt-1 tabular-nums">{r.guestPhone}</div>}
+                  {r.message && <div className="text-[13px] text-gray-600 mt-2 whitespace-pre-wrap leading-relaxed">{r.message}</div>}
+                  {hasTags && (
+                    <div className="flex flex-wrap gap-1.5 mt-2.5">
+                      {sd && (
+                        <span className={`inline-flex items-center gap-1 text-[11px] font-semibold rounded px-1.5 py-0.5 border ${r.side === 'bride' ? 'text-rose-600 border-rose-200' : 'text-blue-700 border-blue-200'}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${r.side === 'bride' ? 'bg-rose-400' : 'bg-blue-500'}`} />
+                          {sd}
+                        </span>
+                      )}
+                      {r.meal === 'yes' && <span className="text-[11px] font-semibold text-gray-500 border border-gray-200 rounded px-1.5 py-0.5">식사</span>}
+                      {r.shuttle === 'yes' && <span className="text-[11px] font-semibold text-gray-500 border border-gray-200 rounded px-1.5 py-0.5">셔틀</span>}
+                      {r.afterParty === 'yes' && <span className="text-[11px] font-semibold text-gray-500 border border-gray-200 rounded px-1.5 py-0.5">애프터</span>}
+                    </div>
+                  )}
                 </div>
-                {r.guestPhone && <div className="text-xs text-gray-500 mt-1 tabular-nums">{r.guestPhone}</div>}
-                {r.message && <div className="text-sm text-gray-600 mt-1.5 whitespace-pre-wrap">{r.message}</div>}
-                {/* 옵션 배지 + 어느 청첩장에서 왔는지(항상 표시) */}
-                <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                  {sd && <span className="text-[11px] text-gray-600 bg-gray-100 rounded px-1.5 py-0.5">{sd}</span>}
-                  {r.meal === 'yes' && <span className="text-[11px] text-gray-600 bg-gray-100 rounded px-1.5 py-0.5">식사</span>}
-                  {r.shuttle === 'yes' && <span className="text-[11px] text-gray-600 bg-gray-100 rounded px-1.5 py-0.5">셔틀</span>}
-                  {r.afterParty === 'yes' && <span className="text-[11px] text-gray-600 bg-gray-100 rounded px-1.5 py-0.5">애프터</span>}
-                  <span className="text-[11px] text-gray-400 ml-auto truncate max-w-[55%]">{r.invitationName}</span>
+                <div className="text-right">
+                  <div className="text-[11px] text-gray-400 tabular-nums whitespace-nowrap">{fmtDateTime(r.createdAt)}</div>
+                  <div className="text-[11px] text-gray-400 mt-2 truncate max-w-[110px] ml-auto">
+                    from <b className="font-semibold text-gray-500">{r.invitationName}</b>
+                  </div>
                 </div>
               </div>
             )
@@ -326,32 +368,44 @@ export default function RsvpBoard({ shareSlug }: { shareSlug?: string }) {
           <button
             type="button"
             onClick={() => loadResponses({ page: page + 1, invitation: invFilter, status: statusFilter, side: sideFilter, q: search, append: true })}
-            className="w-full mt-4 rounded-lg border border-gray-300 bg-white py-2.5 text-sm font-medium text-gray-700"
+            className="w-full mt-5 rounded-xl border border-gray-300 bg-white py-3 text-sm font-semibold text-gray-700 hover:border-gray-400"
           >
             더 보기 ({items.length}/{total})
           </button>
-        )}
-
-        {/* CSV(오너만) */}
-        {!isShared && total > 0 && (
-          <a href="/api/rsvp/export?scope=all" className="block text-center mt-6 text-sm text-gray-500 underline">
-            전체 CSV 내보내기
-          </a>
         )}
       </div>
     </div>
   )
 }
 
-function Chip({ children, on, onClick, small }: { children: React.ReactNode; on: boolean; onClick: () => void; small?: boolean }) {
+/** 언더라인 탭 — 청첩장 유형 필터 */
+function Tab({ children, on, onClick }: { children: React.ReactNode; on: boolean; onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`shrink-0 rounded-full font-semibold whitespace-nowrap ${small ? 'text-xs px-3 py-1.5' : 'text-[13px] px-3.5 py-1.5'} ${on ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 border border-gray-200'}`}
+      className={`shrink-0 text-[13.5px] font-semibold whitespace-nowrap px-1 py-2.5 mr-5 border-b-2 -mb-px transition-colors ${on ? 'text-gray-900 border-slate-600' : 'text-gray-400 border-transparent hover:text-gray-600'}`}
     >
       {children}
     </button>
+  )
+}
+
+/** 세그먼트 컨트롤 — 참석여부 / 신랑·신부측 필터 */
+function Segment({ options, value, onChange }: { options: readonly (readonly [string, string])[]; value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="inline-flex bg-gray-100 rounded-xl p-0.5 gap-0.5">
+      {options.map(([v, label]) => (
+        <button
+          key={v}
+          type="button"
+          onClick={() => onChange(v)}
+          className={`text-xs font-semibold px-3.5 py-1.5 rounded-lg transition-colors ${value === v ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
   )
 }
 
@@ -401,7 +455,10 @@ function ShareButton() {
 
   return (
     <>
-      <button type="button" onClick={openModal} className="text-sm rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-gray-700">공유</button>
+      <button type="button" onClick={openModal} className="inline-flex items-center gap-1.5 text-[13px] font-semibold rounded-full border border-gray-300 bg-white px-3.5 py-1.5 text-gray-700 hover:border-gray-400">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" /></svg>
+        공유
+      </button>
       {open && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-4" onClick={() => setOpen(false)}>
           <div className="w-full max-w-sm bg-white rounded-2xl p-6" onClick={(e) => e.stopPropagation()}>
@@ -412,7 +469,7 @@ function ShareButton() {
             <p className="text-xs text-gray-500 mt-1">이 링크로 다른 사람도 참석 현황을 볼 수 있어요.</p>
 
             {!slug ? (
-              <button type="button" onClick={() => patch({ enable: true }, '링크를 만들었어요')} disabled={busy} className="mt-4 w-full rounded-lg bg-gray-900 text-white py-2.5 text-sm font-semibold disabled:opacity-50">
+              <button type="button" onClick={() => patch({ enable: true }, '링크를 만들었어요')} disabled={busy} className="mt-4 w-full rounded-lg bg-slate-700 text-white py-2.5 text-sm font-semibold disabled:opacity-50">
                 공유 링크 만들기
               </button>
             ) : (
@@ -430,7 +487,7 @@ function ShareButton() {
                   <label className="text-xs font-medium text-gray-600">비밀번호 {hasPassword ? '(설정됨)' : '(없음 · 링크만 알면 열람)'}</label>
                   <div className="flex gap-2 mt-1">
                     <input type="password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder={hasPassword ? '새 비밀번호(변경 시)' : '비밀번호(4자 이상)'} className="flex-1 min-w-0 rounded-lg border border-gray-200 px-3 py-2 text-sm" />
-                    <button type="button" onClick={() => patch({ password: pw }, hasPassword ? '변경했어요' : '설정했어요')} disabled={busy || pw.length < 4} className="text-sm rounded-lg bg-gray-900 text-white px-3 py-2 shrink-0 disabled:opacity-40">
+                    <button type="button" onClick={() => patch({ password: pw }, hasPassword ? '변경했어요' : '설정했어요')} disabled={busy || pw.length < 4} className="text-sm rounded-lg bg-slate-700 text-white px-3 py-2 shrink-0 disabled:opacity-40">
                       {hasPassword ? '변경' : '설정'}
                     </button>
                   </div>

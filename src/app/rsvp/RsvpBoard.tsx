@@ -73,6 +73,10 @@ export default function RsvpBoard({ shareSlug }: { shareSlug?: string }) {
   const [invFilter, setInvFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
   const [sideFilter, setSideFilter] = useState('all')
+  const [mealFilter, setMealFilter] = useState('all')
+  const [shuttleFilter, setShuttleFilter] = useState('all')
+  const [afterFilter, setAfterFilter] = useState('all')
+  const [optOpen, setOptOpen] = useState(false) // RSVP 옵션 필터 펼침
   const [search, setSearch] = useState('')
   const [listLoading, setListLoading] = useState(false)
 
@@ -98,12 +102,14 @@ export default function RsvpBoard({ shareSlug }: { shareSlug?: string }) {
   }, [shareSlug])
 
   const loadResponses = useCallback(
-    async (opts: { page: number; invitation: string; status: string; side: string; q: string; append: boolean }) => {
+    async (opts: { page: number; invitation: string; status: string; side: string; meal: string; shuttle: string; afterParty: string; q: string; append: boolean }) => {
       setListLoading(true)
       try {
-        const res = await fetch(
-          `/api/rsvp/responses?${q({ invitation: opts.invitation, status: opts.status, side: opts.side, q: opts.q, page: String(opts.page), pageSize: '30' })}`,
-        )
+        const params: Record<string, string> = { invitation: opts.invitation, status: opts.status, side: opts.side, q: opts.q, page: String(opts.page), pageSize: '30' }
+        if (opts.meal !== 'all') params.meal = opts.meal
+        if (opts.shuttle !== 'all') params.shuttle = opts.shuttle
+        if (opts.afterParty !== 'all') params.afterParty = opts.afterParty
+        const res = await fetch(`/api/rsvp/responses?${q(params)}`)
         if (!res.ok) return
         const d = (await res.json()) as { items: RespItem[]; total: number; page: number }
         setItems((prev) => (opts.append ? [...prev, ...d.items] : d.items))
@@ -121,7 +127,7 @@ export default function RsvpBoard({ shareSlug }: { shareSlug?: string }) {
     setState('loading')
     const ok = await loadOverview()
     if (ok) {
-      await loadResponses({ page: 1, invitation: 'all', status: 'all', side: 'all', q: '', append: false })
+      await loadResponses({ page: 1, invitation: 'all', status: 'all', side: 'all', meal: 'all', shuttle: 'all', afterParty: 'all', q: '', append: false })
       setState('ok')
     }
   }, [loadOverview, loadResponses])
@@ -132,15 +138,21 @@ export default function RsvpBoard({ shareSlug }: { shareSlug?: string }) {
   }, [shareSlug])
 
   // 필터 변경 시 목록 재조회(현재 상태와 병합)
-  const reload = (next: Partial<{ inv: string; status: string; side: string; q: string }>) => {
+  const reload = (next: Partial<{ inv: string; status: string; side: string; meal: string; shuttle: string; afterParty: string; q: string }>) => {
     const inv = next.inv ?? invFilter
     const status = next.status ?? statusFilter
     const side = next.side ?? sideFilter
+    const meal = next.meal ?? mealFilter
+    const shuttle = next.shuttle ?? shuttleFilter
+    const afterParty = next.afterParty ?? afterFilter
     const qStr = next.q ?? search
     setInvFilter(inv)
     setStatusFilter(status)
     setSideFilter(side)
-    loadResponses({ page: 1, invitation: inv, status, side, q: qStr, append: false })
+    setMealFilter(meal)
+    setShuttleFilter(shuttle)
+    setAfterFilter(afterParty)
+    loadResponses({ page: 1, invitation: inv, status, side, meal, shuttle, afterParty, q: qStr, append: false })
   }
 
   const submitPassword = async () => {
@@ -301,6 +313,46 @@ export default function RsvpBoard({ shareSlug }: { shareSlug?: string }) {
           </div>
         )}
 
+        {/* RSVP 옵션 필터 (식사·셔틀·애프터) — 접이식, 데이터 있을 때만 */}
+        {(t.mealYes + t.mealNo > 0 || t.shuttleYes + t.shuttleNo > 0 || t.afterYes + t.afterNo > 0) && (() => {
+          const optActive = [mealFilter, shuttleFilter, afterFilter].filter((v) => v !== 'all').length
+          return (
+            <div className="mt-2">
+              <button
+                type="button"
+                onClick={() => setOptOpen((o) => !o)}
+                className="flex items-center gap-1.5 text-[13px] font-semibold text-gray-500 py-1 hover:text-gray-700"
+              >
+                옵션 필터
+                {optActive > 0 && <span className="text-[11px] font-bold text-slate-700 bg-slate-100 rounded-full px-1.5 tabular-nums">{optActive}</span>}
+                <svg className={`transition-transform ${optOpen ? 'rotate-180' : ''}`} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+              </button>
+              {optOpen && (
+                <div className="mt-2 flex flex-col gap-2.5 rounded-xl bg-gray-50 p-3">
+                  {t.mealYes + t.mealNo > 0 && (
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-[13px] font-medium text-gray-600">식사</span>
+                      <Segment options={[['all', '전체'], ['yes', '신청'], ['no', '미신청']]} value={mealFilter} onChange={(v) => reload({ meal: v })} />
+                    </div>
+                  )}
+                  {t.shuttleYes + t.shuttleNo > 0 && (
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-[13px] font-medium text-gray-600">셔틀버스</span>
+                      <Segment options={[['all', '전체'], ['yes', '신청'], ['no', '미신청']]} value={shuttleFilter} onChange={(v) => reload({ shuttle: v })} />
+                    </div>
+                  )}
+                  {t.afterYes + t.afterNo > 0 && (
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-[13px] font-medium text-gray-600">애프터파티</span>
+                      <Segment options={[['all', '전체'], ['yes', '신청'], ['no', '미신청']]} value={afterFilter} onChange={(v) => reload({ afterParty: v })} />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )
+        })()}
+
         {/* 검색 */}
         <div className="relative mt-3">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -367,7 +419,7 @@ export default function RsvpBoard({ shareSlug }: { shareSlug?: string }) {
         {hasMore && !listLoading && (
           <button
             type="button"
-            onClick={() => loadResponses({ page: page + 1, invitation: invFilter, status: statusFilter, side: sideFilter, q: search, append: true })}
+            onClick={() => loadResponses({ page: page + 1, invitation: invFilter, status: statusFilter, side: sideFilter, meal: mealFilter, shuttle: shuttleFilter, afterParty: afterFilter, q: search, append: true })}
             className="w-full mt-5 rounded-xl border border-gray-300 bg-white py-3 text-sm font-semibold text-gray-700 hover:border-gray-400"
           >
             더 보기 ({items.length}/{total})

@@ -176,7 +176,7 @@ export interface RsvpResponsesResult {
 
 export async function getRsvpResponses(
   userId: string,
-  opts: { invitationId?: string; status?: string; side?: string; q?: string; sort?: string; page?: number; pageSize?: number },
+  opts: { invitationId?: string; status?: string; side?: string; meal?: string; shuttle?: string; afterParty?: string; q?: string; sort?: string; page?: number; pageSize?: number },
 ): Promise<RsvpResponsesResult> {
   const db = await getDB()
   const conds: string[] = ['i.user_id = ?']
@@ -192,6 +192,18 @@ export async function getRsvpResponses(
   if (opts.side && ['groom', 'bride'].includes(opts.side)) {
     conds.push('r.side = ?')
     binds.push(opts.side)
+  }
+  if (opts.meal && ['yes', 'no'].includes(opts.meal)) {
+    conds.push('r.meal_attendance = ?')
+    binds.push(opts.meal)
+  }
+  if (opts.shuttle && ['yes', 'no'].includes(opts.shuttle)) {
+    conds.push('r.shuttle_bus = ?')
+    binds.push(opts.shuttle)
+  }
+  if (opts.afterParty && ['yes', 'no'].includes(opts.afterParty)) {
+    conds.push('r.after_party = ?')
+    binds.push(opts.afterParty)
   }
   if (opts.q && opts.q.trim()) {
     conds.push('(r.guest_name LIKE ? OR r.message LIKE ?)')

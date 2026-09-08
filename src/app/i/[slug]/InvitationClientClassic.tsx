@@ -459,6 +459,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   // 인사말 카드 프레임 (웨이브 / 레이스 / 종이 / 없음)
   const letterNoFrame = cc.classicLetterFrame === 'none'
   const letterPaper = cc.classicLetterFrame === 'paper' // 풀블리드 사진 위 아이보리 종이 카드(이중 헤어라인)
+  // 인사말 카드 크기(스케일). 기본 1.0, 0.8~1.2 범위
+  const letterScale = typeof cc.classicLetterScale === 'number' ? Math.max(0.8, Math.min(1.2, cc.classicLetterScale)) : 1
   const letterFrame = cc.classicLetterFrame === 'lace'
     ? { img: '/classic/letter-lace2.webp', aspect: '940 / 1366', inset: '17% 15%' }
     : cc.classicLetterFrame === 'wavy'
@@ -476,6 +478,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   const dateFrame: 'heart' | 'stamp' = cc.classicDateFrame === 'stamp' ? 'stamp' : 'heart'
   // 마무리 감사 인사 프레임 (없음 / 도일리)
   const thanksFrame: 'none' | 'doily' = cc.classicThanksFrame === 'doily' ? 'doily' : 'none'
+  // 마무리 감사 인사 나타나는 효과 (부드럽게=페이드 / 타이핑=타자기 / 고정=정적). 기본 typing(기존 동작 유지)
+  const thanksAnim: 'fade' | 'typing' | 'static' = cc.classicThanksAnim === 'static' ? 'static' : cc.classicThanksAnim === 'fade' ? 'fade' : 'typing'
   // THANK YOU 섹션 배치: 중간(center) / 상단 문구+하단 버튼(top) / 둘다 하단(bottom) — 배경 이미지에 맞춰 선택
   const thanksLayout: 'center' | 'top' | 'bottom' = cc.classicThanksLayout === 'top' ? 'top' : cc.classicThanksLayout === 'bottom' ? 'bottom' : 'center'
   const thanksJustify = thanksLayout === 'top' ? 'flex-start' : thanksLayout === 'bottom' ? 'flex-end' : 'center'
@@ -578,8 +582,11 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
               {WK_EN.map((w, i) => <span key={i} style={{ fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 13, color: '#6f6757', textAlign: 'center' }}>{w}</span>)}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              {weeks.map((wrow, ri) => (
-                <div key={ri} className="cl-reveal cl-rise" data-delay={320 + ri * 100} style={{ minHeight: 44, display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', borderBottom: '1px solid rgba(43,39,36,.16)' }}>
+              {weeks.map((wrow, ri) => {
+                // 마커가 있는 주는 위로 올려 라벨(셀 아래로 넘침)이 다음 주 행에 가려지지 않게 함(iOS stacking 대비)
+                const rowHasDay = wrow.includes(day)
+                return (
+                <div key={ri} className="cl-reveal cl-rise" data-delay={320 + ri * 100} style={{ minHeight: 44, display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', borderBottom: '1px solid rgba(43,39,36,.16)', ...(rowHasDay ? { position: 'relative', zIndex: 5 } : null) }}>
                   {wrow.map((n, ci) => (
                     <div key={ci} style={{ padding: '7px 0 6px 8px' }}>
                       {n === null ? null : n === day
@@ -595,7 +602,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                     </div>
                   ))}
                 </div>
-              ))}
+                )
+              })}
             </div>
             <div style={{ marginTop: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12 }}>
               <div>
@@ -1595,7 +1603,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         <section data-scene="letter" style={{ order: orderOf('letter'), position: 'relative', minHeight: '92vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '52px 22px', background: greetingHasBg ? DARK_PHOTO : secBg('letter'), overflow: 'hidden', ...hide('letter') }}>
           {greetingHasBg && <div data-letter-photo style={{ position: 'absolute', inset: 0, ...cropBg(cc.classicGreetingBgImage, { background: 'transparent' }), filter: 'saturate(.78)', willChange: 'transform,opacity' }} />}
           {greetingHasBg && <div data-letter-scrim style={{ position: 'absolute', inset: 0, background: `rgba(${hexToRgb(greetingOverlay, '36,22,16')},${greetingOverlayOp})` }} />}
-          <div style={{ position: 'relative', width: '100%', maxWidth: 356 }}>
+          <div style={{ position: 'relative', width: '100%', maxWidth: Math.round((letterPaper ? 312 : 356) * letterScale) }}>
           {(() => { const INK = letterInk; const inkA = letterInkA; const letterInner = (
               <>
                 <p style={label(T_EYEBROW, 0.44, inkA(0.5))}>{nameCase('INVITATION')}</p>
@@ -2090,21 +2098,25 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           const thanksBody = (col: string, colA: (a: number) => string) => (
             <>
               <p style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: T_TITLE, color: col }}>{nameCase('Thank You')}</p>
-              <TypeText
-                text={cc.classicThankYou || '귀한 걸음으로 축복해 주시는\n모든 분께 진심으로 감사드립니다.'}
-                caretColor={colA(0.5)}
-                speed={125}
-                style={{ margin: '16px 0 0', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 2, color: colA(0.82), whiteSpace: 'pre-line', wordBreak: 'keep-all' }}
-              />
+              {thanksAnim !== 'typing' ? (
+                <p style={{ margin: '16px 0 0', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 2, color: colA(0.82), whiteSpace: 'pre-line', wordBreak: 'keep-all' }}>{cc.classicThankYou || '귀한 걸음으로 축복해 주시는\n모든 분께 진심으로 감사드립니다.'}</p>
+              ) : (
+                <TypeText
+                  text={cc.classicThankYou || '귀한 걸음으로 축복해 주시는\n모든 분께 진심으로 감사드립니다.'}
+                  caretColor={colA(0.5)}
+                  speed={125}
+                  style={{ margin: '16px 0 0', fontFamily: F_BODY, fontSize: bfs(13), lineHeight: 2, color: colA(0.82), whiteSpace: 'pre-line', wordBreak: 'keep-all' }}
+                />
+              )}
             </>
           )
           return (<>
           {thanksFrame === 'doily' ? (
-            <div className="cl-reveal cl-fade" style={{ position: 'relative', backgroundImage: "url('/classic/thanks-frame.webp')", backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', aspectRatio: '894 / 711', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16% 10%', boxSizing: 'border-box' }}>
+            <div className={thanksAnim === 'static' ? undefined : 'cl-reveal cl-fade'} style={{ position: 'relative', backgroundImage: "url('/classic/thanks-frame.webp')", backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', aspectRatio: '894 / 711', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16% 10%', boxSizing: 'border-box' }}>
               <div style={{ textAlign: 'center' }}>{thanksBody(fgC('links'), (a) => fgA('links', a))}</div>
             </div>
           ) : (
-            <div className="cl-reveal cl-blur" style={{ position: 'relative', textAlign: 'center' }}>{thanksBody(INK, inkA)}</div>
+            <div className={thanksAnim === 'static' ? undefined : 'cl-reveal cl-blur'} style={{ position: 'relative', textAlign: 'center' }}>{thanksBody(INK, inkA)}</div>
           )}
           <div className="cl-reveal cl-up" data-delay="200" style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: 12, marginTop: thanksLayout === 'top' ? 'auto' : undefined }}>
             <button onClick={doShare} style={{ fontFamily: F_BODY, fontSize: bfs(13), letterSpacing: '.02em', padding: '15px 0', cursor: 'pointer', background: '#FEE500', border: '1px solid #FEE500', color: '#3C1E1E', whiteSpace: 'nowrap' }}>카카오톡 공유</button>

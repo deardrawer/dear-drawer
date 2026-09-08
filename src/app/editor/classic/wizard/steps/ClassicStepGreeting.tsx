@@ -68,6 +68,19 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
               <p className="text-[10px] text-gray-400 leading-tight mt-1">프레임이 없으면 배경 위에 바로 놓이므로 배경과 대비되는 색을 골라주세요.</p>
             </div>
           )}
+          <div className="pt-1">
+            <div className="flex justify-between text-[11px] text-gray-500 mb-1">
+              <span>카드 크기</span>
+              <span>{Math.round((data.content.classicLetterScale ?? 1) * 100)}%</span>
+            </div>
+            <input
+              type="range" min={0.8} max={1.2} step={0.02}
+              value={data.content.classicLetterScale ?? 1}
+              onChange={(e) => updateNestedData('content.classicLetterScale', parseFloat(e.target.value))}
+              className="w-full accent-gray-900"
+            />
+            <p className="text-[10px] text-gray-400 leading-tight mt-1">인사말 카드의 좌우 너비(크기)를 조절합니다.</p>
+          </div>
         </div>
         <div className="space-y-1.5">
           <Label className="text-sm font-medium">인사말 본문</Label>
@@ -840,6 +853,25 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
               const active = (data.content.classicThanksFrame || 'none') === opt.id
               return (
                 <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicThanksFrame', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                  {opt.label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        <div className="space-y-2 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
+          <span className="text-sm font-medium text-gray-700">나타나는 효과</span>
+          <p className="text-[10px] text-gray-400 leading-tight">감사 인사가 화면에 나타나는 방식입니다.</p>
+          <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+            {([
+              { id: 'fade', label: '부드럽게 나타나기' },
+              { id: 'typing', label: '타이핑' },
+              { id: 'static', label: '고정' },
+            ] as const).map((opt) => {
+              const active = (data.content.classicThanksAnim || 'typing') === opt.id
+              return (
+                <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicThanksAnim', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
                   {opt.label}
                 </button>
               )

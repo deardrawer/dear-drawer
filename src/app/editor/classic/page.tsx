@@ -95,6 +95,7 @@ export interface ClassicInvitationData {
     classicGreetingOverlayColor?: string // 인사말 배경 오버레이 색상
     classicGreetingOverlayOpacity?: number // 인사말 배경 오버레이 투명도 0~1
     classicLetterFrame?: 'wave' | 'wavy' | 'lace' | 'scallop' | 'paper' | 'none' // 인사말 카드 프레임 (웨이브 / 물결 / 레이스 / 스캘럽 / 종이 / 없음)
+    classicLetterScale?: number // 인사말 카드 크기(스케일). 기본 1.0, 0.8~1.2
     classicLetterTextColor?: string // 프레임 '없음'일 때 인사말 텍스트 색상
     classicGreetingLineHeight?: number // 인사말 본문 행간 (기본 2.1)
     classicGreetingLetterSpacing?: number // 인사말 본문 자간 em (기본 0)
@@ -169,6 +170,7 @@ export interface ClassicInvitationData {
     classicButtonTextColor?: string // 채움 버튼 글자색
     classicThankYou?: string // 마무리 감사 인사 (공유 섹션)
     classicThanksFrame?: 'none' | 'doily' // 마무리 감사 인사 프레임 (없음 / 도일리)
+    classicThanksAnim?: 'fade' | 'typing' | 'static' // 마무리 감사 인사 나타나는 효과 (부드럽게 / 타이핑 / 고정)
     classicThanksLayout?: 'center' | 'top' | 'bottom' // THANK YOU 배치: 중간 / 상단(버튼 하단) / 둘다 하단
     classicDateHeading?: string // 예식일정 상단 문구 (저희가 하나 되는 날)
     classicIntroShowParents?: boolean // 커플소개 상단 부모님 성함 표시

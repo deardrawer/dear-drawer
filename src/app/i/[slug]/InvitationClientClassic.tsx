@@ -102,6 +102,9 @@ const CLASSIC_STYLES = `
   .cl-reveal.cl-rise.is-in { transform: none; transition: opacity .7s ease, transform .7s cubic-bezier(.22,.61,.36,1); }
   .cl-reveal.cl-pop { transform: scale(.92); }
   .cl-reveal.cl-pop.is-in { transform: none; transition: opacity .5s ease, transform .6s cubic-bezier(.22,.61,.36,1); }
+  /* WEDDING DAY 라벨: 위에서 살짝 내려앉으며 팝(달력에서 가장 마지막에 등장) */
+  .cl-reveal.cl-mklabel { transform: translateY(-6px) scale(.82); transform-origin: top center; }
+  .cl-reveal.cl-mklabel.is-in { transform: none; transition: opacity .5s ease, transform .6s cubic-bezier(.34,1.56,.64,1); }
   /* 장식(우표·새 등): 바운스 제거 → 잔잔한 안착 */
   .cl-reveal.cl-poof { transform: scale(.94); }
   .cl-reveal.cl-poof.is-in { transform: none; transition: opacity .7s ease, transform .8s cubic-bezier(.22,.61,.36,1); }
@@ -149,6 +152,7 @@ const CLASSIC_STYLES = `
     .cl-reveal.cl-rise, .cl-reveal.cl-rise.is-in,
     .cl-reveal.cl-linex, .cl-reveal.cl-linex.is-in,
     .cl-reveal.cl-pop, .cl-reveal.cl-pop.is-in,
+    .cl-reveal.cl-mklabel, .cl-reveal.cl-mklabel.is-in,
     .cl-reveal.cl-poof, .cl-reveal.cl-poof.is-in,
     .cl-reveal.cl-boop, .cl-reveal.cl-boop.is-in,
     .cl-reveal.cl-cal, .cl-reveal.cl-cal.is-in,
@@ -604,7 +608,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
               {/* WEDDING DAY 라벨 — 행들 밖(맨 끝) 절대배치로 오버레이 → 항상 위에 표시(iOS 겹침 방지) */}
               {mkRow >= 0 && (
                 <span style={{ position: 'absolute', top: mkRow * 44 + 41, left: `calc(${(mkCol / 7) * 100}% + 21px)`, transform: 'translateX(-50%)', zIndex: 6, pointerEvents: 'none' }}>
-                  <span className="cl-mk-label" style={{ display: 'block', whiteSpace: 'nowrap', background: datePoint, color: '#fff', fontFamily: F_BODY, fontSize: 8.5, lineHeight: 1, letterSpacing: '.1em', paddingLeft: '.1em', padding: '3px 6px', borderRadius: 3 }}>WEDDING DAY</span>
+                  <span className="cl-reveal cl-mklabel" data-delay="1100" style={{ display: 'block', whiteSpace: 'nowrap', background: datePoint, color: '#fff', fontFamily: F_BODY, fontSize: 8.5, lineHeight: 1, letterSpacing: '.1em', paddingLeft: '.1em', padding: '3px 6px', borderRadius: 3 }}>WEDDING DAY</span>
                 </span>
               )}
             </div>

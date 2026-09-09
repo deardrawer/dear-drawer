@@ -583,10 +583,11 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             </div>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               {weeks.map((wrow, ri) => {
-                // 마커가 있는 주는 위로 올려 라벨(셀 아래로 넘침)이 다음 주 행에 가려지지 않게 함(iOS stacking 대비)
+                // 마커가 있는 주는 (1) 아래 여백을 확보해 WEDDING DAY 라벨이 이 행 안에 들어오게 하고
+                //   (2) 위로 올려 두어 어떤 iOS 브라우저에서도 라벨이 다음 주 행에 가려지지 않게 한다.
                 const rowHasDay = wrow.includes(day)
                 return (
-                <div key={ri} className="cl-reveal cl-rise" data-delay={320 + ri * 100} style={{ minHeight: 44, display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', borderBottom: '1px solid rgba(43,39,36,.16)', ...(rowHasDay ? { position: 'relative', zIndex: 5 } : null) }}>
+                <div key={ri} className="cl-reveal cl-rise" data-delay={320 + ri * 100} style={{ minHeight: 44, display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', borderBottom: '1px solid rgba(43,39,36,.16)', ...(rowHasDay ? { position: 'relative', zIndex: 5, paddingBottom: 30 } : null) }}>
                   {wrow.map((n, ci) => (
                     <div key={ci} style={{ padding: '7px 0 6px 8px' }}>
                       {n === null ? null : n === day

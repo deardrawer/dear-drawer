@@ -570,6 +570,11 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
       for (let i = 0; i < monthCells.length; i += 7) weeks.push(monthCells.slice(i, i + 7))
       // 날짜가 하나도 없는 마지막 주(빈 줄)는 제거
       while (weeks.length > 0 && weeks[weeks.length - 1].every((c) => c === null)) weeks.pop()
+      // WEDDING DAY 라벨은 주(week) 행들 밖(달력 컨테이너 맨 끝)에 절대배치로 얹는다.
+      //  → transform 애니메이션이 걸린 행들과 무관하게 항상 위에 그려져, iOS(사파리·카톡)에서 다음 행에 가려지지 않음.
+      //  행 피치=44px(border-box: minHeight 44에 border 포함). 셀 숫자는 좌측 padding 8 + 26/2 지점에 중앙.
+      const mkCol = dow
+      const mkRow = Math.floor((firstDow0 + day - 1) / 7)
       const monthEnT = MONTHS_EN[monthIdx0].charAt(0) + MONTHS_EN[monthIdx0].slice(1).toLowerCase()
       const WK_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
       return (
@@ -581,30 +586,27 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             <div className="cl-reveal cl-up" data-delay="220" style={{ marginTop: 24, display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', paddingBottom: 8, borderBottom: '1px solid rgba(43,39,36,.4)' }}>
               {WK_EN.map((w, i) => <span key={i} style={{ fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 13, color: '#6f6757', textAlign: 'center' }}>{w}</span>)}
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              {weeks.map((wrow, ri) => {
-                // 마커가 있는 주는 (1) 아래 여백을 확보해 WEDDING DAY 라벨이 이 행 안에 들어오게 하고
-                //   (2) 위로 올려 두어 어떤 iOS 브라우저에서도 라벨이 다음 주 행에 가려지지 않게 한다.
-                const rowHasDay = wrow.includes(day)
-                return (
-                <div key={ri} className="cl-reveal cl-rise" data-delay={320 + ri * 100} style={{ minHeight: 44, display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', borderBottom: '1px solid rgba(43,39,36,.16)', ...(rowHasDay ? { position: 'relative', zIndex: 5, paddingBottom: 30 } : null) }}>
+            <div style={{ display: 'flex', flexDirection: 'column', position: 'relative' }}>
+              {weeks.map((wrow, ri) => (
+                <div key={ri} className="cl-reveal cl-rise" data-delay={320 + ri * 100} style={{ minHeight: 44, display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', borderBottom: '1px solid rgba(43,39,36,.16)' }}>
                   {wrow.map((n, ci) => (
                     <div key={ci} style={{ padding: '7px 0 6px 8px' }}>
                       {n === null ? null : n === day
                         ? <span style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26 }}>
                             <span className="cl-mk-ring" style={{ position: 'absolute', inset: -4, border: `1.5px solid ${datePoint}`, borderRadius: '50%', ['--mk-pulse' as string]: `rgba(${hexToRgb(datePoint, '192,106,91')},.3)` } as React.CSSProperties} />
                             <span style={{ fontFamily: F_NUM, fontSize: 16, color: '#231f1b' }}>{n}</span>
-                            {/* 라벨: 중앙정렬은 래퍼가 담당(transform 충돌 방지), 등장 애니메이션은 내부 span */}
-                            <span style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', marginTop: 8, zIndex: 6, pointerEvents: 'none' }}>
-                              <span className="cl-mk-label" style={{ display: 'block', whiteSpace: 'nowrap', background: datePoint, color: '#fff', fontFamily: F_BODY, fontSize: 8.5, lineHeight: 1, letterSpacing: '.1em', paddingLeft: '.1em', padding: '3px 6px', borderRadius: 3 }}>WEDDING DAY</span>
-                            </span>
                           </span>
                         : <span style={{ fontFamily: F_NUM, fontSize: 16, color: '#5b5449' }}>{n}</span>}
                     </div>
                   ))}
                 </div>
-                )
-              })}
+              ))}
+              {/* WEDDING DAY 라벨 — 행들 밖(맨 끝) 절대배치로 오버레이 → 항상 위에 표시(iOS 겹침 방지) */}
+              {mkRow >= 0 && (
+                <span style={{ position: 'absolute', top: mkRow * 44 + 41, left: `calc(${(mkCol / 7) * 100}% + 21px)`, transform: 'translateX(-50%)', zIndex: 6, pointerEvents: 'none' }}>
+                  <span className="cl-mk-label" style={{ display: 'block', whiteSpace: 'nowrap', background: datePoint, color: '#fff', fontFamily: F_BODY, fontSize: 8.5, lineHeight: 1, letterSpacing: '.1em', paddingLeft: '.1em', padding: '3px 6px', borderRadius: 3 }}>WEDDING DAY</span>
+                </span>
+              )}
             </div>
             <div style={{ marginTop: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12 }}>
               <div>

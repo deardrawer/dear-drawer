@@ -16,6 +16,7 @@ import type { Viewport } from "next";
 import { isUUID } from "@/lib/slug";
 import { createSampleInvitation, ourSampleContent, familySampleContent, theSimpleSampleContent, classicSampleContent } from "@/lib/sample-data";
 import GuestShareFab from "./GuestShareFab";
+import { isWeddingArchivedKST, isPostDrawerActiveKST } from "@/lib/weddingLifecycle";
 
 // 핀치 줌 비활성화를 위한 viewport 설정
 export const viewport: Viewport = {
@@ -163,6 +164,31 @@ export default async function InvitationPage({ params, searchParams }: PageProps
   const realInvitation = invitation as Invitation;
   const guestShareOn = !isSampleInvitation && !isPreview && (realInvitation.guest_share_enabled ?? 0) === 1;
   const guestShareSlug = realInvitation.slug || realInvitation.id;
+
+  // Mode 1 공개 링크 접근제어(실제 청첩장만; preview/sample 제외):
+  //  - Day 31+ : 예식 종료 자동(isWeddingArchivedKST)
+  //  - Day 1~30: owner가 설정에서 수동 비공개(public_hidden=1)
+  // 데이터는 삭제하지 않고 화면 노출만 막는다.
+  // ⚠️ KILL-SWITCH(기본 OFF): 환경변수 POST_WEDDING_CUTOFF_ENABLED='1' 일 때만 활성.
+  //   미설정(기본)이면 기존처럼 청첩장을 그대로 노출 → 배포만으로는 기존 청첩장 화면 불변.
+  const postWeddingCutoffEnabled = process.env.POST_WEDDING_CUTOFF_ENABLED === '1';
+  const publicHidden = (realInvitation as unknown as { public_hidden?: number }).public_hidden === 1;
+  if (
+    postWeddingCutoffEnabled &&
+    !isPreview && !isSampleInvitation &&
+    (isWeddingArchivedKST(realInvitation.wedding_date) ||
+      (publicHidden && isPostDrawerActiveKST(realInvitation.wedding_date)))
+  ) {
+    return (
+      <main style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f7f5f1', padding: '0 24px', textAlign: 'center' }}>
+        <div style={{ maxWidth: 360 }}>
+          <p style={{ fontSize: 40, margin: '0 0 18px' }}>🤍</p>
+          <h1 style={{ fontSize: 18, fontWeight: 600, color: '#3a352c', margin: '0 0 10px' }}>함께 축하해주셔서 감사합니다</h1>
+          <p style={{ fontSize: 14, lineHeight: 1.8, color: '#8b8271', margin: 0 }}>두 사람의 예식이<br />행복하게 마무리되었습니다.</p>
+        </div>
+      </main>
+    );
+  }
 
   // 감사장은 별도 렌더링 (props가 다름)
   if (isThankYou) {

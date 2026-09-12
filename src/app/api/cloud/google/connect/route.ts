@@ -7,7 +7,8 @@ import { buildGoogleAuthUrl, signOAuthState } from '@/lib/googleOAuth'
  * CSRF 방어: nonce를 signed state와 httpOnly 쿠키 양쪽에 심어 콜백에서 double-submit 검증.
  */
 export async function GET(request: NextRequest) {
-  const invitationId = new URL(request.url).searchParams.get('invitationId')
+  const sp = new URL(request.url).searchParams
+  const invitationId = sp.get('invitationId')
   if (!invitationId) {
     return NextResponse.json({ error: 'invitationId가 필요합니다.' }, { status: 400 })
   }
@@ -16,8 +17,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: '로그인 후 본인 청첩장에서만 연결할 수 있습니다.' }, { status: 403 })
   }
 
+  // 연결 완료 후 복귀 경로(선택): 오픈 리다이렉트 방지 위해 앱 내부 상대경로(/로 시작, //·백슬래시 제외)만 허용
+  const rawReturn = sp.get('returnTo') || ''
+  const returnTo = /^\/(?!\/)[A-Za-z0-9/?=&_.%-]*$/.test(rawReturn) ? rawReturn : undefined
+
   const nonce = crypto.randomUUID()
-  const state = await signOAuthState({ userId: owned.user.id, invitationId, nonce })
+  const state = await signOAuthState({ userId: owned.user.id, invitationId, nonce, returnTo })
   const authUrl = await buildGoogleAuthUrl(state)
 
   const res = NextResponse.redirect(authUrl)

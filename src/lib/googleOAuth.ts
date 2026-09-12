@@ -21,11 +21,12 @@ export interface OAuthStatePayload {
   userId: string
   invitationId: string
   nonce: string
+  returnTo?: string // 연결 완료 후 돌아갈 앱 내부 경로(선택). 같은 출처 상대경로만 허용.
 }
 
-/** state = 서명(JWT, 10분 만료) — userId+invitationId+nonce 포함 */
+/** state = 서명(JWT, 10분 만료) — userId+invitationId+nonce(+returnTo) 포함 */
 export async function signOAuthState(p: OAuthStatePayload): Promise<string> {
-  return new SignJWT({ userId: p.userId, invitationId: p.invitationId, nonce: p.nonce })
+  return new SignJWT({ userId: p.userId, invitationId: p.invitationId, nonce: p.nonce, ...(p.returnTo ? { returnTo: p.returnTo } : {}) })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime('10m')
@@ -36,7 +37,7 @@ export async function verifyOAuthState(token: string): Promise<OAuthStatePayload
   try {
     const { payload } = await jwtVerify(token, await stateSecret())
     if (!payload.userId || !payload.invitationId || !payload.nonce) return null
-    return { userId: String(payload.userId), invitationId: String(payload.invitationId), nonce: String(payload.nonce) }
+    return { userId: String(payload.userId), invitationId: String(payload.invitationId), nonce: String(payload.nonce), returnTo: payload.returnTo ? String(payload.returnTo) : undefined }
   } catch {
     return null
   }

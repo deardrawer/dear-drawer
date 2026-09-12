@@ -12,8 +12,10 @@ import { getAccountEmail, ensureRootFolders, ensureGuestFolder } from '@/lib/goo
  */
 export async function GET(request: NextRequest) {
   const url = new URL(request.url)
-  const redirectTo = (ok: boolean, msg: string, invId?: string) => {
-    const u = new URL(invId ? `/dashboard/${invId}` : '/my-invitations', url)
+  const redirectTo = (ok: boolean, msg: string, invId?: string, returnTo?: string) => {
+    // 연결 시작 지점(에디터 등)으로 복귀할 returnTo가 있으면 우선 사용, 없으면 기존 대시보드/목록
+    const base = returnTo || (invId ? `/dashboard/${invId}` : '/my-invitations')
+    const u = new URL(base, url)
     u.searchParams.set(ok ? 'drive' : 'drive_error', ok ? 'connected' : msg)
     return NextResponse.redirect(u)
   }
@@ -73,7 +75,7 @@ export async function GET(request: NextRequest) {
       guestFolderId: folders.guestFolderId,
     })
 
-    const res = redirectTo(true, 'connected', state.invitationId)
+    const res = redirectTo(true, 'connected', state.invitationId, state.returnTo)
     res.cookies.delete('g_oauth_nonce')
     return res
   } catch (e) {

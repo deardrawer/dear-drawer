@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import GuestShareSettings from '@/components/dashboard/GuestShareSettings'
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -1027,10 +1026,7 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* 하객 사진 공유 설정 (추가 섹션) */}
-      <div className="mt-6 md:mt-8">
-        <GuestShareSettings invitationId={invitationId} />
-      </div>
+      {/* 하객 사진 공유는 '내 청첩장'의 각 카드로 이동(결제완료 전용). 대시보드에서는 제거. */}
 
       {/* RSVP 수정 Dialog */}
       <Dialog open={!!editingRsvp} onOpenChange={() => setEditingRsvp(null)}>

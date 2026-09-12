@@ -27,8 +27,10 @@ interface CloudflareEnvWithDB {
 }
 
 // Cloudflare D1 데이터베이스 접근
+// async:true → next dev의 SSR 워커에서도 바인딩 해석 가능(동기 호출은 워커에서 실패해 크래시).
+//   프로덕션(workerd) 동작은 동일. (게스트/내서랍 등 SSR 페이지 로컬 크래시 해결)
 export async function getDB(): Promise<D1Database> {
-  const { env } = await getCloudflareContext() as { env: CloudflareEnvWithDB };
+  const { env } = await getCloudflareContext({ async: true }) as { env: CloudflareEnvWithDB };
   if (!env.DB) {
     throw new Error("D1 Database not configured");
   }

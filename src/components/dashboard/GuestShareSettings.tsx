@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 
 interface Props {
-  invitationId: string
+  invitationId: string | null
 }
 
 interface StatusData {
@@ -35,6 +35,10 @@ export default function GuestShareSettings({ invitationId }: Props) {
   const [error, setError] = useState('')
 
   useEffect(() => {
+    if (!invitationId) {
+      setLoading(false)
+      return
+    }
     let alive = true
     ;(async () => {
       try {
@@ -110,6 +114,15 @@ export default function GuestShareSettings({ invitationId }: Props) {
     }
   }
 
+  if (!invitationId) {
+    return (
+      <div className="rounded-2xl border border-gray-200 bg-white p-5">
+        <h2 className="text-base font-semibold text-gray-900">하객 사진 공유 🤍</h2>
+        <p className="mt-1 text-sm text-gray-500">청첩장을 저장하면 사진 공유를 켜고 공유 링크를 만들 수 있어요.</p>
+      </div>
+    )
+  }
+
   if (loading) {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-5">
@@ -164,7 +177,10 @@ export default function GuestShareSettings({ invitationId }: Props) {
             </p>
             <button
               onClick={() => {
-                window.location.href = `/api/cloud/google/connect?invitationId=${invitationId}`
+                if (confirm('Google Drive 연결 페이지로 이동합니다.\n편집 중인 내용은 먼저 저장해 주세요. 이동할까요?')) {
+                  const returnTo = encodeURIComponent(window.location.pathname + window.location.search)
+                  window.location.href = `/api/cloud/google/connect?invitationId=${invitationId}&returnTo=${returnTo}`
+                }
               }}
               className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white active:scale-[0.99]"
             >

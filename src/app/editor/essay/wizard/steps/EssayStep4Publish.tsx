@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import type { EssayInvitationData } from '../../page'
+import GuestShareSettings from '@/components/dashboard/GuestShareSettings'
 
 interface StepProps {
   data: EssayInvitationData
@@ -390,6 +391,9 @@ export default function EssayStep4Publish({ data, invitationId, slug, onSave, on
           </Button>
         </DialogContent>
       </Dialog>
+      <div className="mt-4">
+        <GuestShareSettings invitationId={invitationId} />
+      </div>
     </div>
   )
 }

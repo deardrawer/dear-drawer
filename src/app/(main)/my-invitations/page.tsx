@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useAuth } from '@/components/providers/AuthProvider'
+import { isPostDrawerActiveKST } from '@/lib/weddingLifecycle'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import QRCode from 'qrcode'
@@ -220,6 +221,8 @@ export default function MyInvitationsPage() {
 
   // 관리 모달 상태
   const [manageInvitation, setManageInvitation] = useState<InvitationSummary | null>(null)
+  // POST DRAWER 열기 진행 중 카드 id (예식 후 결제완료 청첩장)
+  const [openingDrawerId, setOpeningDrawerId] = useState<string | null>(null)
   const [rsvpData, setRsvpData] = useState<RSVPData[]>([])
   const [guestbookData, setGuestbookData] = useState<GuestbookMessage[]>([])
   const [isLoadingManageData, setIsLoadingManageData] = useState(false)
@@ -398,6 +401,28 @@ export default function MyInvitationsPage() {
     } finally {
       setIsDeleting(false)
       setDeleteId(null)
+    }
+  }
+
+  // 예식 후(결제완료) 청첩장: POST DRAWER 열기 — archive_slug 확보 후 이동
+  const handleOpenPostDrawer = async (invitation: InvitationSummary) => {
+    setOpeningDrawerId(invitation.id)
+    try {
+      const res = await fetch('/api/post-drawer/ensure', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ invitationId: invitation.id }),
+      })
+      const data = await res.json() as { archiveSlug?: string; error?: string }
+      if (res.ok && data.archiveSlug) {
+        router.push(`/post-drawer/${data.archiveSlug}`)
+      } else {
+        alert(data.error || 'POST DRAWER를 열 수 없습니다.')
+      }
+    } catch {
+      alert('POST DRAWER를 열 수 없습니다.')
+    } finally {
+      setOpeningDrawerId(null)
     }
   }
 
@@ -961,6 +986,8 @@ export default function MyInvitationsPage() {
             const templateName = getTemplateDisplayName(invitation.template_id, senderSide)
             const templateBadgeColor = getTemplateBadgeColor(invitation.template_id, senderSide)
             const isParentsTemplate = invitation.template_id === 'narrative-parents' || invitation.template_id === 'parents' || invitation.template_id === 'parents-formal'
+            // 결제완료 + 예식 다음날(Day 1)부터 → 예식 종료. 카드 액션을 잠그고 POST DRAWER 바로가기만 노출
+            const isDrawerMode = !!invitation.is_paid && isPostDrawerActiveKST(invitation.wedding_date)
 
             return (
               <Card key={invitation.id} className="overflow-hidden group hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
@@ -1065,6 +1092,18 @@ export default function MyInvitationsPage() {
                     {invitation.is_paid ? '예식일로부터 30일 후 자동 삭제됩니다' : '결제하지 않은 청첩장은 생성일로부터 7일 후 자동 삭제됩니다'}
                   </p>
 
+                  {isDrawerMode ? (
+                    /* 예식 종료(결제완료 + 예식 다음날~): 편집·복제·공유·관리·삭제 모두 숨기고 POST DRAWER 바로가기만 */
+                    <Button
+                      size="sm"
+                      className="w-full bg-violet-600 hover:bg-violet-700 text-white"
+                      onClick={() => handleOpenPostDrawer(invitation)}
+                      disabled={openingDrawerId === invitation.id}
+                    >
+                      {openingDrawerId === invitation.id ? '여는 중…' : 'POST DRAWER 바로가기'}
+                    </Button>
+                  ) : (
+                  <>
                   {/* 상단: 주요 액션 (에디터 편집, 워터마크 제거/모임 관리) */}
                   <div className="grid grid-cols-2 gap-2 mb-2">
                     <Link href={
@@ -1120,6 +1159,8 @@ export default function MyInvitationsPage() {
                       삭제
                     </Button>
                   </div>
+                  </>
+                  )}
                 </CardContent>
               </Card>
             )

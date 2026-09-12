@@ -1089,7 +1089,7 @@ export default function MyInvitationsPage() {
                   </div>
 
                   <p className="text-[10px] sm:text-xs text-gray-400 mb-3">
-                    {invitation.is_paid ? '예식일로부터 30일 후 자동 삭제됩니다' : '결제하지 않은 청첩장은 생성일로부터 7일 후 자동 삭제됩니다'}
+                    {invitation.is_paid ? '예식일로부터 30일 후 청첩장 링크 공개만 종료됩니다. 방명록·하객 사진·메시지 등 기록은 삭제되지 않고 POST DRAWER에 계속 보관됩니다.' : '결제하지 않은 청첩장은 생성일로부터 7일 후 자동 삭제됩니다'}
                   </p>
 
                   {isDrawerMode ? (

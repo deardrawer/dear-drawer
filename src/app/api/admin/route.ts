@@ -5,6 +5,7 @@ import {
   getRecentUsers,
   forceDeleteInvitation,
   deleteExpiredInvitations,
+  setInvitationPublicAutoClose,
 } from "@/lib/db";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
@@ -44,17 +45,33 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// PATCH: 워터마크(is_paid) 토글
+// PATCH: 워터마크(is_paid) 토글 / 공개 자동 종료(public_auto_close) 토글
 export async function PATCH(request: NextRequest) {
   if (!verifyAdmin(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    const { id, is_paid } = (await request.json()) as {
+    const body = (await request.json()) as {
       id: string;
-      is_paid: 0 | 1;
+      is_paid?: 0 | 1;
+      public_auto_close?: boolean;
     };
+    const { id } = body;
+
+    // 공개 자동 종료 토글 (content.meta.publicAutoClose)
+    if (typeof body.public_auto_close === "boolean") {
+      if (!id) {
+        return NextResponse.json({ error: "id required" }, { status: 400 });
+      }
+      const ok = await setInvitationPublicAutoClose(id, body.public_auto_close);
+      if (!ok) {
+        return NextResponse.json({ error: "Failed to update" }, { status: 500 });
+      }
+      return NextResponse.json({ success: true, public_auto_close: body.public_auto_close });
+    }
+
+    const is_paid = body.is_paid;
 
     if (!id || (is_paid !== 0 && is_paid !== 1)) {
       return NextResponse.json(

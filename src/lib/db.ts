@@ -47,6 +47,37 @@ function generateId(): string {
   return generateShortId();
 }
 
+// 청첩장별 공개 자동 종료(예식+30일) 플래그 저장. content.meta.publicAutoClose(boolean).
+// 데이터는 삭제하지 않고 게스트 공개 노출만 제어. 관리자는 항상 열람.
+export async function setInvitationPublicAutoClose(invitationId: string, enabled: boolean): Promise<boolean> {
+  try {
+    const db = await getDB();
+    const row = await db
+      .prepare("SELECT content FROM invitations WHERE id = ? LIMIT 1")
+      .bind(invitationId)
+      .first<{ content: string | null }>();
+    if (!row) return false;
+    let content: Record<string, unknown> = {};
+    try {
+      content = row.content ? (JSON.parse(row.content) as Record<string, unknown>) : {};
+    } catch {
+      content = {};
+    }
+    const meta = content.meta && typeof content.meta === "object" ? (content.meta as Record<string, unknown>) : {};
+    if (enabled) meta.publicAutoClose = true;
+    else delete meta.publicAutoClose;
+    content.meta = meta;
+    await db
+      .prepare("UPDATE invitations SET content = ?, updated_at = ? WHERE id = ?")
+      .bind(JSON.stringify(content), new Date().toISOString(), invitationId)
+      .run();
+    return true;
+  } catch (e) {
+    console.error("setInvitationPublicAutoClose failed:", e);
+    return false;
+  }
+}
+
 // 청첩장 생성
 export async function createInvitation(
   userId: string,

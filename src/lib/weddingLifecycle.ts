@@ -52,6 +52,28 @@ export function isPostDrawerActiveKST(weddingDate: string | null | undefined): b
   return todayKstDayNumber() - weddingDay >= 1
 }
 
+/**
+ * 게스트 공개 청첩장 뷰가 "종료" 상태여야 하는지 판단(데이터는 보존, 화면만 차단).
+ *  - Day 31+ : 예식 종료 자동(isWeddingArchivedKST)
+ *  - Day 1~30: owner가 설정에서 수동 비공개(publicHidden)
+ *  - preview/sample 은 항상 노출.
+ * 스위치(enabled)는 청첩장별 토글값(content.meta.publicAutoClose). false면 항상 노출.
+ * 관리자 우회는 호출부에서 별도 처리(isAdminViewer).
+ */
+export function isPublicViewClosed(opts: {
+  enabled: boolean
+  weddingDate: string | null | undefined
+  publicHidden?: boolean
+  isPreview?: boolean
+  isSample?: boolean
+}): boolean {
+  if (!opts.enabled) return false
+  if (opts.isPreview || opts.isSample) return false
+  if (isWeddingArchivedKST(opts.weddingDate)) return true
+  if (opts.publicHidden && isPostDrawerActiveKST(opts.weddingDate)) return true
+  return false
+}
+
 /** 예식일로부터 지난 일수(KST). 예식 당일=0, 다음날=1. 계산 불가면 null. */
 export function daysSinceWeddingKST(weddingDate: string | null | undefined): number | null {
   if (!weddingDate) return null

@@ -13,6 +13,9 @@ import InvitationClientThankYou from "@/app/i/[slug]/InvitationClientThankYou";
 import InvitationClientTheSimple from "@/app/i/[slug]/InvitationClientTheSimple";
 import InvitationClientClassic from "@/app/i/[slug]/InvitationClientClassic";
 import type { Invitation } from "@/types/invitation";
+import { isPublicViewClosed } from "@/lib/weddingLifecycle";
+import { isAdminViewer } from "@/lib/adminCookie";
+import PublicClosedNotice from "@/components/invitation/PublicClosedNotice";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -98,6 +101,29 @@ export default async function InvitationPage({ params, searchParams }: PageProps
       ? `/invitation/${canonicalSlug}?guest=${guestId}`
       : `/invitation/${canonicalSlug}`;
     redirect(redirectUrl);
+  }
+
+  // 공개 링크 접근제어(데이터는 보존, 화면만 차단). /i/[slug]와 동일 정책.
+  //  - Day 31+ 자동 종료 / Day 1~30 owner 수동 비공개(public_hidden=1)
+  //  - 스위치: 관리자 페이지에서 청첩장별 토글(content.meta.publicAutoClose).
+  //  - 사이트 관리자(/admin 로그인 쿠키)는 종료 후에도 그대로 열람 가능.
+  const publicHidden = (invitation as unknown as { public_hidden?: number }).public_hidden === 1;
+  let publicAutoClose = false;
+  if (invitation.content) {
+    try {
+      publicAutoClose = (JSON.parse(invitation.content) as { meta?: { publicAutoClose?: unknown } })?.meta?.publicAutoClose === true;
+    } catch { /* ignore */ }
+  }
+  if (
+    isPublicViewClosed({
+      enabled: publicAutoClose,
+      weddingDate: invitation.wedding_date,
+      publicHidden,
+      isPreview,
+    }) &&
+    !(await isAdminViewer())
+  ) {
+    return <PublicClosedNotice />;
   }
 
   // 게스트 정보 조회 (guest 파라미터가 있는 경우)

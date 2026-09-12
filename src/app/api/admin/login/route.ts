@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ADMIN_COOKIE, adminCookieToken } from "@/lib/adminCookie";
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,7 +21,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ success: true });
+    // 관리자 열람 쿠키 심기(게스트 청첩장 공개 종료 우회용). httpOnly.
+    const res = NextResponse.json({ success: true });
+    const token = await adminCookieToken();
+    if (token) {
+      res.cookies.set(ADMIN_COOKIE, token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 60 * 24 * 30, // 30일
+      });
+    }
+    return res;
   } catch (error) {
     console.error("Admin login error:", error);
     return NextResponse.json(
@@ -28,4 +41,17 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+// 로그아웃: 관리자 열람 쿠키 제거.
+export async function DELETE() {
+  const res = NextResponse.json({ success: true });
+  res.cookies.set(ADMIN_COOKIE, "", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
+  });
+  return res;
 }

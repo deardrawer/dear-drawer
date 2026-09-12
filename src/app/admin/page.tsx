@@ -13,6 +13,7 @@ interface Invitation {
   wedding_date: string | null
   is_paid: number
   is_published: number
+  content?: string | null
   created_at: string
   deletion_date: string
   deletion_reason: 'incomplete' | 'post_wedding'
@@ -73,6 +74,10 @@ export default function AdminPage() {
   // Tab state
   const [activeTab, setActiveTab] = useState<TabType>('invitations')
 
+  // 청첩장별 공개 자동 종료(예식+30일)
+  const [savingCloseId, setSavingCloseId] = useState<string | null>(null)
+  const [autoCloseOverride, setAutoCloseOverride] = useState<Record<string, boolean>>({}) // 토글 후 세션 오버라이드
+
   // Invitations state
   const [invitations, setInvitations] = useState<Invitation[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
@@ -99,10 +104,16 @@ export default function AdminPage() {
     setIsInitialLoading(false)
   }, [])
 
-  // Save password on auth success
+  // Save password on auth success + 관리자 열람 쿠키 심기(게스트 청첩장 공개 종료 우회용).
+  // 저장된 비밀번호로 자동 인증되는 경우에도 쿠키가 설정되도록 여기서 처리.
   useEffect(() => {
     if (isAuthenticated) {
       localStorage.setItem('admin_password', password)
+      fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      }).catch(() => {})
     }
   }, [isAuthenticated, password])
 
@@ -316,6 +327,7 @@ export default function AdminPage() {
 
   const handleLogout = () => {
     localStorage.removeItem('admin_password')
+    fetch('/api/admin/login', { method: 'DELETE' }).catch(() => {})
     setIsAuthenticated(false)
     setPassword('')
     setInvitations([])
@@ -329,6 +341,38 @@ export default function AdminPage() {
       fetchPayments()
     }
   }, [isAuthenticated, fetchInvitations, fetchPayments])
+
+  // 청첩장의 현재 공개 자동 종료 상태(오버라이드 우선, 없으면 content.meta.publicAutoClose)
+  const autoCloseOf = (inv: Invitation): boolean => {
+    if (inv.id in autoCloseOverride) return autoCloseOverride[inv.id]
+    try {
+      const c = inv.content ? (JSON.parse(inv.content) as { meta?: { publicAutoClose?: unknown } }) : null
+      return c?.meta?.publicAutoClose === true
+    } catch {
+      return false
+    }
+  }
+
+  // 청첩장별 공개 자동 종료(예식+30일) 토글. content.meta.publicAutoClose.
+  const togglePublicAutoClose = async (inv: Invitation, next: boolean) => {
+    if (savingCloseId) return
+    if (next && !window.confirm('이 청첩장의 공개 자동 종료를 켭니다.\n예식 +30일이 지나면 게스트에게 종료 화면이 보입니다. (관리자는 계속 열람 가능, 데이터는 보존)\n계속할까요?')) return
+    setSavingCloseId(inv.id)
+    try {
+      const res = await fetch('/api/admin', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+        body: JSON.stringify({ id: inv.id, public_auto_close: next }),
+      })
+      const d = (await res.json().catch(() => ({}))) as { public_auto_close?: boolean; error?: string }
+      if (!res.ok) { alert(d.error || '저장에 실패했습니다.'); return }
+      setAutoCloseOverride((m) => ({ ...m, [inv.id]: !!d.public_auto_close }))
+    } catch {
+      alert('저장에 실패했습니다.')
+    } finally {
+      setSavingCloseId(null)
+    }
+  }
 
   // ===== Computed =====
   const filteredInvitations = invitations.filter((inv) => {
@@ -795,6 +839,24 @@ export default function AdminPage() {
                             >
                               {inv.is_paid === 1 ? '워터마크OFF' : '워터마크ON'}
                             </button>
+                            {(() => {
+                              const on = autoCloseOf(inv)
+                              return (
+                                <button
+                                  onClick={() => togglePublicAutoClose(inv, !on)}
+                                  disabled={savingCloseId === inv.id}
+                                  title="예식+30일 후 게스트 공개 자동 종료 (관리자는 계속 열람, 데이터 보존)"
+                                  className="px-3 py-1 rounded text-xs font-medium"
+                                  style={{
+                                    backgroundColor: on ? '#FDE68A' : '#F3F4F6',
+                                    color: on ? '#92400E' : '#374151',
+                                    opacity: savingCloseId === inv.id ? 0.5 : 1,
+                                  }}
+                                >
+                                  {savingCloseId === inv.id ? '…' : on ? '공개종료ON' : '공개종료OFF'}
+                                </button>
+                              )
+                            })()}
                             <button
                               onClick={() => handleDelete(inv.id)}
                               className="px-3 py-1 rounded text-xs text-white"

@@ -130,6 +130,37 @@ export async function setStampPublic(invitationId: string, isPublic: boolean): P
   await db.prepare('UPDATE invitations SET content = ?, updated_at = ? WHERE id = ?').bind(JSON.stringify(content), nowIso(), invitationId).run()
 }
 
+/** 내 서랍 목록에서 표시할 청첩장 별칭 (content.meta.drawerLabel). */
+export function drawerLabelOf(contentJson: string | null): string {
+  if (!contentJson) return ''
+  try {
+    const c = JSON.parse(contentJson) as { meta?: { drawerLabel?: unknown } }
+    const v = c?.meta?.drawerLabel
+    return typeof v === 'string' ? v.trim() : ''
+  } catch {
+    return ''
+  }
+}
+
+/** 서랍 별칭 저장/해제 (content.meta.drawerLabel). 빈 값 → 삭제. 최대 40자. */
+export async function setDrawerLabel(invitationId: string, label: string | null): Promise<string> {
+  const db = await getDB()
+  const row = await db.prepare('SELECT content FROM invitations WHERE id = ? LIMIT 1').bind(invitationId).first<{ content: string | null }>()
+  let content: Record<string, unknown> = {}
+  try {
+    content = row?.content ? (JSON.parse(row.content) as Record<string, unknown>) : {}
+  } catch {
+    content = {}
+  }
+  const meta = content.meta && typeof content.meta === 'object' ? (content.meta as Record<string, unknown>) : {}
+  const trimmed = (label ?? '').toString().trim().slice(0, 40)
+  if (trimmed) meta.drawerLabel = trimmed
+  else delete meta.drawerLabel
+  content.meta = meta
+  await db.prepare('UPDATE invitations SET content = ?, updated_at = ? WHERE id = ?').bind(JSON.stringify(content), nowIso(), invitationId).run()
+  return trimmed
+}
+
 /** 우표 전용 사진 오버라이드 설정/해제. url=null → 해제(카카오 썸네일로 fallback). */
 export async function setDrawerStampPhoto(invitationId: string, url: string | null): Promise<void> {
   const db = await getDB()

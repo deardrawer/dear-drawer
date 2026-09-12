@@ -367,17 +367,19 @@ export default function SettingsClient({ archiveSlug }: { archiveSlug: string })
             position: 'sticky',
             bottom: 0,
             marginTop: 20,
-            padding: '12px 0 18px',
+            padding: '10px 0 14px',
             background: 'var(--background-normal-normal)',
             borderTop: '1px solid var(--line-normal-alternative)',
+            display: 'flex',
+            justifyContent: 'flex-end',
           }}
         >
           <button
             type="button"
-            className="btn btn-solid"
+            className="btn btn-m btn-solid"
             disabled={saving || !dirty}
             onClick={onSaveAll}
-            style={{ width: '100%', padding: '15px', fontSize: 15, fontWeight: 700, borderRadius: 12, opacity: saving || !dirty ? 0.5 : 1 }}
+            style={{ opacity: saving || !dirty ? 0.5 : 1 }}
           >
             {saving ? '저장 중…' : dirty ? '저장' : '변경사항 없음'}
           </button>

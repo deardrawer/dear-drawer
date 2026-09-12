@@ -531,6 +531,35 @@ export default function ArchiveClient({ archiveSlug }: { archiveSlug: string }) 
     }
   }
 
+  const kakaoShare = () => {
+    const kw = window as typeof window & {
+      Kakao?: { isInitialized?: () => boolean; Share?: { sendDefault: (c: object) => void } }
+    }
+    if (typeof window === 'undefined' || !kw.Kakao?.Share || !kw.Kakao.isInitialized?.()) {
+      share() // SDK 미준비 시 기존 공유(웹공유/링크복사)로 대체
+      return
+    }
+    const prod = 'https://invite.deardrawer.com'
+    let imageUrl = `${prod}/og-image.png`
+    const p = stamp.photo
+    if (p) {
+      if (p.startsWith('https://')) imageUrl = p.split('?')[0]
+      else if (p.startsWith('/api/r2/') || p.startsWith('/uploads/')) imageUrl = `${prod}${p.split('?')[0]}`
+    }
+    kw.Kakao.Share.sendDefault({
+      objectType: 'feed',
+      content: {
+        title: `${stamp.name || '우리'}의 청첩장`,
+        description: '두 사람의 이야기가 담긴 청첩장이 도착했어요',
+        imageUrl,
+        imageWidth: 800,
+        imageHeight: 800,
+        link: { mobileWebUrl: shareUrl, webUrl: shareUrl },
+      },
+      buttons: [{ title: '청첩장 보기', link: { mobileWebUrl: shareUrl, webUrl: shareUrl } }],
+    })
+  }
+
   const hasMoments = moments.length > 0
   const lb = lightbox ? lightbox.items[lightbox.index] : null
 
@@ -562,8 +591,11 @@ export default function ArchiveClient({ archiveSlug }: { archiveSlug: string }) 
             <a href={openUrl} target="_blank" rel="noopener noreferrer" className="btn btn-m btn-solid">
               내 청첩장 바로가기
             </a>
+            <button type="button" className="btn btn-m btn-assist" onClick={kakaoShare}>
+              카카오톡 공유
+            </button>
             <button type="button" className="btn btn-m btn-assist" onClick={share}>
-              {copied ? '링크 복사됨!' : '공유하기'}
+              {copied ? '링크 복사됨!' : '링크 공유'}
             </button>
             <Link href={`/post-drawer/${archiveSlug}/settings`} className="btn btn-m btn-assist">
               설정

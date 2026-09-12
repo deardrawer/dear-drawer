@@ -32,12 +32,51 @@ function kakaoThumb(content?: string): string | null {
     return null
   }
 }
+function drawerLabel(content?: string): string {
+  if (!content) return ''
+  try {
+    const c = JSON.parse(content) as { meta?: { drawerLabel?: unknown } }
+    const v = c?.meta?.drawerLabel
+    return typeof v === 'string' ? v.trim() : ''
+  } catch {
+    return ''
+  }
+}
 
 export default function MineClient() {
   const router = useRouter()
   const [state, setState] = useState<'loading' | 'auth' | 'empty' | 'choose' | 'error'>('loading')
   const [invs, setInvs] = useState<Inv[]>([])
   const [openingId, setOpeningId] = useState<string | null>(null)
+  const [labels, setLabels] = useState<Record<string, string>>({}) // 저장 후 별칭 오버라이드
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [draft, setDraft] = useState('')
+  const [savingLabel, setSavingLabel] = useState(false)
+
+  const nameOf = (inv: Inv) => labels[inv.id] ?? drawerLabel(inv.content)
+  const startEdit = (inv: Inv) => { setEditingId(inv.id); setDraft(nameOf(inv)) }
+  const saveLabel = async (inv: Inv) => {
+    if (savingLabel) return
+    setSavingLabel(true)
+    try {
+      const res = await fetch('/api/post-drawer/label', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ invitationId: inv.id, label: draft }),
+      })
+      const d = (await res.json().catch(() => ({}))) as { label?: string; error?: string }
+      if (!res.ok) {
+        alert(d.error || '저장에 실패했습니다.')
+        return
+      }
+      setLabels((m) => ({ ...m, [inv.id]: d.label ?? '' }))
+      setEditingId(null)
+    } catch {
+      alert('저장에 실패했습니다.')
+    } finally {
+      setSavingLabel(false)
+    }
+  }
 
   const open = async (inv: Inv) => {
     if (openingId) return
@@ -109,40 +148,68 @@ export default function MineClient() {
           <div className="minelist">
             {invs.map((inv) => {
               const thumb = kakaoThumb(inv.content)
+              const displayName = nameOf(inv) || `${coupleName(inv)}의 서랍`
+              if (editingId === inv.id) {
+                return (
+                  <div key={inv.id} className="minerow">
+                    <input
+                      autoFocus
+                      value={draft}
+                      maxLength={40}
+                      onChange={(e) => setDraft(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') saveLabel(inv); if (e.key === 'Escape') setEditingId(null) }}
+                      placeholder={`${coupleName(inv)}의 서랍`}
+                      className="setinput"
+                      style={{ flex: 1, minWidth: 0 }}
+                    />
+                    <button type="button" className="btn btn-m btn-solid" disabled={savingLabel} onClick={() => saveLabel(inv)} style={{ flexShrink: 0, marginLeft: 8 }}>저장</button>
+                    <button type="button" className="btn btn-m btn-assist" disabled={savingLabel} onClick={() => setEditingId(null)} style={{ flexShrink: 0, marginLeft: 6 }}>취소</button>
+                  </div>
+                )
+              }
               return (
-                <button
-                  key={inv.id}
-                  type="button"
-                  className="minerow"
-                  onClick={() => open(inv)}
-                  disabled={openingId === inv.id}
-                >
-                  <span className={`mthumb${thumb ? '' : ' noimg'}`}>
-                    {thumb ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={thumb} alt="" />
-                    ) : (
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="3" width="18" height="18" rx="2" />
-                        <circle cx="8.5" cy="8.5" r="1.5" />
-                        <path d="M21 15l-5-5L5 21" />
-                      </svg>
-                    )}
-                  </span>
-                  <span className="minemeta">
-                    <span className="nm">{coupleName(inv)}의 서랍</span>
-                    <span className="dt">{inv.wedding_date ? fmtDate(inv.wedding_date) : '날짜 미정'}</span>
-                  </span>
-                  <span className="mchev" aria-hidden>
-                    {openingId === inv.id ? (
-                      '…'
-                    ) : (
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M9 6l6 6-6 6" />
-                      </svg>
-                    )}
-                  </span>
-                </button>
+                <div key={inv.id} className="minerow">
+                  <button
+                    type="button"
+                    onClick={() => open(inv)}
+                    disabled={openingId === inv.id}
+                    style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 14, border: 0, background: 'transparent', font: 'inherit', color: 'inherit', textAlign: 'left', cursor: 'pointer', padding: 0 }}
+                  >
+                    <span className={`mthumb${thumb ? '' : ' noimg'}`}>
+                      {thumb ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={thumb} alt="" />
+                      ) : (
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="3" y="3" width="18" height="18" rx="2" />
+                          <circle cx="8.5" cy="8.5" r="1.5" />
+                          <path d="M21 15l-5-5L5 21" />
+                        </svg>
+                      )}
+                    </span>
+                    <span className="minemeta">
+                      <span className="nm">{displayName}</span>
+                      <span className="dt">{inv.wedding_date ? fmtDate(inv.wedding_date) : '날짜 미정'}</span>
+                    </span>
+                    <span className="mchev" aria-hidden>
+                      {openingId === inv.id ? (
+                        '…'
+                      ) : (
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M9 6l6 6-6 6" />
+                        </svg>
+                      )}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => startEdit(inv)}
+                    aria-label="이름 수정"
+                    style={{ flexShrink: 0, marginLeft: 8, border: 0, background: 'transparent', color: 'var(--label-alternative)', cursor: 'pointer', fontSize: 12, padding: '6px 8px', textDecoration: 'underline' }}
+                  >
+                    이름
+                  </button>
+                </div>
               )
             })}
           </div>

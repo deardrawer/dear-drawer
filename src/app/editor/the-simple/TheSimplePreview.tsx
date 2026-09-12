@@ -4299,14 +4299,16 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
     },
 
     video: (v) => {
+      const fileUrl = video?.fileUrl || ''
+      const isFile = !!fileUrl
       const videoUrl = video?.url || ''
       const videoMatch = videoUrl.match(
         /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/|youtube\.com\/live\/)([a-zA-Z0-9_-]+)/
       )
-      const videoId = videoMatch?.[1]
+      const videoId = !isFile ? videoMatch?.[1] : undefined
 
-      // URL이 없거나 유효하지 않으면 placeholder
-      if (!videoId) {
+      // 파일도 없고 유튜브도 유효하지 않으면 placeholder
+      if (!isFile && !videoId) {
         return (
           <AnimatedSection className={`ts-sec ts-video ts-anim-vid-v${v}`} key={`video-${v}`}>
             <div className="ts-eyebrow">{video?.eyebrow || 'Video'}</div>
@@ -4323,20 +4325,36 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
                 fontSize: 'calc(12px * var(--ts-font-scale, 1))',
               }}
             >
-              유튜브 URL을 입력하세요
+              유튜브 URL 또는 동영상 파일을 넣어주세요
             </div>
           </AnimatedSection>
         )
       }
 
       const isPortrait = video?.portrait === true
-      const thumbEl = isPortrait ? (
-        <div style={{ maxWidth: '66%', margin: '0 auto' }}>
-          <YouTubeLite videoId={videoId} aspectRatio="9 / 16" onPlay={onVideoPlay} onStop={onVideoStop} />
-        </div>
+      // 파일: <video> 스트리밍(preload=metadata로 첫 프레임만, 초기 로딩 최소화). 유튜브: 기존 경량 임베드.
+      const player = isFile ? (
+        <video
+          src={fileUrl}
+          controls
+          playsInline
+          preload="metadata"
+          onPlay={onVideoPlay}
+          onPause={onVideoStop}
+          onEnded={onVideoStop}
+          style={{
+            width: '100%',
+            display: 'block',
+            background: '#000',
+            borderRadius: v === 1 ? 8 : 0,
+            aspectRatio: isPortrait ? '9 / 16' : '16 / 9',
+            objectFit: 'contain',
+          }}
+        />
       ) : (
-        <YouTubeLite videoId={videoId} onPlay={onVideoPlay} onStop={onVideoStop} />
+        <YouTubeLite videoId={videoId as string} aspectRatio={isPortrait ? '9 / 16' : undefined} onPlay={onVideoPlay} onStop={onVideoStop} />
       )
+      const thumbEl = isPortrait ? <div style={{ maxWidth: '66%', margin: '0 auto' }}>{player}</div> : player
 
       // V2 · 풀폭 (패딩 없음)
       if (v === 2) {

@@ -197,6 +197,7 @@ export interface SectionContents {
   video: {
     eyebrow: string
     url: string
+    fileUrl?: string // 파일 업로드 동영상(mp4) URL. 있으면 유튜브(url) 대신 파일 재생
     portrait?: boolean // 세로형(숏폼) 9:16 표시 (기본 false = 가로 16:9)
   }
   rsvp: {
@@ -2388,6 +2389,7 @@ function TheSimpleEditorContent() {
                           return (
                             <VideoEditor
                               value={data.sections.video}
+                              invitationId={invitationId}
                               onChange={(next) =>
                                 updateData({
                                   sections: { ...data.sections, video: next },

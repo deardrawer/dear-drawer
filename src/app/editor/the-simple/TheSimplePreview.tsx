@@ -4338,6 +4338,10 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
           src={fileUrl}
           controls
           playsInline
+          // 컨트롤 정리: 점3개(⋮) 오버플로 메뉴(다운로드/재생속도/원격재생)와 전체화면(⛶) 버튼 숨김.
+          //   → 영상은 인라인으로만 재생(카카오톡 인앱 전체화면 회전/오프닝 튐 이슈 회피).
+          controlsList="nodownload noplaybackrate noremoteplayback nofullscreen"
+          disablePictureInPicture
           poster={video?.posterUrl || undefined}
           preload={video?.posterUrl ? 'none' : 'metadata'}
           onPlay={onVideoPlay}

@@ -287,6 +287,54 @@ export default function InvitationClientTheSimple({
     }
   }, [hasCover, data.ddayPopup?.enabled])
 
+  // 동영상 전체화면 진입/이탈 시 스크롤 위치 보존.
+  //  - 전체화면은 (특히 iOS/카카오톡 인앱) 화면을 가로로 회전시키고, 세로 복귀 시 zoom 스케일
+  //    레이아웃이 리플로우되며 스크롤이 맨 위(오프닝)로 튄다.
+  //  - 카카오톡 안드로이드 WebView는 fullscreenchange를 안 쏘는 경우가 많아, 이벤트에만 의존하지
+  //    않고 (1) 평소 스크롤 위치를 계속 추적 → (2) 세로로 복귀할 때 그 위치로 복원한다.
+  useEffect(() => {
+    let lastY = 0
+    let restoring = false
+    const track = () => { if (!restoring) lastY = window.scrollY || 0 }
+    const restore = () => {
+      restoring = true
+      const y = lastY
+      const doRestore = () => window.scrollTo(0, y)
+      doRestore()
+      requestAnimationFrame(doRestore)
+      const timers = [60, 200, 450, 800, 1200].map((ms) => setTimeout(doRestore, ms))
+      setTimeout(() => { restoring = false }, 1300)
+      return timers
+    }
+    // 세로 화면으로 돌아왔을 때만 복원(전체화면 진입=가로 전환 시엔 건드리지 않음)
+    const onOrient = () => {
+      setTimeout(() => {
+        if (window.innerHeight >= window.innerWidth) restore()
+      }, 50)
+    }
+    // 이벤트를 쏘는 브라우저(iOS <video>/데스크톱)에서는 더 정확히 처리
+    const save = () => { lastY = window.scrollY || 0 }
+    const onFsChange = () => {
+      const fsEl = document.fullscreenElement || (document as unknown as { webkitFullscreenElement?: Element }).webkitFullscreenElement
+      if (fsEl) save()
+      else restore()
+    }
+    window.addEventListener('scroll', track, { passive: true })
+    window.addEventListener('orientationchange', onOrient)
+    document.addEventListener('fullscreenchange', onFsChange)
+    document.addEventListener('webkitfullscreenchange', onFsChange as EventListener)
+    document.addEventListener('webkitbeginfullscreen', save, true)
+    document.addEventListener('webkitendfullscreen', restore, true)
+    return () => {
+      window.removeEventListener('scroll', track)
+      window.removeEventListener('orientationchange', onOrient)
+      document.removeEventListener('fullscreenchange', onFsChange)
+      document.removeEventListener('webkitfullscreenchange', onFsChange as EventListener)
+      document.removeEventListener('webkitbeginfullscreen', save, true)
+      document.removeEventListener('webkitendfullscreen', restore, true)
+    }
+  }, [])
+
   const coverData = {
     groomName: data.groom.name,
     brideName: data.bride.name,

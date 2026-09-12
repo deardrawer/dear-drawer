@@ -127,7 +127,7 @@ export default function VideoEditor({ value, invitationId, onChange }: VideoEdit
             </p>
           ) : value.fileUrl ? (
             <div className="space-y-1.5">
-              <div className={`${value.portrait ? 'aspect-[9/16] max-w-[55%] mx-auto' : 'aspect-video'} rounded-md overflow-hidden bg-black`}>
+              <div className={`${value.portrait ? 'aspect-[9/16] max-w-[72%] mx-auto' : 'aspect-video'} rounded-md overflow-hidden bg-black`}>
                 <video src={value.fileUrl} controls playsInline preload="metadata" className="w-full h-full object-contain bg-black" />
               </div>
               <button type="button" onClick={removeFile} className="text-[10px] text-stone-500 underline">
@@ -170,7 +170,7 @@ export default function VideoEditor({ value, invitationId, onChange }: VideoEdit
       {mode === 'youtube' && videoId && (
         <div className="space-y-1">
           <span className="text-[10px] uppercase tracking-wider text-stone-400">미리보기</span>
-          <div className={`${value.portrait ? 'aspect-[9/16] max-w-[55%] mx-auto' : 'aspect-video'} rounded-md overflow-hidden bg-black`}>
+          <div className={`${value.portrait ? 'aspect-[9/16] max-w-[72%] mx-auto' : 'aspect-video'} rounded-md overflow-hidden bg-black`}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={ytError ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}

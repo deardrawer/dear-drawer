@@ -4354,7 +4354,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
       ) : (
         <YouTubeLite videoId={videoId as string} aspectRatio={isPortrait ? '9 / 16' : undefined} onPlay={onVideoPlay} onStop={onVideoStop} />
       )
-      const thumbEl = isPortrait ? <div style={{ maxWidth: '66%', margin: '0 auto' }}>{player}</div> : player
+      const thumbEl = isPortrait ? <div style={{ maxWidth: '84%', margin: '0 auto' }}>{player}</div> : player
 
       // V2 · 풀폭 (패딩 없음)
       if (v === 2) {

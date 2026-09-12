@@ -198,6 +198,7 @@ export interface SectionContents {
     eyebrow: string
     url: string
     fileUrl?: string // 파일 업로드 동영상(mp4) URL. 있으면 유튜브(url) 대신 파일 재생
+    posterUrl?: string // 파일 동영상 포스터(첫 프레임 자동 캡처) — 재생 전 썸네일
     portrait?: boolean // 세로형(숏폼) 9:16 표시 (기본 false = 가로 16:9)
   }
   rsvp: {

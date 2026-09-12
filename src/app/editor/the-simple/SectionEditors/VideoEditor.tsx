@@ -19,6 +19,54 @@ function extractVideoId(url: string): string | null {
 
 const MAX_MB = 50
 
+/** 동영상 첫 프레임(약간 뒤 지점)을 캡처해 webp Blob으로 반환 (실패 시 null) */
+function capturePoster(file: File): Promise<Blob | null> {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file)
+    const v = document.createElement('video')
+    v.muted = true
+    v.playsInline = true
+    v.preload = 'auto'
+    let done = false
+    const finish = (blob: Blob | null) => {
+      if (done) return
+      done = true
+      try {
+        URL.revokeObjectURL(url)
+      } catch {
+        /* noop */
+      }
+      resolve(blob)
+    }
+    v.onloadeddata = () => {
+      try {
+        v.currentTime = Math.min(0.6, (v.duration || 1) * 0.1)
+      } catch {
+        /* seek 실패 시 seeked 없이 timeout */
+      }
+    }
+    v.onseeked = () => {
+      try {
+        const w = v.videoWidth
+        const h = v.videoHeight
+        if (!w || !h) return finish(null)
+        const canvas = document.createElement('canvas')
+        canvas.width = w
+        canvas.height = h
+        const ctx = canvas.getContext('2d')
+        if (!ctx) return finish(null)
+        ctx.drawImage(v, 0, 0, w, h)
+        canvas.toBlob((b) => finish(b), 'image/webp', 0.8)
+      } catch {
+        finish(null)
+      }
+    }
+    v.onerror = () => finish(null)
+    setTimeout(() => finish(null), 6000)
+    v.src = url
+  })
+}
+
 export default function VideoEditor({ value, invitationId, onChange }: VideoEditorProps) {
   const [ytError, setYtError] = useState(false)
   const [mode, setMode] = useState<'youtube' | 'file'>(value.fileUrl ? 'file' : 'youtube')
@@ -52,8 +100,26 @@ export default function VideoEditor({ value, invitationId, onChange }: VideoEdit
         setFileMsg(d.error || '업로드에 실패했어요.')
         return
       }
+
+      // 포스터(첫 프레임) 자동 생성 → 이미지 업로드 (실패해도 동영상은 정상 저장)
+      let posterUrl: string | undefined
+      try {
+        const poster = await capturePoster(file)
+        if (poster) {
+          const pfd = new FormData()
+          pfd.append('web', new File([poster], 'poster.webp', { type: 'image/webp' }))
+          if (invitationId) pfd.append('invitationId', invitationId)
+          pfd.append('imageId', 'video-poster')
+          const pres = await fetch('/api/upload', { method: 'POST', body: pfd })
+          const pd = (await pres.json().catch(() => ({}))) as { webUrl?: string }
+          if (pres.ok && pd.webUrl) posterUrl = `${pd.webUrl}${pd.webUrl.includes('?') ? '&' : '?'}t=${Date.now()}`
+        }
+      } catch {
+        /* 포스터는 선택 사항 */
+      }
+
       // 파일을 넣으면 유튜브 URL은 비워 파일이 우선 재생되도록
-      onChange({ ...value, fileUrl: d.url, url: '' })
+      onChange({ ...value, fileUrl: d.url, url: '', posterUrl })
       setFileMsg('업로드 완료!')
       setTimeout(() => setFileMsg(''), 1800)
     } catch {
@@ -63,7 +129,7 @@ export default function VideoEditor({ value, invitationId, onChange }: VideoEdit
     }
   }
 
-  const removeFile = () => onChange({ ...value, fileUrl: undefined })
+  const removeFile = () => onChange({ ...value, fileUrl: undefined, posterUrl: undefined })
 
   return (
     <div className="space-y-3">
@@ -128,7 +194,7 @@ export default function VideoEditor({ value, invitationId, onChange }: VideoEdit
           ) : value.fileUrl ? (
             <div className="space-y-1.5">
               <div className={`${value.portrait ? 'aspect-[9/16] max-w-[72%] mx-auto' : 'aspect-video'} rounded-md overflow-hidden bg-black`}>
-                <video src={value.fileUrl} controls playsInline preload="metadata" className="w-full h-full object-contain bg-black" />
+                <video src={value.fileUrl} controls playsInline poster={value.posterUrl || undefined} preload={value.posterUrl ? 'none' : 'metadata'} className="w-full h-full object-contain bg-black" />
               </div>
               <button type="button" onClick={removeFile} className="text-[10px] text-stone-500 underline">
                 파일 제거

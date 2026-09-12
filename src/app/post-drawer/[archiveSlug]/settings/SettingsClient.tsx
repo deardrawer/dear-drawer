@@ -60,6 +60,9 @@ export default function SettingsClient({ archiveSlug }: { archiveSlug: string })
   const [copied, setCopied] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [stampMsg, setStampMsg] = useState('')
+  const [pubHidden, setPubHidden] = useState(false) // 로컬 편집값 (저장 눌러야 반영)
+  const [removePw, setRemovePw] = useState(false) // 비밀번호 해제 예약
+  const [photoChange, setPhotoChange] = useState<{ type: 'set'; url: string } | { type: 'remove' } | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const load = async () => {
@@ -71,6 +74,10 @@ export default function SettingsClient({ archiveSlug }: { archiveSlug: string })
       const data = (await res.json()) as Settings
       setS(data)
       setStampMsg(data.stamp?.message ?? '')
+      setPubHidden(data.publicHidden)
+      setRemovePw(false)
+      setPhotoChange(null)
+      setPw('')
       setState('ok')
     } catch {
       setState('error')
@@ -134,17 +141,13 @@ export default function SettingsClient({ archiveSlug }: { archiveSlug: string })
         return
       }
       const busted = `${ud.webUrl}${ud.webUrl.includes('?') ? '&' : '?'}t=${Date.now()}`
-      await patch({ stampPhoto: busted }, '우표 사진을 변경했어요')
+      // 즉시 저장하지 않고 편집 버퍼에만 반영 → 하단 '저장'에서 일괄 반영
+      setPhotoChange({ type: 'set', url: busted })
     } catch {
       setMsg('업로드에 실패했어요.')
     } finally {
       setUploading(false)
     }
-  }
-
-  const saveMessage = async () => {
-    const d = await patch({ stampMessage: stampMsg }, '한마디를 저장했어요')
-    if (d) setStampMsg(d.stamp?.message ?? '')
   }
 
   if (state !== 'ok' || !s) {
@@ -169,8 +172,37 @@ export default function SettingsClient({ archiveSlug }: { archiveSlug: string })
   }
 
   const dLeft = daysLeftToArchive(s.weddingDate)
-  const publicStatus = s.archived ? '공개 종료됨' : s.publicHidden ? '비공개' : '공개 중'
+  const publicStatus = s.archived ? '공개 종료됨' : pubHidden ? '비공개' : '공개 중'
   const shareUrl = s.share.shareSlug ? `https://invite.deardrawer.com/s/${s.share.shareSlug}` : ''
+
+  // 편집 버퍼 → 미리보기/변경 여부
+  const previewPhoto = photoChange?.type === 'set' ? photoChange.url : photoChange?.type === 'remove' ? s.stamp.kakaoThumbnail : s.stamp.photo
+  const previewHasCustom = photoChange?.type === 'set' ? true : photoChange?.type === 'remove' ? false : s.stamp.hasCustomPhoto
+  const dirty =
+    stampMsg !== (s.stamp.message ?? '') ||
+    (s.canTogglePublic && pubHidden !== s.publicHidden) ||
+    photoChange !== null ||
+    removePw ||
+    pw.length >= 4
+
+  const onSaveAll = async () => {
+    if (!dirty) return
+    const body: Record<string, unknown> = {}
+    if (stampMsg !== (s.stamp.message ?? '')) body.stampMessage = stampMsg
+    if (s.canTogglePublic && pubHidden !== s.publicHidden) body.publicHidden = pubHidden
+    if (photoChange?.type === 'set') body.stampPhoto = photoChange.url
+    else if (photoChange?.type === 'remove') body.removeStampPhoto = true
+    if (removePw) body.removePassword = true
+    else if (pw.length >= 4) body.sharePassword = pw
+    const d = await patch(body, '저장되었습니다')
+    if (d) {
+      setStampMsg(d.stamp?.message ?? '')
+      setPubHidden(d.publicHidden)
+      setRemovePw(false)
+      setPhotoChange(null)
+      setPw('')
+    }
+  }
 
   return (
     <div className="pd">
@@ -193,32 +225,32 @@ export default function SettingsClient({ archiveSlug }: { archiveSlug: string })
           <h2>우표 사진</h2>
           <p className="setdesc">서랍과 공개 컬렉션에서 보이는 우표 사진이에요. 카카오 공유 썸네일과 별개로 지정할 수 있고, 지정하지 않으면 카카오 공유 썸네일을 사용합니다.</p>
           <div className="stamp-edit">
-            <div className={`stamp-prev${s.stamp.photo ? '' : ' noimg'}`}>
-              {s.stamp.photo ? (
+            <div className={`stamp-prev${previewPhoto ? '' : ' noimg'}`}>
+              {previewPhoto ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={s.stamp.photo} alt="" />
+                <img src={previewPhoto} alt="" />
               ) : (
                 <span>사진 없음</span>
               )}
             </div>
             <div className="stamp-edit-body">
               <p className="setnote">
-                {s.stamp.hasCustomPhoto
-                  ? '서랍 전용 사진을 사용 중이에요.'
+                {previewHasCustom
+                  ? '서랍 전용 사진을 사용해요.'
                   : s.stamp.kakaoThumbnail
-                    ? '지금은 카카오 공유 썸네일을 사용 중이에요.'
+                    ? '카카오 공유 썸네일을 사용해요.'
                     : '아직 사진이 없어요. 지정하면 우표에 보여요.'}
               </p>
               <div className="stamp-btns">
                 <button type="button" className="btn btn-m btn-solid" disabled={uploading || saving} onClick={onPickPhoto}>
-                  {uploading ? '업로드 중…' : s.stamp.hasCustomPhoto ? '사진 변경' : '사진 지정'}
+                  {uploading ? '업로드 중…' : previewHasCustom ? '사진 변경' : '사진 지정'}
                 </button>
-                {s.stamp.hasCustomPhoto && (
+                {previewHasCustom && (
                   <button
                     type="button"
                     className="btn btn-m btn-assist"
                     disabled={uploading || saving}
-                    onClick={() => patch({ removeStampPhoto: true }, '카카오 썸네일로 되돌렸어요')}
+                    onClick={() => setPhotoChange({ type: 'remove' })}
                   >
                     카카오 썸네일로 되돌리기
                   </button>
@@ -243,9 +275,6 @@ export default function SettingsClient({ archiveSlug }: { archiveSlug: string })
           />
           <div className="stamp-ta-row">
             <span className="setnote">{stampMsg.length}/{s.stamp.messageMax}</span>
-            <button type="button" className="btn btn-m btn-solid" disabled={saving || stampMsg === (s.stamp.message ?? '')} onClick={saveMessage}>
-              한마디 저장
-            </button>
           </div>
         </section>
 
@@ -265,11 +294,11 @@ export default function SettingsClient({ archiveSlug }: { archiveSlug: string })
             ) : (
               <button
                 type="button"
-                className={`btn btn-m ${s.publicHidden ? 'btn-solid' : 'btn-assist'}`}
+                className={`btn btn-m ${pubHidden ? 'btn-solid' : 'btn-assist'}`}
                 disabled={saving || !s.canTogglePublic}
-                onClick={() => patch({ publicHidden: !s.publicHidden }, '변경되었습니다')}
+                onClick={() => setPubHidden((v) => !v)}
               >
-                {s.publicHidden ? '다시 공개하기' : '비공개로 전환'}
+                {pubHidden ? '다시 공개하기' : '비공개로 전환'}
               </button>
             )}
           </div>
@@ -305,27 +334,20 @@ export default function SettingsClient({ archiveSlug }: { archiveSlug: string })
                 <label className="setlb">
                   비밀번호 <span className={`badge2 ${s.share.hasPassword ? 'on' : 'off'}`}>{s.share.hasPassword ? '설정됨' : '없음(링크만 알면 열람)'}</span>
                 </label>
-                <div className="setinline">
-                  <input
-                    type="password"
-                    value={pw}
-                    onChange={(e) => setPw(e.target.value)}
-                    placeholder={s.share.hasPassword ? '새 비밀번호(변경 시)' : '비밀번호(4자 이상)'}
-                    className="setinput"
-                  />
-                  <button
-                    type="button"
-                    className="btn btn-m btn-assist"
-                    disabled={saving || pw.length < 4}
-                    onClick={() => patch({ sharePassword: pw }, s.share.hasPassword ? '비밀번호를 변경했어요' : '비밀번호를 설정했어요')}
-                  >
-                    {s.share.hasPassword ? '변경' : '설정'}
-                  </button>
-                </div>
+                <input
+                  type="password"
+                  value={pw}
+                  onChange={(e) => { setPw(e.target.value); if (e.target.value) setRemovePw(false) }}
+                  placeholder={s.share.hasPassword ? '새 비밀번호로 변경(4자 이상)' : '비밀번호(4자 이상)'}
+                  className="setinput"
+                  disabled={removePw}
+                  style={{ width: '100%' }}
+                />
                 {s.share.hasPassword && (
-                  <button type="button" className="setlink" disabled={saving} onClick={() => patch({ removePassword: true }, '비밀번호를 해제했어요')}>
+                  <label className="setlink" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+                    <input type="checkbox" checked={removePw} onChange={(e) => { setRemovePw(e.target.checked); if (e.target.checked) setPw('') }} />
                     비밀번호 해제 (링크만으로 공개)
-                  </button>
+                  </label>
                 )}
                 <p className="setnote">
                   {s.share.hasPassword
@@ -338,6 +360,28 @@ export default function SettingsClient({ archiveSlug }: { archiveSlug: string })
         </section>
 
         {msg && <div className="setmsg">{msg}</div>}
+
+        {/* 하단 일괄 저장 — 위 설정을 모두 만진 뒤 한 번에 저장 */}
+        <div
+          style={{
+            position: 'sticky',
+            bottom: 0,
+            marginTop: 20,
+            padding: '12px 0 18px',
+            background: 'var(--background-normal-normal)',
+            borderTop: '1px solid var(--line-normal-alternative)',
+          }}
+        >
+          <button
+            type="button"
+            className="btn btn-solid"
+            disabled={saving || !dirty}
+            onClick={onSaveAll}
+            style={{ width: '100%', padding: '15px', fontSize: 15, fontWeight: 700, borderRadius: 12, opacity: saving || !dirty ? 0.5 : 1 }}
+          >
+            {saving ? '저장 중…' : dirty ? '저장' : '변경사항 없음'}
+          </button>
+        </div>
       </div>
     </div>
   )

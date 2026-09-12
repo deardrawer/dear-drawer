@@ -547,8 +547,10 @@
   .pd .minelist { padding: 24px 20px 0; }
   .pd .nav { height: 56px; padding: 0 20px; }
   .pd .nav .wm { font-size: 17px; }
-  .pd .nav ul { display: none; }
-  .pd .nav .burger { display: inline-flex; }
+  /* 모바일: 유일한 메뉴 '내 서랍'을 그대로 노출(버거는 홈으로만 가서 진입이 사라졌던 문제 수정) */
+  .pd .nav ul { display: flex; gap: 0; }
+  .pd .nav li { font-size: 14px; }
+  .pd .nav .burger { display: none; }
   .pd .hero { padding: 40px 20px 0; }
   .pd .hero h1 { font-size: 28px; line-height: 1.4; letter-spacing: -.023em; }
   .pd .hero .lead { font-size: 14px; line-height: 1.75; }

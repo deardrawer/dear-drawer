@@ -4338,7 +4338,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
           src={fileUrl}
           controls
           playsInline
-          preload="metadata"
+          poster={video?.posterUrl || undefined}
+          preload={video?.posterUrl ? 'none' : 'metadata'}
           onPlay={onVideoPlay}
           onPause={onVideoStop}
           onEnded={onVideoStop}

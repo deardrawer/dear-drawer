@@ -1575,7 +1575,7 @@ function TemplatesContent() {
                           </svg>
                         </div>
                       </div>
-                      <h2 className="text-lg font-bold text-gray-900">THE CLASSIC</h2>
+                      <h2 className="text-lg font-bold text-gray-900 whitespace-nowrap">THE CLASSIC</h2>
                       <p className="text-[10px] text-gray-400 mt-0.5">클래식 · 격식</p>
                     </div>
                     <div className="flex-1 p-5 sm:p-6">

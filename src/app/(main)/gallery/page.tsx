@@ -270,7 +270,7 @@ export default function GalleryPage() {
                   <div className="flex-1 min-w-0">
                     <h3 className="text-sm font-semibold text-gray-900">미니 스토리형</h3>
                     <p className="text-[10px] text-gray-500">사진과 이야기 중심의 간결한 청첩장</p>
-                    <p className="text-[9px] text-gray-400">MAGAZINE · MOVIE · RECORD · FEED</p>
+                    <p className="text-[9px] text-gray-400">MAGAZINE · MOVIE · RECORD · FEED · THE SIMPLE</p>
                   </div>
                   <span className="flex-shrink-0 px-3 py-1.5 text-[10px] bg-violet-500 text-white rounded-full font-medium">만들기</span>
                 </Link>
@@ -290,7 +290,7 @@ export default function GalleryPage() {
                   <div className="flex-1 min-w-0">
                     <h3 className="text-sm font-semibold text-gray-900">혼주용</h3>
                     <p className="text-[10px] text-gray-500">부모님의 시선으로 전하는 모바일 청첩장</p>
-                    <p className="text-[9px] text-gray-400">PARENTS</p>
+                    <p className="text-[9px] text-gray-400">PARENTS · THE&nbsp;CLASSIC</p>
                   </div>
                   <span className="flex-shrink-0 px-3 py-1.5 text-[10px] bg-sky-500 text-white rounded-full font-medium">만들기</span>
                 </Link>
@@ -311,7 +311,7 @@ export default function GalleryPage() {
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-1">스토리형</h3>
                   <p className="text-sm text-gray-500 leading-relaxed">우리의 이야기를 담는<br />스토리 청첩장</p>
-                  <p className="text-xs text-gray-400 mt-1">OUR · FAMILY</p>
+                  <p className="text-xs text-gray-400 mt-1 mb-3">OUR · FAMILY</p>
                   <Link href="/templates?category=story" className="mt-auto pt-3 inline-flex items-center justify-center px-4 py-2 text-xs bg-rose-500 text-white rounded-full hover:bg-rose-600 transition-colors">
                     스토리 청첩장 만들기
                   </Link>
@@ -331,7 +331,7 @@ export default function GalleryPage() {
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-1">미니 스토리형</h3>
                   <p className="text-sm text-gray-500 leading-relaxed">사진과 이야기 중심의<br />간결한 청첩장</p>
-                  <p className="text-xs text-gray-400 mt-1">MAGAZINE · MOVIE · RECORD · FEED</p>
+                  <p className="text-xs text-gray-400 mt-1 mb-3">MAGAZINE · MOVIE · RECORD · FEED · THE SIMPLE</p>
                   <Link href="/templates?category=mini" className="mt-auto pt-3 inline-flex items-center justify-center px-4 py-2 text-xs bg-violet-500 text-white rounded-full hover:bg-violet-600 transition-colors">
                     미니 청첩장 만들기
                   </Link>
@@ -351,7 +351,7 @@ export default function GalleryPage() {
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-1">혼주용 청첩장</h3>
                   <p className="text-sm text-gray-500 leading-relaxed">부모님의 시선으로 전하는<br />모바일 청첩장</p>
-                  <p className="text-xs text-gray-400 mt-1">PARENTS</p>
+                  <p className="text-xs text-gray-400 mt-1 mb-3">PARENTS · THE&nbsp;CLASSIC</p>
                   <Link href="/templates?category=parents" className="mt-auto pt-3 inline-flex items-center justify-center px-4 py-2 text-xs bg-sky-500 text-white rounded-full hover:bg-sky-600 transition-colors">
                     혼주용 청첩장 만들기
                   </Link>

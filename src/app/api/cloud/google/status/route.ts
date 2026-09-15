@@ -13,6 +13,14 @@ export async function GET(request: NextRequest) {
   const storage = await getProjectStorage(invitationId)
   const conn = storage ? await getCloudConnectionById(storage.connection_id) : null
 
+  // FAB 표시 여부 (content.meta.guestShareFab, 기본 표시)
+  let guestShareFab = true
+  try {
+    const raw = (owned.invitation as { content?: string | null }).content
+    const c = raw ? (JSON.parse(raw) as { meta?: { guestShareFab?: unknown } }) : null
+    if (c?.meta?.guestShareFab === false) guestShareFab = false
+  } catch { /* ignore */ }
+
   return NextResponse.json({
     connected: !!storage && !!conn,
     accountEmail: conn?.account_email ?? null,
@@ -20,6 +28,7 @@ export async function GET(request: NextRequest) {
     guestShareEnabled: (owned.invitation.guest_share_enabled ?? 0) === 1,
     guestShareTitle: owned.invitation.guest_share_title ?? null,
     guestShareDescription: owned.invitation.guest_share_description ?? null,
+    guestShareFab,
     slug: owned.invitation.slug ?? owned.invitation.id,
   })
 }

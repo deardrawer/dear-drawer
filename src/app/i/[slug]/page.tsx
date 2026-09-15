@@ -164,7 +164,8 @@ export default async function InvitationPage({ params, searchParams }: PageProps
   // 하객 사진 공유 진입 FAB — 공유 활성 + 실제 청첩장(프리뷰/샘플 제외)일 때만
   // (샘플은 union 타입이라 guest_share_* 미보유 → 실제 청첩장일 때만 접근하도록 캐스팅)
   const realInvitation = invitation as Invitation;
-  const guestShareOn = !isSampleInvitation && !isPreview && (realInvitation.guest_share_enabled ?? 0) === 1;
+  const fabVisible = invitationContent?.meta?.guestShareFab !== false; // 기본 표시, meta.guestShareFab===false 일 때만 숨김
+  const guestShareOn = !isSampleInvitation && !isPreview && (realInvitation.guest_share_enabled ?? 0) === 1 && isPaid && fabVisible;
   const guestShareSlug = realInvitation.slug || realInvitation.id;
 
   // 공개 링크 접근제어(실제 청첩장만; preview/sample 제외):

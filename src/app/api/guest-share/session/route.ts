@@ -13,6 +13,7 @@ import {
 } from '@/lib/guestShareLimits'
 import { createPresignedPutUrl } from '@/lib/r2Presign'
 import { POST_DRAWER_MAX_PHOTOS } from '@/lib/postDrawerConstants'
+import { daysSinceWeddingKST } from '@/lib/weddingLifecycle'
 
 async function hashIp(ip: string): Promise<string> {
   const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(ip))
@@ -39,9 +40,15 @@ export async function POST(request: NextRequest) {
     }
     if (!invitation) return NextResponse.json({ error: '청첩장을 찾을 수 없습니다.' }, { status: 404 })
 
-    // 공유 활성 + 발행 확인
-    if ((invitation.guest_share_enabled ?? 0) !== 1 || (invitation.is_published ?? 0) !== 1) {
+    // 공유 활성 + 결제완료(워터마크 제거 가능) 확인. (발행 여부와 무관 — 메인 /i 와 동일 기준)
+    if ((invitation.guest_share_enabled ?? 0) !== 1 || (invitation.is_paid ?? 0) !== 1) {
       return NextResponse.json({ error: '사진 공유가 활성화되어 있지 않습니다.' }, { status: 403 })
+    }
+
+    // 예식 당일(Day 0)부터 업로드 허용 — 예식 전에는 차단(안내 페이지에서 처리). wedding_date 없으면 허용.
+    const since = daysSinceWeddingKST(invitation.wedding_date)
+    if (since !== null && since < 0) {
+      return NextResponse.json({ error: '결혼식 당일부터 사진을 보낼 수 있어요.' }, { status: 403 })
     }
 
     // 파일 검증 (개수/총량 + 개별 타입/크기)

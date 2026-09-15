@@ -183,7 +183,7 @@ export async function deleteProjectStorage(invitationId: string): Promise<void> 
 // ── invitations.guest_share_* ────────────────────────────────────
 export async function updateGuestShareSettings(
   invitationId: string,
-  s: { enabled?: boolean; title?: string | null; description?: string | null },
+  s: { enabled?: boolean; title?: string | null; description?: string | null; fab?: boolean },
 ): Promise<void> {
   const db = await getDB()
   const sets: string[] = []
@@ -191,6 +191,17 @@ export async function updateGuestShareSettings(
   if (s.enabled !== undefined) { sets.push('guest_share_enabled = ?'); vals.push(s.enabled ? 1 : 0) }
   if (s.title !== undefined) { sets.push('guest_share_title = ?'); vals.push(s.title) }
   if (s.description !== undefined) { sets.push('guest_share_description = ?'); vals.push(s.description) }
+  // FAB(청첩장 사진공유 버튼) 표시 여부 — content.meta.guestShareFab (기본 표시, 숨김일 때만 false 저장)
+  if (s.fab !== undefined) {
+    const row = await db.prepare('SELECT content FROM invitations WHERE id = ? LIMIT 1').bind(invitationId).first<{ content: string | null }>()
+    let content: Record<string, unknown> = {}
+    try { content = row?.content ? (JSON.parse(row.content) as Record<string, unknown>) : {} } catch { content = {} }
+    const meta = content.meta && typeof content.meta === 'object' ? (content.meta as Record<string, unknown>) : {}
+    if (s.fab === false) meta.guestShareFab = false
+    else delete meta.guestShareFab
+    content.meta = meta
+    sets.push('content = ?'); vals.push(JSON.stringify(content))
+  }
   if (!sets.length) return
   sets.push("updated_at = datetime('now')")
   vals.push(invitationId)

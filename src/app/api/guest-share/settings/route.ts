@@ -13,6 +13,7 @@ export async function POST(request: NextRequest) {
       enabled?: boolean
       title?: string | null
       description?: string | null
+      fab?: boolean
     }
     const invitationId = body.invitationId
     if (!invitationId) return NextResponse.json({ error: 'invitationId가 필요합니다.' }, { status: 400 })
@@ -24,6 +25,7 @@ export async function POST(request: NextRequest) {
       enabled: body.enabled,
       title: body.title === undefined ? undefined : (body.title || null),
       description: body.description === undefined ? undefined : (body.description || null),
+      fab: body.fab,
     })
 
     return NextResponse.json({ ok: true })

@@ -13,6 +13,7 @@ interface StatusData {
   guestShareEnabled: boolean
   guestShareTitle: string | null
   guestShareDescription: string | null
+  guestShareFab: boolean
   slug: string
 }
 
@@ -27,6 +28,7 @@ export default function GuestShareSettings({ invitationId }: Props) {
   const [status, setStatus] = useState<StatusData | null>(null)
   const [loading, setLoading] = useState(true)
   const [enabled, setEnabled] = useState(false)
+  const [fabVisible, setFabVisible] = useState(true)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [saving, setSaving] = useState(false)
@@ -51,6 +53,7 @@ export default function GuestShareSettings({ invitationId }: Props) {
         if (!alive) return
         setStatus(data)
         setEnabled(data.guestShareEnabled)
+        setFabVisible(data.guestShareFab !== false)
         setTitle(data.guestShareTitle ?? '')
         setDescription(data.guestShareDescription ?? '')
       } catch {
@@ -66,7 +69,7 @@ export default function GuestShareSettings({ invitationId }: Props) {
 
   const shareUrl = status ? `${typeof window !== 'undefined' ? window.location.origin : ''}/i/${status.slug}/share` : ''
 
-  const saveSettings = async (payload: { enabled?: boolean; title?: string | null; description?: string | null }) => {
+  const saveSettings = async (payload: { enabled?: boolean; title?: string | null; description?: string | null; fab?: boolean }) => {
     setError('')
     const res = await fetch('/api/guest-share/settings', {
       method: 'POST',
@@ -86,6 +89,17 @@ export default function GuestShareSettings({ invitationId }: Props) {
       await saveSettings({ enabled: next })
     } catch (e) {
       setEnabled(!next) // revert
+      setError(e instanceof Error ? e.message : '저장 실패')
+    }
+  }
+
+  const onToggleFab = async () => {
+    const next = !fabVisible
+    setFabVisible(next)
+    try {
+      await saveSettings({ fab: next })
+    } catch (e) {
+      setFabVisible(!next) // revert
       setError(e instanceof Error ? e.message : '저장 실패')
     }
   }
@@ -194,6 +208,24 @@ export default function GuestShareSettings({ invitationId }: Props) {
         <p className="mb-4 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
           Drive 미연결 상태에서도 하객이 사진을 보낼 수 있지만, Drive 자동 이전은 연결 후부터 진행돼요.
         </p>
+      )}
+
+      {/* 청첩장 FAB(사진 공유 버튼) 표시 여부 — 공유는 켜두되 버튼만 숨기고 싶을 때 */}
+      {enabled && (
+        <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-gray-100 px-4 py-3">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-gray-800">청첩장에 사진 공유 버튼 표시</p>
+            <p className="mt-0.5 text-xs text-gray-500">끄면 공유 링크는 그대로 열리지만, 청첩장 화면의 버튼은 숨겨져요.</p>
+          </div>
+          <label className="inline-flex cursor-pointer items-center gap-2 shrink-0">
+            <span className="text-xs text-gray-500">{fabVisible ? '표시' : '숨김'}</span>
+            <span className="relative">
+              <input type="checkbox" checked={fabVisible} onChange={onToggleFab} className="peer sr-only" />
+              <span className="block h-6 w-11 rounded-full bg-gray-200 transition peer-checked:bg-gray-900" />
+              <span className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition peer-checked:translate-x-5" />
+            </span>
+          </label>
+        </div>
       )}
 
       {/* 공유 페이지 문구 */}

@@ -817,7 +817,11 @@ function EditorContent() {
                         autoPlay={true}
                         weddingDate={invitation.wedding.date}
                         weddingTime={invitation.wedding.time}
+                        weddingTimeDisplay={invitation.wedding.timeDisplay}
                         venueName={invitation.wedding.venue.name}
+                        groomName={invitation.groom.name}
+                        brideName={invitation.bride.name}
+                        coverTitle={invitation.wedding.title}
                       />
                     </div>
                     <button

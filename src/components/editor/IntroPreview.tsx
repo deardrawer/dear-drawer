@@ -16,11 +16,14 @@ interface IntroPreviewProps {
   // 청첩장 정보 연동 (날짜, 장소만)
   weddingDate?: string
   weddingTime?: string
+  weddingTimeDisplay?: string
   venueName?: string
   // 매거진 인트로 스타일
   magazineIntroStyle?: 'cover' | 'clean' | 'editorial'
   groomName?: string
   brideName?: string
+  // 커버(인트로 애니메이션 뒤에 자동으로 넘어가 보여줄 실제 커버 화면) 제목
+  coverTitle?: string
 }
 
 // 보케(빛 입자) 컴포넌트
@@ -132,6 +135,15 @@ function formatDate(dateString: string): string {
   return `${month} ${day}, ${year}`
 }
 
+// 한글 날짜 포맷 (2026년 10월 10일 토요일) — 게스트 커버와 동일
+function formatDateKo(dateString: string): string {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  if (isNaN(date.getTime())) return ''
+  const w = ['일', '월', '화', '수', '목', '금', '토'][date.getDay()]
+  return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일 ${w}요일`
+}
+
 // hex to rgba 변환 함수
 function hexToRgba(hex: string, alpha: number): string {
   const r = parseInt(hex.slice(1, 3), 16)
@@ -150,13 +162,18 @@ export default function IntroPreview({
   autoPlay = true,
   weddingDate,
   weddingTime,
+  weddingTimeDisplay,
   venueName,
   magazineIntroStyle,
   groomName,
   brideName,
+  coverTitle,
 }: IntroPreviewProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [key, setKey] = useState(0)
+  // 인트로 애니메이션이 끝나면 실제 커버 화면으로 자동 전환(게스트 뷰와 동일한 흐름 재현)
+  const [showCover, setShowCover] = useState(false)
+  const [coverAnimated, setCoverAnimated] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
   // 메인 타이틀: 프리셋 기본값 유지 (사용자가 커스터마이징 탭에서 수정 가능)
@@ -180,6 +197,21 @@ export default function IntroPreview({
       setKey(k => k + 1)
     }
   }, [settings.presetId, autoPlay])
+
+  // 인트로 애니메이션 재생 후 커버 화면으로 자동 전환 (프리셋 변경/다시보기 시 리셋)
+  useEffect(() => {
+    setShowCover(false)
+    setCoverAnimated(false)
+    const t = setTimeout(() => setShowCover(true), 4500)
+    return () => clearTimeout(t)
+  }, [settings.presetId, key])
+
+  // 커버 등장 애니메이션(이미지 스케일/페이드 + 텍스트 순차 등장) 트리거
+  useEffect(() => {
+    if (!showCover) return
+    const r = requestAnimationFrame(() => setCoverAnimated(true))
+    return () => cancelAnimationFrame(r)
+  }, [showCover])
 
   // 인트로 전용 이미지 결정: prop > settings.introImage > coverImage 폴백
   const resolvedIntroImage = introImage || settings.introImage
@@ -237,6 +269,26 @@ export default function IntroPreview({
   }
 
   const backgroundStyle = computeBackgroundStyle()
+
+  // 커버(실제 청첩장 첫 화면) 배경 — coverImage + coverImageSettings 크롭 반영
+  const coverBackgroundStyle: React.CSSProperties = (() => {
+    if (!coverImage) return { background: 'linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)' }
+    const cs = coverImageSettings || {}
+    const cw = cs.cropWidth ?? 1
+    const ch = cs.cropHeight ?? 1
+    const cx = cs.cropX ?? 0
+    const cy = cs.cropY ?? 0
+    const hasC = cw < 1 || ch < 1
+    const scale = Math.max(100 / cw, 100 / ch)
+    const posX = cw < 1 ? (cx / (1 - cw)) * 100 : 50
+    const posY = ch < 1 ? (cy / (1 - ch)) * 100 : 50
+    return {
+      backgroundImage: `url(${coverImage})`,
+      backgroundSize: hasC ? `${scale}%` : 'cover',
+      backgroundPosition: `${Math.min(Math.max(posX, 0), 100)}% ${Math.min(Math.max(posY, 0), 100)}%`,
+      backgroundRepeat: 'no-repeat',
+    }
+  })()
 
   const overlayStyle = {
     backgroundColor: `rgba(0, 0, 0, ${(settings.overlayOpacity ?? 30) / 100})`,
@@ -619,7 +671,50 @@ export default function IntroPreview({
         .intro-diagonal-reveal { animation: introDiagonalReveal 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; opacity: 0; }
       `}</style>
 
-      {renderIntro()}
+      {/* 인트로 애니메이션 — 커버 등장 시 함께 페이드아웃(게스트 뷰와 동일) */}
+      <div
+        className="absolute inset-0"
+        style={{ opacity: showCover ? 0 : 1, transition: 'opacity 0.6s ease', pointerEvents: showCover ? 'none' : 'auto' }}
+      >
+        {renderIntro()}
+      </div>
+
+      {/* 인트로 애니메이션 뒤에 자동으로 넘어가는 커버 화면 (게스트 뷰 커버와 동일 흐름) */}
+      {showCover && (
+        <div className="absolute inset-0 z-40 flex flex-col justify-center items-center overflow-hidden">
+          {/* 커버 배경: 스케일+페이드 인 */}
+          <div
+            className="absolute inset-0"
+            style={{
+              ...coverBackgroundStyle,
+              opacity: coverAnimated ? 1 : 0,
+              transform: coverAnimated ? 'scale(1)' : 'scale(1.08)',
+              transition: 'opacity 1.4s cubic-bezier(0.22, 1, 0.36, 1), transform 6s cubic-bezier(0.22, 1, 0.36, 1)',
+            }}
+          />
+          <div className="absolute inset-0" style={{ background: 'rgba(0, 0, 0, 0.3)' }} />
+          <div className="relative z-10 w-full text-center text-white px-5">
+            {(groomName || brideName) && (
+              <p style={{ fontSize: '13px', fontWeight: 300, letterSpacing: '2px', marginBottom: '14px', opacity: coverAnimated ? 1 : 0, transform: coverAnimated ? 'translateY(0)' : 'translateY(8px)', transition: 'opacity 0.8s cubic-bezier(0.22,1,0.36,1) 0.2s, transform 0.8s cubic-bezier(0.22,1,0.36,1) 0.2s' }}>
+                {groomName} &amp; {brideName}
+              </p>
+            )}
+            <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '24px', fontWeight: 600, letterSpacing: '6px', marginBottom: '18px', opacity: coverAnimated ? 1 : 0, transform: coverAnimated ? 'translateY(0)' : 'translateY(10px)', filter: coverAnimated ? 'blur(0px)' : 'blur(3px)', transition: 'opacity 1.1s cubic-bezier(0.22,1,0.36,1) 0.4s, transform 1.1s cubic-bezier(0.22,1,0.36,1) 0.4s, filter 1.1s cubic-bezier(0.22,1,0.36,1) 0.4s' }}>
+              {coverTitle || 'OUR WEDDING'}
+            </h1>
+            {effectiveVenueText && (
+              <p style={{ fontSize: '13px', fontWeight: 500, letterSpacing: '4px', marginBottom: '6px', opacity: coverAnimated ? 1 : 0, transform: coverAnimated ? 'translateY(0)' : 'translateY(8px)', transition: 'opacity 0.8s cubic-bezier(0.22,1,0.36,1) 0.6s, transform 0.8s cubic-bezier(0.22,1,0.36,1) 0.6s' }}>
+                {effectiveVenueText}
+              </p>
+            )}
+            {weddingDate && (
+              <p style={{ fontSize: '14px', fontWeight: 300, letterSpacing: '1px', opacity: coverAnimated ? 1 : 0, transform: coverAnimated ? 'translateY(0)' : 'translateY(8px)', transition: 'opacity 0.8s cubic-bezier(0.22,1,0.36,1) 0.8s, transform 0.8s cubic-bezier(0.22,1,0.36,1) 0.8s' }}>
+                {formatDateKo(weddingDate)}{weddingTimeDisplay ? ` ${weddingTimeDisplay}` : (weddingTime ? ` ${weddingTime}` : '')}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* 스킵 버튼 */}
       {onSkip && (

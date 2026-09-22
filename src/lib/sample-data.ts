@@ -260,118 +260,564 @@ export const familySampleContent = {
 }
 
 // MOVIE 템플릿 샘플 데이터
+// MOVIE 샘플 콘텐츠 — 실제 에디터로 제작(한지훈 & 윤서연) 기반. 이미지는 public/sample/movie/* 로 커밋.
 export const filmSampleContent = {
-  ...ourSampleContent,
-  templateId: 'film',
-  colorTheme: 'film-dark' as const,
-  fontStyle: 'roundgothic' as const,
-  displayFont: 'italianno',
-  groom: {
-    ...ourSampleContent.groom,
-    name: '한지훈',
-    nameEn: 'Jihun',
-    lastName: '한',
-    firstName: '지훈',
-    profile: {
-      ...ourSampleContent.groom.profile,
-      images: ['/sample/movie-groom.png'],
-      imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }],
+  "groom": {
+    "name": "한지훈",
+    "nameEn": "JIHOON",
+    "lastName": "",
+    "firstName": "",
+    "phone": "",
+    "father": {
+      "name": "김00",
+      "phone": "",
+      "deceased": false,
+      "bank": {
+        "bank": "",
+        "account": "",
+        "holder": "",
+        "enabled": false
+      }
     },
+    "mother": {
+      "name": "박00",
+      "phone": "",
+      "deceased": false,
+      "bank": {
+        "bank": "",
+        "account": "",
+        "holder": "",
+        "enabled": false
+      }
+    },
+    "bank": {
+      "bank": "신한",
+      "account": "000-000-0000",
+      "holder": "한지훈",
+      "enabled": true
+    },
+    "profile": {
+      "images": [
+        "/sample/movie/c3ba2f27-653f-42fd-bd38-8d2412e7ee83_web.webp"
+      ],
+      "imageSettings": [
+        {
+          "cropX": 0.07666666666666667,
+          "cropY": 0.03333333333333333,
+          "cropWidth": 0.4772222222222222,
+          "cropHeight": 0.4772222222222222
+        }
+      ],
+      "aboutLabel": "ABOUT GROOM",
+      "subtitle": "신부가 소개하는 신랑",
+      "intro": "",
+      "tag": "세상에서 가장 따뜻한 사람"
+    }
   },
-  bride: {
-    ...ourSampleContent.bride,
-    name: '윤서연',
-    nameEn: 'Seoyeon',
-    lastName: '윤',
-    firstName: '서연',
-    profile: {
-      ...ourSampleContent.bride.profile,
-      images: ['/sample/movie-bride.png'],
-      imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }],
+  "bride": {
+    "name": "윤서연",
+    "nameEn": "SEOYEON",
+    "lastName": "",
+    "firstName": "",
+    "phone": "",
+    "father": {
+      "name": "이00",
+      "phone": "",
+      "deceased": false,
+      "bank": {
+        "bank": "",
+        "account": "",
+        "holder": "",
+        "enabled": false
+      }
     },
+    "mother": {
+      "name": "최00",
+      "phone": "",
+      "deceased": false,
+      "bank": {
+        "bank": "",
+        "account": "",
+        "holder": "",
+        "enabled": false
+      }
+    },
+    "bank": {
+      "bank": "국민",
+      "account": "000-000-0000",
+      "holder": "윤서",
+      "enabled": true
+    },
+    "profile": {
+      "images": [
+        "/sample/movie/447e4f00-faeb-4228-96dd-faef58c8718f_web.webp"
+      ],
+      "imageSettings": [
+        {
+          "cropX": 0.5297222222222222,
+          "cropY": 0.04027777777777779,
+          "cropWidth": 0.4702777777777778,
+          "cropHeight": 0.4702777777777778
+        }
+      ],
+      "aboutLabel": "ABOUT BRIDE",
+      "subtitle": "신랑이 소개하는 신부",
+      "intro": "",
+      "tag": "매일 웃게 해주는 사람"
+    },
+    "familyRole": ""
   },
-  wedding: {
-    ...ourSampleContent.wedding,
-    date: '2026-05-23',
-    time: '13:30',
-    timeDisplay: '오후 1시 30분',
-    venue: {
-      name: '더채플앳청담',
-      hall: '그랜드홀',
-      address: '서울특별시 강남구 청담동 123-45',
+  "wedding": {
+    "date": "2027-09-25",
+    "time": "13:30",
+    "timeDisplay": "오후 1시 30분",
+    "dayOfWeek": "",
+    "title": "OUR WEDDING",
+    "venue": {
+      "name": "더채플앳청담",
+      "hall": "그랜드홀",
+      "address": "서울특별시 강남구 청담동 123-45"
     },
+    "directions": {
+      "car": "네비게이션에 \"더채플앳청담\" 검색\n강남역 방면에서 청담사거리 방향으로 직진 후 우회전",
+      "publicTransport": "지하철: 압구정로데오역 5번 출구 도보 10분\n버스: 146, 301, 401, 3422, 4412",
+      "train": "",
+      "expressBus": "",
+      "shuttle": "",
+      "extraInfoEnabled": false,
+      "extraInfoText": ""
+    }
   },
-  content: {
-    ...ourSampleContent.content,
-    filmTitle: 'THE WEDDING',
-    greeting: '솔직히 말하면,\n처음엔 그냥 밥 한번 먹자는 거였는데\n어쩌다 보니 평생 같이 먹게 됐습니다.\n\n이 예상 밖의 전개에\n여러분을 초대합니다.',
-    quote: {
-      text: 'I came here tonight because when you realize you want to spend the rest of your life with somebody, you want the rest of your life to start as soon as possible.',
-      author: 'When Harry Met Sally',
-    },
-    interviews: [
+  "relationship": {
+    "startDate": "",
+    "stories": [
       {
-        question: '처음 만났을 때 서로의 첫인상은?',
-        answer: '"카페에서 책을 읽고 있는 모습이 정말 예뻤어요"\n"웃을 때 눈이 반달처럼 되는 게 인상적이었어요"',
-        images: ['/sample/story1-1.png', '/sample/story1-2.png'],
-        imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],
-        bgClass: 'pink-bg',
+        "date": "",
+        "title": "",
+        "desc": "",
+        "images": [],
+        "imageSettings": []
       },
       {
-        question: '결혼을 결심하게 된 순간은?',
-        answer: '"아플 때 밤새 간호해주는 모습을 보고 확신했어요"\n"이 사람과 함께라면 어떤 어려움도 이겨낼 수 있겠다 싶었어요"',
-        images: ['/sample/story2-1.png', '/sample/story2-2.png'],
-        imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],
-        bgClass: 'white-bg',
+        "date": "",
+        "title": "",
+        "desc": "",
+        "images": [],
+        "imageSettings": []
       },
       {
-        question: '서로에게 하고 싶은 한마디는?',
-        answer: '"평생 웃게 해줄게요. 사랑해요"\n"당신을 만나서 정말 행복해요. 영원히 함께해요"',
-        images: ['/sample/movie-story3-1.png', '/sample/movie-story3-2.png'],
-        imageSettings: [{ scale: 1, positionX: 0, positionY: 0 }, { scale: 1, positionX: 0, positionY: 0 }],
-        bgClass: 'pink-bg',
-      },
+        "date": "",
+        "title": "",
+        "desc": "",
+        "images": [],
+        "imageSettings": []
+      }
     ],
-    thankYou: {
-      title: 'SPECIAL THANKS',
-      message: '바쁘신 와중에도 저희의 결혼을\n축하해 주셔서 진심으로 감사드립니다.\n\n여러분의 축복을 마음에 새기며\n서로 아끼고 사랑하며 살겠습니다.',
-      sign: '지훈 & 서연 올림',
+    "closingText": "그리고 이제 드디어 부르는 서로의 이름에\n'신랑', '신부'라는 호칭을 담습니다."
+  },
+  "content": {
+    "greeting": "솔직히 말하면,\n처음엔 그냥 밥 한번 먹자는 거였는데\n어쩌다 보니 평생 같이 먹게 됐습니다.",
+    "greetingDialogue": "이 예상 밖의 전개에\n여러분을 초대합니다.",
+    "quote": {
+      "text": "I came here tonight because when you realize you want to spend the rest of your life with somebody, you want the rest of your life to start as soon as possible.",
+      "author": "When Harry Met Sally"
     },
-  },
-  gallery: {
-    images: ['/sample/movie-gallery1.png', '/sample/movie-gallery2.png', '/sample/movie-gallery3.png', '/sample/movie-gallery4.png', '/sample/movie-gallery5.png', '/sample/movie-gallery6.png'],
-    imageSettings: Array(6).fill({ scale: 1, positionX: 0, positionY: 0 }),
-  },
-  media: {
-    coverImage: '/sample/cover.png',
-    infoImage: '/sample/movie-information1.png',
-    bgm: '',
-  },
-  guidance: { ...ourSampleContent.guidance, image: '/sample/movie-information1.png', imageSettings: { scale: 1, positionX: 0, positionY: 0 } },
-  design: {
-    ...ourSampleContent.design,
-    coverTitle: 'A MOVIE BY US',
-    sectionDividers: {
-      ...ourSampleContent.design.sectionDividers,
-      invitation: 'CHAPTER 1',
-      ourStory: 'CHAPTER 2',
-      aboutUs: 'CHAPTER 2',
-      interview: 'CHAPTER 2',
-      gallery: 'CHAPTER 3',
-      location: 'THE PREMIERE',
-      rsvp: 'RESERVATION',
-      thankYou: 'SPECIAL THANKS',
-      guestbook: 'AUDIENCE REVIEWS',
+    "thankYou": {
+      "title": "SPECIAL THANKS",
+      "message": "바쁘신 와중에도 저희의 결혼을\n축하해 주셔서 진심으로 감사드립니다.\n\n여러분의 축복을 마음에 새기며\n서로 아끼고 사랑하며 살겠습니다.",
+      "sign": "민준 & 서연 올림"
     },
+    "info": {
+      "dressCode": {
+        "title": "드레스코드 안내",
+        "content": "결혼식에 맞는 옷차림을 고민하지 않으셔도 괜찮아요.\n여러분이 가장 좋아하는 옷,\n가장 여러분다운 모습으로 오셔서\n함께 웃고 즐겨주신다면 그걸로 충분합니다.",
+        "enabled": true
+      },
+      "photoShare": {
+        "title": "사진 공유",
+        "content": "결혼식에서 찍은 사진들을 공유해주세요!\n여러분의 시선으로 담긴 우리의 결혼식,\n소중한 추억으로 간직하겠습니다.",
+        "buttonText": "사진 공유하기",
+        "url": "",
+        "enabled": false
+      },
+      "photoBooth": {
+        "title": "포토부스",
+        "content": "소중한 하루를 오래 기억할 수 있도록\n포토부스가 준비되어 있습니다.\n즐거운 추억을 사진으로 남겨주세요.",
+        "enabled": false
+      },
+      "flowerChild": {
+        "title": "화동 안내",
+        "content": "본 예식에는\n소중한 반려견 푸코가 화동으로 함께합니다.\n혹시 강아지를 무서워 하는 분이 계신다면\n너른 마음으로 양해부탁 드리겠습니다.",
+        "enabled": false
+      },
+      "flowerGift": {
+        "title": "꽃 답례품 안내",
+        "content": "예식 후 하객분들께 감사의 마음을 전하기 위해\n계절의 꽃으로 만든 작은 꽃다발을 준비했습니다.\n소중한 발걸음에 대한 감사의 선물로 받아주세요.",
+        "enabled": true
+      },
+      "wreath": {
+        "title": "화환 안내",
+        "content": "마음만 감사히 받겠습니다.\n화환은 정중히 사양하오니\n너른 양해 부탁드립니다.",
+        "enabled": false
+      },
+      "shuttle": {
+        "title": "셔틀버스 안내",
+        "content": "예식 당일 셔틀버스가 운행될 예정입니다.\n탑승 장소와 시간은 아래 내용을 참고해 주세요.\n편안한 이동이 되시길 바랍니다.\n\n[출발 일시]\n0000년 0월 0일 (0요일)\n오전 00시 00분 출발\n\n[탑승 장소]\n00시 00구 00역 0번 출구 앞\n\n[복귀 일시]\n예식 종료 후\n오후 00시 00분 출발 예정\n\n[차량 번호]\n전세버스 ○○○○호\n\n안내 사항\n원활한 출발을 위해 출발 10분 전까지 도착 부탁드립니다.\n정시 출발로, 지각 시 탑승이 어려울 수 있습니다.\n복귀 시간은 현장 상황에 따라 변동될 수 있습니다.",
+        "enabled": false
+      },
+      "reception": {
+        "title": "피로연 안내",
+        "content": "먼 걸음이 어려우신 분들을 모시고자\n피로연 자리를 마련하였습니다.\n\n참석하시어 두 사람의 앞날을\n따뜻한 축복으로 함께해 주시면\n감사하겠습니다.\n\n[장소]\n장소 입력\n\n[일시]\n0년 0월 0일(0요일) 오후 0시 0분",
+        "venue": "",
+        "datetime": "",
+        "enabled": false
+      },
+      "customItems": [],
+      "itemOrder": [
+        "dressCode",
+        "photoBooth",
+        "photoShare",
+        "flowerGift",
+        "flowerChild",
+        "wreath",
+        "shuttle",
+        "reception"
+      ]
+    },
+    "filmTitle": "THE WEDDING",
+    "interviews": [
+      {
+        "question": "처음 만났을 때 서로의 첫인상은?",
+        "answer": "",
+        "groomDialogue": "카페에서 책을 읽고 있는 모습이 정말 예뻤어요",
+        "brideDialogue": "웃을 때 눈이 반달처럼 되는 게 인상적이었어요",
+        "narration": "",
+        "displayOrder": [
+          "narration",
+          "groom",
+          "bride"
+        ],
+        "images": [
+          "/sample/movie/2968e545-7a3c-4be3-b0aa-389c3a90aa1a_web.webp"
+        ],
+        "imageSettings": [],
+        "bgClass": ""
+      },
+      {
+        "question": "결혼을 결심하게 된 순간은?",
+        "answer": "",
+        "groomDialogue": "아플 때 밤새 간호해주는 모습을 보고 확신했어요",
+        "brideDialogue": "이 사람과 함께라면 어떤 어려움도 이겨낼 수 있겠다 싶었어요",
+        "narration": "",
+        "displayOrder": [
+          "narration",
+          "groom",
+          "bride"
+        ],
+        "images": [
+          "/sample/movie/1ccc83d1-1a84-4ef8-845b-b9ccf0722541_web.webp"
+        ],
+        "imageSettings": [],
+        "bgClass": ""
+      },
+      {
+        "question": "서로에게 하고 싶은 한마디는?",
+        "answer": "",
+        "groomDialogue": "평생 웃게 해줄게요. 사랑해요",
+        "brideDialogue": "당신을 만나서 정말 행복해요. 영원히 함께해요",
+        "narration": "",
+        "displayOrder": [
+          "narration",
+          "groom",
+          "bride"
+        ],
+        "images": [
+          "/sample/movie/c6359fda-294c-4b70-b73b-a37655e16044_web.webp"
+        ],
+        "imageSettings": [],
+        "bgClass": ""
+      }
+    ],
+    "interviewIntro": "",
+    "guestbookQuestions": [
+      "두 주인공에게 관람평을 남겨주세요",
+      "결혼생활에서 가장 중요한 건?",
+      "두 사람의 첫인상은 어땠나요?"
+    ],
+    "parentsGreeting": "",
+    "parentsSign": ""
   },
-  youtube: {
-    enabled: true,
-    title: '',
-    url: 'https://youtu.be/iK1eXqrFZ6s',
+  "gallery": {
+    "images": [
+      "/sample/movie/0aba4872-30f3-4c1b-a848-06d7504413d0_web.webp",
+      "/sample/movie/6801de6c-33fe-4dca-b6c5-84b0caa9ea3c_web.webp",
+      "/sample/movie/b21858b0-4bfd-412f-9f47-7e7c8eb49214_web.webp",
+      "/sample/movie/deeaeb10-1c7b-430b-b442-32f15db58057_web.webp",
+      "/sample/movie/34ef83d3-c823-494d-bafb-2fa1ac2e3a67_web.webp",
+      "/sample/movie/7920881d-7c92-4ecb-9590-6990a608e9ae_web.webp"
+    ],
+    "imageSettings": [
+      {
+        "scale": 1,
+        "positionX": 0,
+        "positionY": 0
+      },
+      {
+        "scale": 1,
+        "positionX": 0,
+        "positionY": 0
+      },
+      {
+        "scale": 1,
+        "positionX": 0,
+        "positionY": 0
+      },
+      {
+        "scale": 1,
+        "positionX": 0,
+        "positionY": 0
+      },
+      {
+        "scale": 1,
+        "positionX": 0,
+        "positionY": 0
+      },
+      {
+        "scale": 1,
+        "positionX": 0,
+        "positionY": 0
+      }
+    ]
   },
+  "media": {
+    "coverImage": "/sample/movie/a80f155e-d24c-4f5d-b1d7-19f41e560e40_web.webp",
+    "infoImage": "",
+    "bgm": "",
+    "coverImageSettings": {
+      "cropX": 0.010000000000000009,
+      "cropY": 0.01656697695913384,
+      "cropWidth": 0.99,
+      "cropHeight": 0.458532712748399
+    }
+  },
+  "meta": {
+    "title": "",
+    "description": "2027년 9월 25일 토요일 오후 1시 30분\n더채플앳청담",
+    "ogImage": "",
+    "ogImageSettings": {
+      "scale": 1,
+      "positionX": 0,
+      "positionY": 0
+    },
+    "kakaoThumbnail": "",
+    "kakaoThumbnailSettings": {
+      "scale": 1,
+      "positionX": 0,
+      "positionY": 0
+    },
+    "kakaoTitle": "",
+    "kakaoDescription": ""
+  },
+  "templateId": "narrative-film",
+  "primaryColor": "#E8E4DF",
+  "secondaryColor": "#2C2C2E",
+  "accentColor": "#B8977E",
+  "backgroundColor": "#1C1C1E",
+  "textColor": "#E8E4DF",
+  "fontStyle": "suit",
+  "displayFont": "cormorant",
+  "colorTheme": "film-light",
+  "rsvpEnabled": true,
+  "rsvpDeadline": "",
+  "rsvpAllowGuestCount": true,
+  "rsvpMealOption": false,
+  "rsvpShuttleOption": false,
+  "rsvpAfterPartyOption": false,
+  "sharedRsvpEnabled": false,
+  "rsvpPhoneOption": false,
+  "rsvpSideDetail": false,
+  "rsvpMessagePlaceholder": "",
+  "rsvpNotice": "",
+  "giftNotice": "참석이 어려우신 분들을 위해 기재했습니다.\n너그러운 마음으로 양해 부탁드립니다.",
+  "greetingTitle": "THE BEGINNING",
+  "journeyTitle": "OUR JOURNEY",
+  "deceasedDisplayStyle": "flower",
+  "sectionVisibility": {
+    "coupleProfile": true,
+    "ourStory": true,
+    "parentsGreeting": true,
+    "interview": true,
+    "guidance": true,
+    "contacts": true,
+    "bankAccounts": true,
+    "guestbook": true,
+    "parentNames": true
+  },
+  "profileOrder": "groom-first",
+  "design": {
+    "introAnimation": "fade-in",
+    "coverTitle": "THE WEDDING",
+    "sectionDividers": {
+      "invitation": "INVITATION",
+      "ourStory": "OUR STORY",
+      "aboutUs": "ABOUT US",
+      "interview": "INTERVIEW",
+      "gallery": "GALLERY",
+      "information": "INFORMATION",
+      "location": "LOCATION",
+      "rsvp": "RSVP",
+      "thankYou": "THANK YOU",
+      "guestbook": "GUESTBOOK"
+    }
+  },
+  "bgm": {
+    "enabled": false,
+    "url": "",
+    "autoplay": false,
+    "startPage": "main"
+  },
+  "guidance": {
+    "enabled": true,
+    "title": "행복한 시간을 위한 안내",
+    "content": "",
+    "image": "/sample/movie/4a2d77dc-fb38-46e5-be37-1d5c2a5a6288_web.webp",
+    "imageSettings": {
+      "scale": 1,
+      "positionX": 0,
+      "positionY": 0
+    }
+  },
+  "intro": {
+    "presetId": "cinematic",
+    "mainTitle": "Welcome to our wedding",
+    "subTitle": "",
+    "dateText": "",
+    "venueText": "",
+    "titleFontSize": 16,
+    "titleLetterSpacing": 3,
+    "titleFontFamily": "'Playfair Display', serif",
+    "titleColor": "#ffffff",
+    "subTitleColor": "rgba(255,255,255,0.6)",
+    "backgroundScale": 110,
+    "backgroundPositionX": 50,
+    "backgroundPositionY": 0,
+    "backgroundBrightness": 50,
+    "overlayOpacity": 50,
+    "introImage": "",
+    "imageMode": "photo",
+    "solidColor": "#F8F6F3",
+    "gradientFrom": "#F8F6F3",
+    "gradientTo": "#e8e0d4",
+    "gradientAngle": 135,
+    "accentColor": "#F8F6F3",
+    "overlayColor": "#000000",
+    "guideEnabled": false,
+    "guideText": "터치하거나 아래로 넘겨주세요"
+  },
+  "fullHeightDividers": {
+    "enabled": false,
+    "items": [
+      {
+        "id": "divider-1",
+        "englishTitle": "From Our Family to Yours",
+        "koreanText": "우리의 봄이, 누군가의 평생이 됩니다",
+        "image": "",
+        "imageSettings": {
+          "scale": 1,
+          "positionX": 0,
+          "positionY": 0,
+          "grayscale": 100,
+          "opacity": 100
+        }
+      },
+      {
+        "id": "divider-2",
+        "englishTitle": "Why We Chose Each Other for Life",
+        "koreanText": "서로의 부족한 점을 채워줄 수 있는\n사람을 만났습니다.",
+        "image": "",
+        "imageSettings": {
+          "scale": 1,
+          "positionX": 0,
+          "positionY": 0,
+          "grayscale": 100,
+          "opacity": 100
+        }
+      },
+      {
+        "id": "divider-3",
+        "englishTitle": "Our way to marriage",
+        "koreanText": "같은 시간, 같은 마음으로\n하나의 계절을 준비하고 있습니다.",
+        "image": "",
+        "imageSettings": {
+          "scale": 1,
+          "positionX": 0,
+          "positionY": 0,
+          "grayscale": 100,
+          "opacity": 100
+        }
+      }
+    ]
+  },
+  "parentIntro": {
+    "groom": {
+      "enabled": true,
+      "parentNames": "",
+      "childOrder": "첫째",
+      "images": [],
+      "message": ""
+    },
+    "bride": {
+      "enabled": true,
+      "parentNames": "",
+      "childOrder": "첫째",
+      "images": [],
+      "message": ""
+    }
+  },
+  "whyWeChose": {
+    "enabled": true,
+    "title": "우리가 서로를 선택한 이유",
+    "subtitle": "오래 보아도 좋은 사람, 서로 그렇게 되기까지",
+    "groom": {
+      "enabled": true,
+      "images": [],
+      "imageSettings": [],
+      "description": "",
+      "quote": "서로 아끼며 행복하게 살겠습니다."
+    },
+    "bride": {
+      "enabled": true,
+      "images": [],
+      "imageSettings": [],
+      "description": "",
+      "quote": "늘 처음처럼 행복하게 살겠습니다."
+    }
+  },
+  "ourStory": "",
+  "decision": "",
+  "invitation": "",
+  "filmIntroStyle": "frame",
+  "filmFrameId": "8",
+  "filmFrameImage2": "/sample/movie/3b4ca0a9-84bd-408d-ac46-079d81992729_web.webp",
+  "filmFrameImage2Settings": {
+    "cropX": 0,
+    "cropY": 0.45613784907902555,
+    "cropWidth": 0.98,
+    "cropHeight": 0.5438621509209745
+  },
+  "filmFrameBgColor": "#1f2631",
+  "filmFrameTextColor": "#b3bac7",
+  "customAccentColor": "#0469c8",
+  "customBgColor": "#F5F0EB",
+  "youtube": {
+    "enabled": true,
+    "url": "https://youtu.be/iK1eXqrFZ6s"
+  },
+  "filmFrameTitle": "",
+  "filmFrameColorMode": "custom",
+  "filmFrameColor": "#FFFFFF"
 }
 
-// RECORD 템플릿 샘플 데이터
 export const recordSampleContent = {
   ...ourSampleContent,
   templateId: 'record',

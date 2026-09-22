@@ -1681,10 +1681,10 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                     // 부모명 · 관계(작게) · 자녀명을 3열로 컬럼 정렬 — 두 줄이 세로로 맞음
                     <div style={{ display: 'grid', gridTemplateColumns: 'auto auto auto', columnGap: 8, rowGap: 7, justifyContent: 'center', alignItems: 'baseline' }}>
                       <span style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>{parentsJsx(letterA.side.father, letterA.side.mother) || ''}</span>
-                      <span style={{ fontSize: bfs(9), color: inkA(0.5), whiteSpace: 'nowrap' }}>{parentsJsx(letterA.side.father, letterA.side.mother) ? `의 ${letterA.title}` : letterA.title}</span>
+                      <span style={{ fontSize: bfs(9), color: inkA(0.5), textAlign: 'left', whiteSpace: 'nowrap' }}>{parentsJsx(letterA.side.father, letterA.side.mother) ? `의 ${letterA.title}` : letterA.title}</span>
                       <span style={{ textAlign: 'left', color: INK, whiteSpace: 'nowrap' }}>{letterA.ko}</span>
                       <span style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>{parentsJsx(letterB.side.father, letterB.side.mother) || ''}</span>
-                      <span style={{ fontSize: bfs(9), color: inkA(0.5), whiteSpace: 'nowrap' }}>{parentsJsx(letterB.side.father, letterB.side.mother) ? `의 ${letterB.title}` : letterB.title}</span>
+                      <span style={{ fontSize: bfs(9), color: inkA(0.5), textAlign: 'left', whiteSpace: 'nowrap' }}>{parentsJsx(letterB.side.father, letterB.side.mother) ? `의 ${letterB.title}` : letterB.title}</span>
                       <span style={{ textAlign: 'left', color: INK, whiteSpace: 'nowrap' }}>{letterB.ko}</span>
                     </div>
                   )}

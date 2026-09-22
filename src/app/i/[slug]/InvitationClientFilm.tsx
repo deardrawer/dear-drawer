@@ -1594,7 +1594,7 @@ function ThePremiere({ invitation, fonts, tc, bgOverride }: { invitation: any; f
 
           {/* ADMIT TWO stamp overlay */}
           <div className={`premiere-stamp ${isVisible ? 'stamp-visible' : ''}`} style={{ color: tc.accent, borderColor: tc.accent }}>
-            <span style={{ fontFamily: fonts.display, fontSize: dfs(7), letterSpacing: '2px', color: tc.accent, fontWeight: 600, textAlign: 'center', lineHeight: 1.3 }}>Admit<br />Two</span>
+            <span style={{ fontFamily: fonts.displayKr, fontSize: dfs(7), letterSpacing: '2px', color: tc.accent, fontWeight: 600, textAlign: 'center', lineHeight: 1.3 }}>Admit<br />Two</span>
           </div>
 
           {/* Ticket Top - Title Area */}
@@ -1604,8 +1604,8 @@ function ThePremiere({ invitation, fonts, tc, bgOverride }: { invitation: any; f
             <div style={{ position: 'absolute', width: '20px', height: '20px', borderRadius: '50%', background: bgOverride || tc.sectionBg, top: '100%', right: '-10px', transform: 'translateY(-50%)' }} />
 
             <div className="flex items-center justify-between mb-4">
-              <span style={{ fontFamily: fonts.display, fontSize: dfs(8), letterSpacing: '4px', color: tc.accent }}>Admit Two</span>
-              <span style={{ fontFamily: fonts.display, fontSize: dfs(8), letterSpacing: '2px', color: cg }}>Premiere</span>
+              <span style={{ fontFamily: fonts.displayKr, fontSize: dfs(8), letterSpacing: '4px', color: tc.accent }}>Admit Two</span>
+              <span style={{ fontFamily: fonts.displayKr, fontSize: dfs(8), letterSpacing: '2px', color: cg }}>Premiere</span>
             </div>
 
             {/* Parents + Names */}
@@ -1685,7 +1685,7 @@ function ThePremiere({ invitation, fonts, tc, bgOverride }: { invitation: any; f
 
             {/* Venue */}
             <div style={{ background: getAccentTint(tc.accent, 0.85), borderRadius: '8px', padding: '16px', textAlign: 'center' }}>
-              <div style={{ fontFamily: fonts.display, fontSize: dfs(7), letterSpacing: '4px', color: tc.accent, marginBottom: '8px' }}>Theater</div>
+              <div style={{ fontFamily: fonts.displayKr, fontSize: dfs(7), letterSpacing: '4px', color: tc.accent, marginBottom: '8px' }}>Theater</div>
               <p style={{ fontFamily: fonts.displayKr, fontSize: '16px', fontWeight: 500, color: ct }}>{w.venue?.name || ''}</p>
               {w.venue?.hall && !w.venue?.hideHall && (
                 <p style={{ fontFamily: fonts.body, fontSize: '12px', color: cg, marginTop: '4px' }}>{w.venue.hall}</p>
@@ -1736,7 +1736,7 @@ function ThePremiere({ invitation, fonts, tc, bgOverride }: { invitation: any; f
                       <div className="w-6 h-6 rounded-full flex items-center justify-center mb-1.5" style={{ background: m.color }}>
                         <span style={{ color: m.letterColor, fontSize: '9px', fontWeight: 700 }}>{m.letter}</span>
                       </div>
-                      <span style={{ fontFamily: fonts.display, fontSize: dfs(7), letterSpacing: '1px', color: cg }}>{m.label}</span>
+                      <span style={{ fontFamily: fonts.displayKr, fontSize: dfs(7), letterSpacing: '1px', color: cg }}>{m.label}</span>
                     </a>
                   ))}
                 </div>
@@ -1750,31 +1750,31 @@ function ThePremiere({ invitation, fonts, tc, bgOverride }: { invitation: any; f
           <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '10px', alignSelf: 'stretch', width: '100%' }}>
             {w.directions.car && (
               <div className="direction-card revealed" style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
-                <div style={{ fontFamily: fonts.display, fontSize: dfs(8), letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>By Car</div>
+                <div style={{ fontFamily: fonts.displayKr, fontSize: dfs(8), letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>By Car</div>
                 <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: cg, whiteSpace: 'pre-line' }}>{w.directions.car}</p>
               </div>
             )}
             {w.directions.publicTransport && (
               <div className="direction-card revealed" style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
-                <div style={{ fontFamily: fonts.display, fontSize: dfs(8), letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>Public Transit</div>
+                <div style={{ fontFamily: fonts.displayKr, fontSize: dfs(8), letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>Public Transit</div>
                 <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: cg, whiteSpace: 'pre-line' }}>{w.directions.publicTransport}</p>
               </div>
             )}
             {w.directions.train && (
               <div className="direction-card revealed" style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
-                <div style={{ fontFamily: fonts.display, fontSize: dfs(8), letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>Train</div>
+                <div style={{ fontFamily: fonts.displayKr, fontSize: dfs(8), letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>Train</div>
                 <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: cg, whiteSpace: 'pre-line' }}>{typeof w.directions.train === 'string' ? w.directions.train : ''}</p>
               </div>
             )}
             {w.directions.expressBus && (
               <div className="direction-card revealed" style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
-                <div style={{ fontFamily: fonts.display, fontSize: dfs(8), letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>Express Bus</div>
+                <div style={{ fontFamily: fonts.displayKr, fontSize: dfs(8), letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>Express Bus</div>
                 <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: cg, whiteSpace: 'pre-line' }}>{typeof w.directions.expressBus === 'string' ? w.directions.expressBus : ''}</p>
               </div>
             )}
             {w.directions.extraInfoEnabled && w.directions.extraInfoText && (
               <div className="direction-card revealed" style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
-                <div style={{ fontFamily: fonts.display, fontSize: dfs(8), letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>{(w.directions.extraInfoTitle || 'Info').split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')}</div>
+                <div style={{ fontFamily: fonts.displayKr, fontSize: dfs(8), letterSpacing: '3px', color: tc.accent, marginBottom: '6px' }}>{(w.directions.extraInfoTitle || 'Info').split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')}</div>
                 <p style={{ fontFamily: fonts.body, fontSize: '12px', lineHeight: 1.7, color: cg, whiteSpace: 'pre-line' }}>{w.directions.extraInfoText}</p>
               </div>
             )}
@@ -1881,7 +1881,7 @@ function MapSection({ invitation, fonts, tc }: { invitation: any; fonts: FontCon
         <div className="text-center mb-6">
           <div className="flex items-center justify-center gap-3 mb-3">
             <div style={{ height: '1px', width: '20px', background: tc.divider }} />
-            <span style={{ fontFamily: fonts.display, fontSize: dfs(8), letterSpacing: '5px', color: tc.gray }}>Location</span>
+            <span style={{ fontFamily: fonts.displayKr, fontSize: dfs(8), letterSpacing: '5px', color: tc.gray }}>Location</span>
             <div style={{ height: '1px', width: '20px', background: tc.divider }} />
           </div>
         </div>
@@ -2485,7 +2485,7 @@ function TicketRsvp({ invitation, invitationId, fonts, tc, bgOverride }: {
             <div className="ticket-notch-right" style={{ background: bgOverride || tc.sectionBg }} />
 
             <div className="flex items-center justify-between mb-3">
-              <span style={{ fontFamily: fonts.display, fontSize: dfs(8), letterSpacing: '4px', color: tc.accent }}>Admit One</span>
+              <span style={{ fontFamily: fonts.displayKr, fontSize: dfs(8), letterSpacing: '4px', color: tc.accent }}>Admit One</span>
               <span style={{ fontFamily: fonts.display, fontSize: dfs(8), letterSpacing: '2px', color: tc.cardGray || tc.gray }}>
                 {date ? `${date.getFullYear()}.${String(date.getMonth()+1).padStart(2,'0')}.${String(date.getDate()).padStart(2,'0')}` : ''}
               </span>

@@ -2490,7 +2490,7 @@ function TicketRsvp({ invitation, invitationId, fonts, tc, bgOverride }: {
                 {date ? `${date.getFullYear()}.${String(date.getMonth()+1).padStart(2,'0')}.${String(date.getDate()).padStart(2,'0')}` : ''}
               </span>
             </div>
-            <div style={{ fontFamily: fonts.display, fontSize: dfs(13), letterSpacing: '6px', color: tc.cardText || tc.text, marginBottom: '4px' }}>
+            <div style={{ fontFamily: fonts.display, fontSize: dfs(22), fontStyle: 'italic', letterSpacing: '2px', color: tc.cardText || tc.text, marginBottom: '4px' }}>
               Reservation
             </div>
             <div style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.cardGray || tc.gray }}>

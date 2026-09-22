@@ -34,9 +34,9 @@ const colorThemes: Record<ColorTheme, ColorConfig> = {
     cardBg: '#FFFFFF',
     divider: '#2A2A2A',
     text: '#E8E4DF',
-    gray: '#8E8E93',
+    gray: '#555555',
     cardText: '#2A2A2A',
-    cardGray: '#888888',
+    cardGray: '#555555',
   },
   'film-light': {
     primary: '#1A1A1A',
@@ -47,7 +47,7 @@ const colorThemes: Record<ColorTheme, ColorConfig> = {
     cardBg: '#FFFFFF',
     divider: '#E5E0DA',
     text: '#1A1A1A',
-    gray: '#999999',
+    gray: '#555555',
   },
 }
 

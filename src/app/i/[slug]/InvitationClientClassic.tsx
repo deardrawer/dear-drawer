@@ -507,9 +507,14 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   const venueHall = venue.hall || ''
   const venueAddress = venue.address || '서울 중구 정동길 24'
   const venueFull = [venueHall, venueAddress].filter(Boolean).join(' · ')
+  // 지도 옵션: 'google'이면 구글맵 임베드 + 안내문구(네이버/카카오/티맵 버튼 없음), 기본은 카카오맵+버튼
+  const isGoogleMap = cc.classicMapProvider === 'google'
+  const gmapQuery = encodeURIComponent((venueAddress || venueName || '').trim())
 
   // ===== 예식일정 달력 변형 (2b 풀그리드 / 2c 다크 / 2d 티켓 / 2e 에디토리얼) =====
   const dateStyle: string = ['2b', '2c', '2d', '2e'].includes(cc.classicDateStyle) ? cc.classicDateStyle : 'classic'
+  // 달력 커스텀 문구(줄바꿈 가능). 설정 시 스타일 기본 문구 대체, 미설정 시 def 사용. 빈 문자열이면 숨김.
+  const dateCustomMsg = (def: string): string => (typeof cc.classicDateMessage === 'string' ? cc.classicDateMessage : def)
   const datePoint: string = cc.classicDatePointColor || '#c06a5b' // 달력 포인트 색 (하트/동그라미/말풍선/디데이)
   // 달력 숫자 폰트: 기본은 디스플레이(영문) 폰트, 'body' 선택 시 본문(한글) 폰트 사용
   const F_NUM = cc.classicDateNumFont === 'body' ? F_BODY : F_DISPLAY
@@ -637,7 +642,9 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             <div className="cl-reveal cl-lux" data-delay="180" style={{ fontFamily: F_NUM, fontWeight: 300, fontSize: 'clamp(112px,38vw,148px)', lineHeight: 0.82, letterSpacing: '-.03em', color: dTx }}>{day}</div>
             <div className="cl-reveal cl-up" data-delay="380" style={{ marginTop: 22, fontFamily: F_BODY, fontSize: 12, letterSpacing: '.22em', paddingLeft: '.22em', color: dTxA(0.72) }}>{year}년 {monthIdx0 + 1}월 · {WEEK_KO[dow]}요일</div>
           </div>
-          <p className="cl-reveal cl-blur" data-delay="240" style={{ margin: '40px 0 0', textAlign: 'center', fontFamily: F_BODY, fontSize: 13.5, lineHeight: 2, letterSpacing: '.02em', color: dTxA(0.82), whiteSpace: 'pre-line' }}>{'서로의 이름을 나란히 두는 날\n귀한 걸음으로 축복해 주시기 바랍니다'}</p>
+          {dateCustomMsg('서로의 이름을 나란히 두는 날\n귀한 걸음으로 축복해 주시기 바랍니다').trim() && (
+            <p className="cl-reveal cl-blur" data-delay="240" style={{ margin: '40px 0 36px', textAlign: 'center', fontFamily: F_BODY, fontSize: 13.5, lineHeight: 2, letterSpacing: '.02em', color: dTxA(0.82), whiteSpace: 'pre-line' }}>{dateCustomMsg('서로의 이름을 나란히 두는 날\n귀한 걸음으로 축복해 주시기 바랍니다')}</p>
+          )}
           <div style={{ marginTop: 'auto' }}>
             <div className="cl-reveal cl-linex" data-delay="80" style={{ height: 1, background: dTxA(0.24), transformOrigin: 'center' }} />
             <div className="cl-reveal cl-up" data-delay="120" style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', paddingTop: 14 }}>{wk(dTxA(0.5))}</div>
@@ -681,6 +688,9 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
               <span style={{ fontFamily: F_BODY, fontSize: 14, color: '#8b8271' }}>{WEEK_KO[dow]}요일</span>
             </div>
             <p style={{ margin: '22px 0 0', fontFamily: F_BODY, fontSize: 13, lineHeight: 1.9, color: '#6f6757', whiteSpace: 'pre-line' }}>{timeDisplay} · {venueName}{venueHall ? ` ${venueHall}` : ''}{venueAddress ? `\n${venueAddress}` : ''}</p>
+            {dateCustomMsg('서로의 이름을 나란히 두는 날\n귀한 걸음으로 축복해 주시기 바랍니다').trim() && (
+              <p className="cl-reveal cl-blur" data-delay="220" style={{ margin: '18px 0 0', fontFamily: F_BODY, fontSize: 13, lineHeight: 1.9, letterSpacing: '.02em', color: '#6f6757', whiteSpace: 'pre-line' }}>{dateCustomMsg('서로의 이름을 나란히 두는 날\n귀한 걸음으로 축복해 주시기 바랍니다')}</p>
+            )}
           </div>
           <div style={{ ...panel, borderTop: 'none', borderBottom: 'none', height: 24, display: 'flex', alignItems: 'center', padding: '0 20px', position: 'relative' }}>
             <div style={{ position: 'absolute', left: -9, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, borderRadius: '50%', background: '#efece4', border: '1px solid rgba(43,39,36,.1)', clipPath: 'inset(0 0 0 50%)' }} />
@@ -720,7 +730,9 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           <span className="cl-reveal cl-linex" data-delay="760" style={{ flex: 1, height: 1, background: 'rgba(43,39,36,.2)' }} />
           {dday !== null && dday >= 0 && <span className="cl-reveal cl-boop" data-delay="920" style={{ fontFamily: F_NUM, fontWeight: 400, fontSize: 30, lineHeight: 1, color: datePoint, whiteSpace: 'nowrap' }}>{dday === 0 ? '오늘' : `D-${dday}`}</span>}
         </div>
-        <p className="cl-reveal cl-blur" data-delay="1040" style={{ margin: '34px 0 0', fontFamily: F_BODY, fontSize: 15, lineHeight: 2, color: '#5b5449', whiteSpace: 'pre-line' }}>{'함께 걸어온 시간을\n같은 이름으로 이어가고자 합니다.'}</p>
+        {dateCustomMsg('함께 걸어온 시간을\n같은 이름으로 이어가고자 합니다.').trim() && (
+          <p className="cl-reveal cl-blur" data-delay="1040" style={{ margin: '34px 0 0', fontFamily: F_BODY, fontSize: 15, lineHeight: 2, color: '#5b5449', whiteSpace: 'pre-line' }}>{dateCustomMsg('함께 걸어온 시간을\n같은 이름으로 이어가고자 합니다.')}</p>
+        )}
         <div className="cl-reveal cl-place" data-delay="1200" style={{ marginTop: 'auto', marginLeft: -22, marginRight: -22, background: '#FFFFFF', border: '1px solid rgba(43,39,36,.1)', padding: '22px 22px 20px', boxShadow: '0 18px 30px -26px rgba(20,10,8,.5)' }}>
           <div style={{ paddingBottom: 18, borderBottom: '1px solid rgba(43,39,36,.18)' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)' }}>{WEEK_KO.map((w, i) => <span key={i} style={{ fontFamily: F_META, fontSize: 10, color: '#8b8271', letterSpacing: '.06em', textAlign: 'center', paddingBottom: 12 }}>{w}</span>)}</div>
@@ -786,6 +798,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   // 카카오맵 (다른 템플릿과 동일: 주소 지오코딩 → 지도+마커+말풍선). 실패 시 mapError로 폴백.
   // 주의: 인트로 페이지에서는 지도 컨테이너가 렌더되지 않으므로 page가 main일 때 초기화해야 함
   useEffect(() => {
+    if (isGoogleMap) return // 구글맵 옵션은 iframe 임베드라 카카오 초기화 불필요
     if (!venueAddress) return
     if (page !== 'main') return
     let cancelled = false
@@ -851,7 +864,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
       document.head.appendChild(script)
     }
     return () => { cancelled = true; visObs?.disconnect() }
-  }, [venueAddress, venueName, page])
+  }, [venueAddress, venueName, page, isGoogleMap])
 
   // 인사말 배경 (크롭 사진 + 오버레이 색상/투명도)
   const greetingOverlay: string = cc.classicGreetingOverlayColor || '#241610'
@@ -1419,6 +1432,38 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
     }
   }, [ddayPopup?.enabled, isPreview])
 
+  // 지도 박스 — 구글맵 옵션이면 keyless 임베드(iframe), 아니면 카카오맵(지오코딩).
+  //  두 배치(상단/하단)에서 동일 재사용(동시 렌더는 하나뿐이라 ref 공유 안전).
+  //  실제 지도(카카오/구글)일 땐 공용 탭 잠금 오버레이로 페이지 스크롤 가로채기 방지.
+  const mapInteractive = isGoogleMap ? !!gmapQuery : !mapError
+  const mapBox = (
+    <div ref={mapWrapRef} style={{ position: 'relative', aspectRatio: '4/3', overflow: 'hidden', background: '#E3DCCD' }}>
+      {isGoogleMap ? (
+        gmapQuery ? (
+          <iframe
+            title={venueName || 'map'}
+            src={`https://maps.google.com/maps?q=${gmapQuery}&hl=ko&z=16&output=embed`}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0, pointerEvents: mapActive ? 'auto' : 'none' }}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            allowFullScreen
+          />
+        ) : (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: F_BODY, fontSize: bfs(12), color: inkA(0.6) }}>지도를 표시할 수 없습니다</div>
+        )
+      ) : mapError ? (
+        <a href={`https://map.kakao.com/?q=${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: F_BODY, fontSize: bfs(12), color: inkA(0.6) }}>지도에서 위치 보기</a>
+      ) : (
+        <div ref={mapContainerRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
+      )}
+      {mapInteractive && !mapActive && (
+        <div onClick={handleOverlayTap} style={{ position: 'absolute', inset: 0, zIndex: 2, cursor: 'pointer', background: 'rgba(53,23,20,.04)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 46 }}>
+          <span style={{ fontFamily: F_BODY, fontSize: bfs(11), color: IVORY, background: inkA(0.62), padding: '5px 12px', borderRadius: 20 }}>{mapState === 'hint' ? '한 번 더 누르면 이동할 수 있어요' : '지도를 눌러 이동/확대'}</span>
+        </div>
+      )}
+    </div>
+  )
+
   return (
     <div style={{ minHeight: isPreview ? undefined : '100vh', height: isPreview && page === 'intro' ? '100%' : undefined, display: 'flex', justifyContent: 'center', background: '#c9c1b3' }}>
       {/* 워터마크 배너 (미결제 · 실제 페이지에서만) */}
@@ -1633,10 +1678,15 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                       </>
                     )
                   ) : (
-                    <>
-                      <p style={{ margin: 0 }}>{parentsJsx(letterA.side.father, letterA.side.mother) ? <>{parentsJsx(letterA.side.father, letterA.side.mother)} 의 {letterA.title} </> : `${letterA.title} `}<span style={{ color: INK }}>{letterA.ko}</span></p>
-                      <p style={{ margin: 0 }}>{parentsJsx(letterB.side.father, letterB.side.mother) ? <>{parentsJsx(letterB.side.father, letterB.side.mother)} 의 {letterB.title} </> : `${letterB.title} `}<span style={{ color: INK }}>{letterB.ko}</span></p>
-                    </>
+                    // 부모명 · 관계(작게) · 자녀명을 3열로 컬럼 정렬 — 두 줄이 세로로 맞음
+                    <div style={{ display: 'grid', gridTemplateColumns: 'auto auto auto', columnGap: 8, rowGap: 7, justifyContent: 'center', alignItems: 'baseline' }}>
+                      <span style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>{parentsJsx(letterA.side.father, letterA.side.mother) || ''}</span>
+                      <span style={{ fontSize: bfs(9), color: inkA(0.5), whiteSpace: 'nowrap' }}>{parentsJsx(letterA.side.father, letterA.side.mother) ? `의 ${letterA.title}` : letterA.title}</span>
+                      <span style={{ textAlign: 'left', color: INK, whiteSpace: 'nowrap' }}>{letterA.ko}</span>
+                      <span style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>{parentsJsx(letterB.side.father, letterB.side.mother) || ''}</span>
+                      <span style={{ fontSize: bfs(9), color: inkA(0.5), whiteSpace: 'nowrap' }}>{parentsJsx(letterB.side.father, letterB.side.mother) ? `의 ${letterB.title}` : letterB.title}</span>
+                      <span style={{ textAlign: 'left', color: INK, whiteSpace: 'nowrap' }}>{letterB.ko}</span>
+                    </div>
                   )}
                 </div>
                 </>)}
@@ -1982,20 +2032,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: '44%', background: 'linear-gradient(180deg,rgba(242,238,230,.2),rgba(242,238,230,.9))' }} />
           {!dirMapBottom && (
           <div className="cl-reveal cl-fade" style={{ position: 'relative', margin: '0 26px' }}>
-            <div ref={mapWrapRef} style={{ position: 'relative', aspectRatio: '4/3', overflow: 'hidden', background: '#E3DCCD' }}>
-              {mapError ? (
-                <a href={`https://map.kakao.com/?q=${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: F_BODY, fontSize: bfs(12), color: inkA(0.6) }}>지도에서 위치 보기</a>
-              ) : (
-                <>
-                  <div ref={mapContainerRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
-                  {!mapActive && (
-                    <div onClick={handleOverlayTap} style={{ position: 'absolute', inset: 0, zIndex: 2, cursor: 'pointer', background: 'rgba(53,23,20,.04)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 46 }}>
-                      <span style={{ fontFamily: F_BODY, fontSize: bfs(11), color: IVORY, background: inkA(0.62), padding: '5px 12px', borderRadius: 20 }}>{mapState === 'hint' ? '한 번 더 누르면 이동할 수 있어요' : '지도를 눌러 이동/확대'}</span>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
+            {mapBox}
             <div style={{ position: 'absolute', inset: 0, border: `1px solid ${inkA(0.16)}`, pointerEvents: 'none' }} />
           </div>
           )}
@@ -2024,28 +2061,17 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             )}
             {dirMapBottom && (
             <div className="cl-reveal cl-fade" style={{ position: 'relative', margin: '24px -28px 0' }}>
-              <div ref={mapWrapRef} style={{ position: 'relative', aspectRatio: '4/3', overflow: 'hidden', background: '#E3DCCD' }}>
-                {mapError ? (
-                  <a href={`https://map.kakao.com/?q=${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: F_BODY, fontSize: bfs(12), color: inkA(0.6) }}>지도에서 위치 보기</a>
-                ) : (
-                  <>
-                    <div ref={mapContainerRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
-                    {!mapActive && (
-                      <div onClick={handleOverlayTap} style={{ position: 'absolute', inset: 0, zIndex: 2, cursor: 'pointer', background: 'rgba(53,23,20,.04)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 46 }}>
-                        <span style={{ fontFamily: F_BODY, fontSize: bfs(11), color: IVORY, background: inkA(0.62), padding: '5px 12px', borderRadius: 20 }}>{mapState === 'hint' ? '한 번 더 누르면 이동할 수 있어요' : '지도를 눌러 이동/확대'}</span>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
+              {mapBox}
               <div style={{ position: 'absolute', inset: 0, border: `1px solid ${inkA(0.16)}`, pointerEvents: 'none' }} />
             </div>
             )}
+            {!isGoogleMap && (
             <div style={{ display: 'flex', gap: 7, margin: '22px 0 0' }}>
               <a href={`https://map.naver.com/p/search/${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: F_BODY, fontSize: bfs(10.5), padding: '10px 0', background: '#FFFFFF', border: `1px solid ${inkA(0.2)}`, color: inkA(0.78), borderRadius: 6, whiteSpace: 'nowrap' }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#03C75A', flexShrink: 0 }} />네이버지도</a>
               <a href={`https://map.kakao.com/?q=${encodeURIComponent(venueAddress)}`} target="_blank" rel="noreferrer" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: F_BODY, fontSize: bfs(10.5), padding: '10px 0', background: '#FFFFFF', border: `1px solid ${inkA(0.2)}`, color: inkA(0.78), borderRadius: 6, whiteSpace: 'nowrap' }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#FEE500', boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.08)', flexShrink: 0 }} />카카오맵</a>
               <a href={`tmap://search?name=${encodeURIComponent(venueName)}`} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: F_BODY, fontSize: bfs(10.5), padding: '10px 0', background: '#FFFFFF', border: `1px solid ${inkA(0.2)}`, color: inkA(0.78), borderRadius: 6, whiteSpace: 'nowrap' }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#00C7B1', flexShrink: 0 }} />티맵</a>
             </div>
+            )}
           </div>
         </section>
 

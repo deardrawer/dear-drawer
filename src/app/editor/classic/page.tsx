@@ -124,6 +124,7 @@ export interface ClassicInvitationData {
     classicDateBird?: boolean // 사진 미표시일 때 비둘기 장식 표시 여부 (기본 true)
     classicDateFrame?: 'heart' | 'stamp' // 예식일정 사진 프레임 (하트 / 우표)
     classicDateStyle?: 'classic' | '2b' | '2c' | '2d' | '2e' // 예식일정 달력 디자인 (기본 / 풀그리드 / 다크 / 티켓 / 에디토리얼)
+    classicDateMessage?: string // 달력 커스텀 문구(줄바꿈 가능) — 다크·티켓·에디토리얼 스타일에서 표시. 미설정 시 스타일별 기본 문구
     classicDatePointColor?: string // 달력 변형 포인트 색 (하트/동그라미/말풍선/디데이)
     classicDateBgColor?: string // 예식일정 섹션 배경색 (미지정 시 스타일별 기본값)
     classicDateNumFont?: 'display' | 'body' // 달력 숫자 폰트: 영문(display) / 한글(body)
@@ -147,6 +148,7 @@ export interface ClassicInvitationData {
     classicDirectionsExtraTitle?: string // 오시는길 추가 안내 제목 (선택)
     classicDirectionsExtraBody?: string // 오시는길 추가 안내 내용 (선택)
     classicDirectionsMapPosition?: 'top' | 'bottom' // 오시는길 지도 위치: 상단(기본) / 하단
+    classicMapProvider?: 'kakao' | 'google' // 지도 종류: 카카오맵+버튼(기본) / 구글맵 임베드+안내(버튼 없음)
     // 커플소개 섹션 배경
     classicIntroSectionBg?: ClassicPhoto
     classicIntroSectionOverlayColor?: string

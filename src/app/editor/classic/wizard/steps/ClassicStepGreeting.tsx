@@ -632,6 +632,19 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
             })}
           </div>
           <p className="text-[10px] text-gray-400 leading-tight">기본 외 디자인(풀그리드·다크·티켓·에디토리얼)은 각자 고유 색상·레이아웃을 사용하며, 사진 없이 타이포 중심입니다.</p>
+          {['2c', '2d', '2e'].includes(data.content.classicDateStyle || 'classic') && (
+            <div className="pt-2 space-y-1.5">
+              <Label className="text-sm font-medium">커스텀 문구</Label>
+              <Textarea
+                value={data.content.classicDateMessage ?? ''}
+                onChange={(e) => updateNestedData('content.classicDateMessage', e.target.value)}
+                rows={2}
+                placeholder={(data.content.classicDateStyle || 'classic') === '2e' ? '함께 걸어온 시간을\n같은 이름으로 이어가고자 합니다.' : '서로의 이름을 나란히 두는 날\n귀한 걸음으로 축복해 주시기 바랍니다'}
+                className="text-sm"
+              />
+              <p className="text-[10px] text-gray-400 leading-tight">다크·티켓·에디토리얼 스타일의 달력 문구입니다. 줄바꿈(Enter) 가능. 비우면 표시되지 않습니다.</p>
+            </div>
+          )}
           <div className="pt-1">
             <ColorField label="포인트 색상 (예식일 강조·하트·디데이)" value={data.content.classicDatePointColor || '#c06a5b'} onChange={(hex) => updateNestedData('content.classicDatePointColor', hex)} />
           </div>
@@ -738,6 +751,23 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
                 )
               })}
             </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">지도 종류</Label>
+            <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+              {([
+                { id: 'kakao', label: '카카오맵 + 버튼' },
+                { id: 'google', label: '구글맵 (버튼 없음)' },
+              ] as const).map((opt) => {
+                const active = (data.content.classicMapProvider || 'kakao') === opt.id
+                return (
+                  <button key={opt.id} type="button" onClick={() => updateNestedData('content.classicMapProvider', opt.id)} className={`px-4 py-1.5 text-xs transition-colors ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
+                    {opt.label}
+                  </button>
+                )
+              })}
+            </div>
+            <p className="text-[10px] text-gray-400 leading-tight">구글맵 선택 시 네이버·카카오·티맵 버튼이 숨겨지고 지도만 표시됩니다.</p>
           </div>
           <div className="space-y-1.5">
             <Label className="text-sm font-medium">배경 사진 (선택)</Label>

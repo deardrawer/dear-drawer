@@ -15,6 +15,10 @@ build/
 .env.development.local
 .env.test.local
 .env.production.local
+.env*.local
+# Cloudflare local secrets (wrangler dev) — 어느 폴더든 커밋 금지 (cron-worker 등)
+.dev.vars
+.dev.vars.*
 
 # Debug
 npm-debug.log*

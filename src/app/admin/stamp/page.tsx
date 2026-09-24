@@ -14,6 +14,7 @@ interface StampItem {
   message: string | null
   hidden: boolean
   public: boolean
+  longTerm: boolean
 }
 
 interface ColStamp {
@@ -56,6 +57,9 @@ export default function AdminStampPage() {
   const [drafts, setDrafts] = useState<Record<string, string>>({})
   const [busy, setBusy] = useState<string | null>(null)
   const [toast, setToast] = useState('')
+  // 영구 삭제 인라인 확인
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
+  const [deleteText, setDeleteText] = useState('')
   // 직접 추가한 우표
   const [colStamps, setColStamps] = useState<ColStamp[]>([])
   const [newPhoto, setNewPhoto] = useState<string | null>(null)
@@ -211,6 +215,44 @@ export default function AdminStampPage() {
       setTimeout(() => setToast(''), 2000)
     } catch {
       setToast('저장 실패')
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const coupleLabel = (it: StampItem) => [it.groomName, it.brideName].filter(Boolean).join(' · ')
+
+  // 현재 만료 잠김 상태(예식+30일 경과 & 장기보관 미신청) — 서버 isPostDrawerLockedByExpiry와 동일 기준(KST)
+  const isExpiredLocked = (it: StampItem): boolean => {
+    if (it.longTerm || !it.weddingDate) return false
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(it.weddingDate)
+    if (!m) return false
+    const wd = Math.floor(Date.UTC(+m[1], +m[2] - 1, +m[3]) / 86400000)
+    const today = Math.floor((Date.now() + 9 * 3600 * 1000) / 86400000)
+    return today - wd > 30
+  }
+
+  const permanentDelete = async (it: StampItem) => {
+    const label = coupleLabel(it)
+    if (!label || deleteText.trim() !== label) return
+    setBusy(it.id)
+    try {
+      const res = await fetch(`/api/admin/stamp?invitationId=${encodeURIComponent(it.id)}&confirm=${encodeURIComponent(deleteText.trim())}`, {
+        method: 'DELETE',
+        headers: { 'x-admin-password': password },
+      })
+      const d = (await res.json().catch(() => ({}))) as { success?: boolean; error?: string }
+      if (!res.ok || !d.success) {
+        setToast(d.error || '삭제 실패')
+        return
+      }
+      setItems((prev) => prev.filter((x) => x.id !== it.id))
+      setDeleteTarget(null)
+      setDeleteText('')
+      setToast('영구 삭제되었습니다')
+      setTimeout(() => setToast(''), 2500)
+    } catch {
+      setToast('삭제 실패')
     } finally {
       setBusy(null)
     }
@@ -383,6 +425,8 @@ export default function AdminStampPage() {
                       ? <span className="text-[11px] font-semibold text-green-700 bg-green-50 rounded px-1.5 py-0.5">공개 노출중</span>
                       : <span className="text-[11px] font-semibold text-gray-500 bg-gray-100 rounded px-1.5 py-0.5">비공개</span>}
                     {it.hidden && <span className="text-[11px] font-semibold text-red-600 bg-red-50 rounded px-1.5 py-0.5">서랍 잠금</span>}
+                    {it.longTerm && <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 rounded px-1.5 py-0.5">장기보관</span>}
+                    {isExpiredLocked(it) && <span className="text-[11px] font-semibold text-amber-700 bg-amber-50 rounded px-1.5 py-0.5">만료 잠김</span>}
                     {it.hasCustomPhoto && <span className="text-[11px] text-gray-500 bg-gray-100 rounded px-1.5 py-0.5">전용 사진</span>}
                   </div>
 
@@ -438,7 +482,45 @@ export default function AdminStampPage() {
                     >
                       {it.hidden ? '잠금 해제' : '서랍 잠금'}
                     </button>
+                    <button
+                      type="button"
+                      disabled={busy === it.id}
+                      onClick={() => patch(it.id, { longTerm: !it.longTerm }, it.longTerm ? '장기보관 해제됨' : '장기보관 신청 처리됨')}
+                      className={`text-xs rounded-lg px-3 py-1.5 ${it.longTerm ? 'bg-blue-600 text-white' : 'border border-blue-300 text-blue-600'}`}
+                      title="예식+30일 후 내 서랍·시크릿 청첩장 접근 허용(장기보관)"
+                    >
+                      {it.longTerm ? '장기보관 해제' : '장기보관 신청'}
+                    </button>
                   </div>
+
+                  {/* 영구 삭제 (되돌릴 수 없음) — 신랑·신부 이름 정확 입력 시에만 실행 */}
+                  {deleteTarget === it.id ? (
+                    <div className="mt-3 p-3 rounded-lg border border-red-200 bg-red-50">
+                      <p className="text-xs text-red-700 leading-relaxed">
+                        되돌릴 수 없는 <b>영구 삭제</b>입니다. 방명록 · 하객사진 · RSVP · 서랍 등 모든 데이터가 삭제됩니다. (결제 기록은 보존)
+                        <br />확인하려면 아래에 <b>{coupleLabel(it) || '이름 없음'}</b> 을(를) 정확히 입력하세요.
+                      </p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <input
+                          value={deleteText}
+                          onChange={(e) => setDeleteText(e.target.value)}
+                          placeholder="신랑 · 신부 이름"
+                          className="flex-1 min-w-0 rounded-lg border border-red-300 px-3 py-1.5 text-sm focus:outline-none focus:border-red-500"
+                        />
+                        <button
+                          type="button"
+                          disabled={busy === it.id || !coupleLabel(it) || deleteText.trim() !== coupleLabel(it)}
+                          onClick={() => permanentDelete(it)}
+                          className="shrink-0 text-xs rounded-lg bg-red-600 text-white px-3 py-1.5 disabled:opacity-40"
+                        >
+                          삭제 실행
+                        </button>
+                        <button type="button" onClick={() => { setDeleteTarget(null); setDeleteText('') }} className="shrink-0 text-xs rounded-lg border border-gray-300 px-3 py-1.5">취소</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button type="button" onClick={() => { setDeleteTarget(it.id); setDeleteText('') }} className="mt-2 text-[11px] text-red-500 hover:text-red-700 underline">영구 삭제</button>
+                  )}
                 </div>
               </div>
             </div>

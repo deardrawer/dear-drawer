@@ -102,7 +102,7 @@ function invPath(inv: { id: string; slug: string | null; templateId: string }): 
 }
 
 export default function ArchiveClient({ archiveSlug }: { archiveSlug: string }) {
-  const [state, setState] = useState<'loading' | 'ok' | 'pending' | 'forbidden' | 'notfound' | 'error' | 'hidden'>('loading')
+  const [state, setState] = useState<'loading' | 'ok' | 'pending' | 'forbidden' | 'notfound' | 'error' | 'hidden' | 'expired'>('loading')
   const [data, setData] = useState<DrawerData | null>(null)
   const [pendingDate, setPendingDate] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
@@ -134,7 +134,11 @@ export default function ArchiveClient({ archiveSlug }: { archiveSlug: string }) 
         }
         if (res.status === 404) return setState('notfound')
         if (!res.ok) return setState('error')
-        const json = (await res.json()) as { data?: DrawerData; pending?: boolean; weddingDate?: string | null }
+        const json = (await res.json()) as { data?: DrawerData; pending?: boolean; expired?: boolean; weddingDate?: string | null }
+        if (json.expired) {
+          setPendingDate(json.weddingDate ?? null)
+          return setState('expired')
+        }
         if (json.pending) {
           setPendingDate(json.weddingDate ?? null)
           return setState('pending')
@@ -287,6 +291,16 @@ export default function ArchiveClient({ archiveSlug }: { archiveSlug: string }) 
               <h1>아직 준비 중이에요</h1>
               <p>POST DRAWER는 예식 다음날부터 이용할 수 있어요.{pendingDate ? ` (${fmtDate(pendingDate)} 예식)` : ''}</p>
               <Link href="/post-drawer/mine" className="btn btn-m btn-assist">내 서랍</Link>
+            </>
+          ) : state === 'expired' ? (
+            <>
+              <h1>내 서랍 보관 기간이 종료되었어요</h1>
+              <p>
+                예식 후 30일까지는 무료로 보관돼요.{pendingDate ? ` (${fmtDate(pendingDate)} 예식)` : ''}
+                <br />
+                장기보관을 신청하시면 이후에도 받은 마음과 사진을 계속 꺼내볼 수 있어요.
+              </p>
+              <a href="https://pf.kakao.com/_bEpxen/chat" target="_blank" rel="noopener noreferrer" className="btn btn-m btn-solid">문의하기</a>
             </>
           ) : state === 'forbidden' ? (
             <>

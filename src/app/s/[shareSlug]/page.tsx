@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { cookies } from 'next/headers'
-import { getPostDrawerByShareSlug, shareCookieToken } from '@/lib/postDrawer'
+import { getPostDrawerByShareSlug, shareCookieToken, isPostDrawerLockedByExpiry } from '@/lib/postDrawer'
 import { getInvitationById } from '@/lib/db'
 import { isPostDrawerActiveKST } from '@/lib/weddingLifecycle'
 import { verifyToken, getAuthCookieName } from '@/lib/auth'
@@ -40,6 +40,11 @@ export default async function SharePage({ params }: { params: Promise<{ shareSlu
   const inv = await getInvitationById(row.invitation_id)
   if (!inv || !isPostDrawerActiveKST(inv.wedding_date)) {
     return <Screen emoji="🤍" title="아직 이용할 수 없어요" desc="결혼 후 비공개 청첩장은 예식 다음날부터 열람할 수 있습니다." />
+  }
+
+  // 장기보관 미신청 + 예식+30일 경과 → 자동 잠금(owner·하객 모두). 장기보관 신청 시 계속 열람.
+  if (isPostDrawerLockedByExpiry(inv.content, inv.wedding_date)) {
+    return <Screen emoji="🗄️" title="보관 기간이 종료되었어요" desc="예식 후 30일까지 무료로 보관돼요. 장기보관을 신청하시면 이후에도 계속 열람할 수 있어요." />
   }
 
   const cookieStore = await cookies()

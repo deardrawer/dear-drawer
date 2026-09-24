@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getOwnedInvitation } from '@/lib/ownerAuth'
-import { getPostDrawerByArchiveSlug, getPostDrawerByInvitationId, getPostDrawerData, ensureShareSlug, stampHiddenOf } from '@/lib/postDrawer'
+import { getPostDrawerByArchiveSlug, getPostDrawerByInvitationId, getPostDrawerData, ensureShareSlug, stampHiddenOf, isPostDrawerLockedByExpiry } from '@/lib/postDrawer'
 
 /**
  * [비공개] 개인 POST DRAWER 데이터 (방명록 + photo_share 비공개 메시지 + 파일 카운트).
@@ -20,6 +20,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     // 관리자가 우표를 숨긴 청첩장은 서랍도 열리지 않는다(소유자 본인 포함). 데이터는 보존.
     if (stampHiddenOf(owned.invitation.content)) {
       return NextResponse.json({ hidden: true }, { status: 403 })
+    }
+
+    // 장기보관 미신청 + 예식+30일 경과 → 자동 잠금(안내). 데이터는 보존, admin이 장기보관 on 하면 재개방.
+    if (isPostDrawerLockedByExpiry(owned.invitation.content, owned.invitation.wedding_date)) {
+      return NextResponse.json({ expired: true, weddingDate: owned.invitation.wedding_date ?? null })
     }
 
     // 내 서랍은 결제완료(is_paid) 시 바로 열린다 — 예식 전이어도 접근 가능

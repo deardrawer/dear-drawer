@@ -106,6 +106,18 @@ export default function ClassicStepContent({ data, updateNestedData, invitationI
         </h3>
         <p className="text-sm text-gray-500">토글을 켠 계좌만 청첩장 &quot;마음 전하실 곳&quot;에 표시됩니다.</p>
 
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">안내 문구 (선택)</Label>
+          <Textarea
+            value={data.content.classicAccountMessage ?? ''}
+            onChange={(e) => updateNestedData('content.classicAccountMessage', e.target.value)}
+            rows={2}
+            placeholder={'참석이 어려우신 분들을 위해\n마음 전하실 곳을 안내드립니다.'}
+            className="text-sm resize-none"
+          />
+          <p className="text-[10px] text-gray-400 leading-tight">비워두면 기본 문구가 표시됩니다. 줄바꿈 가능.</p>
+        </div>
+
         <div className="space-y-3 p-4 bg-blue-50 rounded-lg">
           <p className="font-semibold text-blue-800">신랑측</p>
           {renderBankFields(data.groom.bank, 'groom.bank', '신랑 계좌', data.groom.name)}

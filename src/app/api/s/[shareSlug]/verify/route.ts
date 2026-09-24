@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
-import { getPostDrawerByShareSlug, shareCookieToken } from '@/lib/postDrawer'
+import { getPostDrawerByShareSlug, shareCookieToken, isPostDrawerLockedByExpiry } from '@/lib/postDrawer'
 import { getInvitationById } from '@/lib/db'
 import { isPostDrawerActiveKST } from '@/lib/weddingLifecycle'
 
@@ -48,6 +48,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const inv = await getInvitationById(row.invitation_id)
     if (!inv || !isPostDrawerActiveKST(inv.wedding_date)) {
       return NextResponse.json({ error: '아직 이용할 수 없습니다.' }, { status: 403 })
+    }
+    if (isPostDrawerLockedByExpiry(inv.content, inv.wedding_date)) {
+      return NextResponse.json({ error: '보관 기간이 종료되었습니다.' }, { status: 403 })
     }
 
     const body = (await request.json()) as { password?: string }

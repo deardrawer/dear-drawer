@@ -1,6 +1,6 @@
 import { getDB, getGuestbookMessages } from './db'
 import { getProjectStorage } from './cloudStorage'
-import { milestoneStatuses, daysSinceWeddingKST } from './weddingLifecycle'
+import { milestoneStatuses, daysSinceWeddingKST, isWeddingArchivedKST } from './weddingLifecycle'
 import type { Invitation } from '@/types/invitation'
 
 /**
@@ -129,6 +129,46 @@ export async function setStampPublic(invitationId: string, isPublic: boolean): P
   else delete meta.stampPublic
   content.meta = meta
   await db.prepare('UPDATE invitations SET content = ?, updated_at = ? WHERE id = ?').bind(JSON.stringify(content), nowIso(), invitationId).run()
+}
+
+/**
+ * POST DRAWER 장기보관 신청 여부(content.meta.postDrawerLongTerm). 기본 false=미신청.
+ * 미신청 + 예식+30일 경과 시 내 서랍·시크릿 청첩장이 자동 차단된다.
+ * admin이 수동으로 on 하면(=신청 처리) 이후에도 계속 열린다.
+ */
+export function postDrawerLongTermOf(contentJson: string | null): boolean {
+  if (!contentJson) return false
+  try {
+    const c = JSON.parse(contentJson) as { meta?: { postDrawerLongTerm?: unknown } }
+    return c?.meta?.postDrawerLongTerm === true || c?.meta?.postDrawerLongTerm === 1
+  } catch {
+    return false
+  }
+}
+
+export async function setPostDrawerLongTerm(invitationId: string, on: boolean): Promise<void> {
+  const db = await getDB()
+  const row = await db.prepare('SELECT content FROM invitations WHERE id = ? LIMIT 1').bind(invitationId).first<{ content: string | null }>()
+  let content: Record<string, unknown> = {}
+  try {
+    content = row?.content ? (JSON.parse(row.content) as Record<string, unknown>) : {}
+  } catch {
+    content = {}
+  }
+  const meta = (content.meta as Record<string, unknown>) || {}
+  if (on) meta.postDrawerLongTerm = true
+  else delete meta.postDrawerLongTerm
+  content.meta = meta
+  await db.prepare('UPDATE invitations SET content = ?, updated_at = ? WHERE id = ?').bind(JSON.stringify(content), nowIso(), invitationId).run()
+}
+
+/**
+ * 내 서랍·시크릿 청첩장을 만료로 잠글지 판정.
+ * = 장기보관 미신청(off) AND 예식+30일 경과(isWeddingArchivedKST).
+ * 데이터는 보존한다 — 잠금만. admin이 장기보관을 on 하면 즉시 다시 열린다.
+ */
+export function isPostDrawerLockedByExpiry(contentJson: string | null, weddingDate: string | null | undefined): boolean {
+  return !postDrawerLongTermOf(contentJson) && isWeddingArchivedKST(weddingDate)
 }
 
 /** 내 서랍 목록에서 표시할 청첩장 별칭 (content.meta.drawerLabel). */

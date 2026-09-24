@@ -1089,11 +1089,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
     directions.expressBus && { label: '고속버스', text: directions.expressBus },
     directions.car && { label: '자가용', text: directions.car },
   ].filter(Boolean) as { label: string; text: string }[]
-  const dirDisplay = dirRows.length ? dirRows : [
-    { label: '대중교통', text: '1·2호선 시청역 4번 출구에서 도보 5분' },
-    { label: '고속버스', text: '덕수궁 정류장 하차 · 간선 401, 405, 지선 7011' },
-    { label: '자가용', text: '건물 지하 1~3층 주차 · 안내 데스크에서 3시간 무료' },
-  ]
+  // 입력한 항목만 표시 — 비운 필드는 어디서든(실제·에디터 미리보기) 표시하지 않는다. 예시는 샘플 데이터로만 채움.
+  const dirDisplay = dirRows
 
   // 안내 캐러셀
   const infoSlides: { title: string; body: string; pos: string; photo?: unknown }[] =
@@ -2044,15 +2041,19 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
               <p style={{ margin: 0, textAlign: 'center', fontFamily: F_BODY, fontSize: bfs(11), color: inkA(0.7) }}>{venueAddress}</p>
               <button onClick={() => doCopy(venueAddress, 'addr')} style={{ flexShrink: 0, fontFamily: F_BODY, fontSize: bfs(9.5), cursor: 'pointer', background: 'transparent', border: `1px solid ${inkA(0.3)}`, color: inkA(0.7), borderRadius: 4, padding: '3px 8px', whiteSpace: 'nowrap' }}>{copied === 'addr' ? '복사됨' : '주소 복사'}</button>
             </div>
-            <div style={{ height: 1, background: inkA(0.14), margin: '22px 0' }} />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {dirDisplay.map((r, i) => (
-                <div key={i} className="cl-reveal cl-rise" data-delay={200 + i * 90} style={{ display: 'flex', gap: 14 }}>
-                  <span style={{ flex: '0 0 50px', fontFamily: F_BODY, fontSize: bfs(10.5), fontWeight: 600, color: inkA(0.55), paddingTop: 2 }}>{r.label}</span>
-                  <p style={{ margin: 0, flex: 1, fontFamily: F_BODY, fontSize: bfs(11), lineHeight: 1.8, color: inkA(0.72), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{r.text}</p>
+            {dirDisplay.length > 0 && (
+              <>
+                <div style={{ height: 1, background: inkA(0.14), margin: '22px 0' }} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  {dirDisplay.map((r, i) => (
+                    <div key={i} className="cl-reveal cl-rise" data-delay={200 + i * 90} style={{ display: 'flex', gap: 14 }}>
+                      <span style={{ flex: '0 0 50px', fontFamily: F_BODY, fontSize: bfs(10.5), fontWeight: 600, color: inkA(0.55), paddingTop: 2 }}>{r.label}</span>
+                      <p style={{ margin: 0, flex: 1, fontFamily: F_BODY, fontSize: bfs(11), lineHeight: 1.8, color: inkA(0.72), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{r.text}</p>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </>
+            )}
             {(cc.classicDirectionsExtraTitle || cc.classicDirectionsExtraBody) && (
               <div className="cl-reveal cl-rise" style={{ marginTop: 20, paddingTop: 18, borderTop: `1px solid ${inkA(0.14)}` }}>
                 {cc.classicDirectionsExtraTitle && <p style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(11), fontWeight: 600, letterSpacing: '.04em', color: inkA(0.55) }}>{cc.classicDirectionsExtraTitle}</p>}
@@ -2100,7 +2101,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         <section style={{ order: orderOf('accounts'), position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 22, padding: '84px 30px', background: IVORY, backgroundImage: 'repeating-linear-gradient(135deg,rgba(53,23,20,.035) 0 1px,transparent 1px 9px)', ...tintBg('accounts') }}>
           <div className="cl-reveal cl-up" style={{ textAlign: 'center' }}>
             <h2 style={{ margin: 0, fontFamily: F_LABEL, fontStyle: 'italic', fontSize: T_TITLE, color: fgC('accounts') }}>{nameCase('With Your Heart')}</h2>
-            <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.9, color: fgA('accounts', 0.65), wordBreak: 'keep-all' }}>참석이 어려우신 분들을 위해<br />마음 전하실 곳을 안내드립니다.</p>
+            <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.9, color: fgA('accounts', 0.65), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{(typeof cc.classicAccountMessage === 'string' && cc.classicAccountMessage.trim()) ? cc.classicAccountMessage : '참석이 어려우신 분들을 위해\n마음 전하실 곳을 안내드립니다.'}</p>
           </div>
           {acctSides.map((grp, gi) => (
             <div key={gi} className="cl-reveal cl-up" data-delay={gi * 150} style={{ background: '#FFFFFF', padding: '24px 22px', boxShadow: '0 18px 30px -26px rgba(20,10,8,.5)' }}>

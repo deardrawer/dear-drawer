@@ -277,6 +277,48 @@ export async function deleteInvitation(id: string, userId: string): Promise<bool
   return result.meta.changes > 0;
 }
 
+/**
+ * [관리자 전용] 청첩장 영구 삭제 — 되돌릴 수 없음.
+ * invitation_id로 연결된 모든 데이터를 자식→부모 순으로 원자적(batch) 삭제.
+ * 보존: payment_requests(결제/정산 기록), rsvp_shares(user 단위), cloud_connections(user 공용 Google 연결), users.
+ * 제외 대상은 의도적으로 남긴다. 하객 사진 원본은 신랑·신부 Google Drive에 있어 여기서 지우지 않는다.
+ * R2에 저장된 청첩장 이미지는 이 함수 범위 밖(후속 정리 대상).
+ * @returns 삭제된 invitations 행 수(0이면 없던 청첩장)
+ */
+export async function deleteInvitationCascadeAdmin(invitationId: string): Promise<boolean> {
+  const db = await getDB();
+  const gPages = `SELECT id FROM geunnal_pages WHERE invitation_id = ?`;
+  const gEvents = `SELECT id FROM geunnal_events WHERE page_id IN (${gPages})`;
+  const stmts = [
+    // 근날(geunnal): 자식(guest/submission) → event/venue/push/settings → page
+    db.prepare(`DELETE FROM geunnal_event_guests WHERE event_id IN (${gEvents})`).bind(invitationId),
+    db.prepare(`DELETE FROM geunnal_submissions WHERE event_id IN (${gEvents})`).bind(invitationId),
+    db.prepare(`DELETE FROM geunnal_venues WHERE page_id IN (${gPages})`).bind(invitationId),
+    db.prepare(`DELETE FROM geunnal_events WHERE page_id IN (${gPages})`).bind(invitationId),
+    db.prepare(`DELETE FROM geunnal_push_subscriptions WHERE page_id IN (${gPages})`).bind(invitationId),
+    db.prepare(`DELETE FROM geunnal_notification_settings WHERE page_id IN (${gPages})`).bind(invitationId),
+    db.prepare(`DELETE FROM geunnal_pages WHERE invitation_id = ?`).bind(invitationId),
+    // 하객 사진 공유 / 클라우드 매핑
+    db.prepare(`DELETE FROM guest_upload_files WHERE invitation_id = ?`).bind(invitationId),
+    db.prepare(`DELETE FROM guest_upload_sessions WHERE invitation_id = ?`).bind(invitationId),
+    db.prepare(`DELETE FROM project_cloud_storage WHERE invitation_id = ?`).bind(invitationId),
+    // 방명록 / RSVP / 게스트 / 조회수 / 템플릿 / 관리자매핑 / 별칭 / 서랍
+    db.prepare(`DELETE FROM guestbook_messages WHERE invitation_id = ?`).bind(invitationId),
+    db.prepare(`DELETE FROM rsvp_responses WHERE invitation_id = ?`).bind(invitationId),
+    db.prepare(`DELETE FROM guests WHERE invitation_id = ?`).bind(invitationId),
+    db.prepare(`DELETE FROM page_views WHERE invitation_id = ?`).bind(invitationId),
+    db.prepare(`DELETE FROM greeting_templates WHERE invitation_id = ?`).bind(invitationId),
+    db.prepare(`DELETE FROM invitation_admins WHERE invitation_id = ?`).bind(invitationId),
+    db.prepare(`DELETE FROM slug_aliases WHERE invitation_id = ?`).bind(invitationId),
+    db.prepare(`DELETE FROM post_drawers WHERE invitation_id = ?`).bind(invitationId),
+    // 마지막: 청첩장 본체
+    db.prepare(`DELETE FROM invitations WHERE id = ?`).bind(invitationId),
+  ];
+  const results = await db.batch(stmts);
+  const last = results[results.length - 1];
+  return (last?.meta?.changes ?? 0) > 0;
+}
+
 // 슬러그 중복 확인 (invitations 테이블 + slug_aliases 테이블 모두 체크)
 export async function isSlugAvailable(slug: string, excludeId?: string): Promise<boolean> {
   const db = await getDB();

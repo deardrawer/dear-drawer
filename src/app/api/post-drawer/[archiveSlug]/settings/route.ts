@@ -13,6 +13,7 @@ import {
   setDrawerStampPhoto,
   setStampMessage,
   STAMP_MESSAGE_MAX,
+  isPostDrawerLockedByExpiry,
 } from '@/lib/postDrawer'
 import { isPostDrawerActiveKST, isWeddingArchivedKST } from '@/lib/weddingLifecycle'
 import type { Invitation } from '@/types/invitation'
@@ -80,6 +81,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const { archiveSlug } = await params
     const r = await resolveOwned(request, archiveSlug)
     if (!r.ok) return NextResponse.json({ error: r.error }, { status: r.status })
+    const gContent = (r.invitation as unknown as { content?: string | null }).content ?? null
+    if (isPostDrawerLockedByExpiry(gContent, r.invitation.wedding_date)) {
+      return NextResponse.json({ error: '보관 기간이 종료되었습니다.' }, { status: 403 })
+    }
     return NextResponse.json(await stateOf(r.invitation))
   } catch (e) {
     console.error('settings get error:', e)
@@ -93,6 +98,10 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const r = await resolveOwned(request, archiveSlug)
     if (!r.ok) return NextResponse.json({ error: r.error }, { status: r.status })
     const inv = r.invitation
+    const pContent = (inv as unknown as { content?: string | null }).content ?? null
+    if (isPostDrawerLockedByExpiry(pContent, inv.wedding_date)) {
+      return NextResponse.json({ error: '보관 기간이 종료되었습니다.' }, { status: 403 })
+    }
     const archived = isWeddingArchivedKST(inv.wedding_date)
     const body = (await request.json()) as {
       publicHidden?: boolean

@@ -1520,7 +1520,7 @@ export const classicSampleContent = {
     "time": "14:00",
     "timeDisplay": "오후 2시",
     "venue": { "name": "더 클래식하우스", "hall": "그랜드홀", "address": "서울 중구 정동길 24" },
-    "directions": { "car": "", "publicTransport": "", "train": "", "expressBus": "" }
+    "directions": { "car": "건물 지하 1~3층 주차 · 안내 데스크에서 3시간 무료", "publicTransport": "1·2호선 시청역 4번 출구에서 도보 5분", "train": "", "expressBus": "덕수궁 정류장 하차 · 간선 401, 405, 지선 7011" }
   },
   "gallery": {
     "images": [

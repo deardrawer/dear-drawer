@@ -51,6 +51,7 @@ interface DrawerData {
   messages: DrawerMessage[]
   moments: MomentBundle[]
   summary: { totalMessages: number; publicMessages: number; privateMessages: number; totalImages: number; totalVideos: number }
+  driveFolderUrl: string | null
 }
 
 /** 선택 이미지를 webp Blob으로 변환(최대 변 1200px). */
@@ -79,18 +80,6 @@ interface MediaItem {
   name: string | null
   error: boolean
 }
-interface MediaState {
-  items: MediaItem[]
-  total: number
-  loading: boolean
-  error: string | null // 'drive_disconnected' | 기타 메시지
-  reconnectUrl: string | null
-  loaded: boolean
-  open: boolean
-}
-const EMPTY_MEDIA: MediaState = { items: [], total: 0, loading: false, error: null, reconnectUrl: null, loaded: false, open: false }
-const PAGE = 24
-
 function fmtDate(s: string | null): string {
   if (!s) return ''
   const d = s.slice(0, 10)
@@ -120,10 +109,7 @@ export default function ArchiveClient({ archiveSlug }: { archiveSlug: string }) 
   const [msgFilter, setMsgFilter] = useState<'all' | 'guestbook' | 'rsvp' | 'geunnal'>('all')
   const [msgSort, setMsgSort] = useState<'recent' | 'name'>('recent')
 
-  // 함께 남겨준 순간 — 보기 모드 + 미디어 상태
-  const [momentsView, setMomentsView] = useState<'people' | 'all'>('people')
-  const [bundleMedia, setBundleMedia] = useState<Record<string, MediaState>>({})
-  const [allMedia, setAllMedia] = useState<MediaState>(EMPTY_MEDIA)
+  // 라이트박스(방명록 사진 확대 보기용)
   const [lightbox, setLightbox] = useState<{ items: MediaItem[]; index: number } | null>(null)
 
   // 타임머신 우표 — 기록 모달
@@ -164,75 +150,6 @@ export default function ArchiveClient({ archiveSlug }: { archiveSlug: string }) 
       alive = false
     }
   }, [archiveSlug])
-
-  // Drive 표시용 URL 발급 요청
-  const fetchMedia = useCallback(
-    async (scope: 'bundle' | 'all', key: string | null, offset: number) => {
-      const qs = new URLSearchParams({ scope, offset: String(offset), limit: String(PAGE) })
-      if (scope === 'bundle' && key) qs.set('key', key)
-      const res = await fetch(`/api/post-drawer/${archiveSlug}/media?${qs.toString()}`)
-      return (await res.json()) as {
-        items?: MediaItem[]
-        total?: number
-        nextOffset?: number | null
-        error?: string
-        reconnectUrl?: string
-        pending?: boolean
-      }
-    },
-    [archiveSlug],
-  )
-
-  // 사람별 묶음 로드( fresh=true → 재발급/처음, false → 더 불러오기 )
-  const loadBundle = useCallback(
-    async (key: string, fresh: boolean) => {
-      setBundleMedia((s) => {
-        const cur = s[key] || EMPTY_MEDIA
-        return { ...s, [key]: { ...cur, open: true, loading: true, error: null } }
-      })
-      const cur = bundleMedia[key] || EMPTY_MEDIA
-      const offset = fresh ? 0 : cur.items.length
-      try {
-        const json = await fetchMedia('bundle', key, offset)
-        setBundleMedia((s) => {
-          const prev = s[key] || EMPTY_MEDIA
-          if (json.error) {
-            return { ...s, [key]: { ...prev, loading: false, error: json.error, reconnectUrl: json.reconnectUrl ?? null, loaded: true } }
-          }
-          const items = fresh ? json.items || [] : [...prev.items, ...(json.items || [])]
-          return { ...s, [key]: { items, total: json.total ?? items.length, loading: false, error: null, reconnectUrl: null, loaded: true, open: true } }
-        })
-      } catch {
-        setBundleMedia((s) => ({ ...s, [key]: { ...(s[key] || EMPTY_MEDIA), loading: false, error: '불러오지 못했습니다.', loaded: true } }))
-      }
-    },
-    [bundleMedia, fetchMedia],
-  )
-
-  // 전체보기 로드
-  const loadAll = useCallback(
-    async (fresh: boolean) => {
-      setAllMedia((s) => ({ ...s, open: true, loading: true, error: null }))
-      const offset = fresh ? 0 : allMedia.items.length
-      try {
-        const json = await fetchMedia('all', null, offset)
-        setAllMedia((s) => {
-          if (json.error) return { ...s, loading: false, error: json.error, reconnectUrl: json.reconnectUrl ?? null, loaded: true }
-          const items = fresh ? json.items || [] : [...s.items, ...(json.items || [])]
-          return { items, total: json.total ?? items.length, loading: false, error: null, reconnectUrl: null, loaded: true, open: true }
-        })
-      } catch {
-        setAllMedia((s) => ({ ...s, loading: false, error: '불러오지 못했습니다.', loaded: true }))
-      }
-    },
-    [allMedia.items.length, fetchMedia],
-  )
-
-  // 전체보기 탭으로 전환(최초 진입 시 첫 페이지 로드)
-  const showAll = useCallback(() => {
-    setMomentsView('all')
-    if (!allMedia.loaded && !allMedia.loading) loadAll(true)
-  }, [allMedia.loaded, allMedia.loading, loadAll])
 
   // ── 우표 기록/편집 (결혼식 + 타임머신 통합) ──
   // 결혼식 우표는 설정 엔드포인트(공개 반영), 마일스톤은 캡슐 엔드포인트로 저장. 저장 후 서랍 재조회.
@@ -401,7 +318,7 @@ export default function ArchiveClient({ archiveSlug }: { archiveSlug: string }) 
     )
   }
 
-  const { stamp, invitation, share: shareInfo, daysMarried, capsules, messages, moments, summary } = data
+  const { stamp, invitation, share: shareInfo, daysMarried, capsules, messages, moments, summary, driveFolderUrl } = data
   const currentCapsule = capsuleKey ? capsules.find((c) => c.key === capsuleKey) || null : null
   // 추가(＋)는 마지막 우표가 채워졌을 때만, 최대 30년까지
   const yearCaps = capsules.filter((c) => /^y\d+$/.test(c.key))
@@ -459,58 +376,6 @@ export default function ArchiveClient({ archiveSlug }: { archiveSlug: string }) 
       </div>
     </div>
   )
-
-  // 미디어 그리드(썸네일) — 클릭 시 라이트박스
-  const renderMediaGrid = (items: MediaItem[]) => (
-    <div className="mgrid">
-      {items.map((it, i) => (
-        <button
-          type="button"
-          key={it.id}
-          className={`mcell${it.kind === 'video' ? ' vid' : ''}${it.error ? ' err' : ''}`}
-          onClick={() => setLightbox({ items, index: i })}
-          aria-label={it.kind === 'video' ? '영상 보기' : '사진 보기'}
-        >
-          {it.error || !it.thumb ? (
-            <span className="mcell-ph">불러오기 실패</span>
-          ) : (
-            <>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={it.thumb} alt="" loading="lazy" />
-              {it.kind === 'video' && (
-                <span className="playbadge" aria-hidden>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                </span>
-              )}
-            </>
-          )}
-        </button>
-      ))}
-    </div>
-  )
-
-  // Drive 연결 끊김/에러 안내
-  const renderMediaError = (st: MediaState, onRetry: () => void) => {
-    if (st.error === 'drive_disconnected') {
-      return (
-        <div className="mdrive-err">
-          <p>Google Drive 연결이 필요합니다.</p>
-          <p className="setnote">사진 원본은 두 사람의 Google Drive에 있어요. 다시 연결하면 여기서 바로 볼 수 있습니다.</p>
-          {st.reconnectUrl && (
-            <a href={st.reconnectUrl} className="btn btn-s btn-solid">Google Drive 다시 연결</a>
-          )}
-        </div>
-      )
-    }
-    return (
-      <div className="mdrive-err">
-        <p>{st.error}</p>
-        <button type="button" className="btn btn-s btn-assist" onClick={onRetry}>다시 불러오기</button>
-      </div>
-    )
-  }
 
   const share = async () => {
     const nav = navigator as Navigator & { share?: (d: { title?: string; url?: string }) => Promise<void> }
@@ -716,90 +581,36 @@ export default function ArchiveClient({ archiveSlug }: { archiveSlug: string }) 
                 사진 <b>{summary.totalImages}</b>장 · 영상 <b>{summary.totalVideos}</b>개
               </div>
 
-              {/* 보기 모드 토글 */}
-              <div className="mtoggle" role="tablist">
-                <button type="button" role="tab" aria-selected={momentsView === 'people'} className={momentsView === 'people' ? 'on' : ''} onClick={() => setMomentsView('people')}>
-                  하객별 보기
-                </button>
-                <button type="button" role="tab" aria-selected={momentsView === 'all'} className={momentsView === 'all' ? 'on' : ''} onClick={showAll}>
-                  사진 전체보기
-                </button>
+              {/* 하객별 이름·메시지·장수. 사진 원본은 Google Drive에서 본다(앱 내 썸네일 표시는 Google 제한으로 불안정). */}
+              <div className="mbundles">
+                {moments.map((b) => (
+                  <div className="mbundle" key={b.key}>
+                    <div className="meta">
+                      <div className="nm"><span className="from">From.</span> {b.guestName || '이름만 남긴 하객'}</div>
+                      {b.message && <div className="msg">{b.message}</div>}
+                      <div className="cnt">{countLabel(b.images, b.videos)}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
 
-              {momentsView === 'people' ? (
-                <div className="mbundles">
-                  {moments.map((b) => {
-                    const st = bundleMedia[b.key]
-                    return (
-                      <div className="mbundle" key={b.key}>
-                        <div className="meta">
-                          <div className="nm"><span className="from">From.</span> {b.guestName || '이름만 남긴 하객'}</div>
-                          {b.message && <div className="msg">{b.message}</div>}
-                          <div className="cnt">{countLabel(b.images, b.videos)}</div>
-                        </div>
-
-                        {!st || !st.open ? (
-                          (b.images > 0 || b.videos > 0) && (
-                            <button type="button" className="loadbtn" onClick={() => loadBundle(b.key, true)}>
-                              사진 불러오기
-                            </button>
-                          )
-                        ) : st.error ? (
-                          renderMediaError(st, () => loadBundle(b.key, true))
-                        ) : (
-                          <>
-                            {st.items.length > 0 && renderMediaGrid(st.items)}
-                            {st.loading && <p className="setnote">불러오는 중…</p>}
-                            {!st.loading && st.items.length === 0 && st.loaded && (
-                              <p className="setnote">아직 Drive에 올라온 파일이 없습니다. (전송 중이거나 처리 대기 중)</p>
-                            )}
-                            <div className="mrow">
-                              {!st.loading && st.items.length < st.total && (
-                                <button type="button" className="btn btn-s btn-assist" onClick={() => loadBundle(b.key, false)}>
-                                  더 불러오기 ({st.items.length}/{st.total})
-                                </button>
-                              )}
-                              {!st.loading && st.items.length > 0 && (
-                                <button type="button" className="mreload" onClick={() => loadBundle(b.key, true)} title="사진이 안 보이면 다시 불러오세요">
-                                  다시 불러오기
-                                </button>
-                              )}
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
+              {driveFolderUrl ? (
+                <a
+                  href={driveFolderUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-m btn-solid"
+                  style={{ marginTop: 12 }}
+                >
+                  Google Drive에서 사진 보기
+                </a>
               ) : (
-                <div className="mall">
-                  {allMedia.error ? (
-                    renderMediaError(allMedia, () => loadAll(true))
-                  ) : (
-                    <>
-                      {allMedia.items.length > 0 && renderMediaGrid(allMedia.items)}
-                      {allMedia.loading && <p className="setnote">불러오는 중…</p>}
-                      {!allMedia.loading && allMedia.loaded && allMedia.items.length === 0 && (
-                        <p className="setnote">아직 Drive에 올라온 파일이 없습니다. (전송 중이거나 처리 대기 중)</p>
-                      )}
-                      <div className="mrow">
-                        {!allMedia.loading && allMedia.items.length < allMedia.total && (
-                          <button type="button" className="btn btn-s btn-assist" onClick={() => loadAll(false)}>
-                            더 불러오기 ({allMedia.items.length}/{allMedia.total})
-                          </button>
-                        )}
-                        {!allMedia.loading && allMedia.items.length > 0 && (
-                          <button type="button" className="mreload" onClick={() => loadAll(true)} title="사진이 안 보이면 다시 불러오세요">
-                            다시 불러오기
-                          </button>
-                        )}
-                      </div>
-                    </>
-                  )}
-                </div>
+                <p className="setnote" style={{ marginTop: 12 }}>
+                  Google Drive를 연결하면 하객이 보낸 사진을 폴더에서 한 번에 볼 수 있어요. (설정 &gt; 하객 사진 공유)
+                </p>
               )}
 
-              <p className="moments-note">원본 사진 · 영상은 두 사람의 Google Drive에 안전하게 보관됩니다.</p>
+              <p className="moments-note">사진 · 영상은 두 사람의 Google Drive에 안전하게 보관됩니다. 위 버튼으로 폴더에서 원본을 확인하세요.</p>
             </>
           )}
         </section>

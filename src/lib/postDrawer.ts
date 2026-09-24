@@ -1,4 +1,5 @@
 import { getDB, getGuestbookMessages } from './db'
+import { getProjectStorage } from './cloudStorage'
 import { milestoneStatuses, daysSinceWeddingKST } from './weddingLifecycle'
 import type { Invitation } from '@/types/invitation'
 
@@ -525,6 +526,7 @@ export interface PostDrawerData {
   messages: PostDrawerMessage[] // 받은 마음: 방명록 + RSVP + 모임(근날). photo_share 제외.
   moments: MomentBundle[] // 함께 남겨준 순간: photo_share 메시지 묶음 + 사진만 세션
   summary: { totalMessages: number; publicMessages: number; privateMessages: number; totalImages: number; totalVideos: number }
+  driveFolderUrl: string | null // 하객 사진이 모이는 커플 Google Drive 폴더(있으면) — 앱에서 썸네일 대신 Drive로 열람
 }
 
 function isVideo(mime: string | null): boolean {
@@ -680,6 +682,12 @@ export async function getPostDrawerData(
   const privateMessages = messages.filter((m) => !m.isPublic).length
   const stamp = resolveStamp(invitation, row)
 
+  // 하객 사진 폴더(커플 Drive) 링크 — 있으면 앱에서 썸네일 대신 Drive로 바로 보게 한다.
+  const storage = await getProjectStorage(invitation.id)
+  const driveFolderUrl = storage?.guest_folder_id
+    ? `https://drive.google.com/drive/folders/${storage.guest_folder_id}`
+    : null
+
   return {
     archiveSlug: row.archive_slug || '',
     invitation: { id: invitation.id, slug: invitation.slug ?? null, templateId: invitation.template_id },
@@ -696,5 +704,6 @@ export async function getPostDrawerData(
       totalImages,
       totalVideos,
     },
+    driveFolderUrl,
   }
 }

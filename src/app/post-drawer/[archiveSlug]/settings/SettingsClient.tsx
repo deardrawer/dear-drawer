@@ -4,6 +4,7 @@ import '../../postdrawer.css'
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { STAMP_MESSAGE_PLACEHOLDER } from '@/lib/postDrawerConstants'
+import GuestShareSettings from '@/components/dashboard/GuestShareSettings'
 
 interface StampInfo {
   photo: string | null // 실제 표시되는 사진(전용값 || 카카오)
@@ -217,8 +218,15 @@ export default function SettingsClient({ archiveSlug }: { archiveSlug: string })
       <div className="drawer">
         <header className="dhead">
           <h1>설정</h1>
-          <p className="sub">우표 · 한마디와 청첩장 공개 · 비공개 공유를 관리합니다.</p>
+          <p className="sub">하객 사진 공유 · 우표 · 한마디와 청첩장 공개 · 비공개 공유를 관리합니다.</p>
         </header>
+
+        {/* 섹션 0: 하객 사진 공유 (Google Drive 연결 · 공유 켜기 · 공유 링크) — 에디터에서 이관 */}
+        <section className="sect">
+          <h2>하객 사진 공유</h2>
+          <p className="setdesc">결혼식 사진을 하객이 보내주면 두 사람의 Google Drive에 자동 보관돼요. 공유를 켜고 링크를 나눠보세요.</p>
+          <GuestShareSettings invitationId={s.invitationId} />
+        </section>
 
         {/* 섹션 0-a: 우표 사진 */}
         <section className="sect">

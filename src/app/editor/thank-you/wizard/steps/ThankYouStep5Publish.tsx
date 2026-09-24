@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useThankYouEditorStore } from '@/store/thankYouEditorStore'
 import { Loader2, ExternalLink, Copy, Check } from 'lucide-react'
 import ImageUploader from '@/components/editor/ImageUploader'
-import GuestShareSettings from '@/components/dashboard/GuestShareSettings'
+import GuestShareNotice from '@/components/editor/GuestShareNotice'
 
 interface ThankYouStep5PublishProps {
   invitationId: string | null
@@ -455,9 +455,7 @@ export default function ThankYouStep5Publish({
           </p>
         </div>
       )}
-      <div className="mt-4">
-        <GuestShareSettings invitationId={invitationId} />
-      </div>
+      <GuestShareNotice />
     </div>
   )
 }

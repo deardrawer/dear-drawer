@@ -578,11 +578,17 @@ export default function ArchiveClient({ archiveSlug }: { archiveSlug: string }) 
       <div className="drawer">
         <header className="dhead">
           <h1>{stamp.name ? `${stamp.name}의 서랍` : '우리의 서랍'}</h1>
-          {(stamp.weddingDate || (daysMarried != null && daysMarried >= 0)) && (
+          {(stamp.weddingDate || daysMarried != null) && (
             <div className="dmeta">
               {stamp.weddingDate && <span className="dm-date">{fmtDate(stamp.weddingDate)} 결혼</span>}
-              {daysMarried != null && daysMarried >= 0 && (
-                <span className="dm-dday">결혼 <b>{daysMarried === 0 ? '오늘' : `${daysMarried}일째`}</b></span>
+              {daysMarried != null && (
+                <span className="dm-dday">
+                  {daysMarried < 0 ? (
+                    <>예식까지 <b>D-{Math.abs(daysMarried)}</b></>
+                  ) : (
+                    <>결혼 <b>{daysMarried === 0 ? '오늘' : `${daysMarried}일째`}</b></>
+                  )}
+                </span>
               )}
             </div>
           )}

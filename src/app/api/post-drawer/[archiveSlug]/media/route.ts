@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getOwnedInvitation } from '@/lib/ownerAuth'
 import { getPostDrawerByArchiveSlug } from '@/lib/postDrawer'
-import { isPostDrawerActiveKST } from '@/lib/weddingLifecycle'
 import { getDB } from '@/lib/db'
 import { getProjectStorage, getCloudConnectionById, getCloudConnectionByUser } from '@/lib/cloudStorage'
 import { getValidAccessToken, getFileView } from '@/lib/googleDrive'
@@ -53,10 +52,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const owned = await getOwnedInvitation(request, row.invitation_id)
     if (!owned) return NextResponse.json({ error: '권한이 없습니다.' }, { status: 403 })
     const invitationId = owned.invitation.id
-
-    if (!isPostDrawerActiveKST(owned.invitation.wedding_date)) {
-      return NextResponse.json({ pending: true })
-    }
+    // 내 서랍은 결제 직후 열린다 — 예식 전이어도 미디어(하객 사진)를 조회할 수 있게 게이트 제거.
 
     const { searchParams } = new URL(request.url)
     const scope = searchParams.get('scope') === 'bundle' ? 'bundle' : 'all'
@@ -157,14 +153,16 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const conn =
       (storage?.connection_id ? await getCloudConnectionById(storage.connection_id) : null) ||
       (await getCloudConnectionByUser(owned.invitation.user_id))
+    // 재연결은 내 서랍(설정)으로 돌아오도록 — 기존엔 RSVP 대시보드(/dashboard)로 튀는 문제가 있었음.
+    const reconnectUrl = `/api/cloud/google/connect?invitationId=${invitationId}&returnTo=${encodeURIComponent(`/post-drawer/${archiveSlug}/settings`)}`
     if (!conn) {
-      return NextResponse.json({ error: 'drive_disconnected', reconnectUrl: `/dashboard/${invitationId}` }, { status: 200 })
+      return NextResponse.json({ error: 'drive_disconnected', reconnectUrl }, { status: 200 })
     }
     let accessToken: string
     try {
       accessToken = await getValidAccessToken(conn)
     } catch {
-      return NextResponse.json({ error: 'drive_disconnected', reconnectUrl: `/dashboard/${invitationId}` }, { status: 200 })
+      return NextResponse.json({ error: 'drive_disconnected', reconnectUrl }, { status: 200 })
     }
 
     // ── 파일별 표시용 URL 발급(썸네일/보기 링크). 바이트는 받지 않음. ──

@@ -46,9 +46,13 @@ export async function POST(request: NextRequest) {
     }
 
     // 예식 당일(Day 0)부터 업로드 허용 — 예식 전에는 차단(안내 페이지에서 처리). wedding_date 없으면 허용.
+    // 업로드 창: 예식 당일(Day 0) ~ 예식+10일. 그 전엔 대기, 이후엔 마감. wedding_date 없으면 허용.
     const since = daysSinceWeddingKST(invitation.wedding_date)
     if (since !== null && since < 0) {
       return NextResponse.json({ error: '결혼식 당일부터 사진을 보낼 수 있어요.' }, { status: 403 })
+    }
+    if (since !== null && since > 10) {
+      return NextResponse.json({ error: '사진 공유 기간이 마감되었어요. (예식 후 10일까지)' }, { status: 403 })
     }
 
     // 파일 검증 (개수/총량 + 개별 타입/크기)

@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import type { ParentsInvitationData } from '../../page'
-import GuestShareSettings from '@/components/dashboard/GuestShareSettings'
+import GuestShareNotice from '@/components/editor/GuestShareNotice'
 
 interface ParentsStep4PublishProps {
   data: ParentsInvitationData
@@ -552,9 +552,7 @@ export default function ParentsStep4Publish({
           </Button>
         </DialogContent>
       </Dialog>
-      <div className="mt-4">
-        <GuestShareSettings invitationId={invitationId} />
-      </div>
+      <GuestShareNotice />
     </div>
   )
 }

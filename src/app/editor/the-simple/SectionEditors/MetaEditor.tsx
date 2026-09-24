@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback } from 'react'
 import type { TheSimpleInvitationData, ImageWithSettings, TheSimpleImageSettings } from '../page'
 import { uploadImage } from '@/lib/imageUpload'
-import GuestShareSettings from '@/components/dashboard/GuestShareSettings'
+import GuestShareNotice from '@/components/editor/GuestShareNotice'
 
 const DEFAULT_SETTINGS: TheSimpleImageSettings = {
   scale: 1,
@@ -522,9 +522,7 @@ export default function MetaEditor({
           )}
         </div>
       )}
-      <div className="mt-4">
-        <GuestShareSettings invitationId={invitationId} />
-      </div>
+      <GuestShareNotice />
     </div>
   )
 }

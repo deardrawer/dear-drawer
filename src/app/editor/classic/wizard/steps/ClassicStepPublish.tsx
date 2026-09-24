@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dialog'
 import type { ClassicInvitationData } from '../../page'
 import { classicGalleryUrl } from '../../page'
-import GuestShareSettings from '@/components/dashboard/GuestShareSettings'
+import GuestShareNotice from '@/components/editor/GuestShareNotice'
 
 interface StepProps {
   data: ClassicInvitationData
@@ -390,9 +390,7 @@ export default function ClassicStepPublish({ data, invitationId, slug, onSave, o
           </Button>
         </DialogContent>
       </Dialog>
-      <div className="mt-4">
-        <GuestShareSettings invitationId={invitationId} />
-      </div>
+      <GuestShareNotice />
     </div>
   )
 }

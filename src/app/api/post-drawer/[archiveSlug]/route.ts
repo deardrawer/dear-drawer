@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getOwnedInvitation } from '@/lib/ownerAuth'
 import { getPostDrawerByArchiveSlug, getPostDrawerByInvitationId, getPostDrawerData, ensureShareSlug, stampHiddenOf } from '@/lib/postDrawer'
-import { isPostDrawerActiveKST } from '@/lib/weddingLifecycle'
 
 /**
  * [비공개] 개인 POST DRAWER 데이터 (방명록 + photo_share 비공개 메시지 + 파일 카운트).
@@ -23,10 +22,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ hidden: true }, { status: 403 })
     }
 
-    // POST DRAWER는 예식 다음날(Day 1)부터 활성 — 그 전엔 준비중(데이터 미반환)
-    if (!isPostDrawerActiveKST(owned.invitation.wedding_date)) {
-      return NextResponse.json({ pending: true, weddingDate: owned.invitation.wedding_date ?? null })
-    }
+    // 내 서랍은 결제완료(is_paid) 시 바로 열린다 — 예식 전이어도 접근 가능
+    //  (하객 메시지·사진이 쌓이는 걸 미리 보고, Drive 연결 등 준비를 할 수 있도록).
+    //  기존 "예식 다음날부터 활성" 게이트 제거.
 
     // 비밀 청첩장 링크는 활성 시 항상 존재(없으면 생성) → 최신 row로 반환
     await ensureShareSlug(owned.invitation.id)

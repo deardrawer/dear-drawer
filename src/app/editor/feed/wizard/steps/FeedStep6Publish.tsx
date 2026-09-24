@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import type { FeedInvitationData } from '../../page'
-import GuestShareSettings from '@/components/dashboard/GuestShareSettings'
+import GuestShareNotice from '@/components/editor/GuestShareNotice'
 
 interface StepProps {
   data: FeedInvitationData
@@ -460,9 +460,7 @@ export default function FeedStep6Publish({
           </div>
         </div>
       )}
-      <div className="mt-4">
-        <GuestShareSettings invitationId={invitationId} />
-      </div>
+      <GuestShareNotice />
     </div>
   )
 }

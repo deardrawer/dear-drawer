@@ -10,20 +10,28 @@
   - 워크플로우는 active·master·이벤트=schedule·skip 없음 → **설정 문제가 아니라 GitHub 플랫폼 특성**.
 - Cloudflare Workers **Cron Trigger는 예약대로 실행**되므로 이 Worker로 대체.
 
+## ⚠️ 반드시 `--config wrangler.toml` (또는 npm 스크립트) 사용
+상위 `wedding-link/` 에 wrangler 설정(`wrangler.jsonc` + `wrangler.toml`, 둘 다 **Pages** 앱)이 있어,
+cron-worker 폴더에서 그냥 `wrangler deploy` 를 하면 wrangler(v4)가 **상위 Pages 설정을 읽어**
+`It looks like you've run a Workers-specific command in a Pages project` 오류가 납니다.
+→ 이 폴더의 `package.json` 스크립트에는 `--config wrangler.toml` 이 내장돼 있으니 **npm 스크립트를 쓰세요.**
+
 ## 배포 (최초 1회)
 > 별도 Worker라 앱(Pages) 배포와 무관. GitHub push로는 배포되지 않으니 아래 명령을 직접 실행.
 
 ```bash
 cd wedding-link/cron-worker
 
-# 1) 앱과 동일한 CRON_SECRET 을 시크릿으로 등록
-wrangler secret put CRON_SECRET
-#   → 프롬프트에 앱의 CRON_SECRET 값 입력
+# (로그인 안 돼 있으면 먼저) npx wrangler login
 
-# 2) (도메인이 다르면) wrangler.toml 의 API_URL 확인/수정
+# 1) 배포 (Worker 생성 + cron trigger 등록)  — 아직 시크릿 없으니 이 시점 호출은 401(무방)
+npm run deploy
 
-# 3) 배포 (cron trigger 포함)
-wrangler deploy
+# 2) 앱과 동일한 CRON_SECRET 을 시크릿으로 등록 (프롬프트에 값 입력) → Worker는 즉시 반영
+npm run secret
+
+# 로그 확인
+npm run tail
 ```
 
 배포 후 Cloudflare 대시보드 → Workers & Pages → `dear-drawer-cron` → Triggers 에서

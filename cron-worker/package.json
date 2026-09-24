@@ -1,0 +1,12 @@
+{
+  "name": "dear-drawer-cron",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Standalone Cloudflare Worker (cron trigger) for dear-drawer notifications. Independent from the Pages app.",
+  "scripts": {
+    "deploy": "npx wrangler deploy --config wrangler.toml",
+    "secret": "npx wrangler secret put CRON_SECRET --config wrangler.toml",
+    "tail": "npx wrangler tail --config wrangler.toml",
+    "whoami": "npx wrangler whoami"
+  }
+}

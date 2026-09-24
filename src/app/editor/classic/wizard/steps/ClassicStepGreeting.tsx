@@ -838,21 +838,49 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
               className="resize-none"
             />
           </div>
-          <div className="space-y-1.5 pt-3 border-t border-gray-200">
-            <Label className="text-sm font-medium">추가 안내 (선택)</Label>
-            <p className="text-[10px] text-gray-400 leading-tight">필요시 제목과 내용을 넣으면 오시는 길 하단에 표시됩니다.</p>
-            <Input
-              value={data.content.classicDirectionsExtraTitle || ''}
-              onChange={(e) => updateNestedData('content.classicDirectionsExtraTitle', e.target.value)}
-              placeholder="예: 주차 안내 / 셔틀버스 운행"
-            />
-            <Textarea
-              value={data.content.classicDirectionsExtraBody || ''}
-              onChange={(e) => updateNestedData('content.classicDirectionsExtraBody', e.target.value)}
-              placeholder="예: 예식 30분 전부터 정문 앞에서 셔틀버스를 운행합니다."
-              rows={3}
-              className="resize-none"
-            />
+          <div className="space-y-2 pt-3 border-t border-gray-200">
+            <Label className="text-sm font-medium">추가 안내 (선택 · 최대 5개)</Label>
+            <p className="text-[10px] text-gray-400 leading-tight">주차·셔틀버스 등 필요한 안내를 항목별로 추가하면 오시는 길 하단에 표시됩니다.</p>
+            {(() => {
+              const legacy = (data.content.classicDirectionsExtraTitle || data.content.classicDirectionsExtraBody)
+                ? [{ title: data.content.classicDirectionsExtraTitle || '', body: data.content.classicDirectionsExtraBody || '' }]
+                : []
+              const extras = data.content.classicDirectionsExtras ?? legacy
+              const write = (next: { title: string; body: string }[]) => updateNestedData('content.classicDirectionsExtras', next)
+              return (
+                <div className="space-y-3">
+                  {extras.map((ex, i) => (
+                    <div key={i} className="space-y-1.5 p-3 rounded-lg border border-gray-200 bg-gray-50/60">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-gray-500">안내 {i + 1}</span>
+                        <button type="button" onClick={() => write(extras.filter((_, j) => j !== i))} className="text-[11px] text-red-500 hover:text-red-700">삭제</button>
+                      </div>
+                      <Input
+                        value={ex.title || ''}
+                        onChange={(e) => write(extras.map((x, j) => (j === i ? { ...x, title: e.target.value } : x)))}
+                        placeholder="예: 주차 안내 / 셔틀버스 운행"
+                      />
+                      <Textarea
+                        value={ex.body || ''}
+                        onChange={(e) => write(extras.map((x, j) => (j === i ? { ...x, body: e.target.value } : x)))}
+                        placeholder="예: 예식 30분 전부터 정문 앞에서 셔틀버스를 운행합니다."
+                        rows={3}
+                        className="resize-none"
+                      />
+                    </div>
+                  ))}
+                  {extras.length < 5 && (
+                    <button
+                      type="button"
+                      onClick={() => write([...extras, { title: '', body: '' }])}
+                      className="w-full py-2 text-sm text-gray-600 border border-dashed border-gray-300 rounded-lg hover:bg-gray-50"
+                    >
+                      + 안내 추가
+                    </button>
+                  )}
+                </div>
+              )
+            })()}
           </div>
         </div>
       </section>

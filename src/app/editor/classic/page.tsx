@@ -146,8 +146,9 @@ export interface ClassicInvitationData {
     classicDirectionsBg?: ClassicPhoto // 오시는길 상단 배경 사진 (미설정 시 갤러리 첫 사진)
     classicDirectionsOverlayColor?: string // 오시는길 배경사진 오버레이 색상 (기본 #1C100D)
     classicDirectionsOverlayOpacity?: number // 오시는길 배경사진 오버레이 투명도 0~1 (기본 0)
-    classicDirectionsExtraTitle?: string // 오시는길 추가 안내 제목 (선택)
-    classicDirectionsExtraBody?: string // 오시는길 추가 안내 내용 (선택)
+    classicDirectionsExtraTitle?: string // [레거시] 오시는길 추가 안내 제목 (단일) — classicDirectionsExtras로 대체, 하위호환 유지
+    classicDirectionsExtraBody?: string // [레거시] 오시는길 추가 안내 내용 (단일)
+    classicDirectionsExtras?: { title: string; body: string }[] // 오시는길 추가 안내(최대 5개). 미설정 시 레거시 단일 필드로 fallback
     classicDirectionsMapPosition?: 'top' | 'bottom' // 오시는길 지도 위치: 상단(기본) / 하단
     classicMapProvider?: 'kakao' | 'google' // 지도 종류: 카카오맵+버튼(기본) / 구글맵 임베드+안내(버튼 없음)
     // 커플소개 섹션 배경

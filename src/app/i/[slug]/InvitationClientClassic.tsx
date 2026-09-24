@@ -1091,6 +1091,11 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   ].filter(Boolean) as { label: string; text: string }[]
   // 입력한 항목만 표시 — 비운 필드는 어디서든(실제·에디터 미리보기) 표시하지 않는다. 예시는 샘플 데이터로만 채움.
   const dirDisplay = dirRows
+  // 오시는길 추가 안내(최대 5개). classicDirectionsExtras가 배열이면 우선, 없으면 레거시 단일 필드로 fallback.
+  const dirExtrasRaw: Array<{ title?: string; body?: string }> = Array.isArray(cc.classicDirectionsExtras)
+    ? cc.classicDirectionsExtras
+    : ((cc.classicDirectionsExtraTitle || cc.classicDirectionsExtraBody) ? [{ title: cc.classicDirectionsExtraTitle, body: cc.classicDirectionsExtraBody }] : [])
+  const dirExtras = dirExtrasRaw.filter((e) => (e?.title || '').trim() || (e?.body || '').trim())
 
   // 안내 캐러셀
   const infoSlides: { title: string; body: string; pos: string; photo?: unknown }[] =
@@ -2054,10 +2059,14 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                 </div>
               </>
             )}
-            {(cc.classicDirectionsExtraTitle || cc.classicDirectionsExtraBody) && (
-              <div className="cl-reveal cl-rise" style={{ marginTop: 20, paddingTop: 18, borderTop: `1px solid ${inkA(0.14)}` }}>
-                {cc.classicDirectionsExtraTitle && <p style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(11), fontWeight: 600, letterSpacing: '.04em', color: inkA(0.55) }}>{cc.classicDirectionsExtraTitle}</p>}
-                {cc.classicDirectionsExtraBody && <p style={{ margin: cc.classicDirectionsExtraTitle ? '8px 0 0' : 0, fontFamily: F_BODY, fontSize: bfs(11), lineHeight: 1.8, color: inkA(0.72), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{cc.classicDirectionsExtraBody}</p>}
+            {dirExtras.length > 0 && (
+              <div className="cl-reveal cl-rise" style={{ marginTop: 20, paddingTop: 18, borderTop: `1px solid ${inkA(0.14)}`, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {dirExtras.map((ex, i) => (
+                  <div key={i}>
+                    {ex.title && <p style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(11), fontWeight: 600, letterSpacing: '.04em', color: inkA(0.55) }}>{ex.title}</p>}
+                    {ex.body && <p style={{ margin: ex.title ? '8px 0 0' : 0, fontFamily: F_BODY, fontSize: bfs(11), lineHeight: 1.8, color: inkA(0.72), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{ex.body}</p>}
+                  </div>
+                ))}
               </div>
             )}
             {dirMapBottom && (

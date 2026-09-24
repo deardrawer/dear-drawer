@@ -1,11 +1,11 @@
 name: Send Geunnal Notifications
 
 on:
-  schedule:
-    # 매 5분마다 (UTC) - 1분 단위 알림 지원
-    - cron: '*/5 * * * *'
+  # 예약 실행은 Cloudflare Worker(cron-worker, Cron Trigger)로 이관됨.
+  #   GitHub Actions는 고빈도 schedule을 대량 드롭해 알림이 누락됐음(실측 기대의 ~2%).
+  #   여기서는 schedule을 제거하고 수동 실행(workflow_dispatch)만 남긴다.
   workflow_dispatch:
-    # 수동 실행 가능
+    # 수동 실행 가능 (필요 시 GitHub에서 직접 트리거)
 
 jobs:
   send-notifications:

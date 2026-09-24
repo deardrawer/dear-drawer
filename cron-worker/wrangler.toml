@@ -12,3 +12,9 @@ crons = ["*/5 * * * *"]
 # Production API domain. CRON_SECRET is set separately via: wrangler secret put CRON_SECRET
 [vars]
 API_URL = "https://invite.deardrawer.com"
+
+# Keep Observability (Workers logs) ON across deploys, so a `wrangler deploy`
+# does not turn off logging that was enabled in the dashboard.
+[observability]
+enabled = true
+head_sampling_rate = 1

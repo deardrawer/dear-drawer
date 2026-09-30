@@ -38,13 +38,24 @@ const nowIso = () => new Date().toISOString()
 import { STAMP_MESSAGE_MAX, POST_DRAWER_MAX_PER_ACCOUNT, pickLoveFragment } from './postDrawerConstants'
 export { STAMP_MESSAGE_MAX }
 
+/**
+ * 이미지 필드 정규화. 템플릿에 따라 string 또는 { url } 객체(THE SIMPLE 등)로 저장되므로 둘 다 처리.
+ */
+function imageUrlOf(v: unknown): string | null {
+  if (typeof v === 'string') return v.trim() ? v : null
+  if (v && typeof v === 'object') {
+    const u = (v as { url?: unknown }).url
+    if (typeof u === 'string' && u.trim()) return u
+  }
+  return null
+}
+
 /** content JSON에서 카카오톡 공유 썸네일만 추출. 없거나 파싱 실패 시 null. */
 export function kakaoThumbnailOf(contentJson: string | null): string | null {
   if (!contentJson) return null
   try {
     const c = JSON.parse(contentJson) as { meta?: { kakaoThumbnail?: unknown } }
-    const t = c?.meta?.kakaoThumbnail
-    return typeof t === 'string' && t.trim() ? t : null
+    return imageUrlOf(c?.meta?.kakaoThumbnail)
   } catch {
     return null
   }
@@ -58,8 +69,7 @@ export function drawerStampPhotoOf(contentJson: string | null): string | null {
   if (!contentJson) return null
   try {
     const c = JSON.parse(contentJson) as { meta?: { drawerStampPhoto?: unknown } }
-    const t = c?.meta?.drawerStampPhoto
-    return typeof t === 'string' && t.trim() ? t : null
+    return imageUrlOf(c?.meta?.drawerStampPhoto)
   } catch {
     return null
   }

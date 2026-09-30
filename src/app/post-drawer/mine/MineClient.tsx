@@ -356,7 +356,7 @@ export default function MineClient() {
                       <span className="from">From.</span> {m.guestName || '익명'}
                       {m.source === 'rsvp' && <span className="ptag">RSVP</span>}
                       {m.source === 'geunnal' && <span className="ptag">모임</span>}
-                      {m.source === 'photo_share' && <span className="ptag">📷 사진{(m.images ?? 0) > 0 ? ` ${m.images}` : ''}</span>}
+                      {m.source === 'photo_share' && <span className="ptag">스냅{(m.images ?? 0) > 0 ? ` ${m.images}` : ''}</span>}
                       {msgTab === 'all' && <span className="ptag">{m.invLabel}</span>}
                     </div>
                     {m.message && <div className="msg">{m.message}</div>}

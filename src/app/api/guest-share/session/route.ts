@@ -13,7 +13,7 @@ import {
 } from '@/lib/guestShareLimits'
 import { createPresignedPutUrl } from '@/lib/r2Presign'
 import { POST_DRAWER_MAX_PHOTOS } from '@/lib/postDrawerConstants'
-import { getCoupleGuestShareBySlug, getPrimaryPaidInvitation } from '@/lib/postDrawer'
+import { getCoupleGuestShareBySlug, resolveCoupleShareInvitation, ensureCoupleDriveMapping } from '@/lib/postDrawer'
 import { daysSinceWeddingKST } from '@/lib/weddingLifecycle'
 
 async function hashIp(ip: string): Promise<string> {
@@ -38,8 +38,10 @@ export async function POST(request: NextRequest) {
       const couple = await getCoupleGuestShareBySlug(coupleSlug)
       if (!couple) return NextResponse.json({ error: '공유를 찾을 수 없습니다.' }, { status: 404 })
       if (!couple.enabled) return NextResponse.json({ error: '사진 공유가 활성화되어 있지 않습니다.' }, { status: 403 })
-      invitation = await getPrimaryPaidInvitation(couple.userId)
+      // 대표 청첩장(지정 → 없으면 자동) 기준으로 폴더/창 결정. 매핑 없으면 계정 연결 재사용해 생성.
+      invitation = await resolveCoupleShareInvitation(couple.userId)
       if (!invitation) return NextResponse.json({ error: '아직 사진을 받을 수 없어요.' }, { status: 403 })
+      await ensureCoupleDriveMapping(couple.userId, invitation.id)
       coupleMode = true
     } else {
       const slug = (body.slug || '').trim()

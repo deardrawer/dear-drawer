@@ -368,6 +368,7 @@ export interface DrawerProfileRow {
   guest_share_enabled: number | null
   guest_share_title: string | null
   guest_share_description: string | null
+  guest_share_invitation_id: string | null // 사진 받을 '대표 청첩장' 지정(미지정 시 자동 폴백)
 }
 
 export async function getDrawerProfile(userId: string): Promise<DrawerProfileRow | null> {
@@ -471,6 +472,7 @@ export interface CoupleGuestShare {
   title: string | null
   description: string | null
   weddingDate: string | null
+  invitationId: string | null // 지정한 대표 청첩장(미지정이면 null → 자동 폴백)
 }
 
 /** 커플 공유 슬러그 확보(없으면 생성). */
@@ -486,18 +488,18 @@ export async function ensureCoupleGuestShareSlug(userId: string): Promise<string
 export async function getCoupleGuestShareByUser(userId: string): Promise<CoupleGuestShare | null> {
   const p = await getDrawerProfile(userId)
   if (!p) return null
-  return { userId: p.user_id, slug: p.guest_share_slug ?? null, enabled: (p.guest_share_enabled ?? 0) === 1, title: p.guest_share_title ?? null, description: p.guest_share_description ?? null, weddingDate: p.wedding_date ?? null }
+  return { userId: p.user_id, slug: p.guest_share_slug ?? null, enabled: (p.guest_share_enabled ?? 0) === 1, title: p.guest_share_title ?? null, description: p.guest_share_description ?? null, weddingDate: p.wedding_date ?? null, invitationId: p.guest_share_invitation_id ?? null }
 }
 
 export async function getCoupleGuestShareBySlug(slug: string): Promise<CoupleGuestShare | null> {
   const db = await getDB()
   const p = await db.prepare('SELECT * FROM drawer_profiles WHERE guest_share_slug = ? LIMIT 1').bind(slug).first<DrawerProfileRow>()
   if (!p) return null
-  return { userId: p.user_id, slug: p.guest_share_slug ?? null, enabled: (p.guest_share_enabled ?? 0) === 1, title: p.guest_share_title ?? null, description: p.guest_share_description ?? null, weddingDate: p.wedding_date ?? null }
+  return { userId: p.user_id, slug: p.guest_share_slug ?? null, enabled: (p.guest_share_enabled ?? 0) === 1, title: p.guest_share_title ?? null, description: p.guest_share_description ?? null, weddingDate: p.wedding_date ?? null, invitationId: p.guest_share_invitation_id ?? null }
 }
 
-/** 커플 하객 공유 설정 저장(켜기/제목/문구). */
-export async function setCoupleGuestShare(userId: string, fields: { enabled?: boolean; title?: string | null; description?: string | null }): Promise<void> {
+/** 커플 하객 공유 설정 저장(켜기/제목/문구/대표 청첩장 지정). */
+export async function setCoupleGuestShare(userId: string, fields: { enabled?: boolean; title?: string | null; description?: string | null; invitationId?: string | null }): Promise<void> {
   await ensureDrawerProfile(userId)
   const db = await getDB()
   const sets: string[] = []
@@ -505,8 +507,44 @@ export async function setCoupleGuestShare(userId: string, fields: { enabled?: bo
   if (fields.enabled !== undefined) { sets.push('guest_share_enabled = ?'); binds.push(fields.enabled ? 1 : 0) }
   if (fields.title !== undefined) { sets.push('guest_share_title = ?'); binds.push(fields.title ? fields.title.slice(0, 40) : null) }
   if (fields.description !== undefined) { sets.push('guest_share_description = ?'); binds.push(fields.description ? fields.description.slice(0, 120) : null) }
+  if (fields.invitationId !== undefined) { sets.push('guest_share_invitation_id = ?'); binds.push(fields.invitationId || null) }
   if (!sets.length) return
   await db.prepare(`UPDATE drawer_profiles SET ${sets.join(', ')}, updated_at = ? WHERE user_id = ?`).bind(...binds, nowIso(), userId).run()
+}
+
+/**
+ * 커플 하객 사진이 저장될 '대표 청첩장' 해석.
+ * 커플이 지정(guest_share_invitation_id)했고 유효한 결제 청첩장이면 그것을,
+ * 아니면 자동(Drive 폴더 매핑 있는 것 우선 → 예식일이 오늘과 가장 가까운 것)으로 폴백.
+ * 창(열림/마감)·이름·업로드 폴더·Drive 연결의 공통 기준.
+ */
+export async function resolveCoupleShareInvitation(userId: string): Promise<Invitation | null> {
+  const invs = (await getInvitationsByUserId(userId)).filter((i) => ((i as unknown as { is_paid?: number }).is_paid ?? 0) === 1)
+  if (!invs.length) return null
+  const p = await getDrawerProfile(userId)
+  const chosen = p?.guest_share_invitation_id
+  if (chosen) {
+    const hit = invs.find((i) => i.id === chosen)
+    if (hit) return hit
+  }
+  return getCoupleUploadInvitation(userId)
+}
+
+export interface CouplePaidInvitationOption {
+  id: string
+  groomName: string | null
+  brideName: string | null
+  weddingDate: string | null
+  templateId: string | null
+}
+
+/** 커플이 대표 청첩장으로 고를 수 있는 결제 청첩장 목록(예식일이 오늘과 가까운 순). */
+export async function listCouplePaidInvitations(userId: string): Promise<CouplePaidInvitationOption[]> {
+  const invs = (await getInvitationsByUserId(userId)).filter((i) => ((i as unknown as { is_paid?: number }).is_paid ?? 0) === 1)
+  const dist = (d: string | null | undefined) => { const s = daysSinceWeddingKST(d ?? null); return s === null ? Infinity : Math.abs(s) }
+  return [...invs]
+    .sort((a, b) => dist(a.wedding_date) - dist(b.wedding_date))
+    .map((i) => ({ id: i.id, groomName: i.groom_name ?? null, brideName: i.bride_name ?? null, weddingDate: i.wedding_date ?? null, templateId: i.template_id ?? null }))
 }
 
 /**
@@ -524,6 +562,40 @@ export async function getPrimaryPaidInvitation(userId: string): Promise<Invitati
   })
   scored.sort((a, b) => a.dist - b.dist)
   return scored[0].i
+}
+
+/**
+ * 커플 하객 업로드가 저장될 청첩장(Drive 폴더 호스트).
+ * 이미 Drive 폴더 매핑(project_cloud_storage)이 있는 결제 청첩장을 우선(폴더 분산 방지),
+ * 그중 오늘과 가장 가까운 예식일. 매핑된 게 없으면 대표(가장 가까운) 청첩장으로 폴백.
+ * (창/이름은 getPrimaryPaidInvitation을 계속 쓰고, 폴더만 이 함수로 안정화)
+ */
+export async function getCoupleUploadInvitation(userId: string): Promise<Invitation | null> {
+  const invs = (await getInvitationsByUserId(userId)).filter((i) => ((i as unknown as { is_paid?: number }).is_paid ?? 0) === 1)
+  if (!invs.length) return null
+  const db = await getDB()
+  const ids = invs.map((i) => i.id)
+  const placeholders = ids.map(() => '?').join(',')
+  const rows = await db.prepare(`SELECT invitation_id FROM project_cloud_storage WHERE invitation_id IN (${placeholders})`).bind(...ids).all<{ invitation_id: string }>()
+  const mapped = new Set((rows.results ?? []).map((r) => r.invitation_id))
+  const dist = (i: Invitation) => { const s = daysSinceWeddingKST(i.wedding_date); return s === null ? Infinity : Math.abs(s) }
+  const pool = invs.some((i) => mapped.has(i.id)) ? invs.filter((i) => mapped.has(i.id)) : invs
+  return [...pool].sort((a, b) => dist(a) - dist(b))[0]
+}
+
+/**
+ * 대상 청첩장에 Drive 폴더 매핑이 없으면, 커플의 계정 연결(cloud_connections)을 재사용해 생성.
+ * 폴더 id는 null로 두고 Worker가 전송 시 생성한다. 계정 연결이 없으면 false(아직 Drive 미연결).
+ */
+export async function ensureCoupleDriveMapping(userId: string, invitationId: string): Promise<boolean> {
+  const db = await getDB()
+  const existing = await db.prepare('SELECT invitation_id FROM project_cloud_storage WHERE invitation_id = ? LIMIT 1').bind(invitationId).first<{ invitation_id: string }>()
+  if (existing) return true
+  const conn = await db.prepare("SELECT id FROM cloud_connections WHERE user_id = ? AND provider = 'google' ORDER BY updated_at DESC LIMIT 1").bind(userId).first<{ id: string }>()
+  if (!conn) return false
+  const ts = nowIso()
+  await db.prepare('INSERT INTO project_cloud_storage (invitation_id, connection_id, root_folder_id, guest_folder_id, created_at, updated_at) VALUES (?, ?, NULL, NULL, ?, ?)').bind(invitationId, conn.id, ts, ts).run()
+  return true
 }
 
 // ── post_drawers 행 ────────────────────────────────────────────────

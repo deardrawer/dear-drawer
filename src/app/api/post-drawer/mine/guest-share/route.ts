@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/ownerAuth'
-import { ensureCoupleGuestShareSlug, getCoupleGuestShareByUser, setCoupleGuestShare, getPrimaryPaidInvitation } from '@/lib/postDrawer'
+import { ensureCoupleGuestShareSlug, getCoupleGuestShareByUser, setCoupleGuestShare, resolveCoupleShareInvitation, listCouplePaidInvitations, ensureCoupleDriveMapping } from '@/lib/postDrawer'
 import { getCloudConnectionByUser } from '@/lib/cloudStorage'
 
 /**
@@ -16,7 +16,8 @@ export async function GET(request: NextRequest) {
   try {
     await ensureCoupleGuestShareSlug(user.id)
     const share = await getCoupleGuestShareByUser(user.id)
-    const primary = await getPrimaryPaidInvitation(user.id)
+    const host = await resolveCoupleShareInvitation(user.id)
+    const invitations = await listCouplePaidInvitations(user.id)
     const conn = await getCloudConnectionByUser(user.id)
     return NextResponse.json({
       slug: share?.slug ?? null,
@@ -25,7 +26,9 @@ export async function GET(request: NextRequest) {
       description: share?.description ?? null,
       connected: !!conn,
       accountEmail: conn?.account_email ?? null,
-      primaryInvitationId: primary?.id ?? null,
+      primaryInvitationId: host?.id ?? null, // 실제로 업로드/연결이 갈 청첩장(지정 or 자동)
+      selectedInvitationId: share?.invitationId ?? null, // 커플이 명시 지정한 것(null이면 자동)
+      invitations, // 대표로 고를 수 있는 결제 청첩장 목록
     })
   } catch (e) {
     console.error('couple guest-share GET error:', e)
@@ -37,10 +40,15 @@ export async function POST(request: NextRequest) {
   const user = await getCurrentUser(request)
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   try {
-    const body = (await request.json()) as { enabled?: boolean; title?: string | null; description?: string | null }
+    const body = (await request.json()) as { enabled?: boolean; title?: string | null; description?: string | null; invitationId?: string | null }
     await setCoupleGuestShare(user.id, body)
+    // 대표 청첩장을 지정하면, Drive 연결돼 있을 때 그 청첩장에 폴더 매핑을 미리 확보(폴더는 전송 시 생성)
+    if (typeof body.invitationId === 'string' && body.invitationId) {
+      await ensureCoupleDriveMapping(user.id, body.invitationId)
+    }
     const share = await getCoupleGuestShareByUser(user.id)
-    return NextResponse.json({ ok: true, enabled: share?.enabled ?? false, title: share?.title ?? null, description: share?.description ?? null })
+    const host = await resolveCoupleShareInvitation(user.id)
+    return NextResponse.json({ ok: true, enabled: share?.enabled ?? false, title: share?.title ?? null, description: share?.description ?? null, selectedInvitationId: share?.invitationId ?? null, primaryInvitationId: host?.id ?? null })
   } catch (e) {
     console.error('couple guest-share POST error:', e)
     return NextResponse.json({ error: e instanceof Error ? e.message : '저장 실패' }, { status: 500 })

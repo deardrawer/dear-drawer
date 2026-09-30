@@ -2,7 +2,7 @@ import type { Viewport } from 'next'
 import type { ReactNode } from 'react'
 import { notFound } from 'next/navigation'
 import GuestShareClient from '@/app/i/[slug]/share/GuestShareClient'
-import { getCoupleGuestShareBySlug, getPrimaryPaidInvitation } from '@/lib/postDrawer'
+import { getCoupleGuestShareBySlug, resolveCoupleShareInvitation } from '@/lib/postDrawer'
 import { daysSinceWeddingKST } from '@/lib/weddingLifecycle'
 
 // 모바일 우선 — 핀치 줌 비활성화(기존 공유 페이지와 동일)
@@ -35,7 +35,7 @@ export default async function CouplePhotoSharePage({ params }: PageProps) {
   const couple = await getCoupleGuestShareBySlug(shareSlug)
   if (!couple) notFound()
 
-  const primary = await getPrimaryPaidInvitation(couple.userId)
+  const primary = await resolveCoupleShareInvitation(couple.userId)
   const coupleName = primary ? [primary.groom_name, primary.bride_name].filter(Boolean).join(' · ') || '우리' : '우리'
   const title = couple.title || '사진 공유'
   const description = couple.description || '결혼식의 소중한 순간을 함께 나눠주세요 🤍'

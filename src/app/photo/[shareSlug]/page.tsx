@@ -1,4 +1,5 @@
 import type { Viewport } from 'next'
+import type { ReactNode } from 'react'
 import { notFound } from 'next/navigation'
 import GuestShareClient from '@/app/i/[slug]/share/GuestShareClient'
 import { getCoupleGuestShareBySlug, getPrimaryPaidInvitation } from '@/lib/postDrawer'
@@ -12,7 +13,7 @@ interface PageProps {
   params: Promise<{ shareSlug: string }>
 }
 
-function Screen({ title, desc }: { title: string; desc: string }) {
+function Screen({ title, desc }: { title: string; desc: ReactNode }) {
   return (
     <main className="min-h-[100dvh] flex items-center justify-center bg-neutral-50 px-6 text-center">
       <div className="max-w-sm">
@@ -46,10 +47,10 @@ export default async function CouplePhotoSharePage({ params }: PageProps) {
   // 업로드 창: 예식 당일(Day 0) ~ 예식+10일. wedding_date 없으면 허용.
   const since = daysSinceWeddingKST(couple.weddingDate)
   if (since !== null && since < 0) {
-    return <Screen title="결혼식 당일부터 열려요" desc={`${coupleName}의 결혼식 당일부터 이곳에서 사진을 함께 나눌 수 있어요. 그날 소중한 순간을 담아 보내주세요 🤍`} />
+    return <Screen title="결혼식 당일부터 열려요" desc={<>{coupleName}의 결혼식 당일부터<br />이곳에서 사진을 함께 나눌 수 있어요.<br />그날 소중한 순간을 담아 보내주세요 🤍</>} />
   }
   if (since !== null && since > 10) {
-    return <Screen title="사진 공유가 마감되었어요" desc={`${coupleName}의 사진 공유 기간(예식 후 10일)이 끝났어요. 함께해 주셔서 감사합니다 🤍`} />
+    return <Screen title="사진 공유가 마감되었어요" desc={<>{coupleName}의 사진 공유 기간(예식 후 10일)이<br />끝났어요. 함께해 주셔서 감사합니다 🤍</>} />
   }
 
   return <GuestShareClient slug="" coupleSlug={shareSlug} coupleName={coupleName} title={title} description={description} />

@@ -817,7 +817,7 @@ export interface PostDrawerData {
   stamp: Stamp
   daysMarried: number | null // 예식일로부터 지난 일수(KST). 서랍 D-day 표시용.
   capsules: CapsuleStamp[] // 타임머신 우표(결혼식 + 100일/1년/2년/3년). 서랍 전용.
-  messages: PostDrawerMessage[] // 받은 마음: 방명록 + RSVP + 모임(근날). photo_share 제외.
+  messages: PostDrawerMessage[] // 받은 마음: 방명록 + RSVP + 모임(근날) + photo_share(하객 사진 메시지).
   moments: MomentBundle[] // 함께 남겨준 순간: photo_share 메시지 묶음 + 사진만 세션
   summary: { totalMessages: number; publicMessages: number; privateMessages: number; totalImages: number; totalVideos: number }
   driveFolderUrl: string | null // 하객 사진이 모이는 커플 Google Drive 폴더(있으면) — 앱에서 썸네일 대신 Drive로 열람
@@ -943,8 +943,25 @@ export async function getPostDrawerData(
     console.error('geunnal submissions load failed:', e)
   }
 
-  // 청첩장 방명록 + RSVP + share 비공개 + 데이드로어(근날) 통합(최신순)
-  const messages: PostDrawerMessage[] = [...guestbookMessages, ...rsvpMessages, ...geunnalMessages].sort((a, b) =>
+  // photo_share(사진과 함께 온 메시지)도 '받은 마음'에 포함 — 사진은 Drive에 보관, 여기선 보낸 이·메시지·사진 수를 노출
+  const photoShareMessages: PostDrawerMessage[] = messagesRaw
+    .filter((m) => (m.source ?? null) === 'photo_share')
+    .map((m) => {
+      const c = byMessage.get(m.id) || { images: 0, videos: 0 }
+      return {
+        id: m.id,
+        guestName: m.guest_name,
+        message: m.message,
+        source: 'photo_share' as const,
+        isPublic: false, // 하객 사진 공유 메시지는 비공개(오너만 확인)
+        createdAt: m.created_at,
+        images: c.images,
+        videos: c.videos,
+      }
+    })
+
+  // 청첩장 방명록 + RSVP + share 비공개(photo_share) + 데이드로어(근날) 통합(최신순)
+  const messages: PostDrawerMessage[] = [...guestbookMessages, ...rsvpMessages, ...geunnalMessages, ...photoShareMessages].sort((a, b) =>
     a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0,
   )
 

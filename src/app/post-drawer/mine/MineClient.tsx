@@ -54,6 +54,8 @@ interface AggMessage {
   source: string | null
   createdAt: string
   photoUrl?: string | null
+  images?: number
+  videos?: number
   invitationId: string
   invLabel: string
 }
@@ -344,7 +346,7 @@ export default function MineClient() {
             </div>
           )}
           {visibleMsgs.length === 0 ? (
-            <div className="empty-box">아직 받은 마음이 없습니다.<br />방명록 · RSVP · 모임에서 받은 메시지가 이곳에 모입니다.</div>
+            <div className="empty-box">아직 받은 마음이 없습니다.<br />방명록 · RSVP · 모임 · 하객 사진에서 받은 메시지가 이곳에 모입니다.</div>
           ) : (
             <div className="gb">
               {visibleMsgs.map((m) => (
@@ -354,6 +356,7 @@ export default function MineClient() {
                       <span className="from">From.</span> {m.guestName || '익명'}
                       {m.source === 'rsvp' && <span className="ptag">RSVP</span>}
                       {m.source === 'geunnal' && <span className="ptag">모임</span>}
+                      {m.source === 'photo_share' && <span className="ptag">📷 사진{(m.images ?? 0) > 0 ? ` ${m.images}` : ''}</span>}
                       {msgTab === 'all' && <span className="ptag">{m.invLabel}</span>}
                     </div>
                     {m.message && <div className="msg">{m.message}</div>}

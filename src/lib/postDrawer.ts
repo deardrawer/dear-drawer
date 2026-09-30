@@ -509,10 +509,21 @@ export async function setCoupleGuestShare(userId: string, fields: { enabled?: bo
   await db.prepare(`UPDATE drawer_profiles SET ${sets.join(', ')}, updated_at = ? WHERE user_id = ?`).bind(...binds, nowIso(), userId).run()
 }
 
-/** 커플 하객 사진 업로드 대상 = 가장 최근 결제 청첩장(폴더/Drive 파이프라인 재사용). */
+/**
+ * 커플 대표 청첩장 = 예식일이 오늘과 가장 가까운 결제 청첩장('지금의 예식' 기준).
+ * 사진 공유 창(window)·이름·업로드 폴더·Drive 연결의 공통 기준.
+ * 여러 청첩장의 예식일이 흩어져 있을 때 '가장 늦은 날짜'를 고르면 미래 청첩장이 잡혀
+ * 창이 계속 닫혀 있으므로, 오늘과의 거리(절댓값)가 최소인 것을 선택한다.
+ */
 export async function getPrimaryPaidInvitation(userId: string): Promise<Invitation | null> {
   const invs = (await getInvitationsByUserId(userId)).filter((i) => ((i as unknown as { is_paid?: number }).is_paid ?? 0) === 1)
-  return [...invs].sort((a, b) => ((a.wedding_date || '') < (b.wedding_date || '') ? 1 : -1))[0] || null
+  if (!invs.length) return null
+  const scored = invs.map((i) => {
+    const since = daysSinceWeddingKST(i.wedding_date)
+    return { i, dist: since === null ? Infinity : Math.abs(since) }
+  })
+  scored.sort((a, b) => a.dist - b.dist)
+  return scored[0].i
 }
 
 // ── post_drawers 행 ────────────────────────────────────────────────

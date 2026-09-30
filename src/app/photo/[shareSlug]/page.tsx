@@ -45,7 +45,8 @@ export default async function CouplePhotoSharePage({ params }: PageProps) {
   }
 
   // 업로드 창: 예식 당일(Day 0) ~ 예식+10일. wedding_date 없으면 허용.
-  const since = daysSinceWeddingKST(couple.weddingDate)
+  // 대표 청첩장의 현재 예식일을 기준으로(서랍 프로필의 시드 스냅샷은 예식일 변경 시 어긋날 수 있음).
+  const since = daysSinceWeddingKST(primary.wedding_date || couple.weddingDate)
   if (since !== null && since < 0) {
     return <Screen title="결혼식 당일부터 열려요" desc={<>{coupleName}의 결혼식 당일부터<br />이곳에서 사진을 함께 나눌 수 있어요.<br />그날 소중한 순간을 담아 보내주세요 🤍</>} />
   }

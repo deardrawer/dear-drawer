@@ -16,6 +16,7 @@ import type { Viewport } from "next";
 import { isUUID } from "@/lib/slug";
 import { createSampleInvitation, ourSampleContent, familySampleContent, theSimpleSampleContent, classicSampleContent } from "@/lib/sample-data";
 import GuestShareFab from "./GuestShareFab";
+import { getCoupleGuestShareByUser } from "@/lib/postDrawer";
 import { isPublicViewClosed } from "@/lib/weddingLifecycle";
 import { isAdminViewer } from "@/lib/adminCookie";
 import PublicClosedNotice from "@/components/invitation/PublicClosedNotice";
@@ -164,9 +165,11 @@ export default async function InvitationPage({ params, searchParams }: PageProps
   // 하객 사진 공유 진입 FAB — 공유 활성 + 실제 청첩장(프리뷰/샘플 제외)일 때만
   // (샘플은 union 타입이라 guest_share_* 미보유 → 실제 청첩장일 때만 접근하도록 캐스팅)
   const realInvitation = invitation as Invitation;
-  const fabVisible = invitationContent?.meta?.guestShareFab !== false; // 기본 표시, meta.guestShareFab===false 일 때만 숨김
-  const guestShareOn = !isSampleInvitation && !isPreview && (realInvitation.guest_share_enabled ?? 0) === 1 && isPaid && fabVisible;
-  const guestShareSlug = realInvitation.slug || realInvitation.id;
+  const fabVisible = invitationContent?.meta?.guestShareFab !== false; // 청첩장별 팝업 표시 토글(기본 true)
+  // 하객 공유는 커플(서랍) 단위 — 커플 공유가 켜져 있고 이 청첩장의 팝업 토글이 켜져 있을 때만 FAB 표시. 커플 링크로 연결.
+  const coupleShare = !isSampleInvitation && !isPreview && isPaid ? await getCoupleGuestShareByUser(realInvitation.user_id) : null;
+  const guestShareOn = !isSampleInvitation && !isPreview && isPaid && fabVisible && !!(coupleShare?.enabled && coupleShare?.slug);
+  const coupleShareHref = coupleShare?.slug ? `/photo/${coupleShare.slug}` : '';
 
   // 공개 링크 접근제어(실제 청첩장만; preview/sample 제외):
   //  - Day 31+ : 예식 종료 자동 / Day 1~30: owner 수동 비공개(public_hidden=1)
@@ -198,7 +201,7 @@ export default async function InvitationPage({ params, searchParams }: PageProps
           isPreview={isPreview}
           isSample={isSampleInvitation}
         />
-        {guestShareOn && <GuestShareFab slug={guestShareSlug} />}
+        {guestShareOn && <GuestShareFab href={coupleShareHref} />}
       </>
     );
   }
@@ -219,7 +222,7 @@ export default async function InvitationPage({ params, searchParams }: PageProps
         guestInfo={guestInfo}
         isSample={isSampleInvitation}
       />
-      {guestShareOn && <GuestShareFab slug={guestShareSlug} />}
+      {guestShareOn && <GuestShareFab href={coupleShareHref} />}
     </>
   );
 }

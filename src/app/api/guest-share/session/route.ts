@@ -13,6 +13,7 @@ import {
 } from '@/lib/guestShareLimits'
 import { createPresignedPutUrl } from '@/lib/r2Presign'
 import { POST_DRAWER_MAX_PHOTOS } from '@/lib/postDrawerConstants'
+import { getCoupleGuestShareBySlug, getPrimaryPaidInvitation } from '@/lib/postDrawer'
 import { daysSinceWeddingKST } from '@/lib/weddingLifecycle'
 
 async function hashIp(ip: string): Promise<string> {
@@ -26,22 +27,36 @@ async function hashIp(ip: string): Promise<string> {
  */
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as { slug?: string; guestName?: string; message?: string; files?: FileMetaInput[] }
-    const slug = (body.slug || '').trim()
+    const body = (await request.json()) as { slug?: string; coupleSlug?: string; guestName?: string; message?: string; files?: FileMetaInput[] }
     const files = Array.isArray(body.files) ? body.files : []
-    if (!slug) return NextResponse.json({ error: 'slug가 필요합니다.' }, { status: 400 })
 
-    // 초대장 조회 (slug → id → alias)
-    let invitation = await getInvitationBySlug(slug)
-    if (!invitation) invitation = await getInvitationById(slug)
-    if (!invitation) {
-      const byAlias = await getInvitationByAlias(slug)
-      if (byAlias) invitation = byAlias
+    // 대상 청첩장 결정: 커플 공유(coupleSlug)면 대표(가장 최근 결제) 청첩장 폴더로, 아니면 청첩장 slug로.
+    let invitation: Awaited<ReturnType<typeof getInvitationBySlug>> = null
+    let coupleMode = false
+    const coupleSlug = (body.coupleSlug || '').trim()
+    if (coupleSlug) {
+      const couple = await getCoupleGuestShareBySlug(coupleSlug)
+      if (!couple) return NextResponse.json({ error: '공유를 찾을 수 없습니다.' }, { status: 404 })
+      if (!couple.enabled) return NextResponse.json({ error: '사진 공유가 활성화되어 있지 않습니다.' }, { status: 403 })
+      invitation = await getPrimaryPaidInvitation(couple.userId)
+      if (!invitation) return NextResponse.json({ error: '아직 사진을 받을 수 없어요.' }, { status: 403 })
+      coupleMode = true
+    } else {
+      const slug = (body.slug || '').trim()
+      if (!slug) return NextResponse.json({ error: 'slug가 필요합니다.' }, { status: 400 })
+      // 초대장 조회 (slug → id → alias)
+      invitation = await getInvitationBySlug(slug)
+      if (!invitation) invitation = await getInvitationById(slug)
+      if (!invitation) {
+        const byAlias = await getInvitationByAlias(slug)
+        if (byAlias) invitation = byAlias
+      }
+      if (!invitation) return NextResponse.json({ error: '청첩장을 찾을 수 없습니다.' }, { status: 404 })
     }
     if (!invitation) return NextResponse.json({ error: '청첩장을 찾을 수 없습니다.' }, { status: 404 })
 
-    // 공유 활성 + 결제완료(워터마크 제거 가능) 확인. (발행 여부와 무관 — 메인 /i 와 동일 기준)
-    if ((invitation.guest_share_enabled ?? 0) !== 1 || (invitation.is_paid ?? 0) !== 1) {
+    // 공유 활성 + 결제완료(워터마크 제거 가능) 확인. 커플 모드는 위에서 활성 확인 + 대표 청첩장은 결제완료 보장.
+    if (!coupleMode && ((invitation.guest_share_enabled ?? 0) !== 1 || (invitation.is_paid ?? 0) !== 1)) {
       return NextResponse.json({ error: '사진 공유가 활성화되어 있지 않습니다.' }, { status: 403 })
     }
 

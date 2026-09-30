@@ -3,6 +3,7 @@
 import '../postdrawer.css'
 import { useEffect, useRef, useState, type ChangeEvent } from 'react'
 import Link from 'next/link'
+import CoupleGuestShareCard from '@/components/post-drawer/CoupleGuestShareCard'
 
 /** 선택 이미지를 webp Blob으로 변환(최대 변 1200px). */
 async function fileToWebp(file: File, maxDim = 1200): Promise<Blob> {
@@ -42,6 +43,9 @@ interface InvOverview {
   share: { shareSlug: string | null; enabled: boolean; hasPassword: boolean; canManage: boolean }
   counts: { messages: number; photos: number } | null
   driveFolderUrl: string | null
+  publicHidden: boolean
+  canTogglePublic: boolean
+  fab: boolean
 }
 interface AggMessage {
   id: string
@@ -75,6 +79,7 @@ function ddayLabel(days: number | null): string {
 export default function MineClient() {
   const [state, setState] = useState<'loading' | 'auth' | 'empty' | 'ok' | 'error'>('loading')
   const [data, setData] = useState<Overview | null>(null)
+  const [view, setView] = useState<'home' | 'invitations' | 'share'>('home') // 서랍 홈 / 내 청첩장 / 하객 사진 공유
   const [msgTab, setMsgTab] = useState<string>('all')
   const [copied, setCopied] = useState<string | null>(null)
   const [pwDraft, setPwDraft] = useState<Record<string, string>>({})
@@ -149,6 +154,29 @@ export default function MineClient() {
       patchInv(inv.invitationId, { label: (j.label && j.label.trim()) || inv.typeLabel })
       setEditingId(null)
     } catch { flash('저장 실패') } finally { setBusy(null) }
+  }
+
+  const toggleFab = async (inv: InvOverview) => {
+    setBusy(inv.invitationId)
+    try {
+      const next = !inv.fab
+      const res = await fetch('/api/guest-share/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ invitationId: inv.invitationId, fab: next }) })
+      if (!res.ok) { const j = (await res.json().catch(() => ({}))) as { error?: string }; flash(j.error || '변경 실패'); return }
+      patchInv(inv.invitationId, { fab: next })
+      flash(next ? '사진 공유 팝업을 표시해요' : '사진 공유 팝업을 숨겼어요')
+    } catch { flash('변경 실패') } finally { setBusy(null) }
+  }
+
+  const togglePublic = async (inv: InvOverview) => {
+    setBusy(inv.invitationId)
+    try {
+      const next = !inv.publicHidden
+      const res = await fetch(`/api/post-drawer/${inv.archiveSlug}/settings`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ publicHidden: next }) })
+      const j = (await res.json().catch(() => ({}))) as { error?: string }
+      if (!res.ok) { flash(j.error || '변경 실패'); return }
+      patchInv(inv.invitationId, { publicHidden: next })
+      flash(next ? '비공개로 전환했어요' : '다시 공개했어요')
+    } catch { flash('변경 실패') } finally { setBusy(null) }
   }
 
   // ── 우표(커플 단위) 기록 ──
@@ -234,8 +262,22 @@ export default function MineClient() {
 
   return (
     <div className="pd">
-      {Nav}
+      <nav className="nav">
+        {view === 'home' ? (
+          <Link href="/post-drawer" className="back" aria-label="POST DRAWER로">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+            POST DRAWER
+          </Link>
+        ) : (
+          <button type="button" className="back" onClick={() => setView('home')} style={{ border: 0, background: 'transparent', cursor: 'pointer', font: 'inherit' }} aria-label="서랍으로">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+            서랍
+          </button>
+        )}
+        <span aria-hidden style={{ width: 20 }} />
+      </nav>
       <div className="drawer">
+        {view === 'home' && (<>
         <header className="dhead">
           <h1>{header.name ? `${header.name}의 서랍` : '우리의 서랍'}</h1>
           {(header.weddingDate || header.daysMarried != null) && (
@@ -246,7 +288,8 @@ export default function MineClient() {
           )}
           <p className="sub">받은 마음과 우리의 순간을 두 사람만 다시 꺼내봅니다.</p>
           <div className="acts">
-            <a href="#my-invitations" className="btn btn-m btn-solid">내 청첩장 바로가기</a>
+            <button type="button" className="btn btn-m btn-solid" onClick={() => setView('invitations')}>내 청첩장</button>
+            <button type="button" className="btn btn-m btn-assist" onClick={() => setView('share')}>사진 공유</button>
           </div>
         </header>
 
@@ -354,9 +397,14 @@ export default function MineClient() {
           )}
         </section>
 
-        {/* 4. 내 청첩장 (청첩장별 시크릿 링크 · 비번 · 설정) */}
-        <section className="sect" id="my-invitations">
-          <h2>내 청첩장 <span className="cnt2">{invitations.length}</span></h2>
+        </>)}
+
+        {view === 'invitations' && (<>
+        <header className="dhead">
+          <h1>내 청첩장 <span className="cnt2">{invitations.length}</span></h1>
+          <p className="sub">청첩장별 시크릿 링크 · 비밀번호 · 공개 여부를 관리합니다.</p>
+        </header>
+        <section className="sect">
           <div className="mbundles">
             {invitations.map((inv) => (
               <div className="mbundle noheart" key={inv.invitationId}>
@@ -368,12 +416,12 @@ export default function MineClient() {
                       <button type="button" className="btn btn-s btn-assist" onClick={() => setEditingId(null)}>취소</button>
                     </div>
                   ) : (
-                    <div className="nm">
+                    <div className="nm" style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                       <span>{inv.label}</span>
                       <span className="ptag">{inv.typeLabel}</span>
                       {inv.locked && <span className="badge2 off">만료 잠김</span>}
                       {inv.hidden && <span className="badge2 off">관리자 잠금</span>}
-                      <button type="button" onClick={() => { setEditingId(inv.invitationId); setLabelDraft(inv.label === inv.typeLabel ? '' : inv.label) }} style={{ border: 0, background: 'transparent', color: 'var(--label-alternative)', cursor: 'pointer', fontSize: 12, textDecoration: 'underline', padding: 0 }}>이름</button>
+                      <button type="button" onClick={() => { setEditingId(inv.invitationId); setLabelDraft(inv.label === inv.typeLabel ? '' : inv.label) }} style={{ border: 0, background: 'transparent', color: 'var(--label-alternative)', cursor: 'pointer', fontSize: 12, textDecoration: 'underline', padding: 0, marginLeft: 'auto' }}>이름 변경</button>
                     </div>
                   )}
                   <div className="cnt">
@@ -408,15 +456,47 @@ export default function MineClient() {
                     ) : (
                       <p className="setnote">비밀번호는 예식 다음날부터 설정할 수 있어요.</p>
                     )}
-                    <div className="mrow">
-                      <Link href={`/post-drawer/${inv.archiveSlug}/settings`} className="btn btn-s btn-solid">설정</Link>
-                    </div>
+                    {inv.canTogglePublic && (
+                      <div className="setrow" style={{ marginTop: 16, paddingTop: 14, paddingBottom: 0, borderTop: '1px solid var(--line-normal-alternative)', alignItems: 'center', gap: 12 }}>
+                        <div style={{ minWidth: 0 }}>
+                          <div className="setlb" style={{ fontSize: 12 }}>기존 청첩장 공개 <span className={`badge2 ${inv.publicHidden ? 'off' : 'on'}`}>{inv.publicHidden ? '비공개' : '공개 중'}</span></div>
+                          <div className="setnote">하객에게 공유한 청첩장(/i) 링크 열기/닫기</div>
+                        </div>
+                        <button type="button" className={`btn btn-s ${inv.publicHidden ? 'btn-solid' : 'btn-assist'}`} style={{ flexShrink: 0 }} disabled={busy === inv.invitationId} onClick={() => togglePublic(inv)}>{inv.publicHidden ? '다시 공개' : '비공개로'}</button>
+                      </div>
+                    )}
                   </>
                 )}
               </div>
             ))}
           </div>
         </section>
+        </>)}
+
+        {view === 'share' && (<>
+        <header className="dhead">
+          <h1>하객 사진 공유</h1>
+          <p className="sub">서랍당 링크 하나로 하객에게 사진을 받아요. 받은 사진은 서랍 &lsquo;우리의 순간&rsquo;에 모입니다.</p>
+        </header>
+        <section className="sect">
+          <CoupleGuestShareCard />
+        </section>
+        <section className="sect">
+          <h2>청첩장에 팝업 표시</h2>
+          <p className="setdesc">각 청첩장 화면에 &lsquo;사진 공유&rsquo; 버튼(팝업)을 띄울지 선택해요. 팝업은 위 공유 링크로 연결됩니다.</p>
+          <div className="mbundles">
+            {activeInvs.map((inv) => (
+              <div className="mbundle noheart" key={inv.invitationId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                <div className="meta" style={{ minWidth: 0 }}>
+                  <div className="nm"><span>{inv.label}</span><span className="ptag">{inv.typeLabel}</span></div>
+                </div>
+                <button type="button" className={`btn btn-s ${inv.fab ? 'btn-assist' : 'btn-solid'}`} disabled={busy === inv.invitationId} onClick={() => toggleFab(inv)}>{inv.fab ? '표시 중' : '숨김'}</button>
+              </div>
+            ))}
+            {activeInvs.length === 0 && <p className="setnote">표시할 청첩장이 없습니다.</p>}
+          </div>
+        </section>
+        </>)}
 
         <div className="dfoot">
           <p className="note">이 서랍은 두 사람만 볼 수 있습니다.</p>

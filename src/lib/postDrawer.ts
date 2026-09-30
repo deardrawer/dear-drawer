@@ -354,6 +354,10 @@ export interface DrawerProfileRow {
   time_capsules: string | null // JSON: Record<key, TimeCapsuleEntry>
   capsule_years: number | null
   seeded: number
+  guest_share_slug: string | null // 커플 하객 사진 공유 링크 슬러그(서랍당 하나)
+  guest_share_enabled: number | null
+  guest_share_title: string | null
+  guest_share_description: string | null
 }
 
 export async function getDrawerProfile(userId: string): Promise<DrawerProfileRow | null> {
@@ -447,6 +451,58 @@ export async function incrementUserCapsuleYears(userId: string): Promise<number>
   const db = await getDB()
   await db.prepare('UPDATE drawer_profiles SET capsule_years = ?, updated_at = ? WHERE user_id = ?').bind(next, nowIso(), userId).run()
   return next
+}
+
+// ── 커플(user) 단위 하객 사진 공유: 서랍당 링크 하나 ──
+export interface CoupleGuestShare {
+  userId: string
+  slug: string | null
+  enabled: boolean
+  title: string | null
+  description: string | null
+  weddingDate: string | null
+}
+
+/** 커플 공유 슬러그 확보(없으면 생성). */
+export async function ensureCoupleGuestShareSlug(userId: string): Promise<string> {
+  const p = await ensureDrawerProfile(userId)
+  if (p.guest_share_slug) return p.guest_share_slug
+  const slug = crypto.randomUUID().replace(/-/g, '')
+  const db = await getDB()
+  await db.prepare('UPDATE drawer_profiles SET guest_share_slug = ?, updated_at = ? WHERE user_id = ?').bind(slug, nowIso(), userId).run()
+  return slug
+}
+
+export async function getCoupleGuestShareByUser(userId: string): Promise<CoupleGuestShare | null> {
+  const p = await getDrawerProfile(userId)
+  if (!p) return null
+  return { userId: p.user_id, slug: p.guest_share_slug ?? null, enabled: (p.guest_share_enabled ?? 0) === 1, title: p.guest_share_title ?? null, description: p.guest_share_description ?? null, weddingDate: p.wedding_date ?? null }
+}
+
+export async function getCoupleGuestShareBySlug(slug: string): Promise<CoupleGuestShare | null> {
+  const db = await getDB()
+  const p = await db.prepare('SELECT * FROM drawer_profiles WHERE guest_share_slug = ? LIMIT 1').bind(slug).first<DrawerProfileRow>()
+  if (!p) return null
+  return { userId: p.user_id, slug: p.guest_share_slug ?? null, enabled: (p.guest_share_enabled ?? 0) === 1, title: p.guest_share_title ?? null, description: p.guest_share_description ?? null, weddingDate: p.wedding_date ?? null }
+}
+
+/** 커플 하객 공유 설정 저장(켜기/제목/문구). */
+export async function setCoupleGuestShare(userId: string, fields: { enabled?: boolean; title?: string | null; description?: string | null }): Promise<void> {
+  await ensureDrawerProfile(userId)
+  const db = await getDB()
+  const sets: string[] = []
+  const binds: (string | number | null)[] = []
+  if (fields.enabled !== undefined) { sets.push('guest_share_enabled = ?'); binds.push(fields.enabled ? 1 : 0) }
+  if (fields.title !== undefined) { sets.push('guest_share_title = ?'); binds.push(fields.title ? fields.title.slice(0, 40) : null) }
+  if (fields.description !== undefined) { sets.push('guest_share_description = ?'); binds.push(fields.description ? fields.description.slice(0, 120) : null) }
+  if (!sets.length) return
+  await db.prepare(`UPDATE drawer_profiles SET ${sets.join(', ')}, updated_at = ? WHERE user_id = ?`).bind(...binds, nowIso(), userId).run()
+}
+
+/** 커플 하객 사진 업로드 대상 = 가장 최근 결제 청첩장(폴더/Drive 파이프라인 재사용). */
+export async function getPrimaryPaidInvitation(userId: string): Promise<Invitation | null> {
+  const invs = (await getInvitationsByUserId(userId)).filter((i) => ((i as unknown as { is_paid?: number }).is_paid ?? 0) === 1)
+  return [...invs].sort((a, b) => ((a.wedding_date || '') < (b.wedding_date || '') ? 1 : -1))[0] || null
 }
 
 // ── post_drawers 행 ────────────────────────────────────────────────
@@ -866,6 +922,9 @@ export interface DrawerInvOverview {
   share: { shareSlug: string | null; enabled: boolean; hasPassword: boolean; canManage: boolean } // 청첩장별 시크릿 링크+비번(각각)
   counts: { messages: number; photos: number } | null // 잠김/숨김이면 null(데이터 미노출)
   driveFolderUrl: string | null // 하객 사진(우리의 순간) Drive 폴더
+  publicHidden: boolean // 기존 청첩장(/i) 수동 비공개 여부
+  canTogglePublic: boolean // 공개 토글 가능 시점(예식 다음날~30일)
+  fab: boolean // 청첩장 화면에 '사진 공유' 팝업(FAB) 표시 여부(content.meta.guestShareFab, 기본 true)
 }
 export interface DrawerAggMessage {
   id: string
@@ -928,6 +987,9 @@ export async function getUserDrawerOverview(userId: string): Promise<UserDrawerO
       },
       counts,
       driveFolderUrl,
+      publicHidden: (inv as unknown as { public_hidden?: number }).public_hidden === 1,
+      canTogglePublic: isPostDrawerActiveKST(inv.wedding_date) && !isWeddingArchivedKST(inv.wedding_date),
+      fab: (() => { try { return (JSON.parse(content || '{}') as { meta?: { guestShareFab?: unknown } })?.meta?.guestShareFab !== false } catch { return true } })(),
     })
   }
   messages.sort((a, b) => (a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0))

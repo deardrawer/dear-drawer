@@ -9,6 +9,7 @@ interface Props {
   coupleName: string
   title: string
   description: string
+  coupleSlug?: string // 지정 시 커플 단위 공유(세션 API에 coupleSlug로 요청) — 서랍당 링크 하나
 }
 
 type ItemStatus = 'ready' | 'uploading' | 'done' | 'error'
@@ -30,7 +31,7 @@ function fmtSize(bytes: number): string {
   return `${Math.max(1, Math.round(bytes / 1024))}KB`
 }
 
-export default function GuestShareClient({ slug, coupleName, title, description }: Props) {
+export default function GuestShareClient({ slug, coupleName, title, description, coupleSlug }: Props) {
   const [guestName, setGuestName] = useState('')
   const [message, setMessage] = useState('')
   const [items, setItems] = useState<Item[]>([])
@@ -127,7 +128,7 @@ export default function GuestShareClient({ slug, coupleName, title, description 
       const res = await fetch('/api/guest-share/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug, guestName: name, message: message.trim().slice(0, 200), files: metas }),
+        body: JSON.stringify({ ...(coupleSlug ? { coupleSlug } : { slug }), guestName: name, message: message.trim().slice(0, 200), files: metas }),
       })
       if (!res.ok) {
         const err = (await res.json().catch(() => ({}))) as { error?: string }
@@ -188,7 +189,7 @@ export default function GuestShareClient({ slug, coupleName, title, description 
     if (failed > 0) {
       setGlobalError(`${success}장 전송 완료, ${failed}장 실패했어요. 실패한 사진을 다시 보낼 수 있어요.`)
     }
-  }, [guestName, message, slug, patch])
+  }, [guestName, message, slug, coupleSlug, patch])
 
   const resetForMore = useCallback(() => {
     itemsRef.current.forEach((i) => URL.revokeObjectURL(i.url))

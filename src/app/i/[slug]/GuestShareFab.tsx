@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react'
  * 오프닝(첫 화면)에서는 숨기고, 본문으로 스크롤해 들어가면 나타난다.
  * 템플릿마다 스크롤 주체가 다르므로(윈도우 vs 내부 컨테이너) 캡처 단계로 모든 스크롤을 관찰한다.
  */
-export default function GuestShareFab({ slug }: { slug: string }) {
+export default function GuestShareFab({ href }: { href: string }) {
   const [shown, setShown] = useState(false)
 
   useEffect(() => {
@@ -34,7 +34,7 @@ export default function GuestShareFab({ slug }: { slug: string }) {
 
   return (
     <a
-      href={`/i/${slug}/share`}
+      href={href}
       aria-label="하객 사진 공유"
       aria-hidden={!shown}
       tabIndex={shown ? 0 : -1}

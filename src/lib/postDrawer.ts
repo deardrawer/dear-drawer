@@ -1069,7 +1069,9 @@ export async function getUserDrawerOverview(userId: string): Promise<UserDrawerO
     await ensurePostDrawer(inv.id)
     if (!hidden && !locked) await ensureShareSlug(inv.id)
     const row = await getPostDrawerByInvitationId(inv.id)
-    const label = drawerLabelOf(content) || [inv.groom_name, inv.bride_name].filter(Boolean).join(' · ') || rsvpTemplateLabel(inv.template_id)
+    // 기본 라벨 = 템플릿 종류(OUR/THE SIMPLE 등). 커플은 이름이 모든 청첩장에 동일해 구분이 안 되고,
+    // 서랍 헤더에 이미 이름이 나오므로 per-청첩장 구분은 템플릿이 유용. 커플이 '이름 변경'으로 지정하면 그게 우선.
+    const label = drawerLabelOf(content) || rsvpTemplateLabel(inv.template_id)
     let counts: { messages: number; photos: number } | null = null
     let driveFolderUrl: string | null = null
     if (!hidden && !locked && row) {

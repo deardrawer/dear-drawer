@@ -1,6 +1,7 @@
-import { getDB, getGuestbookMessages } from './db'
+import { getDB, getGuestbookMessages, getInvitationsByUserId } from './db'
 import { getProjectStorage } from './cloudStorage'
-import { milestoneStatuses, daysSinceWeddingKST, isWeddingArchivedKST } from './weddingLifecycle'
+import { rsvpTemplateLabel } from './rsvpShare'
+import { milestoneStatuses, daysSinceWeddingKST, isWeddingArchivedKST, isPostDrawerActiveKST } from './weddingLifecycle'
 import type { Invitation } from '@/types/invitation'
 
 /**
@@ -341,6 +342,110 @@ export async function incrementCapsuleYears(invitationId: string): Promise<numbe
   meta.capsuleYears = next
   content.meta = meta
   await db.prepare('UPDATE invitations SET content = ?, updated_at = ? WHERE id = ?').bind(JSON.stringify(content), nowIso(), invitationId).run()
+  return next
+}
+
+// ── 커플(user) 단위 서랍 프로필: 우표 타임라인을 청첩장이 아닌 커플 단위로 보관 ──
+export interface DrawerProfileRow {
+  user_id: string
+  wedding_date: string | null
+  stamp_photo: string | null
+  stamp_message: string | null
+  time_capsules: string | null // JSON: Record<key, TimeCapsuleEntry>
+  capsule_years: number | null
+  seeded: number
+}
+
+export async function getDrawerProfile(userId: string): Promise<DrawerProfileRow | null> {
+  const db = await getDB()
+  return db.prepare('SELECT * FROM drawer_profiles WHERE user_id = ? LIMIT 1').bind(userId).first<DrawerProfileRow>()
+}
+
+/** 프로필 확보 + 최초 1회 시드(커플의 가장 최근 결제 청첩장 우표/예식일/캡슐에서). 이후엔 커플 단위로 편집. */
+export async function ensureDrawerProfile(userId: string): Promise<DrawerProfileRow> {
+  const db = await getDB()
+  const existing = await getDrawerProfile(userId)
+  if (existing?.seeded) return existing
+
+  const invs = (await getInvitationsByUserId(userId)).filter((i) => ((i as unknown as { is_paid?: number }).is_paid ?? 0) === 1)
+  const src = [...invs].sort((a, b) => ((a.wedding_date || '') < (b.wedding_date || '') ? 1 : -1))[0] || null
+  let weddingDate: string | null = null
+  let stampPhoto: string | null = null
+  let stampMessage: string | null = null
+  let timeCapsules = '{}'
+  let years = 3
+  if (src) {
+    weddingDate = src.wedding_date ?? null
+    const pdrow = await getPostDrawerByInvitationId(src.id)
+    const stamp = resolveStamp(src, pdrow)
+    stampPhoto = stamp.photo
+    stampMessage = stamp.message
+    timeCapsules = JSON.stringify(getTimeCapsules(src.content ?? null))
+    years = getCapsuleYears(src.content ?? null)
+  }
+  const ts = nowIso()
+  if (existing) {
+    await db.prepare('UPDATE drawer_profiles SET wedding_date = ?, stamp_photo = ?, stamp_message = ?, time_capsules = ?, capsule_years = ?, seeded = 1, updated_at = ? WHERE user_id = ?')
+      .bind(weddingDate, stampPhoto, stampMessage, timeCapsules, years, ts, userId).run()
+  } else {
+    await db.prepare('INSERT INTO drawer_profiles (user_id, wedding_date, stamp_photo, stamp_message, time_capsules, capsule_years, seeded, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?)')
+      .bind(userId, weddingDate, stampPhoto, stampMessage, timeCapsules, years, ts, ts).run()
+  }
+  return (await getDrawerProfile(userId))!
+}
+
+/** 커플 서랍 우표 타임라인(결혼식 + 마일스톤). buildCapsules를 프로필 데이터로 미러링. */
+export async function buildCapsulesForUser(userId: string): Promise<CapsuleStamp[]> {
+  const p = await ensureDrawerProfile(userId)
+  let caps: Record<string, TimeCapsuleEntry> = {}
+  try { caps = p.time_capsules ? (JSON.parse(p.time_capsules) as Record<string, TimeCapsuleEntry>) : {} } catch { caps = {} }
+  const years = Math.max(3, Math.min(CAPSULE_YEARS_MAX, p.capsule_years || 3))
+  const wedding: CapsuleStamp = {
+    key: 'wedding', label: '결혼식', dateIso: p.wedding_date, dday: 0, unlocked: true,
+    recorded: !!(p.stamp_photo || p.stamp_message), photo: p.stamp_photo, message: p.stamp_message,
+  }
+  const rest = milestoneStatuses(p.wedding_date, years).map<CapsuleStamp>((m) => {
+    const e = caps[m.key]
+    const photo = e?.photo || null
+    const message = e?.message && e.message.trim() ? e.message : null
+    return { key: m.key, label: m.label, dateIso: m.dateIso, dday: m.dday, unlocked: m.unlocked, recorded: !!(photo || message), photo, message }
+  })
+  return [wedding, ...rest]
+}
+
+/** 마일스톤 기록 저장(커플 단위). setTimeCapsule의 user-level 버전. */
+export async function setUserTimeCapsule(userId: string, key: string, fields: { photo?: string | null; message?: string | null }): Promise<void> {
+  const p = await ensureDrawerProfile(userId)
+  let caps: Record<string, TimeCapsuleEntry> = {}
+  try { caps = p.time_capsules ? (JSON.parse(p.time_capsules) as Record<string, TimeCapsuleEntry>) : {} } catch { caps = {} }
+  const prev = caps[key] || { photo: null, message: '', createdAt: nowIso() }
+  caps[key] = {
+    photo: fields.photo !== undefined ? fields.photo : prev.photo,
+    message: fields.message !== undefined ? (fields.message ?? '').toString().trim().slice(0, STAMP_MESSAGE_MAX) : prev.message,
+    createdAt: prev.createdAt || nowIso(),
+  }
+  const db = await getDB()
+  await db.prepare('UPDATE drawer_profiles SET time_capsules = ?, updated_at = ? WHERE user_id = ?').bind(JSON.stringify(caps), nowIso(), userId).run()
+}
+
+/** 결혼식 우표(사진/한 조각) 커플 단위 저장. */
+export async function setUserWeddingStamp(userId: string, fields: { photo?: string | null; message?: string | null }): Promise<void> {
+  await ensureDrawerProfile(userId)
+  const db = await getDB()
+  const sets: string[] = []
+  const binds: (string | null)[] = []
+  if (fields.photo !== undefined) { sets.push('stamp_photo = ?'); binds.push(fields.photo) }
+  if (fields.message !== undefined) { sets.push('stamp_message = ?'); binds.push(fields.message ? fields.message.toString().trim().slice(0, STAMP_MESSAGE_MAX) : null) }
+  if (!sets.length) return
+  await db.prepare(`UPDATE drawer_profiles SET ${sets.join(', ')}, updated_at = ? WHERE user_id = ?`).bind(...binds, nowIso(), userId).run()
+}
+
+/** 우표 한 칸(1년) 추가(커플 단위). 새 값 반환. */
+export async function incrementUserCapsuleYears(userId: string): Promise<number> {
+  const p = await ensureDrawerProfile(userId)
+  const next = Math.min(CAPSULE_YEARS_MAX, (p.capsule_years || 3) + 1)
+  const db = await getDB()
+  await db.prepare('UPDATE drawer_profiles SET capsule_years = ?, updated_at = ? WHERE user_id = ?').bind(next, nowIso(), userId).run()
   return next
 }
 
@@ -746,4 +851,90 @@ export async function getPostDrawerData(
     },
     driveFolderUrl,
   }
+}
+
+// ── 통합 내 서랍 (user 단위 집계) — 통합 RSVP(getRsvpOverview) 패턴을 그대로 따른다 ──
+export interface DrawerInvOverview {
+  invitationId: string
+  archiveSlug: string
+  label: string // drawerLabel > 신랑·신부 이름 > 템플릿 라벨
+  typeLabel: string // 템플릿 유형(동명 청첩장 구분용)
+  weddingDate: string | null
+  templateId: string
+  locked: boolean // 장기보관 미신청 & 예식+30일 → 만료 잠김
+  hidden: boolean // 관리자 서랍 잠금
+  share: { shareSlug: string | null; enabled: boolean; hasPassword: boolean; canManage: boolean } // 청첩장별 시크릿 링크+비번(각각)
+  counts: { messages: number; photos: number } | null // 잠김/숨김이면 null(데이터 미노출)
+  driveFolderUrl: string | null // 하객 사진(우리의 순간) Drive 폴더
+}
+export interface DrawerAggMessage {
+  id: string
+  guestName: string
+  message: string
+  source: string | null
+  createdAt: string
+  images: number
+  videos: number
+  photoUrl?: string | null
+  group?: string | null
+  invitationId: string // 어느 청첩장인지(청첩장별 필터/전체보기용)
+  invLabel: string
+}
+export interface UserDrawerOverview {
+  header: { name: string; weddingDate: string | null; daysMarried: number | null }
+  capsules: CapsuleStamp[] // 커플 단위 우표 타임라인(결혼식 + 마일스톤)
+  invitations: DrawerInvOverview[]
+  messages: DrawerAggMessage[] // 받은 마음(방명록+RSVP+근날) 통합, 최신순. photo_share 제외(청첩장별 서랍에서).
+}
+
+/** [owner] 로그인 유저의 모든 결제완료 청첩장을 하나의 서랍으로 통합 집계. */
+export async function getUserDrawerOverview(userId: string): Promise<UserDrawerOverview> {
+  const all = await getInvitationsByUserId(userId)
+  const paid = all.filter((i) => ((i as unknown as { is_paid?: number }).is_paid ?? 0) === 1)
+  const invitations: DrawerInvOverview[] = []
+  const messages: DrawerAggMessage[] = []
+  for (const inv of paid) {
+    const content = (inv as unknown as { content?: string | null }).content ?? null
+    const hidden = stampHiddenOf(content)
+    const locked = isPostDrawerLockedByExpiry(content, inv.wedding_date)
+    await ensurePostDrawer(inv.id)
+    if (!hidden && !locked) await ensureShareSlug(inv.id)
+    const row = await getPostDrawerByInvitationId(inv.id)
+    const label = drawerLabelOf(content) || [inv.groom_name, inv.bride_name].filter(Boolean).join(' · ') || rsvpTemplateLabel(inv.template_id)
+    let counts: { messages: number; photos: number } | null = null
+    let driveFolderUrl: string | null = null
+    if (!hidden && !locked && row) {
+      const data = await getPostDrawerData(inv, row)
+      counts = { messages: data.summary.totalMessages, photos: data.summary.totalImages }
+      driveFolderUrl = data.driveFolderUrl
+      for (const m of data.messages) {
+        messages.push({ id: m.id, guestName: m.guestName, message: m.message, source: m.source, createdAt: m.createdAt, images: m.images, videos: m.videos, photoUrl: m.photoUrl ?? null, group: m.group ?? null, invitationId: inv.id, invLabel: label })
+      }
+    }
+    invitations.push({
+      invitationId: inv.id,
+      archiveSlug: row?.archive_slug || '',
+      label,
+      typeLabel: rsvpTemplateLabel(inv.template_id),
+      weddingDate: inv.wedding_date ?? null,
+      templateId: inv.template_id,
+      locked,
+      hidden,
+      share: {
+        shareSlug: row?.share_slug ?? null,
+        enabled: (row?.share_enabled ?? 0) === 1,
+        hasPassword: !!row?.share_password_hash,
+        canManage: !hidden && !locked && isPostDrawerActiveKST(inv.wedding_date),
+      },
+      counts,
+      driveFolderUrl,
+    })
+  }
+  messages.sort((a, b) => (a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0))
+  // 헤더는 가장 최근 예식 청첩장 하나에서 이름·날짜를 함께 도출(실제 한 커플은 이름 동일). 우표 프로필 시드와 동일 기준.
+  const primary = [...paid].sort((a, b) => ((a.wedding_date || '') < (b.wedding_date || '') ? 1 : -1))[0] || null
+  const weddingDate = primary?.wedding_date ?? null
+  const name = primary ? [primary.groom_name, primary.bride_name].filter(Boolean).join(' · ') || '우리' : '우리'
+  const capsules = paid.length ? await buildCapsulesForUser(userId) : []
+  return { header: { name, weddingDate, daysMarried: daysSinceWeddingKST(weddingDate) }, capsules, invitations, messages }
 }

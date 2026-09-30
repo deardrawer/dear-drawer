@@ -340,6 +340,9 @@
   -webkit-mask-composite: source-in, source-in, source-in;
           mask-composite: intersect;
 }
+/* 통합 서랍의 청첩장 카드는 ♥ 장식 없이 사용(우측 버튼과 겹침 방지) */
+.pd .mbundle.noheart::after { content: none; }
+.pd .mbundle.noheart .meta .nm { padding-right: 0; }
 .pd .mbundle .meta .nm { font-size: 14px; font-weight: 600; color: var(--label-normal); padding-right: 30px; }
 .pd .mbundle .meta .nm .from { font-size: 11px; font-weight: 500; color: var(--label-assistive); letter-spacing: .04em; margin-right: 2px; }
 .pd .mbundle .meta .msg { font-size: 13px; font-weight: 500; line-height: 1.7; color: var(--label-neutral); margin-top: 6px; white-space: pre-wrap; }

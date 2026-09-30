@@ -155,7 +155,7 @@ export default function SettingsClient({ archiveSlug }: { archiveSlug: string })
     return (
       <div className="pd">
         <nav className="nav">
-          <Link href={`/post-drawer/${archiveSlug}`} className="back" aria-label="서랍으로">
+          <Link href="/post-drawer/mine" className="back" aria-label="서랍으로">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
             서랍
           </Link>
@@ -208,7 +208,7 @@ export default function SettingsClient({ archiveSlug }: { archiveSlug: string })
   return (
     <div className="pd">
       <nav className="nav">
-        <Link href={`/post-drawer/${archiveSlug}`} className="back" aria-label="서랍으로">
+        <Link href="/post-drawer/mine" className="back" aria-label="서랍으로">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
           서랍
         </Link>

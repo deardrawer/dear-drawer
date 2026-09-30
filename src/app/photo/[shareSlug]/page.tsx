@@ -17,8 +17,8 @@ function Screen({ title, desc }: { title: string; desc: string }) {
     <main className="min-h-[100dvh] flex items-center justify-center bg-neutral-50 px-6 text-center">
       <div className="max-w-sm">
         <p className="text-4xl mb-4">🤍</p>
-        <h1 className="text-lg font-semibold text-neutral-800 mb-2">{title}</h1>
-        <p className="text-sm text-neutral-500 leading-relaxed">{desc}</p>
+        <h1 className="text-lg font-semibold text-neutral-800 mb-2 break-keep">{title}</h1>
+        <p className="text-sm text-neutral-500 leading-relaxed break-keep">{desc}</p>
       </div>
     </main>
   )

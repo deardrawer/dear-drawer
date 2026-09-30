@@ -258,7 +258,6 @@ export default function MineClient() {
   const canAddYear = yearCaps.length < 30 && (yearCaps.length === 0 || yearCaps[yearCaps.length - 1].recorded)
   const activeInvs = invitations.filter((i) => !i.locked && !i.hidden)
   const visibleMsgs = msgTab === 'all' ? messages : messages.filter((m) => m.invitationId === msgTab)
-  const photoInvs = invitations.filter((i) => i.counts && i.counts.photos > 0)
 
   return (
     <div className="pd">
@@ -286,7 +285,7 @@ export default function MineClient() {
               {header.daysMarried != null && <span className="dm-dday"><b>{ddayLabel(header.daysMarried)}</b></span>}
             </div>
           )}
-          <p className="sub">받은 마음과 우리의 순간을 두 사람만 다시 꺼내봅니다.</p>
+          <p className="sub">두 사람에게 도착한 마음을 다시 꺼내봅니다.</p>
           <div className="acts">
             <button type="button" className="btn btn-m btn-solid" onClick={() => setView('invitations')}>내 청첩장</button>
             <button type="button" className="btn btn-m btn-assist" onClick={() => setView('share')}>사진 공유</button>
@@ -373,30 +372,6 @@ export default function MineClient() {
           )}
         </section>
 
-        {/* 3. 우리의 순간 (하객 사진 — 청첩장별 Drive 폴더) */}
-        <section className="sect">
-          <h2>우리의 순간</h2>
-          {photoInvs.length === 0 ? (
-            <div className="empty-box">아직 하객이 보낸 사진이 없습니다.<br />청첩장에서 사진 공유를 켜면 이곳에 모입니다.</div>
-          ) : (
-            <div className="mbundles">
-              {photoInvs.map((inv) => (
-                <div className="mbundle noheart" key={inv.invitationId}>
-                  <div className="meta">
-                    <div className="nm"><span>{inv.label}</span><span className="ptag">{inv.typeLabel}</span></div>
-                    <div className="cnt">사진 {inv.counts?.photos ?? 0}장</div>
-                  </div>
-                  {inv.driveFolderUrl ? (
-                    <div className="mrow"><a href={inv.driveFolderUrl} target="_blank" rel="noopener noreferrer" className="btn btn-s btn-solid">Google Drive에서 사진 보기</a></div>
-                  ) : (
-                    <p className="setnote">Google Drive를 연결하면 폴더에서 한 번에 볼 수 있어요. (설정 &gt; 하객 사진 공유)</p>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-
         </>)}
 
         {view === 'invitations' && (<>
@@ -476,7 +451,7 @@ export default function MineClient() {
         {view === 'share' && (<>
         <header className="dhead">
           <h1>하객 사진 공유</h1>
-          <p className="sub">서랍당 링크 하나로 하객에게 사진을 받아요. 받은 사진은 서랍 &lsquo;우리의 순간&rsquo;에 모입니다.</p>
+          <p className="sub">서랍당 링크 하나로 하객에게 사진을 받아요. 받은 사진은 연결한 Google Drive 폴더에 모입니다.</p>
         </header>
         <section className="sect">
           <CoupleGuestShareCard />

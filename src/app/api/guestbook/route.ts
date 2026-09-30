@@ -36,7 +36,8 @@ export async function GET(request: NextRequest) {
         /* 무효 토큰 → 공개만 */
       }
     }
-    const messages = await getGuestbookMessages(invitationId, includePrivate);
+    // 스냅(photo_share) 메시지는 방명록에 노출하지 않음(서랍 '받은 마음' 전용)
+    const messages = await getGuestbookMessages(invitationId, includePrivate, false);
     return NextResponse.json({ data: messages });
   } catch (error) {
     console.error("Failed to get guestbook messages:", error);

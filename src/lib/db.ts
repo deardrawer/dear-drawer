@@ -747,11 +747,13 @@ export async function getRecentGuestbookMessage(
 // 방명록 메시지 목록 조회
 // includePrivate=false(기본): 공개만 — 기존 행(is_public NULL)은 공개로 폴백, photo_share(is_public=0) 제외.
 // includePrivate=true: 전체 — 오너 대시보드/CSV 전용.
-export async function getGuestbookMessages(invitationId: string, includePrivate = false): Promise<GuestbookMessage[]> {
+export async function getGuestbookMessages(invitationId: string, includePrivate = false, includePhotoShare = true): Promise<GuestbookMessage[]> {
   const db = await getDB();
   const visFilter = includePrivate ? "" : " AND (is_public IS NULL OR is_public = 1)";
+  // 하객 사진 공유(스냅) 메시지는 '받은 마음(서랍)' 전용 — 방명록/내보내기에는 노출하지 않는다.
+  const psFilter = includePhotoShare ? "" : " AND (source IS NULL OR source != 'photo_share')";
   const result = await db
-    .prepare(`SELECT * FROM guestbook_messages WHERE invitation_id = ?${visFilter} ORDER BY created_at DESC`)
+    .prepare(`SELECT * FROM guestbook_messages WHERE invitation_id = ?${visFilter}${psFilter} ORDER BY created_at DESC`)
     .bind(invitationId)
     .all<GuestbookMessage>();
 

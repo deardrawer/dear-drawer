@@ -30,7 +30,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const messages = await getGuestbookMessages(invitationId, true);
+    // 스냅(photo_share) 메시지는 방명록 내보내기에서 제외(서랍 '받은 마음' 전용)
+    const messages = await getGuestbookMessages(invitationId, true, false);
 
     // CSV 헤더
     const headers = ["이름", "메시지", "질문", "등록일"];

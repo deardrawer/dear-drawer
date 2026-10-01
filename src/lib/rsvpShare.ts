@@ -60,6 +60,8 @@ export interface RsvpBreakdown {
   shuttleYes: number; shuttleNo: number
   afterYes: number; afterNo: number
   groomSide: number; brideSide: number
+  // 부모님 세부(하객 구분 옵션): side_detail = father/mother. self는 (side − father − mother)로 도출.
+  groomFather: number; groomMother: number; brideFather: number; brideMother: number
 }
 export interface RsvpInvSummary extends RsvpBreakdown {
   id: string
@@ -107,7 +109,11 @@ export async function getRsvpOverview(userId: string): Promise<RsvpOverview> {
                 COALESCE(SUM(CASE WHEN r.after_party='yes' THEN 1 ELSE 0 END), 0) AS afterYes,
                 COALESCE(SUM(CASE WHEN r.after_party='no' THEN 1 ELSE 0 END), 0) AS afterNo,
                 COALESCE(SUM(CASE WHEN r.side='groom' THEN 1 ELSE 0 END), 0) AS groomSide,
-                COALESCE(SUM(CASE WHEN r.side='bride' THEN 1 ELSE 0 END), 0) AS brideSide
+                COALESCE(SUM(CASE WHEN r.side='bride' THEN 1 ELSE 0 END), 0) AS brideSide,
+                COALESCE(SUM(CASE WHEN r.side='groom' AND r.side_detail='father' THEN 1 ELSE 0 END), 0) AS groomFather,
+                COALESCE(SUM(CASE WHEN r.side='groom' AND r.side_detail='mother' THEN 1 ELSE 0 END), 0) AS groomMother,
+                COALESCE(SUM(CASE WHEN r.side='bride' AND r.side_detail='father' THEN 1 ELSE 0 END), 0) AS brideFather,
+                COALESCE(SUM(CASE WHEN r.side='bride' AND r.side_detail='mother' THEN 1 ELSE 0 END), 0) AS brideMother
          FROM invitations i
          LEFT JOIN rsvp_responses r ON r.invitation_id = i.id
          WHERE i.user_id = ?
@@ -115,7 +121,7 @@ export async function getRsvpOverview(userId: string): Promise<RsvpOverview> {
          ORDER BY i.wedding_date DESC`,
       )
       .bind(userId)
-      .all<{ id: string; groom_name: string | null; bride_name: string | null; wedding_date: string | null; slug: string | null; template_id: string | null; attending: number; notAttending: number; pending: number; guests: number; total: number; mealYes: number; mealNo: number; shuttleYes: number; shuttleNo: number; afterYes: number; afterNo: number; groomSide: number; brideSide: number }>()
+      .all<{ id: string; groom_name: string | null; bride_name: string | null; wedding_date: string | null; slug: string | null; template_id: string | null; attending: number; notAttending: number; pending: number; guests: number; total: number; mealYes: number; mealNo: number; shuttleYes: number; shuttleNo: number; afterYes: number; afterNo: number; groomSide: number; brideSide: number; groomFather: number; groomMother: number; brideFather: number; brideMother: number }>()
   ).results || []
   const invitations: RsvpInvSummary[] = rows.map((r) => ({
     id: r.id,
@@ -132,6 +138,7 @@ export async function getRsvpOverview(userId: string): Promise<RsvpOverview> {
     shuttleYes: r.shuttleYes, shuttleNo: r.shuttleNo,
     afterYes: r.afterYes, afterNo: r.afterNo,
     groomSide: r.groomSide, brideSide: r.brideSide,
+    groomFather: r.groomFather, groomMother: r.groomMother, brideFather: r.brideFather, brideMother: r.brideMother,
   }))
   const totals = invitations.reduce(
     (a, v) => ({
@@ -145,8 +152,10 @@ export async function getRsvpOverview(userId: string): Promise<RsvpOverview> {
       shuttleYes: a.shuttleYes + v.shuttleYes, shuttleNo: a.shuttleNo + v.shuttleNo,
       afterYes: a.afterYes + v.afterYes, afterNo: a.afterNo + v.afterNo,
       groomSide: a.groomSide + v.groomSide, brideSide: a.brideSide + v.brideSide,
+      groomFather: a.groomFather + v.groomFather, groomMother: a.groomMother + v.groomMother,
+      brideFather: a.brideFather + v.brideFather, brideMother: a.brideMother + v.brideMother,
     }),
-    { attending: 0, notAttending: 0, pending: 0, guests: 0, total: 0, invitations: invitations.length, mealYes: 0, mealNo: 0, shuttleYes: 0, shuttleNo: 0, afterYes: 0, afterNo: 0, groomSide: 0, brideSide: 0 },
+    { attending: 0, notAttending: 0, pending: 0, guests: 0, total: 0, invitations: invitations.length, mealYes: 0, mealNo: 0, shuttleYes: 0, shuttleNo: 0, afterYes: 0, afterNo: 0, groomSide: 0, brideSide: 0, groomFather: 0, groomMother: 0, brideFather: 0, brideMother: 0 },
   )
   return { invitations, totals }
 }
@@ -189,9 +198,17 @@ export async function getRsvpResponses(
     conds.push('r.attendance = ?')
     binds.push(opts.status)
   }
-  if (opts.side && ['groom', 'bride'].includes(opts.side)) {
-    conds.push('r.side = ?')
-    binds.push(opts.side)
+  // side 필터: 'groom'/'bride' 또는 부모님 세부 'groom_father'|'groom_mother'|'bride_father'|'bride_mother'
+  if (opts.side) {
+    const [base, detail] = opts.side.split('_')
+    if (['groom', 'bride'].includes(base)) {
+      conds.push('r.side = ?')
+      binds.push(base)
+      if (detail && ['self', 'father', 'mother'].includes(detail)) {
+        conds.push('r.side_detail = ?')
+        binds.push(detail)
+      }
+    }
   }
   if (opts.meal && ['yes', 'no'].includes(opts.meal)) {
     conds.push('r.meal_attendance = ?')

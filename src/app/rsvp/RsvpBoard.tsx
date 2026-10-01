@@ -19,6 +19,8 @@ interface Breakdown {
   shuttleYes: number; shuttleNo: number
   afterYes: number; afterNo: number
   groomSide: number; brideSide: number
+  // 부모님 세부(하객 구분 옵션). 구버전 응답 호환 위해 optional.
+  groomFather?: number; groomMother?: number; brideFather?: number; brideMother?: number
 }
 interface Overview {
   invitations: InvSummary[]
@@ -225,6 +227,14 @@ export default function RsvpBoard({ shareSlug }: { shareSlug?: string }) {
   const t = overview.totals
   const hasMore = items.length < total
   const hasSide = t.groomSide + t.brideSide > 0
+  // 측 필터 옵션 — 부모님 세부(하객 구분)는 해당 데이터가 있을 때만 추가 노출
+  const gF = t.groomFather ?? 0, gM = t.groomMother ?? 0, bF = t.brideFather ?? 0, bM = t.brideMother ?? 0
+  const sideOptions: [string, string][] = [['all', '전체'], ['groom', '신랑측']]
+  if (gF > 0) sideOptions.push(['groom_father', '신랑 아버지'])
+  if (gM > 0) sideOptions.push(['groom_mother', '신랑 어머니'])
+  sideOptions.push(['bride', '신부측'])
+  if (bF > 0) sideOptions.push(['bride_father', '신부 아버지'])
+  if (bM > 0) sideOptions.push(['bride_mother', '신부 어머니'])
   const hasSub = hasSide || t.mealYes + t.mealNo > 0 || t.shuttleYes + t.shuttleNo > 0 || t.afterYes + t.afterNo > 0
 
   return (
@@ -273,7 +283,11 @@ export default function RsvpBoard({ shareSlug }: { shareSlug?: string }) {
             {hasSide && (
               <>
                 <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500" />신랑측 <b className="font-bold text-gray-900 tabular-nums">{t.groomSide}</b></span>
+                {gF > 0 && <span>· 아버지 <b className="font-bold text-gray-900 tabular-nums">{gF}</b></span>}
+                {gM > 0 && <span>· 어머니 <b className="font-bold text-gray-900 tabular-nums">{gM}</b></span>}
                 <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-400" />신부측 <b className="font-bold text-gray-900 tabular-nums">{t.brideSide}</b></span>
+                {bF > 0 && <span>· 아버지 <b className="font-bold text-gray-900 tabular-nums">{bF}</b></span>}
+                {bM > 0 && <span>· 어머니 <b className="font-bold text-gray-900 tabular-nums">{bM}</b></span>}
               </>
             )}
             {t.mealYes + t.mealNo > 0 && <span>식사 <b className="font-bold text-gray-900 tabular-nums">{t.mealYes}</b></span>}
@@ -302,11 +316,11 @@ export default function RsvpBoard({ shareSlug }: { shareSlug?: string }) {
             onChange={(v) => reload({ status: v })}
           />
         </div>
-        {/* 신랑/신부측 (측 데이터 있을 때만) */}
-        {t.groomSide + t.brideSide > 0 && (
-          <div className="mt-2">
+        {/* 신랑/신부측 + 부모님 세부 (측 데이터 있을 때만) — 세부 옵션은 가로 스크롤 */}
+        {hasSide && (
+          <div className="mt-2 overflow-x-auto -mx-4 px-4">
             <Segment
-              options={[['all', '전체'], ['groom', '신랑측'], ['bride', '신부측']]}
+              options={sideOptions}
               value={sideFilter}
               onChange={(v) => reload({ side: v })}
             />

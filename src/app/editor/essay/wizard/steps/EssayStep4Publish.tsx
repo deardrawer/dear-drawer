@@ -187,15 +187,11 @@ export default function EssayStep4Publish({ data, invitationId, slug, onSave, on
   return (
     <div className="p-6 space-y-8">
       {/* 안내 */}
-      <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-        <p className="text-base text-purple-800 font-medium mb-1 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="m3 11 18-5v12L3 13v-2z" />
-            <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" />
-          </svg>
+      <div className="p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
+        <p className="text-base font-medium mb-1" style={{ color: 'var(--ed-text)' }}>
           거의 다 왔어요!
         </p>
-        <p className="text-sm text-purple-700">
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
           청첩장을 발행하면 바로 공유할 수 있어요.
         </p>
       </div>
@@ -203,11 +199,7 @@ export default function EssayStep4Publish({ data, invitationId, slug, onSave, on
       {/* 청첩장 주소 */}
       {invitationUrl && (
         <section className="space-y-4">
-          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-            </svg>
+          <h3 className="text-base font-semibold text-gray-900">
             청첩장 주소
           </h3>
 
@@ -265,12 +257,7 @@ export default function EssayStep4Publish({ data, invitationId, slug, onSave, on
 
       {/* 공개 설정 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M2 12h20" />
-            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-          </svg>
+        <h3 className="text-base font-semibold text-gray-900">
           공개 설정
         </h3>
         <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
@@ -303,7 +290,7 @@ export default function EssayStep4Publish({ data, invitationId, slug, onSave, on
       <Button
         onClick={handlePublish}
         disabled={isPublishing || isPublished}
-        className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+        className="w-full h-14 text-lg font-semibold neu-btn-primary"
       >
         {isPublishing ? (
           <div className="flex items-center gap-2">
@@ -337,7 +324,7 @@ export default function EssayStep4Publish({ data, invitationId, slug, onSave, on
         <DialogContent className="max-w-sm mx-auto">
           <DialogTitle className="sr-only">발행 완료</DialogTitle>
           <div className="text-center pt-2 pb-4">
-            <div className="mb-3 animate-bounce flex justify-center">
+            <div className="mb-3 flex justify-center">
               <svg className="w-16 h-16 text-gray-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="m3 11 18-5v12L3 13v-2z" />
                 <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" />
@@ -349,11 +336,7 @@ export default function EssayStep4Publish({ data, invitationId, slug, onSave, on
 
           {invitationUrl && (
             <div className="space-y-2">
-              <p className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
-                <svg className="w-3.5 h-3.5 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                </svg>
+              <p className="text-sm font-medium text-gray-700">
                 공유 링크
               </p>
               <div className="flex items-center gap-2">

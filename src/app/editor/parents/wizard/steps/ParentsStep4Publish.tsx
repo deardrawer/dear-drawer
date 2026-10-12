@@ -280,18 +280,18 @@ export default function ParentsStep4Publish({
   return (
     <div className="p-6 space-y-8">
       {/* 안내 */}
-      <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-        <p className="text-base text-purple-800 font-medium mb-1">거의 다 왔어요!</p>
-        <p className="text-sm text-purple-700">
-          💙 청첩장을 발행하면 바로 공유할 수 있어요.
+      <div className="p-4 rounded-xl" style={{ backgroundColor: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
+        <p className="text-base font-medium mb-1" style={{ color: 'var(--ed-text)' }}>거의 다 왔어요</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
+          청첩장을 발행하면 바로 공유할 수 있어요.
         </p>
       </div>
 
       {/* 청첩장 주소 표시 */}
       {invitationUrl && (
         <section className="space-y-4">
-          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            🔗 청첩장 주소
+          <h3 className="text-base font-semibold text-gray-900">
+            청첩장 주소
           </h3>
 
           <div className="p-4 bg-gray-50 rounded-lg space-y-3">
@@ -384,8 +384,8 @@ export default function ParentsStep4Publish({
 
       {/* 공개 설정 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          🌐 공개 설정
+        <h3 className="text-base font-semibold text-gray-900">
+          공개 설정
         </h3>
 
         <div className="space-y-3">
@@ -435,7 +435,7 @@ export default function ParentsStep4Publish({
         ) : isPublished ? (
           '✓ 발행 완료'
         ) : (
-          '✨ 청첩장 발행하기'
+          '청첩장 발행하기'
         )}
       </Button>
 
@@ -454,7 +454,6 @@ export default function ParentsStep4Publish({
           <DialogTitle className="sr-only">발행 완료</DialogTitle>
           {/* 축하 헤더 */}
           <div className="text-center pt-2 pb-4">
-            <div className="text-5xl mb-3 animate-bounce">🎊</div>
             <h2 className="text-xl font-bold text-gray-900 mb-1">축하합니다!</h2>
             <p className="text-sm text-gray-600">청첩장이 발행되었습니다</p>
           </div>
@@ -462,7 +461,7 @@ export default function ParentsStep4Publish({
           {/* 공유 링크 */}
           {invitationUrl && (
             <div className="space-y-2">
-              <p className="text-sm font-medium text-gray-700">🔗 공유 링크</p>
+              <p className="text-sm font-medium text-gray-700">공유 링크</p>
               <div className="flex items-center gap-2">
                 <Input
                   value={invitationUrl}
@@ -516,7 +515,7 @@ export default function ParentsStep4Publish({
           {/* 게스트 관리 안내 */}
           <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl">
             <p className="text-xs text-amber-700">
-              💡 <span className="font-medium">게스트 관리</span>에서 하객별 맞춤 링크를 생성하고 열람 여부를 확인할 수 있어요
+              <span className="font-medium">게스트 관리</span>에서 하객별 맞춤 링크를 생성하고 열람 여부를 확인할 수 있어요
             </p>
           </div>
 

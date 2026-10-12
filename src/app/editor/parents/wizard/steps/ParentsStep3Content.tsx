@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
-import { Heart, Clock, ImagePlus, MapPin, Bus, CreditCard, Plus, X, MessageSquare, GripVertical, Film } from 'lucide-react'
+import { Plus, X, GripVertical } from 'lucide-react'
 import { SortableList, SortableItem } from '@/components/ui/sortable-list'
 import ImageCropEditor from '@/components/parents/ImageCropEditor'
 import { PARENTS_FRAME_CFG, PARENTS_FRAME_IDS } from '@/components/parents/MainPhotoSection'
@@ -211,22 +211,16 @@ export default function ParentsStep3Content({
   return (
     <div className="p-6 space-y-8">
       {/* 안내 */}
-      <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-        <p className="text-base text-purple-800 font-medium mb-1">본문 내용 작성</p>
-        <p className="text-sm text-purple-700">
-          💙 청첩장 본문에 표시될 내용을 작성해주세요.
-        </p>
-      </div>
+      <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
+        청첩장 본문에 표시될 내용을 작성해주세요.
+      </p>
 
       {/* 본문 인사말 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-cyan-100 flex items-center justify-center">
-            <Heart className="w-3 h-3 text-cyan-500" />
-          </div>
+        <h3 className="text-base font-semibold text-gray-900">
           본문 인사말
         </h3>
-        <p className="text-sm text-blue-600">💙 청첩장 본문에 표시될 인사말을 작성해주세요.</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>청첩장 본문에 표시될 인사말을 작성해주세요.</p>
 
         <Textarea
           value={data.greeting}
@@ -240,13 +234,10 @@ export default function ParentsStep3Content({
 
       {/* 타임라인 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center">
-            <Clock className="w-3 h-3 text-indigo-500" />
-          </div>
+        <h3 className="text-base font-semibold text-gray-900">
           타임라인
         </h3>
-        <p className="text-sm text-blue-600">💙 부모님 시점에서 아이의 성장 이야기를 담아보세요.</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>부모님 시점에서 아이의 성장 이야기를 담아보세요.</p>
 
         {/* ON/OFF 토글 */}
         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -353,13 +344,10 @@ export default function ParentsStep3Content({
 
       {/* 메인 사진 (커플정보) */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-teal-100 flex items-center justify-center">
-            <ImagePlus className="w-3 h-3 text-teal-500" />
-          </div>
+        <h3 className="text-base font-semibold text-gray-900">
           메인 사진
         </h3>
-        <p className="text-sm text-blue-600">💙 커플정보 영역의 대표 사진입니다. 미설정 시 갤러리 첫 번째 사진이 사용됩니다.</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>커플정보 영역의 대표 사진입니다. 미설정 시 갤러리 첫 번째 사진이 사용됩니다.</p>
 
         <ImageCropEditor
           value={data.mainImage || { url: '', cropX: 0, cropY: 0, cropWidth: 1, cropHeight: 1 }}
@@ -459,9 +447,9 @@ export default function ParentsStep3Content({
           </div>
 
           {/* 신랑 측 부모님 */}
-          <div className="space-y-3 p-3 bg-blue-50/50 rounded-lg">
+          <div className="space-y-3 p-3 rounded-lg" style={{ backgroundColor: 'var(--ed-surface-2)' }}>
             <div className="flex items-center justify-between">
-              <div className="text-sm font-medium text-blue-800">신랑 측 부모님</div>
+              <div className="text-sm font-medium" style={{ color: 'var(--ed-text)' }}>신랑 측 부모님</div>
               <label className="flex items-center gap-1.5 cursor-pointer">
                 <Switch
                   checked={data.groom.parentsHidden ?? false}
@@ -515,9 +503,9 @@ export default function ParentsStep3Content({
           </div>
 
           {/* 신부 측 부모님 */}
-          <div className="space-y-3 p-3 bg-pink-50/50 rounded-lg">
+          <div className="space-y-3 p-3 rounded-lg" style={{ backgroundColor: 'var(--ed-surface-2)' }}>
             <div className="flex items-center justify-between">
-              <div className="text-sm font-medium text-pink-800">신부 측 부모님</div>
+              <div className="text-sm font-medium" style={{ color: 'var(--ed-text)' }}>신부 측 부모님</div>
               <label className="flex items-center gap-1.5 cursor-pointer">
                 <Switch
                   checked={data.bride.parentsHidden ?? false}
@@ -609,14 +597,11 @@ export default function ParentsStep3Content({
 
       {/* 갤러리 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center">
-            <ImagePlus className="w-3 h-3 text-emerald-500" />
-          </div>
+        <h3 className="text-base font-semibold text-gray-900">
           갤러리
-          <span className="text-xs text-gray-400 font-normal">({data.gallery?.images?.length || 0}장)</span>
+          <span className="text-xs text-gray-400 font-normal ml-1.5">({data.gallery?.images?.length || 0}장)</span>
         </h3>
-        <p className="text-sm text-blue-600">💙 신랑신부 사진을 추가하세요. (최대 30장)</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>신랑신부 사진을 추가하세요. (최대 30장)</p>
         <p className="text-xs text-gray-500">사진이 2장 이상이면 드래그하여 순서를 변경할 수 있습니다.</p>
 
         {(() => {
@@ -721,10 +706,7 @@ export default function ParentsStep3Content({
       {/* 유튜브 영상 */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center">
-              <Film className="w-3 h-3 text-red-500" />
-            </div>
+          <h3 className="text-base font-semibold text-gray-900">
             영상
           </h3>
           <Switch
@@ -732,7 +714,7 @@ export default function ParentsStep3Content({
             onCheckedChange={(checked) => updateNestedData('youtube.enabled', checked)}
           />
         </div>
-        <p className="text-sm text-blue-600">💙 유튜브 영상을 추가하세요. 갤러리 아래에 표시됩니다.</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>유튜브 영상을 추가하세요. 갤러리 아래에 표시됩니다.</p>
 
         {data.youtube?.enabled && (
           <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
@@ -779,13 +761,10 @@ export default function ParentsStep3Content({
 
       {/* 결혼식 정보 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center">
-            <MapPin className="w-3 h-3 text-purple-500" />
-          </div>
+        <h3 className="text-base font-semibold text-gray-900">
           결혼식 정보
         </h3>
-        <p className="text-sm text-blue-600">💙 결혼식 날짜, 시간, 장소를 입력해주세요.</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>결혼식 날짜, 시간, 장소를 입력해주세요.</p>
 
         {/* 날짜/시간 */}
         <div className="grid grid-cols-2 gap-3">
@@ -1255,7 +1234,7 @@ export default function ParentsStep3Content({
           {/* 추가 안내사항 */}
           <div className="border rounded-lg p-3 space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-medium">📝 추가 안내사항</Label>
+              <Label className="text-xs font-medium">추가 안내사항</Label>
               <Switch
                 checked={data.wedding.directions?.extraInfoEnabled ?? false}
                 onCheckedChange={(checked) => updateNestedData('wedding.directions.extraInfoEnabled', checked)}
@@ -1276,13 +1255,10 @@ export default function ParentsStep3Content({
 
       {/* 결혼식 안내 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-rose-100 flex items-center justify-center">
-            <Bus className="w-3 h-3 text-rose-500" />
-          </div>
+        <h3 className="text-base font-semibold text-gray-900">
           결혼식 안내
         </h3>
-        <p className="text-sm text-blue-600">💙 답례품, 화환, 피로연, 셔틀버스 등 안내 정보를 입력해주세요.</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>답례품, 화환, 피로연, 셔틀버스 등 안내 정보를 입력해주세요.</p>
 
         {/* 섹션 전체 ON/OFF */}
         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -1541,10 +1517,7 @@ export default function ParentsStep3Content({
       {/* RSVP (참석의사전달) */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-violet-100 flex items-center justify-center">
-              <MessageSquare className="w-3 h-3 text-violet-500" />
-            </div>
+          <h3 className="text-base font-semibold text-gray-900">
             RSVP (참석의사전달)
           </h3>
           <Switch
@@ -1552,7 +1525,7 @@ export default function ParentsStep3Content({
             onCheckedChange={(checked) => updateData({ rsvpEnabled: checked })}
           />
         </div>
-        <p className="text-sm text-blue-600">💙 하객분들이 참석 여부를 전달할 수 있는 RSVP 기능이 표시됩니다.</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>하객분들이 참석 여부를 전달할 수 있는 RSVP 기능이 표시됩니다.</p>
 
         <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
           <Switch
@@ -1661,16 +1634,13 @@ export default function ParentsStep3Content({
 
       {/* 계좌 안내 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-            <CreditCard className="w-3 h-3 text-green-600" />
-          </div>
+        <h3 className="text-base font-semibold text-gray-900">
           계좌 안내
         </h3>
-        <p className="text-sm text-blue-600">
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
           {data.sender.side === 'bride'
-            ? '💙 신부측 계좌 정보를 입력하세요.'
-            : '💙 신랑측 계좌 정보를 입력하세요.'}
+            ? '신부측 계좌 정보를 입력하세요.'
+            : '신랑측 계좌 정보를 입력하세요.'}
         </p>
 
         {/* ON/OFF 토글 */}
@@ -1686,8 +1656,8 @@ export default function ParentsStep3Content({
         </div>
 
         {data.accounts?.enabled !== false && (
-          <div className={`p-4 rounded-lg space-y-4 ${data.sender.side === 'bride' ? 'bg-pink-50/50' : 'bg-blue-50/50'}`}>
-            <p className={`text-sm font-semibold ${data.sender.side === 'bride' ? 'text-pink-800' : 'text-blue-800'}`}>
+          <div className="p-4 rounded-lg space-y-4" style={{ backgroundColor: 'var(--ed-surface-2)' }}>
+            <p className="text-sm font-semibold" style={{ color: 'var(--ed-text)' }}>
               {data.sender.side === 'bride' ? '신부측' : '신랑측'}
             </p>
 

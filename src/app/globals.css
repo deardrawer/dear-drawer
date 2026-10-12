@@ -1238,15 +1238,28 @@
   }
 
   .theme-neu {
-    background: linear-gradient(160deg, #F5F0ED 0%, #EDE8EC 30%, #E9ECF2 65%, #F0F1F3 100%) !important;
-    color: #2C2824;
+    /* ── 에디터 셸 디자인 토큰 (웜그레이 중립 + 단일 강조) ── */
+    --ed-text: #2C2824;        /* 본문 */
+    --ed-text-muted: #6E6660;  /* 보조 */
+    --ed-text-faint: #A8A099;  /* 비활성 */
+    --ed-surface: #FFFFFF;      /* 표면 1 (패널·입력) */
+    --ed-surface-2: #F6F2EE;    /* 표면 2 (옅은 웜그레이) */
+    --ed-border: rgba(44,40,36,0.10); /* 구분선 */
+    --ed-accent: #7A5A44;       /* 유일한 강조(웜브라운) — 회색 텍스트와 구분되게 또렷한 톤 */
+    --ed-accent-weak: rgba(122,90,68,0.08);
+    --ed-radius-sm: 8px;        /* 작은 요소 */
+    --ed-radius: 12px;          /* 입력·카드·패널 */
+    --ed-radius-pill: 999px;    /* 토글·세그먼트 */
+
+    background: linear-gradient(160deg, #F4F0EC 0%, #EFEAE4 100%) !important;
+    color: var(--ed-text);
   }
 
   .theme-neu .editor-header {
-    background: rgba(245,240,237,0.95) !important;
+    background: rgba(244,240,236,0.95) !important;
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    border-bottom: 1px solid rgba(0,0,0,0.06) !important;
+    border-bottom: 1px solid var(--ed-border) !important;
   }
 
   .theme-neu .editor-scroll-area {
@@ -1263,59 +1276,54 @@
   }
 
   .theme-neu .editor-panel {
-    background: rgba(255,255,255,0.45);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-radius: 24px;
-    border: 1px solid rgba(255,255,255,0.6) !important;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.03);
+    background: var(--ed-surface);
+    border-radius: var(--ed-radius);
+    border: 1px solid var(--ed-border) !important;
+    box-shadow: none;
   }
 
   .theme-neu .neu-card {
-    background: rgba(255,255,255,0.5);
-    backdrop-filter: blur(8px);
-    border: 1.5px solid rgba(0,0,0,0.03) !important;
-    border-radius: 14px;
-    transition: all 0.25s;
+    background: transparent;
+    border: 1px solid var(--ed-border) !important;
+    border-radius: var(--ed-radius);
+    transition: border-color 0.15s, background 0.15s;
   }
 
   .theme-neu .neu-card:hover {
-    background: rgba(255,255,255,0.75);
-    border-color: rgba(0,0,0,0.05) !important;
+    background: var(--ed-surface-2);
+    border-color: rgba(44,40,36,0.18) !important;
   }
 
+  /* 선택 상태 = 강조 테두리 1px + 체크만 (배경 채움·그림자 없음) */
   .theme-neu .neu-card-selected {
-    border-color: rgba(163,126,105,0.4) !important;
-    background: rgba(163,126,105,0.05) !important;
-    box-shadow: 0 2px 10px rgba(163,126,105,0.08);
+    border-color: var(--ed-accent) !important;
+    background: transparent !important;
+    box-shadow: none;
   }
 
   .theme-neu .neu-btn {
-    background: rgba(255,255,255,0.7);
-    backdrop-filter: blur(8px);
-    border: none !important;
-    border-radius: 99px;
-    color: #6B6560;
-    transition: all 0.2s;
+    background: var(--ed-surface);
+    border: 1px solid var(--ed-border) !important;
+    border-radius: var(--ed-radius-sm) !important;
+    color: var(--ed-text-muted);
+    transition: background 0.15s, color 0.15s;
   }
 
   .theme-neu .neu-btn:hover {
-    background: rgba(255,255,255,0.9);
-    color: #3A3530;
+    background: var(--ed-surface-2);
+    color: var(--ed-text);
   }
 
   .theme-neu .neu-btn-primary {
-    background: #3A3530 !important;
+    background: var(--ed-accent) !important;
     color: #F5F0ED !important;
-    box-shadow: 0 2px 8px rgba(58,53,48,0.2);
-    border: none !important;
-    border-radius: 14px;
+    box-shadow: none;
+    border: 1px solid var(--ed-accent) !important;
+    border-radius: var(--ed-radius-sm) !important;
   }
 
   .theme-neu .neu-btn-primary:hover {
-    background: #4A453F !important;
-    box-shadow: 0 4px 14px rgba(58,53,48,0.25);
-    transform: translateY(-1px);
+    background: #684B38 !important;
   }
 
   .theme-neu .neu-tab {
@@ -1323,31 +1331,31 @@
     border: none !important;
     border-radius: 0;
     border-bottom: 2px solid transparent !important;
-    color: #C0BBB6;
-    letter-spacing: 1px;
+    color: var(--ed-text-faint);
+    letter-spacing: 0.3px;
     font-size: 12px;
-    transition: all 0.25s;
+    transition: color 0.15s, border-color 0.15s;
   }
 
   .theme-neu .neu-tab:hover {
-    color: #8A8580;
+    color: var(--ed-text-muted);
   }
 
   .theme-neu .neu-tab-active {
-    color: #3A3530 !important;
-    border-bottom: 2px solid #A37E69 !important;
+    color: var(--ed-text) !important;
+    border-bottom: 2px solid var(--ed-accent) !important;
     background: transparent !important;
     font-weight: 600;
   }
 
   .theme-neu .neu-progress-bar {
-    background: rgba(0,0,0,0.06);
-    border-radius: 4px;
+    background: var(--ed-border);
+    border-radius: var(--ed-radius-pill);
     overflow: hidden;
   }
 
   .theme-neu .neu-progress-fill {
-    background: linear-gradient(135deg, #A37E69, #C9977F);
+    background: var(--ed-accent);
   }
 
   .theme-neu .neu-divider {
@@ -1355,17 +1363,17 @@
   }
 
   .theme-neu .wizard-sticky-header {
-    background: rgba(245,240,237,0.92) !important;
+    background: rgba(244,240,236,0.92) !important;
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid rgba(0,0,0,0.04) !important;
+    border-bottom: 1px solid var(--ed-border) !important;
   }
 
   .theme-neu .wizard-sticky-footer {
-    background: rgba(245,240,237,0.92) !important;
+    background: rgba(244,240,236,0.92) !important;
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border-top: 1px solid rgba(0,0,0,0.04) !important;
+    border-top: 1px solid var(--ed-border) !important;
   }
 
   .theme-neu .wizard-content {
@@ -1373,10 +1381,10 @@
   }
 
   .theme-neu .mobile-tab-bar {
-    background: rgba(255,255,255,0.7) !important;
+    background: rgba(255,255,255,0.9) !important;
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-top: 1px solid rgba(0,0,0,0.04) !important;
+    border-top: 1px solid var(--ed-border) !important;
   }
 }
 

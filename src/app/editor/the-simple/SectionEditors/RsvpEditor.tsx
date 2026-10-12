@@ -283,7 +283,7 @@ export default function RsvpEditor({ value, variant = 1, shareSlug, invitationId
               </button>
             </div>
           ) : (
-            <p className="mt-2 text-[11px] text-amber-600">저장(발행) 후 링크가 생성됩니다.</p>
+            <p className="mt-2 text-[11px] text-stone-500">저장(발행) 후 링크가 생성됩니다.</p>
           )
         )}
         {value.sharedRsvpEnabled && rsvpUrl && (
@@ -329,7 +329,7 @@ export default function RsvpEditor({ value, variant = 1, shareSlug, invitationId
               카카오톡으로 공유
             </button>
             <p className="text-[10px] leading-tight text-stone-400">
-              제목·설명을 비우면 기본 문구가 사용됩니다. <b className="text-stone-500">카카오톡으로 공유</b> 버튼은 수정 즉시 반영됩니다. 링크를 복사해 붙여넣는 경우엔 <span className="text-amber-600">저장 후</span> 카카오 캐시 갱신이 필요할 수 있어요.
+              제목·설명을 비우면 기본 문구가 사용됩니다. <b className="text-stone-500">카카오톡으로 공유</b> 버튼은 수정 즉시 반영됩니다. 링크를 복사해 붙여넣는 경우엔 <span className="text-stone-500">저장 후</span> 카카오 캐시 갱신이 필요할 수 있어요.
             </p>
           </div>
         )}

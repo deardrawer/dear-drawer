@@ -88,22 +88,16 @@ export default function ClassicStepContent({ data, updateNestedData, invitationI
   return (
     <div className="p-6 space-y-8">
       {/* 안내 배너 */}
-      <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-        <p className="text-base text-orange-800 font-medium mb-1">추가 정보</p>
-        <p className="text-sm text-orange-700">
+      <div className="p-4 rounded-lg border" style={{ backgroundColor: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
+        <p className="text-base font-medium mb-1" style={{ color: 'var(--ed-text)' }}>추가 정보</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
           계좌, 결혼식 안내, 공유, 참석 여부(RSVP) 정보를 입력하세요.
         </p>
       </div>
 
       {/* 마음 전하실 곳 (계좌) */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="1" y="4" width="22" height="16" rx="2" />
-            <path d="M1 10h22" />
-          </svg>
-          마음 전하실 곳
-        </h3>
+        <h3 className="text-base font-semibold text-gray-900">마음 전하실 곳</h3>
         <p className="text-sm text-gray-500">토글을 켠 계좌만 청첩장 &quot;마음 전하실 곳&quot;에 표시됩니다.</p>
 
         <div className="space-y-1.5">
@@ -118,15 +112,15 @@ export default function ClassicStepContent({ data, updateNestedData, invitationI
           <p className="text-[10px] text-gray-400 leading-tight">비워두면 기본 문구가 표시됩니다. 줄바꿈 가능.</p>
         </div>
 
-        <div className="space-y-3 p-4 bg-blue-50 rounded-lg">
-          <p className="font-semibold text-blue-800">신랑측</p>
+        <div className="space-y-3 p-4 rounded-lg border" style={{ backgroundColor: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
+          <p className="font-semibold" style={{ color: 'var(--ed-text)' }}>신랑측</p>
           {renderBankFields(data.groom.bank, 'groom.bank', '신랑 계좌', data.groom.name)}
           {renderBankFields(data.groom.father.bank, 'groom.father.bank', '아버지 계좌', data.groom.father.name)}
           {renderBankFields(data.groom.mother.bank, 'groom.mother.bank', '어머니 계좌', data.groom.mother.name)}
         </div>
 
-        <div className="space-y-3 p-4 bg-pink-50 rounded-lg">
-          <p className="font-semibold text-pink-800">신부측</p>
+        <div className="space-y-3 p-4 rounded-lg border" style={{ backgroundColor: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
+          <p className="font-semibold" style={{ color: 'var(--ed-text)' }}>신부측</p>
           {renderBankFields(data.bride.bank, 'bride.bank', '신부 계좌', data.bride.name)}
           {renderBankFields(data.bride.father.bank, 'bride.father.bank', '아버지 계좌', data.bride.father.name)}
           {renderBankFields(data.bride.mother.bank, 'bride.mother.bank', '어머니 계좌', data.bride.mother.name)}
@@ -135,14 +129,7 @@ export default function ClassicStepContent({ data, updateNestedData, invitationI
 
       {/* 결혼식 안내 (Information) */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M12 16v-4" />
-            <path d="M12 8h.01" />
-          </svg>
-          결혼식 안내
-        </h3>
+        <h3 className="text-base font-semibold text-gray-900">결혼식 안내</h3>
         <p className="text-sm text-gray-500">예정된 안내는 토글로 켜서 사용하고, 필요하면 항목을 추가하세요.</p>
 
         <ClassicGuideEditor
@@ -189,12 +176,7 @@ export default function ClassicStepContent({ data, updateNestedData, invitationI
 
       {/* RSVP */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
-          </svg>
-          참석 여부 (RSVP)
-        </h3>
+        <h3 className="text-base font-semibold text-gray-900">참석 여부 (RSVP)</h3>
         <p className="text-sm text-gray-500">참석 여부 버튼을 누르면 상세 입력 폼이 열립니다. 받을 항목을 선택하세요.</p>
 
         <div className="space-y-3 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
@@ -296,12 +278,7 @@ export default function ClassicStepContent({ data, updateNestedData, invitationI
 
       {/* 섹션 순서 (가장 마지막) */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
-          </svg>
-          섹션 순서
-        </h3>
+        <h3 className="text-base font-semibold text-gray-900">섹션 순서</h3>
         <p className="text-sm text-gray-500">청첩장에 표시되는 순서입니다. 위·아래 화살표로 순서를 바꾸세요.</p>
         <div className="space-y-2">
           {sectionOrder.map((key, i) => (

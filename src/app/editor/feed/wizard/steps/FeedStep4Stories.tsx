@@ -70,7 +70,7 @@ function EmojiPicker({ value, onChange }: { value: string; onChange: (emoji: str
                 key={emoji}
                 type="button"
                 onClick={() => { onChange(emoji); setOpen(false) }}
-                className={`w-7 h-7 rounded-md flex items-center justify-center text-base hover:bg-gray-100 transition-colors ${value === emoji ? 'bg-blue-50 ring-1 ring-blue-300' : ''}`}
+                className={`w-7 h-7 rounded-md flex items-center justify-center text-base hover:bg-gray-100 transition-colors ${value === emoji ? 'bg-gray-100 ring-1 ring-gray-300' : ''}`}
               >
                 {emoji}
               </button>
@@ -153,17 +153,17 @@ export default function FeedStep4Stories({
   return (
     <div className="p-6 space-y-8">
       {/* 안내 */}
-      <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-        <p className="text-base text-orange-800 font-medium mb-1">콘텐츠 작성</p>
-        <p className="text-sm text-orange-700">
+      <div className="p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
+        <p className="text-base font-medium mb-1" style={{ color: 'var(--ed-text)' }}>콘텐츠 작성</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
           인사말, 프로필, 러브스토리 등 청첩장 콘텐츠를 작성해주세요.
         </p>
       </div>
 
       {/* 인사말 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          💌 인사말
+        <h3 className="text-base font-semibold text-gray-900">
+          인사말
         </h3>
 
         <div className="space-y-1.5">
@@ -181,8 +181,8 @@ export default function FeedStep4Stories({
       {/* 프로필 */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            👫 프로필
+          <h3 className="text-base font-semibold text-gray-900">
+            프로필
           </h3>
           <ToggleSwitch
             checked={data.sectionVisibility?.profile !== false}
@@ -190,8 +190,8 @@ export default function FeedStep4Stories({
           />
         </div>
         {data.sectionVisibility?.profile !== false && <>
-        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-sm text-blue-800">프로필 사진과 소개 글을 입력하면 인트로 섹션에 표시됩니다.</p>
+        <div className="p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
+          <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>프로필 사진과 소개 글을 입력하면 인트로 섹션에 표시됩니다.</p>
         </div>
 
         {/* 신랑 프로필 */}
@@ -273,8 +273,8 @@ export default function FeedStep4Stories({
       {/* 러브스토리 */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            💕 러브스토리
+          <h3 className="text-base font-semibold text-gray-900">
+            러브스토리
           </h3>
           <ToggleSwitch
             checked={data.sectionVisibility?.loveStory !== false}
@@ -282,8 +282,8 @@ export default function FeedStep4Stories({
           />
         </div>
         {data.sectionVisibility?.loveStory !== false && <>
-        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-sm text-blue-800">인스타그램 포스트처럼 사진과 캡션으로 두 사람의 이야기를 들려주세요. 최대 10개까지 추가할 수 있어요.</p>
+        <div className="p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
+          <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>인스타그램 포스트처럼 사진과 캡션으로 두 사람의 이야기를 들려주세요. 최대 10개까지 추가할 수 있어요.</p>
         </div>
 
         {/* Empty state */}
@@ -377,15 +377,15 @@ export default function FeedStep4Stories({
       {/* 영상 */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            🎬 영상
+          <h3 className="text-base font-semibold text-gray-900">
+            영상
           </h3>
           <ToggleSwitch
             checked={data.youtube?.enabled ?? false}
             onChange={(checked) => updateNestedData('youtube.enabled', checked)}
           />
         </div>
-        <p className="text-sm text-blue-600">유튜브 영상을 추가하세요. 갤러리 하단에 표시됩니다.</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>유튜브 영상을 추가하세요. 갤러리 하단에 표시됩니다.</p>
 
         {data.youtube?.enabled && (
           <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
@@ -415,10 +415,10 @@ export default function FeedStep4Stories({
 
       {/* 오시는 길 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          🚗 오시는 길
+        <h3 className="text-base font-semibold text-gray-900">
+          오시는 길
         </h3>
-        <p className="text-sm text-blue-600">교통 안내 정보를 입력해주세요.</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>교통 안내 정보를 입력해주세요.</p>
 
         <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
           <div className="space-y-1.5">
@@ -565,10 +565,10 @@ export default function FeedStep4Stories({
 
       {/* 안내사항 (레코드와 동일한 8개 항목) */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          ℹ️ 안내사항
+        <h3 className="text-base font-semibold text-gray-900">
+          안내사항
         </h3>
-        <p className="text-sm text-blue-600">하객분들께 전달할 안내사항을 작성해주세요.</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>하객분들께 전달할 안내사항을 작성해주세요.</p>
 
         <div className="space-y-3">
           {/* 8개 기본 항목 */}
@@ -698,8 +698,8 @@ export default function FeedStep4Stories({
 
       {/* 감사인사 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          📝 감사인사
+        <h3 className="text-base font-semibold text-gray-900">
+          감사인사
         </h3>
 
         <div className="p-4 bg-gray-50 rounded-lg space-y-3">
@@ -747,28 +747,28 @@ export default function FeedStep4Stories({
       {/* 방명록 */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            📖 방명록
+          <h3 className="text-base font-semibold text-gray-900">
+            방명록
           </h3>
           <ToggleSwitch
             checked={data.sectionVisibility.guestbook}
             onChange={(checked) => updateNestedData('sectionVisibility.guestbook', checked)}
           />
         </div>
-        <p className="text-sm text-blue-600">하객분들이 축하 메시지를 남길 수 있는 방명록이 표시됩니다.</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>하객분들이 축하 메시지를 남길 수 있는 방명록이 표시됩니다.</p>
 
         {data.sectionVisibility.guestbook && (
-          <div className="p-4 bg-amber-50 rounded-lg space-y-3">
+          <div className="p-4 rounded-lg space-y-3" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-amber-800">질문 설정 (최대 10개)</p>
-              <span className="text-xs text-amber-600">{questions.length}/10</span>
+              <p className="text-sm font-medium" style={{ color: 'var(--ed-text)' }}>질문 설정 (최대 10개)</p>
+              <span className="text-xs" style={{ color: 'var(--ed-text-faint)' }}>{questions.length}/10</span>
             </div>
-            <p className="text-xs text-amber-700">하객분들에게 보여질 질문을 설정하세요.</p>
+            <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>하객분들에게 보여질 질문을 설정하세요.</p>
 
             <div className="space-y-2">
               {questions.map((question, index) => (
                 <div key={index} className="flex items-center gap-2">
-                  <span className="text-xs text-amber-600 w-5">{index + 1}.</span>
+                  <span className="text-xs w-5" style={{ color: 'var(--ed-text-faint)' }}>{index + 1}.</span>
                   <input
                     value={question}
                     onChange={(e) => updateQuestion(index, e.target.value)}
@@ -777,7 +777,7 @@ export default function FeedStep4Stories({
                   />
                   <button
                     onClick={() => deleteQuestion(index)}
-                    className="p-1.5 text-amber-600 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -788,7 +788,7 @@ export default function FeedStep4Stories({
             {questions.length < 10 && (
               <button
                 onClick={addQuestion}
-                className="w-full py-2 border-2 border-dashed border-amber-300 rounded-lg text-sm text-amber-600 hover:border-amber-400 hover:text-amber-700 hover:bg-amber-100/50 transition-colors flex items-center justify-center gap-1"
+                className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors flex items-center justify-center gap-1"
               >
                 <Plus className="w-4 h-4" />
                 질문 추가

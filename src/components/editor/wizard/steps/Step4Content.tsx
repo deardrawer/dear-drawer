@@ -18,7 +18,7 @@ import {
   SAMPLE_THANK_YOU,
 } from '@/lib/sampleData'
 import { parseHighlight } from '@/lib/textUtils'
-import { AlignLeft, AlignCenter, AlignRight, X, Plus, ChevronUp, ChevronDown, GripVertical } from 'lucide-react'
+import { AlignLeft, AlignCenter, AlignRight, X, Plus, ChevronUp, ChevronDown, MessageSquare, Sparkles, Image as ImageIcon } from 'lucide-react'
 
 // 로컬 상태 슬라이더 (깜빡임 방지)
 function LocalSlider({
@@ -235,7 +235,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
     return (
       <div className="p-4 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl space-y-4 mb-4">
         <p className="text-sm font-semibold text-white flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-300 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M2 10h20" /><path d="M6 4l3 6" /><path d="M12 4l3 6" /></svg> {label}
+<ImageIcon className="w-4 h-4 text-gray-300 flex-shrink-0" strokeWidth={1.75} /> {label}
         </p>
         <p className="text-xs text-gray-300">흑백 웨딩사진 배경으로 섹션을 구분해요</p>
 
@@ -401,9 +401,9 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
   return (
     <div className="p-6 space-y-8">
       {/* 안내 */}
-      <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-        <p className="text-base text-purple-800 font-medium mb-1">{isMagazine ? '매거진 콘텐츠 작성' : '본문 콘텐츠 작성'}</p>
-        <p className="text-sm text-purple-700">
+      <div className="space-y-1">
+        <p className="text-base font-medium mb-1" style={{ color: 'var(--ed-text)' }}>{isMagazine ? '매거진 콘텐츠 작성' : '본문 콘텐츠 작성'}</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
           {isMagazine
             ? "Editor's Note와 인터뷰 등 매거진 본문을 작성해주세요."
             : '청첩장 본문에 들어갈 내용을 작성해주세요. 질문에 답하면 초안을 작성해드려요.'}
@@ -413,10 +413,10 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
       {/* 매거진: Editor's Note (인사말 + 명언) */}
       {isMagazine && (
         <section className="space-y-4">
-          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg> Editor&apos;s Note
+          <h3 className="text-base font-semibold text-gray-900">
+            Editor&apos;s Note
           </h3>
-          <p className="text-sm text-blue-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> 매거진 본문 상단에 표시되는 인사말과 명언을 작성해주세요.</p>
+          <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>매거진 본문 상단에 표시되는 인사말과 명언을 작성해주세요.</p>
 
           <div className="space-y-1.5">
             <Label className="text-xs font-medium">인사말</Label>
@@ -447,13 +447,14 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
       <section className="space-y-4">
         <button
           onClick={onOpenAIStoryGenerator}
-          className="w-full p-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-xl transition-all shadow-lg hover:shadow-xl"
+          className="w-full px-4 py-3 text-white rounded-xl transition-opacity hover:opacity-90"
+          style={{ background: '#8B75D0' }}
         >
-          <div className="flex items-center justify-center gap-3">
-            <svg className="w-6 h-6 text-white/90" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" fill="rgba(255,255,255,0.2)" /><path d="M20 3v4" /><path d="M22 5h-4" /></svg>
+          <div className="flex items-center justify-center gap-2.5">
+            <Sparkles className="w-4 h-4 shrink-0" strokeWidth={1.75} />
             <div className="text-left">
-              <p className="font-semibold text-lg">초안 작성해드려요</p>
-              <p className="text-sm text-white/80">질문에 답하면 맞춤 콘텐츠를 작성해드려요</p>
+              <p className="font-semibold text-sm">초안 작성해드려요</p>
+              <p className="text-xs text-white/80">질문에 답하면 맞춤 콘텐츠를 작성해드려요</p>
             </div>
           </div>
         </button>
@@ -464,8 +465,8 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
       {!isFamily && !isMagazine && (
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-              <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="5" /><path d="M20 21a8 8 0 0 0-16 0" /></svg> 연인의 시선으로 소개
+            <h3 className="text-base font-semibold text-gray-900">
+              연인의 시선으로 소개
             </h3>
             <Switch
               checked={invitation.sectionVisibility.coupleProfile}
@@ -473,21 +474,21 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
             />
           </div>
           {/* TIP 섹션 */}
-          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-sm text-blue-800 mb-2"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> 내가 사랑하는 사람을 소개해 주세요. 함께 지내며 느낀 그 사람의 모습이면 충분합니다.</p>
-            <details className="text-xs text-blue-700">
-              <summary className="cursor-pointer font-medium hover:text-blue-900">가이드 보기</summary>
-              <div className="mt-3 space-y-3 pl-2 border-l-2 border-blue-300">
-                <p className="font-medium"><svg className="w-3 h-3 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg> 이렇게 작성해 보세요</p>
+          <div className="p-4 rounded-lg border" style={{ background: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
+            <p className="text-sm mb-2" style={{ color: 'var(--ed-text-muted)' }}>내가 사랑하는 사람을 소개해 주세요. 함께 지내며 느낀 그 사람의 모습이면 충분합니다.</p>
+            <details className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
+              <summary className="cursor-pointer font-medium hover:underline">가이드 보기</summary>
+              <div className="mt-3 space-y-3 pl-2 border-l-2" style={{ borderColor: 'var(--ed-border)' }}>
+                <p className="font-medium">이렇게 작성해 보세요</p>
                 <ul className="space-y-1 list-disc list-inside">
                   <li>'나'가 아닌 그 사람의 이름으로 시작해요</li>
                   <li>성격 나열보다 장면 하나를 떠올려 보세요</li>
                   <li>짧아도, 문단이 길어도 괜찮아요</li>
                 </ul>
-                <div className="p-2 bg-white/50 rounded text-gray-600 italic">
+                <div className="p-2 bg-white/50 rounded italic">
                   예시) "다해는 세상을 조금 다르게 바라보는 사람입니다.<br/>익숙한 것에도 늘 질문을 던지고,<br/>그 덕분에 제 하루는 자주 새로워집니다."
                 </div>
-                <p className="text-blue-600"><svg className="w-3 h-3 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg> 이 글은 소개문이 아니라, 사랑하는 사람이 바라본 한 사람의 기록입니다.</p>
+                <p>이 글은 소개문이 아니라, 사랑하는 사람이 바라본 한 사람의 기록입니다.</p>
               </div>
             </details>
           </div>
@@ -521,11 +522,11 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
               </div>
 
               {/* 신랑 소개 */}
-              <div className={`p-4 bg-blue-50 rounded-lg space-y-4 ${invitation.profileOrder === 'bride-first' ? 'order-2' : 'order-1'}`}>
+              <div className={`p-4 rounded-lg space-y-4 ${invitation.profileOrder === 'bride-first' ? 'order-2' : 'order-1'}`} style={{ background: 'var(--ed-surface-2)' }}>
                 <div className="flex items-center justify-between">
-                  <p className="font-semibold text-blue-800">신부가 소개하는 신랑</p>
+                  <p className="font-semibold" style={{ color: 'var(--ed-text)' }}>신부가 소개하는 신랑</p>
                   {!invitation.groom.profile.intro && (
-                    <button onClick={applySampleGroomProfile} className="text-xs text-blue-600 hover:underline">
+                    <button onClick={applySampleGroomProfile} className="text-xs text-stone-500 hover:text-stone-700">
                       샘플 적용
                     </button>
                   )}
@@ -544,13 +545,13 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                 {/* 이미지 크롭 조정 */}
                 {(invitation.groom.profile.images?.filter(img => img)?.length || 0) > 0 && (
                   <div className="mt-2 p-3 bg-white/70 rounded-lg space-y-3">
-                    <p className="text-[10px] font-medium text-blue-700">이미지 크롭 조정</p>
+                    <p className="text-[10px] font-medium" style={{ color: 'var(--ed-text-muted)' }}>이미지 크롭 조정</p>
                     {invitation.groom.profile.images?.map((imageUrl, imgIndex) => {
                       if (!imageUrl) return null
                       const settings = invitation.groom.profile.imageSettings?.[imgIndex] || { scale: 1.0, positionX: 0, positionY: 0 }
                       return (
-                        <div key={imgIndex} className="space-y-2 pb-3 border-b border-blue-100 last:border-0 last:pb-0">
-                          <p className="text-[9px] text-blue-600">사진 {imgIndex + 1}</p>
+                        <div key={imgIndex} className="space-y-2 pb-3 border-b border-[var(--ed-border)] last:border-0 last:pb-0">
+                          <p className="text-[9px]" style={{ color: 'var(--ed-text-faint)' }}>사진 {imgIndex + 1}</p>
                           <InlineCropEditor
                             imageUrl={imageUrl}
                             settings={settings}
@@ -625,11 +626,11 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
             </div>
 
             {/* 신부 소개 */}
-            <div className={`p-4 bg-pink-50 rounded-lg space-y-4 ${invitation.profileOrder === 'bride-first' ? 'order-1' : 'order-2'}`}>
+            <div className={`p-4 rounded-lg space-y-4 ${invitation.profileOrder === 'bride-first' ? 'order-1' : 'order-2'}`} style={{ background: 'var(--ed-surface-2)' }}>
               <div className="flex items-center justify-between">
-                <p className="font-semibold text-pink-800">신랑이 소개하는 신부</p>
+                <p className="font-semibold" style={{ color: 'var(--ed-text)' }}>신랑이 소개하는 신부</p>
                 {!invitation.bride.profile.intro && (
-                  <button onClick={applySampleBrideProfile} className="text-xs text-pink-600 hover:underline">
+                  <button onClick={applySampleBrideProfile} className="text-xs text-stone-500 hover:text-stone-700">
                     샘플 적용
                   </button>
                 )}
@@ -648,13 +649,13 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                 {/* 이미지 크롭 조정 */}
                 {(invitation.bride.profile.images?.filter(img => img)?.length || 0) > 0 && (
                   <div className="mt-2 p-3 bg-white/70 rounded-lg space-y-3">
-                    <p className="text-[10px] font-medium text-pink-700">이미지 크롭 조정</p>
+                    <p className="text-[10px] font-medium" style={{ color: 'var(--ed-text-muted)' }}>이미지 크롭 조정</p>
                     {invitation.bride.profile.images?.map((imageUrl, imgIndex) => {
                       if (!imageUrl) return null
                       const settings = invitation.bride.profile.imageSettings?.[imgIndex] || { scale: 1.0, positionX: 0, positionY: 0 }
                       return (
-                        <div key={imgIndex} className="space-y-2 pb-3 border-b border-pink-100 last:border-0 last:pb-0">
-                          <p className="text-[9px] text-pink-600">사진 {imgIndex + 1}</p>
+                        <div key={imgIndex} className="space-y-2 pb-3 border-b border-[var(--ed-border)] last:border-0 last:pb-0">
+                          <p className="text-[9px]" style={{ color: 'var(--ed-text-faint)' }}>사진 {imgIndex + 1}</p>
                           <InlineCropEditor
                             imageUrl={imageUrl}
                             settings={settings}
@@ -737,8 +738,8 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
         /* OUR 템플릿: 러브스토리 */
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-              <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg> 러브스토리
+            <h3 className="text-base font-semibold text-gray-900">
+              러브스토리
             </h3>
             <Switch
               checked={invitation.sectionVisibility.ourStory}
@@ -747,32 +748,32 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
           </div>
 
           {/* TIP 섹션 */}
-          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-sm text-blue-800 mb-2"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> 첫 만남부터 결혼을 결심하기까지, 그때의 이야기와 사진을 함께 담아주세요.</p>
-            <details className="text-xs text-blue-700">
-              <summary className="cursor-pointer font-medium hover:text-blue-900">가이드 보기</summary>
-              <div className="mt-3 space-y-4 pl-2 border-l-2 border-blue-300">
+          <div className="p-4 rounded-lg border" style={{ background: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
+            <p className="text-sm mb-2" style={{ color: 'var(--ed-text-muted)' }}>첫 만남부터 결혼을 결심하기까지, 그때의 이야기와 사진을 함께 담아주세요.</p>
+            <details className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
+              <summary className="cursor-pointer font-medium hover:underline">가이드 보기</summary>
+              <div className="mt-3 space-y-4 pl-2 border-l-2" style={{ borderColor: 'var(--ed-border)' }}>
                 <p>이 페이지는 첫 만남부터 결혼을 결심하기까지의 시간을 사진과 함께 기록하는 공간입니다.</p>
 
                 <div className="space-y-2">
                   <p className="font-medium">① 첫 만남</p>
                   <p>처음 마주했던 날을 떠올려 보세요. 그날의 분위기와 마음을 한두 문장으로 남기고, 첫 시절의 사진을 함께 담아 주세요.</p>
-                  <div className="p-2 bg-white/50 rounded text-gray-600 italic">예시) "스무 살, 같은 캠퍼스에서 친구로 처음 만났습니다."</div>
+                  <div className="p-2 bg-white/50 rounded italic">예시) "스무 살, 같은 캠퍼스에서 친구로 처음 만났습니다."</div>
                 </div>
 
                 <div className="space-y-2">
                   <p className="font-medium">② 연애의 시간</p>
                   <p>연애하며 함께 쌓아온 시간을 요약해 보세요. 장거리, 취미, 반복된 일상처럼 우리다웠던 시간을 보여주는 사진이 잘 어울립니다.</p>
-                  <div className="p-2 bg-white/50 rounded text-gray-600 italic">예시) "장거리와 바쁜 일상 속에서도 함께 웃고, 같은 취미를 나누며 시간을 쌓아왔습니다."</div>
+                  <div className="p-2 bg-white/50 rounded italic">예시) "장거리와 바쁜 일상 속에서도 함께 웃고, 같은 취미를 나누며 시간을 쌓아왔습니다."</div>
                 </div>
 
                 <div className="space-y-2">
                   <p className="font-medium">③ 결혼을 결심한 순간</p>
                   <p>결혼을 준비하게 된 계기나 프러포즈의 순간을 담아보세요.</p>
-                  <div className="p-2 bg-white/50 rounded text-gray-600 italic">예시) "10주년을 기념한 여행에서, 서로의 평생이 되기로 약속했습니다."</div>
+                  <div className="p-2 bg-white/50 rounded italic">예시) "10주년을 기념한 여행에서, 서로의 평생이 되기로 약속했습니다."</div>
                 </div>
 
-                <p className="text-blue-600"><svg className="w-3 h-3 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg> 사진은 기록을 더 선명하게 만들고, 글은 그 순간에 의미를 더합니다. 잘 나온 사진보다 그때의 감정이 느껴지는 사진이 좋아요.</p>
+                <p>사진은 기록을 더 선명하게 만들고, 글은 그 순간에 의미를 더합니다. 잘 나온 사진보다 그때의 감정이 느껴지는 사진이 좋아요.</p>
               </div>
             </details>
           </div>
@@ -781,7 +782,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
             <div className="space-y-4">
               {invitation.relationship.stories.every(s => !s.title && !s.desc) && (
                 <div className="flex justify-end">
-                  <button onClick={applySampleStories} className="text-xs text-blue-600 hover:underline">
+                  <button onClick={applySampleStories} className="text-xs text-stone-500 hover:text-stone-700">
                     샘플 적용
                   </button>
                 </div>
@@ -843,13 +844,13 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                     {/* 이미지 크롭 조정 */}
                     {(story.images?.filter(img => img)?.length || 0) > 0 && (
                       <div className="mt-2 p-3 bg-white/70 rounded-lg space-y-3">
-                        <p className="text-[10px] font-medium text-rose-700">이미지 크롭 조정</p>
+                        <p className="text-[10px] font-medium" style={{ color: 'var(--ed-text-muted)' }}>이미지 크롭 조정</p>
                         {story.images?.map((imageUrl, imgIndex) => {
                           if (!imageUrl) return null
                           const settings = story.imageSettings?.[imgIndex] || { scale: 1.0, positionX: 0, positionY: 0 }
                           return (
-                            <div key={imgIndex} className="space-y-2 pb-3 border-b border-rose-100 last:border-0 last:pb-0">
-                              <p className="text-[9px] text-rose-600">사진 {imgIndex + 1}</p>
+                            <div key={imgIndex} className="space-y-2 pb-3 border-b border-[var(--ed-border)] last:border-0 last:pb-0">
+                              <p className="text-[9px]" style={{ color: 'var(--ed-text-faint)' }}>사진 {imgIndex + 1}</p>
                               <InlineCropEditor
                                 imageUrl={imageUrl}
                                 settings={settings}
@@ -880,8 +881,8 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
         /* FAMILY 템플릿: 부모님 인사말 (신랑측/신부측 분리) */
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-              <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg> 부모님 소개
+            <h3 className="text-base font-semibold text-gray-900">
+              부모님 소개
             </h3>
             <Switch
               checked={invitation.sectionVisibility.parentsGreeting ?? true}
@@ -892,14 +893,14 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
           {(invitation.sectionVisibility.parentsGreeting ?? true) && (
             <div className="space-y-4">
               {/* TIP 섹션 */}
-              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <p className="text-sm text-blue-800 mb-2"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> 부모님의 시선으로 자녀를 소개하고, 함께 축하 인사를 전해보세요.</p>
-                <details className="text-xs text-blue-700">
-                  <summary className="cursor-pointer font-medium hover:text-blue-900">가이드 보기</summary>
-                  <div className="mt-3 space-y-3 pl-2 border-l-2 border-blue-300">
+              <div className="p-4 rounded-lg border" style={{ background: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
+                <p className="text-sm mb-2" style={{ color: 'var(--ed-text-muted)' }}>부모님의 시선으로 자녀를 소개하고, 함께 축하 인사를 전해보세요.</p>
+                <details className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
+                  <summary className="cursor-pointer font-medium hover:underline">가이드 보기</summary>
+                  <div className="mt-3 space-y-3 pl-2 border-l-2" style={{ borderColor: 'var(--ed-border)' }}>
                     <div>
-                      <p className="font-medium text-blue-800 mb-1">작성 팁:</p>
-                      <ul className="list-disc list-inside space-y-0.5 text-blue-700">
+                      <p className="font-medium mb-1" style={{ color: 'var(--ed-text)' }}>작성 팁:</p>
+                      <ul className="list-disc list-inside space-y-0.5">
                         <li>부모님의 목소리로, "이런 아이였어요" "이렇게 자랐어요"를 떠올려 보세요.</li>
                         <li>자녀를 사랑으로 키우신 이야기와 함께, 새로운 시작에 대한 축복의 마음을 담아주세요.</li>
                         <li>자녀에 대한 따뜻한 소개, 그리고 앞으로의 결혼 생활을 응원하는 메시지면 좋아요.</li>
@@ -918,9 +919,9 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
               />
 
               {/* 신랑측 부모님 소개 */}
-              <div className="p-4 bg-blue-50 rounded-lg space-y-4">
+              <div className="p-4 rounded-lg space-y-4" style={{ background: 'var(--ed-surface-2)' }}>
                 <div className="flex items-center justify-between">
-                  <p className="font-semibold text-blue-800">신랑측 부모님 소개</p>
+                  <p className="font-semibold" style={{ color: 'var(--ed-text)' }}>신랑측 부모님 소개</p>
                   <div className="flex items-center gap-2">
                     <Label className="text-xs text-gray-500">표시</Label>
                     <Switch
@@ -972,14 +973,14 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                       <p className="text-[10px] text-gray-400">2장 등록 시 자동 슬라이드됩니다</p>
                       {/* 이미지 크롭 조정 */}
                       {(parentIntro.groom?.images?.filter((img: string) => img)?.length || 0) > 0 && (
-                        <div className="mt-2 p-3 bg-blue-50 rounded-lg space-y-3">
-                          <p className="text-[10px] font-medium text-blue-700">이미지 크롭 조정</p>
+                        <div className="mt-2 p-3 bg-white/70 rounded-lg space-y-3">
+                          <p className="text-[10px] font-medium" style={{ color: 'var(--ed-text-muted)' }}>이미지 크롭 조정</p>
                           {parentIntro.groom?.images?.map((imageUrl: string, imgIndex: number) => {
                             if (!imageUrl) return null
                             const settings = parentIntro.groom?.imageSettings?.[imgIndex] || {}
                             return (
-                              <div key={imgIndex} className="space-y-2 pb-3 border-b border-blue-100 last:border-0 last:pb-0">
-                                <p className="text-[9px] text-blue-600">사진 {imgIndex + 1}</p>
+                              <div key={imgIndex} className="space-y-2 pb-3 border-b border-[var(--ed-border)] last:border-0 last:pb-0">
+                                <p className="text-[9px]" style={{ color: 'var(--ed-text-faint)' }}>사진 {imgIndex + 1}</p>
                                 <InlineCropEditor
                                   imageUrl={imageUrl}
                                   settings={settings}
@@ -1018,9 +1019,9 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
               </div>
 
               {/* 신부측 부모님 소개 */}
-              <div className="p-4 bg-pink-50 rounded-lg space-y-4">
+              <div className="p-4 rounded-lg space-y-4" style={{ background: 'var(--ed-surface-2)' }}>
                 <div className="flex items-center justify-between">
-                  <p className="font-semibold text-pink-800">신부측 부모님 소개</p>
+                  <p className="font-semibold" style={{ color: 'var(--ed-text)' }}>신부측 부모님 소개</p>
                   <div className="flex items-center gap-2">
                     <Label className="text-xs text-gray-500">표시</Label>
                     <Switch
@@ -1072,14 +1073,14 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                       <p className="text-[10px] text-gray-400">2장 등록 시 자동 슬라이드됩니다</p>
                       {/* 이미지 크롭 조정 */}
                       {(parentIntro.bride?.images?.filter((img: string) => img)?.length || 0) > 0 && (
-                        <div className="mt-2 p-3 bg-pink-50 rounded-lg space-y-3">
-                          <p className="text-[10px] font-medium text-pink-700">이미지 크롭 조정</p>
+                        <div className="mt-2 p-3 bg-white/70 rounded-lg space-y-3">
+                          <p className="text-[10px] font-medium" style={{ color: 'var(--ed-text-muted)' }}>이미지 크롭 조정</p>
                           {parentIntro.bride?.images?.map((imageUrl: string, imgIndex: number) => {
                             if (!imageUrl) return null
                             const settings = parentIntro.bride?.imageSettings?.[imgIndex] || {}
                             return (
-                              <div key={imgIndex} className="space-y-2 pb-3 border-b border-pink-100 last:border-0 last:pb-0">
-                                <p className="text-[9px] text-pink-600">사진 {imgIndex + 1}</p>
+                              <div key={imgIndex} className="space-y-2 pb-3 border-b border-[var(--ed-border)] last:border-0 last:pb-0">
+                                <p className="text-[9px]" style={{ color: 'var(--ed-text-faint)' }}>사진 {imgIndex + 1}</p>
                                 <InlineCropEditor
                                   imageUrl={imageUrl}
                                   settings={settings}
@@ -1125,8 +1126,8 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
       {isFamily && (
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-              <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg> 서로를 선택한 이유
+            <h3 className="text-base font-semibold text-gray-900">
+              서로를 선택한 이유
             </h3>
             <Switch
               checked={whyWeChose.enabled !== false}
@@ -1137,14 +1138,14 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
           {whyWeChose.enabled !== false && (
             <div className="space-y-4">
               {/* TIP 섹션 */}
-              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <p className="text-sm text-blue-800 mb-2"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> 상대에게 느낀 특별함을, 두 분의 말로 직접 전해 보세요.</p>
-                <details className="text-xs text-blue-700">
-                  <summary className="cursor-pointer font-medium hover:text-blue-900">가이드 보기</summary>
-                  <div className="mt-3 space-y-3 pl-2 border-l-2 border-blue-300">
+              <div className="p-4 rounded-lg border" style={{ background: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
+                <p className="text-sm mb-2" style={{ color: 'var(--ed-text-muted)' }}>상대에게 느낀 특별함을, 두 분의 말로 직접 전해 보세요.</p>
+                <details className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
+                  <summary className="cursor-pointer font-medium hover:underline">가이드 보기</summary>
+                  <div className="mt-3 space-y-3 pl-2 border-l-2" style={{ borderColor: 'var(--ed-border)' }}>
                     <div>
-                      <p className="font-medium text-blue-800 mb-1">작성 팁:</p>
-                      <ul className="list-disc list-inside space-y-0.5 text-blue-700">
+                      <p className="font-medium mb-1" style={{ color: 'var(--ed-text)' }}>작성 팁:</p>
+                      <ul className="list-disc list-inside space-y-0.5">
                         <li>단순한 장점이 아닌, 일상에서 느낀 순간을 떠올려 보세요.</li>
                         <li>예시: "힘든 날 먼저 다가와 주던 손이 고마웠어요."</li>
                         <li>진심이 담긴 한 문장이 화려한 수식어보다 더 마음에 남습니다.</li>
@@ -1188,9 +1189,9 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
               </div>
 
               {/* 신랑이 신부를 선택한 이유 */}
-              <div className="p-4 bg-blue-50 rounded-lg space-y-4">
+              <div className="p-4 rounded-lg space-y-4" style={{ background: 'var(--ed-surface-2)' }}>
                 <div className="flex items-center justify-between">
-                  <p className="font-semibold text-blue-800">신랑이 신부를 선택한 이유</p>
+                  <p className="font-semibold" style={{ color: 'var(--ed-text)' }}>신랑이 신부를 선택한 이유</p>
                   <div className="flex items-center gap-2">
                     <Label className="text-xs text-gray-500">표시</Label>
                     <Switch
@@ -1214,14 +1215,14 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                       />
                       {/* 이미지 크롭 조정 */}
                       {(whyWeChose.groom?.images?.filter((img: string) => img)?.length || 0) > 0 && (
-                        <div className="mt-2 p-3 bg-blue-100/50 rounded-lg space-y-3">
-                          <p className="text-[10px] font-medium text-blue-700">이미지 크롭 조정</p>
+                        <div className="mt-2 p-3 bg-white/70 rounded-lg space-y-3">
+                          <p className="text-[10px] font-medium" style={{ color: 'var(--ed-text-muted)' }}>이미지 크롭 조정</p>
                           {whyWeChose.groom?.images?.map((imageUrl: string, imgIndex: number) => {
                             if (!imageUrl) return null
                             const settings = whyWeChose.groom?.imageSettings?.[imgIndex] || {}
                             return (
-                              <div key={imgIndex} className="space-y-2 pb-3 border-b border-blue-200 last:border-0 last:pb-0">
-                                <p className="text-[9px] text-blue-600">사진 {imgIndex + 1}</p>
+                              <div key={imgIndex} className="space-y-2 pb-3 border-b border-[var(--ed-border)] last:border-0 last:pb-0">
+                                <p className="text-[9px]" style={{ color: 'var(--ed-text-faint)' }}>사진 {imgIndex + 1}</p>
                                 <InlineCropEditor
                                   imageUrl={imageUrl}
                                   settings={settings}
@@ -1239,7 +1240,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
 
                     {/* 본문 */}
                     <div className="space-y-1.5">
-                      <Label className="text-xs">본문 <span className="text-pink-500 text-[10px] ml-1">✦ 초안 작성 가능</span></Label>
+                      <Label className="text-xs">본문 <span className="text-[10px] ml-1" style={{ color: 'var(--ed-text-muted)' }}>✦ 초안 작성 가능</span></Label>
                       <TextStyleControls
                         lineHeight={invitation.whyWeChoseTextStyle?.lineHeight}
                         textAlign={whyWeChose.groom?.textAlign ?? invitation.whyWeChoseTextStyle?.textAlign}
@@ -1272,9 +1273,9 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
               </div>
 
               {/* 신부가 신랑을 선택한 이유 */}
-              <div className="p-4 bg-pink-50 rounded-lg space-y-4">
+              <div className="p-4 rounded-lg space-y-4" style={{ background: 'var(--ed-surface-2)' }}>
                 <div className="flex items-center justify-between">
-                  <p className="font-semibold text-pink-800">신부가 신랑을 선택한 이유</p>
+                  <p className="font-semibold" style={{ color: 'var(--ed-text)' }}>신부가 신랑을 선택한 이유</p>
                   <div className="flex items-center gap-2">
                     <Label className="text-xs text-gray-500">표시</Label>
                     <Switch
@@ -1298,14 +1299,14 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                       />
                       {/* 이미지 크롭 조정 */}
                       {(whyWeChose.bride?.images?.filter((img: string) => img)?.length || 0) > 0 && (
-                        <div className="mt-2 p-3 bg-pink-100/50 rounded-lg space-y-3">
-                          <p className="text-[10px] font-medium text-pink-700">이미지 크롭 조정</p>
+                        <div className="mt-2 p-3 bg-white/70 rounded-lg space-y-3">
+                          <p className="text-[10px] font-medium" style={{ color: 'var(--ed-text-muted)' }}>이미지 크롭 조정</p>
                           {whyWeChose.bride?.images?.map((imageUrl: string, imgIndex: number) => {
                             if (!imageUrl) return null
                             const settings = whyWeChose.bride?.imageSettings?.[imgIndex] || {}
                             return (
-                              <div key={imgIndex} className="space-y-2 pb-3 border-b border-pink-200 last:border-0 last:pb-0">
-                                <p className="text-[9px] text-pink-600">사진 {imgIndex + 1}</p>
+                              <div key={imgIndex} className="space-y-2 pb-3 border-b border-[var(--ed-border)] last:border-0 last:pb-0">
+                                <p className="text-[9px]" style={{ color: 'var(--ed-text-faint)' }}>사진 {imgIndex + 1}</p>
                                 <InlineCropEditor
                                   imageUrl={imageUrl}
                                   settings={settings}
@@ -1323,7 +1324,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
 
                     {/* 본문 */}
                     <div className="space-y-1.5">
-                      <Label className="text-xs">본문 <span className="text-pink-500 text-[10px] ml-1">✦ 초안 작성 가능</span></Label>
+                      <Label className="text-xs">본문 <span className="text-[10px] ml-1" style={{ color: 'var(--ed-text-muted)' }}>✦ 초안 작성 가능</span></Label>
                       <TextStyleControls
                         lineHeight={invitation.whyWeChoseTextStyle?.lineHeight}
                         textAlign={whyWeChose.bride?.textAlign ?? invitation.whyWeChoseTextStyle?.textAlign}
@@ -1362,11 +1363,11 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
       {/* 처음 만난 날 - OUR 템플릿 전용, D-DAY 계산용 */}
       {!isFamily && !isMagazine && (
         <section className="space-y-4">
-          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg> 처음 만난 날
+          <h3 className="text-base font-semibold text-gray-900">
+            처음 만난 날
           </h3>
-          <div className="p-4 bg-rose-50 rounded-lg space-y-3">
-            <p className="text-sm text-rose-700">두 분이 처음 만난 날짜를 입력해주세요. 청첩장에 함께한 시간이 표시됩니다.</p>
+          <div className="p-4 rounded-lg space-y-3" style={{ background: 'var(--ed-surface-2)' }}>
+            <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>두 분이 처음 만난 날짜를 입력해주세요. 청첩장에 함께한 시간이 표시됩니다.</p>
             <Input
               type="date"
               value={invitation.relationship.startDate || ''}
@@ -1380,8 +1381,8 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
       {/* 스토리 마무리 문구 - OUR 템플릿 전용 (신랑/신부 호칭 등 커스텀 가능) */}
       {!isFamily && !isMagazine && (
         <section className="space-y-4">
-          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg> 마무리 문구
+          <h3 className="text-base font-semibold text-gray-900">
+            마무리 문구
           </h3>
           <div className="p-4 bg-gray-50 rounded-lg space-y-2">
             <div className="flex items-start justify-between gap-2">
@@ -1407,15 +1408,15 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
 
       {/* 갤러리 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg> 갤러리 <span className="text-xs font-normal text-gray-500">(최대 30장)</span>
+        <h3 className="text-base font-semibold text-gray-900">
+          갤러리 <span className="text-xs font-normal text-gray-500">(최대 30장)</span>
         </h3>
         {/* 가이드 섹션 */}
-        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-sm text-blue-800 mb-2"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> 두 사람의 사진을 업로드해 주세요. 스토리에서 쓰지 않은 사진들이 잘 어울립니다.</p>
-          <details className="text-xs text-blue-700">
-            <summary className="cursor-pointer font-medium hover:text-blue-900"><svg className="w-3 h-3 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg> 가이드 보기</summary>
-            <div className="mt-3 space-y-3 pl-2 border-l-2 border-blue-300">
+        <div className="p-4 rounded-lg border" style={{ background: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
+          <p className="text-sm mb-2" style={{ color: 'var(--ed-text-muted)' }}>두 사람의 사진을 업로드해 주세요. 스토리에서 쓰지 않은 사진들이 잘 어울립니다.</p>
+          <details className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
+            <summary className="cursor-pointer font-medium hover:underline">가이드 보기</summary>
+            <div className="mt-3 space-y-3 pl-2 border-l-2" style={{ borderColor: 'var(--ed-border)' }}>
               <p>
                 디어드로어 청첩장은<br/>
                 이야기와 사진이 함께 흐르는 스토리형 청첩장입니다.
@@ -1430,20 +1431,20 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                 사진의 컨셉이 겹치지 않게 선택하는걸 추천드려요.
               </p>
               <div className="p-2 bg-white/50 rounded">
-                <p className="font-medium mb-1"><svg className="w-3 h-3 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg> 이렇게 구성해 보세요</p>
+                <p className="font-medium mb-1">이렇게 구성해 보세요</p>
                 <ul className="list-disc list-inside space-y-0.5">
                   <li>스토리에서 이미 사용한 사진은 피해주세요</li>
                   <li>비슷한 구도·표정의 사진은 줄이고, 다른 느낌의 사진을 골라보세요</li>
                 </ul>
               </div>
               <div className="p-2 bg-white/50 rounded">
-                <p className="font-medium mb-1"><svg className="w-3 h-3 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg> 추천 사진 예시</p>
+                <p className="font-medium mb-1">추천 사진 예시</p>
                 <ul className="list-disc list-inside space-y-0.5">
                   <li>가장 마음에 드는 웨딩 촬영 컷</li>
                   <li>두 사람의 분위기가 잘 드러나는 장면</li>
                 </ul>
               </div>
-              <p className="text-blue-600"><svg className="w-3 h-3 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg> 갤러리는 이야기를 반복하는 공간이 아니라, 이야기를 더 풍성하게 만드는 여백입니다.</p>
+              <p>갤러리는 이야기를 반복하는 공간이 아니라, 이야기를 더 풍성하게 만드는 여백입니다.</p>
             </div>
           </details>
         </div>
@@ -1672,15 +1673,15 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
       {/* 유튜브 영상 */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M2 10h20" /><path d="M6 4l3 6" /><path d="M12 4l3 6" /></svg> 영상
+          <h3 className="text-base font-semibold text-gray-900">
+            영상
           </h3>
           <Switch
             checked={invitation.youtube?.enabled || false}
             onCheckedChange={(checked) => updateNestedField('youtube.enabled', checked)}
           />
         </div>
-        <p className="text-sm text-blue-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> 유튜브 영상을 추가하세요. 갤러리 아래에 표시됩니다.</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>유튜브 영상을 추가하세요. 갤러리 아래에 표시됩니다.</p>
 
         {invitation.youtube?.enabled && (
           <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
@@ -1726,7 +1727,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><line x1="12" y1="19" x2="12" y2="22" /><line x1="8" y1="22" x2="16" y2="22" /></svg> 인터뷰 <span className="text-[10px] font-normal text-green-600 bg-green-50 px-1.5 py-0.5 rounded">초안작성가능</span>
+            인터뷰 <span className="text-[10px] font-normal text-green-600 bg-green-50 px-1.5 py-0.5 rounded">초안작성가능</span>
           </h3>
           <Switch
             checked={invitation.sectionVisibility.interview}
@@ -1738,14 +1739,14 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
           <div className="space-y-4">
 
             {/* TIP 섹션 */}
-            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <p className="text-sm text-blue-800 mb-2"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> 결혼을 앞둔 두 분의 생각과 이야기를, 질문에 답하듯 솔직하게 들려주세요.</p>
-              <details className="text-xs text-blue-700">
-                <summary className="cursor-pointer font-medium hover:text-blue-900">가이드 보기</summary>
-                <div className="mt-3 space-y-3 pl-2 border-l-2 border-blue-300">
+            <div className="p-4 rounded-lg border" style={{ background: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
+              <p className="text-sm mb-2" style={{ color: 'var(--ed-text-muted)' }}>결혼을 앞둔 두 분의 생각과 이야기를, 질문에 답하듯 솔직하게 들려주세요.</p>
+              <details className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
+                <summary className="cursor-pointer font-medium hover:underline">가이드 보기</summary>
+                <div className="mt-3 space-y-3 pl-2 border-l-2" style={{ borderColor: 'var(--ed-border)' }}>
                   <div>
-                    <p className="font-medium text-blue-800 mb-1">질문 예시:</p>
-                    <ul className="list-disc list-inside space-y-0.5 text-blue-700">
+                    <p className="font-medium mb-1" style={{ color: 'var(--ed-text)' }}>질문 예시:</p>
+                    <ul className="list-disc list-inside space-y-0.5">
                       <li>왜 결혼을 결심하셨나요?</li>
                       <li>상대방에게 처음 끌린 점은요?</li>
                       <li>둘이서 가장 행복했던 순간은?</li>
@@ -1755,8 +1756,8 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                     </ul>
                   </div>
                   <div>
-                    <p className="font-medium text-blue-800 mb-1">작성 팁:</p>
-                    <ul className="list-disc list-inside space-y-0.5 text-blue-700">
+                    <p className="font-medium mb-1" style={{ color: 'var(--ed-text)' }}>작성 팁:</p>
+                    <ul className="list-disc list-inside space-y-0.5">
                       <li>답변은 너무 길지 않게, 따뜻한 한두 문장이 더 기억에 남아요.</li>
                       <li>두 사람의 말투/느낌을 살려보세요.</li>
                       <li>꼭 멋진 말이 아니어도, 솔직한 이야기가 더 진정성 있습니다.</li>
@@ -1840,13 +1841,13 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                   {/* 이미지 크롭 조정 */}
                   {(interview.images?.filter(img => img)?.length || 0) > 0 && (
                     <div className="mt-2 p-3 bg-white/70 rounded-lg space-y-3">
-                      <p className="text-[10px] font-medium text-amber-700">이미지 크롭 조정</p>
+                      <p className="text-[10px] font-medium" style={{ color: 'var(--ed-text-muted)' }}>이미지 크롭 조정</p>
                       {interview.images?.map((imageUrl, imgIndex) => {
                         if (!imageUrl) return null
                         const settings = interview.imageSettings?.[imgIndex] || { scale: 1.0, positionX: 0, positionY: 0 }
                         return (
-                          <div key={imgIndex} className="space-y-2 pb-3 border-b border-amber-100 last:border-0 last:pb-0">
-                            <p className="text-[9px] text-amber-600">사진 {imgIndex + 1}</p>
+                          <div key={imgIndex} className="space-y-2 pb-3 border-b border-[var(--ed-border)] last:border-0 last:pb-0">
+                            <p className="text-[9px]" style={{ color: 'var(--ed-text-faint)' }}>사진 {imgIndex + 1}</p>
                             <InlineCropEditor
                               imageUrl={imageUrl}
                               settings={settings}
@@ -1877,8 +1878,8 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
       {/* 안내사항 - 모든 템플릿에서 스토리 탭에 표시 */}
       <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-              <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> 안내사항
+            <h3 className="text-base font-semibold text-gray-900">
+              안내사항
             </h3>
             <Switch
               checked={invitation.sectionVisibility.guidance}
@@ -1887,7 +1888,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
           </div>
 
           {invitation.sectionVisibility.guidance && (<div className="space-y-4">
-            <p className="text-sm text-blue-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> 하객분들께 전달할 안내사항을 작성해주세요. 필요한 항목만 켜서 사용하세요.</p>
+            <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>하객분들께 전달할 안내사항을 작성해주세요. 필요한 항목만 켜서 사용하세요.</p>
 
               {/* 텍스트 정렬 */}
               <div className="flex items-center gap-2">
@@ -1913,9 +1914,9 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
               </div>
 
               {/* 웨딩사진 */}
-              <div className="p-4 bg-gradient-to-br from-rose-50 to-pink-50 rounded-lg space-y-3">
-                <Label className="text-sm font-medium text-rose-800">웨딩사진</Label>
-                <p className="text-xs text-rose-600">안내사항 상단에 표시될 웨딩사진을 추가해주세요.</p>
+              <div className="p-4 rounded-lg space-y-3" style={{ background: 'var(--ed-surface-2)' }}>
+                <Label className="text-sm font-medium" style={{ color: 'var(--ed-text)' }}>웨딩사진</Label>
+                <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>안내사항 상단에 표시될 웨딩사진을 추가해주세요.</p>
 
                 {invitation.guidance?.image ? (
                   <div className="space-y-3">
@@ -1936,7 +1937,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
 
                     {/* 이미지 크롭 조정 */}
                     <div className="p-3 bg-white/70 rounded-lg space-y-2">
-                      <p className="text-[10px] font-medium text-rose-700">이미지 크롭 조정</p>
+                      <p className="text-[10px] font-medium" style={{ color: 'var(--ed-text-muted)' }}>이미지 크롭 조정</p>
                       <InlineCropEditor
                         imageUrl={invitation.guidance.image}
                         settings={invitation.guidance.imageSettings || { scale: 1.0, positionX: 0, positionY: 0 }}
@@ -1949,13 +1950,13 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                   </div>
                 ) : (
                   <label className="block cursor-pointer">
-                    <div className="aspect-[4/5] w-full max-w-[200px] mx-auto border-2 border-dashed border-rose-300 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-rose-400 hover:bg-rose-50/50 transition-colors">
+                    <div className="aspect-[4/5] w-full max-w-[200px] mx-auto border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-gray-400 hover:bg-gray-50 transition-colors">
                       {uploadingImages.has('guidance-image') ? (
-                        <div className="animate-spin w-6 h-6 border-2 border-rose-400 border-t-transparent rounded-full" />
+                        <div className="animate-spin w-6 h-6 border-2 border-gray-400 border-t-transparent rounded-full" />
                       ) : (
                         <>
-                          <Plus className="w-8 h-8 text-rose-400" />
-                          <span className="text-xs text-rose-500">사진 추가</span>
+                          <Plus className="w-8 h-8 text-gray-400" />
+                          <span className="text-xs text-gray-500">사진 추가</span>
                         </>
                       )}
                     </div>
@@ -2143,19 +2144,19 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
       {/* 감사 인사 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /><path d="M12 5.67l3.5 3.5" /></svg> 감사 인사 <span className="text-[10px] font-normal text-green-600 bg-green-50 px-1.5 py-0.5 rounded">초안작성가능</span>
+          감사 인사 <span className="text-[10px] font-normal text-green-600 bg-green-50 px-1.5 py-0.5 rounded">초안작성가능</span>
         </h3>
 
         {/* TIP 섹션 */}
-        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-sm text-blue-800 mb-2"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> 두 분의 진심이 담긴 감사 인사로, 청첩장을 마무리해 주세요.</p>
-          <details className="text-xs text-blue-700">
-            <summary className="cursor-pointer font-medium hover:text-blue-900">가이드 보기</summary>
-            <div className="mt-3 space-y-3 pl-2 border-l-2 border-blue-300">
-              <p className="text-blue-700">바쁘신 중에도 축하해 주시는 분들께 감사 인사를 전할 수 있어요.</p>
+        <div className="p-4 rounded-lg border" style={{ background: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
+          <p className="text-sm mb-2" style={{ color: 'var(--ed-text-muted)' }}>두 분의 진심이 담긴 감사 인사로, 청첩장을 마무리해 주세요.</p>
+          <details className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
+            <summary className="cursor-pointer font-medium hover:underline">가이드 보기</summary>
+            <div className="mt-3 space-y-3 pl-2 border-l-2" style={{ borderColor: 'var(--ed-border)' }}>
+              <p>바쁘신 중에도 축하해 주시는 분들께 감사 인사를 전할 수 있어요.</p>
               <div>
-                <p className="font-medium text-blue-800 mb-1">작성 팁:</p>
-                <ul className="list-disc list-inside space-y-0.5 text-blue-700">
+                <p className="font-medium mb-1" style={{ color: 'var(--ed-text)' }}>작성 팁:</p>
+                <ul className="list-disc list-inside space-y-0.5">
                   <li>형식적인 인사보다는, 진심으로 고마움이 느껴지는 말이 좋아요.</li>
                   <li>지금까지 응원해 주신 분들, 앞으로 함께할 분들에게 전하는 마음을 담아보세요.</li>
                 </ul>
@@ -2188,21 +2189,21 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
       {/* 방명록 - 모든 템플릿에서 스토리 탭 최하단에 표시 */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg> 방명록
+          <h3 className="text-base font-semibold text-gray-900">
+            방명록
           </h3>
           <Switch
             checked={invitation.sectionVisibility.guestbook}
             onCheckedChange={() => toggleSectionVisibility('guestbook')}
           />
         </div>
-        <p className="text-sm text-blue-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> 하객분들이 축하 메시지를 남길 수 있는 방명록이 표시됩니다.</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>하객분들이 축하 메시지를 남길 수 있는 방명록이 표시됩니다.</p>
 
         <details>
-          <summary className="text-xs text-blue-600 cursor-pointer hover:text-blue-700 select-none">
-            질문 예시 ) 펼쳐보기 <svg className="w-3 h-3 text-gray-900 inline -mt-0.5 ml-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
+          <summary className="text-xs cursor-pointer hover:underline select-none" style={{ color: 'var(--ed-text-muted)' }}>
+            질문 예시 ) 펼쳐보기
           </summary>
-          <div className="mt-2 space-y-2 text-xs text-blue-600">
+          <div className="mt-2 space-y-2 text-xs" style={{ color: 'var(--ed-text-muted)' }}>
             <div>
               <p className="font-semibold">① 기본 축하형</p>
               <ul className="ml-3 space-y-0.5 list-disc list-inside">
@@ -2266,17 +2267,17 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
             </div>
 
             {/* 방명록 질문 설정 */}
-            <div className="p-4 bg-amber-50 rounded-lg space-y-3">
+            <div className="p-4 rounded-lg space-y-3" style={{ background: 'var(--ed-surface-2)' }}>
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-amber-800"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg> 질문 설정 (최대 10개)</p>
-                <span className="text-xs text-amber-600">{invitation.content.guestbookQuestions?.length || 0}/10</span>
+                <p className="text-sm font-medium flex items-center gap-1.5" style={{ color: 'var(--ed-text)' }}><MessageSquare className="w-3.5 h-3.5" strokeWidth={1.75} /> 질문 설정 (최대 10개)</p>
+                <span className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>{invitation.content.guestbookQuestions?.length || 0}/10</span>
               </div>
-              <p className="text-xs text-amber-700">하객분들에게 보여질 질문을 설정하세요. 질문이 랜덤으로 표시됩니다.</p>
+              <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>하객분들에게 보여질 질문을 설정하세요. 질문이 랜덤으로 표시됩니다.</p>
 
               <div className="space-y-2">
                 {(invitation.content.guestbookQuestions || []).map((question, index) => (
                   <div key={index} className="flex items-start gap-2">
-                    <span className="text-xs text-amber-600 w-5 mt-2.5">{index + 1}.</span>
+                    <span className="text-xs w-5 mt-2.5" style={{ color: 'var(--ed-text-faint)' }}>{index + 1}.</span>
                     <Textarea
                       value={question}
                       onChange={(e) => {
@@ -2293,7 +2294,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                         const newQuestions = (invitation.content.guestbookQuestions || []).filter((_, i) => i !== index)
                         updateNestedField('content.guestbookQuestions', newQuestions)
                       }}
-                      className="p-1.5 mt-1.5 text-amber-600 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                      className="p-1.5 mt-1.5 text-stone-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -2308,7 +2309,7 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
                     const newQuestions = [...(invitation.content.guestbookQuestions || []), '']
                     updateNestedField('content.guestbookQuestions', newQuestions)
                   }}
-                  className="w-full py-2 border-2 border-dashed border-amber-300 rounded-lg text-sm text-amber-600 hover:border-amber-400 hover:text-amber-700 hover:bg-amber-100/50 transition-colors flex items-center justify-center gap-1"
+                  className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors flex items-center justify-center gap-1"
                 >
                   <Plus className="w-4 h-4" />
                   질문 추가

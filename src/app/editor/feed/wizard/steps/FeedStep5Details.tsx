@@ -52,24 +52,24 @@ export default function FeedStep5Details({
   return (
     <div className="p-6 space-y-8">
       {/* 안내 */}
-      <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-        <p className="text-base text-purple-800 font-medium mb-1">추가 기능 설정</p>
-        <p className="text-sm text-purple-700">
+      <div className="p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
+        <p className="text-base font-medium mb-1" style={{ color: 'var(--ed-text)' }}>추가 기능 설정</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
           부모님 성함, 마음 전하실 곳, RSVP 등을 설정해주세요.
         </p>
       </div>
 
       {/* 부모님 성함 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          👨‍👩‍👧 부모님 성함
+        <h3 className="text-base font-semibold text-gray-900">
+          부모님 성함
         </h3>
-        <p className="text-sm text-blue-600">선택사항 · 입력된 성함만 표시됩니다.</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>선택사항 · 입력된 성함만 표시됩니다.</p>
 
         <div className="space-y-4">
           {/* 신랑측 */}
-          <div className="p-4 bg-blue-50 rounded-lg space-y-3">
-            <p className="text-sm font-semibold text-blue-800">신랑측</p>
+          <div className="p-4 rounded-lg space-y-3" style={{ background: 'var(--ed-surface-2)' }}>
+            <p className="text-sm font-semibold" style={{ color: 'var(--ed-text)' }}>신랑측</p>
             <div className="space-y-1.5">
               <label className={labelClass}>아버지 성함</label>
               <input
@@ -91,8 +91,8 @@ export default function FeedStep5Details({
           </div>
 
           {/* 신부측 */}
-          <div className="p-4 bg-pink-50 rounded-lg space-y-3">
-            <p className="text-sm font-semibold text-pink-800">신부측</p>
+          <div className="p-4 rounded-lg space-y-3" style={{ background: 'var(--ed-surface-2)' }}>
+            <p className="text-sm font-semibold" style={{ color: 'var(--ed-text)' }}>신부측</p>
             <div className="space-y-1.5">
               <label className={labelClass}>아버지 성함</label>
               <input
@@ -117,14 +117,14 @@ export default function FeedStep5Details({
 
       {/* 마음 전하실 곳 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          💳 마음 전하실 곳
+        <h3 className="text-base font-semibold text-gray-900">
+          마음 전하실 곳
         </h3>
 
         <div className="space-y-4">
           {/* 신랑측 계좌 */}
-          <div className="p-4 bg-blue-50 rounded-lg space-y-4">
-            <p className="font-semibold text-blue-800">신랑측</p>
+          <div className="p-4 rounded-lg space-y-4" style={{ background: 'var(--ed-surface-2)' }}>
+            <p className="font-semibold" style={{ color: 'var(--ed-text)' }}>신랑측</p>
 
             {/* 신랑 본인 */}
             <div className="space-y-3">
@@ -182,8 +182,8 @@ export default function FeedStep5Details({
           </div>
 
           {/* 신부측 계좌 */}
-          <div className="p-4 bg-pink-50 rounded-lg space-y-4">
-            <p className="font-semibold text-pink-800">신부측</p>
+          <div className="p-4 rounded-lg space-y-4" style={{ background: 'var(--ed-surface-2)' }}>
+            <p className="font-semibold" style={{ color: 'var(--ed-text)' }}>신부측</p>
 
             {/* 신부 본인 */}
             <div className="space-y-3">
@@ -257,8 +257,8 @@ export default function FeedStep5Details({
       {/* RSVP 설정 */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            📝 RSVP (참석 여부)
+          <h3 className="text-base font-semibold text-gray-900">
+            RSVP (참석 여부)
           </h3>
           <ToggleSwitch
             checked={data.rsvpEnabled}

@@ -151,9 +151,9 @@ export default function ThankYouStep3Photos({ invitationId }: ThankYouStep3Photo
   return (
     <div className="p-6 space-y-6">
       {/* 안내 */}
-      <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-        <p className="text-sm text-green-800 font-medium">사진 3장과 캡션을 설정해주세요</p>
-        <p className="text-xs text-green-600 mt-0.5">사진 업로드 후 크롭 영역을 드래그하여 조정할 수 있습니다.</p>
+      <div className="p-3 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
+        <p className="text-sm font-medium" style={{ color: 'var(--ed-text)' }}>사진 3장과 캡션을 설정해주세요</p>
+        <p className="text-xs mt-0.5" style={{ color: 'var(--ed-text-muted)' }}>사진 업로드 후 크롭 영역을 드래그하여 조정할 수 있습니다.</p>
       </div>
 
       {/* 메인 사진 (히어로 = 카드 1) */}

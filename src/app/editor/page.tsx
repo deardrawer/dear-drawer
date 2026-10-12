@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import { Eye, Share2, Save, Check, AlertCircle } from 'lucide-react'
 import { useAuth } from '@/components/providers/AuthProvider'
 import { getTemplateById } from '@/lib/templates'
 import { Button } from '@/components/ui/button'
@@ -681,38 +682,29 @@ function EditorContent() {
               className="h-5 sm:h-6 w-auto"
             />
           </button>
-          {/* 템플릿 타입 배지 - URL 또는 invitation에서 확인 */}
-          {(() => {
-            const tid = activeTemplate?.id || templateId || ''
-            if (tid === 'narrative-family') return <span className="px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700 rounded-full">family</span>
-            if (tid === 'narrative-magazine') return <span className="px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-700 rounded-full">magazine</span>
-            if (tid === 'narrative-film') return <span className="px-2 py-0.5 text-xs font-medium bg-gray-800 text-gray-100 rounded-full">movie</span>
-            if (tid === 'narrative-record') return <span className="px-2 py-0.5 text-xs font-medium bg-orange-100 text-orange-700 rounded-full">record</span>
-            if (tid === 'narrative-exhibit') return <span className="px-2 py-0.5 text-xs font-medium bg-violet-100 text-violet-700 rounded-full">feed</span>
-            return <span className="px-2 py-0.5 text-xs font-medium bg-rose-100 text-rose-700 rounded-full">our</span>
-          })()}
-          <div className="hidden sm:block h-4 w-px bg-gray-200" />
-          <span className="hidden sm:inline text-sm text-gray-400 font-light tracking-wide">
+          {/* 템플릿 이름 — 중립색 하나 (색상 배지 제거) */}
+          <div className="hidden sm:block h-4 w-px" style={{ background: 'var(--ed-border)' }} />
+          <span className="hidden sm:inline text-sm font-light tracking-wide" style={{ color: 'var(--ed-text-faint)' }}>
             {activeTemplate?.name || 'Loading...'}
             {autoSaveStatus === 'saving' && (
-              <span className="ml-2 text-gray-500 inline-flex items-center gap-1">
-                <span className="animate-spin h-3 w-3 border border-gray-400 border-t-transparent rounded-full" />
+              <span className="ml-2 inline-flex items-center gap-1" style={{ color: 'var(--ed-text-muted)' }}>
+                <span className="animate-spin h-3 w-3 border border-current border-t-transparent rounded-full opacity-60" />
                 저장 중...
               </span>
             )}
             {autoSaveStatus === 'saved' && (
-              <span className="ml-2 text-green-600 inline-flex items-center gap-1">
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+              <span className="ml-2 inline-flex items-center gap-1" style={{ color: 'var(--ed-text-muted)' }}>
+                <Check className="w-3.5 h-3.5" />
                 자동 저장됨
               </span>
             )}
             {autoSaveStatus === 'error' && (
               <span className="ml-2 text-red-500 inline-flex items-center gap-1">
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01" /></svg>
+                <AlertCircle className="w-3.5 h-3.5" />
                 저장 실패
               </span>
             )}
-            {autoSaveStatus === 'idle' && isDirty && <span className="ml-2 text-gray-600">• 미저장</span>}
+            {autoSaveStatus === 'idle' && isDirty && <span className="ml-2" style={{ color: 'var(--ed-text-muted)' }}>• 미저장</span>}
           </span>
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
@@ -721,27 +713,9 @@ function EditorContent() {
             variant="outline"
             size="sm"
             onClick={handlePreview}
-            className={`text-xs tracking-wide ${isOurTemplate ? 'neu-btn text-gray-600' : 'border-gray-200 text-gray-600 hover:bg-gray-50 rounded-none'}`}
+            className={`text-xs tracking-wide ${isOurTemplate ? 'neu-btn' : 'border-gray-200 text-gray-600 hover:bg-gray-50 rounded-none'}`}
           >
-            <svg
-              className="w-4 h-4 sm:mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-              />
-            </svg>
+            <Eye className="w-4 h-4 sm:mr-2" strokeWidth={1.75} />
             <span className="hidden sm:inline">미리보기</span>
           </Button>
           {/* 공유 버튼 - 데스크탑에서만 표시 */}
@@ -749,28 +723,16 @@ function EditorContent() {
             variant="outline"
             size="sm"
             onClick={handleShare}
-            className={`hidden sm:flex text-xs tracking-wide ${isOurTemplate ? 'neu-btn text-gray-600' : 'border-gray-200 text-gray-600 hover:bg-gray-50 rounded-none'}`}
+            className={`hidden sm:flex text-xs tracking-wide ${isOurTemplate ? 'neu-btn' : 'border-gray-200 text-gray-600 hover:bg-gray-50 rounded-none'}`}
           >
-            <svg
-              className="w-4 h-4 mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-              />
-            </svg>
+            <Share2 className="w-4 h-4 mr-2" strokeWidth={1.75} />
             공유
           </Button>
           <Button
             size="sm"
             disabled={isSaving}
             onClick={handleSave}
-            className={`text-xs tracking-wide ${isOurTemplate ? 'neu-btn-primary rounded-xl' : 'bg-black text-white hover:bg-gray-800 rounded-none'}`}
+            className={`text-xs tracking-wide ${isOurTemplate ? 'neu-btn-primary' : 'bg-black text-white hover:bg-gray-800 rounded-none'}`}
           >
             {isSaving ? (
               <>
@@ -779,19 +741,7 @@ function EditorContent() {
               </>
             ) : (
               <>
-                <svg
-                  className="w-4 h-4 sm:mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
-                  />
-                </svg>
+                <Save className="w-4 h-4 sm:mr-2" strokeWidth={1.75} />
                 <span className="hidden sm:inline">저장</span>
               </>
             )}

@@ -2980,7 +2980,6 @@ function TheSimpleEditorContent() {
                         onClick={() => setDdayPreviewOpen(true)}
                         className="mt-3 w-full flex items-center justify-center gap-1.5 border border-stone-300 rounded-md py-2 text-xs text-stone-600 hover:border-stone-500 hover:text-stone-800 transition-colors"
                       >
-                        <span style={{ fontSize: 14 }}>🔔</span>
                         팝업 미리보기
                       </button>
                     )}

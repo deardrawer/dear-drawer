@@ -45,18 +45,18 @@ export default function WizardNavigation({ onSave, isSaving, isOurTemplate }: Wi
     scrollEditorToTop()
   }
 
-  // 마지막 단계는 Step6Publish에서 자체 버튼 사용
+  // 마지막 단계는 Step6Publish에서 자체 발행 버튼 사용 → 여기선 조용한 '이전'만
   if (isLastStep) {
     return (
-      <div className={`hidden md:block px-4 py-2 md:px-6 md:py-4 border-t ${isOurTemplate ? 'md:px-9 md:py-5 border-black/[0.04]' : 'border-gray-100 bg-white'}`}>
-        <Button
-          variant="outline"
+      <div className={`hidden md:block px-4 py-2 md:px-6 md:py-4 border-t ${isOurTemplate ? 'md:px-9 md:py-4 border-black/[0.04]' : 'border-gray-100 bg-white'}`}>
+        <button
+          type="button"
           onClick={handlePrev}
-          className={`w-full btn-cta-outline h-8 text-xs px-2.5 py-0 md:h-11 md:text-base md:px-4 ${isOurTemplate ? 'neu-btn text-[#8A8580]' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+          className="inline-flex items-center gap-1 text-sm py-2 pr-2 text-[color:var(--ed-text-muted)] hover:text-[color:var(--ed-text)] transition-colors"
         >
-          <ChevronLeft className="w-4 h-4 mr-0.5 md:w-5 md:h-5 md:mr-1" />
+          <ChevronLeft className="w-4 h-4" />
           이전 단계로
-        </Button>
+        </button>
       </div>
     )
   }
@@ -70,26 +70,29 @@ export default function WizardNavigation({ onSave, isSaving, isOurTemplate }: Wi
         </div>
       )}
 
-      {/* 버튼 영역 */}
-      <div className={`flex items-center justify-between gap-2 md:gap-3`}>
-        {/* 이전 버튼 */}
-        <Button
-          variant="outline"
-          onClick={handlePrev}
-          disabled={isFirstStep}
-          className={`flex-1 btn-cta-outline h-8 text-xs px-2.5 py-0 md:h-11 md:text-base md:px-4 ${isOurTemplate ? 'neu-btn text-[#8A8580]' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
-        >
-          <ChevronLeft className="w-4 h-4 mr-0.5 md:w-5 md:h-5 md:mr-1" />
-          이전
-        </Button>
+      {/* 버튼 영역 — '이전'은 조용한 고스트(왼쪽), '다음'은 강조·자연 폭(오른쪽) */}
+      <div className="flex items-center justify-between gap-3">
+        {/* 이전 (첫 단계에서는 숨김, 자리 유지) */}
+        {!isFirstStep ? (
+          <button
+            type="button"
+            onClick={handlePrev}
+            className="inline-flex items-center gap-1 text-sm py-2 pr-2 text-[color:var(--ed-text-muted)] hover:text-[color:var(--ed-text)] transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            이전
+          </button>
+        ) : (
+          <span />
+        )}
 
-        {/* 다음 버튼 */}
+        {/* 다음 단계 (주 액션) */}
         <Button
           onClick={handleNext}
-          className={`flex-[2] btn-cta tracking-wide h-8 text-xs px-2.5 py-0 md:h-11 md:text-base md:px-4 ${isOurTemplate ? 'neu-btn-primary' : 'bg-black text-white hover:bg-gray-800'}`}
+          className={`tracking-wide h-10 text-sm px-6 ${isOurTemplate ? 'neu-btn-primary' : 'bg-black text-white hover:bg-gray-800'}`}
         >
           다음 단계
-          <ChevronRight className="w-4 h-4 ml-0.5 md:w-5 md:h-5 md:ml-1" />
+          <ChevronRight className="w-4 h-4 ml-1" />
         </Button>
       </div>
     </div>

@@ -23,19 +23,16 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
   return (
     <div className="p-6 space-y-8">
       {/* 안내 배너 */}
-      <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-        <p className="text-base text-orange-800 font-medium mb-1">인사말</p>
-        <p className="text-sm text-orange-700">
+      <div className="p-4 rounded-xl" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
+        <p className="text-base font-medium mb-1" style={{ color: 'var(--ed-text)' }}>인사말</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
           비워두면 THE CLASSIC 기본 문구가 대신 표시됩니다.
         </p>
       </div>
 
       {/* 인사말 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
-          </svg>
+        <h3 className="text-base font-semibold text-gray-900">
           인사말
         </h3>
         <p className="text-sm text-gray-500">청첩장 상단(Letter 섹션)에 표시되는 초대 문구입니다.</p>
@@ -228,11 +225,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
 
       {/* 신랑 · 신부 소개 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-          </svg>
+        <h3 className="text-base font-semibold text-gray-900">
           신랑 · 신부 소개
         </h3>
         <p className="text-sm text-gray-500">소개 방식을 선택하세요. 사진은 드래그·확대로 크롭할 수 있습니다.</p>
@@ -476,11 +469,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
 
       {/* 갤러리 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-            <circle cx="12" cy="13" r="4" />
-          </svg>
+        <h3 className="text-base font-semibold text-gray-900">
           갤러리 <span className="text-xs font-normal text-gray-500">(최대 30장)</span>
         </h3>
         <p className="text-sm text-gray-500">청첩장 갤러리 섹션에 사용되는 사진들입니다. 각 사진을 드래그·확대하여 원하는 부분을 보여줄 수 있습니다.</p>
@@ -588,12 +577,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
 
       {/* 간지 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2" />
-            <circle cx="9" cy="9" r="2" />
-            <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-          </svg>
+        <h3 className="text-base font-semibold text-gray-900">
           간지 (사이 페이지)
         </h3>
         <p className="text-sm text-gray-500">섹션 사이에 들어가는 사진/인용 페이지입니다. 타입별로 사진을 추가하세요.</p>
@@ -606,10 +590,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
 
       {/* 예식 일정 사진 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
-          </svg>
+        <h3 className="text-base font-semibold text-gray-900">
           예식 일정
         </h3>
         {/* 달력 디자인 선택 */}
@@ -728,11 +709,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
 
       {/* 오시는 길 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-            <circle cx="12" cy="10" r="3" />
-          </svg>
+        <h3 className="text-base font-semibold text-gray-900">
           오시는 길
         </h3>
         <div className="rounded-lg border border-gray-200 p-4 bg-gray-50/50 space-y-3">
@@ -887,10 +864,7 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
 
       {/* 마무리 감사 인사 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-          </svg>
+        <h3 className="text-base font-semibold text-gray-900">
           마무리 감사 인사
         </h3>
         <p className="text-sm text-gray-500">청첩장 마지막(공유) 섹션에 표시되는 감사 인사입니다.</p>

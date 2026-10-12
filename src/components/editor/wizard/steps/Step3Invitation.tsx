@@ -10,7 +10,7 @@ import ImageUploader from '@/components/editor/ImageUploader'
 import CroppedImageDiv from '@/components/ui/CroppedImageDiv'
 import { getPresetById } from '@/lib/introPresets'
 import { SAMPLE_GREETING, SAMPLE_QUOTE } from '@/lib/sampleData'
-import { Sparkles, X, Loader2 } from 'lucide-react'
+import { Sparkles, X, Loader2, AlertTriangle } from 'lucide-react'
 import DdayPopupEditor from '@/components/dday/DdayPopupEditor'
 import { DEFAULT_DDAY_POPUP } from '@/lib/ddayPopupTypes'
 import { buildGreetingPrompt, extractGreetingFromResult } from '@/lib/greetingPrompt'
@@ -241,9 +241,9 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
   return (
     <div className="p-6 space-y-8">
       {/* 안내 */}
-      <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-        <p className="text-base text-purple-800 font-medium mb-1">{isMagazine ? '매거진 커버를 꾸며보세요' : '인트로를 꾸며보세요'}</p>
-        <p className="text-sm text-purple-700">
+      <div className="space-y-1">
+        <p className="text-sm font-medium" style={{ color: 'var(--ed-text)' }}>{isMagazine ? '매거진 커버를 꾸며보세요' : '인트로를 꾸며보세요'}</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
           {isMagazine
             ? '커버 이미지와 기본 정보를 입력하고 매거진 첫 페이지를 완성하세요.'
             : '기본 정보를 입력하고 첫인상을 결정하는 인트로를 디자인해주세요.'}
@@ -252,14 +252,13 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
 
       {/* 2. 신랑신부 기본정보 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+        <h3 className="text-base font-semibold text-gray-900">
           신랑신부 정보
         </h3>
 
         {/* 신랑 */}
-        <div className="space-y-3 p-4 bg-blue-50 rounded-lg">
-          <p className="text-base font-semibold text-blue-800">신랑</p>
+        <div className="space-y-3 p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)' }}>
+          <p className="text-base font-semibold" style={{ color: 'var(--ed-text)' }}>신랑</p>
           {isFamily ? (
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
@@ -314,8 +313,8 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
         </div>
 
         {/* 신부 */}
-        <div className="space-y-3 p-4 bg-pink-50 rounded-lg">
-          <p className="text-base font-semibold text-pink-800">신부</p>
+        <div className="space-y-3 p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)' }}>
+          <p className="text-base font-semibold" style={{ color: 'var(--ed-text)' }}>신부</p>
           {isFamily ? (
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
@@ -370,11 +369,10 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
 
       {/* 결혼식 정보 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" /><path d="M9 22V12h6v10" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M12 6h.01" /><path d="M12 10h.01" /><path d="M8 10h.01" /><path d="M16 10h.01" /></svg>
+        <h3 className="text-base font-semibold text-gray-900">
           결혼식 정보
         </h3>
-        <p className="text-sm text-blue-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>인트로 페이지, 오시는 길 안내, 카카오톡 공유 설정시 사용됩니다.</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>인트로 페이지, 오시는 길 안내, 카카오톡 공유 설정시 사용됩니다.</p>
 
         <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
           {/* 날짜/시간 */}
@@ -473,11 +471,10 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
       {/* 인트로 스타일 편집 (매거진에서는 숨김) */}
       {!isMagazine && (
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" /><path d="M20 3v4" /><path d="M22 5h-4" /></svg>
+        <h3 className="text-base font-semibold text-gray-900">
           인트로 스타일
         </h3>
-        <p className="text-sm text-blue-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>커버 이미지, 애니메이션 효과, 텍스트를 한 곳에서 설정하세요</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>커버 이미지, 애니메이션 효과, 텍스트를 한 곳에서 설정하세요</p>
 
         {/* 미리보기 썸네일 */}
         {media.coverImage && (
@@ -511,11 +508,10 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
       {/* 매거진: 커버 이미지 업로드 (간단) */}
       {isMagazine && (
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>
+        <h3 className="text-base font-semibold text-gray-900">
           커버 이미지
         </h3>
-        <p className="text-sm text-blue-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>매거진 표지에 사용할 사진을 선택하세요</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>매거진 표지에 사용할 사진을 선택하세요</p>
         <button
           onClick={handleOpenIntroSelector}
           className="w-full py-3 px-4 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
@@ -541,8 +537,7 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
       {!isMagazine && (
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z" /><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z" /></svg>
+          <h3 className="text-base font-semibold text-gray-900">
             명언/슬로건
           </h3>
           {!invitation.content.quote?.text?.trim() && (
@@ -551,13 +546,13 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
                 updateNestedField('content.quote.text', '사랑은 서로를 바라보는 것이 아니라\n함께 같은 방향을 바라보는 것이다.')
                 updateNestedField('content.quote.author', '생텍쥐페리')
               }}
-              className="text-sm text-blue-600 hover:text-blue-700"
+              className="text-sm text-stone-500 hover:text-stone-700"
             >
               샘플 적용
             </button>
           )}
         </div>
-        <p className="text-sm text-blue-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>인트로에 표시될 명언이나 슬로건을 입력해주세요. (선택)</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>인트로에 표시될 명언이나 슬로건을 입력해주세요. (선택)</p>
 
         <div className="p-4 bg-gray-50 rounded-lg space-y-3">
           <div className="space-y-1.5">
@@ -609,37 +604,36 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
       {!isMagazine && (
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+          <h3 className="text-base font-semibold text-gray-900">
             인트로 인사말
           </h3>
           {!hasGreeting && (
             <button
               onClick={applySampleGreeting}
-              className="text-sm text-blue-600 hover:text-blue-700"
+              className="text-sm text-stone-500 hover:text-stone-700"
             >
               샘플 적용
             </button>
           )}
         </div>
-        <p className="text-sm text-blue-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>초안을 작성하거나, 샘플을 참고하여 직접 작성해보세요.</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>초안을 작성하거나, 샘플을 참고하여 직접 작성해보세요.</p>
 
         {/* TIP 섹션 */}
-        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-sm text-blue-800 mb-2"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>두 분이 왜 이 선택을 했는지, 시작의 마음을 담아 적어보세요.</p>
-          <details className="text-xs text-blue-700">
-            <summary className="cursor-pointer font-medium hover:text-blue-900">가이드 보기</summary>
-            <div className="mt-3 space-y-3 pl-2 border-l-2 border-blue-300">
-              <p className="font-medium">이렇게 작성해 보세요</p>
+        <div className="p-4 rounded-lg border" style={{ background: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
+          <p className="text-sm mb-2" style={{ color: 'var(--ed-text-muted)' }}>두 분이 왜 이 선택을 했는지, 시작의 마음을 담아 적어보세요.</p>
+          <details className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
+            <summary className="cursor-pointer font-medium" style={{ color: 'var(--ed-text)' }}>가이드 보기</summary>
+            <div className="mt-3 space-y-3 pl-2 border-l-2" style={{ borderColor: 'var(--ed-border)' }}>
+              <p className="font-medium" style={{ color: 'var(--ed-text)' }}>이렇게 작성해 보세요</p>
               <ul className="space-y-1 list-disc list-inside">
                 <li>한 문장의 인용구나 두 분의 말로 시작해요</li>
                 <li>'왜 결혼하는지', 지금의 마음만 담아주세요</li>
                 <li>부탁보다는 초대의 톤이 좋아요</li>
               </ul>
-              <div className="p-2 bg-white/50 rounded text-gray-600 italic">
+              <div className="p-2 rounded italic" style={{ background: 'var(--ed-surface)', color: 'var(--ed-text-muted)' }}>
                 예시) "서로 다른 길을 걸어온 두 사람이<br/>이제 같은 길을 함께 걸어가려 합니다."
               </div>
-              <p className="text-blue-600"><svg className="w-3 h-3 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>완벽한 글보다 두 분의 말투가 느껴지는 글이면 충분합니다.</p>
+              <p style={{ color: 'var(--ed-text-muted)' }}>완벽한 글보다 두 분의 말투가 느껴지는 글이면 충분합니다.</p>
             </div>
           </details>
         </div>
@@ -676,15 +670,14 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
       {/* 5. 부모님 정보 (매거진에서는 숨김) */}
       {!isMagazine && (
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+        <h3 className="text-base font-semibold text-gray-900">
           부모님 정보
         </h3>
-        <p className="text-sm text-blue-600"><svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>인트로에 표시될 부모님 성함을 입력해주세요.</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>인트로에 표시될 부모님 성함을 입력해주세요.</p>
 
         {/* 청첩장 본문 표시 토글 */}
-        <div className="flex items-center justify-between p-3 bg-amber-50 rounded-lg">
-          <span className="text-xs text-amber-800">청첩장에 표시</span>
+        <div className="flex items-center justify-between p-3 rounded-lg" style={{ background: 'var(--ed-surface-2)' }}>
+          <span className="text-xs" style={{ color: 'var(--ed-text)' }}>청첩장에 표시</span>
           <Switch
             checked={invitation.sectionVisibility?.parentNames !== false}
             onCheckedChange={() => toggleSectionVisibility('parentNames')}
@@ -692,8 +685,8 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
         </div>
 
         {/* 신랑측 */}
-        <div className="space-y-3 p-4 bg-blue-50 rounded-lg">
-          <p className="text-base font-semibold text-blue-800">신랑측</p>
+        <div className="space-y-3 p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)' }}>
+          <p className="text-base font-semibold" style={{ color: 'var(--ed-text)' }}>신랑측</p>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">아버지 성함</Label>
@@ -737,8 +730,8 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
         </div>
 
         {/* 신부측 */}
-        <div className="space-y-3 p-4 bg-pink-50 rounded-lg">
-          <p className="text-base font-semibold text-pink-800">신부측</p>
+        <div className="space-y-3 p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)' }}>
+          <p className="text-base font-semibold" style={{ color: 'var(--ed-text)' }}>신부측</p>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">아버지 성함</Label>
@@ -816,23 +809,23 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
 
       {/* 카카오톡 공유 설정 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" /><path d="M12 18h.01" /></svg>
+        <h3 className="text-base font-semibold text-gray-900">
           카카오톡 공유 설정
         </h3>
-        <p className="text-sm text-blue-600">
-          <svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>카카오톡으로 공유할 때 표시되는 정보를 설정해주세요.
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
+          카카오톡으로 공유할 때 표시되는 정보를 설정해주세요.
         </p>
 
         {/* 경고 문구 */}
-        <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-          <p className="text-xs text-amber-700 mb-2">
-            <svg className="w-3 h-3 text-amber-600 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg> <strong>중요:</strong> 카카오톡 공유 정보는 한번 공유된 후 변경하면 캐시로 인해
-            반영되기까지 시간이 오래 걸릴 수 있습니다. 신중하게 설정해주세요.
+        <div className="p-3 rounded-lg border" style={{ background: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
+          <p className="text-xs mb-2 flex gap-1.5" style={{ color: 'var(--ed-text-muted)' }}>
+            <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" strokeWidth={1.75} />
+            <span><strong>중요:</strong> 카카오톡 공유 정보는 한번 공유된 후 변경하면 캐시로 인해
+            반영되기까지 시간이 오래 걸릴 수 있습니다. 신중하게 설정해주세요.</span>
           </p>
-          <details className="text-xs text-amber-700">
-            <summary className="cursor-pointer font-medium hover:text-amber-900">이미지 변경하기 (펼쳐보기)</summary>
-            <div className="mt-2 space-y-1 pl-2 border-l-2 border-amber-300">
+          <details className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
+            <summary className="cursor-pointer font-medium" style={{ color: 'var(--ed-text)' }}>이미지 변경하기 (펼쳐보기)</summary>
+            <div className="mt-2 space-y-1 pl-2 border-l-2" style={{ borderColor: 'var(--ed-border)' }}>
               <p>이미지 변경을 위해 썸네일 캐시 초기화가 필요합니다.</p>
               <ol className="list-decimal list-inside space-y-0.5">
                 <li>
@@ -840,7 +833,7 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
                     href="https://developers.kakao.com/tool/debugger/sharing"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-amber-800 underline hover:text-amber-900"
+                    className="underline text-stone-600 hover:text-stone-800"
                   >
                     카카오톡 디벨로퍼
                   </a>에 접속
@@ -849,7 +842,7 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
                 <li>캐시초기화 버튼 클릭</li>
                 <li>다시 카카오톡 링크 공유</li>
               </ol>
-              <p className="text-amber-600 italic">※ 이전에 공유한 썸네일은 변경되지 않습니다.</p>
+              <p className="italic" style={{ color: 'var(--ed-text-faint)' }}>※ 이전에 공유한 썸네일은 변경되지 않습니다.</p>
             </div>
           </details>
         </div>
@@ -979,17 +972,14 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
 
       {/* OG 이미지 설정 (문자, SNS 공유용) */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg>
+        <h3 className="text-base font-semibold text-gray-900">
           공유 미리보기 이미지 (OG 이미지)
         </h3>
-        <div className="p-3 bg-blue-50 rounded-lg">
-          <p className="text-xs text-blue-700">
-            <svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg><strong>권장 크기:</strong> 1200 x 630 픽셀 (가로형)<br />
-            카카오톡 이외의 플랫폼(문자, 인스타그램, 페이스북 등)에서 공유할 때 표시되는 이미지입니다.<br />
-            카카오톡 썸네일과 다른 이미지를 사용하면 플랫폼별로 다른 미리보기를 보여줄 수 있어요.
-          </p>
-        </div>
+        <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
+          <strong>권장 크기:</strong> 1200 x 630 픽셀 (가로형)<br />
+          카카오톡 이외의 플랫폼(문자, 인스타그램, 페이스북 등)에서 공유할 때 표시되는 이미지입니다.<br />
+          카카오톡 썸네일과 다른 이미지를 사용하면 플랫폼별로 다른 미리보기를 보여줄 수 있어요.
+        </p>
 
         <div className="space-y-3">
           <div className="max-w-[220px] mx-auto rounded-lg border border-stone-200 bg-white shadow-sm overflow-hidden">
@@ -997,7 +987,7 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
               <div className="relative w-full bg-stone-100" style={{ aspectRatio: '1.91/1' }}>
                 <img src={invitation.meta.ogImage || invitation.meta.kakaoThumbnail} alt="OG preview" className="w-full h-full object-cover" />
                 {!invitation.meta.ogImage && invitation.meta.kakaoThumbnail && (
-                  <div className="absolute bottom-0 left-0 right-0 bg-amber-500/80 px-1 py-0.5">
+                  <div className="absolute bottom-0 left-0 right-0 bg-stone-700/80 px-1 py-0.5">
                     <p className="text-[8px] text-white text-center font-medium">카카오 썸네일 사용 중</p>
                   </div>
                 )}
@@ -1057,8 +1047,8 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
               </button>
             </div>
           ) : invitation.meta.kakaoThumbnail ? (
-            <label className="flex items-center justify-center w-full h-10 border border-amber-300 bg-amber-50 rounded-lg cursor-pointer hover:bg-amber-100 transition-colors">
-              <span className="text-[11px] text-amber-700 font-medium">별도 OG 이미지로 교체하기</span>
+            <label className="flex items-center justify-center w-full h-10 border border-stone-200 bg-stone-50 rounded-lg cursor-pointer hover:bg-stone-100 transition-colors">
+              <span className="text-[11px] text-stone-600 font-medium">별도 OG 이미지로 교체하기</span>
               <input
                 type="file"
                 accept="image/*"
@@ -1091,7 +1081,8 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
               onChange={(url) => updateNestedField('meta.ogImage', url)}
               invitationId={invitationId || undefined}
               placeholder="OG 이미지 업로드"
-              aspectRatio="aspect-video"
+              aspectRatio="aspect-[1.91/1]"
+              className="max-w-[220px] mx-auto"
             />
           )}
         </div>
@@ -1117,7 +1108,7 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
       {/* 인사말 작성 모달 */}
       {greetingModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-2xl w-[90%] max-w-md max-h-[85vh] overflow-hidden shadow-xl flex flex-col">
+          <div className="bg-white rounded-xl w-[90%] max-w-md max-h-[85vh] overflow-hidden shadow-xl flex flex-col">
             {/* 헤더 */}
             <div className="flex items-center justify-between p-4 border-b shrink-0">
               <div className="flex items-center gap-2">

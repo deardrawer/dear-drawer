@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { uploadImage } from '@/lib/imageUpload'
-import { X, Plus, Upload } from 'lucide-react'
+import { X, Plus, Upload, AlertTriangle } from 'lucide-react'
 import DdayPopupEditor from '@/components/dday/DdayPopupEditor'
 import { DEFAULT_DDAY_POPUP } from '@/lib/ddayPopupTypes'
 
@@ -77,9 +77,9 @@ export default function EssayStep1BasicInfo({ data, updateData, updateNestedData
   return (
     <div className="p-6 space-y-8">
       {/* 안내 배너 */}
-      <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-        <p className="text-base text-orange-800 font-medium mb-1">기본 정보</p>
-        <p className="text-sm text-orange-700">
+      <div className="p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
+        <p className="text-base font-medium mb-1" style={{ color: 'var(--ed-text)' }}>기본 정보</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
           신랑신부 정보와 결혼식 정보를 입력하세요.
         </p>
       </div>
@@ -87,18 +87,12 @@ export default function EssayStep1BasicInfo({ data, updateData, updateNestedData
 
       {/* 신랑신부 이름 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-          </svg>
+        <h3 className="text-base font-semibold text-gray-900">
           신랑신부 이름
         </h3>
 
-        <div className="space-y-3 p-4 bg-blue-50 rounded-lg">
-          <p className="text-base font-semibold text-blue-800">신랑</p>
+        <div className="space-y-3 p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)' }}>
+          <p className="text-base font-semibold" style={{ color: 'var(--ed-text)' }}>신랑</p>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">성</Label>
@@ -119,8 +113,8 @@ export default function EssayStep1BasicInfo({ data, updateData, updateNestedData
           </div>
         </div>
 
-        <div className="space-y-3 p-4 bg-pink-50 rounded-lg">
-          <p className="text-base font-semibold text-pink-800">신부</p>
+        <div className="space-y-3 p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)' }}>
+          <p className="text-base font-semibold" style={{ color: 'var(--ed-text)' }}>신부</p>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">성</Label>
@@ -144,19 +138,13 @@ export default function EssayStep1BasicInfo({ data, updateData, updateNestedData
 
       {/* 부모님 성함 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-          </svg>
+        <h3 className="text-base font-semibold text-gray-900">
           부모님 성함
         </h3>
         <p className="text-xs text-gray-500">연락처, 계좌번호에 자동 연동됩니다.</p>
 
-        <div className="space-y-3 p-4 bg-blue-50 rounded-lg">
-          <p className="text-sm font-semibold text-blue-800">신랑측</p>
+        <div className="space-y-3 p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)' }}>
+          <p className="text-sm font-semibold" style={{ color: 'var(--ed-text)' }}>신랑측</p>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">아버지</Label>
@@ -201,8 +189,8 @@ export default function EssayStep1BasicInfo({ data, updateData, updateNestedData
           </div>
         </div>
 
-        <div className="space-y-3 p-4 bg-pink-50 rounded-lg">
-          <p className="text-sm font-semibold text-pink-800">신부측</p>
+        <div className="space-y-3 p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)' }}>
+          <p className="text-sm font-semibold" style={{ color: 'var(--ed-text)' }}>신부측</p>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">아버지</Label>
@@ -250,17 +238,7 @@ export default function EssayStep1BasicInfo({ data, updateData, updateNestedData
 
       {/* 결혼식 정보 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="4" y="2" width="16" height="20" rx="2" />
-            <path d="M9 22V12h6v10" />
-            <path d="M8 6h.01" />
-            <path d="M16 6h.01" />
-            <path d="M12 6h.01" />
-            <path d="M12 10h.01" />
-            <path d="M8 10h.01" />
-            <path d="M16 10h.01" />
-          </svg>
+        <h3 className="text-base font-semibold text-gray-900">
           결혼식 정보
         </h3>
 
@@ -346,22 +324,23 @@ export default function EssayStep1BasicInfo({ data, updateData, updateNestedData
 
       {/* 카카오톡 공유 설정 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" /><path d="M12 18h.01" /></svg> 카카오톡 공유 설정
+        <h3 className="text-base font-semibold text-gray-900">
+          카카오톡 공유 설정
         </h3>
-        <p className="text-sm text-blue-600">
-          <svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>카카오톡으로 공유할 때 표시되는 정보를 설정해주세요.
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
+          카카오톡으로 공유할 때 표시되는 정보를 설정해주세요.
         </p>
 
         {/* 경고 문구 */}
-        <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-          <p className="text-xs text-amber-700 mb-2">
-            <svg className="w-3 h-3 text-amber-600 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg> <strong>중요:</strong> 카카오톡 공유 정보는 한번 공유된 후 변경하면 캐시로 인해
-            반영되기까지 시간이 오래 걸릴 수 있습니다.
+        <div className="p-3 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
+          <p className="text-xs mb-2 flex items-start gap-1" style={{ color: 'var(--ed-text-muted)' }}>
+            <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" />
+            <span><strong>중요:</strong> 카카오톡 공유 정보는 한번 공유된 후 변경하면 캐시로 인해
+            반영되기까지 시간이 오래 걸릴 수 있습니다.</span>
           </p>
-          <details className="text-xs text-amber-700">
-            <summary className="cursor-pointer font-medium hover:text-amber-900">이미지 변경하기 (펼쳐보기)</summary>
-            <div className="mt-2 space-y-1 pl-2 border-l-2 border-amber-300">
+          <details className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
+            <summary className="cursor-pointer font-medium">이미지 변경하기 (펼쳐보기)</summary>
+            <div className="mt-2 space-y-1 pl-2" style={{ borderLeft: '2px solid var(--ed-border)' }}>
               <p>이미지 변경을 위해 썸네일 캐시 초기화가 필요합니다.</p>
               <ol className="list-decimal list-inside space-y-0.5">
                 <li>
@@ -369,7 +348,8 @@ export default function EssayStep1BasicInfo({ data, updateData, updateNestedData
                     href="https://developers.kakao.com/tool/debugger/sharing"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-amber-800 underline hover:text-amber-900"
+                    className="underline"
+                    style={{ color: 'var(--ed-text)' }}
                   >
                     카카오톡 디벨로퍼
                   </a>에 접속
@@ -538,12 +518,12 @@ export default function EssayStep1BasicInfo({ data, updateData, updateNestedData
 
       {/* OG 이미지 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg> 공유 미리보기 이미지 (OG 이미지)
+        <h3 className="text-base font-semibold text-gray-900">
+          공유 미리보기 이미지 (OG 이미지)
         </h3>
-        <div className="p-3 bg-blue-50 rounded-lg">
-          <p className="text-xs text-blue-700">
-            <svg className="w-3.5 h-3.5 text-gray-900 inline -mt-0.5 mr-0.5" viewBox="0 0 24 24" fill="rgba(0,0,0,0.1)" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg> <strong>권장 크기:</strong> 1200 x 630 픽셀 (가로형)<br />
+        <div className="p-3 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
+          <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
+            <strong>권장 크기:</strong> 1200 x 630 픽셀 (가로형)<br />
             카카오톡 이외의 플랫폼(문자, 인스타그램, 페이스북 등)에서 공유할 때 표시되는 이미지입니다.
           </p>
         </div>

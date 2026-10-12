@@ -33,27 +33,19 @@ export default function ClassicStepBasicInfo({ data, updateNestedData, invitatio
   return (
     <div className="p-6 space-y-8">
       {/* 안내 배너 */}
-      <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-        <p className="text-base text-orange-800 font-medium mb-1">기본 정보</p>
-        <p className="text-sm text-orange-700">
+      <div className="p-4 rounded-lg border" style={{ backgroundColor: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
+        <p className="text-base font-medium mb-1" style={{ color: 'var(--ed-text)' }}>기본 정보</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
           신랑신부 정보와 결혼식 정보를 입력하세요.
         </p>
       </div>
 
       {/* 신랑신부 이름 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-          </svg>
-          신랑신부 이름
-        </h3>
+        <h3 className="text-base font-semibold text-gray-900">신랑신부 이름</h3>
 
-        <div className="space-y-3 p-4 bg-blue-50 rounded-lg">
-          <p className="text-base font-semibold text-blue-800">신랑</p>
+        <div className="space-y-3 p-4 rounded-lg border" style={{ backgroundColor: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
+          <p className="text-base font-semibold" style={{ color: 'var(--ed-text)' }}>신랑</p>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">이름 <span className="text-red-500">*</span></Label>
@@ -74,8 +66,8 @@ export default function ClassicStepBasicInfo({ data, updateNestedData, invitatio
           </div>
         </div>
 
-        <div className="space-y-3 p-4 bg-pink-50 rounded-lg">
-          <p className="text-base font-semibold text-pink-800">신부</p>
+        <div className="space-y-3 p-4 rounded-lg border" style={{ backgroundColor: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
+          <p className="text-base font-semibold" style={{ color: 'var(--ed-text)' }}>신부</p>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">이름 <span className="text-red-500">*</span></Label>
@@ -114,19 +106,11 @@ export default function ClassicStepBasicInfo({ data, updateNestedData, invitatio
 
       {/* 혼주 성함 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-          </svg>
-          혼주 성함
-        </h3>
+        <h3 className="text-base font-semibold text-gray-900">혼주 성함</h3>
         <p className="text-sm text-gray-500">인사말 · 소개 문구에 자동으로 반영됩니다.</p>
 
-        <div className="space-y-3 p-4 bg-blue-50 rounded-lg">
-          <p className="text-sm font-semibold text-blue-800">신랑측</p>
+        <div className="space-y-3 p-4 rounded-lg border" style={{ backgroundColor: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
+          <p className="text-sm font-semibold" style={{ color: 'var(--ed-text)' }}>신랑측</p>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">아버지</Label>
@@ -145,8 +129,8 @@ export default function ClassicStepBasicInfo({ data, updateNestedData, invitatio
           </div>
         </div>
 
-        <div className="space-y-3 p-4 bg-pink-50 rounded-lg">
-          <p className="text-sm font-semibold text-pink-800">신부측</p>
+        <div className="space-y-3 p-4 rounded-lg border" style={{ backgroundColor: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
+          <p className="text-sm font-semibold" style={{ color: 'var(--ed-text)' }}>신부측</p>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">아버지</Label>
@@ -169,19 +153,7 @@ export default function ClassicStepBasicInfo({ data, updateNestedData, invitatio
 
       {/* 결혼식 정보 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="4" y="2" width="16" height="20" rx="2" />
-            <path d="M9 22V12h6v10" />
-            <path d="M8 6h.01" />
-            <path d="M16 6h.01" />
-            <path d="M12 6h.01" />
-            <path d="M12 10h.01" />
-            <path d="M8 10h.01" />
-            <path d="M16 10h.01" />
-          </svg>
-          결혼식 정보
-        </h3>
+        <h3 className="text-base font-semibold text-gray-900">결혼식 정보</h3>
 
         <div className="space-y-4 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
           <div className="grid grid-cols-2 gap-3">
@@ -235,17 +207,7 @@ export default function ClassicStepBasicInfo({ data, updateNestedData, invitatio
 
       {/* D-Day 팝업 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2" />
-            <path d="M16 2v4" />
-            <path d="M8 2v4" />
-            <path d="M3 10h18" />
-            <path d="M12 14v4" />
-            <path d="M10 16h4" />
-          </svg>
-          D-Day 팝업
-        </h3>
+        <h3 className="text-base font-semibold text-gray-900">D-Day 팝업</h3>
         <p className="text-sm text-gray-500">결혼식 당일 안내 팝업을 설정합니다.</p>
 
         <div className="rounded-lg border border-gray-200 p-4 bg-gray-50/50">
@@ -263,12 +225,7 @@ export default function ClassicStepBasicInfo({ data, updateNestedData, invitatio
 
       {/* 공유 설정 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-          </svg>
-          공유 설정
-        </h3>
+        <h3 className="text-base font-semibold text-gray-900">공유 설정</h3>
         <p className="text-sm text-gray-500">카카오톡·링크로 공유될 때 표시되는 제목·설명·썸네일입니다.</p>
 
         <div className="rounded-lg border border-gray-200 p-4 bg-gray-50/50 space-y-4">

@@ -296,7 +296,7 @@ export default function MetaEditor({
 
       {/* OG 이미지 미설정 시 안내 */}
       {!ogUrl && kakaoUrl && (
-        <p className="text-[10px] text-amber-600 bg-amber-50 rounded px-2 py-1.5 -mt-2">
+        <p className="text-[10px] text-stone-500 -mt-2">
           OG 이미지를 설정하지 않으면 카카오 썸네일이 기본으로 사용됩니다.
         </p>
       )}
@@ -508,7 +508,7 @@ export default function MetaEditor({
                     setSlugInput(s)
                     checkSlug(s)
                   }}
-                  className="block text-[11px] text-blue-500 hover:underline"
+                  className="block text-[11px] text-stone-600 hover:underline"
                 >
                   {s}
                 </button>

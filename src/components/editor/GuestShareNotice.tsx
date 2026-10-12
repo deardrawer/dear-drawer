@@ -6,11 +6,7 @@
 export default function GuestShareNotice() {
   return (
     <section className="mt-4 space-y-3">
-      <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-        <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="3" y="5" width="18" height="14" rx="2" />
-          <path d="M3 8h18M8 5v3" />
-        </svg>
+      <h3 className="text-base font-semibold text-gray-900">
         하객 사진 공유
       </h3>
       <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">

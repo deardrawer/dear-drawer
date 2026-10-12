@@ -37,9 +37,8 @@ export default function ThankYouStep4Message() {
   return (
     <div className="p-6 space-y-6">
       {/* 안내 */}
-      <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-        <p className="text-base text-amber-800 font-medium mb-1">감사 인사</p>
-        <p className="text-sm text-amber-600">커튼이 닫힌 후 스크롤에 따라 제목 → 본문 → 서명 순서로 나타나는 감사 메시지입니다.</p>
+      <div className="p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>커튼이 닫힌 후 스크롤에 따라 제목 → 본문 → 서명 순서로 나타나는 감사 메시지입니다.</p>
       </div>
 
       {/* 제목 */}
@@ -89,7 +88,6 @@ export default function ThankYouStep4Message() {
           className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
         >
           <div className="flex items-center gap-3">
-            <span className="text-lg">📸</span>
             <div className="text-left">
               <p className="text-sm font-medium text-[#2C2824]">사진 공유 요청</p>
               <p className="text-xs text-gray-400">감사 인사 후 사진 공유 팝업이 표시됩니다</p>

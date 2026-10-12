@@ -230,9 +230,9 @@ export default function FeedStep6Publish({
   return (
     <div className="p-6 space-y-8">
       {/* 안내 */}
-      <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-        <p className="text-base text-purple-800 font-medium mb-1">🎉 거의 다 왔어요!</p>
-        <p className="text-sm text-purple-700">
+      <div className="p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
+        <p className="text-base font-medium mb-1" style={{ color: 'var(--ed-text)' }}>거의 다 왔어요</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
           청첩장을 발행하면 바로 공유할 수 있어요.
         </p>
       </div>
@@ -240,8 +240,8 @@ export default function FeedStep6Publish({
       {/* 청첩장 주소 */}
       {invitationUrl && (
         <section className="space-y-4">
-          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            🔗 청첩장 주소
+          <h3 className="text-base font-semibold text-gray-900">
+            청첩장 주소
           </h3>
 
           <div className="p-4 bg-gray-50 rounded-lg space-y-3">
@@ -312,7 +312,8 @@ export default function FeedStep6Publish({
                 {!isPublished && (
                   <button
                     onClick={() => setIsEditingSlug(true)}
-                    className="text-xs text-blue-600 hover:underline"
+                    className="text-xs hover:underline"
+                    style={{ color: 'var(--ed-text-muted)' }}
                   >
                     주소 변경하기
                   </button>
@@ -325,8 +326,8 @@ export default function FeedStep6Publish({
 
       {/* 공개 설정 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          🌐 공개 설정
+        <h3 className="text-base font-semibold text-gray-900">
+          공개 설정
         </h3>
         <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
           <div>
@@ -355,7 +356,7 @@ export default function FeedStep6Publish({
       <button
         onClick={handlePublish}
         disabled={isPublishing || isPublished}
-        className="w-full h-14 text-lg font-semibold text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+        className="w-full h-14 text-lg font-semibold text-white bg-gray-900 hover:bg-gray-800 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {isPublishing ? (
           <span className="flex items-center justify-center gap-2">
@@ -363,9 +364,9 @@ export default function FeedStep6Publish({
             발행 중...
           </span>
         ) : isPublished ? (
-          '✓ 발행 완료'
+          '발행 완료'
         ) : (
-          '✨ 청첩장 발행하기'
+          '청첩장 발행하기'
         )}
       </button>
 
@@ -384,7 +385,6 @@ export default function FeedStep6Publish({
           <div className="bg-white rounded-2xl p-6 max-w-sm mx-4 w-full shadow-2xl">
             {/* 축하 헤더 */}
             <div className="text-center pt-2 pb-4">
-              <div className="text-5xl mb-3 animate-bounce">🎊</div>
               <h2 className="text-xl font-bold text-gray-900 mb-1">축하합니다!</h2>
               <p className="text-sm text-gray-600">청첩장이 발행되었습니다</p>
             </div>
@@ -392,7 +392,7 @@ export default function FeedStep6Publish({
             {/* 공유 링크 */}
             {invitationUrl && (
               <div className="space-y-2 mb-4">
-                <p className="text-sm font-medium text-gray-700">🔗 공유 링크</p>
+                <p className="text-sm font-medium text-gray-700">공유 링크</p>
                 <div className="flex items-center gap-2">
                   <input
                     className={`${inputClass} font-mono text-xs bg-gray-50`}
@@ -415,7 +415,6 @@ export default function FeedStep6Publish({
                 onClick={() => invitationUrl && window.open(invitationUrl, '_blank')}
                 className="flex flex-col items-center gap-2 p-4 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors"
               >
-                <span className="text-2xl">📱</span>
                 <span className="text-sm font-medium text-gray-700">미리보기</span>
               </button>
               <button
@@ -431,21 +430,18 @@ export default function FeedStep6Publish({
 
             {/* 워터마크 안내 (미결제 시) */}
             {!isPaid && (
-              <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl mb-4">
-                <div className="flex items-start gap-3">
-                  <span className="text-xl">💎</span>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-rose-800 mb-1">워터마크 제거</p>
-                    <p className="text-xs text-rose-600 mb-3">
-                      결제 후 워터마크가 제거된 깔끔한 청첩장을 공유하세요
-                    </p>
-                    <button
-                      onClick={handleRemoveWatermark}
-                      className="w-full py-2 bg-rose-500 hover:bg-rose-600 text-white text-sm font-medium rounded-lg transition-colors"
-                    >
-                      워터마크 제거하기
-                    </button>
-                  </div>
+              <div className="p-4 rounded-xl mb-4" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
+                <div className="flex-1">
+                  <p className="text-sm font-medium mb-1" style={{ color: 'var(--ed-text)' }}>워터마크 제거</p>
+                  <p className="text-xs mb-3" style={{ color: 'var(--ed-text-muted)' }}>
+                    결제 후 워터마크가 제거된 깔끔한 청첩장을 공유하세요
+                  </p>
+                  <button
+                    onClick={handleRemoveWatermark}
+                    className="w-full py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg transition-colors"
+                  >
+                    워터마크 제거하기
+                  </button>
                 </div>
               </div>
             )}

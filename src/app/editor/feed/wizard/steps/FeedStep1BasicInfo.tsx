@@ -123,9 +123,9 @@ export default function FeedStep1BasicInfo({
     <div className="pb-4">
       {/* 안내 가이드 */}
       <div className="px-6 pt-6 pb-4">
-        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-sm text-blue-800 font-medium mb-1">디자인 설정</p>
-          <p className="text-xs text-blue-700">
+        <div className="p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
+          <p className="text-sm font-medium mb-1" style={{ color: 'var(--ed-text)' }}>디자인 설정</p>
+          <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
             표시 아이디와 배경음악을 설정해주세요.
           </p>
         </div>
@@ -133,10 +133,10 @@ export default function FeedStep1BasicInfo({
 
       {/* 아이디 설정 */}
       <div className={sectionClass}>
-        <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2 mb-2">
-          🆔 표시 아이디
+        <h3 className="text-sm font-semibold text-gray-900 mb-2">
+          표시 아이디
         </h3>
-        <p className="text-xs text-blue-600 mb-3">인스타그램 프로필에 표시될 아이디를 설정해주세요.</p>
+        <p className="text-sm mb-3" style={{ color: 'var(--ed-text-muted)' }}>인스타그램 프로필에 표시될 아이디를 설정해주세요.</p>
         <input
           className={inputClass}
           value={data.displayId}
@@ -148,14 +148,10 @@ export default function FeedStep1BasicInfo({
 
       {/* 폰트 스타일 */}
       <div className={sectionClass}>
-        <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2 mb-2">
-          <svg className="w-4 h-4 text-gray-900 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 20h9" />
-            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-          </svg>
+        <h3 className="text-sm font-semibold text-gray-900 mb-2">
           폰트 스타일
         </h3>
-        <p className="text-xs text-blue-600 mb-3">텍스트의 글꼴을 선택해주세요.</p>
+        <p className="text-sm mb-3" style={{ color: 'var(--ed-text-muted)' }}>텍스트의 글꼴을 선택해주세요.</p>
 
         <div className="grid grid-cols-1 gap-1.5">
           {([
@@ -191,7 +187,7 @@ export default function FeedStep1BasicInfo({
                   )}
                   <span className="text-xs text-gray-500 flex items-center gap-1.5">
                     {font.desc}
-                    {'recommended' in font && font.recommended && <span className="text-[10px] text-white bg-black px-1.5 py-0.5 rounded-full font-normal">추천</span>}
+                    {'recommended' in font && font.recommended && <span className="text-[11px]" style={{ color: 'var(--ed-text-faint)' }}>추천</span>}
                   </span>
                 </div>
                 <span
@@ -209,8 +205,7 @@ export default function FeedStep1BasicInfo({
       {/* 배경음악 - Instagram Music Selector Style */}
       <div className="px-6 py-6">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-            <Music className="w-4 h-4" />
+          <h3 className="text-sm font-semibold text-gray-900">
             배경음악
           </h3>
           <ToggleSwitch

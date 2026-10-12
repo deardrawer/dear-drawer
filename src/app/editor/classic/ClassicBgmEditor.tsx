@@ -117,7 +117,7 @@ export default function ClassicBgmEditor({ enabled, url, autoplay, onChange, inv
                 </div>
               </label>
             )}
-            {!invitationId && <p className="text-[10px] text-amber-500">저장 후 음악 파일을 업로드할 수 있습니다</p>}
+            {!invitationId && <p className="text-[10px]" style={{ color: 'var(--ed-text-muted)' }}>저장 후 음악 파일을 업로드할 수 있습니다</p>}
             <p className="text-[10px] text-gray-400 leading-relaxed">저작권이 있는 음악을 업로드할 경우 발생하는 모든 법적 책임은 사용자에게 있습니다. 저작권에 위배되지 않는 MP3 파일만 업로드해주세요.</p>
           </div>
 

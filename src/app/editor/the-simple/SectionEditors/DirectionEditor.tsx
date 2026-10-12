@@ -8,11 +8,11 @@ interface DirectionEditorProps {
 }
 
 const TRANSPORT_FIELDS = [
-  { key: 'car' as const, label: '자가용/주차', icon: '🅿️' },
-  { key: 'bus' as const, label: '버스', icon: '🚌' },
-  { key: 'subway' as const, label: '지하철', icon: '🚇' },
-  { key: 'train' as const, label: '기차', icon: '🚂' },
-  { key: 'expressBus' as const, label: '고속버스', icon: '🚍' },
+  { key: 'car' as const, label: '자가용/주차' },
+  { key: 'bus' as const, label: '버스' },
+  { key: 'subway' as const, label: '지하철' },
+  { key: 'train' as const, label: '기차' },
+  { key: 'expressBus' as const, label: '고속버스' },
 ]
 
 export default function DirectionEditor({ value, onChange }: DirectionEditorProps) {
@@ -72,7 +72,7 @@ export default function DirectionEditor({ value, onChange }: DirectionEditorProp
         {TRANSPORT_FIELDS.map((field) => (
           <label key={field.key} className="block mb-2.5">
             <span className="text-[10px] text-stone-500">
-              {field.icon} {field.label}
+              {field.label}
             </span>
             <textarea
               value={transport[field.key] || ''}
@@ -85,7 +85,7 @@ export default function DirectionEditor({ value, onChange }: DirectionEditorProp
         ))}
 
         <div className="mt-3 pt-2 border-t border-stone-100">
-          <span className="text-[10px] text-stone-500">📝 추가 안내사항</span>
+          <span className="text-[10px] text-stone-500">추가 안내사항</span>
           <input
             type="text"
             value={transport.customLabel || ''}

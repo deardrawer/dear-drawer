@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
-import { Mail, Heart, Share2, Upload, X } from 'lucide-react'
+import { Upload } from 'lucide-react'
 import { uploadImage } from '@/lib/imageUpload'
 import type { ParentsInvitationData } from '../../page'
 import DdayPopupEditor from '@/components/dday/DdayPopupEditor'
@@ -57,27 +57,21 @@ export default function ParentsStep2Envelope({
   return (
     <div className="p-6 space-y-8">
       {/* 안내 */}
-      <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-        <p className="text-base text-purple-800 font-medium mb-1">봉투 인트로 작성</p>
-        <p className="text-sm text-purple-700">
-          💙 청첩장 봉투에 표시될 정보를 입력해주세요.
-        </p>
-      </div>
+      <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
+        청첩장 봉투에 표시될 정보를 입력해주세요.
+      </p>
 
       {/* 보내는 사람 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center">
-            <Mail className="w-3 h-3 text-amber-600" />
-          </div>
+        <h3 className="text-base font-semibold text-gray-900">
           보내는 사람
         </h3>
-        <p className="text-sm text-blue-600">
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
           {data.sender.side === 'groom'
-            ? '💙 신랑측 부모님으로 청첩장을 보냅니다'
+            ? '신랑측 부모님으로 청첩장을 보냅니다'
             : data.sender.side === 'bride'
-            ? '💙 신부측 부모님으로 청첩장을 보냅니다'
-            : '💙 누구의 청첩장인지 선택하고 부모님 정보를 입력해주세요.'}
+            ? '신부측 부모님으로 청첩장을 보냅니다'
+            : '누구의 청첩장인지 선택하고 부모님 정보를 입력해주세요.'}
         </p>
 
         {/* 혼주 선택 */}
@@ -187,20 +181,17 @@ export default function ParentsStep2Envelope({
 
       {/* 신랑·신부 이름 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-pink-100 flex items-center justify-center">
-            <Heart className="w-3 h-3 text-pink-500" />
-          </div>
+        <h3 className="text-base font-semibold text-gray-900">
           신랑 · 신부
         </h3>
-        <p className="text-sm text-blue-600">💙 결혼하는 자녀의 이름을 입력해주세요.</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>결혼하는 자녀의 이름을 입력해주세요.</p>
         <p className="text-[11px] text-gray-500 leading-relaxed">
           ※ 양가 부모님 정보와 고인 표시는 <b>03 본문 &gt; 메인 사진</b>에서 입력합니다.
         </p>
 
         {/* 신랑 */}
-        <div className="space-y-3 p-3 bg-blue-50/50 rounded-lg">
-          <div className="text-sm font-medium text-blue-800">신랑</div>
+        <div className="space-y-3 p-3 rounded-lg" style={{ backgroundColor: 'var(--ed-surface-2)' }}>
+          <div className="text-sm font-medium" style={{ color: 'var(--ed-text)' }}>신랑</div>
           <div className="grid grid-cols-3 gap-2">
             <div className="space-y-1">
               <Label className="text-[10px] text-gray-500">성</Label>
@@ -224,8 +215,8 @@ export default function ParentsStep2Envelope({
         </div>
 
         {/* 신부 */}
-        <div className="space-y-3 p-3 bg-pink-50/50 rounded-lg">
-          <div className="text-sm font-medium text-pink-800">신부</div>
+        <div className="space-y-3 p-3 rounded-lg" style={{ backgroundColor: 'var(--ed-surface-2)' }}>
+          <div className="text-sm font-medium" style={{ color: 'var(--ed-text)' }}>신부</div>
           <div className="grid grid-cols-3 gap-2">
             <div className="space-y-1">
               <Label className="text-[10px] text-gray-500">성</Label>
@@ -251,13 +242,10 @@ export default function ParentsStep2Envelope({
 
       {/* 봉투 메시지 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center">
-            <Mail className="w-3 h-3 text-orange-500" />
-          </div>
+        <h3 className="text-base font-semibold text-gray-900">
           봉투 메시지
         </h3>
-        <p className="text-sm text-blue-600">💙 청첩장 봉투에 표시될 메시지를 작성해주세요.</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>청첩장 봉투에 표시될 메시지를 작성해주세요.</p>
 
         <div className="space-y-1.5">
           <Label className="text-xs">편지 메시지 (줄바꿈으로 구분)</Label>
@@ -281,13 +269,10 @@ export default function ParentsStep2Envelope({
 
       {/* 공유 설정 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center">
-            <Share2 className="w-3 h-3 text-blue-600" />
-          </div>
+        <h3 className="text-base font-semibold text-gray-900">
           공유 설정
         </h3>
-        <p className="text-sm text-blue-600">💙 카카오톡, 문자 등으로 청첩장을 공유할 때 표시되는 정보입니다.</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>카카오톡, 문자 등으로 청첩장을 공유할 때 표시되는 정보입니다.</p>
 
         {/* 공유 제목 */}
         <div className="space-y-2">
@@ -316,7 +301,7 @@ export default function ParentsStep2Envelope({
         {/* 카카오톡 공유 썸네일 */}
         <div className="space-y-2 pt-3 border-t">
           <Label className="text-xs font-medium">카카오톡 공유 썸네일</Label>
-          <p className="text-xs text-blue-600">💙 카카오톡에서 공유할 때 표시되는 이미지입니다.</p>
+          <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>카카오톡에서 공유할 때 표시되는 이미지입니다.</p>
         </div>
 
         {/* Kakao 비율 선택 */}
@@ -445,8 +430,8 @@ export default function ParentsStep2Envelope({
         {/* 링크 공유 썸네일 이미지 (OG Image) */}
         <div className="space-y-2 pt-4 border-t">
           <Label className="text-xs font-medium">링크 공유 썸네일 (OG 이미지)</Label>
-          <p className="text-xs text-blue-600">
-            💙 카카오톡 이외의 플랫폼(문자, 인스타그램, 페이스북 등)에서 공유할 때 표시되는 이미지입니다.
+          <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
+            카카오톡 이외의 플랫폼(문자, 인스타그램, 페이스북 등)에서 공유할 때 표시되는 이미지입니다.
           </p>
           <p className="text-xs text-gray-500">
             이미지는 1.91:1 비율로 자동 잘립니다

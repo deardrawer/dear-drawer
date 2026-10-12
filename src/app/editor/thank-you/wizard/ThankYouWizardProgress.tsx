@@ -5,35 +5,22 @@ import { Check } from 'lucide-react'
 export type ThankYouWizardStep = 1 | 2 | 3 | 4 | 5
 
 const STEP_INFO: { step: ThankYouWizardStep; label: string; shortLabel: string }[] = [
-  { step: 1, label: '디자인을 선택해주세요', shortLabel: '디자인' },
-  { step: 2, label: '기본 정보를 입력해요', shortLabel: '정보' },
-  { step: 3, label: '사진을 추가해요', shortLabel: '사진' },
-  { step: 4, label: '감사 인사를 작성해요', shortLabel: '감사인사' },
-  { step: 5, label: '감사장을 발행해요', shortLabel: '발행' },
+  { step: 1, label: '디자인', shortLabel: '디자인' },
+  { step: 2, label: '정보', shortLabel: '정보' },
+  { step: 3, label: '사진', shortLabel: '사진' },
+  { step: 4, label: '감사인사', shortLabel: '감사인사' },
+  { step: 5, label: '발행', shortLabel: '발행' },
 ]
 
 export function ThankYouWizardStepHeader({ currentStep }: { currentStep: ThankYouWizardStep }) {
   return (
-    <div className="px-8 pt-7 pb-0">
-      <div
-        style={{
-          fontSize: '72px',
-          fontWeight: 200,
-          lineHeight: 1,
-          background: 'linear-gradient(135deg, rgba(163,126,105,0.18), rgba(163,126,105,0.05))',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text',
-        }}
-      >
-        {String(currentStep).padStart(2, '0')}
-      </div>
-      <h2 className="text-[22px] font-semibold tracking-tight text-[#2C2824]" style={{ marginTop: '-12px' }}>
+    <div className="px-8 pt-6 pb-0">
+      <h2 className="text-[22px] font-semibold tracking-tight text-[#2C2824]">
         {STEP_INFO[currentStep - 1].label}
       </h2>
       <div
         className="mt-5"
-        style={{ height: '1px', background: 'linear-gradient(to right, rgba(163,126,105,0.12), transparent 70%)' }}
+        style={{ height: '1px', background: 'var(--ed-border)' }}
       />
     </div>
   )
@@ -83,7 +70,6 @@ export default function ThankYouWizardProgress({
                     : 'neu-tab'
                 }`}
               >
-                <span className="text-[9px] sm:text-[10px] font-bold">{String(step).padStart(2, '0')}</span>
                 {shortLabel}
                 {isCompleted && !isCurrent && <Check className="w-3 h-3" />}
               </button>

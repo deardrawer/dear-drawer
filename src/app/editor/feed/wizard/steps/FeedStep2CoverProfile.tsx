@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { X, Plus } from 'lucide-react'
+import { X, Plus, AlertTriangle } from 'lucide-react'
 import ImageUploader, { MultiImageUploader } from '@/components/editor/ImageUploader'
 import InlineCropEditor from '@/components/editor/InlineCropEditor'
 import type { ImageSettings } from '@/store/editorStore'
@@ -57,19 +57,19 @@ export default function FeedStep2CoverProfile({
   return (
     <div className="p-6 space-y-8">
       {/* 안내 */}
-      <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-        <p className="text-base text-orange-800 font-medium mb-1">기본 정보</p>
-        <p className="text-sm text-orange-700">
+      <div className="p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
+        <p className="text-base font-medium mb-1" style={{ color: 'var(--ed-text)' }}>기본 정보</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
           커버 이미지와 신랑신부 정보, 결혼식 정보를 입력하세요.
         </p>
       </div>
 
       {/* 커버 이미지 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          📷 커버 이미지
+        <h3 className="text-base font-semibold text-gray-900">
+          커버 이미지
         </h3>
-        <p className="text-sm text-blue-600">인스타그램 스토리에 표시되는 이미지입니다. 최대 4장까지 추가 가능합니다.</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>인스타그램 스토리에 표시되는 이미지입니다. 최대 4장까지 추가 가능합니다.</p>
 
         <MultiImageUploader
           images={data.media.coverImages || (data.media.coverImage ? [data.media.coverImage] : [])}
@@ -87,10 +87,10 @@ export default function FeedStep2CoverProfile({
 
       {/* 프로필 아바타 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          🧑‍🤝‍🧑 프로필 아바타
+        <h3 className="text-base font-semibold text-gray-900">
+          프로필 아바타
         </h3>
-        <p className="text-sm text-blue-600">인스타그램 프로필 영역에 표시되는 원형 사진입니다.</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>인스타그램 프로필 영역에 표시되는 원형 사진입니다.</p>
 
         <div className="flex items-start gap-4">
           {data.media.profileAvatar ? (
@@ -160,12 +160,12 @@ export default function FeedStep2CoverProfile({
 
       {/* 신랑신부 이름 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          👫 신랑신부 이름
+        <h3 className="text-base font-semibold text-gray-900">
+          신랑신부 이름
         </h3>
 
-        <div className="space-y-3 p-4 bg-blue-50 rounded-lg">
-          <p className="text-base font-semibold text-blue-800">신랑</p>
+        <div className="space-y-3 p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)' }}>
+          <p className="text-base font-semibold" style={{ color: 'var(--ed-text)' }}>신랑</p>
           <div className="space-y-1.5">
             <label className={labelClass}>이름 <span className="text-red-500">*</span></label>
             <input
@@ -177,8 +177,8 @@ export default function FeedStep2CoverProfile({
           </div>
         </div>
 
-        <div className="space-y-3 p-4 bg-pink-50 rounded-lg">
-          <p className="text-base font-semibold text-pink-800">신부</p>
+        <div className="space-y-3 p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)' }}>
+          <p className="text-base font-semibold" style={{ color: 'var(--ed-text)' }}>신부</p>
           <div className="space-y-1.5">
             <label className={labelClass}>이름 <span className="text-red-500">*</span></label>
             <input
@@ -193,8 +193,8 @@ export default function FeedStep2CoverProfile({
 
       {/* 결혼식 정보 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          💒 결혼식 정보
+        <h3 className="text-base font-semibold text-gray-900">
+          결혼식 정보
         </h3>
 
         <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
@@ -261,22 +261,23 @@ export default function FeedStep2CoverProfile({
 
       {/* 카카오톡 공유 설정 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          📲 카카오톡 공유 설정
+        <h3 className="text-base font-semibold text-gray-900">
+          카카오톡 공유 설정
         </h3>
-        <p className="text-sm text-blue-600">
-          💙 카카오톡으로 공유할 때 표시되는 정보를 설정해주세요.
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
+          카카오톡으로 공유할 때 표시되는 정보를 설정해주세요.
         </p>
 
         {/* 경고 문구 */}
-        <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-          <p className="text-xs text-amber-700 mb-2">
-            ⚠️ <strong>중요:</strong> 카카오톡 공유 정보는 한번 공유된 후 변경하면 캐시로 인해
-            반영되기까지 시간이 오래 걸릴 수 있습니다.
+        <div className="p-3 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
+          <p className="text-xs mb-2 flex items-start gap-1.5" style={{ color: 'var(--ed-text-muted)' }}>
+            <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+            <span><strong>중요:</strong> 카카오톡 공유 정보는 한번 공유된 후 변경하면 캐시로 인해
+            반영되기까지 시간이 오래 걸릴 수 있습니다.</span>
           </p>
-          <details className="text-xs text-amber-700">
-            <summary className="cursor-pointer font-medium hover:text-amber-900">이미지 변경하기 (펼쳐보기)</summary>
-            <div className="mt-2 space-y-1 pl-2 border-l-2 border-amber-300">
+          <details className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
+            <summary className="cursor-pointer font-medium">이미지 변경하기 (펼쳐보기)</summary>
+            <div className="mt-2 space-y-1 pl-2" style={{ borderLeft: '2px solid var(--ed-border)' }}>
               <p>이미지 변경을 위해 썸네일 캐시 초기화가 필요합니다.</p>
               <ol className="list-decimal list-inside space-y-0.5">
                 <li>
@@ -284,7 +285,8 @@ export default function FeedStep2CoverProfile({
                     href="https://developers.kakao.com/tool/debugger/sharing"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-amber-800 underline hover:text-amber-900"
+                    className="underline"
+                    style={{ color: 'var(--ed-text)' }}
                   >
                     카카오톡 디벨로퍼
                   </a>에 접속
@@ -452,12 +454,12 @@ export default function FeedStep2CoverProfile({
 
       {/* OG 이미지 설정 (문자, SNS 공유용) */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          🖼️ 공유 미리보기 이미지 (OG 이미지)
+        <h3 className="text-base font-semibold text-gray-900">
+          공유 미리보기 이미지 (OG 이미지)
         </h3>
-        <div className="p-3 bg-blue-50 rounded-lg">
-          <p className="text-xs text-blue-700">
-            💙 <strong>권장 크기:</strong> 1200 x 630 픽셀 (가로형)<br />
+        <div className="p-3 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
+          <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
+            <strong>권장 크기:</strong> 1200 x 630 픽셀 (가로형)<br />
             카카오톡 이외의 플랫폼(문자, 인스타그램, 페이스북 등)에서 공유할 때 표시되는 이미지입니다.
           </p>
         </div>
@@ -523,8 +525,8 @@ export default function FeedStep2CoverProfile({
               </button>
             </div>
           ) : data.meta.kakaoThumbnail ? (
-            <label className="flex items-center justify-center w-full h-10 border border-amber-300 bg-amber-50 rounded-lg cursor-pointer hover:bg-amber-100 transition-colors">
-              <span className="text-[11px] text-amber-700 font-medium">
+            <label className="flex items-center justify-center w-full h-10 rounded-lg cursor-pointer transition-colors" style={{ border: '1px solid var(--ed-border)', background: 'var(--ed-surface-2)' }}>
+              <span className="text-[11px] font-medium" style={{ color: 'var(--ed-text)' }}>
                 {uploadingImages.has('og-image') ? '업로드 중...' : '별도 OG 이미지로 교체하기'}
               </span>
               <input

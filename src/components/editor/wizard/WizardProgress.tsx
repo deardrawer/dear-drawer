@@ -5,11 +5,11 @@ import { Check } from 'lucide-react'
 
 // 사용자 친화적 Step 이름 (템플릿 선택은 /templates 페이지에서 처리)
 const STEP_INFO: { step: WizardStep; label: string; shortLabel: string; optional?: boolean }[] = [
-  { step: 1, label: '디자인을 선택해주세요', shortLabel: '디자인' },
-  { step: 2, label: '인트로를 꾸며볼까요?', shortLabel: '인트로', optional: true },
-  { step: 3, label: '스토리를 담아보세요', shortLabel: '스토리', optional: true },
-  { step: 4, label: '추가 기능을 설정해요', shortLabel: '추가기능', optional: true },
-  { step: 5, label: '청첩장을 발행해요', shortLabel: '발행' },
+  { step: 1, label: '디자인', shortLabel: '디자인' },
+  { step: 2, label: '인트로', shortLabel: '인트로', optional: true },
+  { step: 3, label: '스토리', shortLabel: '스토리', optional: true },
+  { step: 4, label: '추가 기능', shortLabel: '추가기능', optional: true },
+  { step: 5, label: '발행', shortLabel: '발행' },
 ]
 
 interface WizardProgressProps {
@@ -22,30 +22,14 @@ export function WizardStepHeader({ isOurTemplate }: WizardProgressProps) {
   if (!isOurTemplate) return null
 
   return (
-    <div className="px-8 pt-7 pb-0">
-      <div
-        style={{
-          fontSize: '72px',
-          fontWeight: 200,
-          lineHeight: 1,
-          background: 'linear-gradient(135deg, rgba(163,126,105,0.18), rgba(163,126,105,0.05))',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text',
-        }}
-      >
-        {String(wizardStep).padStart(2, '0')}
-      </div>
-      <h2 className="text-[22px] font-semibold tracking-tight text-[#2C2824]" style={{ marginTop: '-12px' }}>
+    <div className="px-8 pt-6 pb-0">
+      <h2 className="text-[22px] font-semibold tracking-tight" style={{ color: 'var(--ed-text)' }}>
         {STEP_INFO[wizardStep - 1].label}
       </h2>
       {STEP_INFO[wizardStep - 1].optional && (
-        <span className="text-sm text-[#8A8580] mt-1.5 inline-block">선택사항</span>
+        <span className="text-sm mt-1.5 inline-block" style={{ color: 'var(--ed-text-muted)' }}>선택사항</span>
       )}
-      <div
-        className="mt-5"
-        style={{ height: '1px', background: 'linear-gradient(to right, rgba(163,126,105,0.12), transparent 70%)' }}
-      />
+      <div className="mt-5" style={{ height: '1px', background: 'var(--ed-border)' }} />
     </div>
   )
 }
@@ -124,17 +108,17 @@ export default function WizardProgress({ isOurTemplate }: WizardProgressProps) {
                 <button
                   key={step}
                   onClick={() => handleStepClick(step)}
-                  className={`pb-1 text-[11px] sm:text-xs tracking-wider transition-all flex items-center gap-1 sm:gap-1.5 whitespace-nowrap ${
+                  className={`pb-1 text-xs tracking-wide transition-all flex items-center gap-1.5 whitespace-nowrap ${
                     isCurrent
                       ? 'neu-tab-active'
                       : isSaved
-                      ? 'neu-tab text-[#A37E69]'
+                      ? 'neu-tab'
                       : isVisited
-                      ? 'neu-tab text-[#8A8580]'
+                      ? 'neu-tab'
                       : 'neu-tab'
                   }`}
+                  style={isSaved && !isCurrent ? { color: 'var(--ed-accent)' } : undefined}
                 >
-                  <span className="text-[9px] sm:text-[10px] font-bold">{String(step).padStart(2, '0')}</span>
                   {shortLabel}
                   {isSaved && !isCurrent && <Check className="w-3 h-3" />}
                 </button>

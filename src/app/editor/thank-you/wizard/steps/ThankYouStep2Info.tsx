@@ -8,9 +8,8 @@ export default function ThankYouStep2Info() {
   return (
     <div className="p-6 space-y-6">
       {/* 안내 */}
-      <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <p className="text-base text-blue-800 font-medium mb-1">기본 정보</p>
-        <p className="text-sm text-blue-600">감사장에 표시될 이름, 날짜, 인사말을 입력해주세요.</p>
+      <div className="p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>감사장에 표시될 이름, 날짜, 인사말을 입력해주세요.</p>
       </div>
 
       {/* 이름 */}

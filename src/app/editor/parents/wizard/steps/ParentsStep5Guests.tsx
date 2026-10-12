@@ -137,22 +137,16 @@ export default function ParentsStep5Guests({
   return (
     <div className="p-6 space-y-8">
       {/* 안내 */}
-      <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-        <p className="text-base text-purple-800 font-medium mb-1">게스트 설정</p>
-        <p className="text-sm text-purple-700">
-          💙 게스트별로 맞춤 청첩장 링크를 생성하고 관리할 수 있습니다.
-        </p>
-      </div>
+      <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
+        게스트별로 맞춤 청첩장 링크를 생성하고 관리할 수 있습니다.
+      </p>
 
       {/* 게스트 관리 페이지 버튼 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center">
-            <Users className="w-3 h-3 text-amber-600" />
-          </div>
+        <h3 className="text-base font-semibold text-gray-900">
           게스트 관리
         </h3>
-        <p className="text-sm text-blue-600">💙 게스트를 추가하고 개별 링크를 생성할 수 있습니다.</p>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>게스트를 추가하고 개별 링크를 생성할 수 있습니다.</p>
 
         {invitationId ? (
           <a
@@ -176,10 +170,7 @@ export default function ParentsStep5Guests({
       {/* 비밀번호 설정/리셋 */}
       {invitationId && (
         <section className="space-y-4">
-          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center">
-              <KeyRound className="w-3 h-3 text-gray-600" />
-            </div>
+          <h3 className="text-base font-semibold text-gray-900">
             관리자 비밀번호
           </h3>
           <p className="text-sm text-gray-600">
@@ -278,10 +269,10 @@ export default function ParentsStep5Guests({
       {guests.length > 0 && (
         <section className="space-y-4">
           <h3 className="text-base font-semibold text-gray-900">미리보기 게스트 선택</h3>
-          <p className="text-xs text-blue-600">
-            💙 게스트를 선택하면 봉투 미리보기에서 확인할 수 있어요
+          <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
+            게스트를 선택하면 봉투 미리보기에서 확인할 수 있어요
             {selectedGuest && (
-              <span className="ml-2 text-blue-500 font-medium">
+              <span className="ml-2 font-medium" style={{ color: 'var(--ed-text)' }}>
                 (선택: {selectedGuest.name})
               </span>
             )}

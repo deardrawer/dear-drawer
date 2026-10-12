@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { Palette, Type, Music, Play, Pause, Upload, X, Loader2, ImageIcon } from 'lucide-react'
+import { Play, Pause, Upload, X, Loader2, ImageIcon } from 'lucide-react'
 import { COLOR_THEMES, type ColorThemeId } from '@/components/parents/types'
 import { hexToSealFilter } from '@/components/parents/EnvelopeScreen'
 import { bgmPresets } from '@/lib/bgmPresets'
@@ -118,25 +118,15 @@ export default function ParentsStep1Design({
   return (
     <div className="p-6 space-y-8">
       {/* 안내 */}
-      <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-        <p className="text-base text-purple-800 font-medium mb-1">디자인 선택</p>
-        <p className="text-sm text-purple-700">
-          💙 청첩장의 분위기를 결정하는 컬러와 폰트, 배경음악을 선택해주세요.
-        </p>
-      </div>
+      <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
+        청첩장의 분위기를 결정하는 컬러와 폰트, 배경음악을 선택해주세요.
+      </p>
 
       {/* 컬러 테마 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <div
-            className="w-6 h-6 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: `${COLOR_THEMES[data.colorTheme || 'burgundy'].primary}20` }}
-          >
-            <Palette className="w-3 h-3" style={{ color: COLOR_THEMES[data.colorTheme || 'burgundy'].primary }} />
-          </div>
+        <h3 className="text-base font-semibold text-gray-900">
           컬러 테마
         </h3>
-        <p className="text-sm text-blue-600">💙 청첩장 전체 분위기를 결정하는 컬러 테마를 선택하세요.</p>
 
         <div className="grid grid-cols-2 gap-3">
           {(Object.keys(COLOR_THEMES) as ColorThemeId[]).map((themeId) => {
@@ -269,7 +259,7 @@ export default function ParentsStep1Design({
               />
             </div>
             {(data.customPrimaryColor || data.customAccentColor || data.customBackgroundColor || data.customTextColor || data.cardTextColor) && (
-              <span className="text-[10px] text-blue-500 font-medium">커스텀 적용됨</span>
+              <span className="text-[10px]" style={{ color: 'var(--ed-text-muted)' }}>커스텀 적용됨</span>
             )}
           </div>
         </div>
@@ -574,13 +564,9 @@ export default function ParentsStep1Design({
 
       {/* 폰트 스타일 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center">
-            <Type className="w-3 h-3 text-indigo-600" />
-          </div>
+        <h3 className="text-base font-semibold text-gray-900">
           폰트 스타일
         </h3>
-        <p className="text-sm text-blue-600">💙 청첩장의 분위기를 결정하는 폰트 스타일을 선택하세요.</p>
 
         <div className="space-y-2">
           {FONT_STYLE_OPTIONS.map((font) => {
@@ -611,10 +597,7 @@ export default function ParentsStep1Design({
       {/* 배경음악 */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center">
-              <Music className="w-3 h-3 text-amber-600" />
-            </div>
+          <h3 className="text-base font-semibold text-gray-900">
             배경음악
           </h3>
           <Switch
@@ -628,9 +611,9 @@ export default function ParentsStep1Design({
             }}
           />
         </div>
-        <p className="text-sm text-blue-600">
-          💙 스토리에 어울리는 배경음악을 선택해주세요.<br />
-          <span className="text-amber-600">⚠️ 브라우저 정책에 따라 자동재생 기능이 동작하지 않을 수 있습니다.</span>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
+          스토리에 어울리는 배경음악을 선택해주세요.<br />
+          브라우저 정책에 따라 자동재생 기능이 동작하지 않을 수 있습니다.
         </p>
 
         {/* 숨겨진 오디오 */}

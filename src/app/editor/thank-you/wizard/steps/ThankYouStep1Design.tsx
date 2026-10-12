@@ -117,16 +117,13 @@ export default function ThankYouStep1Design({ invitationId }: ThankYouStep1Desig
   return (
     <div className="p-6 space-y-8">
       {/* 안내 */}
-      <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-        <p className="text-base text-purple-800 font-medium mb-1">디자인 선택</p>
-        <p className="text-sm text-purple-600">메인컬러, 폰트, 배경사진, 실링, 배경음악을 설정해주세요.</p>
+      <div className="p-4 rounded-lg" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>메인컬러, 폰트, 배경사진, 실링, 배경음악을 설정해주세요.</p>
       </div>
 
       {/* 메인 컬러 */}
       <div>
-        <h3 className="text-base font-semibold text-[#2C2824] mb-4 flex items-center gap-2">
-          <span className="text-lg">🎨</span> 메인 컬러
-        </h3>
+        <h3 className="text-base font-semibold text-[#2C2824] mb-4">메인 컬러</h3>
         <p className="text-xs text-gray-500 mb-3">장식 라인과 포인트 텍스트에 사용됩니다.</p>
 
         {/* 프리셋 색상 */}
@@ -161,9 +158,7 @@ export default function ThankYouStep1Design({ invitationId }: ThankYouStep1Desig
 
       {/* 배경 사진 */}
       <div>
-        <h3 className="text-base font-semibold text-[#2C2824] mb-4 flex items-center gap-2">
-          <span className="text-lg">🖼️</span> 배경 사진
-        </h3>
+        <h3 className="text-base font-semibold text-[#2C2824] mb-4">배경 사진</h3>
         <p className="text-xs text-gray-500 mb-3">폴라로이드 사진 뒤에 표시되는 배경 이미지입니다. (선택사항)</p>
 
         {data.backgroundImage ? (
@@ -248,9 +243,7 @@ export default function ThankYouStep1Design({ invitationId }: ThankYouStep1Desig
 
       {/* 폰트 스타일 */}
       <div>
-        <h3 className="text-base font-semibold text-[#2C2824] mb-4 flex items-center gap-2">
-          <span className="text-lg">Aa</span> 폰트 스타일
-        </h3>
+        <h3 className="text-base font-semibold text-[#2C2824] mb-4">폰트 스타일</h3>
         <div className="space-y-1.5">
           {FONT_STYLE_OPTIONS.map((option) => (
             <button
@@ -273,9 +266,7 @@ export default function ThankYouStep1Design({ invitationId }: ThankYouStep1Desig
 
       {/* 실링 색상 */}
       <div>
-        <h3 className="text-base font-semibold text-[#2C2824] mb-4 flex items-center gap-2">
-          <span className="text-lg">🔴</span> 실링 스티커
-        </h3>
+        <h3 className="text-base font-semibold text-[#2C2824] mb-4">실링 스티커</h3>
         <p className="text-xs text-gray-500 mb-3">유산지 위에 올라가는 밀랍 실링의 색상을 선택하세요.</p>
 
         {/* 실링 미리보기 */}
@@ -324,9 +315,7 @@ export default function ThankYouStep1Design({ invitationId }: ThankYouStep1Desig
       {/* 배경음악 */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-semibold text-[#2C2824] flex items-center gap-2">
-            <span className="text-lg">🎵</span> 배경음악
-          </h3>
+          <h3 className="text-base font-semibold text-[#2C2824]">배경음악</h3>
           <div className="flex items-center gap-2">
             <Label htmlFor="bgm-toggle" className="text-sm text-gray-500">사용</Label>
             <Switch
@@ -385,9 +374,9 @@ export default function ThankYouStep1Design({ invitationId }: ThankYouStep1Desig
             <div className="mt-4">
               <p className="text-xs text-gray-500 mb-2">또는 직접 업로드 (MP3, 최대 10MB)</p>
               {isCustomBgm && (
-                <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-xl mb-2">
-                  <span className="text-sm text-blue-700 flex-1 truncate">커스텀 BGM 사용 중</span>
-                  <button onClick={() => setBgm({ url: '' })} className="text-blue-400 hover:text-blue-600">
+                <div className="flex items-center gap-2 p-3 rounded-xl mb-2" style={{ background: 'var(--ed-surface-2)', border: '1px solid var(--ed-border)' }}>
+                  <span className="text-sm flex-1 truncate" style={{ color: 'var(--ed-text)' }}>커스텀 BGM 사용 중</span>
+                  <button onClick={() => setBgm({ url: '' })} style={{ color: 'var(--ed-text-muted)' }}>
                     <X className="w-4 h-4" />
                   </button>
                 </div>

@@ -7,6 +7,7 @@ import { DISPLAY_FONTS, KOREAN_FONTS } from '@/app/editor/the-simple/fontOptions
 import ClassicRsvpForm from './ClassicRsvpForm'
 import ClassicLightbox from './ClassicLightbox'
 import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
+import PinchZoomGuard from '@/components/invitation/PinchZoomGuard'
 import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
 import '@/components/dday/dday-popup.css'
 
@@ -1479,6 +1480,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
       )}
       <div ref={rootRef} className="cl-root" style={{ width: '100%', maxWidth: 420, height: isPreview && page === 'intro' ? '100%' : undefined, position: 'relative', overflow: 'hidden', background: IVORY, boxShadow: '0 0 80px rgba(53,23,20,.2)', fontFamily: F_BODY, color: INK }}>
         <style dangerouslySetInnerHTML={{ __html: CLASSIC_STYLES }} />
+        <PinchZoomGuard />
         {/* Grain overlay */}
         <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 20, opacity: 0.5, mixBlendMode: 'multiply', backgroundImage: 'repeating-linear-gradient(0deg,rgba(53,23,20,.035) 0 1px,transparent 1px 3px),repeating-linear-gradient(90deg,rgba(53,23,20,.03) 0 1px,transparent 1px 3px)' }} />
 

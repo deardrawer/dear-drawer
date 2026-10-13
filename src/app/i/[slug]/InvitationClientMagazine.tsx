@@ -2410,6 +2410,9 @@ function InterviewPopup({ invitation, fonts, themeColors, isOpen, onClose }: { i
 
 // ===== Global Styles =====
 const globalStyles = `
+  /* 핀치 줌 비활성화(페이지) — 스크롤·가로 스와이프는 허용 */
+  html, body { touch-action: pan-x pan-y; -webkit-touch-callout: none; }
+
   .desktop-frame-wrapper {
     min-height: 100vh;
     display: flex;

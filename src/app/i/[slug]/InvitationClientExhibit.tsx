@@ -169,6 +169,9 @@ function useSwipeCarousel(count: number) {
 // Global Styles — Instagram Theme
 // ============================================================
 const globalStyles = `
+  /* 핀치 줌 비활성화(페이지) — 스크롤·가로 스와이프는 허용 */
+  html, body { touch-action: pan-x pan-y; -webkit-touch-callout: none; }
+
   @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600&display=swap');
 
   /* Story progress bar animation */

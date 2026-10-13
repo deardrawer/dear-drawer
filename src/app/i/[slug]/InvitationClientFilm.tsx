@@ -2726,6 +2726,9 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, zoomEnabled = 
 
 // ===== CSS =====
 const globalStyles = `
+  /* 핀치 줌 비활성화(페이지) — 스크롤·가로 스와이프는 허용 */
+  html, body { touch-action: pan-x pan-y; -webkit-touch-callout: none; }
+
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Cinzel:wght@400;600&family=Montserrat:wght@300;400;600&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Great+Vibes&family=Lora:ital,wght@0,400;0,600;1,400&family=Italiana&family=Italianno&display=swap');
 
   .desktop-frame-wrapper {

@@ -296,6 +296,8 @@ export default function ParentsInvitationView({
 
   return (
     <ThemeProvider themeId={data.colorTheme || 'burgundy'} customPrimary={data.customPrimaryColor} customAccent={data.customAccentColor} customBackground={data.customBackgroundColor} customText={data.customTextColor} customCardText={data.cardTextColor} tintedBg={data.tintedBg} tintedColor={data.tintedColor}>
+      {/* 핀치 줌 비활성화(페이지) — 스크롤·가로 스와이프는 허용 */}
+      <style dangerouslySetInnerHTML={{ __html: 'html, body { touch-action: pan-x pan-y; -webkit-touch-callout: none; }' }} />
       {/* 전체 화면 배경색 (max-w-[390px] 바깥 영역 커버) */}
       <div style={{ backgroundColor: theme.background, minHeight: '100vh' }}>
       <div

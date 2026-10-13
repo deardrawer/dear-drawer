@@ -243,6 +243,9 @@ function EssayGalleryViewer({ images, startIndex, onClose, zoomEnabled = true }:
 
 // 갤러리 전용 keyframe: 컴포넌트 로컬로 포함해 default/paper/book 모든 컨셉에서 동작
 const essayGalleryCSS = `
+  /* 핀치 줌 비활성화(페이지) — 스크롤·가로 스와이프는 허용 */
+  html, body { touch-action: pan-x pan-y; -webkit-touch-callout: none; }
+
 @keyframes esGalInL { from { opacity: 0; transform: translateX(-18px); filter: blur(8px); } to { opacity: 1; transform: translateX(0); filter: blur(0); } }
 @keyframes esGalInR { from { opacity: 0; transform: translateX(18px); filter: blur(8px); } to { opacity: 1; transform: translateX(0); filter: blur(0); } }
 @media (prefers-reduced-motion: reduce) {

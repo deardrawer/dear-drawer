@@ -54,6 +54,9 @@ const extractUrl = (im: unknown): string => (typeof im === 'string' ? im : (im &
 
 // 스크롤 리빌 + 인터랙션 스타일
 const CLASSIC_STYLES = `
+  /* 핀치 줌 비활성화(페이지) — 스크롤·가로 스와이프는 허용 */
+  html, body { touch-action: pan-x pan-y; -webkit-touch-callout: none; }
+
   /* ===== 모션 컨셉: "서랍에서 꺼낸 한 통의 편지" — 안착(Settle)·스밈(Ink)·긋기(Draw) ===== */
   .cl-reveal { opacity: 0; transform: translateY(14px); }
   .cl-reveal.is-in { opacity: 1; transform: none; transition: opacity 1.4s ease, transform 1.4s cubic-bezier(.22,.61,.36,1); }

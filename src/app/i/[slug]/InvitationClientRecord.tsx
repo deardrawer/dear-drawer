@@ -2431,6 +2431,9 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, zoomEnabled = 
 
 // ===== CSS =====
 const globalStyles = `
+  /* 핀치 줌 비활성화(페이지) — 스크롤·가로 스와이프는 허용 */
+  html, body { touch-action: pan-x pan-y; -webkit-touch-callout: none; }
+
   /* Gallery lightbox zoomable box (pinch / double-tap) */
   .record-zoomable-box {
     width: 100%;

@@ -247,7 +247,7 @@ export default function EssayStep1BasicInfo({ data, updateData, updateNestedData
           <div className="flex items-center justify-between pb-1">
             <div>
               <p className="text-sm font-medium text-gray-700">날짜 · 시간 표시</p>
-              <p className="text-xs text-gray-500 mt-0.5">끄면 청첩장에서 날짜/시간/D-Day가 숨겨집니다.</p>
+              <p className="text-xs text-gray-500 mt-0.5">노웨딩 등 날짜를 알리지 않을 땐 꺼둘 수 있어요</p>
             </div>
             <Switch
               checked={data.wedding.showDate !== false}
@@ -280,6 +280,17 @@ export default function EssayStep1BasicInfo({ data, updateData, updateNestedData
                 placeholder="오후 2시"
               />
             </div>
+          </div>
+
+          <div className="flex items-center justify-between pb-1 border-t border-gray-200 pt-4">
+            <div>
+              <p className="text-sm font-medium text-gray-700">장소 · 오시는 길 표시</p>
+              <p className="text-xs text-gray-500 mt-0.5">예식장이 정해지지 않았거나 알리지 않을 땐 꺼둘 수 있어요</p>
+            </div>
+            <Switch
+              checked={data.wedding.showVenue !== false}
+              onCheckedChange={(checked) => updateNestedData('wedding.showVenue', checked)}
+            />
           </div>
 
           <div className="space-y-1.5">

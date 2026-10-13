@@ -61,6 +61,7 @@ interface GuestFloatingButtonProps {
   language?: 'ko' | 'en'
   showShare?: boolean // false면 네비/햄버거의 공유 항목 숨김 (푸터 공유 토글과 연동)
   showLocation?: boolean // false면 '오시는 길' 항목 숨김 (장소 표시 토글과 연동, 노웨딩)
+  showDate?: boolean // false면 공유 문구에서 날짜·시간 생략 (날짜 표시 토글과 연동, 노웨딩)
   invitation: {
     venue_name?: string
     venue_address?: string
@@ -97,7 +98,7 @@ interface GuestFloatingButtonProps {
   }
 }
 
-export default function GuestFloatingButton({ themeColors, fonts, invitation, openModal: externalOpenModal, onModalClose, showTooltip = false, scrollContainerRef, navStyle = 'hamburger', navHidden = false, language, showShare = true, showLocation = true }: GuestFloatingButtonProps) {
+export default function GuestFloatingButton({ themeColors, fonts, invitation, openModal: externalOpenModal, onModalClose, showTooltip = false, scrollContainerRef, navStyle = 'hamburger', navHidden = false, language, showShare = true, showLocation = true, showDate = true }: GuestFloatingButtonProps) {
   const isEn = language === 'en'
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false)
   const [activeModal, setActiveModal] = useState<ModalType>('none')
@@ -363,9 +364,12 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
       // 공유 제목
       const displayTitle = invitation.shareTitle || `${groomName} ❤️ ${brideName}의 결혼식`
 
-      // 공유 설명
+      // 공유 설명 (노웨딩: 날짜는 showDate, 장소는 showLocation으로 생략)
+      const dateTimeLine = (showDate !== false && invitation.weddingDate) ? `${formattedDate} ${formattedTime}` : ''
+      const venueLine = (showLocation !== false && invitation.venue_name) ? `${venueDisplay}${venueDetail}` : ''
       const displayDescription = invitation.shareDescription ||
-        `${formattedDate} ${formattedTime}\n${venueDisplay}${venueDetail}`
+        [dateTimeLine, venueLine].filter(Boolean).join('\n') ||
+        `${groomName} ❤️ ${brideName}`
 
       // 피드형 템플릿 (objectType: 'feed')
       const kakaoRatioSizes: Record<string, { w: number; h: number }> = { '3:4': { w: 900, h: 1200 }, '1:1': { w: 800, h: 800 }, '3:2': { w: 1200, h: 800 } }

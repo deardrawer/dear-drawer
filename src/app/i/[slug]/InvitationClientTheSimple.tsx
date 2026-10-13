@@ -340,10 +340,10 @@ export default function InvitationClientTheSimple({
     brideName: data.bride.name,
     groomNameEn: data.groom.nameEn || '',
     brideNameEn: data.bride.nameEn || '',
-    weddingDate: data.wedding.date,
-    weddingTime: data.wedding.timeDisplay,
-    venueName: data.wedding.venue.name,
-    venueHall: data.wedding.venue.hall,
+    weddingDate: data.wedding?.showDate === false ? '' : data.wedding.date,
+    weddingTime: data.wedding?.showDate === false ? '' : data.wedding.timeDisplay,
+    venueName: data.wedding?.showVenue === false ? '' : data.wedding.venue.name,
+    venueHall: data.wedding?.showVenue === false ? '' : data.wedding.venue.hall,
   }
 
   return (
@@ -499,8 +499,8 @@ export default function InvitationClientTheSimple({
               invitationId: data.id,
               groomName: data.groom.name,
               brideName: data.bride.name,
-              weddingDate: data.wedding.date,
-              weddingTime: data.wedding.timeDisplay || data.wedding.time,
+              weddingDate: data.wedding?.showDate !== false ? data.wedding.date : '',
+              weddingTime: data.wedding?.showDate !== false ? (data.wedding.timeDisplay || data.wedding.time) : '',
               thumbnailUrl: thumbUrl,
               shareTitle: data.meta?.title,
               shareDescription: data.meta?.description,
@@ -526,7 +526,7 @@ export default function InvitationClientTheSimple({
       )}
 
       {/* D-Day 팝업 */}
-      {showDdayPopup && data.ddayPopup?.enabled && (
+      {showDdayPopup && data.ddayPopup?.enabled && data.wedding?.showDate !== false && (
         <DdayPopupOverlay
           data={data.ddayPopup}
           weddingDate={data.wedding.date}

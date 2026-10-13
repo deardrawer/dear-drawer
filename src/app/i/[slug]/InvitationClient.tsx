@@ -4320,7 +4320,8 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
         </div>
         )}
 
-        {/* Wedding Info Card */}
+        {/* Wedding Info Card (날짜·장소 모두 숨김이면 카드 자체 숨김) */}
+        {(invitation.wedding.showDate !== false || invitation.wedding.showVenue !== false) && (
         <div className="wedding-info-card rounded-2xl px-6 py-7 mb-9" style={{ background: themeColors.cardBg, boxShadow: '0 0 0 1px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.04), 0 4px 8px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.06)' }}>
           {invitation.wedding.showDate !== false && (
           <>
@@ -4350,6 +4351,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
           </>
           )}
         </div>
+        )}
 
         {/* Next Story Navigation */}
         <div ref={nextStoryRef} className="next-story-section flex flex-col items-center">
@@ -5778,6 +5780,7 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
                   showTooltip={false}
                   scrollContainerRef={scrollContainerRef}
                   showLocation={invitation.wedding.showVenue !== false}
+                  showDate={invitation.wedding.showDate !== false}
                   navStyle={currentPage === 'intro' ? 'bottom-nav' : (content?.navStyle || 'hamburger')}
                   navHidden={currentPage === 'intro' && introNavHidden}
                   invitation={{

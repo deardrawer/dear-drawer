@@ -2552,6 +2552,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
   const venueName = data.wedding.venue.name || '그랜드 하얏트 서울'
   const venueHall = data.wedding.venue.hall || ''
   const venueAddress = data.wedding.venue.address || '서울특별시 용산구 소월로 322'
+  const sdTs = data.wedding.showDate !== false
+  const svTs = data.wedding.showVenue !== false
   const intro = data.sections.intro
   const greeting = data.sections.greeting
   const couple = data.sections.couple
@@ -2657,19 +2659,25 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
                   <h3 className={`ts-in-anim${namesCls}`}>
                     {renderNames('stack')}
                   </h3>
-                  <div className="sub ts-in-anim">
-                    {yy} · {mm} · {dd}
-                  </div>
+                  {sdTs && (
+                    <div className="sub ts-in-anim">
+                      {yy} · {mm} · {dd}
+                    </div>
+                  )}
                 </div>
                 <div className="bottom ts-in-anim">
-                  <div>
-                    <b>Save the Date</b>
-                    {weekdayUpper} · {timeDisplay}
-                  </div>
-                  <div className="r">
-                    <b>{venueName}</b>
-                    {venueHall && venueHall}
-                  </div>
+                  {sdTs && (
+                    <div>
+                      <b>Save the Date</b>
+                      {weekdayUpper} · {timeDisplay}
+                    </div>
+                  )}
+                  {svTs && (
+                    <div className="r">
+                      <b>{venueName}</b>
+                      {venueHall && venueHall}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -2689,7 +2697,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
                 <h3 className={`ts-in-anim${namesCls}`}>
                   {renderNames('stack')}
                 </h3>
-                {!splitBottom && (
+                {!splitBottom && sdTs && (
                   <>
                     <div className="rule ts-in-anim" />
                     <div className="date ts-in-anim">{yy} · {mm} · {dd}</div>
@@ -2697,7 +2705,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
                   </>
                 )}
               </div>
-              {splitBottom && (
+              {splitBottom && sdTs && (
                 <div className="ts-in2-bottom ts-in-anim">
                   <div className="date">{yy} · {mm} · {dd}</div>
                   <div className="day">{weekdayUpper} · {timeDisplay}</div>
@@ -2720,9 +2728,11 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
                   <h3 className={`ts-in-child${namesCls}`}>
                     {renderNames('inline')}
                   </h3>
-                  <div className="date ts-in-child">
-                    {monthUpper} · {dd} · {yy}
-                  </div>
+                  {sdTs && (
+                    <div className="date ts-in-child">
+                      {monthUpper} · {dd} · {yy}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -2751,13 +2761,15 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
                   <div className={`names ts-in-anim${namesCls}`}>
                     {renderNames('stack')}
                   </div>
-                  <div className="date ts-in-anim">
-                    {monthUpper} · {dd} · {yy}
-                  </div>
+                  {sdTs && (
+                    <div className="date ts-in-anim">
+                      {monthUpper} · {dd} · {yy}
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="ts-in4-below">
-                <div className="venue ts-in-anim">{venueName}{venueHall && ` · ${venueHall}`}</div>
+                {svTs && <div className="venue ts-in-anim">{venueName}{venueHall && ` · ${venueHall}`}</div>}
               </div>
             </div>
           </AnimatedSection>
@@ -2774,34 +2786,40 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
               {introBg()}
               <div className="ts-in5-top-bar ts-in-anim">
                 <span>청첩장 &mdash; No. 001</span>
-                <span>{isEnLang ? `${weddingMeta.monthName} ${yy}` : `${yy}년 ${weddingMeta.m}월`}</span>
+                {sdTs && <span>{isEnLang ? `${weddingMeta.monthName} ${yy}` : `${yy}년 ${weddingMeta.m}월`}</span>}
               </div>
               <div className="ts-in5-content">
-                <div className="big-number ts-in-anim">
-                  {digits.map((d, i) => <span key={i}>{d}</span>)}
-                </div>
+                {sdTs && (
+                  <div className="big-number ts-in-anim">
+                    {digits.map((d, i) => <span key={i}>{d}</span>)}
+                  </div>
+                )}
                 <div className="ts-in5-title-block">
                   <div className="eyebrow ts-in-anim">{intro.eyebrow || 'Wedding Ceremony'}</div>
                   <div className={`names ts-in-anim${namesCls}`}>{renderNames('inline')}</div>
-                  {!splitBottom5 && (
+                  {!splitBottom5 && (sdTs || svTs) && (
                     <>
                       <div className="divider ts-in-anim" />
                       <div className="venue-info ts-in-anim">
-                        {weekdayUpper} · {timeDisplay}<br />
-                        {venueName}{venueHall && ` · ${venueHall}`}
+                        {sdTs && <>{weekdayUpper} · {timeDisplay}<br /></>}
+                        {svTs && <>{venueName}{venueHall && ` · ${venueHall}`}</>}
                       </div>
                     </>
                   )}
                 </div>
               </div>
-              {splitBottom5 && (
+              {splitBottom5 && (sdTs || svTs) && (
                 <div className="ts-in5-bottom-info ts-in-anim">
-                  <div className="venue-info">
-                    {weekdayUpper} · {timeDisplay}
-                  </div>
-                  <div className="venue-name">
-                    {venueName}{venueHall && ` · ${venueHall}`}
-                  </div>
+                  {sdTs && (
+                    <div className="venue-info">
+                      {weekdayUpper} · {timeDisplay}
+                    </div>
+                  )}
+                  {svTs && (
+                    <div className="venue-name">
+                      {venueName}{venueHall && ` · ${venueHall}`}
+                    </div>
+                  )}
                 </div>
               )}
               <div className="ts-in5-bottom-bar ts-in-anim">
@@ -2820,14 +2838,14 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
       if (v === 6) {
         const tickerItems = [
           intro.eyebrow || 'Save the Date',
-          `${monthUpper} ${dd}, ${yy}`,
+          ...(sdTs ? [`${monthUpper} ${dd}, ${yy}`] : []),
           renderNames('inline'),
-          venueName,
+          ...(svTs ? [venueName] : []),
         ]
         const tickerBottom = [
-          weekdayUpper,
-          venueHall || 'Grand Ballroom',
-          timeDisplay,
+          ...(sdTs ? [weekdayUpper] : []),
+          ...(svTs ? [venueHall || 'Grand Ballroom'] : []),
+          ...(sdTs ? [timeDisplay] : []),
           `${groomName} & ${brideName}`,
         ]
         return (
@@ -2844,9 +2862,11 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
                 <div className="eyebrow ts-in-anim">{intro.eyebrow || 'Wedding Invitation'}</div>
                 <div className={`names ts-in-anim${namesCls}`}>{renderNames('inline')}</div>
                 <div className="rule ts-in-anim" />
-                <div className="date ts-in-anim">
-                  {yy} · {mm} · {dd}
-                </div>
+                {sdTs && (
+                  <div className="date ts-in-anim">
+                    {yy} · {mm} · {dd}
+                  </div>
+                )}
               </div>
               <div className="ts-in6-band ts-in-anim">
                 <div className="ts-in6-band-inner reverse">
@@ -2876,7 +2896,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
               <div className="ts-in7-content">
                 <div className="tag ts-in-anim">No. 001 — {intro.eyebrow || 'Wedding Invitation'}</div>
                 <div className={`names ts-in-anim${namesCls}`}>{renderNames('inline')}</div>
-                <div className="date ts-in-anim">{monthUpper} {dd}, {yy} · {weekdayUpper}</div>
+                {sdTs && <div className="date ts-in-anim">{monthUpper} {dd}, {yy} · {weekdayUpper}</div>}
               </div>
             </div>
           </AnimatedSection>
@@ -2897,8 +2917,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
               <div className="ts-in8-below">
                 <div className="names ts-in-anim">{gEn.toUpperCase()} &amp; {bEn.toUpperCase()}</div>
                 <div className="rule ts-in-anim" />
-                <div className="date ts-in-anim">{monthUpper} · {dd} · {yy}</div>
-                <div className="venue ts-in-anim">{venueName}</div>
+                {sdTs && <div className="date ts-in-anim">{monthUpper} · {dd} · {yy}</div>}
+                {svTs && <div className="venue ts-in-anim">{venueName}</div>}
               </div>
             </div>
           </AnimatedSection>
@@ -2920,8 +2940,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
                 </div>
                 <div className="h-line ts-in-anim" />
                 <div className="h-row meta ts-in-anim">
-                  {yy} · {mm} · {dd} · {weekdayUpper}
-                  <span>{venueName}{venueHall && ` · ${venueHall}`}</span>
+                  {sdTs && <>{yy} · {mm} · {dd} · {weekdayUpper}</>}
+                  {svTs && <span>{venueName}{venueHall && ` · ${venueHall}`}</span>}
                 </div>
                 <div className="h-line ts-in-anim" />
               </div>
@@ -2950,8 +2970,8 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
               )}
               {/* 하단 날짜 + 장소 */}
               <div className="meta ts-in-anim">
-                <span>{yy}. {mm}. {dd}</span>
-                <span>{venueName}{venueHall && ` ${venueHall}`}</span>
+                {sdTs && <span>{yy}. {mm}. {dd}</span>}
+                {svTs && <span>{venueName}{venueHall && ` ${venueHall}`}</span>}
               </div>
             </div>
           </AnimatedSection>
@@ -6238,12 +6258,14 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
                 const d = new Date(data.wedding.date + 'T00:00:00')
                 if (!isNaN(d.getTime())) {
                   const wd = ['일','월','화','수','목','금','토']
-                  shareDesc = `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 ${wd[d.getDay()]}요일`
-                  if (data.wedding.timeDisplay) shareDesc += ` ${data.wedding.timeDisplay}`
-                  if (data.wedding.venue?.name) shareDesc += `\n${data.wedding.venue.name}`
+                  if (sdTs) {
+                    shareDesc = `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 ${wd[d.getDay()]}요일`
+                    if (data.wedding.timeDisplay) shareDesc += ` ${data.wedding.timeDisplay}`
+                  }
+                  if (svTs && data.wedding.venue?.name) shareDesc += `${shareDesc ? '\n' : ''}${data.wedding.venue.name}`
                 }
               }
-              if (!shareDesc) shareDesc = data.wedding?.venue?.name || ''
+              if (!shareDesc && svTs) shareDesc = data.wedding?.venue?.name || ''
 
               if (kakaoWindow.Kakao?.Share && kakaoWindow.Kakao.isInitialized?.()) {
                 const kakaoRatioSizes: Record<string, { w: number; h: number }> = { '3:4': { w: 900, h: 1200 }, '1:1': { w: 800, h: 800 }, '3:2': { w: 1200, h: 800 } }

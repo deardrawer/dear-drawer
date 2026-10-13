@@ -511,6 +511,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
   const venueHall = venue.hall || ''
   const venueAddress = venue.address || '서울 중구 정동길 24'
   const venueFull = [venueHall, venueAddress].filter(Boolean).join(' · ')
+  const sdCl = wedding.showDate !== false
+  const svCl = wedding.showVenue !== false
   // 지도 옵션: 'google'이면 구글맵 임베드 + 안내문구(네이버/카카오/티맵 버튼 없음), 기본은 카카오맵+버튼
   const isGoogleMap = cc.classicMapProvider === 'google'
   const gmapQuery = encodeURIComponent((venueAddress || venueName || '').trim())
@@ -624,7 +626,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             <div style={{ marginTop: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12 }}>
               <div>
                 <p style={{ margin: 0, fontFamily: F_BODY, fontSize: 14, lineHeight: 1.7, color: '#3a352c' }}>{dateFullKo} <span style={{ whiteSpace: 'nowrap' }}>{timeDisplay}</span></p>
-                <p style={{ margin: 0, fontFamily: F_BODY, fontSize: 12, color: '#8b8271' }}>{venueName}{venueHall ? ` ${venueHall}` : ''}</p>
+                {svCl && <p style={{ margin: 0, fontFamily: F_BODY, fontSize: 12, color: '#8b8271' }}>{venueName}{venueHall ? ` ${venueHall}` : ''}</p>}
               </div>
               {dday !== null && dday >= 0 && (
                 <span className="cl-reveal cl-pop" data-delay="960" style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 5, background: '#2b2724', color: '#f3f0ea', padding: '8px 16px', borderRadius: 999, fontFamily: F_BODY, fontSize: 12, whiteSpace: 'nowrap' }}>{dday === 0 ? '오늘' : <>D-<b style={{ fontFamily: F_NUM, fontSize: 15, fontWeight: 500 }}>{dday}</b></>}</span>
@@ -671,7 +673,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                 </div>
               </div>
             )}
-            <div style={{ marginTop: 22, textAlign: 'center', fontFamily: F_BODY, fontSize: 15, letterSpacing: '.08em', color: dTxA(0.72) }}>{timeDisplay} · {venueName}</div>
+            {(sdCl || svCl) && <div style={{ marginTop: 22, textAlign: 'center', fontFamily: F_BODY, fontSize: 15, letterSpacing: '.08em', color: dTxA(0.72) }}>{[sdCl ? timeDisplay : null, svCl ? venueName : null].filter(Boolean).join(' · ')}</div>}
           </div>
         </section>
       )
@@ -691,7 +693,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
               <span style={{ fontFamily: F_NUM, fontWeight: 300, fontSize: 70, lineHeight: 0.85, color: '#231f1b' }}>{mm}.{dd}</span>
               <span style={{ fontFamily: F_BODY, fontSize: 14, color: '#8b8271' }}>{WEEK_KO[dow]}요일</span>
             </div>
-            <p style={{ margin: '22px 0 0', fontFamily: F_BODY, fontSize: 13, lineHeight: 1.9, color: '#6f6757', whiteSpace: 'pre-line' }}>{timeDisplay} · {venueName}{venueHall ? ` ${venueHall}` : ''}{venueAddress ? `\n${venueAddress}` : ''}</p>
+            <p style={{ margin: '22px 0 0', fontFamily: F_BODY, fontSize: 13, lineHeight: 1.9, color: '#6f6757', whiteSpace: 'pre-line' }}>{[sdCl ? timeDisplay : null, svCl ? `${venueName}${venueHall ? ` ${venueHall}` : ''}` : null].filter(Boolean).join(' · ')}{svCl && venueAddress ? `\n${venueAddress}` : ''}</p>
             {dateCustomMsg('서로의 이름을 나란히 두는 날\n귀한 걸음으로 축복해 주시기 바랍니다').trim() && (
               <p className="cl-reveal cl-blur" data-delay="220" style={{ margin: '18px 0 0', fontFamily: F_BODY, fontSize: 13, lineHeight: 1.9, letterSpacing: '.02em', color: '#6f6757', whiteSpace: 'pre-line' }}>{dateCustomMsg('서로의 이름을 나란히 두는 날\n귀한 걸음으로 축복해 주시기 바랍니다')}</p>
             )}
@@ -755,8 +757,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           </div>
           <div style={{ margin: '18px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
             <div>
-              <p style={{ margin: 0, fontFamily: F_BODY, fontSize: 14, lineHeight: 1.7, color: '#3a352c' }}>{venueName}{venueHall ? ` ${venueHall}` : ''}</p>
-              {venueAddress && <p style={{ margin: 0, fontFamily: F_BODY, fontSize: 12, color: '#8b8271' }}>{venueAddress}</p>}
+              {svCl && <p style={{ margin: 0, fontFamily: F_BODY, fontSize: 14, lineHeight: 1.7, color: '#3a352c' }}>{venueName}{venueHall ? ` ${venueHall}` : ''}</p>}
+              {svCl && venueAddress && <p style={{ margin: 0, fontFamily: F_BODY, fontSize: 12, color: '#8b8271' }}>{venueAddress}</p>}
             </div>
             <span style={{ fontFamily: F_BODY, fontSize: 13, color: '#4c4638', letterSpacing: '.1em', whiteSpace: 'nowrap' }}>{firstKo} &amp; {secondKo}</span>
           </div>
@@ -1523,8 +1525,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
               <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
                 <p style={{ ...label(9.5, 0.46, ivoryA(0.85)), textShadow: '0 1px 10px rgba(20,10,8,.55)', animation: frost ? 'cl-fade-soft .9s ease .35s both' : undefined }}>{nameCase('WE INVITE YOU')}</p>
                 <h1 style={{ margin: '22px 0 0', fontFamily: nameFont, fontSize: 42, lineHeight: 1.12, color: IVORY, textShadow: '0 2px 14px rgba(20,10,8,.55)', animation: frost ? 'cl-emerge 1.2s cubic-bezier(.22,.61,.36,1) .55s both' : undefined }}>{nameGroom}<br />{nameBride}</h1>
-                <p style={{ margin: '26px 0 0', fontFamily: F_BODY, fontSize: bfs(14), letterSpacing: '.04em', color: ivoryA(0.92), textShadow: '0 1px 10px rgba(20,10,8,.55)', animation: frost ? 'cl-fade-soft 1s ease 1.15s both' : undefined }}>{dateFullKo}</p>
-                <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(12), letterSpacing: '.02em', color: ivoryA(0.85), textShadow: '0 1px 10px rgba(20,10,8,.55)', animation: frost ? 'cl-fade-soft 1s ease 1.3s both' : undefined }}>{timeDisplay} · {venueName}</p>
+                {sdCl && <p style={{ margin: '26px 0 0', fontFamily: F_BODY, fontSize: bfs(14), letterSpacing: '.04em', color: ivoryA(0.92), textShadow: '0 1px 10px rgba(20,10,8,.55)', animation: frost ? 'cl-fade-soft 1s ease 1.15s both' : undefined }}>{dateFullKo}</p>}
+                {(sdCl || svCl) && <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(12), letterSpacing: '.02em', color: ivoryA(0.85), textShadow: '0 1px 10px rgba(20,10,8,.55)', animation: frost ? 'cl-fade-soft 1s ease 1.3s both' : undefined }}>{[sdCl ? timeDisplay : null, svCl ? venueName : null].filter(Boolean).join(' · ')}</p>}
               </div>
               <div style={{ position: 'absolute', inset: 0, background: 'rgba(244,241,233,.78)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', opacity: frost ? 0 : 1, transition: 'opacity 1.2s ease', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
                 <p style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(15), letterSpacing: '.02em', color: inkA(0.62), minHeight: '1.4em' }}>{traceText.slice(0, traceTyped)}<span style={{ display: 'inline-block', marginLeft: 1, color: inkA(0.5), animation: 'cl-caret 1s step-end infinite' }}>|</span></p>
@@ -1541,8 +1543,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                     <p style={{ ...label(9.5, 0.46, frameInkA(0.5)), animation: 'cl-fade-soft .9s ease .2s both' }}>{nameCase('WE INVITE YOU')}</p>
                     <h1 style={{ margin: '22px 0 0', fontFamily: nameFont, fontWeight: 400, fontSize: nameLang === 'ko' ? 34 : 44, lineHeight: 1.12, letterSpacing: nameLang === 'ko' ? '.02em' : '.03em', color: frameInk, animation: 'cl-letters 1.5s cubic-bezier(.22,.61,.36,1) .45s both' }}>{nameGroom}<span style={{ display: 'block', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 20, letterSpacing: 0, opacity: 0.55, margin: '10px 0', lineHeight: 1 }}>and</span>{nameBride}</h1>
                     <div style={{ width: 1, height: 34, background: frameInkA(0.22), margin: '26px auto', transformOrigin: 'center', animation: 'cl-line-grow .85s ease .95s both' }} />
-                    <p style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(14), letterSpacing: '.04em', color: frameInk, animation: 'cl-fade-soft 1s ease 1.2s both' }}>{dateFullKo}</p>
-                    <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(12), letterSpacing: '.02em', color: frameInkA(0.7), animation: 'cl-fade-soft 1s ease 1.35s both' }}>{timeDisplay} · {venueName}</p>
+                    {sdCl && <p style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(14), letterSpacing: '.04em', color: frameInk, animation: 'cl-fade-soft 1s ease 1.2s both' }}>{dateFullKo}</p>}
+                    {(sdCl || svCl) && <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(12), letterSpacing: '.02em', color: frameInkA(0.7), animation: 'cl-fade-soft 1s ease 1.35s both' }}>{[sdCl ? timeDisplay : null, svCl ? venueName : null].filter(Boolean).join(' · ')}</p>}
                   </div>
                 </div>
               )}
@@ -1560,8 +1562,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                           <p style={label(9, 0.44, openInkA(0.5))}>{nameCase('SAVE THE DATE')}</p>
                           <h1 style={{ margin: '14px 0 0', fontFamily: nameFont, fontSize: 26, lineHeight: 1.16, color: openInk }}>{nameGroom}<br />{nameBride}</h1>
                           <div style={{ width: 22, height: 1, background: openInkA(0.25), margin: '16px auto' }} />
-                          <p style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(12), letterSpacing: '.03em', color: openInk }}>{dateFullKo}</p>
-                          <p style={{ margin: '10px 0 0', fontFamily: F_BODY, fontSize: bfs(11), letterSpacing: '.02em', color: openInkA(0.65) }}>{timeDisplay} · {venueName}</p>
+                          {sdCl && <p style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(12), letterSpacing: '.03em', color: openInk }}>{dateFullKo}</p>}
+                          {(sdCl || svCl) && <p style={{ margin: '10px 0 0', fontFamily: F_BODY, fontSize: bfs(11), letterSpacing: '.02em', color: openInkA(0.65) }}>{[sdCl ? timeDisplay : null, svCl ? venueName : null].filter(Boolean).join(' · ')}</p>}
                         </div>
                       </div>
                     )}
@@ -1592,19 +1594,21 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                     <div style={{ display: 'grid', gridTemplateRows: fold >= 1 ? '1fr' : '0fr', transition: 'grid-template-rows 1s cubic-bezier(.4,.1,.2,1)' }}>
                       <div style={{ overflow: 'hidden', minHeight: 0 }}>
                       <div style={{ padding: '30px 26px 32px', textAlign: 'center', borderBottom: `1px solid ${openInkA(0.1)}`, transform: fold >= 1 ? 'translateY(0)' : 'translateY(26px)', opacity: fold >= 1 ? 1 : 0, transition: 'transform .8s cubic-bezier(.22,.61,.36,1) .2s, opacity .6s ease .2s' }}>
-                        <p style={label(9, 0.44, openInkA(0.45))}>{nameCase(['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'][dow])}</p>
-                        <p style={{ margin: '14px 0 0', fontFamily: F_BODY, fontSize: bfs(17), letterSpacing: '.02em', color: openInk }}>{dateFullKo}</p>
-                        <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(12), color: openInkA(0.65) }}>{timeDisplay}</p>
+                        {sdCl && <p style={label(9, 0.44, openInkA(0.45))}>{nameCase(['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'][dow])}</p>}
+                        {sdCl && <p style={{ margin: '14px 0 0', fontFamily: F_BODY, fontSize: bfs(17), letterSpacing: '.02em', color: openInk }}>{dateFullKo}</p>}
+                        {sdCl && <p style={{ margin: '12px 0 0', fontFamily: F_BODY, fontSize: bfs(12), color: openInkA(0.65) }}>{timeDisplay}</p>}
                       </div>
                       </div>
                     </div>
                     <div style={{ display: 'grid', gridTemplateRows: fold >= 2 ? '1fr' : '0fr', transition: 'grid-template-rows 1s cubic-bezier(.4,.1,.2,1)' }}>
                       <div style={{ overflow: 'hidden', minHeight: 0 }}>
                       <div style={{ padding: '32px 26px 34px', textAlign: 'center', background: INK, transform: fold >= 2 ? 'translateY(0)' : 'translateY(26px)', opacity: fold >= 2 ? 1 : 0, transition: 'transform .8s cubic-bezier(.22,.61,.36,1) .2s, opacity .6s ease .2s' }}>
+                        {svCl && <>
                         <p style={label(9, 0.44, ivoryA(0.6))}>{nameCase('LOCATION')}</p>
                         <p style={{ margin: '14px 0 0', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 24, color: IVORY }}>{venueName}</p>
                         <div style={{ width: 24, height: 1, background: ivoryA(0.3), margin: '18px auto' }} />
                         <p style={{ margin: 0, fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.95, color: ivoryA(0.78), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{venueFull}</p>
+                        </>}
                       </div>
                       </div>
                     </div>
@@ -1626,17 +1630,17 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
                       <div style={{ position: 'relative', width: '100%', height: '100%', border: `1px solid ${openInkA(0.2)}`, boxSizing: 'border-box', padding: '22px 20px', display: 'flex', flexDirection: 'column' }}>
                         <p style={label(8, 0.4, openInkA(0.45))}>{nameCase('THE WEDDING OF')}</p>
                         <p style={{ margin: '6px 0 0', fontFamily: nameFont, fontSize: 15, letterSpacing: '.06em', color: openInk }}>{nameGroom} &amp; {nameBride}</p>
-                        <p style={{ margin: '24px 0 0', fontFamily: F_BODY, fontSize: bfs(16), lineHeight: 1.5, letterSpacing: '.02em', color: openInk }}>{dateDotKo}</p>
+                        {sdCl && <p style={{ margin: '24px 0 0', fontFamily: F_BODY, fontSize: bfs(16), lineHeight: 1.5, letterSpacing: '.02em', color: openInk }}>{dateDotKo}</p>}
                         <div style={{ height: 1, background: openInkA(0.16), margin: '20px 0 16px' }} />
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 9, paddingRight: 52 }}>
-                          <div style={{ display: 'flex', gap: 10, alignItems: 'baseline' }}>
+                          {sdCl && <div style={{ display: 'flex', gap: 10, alignItems: 'baseline' }}>
                             <span style={{ flex: '0 0 34px', fontFamily: F_LABEL, fontSize: lfs(7.5), letterSpacing: '.28em', color: openInkA(0.42) }}>{nameCase('TIME')}</span>
                             <span style={{ fontFamily: F_BODY, fontSize: bfs(12), color: openInkA(0.75) }}>{timeDisplay}</span>
-                          </div>
-                          <div style={{ display: 'flex', gap: 10, alignItems: 'baseline' }}>
+                          </div>}
+                          {svCl && <div style={{ display: 'flex', gap: 10, alignItems: 'baseline' }}>
                             <span style={{ flex: '0 0 34px', fontFamily: F_LABEL, fontSize: lfs(7.5), letterSpacing: '.28em', color: openInkA(0.42) }}>{nameCase('PLACE')}</span>
                             <span style={{ fontFamily: F_BODY, fontSize: bfs(12), lineHeight: 1.7, color: openInkA(0.75), wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>{venueName}{venueHall ? ` ${venueHall}` : ''}{(cc.classicFlipShowAddress !== false && (venue.address || '').trim()) ? `\n${venue.address}` : ''}</span>
-                          </div>
+                          </div>}
                         </div>
                         <div style={{ position: 'absolute', right: 16, bottom: 16, width: 44, height: 44, borderRadius: '50%', border: `1px solid ${openInkA(0.25)}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: F_LABEL, fontStyle: 'italic', fontSize: 13, color: openInkA(0.5) }}>C&amp;E</div>
                       </div>
@@ -2022,7 +2026,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
               })()}
             </div>
           </div>
-          <p className="cl-reveal cl-rise" data-delay="1200" style={{ position: 'relative', textAlign: 'center', margin: '26px 0 0', fontFamily: F_BODY, fontSize: bfs(12), letterSpacing: '.06em', color: ivoryA(0.85) }}>{timeDisplay} · {venueName}</p>
+          {(sdCl || svCl) && <p className="cl-reveal cl-rise" data-delay="1200" style={{ position: 'relative', textAlign: 'center', margin: '26px 0 0', fontFamily: F_BODY, fontSize: bfs(12), letterSpacing: '.06em', color: ivoryA(0.85) }}>{[sdCl ? timeDisplay : null, svCl ? venueName : null].filter(Boolean).join(' · ')}</p>}
           {dday !== null && dday >= 0 && (
             <p className="cl-reveal cl-rise" data-delay="1280" style={{ position: 'relative', textAlign: 'center', margin: '16px 0 0', fontFamily: F_BODY, fontSize: bfs(13), letterSpacing: '.02em', color: IVORY, wordBreak: 'keep-all' }}>
               {dday === 0 ? '오늘은 결혼식 날입니다' : <>결혼식 <span style={{ fontFamily: F_DISPLAY, fontSize: 18, letterSpacing: '.04em' }}>{dday}</span>일 남았습니다</>}

@@ -2428,8 +2428,8 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
       const showVenue = data.wedding?.showVenue !== false
       const result: BookPage[] = [
         { id: 'info-intro', type: 'info-intro', title: '예식 안내' },
-        { id: 'date-essay', type: 'date-essay' as any, title: '날짜 에세이' },
       ]
+      if (showDate) result.push({ id: 'date-essay', type: 'date-essay' as any, title: '날짜 에세이' })
       if (showDate) result.push({ id: 'wedding-date', type: 'wedding-date' as any, title: '그 날' })
       result.push({ id: 'venue-essay', type: 'venue-essay' as any, title: '장소 에세이' })
       if (showVenue) result.push({ id: 'wedding-venue', type: 'wedding-venue' as any, title: '그 곳' })
@@ -5285,7 +5285,7 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
       {hasBgm && <audio ref={audioRef} loop preload="auto"><source src={bgm.url} type="audio/mpeg" /></audio>}
       {hasBgm && <EssayMusicToggle audioRef={audioRef} theme={theme} showNotification={bgm.showNotification} notificationText={bgm.notificationText} />}
       </div>
-      {showDdayPopup && ddayPopup?.enabled && (
+      {showDdayPopup && ddayPopup?.enabled && data.wedding?.showDate !== false && (
         <DdayPopupOverlay
           data={ddayPopup}
           weddingDate={data.wedding?.date}

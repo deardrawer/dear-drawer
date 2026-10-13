@@ -462,9 +462,9 @@ function FilmPosterCover({ invitation, fonts, tc, onEnter, isPreview }: {
             letterSpacing: '5px',
             marginBottom: '8px',
           }}>
-            {dateFormatted} {dayOfWeek && <span style={{ color: coverGrayDim, fontSize: '11px' }}>({dayOfWeek})</span>}
+            {w?.showDate !== false && <>{dateFormatted} {dayOfWeek && <span style={{ color: coverGrayDim, fontSize: '11px' }}>({dayOfWeek})</span>}</>}
           </div>
-          {venueName && (
+          {w?.showVenue !== false && venueName && (
             <div style={{
               fontFamily: fonts.displayKr,
               fontSize: '11px',
@@ -598,8 +598,8 @@ function FilmFrameCover({ invitation, fonts, tc, onEnter, isPreview }: {
         </div>
         {/* 하단 글자 */}
         <div style={{ position: 'absolute', left: 0, right: 0, top: `${box.y + box.h}%`, bottom: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', color: textColor, padding: '0 20px', gap: '10px' }}>
-          <div style={{ fontFamily: fonts.display, fontSize: '18px', fontStyle: 'italic', animation: `ffUp 1.9s ${CB} 2.9s both` }}>{dateStr}</div>
-          {venueName && <div style={{ fontFamily: fonts.body, fontSize: '13px', letterSpacing: '1px', animation: `ffUp 1.9s ${CB} 3.5s both` }}>{venueName}</div>}
+          {w?.showDate !== false && <div style={{ fontFamily: fonts.display, fontSize: '18px', fontStyle: 'italic', animation: `ffUp 1.9s ${CB} 2.9s both` }}>{dateStr}</div>}
+          {w?.showVenue !== false && venueName && <div style={{ fontFamily: fonts.body, fontSize: '13px', letterSpacing: '1px', animation: `ffUp 1.9s ${CB} 3.5s both` }}>{venueName}</div>}
         </div>
       </div>
     </div>
@@ -753,9 +753,9 @@ function FilmCinematicCover({ invitation, fonts, tc, onEnter, isPreview }: {
             fontFamily: fonts.display, fontSize: dfs(12), fontWeight: 300,
             color: coverGray, letterSpacing: '4px',
           }}>
-            {dateFormatted} {dayOfWeek && <span style={{ fontSize: dfs(10), color: coverGrayDim }}>({dayOfWeek})</span>}
+            {w?.showDate !== false && <>{dateFormatted} {dayOfWeek && <span style={{ fontSize: dfs(10), color: coverGrayDim }}>({dayOfWeek})</span>}</>}
           </div>
-          {venueName && (
+          {w?.showVenue !== false && venueName && (
             <div style={{
               fontFamily: fonts.displayKr, fontSize: '11px', fontWeight: 300,
               color: coverGrayDim, letterSpacing: '2px', marginTop: '6px',
@@ -3503,6 +3503,7 @@ function InvitationClientFilmContent({
               {currentPage === 'main' && !isPreview && (
                 <GuestFloatingButton themeColors={{...tc, primary: tc.cardText ? tc.accent : tc.primary, sectionBg: getAccentTint(tc.accent, 0.85), text: tc.cardText || tc.text, gray: tc.cardGray || tc.gray, background: getAccentTint(tc.accent, 0.82)}} fonts={fonts} openModal="none" onModalClose={() => {}} showTooltip={false} scrollContainerRef={scrollContainerRef}
                   showLocation={invitation.wedding?.showVenue !== false}
+                  showDate={invitation.wedding?.showDate !== false}
                   navStyle={content?.navStyle || 'hamburger'}
                   invitation={{ venue_name: invitation.wedding?.venue?.name || '', venue_address: invitation.wedding?.venue?.address || '', contacts, accounts,
                     directions: invitation.wedding?.directions, rsvpEnabled: invitation.rsvpEnabled, rsvpAllowGuestCount: invitation.rsvpAllowGuestCount,

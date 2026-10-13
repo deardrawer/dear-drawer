@@ -638,7 +638,9 @@ function CoverSection({ content, invitation, displayId, audioRef, bgmEnabled, fo
         >
           {groomName} & {brideName}
         </h1>
-        <p className="text-[13px] text-white/70 tracking-wider">{formattedDate}</p>
+        {content?.wedding?.showDate !== false && (
+          <p className="text-[13px] text-white/70 tracking-wider">{formattedDate}</p>
+        )}
       </div>
 
       {/* Swipe down hint — only on last story */}
@@ -1757,7 +1759,7 @@ function WeddingInfoPost({
                   {venueHall && <p className="text-[13px] mb-1.5" style={{ color: '#6E6E6E' }}>{venueHall}</p>}
                   <div className="w-8 h-[0.5px] mx-auto my-3" style={{ background: '#DBDBDB' }} />
                   {venueAddress && <p className="text-[11px] leading-[1.6] mb-2" style={{ color: '#6E6E6E' }}>{venueAddress}</p>}
-                  <p className="text-[11px]" style={{ color: '#6E6E6E' }}>{formattedDate} {time}</p>
+                  {showDate && <p className="text-[11px]" style={{ color: '#6E6E6E' }}>{formattedDate} {time}</p>}
 
                   {/* Map buttons on venue card */}
                   {venueAddress && (

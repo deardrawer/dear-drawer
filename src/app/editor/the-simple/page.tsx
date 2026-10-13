@@ -2037,6 +2037,26 @@ function TheSimpleEditorContent() {
                       />
                     </label>
 
+                    <label className="flex items-center justify-between gap-3 py-1.5 border-t border-stone-100 cursor-pointer">
+                      <span className="text-xs text-stone-600">날짜 · 시간 표시 <span className="text-stone-400">· 노웨딩이면 꺼둘 수 있어요</span></span>
+                      <input
+                        type="checkbox"
+                        checked={data.wedding.showDate !== false}
+                        onChange={(e) => updateNested('wedding', { ...data.wedding, showDate: e.target.checked })}
+                        className="accent-stone-600 w-4 h-4 shrink-0"
+                      />
+                    </label>
+
+                    <label className="flex items-center justify-between gap-3 py-1.5 cursor-pointer">
+                      <span className="text-xs text-stone-600">장소 · 오시는 길 표시 <span className="text-stone-400">· 노웨딩이면 꺼둘 수 있어요</span></span>
+                      <input
+                        type="checkbox"
+                        checked={data.wedding.showVenue !== false}
+                        onChange={(e) => updateNested('wedding', { ...data.wedding, showVenue: e.target.checked })}
+                        className="accent-stone-600 w-4 h-4 shrink-0"
+                      />
+                    </label>
+
                     <div className="grid grid-cols-2 gap-3">
                       <label className="block">
                         <span className="text-xs text-stone-500">예식장 이름</span>

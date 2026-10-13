@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import ZoomableImage from '@/components/invitation/ZoomableImage'
 
 /**
  * THE CLASSIC 갤러리 라이트박스.
@@ -16,6 +17,7 @@ interface Props {
   variant: number
   onClose: () => void
   accentColor?: string // 화살표/닫기 hover 시 물드는 포인트 컬러 (청첩장 datePoint)
+  zoomEnabled?: boolean // 핀치·더블탭 확대 허용 (기본 true, 끄면 일반 <img>)
 }
 
 const F_LABEL = "var(--font-eb-garamond), serif"
@@ -36,6 +38,7 @@ const CL_LB_STYLES = `
   .cl-lb-stage-row { position: relative; flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
   .cl-lb-stage { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 6px 54px; touch-action: pan-y; }
   .cl-lb-img { max-width: 100%; max-height: 100%; object-fit: contain; -webkit-user-select: none; user-select: none; box-shadow: 0 30px 70px -20px rgba(0,0,0,.7); }
+  .cl-lb-zoombox { width: 100%; height: 80vh; }
   .cl-lb-nav { position: absolute; top: 50%; transform: translateY(-50%); z-index: 3; width: 44px; height: 64px; border: none; background: none; color: #F4F1E9; font-size: 34px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; text-shadow: 0 1px 8px rgba(0,0,0,.45); -webkit-tap-highlight-color: transparent; opacity: .82; transition: opacity .2s ease, color .2s ease; }
   .cl-lb-nav:hover, .cl-lb-nav:active { opacity: 1; color: var(--lb-accent, #c06a5b); background: none; }
   .cl-lb-nav--prev { left: 10px; }
@@ -114,10 +117,11 @@ const CL_LB_STYLES = `
   .cl-lb-grain { position: absolute; inset: 0; pointer-events: none; opacity: .18; mix-blend-mode: overlay; background-image: repeating-linear-gradient(0deg, rgba(255,255,255,.5) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, rgba(0,0,0,.5) 0 1px, transparent 1px 3px); }
 `
 
-export default function ClassicLightbox({ images, index, open, variant, onClose, accentColor }: Props) {
+export default function ClassicLightbox({ images, index, open, variant, onClose, accentColor, zoomEnabled = true }: Props) {
   const accentVar = { ['--lb-accent' as string]: accentColor || '#c06a5b' } as React.CSSProperties
   const [idx, setIdx] = useState(index)
   const [fading, setFading] = useState(false)
+  const [zoomed, setZoomed] = useState(false) // 줌 중엔 좌우 스와이프 비활성화
   const [prevOpen, setPrevOpen] = useState(open)
   const [mounted, setMounted] = useState(false)
   useEffect(() => { setMounted(true) }, [])
@@ -179,6 +183,7 @@ export default function ClassicLightbox({ images, index, open, variant, onClose,
       touchStartY.current = e.touches[0].clientY
     },
     onTouchEnd: (e: React.TouchEvent) => {
+      if (zoomed) return // 줌 상태에서는 팬 제스처이므로 스와이프 이동 금지
       const dx = e.changedTouches[0].clientX - touchStartX.current
       const dy = e.changedTouches[0].clientY - touchStartY.current
       if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) { if (dx < 0) goNext(); else goPrev() }
@@ -216,13 +221,24 @@ export default function ClassicLightbox({ images, index, open, variant, onClose,
         {v === 9 && <div className="cl-lb-sprocket cl-lb-sprocket--top" aria-hidden="true" />}
         <button type="button" className="cl-lb-nav cl-lb-nav--prev" onClick={(e) => { e.stopPropagation(); goPrev() }} aria-label="이전 사진">&#8249;</button>
         <div className="cl-lb-stage" onClick={(e) => e.stopPropagation()} {...touchProps}>
-          <img
-            src={images[idx]}
-            alt={`갤러리 사진 ${idx + 1}`}
-            className={`cl-lb-img${v === 5 ? ' cl-lb--v5-fade' : ''}${v === 5 && fading ? ' is-hidden' : ''}`}
-            draggable={false}
-            onContextMenu={preventContext}
-          />
+          {zoomEnabled ? (
+            <ZoomableImage
+              key={idx}
+              src={images[idx]}
+              alt={`갤러리 사진 ${idx + 1}`}
+              className="cl-lb-zoombox"
+              imgClassName={`cl-lb-img${v === 5 ? ' cl-lb--v5-fade' : ''}${v === 5 && fading ? ' is-hidden' : ''}`}
+              onZoomChange={setZoomed}
+            />
+          ) : (
+            <img
+              src={images[idx]}
+              alt={`갤러리 사진 ${idx + 1}`}
+              className={`cl-lb-img${v === 5 ? ' cl-lb--v5-fade' : ''}${v === 5 && fading ? ' is-hidden' : ''}`}
+              draggable={false}
+              onContextMenu={preventContext}
+            />
+          )}
         </div>
         <button type="button" className="cl-lb-nav cl-lb-nav--next" onClick={(e) => { e.stopPropagation(); goNext() }} aria-label="다음 사진">&#8250;</button>
         {v === 9 && <div className="cl-lb-sprocket cl-lb-sprocket--bottom" aria-hidden="true" />}

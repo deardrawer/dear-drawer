@@ -304,6 +304,14 @@ export default function Step2Record({ invitationId }: Step2RecordProps) {
         </h3>
 
         <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+          {/* 날짜·시간 표시 토글 (노웨딩) */}
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="text-sm font-medium">날짜 · 시간 표시</Label>
+              <p className="text-xs text-gray-500">끄면 하객 화면에 날짜·시간을 표시하지 않아요 (노웨딩)</p>
+            </div>
+            <Switch checked={invitation.wedding.showDate !== false} onCheckedChange={(c) => updateNestedField('wedding.showDate', c)} />
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">날짜 <span className="text-red-500">*</span></Label>
@@ -341,6 +349,14 @@ export default function Step2Record({ invitationId }: Step2RecordProps) {
             </div>
           </div>
 
+          {/* 장소·오시는길 표시 토글 (노웨딩) */}
+          <div className="flex items-center justify-between pt-1">
+            <div>
+              <Label className="text-sm font-medium">장소 · 오시는 길 표시</Label>
+              <p className="text-xs text-gray-500">끄면 예식장·오시는 길을 표시하지 않아요</p>
+            </div>
+            <Switch checked={invitation.wedding.showVenue !== false} onCheckedChange={(c) => updateNestedField('wedding.showVenue', c)} />
+          </div>
           <div className="space-y-1.5">
             <Label className="text-sm font-medium">예식장 이름 <span className="text-red-500">*</span></Label>
             <Input

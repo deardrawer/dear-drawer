@@ -3,6 +3,7 @@
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import ColorField from '@/components/editor/ColorField'
 import ClassicPhotoField from '../../ClassicPhotoField'
 import ClassicGalleryEditor from '../../ClassicGalleryEditor'
@@ -544,6 +545,15 @@ export default function ClassicStepGreeting({ data, updateNestedData, invitation
           invitationId={invitationId || undefined}
           maxImages={30}
         />
+
+        {/* 사진 확대(줌) 허용 토글 */}
+        <div className="flex items-center justify-between pt-1">
+          <div>
+            <Label className="text-sm font-medium">사진 확대(줌) 허용</Label>
+            <p className="text-[10px] text-gray-400 leading-tight">하객이 갤러리 사진을 크게 열면 핀치·더블탭으로 확대할 수 있어요</p>
+          </div>
+          <Switch checked={data.gallery.zoomEnabled === true} onCheckedChange={(c) => updateNestedData('gallery.zoomEnabled', c)} />
+        </div>
 
         {/* 라이트박스 스타일 */}
         <div className="space-y-2 pt-3 border-t border-gray-100">

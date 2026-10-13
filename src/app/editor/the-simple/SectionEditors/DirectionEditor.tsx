@@ -5,6 +5,9 @@ import type { SectionContents } from '../page'
 interface DirectionEditorProps {
   value: SectionContents['direction']
   onChange: (next: SectionContents['direction']) => void
+  // 하객에게 장소·오시는 길 표시 여부 (wedding.showVenue). 기본 ON(미설정=표시)
+  showVenue?: boolean
+  onShowVenueChange?: (next: boolean) => void
 }
 
 const TRANSPORT_FIELDS = [
@@ -15,7 +18,7 @@ const TRANSPORT_FIELDS = [
   { key: 'expressBus' as const, label: '고속버스' },
 ]
 
-export default function DirectionEditor({ value, onChange }: DirectionEditorProps) {
+export default function DirectionEditor({ value, onChange, showVenue, onShowVenueChange }: DirectionEditorProps) {
   const transport = value.transport || {}
 
   const updateTransport = (key: string, text: string) => {
@@ -33,6 +36,17 @@ export default function DirectionEditor({ value, onChange }: DirectionEditorProp
       <p className="text-[10px] text-stone-400 leading-relaxed">
         예식장 이름 · 주소는 상단 &quot;기본 정보&quot;에서 편집하세요.
       </p>
+      {onShowVenueChange && (
+        <label className="flex items-center gap-2 cursor-pointer pb-1 border-b border-stone-100">
+          <input
+            type="checkbox"
+            checked={showVenue !== false}
+            onChange={(e) => onShowVenueChange(e.target.checked)}
+            className="accent-stone-600 w-3.5 h-3.5"
+          />
+          <span className="text-[11px] text-stone-600">장소 · 오시는 길 표시</span>
+        </label>
+      )}
       <label className="block">
         <span className="text-[10px] uppercase tracking-wider text-stone-400">Eyebrow</span>
         <input

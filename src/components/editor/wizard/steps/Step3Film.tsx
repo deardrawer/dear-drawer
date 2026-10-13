@@ -566,6 +566,18 @@ export default function Step3Film({}: Step3FilmProps) {
           <p className="text-xs text-amber-600 mt-1.5">미리보기에 사진이 안 보일 경우, 미리보기 상단의 INTRO 버튼을 누른 후 MAIN 버튼을 다시 눌러주세요.</p>
         </div>
 
+        {/* 사진 확대(줌) 허용 토글 */}
+        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div>
+            <p className="text-sm font-medium text-gray-800">사진 확대(줌) 허용</p>
+            <p className="text-xs text-gray-500">하객이 갤러리 사진을 핀치·더블탭으로 확대할 수 있어요</p>
+          </div>
+          <Switch
+            checked={invitation.gallery.zoomEnabled === true}
+            onCheckedChange={(checked) => updateNestedField('gallery.zoomEnabled', checked)}
+          />
+        </div>
+
         <MultiImageUploader
           images={invitation.gallery.images}
           onChange={(images) => {

@@ -3,6 +3,7 @@
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Switch } from '@/components/ui/switch'
 import ImageUploader from '@/components/editor/ImageUploader'
 import DdayPopupEditor from '@/components/dday/DdayPopupEditor'
 import { DEFAULT_DDAY_POPUP } from '@/lib/ddayPopupTypes'
@@ -156,6 +157,14 @@ export default function ClassicStepBasicInfo({ data, updateNestedData, invitatio
         <h3 className="text-base font-semibold text-gray-900">결혼식 정보</h3>
 
         <div className="space-y-4 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
+          {/* 날짜·시간 표시 토글 (노웨딩) */}
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="text-sm font-medium">날짜 · 시간 표시</Label>
+              <p className="text-xs text-gray-400">끄면 하객 화면에 날짜·시간·D-Day를 표시하지 않아요 (노웨딩)</p>
+            </div>
+            <Switch checked={data.wedding.showDate !== false} onCheckedChange={(c) => updateNestedData('wedding.showDate', c)} />
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">날짜 <span className="text-red-500">*</span></Label>
@@ -176,6 +185,14 @@ export default function ClassicStepBasicInfo({ data, updateNestedData, invitatio
             </div>
           </div>
 
+          {/* 장소·오시는길 표시 토글 (노웨딩) */}
+          <div className="flex items-center justify-between pt-1">
+            <div>
+              <Label className="text-sm font-medium">장소 · 오시는 길 표시</Label>
+              <p className="text-xs text-gray-400">끄면 예식장·오시는 길을 표시하지 않아요</p>
+            </div>
+            <Switch checked={data.wedding.showVenue !== false} onCheckedChange={(c) => updateNestedData('wedding.showVenue', c)} />
+          </div>
           <div className="space-y-1.5">
             <Label className="text-sm font-medium">예식장 이름 <span className="text-red-500">*</span></Label>
             <Input

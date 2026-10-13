@@ -99,6 +99,8 @@ export interface ParentsInvitationData {
     date: string
     time: string
     timeDisplay: string
+    showDate?: boolean   // 날짜·시간 표시 (기본 true)
+    showVenue?: boolean  // 장소·오시는 길 표시 (기본 true)
     venue: {
       name: string
       hall: string
@@ -184,6 +186,7 @@ export interface ParentsInvitationData {
   // 갤러리 (크롭 정보 포함)
   gallery: {
     images: ImageCropData[]
+    zoomEnabled?: boolean  // 라이트박스 사진 확대(줌) 허용 (기본 true)
   }
 
   // 결혼식 안내
@@ -329,6 +332,8 @@ const defaultData: ParentsInvitationData = {
     date: '',
     time: '12:00',
     timeDisplay: '오후 12시',
+    showDate: true,
+    showVenue: true,
     venue: {
       name: '',
       hall: '',
@@ -406,6 +411,7 @@ const defaultData: ParentsInvitationData = {
   },
   gallery: {
     images: [],
+    zoomEnabled: false,
   },
   weddingInfo: {
     enabled: true,

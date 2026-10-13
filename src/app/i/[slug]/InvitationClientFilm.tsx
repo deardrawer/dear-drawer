@@ -13,6 +13,7 @@ import { resolveKoreanFontFamily } from '@/app/editor/the-simple/fontOptions'
 import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
 import '@/components/dday/dday-popup.css'
 import { YouTubeLite } from '@/components/invitation/YouTubeLite'
+import ZoomableImage from '@/components/invitation/ZoomableImage'
 
 // ===== Types =====
 type ColorTheme = 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-green' | 'luxury-navy' | 'sunset-coral' | 'film-dark' | 'film-light'
@@ -1649,7 +1650,7 @@ function ThePremiere({ invitation, fonts, tc, bgOverride }: { invitation: any; f
             <div style={{ position: 'absolute', width: '20px', height: '20px', borderRadius: '50%', background: tc.sectionBg, top: '100%', right: '-10px', transform: 'translateY(-50%)' }} />
 
             {/* Date & Time Grid */}
-            {date && (
+            {date && w.showDate !== false && (
               <>
                 <div className="flex items-center justify-center mb-3">
                   <div style={{ fontFamily: fonts.body, fontSize: '13px', fontWeight: 400, color: ct, letterSpacing: '1px', whiteSpace: 'nowrap' }}>
@@ -1684,6 +1685,7 @@ function ThePremiere({ invitation, fonts, tc, bgOverride }: { invitation: any; f
             )}
 
             {/* Venue */}
+            {w.showVenue !== false && (
             <div style={{ background: getAccentTint(tc.accent, 0.85), borderRadius: '8px', padding: '16px', textAlign: 'center' }}>
               <div style={{ fontFamily: fonts.displayKr, fontSize: dfs(7), letterSpacing: '4px', color: tc.accent, marginBottom: '8px' }}>Theater</div>
               <p style={{ fontFamily: fonts.displayKr, fontSize: '16px', fontWeight: 500, color: ct }}>{w.venue?.name || ''}</p>
@@ -1715,12 +1717,13 @@ function ThePremiere({ invitation, fonts, tc, bgOverride }: { invitation: any; f
                 )}
               </div>
             </div>
+            )}
           </div>
 
           {/* Ticket Bottom - Map */}
           <div style={{ padding: '24px' }}>
             {/* Map buttons */}
-            {w.venue?.address && (() => {
+            {w.showVenue !== false && w.venue?.address && (() => {
               const mb = invitation.mapButtons || { naver: true, kakao: true, tmap: true }
               const buttons = [
                 mb.naver !== false && { label: 'NAVER', color: '#03C75A', letter: 'N', letterColor: '#fff', url: `https://map.naver.com/v5/search/${encodeURIComponent(w.venue.address)}` },
@@ -1746,7 +1749,7 @@ function ThePremiere({ invitation, fonts, tc, bgOverride }: { invitation: any; f
         </div>
 
         {/* Directions - inline */}
-        {w.directions && (w.directions.car || w.directions.publicTransport || w.directions.train || w.directions.expressBus || (w.directions.extraInfoEnabled && w.directions.extraInfoText)) && (
+        {w.showVenue !== false && w.directions && (w.directions.car || w.directions.publicTransport || w.directions.train || w.directions.expressBus || (w.directions.extraInfoEnabled && w.directions.extraInfoText)) && (
           <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '10px', alignSelf: 'stretch', width: '100%' }}>
             {w.directions.car && (
               <div className="direction-card revealed" style={{ padding: '14px 16px', background: tc.cardBg, borderRadius: '10px', borderLeft: `3px solid ${tc.accent}50` }}>
@@ -2487,14 +2490,14 @@ function TicketRsvp({ invitation, invitationId, fonts, tc, bgOverride }: {
             <div className="flex items-center justify-between mb-3">
               <span style={{ fontFamily: fonts.displayKr, fontSize: dfs(8), letterSpacing: '4px', color: tc.accent }}>Admit One</span>
               <span style={{ fontFamily: fonts.display, fontSize: dfs(8), letterSpacing: '2px', color: tc.cardGray || tc.gray }}>
-                {date ? `${date.getFullYear()}.${String(date.getMonth()+1).padStart(2,'0')}.${String(date.getDate()).padStart(2,'0')}` : ''}
+                {date && w.showDate !== false ? `${date.getFullYear()}.${String(date.getMonth()+1).padStart(2,'0')}.${String(date.getDate()).padStart(2,'0')}` : ''}
               </span>
             </div>
             <div style={{ fontFamily: fonts.display, fontSize: dfs(22), fontStyle: 'italic', letterSpacing: '2px', color: tc.cardText || tc.text, marginBottom: '4px' }}>
               Reservation
             </div>
             <div style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.cardGray || tc.gray }}>
-              {w.venue?.name || ''} {w.timeDisplay || w.time || ''}
+              {w.showVenue !== false ? (w.venue?.name || '') : ''} {w.showDate !== false ? (w.timeDisplay || w.time || '') : ''}
             </div>
           </div>
 
@@ -2691,8 +2694,9 @@ function FilmFooter({ invitation, fonts, tc }: { invitation: any; fonts: FontCon
 }
 
 // ===== Lightbox =====
-function GalleryLightbox({ images, isOpen, initialIndex, onClose }: { images: string[]; isOpen: boolean; initialIndex: number; onClose: () => void }) {
+function GalleryLightbox({ images, isOpen, initialIndex, onClose, zoomEnabled = true }: { images: string[]; isOpen: boolean; initialIndex: number; onClose: () => void; zoomEnabled?: boolean }) {
   const [idx, setIdx] = useState(initialIndex)
+  const [zoomed, setZoomed] = useState(false) // 줌 중엔 탭 이동/닫기 비활성화
   useEffect(() => { setIdx(initialIndex) }, [initialIndex])
 
   useEffect(() => {
@@ -2712,10 +2716,10 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose }: { images: st
   if (!isOpen) return null
   const resolved = images.map(extractImageUrl).filter(Boolean)
   return (
-    <div className="fixed inset-0 z-[9999] bg-black flex items-center justify-center" onClick={onClose}>
+    <div className="fixed inset-0 z-[9999] bg-black flex items-center justify-center" onClick={() => { if (zoomed) return; onClose() }}>
       <button onClick={onClose} className="absolute top-4 right-4 text-white text-2xl z-10 w-10 h-10 flex items-center justify-center">&times;</button>
       <div className="absolute bottom-4 left-0 right-0 text-center text-white text-sm opacity-60">{idx + 1} / {resolved.length}</div>
-      {resolved[idx] && <div className="flex items-center justify-center w-full h-full p-4" style={{ cursor: 'pointer' }} onClick={e => { e.stopPropagation(); setIdx((idx + 1) % resolved.length) }}><img src={resolved[idx]} alt="" className="max-w-full max-h-full object-contain" style={{ pointerEvents: 'none', WebkitTouchCallout: 'none', userSelect: 'none', WebkitUserSelect: 'none' } as React.CSSProperties} /></div>}
+      {resolved[idx] && <div className="flex items-center justify-center w-full h-full p-4" style={{ cursor: 'pointer' }} onClick={e => { e.stopPropagation(); if (zoomed) return; setIdx((idx + 1) % resolved.length) }}>{zoomEnabled ? <ZoomableImage src={resolved[idx]} alt="" className="film-zoomable-box" onZoomChange={setZoomed} /> : <img src={resolved[idx]} alt="" className="max-w-full max-h-full object-contain" style={{ pointerEvents: 'none', WebkitTouchCallout: 'none', userSelect: 'none', WebkitUserSelect: 'none' } as React.CSSProperties} />}</div>}
     </div>
   )
 }
@@ -2794,6 +2798,8 @@ const globalStyles = `
   .photos-1 .scene-photo-wrap { aspect-ratio: 16/9; border-radius: 4px; }
   .photos-2 .scene-photo-wrap { aspect-ratio: 3/4; }
   .photos-3 .scene-photo-wrap { aspect-ratio: 1/1; border-radius: 2px; }
+  /* Lightbox pinch/double-tap zoom box */
+  .film-zoomable-box { width: 100%; height: 80vh; }
   .directions-overlay {
     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0,0,0,0.5); z-index: 200;
@@ -3493,6 +3499,7 @@ function InvitationClientFilmContent({
             <div className="mobile-frame-fixed-ui">
               {currentPage === 'main' && !isPreview && (
                 <GuestFloatingButton themeColors={{...tc, primary: tc.cardText ? tc.accent : tc.primary, sectionBg: getAccentTint(tc.accent, 0.85), text: tc.cardText || tc.text, gray: tc.cardGray || tc.gray, background: getAccentTint(tc.accent, 0.82)}} fonts={fonts} openModal="none" onModalClose={() => {}} showTooltip={false} scrollContainerRef={scrollContainerRef}
+                  showLocation={invitation.wedding?.showVenue !== false}
                   navStyle={content?.navStyle || 'hamburger'}
                   invitation={{ venue_name: invitation.wedding?.venue?.name || '', venue_address: invitation.wedding?.venue?.address || '', contacts, accounts,
                     directions: invitation.wedding?.directions, rsvpEnabled: invitation.rsvpEnabled, rsvpAllowGuestCount: invitation.rsvpAllowGuestCount,
@@ -3506,12 +3513,12 @@ function InvitationClientFilmContent({
               {invitation.bgm?.enabled && invitation.bgm?.url && (
                 <MusicToggle audioRef={audioRef} isVisible={currentPage === 'main'} shouldAutoPlay={currentPage === 'main' && invitation.bgm?.autoplay === true} tc={tc} showNotification={invitation.bgm?.showNotification} notificationText={invitation.bgm?.notificationText} />
               )}
-              <GalleryLightbox images={invitation.gallery?.images || []} isOpen={lightboxOpen} initialIndex={lightboxIndex} onClose={() => setLightboxOpen(false)} />
+              <GalleryLightbox images={invitation.gallery?.images || []} isOpen={lightboxOpen} initialIndex={lightboxIndex} onClose={() => setLightboxOpen(false)} zoomEnabled={invitation.gallery?.zoomEnabled === true} />
             </div>
           </div>
         </div>
       </div>
-      {showDdayPopup && invitation?.ddayPopup?.enabled && (
+      {showDdayPopup && invitation?.ddayPopup?.enabled && invitation.wedding?.showDate !== false && (
         <DdayPopupOverlay
           data={invitation.ddayPopup}
           weddingDate={invitation.wedding?.date}

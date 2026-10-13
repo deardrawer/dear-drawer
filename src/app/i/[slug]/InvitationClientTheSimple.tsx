@@ -479,6 +479,7 @@ export default function InvitationClientTheSimple({
             navStyle={data.navStyle || 'hamburger'}
             language={data.language}
             showShare={data.showFooterShare !== false}
+            showLocation={data.wedding?.showVenue !== false}
             invitation={{
               venue_name: data.wedding.venue.name,
               venue_address: data.wedding.venue.address,
@@ -680,6 +681,9 @@ function normalizeTheSimpleData(
         hall: c.wedding?.venue?.hall || '',
         address: c.wedding?.venue?.address || invitation.venue_address || '',
       },
+      // 하객용 표시 옵션 (미설정=표시). 저장값 그대로 전달.
+      showDate: c.wedding?.showDate,
+      showVenue: c.wedding?.showVenue,
     },
     sections,
     sectionOrder: c.sectionOrder && c.sectionOrder.length > 0 ? c.sectionOrder : DEFAULT_ORDER,
@@ -720,6 +724,7 @@ function normalizeTheSimpleData(
     tintedColor: c.tintedColor,
     sectionBgMap: (c as Record<string, unknown>).sectionBgMap as Record<string, 'default' | 'tinted'> | undefined,
     lightboxVariant: typeof c.lightboxVariant === 'number' ? c.lightboxVariant : 1,
+    galleryZoomEnabled: typeof c.galleryZoomEnabled === 'boolean' ? c.galleryZoomEnabled : undefined,
     displayFont: c.displayFont,
     fontStyle: c.fontStyle,
     fontScale: typeof c.fontScale === 'number' ? c.fontScale : 1,

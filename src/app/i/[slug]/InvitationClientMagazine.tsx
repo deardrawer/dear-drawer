@@ -15,6 +15,7 @@ import { resolveKoreanFontFamily } from '@/app/editor/the-simple/fontOptions'
 import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
 import '@/components/dday/dday-popup.css'
 import { YouTubeLite } from '@/components/invitation/YouTubeLite'
+import ZoomableImage from '@/components/invitation/ZoomableImage'
 
 // ===== Types =====
 type ColorTheme = 'classic-rose' | 'modern-black' | 'romantic-blush' | 'nature-green' | 'luxury-navy' | 'sunset-coral'
@@ -416,8 +417,10 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
           opacity: 0,
           ...(loaded ? { animation: 'mag-fadeSlideUp 0.7s ease 2.6s both' } : {}),
         }}>
-          <span style={{ display: 'block' }}>{dateStr} {dayOfWeek}</span>
-          {invitation.wedding?.venue?.name && (
+          {invitation.wedding?.showDate !== false && (
+            <span style={{ display: 'block' }}>{dateStr} {dayOfWeek}</span>
+          )}
+          {invitation.wedding?.showVenue !== false && invitation.wedding?.venue?.name && (
             <span style={{ display: 'block', fontSize: '11px', letterSpacing: '2px' }}>{invitation.wedding.venue.name}</span>
           )}
         </div>
@@ -483,12 +486,14 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
             opacity: 0, transform: 'translateX(-30px)',
             ...(loaded ? { animation: 'mag-slideInLeft 0.8s cubic-bezier(0.22,1,0.36,1) 1.8s both' } : {}),
           }}>{dt('WEDDING')}</span>
+          {invitation.wedding?.showDate !== false && (
           <span style={{
             fontFamily: fonts.display, fontSize: '10px', letterSpacing: '2px',
             color: 'rgba(255,255,255,0.7)',
             opacity: 0, transform: 'translateX(30px)',
             ...(loaded ? { animation: 'mag-slideInRight 0.8s cubic-bezier(0.22,1,0.36,1) 1.8s both' } : {}),
           }}>{dateStr}</span>
+          )}
         </div>
         {/* Spacer */}
         <div className="flex-1" />
@@ -568,6 +573,7 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
             transform: 'scaleX(0)', transformOrigin: 'left',
             ...(loaded ? { animation: 'mag-lineDrawRight 1s ease 0.4s both' } : {}),
           }} />
+          {invitation.wedding?.showDate !== false && (
           <span style={{
             fontFamily: fonts.display, fontSize: '11px', letterSpacing: '2px', color: themeColors.primary,
             opacity: 0,
@@ -575,6 +581,7 @@ function MagazineCover({ invitation, fonts, themeColors, onEnter, isPreview }: {
           }}>
             {dateStr}
           </span>
+          )}
         </div>
       </div>
       {/* Cover image — Ken Burns zoom out */}
@@ -1290,7 +1297,7 @@ function TheDetails({ invitation, fonts, themeColors, bgOverride }: { invitation
         )}
 
         {/* Date Card */}
-        {date && (
+        {date && w.showDate !== false && (
           <div className="text-center mb-12" style={{ padding: '28px 20px', border: `0.5px solid ${themeColors.divider}`, opacity: 0, ...(isVisible ? { animation: 'mag-expandIn 0.8s cubic-bezier(0.22,1,0.36,1) 0.3s both' } : {}) }}>
             <div style={{ fontFamily: fonts.display, fontSize: '11px', letterSpacing: '4px', color: themeColors.gray, marginBottom: '8px', opacity: 0, ...(isVisible ? { animation: 'mag-lineReveal 0.7s ease 0.6s both' } : {}) }}>
               {date.getFullYear()}. {String(date.getMonth() + 1).padStart(2, '0')}
@@ -1332,6 +1339,7 @@ function TheDetails({ invitation, fonts, themeColors, bgOverride }: { invitation
         )}
 
         {/* Venue */}
+        {w.showVenue !== false && (
         <div className="text-center mb-12" style={{ opacity: 0, ...(isVisible ? { animation: 'mag-lineReveal 0.7s ease 0.5s both' } : {}) }}>
           <div style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '4px', color: themeColors.gray, marginBottom: '8px' }}>
             {dt('VENUE')}
@@ -1372,6 +1380,7 @@ function TheDetails({ invitation, fonts, themeColors, bgOverride }: { invitation
             <p style={{ fontFamily: fonts.body, fontSize: '12px', color: themeColors.gray, marginTop: '8px' }}></p>
           )}
         </div>
+        )}
 
         {/* Parents Introduction - Magazine column style */}
         {invitation.sectionVisibility?.parentNames !== false && (groom.father?.name || groom.mother?.name || bride.father?.name || bride.mother?.name) && (
@@ -1411,7 +1420,7 @@ function TheDetails({ invitation, fonts, themeColors, bgOverride }: { invitation
         )}
 
         {/* Map Buttons */}
-        {w.venue?.address && (() => {
+        {w.showVenue !== false && w.venue?.address && (() => {
           const mb = invitation.mapButtons || { naver: true, kakao: true, tmap: true }
           const buttons = [
             mb.naver !== false && { key: 'naver', href: `https://map.naver.com/v5/search/${encodeURIComponent(w.venue.address)}`, target: '_blank', bg: '#03C75A', letter: 'N', textColor: 'white', label: 'NAVER' },
@@ -1446,7 +1455,7 @@ function TheDetails({ invitation, fonts, themeColors, bgOverride }: { invitation
         })()}
 
         {/* Directions */}
-        {w.directions && (w.directions.car || w.directions.publicTransport || w.directions.train || w.directions.expressBus || (w.directions.extraInfoEnabled && w.directions.extraInfoText)) && (
+        {w.showVenue !== false && w.directions && (w.directions.car || w.directions.publicTransport || w.directions.train || w.directions.expressBus || (w.directions.extraInfoEnabled && w.directions.extraInfoText)) && (
           <div className="mt-8">
             <div style={{ fontFamily: fonts.displayKr, fontSize: '13px', color: themeColors.gray, marginBottom: '12px', textAlign: 'center' }}>
               오시는 길
@@ -2218,8 +2227,9 @@ function MagazineFooter({ invitation, fonts, themeColors }: { invitation: any; f
 }
 
 // ===== Gallery Lightbox =====
-function GalleryLightbox({ images, isOpen, initialIndex, onClose }: { images: string[]; isOpen: boolean; initialIndex: number; onClose: () => void }) {
+function GalleryLightbox({ images, isOpen, initialIndex, onClose, zoomEnabled = true }: { images: string[]; isOpen: boolean; initialIndex: number; onClose: () => void; zoomEnabled?: boolean }) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex)
+  const [zoomed, setZoomed] = useState(false) // 줌 중엔 탭-넘기기 비활성화
 
   useEffect(() => { setCurrentIndex(initialIndex) }, [initialIndex])
 
@@ -2243,6 +2253,7 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose }: { images: st
 
   return (
     <div className="fixed inset-0 z-[9999] bg-black flex items-center justify-center" onClick={onClose}>
+      <style>{`.mag-zoomable-box{width:100%;height:80vh;}`}</style>
       <button onClick={onClose} className="absolute top-4 right-4 text-white text-2xl z-10 w-10 h-10 flex items-center justify-center">
         &times;
       </button>
@@ -2250,13 +2261,22 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose }: { images: st
         {currentIndex + 1} / {resolvedImages.length}
       </div>
       {resolvedImages[currentIndex] && (
-        <div className="flex items-center justify-center w-full h-full p-4" style={{ cursor: 'pointer' }} onClick={e => { e.stopPropagation(); if (resolvedImages.length > 1) setCurrentIndex((currentIndex + 1) % resolvedImages.length) }}>
-          <img
-            src={resolvedImages[currentIndex]}
-            alt=""
-            className="max-w-full max-h-full object-contain"
-            style={{ pointerEvents: 'none', WebkitTouchCallout: 'none', userSelect: 'none', WebkitUserSelect: 'none' } as React.CSSProperties}
-          />
+        <div className="flex items-center justify-center w-full h-full p-4" style={{ cursor: 'pointer' }} onClick={e => { e.stopPropagation(); if (!zoomed && resolvedImages.length > 1) setCurrentIndex((currentIndex + 1) % resolvedImages.length) }}>
+          {zoomEnabled ? (
+            <ZoomableImage
+              src={resolvedImages[currentIndex]}
+              alt=""
+              className="mag-zoomable-box"
+              onZoomChange={setZoomed}
+            />
+          ) : (
+            <img
+              src={resolvedImages[currentIndex]}
+              alt=""
+              className="max-w-full max-h-full object-contain"
+              style={{ pointerEvents: 'none', WebkitTouchCallout: 'none', userSelect: 'none', WebkitUserSelect: 'none' } as React.CSSProperties}
+            />
+          )}
         </div>
       )}
     </div>
@@ -2886,13 +2906,14 @@ function InvitationClientMagazineContent({
                   onModalClose={() => {}}
                   showTooltip={false}
                   scrollContainerRef={scrollContainerRef}
+                  showLocation={invitation.wedding?.showVenue !== false}
                   navStyle={content?.navStyle || 'hamburger'}
                   invitation={{
-                    venue_name: invitation.wedding?.venue?.name || '',
-                    venue_address: invitation.wedding?.venue?.address || '',
+                    venue_name: invitation.wedding?.showVenue !== false ? (invitation.wedding?.venue?.name || '') : '',
+                    venue_address: invitation.wedding?.showVenue !== false ? (invitation.wedding?.venue?.address || '') : '',
                     contacts,
                     accounts,
-                    directions: invitation.wedding?.directions,
+                    directions: invitation.wedding?.showVenue !== false ? invitation.wedding?.directions : undefined,
                     rsvpEnabled: invitation.rsvpEnabled,
                     rsvpAllowGuestCount: invitation.rsvpAllowGuestCount,
                     rsvpMealOption: invitation.rsvpMealOption,
@@ -2906,8 +2927,8 @@ function InvitationClientMagazineContent({
                     invitationId: dbInvitation.id,
                     groomName: invitation.groom?.name || '',
                     brideName: invitation.bride?.name || '',
-                    weddingDate: invitation.wedding?.date || '',
-                    weddingTime: invitation.wedding?.timeDisplay || invitation.wedding?.time || '',
+                    weddingDate: invitation.wedding?.showDate !== false ? (invitation.wedding?.date || '') : '',
+                    weddingTime: invitation.wedding?.showDate !== false ? (invitation.wedding?.timeDisplay || invitation.wedding?.time || '') : '',
                     thumbnailUrl: content?.meta?.kakaoThumbnail || content?.meta?.ogImage || extractImageUrl(invitation.media?.coverImage) || extractImageUrl(invitation.gallery?.images?.[0]) || '',
                     shareTitle: content?.meta?.title,
                     shareDescription: content?.meta?.description,
@@ -2923,6 +2944,7 @@ function InvitationClientMagazineContent({
                 isOpen={lightboxOpen}
                 initialIndex={lightboxIndex}
                 onClose={() => setLightboxOpen(false)}
+                zoomEnabled={invitation.gallery?.zoomEnabled === true}
               />
               <InterviewPopup
                 invitation={invitation}
@@ -2935,7 +2957,7 @@ function InvitationClientMagazineContent({
           </div>
         </div>
       </div>
-      {showDdayPopup && invitation?.ddayPopup?.enabled && (
+      {showDdayPopup && invitation?.ddayPopup?.enabled && invitation.wedding?.showDate !== false && (
         <DdayPopupOverlay
           data={invitation.ddayPopup}
           weddingDate={invitation.wedding?.date}

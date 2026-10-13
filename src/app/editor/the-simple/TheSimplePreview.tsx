@@ -10,6 +10,7 @@ import { ParkingIcon, BusIcon, SubwayIcon, TrainIcon, ExpressBusIcon, InfoIcon }
 import { sanitizeTextForRender } from '@/lib/utils'
 import GuestFloatingButton from '@/components/invitation/GuestFloatingButton'
 import { YouTubeLite } from '@/components/invitation/YouTubeLite'
+import ZoomableImage from '@/components/invitation/ZoomableImage'
 import './the-simple-preview.css'
 import '@/components/dday/dday-popup.css'
 
@@ -6075,7 +6076,14 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
   }
 
   // 숨김 섹션 필터링
-  const visibleSections = data.sectionOrder.filter((id) => !data.hiddenSections.includes(id))
+  const visibleSections = data.sectionOrder.filter((id) => {
+    if (data.hiddenSections.includes(id)) return false
+    const t = getSectionType(id)
+    // 하객용 표시 옵션 (기본 ON, === false 일 때만 숨김)
+    if (t === 'info' && data.wedding.showDate === false) return false
+    if (t === 'direction' && data.wedding.showVenue === false) return false
+    return true
+  })
 
   // 폰트 설정 (에디터에서 선택) → CSS 변수로 주입
   const displayFontFamily = resolveDisplayFontFamily(data.displayFont)
@@ -6320,7 +6328,7 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
       </div>
       </div>{/* /ts-body-wrap */}
       <RsvpModal open={rsvpOpen} onClose={() => { setRsvpOpen(false); setRsvpInitAttendance(undefined) }} invitationId={data.id} showMealOption={data.sections.rsvp.showMealOption} showShuttleOption={data.sections.rsvp.showShuttleOption} showAfterPartyOption={data.sections.rsvp.showAfterPartyOption} showPhoneOption={data.sections.rsvp.showPhoneOption} showSideDetail={data.sections.rsvp.showSideDetail} sideDetailOptions={data.sections.rsvp.sideDetailOptions} rsvpNotice={data.sections.rsvp.rsvpNotice} messagePlaceholder={data.sections.rsvp.messagePlaceholder} initialAttendance={rsvpInitAttendance} language={data.language} />
-      <GalleryLightbox images={lightboxImages} isOpen={lightboxOpen} initialIndex={lightboxIndex} onClose={() => setLightboxOpen(false)} variant={data.lightboxVariant ?? 1} />
+      <GalleryLightbox images={lightboxImages} isOpen={lightboxOpen} initialIndex={lightboxIndex} onClose={() => setLightboxOpen(false)} variant={data.lightboxVariant ?? 1} zoomEnabled={data.galleryZoomEnabled === true} />
       {/* 네비게이션 프리뷰 */}
       {(() => {
         const contacts = [
@@ -6411,16 +6419,19 @@ export default function TheSimplePreview({ data, skipIntroBgFade, onVideoPlay, o
 /* ==========================================================================
  * GalleryLightbox — 9 variant 갤러리 뷰어
  * ========================================================================== */
-function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1 }: {
+function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1, zoomEnabled = true }: {
   images: string[]
   isOpen: boolean
   initialIndex: number
   onClose: () => void
   variant?: number
+  zoomEnabled?: boolean
 }) {
   const [idx, setIdx] = useState(initialIndex)
   const [animClass, setAnimClass] = useState('')
   const [transitioning, setTransitioning] = useState(false)
+  // 사진 확대(줌) 중에는 스와이프/탭 네비게이션을 막는다
+  const [zoomed, setZoomed] = useState(false)
   const touchStartX = useRef(0)
   const overlayRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -6434,6 +6445,7 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1 }:
       setIdx(initialIndex)
       setAnimClass('')
       setTransitioning(false)
+      setZoomed(false)
     }
   }, [initialIndex, isOpen, variant])
 
@@ -6523,13 +6535,31 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1 }:
     )
   }
 
-  // 공통 터치/스와이프 핸들러
+  // 공통 터치/스와이프 핸들러 (줌 중에는 스와이프 비활성 → 패닝 우선)
   const touchProps = {
     onTouchStart: (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX },
     onTouchEnd: (e: React.TouchEvent) => {
+      if (zoomed) return
       const diff = e.changedTouches[0].clientX - touchStartX.current
       if (Math.abs(diff) > 50) { diff < 0 ? goNext() : goPrev() }
     },
+  }
+
+  // 탭하여 다음 사진 (줌 중에는 비활성)
+  const tapNext = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (zoomed) return
+    goNext()
+  }
+
+  // 메인 이미지 렌더러 — zoomEnabled 시 ZoomableImage(핀치/더블탭 줌), 아니면 기존 <img>
+  // 주의: 컴포넌트가 아닌 렌더 함수로 유지 (render 중 컴포넌트 생성 금지 규칙 회피)
+  const renderMainImage = (src: string, imgClass = '') => {
+    if (zoomEnabled) {
+      return <ZoomableImage src={src} className="ts-lb-zoom" onZoomChange={setZoomed} />
+    }
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={src} alt="" className={`ts-lb-img ${imgClass} ${animClass}`.trim()} draggable={false} />
   }
 
   // === V9: 필름 스트립 (좌우 캐러셀 — 중앙 사진 슬라이드) ===
@@ -6566,8 +6596,8 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1 }:
           <span className="ts-lb-topbar-title">Gallery</span>
           <button className="ts-lb-topbar-close" onClick={onClose}>&times;</button>
         </div>
-        <div className="ts-lb-image-wrap" onClick={e => { e.stopPropagation(); goNext() }} {...touchProps}>
-          {images[idx] && <img src={images[idx]} alt="" className={`ts-lb-img ${animClass}`} draggable={false} />}
+        <div className="ts-lb-image-wrap" onClick={tapNext} {...touchProps}>
+          {images[idx] && renderMainImage(images[idx])}
         </div>
         <div className="ts-lb-counter">{pad(idx + 1)} / {pad(images.length)}</div>
         <div className="ts-lb-progress">
@@ -6582,8 +6612,8 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1 }:
     return (
       <div ref={overlayRef} className="ts-lightbox ts-lb--v2" onContextMenu={preventContext} onClick={onClose}>
         <button className="ts-lb-topbar-close ts-lb-v2-close" onClick={onClose}>&times;</button>
-        <div className="ts-lb-image-wrap ts-lb-v2-wrap" onClick={e => { e.stopPropagation(); goNext() }} {...touchProps}>
-          {images[idx] && <img src={images[idx]} alt="" className={`ts-lb-img ts-lb-v2-img ${animClass}`} draggable={false} />}
+        <div className="ts-lb-image-wrap ts-lb-v2-wrap" onClick={tapNext} {...touchProps}>
+          {images[idx] && renderMainImage(images[idx], "ts-lb-v2-img")}
         </div>
         <div className="ts-lb-v2-dots">
           {images.map((_, i) => (
@@ -6598,8 +6628,8 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1 }:
   if (v === 5) {
     return (
       <div ref={overlayRef} className="ts-lightbox ts-lb--v5" onContextMenu={preventContext} onClick={onClose}>
-        <div className="ts-lb-image-wrap ts-lb-v5-wrap" onClick={e => { e.stopPropagation(); goNext() }} {...touchProps}>
-          {images[idx] && <img src={images[idx]} alt="" className={`ts-lb-img ts-lb-v5-img ${animClass}`} draggable={false} />}
+        <div className="ts-lb-image-wrap ts-lb-v5-wrap" onClick={tapNext} {...touchProps}>
+          {images[idx] && renderMainImage(images[idx], "ts-lb-v5-img")}
         </div>
       </div>
     )
@@ -6612,7 +6642,7 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1 }:
         <button className="ts-lb-topbar-close ts-lb-v6-close" onClick={onClose}>&times;</button>
         <div className="ts-lb-image-wrap ts-lb-v6-wrap" onClick={e => e.stopPropagation()} {...touchProps}>
           <button className="ts-lb-v6-arrow ts-lb-v6-arrow--prev" onClick={e => { e.stopPropagation(); goPrev() }} aria-label="이전">&#8249;</button>
-          {images[idx] && <img src={images[idx]} alt="" className={`ts-lb-img ${animClass}`} draggable={false} />}
+          {images[idx] && renderMainImage(images[idx])}
           <button className="ts-lb-v6-arrow ts-lb-v6-arrow--next" onClick={e => { e.stopPropagation(); goNext() }} aria-label="다음">&#8250;</button>
         </div>
         <div className="ts-lb-v6-counter">{idx + 1} / {images.length}</div>
@@ -6627,7 +6657,7 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1 }:
         <button className="ts-lb-topbar-close ts-lb-v7-close" onClick={onClose}>&times;</button>
         <div className="ts-lb-image-wrap ts-lb-v7-wrap" onClick={e => e.stopPropagation()} {...touchProps}>
           <button className="ts-lb-v7-arrow ts-lb-v7-arrow--prev" onClick={e => { e.stopPropagation(); goPrev() }} aria-label="이전">&#8249;</button>
-          {images[idx] && <img src={images[idx]} alt="" className={`ts-lb-img ${animClass}`} draggable={false} />}
+          {images[idx] && renderMainImage(images[idx])}
           <button className="ts-lb-v7-arrow ts-lb-v7-arrow--next" onClick={e => { e.stopPropagation(); goNext() }} aria-label="다음">&#8250;</button>
         </div>
         <div className="ts-lb-v7-thumbs" onClick={e => e.stopPropagation()}>
@@ -6655,8 +6685,8 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose, variant = 1 }:
         <span className="ts-lb-topbar-title">Gallery</span>
         <button className="ts-lb-topbar-close" onClick={onClose}>&times;</button>
       </div>
-      <div className="ts-lb-image-wrap" onClick={e => { e.stopPropagation(); goNext() }} {...touchProps}>
-        {images[idx] && <img src={images[idx]} alt="" className={`ts-lb-img ${animClass}`} draggable={false} />}
+      <div className="ts-lb-image-wrap" onClick={tapNext} {...touchProps}>
+        {images[idx] && renderMainImage(images[idx])}
       </div>
       <div className="ts-lb-counter">{pad(idx + 1)} / {pad(images.length)}</div>
       <div className="ts-lb-progress">

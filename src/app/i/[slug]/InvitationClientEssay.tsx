@@ -5,6 +5,7 @@ import RsvpForm from '@/components/invitation/RsvpForm'
 import GuestFloatingButton from '@/components/invitation/GuestFloatingButton'
 import type { Invitation } from '@/types/invitation'
 import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
+import ZoomableImage from '@/components/invitation/ZoomableImage'
 import { resolveKoreanFontFamily } from '@/app/editor/the-simple/fontOptions'
 import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
 import '@/components/dday/dday-popup.css'
@@ -99,10 +100,11 @@ function ScrollSection({ children, delay = 0, className = '' }: { children: Reac
 
 // ===== Shared Gallery Components =====
 
-function EssayGalleryViewer({ images, startIndex, onClose }: { images: string[]; startIndex: number; onClose: () => void }) {
+function EssayGalleryViewer({ images, startIndex, onClose, zoomEnabled = true }: { images: string[]; startIndex: number; onClose: () => void; zoomEnabled?: boolean }) {
   const [currentIndex, setCurrentIndex] = useState(startIndex)
   const [visible, setVisible] = useState(false)
   const [imgFade, setImgFade] = useState(true)
+  const [zoomed, setZoomed] = useState(false) // 줌 중엔 좌우 스와이프 비활성화
   const touchStartX = useRef(0)
 
   // 열릴 때 fade-in
@@ -148,9 +150,11 @@ function EssayGalleryViewer({ images, startIndex, onClose }: { images: string[];
   }, [handleClose, goNext, goPrev])
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    if (zoomed) return
     touchStartX.current = e.touches[0].clientX
   }
   const handleTouchEnd = (e: React.TouchEvent) => {
+    if (zoomed) return
     const dx = e.changedTouches[0].clientX - touchStartX.current
     if (Math.abs(dx) > 40) { dx < 0 ? goNext() : goPrev() }
   }
@@ -190,15 +194,30 @@ function EssayGalleryViewer({ images, startIndex, onClose }: { images: string[];
       >&#8249;</div>
 
       {/* Image */}
-      <img
-        src={images[currentIndex]}
-        alt=""
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          maxWidth: '92%', maxHeight: '78%', objectFit: 'contain', filter: 'saturate(0.65)',
-          opacity: imgFade ? 1 : 0, transition: 'opacity 0.3s',
-        }}
-      />
+      {zoomEnabled ? (
+        <div
+          onClick={(e) => e.stopPropagation()}
+          style={{ width: '92%', height: '80vh', opacity: imgFade ? 1 : 0, transition: 'opacity 0.3s' }}
+        >
+          <ZoomableImage
+            key={currentIndex}
+            src={images[currentIndex]}
+            className="essay-zoom-box"
+            imgClassName="essay-zoom-img"
+            onZoomChange={setZoomed}
+          />
+        </div>
+      ) : (
+        <img
+          src={images[currentIndex]}
+          alt=""
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            maxWidth: '92%', maxHeight: '78%', objectFit: 'contain', filter: 'saturate(0.65)',
+            opacity: imgFade ? 1 : 0, transition: 'opacity 0.3s',
+          }}
+        />
+      )}
 
       {/* Next arrow */}
       <div
@@ -229,6 +248,8 @@ const essayGalleryCSS = `
 @media (prefers-reduced-motion: reduce) {
   .essay-gal-item { animation-duration: 0.01ms !important; animation-delay: 0ms !important; }
 }
+.essay-zoom-box { width: 100%; height: 100%; }
+.essay-zoom-img { filter: saturate(0.65); }
 `
 
 // active: false면 애니메이션 대기(투명), true가 되는 순간 지그재그 리빌 시작 (스크롤형 컨셉용)
@@ -362,6 +383,8 @@ function CoverSection({ data, theme }: { data: any; theme: ThemeConfig }) {
   const dayNames = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일']
   const dayOfWeek = dayNames[weddingDate.getDay()]
   const venueName = data.wedding?.venue?.name || ''
+  const showDate = data.wedding?.showDate !== false
+  const showVenue = data.wedding?.showVenue !== false
 
   useEffect(() => { setTimeout(() => setLoaded(true), 100) }, [])
 
@@ -412,13 +435,15 @@ function CoverSection({ data, theme }: { data: any; theme: ThemeConfig }) {
           </div>
           <div className="mt-6 transition-all duration-[1200ms] delay-[900ms]" style={{ opacity: loaded ? 1 : 0 }}>
             <div style={{ width: '24px', height: '1px', background: 'rgba(255,255,255,0.4)', margin: '0 auto 12px' }} />
+            {showDate && (<>
             <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '11px', letterSpacing: '4px', color: 'rgba(255,255,255,0.8)' }}>
               {typedText}<span className="animate-pulse" style={{ color: 'rgba(255,255,255,0.3)' }}>|</span>
             </div>
             <div className="mt-2 transition-all duration-500 delay-[2000ms]" style={{ opacity: loaded ? 1 : 0 }}>
               <div style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '10px', letterSpacing: '3px', color: 'rgba(255,255,255,0.6)' }}>{dayOfWeek}</div>
             </div>
-            {venueName && (
+            </>)}
+            {showVenue && venueName && (
               <div className="mt-3" style={{ fontFamily: "'Okticon', serif", fontSize: '12px', fontStyle: 'italic', color: 'rgba(255,255,255,0.6)' }}>{venueName}</div>
             )}
           </div>
@@ -450,11 +475,13 @@ function CoverSection({ data, theme }: { data: any; theme: ThemeConfig }) {
         </div>
 
         {/* 날짜 */}
+        {showDate && (
         <div className="mt-10 transition-all duration-[1200ms] delay-700" style={{ opacity: loaded ? 1 : 0 }}>
           <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '22px', fontWeight: 400, fontStyle: 'italic', letterSpacing: '2px', color: '#3D3028', textAlign: 'center' }}>
             {typedText}<span className="animate-pulse" style={{ color: 'rgba(0,0,0,0.12)' }}>|</span>
           </div>
         </div>
+        )}
 
         {/* 이름 나란히 */}
         <div className="mt-4 transition-all duration-[1200ms] delay-900" style={{ opacity: loaded ? 1 : 0 }}>
@@ -467,7 +494,7 @@ function CoverSection({ data, theme }: { data: any; theme: ThemeConfig }) {
         </div>
 
         {/* 장소 */}
-        {venueName && (
+        {showVenue && venueName && (
           <div className="mt-10 transition-all duration-[1200ms] delay-[1100ms]" style={{ opacity: loaded ? 1 : 0 }}>
             <div style={{ fontFamily: "'Okticon', serif", fontSize: '16px', fontStyle: 'italic', color: '#5C5040', textAlign: 'center' }}>
               {venueName}
@@ -512,13 +539,15 @@ function CoverSection({ data, theme }: { data: any; theme: ThemeConfig }) {
         <div className="mt-12 transition-all duration-[1200ms] delay-[900ms]" style={{ opacity: loaded ? 1 : 0 }}>
           <div style={{ width: '32px', height: '1px', background: theme.divider, margin: '0 auto 12px' }} />
           <div className="text-center">
+            {showDate && (<>
             <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '12px', letterSpacing: '4px', color: theme.accent }}>
               {typedText}<span className="animate-pulse" style={{ color: theme.divider }}>|</span>
             </div>
             <div className="mt-2 transition-all duration-500 delay-[2000ms]" style={{ opacity: loaded ? 1 : 0 }}>
               <div style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '10px', letterSpacing: '3px', color: theme.gray }}>{dayOfWeek}</div>
             </div>
-            {venueName && (
+            </>)}
+            {showVenue && venueName && (
               <div className="mt-3" style={{ fontFamily: "'Okticon', serif", fontSize: '12px', fontStyle: 'italic', color: theme.gray }}>{venueName}</div>
             )}
           </div>
@@ -572,13 +601,15 @@ function CoverSection({ data, theme }: { data: any; theme: ThemeConfig }) {
         <div className="mt-12 transition-all duration-[1200ms] delay-[900ms]" style={{ opacity: loaded ? 1 : 0 }}>
           <div style={{ width: '32px', height: '1px', background: ec.line, margin: '0 auto 14px' }} />
           <div className="text-center">
+            {showDate && (<>
             <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '12px', letterSpacing: '4px', ...embossStyle('md') }}>
               {typedText}<span className="animate-pulse" style={{ color: ec.line }}>|</span>
             </div>
             <div className="mt-2 transition-all duration-500 delay-[2000ms]" style={{ opacity: loaded ? 1 : 0 }}>
               <div style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '10px', letterSpacing: '3px', ...embossStyle('sm') }}>{dayOfWeek}</div>
             </div>
-            {venueName && (
+            </>)}
+            {showVenue && venueName && (
               <div className="mt-3" style={{ fontFamily: "'Okticon', serif", fontSize: '11px', fontStyle: 'italic', ...embossStyle('sm') }}>{venueName}</div>
             )}
           </div>
@@ -622,6 +653,7 @@ function CoverSection({ data, theme }: { data: any; theme: ThemeConfig }) {
       </div>
 
       {/* Date + Day */}
+      {showDate && (
       <div className="text-center transition-all duration-[1200ms] delay-[1100ms]" style={{ opacity: loaded ? 1 : 0, transform: loaded ? 'translateY(0)' : 'translateY(10px)' }}>
         <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '12px', letterSpacing: '4px', color: theme.accent }}>
           {typedText}<span className="animate-pulse" style={{ color: theme.divider }}>|</span>
@@ -630,6 +662,7 @@ function CoverSection({ data, theme }: { data: any; theme: ThemeConfig }) {
           <div style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '10px', letterSpacing: '3px', color: theme.gray }}>{dayOfWeek}</div>
         </div>
       </div>
+      )}
       {scrollHint}
     </div>
   )
@@ -814,7 +847,7 @@ function DefaultGallerySection({ data, theme }: { data: any; theme: ThemeConfig 
         />
       </div>
       {viewerOpen && (
-        <EssayGalleryViewer images={images} startIndex={viewerIndex} onClose={() => setViewerOpen(false)} />
+        <EssayGalleryViewer images={images} startIndex={viewerIndex} onClose={() => setViewerOpen(false)} zoomEnabled={data.gallery?.zoomEnabled === true} />
       )}
     </div>
   )
@@ -907,6 +940,8 @@ function WeddingInfoSection({ data, theme }: { data: any; theme: ThemeConfig }) 
   const w = data.wedding || {}; const groom = data.groom || {}; const bride = data.bride || {}
   const weddingDate = w.date ? new Date(w.date) : new Date()
   const dayNames = ['일', '월', '화', '수', '목', '금', '토']
+  const showDate = w.showDate !== false
+  const showVenue = w.showVenue !== false
   return (
     <ScrollSection>
       <div className="px-8 py-16" style={{ backgroundColor: theme.background }}>
@@ -919,16 +954,20 @@ function WeddingInfoSection({ data, theme }: { data: any; theme: ThemeConfig }) 
               <div style={{ width: '40px', height: '0.5px', background: theme.divider }} />
             </div>
           </div>
+          {showDate && (
           <div className="text-center mb-8">
             <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '48px', fontWeight: 300, color: theme.heading, lineHeight: 1 }}>{weddingDate.getDate()}</div>
             <div className="es-f13" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '13px', color: theme.gray, marginTop: '8px' }}>{weddingDate.getFullYear()}년 {weddingDate.getMonth() + 1}월 {dayNames[weddingDate.getDay()]}요일</div>
             <div className="es-f13" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '13px', color: theme.text, marginTop: '4px' }}>{w.timeDisplay || ''}</div>
           </div>
+          )}
+          {showVenue && (
           <div className="text-center py-6" style={{ borderTop: `0.5px solid ${theme.divider}`, borderBottom: `0.5px solid ${theme.divider}` }}>
             <div className="es-f16" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '16px', fontWeight: 600, color: theme.heading }}>{w.venue?.name || ''}</div>
             {w.venue?.hall && !w.venue?.hideHall && <div className="es-f13" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '13px', color: theme.text, marginTop: '4px' }}>{w.venue.hall}</div>}
             <div className="es-f12" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '12px', color: theme.gray, marginTop: '8px' }}>{w.venue?.address || ''}</div>
           </div>
+          )}
           {data.sectionVisibility?.parentNames !== false && (groom.father?.name || groom.mother?.name || bride.father?.name || bride.mother?.name) && (
             <div className="mt-8 grid grid-cols-2 gap-6 text-center">
               {['groom', 'bride'].map(side => {
@@ -946,7 +985,7 @@ function WeddingInfoSection({ data, theme }: { data: any; theme: ThemeConfig }) 
               })}
             </div>
           )}
-          {w.venue?.address && (
+          {showVenue && w.venue?.address && (
             <div className="mt-10">
               <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '10px', letterSpacing: '4px', color: theme.gray, marginBottom: '12px', textAlign: 'center' }}>MAP</div>
               <div className="grid grid-cols-3 gap-2">
@@ -963,7 +1002,7 @@ function WeddingInfoSection({ data, theme }: { data: any; theme: ThemeConfig }) 
               </div>
             </div>
           )}
-          {w.directions && (w.directions.car || w.directions.publicTransport) && (
+          {showVenue && w.directions && (w.directions.car || w.directions.publicTransport) && (
             <div className="mt-10">
               <div style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '13px', fontWeight: 600, color: theme.heading, marginBottom: '12px', textAlign: 'center' }}>오시는 길</div>
               <div className="space-y-4">
@@ -1276,6 +1315,7 @@ function PaperCover({ data, onOpen }: { data: any; onOpen: () => void }) {
   const brideName = data.bride?.name || '신부'
   const weddingDate = data.wedding?.date ? new Date(data.wedding.date) : new Date()
   const dateStr = `${weddingDate.getFullYear()}.${String(weddingDate.getMonth() + 1).padStart(2, '0')}.${String(weddingDate.getDate()).padStart(2, '0')}`
+  const showDate = data.wedding?.showDate !== false
 
   useEffect(() => { setTimeout(() => setLoaded(true), 100) }, [])
 
@@ -1304,6 +1344,7 @@ function PaperCover({ data, onOpen }: { data: any; onOpen: () => void }) {
         }}>
           {groomName} & {brideName}
         </div>
+        {showDate && (
         <div style={{
           fontFamily: "'BonmyeongjoSourceHanSerif', serif",
           fontSize: '13px', color: paperColors.muted,
@@ -1311,6 +1352,7 @@ function PaperCover({ data, onOpen }: { data: any; onOpen: () => void }) {
         }}>
           {dateStr}
         </div>
+        )}
       </div>
 
       <div className="absolute bottom-12 left-1/2 -translate-x-1/2" style={{
@@ -1480,7 +1522,7 @@ function PaperGallery({ data }: { data: any }) {
         </PaperReveal>
       </div>
       {viewerOpen && (
-        <EssayGalleryViewer images={images} startIndex={viewerIndex} onClose={() => setViewerOpen(false)} />
+        <EssayGalleryViewer images={images} startIndex={viewerIndex} onClose={() => setViewerOpen(false)} zoomEnabled={data.gallery?.zoomEnabled === true} />
       )}
     </div>
   )
@@ -1493,6 +1535,8 @@ function PaperInvitationInfo({ data }: { data: any }) {
   const bride = data.bride || {}
   const weddingDate = w.date ? new Date(w.date) : new Date()
   const dayNames = ['일', '월', '화', '수', '목', '금', '토']
+  const showDate = w.showDate !== false
+  const showVenue = w.showVenue !== false
   const { typed, showCursor } = useTypingEffect(
     `${weddingDate.getFullYear()}.${String(weddingDate.getMonth() + 1).padStart(2, '0')}.${String(weddingDate.getDate()).padStart(2, '0')}`,
     35, 300
@@ -1505,6 +1549,7 @@ function PaperInvitationInfo({ data }: { data: any }) {
           <div style={{ width: '100%', height: '1px', background: paperColors.accent, marginBottom: '40px' }} />
         </PaperReveal>
 
+        {showDate && (
         <PaperReveal delay={100}>
           <div style={{
             fontFamily: "'BonmyeongjoSourceHanSerif', serif",
@@ -1514,7 +1559,9 @@ function PaperInvitationInfo({ data }: { data: any }) {
             {typed}{showCursor && <span style={{ animation: 'blink 0.8s step-end infinite' }}>|</span>}
           </div>
         </PaperReveal>
+        )}
 
+        {showDate && (
         <PaperReveal delay={200}>
           <div className="es-f15" style={{
             fontFamily: "'Pretendard', sans-serif",
@@ -1524,7 +1571,9 @@ function PaperInvitationInfo({ data }: { data: any }) {
             <div>{w.timeDisplay || ''}</div>
           </div>
         </PaperReveal>
+        )}
 
+        {showVenue && (
         <PaperReveal delay={300}>
           <div style={{ marginTop: '28px' }}>
             <div className="es-f16" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '16px', fontWeight: 600, color: paperColors.charcoal }}>{w.venue?.name || ''}</div>
@@ -1532,6 +1581,7 @@ function PaperInvitationInfo({ data }: { data: any }) {
             <div className="es-f12" style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '12px', color: paperColors.muted, marginTop: '8px' }}>{w.venue?.address || ''}</div>
           </div>
         </PaperReveal>
+        )}
 
         {data.sectionVisibility?.parentNames !== false && (groom.father?.name || groom.mother?.name || bride.father?.name || bride.mother?.name) && (
           <PaperReveal delay={400}>
@@ -1552,7 +1602,7 @@ function PaperInvitationInfo({ data }: { data: any }) {
           </PaperReveal>
         )}
 
-        {w.venue?.address && (
+        {showVenue && w.venue?.address && (
           <PaperReveal delay={500}>
             <div className="mt-10">
               <div className="grid grid-cols-3 gap-2">
@@ -1571,7 +1621,7 @@ function PaperInvitationInfo({ data }: { data: any }) {
           </PaperReveal>
         )}
 
-        {w.directions && (w.directions.car || w.directions.publicTransport) && (
+        {showVenue && w.directions && (w.directions.car || w.directions.publicTransport) && (
           <PaperReveal delay={600}>
             <div className="mt-8 space-y-4 text-left">
               {[{ key: 'car', label: '자가용' }, { key: 'publicTransport', label: '대중교통' }].map(d => w.directions[d.key] && (
@@ -2371,13 +2421,15 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
     gallery: () => (data.gallery?.images?.length > 0 && data.sectionVisibility?.gallery !== false) ? [{ id: 'gallery', type: 'gallery', title: '갤러리' }] : [],
     info: () => {
       if (data.sectionVisibility?.info === false) return []
+      const showDate = data.wedding?.showDate !== false
+      const showVenue = data.wedding?.showVenue !== false
       const result: BookPage[] = [
         { id: 'info-intro', type: 'info-intro', title: '예식 안내' },
         { id: 'date-essay', type: 'date-essay' as any, title: '날짜 에세이' },
-        { id: 'wedding-date', type: 'wedding-date' as any, title: '그 날' },
-        { id: 'venue-essay', type: 'venue-essay' as any, title: '장소 에세이' },
-        { id: 'wedding-venue', type: 'wedding-venue' as any, title: '그 곳' },
       ]
+      if (showDate) result.push({ id: 'wedding-date', type: 'wedding-date' as any, title: '그 날' })
+      result.push({ id: 'venue-essay', type: 'venue-essay' as any, title: '장소 에세이' })
+      if (showVenue) result.push({ id: 'wedding-venue', type: 'wedding-venue' as any, title: '그 곳' })
       if (enabledInfoItems.length > 0 && data.sectionVisibility?.guidance !== false) {
         result.push({ id: 'guidance', type: 'guidance' as any, title: '안내' })
       }
@@ -3014,6 +3066,7 @@ function BookConcept({ data, invitationId, isSample, skipIntro }: { data: any; i
           onOpenModal={setOpenModalType}
           bookColors={bookColors}
           sectionVisibility={data?.sectionVisibility}
+          showVenue={data?.wedding?.showVenue !== false}
         />
       )}
 
@@ -3054,7 +3107,7 @@ function BookFullscreenModal({ type, onChangeType, onClose, data, invitationId, 
   const tabs: { key: ModalTab; label: string }[] = [
     contacts.length > 0 ? { key: 'contact', label: '연락하기' } : null,
     data.rsvpEnabled ? { key: 'rsvp', label: '참석여부' } : null,
-    { key: 'location', label: '오시는길' },
+    data.wedding?.showVenue !== false ? { key: 'location', label: '오시는길' } : null,
     accounts.length > 0 ? { key: 'account', label: '마음전하기' } : null,
     { key: 'share', label: '공유하기' },
   ].filter(Boolean) as { key: ModalTab; label: string }[]
@@ -3371,6 +3424,8 @@ function BookCover({ data, onNext }: { data: any; onNext: () => void }) {
   const weddingDate = data.wedding?.date ? new Date(data.wedding.date) : new Date()
   const dateStr = `${weddingDate.getFullYear()}.${String(weddingDate.getMonth() + 1).padStart(2, '0')}.${String(weddingDate.getDate()).padStart(2, '0')}`
   const venueName = data.wedding?.venue?.name || ''
+  const showDate = data.wedding?.showDate !== false
+  const showVenue = data.wedding?.showVenue !== false
 
   useEffect(() => { setTimeout(() => setLoaded(true), 200) }, [])
 
@@ -3418,8 +3473,8 @@ function BookCover({ data, onNext }: { data: any; onNext: () => void }) {
           </div>
           <div className="mt-4">
             <div style={{ width: '30px', height: '0.5px', background: 'rgba(255,255,255,0.4)', margin: '0 auto 12px' }} />
-            <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '12px', letterSpacing: '4px', color: 'rgba(255,255,255,0.7)' }}>{dateStr}</div>
-            {venueName && (
+            {showDate && <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '12px', letterSpacing: '4px', color: 'rgba(255,255,255,0.7)' }}>{dateStr}</div>}
+            {showVenue && venueName && (
               <div className="mt-2" style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '11px', letterSpacing: '2px', color: 'rgba(255,255,255,0.5)' }}>{venueName}</div>
             )}
           </div>
@@ -3469,8 +3524,8 @@ function BookCover({ data, onNext }: { data: any; onNext: () => void }) {
           {/* 날짜 + 장소 */}
           <div className="text-center">
             <div style={{ width: '40px', height: '0.5px', background: '#ccc', margin: '0 auto 12px' }} />
-            <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '12px', letterSpacing: '4px', color: '#999' }}>{dateStr}</div>
-            {venueName && (
+            {showDate && <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '12px', letterSpacing: '4px', color: '#999' }}>{dateStr}</div>}
+            {showVenue && venueName && (
               <div className="mt-2" style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '11px', letterSpacing: '2px', color: '#999' }}>{venueName}</div>
             )}
           </div>
@@ -3502,9 +3557,11 @@ function BookCover({ data, onNext }: { data: any; onNext: () => void }) {
         </div>
 
         {/* 날짜 - 크고 이탤릭 */}
+        {showDate && (
         <div className="mt-8 text-center" style={{ opacity: loaded ? 1 : 0, transition: 'opacity 0.8s 0.7s' }}>
           <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '20px', fontWeight: 400, fontStyle: 'italic', letterSpacing: '2px', color: '#3D3028' }}>{dateStr}</div>
         </div>
+        )}
 
         {/* 이름 나란히 + ARE GETTING MARRIED */}
         <div className="mt-3 text-center" style={{ opacity: loaded ? 1 : 0, transition: 'opacity 0.8s 0.8s' }}>
@@ -3513,7 +3570,7 @@ function BookCover({ data, onNext }: { data: any; onNext: () => void }) {
         </div>
 
         {/* 장소 */}
-        {venueName && (
+        {showVenue && venueName && (
           <div className="mt-8" style={{ opacity: loaded ? 1 : 0, transition: 'opacity 0.8s 1s' }}>
             <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '13px', letterSpacing: '2px', color: '#5C5040', textAlign: 'center' }}>{venueName}</div>
           </div>
@@ -3571,8 +3628,8 @@ function BookCover({ data, onNext }: { data: any; onNext: () => void }) {
         </div>
         <div className="mt-6">
           <div style={{ width: '30px', height: '0.5px', background: bkEc.line, margin: '0 auto 12px' }} />
-          <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '12px', letterSpacing: '4px', ...bkEmbossStyle('sm') }}>{dateStr}</div>
-          {venueName && (
+          {showDate && <div style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '12px', letterSpacing: '4px', ...bkEmbossStyle('sm') }}>{dateStr}</div>}
+          {showVenue && venueName && (
             <div className="mt-2" style={{ fontFamily: "'BonmyeongjoSourceHanSerif', serif", fontSize: '11px', letterSpacing: '2px', ...bkEmbossStyle('sm') }}>{venueName}</div>
           )}
         </div>
@@ -3650,7 +3707,7 @@ function BookIntro({ data, onOpenModal }: { data: any; onOpenModal?: (modal: 'co
   const navItems = [
     sv?.contacts !== false ? { modal: 'contact' as const, label: '연락하기', icon: <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" /></svg> } : null,
     data?.rsvpEnabled && sv?.rsvp !== false ? { modal: 'rsvp' as const, label: '참석여부', icon: <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> } : null,
-    { modal: 'location' as const, label: '오시는길', icon: <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg> },
+    data?.wedding?.showVenue !== false ? { modal: 'location' as const, label: '오시는길', icon: <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg> } : null,
     sv?.bankAccounts !== false ? { modal: 'account' as const, label: '마음전하기', icon: <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg> } : null,
   ].filter(Boolean) as { modal: 'contact' | 'rsvp' | 'location' | 'account'; label: string; icon: React.ReactNode }[]
 
@@ -3980,7 +4037,7 @@ function BookGallery({ data }: { data: any }) {
         </BA>
       </div>
       {viewerOpen && (
-        <EssayGalleryViewer images={images} startIndex={viewerIndex} onClose={() => setViewerOpen(false)} />
+        <EssayGalleryViewer images={images} startIndex={viewerIndex} onClose={() => setViewerOpen(false)} zoomEnabled={data.gallery?.zoomEnabled === true} />
       )}
     </div>
   )
@@ -4149,8 +4206,8 @@ function BookInfoIntro({ data }: { data: any }) {
           <p style={{ fontFamily: "'Pretendard', sans-serif", fontSize: '22px', fontWeight: 300, color: '#fff', lineHeight: 1.8, marginBottom: '16px' }}>예식 안내</p>
         </div>
         <div style={{ opacity: 0, animation: 'bkFadeIn 1.4s ease-out 800ms forwards' }}>
-          <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.9)', letterSpacing: '1px', lineHeight: 2 }}>{dateStr}</p>
-          {venueName && <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', marginTop: '4px' }}>{venueName}</p>}
+          {data.wedding?.showDate !== false && <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.9)', letterSpacing: '1px', lineHeight: 2 }}>{dateStr}</p>}
+          {data.wedding?.showVenue !== false && venueName && <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', marginTop: '4px' }}>{venueName}</p>}
         </div>
       </div>
     </div>
@@ -4734,10 +4791,11 @@ function BookRsvp({ data, invitationId }: { data: any; invitationId: string }) {
 }
 
 // -- Book: Floating Actions (+ 버튼 → 축의금/연락처) --
-function BookFloatingActions({ onOpenModal, bookColors, sectionVisibility }: {
+function BookFloatingActions({ onOpenModal, bookColors, sectionVisibility, showVenue = true }: {
   onOpenModal: (modal: 'contact' | 'rsvp' | 'location' | 'account') => void
   bookColors: ReturnType<typeof getBookColors>
   sectionVisibility?: any
+  showVenue?: boolean
 }) {
   const [expanded, setExpanded] = useState(false)
   const sv = sectionVisibility
@@ -4751,9 +4809,9 @@ function BookFloatingActions({ onOpenModal, bookColors, sectionVisibility }: {
     hasContact ? { modal: 'contact' as const, label: '연락처',
       icon: <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" /></svg>
     } : null,
-    { modal: 'location' as const, label: '오시는길',
+    showVenue ? { modal: 'location' as const, label: '오시는길',
       icon: <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
-    },
+    } : null,
     sv?.rsvp !== false ? { modal: 'rsvp' as const, label: '참석여부',
       icon: <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
     } : null,
@@ -5115,7 +5173,7 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
         {hasBgm && <audio ref={audioRef} loop preload="auto"><source src={bgm.url} type="audio/mpeg" /></audio>}
         {hasBgm && <EssayMusicToggle audioRef={audioRef} theme={theme} showNotification={bgm.showNotification} notificationText={bgm.notificationText} />}
         </div>
-        {showDdayPopup && ddayPopup?.enabled && (
+        {showDdayPopup && ddayPopup?.enabled && data.wedding?.showDate !== false && (
           <DdayPopupOverlay
             data={ddayPopup}
             weddingDate={data.wedding?.date}
@@ -5175,7 +5233,7 @@ export default function InvitationClientEssay({ invitation, content, isPaid, isP
         {hasBgm && <audio ref={audioRef} loop preload="auto"><source src={bgm.url} type="audio/mpeg" /></audio>}
         {hasBgm && <EssayMusicToggle audioRef={audioRef} theme={theme} showNotification={bgm.showNotification} notificationText={bgm.notificationText} />}
         </div>
-        {showDdayPopup && ddayPopup?.enabled && (
+        {showDdayPopup && ddayPopup?.enabled && data.wedding?.showDate !== false && (
           <DdayPopupOverlay
             data={ddayPopup}
             weddingDate={data.wedding?.date}

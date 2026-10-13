@@ -25,6 +25,9 @@ export interface FeedInvitationData {
   // Gallery preview count in All mode (3 or 6)
   galleryPreviewCount: 3 | 6
 
+  // Gallery options (couple-controlled)
+  gallery?: { zoomEnabled?: boolean }  // 라이트박스 사진 확대(줌) 허용 (기본 true)
+
   // Couple info
   groom: {
     name: string
@@ -62,6 +65,8 @@ export interface FeedInvitationData {
     date: string
     time: string
     timeDisplay: string
+    showDate?: boolean   // 날짜·시간 표시 (기본 true, 노웨딩 시 false)
+    showVenue?: boolean  // 장소·오시는 길 표시 (기본 true)
     venue: {
       name: string
       hall: string
@@ -213,9 +218,11 @@ const defaultData: FeedInvitationData = {
   },
   wedding: {
     date: '2026-06-20', time: '12:00', timeDisplay: '오후 12시',
+    showDate: true, showVenue: true,
     venue: { name: '더채플앳청담', hall: '그랜드볼룸', address: '' },
     directions: { car: '', publicTransport: '', train: '', expressBus: '' },
   },
+  gallery: { zoomEnabled: false },
   media: { coverImage: '', coverImages: [] },
   content: {
     greeting: '소중한 분들을 초대합니다.\n\n서로 다른 두 사람이 만나\n하나의 길을 걸어가려 합니다.\n함께 축복해 주시면 감사하겠습니다.',

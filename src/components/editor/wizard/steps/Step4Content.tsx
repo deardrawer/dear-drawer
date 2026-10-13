@@ -1449,6 +1449,15 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
           </details>
         </div>
 
+        {/* 사진 확대(줌) 허용 토글 */}
+        <div className="flex items-center justify-between">
+          <div>
+            <Label className="text-sm font-medium">사진 확대(줌) 허용</Label>
+            <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>하객이 갤러리 사진을 크게 열면 핀치·더블탭으로 확대할 수 있어요</p>
+          </div>
+          <Switch checked={invitation.gallery.zoomEnabled === true} onCheckedChange={(c) => updateNestedField('gallery.zoomEnabled', c)} />
+        </div>
+
         <MultiImageUploader
           images={invitation.gallery.images}
           onChange={(images) => {

@@ -298,6 +298,10 @@ export interface TheSimpleInvitationData {
       hall: string
       address: string
     }
+    // 하객에게 날짜·시간·D-Day(예식 정보 섹션) 표시 여부 (기본 ON, 미설정=표시)
+    showDate?: boolean
+    // 하객에게 장소·오시는 길(오시는 길 섹션) 표시 여부 (기본 ON, 미설정=표시)
+    showVenue?: boolean
   }
 
   // 섹션별 콘텐츠 (인트로 · 인사말 · ...)
@@ -362,6 +366,9 @@ export interface TheSimpleInvitationData {
   // 1=에디토리얼, 2=글라스, 4=룩북, 5=시네마, 6=미니멀, 7=매거진, 9=필름
   lightboxVariant?: number
 
+  // 갤러리 라이트박스 사진 확대(핀치/더블탭 줌) 허용 (기본 ON, 미설정=허용)
+  galleryZoomEnabled?: boolean
+
   // 커버 (Tap to Open) variant (0=없음, 1~10)
   coverVariant?: number
 
@@ -423,6 +430,8 @@ const defaultData: TheSimpleInvitationData = {
     time: '13:00',
     timeDisplay: '오후 1시',
     venue: { name: '', hall: '', address: '' },
+    showDate: true,
+    showVenue: true,
   },
   sections: {
     intro: {
@@ -553,6 +562,7 @@ const defaultData: TheSimpleInvitationData = {
     gallery: 'Gallery',
   },
   lightboxVariant: 1,
+  galleryZoomEnabled: false,
   coverVariant: 0,
   dividerVariant: 1,
   pointColor: '#B8A88A',
@@ -2276,6 +2286,10 @@ function TheSimpleEditorContent() {
                           return (
                             <InfoEditor
                               value={data.sections.info}
+                              showDate={data.wedding.showDate}
+                              onShowDateChange={(next) =>
+                                updateNested('wedding', { showDate: next })
+                              }
                               onChange={(next) =>
                                 updateData({
                                   sections: { ...data.sections, info: next },
@@ -2290,6 +2304,10 @@ function TheSimpleEditorContent() {
                           return (
                             <DirectionEditor
                               value={data.sections.direction}
+                              showVenue={data.wedding.showVenue}
+                              onShowVenueChange={(next) =>
+                                updateNested('wedding', { showVenue: next })
+                              }
                               onChange={(next) =>
                                 updateData({
                                   sections: { ...data.sections, direction: next },
@@ -2702,6 +2720,19 @@ function TheSimpleEditorContent() {
                                   )
                                 })}
                               </div>
+                            </div>
+                            {/* 사진 확대(줌) 허용 */}
+                            <div className="mt-3 pt-3 border-t border-stone-200 space-y-1.5">
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={data.galleryZoomEnabled === true}
+                                  onChange={(e) => updateData({ galleryZoomEnabled: e.target.checked })}
+                                  className="accent-stone-600 w-3.5 h-3.5"
+                                />
+                                <span className="text-[11px] text-stone-600">사진 확대(줌) 허용</span>
+                              </label>
+                              <p className="text-[10px] text-stone-400 leading-relaxed">라이트박스에서 핀치 · 더블탭으로 사진을 확대할 수 있습니다</p>
                             </div>
                           </div>
                         )

@@ -604,6 +604,18 @@ export default function ParentsStep3Content({
         <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>신랑신부 사진을 추가하세요. (최대 30장)</p>
         <p className="text-xs text-gray-500">사진이 2장 이상이면 드래그하여 순서를 변경할 수 있습니다.</p>
 
+        {/* 사진 확대(줌) 허용 토글 */}
+        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div>
+            <p className="text-sm font-medium">사진 확대(줌) 허용</p>
+            <p className="text-xs text-gray-500">사진을 눌러 크게 볼 때 핀치/더블탭 확대 사용</p>
+          </div>
+          <Switch
+            checked={data.gallery?.zoomEnabled === true}
+            onCheckedChange={(checked) => updateNestedData('gallery.zoomEnabled', checked)}
+          />
+        </div>
+
         {(() => {
           const images = data.gallery?.images || []
           const sortableIds = images.map((_, i) => `gallery-img-${i}`)
@@ -766,6 +778,18 @@ export default function ParentsStep3Content({
         </h3>
         <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>결혼식 날짜, 시간, 장소를 입력해주세요.</p>
 
+        {/* 날짜·시간 표시 토글 */}
+        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div>
+            <p className="text-sm font-medium">날짜 · 시간 표시</p>
+            <p className="text-xs text-gray-500">본문의 날짜/달력/D-Day 표시</p>
+          </div>
+          <Switch
+            checked={data.wedding.showDate !== false}
+            onCheckedChange={(checked) => updateNestedData('wedding.showDate', checked)}
+          />
+        </div>
+
         {/* 날짜/시간 */}
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
@@ -786,6 +810,18 @@ export default function ParentsStep3Content({
               placeholder="오후 12시"
             />
           </div>
+        </div>
+
+        {/* 장소·오시는 길 표시 토글 */}
+        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div>
+            <p className="text-sm font-medium">장소 · 오시는 길 표시</p>
+            <p className="text-xs text-gray-500">예식장/지도/교통편 안내 표시</p>
+          </div>
+          <Switch
+            checked={data.wedding.showVenue !== false}
+            onCheckedChange={(checked) => updateNestedData('wedding.showVenue', checked)}
+          />
         </div>
 
         {/* 장소 */}

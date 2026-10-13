@@ -12,6 +12,7 @@ import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
 import { YouTubeLite } from '@/components/invitation/YouTubeLite'
 import { resolveKoreanFontFamily } from '@/app/editor/the-simple/fontOptions'
 import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
+import ZoomableImage from '@/components/invitation/ZoomableImage'
 import '@/components/dday/dday-popup.css'
 
 // Preview context - skip scroll reveal animations in editor preview
@@ -429,10 +430,12 @@ function VinylRecordCover({ invitation, fonts, tc, onEnter, colorTheme }: {
         <p style={{ fontFamily: fonts.displayKr, fontSize: '12px', letterSpacing: '2px', color: coverTextColor ? `${coverTextColor}CC` : (isLightCover ? `${tc.text}B0` : 'rgba(255,255,255,0.7)') }}>
           {groomName} & {brideName}
         </p>
+        {invitation.wedding?.showDate !== false && (
         <p style={{ fontFamily: fonts.display, fontSize: '10px', letterSpacing: '2px', color: coverTextColor ? `${coverTextColor}99` : (isLightCover ? `${tc.text}80` : 'rgba(255,255,255,0.5)'), marginTop: '6px' }}>
           {dateStr}
         </p>
-        {invitation.wedding?.venue?.name && (
+        )}
+        {invitation.wedding?.showVenue !== false && invitation.wedding?.venue?.name && (
           <p style={{ fontFamily: fonts.body, fontSize: '10px', color: coverTextColor ? `${coverTextColor}80` : (isLightCover ? `${tc.text}60` : 'rgba(255,255,255,0.4)'), marginTop: '4px' }}>
             {invitation.wedding.venue.name}
           </p>
@@ -1452,7 +1455,7 @@ function TrackWeddingDay({ invitation, fonts, tc, trackRef, bgOverride, trackNum
             </div>
 
             {/* Large date */}
-            {date && (
+            {w.showDate !== false && date && (
               <div className="text-center mb-6">
                 <p style={{ fontFamily: fonts.display, fontSize: '28px', fontWeight: 300, letterSpacing: '3px', color: tc.cardText, lineHeight: 1.2 }}>
                   {String(date.getFullYear()).slice(2)}.{String(date.getMonth() + 1).padStart(2, '0')}.{String(date.getDate()).padStart(2, '0')}
@@ -1525,6 +1528,7 @@ function TrackWeddingDay({ invitation, fonts, tc, trackRef, bgOverride, trackNum
           </div>
 
           {/* Venue section (below tear line) */}
+          {w.showVenue !== false && (
           <div style={{ padding: '16px 20px 20px' }}>
             <div style={{ background: tc.sectionBg, borderRadius: '10px', padding: '16px', textAlign: 'center', marginBottom: '12px' }}>
               <div style={{ fontFamily: fonts.display, fontSize: '7px', letterSpacing: '4px', color: tc.cardAccent, marginBottom: '8px' }}>{dt('VENUE')}</div>
@@ -1618,6 +1622,7 @@ function TrackWeddingDay({ invitation, fonts, tc, trackRef, bgOverride, trackNum
               </div>
             )}
           </div>
+          )}
 
           {/* Bottom perforation */}
           <div className="flex justify-between px-2" style={{ transform: 'translateY(50%)' }}>
@@ -2043,9 +2048,9 @@ function RsvpSection({ invitation, invitationId, fonts, tc, bgOverride }: {
           </span>
           <h3 style={{ fontFamily: fonts.display, fontSize: '13px', fontWeight: 500, letterSpacing: '5px', color: tc.cardAccent }}>{dt('RSVP')}</h3>
           <div style={{ width: '20px', height: '1px', background: tc.cardAccent, margin: '10px auto 0', opacity: 0.5 }} />
-          {date && (
+          {((w.showDate !== false && date) || w.showVenue !== false) && (
             <p style={{ fontFamily: fonts.body, fontSize: '11px', color: tc.gray, marginTop: '8px' }}>
-              {String(date.getFullYear()).slice(2)}.{String(date.getMonth()+1).padStart(2,'0')}.{String(date.getDate()).padStart(2,'0')} {w.venue?.name || ''}
+              {w.showDate !== false && date ? `${String(date.getFullYear()).slice(2)}.${String(date.getMonth()+1).padStart(2,'0')}.${String(date.getDate()).padStart(2,'0')} ` : ''}{w.showVenue !== false ? (w.venue?.name || '') : ''}
             </p>
           )}
           {invitation.rsvpNotice && (
@@ -2384,9 +2389,11 @@ function RecordFooter({ invitation, fonts, tc }: { invitation: any; fonts: FontC
 }
 
 // ===== Lightbox =====
-function GalleryLightbox({ images, isOpen, initialIndex, onClose }: { images: string[]; isOpen: boolean; initialIndex: number; onClose: () => void }) {
+function GalleryLightbox({ images, isOpen, initialIndex, onClose, zoomEnabled = true }: { images: string[]; isOpen: boolean; initialIndex: number; onClose: () => void; zoomEnabled?: boolean }) {
   const [idx, setIdx] = useState(initialIndex)
+  const [zoomed, setZoomed] = useState(false) // 줌 중엔 탭-넘김 비활성화
   useEffect(() => { setIdx(initialIndex) }, [initialIndex])
+  useEffect(() => { if (isOpen) setZoomed(false) }, [isOpen, idx])
 
   useEffect(() => {
     if (!isOpen) return
@@ -2404,17 +2411,32 @@ function GalleryLightbox({ images, isOpen, initialIndex, onClose }: { images: st
 
   if (!isOpen) return null
   const resolved = images.map(extractImageUrl).filter(Boolean)
+  const advance = () => { if (zoomed) return; setIdx((idx + 1) % resolved.length) }
   return (
-    <div className="fixed inset-0 z-[9999] bg-black flex items-center justify-center" onClick={onClose}>
+    <div className="fixed inset-0 z-[9999] bg-black flex items-center justify-center" onClick={() => { if (!zoomed) onClose() }}>
       <button onClick={onClose} className="absolute top-4 right-4 text-white text-2xl z-10 w-10 h-10 flex items-center justify-center">&times;</button>
       <div className="absolute bottom-4 left-0 right-0 text-center text-white text-sm opacity-60">{idx + 1} / {resolved.length}</div>
-      {resolved[idx] && <div className="flex items-center justify-center w-full h-full p-4" style={{ cursor: 'pointer' }} onClick={e => { e.stopPropagation(); setIdx((idx + 1) % resolved.length) }}><img src={resolved[idx]} alt="" className="max-w-full max-h-full object-contain" style={{ pointerEvents: 'none', WebkitTouchCallout: 'none', userSelect: 'none', WebkitUserSelect: 'none' } as React.CSSProperties} /></div>}
+      {resolved[idx] && (
+        zoomEnabled ? (
+          <div className="flex items-center justify-center w-full h-full p-4" onClick={e => { e.stopPropagation(); advance() }}>
+            <ZoomableImage src={resolved[idx]} alt="" className="record-zoomable-box" onZoomChange={setZoomed} />
+          </div>
+        ) : (
+          <div className="flex items-center justify-center w-full h-full p-4" style={{ cursor: 'pointer' }} onClick={e => { e.stopPropagation(); advance() }}><img src={resolved[idx]} alt="" className="max-w-full max-h-full object-contain" style={{ pointerEvents: 'none', WebkitTouchCallout: 'none', userSelect: 'none', WebkitUserSelect: 'none' } as React.CSSProperties} /></div>
+        )
+      )}
     </div>
   )
 }
 
 // ===== CSS =====
 const globalStyles = `
+  /* Gallery lightbox zoomable box (pinch / double-tap) */
+  .record-zoomable-box {
+    width: 100%;
+    height: 80vh;
+  }
+
   .desktop-frame-wrapper {
     min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; background: #F0EDE8;
   }
@@ -3133,13 +3155,14 @@ function InvitationClientRecordContent({
               {currentPage === 'main' && !isPreview && (
                 <>
                   <GuestFloatingButton themeColors={tc} fonts={fonts} openModal="none" onModalClose={() => {}} showTooltip={false} scrollContainerRef={scrollContainerRef}
+                    showLocation={invitation.wedding?.showVenue !== false}
                     navStyle={content?.navStyle || 'hamburger'}
-                    invitation={{ venue_name: invitation.wedding?.venue?.name || '', venue_address: invitation.wedding?.venue?.address || '', contacts, accounts,
-                      directions: invitation.wedding?.directions, rsvpEnabled: invitation.rsvpEnabled, rsvpAllowGuestCount: invitation.rsvpAllowGuestCount,
+                    invitation={{ venue_name: invitation.wedding?.showVenue !== false ? (invitation.wedding?.venue?.name || '') : '', venue_address: invitation.wedding?.showVenue !== false ? (invitation.wedding?.venue?.address || '') : '', contacts, accounts,
+                      directions: invitation.wedding?.showVenue !== false ? invitation.wedding?.directions : undefined, rsvpEnabled: invitation.rsvpEnabled, rsvpAllowGuestCount: invitation.rsvpAllowGuestCount,
                       rsvpMealOption: invitation.rsvpMealOption, rsvpShuttleOption: invitation.rsvpShuttleOption, rsvpAfterPartyOption: invitation.rsvpAfterPartyOption, rsvpNotice: invitation.rsvpNotice,
                       rsvpPhoneOption: invitation.rsvpPhoneOption, rsvpSideDetail: invitation.rsvpSideDetail, rsvpSideDetailOptions: invitation.rsvpSideDetailOptions, rsvpMessagePlaceholder: invitation.rsvpMessagePlaceholder,
                       invitationId: dbInvitation.id, groomName: invitation.groom?.name || '', brideName: invitation.bride?.name || '',
-                      weddingDate: invitation.wedding?.date || '', weddingTime: invitation.wedding?.timeDisplay || invitation.wedding?.time || '',
+                      weddingDate: invitation.wedding?.showDate !== false ? (invitation.wedding?.date || '') : '', weddingTime: invitation.wedding?.showDate !== false ? (invitation.wedding?.timeDisplay || invitation.wedding?.time || '') : '',
                       thumbnailUrl: content?.meta?.kakaoThumbnail || content?.meta?.ogImage || extractImageUrl(invitation.media?.coverImage) || extractImageUrl(invitation.gallery?.images?.[0]) || '',
                       shareTitle: content?.meta?.title, shareDescription: content?.meta?.description, kakaoThumbnailRatio: content?.meta?.kakaoThumbnailRatio }} />
                   <MiniPlayerBar currentTrack={currentTrack} progress={progress} isAudioPlaying={isAudioPlaying} fonts={fonts} tc={tc} />
@@ -3151,12 +3174,12 @@ function InvitationClientRecordContent({
               {invitation.bgm?.enabled && invitation.bgm?.url && (
                 <MusicToggle audioRef={audioRef} isVisible={currentPage === 'main'} shouldAutoPlay={currentPage === 'main' && invitation.bgm?.autoplay === true} tc={tc} showNotification={invitation.bgm?.showNotification} notificationText={invitation.bgm?.notificationText} />
               )}
-              <GalleryLightbox images={invitation.gallery?.images || []} isOpen={lightboxOpen} initialIndex={lightboxIndex} onClose={() => setLightboxOpen(false)} />
+              <GalleryLightbox images={invitation.gallery?.images || []} isOpen={lightboxOpen} initialIndex={lightboxIndex} onClose={() => setLightboxOpen(false)} zoomEnabled={invitation.gallery?.zoomEnabled === true} />
             </div>
           </div>
         </div>
       </div>
-      {showDdayPopup && invitation?.ddayPopup?.enabled && (
+      {showDdayPopup && invitation?.ddayPopup?.enabled && invitation.wedding?.showDate !== false && (
         <DdayPopupOverlay
           data={invitation.ddayPopup}
           weddingDate={invitation.wedding?.date}

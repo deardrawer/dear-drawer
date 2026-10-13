@@ -14,6 +14,7 @@ import IntroAnimation from '@/components/invitation/IntroAnimation'
 import { IntroSettings, getDefaultIntroSettings } from '@/lib/introPresets'
 import { parseHighlight } from '@/lib/textUtils'
 import DdayPopupOverlay from '@/components/dday/DdayPopupOverlay'
+import ZoomableImage from '@/components/invitation/ZoomableImage'
 import { resolveKoreanFontFamily } from '@/app/editor/the-simple/fontOptions'
 import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
 import '@/components/dday/dday-popup.css'
@@ -702,6 +703,13 @@ const globalStyles = `
     align-items: center;
     justify-content: center;
     padding: 20px;
+  }
+
+  .gallery-lightbox-slide .zoomable-box {
+    width: 100%;
+    height: 80vh;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   }
 
   .gallery-lightbox-slide img {
@@ -1923,16 +1931,19 @@ function GalleryLightbox({
   isOpen,
   initialIndex,
   onClose,
+  zoomEnabled = true,
 }: {
   images: string[]
   isOpen: boolean
   initialIndex: number
   onClose: () => void
+  zoomEnabled?: boolean
 }) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex + 1) // +1 for clone
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [isActive, setIsActive] = useState(false) // CSS 페이드인 트리거용
   const slidesRef = useRef<HTMLDivElement>(null)
+  const [zoomed, setZoomed] = useState(false) // 줌 중엔 좌우 스와이프 비활성화
   const touchStartX = useRef(0)
 
   // useLayoutEffect: paint 전에 올바른 슬라이드로 이동 → 깜빡임 방지
@@ -2021,12 +2032,14 @@ function GalleryLightbox({
     }
   }, [isOpen, onClose, goToPrev, goToNext])
 
-  // Touch swipe
+  // Touch swipe (줌 중엔 비활성화)
   const handleTouchStart = (e: React.TouchEvent) => {
+    if (zoomed) return
     touchStartX.current = e.touches[0].clientX
   }
 
   const handleTouchEnd = (e: React.TouchEvent) => {
+    if (zoomed) return
     const diff = touchStartX.current - e.changedTouches[0].clientX
     if (Math.abs(diff) > 50) {
       if (diff > 0) goToNext()
@@ -2068,17 +2081,17 @@ function GalleryLightbox({
         >
           {/* Last clone */}
           <div className="gallery-lightbox-slide">
-            <img src={images[images.length - 1]} alt="갤러리 이미지" />
+            {zoomEnabled ? <ZoomableImage src={images[images.length - 1]} alt="갤러리 이미지" className="zoomable-box" onZoomChange={setZoomed} resetKey={currentIndex} /> : <img src={images[images.length - 1]} alt="갤러리 이미지" />}
           </div>
           {/* Actual slides */}
           {images.map((img, i) => (
             <div key={i} className="gallery-lightbox-slide">
-              <img src={img} alt={`갤러리 이미지 ${i + 1}`} />
+              {zoomEnabled ? <ZoomableImage src={img} alt={`갤러리 이미지 ${i + 1}`} className="zoomable-box" onZoomChange={setZoomed} resetKey={currentIndex} /> : <img src={img} alt={`갤러리 이미지 ${i + 1}`} />}
             </div>
           ))}
           {/* First clone */}
           <div className="gallery-lightbox-slide">
-            <img src={images[0]} alt="갤러리 이미지" />
+            {zoomEnabled ? <ZoomableImage src={images[0]} alt="갤러리 이미지" className="zoomable-box" onZoomChange={setZoomed} resetKey={currentIndex} /> : <img src={images[0]} alt="갤러리 이미지" />}
           </div>
         </div>
 
@@ -3463,6 +3476,8 @@ const mockInvitation = {
     timeDisplay: '오후 2시',
     dayOfWeek: '토요일',
     title: 'OUR WEDDING',
+    showDate: true,
+    showVenue: true,
     venue: {
       name: '더채플앳청담',
       hall: '루체홀 5층',
@@ -3567,6 +3582,7 @@ const mockInvitation = {
       '/demo/gallery5.jpg',
       '/demo/gallery6.jpg',
     ],
+    zoomEnabled: false as boolean | undefined,
   },
 
   media: {
@@ -4043,8 +4059,8 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
           coverImageSettings={invitation.media.coverImageSettings}
           groomName={invitation.groom.name}
           brideName={invitation.bride.name}
-          weddingDate={invitation.wedding.date}
-          venueName={invitation.wedding.venue.name}
+          weddingDate={invitation.wedding.showDate !== false ? invitation.wedding.date : ''}
+          venueName={invitation.wedding.showVenue !== false ? invitation.wedding.venue.name : ''}
           onComplete={handleIntroComplete}
           isComplete={introComplete}
           introDurationMs={4500}
@@ -4130,6 +4146,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
           </h1>
 
           {/* Venue */}
+          {invitation.wedding.showVenue !== false && (
           <p
             style={{
               fontSize: '13px',
@@ -4143,8 +4160,10 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
           >
             {invitation.wedding.venue.name}
           </p>
+          )}
 
           {/* Date */}
+          {invitation.wedding.showDate !== false && (
           <p
             style={{
               fontFamily: fonts.displayKr,
@@ -4158,6 +4177,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
           >
             {formatDateDisplay(invitation.wedding.date)} {invitation.wedding.timeDisplay}
           </p>
+          )}
         </div>
 
         {/* Scroll indicator - matching original template */}
@@ -4302,11 +4322,17 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
 
         {/* Wedding Info Card */}
         <div className="wedding-info-card rounded-2xl px-6 py-7 mb-9" style={{ background: themeColors.cardBg, boxShadow: '0 0 0 1px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.04), 0 4px 8px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.06)' }}>
+          {invitation.wedding.showDate !== false && (
+          <>
           <span className="inline-block text-[9px] font-light px-3 py-1 rounded-full mb-5" style={{ background: '#f0f0f0', color: '#888' }}>Until wedding {calculateDday(invitation.wedding.date)}</span>
           <div className="pb-4 mb-4 border-b border-gray-100">
             <p className="sc-if18 text-lg font-light mb-1" style={{ fontFamily: fonts.displayKr, color: themeColors.text, letterSpacing: '3px' }}>{formatDateShort(invitation.wedding.date)}</p>
             <p className="sc-if11 text-[11px] font-light" style={{ color: '#777' }}>{invitation.wedding.timeDisplay}</p>
           </div>
+          </>
+          )}
+          {invitation.wedding.showVenue !== false && (
+          <>
           <div className="mb-5">
             <p className="sc-if12 text-xs mb-1" style={{ fontFamily: fonts.displayKr, color: themeColors.text, fontWeight: 400 }}>{invitation.wedding.venue.name}{!invitation.wedding.venue.hideHall && ` ${invitation.wedding.venue.hall}`}</p>
             <p className="sc-if10 text-[10px] font-light" style={{ color: '#999' }}>{invitation.wedding.venue.address || '주소를 입력해주세요'}</p>
@@ -4321,6 +4347,8 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
           >
             오시는 길
           </button>
+          </>
+          )}
         </div>
 
         {/* Next Story Navigation */}
@@ -4362,7 +4390,7 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
       )}
 
       {/* Directions Modal */}
-      {showDirections && (
+      {showDirections && invitation.wedding.showVenue !== false && (
         <div className="fixed inset-0 z-[65] flex items-end justify-center">
           <div className="absolute inset-0 bg-black/50" onClick={() => setShowDirections(false)} />
           <div
@@ -5749,6 +5777,7 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
                   onModalClose={() => setOpenModalType('none')}
                   showTooltip={false}
                   scrollContainerRef={scrollContainerRef}
+                  showLocation={invitation.wedding.showVenue !== false}
                   navStyle={currentPage === 'intro' ? 'bottom-nav' : (content?.navStyle || 'hamburger')}
                   navHidden={currentPage === 'intro' && introNavHidden}
                   invitation={{
@@ -5805,6 +5834,7 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
                   isOpen={lightboxOpen}
                   initialIndex={lightboxIndex}
                   onClose={() => setLightboxOpen(false)}
+                  zoomEnabled={invitation.gallery?.zoomEnabled === true}
                 />
               )}
 
@@ -5830,7 +5860,7 @@ function InvitationClientContent({ invitation: dbInvitation, content, isPaid, is
           </div>
         </div>
       </div>
-      {showDdayPopup && invitation.ddayPopup?.enabled && (
+      {showDdayPopup && invitation.ddayPopup?.enabled && invitation.wedding.showDate !== false && (
         <DdayPopupOverlay
           data={invitation.ddayPopup}
           weddingDate={invitation.wedding.date}

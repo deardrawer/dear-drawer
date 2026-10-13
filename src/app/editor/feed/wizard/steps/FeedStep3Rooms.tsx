@@ -12,9 +12,23 @@ interface StepProps {
   invitationId: string | null
 }
 
+function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      className={`relative w-10 h-5 rounded-full transition-colors shrink-0 ${checked ? 'bg-black' : 'bg-gray-300'}`}
+      aria-pressed={checked}
+    >
+      <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${checked ? 'translate-x-5' : ''}`} />
+    </button>
+  )
+}
+
 export default function FeedStep3Rooms({
   data,
   updateData,
+  updateNestedData,
   invitationId,
 }: StepProps) {
   const rooms = data.rooms
@@ -68,6 +82,18 @@ export default function FeedStep3Rooms({
         <p className="text-xs text-gray-500 mt-1">
           컨셉별 사진 컬렉션을 룸으로 구성해요. 룸당 최대 30장까지 추가할 수 있어요.
         </p>
+
+        {/* 사진 확대(줌) 허용 토글 */}
+        <div className="flex items-center justify-between mt-4">
+          <div>
+            <p className="text-sm font-medium text-gray-900">사진 확대(줌) 허용</p>
+            <p className="text-xs text-gray-500">하객이 갤러리 사진을 크게 열면 핀치·더블탭으로 확대할 수 있어요</p>
+          </div>
+          <ToggleSwitch
+            checked={data.gallery?.zoomEnabled === true}
+            onChange={(c) => updateNestedData('gallery.zoomEnabled', c)}
+          />
+        </div>
       </div>
 
       {/* Room list */}

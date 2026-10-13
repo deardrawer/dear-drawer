@@ -222,9 +222,16 @@ export default function EssayStep3Details({ data, updateData, updateNestedData, 
 
       {/* 오시는 길 */}
       <section className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900">
-          오시는 길
-        </h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-semibold text-gray-900">
+            장소 · 오시는 길 표시
+          </h3>
+          <Switch
+            checked={data.wedding.showVenue !== false}
+            onCheckedChange={(checked) => updateNestedData('wedding.showVenue', checked)}
+          />
+        </div>
+        <p className="text-xs text-gray-500">끄면 청첩장에서 예식 장소와 오시는 길 안내가 숨겨집니다.</p>
 
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -644,6 +651,13 @@ export default function EssayStep3Details({ data, updateData, updateNestedData, 
             <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>
               두 사람의 사진을 업로드해 주세요. 에세이 갤러리 섹션에 표시됩니다.
             </p>
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <span className="text-sm text-gray-700">사진 확대(줌) 허용</span>
+              <Switch
+                checked={data.gallery?.zoomEnabled === true}
+                onCheckedChange={(checked) => updateNestedData('gallery.zoomEnabled', checked)}
+              />
+            </div>
             <MultiImageUploader
               images={data.gallery?.images || []}
               onChange={(images) => {

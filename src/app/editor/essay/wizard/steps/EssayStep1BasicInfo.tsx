@@ -5,6 +5,7 @@ import type { EssayInvitationData } from '../../page'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { uploadImage } from '@/lib/imageUpload'
 import { X, Plus, Upload, AlertTriangle } from 'lucide-react'
 import DdayPopupEditor from '@/components/dday/DdayPopupEditor'
@@ -243,6 +244,16 @@ export default function EssayStep1BasicInfo({ data, updateData, updateNestedData
         </h3>
 
         <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+          <div className="flex items-center justify-between pb-1">
+            <div>
+              <p className="text-sm font-medium text-gray-700">날짜 · 시간 표시</p>
+              <p className="text-xs text-gray-500 mt-0.5">끄면 청첩장에서 날짜/시간/D-Day가 숨겨집니다.</p>
+            </div>
+            <Switch
+              checked={data.wedding.showDate !== false}
+              onCheckedChange={(checked) => updateNestedData('wedding.showDate', checked)}
+            />
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">날짜 <span className="text-red-500">*</span></Label>

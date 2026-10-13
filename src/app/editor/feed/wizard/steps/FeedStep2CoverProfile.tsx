@@ -30,6 +30,19 @@ const inputClass =
   'w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-black focus:border-black'
 const labelClass = 'block text-xs font-medium text-gray-600 mb-1.5'
 
+function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      className={`relative w-10 h-5 rounded-full transition-colors shrink-0 ${checked ? 'bg-black' : 'bg-gray-300'}`}
+      aria-pressed={checked}
+    >
+      <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${checked ? 'translate-x-5' : ''}`} />
+    </button>
+  )
+}
+
 export default function FeedStep2CoverProfile({
   data,
   updateNestedData,
@@ -198,6 +211,17 @@ export default function FeedStep2CoverProfile({
         </h3>
 
         <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+          {/* 날짜·시간 표시 토글 (노웨딩) */}
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-900">날짜 · 시간 표시</p>
+              <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>끄면 하객 화면에 날짜·시간을 표시하지 않아요 (노웨딩)</p>
+            </div>
+            <ToggleSwitch
+              checked={data.wedding.showDate !== false}
+              onChange={(c) => updateNestedData('wedding.showDate', c)}
+            />
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <label className={labelClass}>날짜 <span className="text-red-500">*</span></label>
@@ -225,6 +249,18 @@ export default function FeedStep2CoverProfile({
                 </p>
               )}
             </div>
+          </div>
+
+          {/* 장소·오시는길 표시 토글 (노웨딩) */}
+          <div className="flex items-center justify-between pt-1">
+            <div>
+              <p className="text-sm font-medium text-gray-900">장소 · 오시는 길 표시</p>
+              <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>끄면 예식장·오시는 길을 표시하지 않아요</p>
+            </div>
+            <ToggleSwitch
+              checked={data.wedding.showVenue !== false}
+              onChange={(c) => updateNestedData('wedding.showVenue', c)}
+            />
           </div>
 
           <div className="space-y-1.5">

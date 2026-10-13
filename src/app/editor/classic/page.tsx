@@ -54,12 +54,14 @@ export interface ClassicInvitationData {
     date: string
     time: string
     timeDisplay: string
+    showDate?: boolean // 하객 화면에 날짜·시간·D-Day 표시 여부 (기본 true, 노웨딩용)
+    showVenue?: boolean // 하객 화면에 예식장·오시는 길 표시 여부 (기본 true)
     venue: { name: string; hall: string; address: string }
     directions: { car: string; publicTransport: string; train: string; expressBus: string }
   }
 
   // Gallery — 각 사진은 문자열(URL) 또는 크롭 정보를 포함한 객체({url,scale,positionX,positionY})
-  gallery: { images: (string | ClassicPhoto)[] }
+  gallery: { images: (string | ClassicPhoto)[]; zoomEnabled?: boolean } // zoomEnabled: 라이트박스 핀치·더블탭 확대 허용 (기본 true)
 
   // 중첩 content (InvitationClientClassic이 c.content로 읽는 영역)
   content: {

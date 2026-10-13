@@ -333,6 +333,8 @@ export interface InvitationContent {
     title: string
     venue: VenueInfo
     directions: DirectionsInfo
+    showDate?: boolean   // 날짜·시간 표시 (기본 true, false면 노웨딩 숨김)
+    showVenue?: boolean  // 장소·오시는길 표시 (기본 true, false면 숨김)
   }
 
   // ===== 우리의 이야기 =====
@@ -362,6 +364,7 @@ export interface InvitationContent {
   gallery: {
     images: string[]
     imageSettings: ImageSettings[]
+    zoomEnabled?: boolean  // 라이트박스 확대(핀치·더블탭) 허용 (기본 true)
   }
 
   // ===== 미디어 =====
@@ -1473,9 +1476,12 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         // 기본 정보 필수 검증 (기존 Step 2)
         if (!invitation.groom.name?.trim()) errors.push('신랑 이름을 입력해주세요.')
         if (!invitation.bride.name?.trim()) errors.push('신부 이름을 입력해주세요.')
-        if (!invitation.wedding.date) errors.push('결혼 날짜를 선택해주세요.')
-        if (!invitation.wedding.venue.name?.trim()) errors.push('예식장 이름을 입력해주세요.')
-        if (!invitation.wedding.venue.address?.trim()) errors.push('예식장 주소를 입력해주세요.')
+        // 날짜·장소 필수 검증은 표시 옵션이 켜진 경우에만 (노웨딩: 끄면 입력 없이 진행 가능)
+        if (invitation.wedding.showDate !== false && !invitation.wedding.date) errors.push('결혼 날짜를 선택해주세요.')
+        if (invitation.wedding.showVenue !== false) {
+          if (!invitation.wedding.venue.name?.trim()) errors.push('예식장 이름을 입력해주세요.')
+          if (!invitation.wedding.venue.address?.trim()) errors.push('예식장 주소를 입력해주세요.')
+        }
         break
       case 2:
         // 인트로 - 카카오 썸네일 필수 (기존 Step 3)

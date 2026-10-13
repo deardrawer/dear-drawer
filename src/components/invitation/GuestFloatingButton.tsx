@@ -60,6 +60,7 @@ interface GuestFloatingButtonProps {
   navHidden?: boolean
   language?: 'ko' | 'en'
   showShare?: boolean // false면 네비/햄버거의 공유 항목 숨김 (푸터 공유 토글과 연동)
+  showLocation?: boolean // false면 '오시는 길' 항목 숨김 (장소 표시 토글과 연동, 노웨딩)
   invitation: {
     venue_name?: string
     venue_address?: string
@@ -96,7 +97,7 @@ interface GuestFloatingButtonProps {
   }
 }
 
-export default function GuestFloatingButton({ themeColors, fonts, invitation, openModal: externalOpenModal, onModalClose, showTooltip = false, scrollContainerRef, navStyle = 'hamburger', navHidden = false, language, showShare = true }: GuestFloatingButtonProps) {
+export default function GuestFloatingButton({ themeColors, fonts, invitation, openModal: externalOpenModal, onModalClose, showTooltip = false, scrollContainerRef, navStyle = 'hamburger', navHidden = false, language, showShare = true, showLocation = true }: GuestFloatingButtonProps) {
   const isEn = language === 'en'
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false)
   const [activeModal, setActiveModal] = useState<ModalType>('none')
@@ -410,7 +411,7 @@ export default function GuestFloatingButton({ themeColors, fonts, invitation, op
   const menuItems = [
     hasContacts && { key: 'contact', label: isEn ? 'Contact' : '축하 전하기', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg> },
     hasRsvp && { key: 'rsvp', label: isEn ? 'RSVP' : '참석 여부', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
-    { key: 'location', label: isEn ? 'Directions' : '오시는 길', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg> },
+    (showLocation !== false) && { key: 'location', label: isEn ? 'Directions' : '오시는 길', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg> },
     hasAccounts && { key: 'account', label: isEn ? 'Gift' : '마음 전하기', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" /></svg> },
     (showShare !== false) && { key: 'share', label: isEn ? 'Share' : '공유하기', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" /></svg> },
   ].filter(Boolean) as { key: string; label: string; icon: React.ReactElement }[]

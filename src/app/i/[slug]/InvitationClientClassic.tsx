@@ -1974,8 +1974,8 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           )}
         </section>
 
-        {/* ===== VIII. Date ===== */}
-        {dateStyle !== 'classic' ? renderDateVariant() : (
+        {/* ===== VIII. Date ===== (showDate !== false 일 때만 — 노웨딩 옵트아웃) */}
+        {wedding.showDate !== false && (dateStyle !== 'classic' ? renderDateVariant() : (
         <section style={{ order: orderOf('date'), position: 'relative', minHeight: '100dvh', padding: '74px 30px 66px', overflow: 'hidden', ...hide('date'), ...(cc.classicDateBgColor ? { background: cc.classicDateBgColor } : { background: IVORY, ...tintBg('date') }) }}>
           {(() => { const IVORY = dInk; const ivoryA = dInkA; return (<>
           <div className="cl-reveal cl-line" data-delay="100" style={{ position: 'absolute', left: 30, top: 0, bottom: 0, width: 1, background: ivoryA(0.14) }} />
@@ -2025,9 +2025,10 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
           )}
           </>) })()}
         </section>
-        )}
+        ))}
 
-        {/* ===== IX. Directions ===== */}
+        {/* ===== IX. Directions ===== (showVenue !== false 일 때만 — 노웨딩 옵트아웃) */}
+        {wedding.showVenue !== false && (
         <section style={{ order: orderOf('directions'), position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '82px 0', background: IVORY, overflow: 'hidden', ...hide('directions'), ...tintBg('directions') }}>
           <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: '44%', ...cropBg(cc.classicDirectionsBg, { background: 'transparent' }) }} />
           {dirOverlayOp > 0 && <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: '44%', background: `rgb(${hexToRgb(dirOverlay, '28,16,13')})`, opacity: dirOverlayOp, pointerEvents: 'none' }} />}
@@ -2084,6 +2085,7 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
             )}
           </div>
         </section>
+        )}
 
         {/* ===== X. 결혼식 안내 (가이드) ===== */}
         {guideOn && guideList.length > 0 && !hiddenSet.has('guide') && (
@@ -2223,9 +2225,9 @@ export default function InvitationClientClassic({ invitation, content, isPaid, i
         )}
 
         {/* 갤러리 라이트박스 */}
-        <ClassicLightbox images={gallery} index={lbIndex} open={lbOpen} variant={lbVariant} accentColor={datePoint} onClose={() => setLbOpen(false)} />
+        <ClassicLightbox images={gallery} index={lbIndex} open={lbOpen} variant={lbVariant} accentColor={datePoint} zoomEnabled={c.gallery?.zoomEnabled === true} onClose={() => setLbOpen(false)} />
       </div>
-      {showDdayPopup && ddayPopup?.enabled && (
+      {showDdayPopup && ddayPopup?.enabled && wedding.showDate !== false && (
         <DdayPopupOverlay
           data={ddayPopup}
           weddingDate={wedding.date}

@@ -8,6 +8,7 @@ import { resolveKoreanFontFamily } from '@/app/editor/the-simple/fontOptions'
 import { normalizeDdayPopup } from '@/lib/ddayPopupNormalize'
 import '@/components/dday/dday-popup.css'
 import { YouTubeLite } from '@/components/invitation/YouTubeLite'
+import ZoomableImage from '@/components/invitation/ZoomableImage'
 
 // ============================================================
 // Types
@@ -681,6 +682,8 @@ function ProfileSection({
   const time = content?.wedding?.timeDisplay || invitation?.wedding_time || ''
   const venueName = content?.wedding?.venue?.name || invitation?.venue_name || ''
   const venueHall = content?.wedding?.venue?.hall || ''
+  const showDate = content?.wedding?.showDate !== false
+  const showVenue = content?.wedding?.showVenue !== false
 
   const dDay = useMemo(() => {
     if (!date) return ''
@@ -732,10 +735,12 @@ function ProfileSection({
             <p className="text-[16px] font-semibold" style={{ color: '#262626' }}>&#8734;</p>
             <p className="text-[13px]" style={{ color: '#6E6E6E' }}>팔로워</p>
           </div>
-          <div className="text-center">
-            <p className="text-[16px] font-semibold" style={{ color: '#262626' }}>{dDay}</p>
-            <p className="text-[13px]" style={{ color: '#6E6E6E' }}>D-Day</p>
-          </div>
+          {showDate && (
+            <div className="text-center">
+              <p className="text-[16px] font-semibold" style={{ color: '#262626' }}>{dDay}</p>
+              <p className="text-[13px]" style={{ color: '#6E6E6E' }}>D-Day</p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -749,12 +754,16 @@ function ProfileSection({
         <p className="text-[15px] font-semibold leading-[1.4] mb-1.5" style={{ color: '#1A1A1A' }}>
           결혼합니다 💍
         </p>
-        <p className="text-[13px] font-medium leading-[1.55]" style={{ color: '#262626' }}>
-          {formattedDate} {time}
-        </p>
-        <p className="text-[13px] font-medium leading-[1.55]" style={{ color: '#262626' }}>
-          {venueName}{venueHall ? ` ${venueHall}` : ''}
-        </p>
+        {showDate && (
+          <p className="text-[13px] font-medium leading-[1.55]" style={{ color: '#262626' }}>
+            {formattedDate} {time}
+          </p>
+        )}
+        {showVenue && (
+          <p className="text-[13px] font-medium leading-[1.55]" style={{ color: '#262626' }}>
+            {venueName}{venueHall ? ` ${venueHall}` : ''}
+          </p>
+        )}
       </div>
 
       {/* Greeting text (bio continuation) — 위계는 색/굵기로만(선은 버튼 위 하나로 절제) */}
@@ -1531,6 +1540,8 @@ function WeddingInfoPost({
   const venueHall = venue?.hall || ''
   const venueAddress = venue?.address || invitation?.venue_address || ''
   const directions = wedding?.directions || {}
+  const showDate = wedding?.showDate !== false
+  const showVenue = wedding?.showVenue !== false
 
   // Parse date
   const dateObj = useMemo(() => {
@@ -1559,8 +1570,8 @@ function WeddingInfoPost({
     return { year, month, monthName: monthNames[month], firstDay, daysInMonth, targetDay }
   }, [dateObj])
 
-  const totalSlides = 2
-  const { currentIndex: infoSlide, setCurrentIndex: setInfoSlide, style: infoSwipeStyle, handlers: infoHandlers, containerRef: infoContainerRef } = useSwipeCarousel(totalSlides)
+  const totalSlides = (showDate ? 1 : 0) + (showVenue ? 1 : 0)
+  const { currentIndex: infoSlide, setCurrentIndex: setInfoSlide, style: infoSwipeStyle, handlers: infoHandlers, containerRef: infoContainerRef } = useSwipeCarousel(Math.max(1, totalSlides))
   const hasDirections = !!(directions?.car || directions?.publicTransport || directions?.train || directions?.expressBus)
   const avatarSettings = content?.media?.profileAvatarSettings || null
 
@@ -1579,18 +1590,22 @@ function WeddingInfoPost({
             </p>
 
             {/* Compact info row */}
-            <div className="flex items-center gap-2 text-[13px] mb-2" style={{ color: '#262626' }}>
-              <span>📅 {formattedDate}</span>
-              <span style={{ color: '#DBDBDB' }}>·</span>
-              <span>🕐 {time}</span>
-            </div>
-            <p className="text-[13px] mb-1" style={{ color: '#262626' }}>
-              📍 {venueName}{venueHall ? ` ${venueHall}` : ''}
-            </p>
-            {venueAddress && <p className="text-[11px] mb-3" style={{ color: '#6E6E6E' }}>{venueAddress}</p>}
+            {showDate && (
+              <div className="flex items-center gap-2 text-[13px] mb-2" style={{ color: '#262626' }}>
+                <span>📅 {formattedDate}</span>
+                <span style={{ color: '#DBDBDB' }}>·</span>
+                <span>🕐 {time}</span>
+              </div>
+            )}
+            {showVenue && (
+              <p className="text-[13px] mb-1" style={{ color: '#262626' }}>
+                📍 {venueName}{venueHall ? ` ${venueHall}` : ''}
+              </p>
+            )}
+            {showVenue && venueAddress && <p className="text-[11px] mb-3" style={{ color: '#6E6E6E' }}>{venueAddress}</p>}
 
             {/* Directions — always expanded */}
-            {hasDirections && (
+            {showVenue && hasDirections && (
               <div className="mt-2">
                 <p className="text-[12px] font-semibold mb-2" style={{ color: '#262626' }}>
                   오시는 길 안내
@@ -1671,6 +1686,7 @@ function WeddingInfoPost({
               style={infoSwipeStyle}
             >
               {/* Slide 1: Mini Calendar */}
+              {showDate && (
               <div className="w-full flex-shrink-0 aspect-square flex items-center justify-center" style={{ background: '#FAFAFA' }}>
                 {calendarData && (
                   <div className="w-[280px] text-center">
@@ -1721,8 +1737,10 @@ function WeddingInfoPost({
                   </div>
                 )}
               </div>
+              )}
 
               {/* Slide 2: Venue Card with Map Link */}
+              {showVenue && (
               <div className="w-full flex-shrink-0 aspect-square flex flex-col items-center justify-center" style={{ background: '#FAFAFA' }}>
                 <div className="w-[300px] text-center">
                   {/* Location pin with gradient circle */}
@@ -1776,6 +1794,7 @@ function WeddingInfoPost({
                   )}
                 </div>
               </div>
+              )}
             </div>
           </div>
 
@@ -3016,6 +3035,7 @@ function GalleryLightbox({
   prevTitle,
   onPrevGallery,
   onClose,
+  zoomEnabled = true,
 }: {
   images: string[]
   isOpen: boolean
@@ -3026,10 +3046,12 @@ function GalleryLightbox({
   prevTitle?: string
   onPrevGallery?: () => void
   onClose: () => void
+  zoomEnabled?: boolean
 }) {
   const [idx, setIdx] = useState(initialIndex)
+  const [zoomed, setZoomed] = useState(false) // 줌 중엔 좌우 네비게이션(클릭 존) 비활성화
   // 갤러리(이미지 배열)나 시작 인덱스가 바뀌면 인덱스 리셋
-  useEffect(() => { setIdx(initialIndex) }, [initialIndex, images])
+  useEffect(() => { setIdx(initialIndex); setZoomed(false) }, [initialIndex, images])
 
   const hasNext = !!(nextTitle && onNextGallery)
   const hasPrev = !!(prevTitle && onPrevGallery)
@@ -3085,24 +3107,37 @@ function GalleryLightbox({
 
       {/* Image — 좌/우 영역 클릭으로 이전·다음, 이미지들을 겹쳐 두고 opacity 크로스페이드(미리 로드되어 깜빡임 없음) */}
       <div className="relative w-full h-full p-4" onClick={(e) => e.stopPropagation()}>
-        {images.map((src, i) => (
-          <img
-            key={i}
-            src={src}
-            alt=""
-            className="absolute inset-0 m-auto max-w-full max-h-full object-contain"
-            style={{
-              opacity: i === idx ? 1 : 0,
-              transition: 'opacity .35s ease',
-              pointerEvents: 'none',
-              WebkitTouchCallout: 'none',
-              userSelect: 'none',
-              WebkitUserSelect: 'none',
-            } as React.CSSProperties}
-          />
-        ))}
-        {/* 좌/우 클릭 존 */}
-        {images.length > 1 && (
+        {zoomEnabled ? (
+          /* 핀치·더블탭 확대 — 현재 이미지 하나만 줌 가능하게 렌더 */
+          <div className="absolute inset-0 flex items-center justify-center p-4">
+            <ZoomableImage
+              key={idx}
+              src={images[idx]}
+              alt=""
+              className="w-full h-[80vh]"
+              onZoomChange={setZoomed}
+            />
+          </div>
+        ) : (
+          images.map((src, i) => (
+            <img
+              key={i}
+              src={src}
+              alt=""
+              className="absolute inset-0 m-auto max-w-full max-h-full object-contain"
+              style={{
+                opacity: i === idx ? 1 : 0,
+                transition: 'opacity .35s ease',
+                pointerEvents: 'none',
+                WebkitTouchCallout: 'none',
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+              } as React.CSSProperties}
+            />
+          ))
+        )}
+        {/* 좌/우 클릭 존 (줌 중에는 비활성화) */}
+        {images.length > 1 && !zoomed && (
           <>
             <button
               aria-label="이전 사진"
@@ -3630,6 +3665,7 @@ function InvitationClientExhibitContent({
           prevTitle={prevRoomIndex >= 0 ? (rooms[prevRoomIndex]?.title || '이전 갤러리') : undefined}
           onPrevGallery={prevRoomIndex >= 0 ? openPrevGallery : undefined}
           onClose={() => setLightboxOpen(false)}
+          zoomEnabled={content?.gallery?.zoomEnabled === true}
         />
 
         {/* Room Story Viewer (highlight click) */}
@@ -3661,7 +3697,7 @@ function InvitationClientExhibitContent({
           isPreview={isPreview}
         />
       </div>
-      {showDdayPopup && ddayPopup?.enabled && (
+      {showDdayPopup && ddayPopup?.enabled && content?.wedding?.showDate !== false && (
         <DdayPopupOverlay
           data={ddayPopup}
           weddingDate={content?.wedding?.date}

@@ -505,6 +505,7 @@ export default function ParentsInvitationView({
                     isPreview={isPreview}
                     groomParentsNode={groomParentsNode}
                     brideParentsNode={brideParentsNode}
+                    zoomEnabled={data.gallery?.zoomEnabled === true}
                   />
                   </SectionTint>
                 )
@@ -536,6 +537,8 @@ export default function ParentsInvitationView({
               )
             })()}
             <div id="preview-wedding">
+              {data.wedding.showDate !== false && (
+                <>
               <SectionDivider />
               <SectionTint tinted={secTinted('date')} tintColor={data.tintedColor} baseBackground={baseBg} tintedText={data.tintedTextColor}>
               <DateSection
@@ -543,6 +546,10 @@ export default function ParentsInvitationView({
                 weddingTimeDisplay={data.wedding.timeDisplay || ''}
               />
               </SectionTint>
+                </>
+              )}
+              {data.wedding.showVenue !== false && (
+                <>
               <SectionDivider />
               <div id="preview-venue">
               <SectionTint tinted={secTinted('venue')} tintColor={data.tintedColor} baseBackground={baseBg} tintedText={data.tintedTextColor}>
@@ -587,6 +594,8 @@ export default function ParentsInvitationView({
               />
               </SectionTint>
               </div>
+                </>
+              )}
             </div>
             {/* 결혼식 안내 - 활성화된 항목이 있을 때만 표시 */}
             {data.weddingInfo?.enabled && (
@@ -647,7 +656,7 @@ export default function ParentsInvitationView({
 
       </div>
       </div>
-      {showDdayPopup && ddayPopup?.enabled && (
+      {showDdayPopup && ddayPopup?.enabled && data.wedding.showDate !== false && (
         <DdayPopupOverlay
           data={ddayPopup}
           weddingDate={data.wedding?.date}

@@ -319,6 +319,8 @@ export interface ParentsInvitationContent {
     date: string
     time: string
     timeDisplay: string
+    showDate?: boolean   // 날짜·시간 표시 (기본 true)
+    showVenue?: boolean  // 장소·오시는 길 표시 (기본 true)
     venue: {
       name: string
       hall: string
@@ -369,6 +371,7 @@ export interface ParentsInvitationContent {
   // 갤러리
   gallery: {
     images: ImageCropData[]
+    zoomEnabled?: boolean  // 라이트박스 사진 확대(줌) 허용 (기본 true)
   }
 
   // 결혼식 안내

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useSectionHighlight } from './SectionHighlightContext'
 import { useTheme } from './ThemeContext'
+import ZoomableImage from '@/components/invitation/ZoomableImage'
 
 interface PhotoWithCrop {
   id: number
@@ -34,6 +35,7 @@ interface MainPhotoSectionProps {
   coupleHeadline?: string  // 이름 위 커스텀 문구
   coupleConnector?: 'and' | 'heart'  // 이름 사이 연결 (and / 하트)
   isPreview?: boolean
+  zoomEnabled?: boolean  // 라이트박스 핀치/더블탭 확대 허용 (기본 true)
 }
 
 /** 메인사진 프레임 옵션 (9:16 세로 프레임, box는 사진 창 위치 %, top/bot는 프레임 아트의 세로 범위(0~1) — 상하 여백 크롭용) */
@@ -99,6 +101,7 @@ export default function MainPhotoSection({
   coupleHeadline,
   coupleConnector,
   isPreview = false,
+  zoomEnabled = true,
 }: MainPhotoSectionProps) {
   const coupleIsHeart = coupleConnector === 'heart'
   // 섹션 전체 (SectionHighlightContext 용)
@@ -118,6 +121,7 @@ export default function MainPhotoSection({
   const [gridExpanded, setGridExpanded] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [slideDir, setSlideDir] = useState<'left' | 'right' | null>(null)
+  const [zoomed, setZoomed] = useState(false) // 줌 중엔 좌우 스와이프/탭닫기 비활성화
   const [pressedIndex, setPressedIndex] = useState<number | null>(null)
   const touchStartXRef = useRef<number>(0)
   const moreBtnRef = useRef<HTMLButtonElement>(null)
@@ -558,8 +562,9 @@ export default function MainPhotoSection({
           {/* 이미지 영역 - 한 장씩 표시 */}
           <div
             className="flex-1 relative flex items-center justify-center px-4"
-            onTouchStart={(e) => { touchStartXRef.current = e.touches[0].clientX }}
+            onTouchStart={(e) => { if (zoomed) return; touchStartXRef.current = e.touches[0].clientX }}
             onTouchEnd={(e) => {
+              if (zoomed) return
               const dx = e.changedTouches[0].clientX - touchStartXRef.current
               if (dx < -60 && lightboxIndex < allPhotos.length - 1) {
                 setSlideDir('left')
@@ -569,19 +574,38 @@ export default function MainPhotoSection({
                 setLightboxIndex(lightboxIndex - 1)
               }
             }}
-            onClick={() => setLightboxIndex(null)}
+            onClick={() => { if (!zoomed) setLightboxIndex(null) }}
           >
-            <img
-              key={lightboxIndex}
-              src={allPhotos[lightboxIndex]?.url}
-              alt={`사진 ${lightboxIndex + 1}`}
-              className="max-w-full max-h-full object-contain select-none"
-              draggable={false}
-              onClick={(e) => e.stopPropagation()}
-              style={{
-                animation: slideDir ? `lb-slide-${slideDir} 0.25s ease-out` : undefined,
-              }}
-            />
+            {zoomEnabled ? (
+              <div
+                key={lightboxIndex}
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  width: '100%',
+                  height: '80vh',
+                  animation: slideDir ? `lb-slide-${slideDir} 0.25s ease-out` : undefined,
+                }}
+              >
+                <ZoomableImage
+                  src={allPhotos[lightboxIndex]?.url}
+                  alt={`사진 ${lightboxIndex + 1}`}
+                  className="w-full h-full"
+                  onZoomChange={setZoomed}
+                />
+              </div>
+            ) : (
+              <img
+                key={lightboxIndex}
+                src={allPhotos[lightboxIndex]?.url}
+                alt={`사진 ${lightboxIndex + 1}`}
+                className="max-w-full max-h-full object-contain select-none"
+                draggable={false}
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  animation: slideDir ? `lb-slide-${slideDir} 0.25s ease-out` : undefined,
+                }}
+              />
+            )}
 
             {/* 좌우 버튼 */}
             {lightboxIndex > 0 && (

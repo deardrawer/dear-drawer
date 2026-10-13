@@ -375,6 +375,14 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
         <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>인트로 페이지, 오시는 길 안내, 카카오톡 공유 설정시 사용됩니다.</p>
 
         <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+          {/* 날짜·시간 표시 토글 (노웨딩) */}
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="text-sm font-medium">날짜 · 시간 표시</Label>
+              <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>노웨딩 등 날짜를 알리지 않을 땐 꺼주세요</p>
+            </div>
+            <Switch checked={invitation.wedding.showDate !== false} onCheckedChange={(c) => updateNestedField('wedding.showDate', c)} />
+          </div>
           {/* 날짜/시간 */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
@@ -413,6 +421,14 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
             </div>
           </div>
 
+          {/* 장소·오시는길 표시 토글 (노웨딩) */}
+          <div className="flex items-center justify-between pt-1">
+            <div>
+              <Label className="text-sm font-medium">장소 · 오시는 길 표시</Label>
+              <p className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>예식장이 정해지지 않았거나 알리지 않을 땐 꺼주세요</p>
+            </div>
+            <Switch checked={invitation.wedding.showVenue !== false} onCheckedChange={(c) => updateNestedField('wedding.showVenue', c)} />
+          </div>
           {/* 예식장 정보 */}
           <div className="space-y-1.5">
             <Label className="text-sm font-medium">예식장 이름 <span className="text-red-500">*</span></Label>

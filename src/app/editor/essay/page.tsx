@@ -60,6 +60,7 @@ export interface EssayInvitationData {
   // Wedding info
   wedding: {
     date: string; time: string; timeDisplay: string
+    showDate?: boolean; showVenue?: boolean
     venue: { name: string; hall: string; address: string; hideHall?: boolean }
     directions: { car: string; publicTransport: string; train: string; expressBus: string; extraInfoEnabled?: boolean; extraInfoTitle?: string; extraInfoText?: string }
     dateEssay: string
@@ -107,7 +108,7 @@ export interface EssayInvitationData {
   }
 
   // Gallery
-  gallery?: { images: string[]; imageSettings?: { scale: number; positionX: number; positionY: number }[] }
+  gallery?: { images: string[]; imageSettings?: { scale: number; positionX: number; positionY: number }[]; zoomEnabled?: boolean }
 
   // Section visibility
   sectionVisibility: { contacts: boolean; bankAccounts: boolean; guestbook: boolean; rsvp: boolean; parentNames: boolean; guidance: boolean; greeting?: boolean; story?: boolean; quote?: boolean; gallery?: boolean; info?: boolean; thankyou?: boolean }
@@ -203,6 +204,7 @@ const defaultData: EssayInvitationData = {
   },
   wedding: {
     date: '2026-06-20', time: '14:00', timeDisplay: '오후 2시',
+    showDate: true, showVenue: true,
     venue: { name: '', hall: '', address: '' },
     directions: { car: '', publicTransport: '', train: '', expressBus: '' },
     dateEssay: '',
@@ -248,7 +250,7 @@ const defaultData: EssayInvitationData = {
       customItems: [],
     },
   },
-  gallery: { images: [], imageSettings: [] },
+  gallery: { images: [], imageSettings: [], zoomEnabled: false },
   sectionVisibility: { contacts: true, bankAccounts: true, guestbook: true, rsvp: true, parentNames: true, guidance: true },
   rsvpEnabled: true,
   rsvpDeadline: '',

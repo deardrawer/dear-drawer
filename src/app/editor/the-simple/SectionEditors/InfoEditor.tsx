@@ -6,13 +6,16 @@ import ColorField from '@/components/editor/ColorField'
 interface InfoEditorProps {
   value: SectionContents['info']
   onChange: (next: SectionContents['info']) => void
+  // 하객에게 날짜·시간·D-Day 표시 여부 (wedding.showDate). 기본 ON(미설정=표시)
+  showDate?: boolean
+  onShowDateChange?: (next: boolean) => void
 }
 
 /**
  * 예식 정보 섹션 에디터 — eyebrow 및 라벨 텍스트
  * 실제 날짜/시간/장소는 상단 "기본 정보"에서 편집합니다.
  */
-export default function InfoEditor({ value, onChange }: InfoEditorProps) {
+export default function InfoEditor({ value, onChange, showDate, onShowDateChange }: InfoEditorProps) {
   const update = (patch: Partial<SectionContents['info']>) => {
     onChange({ ...value, ...patch })
   }
@@ -20,8 +23,19 @@ export default function InfoEditor({ value, onChange }: InfoEditorProps) {
   return (
     <div className="space-y-2.5">
       <p className="text-[10px] text-stone-400 leading-relaxed">
-        날짜 · 시간 · 예식장은 상단 "기본 정보"에서 편집하세요.
+        날짜 · 시간 · 예식장은 상단 &quot;기본 정보&quot;에서 편집하세요.
       </p>
+      {onShowDateChange && (
+        <label className="flex items-center gap-2 cursor-pointer pb-1 border-b border-stone-100">
+          <input
+            type="checkbox"
+            checked={showDate !== false}
+            onChange={(e) => onShowDateChange(e.target.checked)}
+            className="accent-stone-600 w-3.5 h-3.5"
+          />
+          <span className="text-[11px] text-stone-600">날짜 · 시간 표시</span>
+        </label>
+      )}
       <label className="block">
         <span className="text-[10px] uppercase tracking-wider text-stone-400">Eyebrow</span>
         <input

@@ -625,6 +625,18 @@ export default function Step3Record({}: Step3RecordProps) {
             </div>
           </div>
         )}
+
+        {/* 사진 확대(줌) 허용 토글 */}
+        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div>
+            <Label className="text-sm font-medium">사진 확대(줌) 허용</Label>
+            <p className="text-xs text-gray-500">끄면 하객이 갤러리 사진을 확대할 수 없어요</p>
+          </div>
+          <Switch
+            checked={invitation.gallery.zoomEnabled === true}
+            onCheckedChange={(checked) => updateNestedField('gallery.zoomEnabled', checked)}
+          />
+        </div>
       </section>
 
       {/* 영상 */}

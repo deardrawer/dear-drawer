@@ -537,6 +537,7 @@ const Preview = forwardRef<PreviewHandle, object>(function Preview(_, ref) {
                   bride_mother_bank_info: invitation.bride.mother?.bank,
                 } : {}),
                 directions: invitation.wedding.directions,
+                showVenue: invitation.wedding.showVenue,
                 rsvpEnabled: invitation.rsvpEnabled,
                 rsvpAllowGuestCount: invitation.rsvpAllowGuestCount,
                 rsvpMealOption: invitation.rsvpMealOption,

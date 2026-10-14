@@ -367,6 +367,23 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
         </div>
       </section>
 
+      {/* 커버 제목 */}
+      <section className="space-y-2">
+        <h3 className="text-base font-semibold text-gray-900">커버 제목</h3>
+        <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>인트로가 끝난 뒤 커버 화면 가운데 크게 보이는 문구예요. (기본 &lsquo;{isFamily ? 'WEDDING INVITATION' : 'OUR WEDDING'}&rsquo; · Enter로 줄바꿈)</p>
+        <Textarea
+          value={invitation.wedding.title ?? ''}
+          onChange={(e) => {
+            updateNestedField('wedding.title', e.target.value)
+            updateNestedField('design.coverTitle', e.target.value)
+          }}
+          onFocus={() => setActiveSection('invitation')}
+          placeholder={isFamily ? 'WEDDING INVITATION' : 'OUR WEDDING'}
+          rows={2}
+          className="resize-none"
+        />
+      </section>
+
       {/* 결혼식 정보 */}
       <section className="space-y-4">
         <h3 className="text-base font-semibold text-gray-900">
@@ -546,6 +563,19 @@ export default function Step3Invitation({ onOpenIntroSelector, templateId, onScr
             />
           </div>
         )}
+      </section>
+      )}
+
+      {/* 상단 라벨 (인트로 상단 작은 글자, OUR/FAMILY) */}
+      {!isMagazine && (
+      <section className="space-y-2">
+        <h3 className="text-base font-semibold text-gray-900">상단 라벨 <span className="text-sm font-normal" style={{ color: 'var(--ed-text-muted)' }}>(인트로 상단 작은 글자)</span></h3>
+        <Input
+          value={(invitation.content as any).invitationLabel ?? ''}
+          onChange={(e) => updateNestedField('content.invitationLabel', e.target.value)}
+          onFocus={() => setActiveSection('invitation')}
+          placeholder="INVITATION"
+        />
       </section>
       )}
 

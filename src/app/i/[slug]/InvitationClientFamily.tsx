@@ -4376,13 +4376,15 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
               fontWeight: 400,
               letterSpacing: '6px',
               marginBottom: '18px',
+              whiteSpace: 'pre-line',
+              lineHeight: 1.25,
               opacity: coverAnimated ? 1 : 0,
               transform: coverAnimated ? 'translateY(0)' : 'translateY(10px)',
               filter: coverAnimated ? 'blur(0px)' : 'blur(3px)',
               transition: 'opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.4s, transform 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.4s, filter 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.4s'
             }}
           >
-            {invitation.wedding.title || 'OUR WEDDING'}
+            {invitation.wedding.title || 'WEDDING INVITATION'}
           </h1>
 
           {/* Venue */}
@@ -4474,8 +4476,10 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
         onTouchEnd={handleTouchEnd}
         onWheel={handleWheel}
       >
-        {/* INVITATION Title */}
-        <p className="invitation-title typo-caption sc-tt10 mb-9" style={{ color: themeColors.gray }}>INVITATION</p>
+        {/* INVITATION Title (커스텀: content.invitationLabel. undefined=기본 'INVITATION', 빈 문자열이면 숨김) */}
+        {((invitation.content as any)?.invitationLabel ?? 'INVITATION') !== '' && (
+          <p className="invitation-title typo-caption sc-tt10 mb-9" style={{ color: themeColors.gray }}>{(invitation.content as any)?.invitationLabel ?? 'INVITATION'}</p>
+        )}
 
         {/* Quote Section */}
         {invitation.content.quote.text && (
@@ -4992,6 +4996,37 @@ function MainPage({ invitation, invitationId, fonts, themeColors, onNavigate, on
               fonts={fonts}
               themeColors={themeColors}
               textStyle={{ lineHeight: (invitation as any).whyWeChoseTextStyle?.lineHeight, textAlign: (invitation as any).whyWeChose?.bride?.textAlign ?? (invitation as any).whyWeChoseTextStyle?.textAlign }}
+            />
+          )}
+        </>
+      )}
+
+      {/* Our Story (옵션) — 러브스토리 + 사귄날짜 카운터 (relationship.loveStoryEnabled로 명시 opt-in, 기존 family 영향 없음) */}
+      {(invitation.relationship as any)?.loveStoryEnabled === true && (
+        <>
+          {/* 러브스토리 상단 디바이더 (옵션) — 흑백 웨딩사진 (FullHeightDividerSection은 grayscale 기본 100%) */}
+          {(invitation.relationship as any)?.loveStoryDividerEnabled === true && (
+            <FullHeightDividerSection
+              englishTitle={(invitation as any).fullHeightDividers?.items?.[3]?.englishTitle || 'Our Love Story'}
+              koreanText={(invitation as any).fullHeightDividers?.items?.[3]?.koreanText || '두 사람이 함께 걸어온 시간'}
+              image={(invitation as any).fullHeightDividers?.items?.[3]?.image}
+              imageSettings={(invitation as any).fullHeightDividers?.items?.[3]?.imageSettings}
+            />
+          )}
+          {invitation.relationship?.stories?.map((story, index) => story.title || story.desc ? (
+            <StorySection
+              key={index}
+              story={story}
+              fonts={fonts}
+              themeColors={themeColors}
+            />
+          ) : null)}
+          {invitation.relationship?.startDate && (
+            <AnniversaryCounterSection
+              startDate={invitation.relationship.startDate}
+              closingText={invitation.relationship.closingText}
+              fonts={fonts}
+              themeColors={themeColors}
             />
           )}
         </>

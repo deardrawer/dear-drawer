@@ -342,11 +342,14 @@ export interface InvitationContent {
     startDate: string
     stories: StoryItem[]
     closingText: string  // 마무리 문구
+    loveStoryEnabled?: boolean  // FAMILY 전용: 러브스토리 섹션 노출 (기본 off, 명시 opt-in)
+    loveStoryDividerEnabled?: boolean  // FAMILY 전용: 러브스토리 상단 흑백 디바이더 노출 (기본 off)
   }
 
   // ===== 콘텐츠 =====
   content: {
     greeting: string
+    invitationLabel?: string   // 인사말 섹션 상단 라벨 (OUR/FAMILY, 기본 'INVITATION')
     greetingDialogue?: string  // Film 인사말 대사 (나레이션과 분리)
     quote: QuoteInfo
     thankYou: ThankYouInfo
@@ -759,6 +762,7 @@ const createDefaultInvitation = (template: Template): InvitationContent => ({
       : template.id === 'narrative-magazine'
       ? '서로 다른 두 사람이\n같은 방향을 바라보며\n하나의 길을 걸어가려 합니다.\n\n소중한 분들을 초대합니다.'
       : '',
+    invitationLabel: 'INVITATION',
     greetingDialogue: template.id === 'narrative-film'
       ? '이 예상 밖의 전개에\n여러분을 초대합니다.'
       : undefined,

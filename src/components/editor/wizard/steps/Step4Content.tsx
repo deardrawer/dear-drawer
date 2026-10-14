@@ -141,6 +141,15 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
   const isFamily = templateId === 'narrative-family' || invitation.templateId === 'narrative-family'
   const isMagazine = templateId === 'narrative-magazine' || invitation.templateId === 'narrative-magazine'
 
+  // 러브스토리 노출 제어: OUR는 sectionVisibility.ourStory, FAMILY는 relationship.loveStoryEnabled(기본 off, 명시 opt-in)
+  const loveStoryOn = isFamily
+    ? ((invitation.relationship as any)?.loveStoryEnabled === true)
+    : invitation.sectionVisibility.ourStory
+  const toggleLoveStory = () => {
+    if (isFamily) updateNestedField('relationship.loveStoryEnabled', !loveStoryOn)
+    else toggleSectionVisibility('ourStory')
+  }
+
   // 이미지 업로드 핸들러
   const handleImageUpload = async (
     file: File,
@@ -733,151 +742,10 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
         </section>
       )}
 
-      {/* OUR 템플릿: 러브스토리 / FAMILY 템플릿: 부모님 인사말 (MAGAZINE은 숨김) */}
-      {isMagazine ? null : !isFamily ? (
-        /* OUR 템플릿: 러브스토리 */
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold text-gray-900">
-              러브스토리
-            </h3>
-            <Switch
-              checked={invitation.sectionVisibility.ourStory}
-              onCheckedChange={() => toggleSectionVisibility('ourStory')}
-            />
-          </div>
-
-          {/* TIP 섹션 */}
-          <div className="p-4 rounded-lg border" style={{ background: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
-            <p className="text-sm mb-2" style={{ color: 'var(--ed-text-muted)' }}>첫 만남부터 결혼을 결심하기까지, 그때의 이야기와 사진을 함께 담아주세요.</p>
-            <details className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
-              <summary className="cursor-pointer font-medium hover:underline">가이드 보기</summary>
-              <div className="mt-3 space-y-4 pl-2 border-l-2" style={{ borderColor: 'var(--ed-border)' }}>
-                <p>이 페이지는 첫 만남부터 결혼을 결심하기까지의 시간을 사진과 함께 기록하는 공간입니다.</p>
-
-                <div className="space-y-2">
-                  <p className="font-medium">① 첫 만남</p>
-                  <p>처음 마주했던 날을 떠올려 보세요. 그날의 분위기와 마음을 한두 문장으로 남기고, 첫 시절의 사진을 함께 담아 주세요.</p>
-                  <div className="p-2 bg-white/50 rounded italic">예시) "스무 살, 같은 캠퍼스에서 친구로 처음 만났습니다."</div>
-                </div>
-
-                <div className="space-y-2">
-                  <p className="font-medium">② 연애의 시간</p>
-                  <p>연애하며 함께 쌓아온 시간을 요약해 보세요. 장거리, 취미, 반복된 일상처럼 우리다웠던 시간을 보여주는 사진이 잘 어울립니다.</p>
-                  <div className="p-2 bg-white/50 rounded italic">예시) "장거리와 바쁜 일상 속에서도 함께 웃고, 같은 취미를 나누며 시간을 쌓아왔습니다."</div>
-                </div>
-
-                <div className="space-y-2">
-                  <p className="font-medium">③ 결혼을 결심한 순간</p>
-                  <p>결혼을 준비하게 된 계기나 프러포즈의 순간을 담아보세요.</p>
-                  <div className="p-2 bg-white/50 rounded italic">예시) "10주년을 기념한 여행에서, 서로의 평생이 되기로 약속했습니다."</div>
-                </div>
-
-                <p>사진은 기록을 더 선명하게 만들고, 글은 그 순간에 의미를 더합니다. 잘 나온 사진보다 그때의 감정이 느껴지는 사진이 좋아요.</p>
-              </div>
-            </details>
-          </div>
-
-          {invitation.sectionVisibility.ourStory && (
-            <div className="space-y-4">
-              {invitation.relationship.stories.every(s => !s.title && !s.desc) && (
-                <div className="flex justify-end">
-                  <button onClick={applySampleStories} className="text-xs text-stone-500 hover:text-stone-700">
-                    샘플 적용
-                  </button>
-                </div>
-              )}
-
-              {invitation.relationship.stories.map((story, index) => (
-                <div key={index} className="p-4 bg-gray-50 rounded-lg space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-gray-700">스토리 {index + 1}</span>
-                    {invitation.relationship.stories.length > 1 && (
-                      <button
-                        onClick={() => removeStory(index)}
-                        className="text-xs text-red-500 hover:underline"
-                      >
-                        삭제
-                      </button>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <Label className="text-xs">날짜</Label>
-                      <Input
-                        value={story.date}
-                        onChange={(e) => updateNestedField(`relationship.stories.${index}.date`, e.target.value)}
-                        onFocus={() => setActiveSection('our-story')}
-                        placeholder={SAMPLE_STORIES[index]?.date || '2020.05'}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs">제목</Label>
-                      <Input
-                        value={story.title}
-                        onChange={(e) => updateNestedField(`relationship.stories.${index}.title`, e.target.value)}
-                        onFocus={() => setActiveSection('our-story')}
-                        placeholder={SAMPLE_STORIES[index]?.title || '제목을 입력하세요'}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">내용</Label>
-                    <HighlightTextarea
-                      value={story.desc}
-                      onChange={(value) => updateNestedField(`relationship.stories.${index}.desc`, value)}
-                      onFocus={() => setActiveSection('our-story')}
-                      placeholder={SAMPLE_STORIES[index]?.desc || '스토리 내용을 입력해주세요'}
-                      rows={3}
-                    />
-                  </div>
-                  {/* 스토리 이미지 */}
-                  <div className="space-y-1">
-                    <Label className="text-xs">사진 (최대 2장)</Label>
-                    <MultiImageUploader
-                      images={story.images || []}
-                      onChange={(images) => updateNestedField(`relationship.stories.${index}.images`, images)}
-                      maxImages={2}
-                      placeholder="사진 추가"
-                      aspectRatio="aspect-square"
-                    />
-                    {/* 이미지 크롭 조정 */}
-                    {(story.images?.filter(img => img)?.length || 0) > 0 && (
-                      <div className="mt-2 p-3 bg-white/70 rounded-lg space-y-3">
-                        <p className="text-[10px] font-medium" style={{ color: 'var(--ed-text-muted)' }}>이미지 크롭 조정</p>
-                        {story.images?.map((imageUrl, imgIndex) => {
-                          if (!imageUrl) return null
-                          const settings = story.imageSettings?.[imgIndex] || { scale: 1.0, positionX: 0, positionY: 0 }
-                          return (
-                            <div key={imgIndex} className="space-y-2 pb-3 border-b border-[var(--ed-border)] last:border-0 last:pb-0">
-                              <p className="text-[9px]" style={{ color: 'var(--ed-text-faint)' }}>사진 {imgIndex + 1}</p>
-                              <InlineCropEditor
-                                imageUrl={imageUrl}
-                                settings={settings}
-                                onUpdate={(s) => updateStoryImageSettings(index, imgIndex, s)}
-                                aspectRatio={1}
-                                containerWidth={140}
-                                colorClass="rose"
-                              />
-                            </div>
-                          )
-                        })}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-
-              <button
-                onClick={addStory}
-                className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors"
-              >
-                + 스토리 추가
-              </button>
-            </div>
-          )}
-        </section>
-      ) : (
+      {/* 콘텐츠 블록 (MAGAZINE 숨김) — OUR: 러브스토리 / FAMILY: 부모님 인사말 → 서로를 선택한 이유 → 러브스토리(옵션) */}
+      {isMagazine ? null : (
+        <>
+        {isFamily && (
         /* FAMILY 템플릿: 부모님 인사말 (신랑측/신부측 분리) */
         <section className="space-y-4">
           <div className="flex items-center justify-between">
@@ -1358,52 +1226,220 @@ export default function Step4Content({ onOpenAIStoryGenerator, templateId }: Ste
             </div>
           )}
         </section>
-      )}
-
-      {/* 처음 만난 날 - OUR 템플릿 전용, D-DAY 계산용 */}
-      {!isFamily && !isMagazine && (
+        )}
+        {/* 러브스토리 */}
         <section className="space-y-4">
-          <h3 className="text-base font-semibold text-gray-900">
-            처음 만난 날
-          </h3>
-          <div className="p-4 rounded-lg space-y-3" style={{ background: 'var(--ed-surface-2)' }}>
-            <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>두 분이 처음 만난 날짜를 입력해주세요. 청첩장에 함께한 시간이 표시됩니다.</p>
-            <Input
-              type="date"
-              value={invitation.relationship.startDate || ''}
-              onChange={(e) => updateNestedField('relationship.startDate', e.target.value)}
-              className="bg-white"
+          <div className="flex items-center justify-between">
+            <h3 className="text-base font-semibold text-gray-900">
+              러브스토리
+            </h3>
+            <Switch
+              checked={loveStoryOn}
+              onCheckedChange={toggleLoveStory}
             />
           </div>
-        </section>
-      )}
 
-      {/* 스토리 마무리 문구 - OUR 템플릿 전용 (신랑/신부 호칭 등 커스텀 가능) */}
-      {!isFamily && !isMagazine && (
-        <section className="space-y-4">
-          <h3 className="text-base font-semibold text-gray-900">
-            마무리 문구
-          </h3>
-          <div className="p-4 bg-gray-50 rounded-lg space-y-2">
-            <div className="flex items-start justify-between gap-2">
-              <p className="text-xs text-gray-500">스토리 마지막 문구예요. &lsquo;신랑&rsquo;·&lsquo;신부&rsquo; 호칭도 자유롭게 바꿀 수 있어요. (Enter로 줄바꿈)</p>
+          {/* TIP 섹션 */}
+          <div className="p-4 rounded-lg border" style={{ background: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
+            <p className="text-sm mb-2" style={{ color: 'var(--ed-text-muted)' }}>첫 만남부터 결혼을 결심하기까지, 그때의 이야기와 사진을 함께 담아주세요.</p>
+            <details className="text-xs" style={{ color: 'var(--ed-text-muted)' }}>
+              <summary className="cursor-pointer font-medium hover:underline">가이드 보기</summary>
+              <div className="mt-3 space-y-4 pl-2 border-l-2" style={{ borderColor: 'var(--ed-border)' }}>
+                <p>이 페이지는 첫 만남부터 결혼을 결심하기까지의 시간을 사진과 함께 기록하는 공간입니다.</p>
+
+                <div className="space-y-2">
+                  <p className="font-medium">① 첫 만남</p>
+                  <p>처음 마주했던 날을 떠올려 보세요. 그날의 분위기와 마음을 한두 문장으로 남기고, 첫 시절의 사진을 함께 담아 주세요.</p>
+                  <div className="p-2 bg-white/50 rounded italic">예시) "스무 살, 같은 캠퍼스에서 친구로 처음 만났습니다."</div>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="font-medium">② 연애의 시간</p>
+                  <p>연애하며 함께 쌓아온 시간을 요약해 보세요. 장거리, 취미, 반복된 일상처럼 우리다웠던 시간을 보여주는 사진이 잘 어울립니다.</p>
+                  <div className="p-2 bg-white/50 rounded italic">예시) "장거리와 바쁜 일상 속에서도 함께 웃고, 같은 취미를 나누며 시간을 쌓아왔습니다."</div>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="font-medium">③ 결혼을 결심한 순간</p>
+                  <p>결혼을 준비하게 된 계기나 프러포즈의 순간을 담아보세요.</p>
+                  <div className="p-2 bg-white/50 rounded italic">예시) "10주년을 기념한 여행에서, 서로의 평생이 되기로 약속했습니다."</div>
+                </div>
+
+                <p>사진은 기록을 더 선명하게 만들고, 글은 그 순간에 의미를 더합니다. 잘 나온 사진보다 그때의 감정이 느껴지는 사진이 좋아요.</p>
+              </div>
+            </details>
+          </div>
+
+          {loveStoryOn && (
+            <div className="space-y-4">
+              {/* FAMILY 전용: 러브스토리 상단 흑백 웨딩사진 디바이더 (옵션) */}
+              {isFamily && (
+                <div className="p-4 rounded-lg border space-y-3" style={{ background: 'var(--ed-surface-2)', borderColor: 'var(--ed-border)' }}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">상단 흑백 디바이더</p>
+                      <p className="text-xs text-gray-500 mt-0.5">러브스토리 맨 위에 흑백 웨딩사진 디바이더를 넣어요</p>
+                    </div>
+                    <Switch
+                      checked={(invitation.relationship as any)?.loveStoryDividerEnabled === true}
+                      onCheckedChange={(checked) => updateNestedField('relationship.loveStoryDividerEnabled', checked)}
+                    />
+                  </div>
+                  {(invitation.relationship as any)?.loveStoryDividerEnabled === true && (
+                    <PhotoDividerEditor
+                      dividerIndex={3}
+                      label="러브스토리 상단 디바이더"
+                      defaultEnglishTitle="Our Love Story"
+                      defaultKoreanText="두 사람이 함께 걸어온 시간"
+                    />
+                  )}
+                </div>
+              )}
+              {invitation.relationship.stories.every(s => !s.title && !s.desc) && (
+                <div className="flex justify-end">
+                  <button onClick={applySampleStories} className="text-xs text-stone-500 hover:text-stone-700">
+                    샘플 적용
+                  </button>
+                </div>
+              )}
+
+              {invitation.relationship.stories.map((story, index) => (
+                <div key={index} className="p-4 bg-gray-50 rounded-lg space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-gray-700">스토리 {index + 1}</span>
+                    {invitation.relationship.stories.length > 1 && (
+                      <button
+                        onClick={() => removeStory(index)}
+                        className="text-xs text-red-500 hover:underline"
+                      >
+                        삭제
+                      </button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs">날짜</Label>
+                      <Input
+                        value={story.date}
+                        onChange={(e) => updateNestedField(`relationship.stories.${index}.date`, e.target.value)}
+                        onFocus={() => setActiveSection('our-story')}
+                        placeholder={SAMPLE_STORIES[index]?.date || '2020.05'}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">제목</Label>
+                      <Input
+                        value={story.title}
+                        onChange={(e) => updateNestedField(`relationship.stories.${index}.title`, e.target.value)}
+                        onFocus={() => setActiveSection('our-story')}
+                        placeholder={SAMPLE_STORIES[index]?.title || '제목을 입력하세요'}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">내용</Label>
+                    <HighlightTextarea
+                      value={story.desc}
+                      onChange={(value) => updateNestedField(`relationship.stories.${index}.desc`, value)}
+                      onFocus={() => setActiveSection('our-story')}
+                      placeholder={SAMPLE_STORIES[index]?.desc || '스토리 내용을 입력해주세요'}
+                      rows={3}
+                    />
+                  </div>
+                  {/* 스토리 이미지 */}
+                  <div className="space-y-1">
+                    <Label className="text-xs">사진 (최대 2장)</Label>
+                    <MultiImageUploader
+                      images={story.images || []}
+                      onChange={(images) => updateNestedField(`relationship.stories.${index}.images`, images)}
+                      maxImages={2}
+                      placeholder="사진 추가"
+                      aspectRatio="aspect-square"
+                    />
+                    {/* 이미지 크롭 조정 */}
+                    {(story.images?.filter(img => img)?.length || 0) > 0 && (
+                      <div className="mt-2 p-3 bg-white/70 rounded-lg space-y-3">
+                        <p className="text-[10px] font-medium" style={{ color: 'var(--ed-text-muted)' }}>이미지 크롭 조정</p>
+                        {story.images?.map((imageUrl, imgIndex) => {
+                          if (!imageUrl) return null
+                          const settings = story.imageSettings?.[imgIndex] || { scale: 1.0, positionX: 0, positionY: 0 }
+                          return (
+                            <div key={imgIndex} className="space-y-2 pb-3 border-b border-[var(--ed-border)] last:border-0 last:pb-0">
+                              <p className="text-[9px]" style={{ color: 'var(--ed-text-faint)' }}>사진 {imgIndex + 1}</p>
+                              <InlineCropEditor
+                                imageUrl={imageUrl}
+                                settings={settings}
+                                onUpdate={(s) => updateStoryImageSettings(index, imgIndex, s)}
+                                aspectRatio={1}
+                                containerWidth={140}
+                                colorClass="rose"
+                              />
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+
               <button
-                type="button"
-                onClick={() => updateNestedField('relationship.closingText', "그리고 이제 드디어 부르는 서로의 이름에\n'신랑', '신부'라는 호칭을 담습니다")}
-                className="text-[11px] text-gray-400 underline whitespace-nowrap shrink-0 hover:text-gray-700"
+                onClick={addStory}
+                className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors"
               >
-                기본 문구로
+                + 스토리 추가
               </button>
             </div>
-            <Textarea
-              value={invitation.relationship.closingText ?? ''}
-              onChange={(e) => updateNestedField('relationship.closingText', e.target.value)}
-              placeholder={"그리고 이제 드디어 부르는 서로의 이름에\n'신랑', '신부'라는 호칭을 담습니다"}
-              rows={3}
-              className="w-full bg-white text-sm resize-none leading-[1.6]"
-            />
-          </div>
+          )}
         </section>
+
+        {/* 처음 만난 날 - OUR·FAMILY(러브스토리 ON) 공통, D-DAY/사귄날짜 계산용 */}
+        {(!isFamily || loveStoryOn) && (
+          <section className="space-y-4">
+            <h3 className="text-base font-semibold text-gray-900">
+              처음 만난 날
+            </h3>
+            <div className="p-4 rounded-lg space-y-3" style={{ background: 'var(--ed-surface-2)' }}>
+              <p className="text-sm" style={{ color: 'var(--ed-text-muted)' }}>두 분이 처음 만난 날짜를 입력해주세요. 청첩장에 함께한 시간이 표시됩니다.</p>
+              <Input
+                type="date"
+                value={invitation.relationship.startDate || ''}
+                onChange={(e) => updateNestedField('relationship.startDate', e.target.value)}
+                className="bg-white"
+              />
+            </div>
+          </section>
+        )}
+
+        {/* 스토리 마무리 문구 - OUR·FAMILY(러브스토리 ON) 공통 (신랑/신부 호칭 등 커스텀 가능) */}
+        {(!isFamily || loveStoryOn) && (
+          <section className="space-y-4">
+            <h3 className="text-base font-semibold text-gray-900">
+              마무리 문구
+            </h3>
+            <div className="p-4 bg-gray-50 rounded-lg space-y-2">
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-xs text-gray-500">스토리 마지막 문구예요. &lsquo;신랑&rsquo;·&lsquo;신부&rsquo; 호칭도 자유롭게 바꿀 수 있어요. (Enter로 줄바꿈)</p>
+                <button
+                  type="button"
+                  onClick={() => updateNestedField('relationship.closingText', "그리고 이제 드디어 부르는 서로의 이름에\n'신랑', '신부'라는 호칭을 담습니다")}
+                  className="text-[11px] text-gray-400 underline whitespace-nowrap shrink-0 hover:text-gray-700"
+                >
+                  기본 문구로
+                </button>
+              </div>
+              <Textarea
+                value={invitation.relationship.closingText ?? ''}
+                onChange={(e) => updateNestedField('relationship.closingText', e.target.value)}
+                placeholder={"그리고 이제 드디어 부르는 서로의 이름에\n'신랑', '신부'라는 호칭을 담습니다"}
+                rows={3}
+                className="w-full bg-white text-sm resize-none leading-[1.6]"
+              />
+            </div>
+          </section>
+        )}
+
+        </>
       )}
 
       {/* 갤러리 */}

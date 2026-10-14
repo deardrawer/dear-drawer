@@ -4136,6 +4136,8 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
               fontWeight: 600,
               letterSpacing: '6px',
               marginBottom: '18px',
+              whiteSpace: 'pre-line',
+              lineHeight: 1.25,
               opacity: coverAnimated ? 1 : 0,
               transform: coverAnimated ? 'translateY(0)' : 'translateY(10px)',
               filter: coverAnimated ? 'blur(0px)' : 'blur(3px)',
@@ -4234,8 +4236,10 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
         onTouchEnd={handleTouchEnd}
         onWheel={handleWheel}
       >
-        {/* INVITATION Title */}
-        <p className="invitation-title sc-tt10 text-[10px] font-light mb-9" style={{ color: themeColors.gray, letterSpacing: '4px' }}>INVITATION</p>
+        {/* INVITATION Title (커스텀: content.invitationLabel. undefined=기본 'INVITATION', 빈 문자열이면 숨김) */}
+        {((invitation.content as any)?.invitationLabel ?? 'INVITATION') !== '' && (
+          <p className="invitation-title sc-tt10 text-[10px] font-light mb-9" style={{ color: themeColors.gray, letterSpacing: '4px' }}>{(invitation.content as any)?.invitationLabel ?? 'INVITATION'}</p>
+        )}
 
         {/* Quote Section */}
         {invitation.content.quote.text && (

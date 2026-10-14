@@ -4230,15 +4230,15 @@ function IntroPage({ invitation, invitationId: _invitationId, fonts, themeColors
           minHeight: '100vh',
           opacity: screenFadeOut ? 0 : 1,
           transition: 'opacity 0.5s ease',
-          // 노웨딩(날짜·장소 모두 숨김): 본문 세로 중앙 + '다음 이야기' 하단 고정
-          ...((invitation.wedding.showDate === false && invitation.wedding.showVenue === false) ? { display: 'flex', flexDirection: 'column' as const } : {})
+          // 노웨딩(날짜·장소 모두 숨김): 본문+다음이야기를 묶어 세로 중앙 정렬(빈 공간 최소화)
+          ...((invitation.wedding.showDate === false && invitation.wedding.showVenue === false) ? { display: 'flex', flexDirection: 'column' as const, justifyContent: 'center' as const } : {})
         }}
         onClick={handleInvitationClick}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         onWheel={handleWheel}
       >
-        <div style={(invitation.wedding.showDate === false && invitation.wedding.showVenue === false) ? { flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' } : undefined}>
+        <div>
         {/* INVITATION Title (커스텀: content.invitationLabel. undefined=기본 'INVITATION', 빈 문자열이면 숨김) */}
         {((invitation.content as any)?.invitationLabel ?? 'INVITATION') !== '' && (
           <p className="invitation-title sc-tt10 text-[10px] font-light mb-9" style={{ color: themeColors.gray, letterSpacing: '4px' }}>{(invitation.content as any)?.invitationLabel ?? 'INVITATION'}</p>
